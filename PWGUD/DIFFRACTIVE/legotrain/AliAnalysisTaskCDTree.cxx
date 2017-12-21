@@ -75,12 +75,14 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fPIDmode(0)
 	, fGapInformation(0)
 	, fTree(0x0)
+	, fList(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
-	, fList(0x0)
+	, fRunNumber(0)
+	, fPeriod(0)
 	, fHistEvent(0x0)
 	, fHistEventProcesses(0x0)
 	, fHistPrimVtxX(0x0)
@@ -112,8 +114,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fSPDTrkvsCls_bf(0x0)
 	, fSPDTrkvsCls_af(0x0)
 	, fPrimaries(0x0)
-	, fRunNumber(0)
-	, fPeriod(0)
 {
 	//
 	// standard constructor (the one which should be used)
@@ -198,12 +198,14 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fPIDmode(0)
 	, fGapInformation(0)
 	, fTree(0x0)
+	, fList(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
-	, fList(0x0)
+	, fRunNumber(0)
+	, fPeriod(0)
 	, fHistEvent(0x0)
 	, fHistEventProcesses(0x0)
 	, fHistPrimVtxX(0x0)
@@ -235,8 +237,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fSPDTrkvsCls_bf(0x0)
 	, fSPDTrkvsCls_af(0x0)
 	, fPrimaries(0x0)
-	, fRunNumber(0)
-	, fPeriod(0)
 {
 	for (Int_t i = 0; i < 3; i++) {
 		fVertex[i] = 0.;
@@ -712,8 +712,6 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 	//-------------------------------------------------------------------------
 
 	// EVENT SELECTION---------------------------------------------------------
-	Int_t kfo = 0;
-	Int_t ninnerp=-999, nouterp=-999;
 	Bool_t eventIsValid = CutEvent(fESDEvent, fHistSPDFiredChips,0x0,fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ, fVertex);
 	if (!eventIsValid) {
 		PostOutputs();
@@ -1309,7 +1307,7 @@ Int_t AliAnalysisTaskCDTree::CheckChipEta(const Int_t chipKey, const TString scu
 Bool_t AliAnalysisTaskCDTree::CheckV0Hit(const AliESDEvent *ESDEvent, TH1D* hitV0A, TH1D* hitV0C)
 {
 	AliTriggerAnalysis triggerAnalysis;
-	const Bool_t khw = kFALSE;
+        const Bool_t khw = kFALSE;
 	const Bool_t v0A = (triggerAnalysis.V0Trigger(ESDEvent, AliTriggerAnalysis::kASide, khw) == AliTriggerAnalysis::kV0BB);
 	const Bool_t v0C =
 		(triggerAnalysis.V0Trigger(ESDEvent, AliTriggerAnalysis::kCSide, khw) ==
@@ -1360,7 +1358,6 @@ Int_t AliAnalysisTaskCDTree::DetermineGap(const AliESDEvent *ESDEvent,const Bool
 
 	//Read V0 first
 	AliTriggerAnalysis triggerAnalysis;
-	const Bool_t khw = kFALSE;
 	const Bool_t v0A = triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kV0A);
 	const Bool_t v0C = triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kV0C);
 	//Check central activity

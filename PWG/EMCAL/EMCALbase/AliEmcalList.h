@@ -29,6 +29,7 @@ public:
   ~AliEmcalList() {}
   Long64_t                    Merge(TCollection *hlist);
   void                        SetUseScaling(Bool_t val) {fUseScaling = val;}
+  Bool_t                      IsUseScaling() const { return fUseScaling; }
 
 private:
   // ####### Helper functions

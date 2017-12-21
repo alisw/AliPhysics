@@ -535,6 +535,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     return;
   }
   
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
+
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
     fHistNEvents->Fill(6);
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
@@ -565,6 +567,16 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       }
     }
     if(!isSelBit) continue; 
+
+    if(fDecChannel==0 || fDecChannel==3) {
+      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+    }
+    else if(fDecChannel == 1) {
+      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+    }
+    else if(fDecChannel == 2) {
+      if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
+    }
 
     if (fDecChannel==2) {
       DStarToD0pi = (AliAODRecoCascadeHF*)arrayProng->At(iProng);

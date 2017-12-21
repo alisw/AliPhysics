@@ -526,7 +526,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
   // Input / output delta AOD settings
 
   ana->SetOutputAODName(Form("Photon%s",kAnaIsoPhotonName.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
 
   //Set Histograms name tag, bins and ranges
 
@@ -677,17 +677,12 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
   // Study exotic clusters PHOS and EMCAL
   ana->SwitchOffStudyBadClusters() ;
 
-
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
-  ana->SwitchOffStudyBadClusters();
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
-
 
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
@@ -719,7 +714,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugL
   // Input / output delta AOD settings
 
   ana->SetOutputAODName(Form("Hadron%s",kAnaIsoPhotonName.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4Particle");
+  ana->SetOutputAODClassName("AliCaloTrackParticle");
   ana->SetInputAODName(Form("Hadron%s",kAnaIsoPhotonName.Data()));
 
   //Set Histograms name tag, bins and ranges
@@ -744,7 +739,7 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   ana->SetDebug(kDebug); //10 for lots of messages
 
   if(detector=="") detector = kCalorimeter;
-  ana->SetDetector(detector);
+  ana->SetTriggerDetector(detector);
 
   // selection cuts
   ana->SetMinPt(4.);
@@ -771,7 +766,7 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if(!kData.Contains("delta"))
   {
     ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   }
   else
     ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));

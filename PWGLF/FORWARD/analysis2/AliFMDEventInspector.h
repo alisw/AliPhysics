@@ -480,7 +480,52 @@ protected:
    * 
    * @param o Object to copy from 
    */
-  AliFMDEventInspector(const AliFMDEventInspector& o) : TNamed(o) {}
+  AliFMDEventInspector(const AliFMDEventInspector& o)
+    : TNamed(o),
+      fHEventsTr(0), 
+      fHEventsTrVtx(0),
+      fHEventsAccepted(0),
+      fHEventsAcceptedXY(0),
+      fHTriggers(0),
+      fHType(0),
+      fHWords(0),
+      fHCent(0),
+      fHCentVsQual(0),
+      fHStatus(0),
+      fHVtxStatus(0),
+      fHTrgStatus(0), 
+      fHPileup(0),
+      fLowFluxCut(1000),
+      fMaxVzErr(0.2),
+      fList(0),
+      fEnergy(0),
+      fField(999), 
+      fCollisionSystem(kUnknown),
+      fDebug(0),
+      fCentAxis(0),
+      fVtxAxis(10,-10,10),
+      fVtxMethod(kNormal),
+      // fUseFirstPhysicsVertex(false),
+      fUseV0AND(false),
+      fPileupFlags(kSPD|kTracks|kOutOfBunch|kSPDBins),
+      fMinPileupContrib(3), 
+      fMinPileupDistance(0.8),
+      // fUseDisplacedVertices(false),
+      fDisplacedVertex(),
+      fCollWords(),
+      fBgWords(),
+      fCentMethod("default"),
+      fMinCent(-1.0),
+      fMaxCent(-1.0),
+      // fUsepA2012Vertex(false),
+      fRunNumber(0),
+      fMC(false),
+      fProdYear(-1),
+      fProdLetter('?'),
+      fProdPass(-1),
+      fProdSVN(-1),
+      fProdMC(false)
+  {}
   /** 
    * Assignement operator - not implemented
    * 

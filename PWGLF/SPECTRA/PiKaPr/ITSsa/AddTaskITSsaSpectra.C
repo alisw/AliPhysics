@@ -1,53 +1,56 @@
 AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
-                                                  Bool_t   isMC       = kFALSE, //
-                                                  Bool_t   optNtuple  = kFALSE,
-                                                  Bool_t   doMultSel  = kFALSE,
-                                                  Float_t  lowMultCut = -1,
-                                                  Float_t  upMultCut  = -1,
-                                                  const char* multEst = "V0M",
-                                                  const char* suffix  = "")
+                                                   Bool_t   isMC       = kFALSE, //
+                                                   Bool_t   defPriors  = kTRUE,
+                                                   Bool_t   optNtuple  = kFALSE,
+                                                   const char* suffix  = "")
 {
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // with ITS standalone tracks
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  if(!mgr) {
     ::Error("AddTaskITSsaBayes", "No analysis manager to connect to.");
     return NULL;
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
+  if(!mgr->GetInputEventHandler()) {
     ::Error("AddTaskITSsaBayes", "This task requires an input event handler");
     return NULL;
   }
 
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (type.Contains("AOD")) {
+  if(type.Contains("AOD")) {
     ::Error("AddUserTask", "This task requires to run on ESD");
     return NULL;
   }
 
-  char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
+  const char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
   TString kContSuffix(pidName[pidMethod]);
 
   // Create and configure the task
   AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra();
+
+  taskits->SetPidTech(pidMethod);
   taskits->SetIsMC(isMC);
   taskits->SetFillNtuple(optNtuple);
-  taskits->SetPidTech(pidMethod);
+  taskits->SetUseDefaultPriors(defPriors);
 
-  if (doMultSel) {
-    taskits->SetDoMultSel(doMultSel);
-    taskits->SetCentEst(multEst);
-    taskits->SetMultiplicityCut(lowMultCut, upMultCut);
-    kContSuffix.Append(Form("_%s-%.1fto%.1f",
-                            multEst,
-                            (lowMultCut < 0) ?   0 : lowMultCut,
-                            (upMultCut  < 0) ? 100 :  upMultCut));
-  }
+  const int nMultBins=14;
+  float mult[nMultBins+1] = {-5.f,0.f,1.f,5.f,10.f,15.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  taskits->SetCentBins(nMultBins, mult);
+
+  const int nPtBins=24;
+  float ptBins[nPtBins+1] = {
+   0.00f,0.05f,0.08f,0.10f,0.12f,0.14f,0.16f,0.18f,0.20f,0.25f,
+   0.30f,0.35f,0.40f,0.45f,0.50f,0.55f,0.60f,0.65f,0.70f,0.75f,
+   0.80f,0.85f,0.90f,0.95f,1.00f
+  };
+  taskits->SetPtBins(nPtBins, ptBins);
+  
+  taskits->Init();
 
   kContSuffix += suffix;
   mgr->AddTask(taskits);
@@ -66,7 +69,7 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
   kMainDataCont = mgr->CreateContainer(kMainContName.Data(),
                                        TList::Class(),
                                        AliAnalysisManager::kOutputContainer,
-                                       outputFileName );
+                                       outputFileName);
   mgr->ConnectOutput(taskits, 1, kMainDataCont);
 
   TString kDCAcutContName("cListDCAcutFunction");
@@ -79,17 +82,16 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
                                          outputFileName);
   mgr->ConnectOutput(taskits, 2, kDCAcutDataCont);
 
-  if (optNtuple) {
-    TString kNtupleContName("cListTreeInfo");
-    kNtupleContName += kContSuffix;
+  TString kNtupleContName("cListTreeInfo");
+  kNtupleContName += kContSuffix;
 
+  if (optNtuple){
     AliAnalysisDataContainer* kNtupleDataCont;
-    kNtupleDataCont = mgr->CreateContainer(kContSuffix.Data(),
-                                           TTree::Class(),
+    kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
+                                           TList::Class(),
                                            AliAnalysisManager::kOutputContainer,
                                            outputFileName);
     mgr->ConnectOutput(taskits, 3, kNtupleDataCont);
   }
-
   return taskits;
 }

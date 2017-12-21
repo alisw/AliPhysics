@@ -28,6 +28,8 @@ class AliEmcalJetUtilityConstSubtractor : public AliEmcalJetUtility
 
   void                   SetJetsSubName(const char *n)       { fJetsSubName      = n     ; }
   void                   SetParticlesSubName(const char *n)  { fParticlesSubName = n     ; }
+  void                   SetAlpha(const Double_t a)            { fAlpha            = a     ; }
+  void                   SetMaxDelR(const Double_t r)          { fMaxDelR          = r     ; }
 
   void Init();
   void InitEvent(AliFJWrapper& fjw);
@@ -44,12 +46,14 @@ class AliEmcalJetUtilityConstSubtractor : public AliEmcalJetUtility
   TString                fRhomName;                           // name of rhom
   Double_t               fRho;                                // pT background density
   Double_t               fRhom;                               // mT background density
+  Double_t               fAlpha;                              // pT weight exponent applied in const sub
+  Double_t               fMaxDelR;                            // Max distance between ghost and constituent pair in subtraction
 
   TClonesArray          *fJetsSub;                            //!subtracted jet collection
   TClonesArray          *fParticlesSub;                       //!subtracted particle collection
   AliRhoParameter       *fRhoParam;                           //!event rho
   AliRhoParameter       *fRhomParam;                          //!event rhom
 
-  ClassDef(AliEmcalJetUtilityConstSubtractor, 1) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
+  ClassDef(AliEmcalJetUtilityConstSubtractor, 2) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
 };
 #endif

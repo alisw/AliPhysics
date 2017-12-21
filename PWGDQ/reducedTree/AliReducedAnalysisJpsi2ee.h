@@ -78,8 +78,6 @@ protected:
    TList fPrefilterPosTracks;  // list of prefilter selected positive tracks in the current event
    TList fPrefilterNegTracks; // list of prefilter selected negative tracks in the current event
    
-   ULong_t fEventCounter;   // event counter
-   
   Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);

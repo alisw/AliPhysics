@@ -8,7 +8,6 @@
 #include "AliExternalTrackParam.h"
 
 class TRandom3;
-class AliStack;
 class TList;
 class TString;
 class TH1F;

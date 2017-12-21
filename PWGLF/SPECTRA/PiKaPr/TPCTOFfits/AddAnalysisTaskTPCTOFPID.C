@@ -1,5 +1,5 @@
 AliAnalysisTaskTPCTOFPID *
-AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Bool_t pbpbFlag = kFALSE)
+AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, const char *PeriodName=NULL, Bool_t mcTuneFlag = kFALSE, Bool_t pbpbFlag = kFALSE)
 {
 
   /* check analysis manager */
@@ -31,7 +31,14 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
     AliMCEventHandler * handler = (AliMCEventHandler *) mgr->GetMCtruthEventHandler();
     handler->SetReadTR(kTRUE);
   }
-  
+  //If MC and period name specified, set the AliMultSelectionTask to use the right calibration
+  if (mcFlag) {
+    AliMultSelectionTask *ams = (AliMultSelectionTask*)mgr->GetTask("taskMultSelection");
+    if(ams&&PeriodName) {
+      ams->SetUseDefaultMCCalib(kTRUE);
+      ams->SetAlternateOADBforEstimators(PeriodName);
+    };
+  };
   /* get common input data container */
   AliAnalysisDataContainer *inputc = mgr->GetCommonInputContainer();
   if (!inputc) {

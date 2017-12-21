@@ -36,6 +36,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler() :
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(0),
@@ -56,6 +57,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t binsZ,Int_t
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(binsZ),
@@ -78,6 +80,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(binsZ),
@@ -349,6 +352,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(const AliGammaCon
 	fBGEventCounter(original.fBGEventCounter),
 	fBGEventENegCounter(original.fBGEventENegCounter),
 	fBGEventMesonCounter(original.fBGEventMesonCounter),
+	fBGEventBufferCounter(original.fBGEventBufferCounter),
 	fBGProbability(original.fBGProbability),
 	fBGEventVertex(original.fBGEventVertex),
 	fNBinsZ(original.fNBinsZ),
@@ -405,6 +409,14 @@ AliGammaConversionAODBGHandler::~AliGammaConversionAODBGHandler(){
 		delete[] fBGEventMesonCounter;
 		fBGEventMesonCounter = NULL;
 	}
+	
+	if(fBGEventBufferCounter){
+		for(Int_t z=0;z<fNBinsZ;z++){
+			delete[] fBGEventBufferCounter[z];
+		}
+		delete[] fBGEventMesonCounter;
+		fBGEventMesonCounter = NULL;
+	}
 
 	if(fBinLimitsArrayZ){
 		delete[] fBinLimitsArrayZ;
@@ -452,9 +464,18 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
 		fBGEventMesonCounter[z]=new Int_t[fNBinsMultiplicity];
 	}
 	
+	
+	if(fBGEventBufferCounter == NULL){
+		fBGEventBufferCounter= new Int_t*[fNBinsZ];
+	}
+	for(Int_t z=0;z<fNBinsZ;z++){
+		fBGEventBufferCounter[z]=new Int_t[fNBinsMultiplicity];
+	}
+	
 	for(Int_t z=0;z<fNBinsZ;z++){
 		for(Int_t m=0;m<fNBinsMultiplicity;m++){
 			fBGEventMesonCounter[z][m]=0;
+			fBGEventBufferCounter[z][m] =0;
 		}
 	}
 
@@ -490,41 +511,25 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
 	for(Int_t z=0; z < fNBinsZ; z++){
 		fBGProbability[z] = new Double_t[fNBinsMultiplicity];
 	}
-
+    Double_t BGProbabilityLookup[7][4] =
+           {
+             {0.243594,0.279477,0.305104,0.315927},
+             {0.241964,0.272995,0.307165,0.292248},
+             {0.241059,0.27509,0.283657,0.310512},
+             {0.23888,0.283418,0.297232,0.348188},
+             {0.245555,0.281218,0.317236,0.323495},
+             {0.244572,0.259498,0.278383,0.284696},
+             {0.24703, 0.275265,0.284004,0.343584}
+           };
 	for(Int_t z=0;z<fNBinsZ;z++){
 		for(Int_t m=0;m<fNBinsMultiplicity; m++){
-			fBGProbability[z][m] = 0;
+            if((z<7)&&(m<4)){
+                fBGProbability[z][m] = BGProbabilityLookup[z][m];
+            }else{
+                fBGProbability[z][m] = 1;
+            }
 		}
 	}
-	//filling the probability
-	fBGProbability[0][0] = 0.243594;
-	fBGProbability[0][1] = 0.279477;
-	fBGProbability[0][2] = 0.305104;
-	fBGProbability[0][3] = 0.315927;
-	fBGProbability[1][0] = 0.241964;
-	fBGProbability[1][1] = 0.272995;
-	fBGProbability[1][2] = 0.307165;
-	fBGProbability[1][3] = 0.292248;
-	fBGProbability[2][0] = 0.241059;
-	fBGProbability[2][1] = 0.27509;
-	fBGProbability[2][2] = 0.283657;
-	fBGProbability[2][3] = 0.310512;
-	fBGProbability[3][0] = 0.23888;
-	fBGProbability[3][1] = 0.283418;
-	fBGProbability[3][2] = 0.297232;
-	fBGProbability[3][3] = 0.348188;
-	fBGProbability[4][0] = 0.245555;
-	fBGProbability[4][1] = 0.281218;
-	fBGProbability[4][2] = 0.317236;
-	fBGProbability[4][3] = 0.323495;
-	fBGProbability[5][0] = 0.244572;
-	fBGProbability[5][1] = 0.259498;
-	fBGProbability[5][2] = 0.278383;
-	fBGProbability[5][3] = 0.284696;
-	fBGProbability[6][0] = 0.24703;
-	fBGProbability[6][1] = 0.275265;
-	fBGProbability[6][2] = 0.284004;
-	fBGProbability[6][3] = 0.343584;
 	
 }
 
@@ -588,7 +593,7 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	//  cout<<"Checking the entries: Z="<<z<<", M="<<m<<", eventCounter="<<eventCounter<<endl;
 
 	//  cout<<"The size of this vector is: "<<fBGEvents[z][m][eventCounter].size()<<endl;
-    for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+    for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
 		delete (AliAODConversionPhoton*)(fBGEvents[z][m][eventCounter][d]);
 	}
 	fBGEvents[z][m][eventCounter].clear();
@@ -612,6 +617,9 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	if(fBGEventMesonCounter[z][m] >= fNEvents){
 		fBGEventMesonCounter[z][m]=0;
 	}
+	if(fBGEventBufferCounter[z][m] < fNEvents){
+		fBGEventBufferCounter[z][m]++;
+	}
 	Int_t eventCounter=fBGEventMesonCounter[z][m];
 	
 	fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -620,7 +628,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventVertex[z][m][eventCounter].fEP = epvalue;
 
 	//first clear the vector
-    for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+  for(UInt_t d=0;d<fBGEventsMeson[z][m][eventCounter].size();d++){
 		delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
 	}
 	fBGEventsMeson[z][m][eventCounter].clear();
@@ -632,6 +640,35 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventMesonCounter[z][m]++;
 }
 
+void AliGammaConversionAODBGHandler::AddMesonEvent(const std::vector<AliAODConversionMother> &eventMother, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue){
+  Int_t z = GetZBinIndex(zvalue);
+  Int_t m = GetMultiplicityBinIndex(multiplicity);
+
+  if(fBGEventMesonCounter[z][m] >= fNEvents){
+    fBGEventMesonCounter[z][m]=0;
+  }
+	if(fBGEventBufferCounter[z][m] < fNEvents){
+		fBGEventBufferCounter[z][m]++;
+	}
+  Int_t eventCounter=fBGEventMesonCounter[z][m];
+
+  fBGEventVertex[z][m][eventCounter].fX = xvalue;
+  fBGEventVertex[z][m][eventCounter].fY = yvalue;
+  fBGEventVertex[z][m][eventCounter].fZ = zvalue;
+  fBGEventVertex[z][m][eventCounter].fEP = epvalue;
+
+  //first clear the vector
+  for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+    delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
+  }
+  fBGEventsMeson[z][m][eventCounter].clear();
+
+  // add the gammas to the vector
+  for(const auto &mother : eventMother){
+    fBGEventsMeson[z][m][eventCounter].push_back(new AliAODConversionMother(mother));
+  }
+  fBGEventMesonCounter[z][m]++;
+}
 
 //_____________________________________________________________________________________________________________________________
 void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity){
@@ -649,7 +686,7 @@ void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventE
 	//  cout<<"Checking the entries: Z="<<z<<", M="<<m<<", eventCounter="<<eventCounter<<endl;
 
 	//  cout<<"The size of this vector is: "<<fBGEvents[z][m][eventCounter].size()<<endl;
-    for(Int_t d=0;d<fBGEventsENeg[z][m][eventENegCounter].size();d++){
+    for(UInt_t d=0;d<fBGEventsENeg[z][m][eventENegCounter].size();d++){
 		delete (AliAODConversionPhoton*)(fBGEventsENeg[z][m][eventENegCounter][d]);
 	}
 
@@ -673,6 +710,11 @@ AliGammaConversionAODVector* AliGammaConversionAODBGHandler::GetBGGoodV0s(Int_t 
 AliGammaConversionMotherAODVector* AliGammaConversionAODBGHandler::GetBGGoodMesons(Int_t zbin, Int_t mbin, Int_t event){
 	//see headerfile for documentation
 	return &(fBGEventsMeson[zbin][mbin][event]);
+}
+
+//_____________________________________________________________________________________________________________________________
+Int_t AliGammaConversionAODBGHandler::GetNBackgroundEventsInBuffer(Int_t binz, int binMult) const {
+  return fBGEventBufferCounter[binz][binMult];
 }
 
 //_____________________________________________________________________________________________________________________________

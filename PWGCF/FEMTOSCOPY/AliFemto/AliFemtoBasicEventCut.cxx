@@ -112,7 +112,7 @@ AliFemtoString AliFemtoBasicEventCut::Report()
    report += TString::Format("Vertex Z-position:\t %E - %E\n", fVertZPos[0], fVertZPos[1])
            + TString::Format("Number of events which passed:\t%ld  Number which failed:\t%ld\n", fNEventsPassed, fNEventsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
 {

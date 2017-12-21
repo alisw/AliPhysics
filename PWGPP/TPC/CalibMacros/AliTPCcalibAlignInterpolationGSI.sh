@@ -53,7 +53,7 @@ submitTiming(){
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 	echo source  $balice >  submitTime.sh
-	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitTime.sh
+	echo "( source $ALICE_ROOT/libexec/utilities.sh;  gitInfo 2;)" >> submitTime.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) >> submitTime.sh
 	echo cp syswatch.log syswatch_Time.log     >> submitTime.sh 
 	chmod a+x submitTime.sh  
@@ -91,7 +91,7 @@ submitDrift(){
 	echo export runNumber=$arun  >  submitDrift.sh
 	echo export driftDeltaT=$driftDeltaT >> submitDrift.sh 
         echo export driftSigmaT=$driftSigmaT  >> submitDrift.sh 
-	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitDrift.sh
+	echo "( source $ALICE_ROOT/libexec/utilities.sh;  gitInfo 2;)" >> submitDrift.sh
 	echo source  $balice >>  submitDrift.sh
 	echo aliroot -b -q $incScript  $ALICE_PHYSICS/../src/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C\\\($run,\\\"$OCDB_PATH0\\\"\\\) AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
 	echo cp syswatch.log syswatch_Drift.log >>  submitDrift.sh   
@@ -156,7 +156,7 @@ submitHistogramming(){
 		rm core*
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
-		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitHisto$ihis.sh
+		echo "( source $ALICE_ROOT/libexec/utilities.sh;  gitInfo 2;)" >> submitHisto$ihis.sh
 		echo export mapStopTime=$(($itime+$timeDeltaRun)) >> submitHisto$ihis.sh
 		echo export runNumber=$arun    >> submitHisto$ihis.sh  
 		echo source  $balice >>submitHisto$ihis.sh
@@ -214,7 +214,7 @@ submitNDLocal(){
 		submitScript=submit_${ctype}_${side}_${sec0}
 		rm -f $submitScript.*
 		echo export inputFile=$inputFile >  ${submitScript}
-		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> ${submitScript}
+		echo "( source $ALICE_ROOT/libexec/utilities.sh;  gitInfo 2;)" >> ${submitScript}
 		echo export inputTree=${treeNames[$ctype]} >> ${submitScript}
 		echo export varTheta0=$theta0       >> ${submitScript}
 		echo export varTheta1=$theta1       >> ${submitScript}
@@ -287,8 +287,8 @@ submitTimeDependentGSI(){
     # assuming run.list and residual.list ascii file exist in working directory
     
     source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationGSI.sh
-    #source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
-    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh      
+    #source $ALICE_ROOT/libexec/alilog4bash.sh
+    source $ALICE_ROOT/libexec/utilities.sh
     #
     # Set parameters:
     #
@@ -387,7 +387,7 @@ makeSysWatchSummary(){
     wdir=`pwd`;
     find $wdir/*  -iname syswatch_Time.log > $wdir/syswatch/syswatchTime.list
     cd $wdir/syswatch
-    ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchTime.list syswatchTime.root; )
+    ( source $ALICE_ROOT/libexec/utilities.sh;  mergeAliSysInfo syswatchTime.list syswatchTime.root; )
 
 }
 

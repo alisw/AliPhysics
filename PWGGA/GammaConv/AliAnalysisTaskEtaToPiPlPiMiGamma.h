@@ -92,7 +92,6 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliGammaConversionAODBGHandler 	**fBGHandler;								//
 		AliESDEvent 					*fESDEvent;									//
 		AliMCEvent 						*fMCEvent;									//
-		AliStack 						*fMCStack;									//
 		TList 							**fCutFolder;								//
 		TList 							**fESDList;									//
 		TList 							**fBackList;								//
@@ -183,7 +182,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-        ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 5 );
+        ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 6 );
 };
 
 #endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H

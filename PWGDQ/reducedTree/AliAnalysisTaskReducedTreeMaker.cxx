@@ -22,8 +22,11 @@
 
 #include <TChain.h>
 #include <TH1D.h>
+#include <TH2I.h>
 #include <TFile.h>
 #include <TBits.h>
+#include <TRandom.h>
+#include <TTimeStamp.h>
 
 #include <AliAnalysisTaskSE.h>
 #include <AliCFContainer.h>
@@ -37,11 +40,13 @@
 #include <AliESDHeader.h>
 #include <AliAODHeader.h>
 #include <AliAODTrack.h>
+#include <AliAODTrdTrack.h>
 #include <AliAODForwardMult.h>
 #include <AliForwardUtil.h>
 #include <AliTriggerAnalysis.h>
 #include <AliAODTrack.h>
 #include <AliESDtrack.h>
+#include <AliESDTrdTrack.h>
 #include <AliESDtrackCuts.h>
 #include <AliVZDC.h>
 #include <AliESDv0.h>
@@ -60,6 +65,8 @@
 #include <AliMultSelection.h>
 #include <AliMultEstimator.h>
 #include <AliCentrality.h>
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
 #include "AliReducedEventInfo.h"
@@ -68,11 +75,15 @@
 #include "AliReducedCaloClusterInfo.h"
 #include "AliReducedFMDInfo.h"
 #include "AliReducedEventPlaneInfo.h"
+#include "AliSignalMC.h"
 #include "AliAnalysisTaskReducedTreeMaker.h"
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 using std::cout;
 using std::endl;
+using std::flush;
 
 ClassImp(AliAnalysisTaskReducedTreeMaker)
 
@@ -90,6 +101,15 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fMinSelectedTracks(1),
+  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
+  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fWriteSecondTrackArray(kFALSE),
+  fSetTrackFilterUsed(kFALSE),
+  fWriteBaseTrack(),
+  fEventsHistogram(0x0),
+  fTracksHistogram(0x0),
+  fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -101,8 +121,13 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
+  fMCsignals(),
+  fMCsignalsWritingOptions(),
+  fFillTRDMatchedTracks(kFALSE),
+  fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
-  fTrackFilter(0x0),
+  fTrackFilter(),
   fFlowTrackFilter(0x0),
   fK0sCuts(0x0),
   fLambdaCuts(0x0),
@@ -123,9 +148,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
+  fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0),
-  fNevents(0)
+  fUsedVars(0x0)
 {
   //
   // Constructor
@@ -146,6 +171,15 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fMinSelectedTracks(1),
+  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
+  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fWriteSecondTrackArray(kFALSE),
+  fSetTrackFilterUsed(kFALSE),
+  fWriteBaseTrack(),
+  fEventsHistogram(0x0),
+  fTracksHistogram(0x0),
+  fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -157,8 +191,13 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
+  fMCsignals(),
+  fMCsignalsWritingOptions(),
+  fFillTRDMatchedTracks(kFALSE),
+  fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
-  fTrackFilter(0x0),
+  fTrackFilter(),
   fFlowTrackFilter(0x0),
   fK0sCuts(0x0),
   fLambdaCuts(0x0),
@@ -179,9 +218,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
+  fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0),
-  fNevents(0)
+  fUsedVars(0x0)
 {
   //
   // Constructor
@@ -189,14 +228,18 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fK0sMassRange[0] = 0.4; fK0sMassRange[1] = 0.6;
   fLambdaMassRange[0] = 1.08; fLambdaMassRange[1] = 1.15;
   fGammaMassRange[0] = 0.0; fGammaMassRange[1] = 0.1;
-
+  for(Int_t i=0; i<kMaxMCsignals; ++i) fMCsignalsWritingOptions[i] = kBaseTrack;
   //fAliFlowTrackCuts = new AliFlowTrackCuts();
  
   DefineInput(0,TChain::Class());
   //DefineInput(2,AliAODForwardMult::Class());
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
-  if(writeTree)
-    DefineOutput(2, TTree::Class());   // reduced information tree
+  if(writeTree) {
+    DefineOutput(2, TTree::Class());  // reduced information tree
+    DefineOutput(3, TH2I::Class());   // event statistics information
+    DefineOutput(4, TH2I::Class());   // track statistics information
+    DefineOutput(5, TH2I::Class());   // MC signals statistics information
+  }
 }
 
 
@@ -206,7 +249,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   //
   // Add all histogram manager histogram lists to the output TList
   //
-  if(fUseAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils();
+  if (fUseAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils();
   if (fTree) return; //already initialised
   
   if(fWriteTree) {
@@ -214,18 +257,69 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTree = new TTree("DstTree","Reduced ESD information");
   }
   
+  // set base/full track flag for track filter that was added with SetTrackFilter()
+  if (fSetTrackFilterUsed && (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks))
+    fWriteBaseTrack.at(0) = kFALSE;
+
+  // check for tension between fTreeWritingOption and individual choices from AddTrackFilter
+  if (fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
+    for (Int_t i=0; i<fWriteBaseTrack.size(); i++) {
+      if (!fWriteBaseTrack.at(i)) {
+        printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: Full tracks requested for filter %d, but interferes with fTreeWritingOption choice! Only base tracks will be written. \n", i);
+        fWriteBaseTrack.at(i) = kTRUE;
+      }
+    }
+  }
+
+  // check for tension between fTreeWritingOption and individual choices for MC signals
+  if (fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
+    for (Int_t i=0; i<kMaxMCsignals; i++) {
+      if (fMCsignalsWritingOptions[i]==kFullTrack) {
+        printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: Full tracks requested for MC signal %d, but interferes with fTreeWritingOption choice! Only base tracks will be written. \n", i);
+        fMCsignalsWritingOptions[i] = kBaseTrack;
+      }
+    }
+  }
+
+  // print active filters
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++)
+    cout << "AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() filter " << i << ", base track = " << fWriteBaseTrack.at(i) << endl;
+
+  // check if second track array is needed, i.e. fTracks contains full tracks, fTracks2 contains base tracks
+  if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
+    // data
+    if (std::find(fWriteBaseTrack.begin(), fWriteBaseTrack.end(), kTRUE) != fWriteBaseTrack.end()) {
+      printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+      fWriteSecondTrackArray = kTRUE;
+    }
+
+    // MC
+    if (fWriteSecondTrackArray==kFALSE) {
+      for (Int_t i=0; i<kMaxMCsignals; i++) {
+        if (fMCsignalsWritingOptions[i]==kBaseTrack) {
+          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+          fWriteSecondTrackArray = kTRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  Int_t track2Option = AliReducedBaseEvent::kNoInit;
+  if (fWriteSecondTrackArray) track2Option = AliReducedBaseEvent::kUseBaseTracks;
+
   switch(fTreeWritingOption) {
      case kBaseEventsWithBaseTracks:
-        fReducedEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseBaseTracks);
+        fReducedEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseBaseTracks, track2Option);
         break;
      case kBaseEventsWithFullTracks:
-        fReducedEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseReducedTracks);
+        fReducedEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseReducedTracks, track2Option);
         break;
      case kFullEventsWithBaseTracks:
-        fReducedEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseBaseTracks);   
+        fReducedEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseBaseTracks, track2Option);
         break;
      case kFullEventsWithFullTracks:
-        fReducedEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseReducedTracks);   
+        fReducedEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseReducedTracks, track2Option);
         break;
      default:
         break;
@@ -240,7 +334,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   for(Int_t i=0; i<aractive->GetEntries(); i++){
     fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
   }
-  
+
   // if user set inactive branches
   TObjArray* arinactive=fInactiveBranches.Tokenize(";");
   for(Int_t i=0; i<arinactive->GetEntries(); i++){
@@ -262,15 +356,60 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   
   // enable all variables in the VarManager
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
-  for(Int_t i=0;i<AliDielectronVarManager::kNMaxValues;++i) fUsedVars->SetBitNumber(i,kTRUE);
+  for(Int_t i=0;i<AliDielectronVarManager::kNacc;++i) fUsedVars->SetBitNumber(i,kTRUE);
   
+  AliDielectronVarManager::SetFillMap(fUsedVars);
+
+  // event statistics histogram
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 9, -0.5,8.5,32,-0.5,31.5);
+  const Char_t* offlineTriggerNames[32] = {"MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+     "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
+     "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
+     "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
+     "TRD", "N/A", "FastOnly", "N/A"
+  };  
+  const Char_t* selectionNames[9] = {"All PS", "PS and trigger selected", "Event cuts selected", "Rejected (event cuts)", "Rejected (no tracks)", "Rejected (no tracks and no assoc tracks)", "Written (has tracks)", "Written (no tracks, has assoc tracks)", "Written (no tracks, no assoc tracks)"};
+  for(Int_t i=1;i<=32;++i)
+     fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
+  for(Int_t i=1;i<=9;++i)
+     fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  
+  // track statistics histogram
+  Int_t nBins = fTrackFilter.GetEntries()+4;
+  Double_t xMin = -4.5;
+  Double_t xMax = xMin + nBins;
+  fTracksHistogram = new TH2I("TrackStatistics", "Track statistics", nBins, xMin, xMax, 3, 0.5, 3.5);
+  const Char_t* yLabels[3] = {"base tracks", "full tracks", "total"};
+  const Char_t* xLabels[4] = {"written to tree", "written to tree, one track filter passed", "written to tree, several track filters passed", "written to tree, no track filter passed"};
+  for (Int_t i=1; i<=3; i++)
+    fTracksHistogram->GetYaxis()->SetBinLabel(i, yLabels[i-1]);
+  for (Int_t i=1; i<=4; i++)
+    fTracksHistogram->GetXaxis()->SetBinLabel(i, xLabels[i-1]);
+  for (Int_t i=5; i<nBins+1; i++)
+    fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", ((AliAnalysisCuts*)fTrackFilter.At(i-5))->GetName()));
+
+  // MC statistics histogram
+  fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
+                                 fMCsignals.GetEntries(), -0.5, Double_t(fMCsignals.GetEntries())-0.5, 32, -0.5, 31.5);
+  for(Int_t i=1;i<=32;++i) fMCSignalsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
+  for(Int_t i=1;i<=fMCsignals.GetEntries();++i) {
+     TString trackTypeStr = "base track";
+     if(fMCsignalsWritingOptions[i-1]==kFullTrack) trackTypeStr = "full track";
+     fMCSignalsHistogram->GetXaxis()->SetBinLabel(i, Form("%s (%s)", ((AliSignalMC*)fMCsignals.At(i-1))->GetName(), trackTypeStr.Data()));
+  }
+  
+  // set a seed for the random number generator
+  TTimeStamp ts;
+  gRandom->SetSeed(ts.GetNanoSec());
   
   PostData(1, fReducedEvent);
-  if(fWriteTree)
+  if(fWriteTree) {
     PostData(2, fTree);
-  //if(fFillFriendInfo) PostData(3, fFriendTree);
-  //PostData(2, fFriendTree);
-  //PostData(1, fTree);
+    PostData(3, fEventsHistogram);
+    PostData(4, fTracksHistogram);
+    if(fFillMCInfo)
+       PostData(5, fMCSignalsHistogram);
+  }
 }
 
 //_________________________________________________________________________________
@@ -278,17 +417,16 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 {
   //
   // Main loop. Called for every event
-  //  
-  option = option;
+  //
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   fNevents++;
-  
+
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
-  
+
   if ( inputHandler->GetPIDResponse() ){
     AliDielectronVarManager::SetPIDResponse( inputHandler->GetPIDResponse() );
   } else {
@@ -297,64 +435,276 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 
   // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
-  if(fSelectPhysics && inputHandler){
+  // event statistics before any cuts
+  for(Int_t i=0;i<32;++i) 
+     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+  
+  if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
       isSelected&=fTriggerMask;
     }
   }
-
-  fReducedEvent->ClearEvent();
+  
+  // event statistics after physics selection
+  if(isSelected) {
+     for(Int_t i=0;i<32;++i) 
+        if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+  }
+     
+  if(!fSelectPhysics) isSelected = AliVEvent::kAny;
   
   if(isSelected==0) {
-    //cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
-    //PostData(1, fReducedEvent);
-    return;
+     PostData(3, fEventsHistogram);
+     return;
   }
-
+  
   //event filter
   if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) return;
+    if (!fEventFilter->IsSelected(InputEvent())) {
+       // event statistics for events failing selection cuts
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+
+       PostData(3, fEventsHistogram);
+       return;
+    }
   }
-  
+
   //pileup
   if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) {
+       // event statistics for events failing selection cuts
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+       
+       PostData(3, fEventsHistogram);
+       return;
+    }
   }
   
-  AliDielectronVarManager::SetFillMap(fUsedVars);
-  AliDielectronVarManager::SetEvent(InputEvent());
+  // event statistics after event selection cuts
+  for(Int_t i=0;i<32;++i) 
+     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(2.,Double_t(i));
   
   if(fFillMCInfo) {
-    Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
-    if(hasMC) AliDielectronMC::Instance()->ConnectMCEvent();
+     Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+     if(hasMC) {
+       AliDielectronMC::Instance()->SetCheckHF(fFillHFInfo);
+       AliDielectronMC::Instance()->ConnectMCEvent();
+       AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
+     }
   }
+  AliDielectronVarManager::SetEvent(InputEvent());
 
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
-  
+
   //Fill event wise information
+  fReducedEvent->ClearEvent();
   FillEventInfo();
-  
+
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
   if(fFillMCInfo) FillMCTruthInfo();
   if(fFillV0Info && isESD) FillV0PairInfo();
   if(fFillTrackInfo) FillTrackInfo();
  
   if(fWriteTree) {
-    if(fWriteEventsWithNoSelectedTracks) fTree->Fill();
-    if(!fWriteEventsWithNoSelectedTracks && fReducedEvent->fNtracks[1]>0) fTree->Fill();
-  }
-        
-  // if there are candidate pairs, add the information to the reduced tree
-  //if(fFillFriendInfo) PostData(3, fFriendTree);
+    Bool_t writeEvent = kFALSE;
+    Int_t nTracks = fReducedEvent->fTracks->GetEntries();
+    Int_t nTracks2 = fReducedEvent->fTracks2->GetEntries();
+    if(nTracks>=fMinSelectedTracks) {
+       writeEvent = kTRUE;
+       // event statistics, event with tracks -> written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+    }
+    else {
+       if(nTracks2>0) {
+          if(fWriteEventsWithNoSelectedTracks) {
+             writeEvent = kTRUE;
+             // event statistics, event with no POI tracks, but with assoc tracks -> written
+             for(Int_t i=0;i<32;++i) 
+                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+          }
+          else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
+             writeEvent = kTRUE;
+             // event statistics, event with no POI tracks, but with assoc tracks -> written
+             for(Int_t i=0;i<32;++i) 
+                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+          }
+      }
+      else {
+         if(fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks) {
+            writeEvent = kTRUE;
+            // event statistics, event with no POI tracks, and no assoc tracks -> written
+            for(Int_t i=0;i<32;++i) 
+               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+         }
+         else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
+            writeEvent = kTRUE;
+            // event statistics, event with no POI tracks, and no assoc tracks -> written
+            for(Int_t i=0;i<32;++i) 
+               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+         }
+      }  // end else (nTracks2==0)
+    }  // end else(nTracks==0)
+    
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2==0) {
+       // event statistics, event with no POI tracks, and no assoc tracks -> NOT written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+    }
+    if(!writeEvent && nTracks<fMinSelectedTracks) {
+       // event statistics, event with no POI tracks (may have assoc tracks) -> NOT written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+    }
+    
+    if(writeEvent) fTree->Fill();
+  }  // end if(writeTree)
+
   PostData(1, fReducedEvent);
-  //PostData(2, fFriendTree);
-  if(fWriteTree)
+  if(fWriteTree) {
     PostData(2, fTree);
+    PostData(3, fEventsHistogram);
+    PostData(4, fTracksHistogram);
+    if(fFillMCInfo)
+      PostData(5, fMCSignalsHistogram);
+  }
 }
 
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter)
+{
+  //
+  // set track filter at first position in track filter list
+  //
+  fTrackFilter.AddAt(filter, 0);
+  fWriteBaseTrack.insert(fWriteBaseTrack.begin(), kTRUE);
+  fSetTrackFilterUsed = kTRUE;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option/*=kFALSE*/)
+{
+  //
+  // add track filter to track filter list
+  //
+  if (fTrackFilter.GetEntries()<32) {
+    fTrackFilter.Add(filter);
+    fWriteBaseTrack.push_back(option);
+  } else {
+    printf("AliAnalysisTaskReducedTreeMaker::AddTrackFilter() WARNING: Track filter list full (%d entries), will not add another filter!\n", fTrackFilter.GetEntries());
+  }
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision)
+{
+  //
+  // check if track is selected and write filter decision to vector
+  //
+  Bool_t trackIsSelected = kFALSE;
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
+    AliAnalysisCuts* filter = (AliAnalysisCuts*)fTrackFilter.At(i);
+    if (filter->IsSelected(track)) {
+      filterDecision.push_back(kTRUE);
+      trackIsSelected = kTRUE;
+    } else {
+      filterDecision.push_back(kFALSE);
+    }
+  }
+  return trackIsSelected;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or)
+{
+  //
+  // compare passed track filter and corresponding choice of base or full track
+  // full track wins if there is some overlap
+  //
+  Bool_t isBaseTrack = kTRUE;
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
+    if (filterDecision[i] && !fWriteBaseTrack[i]) {
+      isBaseTrack = kFALSE;
+      break;
+    }
+  }
+  if (isBaseTrack && usedForV0Or) {
+    if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+      isBaseTrack = kFALSE;
+  }
+  return isBaseTrack;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision)
+{
+  //
+  // set track quality flags for passed track filters
+  //
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
+    if (filterDecision[i])
+      track->SetQualityFlag(32+i); // AliReduceBaseTrack::fQualityFlags BIT 32+i (0<=i<fTrackFilter.GetEntries())
+  }
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or)
+{
+  //
+  // fill track statistics histogram
+  //
+  if (!fTrackFilter.GetEntries()) return;
+  Bool_t fullTracksV0 = kFALSE;
+  if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) fullTracksV0 = kTRUE;
+  Int_t nPassedFiltersBase = 0;
+  Int_t nPassedFiltersFull = 0;
+  // individual filters
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
+    if (filterDecision[i]) {
+      fTracksHistogram->Fill(i, 3);
+      if (!fWriteBaseTrack[i]) {
+        fTracksHistogram->Fill(i, 2);
+        nPassedFiltersFull++;
+      } else {
+        fTracksHistogram->Fill(i, 1);
+        nPassedFiltersBase++;
+      }
+    }
+  }
+  // written to tree
+  if (nPassedFiltersFull || nPassedFiltersBase) {
+                            fTracksHistogram->Fill(-4, 3);
+    if (nPassedFiltersFull) fTracksHistogram->Fill(-4, 2);
+    else                    fTracksHistogram->Fill(-4, 1);
+  } else if (usedForV0Or) {
+                            fTracksHistogram->Fill(-4, 3);
+    if (fullTracksV0)       fTracksHistogram->Fill(-4, 2);
+    else                    fTracksHistogram->Fill(-4, 1);
+  }
+  // written to tree, one track filter passed
+  if (nPassedFiltersFull==1 || nPassedFiltersBase==1) {
+                                fTracksHistogram->Fill(-3, 3);
+    if (nPassedFiltersFull==1)  fTracksHistogram->Fill(-3, 2);
+    else                        fTracksHistogram->Fill(-3, 1);
+  }
+  // written to tree, several track filters passed
+  if (nPassedFiltersFull>1 || nPassedFiltersBase>1) {
+                              fTracksHistogram->Fill(-2, 3);
+    if (nPassedFiltersFull>1) fTracksHistogram->Fill(-2, 2);
+    else                      fTracksHistogram->Fill(-2, 1);
+  }
+  // written to tree, no track filter passed
+  if (usedForV0Or && !nPassedFiltersFull && !nPassedFiltersBase) {
+                      fTracksHistogram->Fill(-1, 3);
+    if (fullTracksV0) fTracksHistogram->Fill(-1, 2);
+    else              fTracksHistogram->Fill(-1, 1);
+  }
+}
 
 //_________________________________________________________________________________
 void AliAnalysisTaskReducedTreeMaker::FillEventInfo() 
@@ -451,7 +801,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
-
+  
   // In case we want to write just basic event information, we stop here
   if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kBaseEventsWithFullTracks) 
      return;
@@ -470,6 +820,9 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      eventInfo->fMultiplicityEstimatorPercentiles[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
      eventInfo->fMultiplicityEstimatorPercentiles[8] = multSelection->GetMultiplicityPercentile("RefMult05");
      eventInfo->fMultiplicityEstimatorPercentiles[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+     eventInfo->fMultiplicityEstimatorPercentiles[10] = multSelection->GetMultiplicityPercentile("V0M");
+     eventInfo->fMultiplicityEstimatorPercentiles[11] = multSelection->GetMultiplicityPercentile("V0A");
+     eventInfo->fMultiplicityEstimatorPercentiles[12] = multSelection->GetMultiplicityPercentile("V0C");
      AliMultEstimator* estimator = 0x0;
      estimator = multSelection->GetEstimator("OnlineV0M"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
      estimator = multSelection->GetEstimator("OnlineV0A"); if(estimator) eventInfo->fMultiplicityEstimators[1] = estimator->GetValue();
@@ -480,7 +833,18 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      estimator = multSelection->GetEstimator("SPDClusters"); if(estimator) eventInfo->fMultiplicityEstimators[6] = estimator->GetValue();
      estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[7] = estimator->GetValue();
      estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[8] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
+     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();   
+     estimator = multSelection->GetEstimator("V0M"); if(estimator) eventInfo->fMultiplicityEstimators[10] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("V0A"); if(estimator) eventInfo->fMultiplicityEstimators[11] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("V0C"); if(estimator) eventInfo->fMultiplicityEstimators[12] = estimator->GetValue();  
+  }
+  
+  if(eventVtx){
+    Double_t covTracks[6];
+    eventVtx->GetCovarianceMatrix(covTracks);
+    for(Int_t i=0;i<6;++i) {
+      eventInfo->fVtxCovMatrix[i] = covTracks[i];
+    }
   }
   
   AliVVertex* eventVtxSPD = 0x0;
@@ -793,6 +1157,138 @@ Double_t AliAnalysisTaskReducedTreeMaker::Radius(Double_t eta, Double_t z){
   return r;
 }
 
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckPDGcode(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal) {
+   //
+   // Check that the particle satisfies the PDG code criteria specified in the mcSignal
+   // Work on just 1 pronged MC signals here
+   // Method: All of the defined generations of the prong must fulfill the defined PDG criteria
+   // 
+   if(mcSignal->GetNProngs()>1) return kFALSE;
+   
+   // loop over all generations
+   AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
+   Int_t currentGenerationLabel = ipart;
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {      
+      // test the PDG code of this particle
+      // In case the MC history finished (no current particle), test the MC signal using the not assigned PDG.
+      // If there is no PDG requested in this generation, the MC test can still pass
+      if(!mcSignal->TestPDG(0, ig, currentGenerationParticle ? currentGenerationParticle->PdgCode() : AliSignalMC::kPDGnotAssigned)) 
+         return kFALSE;
+      
+      // get the next generation
+      currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
+      currentGenerationParticle = (currentGenerationParticle ? event->GetTrack(currentGenerationLabel) : 0x0);
+   }
+   return kTRUE;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal) {
+   //
+   // Check that the particle satisfies the source criteria specified in the mcSignal
+   // Work on just 1 pronged MC signals here
+   // Method: All of the defined generations of the prong must fulfill the defined source bit map
+   //               For a given generation, all the sources for which corresponding bits are enabled, must be fulfilled 
+   // 
+   if(mcSignal->GetNProngs()>1) return kFALSE;
+   
+   // loop over all generations
+   AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
+   Int_t currentGenerationLabel = ipart;
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
+      if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
+      if(!currentGenerationParticle) return kFALSE;   // if there are sources requested, but MC history finished, evaluate to FALSE
+      
+      // check all implemented sources
+      UInt_t decision = 0;
+      // use logical XOR between the presence of a given source and the exclude flag
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kPhysicalPrimary) != event->IsPhysicalPrimary(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kPhysicalPrimary);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromBGEvent) != event->IsFromBGEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromBGEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromWeakDecay) != event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromWeakDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromMaterial) != event->IsSecondaryFromMaterial(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromMaterial);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromSubsidiaryEvent) != event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromSubsidiaryEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kRadiativeDecay) != (currentGenerationParticle->GetNDaughters()>2)) 
+            decision |= (UInt_t(1) << AliSignalMC::kRadiativeDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstInStack) != (ipart==0)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondInStack) != (ipart==1)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstTenInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstTenInStack) != (ipart<10)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstTenInStack);
+      }
+      
+      if(!decision) return kFALSE;
+      decision &= mcSignal->GetSources(0,ig);
+      if(mcSignal->GetUseANDonSourceBits(0,ig) && (decision != mcSignal->GetSources(0,ig))) return kFALSE;  // not all req sources are fullfilled
+      
+      // get the next generation
+      currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
+      currentGenerationParticle = (currentGenerationParticle ? event->GetTrack(currentGenerationLabel) : 0x0);
+   }
+   return kTRUE;
+}
+
+//_________________________________________________________________________________
+UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
+   //
+   // check whether the defined MC signals match this particle
+   //
+   if(!AliDielectronMC::Instance()->HasMC()) return 0;
+   
+   Int_t nMCsignals = fMCsignals.GetEntries();
+   if(!nMCsignals) return 0;
+   
+   AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
+   AliVParticle* particle = event->GetTrack(iparticle);
+   
+   UInt_t mcSignalsMap = 0;
+   for(Int_t isig=0; isig<nMCsignals; ++isig) {
+      Bool_t mcMatch = CheckPDGcode(event, iparticle, (AliSignalMC*)fMCsignals.At(isig)) && 
+                                    CheckParticleSource(event, iparticle, (AliSignalMC*)fMCsignals.At(isig));
+      
+      if(mcMatch)
+         mcSignalsMap |= (UInt_t(1)<<isig);
+   }
+   return mcSignalsMap;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckMCtruthWriteFormat(UInt_t bitMap) {
+   //
+   // For the bits which are on, check which writing options were requested
+   // If both base and full track formats are requested, the track will be written as full track
+   // Return TRUE if base track format is chosen, and FALSE otherwise 
+   //
+   Bool_t writeBaseTrack = kTRUE;
+   for(Int_t iflag=0;iflag<32;++iflag) {
+      if(!(bitMap & (UInt_t(1)<<iflag))) continue;
+      if(fMCsignalsWritingOptions[iflag]==kFullTrack) writeBaseTrack = kFALSE;
+   }
+   return writeBaseTrack;
+}
 
 //_________________________________________________________________________________
 void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo() 
@@ -802,46 +1298,55 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    //
    Bool_t hasMC = AliDielectronMC::Instance()->HasMC();
    if(!hasMC) return;
+   Int_t nMCsignals = fMCsignals.GetEntries();
+   if(!nMCsignals) return;
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
    
-   AliDielectronMC* mcHandler = AliDielectronMC::Instance();
+   AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
    
-   Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
-   
-   //cout << "Event+++++++++++++++++++++++++" << endl;
-   
-   for(Int_t i=0; i<nPrimary; ++i) {
-      AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
-      
-      // write J/psi's and electrons from J/psi decays
-      // TODO: Create a dynamical way to define which particles from the MC stack will be written
+   // We loop over all particles in the MC event
+   for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
+      AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
-      Bool_t acceptParticle = kFALSE;
-      if(particle->PdgCode()==443) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==411) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==421) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==431) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==4122) acceptParticle = kTRUE;
-      AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
-      if(mother && mother->PdgCode()==443) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==411) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==421) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==431) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==4122) acceptParticle = kTRUE;      
-      if(!acceptParticle) continue;
       
-      TClonesArray& tracks = *(fReducedEvent->fTracks);
+      UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
+      if(!mcSignalsMap) continue;
+      
+      // fill MC statistics summary
+      for(Int_t iTrig=0;iTrig<32;++iTrig) {
+         if(inputHandler->IsEventSelected() & (UInt_t(1)<<iTrig)) {
+            for(Int_t iSig=0;iSig<fMCsignals.GetEntries();++iSig) {
+               if(mcSignalsMap & (UInt_t(1)<<iSig)) fMCSignalsHistogram->Fill(Double_t(iSig), Double_t(iTrig));
+            }
+         }
+      }
+      
+      Bool_t writeBaseTrack = kFALSE;      // if false write full track format
+      writeBaseTrack = CheckMCtruthWriteFormat(mcSignalsMap);  // check which track format (base/full) should be used
+      // write the track in the first track array if the format is full track
+      // if the track format is base track then write it on either the first or the second array, depending on the tree writing options
+      Bool_t useFirstTrackArray = kTRUE;
+      if(writeBaseTrack) {
+         if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+            useFirstTrackArray = kFALSE;
+      }
+      
+      TClonesArray* trackArrPointer = fReducedEvent->fTracks;
+      if(!useFirstTrackArray) trackArrPointer = fReducedEvent->fTracks2;
+      TClonesArray& tracks = *(trackArrPointer);
+      Int_t currentTrackIdx = tracks.GetEntries();
+      
       AliReducedBaseTrack* reducedParticle=NULL;
-      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks)
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
-      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+      if(writeBaseTrack) 
+         reducedParticle=new(tracks[currentTrackIdx]) AliReducedBaseTrack();
+      else
+         reducedParticle=new(tracks[currentTrackIdx]) AliReducedTrackInfo();
       
+      reducedParticle->fMCFlags = mcSignalsMap;
       reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
-      reducedParticle->fQualityFlags |= (ULong_t(1)<<63);               // this means that this is a pure MC track
-      
-      Int_t nDaughters = (particle->PdgCode()==443 ? particle->GetLastDaughter() - particle->GetFirstDaughter() + 1 : 0);
-      if(nDaughters==2) reducedParticle->fQualityFlags |= (ULong_t(1)<<62);    // J/psi -> e+e-
-      if(nDaughters>2) reducedParticle->fQualityFlags |= (ULong_t(1)<<61);       // J/psi -> e+e- + X 
+      reducedParticle->Charge(particle->Charge());
+   
+      if(writeBaseTrack) continue;
       
       AliReducedTrackInfo* trackInfo = dynamic_cast<AliReducedTrackInfo*>(reducedParticle);
       if(!trackInfo) continue;
@@ -852,29 +1357,24 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       trackInfo->fMCMom[1] = particle->Py();
       trackInfo->fMCMom[2] = particle->Pz();
       
+      AliVParticle* mother = event->GetTrack(particle->GetMother());
       if(mother) {
-        trackInfo->fMCLabels[1] = mother->GetLabel();
-        trackInfo->fMCPdg[1] = mother->PdgCode();
-        if(particle->PdgCode()==443)
-          reducedParticle->fQualityFlags |= (ULong_t(1)<<60);    // secondary J/psi
-        
-        AliVParticle* grandmother = mcHandler->GetMCTrackFromMCEvent(mother->GetMother());
-        if(grandmother) {
-           trackInfo->fMCLabels[2] = grandmother->GetLabel();
-           trackInfo->fMCPdg[2] = grandmother->PdgCode();
-           
-           AliVParticle* grandgrandmother = mcHandler->GetMCTrackFromMCEvent(grandmother->GetMother());
-           if(grandgrandmother) {
-              trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
-              trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
-           }
-        }
+         trackInfo->fMCLabels[1] = mother->GetLabel();
+         trackInfo->fMCPdg[1] = mother->PdgCode();
+         
+         AliVParticle* grandmother = event->GetTrack(mother->GetMother());
+         if(grandmother) {
+            trackInfo->fMCLabels[2] = grandmother->GetLabel();
+            trackInfo->fMCPdg[2] = grandmother->PdgCode();
+            
+            AliVParticle* grandgrandmother = event->GetTrack(grandmother->GetMother());
+            if(grandgrandmother) {
+               trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
+               trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
+            }
+         }
       }
-      
-      /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
-        << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
-        << reducedParticle->Py() << "/" << reducedParticle->Pz() << "/" << nDaughters << "/" << particle->GetFirstDaughter() << "/"
-        << particle->GetLastDaughter() << endl; */
+      if(fFillHFInfo) trackInfo->fHFProc = AliDielectronMC::Instance()->GetHFProcess(particle->GetLabel());
         
       fReducedEvent->fNtracks[1] += 1;  
    }
@@ -943,8 +1443,60 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(!leg2Found[pairId]) {trackIdsPureV0[pairId][nPureV0LegsTagged[pairId]] = pair->fLegIds[1]; ++nPureV0LegsTagged[pairId];}
     }
   }
-      
-  Int_t pidtypes[4] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton};
+        
+  // check for tracks matched in TRD 
+  Int_t trackIdsTRD[20000]={0};
+  Int_t nTracksTRD = 0;
+  if(fFillTRDMatchedTracks) {
+    for(Int_t itrackTRD=0; itrackTRD<event->GetNumberOfTrdTracks(); ++itrackTRD) {
+       if(isESD) {
+         AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());  
+         AliESDTrdTrack* trdTrack = (AliESDTrdTrack*)esdEvent->GetTrdTrack(itrackTRD);
+         if(!trdTrack) {
+            cout << "############## Bad TRD track found" << endl;
+            continue;
+         }
+         AliESDtrack* tempESDtrack = dynamic_cast<AliESDtrack*>(trdTrack->GetTrackMatch());
+         if(!tempESDtrack) continue;
+         Int_t trackID = tempESDtrack->GetID();
+         Bool_t found = kFALSE;
+         for(Int_t k=0; k<nTracksTRD; ++k) {
+           if(trackID==trackIdsTRD[k]) {
+              found = kTRUE;   
+              break;
+           }
+         }
+         if(!found) {
+           trackIdsTRD[nTracksTRD] = trackID;
+           nTracksTRD++;
+         }
+       }
+       if(isAOD) {
+          AliAODEvent* aodEvent = static_cast<AliAODEvent*>(InputEvent());  
+          AliAODTrdTrack* trdTrack = (AliAODTrdTrack*)aodEvent->GetTrdTrack(itrackTRD);
+          if(!trdTrack) {
+             cout << "############## Bad TRD track found" << endl;
+             continue;
+          }
+          AliAODTrack* tempAODtrack = dynamic_cast<AliAODTrack*>(trdTrack->GetTrackMatch());
+          if(!tempAODtrack) continue;
+          Int_t trackID = tempAODtrack->GetID();
+          Bool_t found = kFALSE;
+          for(Int_t k=0; k<nTracksTRD; ++k) {
+             if(trackID==trackIdsTRD[k]) {
+                found = kTRUE;   
+                break;
+             }
+          }
+          if(!found) {
+             trackIdsTRD[nTracksTRD] = trackID;
+             nTracksTRD++;
+          }
+       }
+    }  // end loop over TRD tracks
+  }  // end if(fFillTRDMatchedTracks)
+
+  //Int_t pidtypes[4] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton};
   AliESDtrack* esdTrack=0;
   AliAODTrack* aodTrack=0;
   Int_t ntracks=event->GetNumberOfTracks();
@@ -953,6 +1505,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Bool_t usedForPureV0[4] = {kFALSE};
   Bool_t usedForV0Or = kFALSE;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
+     
     AliVParticle *particle=event->GetTrack(itrack);
     if(isESD) {
       esdTrack=static_cast<AliESDtrack*>(particle);
@@ -969,7 +1522,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       for(Int_t ii=0; ii<nV0LegsTagged[i]; ++ii) {
         if(UShort_t(trackId)==trackIdsV0[i][ii]) {
           usedForV0[i] = kTRUE;
-          //cout << "track " << trackId << " used for V0 type " << i << endl;
           break;
         }
       }
@@ -981,8 +1533,20 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
           break;
         }
       }
+      usedForV0Or = usedForV0Or || usedForPureV0[i];
     }
-        
+    
+    // check whether this track is matched in TRD
+    Bool_t matchedInTRD = kFALSE;
+    if(fFillTRDMatchedTracks) {
+      for(Int_t kk=0; kk<nTracksTRD; ++kk) {
+        if(trackId==trackIdsTRD[kk]) {
+           matchedInTRD = kTRUE;
+           break;
+        }   
+      }
+    }
+    
     ULong_t status = (isESD ? esdTrack->GetStatus() : aodTrack->GetStatus());
     
     AliReducedEventInfo* eventInfo = NULL; 
@@ -996,16 +1560,38 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       }
     }
     
-    //apply track cuts
-    if(!usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
-    
-    TClonesArray& tracks = *(fReducedEvent->fTracks);
-    AliReducedBaseTrack* reducedParticle=NULL;
-    if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks)
-      reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
-    if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
-       reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
-        
+    // decide whether to write the track in the tree
+    Bool_t writeTrack = kFALSE;
+    Bool_t trackFilterDecision = kFALSE;
+    std::vector<Bool_t> individualFilterDecisions;
+    if (fTrackFilter.GetEntries()==0) trackFilterDecision = kTRUE;
+    if (fTrackFilter.GetEntries()>0)  trackFilterDecision = IsTrackSelected(particle, individualFilterDecisions);
+    if(trackFilterDecision) writeTrack = kTRUE;
+    if(matchedInTRD) {
+       if(fFillAllTRDMatchedTracks) writeTrack = kTRUE;
+       else 
+          if(trackFilterDecision) writeTrack = kTRUE;     // not needed since the track will be written anyway
+    }
+    if(usedForV0Or) writeTrack = kTRUE;
+    if(!writeTrack) continue;
+    //if(!matchedInTRD && !usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
+
+    Bool_t fSelectedTrackIsBaseTrack = IsSelectedTrackRequestedBaseTrack(individualFilterDecisions, usedForV0Or);
+    TClonesArray& tracks = (fWriteSecondTrackArray && fSelectedTrackIsBaseTrack) ? *(fReducedEvent->fTracks2) : *(fReducedEvent->fTracks);
+    AliReducedBaseTrack* reducedParticle = NULL;
+    if (fSelectedTrackIsBaseTrack && fWriteSecondTrackArray)
+      reducedParticle=new(tracks[fReducedEvent->NTracks2()]) AliReducedBaseTrack();
+    else if (fSelectedTrackIsBaseTrack && !fWriteSecondTrackArray)
+      reducedParticle=new(tracks[fReducedEvent->NTracks1()]) AliReducedBaseTrack();
+    else
+      reducedParticle=new(tracks[fReducedEvent->NTracks1()]) AliReducedTrackInfo();
+
+    // set track quality flags
+    SetTrackFilterQualityFlags(reducedParticle, individualFilterDecisions);
+
+    // fill track statistics histogram
+    FillTrackStatisticsHistogram(individualFilterDecisions, usedForV0Or);
+
     Double_t values[AliDielectronVarManager::kNMaxValues];
     // set the fill map (all 1's) for the AliDielectronVarManager
     AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -1015,17 +1601,19 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     reducedParticle->fCharge        = values[AliDielectronVarManager::kCharge];
     
     if(fFlowTrackFilter) {
-       // switch on the first bit if this particle should be used for the event plane
-       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fQualityFlags |= (ULong_t(1)<<0);
+      // switch on the first bit if this particle should be used for the event plane
+      if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fQualityFlags |= (ULong_t(1)<<0);
     }
     for(Int_t iV0type=0;iV0type<4;++iV0type) {
-       if(usedForV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+1));
-       if(usedForPureV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+8));
+      if(usedForV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+1));
+      if(usedForPureV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+8));
     }
-        
+    if(matchedInTRD) reducedParticle->fQualityFlags |= (ULong_t(1)<<26);
+
     if(isESD) {
-       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
-       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
+      reducedParticle->fTrackId          = (UShort_t)esdTrack->GetID();
+      for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
+      for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
        
        //check is track passes bayesian combined TOF+TPC pid cut
        //Bool_t goodtrack = (esdTrack->GetStatus() & AliESDtrack::kTOFout) &&
@@ -1061,16 +1649,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
      } */
    }
    if(isAOD) {
+      reducedParticle->fTrackId = aodTrack->GetID();
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
       for(Int_t idx=0; idx<11; ++idx) if(aodTrack->TestFilterBit(BIT(idx))) reducedParticle->SetQualityFlag(15+idx);
    }
    
-   // If we want to write only AliReducedBaseTrack objects, then we stop here
-   if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
-     fReducedEvent->fNtracks[1] += 1;
-     continue;
-   }    
+    // If we want to write only AliReducedBaseTrack objects, then we stop here
+    if (fSelectedTrackIsBaseTrack) {
+      fReducedEvent->fNtracks[1] += 1;
+      continue;
+    }
     
     AliReducedTrackInfo* trackInfo = dynamic_cast<AliReducedTrackInfo*>(reducedParticle);
     if(!trackInfo) continue;
@@ -1118,10 +1707,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
-       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
+
+       AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+       TClass* esdClass = esdTrack->Class();
+       if( esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal") && fld)
          trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+//       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
        
-      trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 
       //trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
@@ -1165,6 +1757,20 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      esdTrack->GetXYZ(xyz);
+      esdTrack->GetPxPyPz(pxpypz);
+      esdTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+      
+      
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
@@ -1177,7 +1783,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
            trackInfo->fMCPdg[0] = truthParticle->PdgCode();
            trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
-           if(truthParticle->PdgCode()!=-9999 && esdTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);   // means the track has MC truth info
            
            AliMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
            if(motherTruth) {
@@ -1198,7 +1803,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
               trackInfo->fMCLabels[3] = grandmotherTruth->GetMother();
               trackInfo->fMCPdg[3] = grandgrandmotherTruth->PdgCode();
            }
-         }
+
+	   if(fFillHFInfo)      trackInfo->fHFProc = AliDielectronMC::Instance()->GetHFProcess(truthParticle->GetLabel());
+	   
+	 }
       }
     }  // end if(isESD)
     if(isAOD) {
@@ -1234,7 +1842,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
       
-      trackInfo->fTrackId = aodTrack->GetID(); 
       trackInfo->fTRDntracklets[0] = aodTrack->GetTRDntrackletsPID();
       trackInfo->fTRDntracklets[1] = aodTrack->GetTRDntrackletsPID();
       pidResponse->ComputeTRDProbability(aodTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ1D);
@@ -1247,6 +1854,19 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      aodTrack->GetXYZ(xyz);
+      aodTrack->GetPxPyPz(pxpypz);
+      aodTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+        
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
@@ -1259,7 +1879,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             trackInfo->fMCLabels[0] = aodTrack->GetLabel();
             trackInfo->fMCPdg[0] = truthParticle->PdgCode();
             trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
-            if(truthParticle->PdgCode()!=-9999 && aodTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);
             
             AliAODMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
             if(motherTruth) {
@@ -1282,6 +1901,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             }
          }
       }
+      
+      
+      
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;
@@ -1302,8 +1924,8 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
   
   if(!(fFillK0s || fFillLambda || fFillALambda || fFillGammaConversions)) return;
     
-  Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
-  Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
+  //Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
+  //Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
   
   if(fV0OpenCuts) {
     fV0OpenCuts->SetEvent(esd);

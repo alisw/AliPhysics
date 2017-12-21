@@ -20,7 +20,7 @@
 //---- ANALYSIS system ----
 #include "AliAnaParticlePartonCorrelation.h" 
 #include "AliMCEvent.h"  
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliVParticle.h"
 
 /// \cond CLASSIMP
@@ -112,7 +112,7 @@ TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()
 //____________________________________________________
 void AliAnaParticlePartonCorrelation::InitParameters()
 {
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("CaloTrackParticle");
   SetAODObjArrayName("Partons");  
   AddToHistogramsName("AnaPartonCorr_");
 }
@@ -140,8 +140,8 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   if(!GetInputAODBranch())
     AliFatal(Form("No input particles in AOD with name branch < %s > ",GetInputAODName().Data()));
   
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
-    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliCaloTrackParticleCorrelation"))
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliCaloTrackParticleCorrelation> and not <%s>",
              GetInputAODBranch()->GetClass()->GetName()));
   
   AliDebug(1,"Begin fill AODs");
@@ -151,7 +151,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     if(!GetMC())
     {
@@ -218,7 +218,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
   AliVParticle *  mom = NULL ;
   
   for(Int_t iaod = 0; iaod < naod ; iaod++){
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     Float_t ptTrigg  = particle->Pt();
     Float_t phiTrigg = particle->Phi();

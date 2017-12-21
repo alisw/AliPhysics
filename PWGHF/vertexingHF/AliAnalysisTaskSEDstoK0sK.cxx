@@ -559,32 +559,25 @@ void AliAnalysisTaskSEDstoK0sK::UserCreateOutputObjects()
       listVar.Append(":K0sPtDauNeg");          //  10  V0:    Pt positive daughters
       listVar.Append(":BachPt");               //  11  Bach:  Pt
       listVar.Append(":Bachd0");               //  12  Bach:  impact parameter
-      listVar.Append(":BachNsigmaTPCpion");    //  13  Bach:  N sigmaTPC pion
-      listVar.Append(":BachNsigmaTPCkaon");    //  14  Bach:  N sigmaTPC kaon
-      listVar.Append(":BachNsigmaTPCproton");  //  15  Bach:  N sigmaTPC proton
-      listVar.Append(":BachNsigmaTOFpion");    //  16  Bach:  N sigmaTOF pion
-      listVar.Append(":BachNsigmaTOFkaon");    //  17  Bach:  N sigmaTOF kaon
-      listVar.Append(":BachNsigmaTOFproton");  //  18  Bach:  N sigmaTOF proton
-      listVar.Append(":CanInvMassDs");         //  19  Ds:    invariant mass (K0sK+)
-      listVar.Append(":CanInvMassDplus");      //  20  Ds:    invariant mass (K0spi+)
-      listVar.Append(":CanPt");                //  21  Ds:    Pt
-      listVar.Append(":CanDCAProngToProng");   //  22  Ds:    DCA prong-to-prong (K0s,K)
-      listVar.Append(":CanCosThetaStarK0s");   //  23  Ds:    cosine theta* K0s
-      listVar.Append(":CanCosThetaStarBach");  //  24  Ds:    cosine theta* K+
-      listVar.Append(":CanCosPA");             //  25  Ds:    cosine pointing angle
-      listVar.Append(":CanCosPAxy");           //  26  Ds:    cosine pointing angle XY
-      listVar.Append(":CanDLengthXY");         //  27  Ds:    decay length XY
-      listVar.Append(":CanNormDLengthXY");     //  28  Ds:    normalised decay length XY
-      listVar.Append(":CanDLength3D");         //  29  Ds:    decay length 3D
-      listVar.Append(":CanNormDLength3D");     //  30  Ds:    normalised decay length 3D
-      listVar.Append(":CanSigmaVtx");          //  31  Ds:    sigma vertex
-      listVar.Append(":CanNormTopoBach");      //  32  Ds:    difference between measured and expected normalised d0(K+)
-      listVar.Append(":CanNormTopoK0s");       //  33  Ds:    difference between measured and expected normalised d0(K0s)
+      listVar.Append(":CanInvMassDs");         //  13  Ds:    invariant mass (K0sK+)
+      listVar.Append(":CanInvMassDplus");      //  14  Ds:    invariant mass (K0spi+)
+      listVar.Append(":CanPt");                //  15  Ds:    Pt
+      listVar.Append(":CanDCAProngToProng");   //  16  Ds:    DCA prong-to-prong (K0s,K)
+      listVar.Append(":CanCosThetaStarK0s");   //  17  Ds:    cosine theta* K0s
+      listVar.Append(":CanCosThetaStarBach");  //  18  Ds:    cosine theta* K+
+      listVar.Append(":CanCosPA");             //  19  Ds:    cosine pointing angle
+      listVar.Append(":CanCosPAxy");           //  20  Ds:    cosine pointing angle XY
+      listVar.Append(":CanDLengthXY");         //  21  Ds:    decay length XY
+      listVar.Append(":CanNormDLengthXY");     //  22  Ds:    normalised decay length XY
+      listVar.Append(":CanDLength3D");         //  23  Ds:    decay length 3D
+      listVar.Append(":CanNormDLength3D");     //  24  Ds:    normalised decay length 3D
+      listVar.Append(":CanSigmaVtx");          //  25  Ds:    sigma vertex
+      listVar.Append(":CanNormTopoBach");      //  26  Ds:    difference between measured and expected normalised d0(K+)
+      listVar.Append(":CanNormTopoK0s");       //  27  Ds:    difference between measured and expected normalised d0(K0s)
       if (fReadMC) {
-         listVar.Append(":mcTruth");           //  34  MC:    MC informations: 10 (signal), 20 (D+ reflection),
+         listVar.Append(":mcTruth");           //  28  MC:    MC informations: 10 (signal), 20 (D+ reflection),
                                                //                              -1 (backg w/ true K0S), -2 (backg w/ false K0S)
       }
-      // listVar.Append(":CanCosThetaRFrame");    //  32  Ds:    cosine of angle between (K0s-bach) in the Ds rest frame
 
 
       fOutputNtuple = new TNtuple(GetOutputSlot(4)->GetContainer()->GetName(), "TNtuple for reconstructed candidates on real data", listVar.Data());
@@ -1181,28 +1174,21 @@ void AliAnalysisTaskSEDstoK0sK::FillTheTree(AliAODRecoCascadeHF* dCan, AliAODEve
    variableNtuple[10] = v0->PtProng(1);                         // "K0sPtDauNeg"
    variableNtuple[11] = dCan->PtProng(0);                       // "BachPt"
    variableNtuple[12] = dCan->Getd0Prong(0);                    // "Bachd0"
-   variableNtuple[13] = nSigmaTPCpion;                          // "BachNsigmaTPCpion"
-   variableNtuple[14] = nSigmaTPCkaon;                          // "BachNsigmaTPCkaon"
-   variableNtuple[15] = nSigmaTPCproton;                        // "BachNsigmaTPCproton"
-   variableNtuple[16] = nSigmaTOFpion;                          // "BachNsigmaTOFpion"
-   variableNtuple[17] = nSigmaTOFkaon;                          // "BachNsigmaTOFkaon"
-   variableNtuple[18] = nSigmaTOFproton;                        // "BachNsigmaTOFproton"
-   variableNtuple[19] = dCan->InvMassDstoK0sK();                // "CanInvMassDs"
-   variableNtuple[20] = dCan->InvMassDplustoK0spi();            // "CanInvMassDplus"
-   variableNtuple[21] = dCan->Pt();                             // "CanPt"
-   variableNtuple[22] = dCan->GetDCA();                         // "CanDCAProngToProng"
-   variableNtuple[23] = dCan->CosThetaStar(1, 431, 321, 310);   // "CanCosThetaStarK0s"
-   variableNtuple[24] = dCan->CosThetaStar(0, 431, 321, 310);   // "CanCosThetaStarBach"
-   variableNtuple[25] = dCan->CosPointingAngle();               // "CanCosPA"
-   variableNtuple[26] = dCan->CosPointingAngleXY();             // "CanCosPAxy"
-   variableNtuple[27] = dCan->DecayLengthXY();                  // "CanDLengthXY"
-   variableNtuple[28] = dCan->NormalizedDecayLengthXY();        // "CanNormDLengthXY"
-   variableNtuple[29] = dCan->DecayLength();                    // "CanDLength3D"
-   variableNtuple[30] = dCan->NormalizedDecayLength();          // "CanNormDLength3D"
-   variableNtuple[31] = ComputeSigmaVert(aod, dCan);            // "CanSigmaVtx"
-   variableNtuple[32] = diffIP[0]/errdiffIP[0];                 // "CanNormTopoBach"
-   variableNtuple[33] = diffIP[1]/errdiffIP[1];                 // "CanNormTopoK0s"
-   // variableNtuple[32] = CosThetaK0sBachRFrame(dCan);            // "CanCosThetaRFrame"
+   variableNtuple[13] = dCan->InvMassDstoK0sK();                // "CanInvMassDs"
+   variableNtuple[14] = dCan->InvMassDplustoK0spi();            // "CanInvMassDplus"
+   variableNtuple[15] = dCan->Pt();                             // "CanPt"
+   variableNtuple[16] = dCan->GetDCA();                         // "CanDCAProngToProng"
+   variableNtuple[17] = dCan->CosThetaStar(1, 431, 321, 310);   // "CanCosThetaStarK0s"
+   variableNtuple[18] = dCan->CosThetaStar(0, 431, 321, 310);   // "CanCosThetaStarBach"
+   variableNtuple[19] = dCan->CosPointingAngle();               // "CanCosPA"
+   variableNtuple[20] = dCan->CosPointingAngleXY();             // "CanCosPAxy"
+   variableNtuple[21] = dCan->DecayLengthXY();                  // "CanDLengthXY"
+   variableNtuple[22] = dCan->NormalizedDecayLengthXY();        // "CanNormDLengthXY"
+   variableNtuple[23] = dCan->DecayLength();                    // "CanDLength3D"
+   variableNtuple[24] = dCan->NormalizedDecayLength();          // "CanNormDLength3D"
+   variableNtuple[25] = ComputeSigmaVert(aod, dCan);            // "CanSigmaVtx"
+   variableNtuple[26] = diffIP[0]/errdiffIP[0];                 // "CanNormTopoBach"
+   variableNtuple[27] = diffIP[1]/errdiffIP[1];                 // "CanNormTopoK0s"
 
 
    for (Int_t ivar=0; ivar<kNTupleVars; ivar++) {
@@ -1220,14 +1206,14 @@ void AliAnalysisTaskSEDstoK0sK::FillTheTree(AliAODRecoCascadeHF* dCan, AliAODEve
       Bool_t  okMCsignal = (MatchToMCDstoK0sKSignal(dCan, mcArray)>=0)     ? kTRUE : kFALSE;
       Bool_t  okMCreflec = (MatchToMCDplustoK0spiSignal(dCan, mcArray)>=0) ? kTRUE : kFALSE;
 
-      variableNtuple[34] = okMCsignal ? 10   // "CanNormDLengthXY"
+      variableNtuple[28] = okMCsignal ? 10
                          : okMCreflec ? 20
                          : -2;
 
       if (!okMCsignal && !okMCreflec) {
          AliDebug(2, "The candidate is a combinatorial background, check if the V0 is a true K0S");
          Int_t pdgDgK0stoPions[2] = {211, 211};
-         if (v0->MatchToMC(310, mcArray, 2, pdgDgK0stoPions)>=0) variableNtuple[29]++;
+         if (v0->MatchToMC(310, mcArray, 2, pdgDgK0stoPions)>=0) variableNtuple[28]++;
       }
 
    } // end if fReadMC

@@ -49,26 +49,30 @@ class AliCEPBase : public TObject {
 
 		// track status bits
 		kTTBaseLine        = 0,
-    kTTTOFBunchCrossing= (1<< 0), // TOFBunchCrossing==0
-    kTTTPCScluster     = (1<< 1), // number of TPC shared clusters <= fTPCnclsS(3)
-    kTTDCA             = (1<< 2), // DCA to vertex is < 500
-    kTTV0              = (1<< 3), // is a daughter of a V0
-    kTTITSpure         = (1<< 4), // is an ITS pure track
-    kTTZv              = (1<< 5), // |Zv-VtxZ| <= 6
-    kTTeta             = (1<< 6), // -0.9<eta<0.9
-    kTTAccITSTPC       = (1<< 7), // accepted by ITSTPC criteria
-    kTTAccITSSA        = (1<< 8), // accepted by ITSSA  criteria
-    kTTFiredChips      = (1<< 9), // passed FiredChips test
+    kTTTOFBunchCrossing= BIT( 0), // TOFBunchCrossing==0
+    kTTTPCScluster     = BIT( 1), // number of TPC shared clusters <= fTPCnclsS(3)
+    kTTDCA             = BIT( 2), // DCA to vertex is < 500
+    kTTV0              = BIT( 3), // is a daughter of a V0
+    kTTITSpure         = BIT( 4), // is an ITS pure track
+    kTTZv              = BIT( 5), // |Zv-VtxZ| <= 6
+    kTTeta             = BIT( 6), // -0.9<eta<0.9
+    kTTAccITSTPC       = BIT( 7), // accepted by ITSTPC criteria
+    kTTAccITSSA        = BIT( 8), // accepted by ITSSA  criteria
+    kTTFiredChips      = BIT( 9), // passed FiredChips test
+    kTTAccTPCOnly      = BIT(10), // passed standard TPCOnly criteria
+    kTTSPDHit          = BIT(11), // has at least one SPD hit
+    kTTCaloMatch       = BIT(12), // match with calorimeter cluster
+    kTTAccV0daughter   = BIT(13), // passed standard V0daughter criteria
 
     // type of vertex
-    kVtxUnknown = 0,
-    kVtxSPD,                // from ITS
-    kVtxTracks,             // from tracks
-    kVtxErrRes,             // z-resolution of SPD vertex is out-of-bounds
-    kVtxErrDif,             // difference in z between SPD and track vertex is
-                            //  out-of-bounds
-    kVtxErrZ,               // z-position of vertex is  out-of-bounds
-    kVtxAOD,                // On AOD only primary vertex is stored
+    kVtxUnknown         = 0,
+    kVtxSPD             = BIT(0),  // from ITS
+    kVtxTracks          = BIT(1),  // from tracks
+    kVtxErrRes          = BIT(2),  // z-resolution of SPD vertex is out-of-bounds
+    kVtxErrDif          = BIT(3),  // difference in z between SPD and track
+                                    // vertex is out-of-bounds
+    kVtxErrZ            = BIT(4),  // z-position of vertex is out-of-bounds
+    kVtxAOD             = BIT(5),  // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
 		// names for the bins are specified in AliCEPUtils.cxx
@@ -94,53 +98,58 @@ class AliCEPBase : public TObject {
 		kBinLastValue,
 
 		// definition of bits in AliAnalysisTaskCEP::fCurrentEventCondition
-		kBitBaseLine       = (1<< 0),
-    kBitEventCut       = (1<< 1),
-    kBitPhyssel        = (1<< 2),
-    kBitPileup         = (1<< 3),
-    kBitClusterCut     = (1<< 4),
-		kBitDGTrigger      = (1<< 5),
-    kBitVtx            = (1<< 6),
-		kBitMBOR           = (1<< 7),
-    kBitMBAND          = (1<< 8),
-		kBitSPDA           = (1<< 9),
-		kBitSPDC           = (1<<10),
-		kBitTPCA           = (1<<11),
-		kBitTPCC           = (1<<12),
-    kBitV0A            = (1<<13),
-		kBitV0C            = (1<<14),
-		kBitFMDA           = (1<<15),
-		kBitFMDC           = (1<<16),
-		kBitADA            = (1<<17),
-		kBitADC            = (1<<18), 
-		kBitZDCA           = (1<<19), 
-		kBitZDCC           = (1<<20), 
-		kBitZDNA           = (1<<21),
-		kBitZDNC           = (1<<22),
-    kBitSClusterCut    = (1<<23),
+		kETBaseLine       = BIT( 0),
+    kETEventCut       = BIT( 1),
+    kETPhyssel        = BIT( 2),
+    kETPileup         = BIT( 3),
+    kETClusterCut     = BIT( 4),
+		kETDGTrigger      = BIT( 5),
+    kETVtx            = BIT( 6),
+		kETMBOR           = BIT( 7),
+    kETMBAND          = BIT( 8),
+		kETSPDA           = BIT( 9),
+		kETSPDC           = BIT(10),
+		kETTPCA           = BIT(11),
+		kETTPCC           = BIT(12),
+    kETV0A            = BIT(13),
+		kETV0C            = BIT(14),
+		kETFMDA           = BIT(15),
+		kETFMDC           = BIT(16),
+		kETADA            = BIT(17),
+		kETADC            = BIT(18), 
+		kETZDCA           = BIT(19), 
+		kETZDCC           = BIT(20), 
+		kETZDNA           = BIT(21),
+		kETZDNC           = BIT(22),
+    kETSClusterCut    = BIT(23),
 
     // MC process types
     kProctypeUnknown = 0,
+    kProctypeMB,
     kProctypeND,
-    kProctypeSD,
+    kProctypeEL,
+    kProctypeSDA,
+    kProctypeSDB,
     kProctypeDD,
     kProctypeCD,
 
 		// analysis task status bits
 		// do not change the order in order to be backward compatible!
     
-		kBitConfigurationSet      = (1<< 0), // if not set everything is active
-    kBitisRun1                = (1<< 1), // is it run1
-    kBitSaveAllEvents         = (1<< 2), // save all events
-    kBitisMC                  = (1<< 3), // is Monte Carlo
-    kBitQArnumStudy           = (1<< 4), // QA as function of rnum
-    kBitSPDPileupStudy        = (1<< 5), // SPD pileup study
-    kBitnClunTraStudy         = (1<< 6), // cluster vs tracklet study
-    kBitVtxStudy              = (1<< 7), // Vtx study
-    kBitTrackCutStudy         = (1<< 8), // track cut study
-    kBitBBFlagStudy           = (1<< 9), // BBFlag study
-    kBitV0Study               = (1<<10), // V0 study
-		kBitConfigurationVersion  = (1<<11)  // always set, last bit
+		kBitConfigurationSet      = BIT( 0), // if not set everything is active
+    kBitisRun1                = BIT( 1), // is it run1
+    kBitSaveAllEvents         = BIT( 2), // save all events
+    kBitisMC                  = BIT( 3), // is Monte Carlo
+    kBitQArnumStudy           = BIT( 4), // QA as function of rnum
+    kBitSPDPileupStudy        = BIT( 5), // SPD pileup study
+    kBitnClunTraStudy         = BIT( 6), // cluster vs tracklet study
+    kBitVtxStudy              = BIT( 7), // Vtx study
+    kBitTrackCutStudy         = BIT( 8), // track cut study
+    kBitBBFlagStudy           = BIT( 9), // BBFlag study
+    kBitV0Study               = BIT(10), // V0 study
+    kBitFMDStudy              = BIT(11), // FMD study
+    kBitEMCStudy              = BIT(12), // EMC study
+		kBitConfigurationVersion  = BIT(13)  // always set, last bit
 	
   };
 

@@ -1,6 +1,7 @@
 void AddTask_GammaCocktailMC(Bool_t runLightOutput = kFALSE, TString maxyset = "0.80") {
 
   Double_t maxy = maxyset.Atof();
+  maxy         /= 100;  // needed to enable subwagon feature on grid
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

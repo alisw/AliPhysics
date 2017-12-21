@@ -53,6 +53,8 @@ AliRDHFCuts(name)
    , fExcludedCut(-1)
    , fV0Type(0)
    , fV0daughtersCuts(0)
+   , fPidOption(1)
+   , fMaxPtStrongPid(0)
 {
    //
    /// Default Constructor
@@ -104,13 +106,15 @@ AliRDHFCuts(name)
 
 
    // PID settings
-   Double_t nsigma[5] = {3., 3., 3., 3., 0.}; // 0-2 for TPC, 3 for TOF, 4 for ITS
+   Double_t nsigma[5] = {2., 1., 2., 3., 0.}; // 0-2 for TPC, 3 for TOF, 4 for ITS
+   Double_t plim[2]   = {0.6, 0.8};
 
    if (fPidHF) delete fPidHF;
    fPidHF = new AliAODPidHF();
 
+   fPidHF -> SetPLimit(plim, 2);
    fPidHF -> SetMatch(1);          // switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
-   fPidHF -> SetAsym(kFALSE);      // asimmetric PID required (different sigmas for different p bins)
+   fPidHF -> SetAsym(kTRUE);       // asimmetric PID required (different sigmas for different p bins)
    fPidHF -> SetSigma(nsigma);     // sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
    fPidHF -> SetCompat(kTRUE);     // compatibility region : useful only if fMatch=1
    fPidHF -> SetTPC(1);
@@ -128,6 +132,8 @@ AliRDHFCuts(source)
    , fExcludedCut(source.fExcludedCut)
    , fV0Type(source.fV0Type)
    , fV0daughtersCuts(0)
+   , fPidOption(source.fPidOption)
+   , fMaxPtStrongPid(source.fMaxPtStrongPid)
 {
    //
    /// Standard constructor
@@ -358,6 +364,10 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       return 0;
    }
 
+   Double_t pt = d->Pt();
+   if (pt < fMinPtCand) return 0;
+   if (pt > fMaxPtCand) return 0;
+
    if (!d->GetSecondaryVtx()) {
       AliDebug(2, "No secondary vertex for cascade");
       return 0;
@@ -446,7 +456,6 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       Double_t  mk0s = v0->MassK0Short();
 
 
-      Double_t pt = d->Pt();
       Int_t ptbin = PtBin(pt);
       if (ptbin==-1) {
          return 0;
@@ -654,6 +663,11 @@ Int_t AliRDHFCutsDstoK0sK::IsSelectedPID(AliAODRecoDecayHF* obj)
       return 1;
    }
 
+   if (!fPidHF) {
+      AliDebug(2, "PID not configured. Candidate accepted.");
+      return 1;
+   }
+
    AliAODRecoCascadeHF *d = (AliAODRecoCascadeHF*) obj;
    if (!d) {
       AliDebug(2, "AliAODRecoCascadeHF null");
@@ -668,10 +682,33 @@ Int_t AliRDHFCutsDstoK0sK::IsSelectedPID(AliAODRecoDecayHF* obj)
 
 
    // - Combined TPC/TOF PID
+   Double_t origCompatTOF = fPidHF -> GetPCompatTOF();
+   Double_t origThreshTPC = fPidHF -> GetPtThresholdTPC();
+   if (fPidOption == kStrong) {
+      fPidHF -> SetPCompatTOF(999999.);
+      fPidHF -> SetPtThresholdTPC(999999.);
+   }
+
+
    Int_t isKaon = fPidHF -> MakeRawPid(bachelorTrack, AliPID::kKaon);
 
-   if (isKaon>=0) return 1;
-   else           return 0;
+   if (isKaon < 0) {
+      fPidHF -> SetPCompatTOF(origCompatTOF);
+      fPidHF -> SetPtThresholdTPC(origThreshTPC);
+      return 0;
+   }
+
+   if (fPidOption == kStrong && d->Pt() < fMaxPtStrongPid && isKaon <= 0) {
+      fPidHF -> SetPCompatTOF(origCompatTOF);
+      fPidHF -> SetPtThresholdTPC(origThreshTPC);
+      return 0;
+   }
+
+
+   fPidHF -> SetPCompatTOF(origCompatTOF);
+   fPidHF -> SetPtThresholdTPC(origThreshTPC);
+
+   return 1;
 }
 
 

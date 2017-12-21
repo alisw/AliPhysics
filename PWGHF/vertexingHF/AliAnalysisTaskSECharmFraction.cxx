@@ -70,6 +70,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   fCutsLoose(0),
   fCutsTight(0),
   fFastAnalysis(1),  
+  fLightOutput(kFALSE),
   fReadMC(kFALSE),
   fcheckD0Bit(kTRUE),
   fsplitMassD0D0bar(kTRUE),
@@ -162,6 +163,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       fCutsLoose(0x0),
       fCutsTight(0x0),
       fFastAnalysis(1),
+      fLightOutput(kFALSE),
       fReadMC(kFALSE),
       fcheckD0Bit(kTRUE),
       fsplitMassD0D0bar(kTRUE),
@@ -277,6 +279,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fCutsLoose(0),
     fCutsTight(0),
     fFastAnalysis(1),
+    fLightOutput(kFALSE),
     fReadMC(kFALSE),
     fcheckD0Bit(kTRUE),
     fsplitMassD0D0bar(kTRUE),
@@ -5689,33 +5692,29 @@ flistTghCutsSignal->Add(hMassTGHCsignSB);
 
   PostData(1,fNentries);
   PostData(2,fSignalType);
-  PostData(3,fSignalTypeLsCuts);
+if(!fLightOutput)PostData(3,fSignalTypeLsCuts);
   PostData(4,fSignalTypeTghCuts);
   PostData(5,fCounter);
-  PostData(6,flistMCproperties);
-  PostData(7,flistNoCutsSignal);
-  PostData(8,flistNoCutsBack);
-  PostData(9,flistNoCutsFromB);
-  PostData(10,flistNoCutsFromDstar);
-  PostData(11,flistNoCutsOther);
-  PostData(12,flistLsCutsSignal);
-  PostData(13,flistLsCutsBack);
-  PostData(14,flistLsCutsFromB);
-  PostData(15,flistLsCutsFromDstar);
-  PostData(16,flistLsCutsOther);
+  if(!fLightOutput)PostData(6,flistMCproperties);
+  if(!fLightOutput)PostData(7,flistNoCutsSignal);
+  if(!fLightOutput)PostData(8,flistNoCutsBack);
+  if(!fLightOutput)PostData(9,flistNoCutsFromB);
+  if(!fLightOutput)PostData(10,flistNoCutsFromDstar);
+  if(!fLightOutput)PostData(11,flistNoCutsOther);
+  if(!fLightOutput)PostData(12,flistLsCutsSignal);
+  if(!fLightOutput)PostData(13,flistLsCutsBack);
+  if(!fLightOutput)PostData(14,flistLsCutsFromB);
+  if(!fLightOutput)PostData(15,flistLsCutsFromDstar);
+  if(!fLightOutput)PostData(16,flistLsCutsOther);
   PostData(17,flistTghCutsSignal);
   PostData(18,flistTghCutsBack);
   PostData(19,flistTghCutsFromB);
   PostData(20,flistTghCutsFromDstar);
-  PostData(21,flistTghCutsOther);
+  if(!fLightOutput)PostData(21,flistTghCutsOther);
 
   return;
 
 }
-
-
-
-
 
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
@@ -5926,7 +5925,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     // MC primary vertex
     aodmcHeader->GetVertex(vtxTrue);
     // FILL HISTOS FOR D0 mesons, c quarks and D0 from B properties
-    FillHistoMCproperties(arrayMC);
+    if(!fLightOutput)FillHistoMCproperties(arrayMC);
   }
  
 
@@ -6331,16 +6330,16 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	
 	if(signallevel==1||signallevel==0){
 	  if(nprim!=0){
-	    FillAziHistos(d,flistNoCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tightnopid,okd0bartightnopid,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
+	    if(!fLightOutput)FillAziHistos(d,flistNoCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tightnopid,okd0bartightnopid,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
 	    FillAziHistos(d,flistTghCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tight,okd0bartight,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
-	    FillAziHistos(d,flistLsCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0loose,okd0barloose,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 	  
+	    if(!fLightOutput)FillAziHistos(d,flistLsCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0loose,okd0barloose,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 	  
 	  }
 	}
 	
       }
     }
     if(((isPeakD0&&okd0tight)||(isPeakD0bar&&okd0bartight))&&isinacceptance)fSignalTypeTghCuts->Fill(signallevel);
-    if(((isPeakD0&&okd0loose)||(isPeakD0bar&&okd0barloose))&&isinacceptance)fSignalTypeLsCuts->Fill(signallevel);
+    if(!fLightOutput){if(((isPeakD0&&okd0loose)||(isPeakD0bar&&okd0barloose))&&isinacceptance)fSignalTypeLsCuts->Fill(signallevel);};
   
    
     
@@ -6352,23 +6351,24 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //            CANDIDATE VARIABLES   
 
    
-    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
+if(!fLightOutput){
+if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
     else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
-    
+}    
 
     
     //LOOSE CUTS Case
     if(okd0loose||okd0barloose)fNentries->Fill(14);
-
+if(!fLightOutput){
     if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
-
+}
     //TIGHT CUTS Case
     if(okd0tight||okd0bartight){
       fNentries->Fill(7);
@@ -6411,20 +6411,20 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   // ####### histo for #AOD entries already posted
   PostData(1,fNentries);
   PostData(2,fSignalType);
-  PostData(3,fSignalTypeLsCuts);
+ if(!fLightOutput) PostData(3,fSignalTypeLsCuts);
   PostData(4,fSignalTypeTghCuts);
   PostData(5,fCounter);
-  PostData(6,flistMCproperties);
-  PostData(7,flistNoCutsSignal);
-  PostData(8,flistNoCutsBack);
-  PostData(9,flistNoCutsFromB);
-  PostData(10,flistNoCutsFromDstar);
-  PostData(11,flistNoCutsOther);
-  PostData(12,flistLsCutsSignal);
-  PostData(13,flistLsCutsBack);
-  PostData(14,flistLsCutsFromB);
-  PostData(15,flistLsCutsFromDstar);
-  PostData(16,flistLsCutsOther);
+ if(!fLightOutput) PostData(6,flistMCproperties);
+ if(!fLightOutput) PostData(7,flistNoCutsSignal);
+ if(!fLightOutput) PostData(8,flistNoCutsBack);
+ if(!fLightOutput) PostData(9,flistNoCutsFromB);
+ if(!fLightOutput) PostData(10,flistNoCutsFromDstar);
+ if(!fLightOutput) PostData(11,flistNoCutsOther);
+ if(!fLightOutput) PostData(12,flistLsCutsSignal);
+ if(!fLightOutput) PostData(13,flistLsCutsBack);
+ if(!fLightOutput) PostData(14,flistLsCutsFromB);
+ if(!fLightOutput) PostData(15,flistLsCutsFromDstar);
+ if(!fLightOutput) PostData(16,flistLsCutsOther);
   PostData(17,flistTghCutsSignal);
   PostData(18,flistTghCutsBack);
   PostData(19,flistTghCutsFromB);
@@ -7295,12 +7295,12 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     Double_t nLxy=d->NormalizedDecayLengthXY();
     Double_t cosPxy=TMath::Abs(d->CosPointingAngleXY());
     Double_t point[4]={invMassD0,pt,cosPxy,nLxy};
-    if(okD0){
+    if(okD0 && !fLightOutput){
       //      printf("Listname: %s, Here the histo : %p \n",namehist.Data(),((THnSparseF*)list->FindObject(str.Data())));
       ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
     }
     point[0]=invMassD0bar;
-    if(okD0bar){
+    if(okD0bar && !fLightOutput){
       ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
     }
   }
@@ -7506,6 +7506,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	     // a D0 coming from a c quark
 	     mcPartD0->PxPyPz(pxyzDaught);
 	     ptdaught=mcPartD0->Pt();
+            if(!fLightOutput){ 
 	     ((TH1F*)flistMCproperties->FindObject("hMCD0fromcPt"))->Fill(ptdaught);
 	     ((TH1F*)flistMCproperties->FindObject("hMCD0fromcEta"))->Fill(mcPartD0->Eta());
 	     ((TH1F*)flistMCproperties->FindObject("hMCD0fromcEnergy"))->Fill(mcPartD0->E());
@@ -7523,6 +7524,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	     ((TH2F*)flistMCproperties->FindObject("hMCD0cquarkAngleEnergy"))->Fill(mcPart->E(),cosOpenAngle);
 	   }
 	 }
+        }
        }
      }
      

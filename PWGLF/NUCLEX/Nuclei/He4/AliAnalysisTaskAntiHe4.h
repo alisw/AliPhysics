@@ -57,7 +57,7 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   Double_t              fBBParametersLightParticles[5];             //! Bethe Bloch paramters for light paritcles
   Double_t              fBBParametersNuclei[5];                     //! Bethe Bloch paramters for nuclei
   Bool_t                fMCtrue;                                    //! flag if real data or MC is processed
-  Bool_t                fTriggerFired[5];                           //! TriggerFired 0: MB | 1: CE | 2: SC | 3: EJE | 4: EGA
+  Bool_t                fTriggerFired[6];                           //! TriggerFired 0: INT7 | 1: MB | 2: CE | 3: SC | 4: EJE | 5: EGA
   //
   AliESDtrackCuts      *fESDtrackCuts;                              //  basic cut variables
   AliESDtrackCuts      *fESDtrackCutsSharp;                         //  sharp cut variables for final results

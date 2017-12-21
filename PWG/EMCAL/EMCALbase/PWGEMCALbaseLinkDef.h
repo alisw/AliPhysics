@@ -12,7 +12,6 @@
 #pragma link C++ class AliEmcalContainer+;
 #pragma link C++ class AliEmcalContainerUtils+;
 #pragma link C++ class AliEmcalDownscaleFactorsOCDB+;
-#pragma link C++ class AliEmcalAODFilterBitCuts+;
 #pragma link C++ class AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
@@ -31,4 +30,11 @@
 #pragma link C++ class std::pair<std::string, AliParticleContainer*>+;
 #pragma link C++ class std::map<std::string, AliClusterContainer*>+;
 #pragma link C++ class std::pair<std::string, AliClusterContainer*>+;
+
+#pragma link C++ namespace PWG;
+#pragma link C++ namespace PWG::EMCAL;
+#pragma link C++ class PWG::EMCAL::AliEmcalAODFilterBitCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalAODHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
 #endif

@@ -146,7 +146,12 @@ public:
     kNoTrackFilter = 0,   ///< No filter (all tracks passing)
     kCustomTrackFilter,   ///< Custom (user-defined) tracks
     kHybridTracks,        ///< Hybrid tracks
-    kTPCOnlyTracks        ///< TPC-only tracks
+    kTPCOnlyTracks,       ///< TPC-only tracks
+    kITSPureTracks,       ///< ITS stand-alone tracks
+		kHybridTracks2010wNoRefit,	///< Hybrid tracks using the 2010 definition including NoITSrefit tracks (ESD-only)
+		kHybridTracks2010woNoRefit,	///< Hybrid tracks using the 2010 definition excluding NoITSrefit tracks (ESD-only)
+		kHybridTracks2011wNoRefit,	///< Hybrid tracks using the 2011 definition including NoITSrefit tracks (ESD-only)
+		kHybridTracks2011woNoRefit 	///< Hybrid tracks using the 2011 definition excluding NoITSrefit tracks (ESD-only)
   };
 
   /**

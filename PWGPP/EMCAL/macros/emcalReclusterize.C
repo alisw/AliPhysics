@@ -1,6 +1,6 @@
 //--------------------------------------------------
 /// \file emcalReclusterize.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Example of execution macro to run the EMCAL clusterization task locally or on the grid (not plugin)
 ///
 /// Basic example macro to do EMCal reclusterization.

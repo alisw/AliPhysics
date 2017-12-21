@@ -29,7 +29,7 @@ class AliHFJetsContainer : public TNamed
 
   // Variables relevant for corrections
   static const Int_t fgkCFVars = 4;
-  enum CFVars { kCFMult = 0, kCFJetPt, kCFJetEta, kCFJetPhi };
+  enum CFVars { kCFCent = 0, kCFJetPt, kCFJetEta, kCFJetPhi };
   
   // Constructors
   // dummy container for daughter classes
@@ -101,7 +101,7 @@ class AliHFJetsContainer : public TNamed
   void SetStepNames(AliCFContainer* container); // sets analysis step names
   const char* GetStepTitle(CFSteps step); // gets analysis step names
   TH1* StepsRatio(CFSteps num, CFSteps denom, Int_t var1, Int_t var2=-1); // 1D/2D ratio between 2 steps 
-  ClassDef(AliHFJetsContainer, 2)    // containers for HF b-jets analysis
+  ClassDef(AliHFJetsContainer, 3)    // containers for HF b-jets analysis
 };
 
 #endif

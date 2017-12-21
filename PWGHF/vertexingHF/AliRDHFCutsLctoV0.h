@@ -67,6 +67,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
 
   Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd, AliAODEvent* aod=0x0) const;
+  Bool_t ApplySingleProtonCuts(AliAODTrack *trk, AliAODEvent* aod);
+  Bool_t ApplySingleK0Cuts(AliAODv0 *v0, AliAODEvent* aod);
+  Bool_t ApplyCandidateCuts(AliAODRecoDecayHF *rd, AliAODEvent* aod, Bool_t spdfirst);
 
   Int_t GetV0Type();
 
@@ -92,6 +95,10 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   { delete fV0daughtersCuts; fV0daughtersCuts = new AliESDtrackCuts(*v0daug); }
   virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
 
+  Double_t GetProtonEmissionAngleCMS(AliAODRecoDecayHF *d);
+  Double_t GetReSignedd0(AliAODRecoDecayHF *d);
+  void SetMagneticField(Double_t a){fBzkG = a;}
+
   virtual void PrintAll() const;
  protected:
 
@@ -107,11 +114,12 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t fLowPtCut;   /// low pT cut separation for proton identification
   Int_t   fExcludedCut; /// cut to be excluded (-1=none)
   Float_t *fMinCombinedProbability; //[fnPtBins] min value for combined PID probabilities
+  Double_t fBzkG; //Magnetic field for propagation
 
   //UShort_t fV0channel;
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctoV0,7);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,8);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
   /// \endcond
 };
 

@@ -1,4 +1,4 @@
-AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree() {
+AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree(Bool_t savecoords = kFALSE) {
 
   /* check analysis manager */
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -50,10 +50,13 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree() {
   task->SetVertexCut(50.0);
   task->SetDiscardPileupEventFlag(kFALSE);
   task->SetPrimaryDCASelectionFlag(kFALSE);
-  task->SetCalibrateTOFsignal(kTRUE);
+  task->SetCalibrateTOFsignal(kFALSE);
   task->SetComputeT0TOF(kTRUE);
   task->SetUseT0TOF(kFALSE);
   task->SetUseLHCClockPhase(kFALSE);
+  task->SetSaveCoordinates(savecoords);
+ 
+
   //  task->SetSpecificStorageParOffline("alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB");
   //  task->SetSpecificStorageRunParams("alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB");
 
@@ -66,13 +69,7 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree() {
   task->GetTOFcalib()->SetCorrectTExp(kFALSE);
 
   //setup resolution 
-  Double_t timeReso = 100.;
-
-  // setup TOF response 
-  //task->GetESDpid()->GetTOFResponse().SetTimeResolution(timeReso);
-
-  // setup TOF-T0 maker 
-  task->GetTOFT0maker()->SetTimeResolution(timeReso);
+  task->SetTimeResolution(60.);
 
   // setup track cuts 
   AliESDtrackCuts *trackCuts = task->GetTrackCuts();

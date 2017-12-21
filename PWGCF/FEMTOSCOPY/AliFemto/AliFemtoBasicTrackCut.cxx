@@ -105,7 +105,7 @@ AliFemtoString AliFemtoBasicTrackCut::Report()
   report += TString::Format("Particle DCA:\t%E - %E\n", fDCA[0], fDCA[1]);
   report += TString::Format("Number of tracks which passed:\t%ld  Number which failed:\t%ld\n", fNTracksPassed, fNTracksFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 TList *AliFemtoBasicTrackCut::ListSettings()

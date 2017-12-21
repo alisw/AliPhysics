@@ -30,7 +30,7 @@
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrBaseClass) ;
@@ -92,7 +92,7 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
 /// Put cluster/track or created particle object
 /// in the AODParticleCorrelation array.
 //______________________________________________________________________
-void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
+void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliCaloTrackParticle pc)
 {  
   if(!fOutputAODBranch)
   {
@@ -101,14 +101,14 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
   }
   
   Int_t i = fOutputAODBranch->GetEntriesFast();
-  //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
+  //new((*fOutputAODBranch)[i])  AliCaloTrackParticle(pc);
+  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliCaloTrackParticle")==0)
   {
-    new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+    new((*fOutputAODBranch)[i])  AliCaloTrackParticle(pc);
   }
-  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
+  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliCaloTrackParticleCorrelation")==0)
   {
-    new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
+    new((*fOutputAODBranch)[i])  AliCaloTrackParticleCorrelation(pc);
   }
   else
   {
@@ -218,7 +218,7 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 }
 
 //_____________________________________________________________________________________
-/// Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster 
+/// Given the cluster ID stored in AliCaloTrackParticle, get the originator cluster 
 /// and its index in the array. Input parameters:
 /// \param clusters: Full TObjarray of clusters.
 /// \param clId: Integer with the searched cluster ID.
@@ -724,7 +724,7 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   
   fNewAOD              = kFALSE ;
   fOutputAODName       = "CaloTrackCorr";
-  fOutputAODClassName  = "AliAODPWG4Particle";
+  fOutputAODClassName  = "AliCaloTrackParticle";
   fInputAODName        = "CaloTrackCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";

@@ -26,16 +26,16 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		AliAODConversionMother();
 
 		// Constructor for ESD to AOD Conversion
-		AliAODConversionMother(AliKFConversionMother *kf);
+		AliAODConversionMother(const AliKFConversionMother *kf);
 
 		//Constructor Decay Mother Particle
-		AliAODConversionMother(AliAODConversionPhoton *y1, AliAODConversionPhoton *y2);
+		AliAODConversionMother(const AliAODConversionPhoton *y1, const AliAODConversionPhoton *y2);
 		// Constructor Mother particle from one photon and one meson
-		AliAODConversionMother(AliAODConversionMother *meson, AliAODConversionPhoton *gamma);
+		AliAODConversionMother(const AliAODConversionMother *meson, const AliAODConversionPhoton *gamma);
 		// Constructor Mother particle from two mesons
-		AliAODConversionMother(AliAODConversionMother *meson1, AliAODConversionMother *meson2);
+		AliAODConversionMother(const AliAODConversionMother *meson1, const AliAODConversionMother *meson2);
     // Contructor Mother particle from V0 and photon
-    AliAODConversionMother(AliV0ParticleStrange *v0, AliAODConversionPhoton *gamma);
+    AliAODConversionMother(const AliV0ParticleStrange *v0, const AliAODConversionPhoton *gamma);
 
 		
 		//Destructor
@@ -44,9 +44,9 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		// MC
 
 		void SetMCLabel(Int_t i){fMCLabel=i;}
-		Int_t GetMCLabel(){return fMCLabel;}
-		TParticle *GetMCParticle(AliStack *fMCStack);
-		Bool_t IsTrueMeson(AliStack *fMCStack,Int_t pdgcode);
+		Int_t GetMCLabel() const {return fMCLabel;}
+        TParticle *GetMCParticle(AliMCEvent *mcEvent);
+        Bool_t IsTrueMeson(AliMCEvent *mcEvent,Int_t pdgcode);
 
 		///Set the Chi2 of reconstructed conversion gamma
 		void SetChi2(Float_t chi2) {fChi2 = chi2;}
@@ -91,9 +91,9 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		void SetWeight(Double_t weight) {fWeight=weight;}
 		Double_t GetWeight() const {return fWeight;}
 
-		Float_t CalculateDistanceBetweenPhotons(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2 , Double_t prodPoint[3]);
+		Float_t CalculateDistanceBetweenPhotons(const AliAODConversionPhoton* y1, const AliAODConversionPhoton* y2 , Double_t prodPoint[3]);
 		void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
-		void DetermineMesonQuality(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2);
+		void DetermineMesonQuality(const AliAODConversionPhoton* y1, const AliAODConversionPhoton* y2);
 		
 		void SetTrueMesonValue(Int_t trueMeson) {fTrueMeson = trueMeson;}
 		Int_t GetTrueMesonValue()const {return fTrueMeson;}

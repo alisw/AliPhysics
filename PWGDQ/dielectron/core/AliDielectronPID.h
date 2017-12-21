@@ -92,12 +92,16 @@ public:
   static void SetWidthCorrFunction(TH1 *fun) { fgFunWdthCorr=fun; }
   static void SetCentroidCorrFunctionITS(TH1 *fun) { fgFunCntrdCorrITS=fun; }
   static void SetWidthCorrFunctionITS(TH1 *fun) { fgFunWdthCorrITS=fun; }
+  static void SetCentroidCorrFunctionTOF(TH1 *fun) { fgFunCntrdCorrTOF=fun; }
+  static void SetWidthCorrFunctionTOF(TH1 *fun) { fgFunWdthCorrTOF=fun; }
 
   static Double_t GetEtaCorr(const AliVTrack *track);
   static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
   static Double_t GetWdthCorr(const AliVTrack *track)  { return (fgFunWdthCorr  ? GetPIDCorr(track,fgFunWdthCorr)  : 1.0); }
   static Double_t GetCntrdCorrITS(const AliVTrack *track) { return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); }
   static Double_t GetWdthCorrITS(const AliVTrack *track)  { return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS)  : 1.0); }
+  static Double_t GetCntrdCorrTOF(const AliVTrack *track) { return (fgFunCntrdCorrTOF ? GetPIDCorr(track,fgFunCntrdCorrTOF) : 0.0); }
+  static Double_t GetWdthCorrTOF(const AliVTrack *track)  { return (fgFunWdthCorrTOF  ? GetPIDCorr(track,fgFunWdthCorrTOF)  : 1.0); }
 
 private:
   enum {kNmaxPID=30};
@@ -132,6 +136,8 @@ private:
   static TH1    *fgFunWdthCorr;   //function for correction of electron sigma (width) in TPC
   static TH1    *fgFunCntrdCorrITS;  //function for correction of electron sigma (centroid) in ITS
   static TH1    *fgFunWdthCorrITS;   //function for correction of electron sigma (width) in ITS
+  static TH1    *fgFunCntrdCorrTOF;  //function for correction of electron sigma (centroid) in TOF
+  static TH1    *fgFunWdthCorrTOF;   //function for correction of electron sigma (width) in TOF
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
   static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);

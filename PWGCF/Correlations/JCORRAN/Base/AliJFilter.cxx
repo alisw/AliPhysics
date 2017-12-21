@@ -700,11 +700,11 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 
 		//PID TODO
 		double const * pid = track->PID();
-		ctrack->SetPID(AliJTrack::kElectronAliJ,pid[AliAODTrack::kElectron],AliJTrack::kTOF);
-		ctrack->SetPID(AliJTrack::kMuonAliJ,    pid[AliAODTrack::kMuon],    AliJTrack::kTOF);
-		ctrack->SetPID(AliJTrack::kPionAliJ,    pid[AliAODTrack::kPion],    AliJTrack::kTOF);
-		ctrack->SetPID(AliJTrack::kKaonAliJ,    pid[AliAODTrack::kKaon],    AliJTrack::kTOF);
-		ctrack->SetPID(AliJTrack::kProtonAliJ,  pid[AliAODTrack::kProton],  AliJTrack::kTOF);
+		//ctrack->SetPID(AliJTrack::kElectronAliJ,pid[AliAODTrack::kElectron],AliJTrack::kTOF);
+		//ctrack->SetPID(AliJTrack::kMuonAliJ,    pid[AliAODTrack::kMuon],    AliJTrack::kTOF);
+		//ctrack->SetPID(AliJTrack::kPionAliJ,    pid[AliAODTrack::kPion],    AliJTrack::kTOF);
+		//ctrack->SetPID(AliJTrack::kKaonAliJ,    pid[AliAODTrack::kKaon],    AliJTrack::kTOF);
+		//ctrack->SetPID(AliJTrack::kProtonAliJ,  pid[AliAODTrack::kProton],  AliJTrack::kTOF);
 		//TPC
 		ctrack->SetTPCnClust(track->GetTPCNcls());
 		ctrack->SetTPCdEdx( track->GetTPCsignal()  );

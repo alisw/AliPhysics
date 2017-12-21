@@ -5,7 +5,8 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
                                               Int_t triggerNames=AliVEvent::kINT7,
                                               Int_t collCands=AliVEvent::kINT7,
                                               Int_t eventCut=0,
-                                              Int_t wagonnr=0)
+                                              Int_t wagonnr=0,
+                                              Int_t centrality=4 /* 3=minbias, 2=50-80, 1=10-50, 0=00-10 */)
 {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
@@ -76,7 +77,7 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_caklein_LMEEPbPb_AOD(arrNames->At(i)->GetName(),hasMC,bESDANA);
+    AliDielectron *diel_low = Config_caklein_LMEEPbPb_AOD(arrNames->At(i)->GetName(),hasMC,bESDANA,centrality);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());

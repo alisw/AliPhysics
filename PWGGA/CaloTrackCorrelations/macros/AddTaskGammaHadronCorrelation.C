@@ -751,7 +751,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaGammaHadronCorr.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",tm));
@@ -806,7 +806,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   // Branch AOD settings
   ana->SetOutputAODName(Form("%s%sTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
   printf("***Out branch %s***\n",ana->GetOutputAODName().Data());
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
   
@@ -1326,7 +1326,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis( Bool_t simulation, Bool_t prin
   // Branch AOD settings
   
   ana->SetOutputAODName(Form("HadronTrigger_%s",kAnaGammaHadronCorr.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+  ana->SetOutputAODClassName("AliCaloTrackParticle"); // use if no correlation done
   
   //Set Histograms name tag, bins and ranges
   
@@ -1359,8 +1359,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
   ana->SwitchOffStudyBadClusters() ;
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOffFillAllCellTimeHisto() ;
   
   ana->SwitchOnFillAllTrackMatchingHistogram();

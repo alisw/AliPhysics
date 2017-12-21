@@ -254,7 +254,7 @@ void AddAnalysisTasks(Int_t merge){
       printf("Registering delta AOD file\n");
       mgr->RegisterExtraFile("AliAOD.Muons.root");
     }
-    AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, iMUONcopyAOD, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,VAR_MUONMCMODE); // others
+    AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, iMUONcopyAOD, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1500,VAR_MUONMCMODE,kFALSE,kFALSE,kTRUE,kFALSE); // others
     taskesdfilter->DisablePmdClusters();
     taskesdfilter->DisableCaloClusters();
     taskesdfilter->DisableCells();

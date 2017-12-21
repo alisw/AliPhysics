@@ -19,6 +19,7 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+#include <sstream>
 #include <utility>
 #include <cassert>
 
@@ -63,6 +64,9 @@ struct CutConfig_Event {
 
     Int_t trigger_selection = 0;
     Bool_t accept_bad_vertex = false;
+    Bool_t accept_only_physics = true;
+
+    UInt_t min_coll_size = 10;
 
     /// default constructor required to use default initialized members
     CutConfig_Event(){};
@@ -71,7 +75,77 @@ struct CutConfig_Event {
     /// these parameters.
     template <typename EventCutType>
     EventCutType* ConstructCut() const;
+
+    /// Build from config object
+    CutConfig_Event(AliFemtoConfigObject obj) {
+
+      obj.pop_all()
+        ("multiplicity", multiplicity)
+        ("centrality", centrality)
+        ("vertex_z", centrality)
+        ("ep_v0", EP_VZero)
+        ("trigger", trigger_selection)
+        ("accept_bad_vertex", accept_bad_vertex)
+        ("accept_only_physics", accept_only_physics)
+        ("min_collection_size", min_coll_size)
+        .WarnOfRemainingItems();
+    }
+
+    /// Construct a config object with this object's properties
+    operator AliFemtoConfigObject() const {
+        return AliFemtoConfigObject::BuildMap()
+          ("multiplicity", multiplicity)
+          ("centrality", centrality)
+          ("vertex_z", centrality)
+          ("ep_v0", EP_VZero)
+          ("trigger", trigger_selection)
+          ("accept_bad_vertex", accept_bad_vertex)
+          ("accept_only_physics", accept_only_physics)
+          ("min_collection_size", min_coll_size);
+    }
 };
+
+
+template<>
+AliFemtoEventCutCentrality*
+AliFemtoConfigObject::Construct() const
+{
+  CutConfig_Event cfg;
+  AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
+
+  cut->SetCentralityRange(cfg.centrality.first, cfg.centrality.second);
+  cut->SetZPosRange(cfg.vertex_z.first, cfg.vertex_z.second);
+  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
+  cut->SetTriggerSelection(cfg.trigger_selection);
+
+  return cut;
+}
+
+template<>
+AliFemtoBasicEventCut*
+AliFemtoConfigObject::Construct() const
+{
+  CutConfig_Event cfg;
+
+  // auto x = cfg.Construct<AliFemtoEventCutCentrality>("event");
+
+  // load("multiplicity", cfg.multiplicity);
+  // pop_and_load("vertex_z", cfg.vertex_z);
+  // pop_and_load("ep_v0", cfg.EP_VZero);
+  // pop_and_load("trigger_selection", cfg.trigger_selection);
+
+  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
+
+  cut->SetEventMult(cfg.multiplicity.first, cfg.multiplicity.second);
+  cut->SetVertZPos(cfg.vertex_z.first, cfg.vertex_z.second);
+  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
+  cut->SetTriggerSelection(cfg.trigger_selection);
+  // cut->SetAcceptBadVertex(cfg.accept_bad_vertex);
+  // cut->SetAcceptOnlyPhysics(cfg.accept_only_physics);
+
+  return cut;
+}
+
 
 /// Configuration for creating a particle cut specifically for usage
 /// with pion values.
@@ -83,14 +157,59 @@ struct CutConfig_Pion {
            , nSigma = {-3.0, 3.0}
            ;
 
+    Int_t charge = 1,
+          min_tpc_ncls = 80;
+
     Float_t max_impact_xy = 2.4
           , max_impact_z = 3.0
           , max_tpc_chi_ndof = 0.032
           , max_its_chi_ndof = 0.032
           ;
 
+    /// default constructor required to use default initialized members
     CutConfig_Pion(){};
 };
+
+
+template<>
+AliFemtoPairCutDetaDphi*
+AliFemtoConfigObject::Construct<AliFemtoPairCutDetaDphi>() const
+{
+  CutConfig_Pion cfg;
+
+
+  auto cut = new AliFemtoPairCutDetaDphi();
+  return cut;
+}
+
+template<>
+AliFemtoESDTrackCut*
+AliFemtoConfigObject::Construct() const
+{
+
+  CutConfig_Pion cfg;
+
+  AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
+  cut->SetCharge(cfg.charge);
+  cut->SetMass(PionMass);
+  cut->SetPt(cfg.pt.first, cfg.pt.second);
+  cut->SetEta(cfg.eta.first, cfg.eta.second);
+  cut->SetRapidity(cfg.eta.first, cfg.eta.second);
+  cut->SetMostProbablePion();
+//   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
+
+  /// Settings for TPC-Inner Runmode
+  cut->SetStatus(AliESDtrack::kTPCin);
+  cut->SetminTPCncls(cfg.min_tpc_ncls);
+  // cut->SetRemoveKinks(cfg.remove_kinks);
+  // cut->SetLabel(cfg.set_label);
+  cut->SetMaxTPCChiNdof(cfg.max_tpc_chi_ndof);
+  cut->SetMaxITSChiNdof(cfg.max_its_chi_ndof);
+  cut->SetMaxImpactXY(cfg.max_impact_xy);
+  cut->SetMaxImpactZ(cfg.max_impact_z);
+
+  return cut;
+}
 
 
 static const CutConfig_Event default_event;
@@ -119,19 +238,6 @@ const UInt_t default_pion_min_tpc_ncls = 80;
 const Bool_t default_pion_remove_kinks = kTRUE,
              default_pion_set_label = kFALSE;
 
-
-const Float_t default_event_EventMultMin = 0
-          , default_event_EventMultMax = 100000
-
-          , default_event_EventCentralityMin = 0
-          , default_event_EventCentralityMax = 90
-
-          , default_event_VertZPosMin = -10.0
-          , default_event_VertZPosMax = 10.0
-
-          , default_event_EPVZEROMin = -1000.0
-          , default_event_EPVZEROMax = 1000.0
-          ;
 
 const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
@@ -209,6 +315,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   , fGroupOutputObjects(params.group_output_objects)
   , fOutputSettings(params.output_settings)
   , fMCAnalysis(params.is_mc_analysis)
+  , fConfiguration()
 {
   SetVerboseMode(params.verbose);
   SetEnablePairMonitors(params.enable_pair_monitors);
@@ -232,6 +339,59 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   if (fPairCut == nullptr) {
     SetPairCut(BuildPairCut(cut_params));
   }
+
+  fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
+    type: 'AliFemtoAnalysisPionPion',
+    is_mc: %d,
+    event: {
+      multiplicity: %f:%f,
+      centrality: %f:%f,
+      zVertex: %f:%f,
+      trigger: %d,
+      accept_bad_vertex: %s,
+      accept_only_physics: %s,
+    },
+    track: {
+      pt: %f:%f,
+      eta: %f:%f,
+      DCA: %f:%f,
+      nSigma: %f:%f,
+      impact_xy: %f,
+      impact_z: %f,
+      min_tpc_ncls: %d,
+      remove_kinks: %s,
+      set_label: %s,
+    },
+    pair: {
+      max_share_quality: %f,
+      max_share_fraction: %f,
+      delta_eta_min: %f,
+      delta_phi_min: %f,
+      phi_star_radius: %f,
+      tpc_only: %d,
+    },
+  })#",
+    fMCAnalysis,
+    cut_params.event_MultMin, cut_params.event_MultMax,
+    cut_params.event_CentralityMin, cut_params.event_CentralityMax,
+    cut_params.event_VertexZMin, cut_params.event_VertexZMax,
+    cut_params.event_TriggerSelection,
+    (cut_params.event_AcceptBadVertex ? "true" : "false"),
+    (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
+
+    cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
+    cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
+    cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
+    cut_params.pion_1_NSigmaMin, cut_params.pion_1_NSigmaMax,
+    cut_params.pion_1_max_impact_xy, cut_params.pion_1_max_impact_z,
+    cut_params.pion_1_min_tpc_ncls,
+    (cut_params.pion_1_remove_kinks ? "true" : "false"),
+    (cut_params.pion_1_set_label ? "true" : "false"),
+
+    cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
+    cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
+    cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
+  ).Data());
 }
 
 
@@ -282,6 +442,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_event.EP_VZero.second
   , default_event.trigger_selection
   , default_event.accept_bad_vertex
+  , default_event.accept_only_physics
 
     // Pion 1
   , default_pion.pt.first
@@ -340,7 +501,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   };
 
   // sanity checks
-  assert(params.event_MultMin == default_event_EventMultMin);
+  assert(params.event_MultMin == default_event.multiplicity.first);
   assert(params.pion_1_PtMin == default_pion_PtMin);
   assert(params.pion_2_PtMin == default_pion_PtMin);
   assert(params.pair_TPCOnly == default_pair_TPCOnly);
@@ -388,7 +549,6 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   return cut;
 }
 
-
 AliFemtoTrackCut*
 AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
 {
@@ -406,6 +566,8 @@ AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
 //   cut->SetPt(p.pion_2_PtMin, p.pion_2_PtMax);
 //   cut->SetRapidity(p.pion_2_EtaMin, p.pion_2_EtaMax);
 //   cut->SetDCA(p.pion_2_DCAMin, p.pion_2_DCAMax);
+  // AliFemtoConfigObject *cfg;
+  // auto cut = cfg->Construct<AliFemtoESDTrackCut>();
 
   AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
   cut->SetCharge(charge);
@@ -460,7 +622,7 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   cut->SetTriggerSelection(p.event_TriggerSelection);
 
 //   if (!fMCAnalysis) {
-//     cut->SetAcceptOnlyPhysics(kTRUE);
+//  cut->SetAcceptOnlyPhysics(p.event_AcceptOnlyPhysics);
 //   }
 
   return cut;
@@ -619,6 +781,8 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     delete setting_list;
     output->Add(new TObjString(settings));
   }
+
+  output->Add(new AliFemtoConfigObject(fConfiguration));
   return outputlist;
 }
 

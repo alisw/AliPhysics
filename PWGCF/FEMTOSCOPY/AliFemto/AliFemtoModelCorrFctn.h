@@ -39,6 +39,8 @@ public:
 
   virtual AliFemtoModelCorrFctn* Clone();
 
+    void SetFillkT(bool fillkT){fFillkT = fillkT;}
+    
   Double_t GetQinvTrue(AliFemtoPair*);
   
   //Special MC analysis for K selected by PDG code -->
@@ -63,6 +65,12 @@ private:
   //Special MC analysis for K selected by PDG code -->
   Bool_t fKaonPDG;
 
+    bool fFillkT;
+    int fNbbPairs = 21;
+    TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
+    double GetParentsKt(AliFemtoPair *pair);
+    int GetPairNumber(AliFemtoPair *pair); // returns pair code
+    
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoModelCorrFctn, 1);

@@ -9,7 +9,7 @@
 
 #include <Riostream.h>
 
-#include "AliStack.h"
+//#include "AliStack.h" // old way to read MC
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 
@@ -97,10 +97,11 @@ Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int
 //
 
    AliMCEvent    *mc      = rsnEvent->GetRefMCESD();
-   AliStack      *stack   = mc->Stack();
+   //AliStack      *stack   = mc->Stack(); // old way to read MC
    AliMCParticle *mother  = (AliMCParticle *)mc->GetTrack(ipart);
    TParticle     *motherP = mother->Particle();
-   Int_t          ntracks = stack->GetNtrack();
+   Int_t          ntracks = mc->GetNumberOfTracks();
+   // Int_t          ntracks = stack->GetNtrack(); // old way to read MC
 
    // check PDG code and exit if it is wrong
    if (TMath::Abs(motherP->GetPdgCode()) != fDef->GetMotherPDG()) return kFALSE;

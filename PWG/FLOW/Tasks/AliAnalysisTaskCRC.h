@@ -28,6 +28,7 @@
 
 class TString;
 class TList;
+class TProfile2D;
 class AliFlowEventSimple;
 class AliFlowEvent;
 class AliFlowAnalysisCRC;
@@ -39,11 +40,11 @@ public:
   AliAnalysisTaskCRC();
   AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights=kFALSE);
   virtual ~AliAnalysisTaskCRC(){};
-  
+
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  
+
   // Common:
   void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};
@@ -91,7 +92,7 @@ public:
   Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
   void SetWeightsList(TList* const kList) {this->fWeightsList = (TList*)kList->Clone();};
   TList* GetWeightsList() const {return this->fWeightsList;};
-  
+
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
   Int_t GetnBinsMult() const {return this->fnBinsMult;};
@@ -99,7 +100,7 @@ public:
   Double_t GetMinMult() const {return this->fMinMult;};
   void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
   Double_t GetMaxMult() const {return this->fMaxMult;};
-  
+
   // Particle weights:
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -121,32 +122,34 @@ public:
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
   void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
   Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
-  
+  void SetCutMultiplicityOutliers(Bool_t const uPhiEtaW) {this->fCutMultiplicityOutliers = uPhiEtaW;};
+  Bool_t GetCutMultiplicityOutliers() const {return this->fCutMultiplicityOutliers;};
+
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
   // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]
   void SetnBinsForCorrelations(Int_t const nb) {this->fnBinsForCorrelations = nb;};
   Int_t GetnBinsForCorrelations() const {return this->fnBinsForCorrelations;};
-  
+
   // Boundaries for distributions of correlations:
   void SetMinValueOfCorrelation(Int_t const ci, Double_t const minValue) {this->fMinValueOfCorrelation[ci] = minValue;};
   Double_t GetMinValueOfCorrelation(Int_t ci) const {return this->fMinValueOfCorrelation[ci];};
   void SetMaxValueOfCorrelation(Int_t const ci, Double_t const maxValue) {this->fMaxValueOfCorrelation[ci] = maxValue;};
   Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};
-  
+
   // min and max values of correlation products:
   void SetMinValueOfCorrelationProduct(Int_t const cpi, Double_t const minValue) {this->fMinValueOfCorrelationProduct[cpi] = minValue;};
   Double_t GetMinValueOfCorrelationProduct(Int_t cpi) const {return this->fMinValueOfCorrelationProduct[cpi];};
   void SetMaxValueOfCorrelationProduct(Int_t const cpi, Double_t const maxValue) {this->fMaxValueOfCorrelationProduct[cpi] = maxValue;};
   Double_t GetMaxValueOfCorrelationProduct(Int_t cpi) const {return this->fMaxValueOfCorrelationProduct[cpi];};
-  
+
   // min and max values of QvectorTerms:
   void SetMinValueOfQvectorTerms(Int_t const qvti, Double_t const minValue) {this->fMinValueOfQvectorTerms[qvti] = minValue;};
   Double_t GetMinValueOfQvectorTerms(Int_t qvti) const {return this->fMinValueOfQvectorTerms[qvti];};
   void SetMaxValueOfQvectorTerms(Int_t const qvti, Double_t const maxValue) {this->fMaxValueOfQvectorTerms[qvti] = maxValue;};
   Double_t GetMaxValueOfQvectorTerms(Int_t qvti) const {return this->fMaxValueOfQvectorTerms[qvti];};
-  
+
   // bootstrap:
   void SetUseBootstrap(Bool_t const ub) {this->fUseBootstrap = ub;};
   Bool_t GetUseBootstrap() const {return this->fUseBootstrap;};
@@ -154,7 +157,7 @@ public:
   Bool_t GetUseBootstrapVsM() const {return this->fUseBootstrapVsM;};
   void SetnSubsamples(Int_t const ns) {this->fnSubsamples = ns;};
   Int_t GetnSubsamples() const {return this->fnSubsamples;};
-  
+
   // Charge-Rapidity Correlations:
   void SetCalculateCRC(Bool_t const cCRC) {this->fCalculateCRC = cCRC;};
   Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
@@ -186,6 +189,8 @@ public:
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
   Bool_t GetUseZDC() const {return this->fUseZDC;};
+  void SetRemoveSplitMergedTracks(Bool_t const uPhiEtaW) {this->fRemoveSplitMergedTracks = uPhiEtaW;};
+  Bool_t GetRemoveSplitMergedTracks() const {return this->fRemoveSplitMergedTracks;};
   void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
   Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
   void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
@@ -207,6 +212,7 @@ public:
   TList* GetZDCESEList() const {return this->fZDCESEList;};
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = (TList*)wlist->Clone();}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = (TList*)wlist->Clone();}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = (TList*)wlist->Clone();}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
   void SetCRCZDCResList(TList* const wlist) {this->fCRCZDCResList = (TList*)wlist->Clone();}
@@ -231,6 +237,8 @@ public:
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = B;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -250,11 +258,13 @@ public:
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
-  
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
+  void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
+
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
   AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
-  
+
   AliFlowEvent *fEvent;         // the input event
   AliFlowAnalysisCRC *fQC;            // CRC object
   TList *fListHistos;                 // collection of output
@@ -288,15 +298,16 @@ private:
   // Particle weights:
   Bool_t fUseParticleWeights;         // use any particle weights
   Bool_t fUsePhiWeights;              // use phi weights
-  Bool_t fUsePhiEtaCuts;              // use phi,eta cuts (for NUA)
   Bool_t fUsePtWeights;               // use pt weights
   Bool_t fUseEtaWeights;              // use eta weights
   Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)
   Bool_t fUsePhiEtaWeights;           // use phi,eta weights
   Bool_t fUsePhiEtaWeightsChDep;      // use phi,eta weights ch dep
   Bool_t fUsePhiEtaWeightsVtxDep;      // use phi,eta weights vtx dep
+  Bool_t fUsePhiEtaCuts;              // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;        // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
+  Bool_t fCutMultiplicityOutliers;    // cut on reference multiplicity
   TList *fWeightsList;                // list with weights
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
@@ -329,6 +340,7 @@ private:
   Bool_t fCalculateFlowVZ;
   Bool_t fUseVZERO;
   Bool_t fUseZDC;
+  Bool_t fRemoveSplitMergedTracks;
   Bool_t fRecenterZDC;
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
@@ -349,10 +361,14 @@ private:
   TString fCorrWeight;
   TList *fQVecList;       // list with weights
   TList *fCRCZDCCalibList; // ZDC calibration
+  TList *fCRCZDC2DCutList; // ZDC calibration
   TList *fCRCVZEROCalibList; // ZDC calibration
   TList *fCRCZDCResList; // ZDC rescaling
   TList *fZDCESEList;       // list with weights
   TH1D* fCenWeightsHist;
+  TProfile2D *fRefMultRbRPro;
+  TProfile2D *fAvEZDCCRbRPro;
+  TProfile2D *fAvEZDCARbRPro;
   TH1D* fPtWeightsHist[10];
   TH1D* fEtaWeightsHist[10][21][2];
   TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
@@ -360,24 +376,15 @@ private:
   TH2F* fZDCESESpecWeightsHist[5];
   TH2D* fPhiExclZoneHist;
   Bool_t fQAZDCCuts;
+  Bool_t fUseTracklets;
+  Bool_t fStoreExtraHistoForSubSampling;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
-  
-  ClassDef(AliAnalysisTaskCRC,11);
+
+  ClassDef(AliAnalysisTaskCRC,14);
 };
 
 //================================================================================================================
 
 #endif
-
-
-
-
-
-
-
-
-
-
-

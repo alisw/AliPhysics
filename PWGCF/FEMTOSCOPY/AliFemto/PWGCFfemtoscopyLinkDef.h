@@ -4,12 +4,19 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliFemtoBaryoniaAnalysis+;
+#pragma link C++ class AliFemtoTrio+;
+#pragma link C++ class AliFemtoTrioCut+;
+#pragma link C++ class AliFemtoTrioMinvFctn+;
 #pragma link C++ class AliFemtoAnalysis+;
 #pragma link C++ class AliFemtoLikeSignAnalysis+;
 #pragma link C++ class AliFemtoVertexAnalysis+;
 #pragma link C++ class AliFemtoVertexMultAnalysis+;
 #pragma link C++ class AliFemtoAnalysisAzimuthal+;
 #pragma link C++ class AliFemtoSimpleAnalysis+;
+#pragma link C++ class AliFemtoEventAnalysis+;
+#pragma link C++ class AliFemtoSpatialSeparationFunction+;
+#pragma link C++ class AliFemtoAngularSpatialSeparationFunction+;
 #pragma link C++ class AliFemtoAnalysisReactionPlane+;
 #pragma link C++ class AliFemtoEventCut+;
 #pragma link C++ class AliFemtoSphericityEventCut+;

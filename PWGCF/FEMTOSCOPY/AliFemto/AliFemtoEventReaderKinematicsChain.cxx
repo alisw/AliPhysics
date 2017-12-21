@@ -252,49 +252,47 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   for (int i=0;i<nofTracks;i++)	
     {	
      
-
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();
-
-      	  //getting next track
+      //getting next track
       TParticle *kinetrack= fStack->Particle(i);
 
       if(fReadOnlyPrimaries)
 	{
 	  //take only primaries
-	  if(abs(kinetrack->GetPdgCode())!=3122 && !fStack->IsPhysicalPrimary(i)) { delete trackCopy; continue;}
+	  if(!fStack->IsPhysicalPrimary(i)) {  continue;}
 	}
       else if(fReadPrimariesSecWeakMaterial)
 	{
 	  //take only primaries
-	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) { delete trackCopy; continue;}
+	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {  continue;}
 	}
 
-      
-	if(fIsMisalignment){
-       TParticle *motherParticle1;
-       Int_t motherIndex1 = kinetrack->GetFirstMother();
-       bool deleted_kinetrack = false;
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
+       
+      if(fIsMisalignment){
+	TParticle *motherParticle1;
+	Int_t motherIndex1 = kinetrack->GetFirstMother();
+	bool deleted_kinetrack = false;
 
 
-       if((kinetrack->GetPdgCode()==3122)|| (kinetrack->GetPdgCode()==-3122))
-       {
+	if((kinetrack->GetPdgCode()==3122)|| (kinetrack->GetPdgCode()==-3122))
+	  {
             if (motherIndex1 != -1){
              
-            motherParticle1 = fStack->Particle(motherIndex1);
-	        if(motherParticle1->GetPdgCode()==kinetrack->GetPdgCode())
-             {
-                delete trackCopy;
-                 deleted_kinetrack = true;
-              continue;
+	      motherParticle1 = fStack->Particle(motherIndex1);
+	      if(motherParticle1->GetPdgCode()==kinetrack->GetPdgCode())
+		{
+		  delete trackCopy;
+		  deleted_kinetrack = true;
+		  continue;
             
-             }
+		}
 
-           //   cout << "mother after: "<< motherParticle1->GetPdgCode()<< "kinetrack after: "<< kinetrack->GetPdgCode()<<endl;
+	      //   cout << "mother after: "<< motherParticle1->GetPdgCode()<< "kinetrack after: "<< kinetrack->GetPdgCode()<<endl;
 
-                }
-       }
+	    }
+	  }
 
-	}
+      }
 
 
 
@@ -305,7 +303,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
 
 	  //Checking mother
-	
+	  /*
 	  Int_t motherIndex = kinetrack->GetFirstMother();
 	  if (motherIndex != -1){
 	    TParticle *motherParticle = fStack->Particle(motherIndex);
@@ -332,8 +330,35 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 					continue;
 				}
 		}
+		}*/
+
+	  //checking distance from the interaction point
+	  double vtx = kinetrack->Vx();
+	  double vty = kinetrack->Vy();
+	
+	  if(sqrt(vtx*vtx+vty*vty)<0.1){
+	    delete trackCopy;
+	    continue;
 	  }
 
+     // if(sqrt(vtx*vtx+vty*vty)<0.1){
+     // 	if (motherIndex1 != -1){
+     // 	  TParticle *motherParticle2 = fStack->Particle(motherIndex1);
+     // 	  cout<<"PASS Particle "<<i<<" PDG: "<<kinetrack->GetPdgCode()<<" Mother: "<<motherParticle2->GetPdgCode()<<" "<<kinetrack->Vx()<<" "<<kinetrack->Vy()<<" "<<kinetrack->Vz()<<endl;
+     // 	}
+     // 	else
+     // 	  cout<<"PASS Particle "<<i<<" PDG: "<<kinetrack->GetPdgCode()<<" Mother: "<<"-1"<<" "<<kinetrack->Vx()<<" "<<kinetrack->Vy()<<" "<<kinetrack->Vz()<<endl;
+     //  }
+     //  else{
+     // 	if (motherIndex1 != -1){
+     // 	  TParticle *motherParticle2 = fStack->Particle(motherIndex1);
+     // 	  cout<<"FAIL Particle "<<i<<" PDG: "<<kinetrack->GetPdgCode()<<" Mother: "<<motherParticle2->GetPdgCode()<<" "<<kinetrack->Vx()<<" "<<kinetrack->Vy()<<" "<<kinetrack->Vz()<<endl;
+     // 	}
+     // 	else
+     // 	  cout<<"FAIL Particle "<<i<<" PDG: "<<kinetrack->GetPdgCode()<<" Mother: "<<"-1"<<" "<<kinetrack->Vx()<<" "<<kinetrack->Vy()<<" "<<kinetrack->Vz()<<endl;
+     //  }	
+
+	  
 	}
 
       //setting multiplicity

@@ -10,6 +10,7 @@ using std::endl;
 
 #include <TClonesArray.h>
 #include <TIterator.h>
+#include <TList.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -306,6 +307,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s+", trackClass.Data()) );
+      FillTrackHistograms(track, Form("%s", trackClass.Data()) );
    }
    TIter nextNegTrack(&fNegTracks);
    for(Int_t i=0;i<fNegTracks.GetEntries();++i) {
@@ -314,6 +316,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s-", trackClass.Data()) );
+      FillTrackHistograms(track, Form("%s", trackClass.Data()) );
       //cout << "Neg track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
    }
 }
@@ -378,7 +381,6 @@ void AliReducedAnalysisJpsi2eeMult::RunTrackSelection() {
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
@@ -607,7 +609,6 @@ void AliReducedAnalysisJpsi2eeMult::FillMCTruthHistograms() {
   AliReducedTrackInfo* leg2=0x0;
   TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  Float_t nsigma = 0.;
   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;

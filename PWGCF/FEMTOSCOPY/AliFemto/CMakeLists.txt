@@ -14,7 +14,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliFemtoBaryoniaAnalysis.cxx
+  AliFemtoTrio.cxx
+  AliFemtoTrioCut.cxx
+  AliFemtoTrioMinvFctn.cxx
   AliFemtoSimpleAnalysis.cxx
+  AliFemtoEventAnalysis.cxx
+  AliFemtoSpatialSeparationFunction.cxx
+  AliFemtoAngularSpatialSeparationFunction.cxx
   AliFemtoLikeSignAnalysis.cxx
   AliFemtoVertexAnalysis.cxx
   AliFemtoVertexMultAnalysis.cxx

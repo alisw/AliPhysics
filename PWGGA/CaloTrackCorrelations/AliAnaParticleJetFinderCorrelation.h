@@ -47,7 +47,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void     MakeAnalysisFillHistograms() ;
   
   // To access non standard branch
-  Int_t    SelectJet(AliAODPWG4Particle * particle, TClonesArray * aodRecJets) ;
+  Int_t    SelectJet(AliCaloTrackParticle * particle, TClonesArray * aodRecJets) ;
     
   void     Print(const Option_t * opt)           const;
   

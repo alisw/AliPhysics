@@ -44,7 +44,8 @@ public:
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}
   void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; } //same as MC, but bypass event checks
   void SetPi0WeightParameters(TArrayD * ar) ;
-  void SetDustanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}
+  void SetDistanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}
+  void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}
 
 protected:
   void    FillMCHistos() ;
@@ -88,8 +89,10 @@ private:
   Float_t fPhimax ;             //covered by
   Float_t fPhimin ;             //full calorimeter
   Float_t fMinBCDistance;       //minimal distance to bad channel
+  Float_t fTimeCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //Parameters to calculate weights
   //
+  Double_t fRP;           //Reaction plane orientation
   Double_t fCentrality;
   Int_t fCentBin ;
   Bool_t fIsMB ;          //which trigger to use
@@ -97,6 +100,6 @@ private:
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   TH2I * fPHOSBadMap[6] ; 
     
-  ClassDef(AliAnalysisTaskTaggedPhotons, 4);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 5);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONS_H

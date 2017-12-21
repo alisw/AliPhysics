@@ -218,7 +218,9 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const Float_t dEta = fabs(CalculateDEta(p1, p2)),
                 dPhi = fabs(CalculateDPhiStar(p1, charge1, p2, charge2, fR, fCurrentMagneticField));
 
-  bool passes;
+  // Initialize to false - so if fCutTechnique is invalid, all pairs
+  // will fail and user will eventually find this comment.
+  bool passes = false;
   switch (fCutTechnique) {
   case Simple:
     passes = PassesSimple(dEta, dPhi);
@@ -269,7 +271,6 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
   const Double_t radius_in_meters)
 {
   const double PI_OVER_2 = TMath::Pi() / 2.0,
-              PI_TIMES_2 = TMath::Pi() * 2.0,
                RADIUS_CM = radius_in_meters * 100.0;
 
   const double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),

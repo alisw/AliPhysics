@@ -1,11 +1,29 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
+
+
+// PHOS_Run2
+#pragma link C++ class AliAnalysisTaskPHOSObjectCreator+;
+#pragma link C++ class AliPHOSEventCuts+;
+#pragma link C++ class AliPHOSClusterCuts+;
+#pragma link C++ class AliPHOSTriggerHelper+;
+#pragma link C++ class AliPHOSJetJetMC+;
+#pragma link C++ class AliAnalysisTaskPHOSPi0EtaToGammaGamma+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbeddedDiffObjectCreator+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbedding+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbeddingEfficiency+;
+
+
+// PHOS_pp_8TeV_2012 
+#pragma link C++ class AliCaloPhoton+;
+#pragma link C++ class AliAnalysisTaskPHOSTrigPi0+;
+#pragma link C++ class AliCaloTriggerSimulator+;
 
 // PHOS_pp_pi0
 #pragma link C++ class AliCaloPhoton+;
@@ -38,6 +56,10 @@
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
 #pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
 
+// PHOS_Run2embedding
+#pragma link C++ class AliPHOSEmbeddingRun2+;
+#pragma link C++ class AliPHOSEventCounter+;
+
 //PHOS_GAFlow
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
 #pragma link C++ class AliAnalysisTaskThermalGAFlowMC+;
@@ -65,6 +87,8 @@
 #pragma link C++ class AliCaloClusterInfo+;
 #pragma link C++ class AliPHOSpPbPi0Header+;
 #pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
+#pragma link C++ class AliAnalysisTaskPHOSCluster+;
+#pragma link C++ class AliCaloClusterContent+;
 
 //PHOS_Correlations
 #pragma link C++ class AliPHOSCorrelations+;
@@ -75,5 +99,22 @@
 
 //CPV performance
 #pragma link C++ class AliAnalysisTaskCPV+;
+
+// LHC16_pp
+#pragma link C++ class AliPP13ClusterCuts+;
+#pragma link C++ class AliPP13DetectorHistogram+;
+#pragma link C++ class AliPP13PhotonSelection+;
+#pragma link C++ class AliPP13PhotonSpectrumSelection+;
+#pragma link C++ class AliPP13QualityPhotonSelection+;
+#pragma link C++ class AliPP13ParticlesHistogram+;
+#pragma link C++ class AliPP13PhotonTimecutStudySelection+;
+#pragma link C++ class AliPP13PhysPhotonSelection+;
+#pragma link C++ class AliPP13TagAndProbeSelection+;
+#pragma link C++ class AliPP13MesonSelectionMC+;
+#pragma link C++ class AliPP13PythiaInfoSelection+;
+#pragma link C++ class AliPP13PhysPhotonSelectionMC+;
+#pragma link C++ class AliPP13NonlinearityScanSelection+;
+#pragma link C++ class AliPP13MixingSample+;
+#pragma link C++ class AliAnalysisTaskPP13+;
 
 #endif

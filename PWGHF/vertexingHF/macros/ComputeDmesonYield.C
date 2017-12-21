@@ -30,13 +30,15 @@ TString centrality="0-10";
 const Int_t nPtBins=9;
 Double_t binlim[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.,16.,24.};
 Int_t method=2;    // 1=fc; 2=Nb --> default=2
-Int_t optErrFD=2;  // 0=from histos, not combined; 
+Int_t optErrFD=1;  // 0=from histos, not combined; 
                    // 1= from ntuple with Rbc hypo, not combining Nb and fc; 
                    // 2= from ntuple with Rbc hypo, combining Nb and fc
                    // --> default=2; change to 1 only to produce files for D-meson ratios
 Float_t centHypoFdOverPr=2.;
 Float_t lowHypoFdOverPr=1.;
 Float_t highHypoFdOverPr=3.;
+Double_t normToCsec=1.; // put here the trigger cross section in ub; if ==1 per-event yield are computed
+TString collSyst="Pb-Pb";
 
 
 // Graphical styles
@@ -52,30 +54,32 @@ void ComputeDmesonYield(){
 
   TString mesName="Dzero";
   Int_t mesCode=1;
-  Double_t brat=0.0388;
+  Double_t brat=0.0393;
   TString mesSymb="D^{0}";
-  Float_t ptForExtrap=16.;
+  Float_t ptForExtrap=36.;
   if(mesonSpecie==kDplus){
     mesName="Dplus";
     mesCode=2;
-    brat=0.0913;
+    brat=0.0946;
     mesSymb="D^{+}";
     ptForExtrap=24.;
  }else if(mesonSpecie==kDstar){
     mesName="Dstar";
     mesCode=3;
-    brat=0.0388*0.677;
+    brat=0.0393*0.677;
     mesSymb="D^{*+}";
     ptForExtrap=24.;
   }else if(mesonSpecie==kDs){
     mesName="Ds";
     mesCode=4;
-    brat=0.0224;
+    brat=0.0227;
     mesSymb="D_{s}^{+}";
-    Float_t centHypoFdOverPr=1.;
-    Float_t lowHypoFdOverPr=1./3.;
-    Float_t highHypoFdOverPr=3.;
-    ptForExtrap=16.;
+    if(collSyst=="Pb-Pb"){
+     centHypoFdOverPr=1.;
+     lowHypoFdOverPr=1./3.;
+     highHypoFdOverPr=3.;
+    }
+    ptForExtrap=12.;
   }
 
   TString centralityNoDash=centrality.Data();
@@ -121,18 +125,21 @@ void ComputeDmesonYield(){
   // pp reference
 
   TFile *filPP=new TFile(filnamPPref.Data());
-  TH1D *hppRef = (TH1D*)filPP->Get("hReference");//fhScaledData");
+  TH1D *hppRef = (TH1D*)filPP->Get("hReference");
+  if(!hppRef) hppRef = (TH1D*)filPP->Get("fhScaledData");
   TH1D *hppRefSystData = (TH1D*)filPP->Get("fhScaledSystData"); 
 
   Float_t relsysterrLowDatapp[nPtBins],relsysterrHiDatapp[nPtBins];
-  TGraphAsymmErrors* gppRefSyst=(TGraphAsymmErrors*)filPP->Get("gReferenceSyst"); 
-  for(Int_t i=0; i<gppRefSyst->GetN(); i++){
-    Double_t x,y;
-    gppRefSyst->GetPoint(i,x,y);
-    Int_t hBin=TMath::BinarySearch(nPtBins,binlim,x);
-    if(x>ptForExtrap){
-      relsysterrLowDatapp[hBin]=gppRefSyst->GetErrorYlow(i)/y;
-      relsysterrHiDatapp[hBin]=gppRefSyst->GetErrorYhigh(i)/y;
+  TGraphAsymmErrors* gppRefSyst=(TGraphAsymmErrors*)filPP->Get("gReferenceSyst");
+  if(gppRefSyst){
+    for(Int_t i=0; i<gppRefSyst->GetN(); i++){
+      Double_t x,y;
+      gppRefSyst->GetPoint(i,x,y);
+      Int_t hBin=TMath::BinarySearch(nPtBins,binlim,x);
+      if(x>ptForExtrap){
+	relsysterrLowDatapp[hBin]=gppRefSyst->GetErrorYlow(i)/y;
+	relsysterrHiDatapp[hBin]=gppRefSyst->GetErrorYhigh(i)/y;
+      }
     }
   }
   Float_t relstaterrpp[nPtBins];
@@ -189,7 +196,7 @@ void ComputeDmesonYield(){
 
   // A-A events
 							  
-  printf("--- Pb-Pb events ---\n");
+  printf("--- %s events ---\n",collSyst.Data());
 
   TFile *filChi= new TFile(filnamChi.Data());
   TH1D *hSpC = (TH1D*)filChi->Get("hRECpt");
@@ -200,11 +207,21 @@ void ComputeDmesonYield(){
     printf("-- Relative stat errors AA from yield: Bin %d(%d) pt=%f Err %f\n",ib,hBin,hSpC->GetBinCenter(hBin),relstaterrPbPb[ib]);
   }
 
-  AliHFSystErr *systematicsABcent = new AliHFSystErr();
-  systematicsABcent->SetRunNumber(11);
-  systematicsABcent->SetCollisionType(1);
-  systematicsABcent->SetCentrality(centralityNoDash.Data());
-  systematicsABcent->Init(mesCode);
+  AliHFSystErr *systematicsABcent =(AliHFSystErr*)filChi->Get("AliHFSystErr");
+  if(!systematicsABcent){
+    printf("AliHFSysstErr generated on the fly\n");
+    systematicsABcent=new AliHFSystErr("AliHFSystErr","on the fly");
+    if(collSyst=="p-Pb"){
+      systematicsABcent->SetCollisionType(2);
+      systematicsABcent->SetRunNumber(16);
+    }else{
+      systematicsABcent->SetCollisionType(1);
+    }
+    systematicsABcent->SetCentrality(centralityNoDash.Data());
+    systematicsABcent->Init(mesCode);
+  }else{
+    printf("AliHFSystErr read from HFPtSpectrum output\n");
+  }
   TH1D* heffC=(TH1D*)filChi->Get("hDirectEffpt");
 
 
@@ -236,6 +253,7 @@ void ComputeDmesonYield(){
     
     printf("-- Relative stat errors AA from RAA-PP: Bin %d(%f)---%d Err %f\n",ib,0.5*(binlim[ib]+binlim[ib+1]),hBin,relstaterrPbPb2[ib]);
   }
+  AliHFSystErr *systematicsPP =(AliHFSystErr*)filCnt->Get("AliHFSystErrPP");
 
   TNtuple* ntC=(TNtuple*)filCnt->Get("ntupleRAB");
   Float_t pt,TAB,sigmaPP,invyieldAB,RABCharm,RABBeauty;
@@ -299,18 +317,19 @@ void ComputeDmesonYield(){
     if(dist<minval[theBin]){
       raac[theBin]=RABCharm;
       minval[theBin]=dist;
-      invyPbPb[theBin]=invyieldAB;
-      invyPbPbLo[theBin]=invyieldABFDLow;
-      invyPbPbHi[theBin]=invyieldABFDHigh;
+      invyPbPb[theBin]=invyieldAB*normToCsec;
+      invyPbPbLo[theBin]=invyieldABFDLow*normToCsec;
+      invyPbPbHi[theBin]=invyieldABFDHigh*normToCsec;
       invypp[theBin]=TAB*sigmaPP;
+      if(collSyst=="p-Pb" && TMath::Abs(normToCsec-1.)>0.001) invypp[theBin]=208.*sigmaPP*1e6;
       fPromptCent[theBin]=fprompt;
     }
     Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPr);
     if(distLowHyp<minvalLowHyp[theBin]){
       // LowHyp -> lower Raa(feeddown) -> less Fd to be subtracted -> higher fprompt  -> higher prompt yield -> higher Raa(prompt)
       raacLowHyp[theBin]=RABCharm;
-      invyPbPbLowHyp[theBin]=invyieldAB;
-      invyPbPbHiSingleSyst[theBin]=invyieldABFDHigh;
+      invyPbPbLowHyp[theBin]=invyieldAB*normToCsec;
+      invyPbPbHiSingleSyst[theBin]=invyieldABFDHigh*normToCsec;
       minvalLowHyp[theBin]=distLowHyp;
       fPromptLowHyp[theBin]=fprompt;
     }
@@ -318,8 +337,8 @@ void ComputeDmesonYield(){
     if(distHigHyp<minvalHigHyp[theBin]){
       // HigHyp -> higher Raa(feeddown) -> more Fd to be subtracted -> lower fprompt  -> lower prompt yield -> lower Raa(prompt)
       raacHigHyp[theBin]=RABCharm;
-      invyPbPbHigHyp[theBin]=invyieldAB;
-      invyPbPbLoSingleSyst[theBin]=invyieldABFDLow;
+      invyPbPbHigHyp[theBin]=invyieldAB*normToCsec;
+      invyPbPbLoSingleSyst[theBin]=invyieldABFDLow*normToCsec;
       minvalHigHyp[theBin]=distHigHyp;
       fPromptHigHyp[theBin]=fprompt;
     }
@@ -362,7 +381,7 @@ void ComputeDmesonYield(){
 
   Float_t invyPbPbS[nPtBins],invyPbPbLoS[nPtBins],invyPbPbHiS[nPtBins],minvalS[nPtBins];
   Float_t invyPbPbLoSingleSystS[nPtBins],invyPbPbHiSingleSystS[nPtBins],minvalLowHypS[nPtBins],minvalHigHypS[nPtBins];
-  Float_t fPromptLowHypS[nPtBins],fPromptHigHypS[nPtBins];
+  Float_t fPromptCentS[nPtBins],fPromptLowHypS[nPtBins],fPromptHigHypS[nPtBins];
   for(Int_t ib=0; ib<nPtBins; ib++){
     minvalS[ib]=9999.;
     minvalLowHypS[ib]=9999.;
@@ -390,21 +409,22 @@ void ComputeDmesonYield(){
     Float_t dist=TMath::Abs(rFdPr-centHypoFdOverPr);
     if(dist<minvalS[theBin]){
       minvalS[theBin]=dist;
-      invyPbPbS[theBin]=invyieldAB;
-      invyPbPbLoS[theBin]=invyieldABFDLow;
-      invyPbPbHiS[theBin]=invyieldABFDHigh;
+      invyPbPbS[theBin]=invyieldAB*normToCsec;
+      invyPbPbLoS[theBin]=invyieldABFDLow*normToCsec;
+      invyPbPbHiS[theBin]=invyieldABFDHigh*normToCsec;
+      fPromptCentS[theBin]=fprompt;
     }
     Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPr);
     if(distLowHyp<minvalLowHypS[theBin]){
       // LowHyp -> lower Raa(feeddown) -> less Fd to be subtracted -> higher fprompt  -> higher prompt yield -> higher Raa(prompt)
-      invyPbPbHiSingleSystS[theBin]=invyieldABFDHigh;
+      invyPbPbHiSingleSystS[theBin]=invyieldABFDHigh*normToCsec;
       minvalLowHypS[theBin]=distLowHyp;
       fPromptLowHypS[theBin]=fprompt;
     }
     Float_t distHigHyp=TMath::Abs(rFdPr-highHypoFdOverPr);
     if(distHigHyp<minvalHigHypS[theBin]){
       // HigHyp -> higher Raa(feeddown) -> more Fd to be subtracted -> lower fprompt  -> lower prompt yield -> lower Raa(prompt)
-      invyPbPbLoSingleSystS[theBin]=invyieldABFDLow;
+      invyPbPbLoSingleSystS[theBin]=invyieldABFDLow*normToCsec;
       minvalHigHypS[theBin]=distHigHyp;
       fPromptHigHypS[theBin]=fprompt;
     }
@@ -424,11 +444,34 @@ void ComputeDmesonYield(){
   for(Int_t ib=0; ib<nPtBins; ib++){
     printf("Bin %d\n",ib);
     printf("   fprompt central=%f ---  Nb fpromptmin=%f fpromptmax=%f ---  fc fpromptmin=%f fpromptmax=%f\n",fPromptCent[ib],fPromptHigHyp[ib],fPromptLowHyp[ib],fPromptHigHypS[ib],fPromptLowHypS[ib]);
+    
+    //add error from FONLL scale in quadrature
+    Double_t relerrFDscaleHigh = (invyPbPbHi[ib]-invyPbPb[ib])/invyPbPb[ib];
+    Double_t relerrFDscaleLow = (invyPbPb[ib]-invyPbPbLo[ib])/invyPbPb[ib];
+
+    Double_t relerrElossHigh = (fPromptLowHyp[ib]-fPromptCent[ib])/fPromptCent[ib];
+    Double_t relerrElossLow = (fPromptCent[ib]-fPromptHigHyp[ib])/fPromptCent[ib];
+    
+    Double_t toterrFDhigh = TMath::Sqrt(relerrFDscaleHigh*relerrFDscaleHigh+relerrElossHigh*relerrElossHigh)*fPromptCent[ib];
+    Double_t toterrFDlow = TMath::Sqrt(relerrFDscaleLow*relerrFDscaleLow+relerrElossLow*relerrElossLow)*fPromptCent[ib];
+
+    Double_t relerrFDscaleHighS = (invyPbPbHiS[ib]-invyPbPbS[ib])/invyPbPbS[ib];
+    Double_t relerrFDscaleLowS = (invyPbPbS[ib]-invyPbPbLoS[ib])/invyPbPbS[ib];
+    
+    Double_t relerrElossHighS = (fPromptLowHypS[ib]-fPromptCentS[ib])/fPromptCentS[ib];
+    Double_t relerrElossLowS = (fPromptCentS[ib]-fPromptHigHypS[ib])/fPromptCentS[ib];
+    
+    Double_t toterrFDhighS = TMath::Sqrt(relerrFDscaleHighS*relerrFDscaleHighS+relerrElossHighS*relerrElossHighS)*fPromptCentS[ib];
+    Double_t toterrFDlowS = TMath::Sqrt(relerrFDscaleLowS*relerrFDscaleLowS+relerrElossLowS*relerrElossLowS)*fPromptCentS[ib];
+
     hfPromptCent->SetBinContent(ib+1,fPromptCent[ib]);
-    hfPromptMinNb->SetBinContent(ib+1,fPromptHigHyp[ib]);
-    hfPromptMaxNb->SetBinContent(ib+1,fPromptLowHyp[ib]);
-    hfPromptMinfc->SetBinContent(ib+1,fPromptHigHypS[ib]);
-    hfPromptMaxfc->SetBinContent(ib+1,fPromptLowHypS[ib]);
+    hfPromptMinNb->SetBinContent(ib+1,fPromptCent[ib]-toterrFDlow);
+    hfPromptMaxNb->SetBinContent(ib+1,fPromptCent[ib]+toterrFDhigh);
+    hfPromptMinfc->SetBinContent(ib+1,fPromptCentS[ib]-toterrFDlowS);
+    hfPromptMaxfc->SetBinContent(ib+1,fPromptCentS[ib]+toterrFDhighS);
+    
+    printf("Bin %d\n",ib);
+    printf("   fprompt central=%f ---  Nb fpromptmin=%f fpromptmax=%f ---  fc fpromptmin=%f fpromptmax=%f\n",fPromptCent[ib],hfPromptMinNb->GetBinContent(ib+1),hfPromptMaxNb->GetBinContent(ib+1),hfPromptMinfc->GetBinContent(ib+1),hfPromptMaxfc->GetBinContent(ib+1));
   }
 
   TH1F* hppC=new TH1F("hppC",Form("pp reference for %s%% CC",centrality.Data()),nPtBins,binlim);
@@ -670,7 +713,7 @@ void ComputeDmesonYield(){
   tali0->SetTextFont(43);
   tali0->SetTextSize(28);
   tali0->Draw();
-  TLatex* tpbpb=new TLatex(0.41,0.89,Form("Pb-Pb, %s%%, #sqrt{#it{s}_{NN}} = 2.76 TeV",centrality.Data()));
+  TLatex* tpbpb=new TLatex(0.41,0.89,Form("%s, %s%%",collSyst.Data(),centrality.Data()));
   tpbpb->SetNDC();
   tpbpb->SetTextFont(43);
   tpbpb->SetTextSize(28);
@@ -710,15 +753,18 @@ void ComputeDmesonYield(){
   hfPromptMaxfc->SetLineStyle(2);
   hfPromptMinfc->SetLineColor(2);
   hfPromptMaxfc->SetLineColor(2);
-  hfPromptMinfc->Draw("same");
-  hfPromptMaxfc->Draw("same");
+  if(optErrFD==2){
+    hfPromptMinfc->Draw("same");
+    hfPromptMaxfc->Draw("same");
+    TLatex* t1=new TLatex(0.17,0.15,"fc");
+    t1->SetNDC();
+    t1->SetTextColor(2);
+    t1->Draw();
+  }
   TLatex* t2=new TLatex(0.17,0.2,"Nb");
   t2->SetNDC();
   t2->Draw();
-  TLatex* t1=new TLatex(0.17,0.15,"fc");
-  t1->SetNDC();
-  t1->SetTextColor(2);
-  t1->Draw();
+  cfp->SaveAs(Form("fprompt-%s.eps",mesName.Data()));
 
   hppC->SetMarkerStyle(markerppC);
   hppC->SetMarkerSize(msizppC);
@@ -758,11 +804,14 @@ void ComputeDmesonYield(){
   Float_t y12C=hAAC->GetBinContent(hAAC->FindBin(10.));
   if(y12C>0. && y12C<ymin) ymin=y12C;
   ymin*=0.255;
-
   ymax=19.6;
   ymin=7E-7;
+  if(collSyst=="p-Pb" && TMath::Abs(normToCsec-1.)>0.001){
+    ymax=110000.;
+    ymin=1.1;
+  }
 
-  TH2F *hempty=new TH2F("hempty","",100,0.,38.998,100,ymin,ymax);
+  TH2F *hempty=new TH2F("hempty","",100,0.,binlim[nPtBins]*1.02,100,ymin,ymax);
   hempty->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hempty->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T}_{ }|_{ |#it{y}|<0.5} (1/GeV/#it{c})");
   hempty->GetYaxis()->SetTitleSize(0.05);
@@ -773,7 +822,7 @@ void ComputeDmesonYield(){
   hempty->GetYaxis()->SetLabelFont(42);
   hempty->GetXaxis()->SetLabelFont(42);
   hempty->SetStats(0);
-  TLatex* tdec =new TLatex(0.18,0.89,Form("ALICE    %s   #sqrt{#it{s}_{NN}} = 2.76 TeV",mesSymb.Data()));
+  TLatex* tdec =new TLatex(0.18,0.89,Form("%s",mesSymb.Data()));
   tdec->SetNDC();
   tdec->SetTextSize(0.038);
   tdec->SetTextFont(42);
@@ -804,7 +853,7 @@ void ComputeDmesonYield(){
   ent=legC->AddEntry(hppC,"p-p rescaled reference","PL");
   ent=legC->AddEntry("","(#pm 6% norm. unc. not shown)","");
   //ent->SetTextColor(hppC->GetLineColor());
-  ent=legC->AddEntry(hAAC,"Pb-Pb","PL");
+  ent=legC->AddEntry(hAAC,collSyst.Data(),"PL");
   //ent->SetTextColor(hAAC->GetLineColor());
   legC->Draw();
   //TLegend* legSy= new TLegend(0.18,0.16,0.45,0.32);
@@ -822,7 +871,7 @@ void ComputeDmesonYield(){
 
 
 
-  TH2F *hemptyr=new TH2F("hemptyr","",100,0.,38.998,100,0.,1.2);
+  TH2F *hemptyr=new TH2F("hemptyr","",100,0.,binlim[nPtBins]*1.02,100,0.,1.7);
   hemptyr->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hemptyr->GetYaxis()->SetTitle(Form("#it{R}_{AA} (prompt %s)",mesSymb.Data()));
   hemptyr->GetYaxis()->SetTitleOffset(1.2);
@@ -870,7 +919,9 @@ void ComputeDmesonYield(){
   // }
 
 
-  TFile* outfil=new TFile(Form("%sYield_method%d_fd%d_br%d.root",mesName.Data(),method,optErrFD,correctForBR),"recreate");
+  TString type="Yield";
+  if(TMath::Abs(normToCsec-1)>0.001) type="CrossSec";
+  TFile* outfil=new TFile(Form("%s%s_method%d_fd%d_br%d.root",mesName.Data(),type.Data(),method,optErrFD,correctForBR),"recreate");
   hAAC->Write();
   gppCsystFD->Write();
   gppCsystdata->Write();
@@ -885,6 +936,9 @@ void ComputeDmesonYield(){
   hfPromptMaxNb->Write();
   hfPromptMinfc->Write();
   hfPromptMaxfc->Write();
+  systematicsABcent->SetName("AliHFSystErrAA");
+  systematicsABcent->Write();
+  if(systematicsPP) systematicsPP->Write();
   outfil->Close();
 }
 

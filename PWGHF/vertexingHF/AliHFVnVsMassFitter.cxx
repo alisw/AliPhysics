@@ -537,7 +537,7 @@ void AliHFVnVsMassFitter::DefineNumberOfParameters() {
       fNParsMassBkg=2;
       break;
     case 5: //power expo
-      fNParsMassBkg=3;
+      fNParsMassBkg=2;
       break;
     case 6: //high degree pol
       fNParsMassBkg=fPolDegreeBkg+1;
@@ -609,9 +609,8 @@ void AliHFVnVsMassFitter::SetParNames() {
       fVnTotFunc->SetParName(1,"Coef1");
       break;
     case 5: //power expo
-      fVnTotFunc->SetParName(0,"BkgInt");
-      fVnTotFunc->SetParName(1,"Coef1");
-      fVnTotFunc->SetParName(2,"Coef2");
+      fVnTotFunc->SetParName(0,"Coef1");
+      fVnTotFunc->SetParName(1,"Coef2");
       break;
     case 6: //high degree pol
       fVnTotFunc->SetParName(0,"BkgInt");

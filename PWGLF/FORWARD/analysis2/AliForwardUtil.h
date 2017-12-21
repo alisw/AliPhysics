@@ -99,7 +99,8 @@ public:
     kPP, 
     kPbPb,
     kPPb,
-    kPbp 
+    kPbp,
+    kXeXe
   };
   //__________________________________________________________________
   /** 
@@ -153,6 +154,21 @@ public:
    * @return Collision system id 
    */
   static UShort_t ParseCollisionSystem(const char* sys);
+  /** 
+   * Parse a collision system spec given in a string.   Known values are 
+   * 
+   *  - "pp", "p-p" which returns kPP 
+   *  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb
+   *  - "pPb", "p-Pb", "pA", p-A" which returns kPPb
+   *  - Everything else gives kUnknown 
+   * 
+   * @param sys Collision system spec 
+   * 
+   * @return Collision system id 
+   */
+  static UShort_t ParseCollisionSystem(Int_t b1a, Int_t b1z,
+				       Int_t b2a, Int_t b2z,
+				       const char* sys);
   /** 
    * Get a string representation of the collision system 
    * 

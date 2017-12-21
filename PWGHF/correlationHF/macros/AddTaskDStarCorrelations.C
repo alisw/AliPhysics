@@ -25,14 +25,28 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            Float_t eta, // maximum D* eta
                                                            Float_t minDStarPt, // set minimum pt for Dstar
                                                            TString DStarCutsFile, // path of Dmeson cut object
-                                                           TString TrackCutsFile, // path of associated cut object
+                                                           TString TrackCutsFile, // path of associated cut object 
                                                            TString suffix = "", // suffix for output
                                                            TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
 							   TString cutsTrkname = "AssociatedCuts", // name of track cut container
-							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
-							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10, 
-							   Double_t refMult=9.26, Bool_t usemultiplicity, Int_t AODprot=1)
-{
+                                                                   
+                               Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
+							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10,
+							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=1,
+                                                                      
+                                                           Bool_t LoadEffFromMaps = kFALSE, // flag to allow laoding the maps not from the cut file but directly from input map files (kTRUE)
+                                                           TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c
+                                                           TString effDstarnameb = "DStarEff_From_b_wLimAcc_2d.root",// eff map name from b
+                                                           TString effName= "3D_eff_Std.root",
+                                                           Bool_t useSmallSizePlots=kFALSE, //reduce number of bins in THnSparse (use for heavy datasets)
+                                                                         
+                                                           AliAnalysisTaskDStarCorrelations::TreeFill fillTrees=AliAnalysisTaskDStarCorrelations::kNoTrees)
+// AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees)
+//AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees//kTRUE to run in offline mode
+
+
+                                                           
+{ 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -40,7 +54,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     return NULL;
   } 
 
-	cout << "==========================================================" << endl;
+    //cout << "==========================================================" << endl; getchar();
     cout << "Set Inputs : " << endl;
     cout << " " << endl;
     if(syst == AliAnalysisTaskDStarCorrelations::pp) cout << "Running on pp @ 7 TeV" << endl;
@@ -118,11 +132,18 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
        // RDHFDStartoKpipi->SetTriggerClass("");
        // RDHFDStartoKpipi->SetTriggerMask(AliVEvent::kCentral);
     
+    printf("Min pt default %f\n ",RDHFDStartoKpipi->GetMinPtCandidate() );
+    
+    printf("Max pt default %f\n ",RDHFDStartoKpipi->GetMaxPtCandidate() );
+    
     if(minDStarPt>RDHFDStartoKpipi->GetMinPtCandidate()){
+        
         cout << "Changing minimum pT of DStar from " << RDHFDStartoKpipi->GetMinPtCandidate() << " to " << minDStarPt << endl;
+        
+        
         RDHFDStartoKpipi->SetMinPtCandidate(minDStarPt);
     }
-	
+    	
 // ******************************** OPENING THE ASSOCIATED TRACK CUTS ************************************
 	cout << "Getting associated track cut object from file \n" << TrackCutsFile.Data() << "\n " << endl;
 	TFile* filecuts2=TFile::Open(TrackCutsFile.Data());
@@ -138,6 +159,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	}
 	corrCuts->SetName("AssociatedCuts");
 	corrCuts->PrintAll();
+    
+    if(!LoadEffFromMaps){
 	
     if(UseEffic && !corrCuts->IsTrackEffMap()){
         cout << "You are trying to use the single track efficiency, but there is no map loaded in the cut object " << endl;
@@ -154,6 +177,50 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     if(UseDEffic && (var != AliAnalysisTaskDStarCorrelations::kNone) && (!corrCuts->IsTrigEffMap2D()&&(!corrCuts->IsTrigEffMap2DB()))){
         cout << "You are trying to use the DStar efficiency vs pt only, but there is no map loaded in the cut object " << endl;
         return;
+    }
+    }
+      
+    
+    //********************************  SELECTING THE EFFICIENCY MAPS *******************************
+    if(LoadEffFromMaps){
+            
+    if(!effName.EqualTo("")) {
+        TFile* fileeff=TFile::Open(effName.Data());
+        if(!fileeff->IsOpen()){
+            cout<<"Input file not found for efficiency! Exiting..."<<endl;
+            return;
+        }
+        TCanvas *c = (TCanvas*)fileeff->Get("c");
+        TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+        if(UseReco) corrCuts->SetEfficiencyWeightMap(h3D); //data and MC Reco
+    } else cout<<"*** WARNING! No tracking efficiency map set! ***"<<endl;
+        
+    //Load Dstar efficiency map
+    if(!effDstarnamec.EqualTo("")) {
+        TFile* fileeffDstarc=TFile::Open(effDstarnamec.Data());
+        if(!fileeffDstarc->IsOpen()){
+            cout<<"Input file not found for efficiency! Exiting..."<<endl;
+            return;
+        }
+        TH2D *hEffDstarc = (TH2D*)fileeffDstarc->Get("h_Eff");
+        if(UseReco) corrCuts->SetTriggerEffWeightMap(hEffDstarc); //data and MC Reco
+    } else cout<<"*** WARNING! No prompt trigger efficiency map set! ***"<<endl;
+    
+    //Load Dstar efficiency map from b
+    if(theMCon) {
+        if(!effDstarnameb.EqualTo("")) {
+            TFile* fileeffDstarb=TFile::Open(effDstarnameb.Data());
+            if(!fileeffDstarb->IsOpen()){
+                cout<<"Input file not found for efficiency! Exiting..."<<endl;
+                return;
+            }
+            TH2D *hEffDstarb = (TH2D*)fileeffDstarb->Get("h_Eff");
+            if(UseReco && theMCon) corrCuts->SetTriggerEffWeightMapB(hEffDstarb); //MC Reco
+        } else cout<<"*** WARNING! No feed-down trigger efficiency map set! ***"<<endl;
+    }
+    
+    corrCuts->PrintAll();
+
     }
     
 // ******************************** SELECTING THE MC PROCESS  ************************************
@@ -210,6 +277,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
     task->SetUseMCEventType(UseMCEventType);
     task->SetAODMismatchProtection(AODprot);
+    task->SetUseSmallSizePlots(useSmallSizePlots);
+    task->SetFillTrees(fillTrees);
 
     if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);
@@ -271,6 +340,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     TString contname4 = "OutputEventMixing";
     TString contname5 = "OutputCorrelations";
     TString contname6 = "OutputMC";
+    TString contname10 = "TreeDstar";
     TString counter = "NormCounter";
     TString cutname1 = "Dcuts" ;
 	TString cutname2 = "hadroncuts" ;
@@ -282,6 +352,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
         contname4 += suffix;
         contname5 += suffix;
          contname6 += suffix;
+    contname10 += suffix;
         counter += suffix;
         cutname1 += suffix;
         cutname2 += suffix;
@@ -362,6 +433,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 		//outputfileMC += "DEffN_";
 		
     }
+    
+    
+ 
 	
     
     outputfile += Form("%d_bins_",nbins);
@@ -425,15 +499,17 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	//TLists
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-     AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-     AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(contname5, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(contname6, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(contname5, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(contname6, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     // Normalization Counter
-    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
    // Cut Objects
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(cutname1,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts D
   AliAnalysisDataContainer *coutput9 = mgr->CreateContainer(cutname2,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts tracks
+    
+    AliAnalysisDataContainer *coutput10 = mgr->CreateContainer(contname10,TTree::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //TTree D0
 
   
 	
@@ -443,10 +519,12 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
   mgr->ConnectOutput(task,5,coutput5);
-     mgr->ConnectOutput(task,6,coutput6);
-    mgr->ConnectOutput(task,7,coutput7);
-    mgr->ConnectOutput(task,8,coutput8);
-    mgr->ConnectOutput(task,9,coutput9);
+  mgr->ConnectOutput(task,6,coutput6);
+  mgr->ConnectOutput(task,7,coutput7);
+  mgr->ConnectOutput(task,8,coutput8);
+  mgr->ConnectOutput(task,9,coutput9);
+  mgr->ConnectOutput(task,10,coutput10);
+
 
   return task ;
 

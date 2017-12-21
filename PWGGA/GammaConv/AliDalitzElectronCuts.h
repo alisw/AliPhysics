@@ -11,7 +11,7 @@
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TH1F.h"
@@ -90,7 +90,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TString GetCutNumber();
 
     // Cut Selection
-  Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack);
+  Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent);
   Bool_t TrackIsSelected(AliESDtrack* lTrack);
   Bool_t ElectronIsSelected(AliESDtrack* lTrack);
   void InitAODpidUtil(Int_t type);
@@ -222,6 +222,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   // Histograms
   TObjString *fCutString; // cut number used for analysis
+  TString fCutStringRead;
   TH1F *hCutIndex; // bookkeeping for cuts
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
   TH2F *hITSdEdxbefore; // ITS dEdx before cuts
@@ -251,7 +252,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,2)
+  ClassDef(AliDalitzElectronCuts,3)
 };
 
 

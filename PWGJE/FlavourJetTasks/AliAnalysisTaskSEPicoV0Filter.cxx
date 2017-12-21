@@ -1,14 +1,13 @@
-#include <TString.h>
 #include <TClonesArray.h>
 
 #include "AliAnalysisManager.h"
 
-#include "AliAODHandler.h"
 #include "AliAODEvent.h"
+#include "AliAODHandler.h"
 
-#include "AliPicoHeaderCJ.h"
 #include "AliPicoV0RD.h"
 #include "AliPicoV0MC.h"
+#include "AliPicoHeaderV0.h"
 
 #include "AliAnalysisTaskSEPicoV0Filter.h"
 
@@ -17,11 +16,15 @@ ClassImp(AliAnalysisTaskSEPicoV0Filter)
 //_____________________________________________________________________________
 AliAnalysisTaskSEPicoV0Filter::AliAnalysisTaskSEPicoV0Filter() :
 AliAnalysisTaskSE(),
-fIsAnaInfoMC(kFALSE),
-fV0s(0),
-fPicoHeaderCJ(0),
-fPicoV0sClArr(0),
-fListUserOutputs(0)
+fIsMC(kFALSE),
+fMult(""),
+fMultEstDef(""),
+fCutMinMult(0.),
+fCutMaxMult(0.),
+fV0s(nullptr),
+fPicoHeader(nullptr),
+fPicoV0sClArr(nullptr),
+fListUserOutputs(nullptr)
 {
 //
 //  AliAnalysisTaskSEPicoV0Filter::AliAnalysisTaskSEPicoV0Filter
@@ -31,11 +34,15 @@ fListUserOutputs(0)
 //_____________________________________________________________________________
 AliAnalysisTaskSEPicoV0Filter::AliAnalysisTaskSEPicoV0Filter(const char *name) :
 AliAnalysisTaskSE(name),
-fIsAnaInfoMC(kFALSE),
-fV0s(0),
-fPicoHeaderCJ(0),
-fPicoV0sClArr(0),
-fListUserOutputs(0)
+fIsMC(kFALSE),
+fMult(""),
+fMultEstDef(""),
+fCutMinMult(-99999.),
+fCutMaxMult(999999.),
+fV0s(nullptr),
+fPicoHeader(nullptr),
+fPicoV0sClArr(nullptr),
+fListUserOutputs(nullptr)
 {
 //
 //  AliAnalysisTaskSEPicoV0Filter::AliAnalysisTaskSEPicoV0Filter
@@ -51,10 +58,10 @@ AliAnalysisTaskSEPicoV0Filter::~AliAnalysisTaskSEPicoV0Filter()
 //  AliAnalysisTaskSEPicoV0Filter::~AliAnalysisTaskSEPicoV0Filter
 //
 
-  if (fV0s)             { delete fV0s;             fV0s             = 0; }
-  if (fPicoHeaderCJ)    { delete fPicoHeaderCJ;    fPicoHeaderCJ    = 0; }
-  if (fPicoV0sClArr)    { delete fPicoV0sClArr;    fPicoV0sClArr    = 0; }
-  if (fListUserOutputs) { delete fListUserOutputs; fListUserOutputs = 0; }
+  if (fV0s)             { delete fV0s;             fV0s             = nullptr; }
+  if (fPicoHeader)      { delete fPicoHeader;      fPicoHeader      = nullptr; }
+  if (fPicoV0sClArr)    { delete fPicoV0sClArr;    fPicoV0sClArr    = nullptr; }
+  if (fListUserOutputs) { delete fListUserOutputs; fListUserOutputs = nullptr; }
 }
 
 //_____________________________________________________________________________
@@ -74,11 +81,33 @@ void AliAnalysisTaskSEPicoV0Filter::UserCreateOutputObjects()
 //  AliAnalysisTaskSEPicoV0Filter::UserCreateOutputObjects
 //
 
-  fPicoHeaderCJ = new  AliPicoHeaderCJ();
-  fPicoHeaderCJ->SetName("PicoHeaderCJ");
-  AddAODBranch("AliPicoHeaderCJ", &fPicoHeaderCJ);
+  if (fPicoHeader) {
+    delete fPicoHeader;
+    fPicoHeader = nullptr;
+  }
 
-  if (fIsAnaInfoMC) {
+  fPicoHeader = new  AliPicoHeaderV0();
+  fPicoHeader->SetName("PicoHeaderV0");
+
+  if (!fMult.IsNull()) {
+    const auto aMult(fMult.Tokenize(":"));
+
+    TIter next(aMult);
+    TObjString *ps(nullptr);
+    while ((ps = static_cast<TObjString*>(next()))) {
+      fPicoHeader->AddMultEstimator(ps->String());
+    }
+  }
+
+  AddAODBranch("AliPicoHeaderV0", &fPicoHeader);
+//=============================================================================
+
+  if (fPicoV0sClArr) {
+    delete fPicoV0sClArr;
+    fPicoV0sClArr = nullptr;
+  }
+
+  if (fIsMC) {
     fPicoV0sClArr = new TClonesArray("AliPicoV0MC");
     fPicoV0sClArr->SetName("PicoV0sMC");
   } else {
@@ -86,12 +115,23 @@ void AliAnalysisTaskSEPicoV0Filter::UserCreateOutputObjects()
     fPicoV0sClArr->SetName("PicoV0sRD");
   }
 
-  AddAODBranch("TClonesArray",    &fPicoV0sClArr);
+  AddAODBranch("TClonesArray", &fPicoV0sClArr);
+//=============================================================================
 
-/*fListUserOutputs = new TList();
+/*if (fListUserOutputs) {
+    delete fListUserOutputs;
+    fListUserOutputs = nullptr;
+  }
+
+  fListUserOutputs = new TList();
   fListUserOutputs->SetOwner();
-  CreateUserOutputHistograms();
+  const auto b(TH1::AddDirectoryStatus());
+  TH1::AddDirectory(kFALSE);
+//TODO
+  TH1::AddDirectory(b);
   PostData(1, fListUserOutputs);*/
+//=============================================================================
+
   return;
 }
 
@@ -112,48 +152,45 @@ void AliAnalysisTaskSEPicoV0Filter::UserExec(Option_t */*opt*/)
 //  AliAnalysisTaskSEPicoV0Filter::Run
 //
 
-  Int_t ncs = 0;
-  fPicoHeaderCJ->Reset();
+  fPicoHeader->Reset();
   fPicoV0sClArr->Delete();
+//=============================================================================
+
+  if (!fV0s) {
+    fV0s = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoV0s"));
+    if (!fV0s) return;
+  }
+
+  const auto nV0s(fV0s->GetEntriesFast());
+  if (nV0s<=0) return;
+//=============================================================================
+
+  fPicoHeader->SetEventInfo(fInputHandler);
+
+  if (!fMultEstDef.IsNull()) {
+    const auto dMult(fPicoHeader->MultiplicityPercentile(fMultEstDef));
+    if ((dMult<fCutMinMult) || (dMult>=fCutMaxMult)) {
+      fPicoHeader->Reset();
+      return;
+    }
+  }
+//=============================================================================
+
+  auto l(fPicoV0sClArr->GetEntriesFast());
+
+  for (auto i=0; i<nV0s; ++i) {
+    if (fIsMC) {
+      const auto pV0(static_cast<AliPicoV0MC*>(fV0s->At(i))); if (!pV0) continue;
+      new ((*fPicoV0sClArr)[l++]) AliPicoV0MC(*pV0);
+    } else {
+      const auto pV0(static_cast<AliPicoV0RD*>(fV0s->At(i))); if (!pV0) continue;
+      new ((*fPicoV0sClArr)[l++]) AliPicoV0RD(*pV0);
+    }
+  }
 //=============================================================================
 
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 //=============================================================================
 
-  fPicoHeaderCJ->SetEventInfo(fInputHandler);
-  fV0s = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoV0s")); if (!fV0s) return;
-//=============================================================================
-
-  AliPicoV0RD *pV0RD = 0;
-  AliPicoV0MC *pV0MC = 0;
-  ncs = fPicoV0sClArr->GetEntriesFast();
-  for (Int_t i=0; i<fV0s->GetEntriesFast(); i++) {
-    if (fIsAnaInfoMC) {
-      pV0MC = static_cast<AliPicoV0MC*>(fV0s->At(i)); if (!pV0MC) continue;
-      new ((*fPicoV0sClArr)[ncs++]) AliPicoV0MC(*pV0MC);
-      pV0MC = 0;
-    } else {
-      pV0RD = static_cast<AliPicoV0RD*>(fV0s->At(i)); if (!pV0RD) continue;
-      new ((*fPicoV0sClArr)[ncs++]) AliPicoV0RD(*pV0RD);
-      pV0RD = 0;
-    }
-  }
-
-  return;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisTaskSEPicoV0Filter::CreateUserOutputHistograms()
-{
-//
-//  AliAnalysisTaskSEPicoV0Filter::CreateUserOutputHistograms
-//
-
-  if (!fListUserOutputs) return;
-
-  Bool_t bStatusTmpH = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-
-  TH1::AddDirectory(bStatusTmpH);
   return;
 }

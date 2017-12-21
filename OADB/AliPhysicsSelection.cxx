@@ -65,6 +65,7 @@
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
+#include <vector>
 
 #include <Riostream.h>
 #include <TH1F.h>
@@ -107,6 +108,9 @@
 #include "AliVZEROTriggerData.h"
 #include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliITSTriggerConditions.h"
+
+class StringToRegexp : public std::map<std::string, TPRegexp> {};
+
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
@@ -127,8 +131,8 @@ fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(NULL)
+fTriggerToFormula(new StringToFormula()),
+fTriggerToRegexp(new StringToRegexp())
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
@@ -139,7 +143,7 @@ fCashedTokens(NULL)
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
- AliPhysicsSelection::AliPhysicsSelection(const char *name) :
+AliPhysicsSelection::AliPhysicsSelection(const char *name) :
  AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
  fPassName(""),
  fCurrentRun(-1),
@@ -157,8 +161,8 @@ fCashedTokens(NULL)
  fPSOADB(0),
  fFillOADB(0),
  fTriggerOADB(0),
- fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
- fCashedTokens(NULL)
+ fTriggerToFormula(new StringToFormula()),
+ fTriggerToRegexp(new StringToRegexp())
  {
    // constructor
    fCollTrigClasses.SetOwner(1);
@@ -173,8 +177,8 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fPSOADB)       delete fPSOADB;
   if (fFillOADB)     delete fFillOADB;
   if (fTriggerOADB)  delete fTriggerOADB;
-  delete fRegexp;
-  delete fCashedTokens;
+  delete fTriggerToFormula;
+  delete fTriggerToRegexp;
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
@@ -184,130 +188,102 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
   //   in bunch crossing XXX
   //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   //   triggerLogic is filled with ZZ, defaults to 0
-  
+
   TString classes = event->GetFiredTriggerClasses();
-  
+
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
-  
+
   UInt_t returnCode = AliVEvent::kUserDefined;
-  triggerLogic = 0;
-  
-  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", event->GetFiredTriggerClasses().Data()));
-  
-  TString str(trigger);
-  TObjArray* tokens = str.Tokenize(" ");
-  
-  for (Int_t i=0; i < tokens->GetEntries(); i++) {
-    TString str2(((TObjString*) tokens->At(i))->String());
-    if (str2[0] == '+' || str2[0] == '-') {
-      Bool_t flag = (str2[0] == '+');
-      str2.Remove(0, 1);
-      TObjArray* tokens2 = str2.Tokenize(",");
-      Bool_t foundTriggerClass = kFALSE;
-      for (Int_t j=0; j < tokens2->GetEntries(); j++) {
-        TString str3(((TObjString*) tokens2->At(j))->String());
-        if (flag && classes.Contains(str3)) foundTriggerClass = kTRUE;
-        if (!flag && classes.Contains(str3)) {
-          AliDebug(AliLog::kDebug+1, Form("Rejecting event because trigger class %s is present", str3.Data()));
-          delete tokens2;
-          delete tokens;
-          return kFALSE;
-        }
-      }
-      
-      delete tokens2;
-      
-      if (flag && !foundTriggerClass) {
-        AliDebug(AliLog::kDebug+1, Form("Rejecting event because (none of the) trigger class(es) %s is present", str2.Data()));
-        delete tokens;
-        return kFALSE;
-      }
+  Int_t triggerLogicLocal = 0; // don't touch triggerLogic if not successful
+
+  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", classes.Data()));
+
+  struct Util {
+    static Int_t atoi(const char*& str) {
+      Int_t ret = 0;
+      while (*str && *str != ' ')
+        ret = 10 * ret + (*str++ - '0');
+      return ret;
     }
-    else if (str2[0] == '#')
-    {
+  };
+
+  std::string str;
+  while (true) {
+    // finished
+    if (!*trigger)
+      break;
+
+    // required or rejected triggers
+    if (*trigger == '+' || *trigger == '-') {
+      Int_t flag = (*trigger == '+');
+      trigger++;
+
+      const char* begin = trigger;
+      while (*trigger && *trigger != ' ')
+        trigger++;
+      str.assign(begin, trigger);
+
+      auto& re = FindRegexp(str);
+      if (re.Match(classes, "", 0, 1) != flag)
+        return kFALSE; // required not found or rejected found
+
+      continue;
+    }
+    // bunch crossing
+    if (*trigger == '#') {
       foundBCRequirement = kTRUE;
-      
-      str2.Remove(0, 1);
-      
-      Int_t bcNumber = str2.Atoi();
-      AliDebug(AliLog::kDebug+1, Form("Checking for bunch crossing number %d", bcNumber));
-      
-      if (event->GetBunchCrossNumber() == bcNumber)
-      {
+
+      if (event->GetBunchCrossNumber() == Util::atoi(++trigger))
         foundCorrectBC = kTRUE;
-        AliDebug(AliLog::kDebug+1, Form("Found correct bunch crossing %d", bcNumber));
-      }
+
+      continue;
     }
-    else if (str2[0] == '&') { str2.Remove(0, 1); returnCode = str2.Atoll();  }
-    else if (str2[0] == '*') { str2.Remove(0, 1); triggerLogic = str2.Atoi(); }
-    else AliFatal(Form("Invalid trigger syntax: %s", trigger));
+    // return value
+    if (*trigger == '&') {
+      returnCode = Util::atoi(++trigger);
+      continue;
+    }
+    // triggerLogic value
+    if (*trigger == '*') {
+      triggerLogicLocal = Util::atoi(++trigger);
+      continue;
+    }
+
+    trigger++;
   }
-  
-  delete tokens;
-  
+
   if (foundBCRequirement && !foundCorrectBC) return kFALSE;
-  
+
+  triggerLogic = triggerLogicLocal;
   return returnCode;
 }
 
-//______________________________________________________________________________
-Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline){
-  // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
-  // Fills the statistics histogram, if booked at row i
-  TString trigger(triggerLogic);
-  
-  // add space after each token (to use ReplaceAll later)
-  fRegexp->Substitute(trigger, "$1 ", "g");
-  
-  while (1) {
-    AliDebug(AliLog::kDebug, trigger.Data());
-    
-    TArrayI pos;
-    Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-    
-    if (nMatches <= 0) break;
-    
-    TString token(trigger(pos[0], pos[1]-pos[0]+1));
-
-    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
-    if (!param) {
-      TInterpreter::EErrorCode error;
-      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
-      
-      if (error > 0) AliFatal(Form("Trigger token %s unknown", token.Data()));
-      
-      param = new TParameter<Int_t>(token, bit);
-      fCashedTokens->Add(param);
-      AliDebug(AliLog::kDebug, "Added token");
-    }
-    
-    Long64_t bit = param->GetVal();
-    
-    AliDebug(AliLog::kDebug, Form("Tok %d %d %s %lld", pos[0], pos[1], token.Data(), bit));
-    
-    if (offline) 
-      bit |= AliTriggerAnalysis::kOfflineFlag;
-    
-    if(event && triggerAnalysis) {
-      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
-    }
+/// Evaluate if the given event fulfills a given trigger logic
+///
+/// \param event Pointer to the current event
+/// \param triggerAnalysis Pointer to the TriggerAnlysis class
+/// \param triggerLogic Describing trigger logic; e.g. "V0A && V0C && ZDCTime && !TPCHVdip"
+/// \param offline Offline analysis(?)
+///
+/// \return True if the given event matches the trigger logic
+Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
+						 AliTriggerAnalysis* triggerAnalysis,
+						 const char* triggerLogic, Bool_t offline){
+  auto& formula_and_bits = FindForumla(triggerLogic);
+  auto& trg_formula = formula_and_bits.first;
+  auto& bits = formula_and_bits.second;
+  // Get the values for each individual trigger in the trigger logic string;
+  // These values are the parameters of the TFormula
+  std::vector<Double_t> paras(bits.size());
+  auto offline_flag = offline ? AliTriggerAnalysis::kOfflineFlag : 0;
+  for (size_t i = 0; i < bits.size(); ++i) {
+    typedef AliTriggerAnalysis::Trigger Trigger;
+    Trigger bit = static_cast<Trigger>(bits[i] | offline_flag);
+    paras[i] = triggerAnalysis->EvaluateTrigger(event, bit);
   }
-  
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
-  // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
-  // as the v6 version produces a large amount of warnings at runtime.
-  ROOT::v5::TFormula formula("formula",trigger);
-#else
-  TFormula formula("formula", trigger);
-#endif
-  if (formula.Compile() > 0)
-    AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
-  Bool_t result = formula.Eval(0);
-  
-  AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
-  
-  return result;
+  Double_t dummy_val[] = {0};
+  return trg_formula.EvalPar(dummy_val, paras.data());
 }
 
 //______________________________________________________________________________
@@ -487,7 +463,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       else h.ReadPITConditionsFromDB(runNumber,man->GetDefaultStorage()->GetURI().Data());
       AliITSTriggerConditions* tri = h.GetTriggerConditions();
       if (tri) {
-        Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
         if (fTriggerOADB->GetSH1OuterThreshold()<0) {
           Int_t val = tri->GetAlgoParamValueLI("0SH1",1);
           AliInfo(Form("  SH1OuterThreshold set to %i",val));
@@ -509,10 +484,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
-  }
-  if(!fCashedTokens){
-    fCashedTokens = new TList();
-    fCashedTokens->SetOwner();
   }
   
   fCurrentRun = runNumber;
@@ -540,6 +511,7 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t all                 = histStat->GetBinContent(1);
     Float_t accepted            = histStat->GetBinContent(4);
     Float_t v0and = 0;
+    Float_t plusNoZDCBG           = 0;
     Float_t plusNoSPDClsVsTrkBG   = 0;
     Float_t plusNoV0C012vsTklBG   = 0;
     Float_t plusNoV0MOnVsOfPileup = 0;
@@ -555,9 +527,11 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
     Float_t znInTime          = 0;
-    Bool_t b[16];
+    Float_t noZNABG           = 0;
+    Float_t noZNCBG           = 0;
+    Bool_t b[18];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
-      for (Int_t bit=0;bit<16;bit++) b[bit]=i & 1<<bit;
+      for (Int_t bit=0;bit<18;bit++) b[bit]=i & 1<<bit;
       if (b[ 5]) noSPDClsVsTrkBG  +=histStat->GetBinContent(i+1);
       if (b[ 6]) noV0C012vsTklBG  +=histStat->GetBinContent(i+1);
       if (b[ 7]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
@@ -566,9 +540,37 @@ void AliPhysicsSelection::FillStatistics(){
       if (b[10]) noV0PFPileup     +=histStat->GetBinContent(i+1);
       if (b[11]) noV0Casym        +=histStat->GetBinContent(i+1);
       if (b[15]) znInTime         +=histStat->GetBinContent(i+1);
+      if (b[16]) noZNABG          +=histStat->GetBinContent(i+1);
+      if (b[17]) noZNCBG          +=histStat->GetBinContent(i+1);
       if (!b[ 3]) continue;
       if (!b[ 4]) continue;
       v0and+=histStat->GetBinContent(i+1);
+      if ( // bad event according to ZDC cuts
+          (// Pb-Pb
+            !b[15] && ( (fCurrentRun>=136849 && fCurrentRun<=139517) || //10h
+                        (fCurrentRun>=166477 && fCurrentRun<=170593) || //11h
+                        (fCurrentRun>=243399 && fCurrentRun<=246542) || //15o
+                        (fCurrentRun>=246672 && fCurrentRun<=244823) || //15o
+                        (fCurrentRun>=244890 && fCurrentRun<=245060) || //15o
+                        (fCurrentRun>=245062 && fCurrentRun<=245147) || //15o
+                        (fCurrentRun>=245149 && fCurrentRun<=246994) || //17n
+                        (fCurrentRun>=280234 && fCurrentRun<=280235)
+                      )
+          ) ||
+          (// p-Pb
+            !b[16] && ( (fCurrentRun>=188144 && fCurrentRun<=188374) || //12g
+                        (fCurrentRun>=194713 && fCurrentRun<=196345) || //13bcde
+                        (fCurrentRun>=265304 && fCurrentRun<=266318) || //16qr
+                        (fCurrentRun>=267132 && fCurrentRun<=267166)    //16t
+                      )
+          ) ||
+          (// Pb-p
+            !b[17] && ( (fCurrentRun>=196346 && fCurrentRun<=197411) || //13f
+                        (fCurrentRun>=266405 && fCurrentRun<=267131)    //16s
+                      )
+          )
+      ) continue;
+      plusNoZDCBG+=histStat->GetBinContent(i+1);
       if (!b[ 5]) continue;
       plusNoSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
       if (!b[ 6]) continue;
@@ -587,6 +589,7 @@ void AliPhysicsSelection::FillStatistics(){
     fHistStat->Fill("all",trigger,all);
     fHistStat->Fill("accepted",trigger,accepted);
     fHistStat->Fill("V0A & V0C",trigger,v0and);
+    fHistStat->Fill("+ !ZDCBG",trigger,plusNoZDCBG);
     fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
     fHistStat->Fill("+ !V0C012vsTklBG",trigger,plusNoV0C012vsTklBG);
     fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
@@ -819,4 +822,88 @@ void AliPhysicsSelection::DetectPassName(){
   
   AliInfo(Form("pass name: %s\n",passName.Data()));
   fPassName = passName;
+}
+
+FormulaAndBits& AliPhysicsSelection::FindForumla(const char* triggerLogic) {
+  // Do we have this logic cached? If not, set it up
+  auto it = fTriggerToFormula->find(triggerLogic);
+  if (it == fTriggerToFormula->end()) {
+    std::string trg_logic_formated;
+    std::vector<AliTriggerAnalysis::Trigger> bits;
+
+    TString trigger(triggerLogic);
+    TArrayI pos;
+    Int_t b = 0;
+    Int_t e = 0;
+    TPRegexp trigger_regexp("[[:alpha:]][[:alnum:]]*");
+
+    // Go through the matches and construct a new string where each
+    // match is replaced by a TFormula parameter
+    while (trigger_regexp.Match(trigger, "", e, 1, &pos) != 0) {
+      b = e;
+      e = pos[0];
+      std::string unmatched(trigger.Data() + b, trigger.Data() + e);
+
+      trg_logic_formated.append(unmatched);
+      // Each param in the TFormula will be set as the value behind the trigger bit
+      trg_logic_formated.append(Form("int([%i])", (Int_t)bits.size()));
+
+      b = e;
+      e = pos[1];
+      std::string matched(trigger.Data() + b, trigger.Data() + e);
+
+      TInterpreter::EErrorCode error;
+      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", matched.c_str()), &error);
+
+      if (error > 0)
+	AliFatal(Form("Trigger token %s unknown", matched.c_str()));
+
+      bits.push_back(static_cast<AliTriggerAnalysis::Trigger>(bit));
+    }
+    trg_logic_formated.append({trigger.Data() + e, trigger.Data() + trigger.Length()});
+
+    R5TFormula formula(Form("dummy_name_%zu", fTriggerToFormula->size()), trg_logic_formated.c_str());
+
+    if (formula.Compile() > 0) {
+      AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)",
+		    triggerLogic, trg_logic_formated.c_str()));
+    }
+    // Have the iterator point at the newly inserted element so that
+    // we don't have to look it up in the return statement
+    it = fTriggerToFormula->emplace(std::string(triggerLogic),
+				    std::make_pair(formula, std::move(bits))).first;
+  }
+  return it->second;
+}
+
+TPRegexp& AliPhysicsSelection::FindRegexp(const std::string& triggers) const {
+  auto it = fTriggerToRegexp->find(triggers);
+  if (it != fTriggerToRegexp->end())
+    return it->second; // cache hit
+
+  // cache miss
+  TString pattern((Ssiz_t)(triggers.length() + 32));
+
+  pattern.Append("\\b(?:");
+  for (char c : triggers) {
+    if (c == '[')
+      pattern.Append("(?:");
+    else if (c == ']')
+      pattern.Append(')');
+    else if (c == ',')
+      pattern.Append('|');
+    else
+      pattern.Append(c);
+  }
+  pattern.Append(")\\b");
+
+  TPRegexp re(pattern);
+  re.Match(""); // compile regexp
+  if (!re.IsValid()) {
+    AliFatal(Form("Bad trigger logic %s (corresponding regexp %s)",
+                  triggers.c_str(),
+                  pattern.Data()));
+  }
+
+  return fTriggerToRegexp->emplace(triggers, std::move(re)).first->second;
 }

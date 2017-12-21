@@ -6,7 +6,7 @@
 
 class AliESDEvent;
 class AliMCEvent;
-class AliStack;
+//class AliStack;
 class AliPhysicsSelection;
 class AliESDtrackCuts;
 class AliESDpid;
@@ -28,7 +28,7 @@ class AliAnalysisPIDParticle;
 class TClonesArray;
 class AliCentrality;
 class AliPIDResponse;
-class AliPPVsMultUtils;
+class AliMultSelection;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class TTree;
@@ -67,6 +67,11 @@ public AliAnalysisTaskSE
   void SetTimeResolution(Double_t value) {fTimeResolution = value;}; // setter
   void ProcessV0s();
   void FillHist(Double_t myflag);
+  Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex = NULL);
+  Bool_t SelectVertex2015pp(AliESDEvent *esd,
+			    Bool_t checkSPDres = kTRUE, //enable check on vtx resolution 
+			    Bool_t *SPDandTrkExists = NULL, //ask for both trk and SPD vertex
+			    Bool_t *checkProximity = NULL); //apply cut on relative position of spd and trk verteces
 
  protected:
 
@@ -93,17 +98,17 @@ public AliAnalysisTaskSE
   TH1D *fEvHist;
   /* ESD analysis */
   AliPIDResponse *fPIDResponse; //! PID object
-  AliPPVsMultUtils *fMultiUtils; //! V0M Multi utils
   AliAnalysisUtils *fAnUtils; //! Analysis Utils
   Int_t fRunNumber; // run number
   UInt_t fStartTime; // start time
   UInt_t fEndTime; // end time
   AliESDEvent *fESDEvent; // ESD event
   AliMCEvent *fMCEvent; // MC event
-  AliStack *fMCStack; // MC stack
+  //AliStack *fMCStack; // MC stack
   AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
   AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
   AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit
+  AliESDtrackCuts *fTrackCuts2011Sys; //! TPC only track cuts + refit 
   AliESDpid *fESDpid; // ESD PID
   Bool_t fIsCollisionCandidate; // is collision candidate
   UInt_t fIsEventSelected; // is event selected
@@ -141,7 +146,7 @@ public AliAnalysisTaskSE
   TList *fMCHistoList; // MC histo list
 
   
-  ClassDef(AliAnalysisTaskTPCTOFPID, 2);
+  ClassDef(AliAnalysisTaskTPCTOFPID, 3);
 };
 
 #endif /* ALIANALYSISTASKTPCTOFPID_H */

@@ -1192,7 +1192,7 @@ void AliTrackletAlg::FlagV0s(const AliESDVertex *vtx)
 	k0KF.SetProductionVertex(vertexKF);
 	k0KF.GetMass(mass,massErr);
 	mass -= kK0Mass;
-	if (TMath::Abs(mass)>fCutMassK0 || (massErr>0&&(abs(mass)>massErr*fCutMassK0NSigma))) break;
+	if (TMath::Abs(mass)>fCutMassK0 || (massErr>0&&(TMath::Abs(mass)>massErr*fCutMassK0NSigma))) break;
 	if (k0KF.GetS()<fCutK0SFromDecay) break;
 	k0KF.SetMassConstraint(kK0Mass,0.001);
 	chi2c = (k0KF.GetNDF()!=0) ? k0KF.GetChi2()/k0KF.GetNDF() : 1000;

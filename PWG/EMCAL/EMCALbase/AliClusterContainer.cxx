@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <algorithm>
+#include <cfloat>
 #include <iostream>
 #include <vector>
 #include <TClonesArray.h>
@@ -42,8 +43,12 @@ AliClusterContainer::AliClusterContainer():
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1),
   fIncludePHOS(kFALSE),
+  fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(DBL_MIN),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -64,8 +69,12 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1),
   fIncludePHOS(kFALSE),
+  fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(DBL_MIN),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -328,7 +337,12 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
   }
   
   Bool_t bInAcceptance = clus->IsEMCAL();
-  if (fIncludePHOS) bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
+  if (fIncludePHOS) {
+    bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
+  }
+  if (fIncludePHOSonly) {
+    bInAcceptance = (clus->GetType() == AliVCluster::kPHOSNeutral);
+  }
   if (!bInAcceptance) {
       rejectionReason |= kIsEMCalCut;
       return kFALSE;
@@ -359,6 +373,15 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     return kFALSE;
   }
   
+  if (clus->IsEMCAL()) {
+    if (clus->GetNonLinCorrEnergy() < fEmcalMaxM02CutEnergy) {
+      if(clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) {
+        rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
+        return kFALSE;
+      }
+    }
+  }
+
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
     if (clus->GetUserDefEnergy((VCluUserDefEnergy_t)i) < fUserDefEnergyCut[i]) {
       rejectionReason |= kEnergyCut;
@@ -366,15 +389,17 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     }
   }
   
-  if (fIncludePHOS && clus->GetType() == AliVCluster::kPHOSNeutral) {
-    if (clus->GetNCells() < fPhosMinNcells) {
-      rejectionReason |= kExoticCut;
-      return kFALSE;
-    }
-    
-    if (clus->GetM02() < fPhosMinM02) {
-      rejectionReason |= kExoticCut;
-      return kFALSE;
+  if (fIncludePHOS || fIncludePHOSonly) {
+    if (clus->GetType() == AliVCluster::kPHOSNeutral) {
+      if (clus->GetNCells() < fPhosMinNcells) {
+        rejectionReason |= kExoticCut;
+        return kFALSE;
+      }
+      
+      if (clus->GetM02() < fPhosMinM02) {
+        rejectionReason |= kExoticCut;
+        return kFALSE;
+      }
     }
   }
   

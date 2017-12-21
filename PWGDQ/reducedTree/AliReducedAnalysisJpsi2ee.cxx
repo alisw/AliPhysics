@@ -10,6 +10,7 @@ using std::endl;
 
 #include <TClonesArray.h>
 #include <TIterator.h>
+#include <TList.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -40,8 +41,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
-  fPrefilterNegTracks(),
-  fEventCounter(0)
+  fPrefilterNegTracks()
 {
   //
   // default constructor
@@ -67,8 +67,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
-  fPrefilterNegTracks(),
-  fEventCounter(0)
+  fPrefilterNegTracks()
 {
   //
   // named constructor
@@ -147,7 +146,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsTrackSelected(AliReducedBaseTrack* track, Fl
 //___________________________________________________________________________
 Bool_t AliReducedAnalysisJpsi2ee::IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values/*=0x0*/) {
    //
-   // apply event cuts
+   // apply track prefilter cuts
    //
    if(fPreFilterTrackCuts.GetEntries()==0) return kTRUE;
    
@@ -163,7 +162,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsTrackPrefilterSelected(AliReducedBaseTrack* 
 //___________________________________________________________________________
 Bool_t AliReducedAnalysisJpsi2ee::IsPairSelected(Float_t* values) {
   //
-  // apply event cuts
+  // apply pair cuts
   //
   if(fPairCuts.GetEntries()==0) return kTRUE;
   // loop over all the cuts and make a logical and between all cuts in the list
@@ -360,7 +359,6 @@ void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t mask, Int_t pairType,
          fHistosManager->FillHistClass(Form("%s%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
          if(isMCTruth && pairType==1) fHistosManager->FillHistClass(Form("%s%s_%s_MCTruth", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
       }
-         
    }  // end loop over cuts
 }
 
@@ -378,8 +376,7 @@ void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   Float_t nsigma = 0.;
-   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+   for(Int_t it=0; it<fEvent->NTracks1(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
       //cout << "track " << it << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
@@ -549,14 +546,17 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
    nextPosTrack.Reset();
    for(Int_t ip = fPosTracks.GetEntries()-1 ; ip >= 0; --ip) {
      track = (AliReducedTrackInfo*)nextPosTrack();
-     if(!track->GetFlags()) fPosTracks.Remove(track);
+     if(!track->GetFlags()) {
+        fPosTracks.Remove(track);
+     }
    }
   nextNegTrack.Reset();
   for(Int_t ip = fNegTracks.GetEntries()-1 ; ip >= 0; --ip) {
     track = (AliReducedTrackInfo*)nextNegTrack();
-    if(!track->GetFlags()) fNegTracks.Remove(track);
+    if(!track->GetFlags()) {
+       fNegTracks.Remove(track);
+    }
   }
-
 }
 
 //___________________________________________________________________________
@@ -576,7 +576,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsMCTruth(AliReducedTrackInfo* track) {
    //
    if(TMath::Abs(track->MCPdg(0)) != 11) return kFALSE;
    if(TMath::Abs(track->MCPdg(1)) != 443) return kFALSE;
-   if(track->MCPdg(2) != -9999) return kFALSE;
+   //   if(track->MCPdg(2) != -9999) return kFALSE;
    return kTRUE;
 }
 
@@ -589,8 +589,8 @@ Bool_t AliReducedAnalysisJpsi2ee::IsMCTruth(AliReducedTrackInfo* ptrack, AliRedu
    if(TMath::Abs(ntrack->MCPdg(0)) != 11) return kFALSE;
    if(TMath::Abs(ptrack->MCPdg(1)) != 443) return kFALSE;
    if(TMath::Abs(ntrack->MCPdg(1)) != 443) return kFALSE;
-   if(ptrack->MCPdg(2) != -9999) return kFALSE;
-   if(ntrack->MCPdg(2) != -9999) return kFALSE;   
+   //if(ptrack->MCPdg(2) != -9999) return kFALSE;
+   //if(ntrack->MCPdg(2) != -9999) return kFALSE;   
    if(TMath::Abs(ptrack->MCLabel(1)) != TMath::Abs(ntrack->MCLabel(1))) return kFALSE;
    return kTRUE;
 }
@@ -607,7 +607,6 @@ void AliReducedAnalysisJpsi2ee::FillMCTruthHistograms() {
   AliReducedTrackInfo* leg2=0x0;
   TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  Float_t nsigma = 0.;
   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;

@@ -603,6 +603,62 @@ Double_t AliHFCorrFitter::FindBaseline(){
    return fBaseline;     
  }
  
+ if(fFixBase==10){// use fit range and add its statistical uncertainty (to stay on upper edge of fitted baseline)
+   Double_t errAv=0.,av=0.;     
+   for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
+     Printf("Bin %d range %f: %f content %f error",binPhi,fHist->GetBinLowEdge(binPhi),fHist->GetBinContent(binPhi),fHist->GetBinError(binPhi));
+     Printf("max and min range:%f and %f",fMaxBaselineRange,fMinBaselineRange);
+     if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+     
+     if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+   }
+   
+   av/=errAv;
+   errAv=TMath::Sqrt(1./errAv);
+   //  av/=2;
+   //  errAv/=2;
+   printf("Average fBaseline: %f +- %f \n",av,errAv);
+   fBaseline=av+errAv;
+   fErrbaseline=errAv;
+   return fBaseline;     
+ }
+
+ if(fFixBase==20){// use fit range and subtract its statistical uncertainty (to stay on lower edge of fitted baseline)
+   Double_t errAv=0.,av=0.;     
+   for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
+     Printf("Bin %d range %f: %f content %f error",binPhi,fHist->GetBinLowEdge(binPhi),fHist->GetBinContent(binPhi),fHist->GetBinError(binPhi));
+     Printf("max and min range:%f and %f",fMaxBaselineRange,fMinBaselineRange);
+     if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+     
+     if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+   }
+   
+   av/=errAv;
+   errAv=TMath::Sqrt(1./errAv);
+   //  av/=2;
+   //  errAv/=2;
+   printf("Average fBaseline: %f +- %f \n",av,errAv);
+   fBaseline=av-errAv;
+   fErrbaseline=errAv;
+   return fBaseline;     
+ }
+
  Printf("AliHFCorrFitter::FindBaseline   WRONG BASELINE OPTION SET, RETURNING -999");
  return -999.;
     

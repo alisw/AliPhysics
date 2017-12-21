@@ -23,7 +23,7 @@ class AliVCluster;
 
 class AliCaloClusterInfo : public TObject{
  public:
- 
+
   AliCaloClusterInfo();
   AliCaloClusterInfo(AliVCluster* const clust, Int_t relID[4]);
   AliCaloClusterInfo(const AliCaloClusterInfo &src);

@@ -37,6 +37,7 @@
 #pragma link C++ class EmcHit+;
 #pragma link C++ class AliAnalysisTaskNeutralMesons+;
 #pragma link C++ class AliAnalysisTaskGammaHadron+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0GammaCorr+;
 
 ///I (Astrid) decide to put all my classes at the end because the list above is already not in alphabetical order :)
 #pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;

@@ -40,16 +40,16 @@ fWeightMuon(kFALSE),
 fAccEffHisto(0x0),
 fMinvBinSeparator("+"),
 fsystLevel(systLevel),
+fPtFuncOld(0x0),
+fPtFuncNew(0x0),
+fYFuncOld(0x0),
+fYFuncNew(0x0),
 fBinsToFill(0x0),
 fMinvBinSize(0.025),
 fMinvMin(0.0),
 fMinvMax(16.0),
 fmcptcutmin(0.0),
-fmcptcutmax(12.0),
-fPtFuncOld(0x0),
-fPtFuncNew(0x0),
-fYFuncOld(0x0),
-fYFuncNew(0x0)
+fmcptcutmax(12.0)
 {
   // FIXME ? find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")
 

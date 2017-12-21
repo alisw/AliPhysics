@@ -38,7 +38,12 @@ TString strAverage;
 Bool_t v2systOn=kFALSE;
 Bool_t plotv2Separated=kFALSE;
 Double_t v2D=0.,v2had=0.;
-void SetV2values(Bool_t usev2=kTRUE,Double_t v2Dmes=0.1,Double_t v2hadrons=0.1, Bool_t plotseparate=kFALSE){
+Bool_t saveAwaySide=kFALSE;
+void SetSaveAwaySidePlots(Bool_t saveAS){
+  saveAwaySide=saveAS;
+}
+
+void SetV2values(Bool_t usev2=kTRUE,Double_t v2hadrons=0.1,Double_t v2Dmes=0.1, Bool_t plotseparate=kFALSE){
   v2systOn=usev2;
   plotv2Separated=plotseparate;
   v2D=v2Dmes;
@@ -140,7 +145,11 @@ void Systematics_pPb_lowpthad(Bool_t useReflected){
         return;
     }
  
-      systfitter->DrawFinalPlots(); // draws the final trend plots
+
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
+
+
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb",outputpath.Data()));
@@ -152,7 +161,8 @@ void Systematics_pPb_lowpthad(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+	else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
 
@@ -244,7 +254,8 @@ void Systematics_pPb_highpthad(Bool_t useReflected){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-   systfitter->DrawFinalPlots(); // draws the final trend plots
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb",outputpath.Data()));
@@ -255,7 +266,8 @@ void Systematics_pPb_highpthad(Bool_t useReflected){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-     systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
 }
@@ -352,7 +364,8 @@ void Systematics_pPb_integratedpthad(Bool_t useReflected){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
     
-    systfitter->DrawFinalPlots(); // draws the final trend plots
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb",outputpath.Data()));
@@ -363,7 +376,8 @@ void Systematics_pPb_integratedpthad(Bool_t useReflected){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)  systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
     
     // systfitter->CheckHisto(1);
 }
@@ -404,7 +418,7 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
-    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->SetIspPb(kFALSE); // kTrue for pPb, kFALSE for pp
     //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
 
@@ -416,14 +430,26 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     if(useReflected){
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -473,7 +499,8 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    systfitter->DrawFinalPlots(); // draws the final trend plots
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
@@ -485,7 +512,8 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+	else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
 }
@@ -524,7 +552,7 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
-    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->SetIspPb(kFALSE); // kTrue for pPb, kFALSE for pp
     //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
@@ -535,14 +563,26 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     if(useReflected){
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -590,7 +630,8 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    systfitter->DrawFinalPlots(); // draws the final trend plots
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
@@ -602,7 +643,8 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
 }
@@ -641,7 +683,7 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
-    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->SetIspPb(kFALSE); // kTrue for pPb, kFALSE for pp
     //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
@@ -652,14 +694,26 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     if(useReflected){
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      if(strTemplRootName.Contains("EPOS3")){
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+      }
+      else{
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -706,7 +760,8 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    systfitter->DrawFinalPlots(); // draws the final trend plots
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
     gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
@@ -718,7 +773,8 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
 }

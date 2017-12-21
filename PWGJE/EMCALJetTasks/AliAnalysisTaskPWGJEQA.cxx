@@ -63,10 +63,16 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fMaxPt(250),
   fNTotTracks(0),
   fLeadingTrack(),
-  fGeneratorLevel(0),
+  fDoTrackQA(kTRUE),
+  fDoCaloQA(kTRUE),
+  fDoJetQA(kTRUE),
+  fDoEventQA(kTRUE),
   fGeneratorLevelName(),
-  fDetectorLevel(0),
   fDetectorLevelName(),
+  fRejectOutlierEvents(kFALSE),
+  fIsPtHard(kFALSE),
+  fGeneratorLevel(0),
+  fDetectorLevel(0),
   fNPtHistBins(0),
   fPtHistBins(0),
   fNEtaHistBins(0),
@@ -81,14 +87,8 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fPtResHistBins(0),
   fNIntegerHistBins(0),
   fIntegerHistBins(0),
-  fHistManager("AliAnalysisTaskPWGJEQA"),
-  fDoTrackQA(kTRUE),
-  fDoCaloQA(kTRUE),
-  fDoJetQA(kTRUE),
-  fDoEventQA(kTRUE),
-  fRejectOutlierEvents(kFALSE),
-  fIsPtHard(kFALSE),
-  fPHOSGeo(nullptr)
+  fPHOSGeo(nullptr),
+  fHistManager("AliAnalysisTaskPWGJEQA")
 {
   // Default constructor.
   memset(fNTotClusters, 0, sizeof(Int_t)*3);
@@ -106,10 +106,16 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fMaxPt(250),
   fNTotTracks(0),
   fLeadingTrack(),
-  fGeneratorLevel(0),
+  fDoTrackQA(kTRUE),
+  fDoCaloQA(kTRUE),
+  fDoJetQA(kTRUE),
+  fDoEventQA(kTRUE),
   fGeneratorLevelName(),
-  fDetectorLevel(0),
   fDetectorLevelName(),
+  fRejectOutlierEvents(kFALSE),
+  fIsPtHard(kFALSE),
+  fGeneratorLevel(0),
+  fDetectorLevel(0),
   fNPtHistBins(0),
   fPtHistBins(0),
   fNEtaHistBins(0),
@@ -124,14 +130,8 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fPtResHistBins(0),
   fNIntegerHistBins(0),
   fIntegerHistBins(0),
-  fHistManager(name),
-  fDoTrackQA(kTRUE),
-  fDoCaloQA(kTRUE),
-  fDoJetQA(kTRUE),
-  fDoEventQA(kTRUE),
-  fRejectOutlierEvents(kFALSE),
-  fIsPtHard(kFALSE),
-  fPHOSGeo(nullptr)
+  fPHOSGeo(nullptr),
+  fHistManager(name)
 {
   // Standard
   memset(fNTotClusters, 0, sizeof(Int_t)*3);
@@ -315,7 +315,6 @@ void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
     // Allocate THnSparse
-    Double_t jetRadius = jets->GetJetRadius();
     
     TString axisTitle[30]= {""};
     Int_t nbins[30]  = {0};
@@ -777,7 +776,7 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
   
   // If Pt-hard production, get the Pt-hard of the event, and have possibility to reject the event for jet outliers
   if (fIsPtHard) {
-    AliGenPythiaEventHeader* pygen;
+    AliGenPythiaEventHeader* pygen = nullptr;
     if (MCEvent()) {
       pygen = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
       if (!pygen) {

@@ -167,12 +167,14 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   esdHadrCuts->SetRequireSigmaToVertex(kFALSE);
   esdHadrCuts->SetRequireTPCRefit(kTRUE);
   esdHadrCuts->SetRequireITSRefit(kFALSE);
-  esdHadrCuts->SetMinNClustersITS(3);
-  esdHadrCuts->SetMinNClustersTPC(70);
+  esdHadrCuts->SetMinNClustersITS(2);
+//esdHadrCuts->SetMinNClustersTPC(70);
+  esdHadrCuts->SetMinNCrossedRowsTPC(70);
+  esdHadrCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   esdHadrCuts->SetMaxChi2PerClusterTPC(4);
 //esdHadrCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdHadrCuts->SetMaxDCAToVertexZ(1.);
-  esdHadrCuts->SetMaxDCAToVertexXY(0.25);
+  esdHadrCuts->SetMaxDCAToVertexXY(1.);
   esdHadrCuts->SetEtaRange(-eta,eta);
   esdHadrCuts->SetPtRange(0.3,1.e10);
 
@@ -246,13 +248,13 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   HFCorrelationCuts->SetMCEventTypes(MCEvTypeArray);
 
   //Define sideband edges (if set externally in the AddTask file)
-  Double_t LSBLow[15] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-  Double_t LSBUpp[15] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.,0.};
-  Double_t RSBLow[15] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.,0.};
-  Double_t RSBUpp[15] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.,0.};
+  Double_t LSBLow[14] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
+  Double_t LSBUpp[14] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.};
+  Double_t RSBLow[14] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.};
+  Double_t RSBUpp[14] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.};
 
-  TVectorD vLSBLow(15,LSBLow);
-  TVectorD vLSBUpp(15,LSBUpp);
+  TVectorD vLSBLow(14,LSBLow);
+  TVectorD vLSBUpp(14,LSBUpp);
   TVectorD vRSBLow(15,RSBLow);
   TVectorD vRSBUpp(15,RSBUpp);
 

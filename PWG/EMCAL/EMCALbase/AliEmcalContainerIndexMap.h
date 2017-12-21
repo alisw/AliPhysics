@@ -125,8 +125,8 @@ class AliEmcalContainerIndexMap {
  */
 template<class U, class V>
 AliEmcalContainerIndexMap<U, V>::AliEmcalContainerIndexMap():
-  fOffset(100000),
   fGlobalIndexMap(),
+  fOffset(100000),
   fClass(TClass::GetClass(typeid(V)))
 {
 }
@@ -136,8 +136,8 @@ AliEmcalContainerIndexMap<U, V>::AliEmcalContainerIndexMap():
  */
 template<class U, class V>
 AliEmcalContainerIndexMap<U, V>::AliEmcalContainerIndexMap(const AliEmcalContainerIndexMap<U, V> & map):
-  fOffset(map.fOffset),
   fGlobalIndexMap(map.fGlobalIndexMap),
+  fOffset(map.fOffset),
   fClass(map.fClass) // Should be okay to be the same pointer, as it just points to the class type
 {
 }

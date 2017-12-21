@@ -16,7 +16,7 @@
 //
 // Jet fragmentation transverse momentum (j_T) analysis task
 //
-// Author: Beomkyu Kim, Beomsu Chang, Dongjo Kim
+// Author: Beomkyu Kim, Beomsu Chang, Dongjo Kim, Tomas Snellman
 
 #include <TClonesArray.h>
 #include <TH1F.h>
@@ -231,7 +231,7 @@ Bool_t AliJJetTask::FillHistograms()
       continue;
     }
 
-    fJetsCont[i]->ResetCurrentID(); // FIXME:Comments me //Needed to reset internal iterator
+    fJetsCont[i]->ResetCurrentID(); //Needed to reset internal iterator
     AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
     int iJet =0; 
 
@@ -245,7 +245,7 @@ Bool_t AliJJetTask::FillHistograms()
       //== TRACK or Particle
       int nTrack = jet->GetNumberOfTracks();
       for (int it=0; it<nTrack; it++){
-        int iTrack = jet->TrackAt(it);
+        int iTrack = jet->TrackAt(it)%10000; //FIXME Should be 100 000?
         if( fTrackOrMCParticle[i] == kJRecoTrack ){
           j->AddConstituent(fJTracks[iTrack]); // Save as pointers
         } else {

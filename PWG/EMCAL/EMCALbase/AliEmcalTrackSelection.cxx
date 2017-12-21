@@ -15,6 +15,8 @@
 #include <AliEmcalTrackSelection.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <AliESDtrackCuts.h>
+#include <AliEmcalESDtrackCutsWrapper.h>
 #include <AliLog.h>
 #include <AliVCuts.h>
 #include <AliVTrack.h>
@@ -77,11 +79,20 @@ AliEmcalTrackSelection::~AliEmcalTrackSelection() {
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
+  AliInfoStream() << "Adding trackc cuts " << cuts->GetName() << " of type " << cuts->IsA()->GetName() << std::endl;
   if(!fListOfCuts){
     fListOfCuts = new TObjArray;
     fListOfCuts->SetOwner(true);
   }
-  if(cuts) fListOfCuts->Add(new AliEmcalManagedObject(cuts, true));
+  if(cuts) {
+    // Special treatment for AliESDtrackCuts:
+    // As the function IsSelected is not properly implemented for AliAODTracks
+    // a wrapper needs to be used, which handles the expected behaviour for
+    // both AliESDtracks and AliAODTracks
+    AliVCuts *mycuts = cuts;
+    if(AliESDtrackCuts *esdcuts = dynamic_cast<AliESDtrackCuts *>(cuts)) mycuts = new PWG::EMCAL::AliEmcalESDtrackCutsWrapper(esdcuts->GetName(), esdcuts);
+    fListOfCuts->Add(new AliEmcalManagedObject(mycuts, true));
+  } 
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){

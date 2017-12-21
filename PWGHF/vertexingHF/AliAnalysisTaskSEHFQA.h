@@ -229,6 +229,9 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH1F* fHisxvtxSelEv;                        //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisyvtxSelEv;                        //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHiszvtxSelEv;                        //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH1F* fHisxvtxSelEvWithD;                   //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH1F* fHisyvtxSelEvWithD;                   //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH1F* fHiszvtxSelEvWithD;                   //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisWhichVert;                        //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisWhichVertSelEv;                   //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisTrigCent;                         //!<!  Histo. of output slot #7 (fOutputEvSelection)
@@ -239,6 +242,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisnClsITSvsNtrackletsSel;           //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtx;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSel;                 //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH2F* fHiszvtxvsSPDzvtxSelWithD;            //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisFEvents;                          //!<!  Histo. of output slot #8 (fOutputFlowObs)
  TH3F* fHisTPCVZE_AngleQ;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
  TH2F* fHisCentVsMultRPS;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
@@ -247,7 +251,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,17); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,18); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

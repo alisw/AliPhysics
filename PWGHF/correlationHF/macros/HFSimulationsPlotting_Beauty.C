@@ -20,7 +20,7 @@
 TString directory = "";
 Int_t nhistos=12; //pPb2016 = 32, pPb2013 = 6, pp 2013 = 9 - it's N_Dspecies*N_pT(D)
 TString * filenames = new TString[nhistos];
-TString genName = "Perugia2011";
+TString genName = "Pythia8wBoost";
 
 Int_t HFSimulationsPlotting_Beauty(){
     
@@ -34,7 +34,7 @@ Int_t HFSimulationsPlotting_Beauty(){
     LoadLibraries();
     
     //Step 2: Correlations + thr options + name ?
-    TString filename="AnalysisResults_Perugia2011_Boost.root";
+    TString filename="AnalysisResults_pPb5TeV_Pythia8_Boost.root";
     Bool_t Savingfiles= kTRUE; //Want to save your files ?
     
     DoCorreleations(filename, Savingfiles);
@@ -52,7 +52,7 @@ void DoCorreleations(const char *infile="", Bool_t fSave){
         cout<< " No Sim Corr directory "<< Form("KineSimulations") << " found, exiting... "<<endl;
     }
     
-    TString objectoutputSpecific ="SpecificPerugia2011WBoost";
+    TString objectoutputSpecific ="SpecificPythia8wBoost";
     TList *SimCorrSpecificlist = (TList*)Simulationsdirectory->Get(objectoutputSpecific);
     if(!SimCorrSpecificlist){
         cout<< " No Sim Specific Plots list  "<< Form(SimCorrSpecificlist) << " found, exiting... "<<endl;
@@ -126,16 +126,22 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     THnSparseD *HFCorrelations = (THnSparseD*)CorrelationListtemp->FindObject("2PCorrBtwn_HF-hadron");
     if(!HFCorrelations)return;
     THnSparseD *HFCorrelationsSoftPi =  (THnSparseD *)HFCorrelations->Clone(FileName.Data());
+    THnSparseD *HFCorrelationsSecEl =   (THnSparseD *)HFCorrelations->Clone(FileName.Data());
     THnSparseD *HFCorrelationsCorr =  (THnSparseD *)HFCorrelations->Clone(FileName.Data());
     
     //Correlations
     TCanvas *Corr2D = new TCanvas("cDeltaPhiEta","cDeltaPhiEta",800,800);
     TH2D *Correlations2D = ComputeCorrelations(HFCorrelationsCorr, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
-    if(DMeson == "Dzero"){
+    if(DMeson == "Dzero"){ //deactivate softpi removal, since we already just project for primary pi,K,p,e,mu!
         //Soft Pions Case of D0
-        TH2D *SoftCorrelations2D = SoftPionRemoval(HFCorrelationsSoftPi, DMeson.Data(), DMesonpTRange.Data(), pTasso , "softPion");
-        Correlations2D->Add(SoftCorrelations2D, -1);
+//        TH2D *SoftCorrelations2D = SoftPionRemoval(HFCorrelationsSoftPi, DMeson.Data(), DMesonpTRange.Data(), pTasso , "softPion");
+//        Correlations2D->Add(SoftCorrelations2D, -1);
     }
+    
+    //Secondary electrons removal
+    TH2D *SecElCorrelations2D = SecondaryElectronRemoval(HFCorrelationsSecEl, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
+    Correlations2D->Add(SecElCorrelations2D, -1);    
+    
     Correlations2D->GetYaxis()->SetTitle("#Delta #eta");
     Correlations2D->GetYaxis()->SetTitleOffset(1.3);
     Correlations2D->GetXaxis()->SetTitle("#Delta #phi");
@@ -216,6 +222,7 @@ TH2D *ComputeCorrelations(THnSparse *sparse, const TString DMesonType, const TSt
     sparse->GetAxis(0)->SetRange(Particle, Particle);
     sparse->GetAxis(1)->SetRangeUser(DpTmin*1.001, DpTmax*0.999);
     sparse->GetAxis(3)->SetRangeUser(AssopTmin*1.0001, AssopTmax*0.9999);
+    sparse->GetAxis(7)->SetRangeUser(3,10); //take only primary pi,K,p,e,mu, flaggeed as 1-5, so bins 3 to 7!
     
     TH2D *h = sparse->Projection(6,5);
     h->SetName(hname.Data());
@@ -303,6 +310,42 @@ TH2D *SoftPionRemoval(THnSparse *sparseSoftPi, const TString DMesonType, const T
 }
 
 
+TH2D *SecondaryElectronRemoval(THnSparse *sparseSecEl, const TString DMesonType, const TString DpTrange, const Double_t pTSecEl, const TString hname = "hnamePro"){
+       
+    Double_t DpTmin = 0, DpTmax = 0;
+    if(DpTrange == "3To5")       DpTmin = 3.00 , DpTmax = 5.00;
+    else if(DpTrange == "5To8")  DpTmin = 5.00 , DpTmax = 8.00;
+    else if(DpTrange == "8To16") DpTmin = 8.00 , DpTmax = 16.00;
+    else if(DpTrange == "16To24") DpTmin = 16.00 , DpTmax = 24.00;
+    else {cout << "Select Proper pT of D Meson" << endl;}
+    
+    Double_t AssopTmin = 0, AssopTmax = 0;
+    if(pTSecEl == 1)       AssopTmin = 0.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 2)  AssopTmin = 0.00 , AssopTmax = 1.00;
+    else if(pTSecEl == 3)  AssopTmin = 1.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 4)  AssopTmin = 2.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 5)  AssopTmin = 3.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 6)  AssopTmin = 1.00 , AssopTmax = 2.00;
+    else if(pTSecEl == 7)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTSecEl == 8)  AssopTmin = 2.00 , AssopTmax = 3.00;
+    else {cout << "Select Proper pT of Assocated Tracks " << endl;}
+    
+    cout << "SecElon: Assoc --> Min pT = " << AssopTmin<< " and Max pT =  " << AssopTmax<< endl;
+    
+    sparseSecEl->GetAxis(0)->SetRange(5, 7); //D0
+    sparseSecEl->GetAxis(1)->SetRangeUser(DpTmin*1.001, DpTmax*0.999);
+    sparseSecEl->GetAxis(3)->SetRangeUser(AssopTmin*1.0001, AssopTmax*0.999);
+    sparseSecEl->GetAxis(7)->SetRange(9, 9); //gamma conversion
+    
+    TH2D *hSecEl = sparseSecEl->Projection(6,5);
+    cout<<"Number of Soft Entries ------> = "<<hSecEl->GetEntries()<<endl;
+    
+    hSecEl->SetName(hname.Data());
+    hSecEl->SetMarkerColor(kRed);
+    hSecEl->SetMarkerStyle(20);
+    hSecEl->SetMarkerSize(1.3);
+    return hSecEl;
+}
 
 // Plot comparison..
 

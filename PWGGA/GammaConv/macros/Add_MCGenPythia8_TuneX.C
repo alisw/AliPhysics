@@ -1,10 +1,22 @@
+AliGenerator* CreatePythia8Gen( Float_t e_cms,
+                                Int_t tune,
+                                Bool_t kCR,
+                                Int_t kF,
+                                Int_t kProcess,
+                                Double_t ptHardMin,
+                                Double_t ptHardMax,
+                                Bool_t longlived
+                            );
+
 AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760., 
                                         Int_t tune          = 5, 
                                         Bool_t kCR          = kTRUE, 
                                         Int_t kF            = 1, 
                                         Int_t kProcess      = 0, 
                                         Double_t ptHardMin  = 0, 
-                                        Double_t ptHardMax  = 1.
+                                        Double_t ptHardMax  = 1.,
+                                        Bool_t longlived = kFALSE
+
                                     ) {
     // Add Pythia 8 generator: 
     //    -kProcess=0  MB generation
@@ -15,7 +27,7 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax);
+    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax,longlived);
     
     return genP;
 }
@@ -26,7 +38,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
                                 Int_t kF, 
                                 Int_t kProcess, 
                                 Double_t ptHardMin, 
-                                Double_t ptHardMax
+                                Double_t ptHardMax,
+                                Bool_t longlived
                             ) {
     
     gSystem->Load("libpythia6");
@@ -39,7 +52,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
 
 
-    AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
+    AliGenPythiaPlus* gener = new AliGenPythiaPlus(pythia);
 
     std::cout << "*****************************************************************" << std::endl;
     std::cout << "Process: "<< kProcess << "\t Color reconnection: "<< kCR << "\t Tune: " << tune << "\t kFactor: "<< kF <<  std::endl;
@@ -55,7 +69,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     
     if(kProcess==1) {
         gener->SetProcess(kPyJets);
-        std::cout << "went into jet loop" << endl;
+        std::cout << "went into jet loop" << std::endl;
         if(ptHardMin > 0.){ 
             std::cout << "Setting pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
             gener->SetPtHard(ptHardMin,ptHardMax);
@@ -84,5 +98,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         
     (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
     
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }

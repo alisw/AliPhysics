@@ -2,7 +2,10 @@
 AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", Bool_t IsMC = kFALSE, Bool_t IsWeakExclude = kFALSE ,
 		Bool_t IsCentFlat = kFALSE, Int_t FilterBit = 768 , double eta_min = 0.4, double eta_max = 0.8, 
 		double pt_min = 0.2, double pt_max = 5.0, int effMode = 0, Bool_t IsPhiModule = kFALSE, TString InFileNameNUE  = "", int debuglevel = 0, TString suffix = ""){
-    TString combinedName = taskName+suffix;
+    TString combinedName = taskName;
+	if(suffix.Length() > 0)
+		combinedName += "_"+suffix;
+	//TString combinedName = taskName+" "+suffix;
     //
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
 	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;

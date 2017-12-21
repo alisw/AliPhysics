@@ -1,66 +1,31 @@
 // -*- C++ -*-
 // $Id$
 
+#include <sstream>
 
-void MakeLumiRegion_4269() {
-  gROOT->LoadMacro("AliLuminousRegionFit.cxx+");
-  gROOT->LoadMacro("Util.C");
+#include "AliLuminousRegionFit.h"
+#include "AliVdMData.h"
 
-  const ScanData sd[] = {  
-    { 4269,
-      11,
-      "root/4269/AnalysisResults_234040_allparams.root",
-      "txt/4269/SepVStime.out",
-      "Scan1",
-      "Scan1X", 0, 1440534260, 1440535435, 0,
-      "Scan1Y", 1, 1440535779, 1440536959, 0
-    },
-    
-    { 4269,
-      11,
-      "root/4269/AnalysisResults_234040_allparams.root",
-      "txt/4269/SepVStime.out",
-      "Scan2",
-      "Scan2X", 0, 1440537438, 1440538613, 0,
-      "Scan2Y", 1, 1440538946, 1440540071, 0
-    },
-    
-    { 4269,
-      11,
-      "root/4269/AnalysisResults_234045_allparams.root",
-      "txt/4269/SepVStime.out",
-      "ScanOffset",
-      "ScanOffsetX", 0, 1440543600, 1440544900, 336,
-      "ScanOffsetY", 1, 1440545550, 1440546900, 372
-    }
-  };
+void MakeLumiRegion()
+{
+  AliVdMData d(AliVdMData::GetFileName("4937/4937.xml"));
 
-  const Int_t n = sizeof(sd)/sizeof(ScanData);
+  const TString vtxFileName = "4269/4269_vtx.root";
+  const TCut    vtxCuts     = "ntrksTRKnc>=11 && chi2/ntrksTRKnc<2";
+  const TCut    bkgdCuts    = "timeAD.A>55.7 && timeAD.A<57.8 && timeAD.C>64.3 && timeAD.C<66 && timeV0.C>1.8 && timeV0.C<3.5 && timeV0.A>9.8 && timeV0.A<11.4";
+  const Int_t   bcidSel     = -1; // all BCIDs
 
-  // fill 4269
-  const Int_t bcs[9] = {
-    -1,   //all
-    1465, //BCM5  1465H1L2098H
-    1625, //BCM6  1625H1L1938H
-    1785, //BCM7  1785H1L1778H
-    1945, //BCM8  1945H1L1618H
-    2065, //BCM9  2065H1L1498H
-    3067, //BCM10 3067H1L496H
-    3267, //BCM11 3267H1L296H
-    3467  //BCM12 3467H1L96H
-  };
-  
+  std::for_each(d.GetScansBegin(), d.GetScansEnd(), [&](const AliXMLEngine::Node& n) {
+      std::istringstream iss(n.GetData());
+      AliLuminousRegionFit f(d.GetFillNumber(),
+                             AliVdMData::GetFileName(vtxFileName),
+                             iss);
+      f.DoFit(AliVdMData::GetScanName(n),
+              AliVdMData::GetScanType(n),
+              std::stoi(n.GetAttr("offset_um").GetData()),
+              vtxCuts*bkgdCuts,
+              bcidSel);
+    });
 
-  for (Int_t i=0; i<n; ++i) {
-    CheckCopyFile(sd[i].vtxFileName);
-    for (Int_t j=0; j<1; ++j) {
-      Int_t bcid = bcs[j];
-      AliLuminousRegionFit f(sd[i].fillNumber,
-			     sd[i].minNumberOfTracks,
-			     sd[i].vtxFileName,
-			     sd[i].sepFileName);
-      f.DoFit(sd[i].scanName1, sd[i].t1, sd[i].t2, sd[i].scanType1, sd[i].offset1, bcid);
-      f.DoFit(sd[i].scanName2, sd[i].t3, sd[i].t4, sd[i].scanType2, sd[i].offset2, bcid);
-    }
-  }
+  Printf("#scans: %ld", std::distance(d.GetScansBegin(), d.GetScansEnd()));
 }

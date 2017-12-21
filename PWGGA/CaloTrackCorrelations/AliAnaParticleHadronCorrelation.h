@@ -22,7 +22,7 @@
 //_________________________________________________________________________
 
 #include "AliAnaCaloTrackCorrBaseClass.h"
-class AliAODPWG4ParticleCorrelation ;
+class AliCaloTrackParticleCorrelation ;
 
 class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
@@ -50,17 +50,17 @@ public:
   
   // Main analysis methods
   
-  Bool_t       FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle);
+  Bool_t       FindLeadingOppositeHadronInWindow(AliCaloTrackParticleCorrelation * particle);
   
   Bool_t       GetDecayPhotonMomentum   (Int_t indexPhoton1, Int_t indexPhoton2, Int_t idetector);
   
-  void         MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
+  void         MakeChargedCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
   
-  void         MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
+  void         MakeNeutralCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
   
   void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair) ;
   
-  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation * particle) ;
+  void         MakeChargedMixCorrelation(AliCaloTrackParticleCorrelation * particle) ;
   
   // Filling histogram methods
   
@@ -96,7 +96,7 @@ public:
                                                          Float_t zT,       Float_t hbpZT,
                                                          Float_t deltaPhi);
   
-  void         InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex);
+  void         InvMassHisto(AliCaloTrackParticleCorrelation * trigger, Int_t mcIndex);
   
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   

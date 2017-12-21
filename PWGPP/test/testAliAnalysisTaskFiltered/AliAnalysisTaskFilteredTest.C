@@ -1,27 +1,31 @@
-/*
-   Macro to test functionality of the AnliAnalysisTaskFiltered.
-   To be used within UnitTest suit
-   $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
-   To test:
-   1.) CPU/Memory/Data volume
-   2.) Relative fracion of the information in exported trees
-   3.) Compression for points
+/*!
+    \ingroup PWGPP
+    \brief  ## Test of AliAnalysisTaskFiltered  class
 
-   Author of test:
-   marian.ivanov@cern.ch
-   
+    ## Macro to test functionality of the AliAnalysisTaskFiltered.
+    To be used within UnitTest suit
+    $AliPhysics_SRC/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+    To test:
+        - 1.) CPU/Memory/Data volume
+        -  2.) Relative fraction of the information in exported trees
+        -  3.) Compression for points
+    \author marian  Ivanov marian.ivanov@cern.ch
 */
+
+
 void CheckOutput();
-void AliAnalysisTaskFilteredTest( const char* esdList,   
-		       Float_t scalingTracks,
-		       Float_t scalingV0,
-		       Float_t scalingFriend,		       
-		       const char* ocdb ,
-		       Int_t nFiles,  
-		       Int_t firstFile, 
-		       Int_t nEvents, 
-		       Int_t firstEvent,
-		       Bool_t mc=kFALSE)
+
+void AliAnalysisTaskFilteredTest(const char *esdList,
+                                 Int_t run = 0,
+                                 Float_t scalingTracks = 1,
+                                 Float_t scalingV0 = 1,
+                                 Float_t scalingFriend = 1,
+                                 const char *ocdb = "cvmfs://",
+                                 Int_t nFiles = 100000,
+                                 Int_t firstFile = 0,
+                                 Int_t nEvents = 1000000000,
+                                 Int_t firstEvent = 0,
+                                 Bool_t mc = kFALSE)
 {
     TStopwatch timer;
     timer.Start();
@@ -32,15 +36,6 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     printf("nFiles=%d\n",nFiles);
 
     gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD");
-
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libTender");
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGUDbase");
-    gSystem->Load("libTPCcalib");
-    gSystem->Load("libPWGPP");
-    gSystem->Load("libPWGLFspectra");
 
     //____________________________________________//
     // Make the analysis manager
@@ -57,16 +52,15 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     //handler->SetReadTR(kFALSE);
     if (mc) mgr->SetMCtruthEventHandler(handlerMC);
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AddTaskCDBconnect(ocdb);
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    AddTaskCDBconnect(ocdb,run);
 
     if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
       gROOT->LoadMacro("localOCDBaccessConfig.C");
       localOCDBaccessConfig();
     }
     // Create input chain
-    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGUD/macros/CreateESDChain.C");
-    TChain* chain = CreateESDChain(esdList, nFiles,firstFile);
+    TChain* chain = AliXRDPROOFtoolkit::MakeChain(esdList, "esdTree",0,nFiles,firstFile);
 
     if(!chain) {
         printf("ERROR: chain cannot be created\n");
@@ -82,7 +76,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     //
     // Wagons to run 
     //
-    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGPP/macros/AddTaskFilteredTree.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskFilteredTree.C");
     AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("Filtered.root");
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);

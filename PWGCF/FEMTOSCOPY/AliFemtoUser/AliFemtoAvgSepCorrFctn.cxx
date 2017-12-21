@@ -29,8 +29,12 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   fDenominatorNegPos(0),
   fNumeratorNegNeg(0),
   fDenominatorNegNeg(0),
-  fNumeratorBac(0),
-  fDenominatorBac(0),
+  fNumeratorBacTrack(0),
+  fDenominatorBacTrack(0),
+  fNumeratorBacPos(0),
+  fDenominatorBacPos(0),
+  fNumeratorBacNeg(0),
+  fDenominatorBacNeg(0),
   fRatio(0),
   fPairType(kTracks)
 {
@@ -92,10 +96,24 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
 
   char tTitNumBac[101] = "NumXiTrackBac";
   strncat(tTitNumBac, title, 100);
-  fNumeratorBac = new TH1D(tTitNumBac, title, nbins, Low, High);
+  fNumeratorBacTrack = new TH1D(tTitNumBac, title, nbins, Low, High);
   char tTitDenBac[101] = "DenXiTrackBac";
   strncat(tTitDenBac, title, 100);
-  fDenominatorBac = new TH1D(tTitDenBac, title, nbins, Low, High);
+  fDenominatorBacTrack = new TH1D(tTitDenBac, title, nbins, Low, High);
+
+  char tTitNumBacPos[101] = "NumXiBacV0Pos";
+  strncat(tTitNumBacPos, title, 100);
+  fNumeratorBacPos = new TH1D(tTitNumBacPos, title, nbins, Low, High);
+  char tTitDenBacPos[101] = "DenXiBacV0Pos";
+  strncat(tTitDenBacPos, title, 100);
+  fDenominatorBacPos = new TH1D(tTitDenBacPos, title, nbins, Low, High);
+
+  char tTitNumBacNeg[101] = "NumXiBacV0Neg";
+  strncat(tTitNumBacNeg, title, 100);
+  fNumeratorBacNeg = new TH1D(tTitNumBacNeg, title, nbins, Low, High);
+  char tTitDenBacNeg[101] = "DenXiBacV0Neg";
+  strncat(tTitDenBacNeg, title, 100);
+  fDenominatorBacNeg = new TH1D(tTitDenBacNeg, title, nbins, Low, High);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
@@ -115,8 +133,13 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   fNumeratorNegNeg->Sumw2();
   fDenominatorNegNeg->Sumw2();
 
-  fNumeratorBac->Sumw2();
-  fDenominatorBac->Sumw2();
+  fNumeratorBacTrack->Sumw2();
+  fDenominatorBacTrack->Sumw2();
+
+  fNumeratorBacPos->Sumw2();
+  fDenominatorBacPos->Sumw2();
+  fNumeratorBacNeg->Sumw2();
+  fDenominatorBacNeg->Sumw2();
 
   fRatio->Sumw2();
 }
@@ -138,8 +161,12 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const AliFemtoAvgSepCorrFctn &aCo
   fDenominatorNegPos(0),
   fNumeratorNegNeg(0),
   fDenominatorNegNeg(0),
-  fNumeratorBac(0),
-  fDenominatorBac(0),
+  fNumeratorBacTrack(0),
+  fDenominatorBacTrack(0),
+  fNumeratorBacPos(0),
+  fDenominatorBacPos(0),
+  fNumeratorBacNeg(0),
+  fDenominatorBacNeg(0),
   fRatio(0),
   fPairType(kTracks)
 {
@@ -161,8 +188,13 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const AliFemtoAvgSepCorrFctn &aCo
   fNumeratorNegNeg = new TH1D(*aCorrFctn.fNumeratorNegNeg);
   fDenominatorNegNeg = new TH1D(*aCorrFctn.fDenominatorNegNeg);
 
-  fNumeratorBac = new TH1D(*aCorrFctn.fNumeratorBac);
-  fDenominatorBac = new TH1D(*aCorrFctn.fDenominatorBac);
+  fNumeratorBacTrack = new TH1D(*aCorrFctn.fNumeratorBacTrack);
+  fDenominatorBacTrack = new TH1D(*aCorrFctn.fDenominatorBacTrack);
+
+  fNumeratorBacPos = new TH1D(*aCorrFctn.fNumeratorBacPos);
+  fDenominatorBacPos = new TH1D(*aCorrFctn.fDenominatorBacPos);
+  fNumeratorBacNeg = new TH1D(*aCorrFctn.fNumeratorBacNeg);
+  fDenominatorBacNeg = new TH1D(*aCorrFctn.fDenominatorBacNeg);
 
   fRatio = new TH1D(*aCorrFctn.fRatio);
 }
@@ -187,8 +219,13 @@ AliFemtoAvgSepCorrFctn::~AliFemtoAvgSepCorrFctn()
   delete fNumeratorNegNeg;
   delete fDenominatorNegNeg;
 
-  delete fNumeratorBac;
-  delete fDenominatorBac;
+  delete fNumeratorBacTrack;
+  delete fDenominatorBacTrack;
+
+  delete fNumeratorBacPos;
+  delete fDenominatorBacPos;
+  delete fNumeratorBacNeg;
+  delete fDenominatorBacNeg;
 
   delete fRatio;
 }
@@ -230,10 +267,19 @@ AliFemtoAvgSepCorrFctn &AliFemtoAvgSepCorrFctn::operator=(const AliFemtoAvgSepCo
   if (fDenominatorNegNeg) delete fDenominatorNegNeg;
   fDenominatorNegNeg = new TH1D(*aCorrFctn.fDenominatorNegNeg);
 
-  if (fNumeratorBac) delete fNumeratorBac;
-  fNumeratorBac = new TH1D(*aCorrFctn.fNumeratorBac);
-  if (fDenominatorBac) delete fDenominatorBac;
-  fDenominatorBac = new TH1D(*aCorrFctn.fDenominatorBac);
+  if (fNumeratorBacTrack) delete fNumeratorBacTrack;
+  fNumeratorBacTrack = new TH1D(*aCorrFctn.fNumeratorBacTrack);
+  if (fDenominatorBacTrack) delete fDenominatorBacTrack;
+  fDenominatorBacTrack = new TH1D(*aCorrFctn.fDenominatorBacTrack);
+
+  if (fNumeratorBacPos) delete fNumeratorBacPos;
+  fNumeratorBacPos = new TH1D(*aCorrFctn.fNumeratorBacPos);
+  if (fDenominatorBacPos) delete fDenominatorBacPos;
+  fDenominatorBacPos = new TH1D(*aCorrFctn.fDenominatorBacPos);
+  if (fNumeratorBacNeg) delete fNumeratorBacNeg;
+  fNumeratorBacNeg = new TH1D(*aCorrFctn.fNumeratorBacNeg);
+  if (fDenominatorBacNeg) delete fDenominatorBacNeg;
+  fDenominatorBacNeg = new TH1D(*aCorrFctn.fDenominatorBacNeg);
 
   if (fRatio) delete fRatio;
   fRatio = new TH1D(*aCorrFctn.fRatio);
@@ -470,6 +516,53 @@ static void StoreAvgSepBetweenXiBacAndTrack(const AliFemtoXi *Xi,
   }
 }
 
+static void StoreAvgSepBetweenXiBacAndV0(const AliFemtoXi *Xi,
+                                         const AliFemtoV0 *V0,
+                                         TH1D *bacPos_output,
+                                         TH1D *bacNeg_output)
+{
+  // store number of successful points for bachelor pion
+  int countBacPos = 0, countBacNeg = 0;
+
+  // sums of the separation magnitude
+  double avgSepBacPos = 0.0, avgSepBacNeg = 0.0;
+
+  // Need non-const V0 for some reason.
+  AliFemtoXi *mutable_Xi = const_cast<AliFemtoXi*>(Xi);
+  AliFemtoV0 *mutable_V0 = const_cast<AliFemtoV0*>(V0);
+
+  // loop through the 8 points of the 'NominalTpcPoint' methods
+  for (int i = 0; i < 8; i++) {
+    const AliFemtoThreeVector &bac_vec = mutable_Xi->NominalTpcPointBac(i),
+                              &pos_vec = mutable_V0->NominalTpcPointPos(i),
+                              &neg_vec = mutable_V0->NominalTpcPointNeg(i);
+
+    const bool bad_bac = TpcPointIsUnset(bac_vec),
+               bad_pos = TpcPointIsUnset(pos_vec),
+               bad_neg = TpcPointIsUnset(neg_vec);
+
+    if(!bad_bac && !bad_pos)
+    {
+      avgSepBacPos += (bac_vec - pos_vec).Mag();
+      countBacPos++;
+    }
+
+    if(!bad_bac && !bad_neg)
+    {
+      avgSepBacNeg += (bac_vec - neg_vec).Mag();
+      countBacNeg++;
+    }
+  }
+
+  if (countBacPos != 0) {
+    bacPos_output->Fill(avgSepBacPos / countBacPos);
+  }
+  if (countBacNeg != 0) {
+    bacNeg_output->Fill(avgSepBacNeg / countBacNeg);
+  }
+
+}
+
 //____________________________
 void AliFemtoAvgSepCorrFctn::AddRealPair(AliFemtoPair *pair)
 {
@@ -511,11 +604,25 @@ void AliFemtoAvgSepCorrFctn::AddRealPair(AliFemtoPair *pair)
   case kTrackXi:
     StoreAvgSepBetweenXiBacAndTrack(track_1->Xi(),
                                     track_2->Track(),
-                                    fNumeratorBac);
+                                    fNumeratorBacTrack);
     StoreAvgSepBetweenV0AndTrack((AliFemtoV0*)track_1->Xi(),
                                               track_2->Track(),
                                               fNumeratorPos,
                                               fNumeratorNeg);
+    break;
+
+  // Xi + V0
+  case kXiV0:
+    StoreAvgSepBetweenV0s(track_1->Xi(),
+                              track_2->V0(),
+                              fNumeratorPosPos,
+                              fNumeratorPosNeg,
+                              fNumeratorNegPos,
+                              fNumeratorNegNeg);
+    StoreAvgSepBetweenXiBacAndV0(track_1->Xi(),
+                                 track_2->V0(),
+                                 fNumeratorBacPos,
+                                 fNumeratorBacNeg);
     break;
   }
 }
@@ -562,11 +669,25 @@ void AliFemtoAvgSepCorrFctn::AddMixedPair(AliFemtoPair *pair)
   case kTrackXi:
     StoreAvgSepBetweenXiBacAndTrack(track_1->Xi(),
                                     track_2->Track(),
-                                    fDenominatorBac);
+                                    fDenominatorBacTrack);
     StoreAvgSepBetweenV0AndTrack((AliFemtoV0*)track_1->Xi(),
                                               track_2->Track(),
                                               fDenominatorPos,
                                               fDenominatorNeg);
+    break;
+
+  // Xi + V0
+  case kXiV0:
+    StoreAvgSepBetweenV0s(track_1->Xi(),
+                              track_2->V0(),
+                              fDenominatorPosPos,
+                              fDenominatorPosNeg,
+                              fDenominatorNegPos,
+                              fDenominatorNegNeg);
+    StoreAvgSepBetweenXiBacAndV0(track_1->Xi(),
+                                 track_2->V0(),
+                                 fDenominatorBacPos,
+                                 fDenominatorBacNeg);
     break;
   }
 
@@ -598,8 +719,22 @@ void AliFemtoAvgSepCorrFctn::Write()
     fDenominatorPos->Write();
     fNumeratorNeg->Write();
     fDenominatorNeg->Write();
-    fNumeratorBac->Write();
-    fDenominatorBac->Write();
+    fNumeratorBacTrack->Write();
+    fDenominatorBacTrack->Write();
+  }
+    else if (fPairType == kXiV0) {
+    fNumeratorPosPos->Write();
+    fDenominatorPosPos->Write();
+    fNumeratorPosNeg->Write();
+    fDenominatorPosNeg->Write();
+    fNumeratorNegPos->Write();
+    fDenominatorNegPos->Write();
+    fNumeratorNegNeg->Write();
+    fDenominatorNegNeg->Write();
+    fNumeratorBacPos->Write();
+    fDenominatorBacPos->Write();
+    fNumeratorBacNeg->Write();
+    fDenominatorBacNeg->Write();
   }
 }
 //______________________________
@@ -631,8 +766,22 @@ TList *AliFemtoAvgSepCorrFctn::GetOutputList()
     tOutputList->Add(fDenominatorPos);
     tOutputList->Add(fNumeratorNeg);
     tOutputList->Add(fDenominatorNeg);
-    tOutputList->Add(fNumeratorBac);
-    tOutputList->Add(fDenominatorBac);
+    tOutputList->Add(fNumeratorBacTrack);
+    tOutputList->Add(fDenominatorBacTrack);
+  }
+    else if (fPairType == kXiV0) {
+    tOutputList->Add(fNumeratorPosPos);
+    tOutputList->Add(fDenominatorPosPos);
+    tOutputList->Add(fNumeratorPosNeg);
+    tOutputList->Add(fDenominatorPosNeg);
+    tOutputList->Add(fNumeratorNegPos);
+    tOutputList->Add(fDenominatorNegPos);
+    tOutputList->Add(fNumeratorNegNeg);
+    tOutputList->Add(fDenominatorNegNeg);
+    tOutputList->Add(fNumeratorBacPos);
+    tOutputList->Add(fDenominatorBacPos);
+    tOutputList->Add(fNumeratorBacNeg);
+    tOutputList->Add(fDenominatorBacNeg);
   }
   return tOutputList;
 }

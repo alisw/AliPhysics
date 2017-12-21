@@ -161,7 +161,7 @@ AliFemtoString AliFemtoCorrFctn3DLCMSSym::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //____________________________
 void AliFemtoCorrFctn3DLCMSSym::AddRealPair(AliFemtoPair* pair)

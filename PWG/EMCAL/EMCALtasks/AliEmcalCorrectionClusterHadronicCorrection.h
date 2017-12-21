@@ -58,7 +58,8 @@ protected:
   Bool_t                 fDoTrackClus;               ///< loop over tracks first
   Double_t               fHadCorr;                   ///< hadronic correction (fraction)
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
-  Bool_t                 fDoExact;                   ///< do exact correction (embedding only)
+  Bool_t                 fPlotOversubtractionHistograms; ///< compute and plot oversubtracted energy from embedded/signal matches (embedding only)
+  Bool_t                 fDoNotOversubtract;         ///< do not oversubtract energy from cluster (embedding only)
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -98,7 +99,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 3); // EMCal cluster hadronic correction component
+  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 4); // EMCal cluster hadronic correction component
   /// \endcond
 };
 

@@ -1,23 +1,34 @@
-void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root",char* name_fout="QAphi",char* name_list="RsnHistMini_Phi_PhiNsigma_KTPCnsig30",char* name_hist_base="RsnMini_phi.PhiNsigma_KTPCnsig30"){
+void PostProcessQAPhi(char* name_fin="LHC17d1_B0p2.root",char* name_fout="QAphi_LHC17d1_B0p2",char* name_list="RsnQA_phi",char* name_hist_base="taskRsnQA_phi_",Bool_t* MC=kTRUE){
+
   //This macro was written by Anders Knospe (anders.knospe@cern.ch).
   //5 November 2013
+ //Modified by Sourav Kundu (s.kundu@cern.ch).
+  //4 october 2017
 
   //FOR DETAILED INSTRUCTIONS, SEE THE END OF THIS DOCUMENT.
 
   //Arguments:
-  //system: string giving the collision system ("pp276","pp7", or "PbPb276"), used to figure out what the expected yield should be.  If the system you want is unavailable, you will need to calculate your own expected yield.
   //name_fin: name of input file
   //name_fout: base name of output files (without suffix)
   //name_list: name of the list in fin that contains histograms, may be different depending on the cuts applied to the kaon daughters
   //name_hist_base: base name of the THnSparse histograms, may be different depending on the cuts applied to the kaon daughters
-
+  //Bool_t* MC=kTRUE when we analyzed MC output and Bool_t* MC=kFALSE when we analyzed data
+  
   //This Macro does the following:
   //1.) plots the standard histograms showing the number of events that pass selection of criteria and the number of events in each multiplicity or centrality bin
-  //2.) plots invariant-mass histograms (unlike-charge, like-charge, background-subtracted)
-  //3.) fits the background-subtracted invariant-mass distribution.  In case there is a problem with the "default" fit, it does multiple fits using different residual backgrounds and fit regions.  All fits are plotted and all fit results are saved.
-  //4.) prints out relevant information: pT range, phi yield per event, phi mass, and phi width (taken from the default fit)
+  
+  //2.)Plots Accepted events vs. Multiplicity percentile
+
+  //3.)Plots Resolution distribution, acceptance X efficiency vss. eta and pt, acceptance X efficiency vs, pT, acceptance X efficiency vs, eta, eta distribution and pT distribution for MC production.
+
+  //4.) plots invariant-mass histograms (unlike-charge, like-charge, background-subtracted)
+
+  //5.) fits the background-subtracted invariant-mass distribution.  In case there is a problem with the "default" fit, it does multiple fits using different residual backgrounds and fit regions.  All fits are plotted and all fit results are saved.
+
+  //6.) prints out relevant information: pT range, phi yield per event, phi mass, and phi width (taken from the default fit)
 
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
 
   //----- get input histograms -----
 
@@ -27,8 +38,14 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   TList* l=(TList*) fin->Get(name_list);
   if(!l){cerr<<"Error in QAphi(): missing input list "<<name_list<<" in file "<<name_fin<<".  Stopping."<<endl; return;}
 
-  TH1D *hevent,*hmult,*hu,*hm,*hp,*hl,*hs,*hs_plot;
-  THnSparse *su,*sm,*sp;
+  TH1D *hevent,*hmult,*hu,*hm,*hp,*hl,*hs,*hs_plot,*hresolution,*efyeta,*efypt;
+  TH2F *su,*sm,*sp,*resolution,*effypt,*effyeta,*gneta,*trueeta,*genpt,*truept,*ratio;
+  float A,B,UA,UB;
+
+  int lowptbin=3;
+  int highptbin=4;
+
+
 
   hevent=(TH1D*) l->FindObject("hEventStat");//standard histogram in resonance package, shows number of events after various selections
   if(!hevent){cerr<<"Error in QAphi(): missing input histogram hEventStat in file "<<name_fin<<".  Stopping."<<endl; return;}
@@ -37,34 +54,41 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   if(!hmult){cerr<<"Error in QAphi(): missing input histogram hAEventsVsMulti in file "<<name_fin<<".  Stopping."<<endl; return;}
   double nevt=hmult->Integral();
 
-  su=(THnSparse*) l->FindObject(Form("%s_Unlike",name_hist_base));//invariant-mass histogram, unlike-charge
+  su=(TH2F*) l->FindObject(Form("%sUnlike_MPt",name_hist_base));//invariant-mass histogram, unlike-charge
   if(!su){cerr<<"Error in QAphi(): missing input histogram "<<name_hist_base<<"_Unlike in file "<<name_fin<<".  Stopping."<<endl; return;}
 
-  sm=(THnSparse*) l->FindObject(Form("%s_LikeMM",name_hist_base));//invariant-mass histogram, like-charge (K-K-)
+  sm=(TH2F*) l->FindObject(Form("%sLikeMM_MPt",name_hist_base));//invariant-mass histogram, like-charge (K-K-)
   if(!sm){cerr<<"Error in QAphi(): missing input histogram "<<name_hist_base<<"_LikeMM in file "<<name_fin<<".  Stopping."<<endl; return;}
 
-  sp=(THnSparse*) l->FindObject(Form("%s_LikePP",name_hist_base));//invariant-mass histogram, like-charge (K+K+)
+  sp=(TH2F*) l->FindObject(Form("%sLikePP_MPt",name_hist_base));//invariant-mass histogram, like-charge (K+K+)
   if(!sp){cerr<<"Error in QAphi(): missing input histogram "<<name_hist_base<<"_LikePP in file "<<name_fin<<".  Stopping."<<endl; return;}
 
+ if(MC)
+   {
+  
+  resolution=(TH2F*) l->FindObject("taskRsnQA_phi_Res_ResPt");//resolution_pT
+  genpt=(TH2F*) l->FindObject("taskRsnQA_phi_Gen_MPt");//resolution_pT
+  recpt=(TH2F*) l->FindObject("taskRsnQA_phi_Trues_MPt");//resolution_pT
+  
+  genetapt=(TH2F*) l->FindObject("taskRsnQA_phi_Gen_EtaPt");//resolution_pT
+  recetapt=(TH2F*) l->FindObject("taskRsnQA_phi_Trues_EtaPt");//resolution_pT
+   }
+
   TFile* fout=new TFile(Form("%s.root",name_fout),"RECREATE","HistoFile");//open output file
+ 
 
-  bool ptOK=SetPtRange(su);//Was the requested pT range set correctly?
-  SetPtRange(sm);
-  SetPtRange(sp);
+  // TFile* fouteff=new TFile(Form("%seff.root",name_fout),"RECREATE","HistoFile");
 
-  double dy;
-  bool yOK=SetRapidityRange(su,dy);//Is the expected rapidity range (|y|<0.5) being used?  Fill value of dy.
-  SetRapidityRange(sm,dy);
-  SetRapidityRange(sp,dy);
-
-  //----- plot the event and multiplicity/centrality histograms -----
-
+  
+  
+  float dy=1.0;
+  
   TCanvas* c=new TCanvas("c","",10,10,1500,500);
   c->SetFillColor(0);
 
   TPad* p1=new TPad("p1_0","",0.,0.,1./3,1.);
   p1->SetFillColor(0);
-
+  
   TPad* p2=new TPad("p2_0","",1./3,0.,2./3,1.);
   p2->SetFillColor(0);
 
@@ -84,7 +108,8 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   if(xmax>hmult->GetNbinsX()) xmax=hmult->GetNbinsX();
   hmult->GetXaxis()->SetRange(1,xmax);
   hmult->Draw();
-
+  // hmult->GetYaxis()->SetTitle("Events");
+  hmult->GetXaxis()->SetTitle("multiplicity%");
   p3->cd();
   hmult->Draw();//same as p2, but log scale on y axis
 
@@ -99,24 +124,210 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   delete p2;
   delete p3;
   delete c;
-
+  
   fout->cd();
   hevent->Write();
   hmult->Write();
 
+
+
+
+  if(MC)
+    {
+  TCanvas* c=new TCanvas("c","",10,10,1500,500);
+  c->SetFillColor(0);
+  
+  TPad* p1=new TPad("p1_0","",0.,0.,1./3,1.);
+  p1->SetFillColor(0);
+  
+  TPad* p2=new TPad("p2_0","",1./3,0.,2./3,1.);
+  p2->SetFillColor(0);
+  
+  TPad* p3=new TPad("p3_0","",2./3,0.,1.,1.);
+  p3->SetFillColor(0);
+
+  p1->cd();
+  TProfile *px = resolution->ProfileY("resolution",1,200,"e");
+  px->SetMarkerColor(2);
+  px->SetMarkerStyle(20);
+  px->SetTitle("Resolution vs. #it{p}_{T} (GeV/#it{c})");
+  px->SetXTitle("#it{p}_{T} (GeV/c)");
+  px->Draw();
+  
+  p2->cd();
+
+
+  TH2F *genetaptclone=(TH2F*)genetapt->Clone();
+  TH2F *recetaptclone=(TH2F*)recetapt->Clone();
+  recetaptclone->Divide(genetaptclone);
+  recetaptclone->SetTitle("Acceptance #times Efficiency vs. #eta and #it{p}_{T}");
+  recetaptclone->SetMarkerColor(2);
+  recetaptclone->SetMarkerStyle(24);
+  recetaptclone->GetXaxis()->SetTitle("#eta");
+  recetaptclone->GetXaxis()->SetTitleSize(0.05);
+  recetaptclone->GetXaxis()->SetTitleOffset(1.3);
+  recetaptclone->GetYaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  recetaptclone->GetYaxis()->SetTitleSize(0.05);
+  recetaptclone->GetYaxis()->SetTitleOffset(1.4);
+  recetaptclone->Draw("surf");
+
+
+  p3->cd();
+  p3->SetLogy();
+  TH1D* geneta2 = (TH1D*)genetapt->ProjectionX("geneta2",1,100,"E");
+  TH1D* receta2 = (TH1D*)recetapt->ProjectionX("effyvseta",1,100,"E");
+  TH1D* geneta2clone = (TH1D*) geneta2->Clone("geneta");
+  TH1D* receta2clone = (TH1D*) receta2->Clone("receta");
+  geneta2clone->SetMarkerColor(2);
+  geneta2clone->SetMarkerStyle(20);
+  receta2clone->SetMarkerColor(4);
+  receta2clone->SetMarkerStyle(20);
+  geneta2clone->SetTitle("#eta distribution");
+  geneta2clone->SetXTitle("#eta");
+  geneta2clone->GetYaxis()->SetRangeUser(2,1000000);
+  geneta2clone->Draw("EP");
+  receta2clone->Draw("same");
+  TLegend* L=new TLegend(0.25,0.2,0.5,0.3);
+  L->SetFillColor(0);
+  L->AddEntry(geneta2clone,"genarated #phi","p");
+  L->AddEntry(receta2clone,"reconstructed #phi","p");
+  L->Draw();
+
+
+
+  c->cd();
+  p1->Draw();
+  p2->Draw();
+  p3->Draw();
+  c->SaveAs(Form("%s.pdf(",name_fout));
+
+  delete p1;
+  delete p2;
+  delete p3;
+  delete c;
+  
+  
+  TCanvas* c=new TCanvas("c","",10,10,1500,500);
+  c->SetFillColor(0);
+  
+  TPad* p1=new TPad("p1_0","",0.,0.,1./4,1.);
+  p1->SetFillColor(0);
+  
+  TPad* p2=new TPad("p2_0","",1./4,0.,2./4,1.);
+  p2->SetFillColor(0);
+  
+  TPad* p3=new TPad("p3_0","",2./4,0.,3./4,1.);
+  p3->SetFillColor(0);
+
+  TPad* p4=new TPad("p3_0","",3./4,0.,1.,1.);
+  p4->SetFillColor(0);
+
+
+  p1->cd();
+  receta2->Divide(geneta2);
+  receta2->GetYaxis()->SetRangeUser(0.0,0.3);
+  receta2->SetMarkerColor(2);
+  receta2->SetMarkerStyle(20);
+  receta2->SetTitle("Acceptance #times Efficiency vs. #eta");
+  receta2->SetXTitle("#eta");
+  receta2->Draw();
+  
+  p2->cd();
+  p2->SetLogy();
+  TH1D* genpt2 = (TH1D*)genetapt->ProjectionY("genpt2",1,100,"E");
+  TH1D* recpt2 = (TH1D*)recetapt->ProjectionY("effyvspt",1,100,"E");
+  TH1D* genpt2clone = (TH1D*) genpt2->Clone("genpt");
+  TH1D* recpt2clone = (TH1D*) recpt2->Clone("recpt");
+  
+  genpt2clone->Scale(1/hevent->Integral(1,100));
+  recpt2clone->Scale(1/hevent->Integral(1,100));
+  genpt2clone->SetMarkerColor(2);
+  genpt2clone->SetMarkerStyle(20);
+  recpt2clone->SetMarkerColor(4);
+  recpt2clone->SetMarkerStyle(20);
+  genpt2clone->SetTitle("#it{p}_{T} distribution");
+  genpt2clone->SetXTitle("#it{p}_{T} (GeV/c)");
+  genpt2clone->Draw("EP");
+  recpt2clone->Draw("Same");
+
+  TLegend* L1=new TLegend(0.15,0.2,0.4,0.3);
+  L1->SetFillColor(0);
+  L1->AddEntry(genpt2clone,"genarated #phi","p");
+  L1->AddEntry(recpt2clone,"reconstructed #phi","p");
+  L1->Draw();
+
+  p3->cd();
+  recpt2->Rebin(2);
+  genpt2->Rebin(2);
+  recpt2->Divide(genpt2);
+  recpt2->GetYaxis()->SetRangeUser(0.01,1.2);
+  recpt2->SetMarkerColor(2);
+  recpt2->SetMarkerStyle(20);
+  recpt2->SetTitle("Acceptance #times Efficiency vs. #it{p}_{T}");
+  recpt2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  recpt2->Draw();
+
+
+  p4->cd();
+  TH1D* genpt22 = (TH1D*)genetapt->ProjectionY("genpt22",6,15,"E");
+  TH1D* recpt22 = (TH1D*)recetapt->ProjectionY("effyvsptforetalessthanpoint5",6,15,"E");
+  recpt22->Rebin(2);
+  genpt22->Rebin(2);
+  recpt22->Divide(genpt22);
+  recpt22->GetYaxis()->SetRangeUser(0.01,1.2);
+  recpt22->SetMarkerColor(2);
+  recpt22->SetMarkerStyle(20);
+  recpt22->SetTitle("Acceptance #times Efficiency vs. #it{p}_{T} (|#eta|#leq0.5)");
+  recpt22->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  recpt22->Draw();
+
+
+  c->cd();
+  p1->Draw();
+  p2->Draw();
+  p3->Draw();
+  p4->Draw();
+  c->SaveAs(Form("%s.pdf(",name_fout));
+  
+  delete p1;
+  delete p2;
+  delete p3;
+  delete c;
+
+  
+  fout->cd();
+  genpt2clone->Write();
+  recpt2clone->Write();
+  receta2->Write();
+  recpt2->Write();
+  px->Write();
+  
+    }
+
+
+
+
+
+
+
+
+
+
+
   //----- get invariant-mass histograms -----
 
-  //Project the THnSparse histograms onto their x axes.
-  hu=(TH1D*) su->Projection(0,"e");
+  //Project the TH2F histograms onto their x axes.
+  hu=(TH1D*) su->ProjectionX("su",lowptbin,highptbin,"E");
   hu->SetName("mass_unlike");
-  hm=(TH1D*) sm->Projection(0,"e");
+  hm=(TH1D*) sm->ProjectionX("sm",lowptbin,highptbin,"E");
   hm->SetName("mass_likeMM");
-  hp=(TH1D*) sp->Projection(0,"e");
+  hp=(TH1D*) sp->ProjectionX("sp",lowptbin,highptbin,"E");
   hp->SetName("mass_likePP");
 
-  double A,UA,B,UB;
+  float lowpt=(lowptbin-1)*0.2;
+  float highpt=highptbin*0.2;
 
-  hl=(TH1D*) hm->Clone("mass_like");//total like-charge histogram
+ hl=(TH1D*) hm->Clone("mass_like");//total like-charge histogram
   for(j=1;j<=hl->GetNbinsX();j++){
     A=hm->GetBinContent(j);
     B=hp->GetBinContent(j);
@@ -126,13 +337,14 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   hl->SetTitle("Like-Charge Combinatorial Background");
 
   hs=(TH1D*) hu->Clone("mass_signal");
-  for(j=1;j<=hs->GetNbinsX();j++){
+
+    for(j=1;j<=hs->GetNbinsX();j++){
     A=hu->GetBinContent(j); UA=hu->GetBinError(j);
     B=hl->GetBinContent(j); UB=hl->GetBinError(j);
     hs->SetBinContent(j,A-B);//subtract the combinatorial background
     hs->SetBinError(j,sqrt(UA*UA+UB*UB));
   }
-
+  
   double Imin=1.01,Imax=1.03,dx=hs->GetXaxis()->GetBinWidth(1);
 
   hb=(TH1D*) hs->Clone("mass_background");//temporary histogram with the peak removed; used to fit the residual background
@@ -196,7 +408,6 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   hl->Write();
   hs->Write();
 
-  //----- fit the signal histogram -----
 
   c=new TCanvas("c","",10,10,500,500);
   c->SetFillColor(0);
@@ -298,6 +509,19 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
 	if(!status) break;
       }
 
+      //If we want to use resolution as free parameter then we need to uncomment the below section//
+      
+      /*
+ g[jBF][jFR]->ReleaseParameter(3);//release resolution parameter
+      for(j=0;j<100;j++){
+	fr=hs->Fit(g[jBF][jFR],"RSQ");
+	status=fr->Status();
+	if(!status) break;
+      }
+
+      */
+
+      
       g[jBF][jFR]->ReleaseParameter(4);//release residual background constant parameter
       for(j=0;j<100;j++){
 	fr=hs->Fit(g[jBF][jFR],"RSQ");
@@ -420,14 +644,14 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   t3->SetNDC();
   t3->Draw();
 
-  //additional information in pad p4
+//additional information in pad p4
 
   p4->cd();
   TLine* dummy1=new TLine(0,0,1,0);
   dummy1->SetLineColor(1); dummy1->SetLineWidth(2);
   TLine* dummy2=new TLine(0,0,1,0);
   dummy2->SetLineColor(1); dummy2->SetLineWidth(2); dummy2->SetLineStyle(gb[0][0]->GetLineStyle());
-  TLegend* L=new TLegend(0.3,0.69,0.7,0.99);
+  TLegend* L=new TLegend(0.3,0.54,0.84,0.99);
   L->SetFillColor(0);
   L->AddEntry(g[0][0],"Fit Region 0 (0.995,1.06)","l");
   L->AddEntry(g[0][1],"Fit Region 1 (1,1.06)","l");
@@ -435,9 +659,88 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   L->AddEntry(g[0][3],"Fit Region 3 (1,1.07)","l");
   L->AddEntry(dummy1,"Combined Fit","l");
   L->AddEntry(dummy2,"Residual Background Fit","l");
+  L->AddEntry(dummy2,Form("%2.2f #leq #it{p}_{T} < %2.2f GeV/#it{c}",lowpt,highpt),"");
   L->Draw();
 
-  //----- check results -----
+
+
+
+  double yield=r->GetBinContent(8,16);
+  double mass=r->GetBinContent(8,2);
+  double width=r->GetBinContent(8,3);
+   double massresolution=r->GetBinContent(8,4);
+   cout<<"resolution"<<massresolution<<"\n";
+
+   
+  double tx=0.005,ty=0.6,dty=0.06;
+  TString s;
+
+  TLatex* a1=new TLatex(tx,ty-2*dty,Form("#phi Yield/event = %1.5e #pm %1.5e (%s)",r->GetBinContent(8,16),r->GetBinError(8,16),r->GetXaxis()->GetBinLabel(8)));
+  a1->Draw();
+
+  TLatex* a2=new TLatex(tx,ty-3*dty,Form("#phi Mass = %1.5f #pm %1.5f GeV/#it{c}^{2}",r->GetBinContent(8,2),r->GetBinError(8,2)));
+  a2->Draw();
+
+  s.Form("PDG Mass = 1.019455");
+  TLatex* a3=new TLatex(tx+0.1,ty-4*dty,s.Data());
+  a3->Draw();
+
+  TLatex* a4=new TLatex(tx,ty-5*dty,Form("#phi Width = %1.5f #pm %1.5f MeV/#it{c}^{2}",r->GetBinContent(8,3)*1000.,r->GetBinError(8,3)*1000.));
+  a4->Draw();
+
+  s.Form("PDG Width = 4.26");
+  TLatex* a5=new TLatex(tx+0.1,ty-6*dty,s.Data());
+  a5->Draw();
+
+ s.Form("#phi mass resolution = 0.0011 (fixed during fitting)");
+  TLatex* a6=new TLatex(tx+0.1,ty-7*dty,s.Data());
+  a6->Draw();
+
+ 
+
+  c->cd();
+  p1->Draw();
+  p2->Draw();
+  p3->Draw();
+  p4->Draw();
+
+  c->SaveAs(Form("%s.pdf)",name_fout));
+
+
+
+  //----- print out results -----
+
+  j=su->GetXaxis()->GetFirst(); k=su->GetXaxis()->GetLast();
+  printf("%2.2f < pT < %2.2f GeV/c, ",lowpt,highpt);
+  j=su->GetYaxis()->GetFirst(); k=su->GetYaxis()->GetLast();
+  printf("%2.2f < y < %2.2f\n",su->GetYaxis()->GetBinLowEdge(j),su->GetYaxis()->GetBinLowEdge(k+1));
+  printf("phi Yield/event = %1.5e +/- %1.5e (%s)\n",r->GetBinContent(8,16),r->GetBinError(8,16),r->GetXaxis()->GetBinLabel(8));
+  printf("phi Mass = %1.5f +/- %1.5f GeV/c^2 (PDG Value = 1.019455)\n",r->GetBinContent(8,2),r->GetBinError(8,2));
+  printf("phi Width = %1.5f +/- %1.5f MeV/c^2 (PDG Value = 4.26)\n",r->GetBinContent(8,3)*1000.,r->GetBinError(8,3)*1000.);
+ 
+  
+  //----- finish -----
+
+  cerr<<"\nMacro has finished successfully."<<endl;
+
+  fin->Close();
+  fout->Close();
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  /*
+  
+ //----- check results -----
 
   double ex_yield=0;
   if(!strcmp(system,"pp276")) ex_yield=1.416e-3;
@@ -449,8 +752,10 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   }
   double yield=r->GetBinContent(8,16);
   int status_yield;
-  if(yield/ex_yield<1.5 && yield/ex_yield>0.5) status_yield=0;//OK
-  else if(yield/ex_yield<5 && yield/ex_yield>0.2) status_yield=1;//problem
+  //if(yield/ex_yield<1.5 && yield/ex_yield>0.5) status_yield=0;//OK
+  if(yield/ex_yield>0.0) status_yield=0;//OK
+  //else if(yield/ex_yield<5 && yield/ex_yield>0.2) status_yield=1;//problem
+  else if(yield/ex_yield<0.0) status_yield=1;//problem
   else status_yield=2;//big problem
 
   double ex_mass=1.019455;
@@ -467,20 +772,21 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   else if(fabs(width-ex_width)<2) status_width=1;//problem
   else status_width=2;//big problem;
 
-  double tx=0.005,ty=0.64,dty=0.06;
+  double tx=0.005,ty=0.6,dty=0.06;
 
   TString s;
-
-  j=su->GetAxis(1)->GetFirst(); k=su->GetAxis(1)->GetLast();
-  s.Form("%1.2f < #it{p}_{T} < %1.2f GeV/#it{c}, ",su->GetAxis(1)->GetBinLowEdge(j),su->GetAxis(1)->GetBinLowEdge(k+1));
-  j=su->GetAxis(2)->GetFirst(); k=su->GetAxis(2)->GetLast();
-  s.Append(Form("%1.2f < #it{y} < %1.2f",su->GetAxis(2)->GetBinLowEdge(j),su->GetAxis(2)->GetBinLowEdge(k+1)));
+  bool ptOK=1;
+  bool yOK=1;
+  j=su->GetXaxis()->GetFirst(); k=su->GetXaxis()->GetLast();
+  s.Form("%2.2f < #it{p}_{T} < %2.2f GeV/#it{c}, ",lowpt,highpt);
+  j=su->GetYaxis()->GetFirst(); k=su->GetYaxis()->GetLast();
+  s.Append(Form("%2.2f < #it{y} < %2.2f",su->GetYaxis()->GetBinLowEdge(j),su->GetYaxis()->GetBinLowEdge(k+1)));
   if(!ptOK || !yOK) s.Append(" [PROBLEM]");
   TLatex* a1=new TLatex(tx,ty,s.Data());
   SetText(a1,ptOK);
-  a1->Draw();
-
-  TLatex* a2=new TLatex(tx,ty-1*dty,Form("#phi Yield/event = %1.5e #pm %1.5e (%s)",r->GetBinContent(8,16),r->GetBinError(8,16),r->GetXaxis()->GetBinLabel(8)));
+  // a1->Draw();
+  
+  TLatex* a2=new TLatex(tx,ty-2*dty,Form("#phi Yield/event = %1.5e #pm %1.5e (%s)",r->GetBinContent(8,16),r->GetBinError(8,16),r->GetXaxis()->GetBinLabel(8)));
   SetText(a2,status_yield);
   a2->Draw();
 
@@ -488,7 +794,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   if(status_yield) s.Append(" [PROBLEM]");
   TLatex* a3=new TLatex(tx+0.1,ty-2*dty,s.Data());
   SetText(a3,status_yield);
-  a3->Draw();
+  // a3->Draw();
 
   TLatex* a4=new TLatex(tx,ty-3*dty,Form("#phi Mass = %1.5f #pm %1.5f GeV/#it{c}^{2}",r->GetBinContent(8,2),r->GetBinError(8,2)));
   SetText(a4,status_mass);
@@ -520,7 +826,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
 
   TLatex* a8=new TLatex(tx,ty-7*dty,s.Data());
   SetText(a8,status); a8->SetTextSize(0.05);
-  a8->Draw();
+  //a8->Draw();
 
   if(status) s.Form("PLEASE CHECK THE ERROR MESSAGES.");
   else s.Form("");
@@ -536,34 +842,13 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   p4->Draw();
 
   c->SaveAs(Form("%s.pdf)",name_fout));
-
-  //----- print out results -----
-
-  j=su->GetAxis(1)->GetFirst(); k=su->GetAxis(1)->GetLast();
-  printf("%1.2f < pT < %1.2f GeV/c, ",su->GetAxis(1)->GetBinLowEdge(j),su->GetAxis(1)->GetBinLowEdge(k+1));
-  j=su->GetAxis(2)->GetFirst(); k=su->GetAxis(2)->GetLast();
-  printf("%1.2f < y < %1.2f\n",su->GetAxis(2)->GetBinLowEdge(j),su->GetAxis(2)->GetBinLowEdge(k+1));
-  printf("phi Yield/event = %1.5e +/- %1.5e (%s)\n",r->GetBinContent(8,16),r->GetBinError(8,16),r->GetXaxis()->GetBinLabel(8));
-  if(status_yield) printf("*** PROBLEM: phi yield too far from expected value (%1.5e).\n",ex_yield);
-  printf("phi Mass = %1.5f +/- %1.5f GeV/c^2 (PDG Value = 1.019455)\n",r->GetBinContent(8,2),r->GetBinError(8,2));
-  if(status_mass) printf("*** PROBLEM: phi mass too far from expected value.\n");
-  printf("phi Width = %1.5f +/- %1.5f MeV/c^2 (PDG Value = 4.26)\n",r->GetBinContent(8,3)*1000.,r->GetBinError(8,3)*1000.);
-  if(status_width) printf("*** PROBLEM: phi width too far from expected value.\n");
-  if(status) printf("\n*** One or more parameters does not have the expected value.  Please check the error messages and read the instructions at the bottom of the macro file.\n");
-
-  //----- finish -----
-
-  cerr<<"\nMacro has finished successfully."<<endl;
-
-  fin->Close();
-  fout->Close();
-
-  return;
+  */
+ 
 }
 
 
-bool SetPtRange(THnSparse* h){
-  TAxis* a=h->GetAxis(1);
+bool SetPtRange(TH2F* h){
+  /*  TAxis* a=h->GetYaxis();
   double min=0.5,max=1.5;
 
   int b1=a->FindBin(1.00001*min);
@@ -571,18 +856,18 @@ bool SetPtRange(THnSparse* h){
   a->SetRange(b1,b2);
   b1=a->GetFirst();
   b2=a->GetLast();
-
+  
   //min and/or max are not bin boundaries
   if(fabs(a->GetBinLowEdge(b1)-min)>1e-5*min || fabs(a->GetBinLowEdge(b2+1)-max)>1e-5*max){
     cerr<<"Error in QAphi(): pT range cannot be set to ("<<min<<","<<max<<").  The yield may therefore be different from the expected value."<<endl;
     return false;
   }
-
+  */
   return true;
 }
 
-bool SetRapidityRange(THnSparse* h,double& dy){
-  TAxis* a=h->GetAxis(2);
+bool SetRapidityRange(TH2F* h,double& dy){
+  /* TAxis* a=h->GetYaxis();
   double min=-0.5,max=0.5;
 
   int b1=a->FindBin(min+1e-5);
@@ -597,7 +882,7 @@ bool SetRapidityRange(THnSparse* h,double& dy){
     cerr<<"Error in QAphi(): rapidity range cannot be set to |y|<0.5.  Although this macro does correct for the rapidity range dy, using a different rapidity range may cause the yield to be different from the expected value."<<endl;
     return false;
   }
-
+  */
   return true;
 }
 
@@ -745,3 +1030,5 @@ If the width deviates from the expected value, it is possible that the resolutio
 [3]: Analysis Note: A. G. Knospe, "Yield of phi mesons at low pT in Pb-Pb collisions at 2.76 TeV (2010 data)", ALICE-ANA-2012-300, https://aliceinfo.cern.ch/Notes/node/42
  
   -----------------------------------------------*/
+
+

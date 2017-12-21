@@ -68,7 +68,7 @@ public:
 protected:
 
 
-   enum { kMaxPtBins=20, kNTupleVars=34, kNTupleVarsMC=35 };
+   enum { kMaxPtBins=20, kNTupleVars=28, kNTupleVarsMC=29 };
 
 
    AliAnalysisTaskSEDstoK0sK(const AliAnalysisTaskSEDstoK0sK &source);

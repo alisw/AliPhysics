@@ -1,4 +1,4 @@
-AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",TString dirName="",Float_t lRadiusKUp=200.0, Float_t lRadiusKLow= 130.0, Int_t lNCluster=30, Float_t lLowQtValue=0.12, Float_t yRange=0.5)
+AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",Float_t lRadiusKUp=200.0, Float_t lRadiusKLow= 130.0, Int_t lNCluster=30, Float_t lLowQtValue=0.12, Float_t yRange=0.5)
    {
      //pp settings         
       	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,7 +25,7 @@ AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",TString 
      //TString outputFileName = AliAnalysisManager::GetCommonFileName();
     
    
-    	AliAnalysisTaskKinkpp5TeVMC  *task = new AliAnalysisTaskKinkpp5TeVMC(Form("TaskKink_%s",dirName.Data()));
+    	AliAnalysisTaskKinkpp5TeVMC  *task = new AliAnalysisTaskKinkpp5TeVMC("AliAnalysisTaskKinkpp5TeVMC", lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
    
     //task->SetMC("kFALSE"); // 26/11/12
    
@@ -34,18 +34,16 @@ AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",TString 
 	task->SetLowQtValue(lLowQtValue);
 	task->SetYRange(yRange);
 	mgr->AddTask(task);
-   
-     //Attach input
-     	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 
-   //  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());     
-      	mgr->ConnectInput(task,0,cinput);
-     
-     	TString lContainerName="PWGLFKinks5TeVMC";
-     	lContainerName.Append(lCustomName);
-     	AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,"MCkinkspp5TeV.root");
-     	mgr->ConnectOutput(task, 1, coutput1);
-    
-     
-     	return task;
-     
+
+        TString outputFileName = Form("%s:PWGLFSpectra.kinkppMC", AliAnalysisManager::GetCommonFileName());
+        TString outputname0 = Form("fListDefault_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+
+        outputname0.Append(Form("%s",lCustomName.Data()));
+
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+
+        mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+        mgr->ConnectOutput(task, 1, coutput1);
+
+        return task; 
    }

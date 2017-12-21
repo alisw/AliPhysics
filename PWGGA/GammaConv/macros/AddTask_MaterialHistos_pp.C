@@ -265,6 +265,14 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "00000009266300008804004000");
     cuts.AddCut("00010103", "00000009266300008800404000");
     cuts.AddCut("00010103", "00000009266370008804004000");
+ } else if (trainConfig == 21) {                 
+    cuts.AddCut("00010103", "00000009266300008884404000");
+    cuts.AddCut("00010103", "00000009266300008854404000");
+    cuts.AddCut("00010103", "00000009266370008854404000");
+ } else if (trainConfig == 22) {
+    cuts.AddCut("00000103", "00000009266300008884404000");
+    cuts.AddCut("00000103", "00000009266300008854404000");
+    cuts.AddCut("00000103", "00000009266370008854404000");
 
     // Offline V0Finder is used
 
@@ -307,9 +315,30 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266300008804004000");
     cuts.AddCut("00010103", "10000009266300008800404000");
     cuts.AddCut("00010103", "10000009266370008804004000");
+ } else if (trainConfig == 121) {
+    cuts.AddCut("00010103", "10000009266300008884404000");
+    cuts.AddCut("00010103", "10000009266300008854404000");
+    cuts.AddCut("00010103", "10000009266370008854404000");
+ } else if (trainConfig == 122) {
+    cuts.AddCut("00000103", "10000009266300008884404000");
+    cuts.AddCut("00000103", "10000009266300008854404000");
+    cuts.AddCut("00000103", "10000009266370008854404000");
+
  
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
+  // 7 TeV testconfig for pileup checks
+  } else if (trainConfig == 150) {
+    cuts.AddCut("00000103", "00000009266300008884004000");
+    cuts.AddCut("00000103", "00000009266300008804004000");
+    cuts.AddCut("00000103", "10000009266300008884004000");
+    cuts.AddCut("00000103", "10000009266300008804004000");
+    // 8 TeV testconfig for pileup checks
+  } else if (trainConfig == 151) {
+    cuts.AddCut("00010103", "00000009266300008884004000");
+    cuts.AddCut("00010103", "00000009266300008804004000");
+    cuts.AddCut("00010103", "10000009266300008884004000");
+    cuts.AddCut("00010103", "10000009266300008804004000");
 
     // ConstructGamma is used
 

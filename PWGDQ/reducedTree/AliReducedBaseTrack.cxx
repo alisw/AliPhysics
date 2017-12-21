@@ -14,10 +14,12 @@ ClassImp(AliReducedBaseTrack)
 
 //_______________________________________________________________________________
 AliReducedBaseTrack::AliReducedBaseTrack() :
+  fTrackId(0),
   fIsCartesian(kFALSE),
   fCharge(0),
   fFlags(0),
-  fQualityFlags(0)
+  fQualityFlags(0),
+  fMCFlags(0)
 {
   //
   // Constructor
@@ -28,10 +30,12 @@ AliReducedBaseTrack::AliReducedBaseTrack() :
 //_______________________________________________________________________________
 AliReducedBaseTrack::AliReducedBaseTrack(const AliReducedBaseTrack &c) :
   TObject(c),
+  fTrackId(c.fTrackId),
   fIsCartesian(c.IsCartesian()),
   fCharge(c.Charge()),
   fFlags(c.GetFlags()),
-  fQualityFlags(c.GetQualityFlags())
+  fQualityFlags(c.GetQualityFlags()),
+  fMCFlags(c.GetMCFlags())
 {
   //
   // Copy constructor

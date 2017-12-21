@@ -68,6 +68,11 @@ public:
   void    SetFillZDCQA(Bool_t const fillzdcQAon)      {this->bFillZDCQAon       =  fillzdcQAon;}
   void    SetFillQnRunAverage(Bool_t const runAvg)    {this->bRunAveragedQn     =       runAvg;}
   void    SetApplyZDCRecenter(Bool_t const brecent)   {this->bApplyRecent       =      brecent;}
+  void    SetCentCutShift(Bool_t const bCutShift)     {this->bCentCutShift      =    bCutShift;}
+  void    SetShiftVsCent(Bool_t const bVsCent)        {this->bShiftCorrOnCent   =      bVsCent;}
+  void    SetTrigonMetricQ(Bool_t const bTrigQn)      {this->bUseTrigonQn       =      bTrigQn;}
+  void    SetApplyShiftCorr(Bool_t const bDoShift)    {this->bApplyShiftCorr    =     bDoShift;}
+  void    SetShiftCombine(Bool_t const bShiftCom)     {this->bShiftCombinedEP   =    bShiftCom;}
 
 
 
@@ -113,6 +118,11 @@ private:
   Bool_t                bFillZDCQAon;    //
   Bool_t              bRunAveragedQn;    //
   Bool_t                bApplyRecent;    //
+  Bool_t               bCentCutShift;    //
+  Bool_t            bShiftCorrOnCent;    //
+  Bool_t                bUseTrigonQn;    //
+  Bool_t             bApplyShiftCorr;    //
+  Bool_t            bShiftCombinedEP;    //
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
   Float_t                   VyCut[2];    //
@@ -143,6 +153,25 @@ private:
   TH2F           *fHist_Recenter_ZDCAx[20]; //!
   TH2F           *fHist_Recenter_ZDCAy[20]; //!
 
+  TH2F              *fHist_Vxy_RunAveraged; //!
+
+  TH2F           *fHist_ZDCC_AvgCosNPsi[4]; //! 
+  TH2F           *fHist_ZDCC_AvgSinNPsi[4]; //!
+  TH2F           *fHist_ZDCA_AvgCosNPsi[4]; //! 
+  TH2F           *fHist_ZDCA_AvgSinNPsi[4]; //!
+
+  TH2F          *fHist_ZDC_AvgCosNPsiAC[4]; //! 
+  TH2F          *fHist_ZDC_AvgSinNPsiAC[4]; //!
+
+  TH2F              *fHist_ZDCC_AvgQx_VsCR; //!
+  TH2F              *fHist_ZDCC_AvgQy_VsCR; //!
+  TH2F              *fHist_ZDCA_AvgQx_VsCR; //!
+  TH2F              *fHist_ZDCA_AvgQy_VsCR; //!
+
+  TH2F           *fHist_ZDC_dTermXXYY_VsCR; //!
+  TH2F           *fHist_ZDC_dTermXYXY_VsCR; //!
+
+
   TH1F               *fHist_Vx_ArrayFinder; //!
   TH1F               *fHist_Vy_ArrayFinder; //!
   TH1F               *fHist_Vz_ArrayFinder; //!
@@ -154,6 +183,28 @@ private:
   TH1F            *fHist_Psi1_ZDCA_wGainCorr;  //!
   TH1F            *fHist_Psi1_ZDCC_wRectCorr;  //!
   TH1F            *fHist_Psi1_ZDCA_wRectCorr;  //!
+  TH1F            *fHist_Psi1_ZDCC_wCorrFull;  //!
+  TH1F            *fHist_Psi1_ZDCA_wCorrFull;  //!
+
+  TH2F            *fHist_Psi1_ZDCC_RunByRun;  //!
+  TH2F            *fHist_Psi1_ZDCA_RunByRun;  //!
+  TH1F            *fHist_Event_counter_vRun;  //!
+
+  TH1F            *fHist_PsiSumAC_woCorr;  //!
+  TH1F            *fHist_PsiSumAC_wiCorr;  //!
+
+  TH1F            *fHist_PsiSumAC_ZeroQn;  //!
+  TH1F            *fHist_PsiZDCA_ZeroQn;  //!
+  TH1F            *fHist_PsiZDCC_ZeroQn;  //!
+
+  TH1F            *fHist_ZeroQnXY_Conter;  //!
+
+  TProfile      *fHist_Qx_wiCorr_RunByRun[4];  //!
+
+  TProfile          *fHist_Qx_Trig_woCorr[4];
+  TProfile          *fHist_XX_Trig_woCorr[4];
+  TProfile          *fHist_Qx_Trig_wiCorr[4];
+  TProfile          *fHist_XX_Trig_wiCorr[4];
 
   TProfile     *fHist_Qx_vs_Obs_woCorr[4][5];  //!
   TProfile     *fHist_XX_vs_Obs_woCorr[4][5];  //!
@@ -164,9 +215,22 @@ private:
   TProfile         *fHist_v2xV1_ZDN_Refm_All;  //!
   TProfile         *fHist_v2xV1_ZDN_Cent_All;  //!
 
+  TProfile        *fHist_v3xV1_ZDN_Norm_Comb1; //!
+  TProfile        *fHist_v3xV1_ZDN_Norm_Comb2; //!
+  TProfile        *fHist_v3xV1_ZDN_Cent_Comb1; //!
+  TProfile        *fHist_v3xV1_ZDN_Cent_Comb2; //!
+
+  TProfile        *fHist_v4xV1_ZDN_Norm_Comb1; //!
+  TProfile        *fHist_v4xV1_ZDN_Cent_Comb1; //!
+
   TProfile         *fHist_ZDN_resol_Norm_All;  //!
   TProfile         *fHist_ZDN_resol_Refm_All;  //!
   TProfile         *fHist_ZDN_resol_Cent_All;  //!
+
+  TProfile         *fHist_ZDN_resol_Norm_XX;  //!
+  TProfile         *fHist_ZDN_resol_Norm_YY;  //!
+  TProfile         *fHist_ZDN_resol_Cent_XX;  //!
+  TProfile         *fHist_ZDN_resol_Cent_YY;  //!
 
   TProfile       *fHist_v2xV1_ZDN_Norm_Sep[4];  //! 
   TProfile       *fHist_v2xV1_ZDN_Cent_Sep[4];  //!
@@ -174,6 +238,11 @@ private:
   TProfile       *fHist_ZDN_resol_Cent_Sep[2];  //!
 
   TProfile   *fHist_v2xV1_ZDN_pTDiff_All[10];  //!
+  TProfile   *fHist_v4xV1_ZDN_pTDiff_All[10];  //!
+
+  TProfile   *fHist_v3xV1_ZDN_EtaDiff_Comb1[10]; //!
+  TProfile   *fHist_v3xV1_ZDN_EtaDiff_Comb2[10]; //!
+
   TProfile    *fHist_v1xV1_ZDN_pTDiff[4][10];  //!
   TProfile   *fHist_v1xV1_ZDN_EtaDiff[4][10];  //!
 
@@ -191,6 +260,52 @@ private:
 
   TProfile2D  *fHist_ZDCC_En_CommonCh[20];   //!
   TProfile2D  *fHist_ZDCA_En_CommonCh[20];   //!
+
+  TProfile2D      *fHist_ZDCC_AvgCos_VsRun[4];    //!
+  TProfile2D      *fHist_ZDCC_AvgSin_VsRun[4];    //!
+  TProfile2D      *fHist_ZDCA_AvgCos_VsRun[4];    //!
+  TProfile2D      *fHist_ZDCA_AvgSin_VsRun[4];    //!
+
+  TProfile2D      *fHist_ZDC_AvgCosPsiSum_VsRun[4];    //!
+  TProfile2D      *fHist_ZDC_AvgSinPsiSum_VsRun[4];    //!
+
+  TProfile2D      *fHist_ZDC_AvgCosPsiDif_VsRun[4];    //!
+  TProfile2D      *fHist_ZDC_AvgSinPsiDif_VsRun[4];    //!
+
+  TProfile2D      *fHist_ZDCC_AvgQx_VsRun;    //!
+  TProfile2D      *fHist_ZDCC_AvgQy_VsRun;    //!
+  TProfile2D      *fHist_ZDCA_AvgQx_VsRun;    //!
+  TProfile2D      *fHist_ZDCA_AvgQy_VsRun;    //!
+
+  TProfile2D      *fHist_ZDC_AvgXXminusYY_VsRun;   //!
+  TProfile2D      *fHist_ZDC_AvgXYplusXY_VsRun;    //!
+  TProfile2D      *fHist_ZDC_dTermXXYY_VsRun;      //!
+  TProfile2D      *fHist_ZDC_dTermXYXY_VsRun;      //!
+
+  TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
+  TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
+
+  TProfile           *fHist_Corr3p_ZDN_Norm_PN;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Norm_PP;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Norm_NN;  //! 
+
+  TProfile           *fHist_Corr3p_ZDN_Cent_PN;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Cent_PP;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Cent_NN;  //! 
+
+  TProfile           *fHist_Reso2EP_TPC_Norm; //!
+  TProfile           *fHist_Reso2EP_TPC_Cent; //!
+
+  TH1F            *fHist_NormalCentralityBins;  //!
+
+  TProfile2D      *fHist_XX_vs_QnC_2DwoCorr_PosMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnA_2DwoCorr_PosMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnC_2DwoCorr_NegMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnA_2DwoCorr_NegMag[4][6];    //!
+
+  TProfile2D      *fHist_VZERO_Mult_vsRun[90];    //!
+
+  //TH2F           *fHist_ZDCAC_AvgCosSin_vsCent;
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };

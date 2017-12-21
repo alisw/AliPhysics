@@ -45,7 +45,7 @@ Bool_t GetOne(const TString& base, const TString& dir, Bool_t unpack)
     return false;
   }
   if (!unpack) return true;
-  gSystem->Exec(Form("mkdir -p %s && (cd %s && unzip ../%s)", 
+  gSystem->Exec(Form("mkdir -p %s && (cd %s && unzip -n ../%s)", 
 		     name.Data(), name.Data(), dest.Data()));
   return true;
 }

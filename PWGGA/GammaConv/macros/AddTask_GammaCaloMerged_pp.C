@@ -77,9 +77,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    runLightOutput              = kFALSE,             // switch to run light output (only essential histograms for afterburner)
                                   Double_t  minEnergyForExoticsCut      = 1.0,                // minimum energy to be used for exotics CutHandler
                                   Bool_t    runQAForExotics             = kFALSE,             // switch to run QA for exotic clusters
+                                  Bool_t    runDetailedM02              = kFALSE,             // switch on very detailed M02 distribution
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, always has to be last parameter
 ) {
-  
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -90,10 +90,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      if(tempStr.CompareTo("EPCLUSTree") == 0){
-        cout << "INFO: AddTask_GammaCaloMerged_pp activating 'EPCLUSTree'" << endl;
-        doTreeEOverP = kTRUE;
-      }else if(tempStr.BeginsWith("MODIFYACC")){
+      if(tempStr.BeginsWith("MODIFYACC")){
         cout << "INFO: AddTask_GammaCaloMerged_pp activating 'MODIFYACC'" << endl;
         TString tempType = tempStr;
         tempType.Replace(0,9,"");
@@ -109,13 +106,14 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     }
   }
 
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCaloMerged_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
-  }  
+  }
 
   Int_t isHeavyIon = 0;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr           = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -133,9 +131,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherSettings);
   }
-  
+
   Printf("here \n");
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton           = "00000008400100001500000000";
   TString cutnumberEvent            = "00000003";
@@ -211,7 +209,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
-  
+
   // ************************************* EMCAL cuts ****************************************************
   // LHC11a
   if (trainConfig == 1){ // all defaults for LHC11a
@@ -226,35 +224,38 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   } else if (trainConfig == 4){  //NLM exotics default frac = 0.97
     cuts.AddCut("00003113","1111121053532200000","1111121053522110001","0163301100000000"); // INT1
     cuts.AddCut("00051013","1111121053532200000","1111121053522110001","0163301100000000"); // EMC1
-  } else if (trainConfig == 5){  // new default 
-    cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+  } else if (trainConfig == 5){  // new default
+    cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27
+    cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300000000000"); // INT1
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300000000000"); // EMC1
-  } else if (trainConfig == 6){  // new default 
+  } else if (trainConfig == 6){  // new default
     cuts.AddCut("00003113","1111121050032200000","1111121053022000001","0163300000000000"); // no M02, no exotics, TM only for second cut
     cuts.AddCut("00051013","1111121050032200000","1111121053022000001","0163300000000000"); // no M02, no exotics, TM only for second cut
-    cuts.AddCut("00003113","1111121050032200000","1111121053022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second cut
-    cuts.AddCut("00051013","1111121050032200000","1111121053022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second cut
+    cuts.AddCut("00003113","1111121050032200000","1111121053022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second cut
+    cuts.AddCut("00051013","1111121050032200000","1111121053022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second cut
   } else if (trainConfig == 7){  // new default , pt dep TM
-    cuts.AddCut("00003113","1111121057032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics
-    cuts.AddCut("00051013","1111121057032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics
-    cuts.AddCut("00003113","1111121050032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second
-    cuts.AddCut("00051013","1111121050032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second
+    cuts.AddCut("00003113","1111121057032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics
+    cuts.AddCut("00051013","1111121057032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics
+    cuts.AddCut("00003113","1111121050032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second
+    cuts.AddCut("00051013","1111121050032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second
   } else if (trainConfig == 8){  // new default, with eta < 0.7, y < 0.7
-    cuts.AddCut("00003113","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00051013","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00003113","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM  
-    cuts.AddCut("00051013","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM  
+    cuts.AddCut("00003113","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27
+    cuts.AddCut("00051013","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27
+    cuts.AddCut("00003113","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM
+    cuts.AddCut("00051013","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM
+  } else if (trainConfig == 9){  // new default , pt dep TM, no M02
+    cuts.AddCut("00003113","1111121057032200000","1111121057022000001","0163300000000000"); // no M02, no exotics
+    cuts.AddCut("00051013","1111121057032200000","1111121057022000001","0163300000000000"); // no M02, no exotics
 
   // INT1 variations
-  } else if (trainConfig == 10){ // M02 var  
+  } else if (trainConfig == 10){ // M02 var
     cuts.AddCut("00003113","1111121053032200000","1111121053022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00003113","1111121053032200000","1111121053022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00003113","1111121053032200000","1111121053022410001","0163301100000000"); // min 0.27, tighter lower func
     cuts.AddCut("00003113","1111121053032200000","1111121053022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00003113","1111121053032200000","1111121053022430001","0163301100000000"); // min 0.27, tighter func up and low
-  } else if (trainConfig == 11){  // variation track matching to cluster & mass variations 
+  } else if (trainConfig == 11){  // variation track matching to cluster & mass variations
     cuts.AddCut("00003113","1111121050032200000","1111121050022210001","0163301100000000"); // no TM
     cuts.AddCut("00003113","1111121051032200000","1111121051022210001","0163301100000000"); // looser TM
     cuts.AddCut("00003113","1111121056032200000","1111121056022210001","0163301100000000"); // tighter TM
@@ -265,7 +266,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00003113","1111111053032200000","1111111053022210001","0163301100000000"); // conv calo tight time
     cuts.AddCut("00003113","1111101053032200000","1111101053022210001","0163301100000000"); // SDM Jason
     cuts.AddCut("00003113","111110005303O2200000","1111100053022210001","0163301100000000"); // none
-  } else if (trainConfig == 13){ // Alpha cut variations & TRD material 
+  } else if (trainConfig == 13){ // Alpha cut variations & TRD material
     cuts.AddCut("00003113","1111121053032200000","1111121053022210001","0163303100000000"); // NLM 1 looser
     cuts.AddCut("00003113","1111121053032200000","1111121053022210001","0163305100000000"); // NLM 1 tighter
     cuts.AddCut("00003113","1113121053032200000","1113121053022210001","0163301100000000");// TRD infront
@@ -277,7 +278,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00003113","1111121053532200000","1111121053522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00003113","1111121053732200000","1111121053722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00003113","1111121053932200000","1111121053922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 15){  // variation of mass and alpha cut 
+  } else if (trainConfig == 15){  // variation of mass and alpha cut
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163301000000000"); // no mass cut
@@ -300,20 +301,20 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00003113","1111111053032200000","1111111053022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00003113","1111101053032200000","1111101053022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00003113","1111100053032200000","1111100053022700001","0163300000000000"); // none
-    
-  // EMC1 variations  
-  } else if (trainConfig == 20){ // M02 var  
+
+  // EMC1 variations
+  } else if (trainConfig == 20){ // M02 var
     cuts.AddCut("00051013","1111121053032200000","1111121053022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00051013","1111121053032200000","1111121053022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00051013","1111121053032200000","1111121053022410001","0163301100000000"); // min 0.27, tighter lower func
     cuts.AddCut("00051013","1111121053032200000","1111121053022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00051013","1111121053032200000","1111121053022430001","0163301100000000"); // min 0.27, tighter func up and low
-  } else if (trainConfig == 21){ // variation track matching to cluster & mass variations 
+  } else if (trainConfig == 21){ // variation track matching to cluster & mass variations
     cuts.AddCut("00051013","1111121050032200000","1111121050022210001","0163301100000000"); // no TM
     cuts.AddCut("00051013","1111121051032200000","1111121051022210001","0163301100000000"); // looser TM
     cuts.AddCut("00051013","1111121056032200000","1111121056022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163301300000000"); // tighter mass cut
-    cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163301500000000"); // looser mass cut    
+    cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163301500000000"); // looser mass cut
   } else if (trainConfig == 22){ // NL var
     cuts.AddCut("00051013","1111122053032200000","1111122053022210001","0163301100000000"); // SDM loose time
     cuts.AddCut("00051013","1111111053032200000","1111111053022210001","0163301100000000"); // conv calo tight time
@@ -331,7 +332,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111121053532200000","1111121053522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00051013","1111121053732200000","1111121053722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00051013","1111121053932200000","1111121053922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 25){  // variation of mass and alpha cut 
+  } else if (trainConfig == 25){  // variation of mass and alpha cut
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163301000000000"); // no mass cut
@@ -354,7 +355,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111111053032200000","1111111053022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00051013","1111101053032200000","1111101053022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00051013","1111100053032200000","1111100053022700001","0163300000000000"); // none
-  
+
   } else if (trainConfig == 38){     // V1 clusterizer no NLM
     cuts.AddCut("00003113","1111121053032200000","1111121053022000000","0163300000000000"); // INT1
     cuts.AddCut("00003113","1111121053032200000","1111121053022700000","0163300000000000"); // INT1
@@ -367,61 +368,61 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111121053032200000","1111121053022000002","0163300000000000"); // EMC1
     cuts.AddCut("00051013","1111121053032200000","1111121053022700002","0163300700000000"); // EMC1
     cuts.AddCut("00051013","1111121053032200000","1111121053022210002","0163302200000000"); // EMC1
-    
+
   // LHC13g
-  } else if (trainConfig == 40){  // new defaults LHC13g NLM1
+  } else if (trainConfig == 40){  // NLM1 with mass cuts and alpha, TM fixed vs pt
     cuts.AddCut("00010113","1111121063032200000","1111121063022210001","0163301100000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022210001","0163301100000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022210001","0163301100000000"); // EG2
     cuts.AddCut("00083013","1111121063032200000","1111121063022210001","0163301100000000"); // EG1
-  } else if (trainConfig == 41){  // no TM in basis cuts LHC13g NLM1
+  } else if (trainConfig == 41){   // NLM1 with mass cuts and alpha, TM fixed vs pt, no TM in basis cut
     cuts.AddCut("00010113","1111121060032200000","1111121063022210001","0163301100000000"); // INT7
     cuts.AddCut("00052013","1111121060032200000","1111121063022210001","0163301100000000"); // EMC7
     cuts.AddCut("00085013","1111121060032200000","1111121063022210001","0163301100000000"); // EG2
     cuts.AddCut("00083013","1111121060032200000","1111121063022210001","0163301100000000"); // EG1
-  } else if (trainConfig == 42){  // NLM1 no M02, no mass, no alpah
+  } else if (trainConfig == 42){  // NLM1 no M02, no mass, no alpha, TM fixed vs pt
     cuts.AddCut("00010113","1111121063032200000","1111121063022000001","0163300000000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022000001","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022000001","0163300000000000"); // EG2
     cuts.AddCut("00083013","1111121063032200000","1111121063022000001","0163300000000000"); // EG1
-  } else if (trainConfig == 43){  // new default
-    cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-  } else if (trainConfig == 44){  // new default without mass
-    cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300000000000"); 
-  } else if (trainConfig == 45){  //NLM exotics default frac = 0.97
+  } else if (trainConfig == 43){  // NLM1 Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, TM fixed vs pt
+    cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300700000000"); // INT7
+    cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300700000000"); // EMC7
+    cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300700000000"); // EG2
+    cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300700000000"); // EG1
+  } else if (trainConfig == 44){  // NLM1 no explicit exotics cut, M02 cut at 0.27, TM fixed vs pt
+    cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300000000000"); // EG2
+    cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 45){  // NLM1 exotics default frac = 0.97
     cuts.AddCut("00010113","1111121063532200000","1111121063522110001","0163301100000000"); // INT7
     cuts.AddCut("00052013","1111121063532200000","1111121063522110001","0163301100000000"); // EMC7
     cuts.AddCut("00085013","1111121063532200000","1111121063522110001","0163301100000000"); // EG2
     cuts.AddCut("00083013","1111121063532200000","1111121063522110001","0163301100000000"); // EG1
-  } else if (trainConfig == 46){  // new default without mass, TM only in merged
-    cuts.AddCut("00010113","1111121060032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00052013","1111121060032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00085013","1111121060032200000","1111121063022700001","0163300000000000"); 
-    cuts.AddCut("00083013","1111121060032200000","1111121063022700001","0163300000000000"); 
-  } else if (trainConfig == 47){  // NLM1 no M02, TM only in second
+  } else if (trainConfig == 46){  // NLM1 no explicit exotics cut, M02 cut at 0.27, TM fixed vs pt, TM only in merged
+    cuts.AddCut("00010113","1111121060032200000","1111121063022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052013","1111121060032200000","1111121063022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00085013","1111121060032200000","1111121063022700001","0163300000000000"); // EG2
+    cuts.AddCut("00083013","1111121060032200000","1111121063022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 47){  // NLM1 no explicit exotics cut, no M02 cut, TM fixed vs pt
     cuts.AddCut("00010113","1111121060032200000","1111121063022000001","0163300000000000"); // INT7
     cuts.AddCut("00052013","1111121060032200000","1111121063022000001","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121060032200000","1111121063022000001","0163300000000000"); // EG2
     cuts.AddCut("00083013","1111121060032200000","1111121063022000001","0163300000000000"); // EG1
-  } else if (trainConfig == 48){  // new default without mass, pt dependent TM
-    cuts.AddCut("00010113","1111121067032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00052013","1111121067032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00085013","1111121067032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00083013","1111121067032200000","1111121067022700001","0163300000000000"); 
-  } else if (trainConfig == 49){  // new default without mass, TM only in merged, pt dependent TM
-    cuts.AddCut("00010113","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00052013","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00085013","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00083013","1111121060032200000","1111121067022700001","0163300000000000"); 
+  } else if (trainConfig == 48){  // pp 2.76TeV paper cuts
+    cuts.AddCut("00010113","1111121067032200000","1111121067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052013","1111121067032200000","1111121067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00085013","1111121067032200000","1111121067022700001","0163300000000000"); // EG2
+    cuts.AddCut("00083013","1111121067032200000","1111121067022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 49){  // pp 2.76TeV paper cuts  w/o mass
+    cuts.AddCut("00010113","1111121067032200000","1111121067022000001","0163300000000000");
+    cuts.AddCut("00052013","1111121067032200000","1111121067022000001","0163300000000000"); // EMC7
+    cuts.AddCut("00085013","1111121067032200000","1111121067022000001","0163300000000000"); // EG2
+    cuts.AddCut("00083013","1111121067032200000","1111121067022000001","0163300000000000"); // EG1
 
-  // INT7 variations  
-  } else if (trainConfig == 50){ // NLM 1 M02 var  
+  // INT7 variations
+  } else if (trainConfig == 50){ // NLM 1 M02 var
     cuts.AddCut("00010113","1111121063032200000","1111121063022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00010113","1111121063032200000","1111121063022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00010113","1111121063032200000","1111121063022410001","0163301100000000"); // min 0.27, tighter lower func
@@ -442,7 +443,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111121063032200000","1111121063022210001","0163303100000000"); // NLM 1 looser
     cuts.AddCut("00010113","1111121063032200000","1111121063022210001","0163305100000000"); // NLM 1 tighter
     cuts.AddCut("00010113","1112121063032200000","1112121063022210001","0163301100000000"); // TRD infront
-    cuts.AddCut("00010113","1111321063032200000","1111321063022210001","0163301100000000"); // no TRD infront    
+    cuts.AddCut("00010113","1111321063032200000","1111321063022210001","0163301100000000"); // no TRD infront
   } else if (trainConfig == 54){ // varied exoctics
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300000000000"); // no exotics
     cuts.AddCut("00010113","1111121063232200000","1111121063222700001","0163300000000000"); // frac = 0.99
@@ -450,7 +451,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111121063532200000","1111121063522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00010113","1111121063732200000","1111121063722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00010113","1111121063932200000","1111121063922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 55){  // variation of mass and alpha cut 
+  } else if (trainConfig == 55){  // variation of mass and alpha cut
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163301000000000"); // no mass cut
@@ -467,15 +468,15 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111121061032200000","1111121061022700001","0163300000000000"); // looser TM
     cuts.AddCut("00010113","1111121066032200000","1111121066022700001","0163300000000000"); // tighter TM
     cuts.AddCut("00010113","1112121063032200000","1112121063022700001","0163300000000000"); // TRD infront
-    cuts.AddCut("00010113","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront    
+    cuts.AddCut("00010113","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront
   } else if (trainConfig == 58){ // NL var new defaults
     cuts.AddCut("00010113","1111122063032200000","1111122063022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00010113","1111111063032200000","1111111063022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00010113","1111101063032200000","1111101063022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00010113","1111100063032200000","1111100063022700001","0163300000000000"); // none
-  
-  // EMC7 variations  
-  } else if (trainConfig == 60){ // NLM 1 M02 var  
+
+  // EMC7 variations
+  } else if (trainConfig == 60){ // NLM 1 M02 var
     cuts.AddCut("00052013","1111121063032200000","1111121063022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00052013","1111121063032200000","1111121063022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00052013","1111121063032200000","1111121063022410001","0163301100000000"); // min 0.27, tighter lower func
@@ -504,7 +505,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121063532200000","1111121063522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00052013","1111121063732200000","1111121063722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00052013","1111121063932200000","1111121063922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 65){  // variation of mass and alpha cut 
+  } else if (trainConfig == 65){  // variation of mass and alpha cut
     cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163301000000000"); // no mass cut
@@ -521,15 +522,15 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121061032200000","1111121061022700001","0163300000000000"); // looser TM
     cuts.AddCut("00052013","1111121066032200000","1111121066022700001","0163300000000000"); // tighter TM
     cuts.AddCut("00052013","1112121063032200000","1112121063022700001","0163300000000000"); // TRD infront
-    cuts.AddCut("00052013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront    
+    cuts.AddCut("00052013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront
   } else if (trainConfig == 68){ // NL var new defaults
     cuts.AddCut("00052013","1111122063032200000","1111122063022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00052013","1111111063032200000","1111111063022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00052013","1111101063032200000","1111101063022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00052013","1111100063032200000","1111100063022700001","0163300000000000"); // none
-    
+
   // EG2 variations
-  } else if (trainConfig == 70){ // NLM 1 M02 var  
+  } else if (trainConfig == 70){ // NLM 1 M02 var
     cuts.AddCut("00085013","1111121063032200000","1111121063022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00085013","1111121063032200000","1111121063022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00085013","1111121063032200000","1111121063022410001","0163301100000000"); // min 0.27, tighter lower func
@@ -558,7 +559,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00085013","1111121063532200000","1111121063522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00085013","1111121063732200000","1111121063722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00085013","1111121063932200000","1111121063922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 75){  // variation of mass and alpha cut 
+  } else if (trainConfig == 75){  // variation of mass and alpha cut
     cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163301000000000"); // no mass cut
@@ -575,15 +576,15 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00085013","1111121061032200000","1111121061022700001","0163300000000000"); // looser TM
     cuts.AddCut("00085013","1111121066032200000","1111121066022700001","0163300000000000"); // tighter TM
     cuts.AddCut("00085013","1112121063032200000","1112121063022700001","0163300000000000"); // TRD infront
-    cuts.AddCut("00085013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront    
+    cuts.AddCut("00085013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront
   } else if (trainConfig == 78){ // NL var new defaults
     cuts.AddCut("00085013","1111122063032200000","1111122063022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00085013","1111111063032200000","1111111063022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00085013","1111101063032200000","1111101063022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00085013","1111100063032200000","1111100063022700001","0163300000000000"); // none
-        
-  // EG1 variations   
-  } else if (trainConfig == 80){ // NLM 1 M02 var  
+
+  // EG1 variations
+  } else if (trainConfig == 80){ // NLM 1 M02 var
     cuts.AddCut("00083013","1111121063032200000","1111121063022110001","0163301100000000"); // min 0.3 function default
     cuts.AddCut("00083013","1111121063032200000","1111121063022310001","0163301100000000"); // min 0.25 function default
     cuts.AddCut("00083013","1111121063032200000","1111121063022410001","0163301100000000"); // min 0.27, tighter lower func
@@ -612,7 +613,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00083013","1111121063532200000","1111121063522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00083013","1111121063732200000","1111121063722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00083013","1111121063932200000","1111121063922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 85){  // variation of mass and alpha cut 
+  } else if (trainConfig == 85){  // variation of mass and alpha cut
     cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163301700000000"); // only band at 0
     cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300700000000"); // only band at 0, no alpha
     cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163301000000000"); // no mass cut
@@ -629,40 +630,40 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00083013","1111121061032200000","1111121061022700001","0163300000000000"); // looser TM
     cuts.AddCut("00083013","1111121066032200000","1111121066022700001","0163300000000000"); // tighter TM
     cuts.AddCut("00083013","1112121063032200000","1112121063022700001","0163300000000000"); // TRD infront
-    cuts.AddCut("00083013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront    
+    cuts.AddCut("00083013","1111321063032200000","1111321063022700001","0163300000000000"); // no TRD infront
   } else if (trainConfig == 88){ // NL var new defaults
     cuts.AddCut("00083013","1111122063032200000","1111122063022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00083013","1111111063032200000","1111111063022700001","0163300000000000"); // conv calo tight time
     cuts.AddCut("00083013","1111101063032200000","1111101063022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00083013","1111100063032200000","1111100063022700001","0163300000000000"); // none
-    
+
   } else if (trainConfig == 90){  // new default without mass, eta < 0.7, y < 0.7
-    cuts.AddCut("00010113","1551121063032200000","1551121063022700001","0163200000000000"); 
-    cuts.AddCut("00052013","1551121063032200000","1551121063022700001","0163200000000000"); 
-    cuts.AddCut("00085013","1551121063032200000","1551121063022700001","0163200000000000"); 
-    cuts.AddCut("00083013","1551121063032200000","1551121063022700001","0163200000000000"); 
+    cuts.AddCut("00010113","1551121063032200000","1551121063022700001","0163200000000000");
+    cuts.AddCut("00052013","1551121063032200000","1551121063022700001","0163200000000000");
+    cuts.AddCut("00085013","1551121063032200000","1551121063022700001","0163200000000000");
+    cuts.AddCut("00083013","1551121063032200000","1551121063022700001","0163200000000000");
   } else if (trainConfig == 91){  // new default without mass, TM pt dep, eta < 0.7, y < 0.7
-    cuts.AddCut("00010113","1551121067032200000","1551121067022700001","0163200000000000"); 
-    cuts.AddCut("00052013","1551121067032200000","1551121067022700001","0163200000000000"); 
-    cuts.AddCut("00085013","1551121067032200000","1551121067022700001","0163200000000000"); 
-    cuts.AddCut("00083013","1551121067032200000","1551121067022700001","0163200000000000"); 
-  
-    
+    cuts.AddCut("00010113","1551121067032200000","1551121067022700001","0163200000000000");
+    cuts.AddCut("00052013","1551121067032200000","1551121067022700001","0163200000000000");
+    cuts.AddCut("00085013","1551121067032200000","1551121067022700001","0163200000000000");
+    cuts.AddCut("00083013","1551121067032200000","1551121067022700001","0163200000000000");
+
+
   } else if (trainConfig == 95){  // new defaults LHC13g no NLM no mass, no alpha, no M02
     cuts.AddCut("00010113","1111121063032200000","1111121063022000000","0163300000000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022000000","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022000000","0163300000000000"); // EG2
-    cuts.AddCut("00083013","1111121063032200000","1111121063022000000","0163300000000000"); // EG1    
+    cuts.AddCut("00083013","1111121063032200000","1111121063022000000","0163300000000000"); // EG1
   } else if (trainConfig == 96){  // new defaults LHC13g no NLM, no mass
     cuts.AddCut("00010113","1111121063032200000","1111121063022700000","0163300000000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022700000","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022700000","0163300000000000"); // EG2
-    cuts.AddCut("00083013","1111121063032200000","1111121063022700000","0163300000000000"); // EG1    
+    cuts.AddCut("00083013","1111121063032200000","1111121063022700000","0163300000000000"); // EG1
   } else if (trainConfig == 97){  // new defaults LHC13g NLM2
     cuts.AddCut("00010113","1111121063032200000","1111121063022700002","0163300700000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022700002","0163300700000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022700002","0163300700000000"); // EG2
-    cuts.AddCut("00083013","1111121063032200000","1111121063022700002","0163300700000000"); // EG1    
+    cuts.AddCut("00083013","1111121063032200000","1111121063022700002","0163300700000000"); // EG1
   } else if (trainConfig == 98){  // new defaults LHC13g NLM2
     cuts.AddCut("00010113","1111121063032200000","1111121063022210002","0163302200000000"); // INT7
     cuts.AddCut("00052013","1111121063032200000","1111121063022210002","0163302200000000"); // EMC7
@@ -673,7 +674,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121063032200000","1111121063022000002","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022000002","0163300000000000"); // EG2
     cuts.AddCut("00083013","1111121063032200000","1111121063022000002","0163300000000000"); // EG1
-    
+
   // LHC12
   // default
   } else if (trainConfig == 107){  // no M02, pt dep TM
@@ -712,11 +713,11 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067032200000","1111111067022000001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022000001","0163300000000000"); // EGA
-  } else if (trainConfig == 115){  // Mass only band at 0, M02 cut at 0.27  
+  } else if (trainConfig == 115){  // Mass only band at 0, M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300700000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300700000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300700000000"); // EGA
-  } else if (trainConfig == 116){  // M02 cut at 0.27  
+  } else if (trainConfig == 116){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
@@ -732,7 +733,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1551111067032200000","1551111067022700001","0163200000000000"); // INT7
     cuts.AddCut("00052113","1551111067032200000","1551111067022700001","0163200000000000"); // EMC7
     cuts.AddCut("00081113","1551111067032200000","1551111067022700001","0163200000000000"); // EGA
-    
+
     //kINT7 - NLM1
   } else if (trainConfig == 120){  // TRD material INT7 NLM 1
     cuts.AddCut("00010113","1112111067032200000","1112111067022700001","0163300000000000"); // TRD infront
@@ -744,29 +745,30 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067532200000","1111111067522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00010113","1111111067732200000","1111111067722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00010113","1111111067932200000","1111111067922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 122){  // variation of mass and alpha cut 
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163301700000000"); // only band at 0
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300700000000"); // only band at 0, no alpha
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163301000000000"); // no mass cut
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass cut, no alpha
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300100000000"); // no alpha
-  } else if (trainConfig == 123){ // varied M02
-    cuts.AddCut("00010113","1111111067032200000","1111111067022600001","0163300700000000"); // min M02= 0.3
-    cuts.AddCut("00010113","1111111067032200000","1111111067022800001","0163300700000000"); // min M02= 0.25
-    cuts.AddCut("00010113","1111111067032200000","1111111067022600001","0163300000000000"); // no mass, min M02 = 0.3
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass, min M02 = 0.27
-    cuts.AddCut("00010113","1111111067032200000","1111111067022800001","0163300000000000"); // no mass, min M02 = 0.25
-  } else if (trainConfig == 124){  // variation track matching to cluster & mass variations new defaults
-    cuts.AddCut("00010113","1111111060032200000","1111121060022700001","0163300000000000"); // no TM
-    cuts.AddCut("00010113","1111111063032200000","1111121063022700001","0163300000000000"); // old matching std
-    cuts.AddCut("00010113","1111111068032200000","1111121068022700001","0163300000000000"); // looser TM
-    cuts.AddCut("00010113","1111111066032200000","1111121066022700001","0163300000000000"); // tighter TM
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300800000000"); // looser mass cut
-    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300900000000"); // tighter mass cut
-  } else if (trainConfig == 125){ // NL var new defaults
+  } else if (trainConfig == 122){ // varied M02 part 1
+    cuts.AddCut("00010113","1111111067032200000","1111111067022600001","0163300000000000"); // min M02 = 0.3
+    cuts.AddCut("00010113","1111111067032200000","1111111067022c00001","0163300000000000"); // min M02 = 0.29
+    cuts.AddCut("00010113","1111111067032200000","1111111067022b00001","0163300000000000"); // min M02 = 0.28
+  } else if (trainConfig == 123){ // varied M02 part 2
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // min M02 = 0.27
+    cuts.AddCut("00010113","1111111067032200000","1111111067022a00001","0163300000000000"); // min M02 = 0.26
+    cuts.AddCut("00010113","1111111067032200000","1111111067022800001","0163300000000000"); // min M02 = 0.25
+  } else if (trainConfig == 124){  // variation track matching to cluster part 1
+    cuts.AddCut("00010113","1111111060032200000","1111111060022700001","0163300000000000"); // no TM
+    cuts.AddCut("00010113","1111111063032200000","1111111063022700001","0163300000000000"); // old matching std
+  } else if (trainConfig == 125){  // variation track matching to cluster part 2
+    cuts.AddCut("00010113","111111106b032200000","111111106b022700001","0163300000000000"); // looser TM
+    cuts.AddCut("00010113","111111106a032200000","111111106a022700001","0163300000000000"); // tighter TM
+    cuts.AddCut("00010113","1111111068032200000","1111111068022700001","0163300000000000"); // even looser TM
+    cuts.AddCut("00010113","1111111066032200000","1111111066022700001","0163300000000000"); // even tighter TM
+  } else if (trainConfig == 126){ // NL var new defaults
     cuts.AddCut("00010113","1111112067032200000","1111112067022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00010113","1111101067032200000","1111101067022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00010113","1111100067032200000","1111100067022700001","0163300000000000"); // none
+    cuts.AddCut("00010113","1111121067032200000","1111121067022700001","0163300000000000"); // DPOW NL ConvCalo
+    cuts.AddCut("00010113","1111122067032200000","1111122067022700001","0163300000000000"); // DPOW NL Calo
+  } else if (trainConfig == 127){  // std pT dep, |eta| < 0.3, y < 0.3
+    cuts.AddCut("00010113","1661111067032200000","1661111067022700001","0163700000000000"); // diff eta/rap cuts
 
     //kEMC7 - NLM1
   } else if (trainConfig == 130){  // TRD material INT7 NLM 1
@@ -779,30 +781,32 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052113","1111111067532200000","1111111067522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00052113","1111111067732200000","1111111067722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00052113","1111111067932200000","1111111067922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 132){  // variation of mass and alpha cut 
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163301700000000"); // only band at 0
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300700000000"); // only band at 0, no alpha
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163301000000000"); // no mass cut
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass cut, no alpha
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300100000000"); // no alpha
-  } else if (trainConfig == 133){ // varied M02
-    cuts.AddCut("00052113","1111111067032200000","1111111067022600001","0163300700000000"); // min M02= 0.3
-    cuts.AddCut("00052113","1111111067032200000","1111111067022800001","0163300700000000"); // min M02= 0.25
-    cuts.AddCut("00052113","1111111067032200000","1111111067022600001","0163300000000000"); // no mass, min M02 = 0.3
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass, min M02 = 0.27
-    cuts.AddCut("00052113","1111111067032200000","1111111067022800001","0163300000000000"); // no mass, min M02 = 0.25
-  } else if (trainConfig == 134){  // variation track matching to cluster & mass variations new defaults
-    cuts.AddCut("00052113","1111111060032200000","1111121060022700001","0163300000000000"); // no TM
-    cuts.AddCut("00052113","1111111063032200000","1111121063022700001","0163300000000000"); // old matching std
-    cuts.AddCut("00052113","1111111068032200000","1111121068022700001","0163300000000000"); // looser TM
-    cuts.AddCut("00052113","1111111066032200000","1111121066022700001","0163300000000000"); // tighter TM
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300800000000"); // looser mass cut
-    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300900000000"); // tighter mass cut
-  } else if (trainConfig == 135){ // NL var new defaults
+  } else if (trainConfig == 132){ // varied M02 part 1
+    cuts.AddCut("00052113","1111111067032200000","1111111067022600001","0163300000000000"); // min M02 = 0.3
+    cuts.AddCut("00052113","1111111067032200000","1111111067022c00001","0163300000000000"); // min M02 = 0.29
+    cuts.AddCut("00052113","1111111067032200000","1111111067022b00001","0163300000000000"); // min M02 = 0.28
+  } else if (trainConfig == 133){ // varied M02 part 2
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // min M02 = 0.27
+    cuts.AddCut("00052113","1111111067032200000","1111111067022a00001","0163300000000000"); // min M02 = 0.26
+    cuts.AddCut("00052113","1111111067032200000","1111111067022800001","0163300000000000"); // min M02 = 0.25
+  } else if (trainConfig == 134){  // variation track matching to cluster part 1
+    cuts.AddCut("00052113","1111111060032200000","1111111060022700001","0163300000000000"); // no TM
+    cuts.AddCut("00052113","1111111063032200000","1111111063022700001","0163300000000000"); // old matching std
+  } else if (trainConfig == 135){  // variation track matching to cluster part 2
+    cuts.AddCut("00052113","111111106b032200000","111111106b022700001","0163300000000000"); // looser TM
+    cuts.AddCut("00052113","111111106a032200000","111111106a022700001","0163300000000000"); // tighter TM
+    cuts.AddCut("00052113","1111111068032200000","1111111068022700001","0163300000000000"); // even looser TM
+    cuts.AddCut("00052113","1111111066032200000","1111111066022700001","0163300000000000"); // even tighter TM
+  } else if (trainConfig == 136){ // NL var new defaults
     cuts.AddCut("00052113","1111112067032200000","1111112067022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00052113","1111101067032200000","1111101067022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00052113","1111100067032200000","1111100067022700001","0163300000000000"); // none
-  
+    cuts.AddCut("00052113","1111121067032200000","1111121067022700001","0163300000000000"); // DPOW NL ConvCalo
+    cuts.AddCut("00052113","1111122067032200000","1111122067022700001","0163300000000000"); // DPOW NL Calo
+  } else if (trainConfig == 137){  // std pT dep, |eta| < 0.3, y < 0.3
+    cuts.AddCut("00052113","1661111067032200000","1661111067022700001","0163700000000000"); // diff eta/rap cuts
+
+
   //kEMCEGA - NLM1
   } else if (trainConfig == 140){  // TRD material INT7 NLM 1
     cuts.AddCut("00081113","1112111067032200000","1112111067022700001","0163300000000000"); // TRD infront
@@ -814,36 +818,37 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111067532200000","1111111067522700001","0163300000000000"); // frac = 0.97
     cuts.AddCut("00081113","1111111067732200000","1111111067722700001","0163300000000000"); // frac = 0.96
     cuts.AddCut("00081113","1111111067932200000","1111111067922700001","0163300000000000"); // frac = 0.94
-  } else if (trainConfig == 142){  // variation of mass and alpha cut 
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163301700000000"); // only band at 0
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300700000000"); // only band at 0, no alpha
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163301000000000"); // no mass cut
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass cut, no alpha
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300100000000"); // no alpha
-  } else if (trainConfig == 143){ // varied M02
-    cuts.AddCut("00081113","1111111067032200000","1111111067022600001","0163300700000000"); // min M02= 0.3
-    cuts.AddCut("00081113","1111111067032200000","1111111067022800001","0163300700000000"); // min M02= 0.25
-    cuts.AddCut("00081113","1111111067032200000","1111111067022600001","0163300000000000"); // no mass, min M02 = 0.3
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // no mass, min M02 = 0.27
-    cuts.AddCut("00081113","1111111067032200000","1111111067022800001","0163300000000000"); // no mass, min M02 = 0.25
-  } else if (trainConfig == 144){  // variation track matching to cluster & mass variations new defaults
-    cuts.AddCut("00081113","1111111060032200000","1111121060022700001","0163300000000000"); // no TM
-    cuts.AddCut("00081113","1111111063032200000","1111121063022700001","0163300000000000"); // old matching std
-    cuts.AddCut("00081113","1111111068032200000","1111121068022700001","0163300000000000"); // looser TM
-    cuts.AddCut("00081113","1111111066032200000","1111121066022700001","0163300000000000"); // tighter TM
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300800000000"); // looser mass cut
-    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300900000000"); // tighter mass cut
-  } else if (trainConfig == 145){ // NL var new defaults
+  } else if (trainConfig == 142){ // varied M02 part 1
+    cuts.AddCut("00081113","1111111067032200000","1111111067022600001","0163300000000000"); // min M02 = 0.3
+    cuts.AddCut("00081113","1111111067032200000","1111111067022c00001","0163300000000000"); // min M02 = 0.29
+    cuts.AddCut("00081113","1111111067032200000","1111111067022b00001","0163300000000000"); // min M02 = 0.28
+  } else if (trainConfig == 143){ // varied M02 part 2
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // min M02 = 0.27
+    cuts.AddCut("00081113","1111111067032200000","1111111067022a00001","0163300000000000"); // min M02 = 0.26
+    cuts.AddCut("00081113","1111111067032200000","1111111067022800001","0163300000000000"); // min M02 = 0.25
+  } else if (trainConfig == 144){  // variation track matching to cluster part 1
+    cuts.AddCut("00081113","1111111060032200000","1111111060022700001","0163300000000000"); // no TM
+    cuts.AddCut("00081113","1111111063032200000","1111111063022700001","0163300000000000"); // old matching std
+  } else if (trainConfig == 145){  // variation track matching to cluster part 2
+    cuts.AddCut("00081113","111111106b032200000","111111106b022700001","0163300000000000"); // looser TM
+    cuts.AddCut("00081113","111111106a032200000","111111106a022700001","0163300000000000"); // tighter TM
+    cuts.AddCut("00081113","1111111068032200000","1111111068022700001","0163300000000000"); // even looser TM
+    cuts.AddCut("00081113","1111111066032200000","1111111066022700001","0163300000000000"); // even tighter TM
+  } else if (trainConfig == 146){ // NL var new defaults
     cuts.AddCut("00081113","1111112067032200000","1111112067022700001","0163300000000000"); // SDM loose time
     cuts.AddCut("00081113","1111101067032200000","1111101067022700001","0163300000000000"); // SDM Jason
     cuts.AddCut("00081113","1111100067032200000","1111100067022700001","0163300000000000"); // none
-    
-  // NLM2 cuts  
+    cuts.AddCut("00081113","1111121067032200000","1111121067022700001","0163300000000000"); // DPOW NL ConvCalo
+    cuts.AddCut("00081113","1111122067032200000","1111122067022700001","0163300000000000"); // DPOW NL Calo
+  } else if (trainConfig == 147){  // std pT dep, |eta| < 0.3, y < 0.3
+    cuts.AddCut("00081113","1661111067032200000","1661111067022700001","0163700000000000"); // diff eta/rap cuts
+
+  // NLM2 cuts
   } else if (trainConfig == 160){  //no NLM no explicit exotics cut, no M02 cut, no mass
     cuts.AddCut("00010113","1111111067032200000","1111111067022000000","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000000","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022000000","0163300000000000"); // EGA
-  } else if (trainConfig == 161){  // no NLM no mass, no explicit exotics cut, M02 cut at 0.27  
+  } else if (trainConfig == 161){  // no NLM no mass, no explicit exotics cut, M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700000","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700000","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700000","0163300000000000"); // EGA
@@ -852,7 +857,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067032200000","1111111067022000002","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000002","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022000002","0163300000000000"); // EGA
-  } else if (trainConfig == 163){  // NLM2 Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+  } else if (trainConfig == 163){  // NLM2 Mass only band at 0, no explicit exotics cut, M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700002","0163300700000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700002","0163300700000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700002","0163300700000000"); // EGA
@@ -860,24 +865,6 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067032200000","1111111067022210002","0163302200000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022210002","0163302200000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022210002","0163302200000000"); // EMCEGA,
-
-  // diff eta/rap cuts
-  } else if (trainConfig == 171){  // std pT dep, |eta| < 0.3, y < 0.3
-    cuts.AddCut("00010113","1661111067032200000","1661111067022700001","0163700000000000"); // INT7
-    cuts.AddCut("00052113","1661111067032200000","1661111067022700001","0163700000000000"); // EMC7
-    cuts.AddCut("00081113","1661111067032200000","1661111067022700001","0163700000000000"); // EGA
-  } else if (trainConfig == 172){  // std, |eta| < 0.3, y < 0.3
-    cuts.AddCut("00010113","1661111063032200000","1661111063022700001","0163700000000000"); // INT7
-    cuts.AddCut("00052113","1661111063032200000","1661111063022700001","0163700000000000"); // EMC7
-    cuts.AddCut("00081113","1661111063032200000","1661111063022700001","0163700000000000"); // EGA
-  } else if (trainConfig == 173){  // no M02 pT dep, |eta| < 0.3, y < 0.3
-    cuts.AddCut("00010113","1661111067032200000","1661111067022000001","0163700000000000"); // INT7
-    cuts.AddCut("00052113","1661111067032200000","1661111067022000001","0163700000000000"); // EMC7
-    cuts.AddCut("00081113","1661111067032200000","1661111067022000001","0163700000000000"); // EGA
-  } else if (trainConfig == 174){  // no M02, |eta| < 0.3, y < 0.3
-    cuts.AddCut("00010113","1661111063032200000","1661111063022000001","0163700000000000"); // INT7
-    cuts.AddCut("00052113","1661111063032200000","1661111063022000001","0163700000000000"); // EMC7
-    cuts.AddCut("00081113","1661111063032200000","1661111063022000001","0163700000000000"); // EGA
 
   // T0AND cuts
   } else if (trainConfig == 181){  // EMCAL clusters, different triggers with NonLinearity track matching to cluster
@@ -890,12 +877,28 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00082113","1111111067032200000","1111111067022110002","0163302200000000"); // EMC8EGA,
 
     // 13 TeV & 5 TeV
-  } else if (trainConfig == 401){ // EMCAL clusters pp 13 TeV
-    cuts.AddCut("00010113","1111101013032200000","1111101013022210002","0163302200000000"); //INT7 1000ns timing cut, std NL NLM2
-    cuts.AddCut("00052013","1111101013032200000","1111101013022210002","0163302200000000"); //INT7 1000ns timing cut, std NL NLM2
-    cuts.AddCut("00010113","1111101013032200000","1111101013022110001","0163301100000000"); //INT7 1000ns timing cut, std NL NLM1
-    cuts.AddCut("00052013","1111101013032200000","1111101013022110001","0163301100000000"); //EMC7 1000ns timing cut, std NL NLM1
-     
+  } else if (trainConfig == 401){ // pp 2.76TeV paper cuts : open timing, TB nonlin
+    cuts.AddCut("00010113","1111101017032200000","1111101017022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111101017032200000","1111101017022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00085113","1111101017032200000","1111101017022700001","0163300000000000"); // EG2
+    cuts.AddCut("00083113","1111101017032200000","1111101017022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 402){  // pp 2.76TeV paper cuts:  w/o mass, open timing, TB nonlin
+    cuts.AddCut("00010113","1111101017032200000","1111101017022000001","0163300000000000");
+    cuts.AddCut("00052113","1111101017032200000","1111101017022000001","0163300000000000"); // EMC7
+    cuts.AddCut("00085113","1111101017032200000","1111101017022000001","0163300000000000"); // EG2
+    cuts.AddCut("00083113","1111101017032200000","1111101017022000001","0163300000000000"); // EG1
+  } else if (trainConfig == 403){ // pp 2.76TeV paper cuts : open timing, TB nonlin
+    cuts.AddCut("00010113","1111100017032200000","1111100017022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111100017032200000","1111100017022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00085113","1111100017032200000","1111100017022700001","0163300000000000"); // EG2
+    cuts.AddCut("00083113","1111100017032200000","1111100017022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 404){  // pp 2.76TeV paper cuts:  w/o mass, open timing, TB nonlin
+    cuts.AddCut("00010113","1111100017032200000","1111100017022000001","0163300000000000");
+    cuts.AddCut("00052113","1111100017032200000","1111100017022000001","0163300000000000"); // EMC7
+    cuts.AddCut("00085113","1111100017032200000","1111100017022000001","0163300000000000"); // EG2
+    cuts.AddCut("00083113","1111100017032200000","1111100017022000001","0163300000000000"); // EG1
+
+
     // all the cut variations
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -917,7 +920,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   TList *MesonCutList         = new TList();
 
   TList *HeaderList           = new TList();
-  if (periodname.Contains("LHC12i3")){  
+  if (periodname.Contains("LHC12i3")){
     TObjString *Header2       = new TObjString("BOX");
     HeaderList->Add(Header2);
   } else if (periodname.CompareTo("LHC14e2b")==0){
@@ -925,8 +928,8 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     HeaderList->Add(Header2);
     TObjString *Header3       = new TObjString("eta_2");
     HeaderList->Add(Header3);
-  }  
-  
+  }
+
   TString energy      = "";
   TString mcName      = "";
   TString mcNameAdd   = "";
@@ -934,27 +937,27 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     mcNameAdd         = "_WOSDD";
   } else if (periodname.Contains("WSDD")){
     mcNameAdd         = "_WSDD";
-  }   
+  }
   if (periodname.Contains("LHC12i3")){
     energy            = "2760GeV";
     mcName            = "Pythia8_LHC12i3";
-  } else if (periodname.Contains("LHC12f1a")){  
+  } else if (periodname.Contains("LHC12f1a")){
     energy            = "2760GeV";
     mcName            = "Pythia8_LHC12f1a";
-  } else if (periodname.Contains("LHC12f1b")){  
+  } else if (periodname.Contains("LHC12f1b")){
     energy            = "2760GeV";
-    mcName            = "Phojet_LHC12f1b";    
-  } else if (periodname.Contains("LHC14e2a")){  
+    mcName            = "Phojet_LHC12f1b";
+  } else if (periodname.Contains("LHC14e2a")){
     energy            = "8TeV";
-    mcName            = "Pythia8_LHC14e2a";    
-  } else if (periodname.Contains("LHC14e2b")){  
+    mcName            = "Pythia8_LHC14e2a";
+  } else if (periodname.Contains("LHC14e2b")){
     energy            = "8TeV";
-    mcName            = "Pythia8_LHC14e2b";      
-  } else if (periodname.Contains("LHC14e2c")){    
+    mcName            = "Pythia8_LHC14e2b";
+  } else if (periodname.Contains("LHC14e2c")){
     energy            = "8TeV";
-    mcName            = "Phojet_LHC14e2c";        
-  }  
-  
+    mcName            = "Phojet_LHC14e2c";
+  }
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts          = new AliConvEventCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
@@ -977,7 +980,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     }
 
     analysisEventCuts[i]    = new AliConvEventCuts();
-    
+
     // definition of weighting input
     TString fitNamePi0      = Form("Pi0_Fit_Data_%s",energy.Data());
     TString fitNameEta      = Form("Eta_Fit_Data_%s",energy.Data());
@@ -986,7 +989,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     TString mcInputNameEta  = "";
     mcInputNamePi0          = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     mcInputNameEta          = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-    
+
     if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
@@ -998,7 +1001,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisClusterCuts[i]        = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
@@ -1011,7 +1014,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-    
+
     analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts(isMC);
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
@@ -1034,6 +1037,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);

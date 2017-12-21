@@ -28,13 +28,12 @@ AliEmcalCorrectionComponentFactory::map_type * AliEmcalCorrectionComponentFactor
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
-  fEvent(0),
+  fEventManager(),
   fEsdMode(0),
   fMCEvent(0),
   fCent(0),
@@ -44,7 +43,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -64,13 +62,12 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
-  fEvent(0),
+  fEventManager(),
   fEsdMode(0),
   fMCEvent(0),
   fCent(0),
@@ -80,7 +77,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -108,12 +104,13 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
 {
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
-  GetProperty("pass", tempString);
+  // Cannot use usual helper function because "pass" is not inside of a component, but rather at the top level.
+  fYAMLConfig.GetProperty("pass", tempString, true);
   fFilepass = tempString.c_str();
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
     // Handle the "default" value used in MC
-    if (fFilepass == "default") {
+    if (fFilepass == "default" || fFilepass == "usedefault") {
       AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
       fFilepass = "pass1";
     }
@@ -147,6 +144,9 @@ void AliEmcalCorrectionComponent::ExecOnce()
  */
 Bool_t AliEmcalCorrectionComponent::Run()
 {
+  AliDebugStream(3) << ": fEventManager.UseEmbeddingEvent(): " << fEventManager.UseEmbeddingEvent() << ", "
+           << "fEventManager.InputEvent(): " << fEventManager.InputEvent() << ", "
+           << "fEventManager address: " << &fEventManager << "\n";
   if(fGetPassFromFileName)
     GetPass();
   
@@ -196,9 +196,9 @@ void AliEmcalCorrectionComponent::GetEtaPhiDiff(const AliVTrack *t, const AliVCl
 void AliEmcalCorrectionComponent::UpdateCells()
 {
   
-  if (!fEvent) return ;
+  if (!fEventManager.InputEvent()) return ;
   
-  Int_t bunchCrossNo = fEvent->GetBunchCrossNumber();
+  Int_t bunchCrossNo = fEventManager.InputEvent()->GetBunchCrossNumber();
   
   if (fRecoUtils)
     fRecoUtils->RecalibrateCells(fCaloCells, bunchCrossNo);
@@ -212,10 +212,10 @@ void AliEmcalCorrectionComponent::UpdateCells()
 Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
 {
   // Get run number.
-  Bool_t runChanged = fRun != fEvent->GetRunNumber();
+  Bool_t runChanged = fRun != fEventManager.InputEvent()->GetRunNumber();
   
   if (runChanged) {
-    fRun = fEvent->GetRunNumber();
+    fRun = fEventManager.InputEvent()->GetRunNumber();
     AliWarning(Form("Run changed, initializing parameters for %d", fRun));
     
     // init geometry if not already done
@@ -227,28 +227,6 @@ Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
     }
   }
   return runChanged;
-}
-
-/**
- * Check if value is a shared parameter, meaning we should look
- * at another node. Also edits the input string to remove "sharedParameters:"
- * if it exists, making it ready for use.
- *
- * @param[in] value String containing the string value return by the parameter.
- *
- * @return True if the value is shared.
- */
-bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
-{
-  std::size_t sharedParameterLocation = value.find("sharedParameters:");
-  if (sharedParameterLocation != std::string::npos)
-  {
-    // "sharedParameters:" is 17 characters long
-    value.erase(sharedParameterLocation, sharedParameterLocation + 17);
-    return true;
-  }
-  // Return false otherwise
-  return false;
 }
 
 /**
@@ -329,7 +307,7 @@ void AliEmcalCorrectionComponent::FillCellQA(TH1F* h){
  */
 Int_t AliEmcalCorrectionComponent::InitBadChannels()
 {
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
   
   AliInfo("Initialising Bad channel map");
@@ -338,7 +316,7 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   if (!fRecoUtils->GetEMCALBadChannelStatusMapArray())
     fRecoUtils->InitEMCALBadChannelStatusMap() ;
   
-  Int_t runBC = fEvent->GetRunNumber();
+  Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contBC = new AliOADBContainer("");
   if (fBasePath!="")

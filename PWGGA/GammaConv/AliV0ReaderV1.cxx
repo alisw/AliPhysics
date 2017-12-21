@@ -26,11 +26,11 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack 
+// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack
 // in the Array of ESDTracks stored in the ESDEvent via GetTrackLabelPositive() (GetTrackLabelNagative()).
 // Since it is the Position in the Array it is always positive.
 // After the conversion ESD --> AOD each AOD track will give you the former Position in the ESDArray via the
-// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard 
+// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard
 // AODTracks (not copies of AliExternalTrackParam) will be stored with negative values of AODTrack->GetID() (Formula: (ESDTrack->GetID()+1)*-1)
 // This leads to the possibility of more than one AOD track with the same negative ID. For that reason all AOD tracks are additionally flaged.
 // In this analysis we should therefore only use AODTracks with positive values of AODTrack->GetID().
@@ -49,7 +49,6 @@
 #include "AliESDEvent.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliESDtrackCuts.h"
@@ -80,6 +79,8 @@ ClassImp(AliV0ReaderV1)
 
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
+  kAddv0sInESDFilter(kFALSE),
+  fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
   fConversionGammas(NULL),
@@ -94,6 +95,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
+  fNumberOfTPCoutTracks(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -151,6 +153,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   // Default constructor
 
   DefineInput(0, TChain::Class());
+  DefineOutput(1,TBits::Class());
 }
 
 //________________________________________________________________________
@@ -162,6 +165,29 @@ AliV0ReaderV1::~AliV0ReaderV1()
     fConversionGammas->Delete();// Clear Objects
     delete fConversionGammas;
     fConversionGammas=0x0;
+  }
+}
+
+/**
+ * @brief Array index operator
+ *
+ * Access to the photon at a given index in the V0 reader, treated as container
+ *
+ * @param index Index of the photon inside the container
+ * @return Pointer to photon (if the container has at least one photon), otherwise nullptr
+ */
+AliConversionPhotonBase *AliV0ReaderV1::operator[](int index) const {
+  if(fConversionGammas && (index < fConversionGammas->GetEntriesFast())) {
+    TObject *tmp = fConversionGammas->At(index);
+    if(tmp->IsA() == AliAODConversionPhoton::Class()){
+      AliAODConversionPhoton *photon = static_cast<AliAODConversionPhoton *>(tmp);
+      return photon;
+    } else {
+      AliKFConversionPhoton *photon = static_cast<AliKFConversionPhoton *>(tmp);
+      return photon;
+    }
+  } else {
+    return nullptr;
   }
 }
 
@@ -238,6 +264,8 @@ void AliV0ReaderV1::UserCreateOutputObjects()
   // Create AODs
 
   if(fCreateAOD){
+    fPCMv0BitField = new TBits();
+
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -296,7 +324,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoPosTrackImpactParamYvsPt->SetYTitle("Y (cm)");
     fHistoPosTrackImpactParamYvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamYvsPt);
- 
+
     fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,0,10,30,-3,5);
     fHistoPosTrackImpactParamXvsPt->SetYTitle("X (cm)");
     fHistoPosTrackImpactParamXvsPt->SetXTitle("Pt (GeV)");
@@ -472,11 +500,11 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 }
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::Notify(){
-  
+
   // set file name to empty & reset check flag
   fCurrentFileName = "";
   fMCFileChecked   = kFALSE;
-  
+
   // obtain file name from analysis manager
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man) {
@@ -487,7 +515,7 @@ Bool_t AliV0ReaderV1::Notify(){
       fCurrentFileName = file->GetName();
     }
   }
-  
+
   // try to extract period name from file name if not given
   if (fPeriodName.CompareTo("") == 0){
     TObjArray *arr = fCurrentFileName.Tokenize("/");
@@ -509,29 +537,31 @@ Bool_t AliV0ReaderV1::Notify(){
         }
       }
     }
-    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){ 
+    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   } else {
     if(fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   }
   // set pt hard bin from file name
-  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus || 
+  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
-    TObjArray *arr = fCurrentFileName.Tokenize("/");
-    fPtHardBin = -1;
-    for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-      TObjString* testObjString = (TObjString*)arr->At(i);
-      if (testObjString->GetString().BeginsWith("LHC")){
-        TObjString* testObjString2 = (TObjString*)arr->At(i+1);
-        fPtHardBin = testObjString2->GetString().Atoi();
-        i = arr->GetEntriesFast();
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB
+     ){
+        TObjArray *arr = fCurrentFileName.Tokenize("/");
+        fPtHardBin = -1;
+        for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+          TObjString* testObjString = (TObjString*)arr->At(i);
+          if (testObjString->GetString().BeginsWith("LHC")){
+            TObjString* testObjString2 = (TObjString*)arr->At(i+1);
+            fPtHardBin = testObjString2->GetString().Atoi();
+            i = arr->GetEntriesFast();
       }
     }
   }
@@ -575,6 +605,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   //Reset the TClonesArray
   fConversionGammas->Delete();
 
+  //Clear TBits object with accepted v0s from previous event
+  if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
+
   fInputEvent = inputEvent;
   fMCEvent    = mcEvent;
 
@@ -589,14 +622,18 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   // Count Primary Tracks Event
   CountTracks();
 
+  //Count Tracks with TPCout flag
+  CountTPCoutTracks();
+
+
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
     if (fEventCuts->GetEventQuality() == 2 && !fMCFileChecked ){
       cout << "ERROR with MC reading for: "<<  fCurrentFileName.Data() << endl;
       fMCFileChecked                  = kTRUE;
-    }  
+    }
     return kFALSE;
-  }  
+  }
   // Set Magnetic Field
   AliKFParticle::SetField(fInputEvent->GetMagneticField());
 
@@ -627,6 +664,7 @@ void AliV0ReaderV1::FillAODOutput()
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
     if(fCreateAOD) {
+      PostData(1, fPCMv0BitField);
       AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
       if (aodhandler && aodhandler->GetFillAOD()) {
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
@@ -711,6 +749,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
+	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -719,6 +758,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
         fCurrentMotherKFCandidate=NULL;
       }
     }
+    if(kAddv0sInESDFilter){fPCMv0BitField->Compact();}
   }
   return kTRUE;
 }
@@ -805,8 +845,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   //Set MC Label
   if(fMCEvent){
 
-    AliStack *fMCStack= fMCEvent->Stack();
-
     Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
     Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 
@@ -815,9 +853,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
     TParticle *fNegativeMCParticle = 0x0;
-    if(labeln>-1) fNegativeMCParticle = fMCStack->Particle(labeln);
+    if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
-    if(labelp>-1) fPositiveMCParticle = fMCStack->Particle(labelp);
+    if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
@@ -884,7 +922,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF=NULL;
     return 0x0;
   }
-  
+
   // Apply Photon Cuts
   if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
     fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kPhotonCuts);
@@ -920,7 +958,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
     xyz[1]= convpos[1];
     xyz[2]= convpos[2];
   }
- 
+
 
   // Double_t pPlus[3]  = {pt.Px(),pt.Py(),pt.Pz()};
   // Double_t pMinus[3] = {nt.Px(),nt.Py(),nt.Pz()};
@@ -1297,11 +1335,11 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
 }
 
 //************************************************************************
-// This function counts the number of primary tracks in the event, the 
+// This function counts the number of primary tracks in the event, the
 // implementation for ESD and AOD had to be different due to the different
-// filters which are already applied on AOD level the so-called filter 
-// bits, we tried to replicate the conditions in both but an exact match 
-// could not be reached. The cuts are similar to the ones used by the 
+// filters which are already applied on AOD level the so-called filter
+// bits, we tried to replicate the conditions in both but an exact match
+// could not be reached. The cuts are similar to the ones used by the
 // jet-group
 //************************************************************************
 //________________________________________________________________________
@@ -1332,7 +1370,27 @@ void AliV0ReaderV1::CountTracks(){
 	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 	// else if run2 data use 2015 PbPb cuts
       }else if (runNumber>=209122){
-	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	//EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+	EsdTrackCuts = new AliESDtrackCuts();
+	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+	EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+	// ITS; selPrimaries = 1
+	EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+								AliESDtrackCuts::kAny);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
 	// else use 2011 version of track cuts
       }else{
 	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
@@ -1368,15 +1426,36 @@ void AliV0ReaderV1::CountTracks(){
 }
 
 ///________________________________________________________________________
-Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
+void AliV0ReaderV1::CountTPCoutTracks(){
+  fNumberOfTPCoutTracks = 0;
+
+  for (Int_t itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++) {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itrk));
+
+    if (trk != NULL) {
+      /* the initial method of counting TPC out tracks */
+      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+        if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+          fNumberOfTPCoutTracks++;
+        }
+      }
+    }
+  }
+
+
+  return;
+}
+
+///________________________________________________________________________
+Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
   // MonteCarlo Photon Selection
-  if(!MCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
 
   if (particle->GetPdgCode() == 22){
     // check whether particle is within eta range
     if( TMath::Abs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
-    if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE; // no photon as mothers!
     }
     // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
@@ -1385,7 +1464,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = MCStack->Particle(daughterIndex);
+        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
           if(tmpDaughter->GetPdgCode() == 11){
             eNeg = tmpDaughter;
@@ -1440,24 +1519,23 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
    //cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 
-  AliStack *fMCStack= fMCEvent->Stack();
   // Loop over all primary MC particle
-  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
-    if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
-      TParticle* particle = (TParticle *)fMCStack->Particle(i);
+      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
       if (!particle) continue;
-      if (ParticleIsConvertedPhoton(fMCStack, particle, 0.9, 180.,250. )){
+      if (ParticleIsConvertedPhoton(fMCEvent, particle, 0.9, 180.,250. )){
         if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->R());
         fHistoMCGammaPtvsPhi->Fill(particle->Pt(),particle->Phi());
         fHistoMCGammaRvsPhi->Fill(tmpDaughter->R(),particle->Phi());
       }
-      if (ParticleIsConvertedPhoton(fMCStack, particle, 1.4, 180.,250. )){
+      if (ParticleIsConvertedPhoton(fMCEvent, particle, 1.4, 180.,250. )){
         if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsEta->Fill(particle->Pt(),particle->Eta());
         fHistoMCGammaRvsEta->Fill(tmpDaughter->R(),particle->Eta());
@@ -1479,15 +1557,13 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
   Int_t tracklabelPos=currentV0->GetPindex();
   Int_t tracklabelNeg=currentV0->GetNindex();
 
-  AliStack *fMCStack= fMCEvent->Stack();
-
   Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelPos)->GetLabel());
   Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelNeg)->GetLabel());
 
   TParticle* negPart = 0x0;
-  if(labeln>-1) negPart = (TParticle *)fMCStack->Particle(labeln);
+  if(labeln>-1) negPart = (TParticle *)fMCEvent->Particle(labeln);
   TParticle* posPart = 0x0;
-  if(labelp>-1) posPart = (TParticle *)fMCStack->Particle(labelp);
+  if(labelp>-1) posPart = (TParticle *)fMCEvent->Particle(labelp);
 
   if ( negPart == NULL || posPart == NULL ) return;
 //   if (!(negPart->GetPdgCode() == 11)) return;
@@ -1497,29 +1573,29 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 
 //   cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
   if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
-    if (fEventCuts->IsConversionPrimaryESD( fMCStack, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
 
-      TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);
+      TParticle* mother =  (TParticle *)fMCEvent->Particle(motherlabelNeg);
       if (mother->GetPdgCode() == 22 ){
         if (!CheckVectorForDoubleCount(fVectorFoundGammas,motherlabelNeg ) ){
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
             fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->R());
             fHistoRecMCGammaPtvsPhi->Fill(mother->Pt(),mother->Phi());
             fHistoRecMCGammaRvsPhi->Fill(negPart->R(),mother->Phi());
           }
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaPtvsEta->Fill(mother->Pt(),mother->Eta());
             fHistoRecMCGammaRvsEta->Fill(negPart->R(),mother->Eta());
             fHistoRecMCGammaPhivsEta->Fill(mother->Phi(),mother->Eta());
           }
 //           cout << "new gamma found" << endl;
         } else {
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
             fHistoRecMCGammaMultiPt->Fill(mother->Pt());
             fHistoRecMCGammaMultiPhi->Fill(mother->Phi());
             fHistoRecMCGammaMultiR->Fill(negPart->R());
           }
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaMultiPtvsEta->Fill(mother->Pt(),mother->Eta());
           }
 //           cout << "this one I had already: " << motherlabelNeg << endl << "-----------------------"  << endl;
@@ -1545,9 +1621,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fCurrentV0->GetXYZ(convX,convY,convZ);
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
-  Double_t convXrecalc=fCurrentMotherKF->GetConversionX(); 
-  Double_t convYrecalc=fCurrentMotherKF->GetConversionY(); 
-  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ(); 
+  Double_t convXrecalc=fCurrentMotherKF->GetConversionX();
+  Double_t convYrecalc=fCurrentMotherKF->GetConversionY();
+  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ();
   Double_t convRrecalc = fCurrentMotherKF->GetConversionRadius();
 
   //count V0s
@@ -1567,16 +1643,16 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
 
   //count V0s which have...
   if(TPConly){
-    //not passed z cut:    pos.tr.     or           neg.tr. 
+    //not passed z cut:    pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetZ()))>fZmax) || ((TMath::Abs(negativeTrack->GetZ()))>fZmax)){
       fHistoImpactParameterStudy->Fill(2);
-      RemovedByZcut=kTRUE;  
+      RemovedByZcut=kTRUE;
     }
 
-    //not passed y cut:     pos.tr.     or           neg.tr.  
+    //not passed y cut:     pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetY()))>fYmax) || ((TMath::Abs(negativeTrack->GetY()))>fYmax)){
       fHistoImpactParameterStudy->Fill(3);
-      RemovedByYcut=kTRUE;  
+      RemovedByYcut=kTRUE;
     }
   }
 
@@ -1599,21 +1675,21 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   // fill conversion radius histograms
     fHistoR->Fill(convR);
     fHistoRrecalc->Fill(convRrecalc);
-    Double_t alpha = TMath::ATan2(convY,convX);  
+    Double_t alpha = TMath::ATan2(convY,convX);
     if (alpha<0) alpha += TMath::Pi()*2;
     Int_t sec = alpha/(TMath::Pi()/9);
     alpha = (10.+sec*20.)*TMath::DegToRad();
     Double_t cs = TMath::Cos(alpha);
     Double_t sn = TMath::Sin(alpha);
-    Double_t xsV0 = convX*cs - convY*sn; 
+    Double_t xsV0 = convX*cs - convY*sn;
     fHistoRviaAlpha->Fill(xsV0);
-    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);  
+    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);
     if (alpha_r<0) alpha_r += TMath::Pi()*2;
     Int_t sec_r = alpha_r/(TMath::Pi()/9);
     alpha_r = (10.+sec_r*20.)*TMath::DegToRad();
     Double_t cs_r = TMath::Cos(alpha_r);
     Double_t sn_r = TMath::Sin(alpha_r);
-    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;     
+    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;
     fHistoRviaAlphaRecalc->Fill(xsV0_r);
 
   if (convR > 80) {  // conversion within TPC <-> TPC-only tracks
@@ -1625,7 +1701,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
       const TBits& bits = tr->GetTPCClusterMap();
       Int_t nConflict = 0;
       for (Int_t ic=0;ic<159;ic++) {
-        if (rTPC[ic]>(xsV0-kTPCMargin)) break;  
+        if (rTPC[ic]>(xsV0-kTPCMargin)) break;
         if (bits.TestBitNumber(ic)){
           nConflict++;
           fHistoRdiff->Fill(xsV0-rTPC[ic]);
@@ -1656,9 +1732,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   Float_t negX;
   Float_t negPt;
   Float_t R;
-  TBranch *Branch_Pt = fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
-  TBranch *Branch_Y = fImpactParamTree->Branch("posY",&posY,"posY/F");
-  TBranch *Branch_R = fImpactParamTree->Branch("R",&R,"R/F");
+  fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
+  fImpactParamTree->Branch("posY",&posY,"posY/F");
+  fImpactParamTree->Branch("R",&R,"R/F");
   posZ = positiveTrack->GetZ();
   posY = positiveTrack->GetY();
   posX = positiveTrack->GetX();
@@ -1671,22 +1747,22 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fImpactParamTree->Fill();
 
   // fill impact parameter histograms
-  fHistoPosTrackImpactParamZ->Fill(posZ); 
+  fHistoPosTrackImpactParamZ->Fill(posZ);
   fHistoPosTrackImpactParamY->Fill(posY);
   fHistoPosTrackImpactParamX->Fill(posX);
-  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ); 
+  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ);
   fHistoPosTrackImpactParamYvsPt->Fill(posPt, posY);
-  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX); 
-  fHistoNegTrackImpactParamZ->Fill(negZ);  
+  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX);
+  fHistoNegTrackImpactParamZ->Fill(negZ);
   fHistoNegTrackImpactParamY->Fill(negY);
   fHistoNegTrackImpactParamX->Fill(negX);
-  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);  
+  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);
   fHistoNegTrackImpactParamYvsPt->Fill(negPt, negY);
   fHistoNegTrackImpactParamXvsPt->Fill(negPt, negX);
 
   // fill comparison histos before / after new cuts
   fHistoPt->Fill(positiveTrack->Pt());
-  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc); 
+  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc);
   //Float_t *DCAzPhoton;
   Float_t DCAzPhoton;
   //const AliVVertex *PrimVertex = fInputEvent->GetPrimaryVertex();
@@ -1697,7 +1773,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fHistoDCAzPhoton->Fill(DCAzPhoton);
   if(!RemovedByAnyCut) {
     fHistoPt2->Fill(positiveTrack->Pt());
-    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);  
+    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);
     fHistoDCAzPhoton2->Fill(DCAzPhoton);
   }
 
@@ -1737,4 +1813,68 @@ Bool_t AliV0ReaderV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobech
 void AliV0ReaderV1::Terminate(Option_t *)
 {
 
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1 *reader, AliV0ReaderV1::iterator::Direction_t dir, int position):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(),
+    fkData(reader),
+    fCurrentIndex(position),
+    fDirection(dir)
+{
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1::iterator &other):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(other),
+    fkData(other.fkData),
+    fCurrentIndex(other.fCurrentIndex),
+    fDirection(other.fDirection)
+{
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator=(const AliV0ReaderV1::iterator &other){
+  if(this != &other){
+    fkData = other.fkData;
+    fCurrentIndex = other.fCurrentIndex;
+    fDirection = other.fDirection;
+  }
+  return *this;
+}
+
+bool AliV0ReaderV1::iterator::operator!=(AliV0ReaderV1::iterator &other) const{
+  if(fkData != other.fkData) return true;
+  return fCurrentIndex != other.fCurrentIndex;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator++(int index){
+  iterator tmp(*this);
+  operator++();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator++(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator--(int){
+  iterator tmp(*this);
+  operator--();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator--(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliConversionPhotonBase *AliV0ReaderV1::iterator::operator*(){
+  return (*fkData)[fCurrentIndex];
 }

@@ -25,15 +25,15 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pp_Dplus(){
-    GetEnvelopeForEachV2();
+void RunFeedown_pp_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
 
     Int_t collsyst = 0; // 0 is pp, 1 is p-Pb
@@ -41,6 +41,7 @@ void GetEnvelopeForEachV2(){
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
       
     TString inputcorrelation = ""; // input data file (not needed here)
+
     TString outputfilename = ""; //  (not needed here)
     
     //    Double_t Dpt[] = {3,5,8,16}; // set D meson pt bins
@@ -87,7 +88,7 @@ void GetEnvelopeForEachV2(){
            
             // set correct paths
             inputcorrelation = Form("%s/%s%.0f_%.0f_%.1f_%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),Dptbin[0],Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
-
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             
@@ -97,7 +98,7 @@ void GetEnvelopeForEachV2(){
             //FDsubDstarPt3to5assoc0.3to1.0_v2D0.00_v2had0.00.root
 
             // first one - no v2
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             
         }

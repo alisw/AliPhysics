@@ -62,11 +62,9 @@ fSelectOnlyPhotonsInDifferentSM(0),
 fChangeBkgShape(0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
-fNbins(300),              
-fMinBin(0.),              fMaxBin(300.),
-fNEnergybins(1000),
-fMinEnergyBin(0.),        fMaxEnergyBin(100.),
+fNbins(300),              fMinBin(0.),              fMaxBin(300.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
+fNEnergybins(1000),       fMinEnergyBin(0.),        fMaxEnergyBin(100.),
 // Temporal
 fMomentum1(),             fMomentum2(),             fMomentum12(),
 // Histograms
@@ -188,11 +186,9 @@ fSelectOnlyPhotonsInDifferentSM(0),
 fChangeBkgShape(0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
-fNbins(300),              
-fMinBin(0.),              fMaxBin(300.),
-fNEnergybins(1000),
-fMinEnergyBin(0.),        fMaxEnergyBin(100.),
+fNbins(300),              fMinBin(0.),              fMaxBin(300.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
+fNEnergybins(1000),       fMinEnergyBin(0.),        fMaxEnergyBin(100.),
 // Temporal
 fMomentum1(),             fMomentum2(),             fMomentum12(),
 // Histograms

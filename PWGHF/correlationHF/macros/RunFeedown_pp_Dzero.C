@@ -24,16 +24,16 @@ void SetDirectoryInputFiles(TString inputdir){
 void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
-void RunFeedown_pp_Dzero(){
-    GetEnvelopeForEachV2();
-}
 
+void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
+}
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -44,8 +44,6 @@ void GetEnvelopeForEachV2(){
     gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     TString inputcorrelation;
-
-
   
     TString outputfilename = ""; //  (not needed here)
     
@@ -84,12 +82,13 @@ void GetEnvelopeForEachV2(){
  
             //For D0 input filenames! (bins and not pt)
             Double_t Dptbin[2] = {0,0};
-             if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
+            if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
             if(iDpt == 1) {Dptbin[0] = 7; Dptbin[1] = 9;}
             if(iDpt == 2) {Dptbin[0] = 10; Dptbin[1] = 11;}
            
             // set correct paths
             inputcorrelation = Form("%s/%s%dto%d_Limits_2_4_TreshPt_%.1f_to_%.2f_Data.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             
@@ -97,9 +96,9 @@ void GetEnvelopeForEachV2(){
             outputfilename = "./Final_Plots_pp/Singlev2Envelope/pp_FDsubDzero";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
                         
-      
+
             // first one - no v2
-            SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode);
+            SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
 
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             

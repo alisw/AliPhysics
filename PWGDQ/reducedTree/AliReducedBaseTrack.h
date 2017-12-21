@@ -15,9 +15,11 @@ class AliReducedBaseTrack : public TObject {
   
   public:
     AliReducedBaseTrack();
+    AliReducedBaseTrack(const AliReducedBaseTrack &c);
     virtual ~AliReducedBaseTrack();
   
     // getters
+    UShort_t TrackId()                     const {return fTrackId;}
     Float_t Px()  const {return (fIsCartesian ? fP[0] : TMath::Abs(fP[0])*TMath::Cos(fP[1]));}
     Float_t Py()  const {return (fIsCartesian ? fP[1] : TMath::Abs(fP[0])*TMath::Sin(fP[1]));}
     Float_t Pz()  const {return (fIsCartesian ? fP[2] : TMath::Abs(fP[0])*TMath::SinH(fP[2]));}
@@ -28,16 +30,17 @@ class AliReducedBaseTrack : public TObject {
     Float_t Rapidity(Float_t massAssumption) const;
     Float_t Theta() const;
     Float_t Energy(Float_t massAssumption) const {return TMath::Sqrt(massAssumption*massAssumption+P()*P());}
-    Bool_t  TestFlag(UShort_t iflag)       const {return (iflag<8*sizeof(ULong_t) ? fFlags&(ULong_t(1)<<iflag) : kFALSE);} 
+    Bool_t  TestFlag(UShort_t iflag)       const {return ((iflag<(8*sizeof(ULong_t))) ? fFlags&(ULong_t(1)<<iflag) : kFALSE);} 
     ULong_t GetFlags()                     const {return fFlags;}
     Int_t  Charge()                        const {return fCharge;} 
     Bool_t IsCartesian() const {return fIsCartesian;}           
     
     ULong_t GetQualityFlags()             const {return fQualityFlags;}
     Bool_t UsedForQvector()               const {return fQualityFlags&(UShort_t(1)<<0);}
-    Bool_t TestQualityFlag(UShort_t iflag)  const {return (iflag<8*sizeof(ULong_t) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
+    Bool_t TestQualityFlag(UShort_t iflag)  const {return ((iflag<(8*sizeof(ULong_t))) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
     Bool_t IsMCTruth()                        const {return fQualityFlags&(ULong_t(1)<<63);}
     Bool_t HasMCTruthInfo()               const {return fQualityFlags&(ULong_t(1)<<22);}
+    Bool_t IsTRDmatch()                     const {return fQualityFlags&(ULong_t(1)<<26);}
     Bool_t IsGammaLeg()                   const {return fQualityFlags&(ULong_t(1)<<1);}
     Bool_t IsPureGammaLeg()            const {return fQualityFlags&(ULong_t(1)<<8);}
     Bool_t IsK0sLeg()                           const {return fQualityFlags&(ULong_t(1)<<2);}
@@ -46,9 +49,13 @@ class AliReducedBaseTrack : public TObject {
     Bool_t IsPureLambdaLeg()            const {return fQualityFlags&(ULong_t(1)<<10);}
     Bool_t IsALambdaLeg()                 const {return fQualityFlags&(ULong_t(1)<<4);}
     Bool_t IsPureALambdaLeg()          const {return fQualityFlags&(ULong_t(1)<<11);}
-    Bool_t IsKink(Int_t i=0)               const {return (i>=0 && i<3 ? ((fQualityFlags&(ULong_t(1)<<(5+i))) || 
-                                                                        (fQualityFlags&(ULong_t(1)<<(12+i)))) : kFALSE);}
+    Bool_t IsKink(Int_t i=0)               const {return (i>=0 && i<3 ? (fQualityFlags&(ULong_t(1)<<(5+i))) : kFALSE);}
+    Bool_t IsKinkNegativeLabel(Int_t i=0)     const {return (i>=0 && i<3 ? (fQualityFlags&(ULong_t(1)<<(12+i))) : kFALSE);}
     Float_t GetBayesProb(Int_t specie)  const { return (fQualityFlags&(ULong_t(1)<<(15+specie)) ? (fQualityFlags&(ULong_t(1)<<21) ? 0.9 : (fQualityFlags&(ULong_t(1)<<20) ? 0.8 : (fQualityFlags&(ULong_t(1)<<19)           ? 0.7 : 0.5)))   : 0.0);}
+    
+    UInt_t GetMCFlags()                      const {return fMCFlags;}
+    Bool_t TestMCFlag(UShort_t iflag) const {return ((iflag<(8*sizeof(UInt_t))) ? fMCFlags & (UInt_t(1)<<iflag) : kFALSE);}
+    Bool_t IsMCKineParticle()              const {return (fMCFlags ? kTRUE : kFALSE);}
     
     // setters
     void   Px(Float_t px) {fP[0] = px; fIsCartesian=kTRUE;}
@@ -66,8 +73,12 @@ class AliReducedBaseTrack : public TObject {
     Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}  
     Bool_t SetQualityFlag(UShort_t iflag)      {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(1)<<iflag); return kTRUE;}
     Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestQualityFlag(iflag)) fQualityFlags^=(ULong_t(1)<<iflag); return kTRUE;}
+    void    SetMCFlags(UInt_t flags) {fMCFlags = flags;}
+    Bool_t SetMCFlag(UShort_t iflag) {if(iflag>=8*sizeof(UInt_t)) return kFALSE; fMCFlags |= (UInt_t(1)<<iflag); return kTRUE;}
+    Bool_t UnsetMCFlag(UShort_t iflag) {if(iflag>=8*sizeof(UInt_t)) return kFALSE; if(TestMCFlag(iflag)) fMCFlags ^= (UInt_t(1)<<iflag); return kTRUE;}
         
   protected:
+    UShort_t fTrackId;            // track id 
     Float_t fP[3];         // 3-momentum vector
     Bool_t  fIsCartesian;  // if false then the 3-momentum vector is in spherical coordinates (pt,phi,eta)
     Char_t  fCharge;       // electrical charge
@@ -89,27 +100,18 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT14 toggled if the track has kink2 index < 0
                                                    // AOD
                                                    // BIT(15+i) toggled if track has filter bit 0+i , 0 <= i <= 10
-                                                   // BAYES TPC(||TOF)
-                                                   // BIT15 toggled if electron (prob>0.5)
-                                                   // BIT16 toggled if pion (prob>0.5)
-                                                   // BIT17 toggled if kaon (prob>0.5)
-                                                   // BIT18 toggled if proton (prob>0.5)
-                                                   // BIT19 toggled if bayes probability > 0.7
-                                                   // BIT20 toggled if bayes probability > 0.8
-                                                   // BIT21 toggled if bayes probability > 0.9
-                                                   // BIT22 toggled if the track contains MC information
-                                                   // BIT63 toggled if this is a pure MC track
+                                                   // BIT26 toggled if this is a track matched in TRD
+                                                   
                                                    // For AliReducedPairInfo objects
                                                    // BIT1 toggled for pure V0 K0s candidates
                                                    // BIT2 toggled for pure V0 Lambda candidates
                                                    // BIT3 toggled for pure V0 anti-Lambda candidates
                                                    // BIT4 toggled for pure V0 photon candidates
-                                                   
+    UInt_t fMCFlags;                     // flags used to encode Monte-Carlo information
         
-    AliReducedBaseTrack(const AliReducedBaseTrack &c);      
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
     
-    ClassDef(AliReducedBaseTrack, 2)
+    ClassDef(AliReducedBaseTrack, 4)
 };
 
 //_______________________________________________________________________________

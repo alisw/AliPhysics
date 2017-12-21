@@ -26,7 +26,7 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliAnaParticleHadronCorrelation.h"
 #include "AliCaloTrackReader.h"
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliFiducialCut.h"
 #include "AliVTrack.h"
 #include "AliVCluster.h"
@@ -1214,7 +1214,7 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     // Select only hadrons in pt range
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
-    AliAODPWG4Particle * mixedTrack = new AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),0);
+    AliCaloTrackParticle * mixedTrack = new AliCaloTrackParticle(track->Px(),track->Py(),track->Pz(),0);
     mixedTrack->SetDetectorTag(kCTS);
     mixedTrack->SetChargedBit(track->Charge()>0);
     mixEventTracks->Add(mixedTrack);
@@ -1305,7 +1305,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
     // Select only clusters in pt range
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
-    AliAODPWG4Particle * mixedCalo = new AliAODPWG4Particle(fMomentum);
+    AliCaloTrackParticle * mixedCalo = new AliCaloTrackParticle(fMomentum);
     mixedCalo->SetDetectorTag(kEMCAL);
     mixEventCalo->Add(mixedCalo);
   }
@@ -1334,7 +1334,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
 /// Select events where the leading charged particle in the opposite hemisphere
 /// to the trigger particle is in a window centered at 180 from the trigger.
 //_________________________________________________________________________________________________________________
-Bool_t AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle)
+Bool_t AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow(AliCaloTrackParticleCorrelation * particle)
 {
   Float_t etaTrig    = particle->Eta();
   Float_t ptTrig     = particle->Pt();
@@ -3392,27 +3392,27 @@ void AliAnaParticleHadronCorrelation::InitParameters()
 //________________________________________________________________________________________________________
 /// Do the invariant mass of the trigger particle with other clusters.
 /// Activate for photon analysis.
-/// \param trigger: Trigger cluster/track kinematics and more, AliAODPWG4ParticleCorrelation object.
+/// \param trigger: Trigger cluster/track kinematics and more, AliCaloTrackParticleCorrelation object.
 /// \param mcIndex: Histograms MC index of trigger particle
 //________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex)
+void AliAnaParticleHadronCorrelation::InvMassHisto(AliCaloTrackParticleCorrelation * trigger, Int_t mcIndex)
 {
   Int_t    idTrig = trigger->GetCaloLabel(0);
   Float_t  ptTrig = trigger->Pt();
   Float_t tofTrig = trigger->GetTime();
   
-  fMomentum = *(trigger->Momentum());
+  fMomentum = *(trigger->GetMomentum());
   
   // Loop on second cluster to be associated to trigger particle to have the invariant mass
   Int_t nphoton = GetInputAODBranch()->GetEntriesFast();
   
   for(Int_t iphoton = 0; iphoton < nphoton; iphoton++)
   {
-    AliAODPWG4ParticleCorrelation * photon1 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iphoton));
+    AliCaloTrackParticleCorrelation * photon1 =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iphoton));
     
     if(idTrig == photon1->GetCaloLabel(0)) continue;        //Do not the invariant mass for the same particle
     
-    fMomentumIM = *(photon1->Momentum());
+    fMomentumIM = *(photon1->GetMomentum());
     
     // Select secondary photon with proper invariant mass
     if(fM02MaxCut > 0 && fM02MinCut > 0) //clID1 > 0 && clID2 < 0 &&
@@ -3449,13 +3449,13 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   Double_t phiTrig     = 0 ;
   fLeadingTriggerIndex =-1 ;
   Int_t index          =-1 ;
-  AliAODPWG4ParticleCorrelation* pLeading = 0;
+  AliCaloTrackParticleCorrelation* pLeading = 0;
   
   // Loop on stored AOD particles, find leading trigger on the selected list, with at least min pT.
   
   for(Int_t iaod = 0; iaod < GetInputAODBranch()->GetEntriesFast() ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     particle->SetLeadingParticle(kFALSE); // set it later
     
     // Vertex cut in case of mixing
@@ -3648,7 +3648,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   
   for( iaod = 0; iaod < naod; iaod++ )
   {
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     //
     // Trigger particle selection criteria:
@@ -3979,7 +3979,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 ///  * Underlying event xE, zT etc on perperndicular cones
 ///  * Put the correlated charged tracks in a reference array in the trigger particle object if requested.
 //_______________________________________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
+void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackParticleCorrelation *aodParticle)
 {
   AliDebug(1,"Make trigger particle - charged hadron correlation");
   
@@ -4230,7 +4230,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
 //_________________________________________________________________________________________________________
 /// Mix current trigger with tracks in another Minimum Bias event.
 //_________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
+void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackParticleCorrelation *aodParticle)
 {
   AliDebug(1,Form("Make trigger particle - charged hadron mixed event correlation"));
   
@@ -4346,7 +4346,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       Bool_t leading = kTRUE;
       for(Int_t jlead = 0;jlead < nTracks; jlead++ )
       {
-        AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(jlead) ;
+        AliCaloTrackParticle *track = (AliCaloTrackParticle*) bgTracks->At(jlead) ;
         
         ptAssoc  = track->Pt();
         phiAssoc = track->Phi() ;
@@ -4383,7 +4383,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         Int_t nClusters=bgCalo->GetEntriesFast();
         for(Int_t jlead = 0;jlead <nClusters; jlead++ )
         {
-          AliAODPWG4Particle *cluster= (AliAODPWG4Particle*) bgCalo->At(jlead) ;
+          AliCaloTrackParticle *cluster= (AliCaloTrackParticle*) bgCalo->At(jlead) ;
           
           ptAssoc  = cluster->Pt();
           phiAssoc = cluster->Phi() ;
@@ -4436,7 +4436,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     //
     for(Int_t j1 = 0;j1 <nTracks; j1++ )
     {
-      AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(j1) ;
+      AliCaloTrackParticle *track = (AliCaloTrackParticle*) bgTracks->At(j1) ;
       
       if(!track) continue;
       
@@ -4529,7 +4529,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
 /// Correlate the trigger with pi0 selected in another task (AliAnaPi0EbE).
 /// Similar procedure as for charged tracks.
 //_______________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle)
+void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliCaloTrackParticleCorrelation * aodParticle)
 {
   TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); // For the future, foresee more possible pi0 lists
   if(!pi0list) return ;
@@ -4574,7 +4574,7 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
   
   for(Int_t iaod = 0; iaod < npi0 ; iaod++)
   {
-    AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (pi0list->At(iaod));
+    AliCaloTrackParticle* pi0 =  (AliCaloTrackParticle*) (pi0list->At(iaod));
     
     Int_t evtIndex2 = 0 ;
     Int_t evtIndex3 = 0 ;

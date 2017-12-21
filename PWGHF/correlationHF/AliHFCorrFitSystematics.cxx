@@ -68,6 +68,7 @@ fVecHisto(0),
   fFitFunctions(0),
   fVecLowEdgeDpt(0),
   fVecUpEdgeDpt(0),
+  fv2DmesonVsPt(0),
   fVecSystMode(0),
   fFitFuncType(0),
   fMinBaselineEstimationRange(0),
@@ -90,6 +91,7 @@ fVecHisto(0),
   fSavePng(kFALSE),
   fSaveEps(kFALSE),
   fSavePdf(kFALSE),
+  fV2DvsPt(kFALSE),
   fMinFitRange(0),
   fMaxFitRange(-1),
   fv2had(0),
@@ -384,6 +386,16 @@ void AliHFCorrFitSystematics::AddSystematicMode(SystematicModes mode, Bool_t isR
       fMaxBaselineEstimationRange.push_back(max);
       //  cout << "Range set " << min << ","<< max << endl;
     }
+    else if(mode == kTransverseUppStatUnc && !isReference){
+      fMinBaselineEstimationRange.push_back(min);
+      fMaxBaselineEstimationRange.push_back(max);
+      //  cout << "Range set " << min << ","<< max << endl;
+    }    
+    else if(mode == kTransverseLowStatUnc && !isReference){
+      fMinBaselineEstimationRange.push_back(min);
+      fMaxBaselineEstimationRange.push_back(max);
+      //  cout << "Range set " << min << ","<< max << endl;
+    }   
     else if(mode == kTransverse && isReference){
       fMinBaselineEstimationRange.push_back(min);
       fMaxBaselineEstimationRange.push_back(max);
@@ -574,7 +586,25 @@ Bool_t AliHFCorrFitSystematics::SetUpSystematicsFitter(){
     fValueSystematicBaselineASYield = new Double_t[fVecSize];
     fValueSystematicBaselineASSigma = new Double_t[fVecSize];
     fValueSystematicBaselinePedestal = new Double_t[fVecSize];
+
+    fValueSystematicBaseline_FromBaselStatUp_NSYield = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatUp_NSSigma = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatUp_ASYield = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatUp_ASSigma = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatUp_Pedestal = new Double_t[fVecSize];
     
+    fValueSystematicBaseline_FromBaselStatLo_NSYield = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatLo_NSSigma = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatLo_ASYield = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatLo_ASSigma = new Double_t[fVecSize];
+    fValueSystematicBaseline_FromBaselStatLo_Pedestal = new Double_t[fVecSize];
+
+    fRMSRelative_NSYield = new Double_t[fVecSize];
+    fRMSRelative_NSSigma = new Double_t[fVecSize];
+    fRMSRelative_ASYield = new Double_t[fVecSize];
+    fRMSRelative_ASSigma = new Double_t[fVecSize];
+    fRMSRelative_Pedestal = new Double_t[fVecSize];
+
     fValueSystematicNSYieldUp = new Double_t[fVecSize];
     fValueSystematicNSSigmaUp = new Double_t[fVecSize];
     fValueSystematicASYieldUp = new Double_t[fVecSize];
@@ -588,7 +618,7 @@ Bool_t AliHFCorrFitSystematics::SetUpSystematicsFitter(){
     fValueSystematicPedestalLow = new Double_t[fVecSize];
     
     
-    if(fCombineSystematics == kRMS){
+    if(fCombineSystematics == kRMS || fCombineSystematics == kEnvelope_RMS_BaselStat){
     fRMSHistoNSYield = new TH1D *[fVecSize];
     fRMSHistoNSSigma = new TH1D *[fVecSize];
     fRMSHistoASYield = new TH1D *[fVecSize];
@@ -738,13 +768,14 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
 
         v2->SetParameter(0,baseline);
         v2->SetParameter(1,fv2had);
-        v2->SetParameter(2,fv2Dmeson);
+        if(!fV2DvsPt) v2->SetParameter(2,fv2Dmeson);
+        else v2->SetParameter(2,fv2DmesonVsPt.at(iPtBin));
         v2->SetLineColor(4);
         v2->SetLineStyle(4);
+
+        printf("v2 for D-meson = %1.3f, for hadron = %1.3f\n",fv2DmesonVsPt.at(iPtBin),fv2had);
+
         for(Int_t iBin = 1; iBin <= fVecHisto[iPtBin]->GetNbinsX();iBin++){
-            
-          
-            
             value = inputhisto[iPtBin]->GetBinContent(iBin);
             value -= v2->Eval(inputhisto[iPtBin]->GetBinCenter(iBin));
             value += baseline;
@@ -797,8 +828,10 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         fSystValuev2ASSigma[iPtBin] = (fValuev2ASSigma[iPtBin]-fReferenceHistoASSigma->GetBinContent(iPtBin+1))/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
         fSystValuev2Pedestal[iPtBin] = (fValuev2Pedestal[iPtBin]-fReferenceHistoPedestal->GetBinContent(iPtBin+1))/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
         
-        
     }
+
+    cv2->SaveAs(Form("Canvas_v2SystemForFitting_AssocPt%1.1ftp%1.1f.png",fAssocTrackPtMin,fAssocTrackPtMax));
+    cv2->SaveAs(Form("Canvas_v2SystemForFitting_AssocPt%1.1ftp%1.1f.root",fAssocTrackPtMin,fAssocTrackPtMax));
     
 }
 
@@ -973,6 +1006,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
 	      cout << "Nmin points for systmode ("<<iSystMode<<"): "<< fNMinPointsBaselineEstimationRange[iSystMode]<< "," <<fNMinPointsBaselineEstimationRange[iSystMode]<<endl;
              cout << " " << endl;
             if(fVecSystMode[iSystMode]==kTransverse)fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
+            if(fVecSystMode[iSystMode]==kTransverseUppStatUnc)fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
+            if(fVecSystMode[iSystMode]==kTransverseLowStatUnc)fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
 	    if(fVecSystMode[iSystMode]==kMinVar || fVecSystMode[iSystMode]==kMaxVar) fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
             
             
@@ -1109,7 +1144,33 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                      fRMSHistoASYield[iPtBin]->Fill(fValueASYield[index]);
                      fRMSHistoASSigma[iPtBin]->Fill(fValueASSigma[index]);
                      fRMSHistoPedestal[iPtBin]->Fill(fValuePedestal[index]);
+
+
+
                  }
+                 if(fCombineSystematics == kEnvelope_RMS_BaselStat){
+                    if(fVecSystMode[iSystMode] == kTransverseUppStatUnc) {
+                      fValueSystematicBaseline_FromBaselStatUp_NSYield[iPtBin] = fRatioNSYield[index];
+                      fValueSystematicBaseline_FromBaselStatUp_NSSigma[iPtBin] = fRatioNSSigma[index];
+                      fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin] = fRatioASYield[index];
+                      fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin] = fRatioASSigma[index];
+                      fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin] = fRatioPedestal[index];
+                    }
+                    else if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) {
+                      fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin] = fRatioNSYield[index];
+                      fValueSystematicBaseline_FromBaselStatLo_NSSigma[iPtBin] = fRatioNSSigma[index];
+                      fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin] = fRatioASYield[index];
+                      fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin] = fRatioASSigma[index];
+                      fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin] = fRatioPedestal[index];
+                    }
+                    else {
+                       fRMSHistoNSYield[iPtBin]->Fill(fValueNSYield[index]);
+                       fRMSHistoNSSigma[iPtBin]->Fill(fValueNSSigma[index]);
+                       fRMSHistoASYield[iPtBin]->Fill(fValueASYield[index]);
+                       fRMSHistoASSigma[iPtBin]->Fill(fValueASSigma[index]);
+                       fRMSHistoPedestal[iPtBin]->Fill(fValuePedestal[index]);                      
+                    }
+                 }                 
                 
                 
         } // end 2nd loop on D meson pt
@@ -1206,6 +1267,41 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
 	  fRMSHistoPedestal[iPtBin]->Write();
 	  
         }
+
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat){
+          std::cout << "Using RMS" << std::endl;
+          if(fReferenceHistoNSYield->GetBinContent(iPtBin+1)>1.e-6){
+            fValueSystematicBaselineNSYield[iPtBin] = fRMSHistoNSYield[iPtBin]->GetRMS()/fReferenceHistoNSYield->GetBinContent(iPtBin+1);
+            fValueSystematicBaselineNSSigma[iPtBin] = fRMSHistoNSSigma[iPtBin]->GetRMS()/fReferenceHistoNSSigma->GetBinContent(iPtBin+1);
+            fValueSystematicBaselineASYield[iPtBin] = fRMSHistoASYield[iPtBin]->GetRMS()/fReferenceHistoASYield->GetBinContent(iPtBin+1);
+            fValueSystematicBaselineASSigma[iPtBin] = fRMSHistoASSigma[iPtBin]->GetRMS()/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
+            fValueSystematicBaselinePedestal[iPtBin] = fRMSHistoPedestal[iPtBin]->GetRMS()/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
+            fRMSRelative_NSYield[iPtBin] = fValueSystematicBaselineNSYield[iPtBin];
+            fRMSRelative_NSSigma[iPtBin] = fValueSystematicBaselineNSSigma[iPtBin];
+            fRMSRelative_ASYield[iPtBin] = fValueSystematicBaselineASYield[iPtBin];
+            fRMSRelative_ASSigma[iPtBin] = fValueSystematicBaselineASSigma[iPtBin];
+            fRMSRelative_Pedestal[iPtBin] = fValueSystematicBaselinePedestal[iPtBin];
+          }
+          //now substitute RMS with lowstat/uppstat variations, if are larger
+          if(fValueSystematicBaselineNSYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSYield[iPtBin])) fValueSystematicBaselineNSYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSYield[iPtBin]);
+          if(fValueSystematicBaselineNSSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSSigma[iPtBin])) fValueSystematicBaselineNSSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSSigma[iPtBin]);
+          if(fValueSystematicBaselineASYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin])) fValueSystematicBaselineASYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin]);
+          if(fValueSystematicBaselineASSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin])) fValueSystematicBaselineASSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin]);
+          if(fValueSystematicBaselinePedestal[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin])) fValueSystematicBaselinePedestal[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin]);
+
+          if(fValueSystematicBaselineNSYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin])) fValueSystematicBaselineNSYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin]);
+          if(fValueSystematicBaselineNSSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSSigma[iPtBin])) fValueSystematicBaselineNSSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSSigma[iPtBin]);
+          if(fValueSystematicBaselineASYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin])) fValueSystematicBaselineASYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin]);
+          if(fValueSystematicBaselineASSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin])) fValueSystematicBaselineASSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin]);
+          if(fValueSystematicBaselinePedestal[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin])) fValueSystematicBaselinePedestal[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin]);
+
+          fRMSHistoNSYield[iPtBin]->Write();
+          fRMSHistoNSSigma[iPtBin]->Write();
+          fRMSHistoASYield[iPtBin]->Write();
+          fRMSHistoASSigma[iPtBin]->Write();
+          fRMSHistoPedestal[iPtBin]->Write();
+          
+        }        
         
     }
     
@@ -1223,6 +1319,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
             DrawBaselineSystematicsOnCanvas(fSystematicSourcesNSYield,iSystMode,fRatioNSYield,SystematicsLegendNSYield);
         }
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat) DrawRMSBaselineSystematicOnCanvas(fSystematicSourcesNSYield,fRMSRelative_NSYield,fRMSRelative_NSYield,SystematicsLegendNSYield,kTRUE);
         DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesNSYield,fValueSystematicBaselineNSYield, fValueSystematicBaselineNSYield ,SystematicsLegendNSYield,kTRUE);
         SystematicsLegendNSYield->Draw("same");
        DefinePaveText();
@@ -1235,7 +1332,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
             DrawBaselineSystematicsOnCanvas(fSystematicSourcesNSSigma,iSystMode,fRatioNSSigma,SystematicsLegendNSSigma);
         }
-     DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesNSSigma,fValueSystematicBaselineNSSigma, fValueSystematicBaselineNSSigma ,SystematicsLegendNSSigma,kTRUE);
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat) DrawRMSBaselineSystematicOnCanvas(fSystematicSourcesNSSigma,fRMSRelative_NSSigma,fRMSRelative_NSSigma,SystematicsLegendNSSigma,kTRUE);
+        DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesNSSigma,fValueSystematicBaselineNSSigma, fValueSystematicBaselineNSSigma ,SystematicsLegendNSSigma,kTRUE);
         SystematicsLegendNSSigma->Draw("same");
         DefinePaveText();
         
@@ -1247,7 +1345,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
             DrawBaselineSystematicsOnCanvas(fSystematicSourcesASYield,iSystMode,fRatioASYield,SystematicsLegendASYield);
         }
-    DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesASYield,fValueSystematicBaselineASYield, fValueSystematicBaselineASYield ,SystematicsLegendASYield,kTRUE);
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat) DrawRMSBaselineSystematicOnCanvas(fSystematicSourcesASYield,fRMSRelative_ASYield,fRMSRelative_ASYield,SystematicsLegendASYield,kTRUE);
+        DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesASYield,fValueSystematicBaselineASYield, fValueSystematicBaselineASYield ,SystematicsLegendASYield,kTRUE);
         SystematicsLegendASYield->Draw("same");
         DefinePaveText();
         
@@ -1260,7 +1359,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
             DrawBaselineSystematicsOnCanvas(fSystematicSourcesASSigma,iSystMode,fRatioASSigma,SystematicsLegendASSigma);
         }
-    DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesASSigma,fValueSystematicBaselineASSigma, fValueSystematicBaselineASSigma ,SystematicsLegendASSigma,kTRUE);
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat) DrawRMSBaselineSystematicOnCanvas(fSystematicSourcesASSigma,fRMSRelative_ASSigma,fRMSRelative_ASSigma,SystematicsLegendASSigma,kTRUE);
+        DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesASSigma,fValueSystematicBaselineASSigma, fValueSystematicBaselineASSigma ,SystematicsLegendASSigma,kTRUE);
         SystematicsLegendASSigma->Draw("same");
     DefinePaveText();
     
@@ -1272,8 +1372,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
             DrawBaselineSystematicsOnCanvas(fSystematicSourcesPedestal,iSystMode,fRatioPedestal,SystematicsLegendPedestal);
         }
-    
-    DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesPedestal,fValueSystematicBaselinePedestal, fValueSystematicBaselinePedestal ,SystematicsLegendPedestal,kTRUE);
+        if(fCombineSystematics == kEnvelope_RMS_BaselStat) DrawRMSBaselineSystematicOnCanvas(fSystematicSourcesPedestal,fRMSRelative_Pedestal,fRMSRelative_Pedestal,SystematicsLegendPedestal,kTRUE);    
+        DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesPedestal,fValueSystematicBaselinePedestal, fValueSystematicBaselinePedestal ,SystematicsLegendPedestal,kTRUE);
         SystematicsLegendPedestal->Draw("same");
         DefinePaveText();
     
@@ -1517,7 +1617,7 @@ void AliHFCorrFitSystematics::DrawTotalSystematicsOnCanvas(TString variable, TLe
             ValueBaselineSystLow[i] = fValueSystematicBaselineASYield[i];
             ValueCorrSystLow[i] = fVecMinCorrelatedSyst[i];
                 if(fIspPb){
-                    if(fSystValuev2ASYield[i]<0) {TMath::Abs(Valuev2SystLow[i] = fSystValuev2ASYield[i]);
+                    if(fSystValuev2ASYield[i]<0) {Valuev2SystLow[i] = TMath::Abs(fSystValuev2ASYield[i]);
                     Valuev2SystUp[i] = 0;
                     }
                 }
@@ -1648,6 +1748,8 @@ void AliHFCorrFitSystematics::DrawBaselineSystematicsOnCanvas(TH1D * histoinput,
     if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) suffix = "2 Points at pi half";
     if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) suffix = "4 Points at pi half";
     if(fVecSystMode[iSystMode] == kTransverse) suffix = Form("Baseline from region %.3f#pi - %.3f#pi ",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
+    if(fVecSystMode[iSystMode] == kTransverseUppStatUnc) suffix = Form("Basel. from %.3f#pi - %.3f#pi + #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
+    if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) suffix = Form("Basel. from %.3f#pi - %.3f#pi - #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
     if(fVecSystMode[iSystMode] == kBinCount) suffix = "Bin Counting";
     if(fVecSystMode[iSystMode] == kMinVar) suffix = "Min Variation";
     if(fVecSystMode[iSystMode] == kMaxVar) suffix = "Max Variation";
@@ -1659,6 +1761,48 @@ void AliHFCorrFitSystematics::DrawBaselineSystematicsOnCanvas(TH1D * histoinput,
     histo->Draw("e2same");
  
 
+}
+
+//_______________________________________________________________________________
+void AliHFCorrFitSystematics::DrawRMSBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline){
+    
+    TString name = histoinput->GetName();
+    //name += Form("%d",iSystMode);
+    
+    TH1D * histoup = (TH1D*)histoinput->Clone(Form("%s_TotalUp",name.Data()));
+    TH1D * histodown = (TH1D*)histoinput->Clone(Form("%s_TotalDown",name.Data()));
+    histoup->Reset();
+    histodown->Reset();
+  //  cout << "Name = " << name << endl;
+    //   histo->SetName(Form("culone_%d",iSystMode));
+    //histo->SetName(name.Data());
+    
+    TString title = name;
+    title += ";p_{T} (D) GeV/c";
+    
+    histoup->SetTitle(title.Data());
+    Int_t index = -1;
+    for(Int_t iPtBin=0; iPtBin<fVecSize; iPtBin++){
+        
+       // cout << "Name = " << name << "; iPtBin = " << iPtBin << "; iSystMode = " << iSystMode << ", value " << array[index] << endl;
+        
+        histoup->SetBinContent(iPtBin+1,1+arraymax[iPtBin]);
+        histodown->SetBinContent(iPtBin+1,1-arraymin[iPtBin]);
+       // cout << "iptbin = " << iPtBin << "value max syste = " <<  arraymax[iPtBin] << endl;
+      //  cout << "iptbin = " << iPtBin << "value min syste = " <<  arraymin[iPtBin] << endl;
+    }
+    histoup->SetLineColor(3);
+    histodown->SetLineColor(3);
+    histoup->SetLineWidth(2);
+    histodown->SetLineWidth(2);
+    
+   if(fCombineSystematics == kRMS && isSystBaseline) legend->AddEntry(histoup,"Total Syst on std vars (RMS)","l");
+    
+   // cout << "drawing histo" << endl;
+    histoup->Draw("histsame");
+    histodown->Draw("histsame");
+    
+    
 }
 
 //_______________________________________________________________________________
@@ -1698,6 +1842,7 @@ void AliHFCorrFitSystematics::DrawTotalBaselineSystematicOnCanvas(TH1D * histoin
 
    if(fCombineSystematics == kMax && isSystBaseline) legend->AddEntry(histoup,"Total Syst max variation","l");
    if(fCombineSystematics == kRMS && isSystBaseline) legend->AddEntry(histoup,"Total Syst via RMS ","l");
+   if(fCombineSystematics == kEnvelope_RMS_BaselStat && isSystBaseline) legend->AddEntry(histoup,"Total Syst via special envel.","l");
    if(fCombineSystematics == kSumQuadr || !isSystBaseline) legend->AddEntry(histoup,"Total Syst Sum quadrature ","l");
     
    // cout << "drawing histo" << endl;
@@ -1724,6 +1869,8 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
         if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) std::cout << "Systematic mode is two points at pi/2  " << std::endl;
         if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) std::cout << "Systematic mode is 4 points at pi/2  " << std::endl;
         if(fVecSystMode[iSystMode] == kTransverse) std::cout << "Systematic mode is transverse region : (" << fMinBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi, "<< fMaxBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi)"<<std::endl;
+        if(fVecSystMode[iSystMode] == kTransverseUppStatUnc) std::cout << "Systematic mode is transverse region : (" << fMinBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi, "<< fMaxBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi) plus its stat unc"<<std::endl;
+        if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) std::cout << "Systematic mode is transverse region : (" << fMinBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi, "<< fMaxBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi) minus its stat unc"<<std::endl;
         if(fVecSystMode[iSystMode] == kBinCount) std::cout << "Systematic mode is bin counting (yield only)  " << std::endl;
         if(fVecSystMode[iSystMode] == kMinVar) std::cout << "Systematic mode is fit min variation histo  " << std::endl;
         if(fVecSystMode[iSystMode] == kMaxVar) std::cout << "Systematic mode is fit max variation histo  " << std::endl;
@@ -1866,26 +2013,26 @@ Bool_t AliHFCorrFitSystematics::DrawFinalCorrelationPlot(Bool_t drawNSy, Bool_t 
             else pave->AddText(Form("NS Yield = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoNSYield->GetBinContent(iPtBin+1), fReferenceHistoNSYield->GetBinError(iPtBin+1), fValueSystematicNSYieldUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1),fValueSystematicNSYieldLow[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
         }
         if(drawNSsigma){
-            if(fValueSystematicNSSigmaUp == fValueSystematicNSSigmaLow) {pave->AddText(Form("NS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoNSSigma->GetBinContent(iPtBin+1), fReferenceHistoNSSigma->GetBinError(iPtBin+1), fValueSystematicNSSigmaUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
+            if(fValueSystematicNSSigmaUp == fValueSystematicNSSigmaLow) {pave->AddText(Form("NS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoNSSigma->GetBinContent(iPtBin+1), fReferenceHistoNSSigma->GetBinError(iPtBin+1), fValueSystematicNSSigmaUp[iPtBin]*fReferenceHistoNSSigma->GetBinContent(iPtBin+1)));
             }
-            else pave->AddText(Form("NS Sigma = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoNSSigma->GetBinContent(iPtBin+1), fReferenceHistoNSSigma->GetBinError(iPtBin+1), fValueSystematicNSSigmaUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1),fValueSystematicNSSigmaLow[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
+            else pave->AddText(Form("NS Sigma = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoNSSigma->GetBinContent(iPtBin+1), fReferenceHistoNSSigma->GetBinError(iPtBin+1), fValueSystematicNSSigmaUp[iPtBin]*fReferenceHistoNSSigma->GetBinContent(iPtBin+1),fValueSystematicNSSigmaLow[iPtBin]*fReferenceHistoNSSigma->GetBinContent(iPtBin+1)));
         }
         
         if(drawASy){
-            if(fValueSystematicASYieldUp == fValueSystematicASYieldLow) {pave->AddText(Form("AS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoASYield->GetBinContent(iPtBin+1), fReferenceHistoASYield->GetBinError(iPtBin+1), fValueSystematicASYieldUp[iPtBin]));
+            if(fValueSystematicASYieldUp == fValueSystematicASYieldLow) {pave->AddText(Form("AS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoASYield->GetBinContent(iPtBin+1), fReferenceHistoASYield->GetBinError(iPtBin+1), fValueSystematicASYieldUp[iPtBin]*fReferenceHistoASYield->GetBinContent(iPtBin+1)));
             }
-            else pave->AddText(Form("AS Yield = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoASYield->GetBinContent(iPtBin+1), fReferenceHistoASYield->GetBinError(iPtBin+1), fValueSystematicASYieldUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1),fValueSystematicASYieldLow[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
+            else pave->AddText(Form("AS Yield = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoASYield->GetBinContent(iPtBin+1), fReferenceHistoASYield->GetBinError(iPtBin+1), fValueSystematicASYieldUp[iPtBin]*fReferenceHistoASYield->GetBinContent(iPtBin+1),fValueSystematicASYieldLow[iPtBin]*fReferenceHistoASYield->GetBinContent(iPtBin+1)));
         }
         if(drawASsigma){
-            if(fValueSystematicASSigmaUp == fValueSystematicASSigmaLow) {pave->AddText(Form("AS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoASSigma->GetBinContent(iPtBin+1), fReferenceHistoASSigma->GetBinError(iPtBin+1), fValueSystematicASSigmaUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
+            if(fValueSystematicASSigmaUp == fValueSystematicASSigmaLow) {pave->AddText(Form("AS Y = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoASSigma->GetBinContent(iPtBin+1), fReferenceHistoASSigma->GetBinError(iPtBin+1), fValueSystematicASSigmaUp[iPtBin]*fReferenceHistoASSigma->GetBinContent(iPtBin+1)));
             }
-            else pave->AddText(Form("AS Sigma = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoASSigma->GetBinContent(iPtBin+1), fReferenceHistoASSigma->GetBinError(iPtBin+1), fValueSystematicASSigmaUp[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1),fValueSystematicASSigmaLow[iPtBin]*fReferenceHistoNSYield->GetBinContent(iPtBin+1)));
+            else pave->AddText(Form("AS Sigma = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoASSigma->GetBinContent(iPtBin+1), fReferenceHistoASSigma->GetBinError(iPtBin+1), fValueSystematicASSigmaUp[iPtBin]*fReferenceHistoASSigma->GetBinContent(iPtBin+1),fValueSystematicASSigmaLow[iPtBin]*fReferenceHistoASSigma->GetBinContent(iPtBin+1)));
         }
         
         if(drawPed){
             if(fValueSystematicPedestalUp == fValueSystematicPedestalLow) {pave->AddText(Form("Pedestal = %.2f #pm %.2f (stat) #pm %.2f (syst) ",fReferenceHistoPedestal->GetBinContent(iPtBin+1), fReferenceHistoPedestal->GetBinError(iPtBin+1), fValueSystematicPedestalUp[iPtBin]*fReferenceHistoPedestal->GetBinContent(iPtBin+1)));
             }
-            else pave->AddText(Form("Pedestal = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoPedestal->GetBinContent(iPtBin+1), fReferenceHistoPedestal->GetBinError(iPtBin+1), fValueSystematicPedestalUp[iPtBin],fValueSystematicPedestalLow[iPtBin]*fReferenceHistoPedestal->GetBinContent(iPtBin+1)));
+            else pave->AddText(Form("Pedestal = %.2f #pm %.2f (stat) #pm ^{%.2f}_{%.2f} (syst) ",fReferenceHistoPedestal->GetBinContent(iPtBin+1), fReferenceHistoPedestal->GetBinError(iPtBin+1), fValueSystematicPedestalUp[iPtBin]*fReferenceHistoPedestal->GetBinContent(iPtBin+1),fValueSystematicPedestalLow[iPtBin]*fReferenceHistoPedestal->GetBinContent(iPtBin+1)));
         }
         
         pave->SetFillStyle(0);
@@ -1956,7 +2103,7 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
     */
     Bool_t isDrawn = kFALSE;
     
-    TLegend * Legend = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * Legend = new TLegend(0.5,0.7,0.85,0.8);
     Legend->SetFillColor(0);
     Legend->SetTextSize(0.025);
     Legend->SetBorderSize(0);
@@ -2040,10 +2187,12 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
 	fFullSystematicsNSYield->Draw("E2");
 	if(fPlotV2SystSeparately){
 	  fv2SystematicsNSYield->Draw("E2");
+          Legend->Clear();
 	  Legend->AddEntry(fFullSystematicsNSYield,"Total Systematic Uncert.","l");
 	  Legend->AddEntry(fv2SystematicsNSYield,"v_{2} Systematic Uncert.","f");
 	  Legend->Draw("same");
 	}
+        if(fPlotV2SystSeparately) fFinalTrendNSYield->Draw("epsame");
         fCanvasFinalTrendNSYield->Write();
         
     }
@@ -2087,10 +2236,12 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
 	fFullSystematicsNSSigma->Draw("E2");
 	if(fPlotV2SystSeparately){
 	  fv2SystematicsNSSigma->Draw("E2");
+          Legend->Clear();
 	  Legend->AddEntry(fFullSystematicsNSSigma,"Total Systematic Uncert.","l");
 	  Legend->AddEntry(fv2SystematicsNSSigma,"v_{2} Systematic Uncert.","f");
 	  Legend->Draw("same");
 	}
+        if(fPlotV2SystSeparately) fFinalTrendNSSigma->Draw("epsame");
         fCanvasFinalTrendNSSigma->Write();
     }
     if(drawASy){
@@ -2134,10 +2285,12 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
       fFullSystematicsASYield->Draw("E2");
       if(fPlotV2SystSeparately){
 	fv2SystematicsASYield->Draw("E2");
+        Legend->Clear();
 	Legend->AddEntry(fFullSystematicsASYield,"Total Systematic Uncert.","l");
 	Legend->AddEntry(fv2SystematicsASYield,"v_{2} Systematic Uncert.","f");
 	Legend->Draw("same");
       }
+      if(fPlotV2SystSeparately) fFinalTrendASYield->Draw("epsame");
       fCanvasFinalTrendASYield->Write();
     }
     if(drawASsigma){
@@ -2181,13 +2334,15 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         }
 	fFullSystematicsASSigma->Draw("E2");
 	if(fPlotV2SystSeparately){
+          fv2SystematicsASSigma->Draw("E2");
+          Legend->Clear();       
 	  Legend->AddEntry(fFullSystematicsASSigma,"Total Systematic Uncert.","l");
 	  Legend->AddEntry(fv2SystematicsASSigma,"v_{2} Systematic Uncert.","f");
-	  fv2SystematicsASSigma->Draw("E2");
 	  Legend->Draw("same");
 	}
+        if(fPlotV2SystSeparately) fFinalTrendASSigma->Draw("epsame");
         fCanvasFinalTrendASSigma->Write();
-    }
+    }Legend->Clear();
     if(drawPed){fCanvasFinalTrendPedestal = new TCanvas("CanvasFinalTrendPedestal","CanvasFinalTrendPedestal",0,0,1000,800);
         fCanvasFinalTrendPedestal->SetTickx();
         fCanvasFinalTrendPedestal->SetTicky();
@@ -2221,13 +2376,15 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
                 //    else fv2SystematicsPedestal[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)-fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2));
             }
         }
-	fFullSystematicsPedestal->Draw("E2");
 	if(fPlotV2SystSeparately){
+          fv2SystematicsPedestal->Draw("E2");
+          Legend->Clear();
 	  Legend->AddEntry(fFullSystematicsPedestal,"Total Systematic Uncert.","l");
 	  Legend->AddEntry(fv2SystematicsPedestal,"v_{2} Systematic Uncert.","f");
-	  fv2SystematicsPedestal->Draw("E2");
 	  Legend->Draw("same");
 	}
+        if(fPlotV2SystSeparately) fFinalTrendPedestal->Draw("epsame");
+        fFullSystematicsPedestal->Draw("E2");
         fCanvasFinalTrendPedestal->Write();
         
         
@@ -2267,6 +2424,7 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         }
         fBaselineVariationSystematicsPedestal->Draw("E2");
         if(fPlotV2SystSeparately){
+            Legend->Clear();
             Legend->AddEntry(fBaselineVariationSystematicsPedestal,"Baseline variation Systematic Uncert.","l");
             Legend->AddEntry(fv2SystematicsPedestal,"v_{2} Systematic Uncert.","f");
             fv2SystematicsPedestal->Draw("E2");

@@ -9,6 +9,7 @@ AliJJetJtTask* AddTaskJJetJt(
 		Int_t	    Nrandom    =  1,
 		Int_t	    moveJet =  1,
 		Int_t	    doMC       = 0,
+    Int_t     leading = 0,
 		Int_t       debug 		 = 1	
 		)
 {  
@@ -47,6 +48,7 @@ AliJJetJtTask* AddTaskJJetJt(
 	jtTask->SelectCollisionCandidates(trigger);
 	jtTask->SetNrandom(Nrandom);
 	jtTask->SetMoveJet(moveJet);
+  jtTask->SetLeadingJets(leading);
 	mgr->AddTask(jtTask);
 
 	// Create containers for input/output

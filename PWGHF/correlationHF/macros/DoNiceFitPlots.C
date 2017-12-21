@@ -5,6 +5,7 @@
 */
 
 TString inputdirectory = "";
+Int_t pPbyear=2013;
 
 //gStyle->SetLineStyleString(9,"80 20");
 
@@ -12,21 +13,32 @@ void SetInputDirectory(TString strdir){
   inputdirectory=strdir;
 }
 
+void SetpPbyear(Int_t syst){
+  if(syst==1) pPbyear=2013;
+  if(syst==2) pPbyear=2016;
+}
+
+
 void DoNiceFitPlots() {
   TFile fInPP(Form("%s/FitOutputs_pp/FitSystematics_pp_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
   TFile fInPPb(Form("%s/FitOutputs_pPb/FitSystematics_pPb_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
 
   TCanvas *cInPP = (TCanvas*)fInPP.Get("cFitting_0");
   TCanvas *cInPPb = (TCanvas*)fInPPb.Get("cFitting_1");
- gStyle->SetOptStat(0000);
-gStyle->SetOptFit(000);
+   gStyle->SetOptStat(0000);
+  gStyle->SetOptFit(000);
 
   Int_t indexpp = 2;
-  Int_t indexpPb = 2;
+  Int_t indexpPb;
+  if(pPbyear==2013) indexpPb = 2;
+  if(pPbyear==2016) indexpPb = 2;
 
   TCanvas *cOut1 = ExtractPad(cInPP,2);
   cOut1->SetName("cNew_pp");
-  TCanvas *cOut2 = ExtractPad(cInPPb,2);
+  TCanvas *cOut2;
+  if(pPbyear==2013) cOut2 = ExtractPad(cInPPb,2);
+  if(pPbyear==2016) cOut2 = ExtractPad(cInPPb,2);
+
   cOut2->SetName("cNew_pPb");
 
   TCanvas *cUnc_pp = (TCanvas*)fInPP.Get(Form("cFinalCorrelation%d",indexpp-1));
@@ -182,6 +194,7 @@ c->ls();
   TLatex *tl1=new TLatex(0.215,0.87,Form("Average D^{0}, D^{+}, D^{*+}"));
   tl1->SetNDC();
   tl1->SetTextSize(0.042);
+  tl1->SetTextFont(42);
   tl1->Draw("same");
 
   TLegend * legend2 = new TLegend(0.20,0.795,0.5,0.85);
@@ -207,20 +220,20 @@ c->ls();
   TLatex *tl2b=new TLatex(0.79,0.87,Form("ALICE"));
   tl2b->SetNDC();
   tl2b->SetTextSize(0.042);
-  //  tl2b->SetTextFont(42);
+    tl2b->SetTextFont(42);
   tl2b->Draw("same");
 
   if(system==0) {
     TLatex *tl3=new TLatex(0.215,0.75,Form("|#it{y}^{D}_{cms}| < 0.5, |#Delta#eta| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
-    //    tl3->SetTextFont(42);
+        tl3->SetTextFont(42);
     tl3->Draw("same");
   } else {
     TLatex *tl3=new TLatex(0.215,0.75,Form("-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
-    //    tl3->SetTextFont(42);
+        tl3->SetTextFont(42);
     tl3->Draw("same");
   }
 
@@ -228,13 +241,16 @@ c->ls();
     TLatex *tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
-    //    tl4->SetTextFont(42);
+        tl4->SetTextFont(42);
     tl4->Draw("same");
   } else {
-    TLatex *tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
+    TLatex *tl4;
+    if(pPbyear==2013)tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
+    if(pPbyear==2016)tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
+    else tl4=new TLatex();
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
-    //    tl4->SetTextFont(42);
+        tl4->SetTextFont(42);
     tl4->Draw("same");
   }
 /*
@@ -247,13 +263,15 @@ c->ls();
     TLatex *tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus13%s}_{#minus10%s} scale uncertainty","%","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
-    //    tlUnc->SetTextFont(42);
+        tlUnc->SetTextFont(42);
     tlUnc->Draw("same");
   } else {
-    TLatex *tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus10%s}_{#minus10%s} scale uncertainty","%","%"));
+    TLatex *tlUnc;
+    if(pPbyear==2013) tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus10%s}_{#minus10%s} scale uncertainty","%","%"));
+    if(pPbyear==2016) tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus4%s}_{#minus4%s} scale uncertainty","%","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
-    //    tlUnc->SetTextFont(42);
+       tlUnc->SetTextFont(42);
     tlUnc->Draw("same");
   }
 

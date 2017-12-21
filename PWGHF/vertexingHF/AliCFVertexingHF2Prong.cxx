@@ -227,6 +227,12 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 		vectorMC[6] = 1. ;  // fake: always filling with 1 at MC level 
 		vectorMC[7] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
 		break;
+	case AliCFTaskVertexingHF::kFalcon:
+		vectorMC[0] = fmcPartCandidate->Pt();
+		vectorMC[1] = fmcPartCandidate->Y() ;
+		vectorMC[2] = fCentValue;   // dummy value for dca, meaningless in MC
+		vectorMC[3] = fMultiplicity;   // dummy value for dca, meaningless in MC
+		break;
 	}
 	delete decay;
 	bGenValues = kTRUE;
@@ -309,6 +315,12 @@ Bool_t AliCFVertexingHF2Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 		vectorReco[5] = fCentValue;   
 		vectorReco[6] = fFake ; 
 		vectorReco[7] = fMultiplicity;  
+		break;
+	case AliCFTaskVertexingHF::kFalcon:
+		vectorReco[0] = pt;
+		vectorReco[1] = rapidity ;
+		vectorReco[2] = fCentValue;   
+		vectorReco[3] = fMultiplicity;   
 		break;
 	}
 

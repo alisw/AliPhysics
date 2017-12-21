@@ -6,9 +6,9 @@
 /// specially for EMCal triggers. 
 /// The trigger event settings depend on special trigger names:
 ///  * default: Min bias like triggers, kMB or kINT7
-///  * EMCAL_L0, DCAL_L0: EMCAL or DCAL L0 triggers kEMC7, kEMC8, kEMC1 
-///  * EMCAL_L1, DCAL_L1: EMCAL or DCAL L1 triggers, kEMCEGA, with name EG1 or EGA 
-///  * EMCAL_L2, DCAL_L2: EMCAL or DCAL L2 triggers, kEMCEGA, with name EG2 
+///  * EMCAL_L0, DCAL_L0: EMCal or DCal L0 triggers kEMC7, kEMC8, kEMC1 
+///  * EMCAL_L1, DCAL_L1: EMCal or DCal L1 triggers, kEMCEGA, with name EG1 or EGA 
+///  * EMCAL_L2, DCAL_L2: EMCal or DCal L1 triggers, kEMCEGA, with name EG2 
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 

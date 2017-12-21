@@ -61,6 +61,8 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2pPb.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb.cxx
   Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
@@ -76,6 +78,7 @@ set(SRCS
   Cascades/Run2/AliCascadeResult.cxx
   Cascades/Run2/AliStrangenessModule.cxx
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
+  Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   )
 
 # Headers from sources

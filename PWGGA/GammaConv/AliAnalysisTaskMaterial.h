@@ -12,7 +12,6 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConvEventCuts.h"
 #include "TList.h"
-#include "AliStack.h"
 #include "TClonesArray.h"
 
 
@@ -48,7 +47,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 		
 		void ProcessPhotons();
 		void ProcessMCPhotons();
-		void FillMCTree(Int_t stackPos);
+        void FillMCTree(Int_t eventPos);
 		Int_t CountTracks0914();
 		Int_t CountTracks09();
 

@@ -15,7 +15,7 @@
 
 #include "AliAnalysisTaskEmcalJetTagger.h"
 
-ClassImp(AliAnalysisTaskEmcalJetTagger)
+ClassImp(AliAnalysisTaskEmcalJetTagger);
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() : 
@@ -357,6 +357,9 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   const Int_t nJets2 = GetNJets(c2);
 
   if(nJets1==0 || nJets2==0) return;
+
+  AliDebugStream(1) << "Jets Base (" << GetJetContainer(c1)->GetNJets() << ", accepted " << GetJetContainer(c1)->GetNAcceptedJets() << "), jets tag("
+            << GetJetContainer(c2)->GetNJets() << ", accepted " << GetJetContainer(c2)->GetNAcceptedJets() << "), max distance " << maxDist << std::endl;
 
   if(bReset) {
     ResetTagging(c1);

@@ -11,9 +11,10 @@ class TClonesArray;
 class TArrayI;
 class AliAnalysisManager;
 class AliJetContainer;
-
+class AliEmcalJetFinder;
+class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
-
+#include "AliFJWrapper.h"
 
 
 class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
@@ -94,13 +95,13 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
 
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
-
+   void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo);
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[19];                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[12];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -128,6 +129,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
   TH1F                                *fhPt;
   TH1F                                *fhPhi;
+  THnSparse                           *fHLundIterative;// 
   TH2F                                *fNbOfConstvspT;
 
   TTree           *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw 

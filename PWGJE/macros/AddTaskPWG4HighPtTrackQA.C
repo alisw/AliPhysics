@@ -1,3 +1,23 @@
+#if !defined(__CINT__) && !defined (__CLING__)
+#include <TMacro.h>
+#include <TROOT.h>
+#include <TString.h>
+#include <TSystem.h>
+
+#include "AliAnalysisManager.h"
+#include "AliPWG4HighPtTrackQA.h"
+#include "AliVEvent.h"
+#endif
+
+void AddTaskPWG4HighPtTrackQApPb(const char *prodType = "LHC13b");
+void AddTaskPWG4HighPtTrackQAAll(const char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0);
+void AddTaskPWG4HighPtTrackQAAll2011(const char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0);
+void AddTaskPWG4HighPtTrackQAAllReduced(const char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0);
+void AddTaskPWG4HighPtTrackQALHC11hLTS(const char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0);
+void AddTaskPWG4HighPtTrackQAAllReduced2011(const char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0);
+void AddTaskPWG4HighPtTrackQAAOD(const char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768, Bool_t useSPDTrackletVsClusterBG=kFALSE);
+AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(const char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB);
+
 void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272, Bool_t doEfficiency = kFALSE, Bool_t useSPDTrackletVsClusterBG=kFALSE)
 {
   if(iAODanalysis==0) { //run on ESDs
@@ -18,14 +38,14 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
   }
   else if(iAODanalysis==1) { //run on AODs
     if(doEfficiency==1){
-      gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
-      AddTaskHybridTrackEfficiencyQA_AOD_train(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
+      TMacro addmacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
+      addmacro.Exec(Form("\"%s\", %s, AliVEvent::kMB, kTRUE, kFALSE", prodType.Data(), isPbPb ? "kTRUE" : "kFALSE"));
     }
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit, useSPDTrackletVsClusterBG);
   }
 }
 
-void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b")
+void AddTaskPWG4HighPtTrackQApPb(const char *prodType)
 {
   AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kINT7);
   AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kINT7);
@@ -36,7 +56,7 @@ void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b")
   }
 }
 
-void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+void AddTaskPWG4HighPtTrackQAAll(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   Int_t cent = 10;
@@ -58,7 +78,7 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   }
 }
 
-void AddTaskPWG4HighPtTrackQAAll2011(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+void AddTaskPWG4HighPtTrackQAAll2011(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   Int_t cent = 10;
@@ -112,7 +132,7 @@ void AddTaskPWG4HighPtTrackQAAll2011(char *prodType = "LHC11h",Bool_t isPbPb=kTR
   }
 }
 
-void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+void AddTaskPWG4HighPtTrackQAAllReduced(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   int cent = 10;
@@ -128,7 +148,7 @@ void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC11h",Bool_t isPbPb=
   }
 }
 
-void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+void AddTaskPWG4HighPtTrackQALHC11hLTS(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   Int_t cent = 10;
@@ -176,7 +196,7 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   }
 }
 
-void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+void AddTaskPWG4HighPtTrackQAAllReduced2011(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   int cent = 10;
@@ -203,7 +223,7 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
   AliPWG4HighPtTrackQA *taskTrackQA75SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagSemiCentral);
 }
 
-void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768, Bool_t useSPDTrackletVsClusterBG=kFALSE)
+void AddTaskPWG4HighPtTrackQAAOD(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis, Int_t filterBit, Bool_t useSPDTrackletVsClusterBG)
 {  
   UInt_t iPhysicsSelectionFlagMB          = AliVEvent::kMB; 
   UInt_t iPhysicsSelectionFlagCentral     = AliVEvent::kCentral;
@@ -229,7 +249,9 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
       strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || 
       strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || 
       strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f" || strRunPeriod.Contains("lhc12a17") || strRunPeriod.Contains("lhc14a1") ||
-      strRunPeriod == "lhc15o") {
+      strRunPeriod.Contains("lhc16e1") || strRunPeriod.Contains("lhc17f8") ||
+      (strRunPeriod.Length() == 6 && (strRunPeriod.BeginsWith("lhc15") || strRunPeriod.BeginsWith("lhc16") || strRunPeriod.BeginsWith("lhc17"))) // All run2 data
+      ) {
     filterBit  = 768;
     filterBit1 = 256;
     filterBit2 = 512;
@@ -354,7 +376,7 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
   }
 }
 
-AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB)
+AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis, Int_t centClass, Int_t trackType, Int_t cuts, UInt_t iPhysicsSelectionFlag)
 {
   /*
   For ESDs: (AOD see bottom)
@@ -397,7 +419,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
    */
 
   //Load common track cut class
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  TMacro CreateTrackCutsPWGJE(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C"));
 
   // Creates HighPtTrackQA analysis task and adds it to the analysis manager.
   
@@ -430,85 +452,85 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
     // tight global tracks - RAA analysis
-    trackCuts = CreateTrackCutsPWGJE(1000);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("1000");
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWGJE(10001006);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10001006");
   }
   if(trackType==0 && cuts==5) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
-    trackCuts = CreateTrackCutsPWGJE(10001008);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10001008");
   }
   if(trackType==0 && cuts==6) {
     //Cuts global tracks with ITSrefit requirement and no SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
-    trackCuts = CreateTrackCutsPWGJE(10051008);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10051008");
   }
   
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWGJE(10011006);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10011006");
   }
   if(trackType==7 && cuts==0) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWGJE(10041006);
-    trackCutsReject = CreateTrackCutsPWGJE(1006);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10041006");
+    trackCutsReject = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("1006");
   }
   if(trackType==7 && cuts==4) {
     // tight global tracks +  NCrossedRowsCut>120 recommended in 2011
-    trackCuts = CreateTrackCutsPWGJE(10041008);
-    trackCutsReject = CreateTrackCutsPWGJE(1008);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10041008");
+    trackCutsReject = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("1008");
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWGJE(10011006);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10011006");
   }
   if(trackType==7 && cuts==5) {
     // tight global tracks  + NCrossedRowsCut>70 recommended in 2011
-    trackCuts = CreateTrackCutsPWGJE(10011008);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10011008");
   }
   if(trackType==7 && cuts==2) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
-    trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10041006");       //no ITSrefit requirement filter 256
+    trackCutsReject = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10001006"); //ITSrefit requirement filter 16
   }
   if(trackType==7 && cuts==6) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWGJE(10041008);       //no ITSrefit requirement filter 256
-    trackCutsReject = CreateTrackCutsPWGJE(10001008); //ITSrefit requirement filter 16
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10041008");       //no ITSrefit requirement filter 256
+    trackCutsReject = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10001008"); //ITSrefit requirement filter 16
   }
 
   if(trackType==1 && cuts==0) {
     //Set track cuts for TPConly tracks
-    trackCuts = CreateTrackCutsPWGJE(2001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("2001");
   }
   if(trackType==1 && cuts==1) {
     //Set track cuts for TPConly tracks
-    trackCuts = CreateTrackCutsPWGJE(10032001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10032001");
   }
 
   if(trackType==2 && cuts==0) {
     //Set track cuts for TPConly constrained tracks
-    trackCuts = CreateTrackCutsPWGJE(2001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("2001");
   }
   if(trackType==2 && cuts==1) {
     //Set track cuts for TPConly constrained tracks w/o cut on NClusters or NCrossedRows
-    trackCuts = CreateTrackCutsPWGJE(10032001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10032001");
   }
 
   if(trackType==4 && cuts==0) {
      //	      Set track cuts for TPConly constrained tracks
-    trackCuts = CreateTrackCutsPWGJE(2001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("2001");
   }
   if(trackType==4 && cuts==1) {
      //	      Set track cuts for TPConly constrained tracks
-    trackCuts = CreateTrackCutsPWGJE(10032001);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10032001");
   }
   if(trackType==5 || trackType==6) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWGJE(1003);
-    trackCutsReject = CreateTrackCutsPWGJE(10021003); 
-    trackCutsTPConly = CreateTrackCutsPWGJE(2002);
+    trackCuts = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("1003");
+    trackCutsReject = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("10021003");
+    trackCutsTPConly = (AliESDtrackCuts *)CreateTrackCutsPWGJE.Exec("2002");
   }
 
   trackCuts->SetEtaRange(-0.9,0.9);

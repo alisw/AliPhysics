@@ -115,7 +115,7 @@ fNameCutObj(0),
 fUseEff(0),
 fMake2DPlots(kFALSE),
 fWeightPeriods(kTRUE),
-fRemoveSoftPiInME(kTRUE)
+fRejectSoftPi(kTRUE)
 {
 
 }
@@ -171,7 +171,7 @@ fNameCutObj(source.fNameCutObj),
 fUseEff(source.fUseEff),
 fMake2DPlots(source.fMake2DPlots),
 fWeightPeriods(source.fWeightPeriods),
-fRemoveSoftPiInME(source.fRemoveSoftPiInME)
+fRejectSoftPi(source.fRejectSoftPi)
 {
 
 }
@@ -230,7 +230,7 @@ fNameCutObj = orig.fNameCutObj;
 fUseEff = orig.fUseEff;
 fMake2DPlots = orig.fMake2DPlots;
 fWeightPeriods = orig.fWeightPeriods;
-fRemoveSoftPiInME = orig.fRemoveSoftPiInME;
+fRejectSoftPi = orig.fRejectSoftPi;
 
 return *this; //returns pointer of the class
 }
@@ -337,6 +337,13 @@ void AliHFOfflineCorrelator::DefineOutputObjects(){
         h3D->Sumw2();
         fOutputDistr->Add(h3D);
       
+        if(fAnType==kME) {
+          namePlot = Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d_softpiME",fFirstBinNum+iBin,fPtBinsTrLow.at(iAssPt),fPtBinsTrUp.at(iAssPt),iPool);
+          TH3F* h3Dsp = new TH3F(namePlot.Data(),"3D Correlation distribution (fake softpi ME)",32,-TMath::Pi()/2.,3.*TMath::Pi()/2.,16,-1.6,1.6,massBins,massLow,massUp);
+          h3Dsp->Sumw2();
+          fOutputDistr->Add(h3Dsp);
+        }
+
         if(fDebug) { //Defines Eta distribution for all D triggers and tracks in a given pool
           namePlot = Form("hEtaD_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+iBin,fPtBinsTrLow.at(iAssPt),fPtBinsTrUp.at(iAssPt),iPool);
           TH1F* hEtaD = new TH1F(namePlot.Data(),"D-meson eta distribution",32,-0.8,0.8);
@@ -364,6 +371,18 @@ void AliHFOfflineCorrelator::DefineOutputObjects(){
           TH2F* h2D_SB = new TH2F(namePlot.Data(),"2D Correlation distribution - Sidebands",32,-TMath::Pi()/2.,3.*TMath::Pi()/2.,16,-1.6,1.6);
           h2D_SB->Sumw2();
           fOutputDistr->Add(h2D_SB);
+
+          if(fAnType==kME) {
+            namePlot = Form("h2DCorrelations_Sign_Bin%d_%1.1fto%1.1f_p%d_softpiME",fFirstBinNum+iBin,fPtBinsTrLow.at(iAssPt),fPtBinsTrUp.at(iAssPt),iPool);
+            TH2F* h2D_Sign_sp = new TH2F(namePlot.Data(),"2D Correlation distribution - Signal Region (fake softpi ME)",32,-TMath::Pi()/2.,3.*TMath::Pi()/2.,16,-1.6,1.6);
+            h2D_Sign_sp->Sumw2();
+            fOutputDistr->Add(h2D_Sign_sp);
+
+            namePlot = Form("h2DCorrelations_SB_Bin%d_%1.1fto%1.1f_p%d_softpiME",fFirstBinNum+iBin,fPtBinsTrLow.at(iAssPt),fPtBinsTrUp.at(iAssPt),iPool);
+            TH2F* h2D_SB_sp = new TH2F(namePlot.Data(),"2D Correlation distribution - Sidebands (fake softpi ME)",32,-TMath::Pi()/2.,3.*TMath::Pi()/2.,16,-1.6,1.6);
+            h2D_SB_sp->Sumw2();
+            fOutputDistr->Add(h2D_SB_sp);                
+          }
 
           if(fDebug) { //Defines Eta distribution for all D triggers and tracks in a given pool (only when D is in signal region/SB)
             namePlot = Form("hEtaD_Sign_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+iBin,fPtBinsTrLow.at(iAssPt),fPtBinsTrUp.at(iAssPt),iPool);
@@ -569,7 +588,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig4_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
 
       if(fNumSelTr>=0 && (brTr->sel_Tr>>fNumSelTr)%2!=1) continue; //important in case of multiple selection (default selection is 0)
-	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->cent_Tr < fMinCent || brTr->cent_Tr > fMaxCent) continue;} //skip tracks outside centrality range
+      if(fMinCent!=0 && fMaxCent!=0) {if(brTr->cent_Tr < fMinCent || brTr->cent_Tr > fMaxCent) continue;} //skip tracks outside centrality range
 
       poolTr = GetPoolBin(brTr->mult_Tr,brTr->zVtx_Tr);
       if(poolD<0 || poolTr<0 || poolD!=poolTr) continue;  //skips if pools of D and tracks do not match, or if pool number is wrong
@@ -580,10 +599,17 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       Double_t deltaPhi, deltaEta;
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
 
-      if(fRemoveSoftPiInME && fDmesonSpecies==kD0toKpi && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
-		Bool_t reject = IsSoftPionFromDstar(brD,brTr);
-		if(reject) continue;
-	  }
+      Bool_t fillSoftpiME=kFALSE;
+      if(fRejectSoftPi && fDmesonSpecies==kD0toKpi) {
+        Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+        if(fAnType==kSE) { //reject softPi in SE events
+          if(reject) continue;
+        } 
+        if(fAnType==kME && deltaPhi > -0.4 && deltaPhi < 0.4 && deltaEta > -0.4 && deltaEta < 0.4) { //ME fake soft pi cut
+	        Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+	        if(reject) fillSoftpiME=kTRUE; //to fill histograms containing only fake softpi in ME analysis
+        }
+      }
 
       for(Int_t iRng=0; iRng<(int)fPtBinsTrLow.size(); iRng++) {  //loop on associated track ranges
 
@@ -591,19 +617,35 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
         if(brTr->pT_Tr < fPtBinsTrLow.at(iRng) || brTr->pT_Tr > fPtBinsTrUp.at(iRng)) continue; //skip cases where associated track pT is out of range
         namePlot = Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
         ((TH3F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,brD->invMass_D,weight);
+        if(fillSoftpiME) { //fill also the fake softpiME plot (which will be subtracted from the above one, after evaluating the normaliz factor, in the extraction process)
+          namePlot+="_softpiME";
+          ((TH3F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,brD->invMass_D,weight);
+        }
 
         if(fMake2DPlots) {
-	      if(brD->invMass_D > fMassSignL.at(ptBinD) && brD->invMass_D < fMassSignR.at(ptBinD)) {
+	  if(brD->invMass_D > fMassSignL.at(ptBinD) && brD->invMass_D < fMassSignR.at(ptBinD)) {
             namePlot = Form("h2DCorrelations_Sign_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
             ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            if(fillSoftpiME) { //fill also the fake softpiME plot (which will be subtracted from the above one, after evaluating the normaliz factor, in the extraction process)
+              namePlot+="_softpiME";
+              ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            }
           }     
           if(brD->invMass_D > fMassSB1L.at(ptBinD) && brD->invMass_D < fMassSB1R.at(ptBinD)) {
             namePlot = Form("h2DCorrelations_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
             ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            if(fillSoftpiME) { //fill also the fake softpiME plot (which will be subtracted from the above one, after evaluating the normaliz factor, in the extraction process)
+              namePlot+="_softpiME";
+              ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            }
           }
           if(fDmesonSpecies!=kDStarD0pi && (brD->invMass_D > fMassSB2L.at(ptBinD) && brD->invMass_D < fMassSB2R.at(ptBinD))) {
             namePlot = Form("h2DCorrelations_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
             ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            if(fillSoftpiME) { //fill also the fake softpiME plot (which will be subtracted from the above one, after evaluating the normaliz factor, in the extraction process)
+              namePlot+="_softpiME";
+              ((TH2F*)(fOutputDistr->FindObject(namePlot)))->Fill(deltaPhi,deltaEta,weight);
+            }
           }
         } //end if 2D plots
 
@@ -615,23 +657,23 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
           namePlot = Form("hEtaTr_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
           ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);  //fill at each track iteration for the tracks!
           if(fMake2DPlots) {
-	        if(brD->invMass_D > fMassSignL.at(ptBinD) && brD->invMass_D < fMassSignR.at(ptBinD)) {
+	    if(brD->invMass_D > fMassSignL.at(ptBinD) && brD->invMass_D < fMassSignR.at(ptBinD)) {
               namePlot = Form("hEtaD_Sign_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
               if(fillOnce[iRng]==0) ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brD->eta_D);
- 	          namePlot = Form("hEtaTr_Sign_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
-   	          ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
+ 	      namePlot = Form("hEtaTr_Sign_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
+   	      ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
             }     
             if(brD->invMass_D > fMassSB1L.at(ptBinD) && brD->invMass_D < fMassSB1R.at(ptBinD)) {
               namePlot = Form("hEtaD_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
               if(fillOnce[iRng]==0) ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brD->eta_D);
- 	          namePlot = Form("hEtaTr_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
-   	          ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
+ 	      namePlot = Form("hEtaTr_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
+   	      ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
             }
             if(fDmesonSpecies!=kDStarD0pi && (brD->invMass_D > fMassSB2L.at(ptBinD) && brD->invMass_D < fMassSB2R.at(ptBinD))) {
               namePlot = Form("hEtaD_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
               if(fillOnce[iRng]==0) ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brD->eta_D);
- 	          namePlot = Form("hEtaTr_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
-   	          ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
+ 	      namePlot = Form("hEtaTr_SB_Bin%d_%1.1fto%1.1f_p%d",fFirstBinNum+ptBinD,fPtBinsTrLow.at(iRng),fPtBinsTrUp.at(iRng),poolD);
+   	      ((TH1F*)(fOutputDistr->FindObject(namePlot)))->Fill(brTr->eta_Tr);
             }
           } //end if 2D plots (for debug plots)
           fillOnce[iRng]++; //to avoid re-filling of D-meson debug plots with further tracks for the same meson
@@ -673,6 +715,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeight(AliHFCorrelationBranchD *br
   if(fMapEffTr->IsBinUnderflow(binTr)||fMapEffTr->IsBinOverflow(binTr))return 1.;
   effTr = fMapEffTr->GetBinContent(binTr);
 
+  if(effD*effTr==0) return 1.; //safety fix
   return 1./(effD*effTr);
 }
 
@@ -685,6 +728,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeightDOnly(AliHFCorrelationBranch
   if(fMapEffD->IsBinUnderflow(binD)||fMapEffD->IsBinOverflow(binD))return 1.;
   effD = fMapEffD->GetBinContent(binD);
 
+  if(effD==0) return 1.; //safety fix
   return 1./(effD);
 }
 
@@ -842,7 +886,7 @@ void AliHFOfflineCorrelator::SaveOutputPlots() {
 Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr) {
 	//
 	// Calculates invmass of track+D0 and rejects if compatible with D*
-	// (to remove fake pions from D* in ME events - in SE the cut is applied in the main task)
+	// (to remove fake pions from D* in ME events, and true soft pions in SE the cut)
 	// 
 	Double_t nsigma = 3.;
 	
@@ -924,7 +968,7 @@ void AliHFOfflineCorrelator::PrintCfg() const {
   std::cout << "----------------------------------------------\n";
   std::cout << " Weight periods (if ME) = "<<fWeightPeriods<<"\n";
   std::cout << "----------------------------------------------\n";
-  std::cout << " Fake soft pi rejection in Me (D0) = "<<fRemoveSoftPiInME<<"\n";
+  std::cout << " Soft pi rejection (D0) = "<<fRejectSoftPi<<"\n";
   std::cout << "----------------------------------------------\n";
 }
 

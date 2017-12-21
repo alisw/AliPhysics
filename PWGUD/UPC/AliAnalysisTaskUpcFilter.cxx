@@ -326,6 +326,9 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[38] = trigger.Contains("CCUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
   trgClasses[39] = trigger.Contains("CCUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0STG 0OMU
   trgClasses[40] = trigger.Contains("CCUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0SH1
+  
+  trgClasses[41] = trigger.Contains("CMUP13-B");   // 0MUL & !0UBA & !0UBC 
+
 
   //end of list of trigger classes
 
@@ -406,6 +409,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   if(!dataZDC) {PostData(2, fHistList); return;}
 
   //energy in ZDC
+  /*/
   Double_t eZnc=0., eZpc=0., eZna=0., eZpa=0.;
   for(Int_t i=0; i<5; i++) {
     eZnc += dataZDC->GetZNCTowerEnergy()[i];
@@ -416,7 +420,12 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   fUPCEvent->SetZNCEnergy( eZnc );
   fUPCEvent->SetZPCEnergy( eZpc );
   fUPCEvent->SetZNAEnergy( eZna );
-  fUPCEvent->SetZPAEnergy( eZpa );
+  fUPCEvent->SetZPAEnergy( eZpa );/*/
+  
+  fUPCEvent->SetZNCEnergy( dataZDC->GetZNCTowerEnergy()[0] );
+  fUPCEvent->SetZPCEnergy( dataZDC->GetZPCTowerEnergy()[0] );
+  fUPCEvent->SetZNAEnergy( dataZDC->GetZNATowerEnergy()[0] );
+  fUPCEvent->SetZPAEnergy( dataZDC->GetZPATowerEnergy()[0] );
 
   //default primary vertex
   const AliVVertex *vtx = vEvent->GetPrimaryVertex();
@@ -461,10 +470,10 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
     vtx0->SetX(0.); vtx0->SetY(0.); vtx0->SetZ(0.);
   }
 
-  Double_t pxpypz[3];
+  // Double_t pxpypz[3];
   UChar_t maskMan;
-  Double_t xyzDca[2], cov[3];
-  Float_t b[2], covF[3];
+  // Double_t xyzDca[2], cov[3];
+  // Float_t b[2], covF[3];
   Int_t nmun=0, ncen=0;
   Bool_t pdca;
   // AOD tracks loop
@@ -580,6 +589,20 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
 
   fUPCEvent->SetZNCTime( dataZDCAOD->GetZNCTime() );
   fUPCEvent->SetZNATime( dataZDCAOD->GetZNATime() );
+  
+  Float_t znatdcm[4];
+  Float_t znctdcm[4];
+  Float_t zpatdcm[4];
+  Float_t zpctdcm[4];
+  for (Int_t i=0;i<4;i++){ 
+  	znatdcm[i] = dataZDCAOD->GetZNATDCm(i);
+  	znctdcm[i] = dataZDCAOD->GetZNCTDCm(i);
+	zpatdcm[i] = dataZDCAOD->GetZPATDCm(i);
+  	zpctdcm[i] = dataZDCAOD->GetZPCTDCm(i);
+	}
+  fUPCEvent->SetZNTDCm(znatdcm,znctdcm,zpatdcm,zpctdcm);
+  fUPCEvent->SetIR1Map(aodEvent->GetHeader()->GetIRInt1InteractionMap());
+  fUPCEvent->SetIR2Map(aodEvent->GetHeader()->GetIRInt2InteractionMap());
 
   //SPD primary vertex in AOD
   AliAODVertex *vtx = aodEvent->GetPrimaryVertexSPD();
@@ -611,15 +634,18 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
     if(!aodmc) continue;
 
-    //if(aodmc->GetMother() >= 0) continue;
+    if(aodmc->GetMother() >= 0) continue;
 
     TParticle *part = fUPCEvent->AddMCParticle();
     part->SetMomentum(aodmc->Px(), aodmc->Py(), aodmc->Pz(), aodmc->E());
     part->SetProductionVertex(aodmc->Xv(), aodmc->Yv(), aodmc->Zv(), aodmc->T());
-    part->SetFirstMother(aodmc->GetMother());
-    part->SetLastDaughter(aodmc->GetNDaughters());
     part->SetPdgCode(aodmc->GetPdgCode());
+    part->SetStatusCode(aodmc->GetStatus());
     part->SetUniqueID(imc);
+    part->SetFirstMother(aodmc->GetMother());
+    part->SetFirstDaughter(aodmc->GetFirstDaughter());
+    part->SetLastDaughter(aodmc->GetLastDaughter());
+ 
   }//loop over mc particles
 
 }//RunAODMC
@@ -651,13 +677,13 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   }
 
   // ESD central tracks
-  Double_t pxpypz[3];
-  Float_t b[2]; Float_t cov[3];
-  UChar_t maskMan;
-  UInt_t filterMap;
+  // Double_t pxpypz[3];
+  // Float_t b[2]; Float_t cov[3];
+  // UChar_t maskMan;
+  // UInt_t filterMap;
   Int_t nmun=0, ncen=0;
 
-  //ESD central tracks loop
+  /*/ESD central tracks loop
   for(Int_t itr=0; itr<esdEvent->GetNumberOfTracks(); itr++) {
     AliESDtrack *eTrack = esdEvent->GetTrack(itr);
     if( !eTrack ) continue;
@@ -748,6 +774,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
 
     ncen++;
   } //ESD central tracks loop
+  /*/
 
   // ESD muon tracks
   //muon tracks loop
@@ -778,7 +805,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   } //muon tracks loop
 
   //selection for at least one muon or central track
-  //if( nmun + ncen < 1 ) return kFALSE;
+  if( nmun + ncen < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;

@@ -88,6 +88,8 @@ AliAnalysisTaskSE(name),
   fhTPCVertexZ(0),
   fhTrackRefs(0),
   fTreeBeamSpot(0),
+  fTreeDiamond(0),
+  fStoredRuns(0),
   fhTriggeredTrklets(0),
   fhSPD3DTrklets(0),
   fhSPDZTrklets(0),
@@ -117,6 +119,8 @@ AliAnalysisTaskSE(name),
 
   // Define input and output slots here
   // Output slot #0 writes into a TList container
+  fStoredRuns=new TBits(999999);
+  fStoredRuns->ResetAllBits();
   DefineOutput(1, TList::Class());  //My private output
 }
 //________________________________________________________________________
@@ -131,6 +135,7 @@ AliAnalysisTaskVertexESD::~AliAnalysisTaskVertexESD()
     delete fOutput;
     fOutput = 0;
   }
+  delete fStoredRuns;
 }
 
 
@@ -207,6 +212,17 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fTreeBeamSpot->Branch("zTRKnc", &zTRKnc, "zTRKnc/F");
   fTreeBeamSpot->Branch("ntrksTRKnc", &ntrksTRKnc, "ntrksTRKnc/s");
   fOutput->Add(fTreeBeamSpot);
+
+  Float_t xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam;
+  fTreeDiamond = new TTree("fTreeDiamond", "DiamondTree");
+  fTreeDiamond->Branch("run", &run, "run/i");
+  fTreeDiamond->Branch("xdiam",&xdiam,"xdiam/F");
+  fTreeDiamond->Branch("ydiam",&xdiam,"ydiam/F");
+  fTreeDiamond->Branch("zdiam",&xdiam,"zdiam/F");
+  fTreeDiamond->Branch("sigxdiam",&xdiam,"sigxdiam/F");
+  fTreeDiamond->Branch("sigydiam",&xdiam,"sigydiam/F");
+  fTreeDiamond->Branch("sigzdiam",&xdiam,"sigzdiam/F");
+  fOutput->Add(fTreeDiamond);
 
   Int_t nbinTrklets=29;
   Float_t lowTrklets[30]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,7.5,10.5,25.5,50.5,75.5,100.5,150.5,200.5,300.5,400.5,500.5,600.5,800.5,1000.5,1500.5,2000.5,2500.5,3000.5,4000.5,5000.5,6000.5,8000.5,10000.5};
@@ -288,13 +304,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event");
       return;
     }
-    
-    AliStack* stack = mcEvent->Stack();
-    if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
-      return;
-    }
-    
+        
     AliHeader* header = mcEvent->Header();
     if (!header) {
       AliDebug(AliLog::kError, "Header not available");
@@ -303,11 +313,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     AliGenEventHeader* genHeader = header->GenEventHeader();
     genHeader->PrimaryVertex(mcVertex);
 
-    Int_t ngenpart = (Int_t)stack->GetNtrack();
+    Int_t ngenpart = (Int_t)mcEvent->GetNumberOfTracks();
     //printf("# generated particles = %d\n",ngenpart);
     dNchdy=0;
     for(Int_t ip=0; ip<ngenpart; ip++) {
-      TParticle* part = (TParticle*)stack->Particle(ip);
+      TParticle* part = (TParticle*)mcEvent->Particle(ip);
       // keep only electorns, muons, pions, kaons and protons
       Int_t apdg = TMath::Abs(part->GetPdgCode());
       if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;      
@@ -383,6 +393,14 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   fTreeBeamSpot->SetBranchAddress("zTRKnc", &zTRKnc);
   fTreeBeamSpot->SetBranchAddress("ntrksTRKnc", &ntrksTRKnc);
 
+  Float_t xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam;
+  fTreeDiamond->SetBranchAddress("run", &run);
+  fTreeDiamond->SetBranchAddress("xdiam",&xdiam);
+  fTreeDiamond->SetBranchAddress("ydiam",&ydiam);
+  fTreeDiamond->SetBranchAddress("zdiam",&zdiam);
+  fTreeDiamond->SetBranchAddress("sigxdiam",&sigxdiam);
+  fTreeDiamond->SetBranchAddress("sigydiam",&sigydiam);
+  fTreeDiamond->SetBranchAddress("sigzdiam",&sigzdiam);
 
   Double_t tstamp = esdE->GetTimeStamp();
   Float_t cetTime =(tstamp-1262304000.)+7200.;
@@ -572,7 +590,13 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   xnt[index++]=(Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondY()));
   xnt[index++]=(Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondZ()));
   
-  
+  xdiam = (Float_t)esdE->GetDiamondX();
+  ydiam = (Float_t)esdE->GetDiamondY();
+  zdiam = (Float_t)esdE->GetDiamondZ();
+  sigxdiam = (Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondX()));
+  sigydiam = (Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondY()));
+  sigzdiam = (Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondZ()));
+
   xnt[index++]=mcVertex[0];
   xnt[index++]=mcVertex[1];
   xnt[index++]=mcVertex[2];
@@ -725,6 +749,15 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   // if(indexTree>isizeTree) printf("AliAnalysisTaskVertexESD: ERROR, indexTree!=isizeTree\n");
   // only every second event (to reduce output size)
   if(fFillTreeBeamSpot && (nInFile%2 == 0)) fTreeBeamSpot->Fill();
+
+  if(fTreeDiamond->GetEntries()==0){
+    // fills the diamond tree at the first event
+    fTreeDiamond->Fill();
+    fStoredRuns->SetBitNumber(run);
+  }else{
+    // check if in the diamond tree the current run is already stored
+    if(fStoredRuns->TestBitNumber(run)==kFALSE) fTreeDiamond->Fill();
+  }
 
   
   // Post the data already here

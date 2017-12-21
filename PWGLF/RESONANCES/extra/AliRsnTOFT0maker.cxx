@@ -281,7 +281,7 @@ Double_t AliRsnTOFT0maker::GetT0Fill(Int_t nrun) const
 }
 
 //____________________________________________________________________________
-void  AliRsnTOFT0maker::LoadChannelMap(char *filename)
+void  AliRsnTOFT0maker::LoadChannelMap(const char *filename)
 {
    // Load the histo with the channel off map
    TFile *f = new TFile(filename);

@@ -1,6 +1,6 @@
 // $Id$
 //
-// Task to compute the trigger contamination by exotics.
+//task for EMCAL cluster shower shape investigations
 //
 // Authors: M.Cosentino
 
@@ -17,6 +17,8 @@
 #include "AliESDUtils.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliKFParticle.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -40,6 +42,7 @@ ClassImp(AliAnalysisTaskShoShaTests)
 AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() : 
   AliAnalysisTaskSE(), 
   fCaloClusters(0),
+  fTracks(0),
   fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
@@ -55,6 +58,7 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fESD(0),
   fMCEvent(0),
   fStack(0),
+  fPIDResponse(0),
   fOutputList(0),
   fPvPos(0x0),
   fEvtSel(0),
@@ -81,7 +85,15 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fM02EtPi0MassClClTruNeu(0),
   fM02EtTM(0),
   fM02EtExot(0),
-  fM02EtExotTM(0)
+  fM02EtExotTM(0),
+  fElecNSigmaVsP(0),
+  fPionNSigmaVsP(0),
+  fKaonNSigmaVsP(0),
+  fProtNSigmaVsP(0),
+  fM02EtPion(0),
+  fM02EtKaon(0),
+  fM02EtProt(0),
+  fM02EtElec(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -91,6 +103,7 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
 AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) : 
   AliAnalysisTaskSE(name), 
   fCaloClusters(0),
+  fTracks(0),
   fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
@@ -106,6 +119,7 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fESD(0),
   fMCEvent(0),
   fStack(0),
+  fPIDResponse(0),
   fOutputList(0),
   fPvPos(0x0),
   fEvtSel(0),
@@ -132,7 +146,15 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fM02EtPi0MassClClTruNeu(0),
   fM02EtTM(0),
   fM02EtExot(0),
-  fM02EtExotTM(0)
+  fM02EtExotTM(0),
+  fElecNSigmaVsP(0),
+  fPionNSigmaVsP(0),
+  fKaonNSigmaVsP(0),
+  fProtNSigmaVsP(0),
+  fM02EtPion(0),
+  fM02EtKaon(0),
+  fM02EtProt(0),
+  fM02EtElec(0)
 {
   // Constructor
 
@@ -194,7 +216,7 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
   fCellEnergy = new TH1F("hCellE","cell energy spectrum;E_{cell} (GeV);entries",200,0,20);
   fOutputList->Add(fCellEnergy);
 
-  fInvMassEMCNN = new TH1F("hInvMassEMCNN","inv mass of neutral EMC clusters pairs;m_{cc};n-entries",200,0,1);
+  fInvMassEMCNN = new TH2F("hInvMassEMCNN","inv mass of neutral EMC clusters pairs;m_{cc};n-entries",400,0,200,200,0,1);
   fOutputList->Add(fInvMassEMCNN);
   
   fM02Et = new TH2F("hM02Et","#lambda_{0}^{2} vs. E_{T} for trigger clusters ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
@@ -232,6 +254,30 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
 
   fM02EtExotTM = new TH2F("hM02EtExotTM","#lambda_{0}^{2} vs. E_{T} for trigger clusters(TM+Exotic) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02EtExotTM);
+
+  fElecNSigmaVsP = new TH2F("hElecNSigmaVsP","n-#sigma electron vs momentum;track P (GeV/c);n-#sigma (electron)",200,0,20,200,-10,10);
+  fOutputList->Add(fElecNSigmaVsP);
+
+  fPionNSigmaVsP = new TH2F("hPionNSigmaVsP","n-#sigma pion vs momentum;track P (GeV/c);n-#sigma (electron)",200,0,20,200,-10,10);
+  fOutputList->Add(fPionNSigmaVsP);
+
+  fKaonNSigmaVsP = new TH2F("hKaonNSigmaVsP","n-#sigma kaon vs momentum;track P (GeV/c);n-#sigma (electron)",200,0,20,200,-10,10);
+  fOutputList->Add(fKaonNSigmaVsP);
+
+  fProtNSigmaVsP = new TH2F("hProtNSigmaVsP","n-#sigma proton vs momentum;track P (GeV/c);n-#sigma (electron)",200,0,20,200,-10,10);
+  fOutputList->Add(fProtNSigmaVsP);
+  
+  fM02EtPion  = new TH2F("hM02EtPion","#lambda_{0}^{2} vs. E_{T} for #pi^#pm clusters (n-#sigma based) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPion);
+
+  fM02EtKaon  = new TH2F("hM02EtKaon","#lambda_{0}^{2} vs. E_{T} for kaon clusters(n-#sigma based) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtKaon);
+
+  fM02EtProt  = new TH2F("hM02EtProt","#lambda_{0}^{2} vs. E_{T} for proton clusters(n-#sigma based) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtProt);
+
+  fM02EtElec  = new TH2F("hM02EtElec","#lambda_{0}^{2} vs. E_{T} for electron clusters(n-#sigma based) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtElec);
   
   PostData(1, fOutputList);
 }
@@ -240,6 +286,12 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
 void AliAnalysisTaskShoShaTests::UserExec(Option_t *) 
 {
   // User exec. Called once per event.
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr == NULL) return;
+
+  AliESDInputHandler *esdHandler = (AliESDInputHandler*)mgr->GetInputEventHandler();
+  if (esdHandler == NULL) return;
+  fPIDResponse = (AliPIDResponse*)esdHandler->GetPIDResponse();
 
   Bool_t isSelected = 0;
   /*if(fPeriod.Contains("11a"))
@@ -279,6 +331,8 @@ void AliAnalysisTaskShoShaTests::UserExec(Option_t *)
     Double_t e = fEMCalCells->GetCellAmplitude(TMath::Abs(fEMCalCells->GetAmplitude(i)));
     fCellEnergy->Fill(e);
   }
+
+  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   fMCEvent = MCEvent(); 
   if(fMCEvent){
     fStack = (AliStack*)fMCEvent->Stack(); 
@@ -336,6 +390,10 @@ void AliAnalysisTaskShoShaTests::FillClusHists()
       isTM=kTRUE;
       fClusEtTM->Fill(Et1);
       fM02EtTM->Fill(Et1, c1->GetM02());
+      if(c1->GetNTracksMatched()<2){
+	//TArrayI *fTracksMatched = (TArrayI*)c1->GetTracksMatched();
+	FillChargedClustersShoSha(c1->GetTrackMatchedIndex(0), c1, Et1);
+      }
       if(isEx){
 	fClusEtExoticTM->Fill(Et1);
 	fM02EtExotTM->Fill(Et1,c1->GetM02());
@@ -466,7 +524,7 @@ Double_t AliAnalysisTaskShoShaTests::NeutClusPairInvMass(const AliVCluster *cl1,
     lvm = lv1 + lv2;
     mass = lvm.M();
     //printf("the pair mass is %1.2f ++++++++++++++++\n",mass);
-    fInvMassEMCNN->Fill(lvm.M());
+    fInvMassEMCNN->Fill(lvm.Pt(),lvm.M());
     if(mass>fLowPi0MCut && mass<fHighPi0MCut){
       fM02EtPi0MassClCl->Fill(Et1,cl1->GetM02());
       fM02EtPi0MassClCl->Fill(Et2,cl2->GetM02());  
@@ -521,6 +579,35 @@ Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
     nbacksteps++;
   }
   return fpdg;
+}
+//________________________________________________________________________
+void AliAnalysisTaskShoShaTests::FillChargedClustersShoSha(Int_t trackLabel, AliESDCaloCluster *c, Double_t Et)
+{
+  if(!fTracks)
+    return;
+  AliESDtrack *track = static_cast<AliESDtrack*>(fTracks->At(trackLabel));
+  if(!track)
+    return;
+  if(!fPIDResponse){
+    return;
+  }
+  Float_t nselec=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron); 
+  Float_t nspion=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion); 
+  Float_t nskaon=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon); 
+  Float_t nsprot=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton); 
+  fElecNSigmaVsP->Fill(track->P(),nselec);
+  fPionNSigmaVsP->Fill(track->P(),nspion);
+  fKaonNSigmaVsP->Fill(track->P(),nskaon);
+  fProtNSigmaVsP->Fill(track->P(),nsprot);
+  if(TMath::Abs(nselec)>3 && TMath::Abs(nspion)<2 && TMath::Abs(nskaon)>3 && TMath::Abs(nsprot)>3)
+    fM02EtPion->Fill(Et,c->GetM02());
+  if(TMath::Abs(nselec)>3 && TMath::Abs(nspion)>3 && TMath::Abs(nskaon)<2 && TMath::Abs(nsprot)>3)
+    fM02EtKaon->Fill(Et,c->GetM02());
+  if(TMath::Abs(nselec)>3 && TMath::Abs(nspion)>3 && TMath::Abs(nskaon)>3 && TMath::Abs(nsprot)<2)
+    fM02EtProt->Fill(Et,c->GetM02());
+  if(TMath::Abs(nselec)<2 && TMath::Abs(nspion)>3 && TMath::Abs(nskaon)>3 && TMath::Abs(nsprot)>3)
+    fM02EtElec->Fill(Et,c->GetM02());
+  return;
 }
 //________________________________________________________________________
 void AliAnalysisTaskShoShaTests::Terminate(Option_t *) 

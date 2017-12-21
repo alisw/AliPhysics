@@ -52,9 +52,9 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fDoFMD(kFALSE),
 fMC(kFALSE),
 fPileupCutsEnabled(kFALSE),
-fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
 fHistFiredBitsSPD(0),
@@ -70,15 +70,6 @@ fHistV0C3vs012All(0),
 fHistV0C3vs012Cln(0),
 fHistSPDVtxPileupAll(0),
 fHistSPDVtxPileupCln(0),
-fHistV0MOnAll(0),
-fHistV0MOnAcc(0),
-fHistV0MOnVHM(0),
-fHistV0MOfAll(0),
-fHistV0MOfAcc(0),
-fHistOFOAll(0),
-fHistOFOAcc(0),
-fHistTKLAll(0),
-fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
 fHistVIRCln(0),
@@ -90,6 +81,15 @@ fHistBGAflagsAll(0),
 fHistBGAflagsAcc(0),
 fHistBGCflagsAll(0),
 fHistBGCflagsAcc(0),
+fHistV0MOnAll(0),
+fHistV0MOnAcc(0),
+fHistV0MOnVHM(0),
+fHistV0MOfAll(0),
+fHistV0MOfAcc(0),
+fHistOFOAll(0),
+fHistOFOAcc(0),
+fHistTKLAll(0),
+fHistTKLAcc(0),
 fHistAD(0),
 fHistADAAll(0),
 fHistADAAcc(0),
@@ -99,9 +99,9 @@ fHistV0AAll(0),
 fHistV0AAcc(0),
 fHistV0CAll(0),
 fHistV0CAcc(0),
+fHistZDC(0),
 fHistTimeZNA(0),
 fHistTimeZNC(0),
-fHistZDC(0),
 fHistTDCZDC(0),
 fHistTimeZNSumVsDif(0),
 fHistTimeCorrZDC(0),
@@ -190,7 +190,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat            = new TH1F("fHistStat","Accepted events;;",65536,-0.5,65535.5);
+  fHistStat            = new TH1F("fHistStat","Accepted events;;",262144,-0.5,262143.5);
   fHistFiredBitsSPD    = new TH1F("fHistFiredBitsSPD","SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTklAll  = new TH2F("fHistSPDClsVsTklAll",                  "All events;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
   fHistSPDClsVsTklCln  = new TH2F("fHistSPDClsVsTklCln","Events cleaned by other cuts;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
@@ -1504,8 +1504,10 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   fPileupCutsEnabled = kTRUE;
 
   SPDFiredChips(event,1,kTRUE,0);
-  Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
-  Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
+  ADTrigger(event, kASide, kFALSE, 1);
+  ADTrigger(event, kCSide, kFALSE, 1);
+  V0MTrigger(event,kTRUE,1);
+  TKLTrigger(event,1);
   Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, 1);
   Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, 1);
   Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event,1);
@@ -1516,11 +1518,11 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,1);
   Bool_t isV0Casym         = IsV0Casym(event,1);
   Bool_t isVHMTrigger      = VHMTrigger(event,1);
-  Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
   Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
-  Bool_t isTKLTrigger      = TKLTrigger(event,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
+  Bool_t isZNATimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kASide);
+  Bool_t isZNCTimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kCSide);
   Bool_t isV0A             = decisionV0A==kV0BB;
   Bool_t isV0C             = decisionV0C==kV0BB;
   
@@ -1542,6 +1544,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   if (isV0MOfTrigger)     accept |= 1 <<13;
   if (isSH1Trigger)       accept |= 1 <<14;
   if (isZDCTimeTrigger)   accept |= 1 <<15;
+  if (!isZNATimeBG)       accept |= 1 <<16;
+  if (!isZNCTimeBG)       accept |= 1 <<17;
   if (accept) fHistStat->Fill(accept);
   
   Bool_t acceptDefault = isV0A & isV0C;

@@ -398,6 +398,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
+  fEvInfo->MakeSphericity(fTracks);
   // fill event QA
   H = (THnSparse*)fHistosQA->At(kEvInfo);
   val[0] = fEvInfo->GetVertexZ();
@@ -499,6 +500,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
+  fMCevInfo->MakeSphericity(fMCtracks);
   // fill event QA
   H = (THnSparse*)fHistosQA->At(kMCevInfo);
   val[0] = 0.;

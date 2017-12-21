@@ -96,7 +96,7 @@ public:
   bool PassEventPlane(const AliFemtoEvent* event) const;
   bool PassTrigger(const AliFemtoEvent* event) const;
 
-  AliFemtoEventCutCentrality* Clone() const;
+  AliFemtoEventCut* Clone() const;
 
   /// Return the centrality of the event based on whatever algorithm is
   /// selected by the CentralityType member.
@@ -189,7 +189,7 @@ inline void AliFemtoEventCutCentrality::SetTriggerSelection(int trig)
   fSelectTrigger = trig;
 }
 
-inline AliFemtoEventCutCentrality* AliFemtoEventCutCentrality::Clone() const
+inline AliFemtoEventCut* AliFemtoEventCutCentrality::Clone() const
 {
   return new AliFemtoEventCutCentrality(*this);
 }

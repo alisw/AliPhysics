@@ -1,13 +1,16 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJHSInterplay(TString taskName, Bool_t ismc, Bool_t iskinematiconly, UInt_t triggSel, TString cardName, TString cardSetting){
+AliAnalysisTask *AddTaskJHSInterplay(TString taskName, Bool_t ismc, Bool_t iskinematiconly, UInt_t triggSel, TString cardName, TString cardSetting,TString suffix = ""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
+    	TString combinedName = taskName;
+        if(suffix.Length() > 0)
+                combinedName += "_"+suffix;
 
-	cout<<"### DEGUG Input is "<< taskName << "\t"<< cardName <<"\t"<< cardSetting <<"\t"<<"#########"<<endl;
+	cout<<"### DEGUG Input is "<< combinedName << "\t"<< cardName <<"\t"<< cardSetting <<"\t"<<"#########"<<endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 	//==== JCORRAN Efficiency TASK
-	AliJHSInterplayTask *jhstask = new AliJHSInterplayTask(taskName.Data());
+	AliJHSInterplayTask *jhstask = new AliJHSInterplayTask(combinedName.Data());
 	jhstask->SetDebugLevel(0);
 	jhstask->SetDebugMode(0);
 	jhstask->SetIsMC(ismc);

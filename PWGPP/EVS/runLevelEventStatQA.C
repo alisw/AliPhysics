@@ -1,8 +1,4 @@
 #ifndef __CINT__
-#include "TTree.h"
-#include "TFile.h"
-#include "TMath.h"
-#include "TPad.h"
 #endif
 #include "triggerInfo.C"
 
@@ -50,7 +46,8 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504, TString ocdbStorage = "raw://"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -69,6 +66,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   Double_t run_duration    = 0;
   Int_t nBCsPerOrbit       = 0;
   Double_t refCounts       = 0;
+  Double_t refTmaskCounts  = 0;
   Double_t mu              = 0;
   Double_t lumi_seen       = 0;
   Double_t interactionRate = 0;
@@ -80,6 +78,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   ULong64_t class_l1a[NMAXCLASSES]         = {0};
   ULong64_t class_l2b[NMAXCLASSES]         = {0};
   ULong64_t class_l2a[NMAXCLASSES]         = {0};
+  ULong64_t class_duration[NMAXCLASSES]    = {0};
   Double_t  class_lifetime[NMAXCLASSES]    = {0};
   Double_t  class_lumi[NMAXCLASSES]        = {0};
   Double_t  class_ds[NMAXCLASSES]          = {0};
@@ -93,6 +92,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   ULong64_t alias_acc_step5[NBITS]         = {0};
   ULong64_t alias_acc_step6[NBITS]         = {0};
   ULong64_t alias_acc_step7[NBITS]         = {0};
+  ULong64_t alias_acc_step8[NBITS]         = {0};
+  ULong64_t alias_acc_step9[NBITS]         = {0};
   Double_t alias_l0b_rate[NBITS]           = {0};
   Double_t alias_lifetime[NBITS]           = {0};
   Double_t alias_lumi_recorded[NBITS]      = {0};
@@ -151,6 +152,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("class_l1a",&class_l1a,Form("class_l1a[%i]/l",NMAXCLASSES));
   t->Branch("class_l2b",&class_l2b,Form("class_l2b[%i]/l",NMAXCLASSES));
   t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
+  t->Branch("class_duration",&class_duration,Form("class_duration[%i]/l",NMAXCLASSES));
   t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
   t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
   t->Branch("class_ds",&class_ds,Form("class_ds[%i]/D",NMAXCLASSES));
@@ -164,7 +166,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("alias_acc_step5",&alias_acc_step5,Form("alias_acc_step5[%i]/l",NBITS));
   t->Branch("alias_acc_step6",&alias_acc_step6,Form("alias_acc_step6[%i]/l",NBITS));
   t->Branch("alias_acc_step7",&alias_acc_step7,Form("alias_acc_step7[%i]/l",NBITS));
-
+  t->Branch("alias_acc_step8",&alias_acc_step6,Form("alias_acc_step8[%i]/l",NBITS));
+  t->Branch("alias_acc_step9",&alias_acc_step7,Form("alias_acc_step9[%i]/l",NBITS));
   t->Branch("alias_l0b_rate",&alias_lifetime,Form("alias_l0b_rate[%i]/D",NBITS));
   t->Branch("alias_lifetime",&alias_lifetime,Form("alias_lifetime[%i]/D",NBITS));
   t->Branch("alias_lumi_recorded",&alias_lumi_recorded,Form("alias_lumi_recorded[%i]/D",NBITS));
@@ -283,8 +286,13 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=265304 && run<=265586) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
   else if (run>=265587 && run<=267131) { refSigma=1715.; refEff = 0.82; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // T0 efficiency estimate from MC, refSigma assuming cs(INEL) = 2092
   else if (run>=267132 && run<=267166) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
-  else if (run>=267167               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
-
+  else if (run>=267167 && run<=275923) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=275924 && run<=276096) { refSigma= 64.0; refEff = 0.85; refClass = "CINT7-B-NOPF-CENTNOTRD"; } // T0 is not operational, using V0AND
+  else if (run>=267167 && run<=280140) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=280141 && run<=280235) { refSigma=4000.; refEff = 0.74; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // INEL=5.4b*C0V0M/CINT7ZAC
+  else if (run>=280236 && run<=282007) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=282008 && run<=282441) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp@5.02TeV. Taking previous estimates
+  else if (run>=282442               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
   
   Double_t orbitRate = 11245.;
   TString partition;
@@ -292,7 +300,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   TString lhcPeriod;
   TString activeDetectorsString;
   //Int_t run, TString ocdbStorage, TString &partition, TString &activeDetectorsString, Double_t& run_duration, 
-  classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
+  classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a,class_duration);
   activeDetectors.SetString(activeDetectorsString.Data());
   objPartition.SetString(partition.Data());
   Int_t status = triggerInfo(run,ocdbStorage,lhcPeriod,lhcState,fill,nBCsPerOrbit,timeStart,timeEnd);
@@ -355,7 +363,43 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     }
   }
 
-  // special treatment for DG
+  // special treatment for INT11
+  if (run>=252235 && run<=255011 && run!=253434 && run!=253437) {
+    AliTriggerClass* clINT11 = (AliTriggerClass*) classes.FindObject("CINT11-B-NOPF-CENTNOTRD");
+    AliTriggerClass* cl0TVX  = (AliTriggerClass*) classes.FindObject("C0TVX-B-NOPF-CENTNOTRD");
+    if (clINT11 && cl0TVX) {
+      Int_t iCINT11 = classes.IndexOf(clINT11);
+      Int_t iC0TVX  = classes.IndexOf(cl0TVX);
+      class_lifetime[iCINT11] = class_lifetime[iC0TVX];
+      class_lumi[iCINT11]     = class_lumi[iC0TVX];
+    }
+  }
+  
+  // special treatment for CUP2
+  if (run>=255276 && run<=256418) {
+    Int_t iCUP2=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCVHMV0M=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP2-B-SPD1-CENTNOTRD")   ) iCUP2=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CVHMV0M-B-NOPF-CENTNOTRD") ) iCVHMV0M=i;
+    }
+    Int_t iREF = iCVHMV0M>=0 ? iCVHMV0M : iCTRUE_NOPF;
+    if (iCUP2>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
+      class_lifetime[iCUP2] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
+      class_lifetime[iCUP2]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP2]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP2]*=class_ds[iCUP2];
+      class_lumi[iCUP2] = lumi_seen*class_lifetime[iCUP2];
+    }
+    if (iCUP2>=0) printf("lumi=%f\n",class_lumi[iCUP2]);
+  }
+  
+  // special treatment for CUP13
   if (run>=256504) {
     Int_t iCUP13=-1;
     Int_t iCTRUE_NOPF=-1;
@@ -373,16 +417,40 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
     if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
       class_lifetime[iCUP13] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
-      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1]>0 ? class_l2a[iCTRUE_SPD1] : 1;
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
       class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
       class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
     }
-    if (iCUP13>=0) printf("lumi=%f\n",class_lumi[iCUP13]);
+  }
+  
+  // special treatment for CUP25
+  if (run>=272151) {
+    Int_t iCUP25=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCEMC7=-1;
+    Int_t iCPHI7=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP25-B-SPD1-CENTNOTRD")  ) iCUP25=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CEMC7EG1-B-NOPF-CENTNOTRD")) iCEMC7=i;
+      if (TString(cl->GetName()).EqualTo("CPHI7-B-NOPF-CENTNOTRD"))    iCPHI7=i;
+    }
+    Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
+    if (iCUP25>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
+      class_lifetime[iCUP25] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
+      class_lifetime[iCUP25]*=class_l2a[iCTRUE_SPD1]>0 ? class_l2a[iCTRUE_SPD1] : 1;
+      class_lifetime[iCUP25]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP25]*=class_ds[iCUP25];
+      class_lumi[iCUP25] = lumi_seen*class_lifetime[iCUP25];
+    }
   }
   
   // special treatment for UPC central barrel in p-Pb
-  if (run>=265589) {
+  if (run>=265589 && run<=267166) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
       if (!cl) continue;
@@ -399,6 +467,23 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     }
   }
 
+  // special treatment for T-Mask
+  if (run>=276135) {
+    AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
+    if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
+    if (refTmaskClassObject) {
+      Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
+      TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+      refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
+      for (Int_t i=0;i<classes.GetEntriesFast();i++){
+        AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+        if (!cl) continue;
+        if (TString(cl->GetName()).Contains("-T-")){
+          class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+        }
+      }
+    }
+  }
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
@@ -538,6 +623,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     Int_t ibit = TMath::Nint(TMath::Log2(mask));
 
     // FIXME
+//    if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
 //    if (!bitNames[ibit].EqualTo("kINT7")) continue;
 
     if (ibit>=NBITS) continue;
@@ -545,21 +631,62 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+    if (hHistStat->GetNbinsX()!=19) {
+      // old stat histo without ZDC background monitoring
+      // setting ZDCBG step equal to V0AND and take other steps shifted by 1
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+    } else {
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    }
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
-    array = classList.Tokenize(",");
+
+    TObjArray* array = classList.Tokenize(",");
+    while (1) {
+      Int_t i=0;
+      for (i=0; i<array->GetEntries(); i++) {
+        TString str  = array->At(i)->GetName();
+        Int_t begin = str.Index("[");
+        Int_t end = str.Index("]");
+        if (begin<0 || end<0) continue;
+        TString before = str(0, begin);
+        TString after = str(end+1, str.Length());
+        TString tokens = str(begin+1, end-begin-1);
+        Int_t pos = 0;
+        Int_t l = tokens.Index("|", pos);
+        while (l >= 0) {
+          array->Add(new TObjString(before + tokens(pos,l-pos) + after));
+          pos = l + 1;
+          l   = tokens.Index("|", pos);
+        }
+        array->Add(new TObjString(before + tokens(pos, tokens.Length()) + after));
+        ((TObjString*) array->At(i))->SetString("");
+        i=-1;
+      }
+      break;
+    }
+    
     // if trigger bit corresponds to several active classes, just take the last one
     // example: kTRD
     // TODO think about more elegant solution
-    for (Int_t i=0;i<array->GetEntriesFast();i++){
+    for (Int_t i=0;i<array->GetEntries();i++){
       TString token = array->At(i)->GetName();
       AliTriggerClass* cl = (AliTriggerClass*) classes.FindObject(token.Data());
       if (!cl) continue;
@@ -1279,7 +1406,7 @@ Helper function to set a point and its yerror in one go
 */
 void setPointWithError(TGraphErrors *gr, Int_t idx, Float_t x, Float_t y, Float_t yerr) {
   gr->SetPoint(idx, x, y);
-  gr->SetPointError(idx, 0, yerr / 2.0); // not clear if this is the total error or the error in one direction...
+  gr->SetPointError(idx, 0, yerr);
 }
 
 /* 
@@ -1316,7 +1443,6 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
     cut_width_factor = 5;
   }
   else if (detector == "V0M") {
-    // Note that parameter 2 will later be fixed. prior to the fit
     slice_fit = TF1("slice_fit","[2]*exp(-([0]-x)/[1])", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
     min_entries_per_slice = 200;
     cut_width_factor = 7;
@@ -1324,32 +1450,25 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   else {
     return NULL;
   }
-  // Set default parameters and restrict the width to values > 0
-  slice_fit.SetParameters(1, 1, 1);
-  // Ensure that the width parameter > 0
-  slice_fit.SetParLimits(1, 0, 1e4);
-  TF1 fit_lin_mean = TF1("linear_fit_means","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+  slice_fit.SetParameters(1, 1, 1);  // Set default parameters
+  slice_fit.SetParLimits(1, 0, 1e4); // Ensure that the width parameter > 0
+  TF1 fit_lin_mean  = TF1("linear_fit_means" ,"pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
   TF1 fit_lin_width = TF1("linear_fit_widths","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
-  TGraphErrors widths = TGraphErrors();
-  TGraphErrors means = TGraphErrors();
+  TGraphErrors widths  = TGraphErrors();
+  TGraphErrors means   = TGraphErrors();
   TGraphErrors nevents = TGraphErrors();
   Int_t valid_fits = 0;
+
   // Loop through each slice along the offline axis.  Fit each slice
   // with the appropriate function and add this point to a graph which
   // is latter fitted with a linear regression
   for (Int_t ibin = 1; ibin <= h2d->GetNbinsX(); ibin++) {
     TH1* h_py = h2d->ProjectionY("slice", ibin, ibin+1);
-    if (h_py->Integral() < min_entries_per_slice) {
-      // It seems like ~100 events is about the thresholds where the fitting errors skyrocket
-      continue;
-    }
+    if (h_py->Integral() < min_entries_per_slice) continue;
     if (detector == "V0M") {
-      // Alice and Evgeny move to one lower bin for the upper edge! ie h_py.GetMaximumBin() - 1
-      up_bin = h_py->GetMaximumBin() - 1;
+      up_bin  = h_py->GetMaximumBin() - 1;
       low_bin = findBinNtimesLessThanMax(*h_py, 0.1, -1);
-      if (up_bin - low_bin < 5) {
-    continue;
-      }
+      if (up_bin - low_bin < 2) continue;
       up_edge = h_py->GetXaxis()->GetBinCenter(up_bin);
       low_edge = TMath::Min(0.85 * up_edge, h_py->GetXaxis()->GetBinCenter(h_py->GetMaximumBin() -3));
       // Fix parameter [2]
@@ -1360,36 +1479,27 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
     if (detector =="SPD") {
       up_bin = findBinNtimesLessThanMax(*h_py, 0, 1); // last filled bin
       low_edge = h_py->GetXaxis()->GetBinLowEdge(h_py->GetMaximumBin() - 1);
-      up_edge = h_py->GetXaxis()->GetBinUpEdge(up_bin);
+      up_edge  = h_py->GetXaxis()->GetBinUpEdge(up_bin);
       slice_fit.SetParameter(2, h_py->GetBinContent(h_py->GetMaximumBin()));
     }
-    // returns negative value in case of an error not connected with the minimization procedure
     Int_t fit_res = h_py->Fit(&slice_fit, "QRSLL", "", low_edge, up_edge);
-    if (fit_res != 0 || slice_fit.GetNDF() == 0) {
-      continue;
-    }
-    setPointWithError(&means, valid_fits,
-             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(0),
-             slice_fit.GetParError(0));
-    setPointWithError(&widths, valid_fits,
-             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(1),
-             slice_fit.GetParError(1));
+    if (fit_res != 0 || slice_fit.GetNDF() == 0) continue;
+    setPointWithError(&means,  valid_fits,h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(0), slice_fit.GetParError(0));
+    setPointWithError(&widths, valid_fits,h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(1), slice_fit.GetParError(1));
     nevents.SetPoint(valid_fits, h2d->GetXaxis()->GetBinCenter(ibin), h_py->Integral());
     valid_fits++;
   }
   // Quality assurance after each slice has been tried to fit
   // Require a minimum number of successful fits in order to perform a linear regression
-  // Technically, only 2 points are necessary, of cause.
-  if (valid_fits < 3) {
-    return NULL;
-  }
+  if (valid_fits < 3) return NULL;
+
   means.Fit(&fit_lin_mean, "QS");
   widths.Fit(&fit_lin_width, "QRS", "", 0, widths.GetXaxis()->GetXmax());
   Double_t *ret = new Double_t[4];
-  ret[0] = fit_lin_mean.GetParameter(0) - cut_width_factor * fit_lin_width.GetParameter(0);
-  ret[1] = fit_lin_mean.GetParError(0) + cut_width_factor*fit_lin_width.GetParError(0);
+  ret[0] = fit_lin_mean.GetParameter(0) - cut_width_factor*fit_lin_width.GetParameter(0);
+  ret[1] = fit_lin_mean.GetParError(0)  + cut_width_factor*fit_lin_width.GetParError(0);
   ret[2] = fit_lin_mean.GetParameter(1) - cut_width_factor*fit_lin_width.GetParameter(1);
-  ret[3] = fit_lin_mean.GetParError(1) + cut_width_factor*fit_lin_width.GetParError(1);
+  ret[3] = fit_lin_mean.GetParError(1)  + cut_width_factor*fit_lin_width.GetParError(1);
   return ret;
 }
 

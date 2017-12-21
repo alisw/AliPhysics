@@ -45,7 +45,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
@@ -211,6 +211,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(NULL),
    fCutString(NULL),
+   fCutStringRead(""),
    fUtils(NULL),
    fEtaShift(0.0),
    fDoEtaShift(kFALSE),
@@ -371,6 +372,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(ref.fGeneratorNames),
    fCutString(NULL),
+   fCutStringRead(""),
    fUtils(NULL),
    fEtaShift(ref.fEtaShift),
    fDoEtaShift(ref.fDoEtaShift),
@@ -765,7 +767,7 @@ Bool_t AliConversionCuts::InitPIDResponse(){
    return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent){
+Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent){
    // Process Event Selection
 
    Int_t cutindex=0;
@@ -859,10 +861,10 @@ Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMC
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma){
+Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma){
    // MonteCarlo Photon Selection
 
-   if(!fMCStack)return kFALSE;
+   if(!mcEvent)return kFALSE;
 
    if (particle->GetPdgCode() == 22){
 
@@ -874,11 +876,11 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
             return kFALSE;
       }
 
-      if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+      if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
          return kFALSE; // no photon as mothers!
       }
 
-      if(particle->GetMother(0) >= fMCStack->GetNprimary()){
+      if(particle->GetMother(0) >= mcEvent->GetNumberOfPrimaries()){
          return kFALSE; // the gamma has a mother, and it is not a primary particle
       }
 
@@ -890,7 +892,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
 
       if(particle->GetNDaughters() >= 2){
          for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
-            TParticle *tmpDaughter = fMCStack->Particle(daughterIndex);
+            TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
             if(tmpDaughter->GetUniqueID() == 5){
                if(tmpDaughter->GetPdgCode() == 11){
                   eNeg = tmpDaughter;
@@ -1823,6 +1825,8 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+   fCutStringRead = Form("%s",analysisCutSelection.Data());
+
    // Initialize Cuts from a given Cut string
    if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
       AliInfo("Weighting was enabled");
@@ -1834,13 +1838,15 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
       AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
       return kFALSE;
    }
-   if(!analysisCutSelection.IsDigit()){
-      AliError("Cut selection contains characters");
+   if(!analysisCutSelection.IsAlnum()){
+      AliError("Cut selection is not alphanumeric");
       return kFALSE;
    }
 
-   const char *cutSelection = analysisCutSelection.Data();
-#define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+   const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
    for(Int_t ii=0;ii<kNCuts;ii++){
       ASSIGNARRAY(ii);
    }
@@ -3590,7 +3596,7 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
    return -1;
 }
 //-------------------------------------------------------------
-Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEvent)
+Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *fMCEvent)
 {   // Centrality Selection
    if(!fIsHeavyIon)return kTRUE;
 
@@ -4037,11 +4043,7 @@ Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon) con
 ///________________________________________________________________________
 TString AliConversionCuts::GetCutNumber(){
    // returns TString with current cut number
-   TString a(kNCuts);
-   for(Int_t ii=0;ii<kNCuts;ii++){
-      a.Append(Form("%d",fCuts[ii]));
-   }
-   return a;
+   return fCutStringRead;
 }
 
 ///________________________________________________________________________
@@ -4120,18 +4122,17 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 	AliGenCocktailEventHeader *cHeader = 0x0;
 	AliAODMCHeader *cHeaderAOD = 0x0;
 	Bool_t headerFound = kFALSE;
-	AliStack *fMCStack = 0x0;
-	TClonesArray *fMCStackAOD = 0x0;
+    AliMCEvent *mcEvent = 0x0;
+    TClonesArray *mcEventAOD = 0x0;
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if (dynamic_cast<AliMCEvent*>(MCEvent)){
 			cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
 			if(cHeader) headerFound = kTRUE;
-			fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
 		}	
 	}
 	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
 		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-		fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        mcEventAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 		
 		
 		if(cHeaderAOD) headerFound = kTRUE;
@@ -4162,10 +4163,10 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 					TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
 					if(GeneratorName.CompareTo(GeneratorInList) == 0){
 						if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
-							if(fMCStack){
-								if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
+                            if(mcEvent){
+                                if (mcEvent->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
 									if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
-										if (gh->NProduced() > 10 && fMCStack->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
+                                        if (gh->NProduced() > 10 && mcEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
 // 											cout << "cond 1: "<< fnHeaders << endl;
 											fnHeaders++;
 											continue;
@@ -4178,12 +4179,12 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 									}	
 								}
 							}   
-							if ( fMCStackAOD){
-								AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
+                            if ( mcEventAOD){
+                                AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(mcEventAOD->At(firstindexA));
 								if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
 									if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 										if (gh->NProduced() > 10){
-											AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA+10));
+                                            AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(mcEventAOD->At(firstindexA+10));
 											if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
 // 												cout << "cond 1: " << fnHeaders << endl;
 												fnHeaders++;
@@ -4234,11 +4235,11 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 // 				cout << i << "\t" << GeneratorName.Data() << endl;
 				if(GeneratorName.CompareTo(GeneratorInList) == 0){
 					if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
-						if(fMCStack){
-							if (fMCStack->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
+                        if(mcEvent){
+                            if (mcEvent->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
 								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 // 									cout << "produced " << gh->NProduced() << " with box generator" << endl;
-									if (gh->NProduced() > 10 && fMCStack->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
+                                    if (gh->NProduced() > 10 && mcEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
 // 										cout << "one of them was a pi0 or eta" <<  endl;
 										fNotRejectedStart[number] = firstindex;
 										fNotRejectedEnd[number] = lastindex;
@@ -4256,12 +4257,12 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 								}	
 							}
 						}   
-						if ( fMCStackAOD){
-							AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
+                        if ( mcEventAOD){
+                            AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(mcEventAOD->At(firstindex));
 							if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
 								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 									if (gh->NProduced() > 10) {
-										AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex+10));
+                                        AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(mcEventAOD->At(firstindex+10));
 										if ( aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
 											fNotRejectedEnd[number] = lastindex;
 											fNotRejectedStart[number] = firstindex;
@@ -4303,7 +4304,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 
 		fnHeaders = 1;
 		fNotRejectedStart[0] = 0;
-		fNotRejectedEnd[0] = static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
+        fNotRejectedEnd[0] = mcEvent->GetNumberOfPrimaries()-1;
 		fGeneratorNames = new TString[1];
 		fGeneratorNames[0] = "NoCocktailGeneratorFound";
 
@@ -4320,7 +4321,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 }
 
 //_________________________________________________________________________
-Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
+Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent){
 
 	// Not Accepted == kFALSE == 0
 	//     Accepted ==  kTRUE == 1
@@ -4335,9 +4336,9 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 // 	}	
 	Int_t accepted = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-		if( index >= MCStack->GetNprimary()){ // Secondary Particle
-			if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
-			return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
+        if( index >= mcEvent->GetNumberOfPrimaries()){ // Secondary Particle
+            if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
+            return IsParticleFromBGEvent(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent);
 		}
 		for(Int_t i = 0;i<fnHeaders;i++){
 			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
@@ -4353,7 +4354,7 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 			if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
 			if(!aodMCParticle->IsPrimary()){
 				if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
-				return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
+                return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent);
 			}
 			index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
 			for(Int_t i = 0;i<fnHeaders;i++){
@@ -4403,7 +4404,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 }
 
 //_________________________________________________________________________
-Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
+Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent){
 	if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
 	period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
 
@@ -4443,9 +4444,9 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
 	Double_t mesonMass = 0;
 	Int_t PDGCode = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-		mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
-		mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
-		PDGCode = ((TParticle*)MCStack->Particle(index))->GetPdgCode();
+        mesonPt = ((TParticle*)mcEvent->Particle(index))->Pt();
+        mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
+        PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
 	}
 	else if(InputEvent->IsA()==AliAODEvent::Class()){
 		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));

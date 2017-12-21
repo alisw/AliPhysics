@@ -32,9 +32,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
   )
 
 # Sources - alphabetical order
@@ -49,6 +50,7 @@ set(SRCS
   AliAnalysisMuMuGlobal.cxx
   AliAnalysisMuMuMCGene.cxx
   AliAnalysisMuMuMinv.cxx
+  AliAnalysisMuMuFlow.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisMuMuSingle.cxx
   AliAnalysisMuMuTriggerResponse.cxx
@@ -57,51 +59,54 @@ set(SRCS
   AliAnalysisNonPrimaryVertices.cxx
   AliAnalysisTaskAOD2MuonAOD.cxx
   AliAnalysisTaskAOD2MuonAOD.cxx
-  AliAnalysisTaskCreateMixedDimuons.cxx 
-  AliAnalysisTaskDimuonCFContainerBuilder.cxx 
-  AliAnalysisTaskESDMuonFilter.cxx 
-  AliAnalysisTaskFlowSingleMu.cxx 
+  AliAnalysisTaskCreateMixedDimuons.cxx
+  AliAnalysisTaskDimuonCFContainerBuilder.cxx
+  AliAnalysisTaskESDMuonFilter.cxx
+  AliAnalysisTaskFlowSingleMu.cxx
   AliAnalysisTaskFromStandardToMuonAOD.cxx
   AliAnalysisTaskGenTuner.cxx
-  AliAnalysisTaskLinkToMC.cxx 
+  AliAnalysisTaskLinkToMC.cxx
   AliAnalysisTaskLUT.cxx
   AliAnalysisTaskMTRResponse.cxx
   AliAnalysisTaskMuMu.cxx
-  AliAnalysisTaskMuMu.cxx 
-  AliAnalysisTaskMuonAODCreation.cxx 
-  AliAnalysisTaskMuonAODfromGeneral.cxx 
-  AliAnalysisTaskMuonCollisionMultiplicity.cxx 
-  AliAnalysisTaskMuonDistributions.cxx 
-  AliAnalysisTaskMuonTreeBuilder.cxx 
+  AliAnalysisTaskMuMu.cxx
+  AliAnalysisTaskMuonAODCreation.cxx
+  AliAnalysisTaskMuonAODfromGeneral.cxx
+  AliAnalysisTaskMuonCollisionMultiplicity.cxx
+  AliAnalysisTaskMuonDistributions.cxx
+  AliAnalysisTaskMuonTreeBuilder.cxx
   AliAnalysisTaskNorm.cxx
   AliAnalysisTaskOnTheFlyAliAODDimuon.cxx
   AliAnalysisTaskSEMuonsHF.cxx
-  AliAnalysisTaskSingleMu.cxx 
+  AliAnalysisTaskSingleMu.cxx
   AliAnalysisTaskSingleMuESD.cxx
+  AliAnalysisTaskWeightMTRResponse.cxx
   AliAODEventInfo.cxx
   AliAODMuonReplicator.cxx
-  AliCFMuonResTask1.cxx 
-  AliCFMuonResUpsilon.cxx 
-  AliCFMuonSingleTask1.cxx 
-  AliDimuInfoStoreMC.cxx 
-  AliDimuInfoStoreRD.cxx 
-  AliESDMuonTrackCuts.cxx 
-  AliEventPoolMuon.cxx 
+  AliCFMuonResTask1.cxx
+  AliCFMuonResUpsilon.cxx
+  AliCFMuonSingleTask1.cxx
+  AliDimuInfoStoreMC.cxx
+  AliDimuInfoStoreRD.cxx
+  AliESDMuonTrackCuts.cxx
+  AliEventPoolMuon.cxx
   AliHistogramCollection.cxx
   AliMTRParameterizedResponse.cxx
   AliMuonAnalysisOutput.cxx
   AliMuonEventCuts.cxx
-  AliMuonInfoStoreMC.cxx 
-  AliMuonInfoStoreRD.cxx 
-  AliMuonPairCuts.cxx 
+  AliMuonInfoStoreMC.cxx
+  AliMuonInfoStoreRD.cxx
+  AliMuonPairCuts.cxx
   AliMuonsHFHeader.cxx
   AliMuonTrackCuts.cxx
   AliMuonTrackSmearing.cxx
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
   AliTaskMuonTrackSmearing.cxx
+  AliTaskMuonTrackSmearingQA.cxx
+  AliUtilityDimuonSource.cxx
   AliUtilityMuonAncestor.cxx
-  AliVAnalysisMuon.cxx 
+  AliVAnalysisMuon.cxx
   AliAnalysisTaskLMREventFilter.cxx
   AliLMREvent.cxx
   AliLMRMuon.cxx
@@ -120,7 +125,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice AOD CORRFW OADB STEERBase EventMixing)
+set(LIBDEPS ANALYSISalice AOD CORRFW OADB PWGPPevcharQn PWGPPevcharQnInterface STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -138,13 +143,10 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/muon FILES_MATCHING PATTERN "*.C")
-
-
-

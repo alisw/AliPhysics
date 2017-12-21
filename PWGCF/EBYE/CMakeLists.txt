@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY	
                     ${AliPhysics_SOURCE_DIR}/PWGCF/EBYE/LRC
+                    ${AliPhysics_SOURCE_DIR}/PWGPP
   )
 
 # Sources - alphabetical order
@@ -49,6 +50,9 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
+  BalanceFunctions/AliPidBFBase.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx

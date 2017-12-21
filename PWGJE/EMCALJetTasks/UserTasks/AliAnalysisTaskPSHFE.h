@@ -96,13 +96,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistEtaPhi_MB;//!
     TH2F            *fHistEtaPhiTag_MB;//!
     TH2F            *fHistEtaPhiTPCOnly_MB;//!
-    TH1F            *fHistDPhi300_500_MB[3];//!
-    TH1F            *fHistDPhi500_800_MB[3];//!
-    TH1F            *fHistDPhi800_1_MB[3];//!
+    TH1F            *fHistDPhi300_1_MB[3];//!
     TH1F            *fHistDPhi1_2_MB[3];//!
-    TH1F            *fHistDPhi2_3_MB[3];//!
-    TH1F            *fHistDPhi3_4_MB[3];//!
-    TH1F            *fHistDPhi4_MB[3];//!
+    TH1F            *fHistDPhi2_4_MB[3];//!
+    TH1F            *fHistDPhi4_8_MB[3];//!
     TH1F            *fHistDPhi28_MB;//!
     TH2F            *fHistDPhiDEta28_MB;//!
     TH1F            *fHistNevents_MB;//!
@@ -117,13 +114,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistDPhi18Spe_MB;//!
     
     //Mixed Event DPhi histos
-    TH1F            *fHistDPhiMix300_500_MB[3];//!
-    TH1F            *fHistDPhiMix500_800_MB[3];//!
-    TH1F            *fHistDPhiMix800_1_MB[3];//!
+    TH1F            *fHistDPhiMix300_1_MB[3];//!
     TH1F            *fHistDPhiMix1_2_MB[3];//!
-    TH1F            *fHistDPhiMix2_3_MB[3];//!
-    TH1F            *fHistDPhiMix3_4_MB[3];//!
-    TH1F            *fHistDPhiMix4_MB[3];//!
+    TH1F            *fHistDPhiMix2_4_MB[3];//!
+    TH1F            *fHistDPhiMix4_8_MB[3];//!
     TH1F            *fHistDPhiMix28_MB;//!
     TH2F            *fHistDPhiDEtaMix28_MB;//!
     
@@ -148,13 +142,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtSumEMC_EMC7;//!
     TH2F            *fHistEtaPhi_EMC7;//!
     TH2F            *fHistEtaPhiTag_EMC7;//!
-    TH1F            *fHistDPhi300_500_EMC7[3];//!
-    TH1F            *fHistDPhi500_800_EMC7[3];//!
-    TH1F            *fHistDPhi800_1_EMC7[3];//!
+    TH1F            *fHistDPhi300_1_EMC7[3];//!
     TH1F            *fHistDPhi1_2_EMC7[3];//!
-    TH1F            *fHistDPhi2_3_EMC7[3];//!
-    TH1F            *fHistDPhi3_4_EMC7[3];//!
-    TH1F            *fHistDPhi4_EMC7[3];//!
+    TH1F            *fHistDPhi2_4_EMC7[3];//!
+    TH1F            *fHistDPhi4_8_EMC7[3];//!
     TH1F            *fHistDPhi28_EMC7;//!
     TH2F            *fHistDPhiDEta28_EMC7;//!
     TH1F            *fHistNevents_EMC7;//!
@@ -169,13 +160,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistDPhi18Spe_EMC7;//!
     
     //Mixed Event DPhi histos
-    TH1F            *fHistDPhiMix300_500_EMC7[3];//!
-    TH1F            *fHistDPhiMix500_800_EMC7[3];//!
-    TH1F            *fHistDPhiMix800_1_EMC7[3];//!
+    TH1F            *fHistDPhiMix300_1_EMC7[3];//!
     TH1F            *fHistDPhiMix1_2_EMC7[3];//!
-    TH1F            *fHistDPhiMix2_3_EMC7[3];//!
-    TH1F            *fHistDPhiMix3_4_EMC7[3];//!
-    TH1F            *fHistDPhiMix4_EMC7[3];//!
+    TH1F            *fHistDPhiMix2_4_EMC7[3];//!
+    TH1F            *fHistDPhiMix4_8_EMC7[3];//!
     TH1F            *fHistDPhiMix28_EMC7;//!
     TH2F            *fHistDPhiDEtaMix28_EMC7;//!
     
@@ -199,13 +187,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtSumEMC_EMCEGA;//!
     TH2F            *fHistEtaPhi_EMCEGA;//!
     TH2F            *fHistEtaPhiTag_EMCEGA;//!
-    TH1F            *fHistDPhi300_500_EMCEGA[3];//!
-    TH1F            *fHistDPhi500_800_EMCEGA[3];//!
-    TH1F            *fHistDPhi800_1_EMCEGA[3];//!
+    TH1F            *fHistDPhi300_1_EMCEGA[3];//!
     TH1F            *fHistDPhi1_2_EMCEGA[3];//!
-    TH1F            *fHistDPhi2_3_EMCEGA[3];//!
-    TH1F            *fHistDPhi3_4_EMCEGA[3];//!
-    TH1F            *fHistDPhi4_EMCEGA[3];//!
+    TH1F            *fHistDPhi2_4_EMCEGA[3];//!
+    TH1F            *fHistDPhi4_8_EMCEGA[3];//!
     TH1F            *fHistDPhi28_EMCEGA;//!
     TH2F            *fHistDPhiDEta28_EMCEGA;//!
     TH1F            *fHistNevents_EMCEGA;//!
@@ -219,13 +204,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPhotoMismatch_EMCEGA;//!
     TH2F            *fHistDPhi18Spe_EMCEGA;//!
     //Mixed Event DPhi histos
-    TH1F            *fHistDPhiMix300_500_EMCEGA[3];//!
-    TH1F            *fHistDPhiMix500_800_EMCEGA[3];//!
-    TH1F            *fHistDPhiMix800_1_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix300_1_EMCEGA[3];//!
     TH1F            *fHistDPhiMix1_2_EMCEGA[3];//!
-    TH1F            *fHistDPhiMix2_3_EMCEGA[3];//!
-    TH1F            *fHistDPhiMix3_4_EMCEGA[3];//!
-    TH1F            *fHistDPhiMix4_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix2_4_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix4_8_EMCEGA[3];//!
     TH1F            *fHistDPhiMix28_EMCEGA;//!
     TH2F            *fHistDPhiDEtaMix28_EMCEGA;//!
     
@@ -251,13 +233,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtSumEMC_EMCJet;//!
     TH2F            *fHistEtaPhi_EMCJet;//!
     TH2F            *fHistEtaPhiTag_EMCJet;//!
-    TH1F            *fHistDPhi300_500_EMCJet[3];//!
-    TH1F            *fHistDPhi500_800_EMCJet[3];//!
-    TH1F            *fHistDPhi800_1_EMCJet[3];//!
+    TH1F            *fHistDPhi300_1_EMCJet[3];//!
     TH1F            *fHistDPhi1_2_EMCJet[3];//!
-    TH1F            *fHistDPhi2_3_EMCJet[3];//!
-    TH1F            *fHistDPhi3_4_EMCJet[3];//!
-    TH1F            *fHistDPhi4_EMCJet[3];//!
+    TH1F            *fHistDPhi2_4_EMCJet[3];//!
+    TH1F            *fHistDPhi4_8_EMCJet[3];//!
     TH1F            *fHistDPhi28_EMCJet;//!
     TH2F            *fHistDPhiDEta28_EMCJet;//!
     TH1F            *fHistNevents_EMCJet;//!
@@ -272,13 +251,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistDPhi18Spe_EMCJet;//!
     
     //Mixed Event DPhi histos
-    TH1F            *fHistDPhiMix300_500_EMCJet[3];//!
-    TH1F            *fHistDPhiMix500_800_EMCJet[3];//!
-    TH1F            *fHistDPhiMix800_1_EMCJet[3];//!
+    TH1F            *fHistDPhiMix300_1_EMCJet[3];//!
     TH1F            *fHistDPhiMix1_2_EMCJet[3];//!
-    TH1F            *fHistDPhiMix2_3_EMCJet[3];//!
-    TH1F            *fHistDPhiMix3_4_EMCJet[3];//!
-    TH1F            *fHistDPhiMix4_EMCJet[3];//!
+    TH1F            *fHistDPhiMix2_4_EMCJet[3];//!
+    TH1F            *fHistDPhiMix4_8_EMCJet[3];//!
     TH1F            *fHistDPhiMix28_EMCJet;//!
     TH2F            *fHistDPhiDEtaMix28_EMCJet;//!
     
@@ -295,6 +271,15 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTestTPCdEdx;
     TH1F            *fHistTestEOP;
     TH1F            *fHistTestOGDPhi;
+    TH1F            *fHistTestInvMassElecLike;
+    TH1F            *fHistTestInvMassElecUnLike;
+    TH1F            *fHistTestInvMassPionLike;
+    TH1F            *fHistTestInvMassPionUnLike;
+    TH1F            *fHistTestPt;
+    TH2F            *fHistTestDPhiSpeNoSec;
+    TH1F            *fHistTestDPhi18Sec;
+    TH1F            *fHistTestDPhi18NoSec;
+    TH2F            *fHistTestDPhiType;
     
     AliAnalysisTaskPSHFE(const AliAnalysisTaskPSHFE&); // not implemented
     AliAnalysisTaskPSHFE& operator=(const AliAnalysisTaskPSHFE&); // not implemented

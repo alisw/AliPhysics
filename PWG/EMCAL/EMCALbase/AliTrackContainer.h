@@ -79,6 +79,7 @@ class AliTrackContainer : public AliParticleContainer {
 
   void                        SetTrackFilterType(ETrackFilterType_t f)          { fTrackFilterType = f; }
   void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method
+  void                        SetITSHybridTrackDistinction(Bool_t doUse)        { fITSHybridTrackDistinction = doUse; }
 
   void                        SetTrackCutsPeriod(const char* period)            { fTrackCutsPeriod = period; }
   void                        AddTrackCuts(AliVCuts *cuts);
@@ -87,11 +88,12 @@ class AliTrackContainer : public AliParticleContainer {
   void                        SetAODFilterBits(UInt_t bits)                     { fAODFilterBits   = bits  ; }
   void                        AddAODFilterBit(UInt_t bit)                       { fAODFilterBits  |= bit   ; }
   UInt_t                      GetAODFilterBits()                          const { return fAODFilterBits    ; }
+  Bool_t                      IsHybridTrackSelection() const;
 
   void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
   void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
 
-  void                        NextEvent();
+  void                        NextEvent(const AliVEvent* event);
 
   static void                 SetDefTrackCutsPeriod(const char* period)       { fgDefTrackCutsPeriod = period; }
   static TString              GetDefTrackCutsPeriod()                         { return fgDefTrackCutsPeriod  ; }
@@ -122,6 +124,7 @@ class AliTrackContainer : public AliParticleContainer {
   ETrackFilterType_t          fTrackFilterType;               ///< track filter type
   TObjArray                  *fListOfCuts;                    ///< list of track cut objects
   Bool_t                      fSelectionModeAny;              ///< accept track if any of the cuts is fulfilled
+  Bool_t                      fITSHybridTrackDistinction;     ///< Distinct hybrid tracks via SPD information
   UInt_t                      fAODFilterBits;                 ///< track filter bits
   TString                     fTrackCutsPeriod;               ///< period string used to generate track cuts
   AliEmcalTrackSelection     *fEmcalTrackSelection;           //!<! track selection object

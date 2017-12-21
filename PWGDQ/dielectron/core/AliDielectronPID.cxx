@@ -55,6 +55,8 @@ TH1     *AliDielectronPID::fgFunCntrdCorr=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorr=0x0;
 TH1     *AliDielectronPID::fgFunCntrdCorrITS=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorrITS=0x0;
+TH1     *AliDielectronPID::fgFunCntrdCorrTOF=0x0;
+TH1     *AliDielectronPID::fgFunWdthCorrTOF=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
@@ -160,7 +162,7 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
 
   AliDebug(1,Form("Add PID cut %d: sigma [% .1f,% .1f] \t cut [% .1f,% .f] \t var %d->%s \n",
 		  fNcuts,nSigmaLow,nSigmaUp,min,max,fActiveCuts[fNcuts],AliDielectronVarManager::GetValueName(fActiveCuts[fNcuts])));
-  
+
   ++fNcuts;
 
 }
@@ -284,7 +286,7 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
 
   AliDebug(1,Form("Add PID cut %d: sigma [% .1f,% .1f] \n",
 		  fNcuts,nSigmaLow,nSigmaUp));
-  
+
   ++fNcuts;
 
 }
@@ -301,7 +303,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   AliESDtrack *esdTrack=0x0;
   AliAODTrack *aodTrack=0x0;
   Double_t origdEdx=-1;
-  
+
   // apply ETa correction, remove once this is in the tender
   if( (part->IsA() == AliESDtrack::Class()) ){
     esdTrack=static_cast<AliESDtrack*>(part);
@@ -337,7 +339,17 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetZaxis()->GetUniqueID(), kTRUE);
   }
-  
+  if(fgFunCntrdCorrTOF)  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorrTOF)  {
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -442,7 +454,7 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t mom=part->P();
-  
+
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasITS(part, fPartType[icut]);
 
   // post pid corrections ("eta corrections")
@@ -455,7 +467,7 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
   // test if we are supposed to use a function for the cut
   if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
   if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
-  
+
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
@@ -471,7 +483,7 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
   if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
-  
+
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
 
   // post pid corrections ("eta corrections")
@@ -516,7 +528,7 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
 //______________________________________________
 Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod)
 {
-  //   
+  //
   // TRD part of the pid check
   // the TRD checks on the probabilities.
   //
@@ -540,7 +552,7 @@ Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut,
 {
   //
   // TRD part of the pid check using electron efficiency requirement
-  // in this case the upper limit as well as the particle specie is ignored 
+  // in this case the upper limit as well as the particle specie is ignored
   //   and the lower limit regarded as the requested electron efficiency
   //
 
@@ -549,10 +561,10 @@ Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut,
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t centrality = -1.;
-  if(part->IsA() == AliESDtrack::Class())
-    centrality=(const_cast<AliESDEvent*>( (static_cast<const AliESDtrack*>(part))->GetESDEvent()) )->GetCentrality()->GetCentralityPercentile("V0M");
-  if(part->IsA() == AliAODTrack::Class())
-    centrality=(const_cast<AliAODEvent*>( (static_cast<const AliAODTrack*>(part))->GetAODEvent()) )->GetCentrality()->GetCentralityPercentile("V0M");
+  AliVEvent *event = (AliVEvent*) part->GetEvent();
+  AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection"); // Run2 centrality estimator, centrality is no longer stored in the AODs
+  if(!multSelection)  centrality = event->GetCentrality()->GetCentralityPercentile("V0M"); // Should work for Run1 data
+  else centrality = multSelection->GetMultiplicityPercentile("V0M", kFALSE);
 
   Bool_t selected=fPIDResponse->IdentifiedAsElectronTRD(part,fNsigmaLow[icut], centrality, PIDmethod)^fExclude[icut];
   return selected;
@@ -570,7 +582,14 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
-  
+
+  // post pid corrections ("eta corrections")
+  if (fPartType[icut]==AliPID::kElectron){
+    // via functions (1-3D)
+    numberOfSigmas-=GetCntrdCorrTOF(part);
+    numberOfSigmas/=GetWdthCorrTOF(part);
+  }
+
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
@@ -620,7 +639,7 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTPC,AliPID::kPion,-2.,2.,0.,2.,kTRUE);
     AddCut(kTPC,AliPID::kKaon,-2.,2.,0.,2.,kTRUE);
     AddCut(kTPC,AliPID::kProton,-2.,2.,0.,2.,kTRUE);
-    
+
   } else if (def==2) {
     // include 2sigma e TPC
     // 3sigma bands TOF
@@ -638,7 +657,7 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTOF,AliPID::kKaon,-3.,3.,0.,1.,kTRUE);
     AddCut(kTOF,AliPID::kProton,-6.,6.,0.,1.,kTRUE);
     AddCut(kTOF,AliPID::kProton,-3.,3.,1.,2.,kTRUE);
-    
+
   } else if (def==5) {
     AddCut(kTPC,AliPID::kElectron,-0.5,3);
     AddCut(kTOF,AliPID::kElectron,-3,3,0,1.5);
@@ -674,7 +693,7 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTPC,AliPID::kElectron,3.);
     AddCut(kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
     AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
-    
+
   } else if (def==11) {
     // lower cut TPC: parametrisation by HFE
     // only use from period d on !!
@@ -738,7 +757,7 @@ void AliDielectronPID::SetCorrVal(Double_t run)
   //
   fgCorr=0.;
   fgCorrdEdx=1.;
-  
+
   if (fgFitCorr){
     fgCorr=fgFitCorr->Eval(run);
     if (run<fgFitCorr->GetX()[0]) fgCorr=fgFitCorr->GetY()[0];

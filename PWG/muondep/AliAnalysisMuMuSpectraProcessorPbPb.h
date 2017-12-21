@@ -54,6 +54,10 @@ public:
   void PrintConst() const;
   // Compute quantities linked to RAA
   TList* RAAasGraphic(Double_t MUL) const;
+// V2 vs what
+  TList* V2asGraphic(const char* what="PT") const;
+  //Fit the DeltaPhiDistribution for each subresult
+  void FitDistvsDphi(Double_t ptMin, Double_t ptMax,const char* particle="PSI",const char* subresults="", Bool_t draw=kFALSE)const;
 
 
   // Return some data member. Double "const" on purpose to avoid leverage on data members
@@ -71,13 +75,16 @@ private:
   // Equality operator
   AliAnalysisMuMuSpectraProcessorPbPb(const AliAnalysisMuMuSpectraProcessorPbPb& rhs);// not implemented on purpose
   AliAnalysisMuMuSpectraProcessorPbPb& operator=(const AliAnalysisMuMuSpectraProcessorPbPb& rhs);// not implemented on purpose
+  //V2 DeltaPhi
+  TGraphErrors* PlotFlow(const char* what, const char* subresult, Double_t ptBinMin, Double_t ptBinMax, Bool_t divideByBinWidth=kFALSE) const;//, Bool_t bck) const;
+  void DrawDnDphi(TGraphErrors* distribution, TF1* fit, const char* subresName, Double_t ptMin, Double_t ptMax, Double_t v2, Double_t v2Err) const;
 
 
 private:
   Double_t fConstArray[13]; // Array to store constant according to centrality bins
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisMuMuSpectraProcessorPbPb,1);
+  ClassDef(AliAnalysisMuMuSpectraProcessorPbPb,2);
  /// \endcond
 };
 

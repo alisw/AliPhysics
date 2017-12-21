@@ -1,23 +1,30 @@
 /*
-Comments:
-* 19 aug 2015: trichert: changed mc primary method
-* 19 aug 2015: trichert: changed vtx cut
-* 08 sep 2015: trichert: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
-* 15 sep 2015: trichert: fixed bug: p_track->n_track
-* 15 sep 2015: trichert: flags on injected MC particles: 
+  Comments:
+  * 19 aug 2015: trichert: changed mc primary method
+  * 19 aug 2015: trichert: changed vtx cut
+  * 08 sep 2015: trichert: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
+  * 15 sep 2015: trichert: fixed bug: p_track->n_track
+  * 15 sep 2015: trichert: flags on injected MC particles: 
   - MC track: pidCodeMC>10 = injected
   - track: pidCode>10 = injected
   - p_track and n_track: n/p_pidCode>10 = injected
-* 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
-* 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
-* 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
-    
-Remiders:
-* For pp: remove pile up thing
-* For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
-* For 2011 DT: add hardcoded trigger conditions!
+  * 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
+  * 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
+  * 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
+  * 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
+  * 13 dec 2017: cleanup + filtering to reduce output size: 
+                 - eta: 0.9->0.8
+                 - setter function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
+  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config)
+  * 18 dec 2017: - centrality selection also for MC
+                 - several trigger settings
 
-*/
+  Remiders:
+  * For pp: remove pile up thing
+  * For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
+  * For 2011 DT: add hardcoded trigger conditions!
+
+  */
 
 #include "AliAnalysisTaskHighPtDeDx.h"
 #include <bitset>
@@ -40,7 +47,8 @@ Remiders:
 #include <AliESDtrackCuts.h>
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
- 
+#include "AliMultSelectionTask.h"
+
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliStack.h>
@@ -69,13 +77,12 @@ using namespace std;
 
 //
 // Responsible:
-// Alexandru Dobrin (Wayne State) 
 // Peter Christiansen (Lund)
 // Tuva Richert (Lund)
 
 /* 
 
-*/
+ */
 
 
 
@@ -108,13 +115,18 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  ftrigBit1(0x0),
-  ftrigBit2(0x0),
+  // ftrigBit1(0x0),
+  // ftrigBit2(0x0),
+  fTrigType1(AliVEvent::kMB),
+  fTrigType2(AliVEvent::kCentral),
+  fTrigType3(AliVEvent::kSemiCentral),
   fVtxCut(10.0),  
-  fEtaCut(0.9),  
+  fEtaCut(0.8),  
   fEtaCutStack(1.2),  
   fMinPt(0.1),
   fMinPtV0(0.1),
+  fCosPACut(0.95),
+  fDecayRCut(0.2),
   fLowPtFraction(0.01),
   fMassCut(0.1),//
   fTreeOption(0),
@@ -167,13 +179,18 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  ftrigBit1(0x0),
-  ftrigBit2(0x0),
-  fVtxCut(10.0),  
-  fEtaCut(0.9),
+  // ftrigBit1(0x0),
+  // ftrigBit2(0x0),
+  fTrigType1(AliVEvent::kMB),
+  fTrigType2(AliVEvent::kCentral),
+  fTrigType3(AliVEvent::kSemiCentral),
+fVtxCut(10.0),  
+  fEtaCut(0.8),
   fEtaCutStack(1.2),    
   fMinPt(0.1),
   fMinPtV0(0.1),
+  fCosPACut(0.95),
+  fDecayRCut(0.2),
   fLowPtFraction(0.01),
   fMassCut(0.1),//
   fTreeOption(0),
@@ -214,12 +231,7 @@ AliAnalysisTaskHighPtDeDx::~AliAnalysisTaskHighPtDeDx()
   }
   if (fRandom) delete fRandom;
   fRandom=0;
-  
-  // //for proof running; I cannot create tree do to memory limitations -> work with THnSparse 
-  // if (fListOfObjects  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
-  
-  
-  
+    
 }
 
 //______________________________________________________________________________
@@ -294,9 +306,7 @@ void AliAnalysisTaskHighPtDeDx::UserCreateOutputObjects()
     }
 
 
-
     fTree->SetDirectory(0);
-
     fListOfObjects->Add(fTree);
 
   }
@@ -317,8 +327,8 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
  
   AliVEvent *event = InputEvent();
   if (!event) {
-     Error("UserExec", "Could not retrieve event");
-     return;
+    Error("UserExec", "Could not retrieve event");
+    return;
   }
 
 
@@ -361,9 +371,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     } else { // AOD
 
       fMC = dynamic_cast<AliMCEvent*>(MCEvent());
-      // if(fMC)
-      // 	fMC->Dump();
-
+ 
       fMCArray = (TClonesArray*)fAOD->FindListObject("mcparticles");
       if(!fMCArray){
 	Printf("%s:%d AOD MC array not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -376,8 +384,22 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   
   // Get trigger decision
   fTriggeredEventMB = 0; 
+
+  Bool_t lIsDesiredTrigger1 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType1);
+  if(lIsDesiredTrigger1)fTriggeredEventMB = 1;
+ 
+  Bool_t lIsDesiredTrigger2 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType2);
+  if(lIsDesiredTrigger2)fTriggeredEventMB += 2; 
+  
+  Bool_t lIsDesiredTrigger3 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType3);
+  if(lIsDesiredTrigger3)fTriggeredEventMB += 4; 
   
 
+  
+  
+  // /*
+  //____________________ OLD METHOD __________________________________________________
+  
   //_____________NOMINAL TRIGGER CONDITION___________
   // Always use if MC
   // Use if 2010 data
@@ -385,17 +407,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
   //    ->IsEventSelected() & ftrigBit1 ){
   //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1;  event triggered as minimum bias
+  //   fTriggeredEventMB = 1; // event triggered as minimum bias
   // }
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
   //    ->IsEventSelected() & ftrigBit2 ){
-  //   From AliVEvent:
-  //      kINT7         = BIT(1), // V0AND trigger, offline V0 selection
   //   fTriggeredEventMB += 2;  
   //   fn2->Fill(1);
   // }
-
- 
   //_____________ end nominal _______________________
 
 
@@ -403,27 +421,30 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // // Never use if MC
   // // Use if 2011 data
 
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit1 ){
-    fn1->Fill(1);
-    fTriggeredEventMB = 1;  //event triggered as minimum bias
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kSemiCentral ){
-    fTriggeredEventMB += 2;  
-    fn2->Fill(1);
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kMB ){
-    fTriggeredEventMB += 4;  
-    fn2->Fill(1);
-  }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit1 ){//AliVEvent::kMB
+  //   fn1->Fill(1);
+  //   fTriggeredEventMB = 1; // event triggered as minimum bias
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kMB ){
+  //   fTriggeredEventMB += 4;  
+  //   fn2->Fill(1);
+  // }
  
   // //_____________ end special ______________________
 
+  //____________________________________________________________________________
+  // */
 
+  
 
-   // Get process type for MC
+  // Get process type for MC
   fMcProcessType = 0; // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
 
   // real data that are not triggered we skip
@@ -433,11 +454,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   if (fAnalysisMC) {
     
-
-
     if (fAnalysisType == "ESD"){
-
-  
 
       AliHeader* headerMC = fMC->Header();
       if (headerMC) {
@@ -465,16 +482,11 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       }
     } else { // AOD
       
-  
-
       AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject("mcHeader")); 
-
-
+      
       if(mcHeader) {
 	fZvtxMC = mcHeader->GetVtxZ();
 	
-
-
 	if(strstr(mcHeader->GetGeneratorName(), "Pythia")) {
 	  fMcProcessType =  GetPythiaEventProcessType(mcHeader->GetEventType());
 	} else {
@@ -508,7 +520,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	fZvtx  = -999; //vertex = 0x0; //
       else
 	fZvtx = vtxESD->GetZ();
-    }  
+    } 
     else
       fZvtx = vtxESD->GetZ();
     
@@ -531,12 +543,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	  fZvtx  = -1599;
       }
     }
-  }
-
- /*
-
-
- */
+  }//if aod
 
   fVtxStatus = -999;
   
@@ -568,24 +575,24 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Float_t centralityCL1 = -10;
 
   // only analyze triggered events
-  //   cout << " fTriggeredEventMB " << fTriggeredEventMB << "fAnalysisType " << fAnalysisType << " fAnalysisPbPb " <<fAnalysisPbPb << endl;
-  if(fTriggeredEventMB) {
-    //cout << "inside triggered !" << endl;
-    if (fAnalysisType == "ESD"){
+  if(fTriggeredEventMB){
+    if(fAnalysisType == "ESD"){
       if(fAnalysisPbPb){
+
 	AliCentrality *centObject = fESD->GetCentrality();
 	centralityV0M = centObject->GetCentralityPercentile("V0M");
 	// centralityV0A = centObject->GetCentralityPercentile("V0A");
  	// centralityZNA = centObject->GetCentralityPercentile("ZNA");
  	// centralityCL1 = centObject->GetCentralityPercentile("CL1");
      
-	//if(  !(fMinCent>=20 && fMaxCent <=40) ) return; //take out //hljunggr
-	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; //hljunggr comment out, put back in!!
-      }
-      fcent->Fill(centralityV0M);
+	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; 
 
+      }
+
+      fcent->Fill(centralityV0M);
       AnalyzeESD(fESD);
-    } else { // AOD
+
+    }else{ // AOD
       if(fAnalysisPbPb){
 	AliCentrality *centObject = fAOD->GetCentrality();
 	if(centObject){
@@ -594,28 +601,28 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	  // centralityZNA = centObject->GetCentralityPercentile("ZNA");
 	  // centralityCL1 = centObject->GetCentralityPercentile("CL1");
 	}
+	
+	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;
 
-	//if(  !(fMinCent>=20 && fMaxCent <=40) ) return; //take out //hljunggr
-	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; //hljunggr comment out, put back in!!
       }
+
       fcent->Fill(centralityV0M);
       AnalyzeAOD(fAOD);
+
     }
-  }
+  }//if triggered
 
   
   // store MC event data no matter what
-  //if(fAnalysisMC && fStoreMcIn) {
   if(fAnalysisMC) {
+    
+    if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
 
-    if (fAnalysisType == "ESD") {
-      ProcessMCTruthESD();
-    } else { // AOD
-
-      ProcessMCTruthAOD();
+    if(fAnalysisType == "ESD") ProcessMCTruthESD();
+    else ProcessMCTruthAOD(); // AOD
   
-    }
-  }    
+  }//if MC
+
   
 
   if( fTreeOption) {
@@ -627,8 +634,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     //fEvent->centV0A      = centralityV0A;
     //fEvent->centZNA      = centralityZNA;
     //fEvent->centCL1      = centralityCL1;
-
-
+    
     fTree->Fill();
     if(fTrackArrayGlobalPar)fTrackArrayGlobalPar->Clear();
     if(fV0ArrayGlobalPar)fV0ArrayGlobalPar->Clear();
@@ -642,8 +648,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
     if (fAnalysisMC)    
       fTrackArrayMC->Clear();
-      
-
   }
   
   // Post output data.
@@ -653,37 +657,17 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
 {
-  fRun  = esdEvent->GetRunNumber();
+  fRun = esdEvent->GetRunNumber();
   fEventId = 0;
   if(esdEvent->GetHeader())
     fEventId = GetEventIdAsLong(esdEvent->GetHeader());
   
-  //  Short_t isPileup = esdEvent->IsPileupFromSPD();
-  /*
-  cout"  nTPCtracks="<<esdEvent->nTPCtracks<<"  nITStracks="<<esdEvent->nITStracks<<endl;
-  if(esdEvent->nTPCtracks==0 && esdEvent->nITStracks==0){
-    cout<<"Evento defectuoso!!"<<endl;
-    }*/
-
-
-  //  Int_t     event     = esdEvent->GetEventNumberInFile();
   UInt_t    time      = esdEvent->GetTimeStamp();
-  //  ULong64_t trigger   = esdEvent->GetTriggerMask();
   Float_t   magf      = esdEvent->GetMagneticField();
-
-
-
-
 
   if(fTriggeredEventMB) {// Only MC case can we have not triggered events
     
-    // accepted event
     fEvents->Fill(0);
-    
-    
-    //Change, 10/04/13. Now accept all events to do a correct normalization
-    //if(fVtxStatus!=1) return; // accepted vertex
-    //    Int_t nESDTracks = esdEvent->GetNumberOfTracks();
     
     ProduceArrayTrksESD( esdEvent, kGlobalTrk );//produce array with global track parameters
     ProduceArrayV0ESD( esdEvent, kGlobalTrk );//v0's
@@ -696,7 +680,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
     fEvents->Fill(1);
     
     if(fVZEROBranch){
-      AliESDVZERO *esdV0 = esdEvent->GetVZEROData();// loop sobre canales del V0 para obtener las multiplicidad
+      AliESDVZERO *esdV0 = esdEvent->GetVZEROData();
       for (Int_t iCh=0; iCh<64; ++iCh) { 
 	Float_t multv=esdV0->GetMultiplicity(iCh); 
 	Int_t intexv=iCh;
@@ -705,27 +689,16 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
 	cellv0->cellmult= multv;
       }   
     }
-
-
-
   } // end if triggered
   
   if(fTreeOption) {
-
     fEvent->run       = fRun;
     fEvent->eventid   = fEventId;
     fEvent->time      = time;
-    //fEvent->cent      = centrality;
     fEvent->mag       = magf;
     fEvent->zvtx      = fZvtx;
     fEvent->vtxstatus = fVtxStatus;
-    //fEvent->pileup    = isPileup;
-
   }
-
-
-
-
 }
 
 //________________________________________________________________________
@@ -735,15 +708,9 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
   fEventId = 0;
   if(aodEvent->GetHeader())
     fEventId = GetEventIdAsLong(aodEvent->GetHeader());
-   
+  
   UInt_t    time      = 0; // Missing AOD info? aodEvent->GetTimeStamp();
   Float_t   magf      = aodEvent->GetMagneticField();
-
-  //Int_t     trackmult = 0; // no pt cuts
-  //Int_t     nadded    = 0;
-  //  Short_t isPileup = aodEvent->IsPileupFromSPD();
-
-  
 
   if(fTriggeredEventMB) {// Only MC case can we have not triggered events
     
@@ -773,24 +740,17 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
       }   
     }
 
-
-
   } // end if triggered
   
   if(fTreeOption) {
 
-    //Sort(fTrackArrayGlobalPar, kFALSE);
-
     fEvent->run       = fRun;
     fEvent->eventid   = fEventId;
     fEvent->time      = time;
-    //fEvent->cent      = centrality;
     fEvent->mag       = magf;
     fEvent->zvtx      = fZvtx;
     fEvent->vtxstatus = fVtxStatus;
-    //fEvent->trackmult = trackmult;
-    //fEvent->n         = nadded;
-    //fEvent->pileup    = isPileup;
+
   }
 }
 
@@ -841,22 +801,13 @@ Short_t AliAnalysisTaskHighPtDeDx::GetPidCode(Int_t pdgCode) const
 //_____________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD() 
 {
-  // Fill the special MC histogram with the MC truth info
-  
  
-  //cout << "mc truth " << " fAnalysisMC " << fAnalysisMC << " fstoremcin " << fStoreMcIn << endl;
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCStack->GetNtrack();
 
-  // Float_t  sphericityMC=GetSphericityTrue(fMCStack, 0.8, 0.5);
-  // Float_t  spherocityMC=GetSpherocityTrue(fMCStack, 0.8, 0.5);
-
-
   for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
     
-   
-
     //Cuts
     if(!(fMCStack->IsPhysicalPrimary(iTracks)))
       continue;
@@ -872,7 +823,6 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     
     trackmult++;
     
-    //   "charge:pt:p:eta:phi:pidCode"
     Float_t ptMC      = trackMC->Pt();
     Float_t pMC       = trackMC->P();
     Float_t etaMC     = trackMC->Eta();
@@ -883,8 +833,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     Short_t pidCodeMC = 0;
     pidCodeMC = GetPidCode(pdgCode);
     
-    // Here we want to add some of the MC histograms!
-    
+
     Bool_t lIsStrangeness = kFALSE; 
     if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
     
@@ -892,17 +841,13 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    } 
     
     // And therefore we first cut here!
     if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    } 
     
     if(fTreeOption) {
       
@@ -927,9 +872,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    //fEvent->sphericityMC         = sphericityMC;
-    //fEvent->spherocityMC         = spherocityMC;
-
+ 
   }
   
 }
@@ -937,37 +880,28 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 //_____________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD() 
 {
-  // Fill the special MC histogram with the MC truth info
-  //cout << " debug 1 " << endl;
+
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCArray->GetEntriesFast();
-  //cout << " debug 2 " << endl;
 
-  //cout << " debug 3 " << endl;
-  for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
-    //cout << " debug 31 " << endl;
+  for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
-    //cout << " debug 32 " << endl;
     //Cuts
     if(!(trackMC->IsPhysicalPrimary()))
       continue;
-    //cout << " debug 33 " << endl;
     Double_t chargeMC = trackMC->Charge();
 
     
     if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
-    //cout << " debug 34 " << endl;
     trackmult++;
     
-    //   "charge:pt:p:eta:phi:pidCode"
     Float_t ptMC      = trackMC->Pt();
     Float_t pMC       = trackMC->P();
     Float_t etaMC     = trackMC->Eta();
     Float_t phiMC     = trackMC->Phi();
     Float_t yMC       = trackMC->Y();
-    //cout << " debug 35 " << endl;
     Int_t pdgCode = trackMC->PdgCode();
     Short_t pidCodeMC = 0;
     pidCodeMC = GetPidCode(pdgCode);
@@ -975,48 +909,30 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     
     TString genname;
     Bool_t yesno=fMC->GetCocktailGenerator(iTracks, genname);
-    //    if(!yesno) Printf("no cocktail header list was found for this event");
     if(yesno) {
       if(!genname.Contains("Hijing")) 
 	pidCodeMC +=10;
     }
   
  
-    // Here we want to add some of the MC histograms!
-        
     Bool_t lIsStrangeness = kFALSE; 
     if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
 
-    // And therefore we first cut here!
     if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    }     
     
-    // And therefore we first cut here!
     if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    }
     
-    //cout << " debug 36 " << endl;
- 
-    //cout << "fTreeOption " << fTreeOption << endl;
     if(fTreeOption) {
       
-
-      //cout << " debug 361, nadded =  " << nadded << " fTrackArrayMC" << fTrackArrayMC <<  endl;
       DeDxTrackMC* track = new((*fTrackArrayMC)[nadded]) DeDxTrackMC();
-      //cout << " debug 3611, nadded =  " << nadded <<  endl;
       nadded++;
-      //cout << " debug 3612, nadded =  " << nadded <<  endl;
-      //cout << " debug 362 " << endl;
       track->pMC   = pMC;
-      //cout << " debug 363 " << endl;
       track->ptMC  = ptMC;
       track->etaMC = etaMC;
       track->phiMC = phiMC;
@@ -1024,23 +940,17 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
       track->qMC   = Short_t(chargeMC);
       track->pidMC = pidCodeMC;
       track->pdgMC = pdgCode;
-      //cout << " debug 364 " << endl;
-
     }
-    //cout << " debug 37 " << endl;
-  }//MC track loop
-  //cout << " debug 4 " << endl;
+  }
+  
   if(fTreeOption) {
     
     Sort(fTrackArrayMC, kTRUE);
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    //fEvent->sphericityMC         = 0;
-    //fEvent->spherocityMC         = 0;
 
   }
-  //cout << " debug 5 " << endl;
 }
 
 //_____________________________________________________________________________
@@ -1178,7 +1088,6 @@ AliAODMCParticle* AliAnalysisTaskHighPtDeDx::FindPrimaryMotherAOD(AliAODMCPartic
 }
 
 
-//V0______________________________________
 //____________________________________________________________________
 TParticle* AliAnalysisTaskHighPtDeDx::FindPrimaryMotherV0(AliStack* stack, Int_t label)
 {
@@ -1355,21 +1264,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
   //trackmult=AliESDtrackCuts::GetReferenceMultiplicity(ESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5);
 
 
-  // Float_t spherocity=-1;
-  // Float_t sphericity=-1;
-  // Float_t spherocityTPC=-1;
-  // Float_t sphericityTPC=-1;
-
-
-  // spherocity=GetSpherocity(ESDevent,fTrackFilterGolden,0.8, 0.5, kFALSE);
-  // sphericity=GetSphericity(ESDevent,fTrackFilterGolden,0.8, 0.5, kFALSE);
-  // //Lot of memory consumption solved by reducing the number of files per job
-  // //spherocityTPC=GetSpherocity(ESDevent,fTrackFilterGolden,0.8, 0.5, kTRUE);
-  // //sphericityTPC=GetSphericity(ESDevent,fTrackFilterGolden,0.8, 0.5, kTRUE);
-  
-  // spherocityTPC=spherocity;
-  // sphericityTPC=sphericity;
-
 
   if( analysisMode==kGlobalTrk ){  
     
@@ -1418,17 +1312,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
       //
       // Track was accepted
       //      
-      
-      // Here we want to add histograms!
-      
+       
       if (esdTrack->Pt() < fMinPt) {
 	
 	// Keep small fraction of low pT tracks
 	if(fRandom->Rndm() > fLowPtFraction)
 	  continue;
-      } // else {
-      // Here we want to add the high pt part of the histograms!
-      //    }
+      } 
     
       Short_t charge  = esdTrack->Charge();
       Float_t pt      = esdTrack->Pt();
@@ -1493,41 +1383,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	}
       }
       
-    
-      //TOF
-      /*
-	Float_t beta = -99;
-	if (esdTrack->GetStatus()&AliESDtrack::kTOFpid){
-	if ((esdTrack->GetIntegratedLength() != 0) && (esdTrack->GetTOFsignal() != 0))
-	  beta = esdTrack->GetIntegratedLength()/esdTrack->GetTOFsignal()/fgkClight;
-	  }
-      */
-      // Bool_t IsTOFout=kFALSE;
-      // if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-      // 	IsTOFout=kTRUE;
-      
-      // Bool_t HasTOFTime=kTRUE;
-      // if ((esdTrack->GetStatus()&AliESDtrack::kTIME)==0)
-      // 	HasTOFTime=kFALSE;
-      
-      // Bool_t IsMatched=kFALSE;
-      // if (!(esdTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-      // 	IsMatched=kFALSE;
-      // else
-      // 	IsMatched=kTRUE;
-
-      // Float_t lengthtrack=esdTrack->GetIntegratedLength();
-
-      // Float_t timeTOF=esdTrack->GetTOFsignal();
-
-      // Double_t inttime[5]={0,0,0,0,0}; 
-      // esdTrack->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
-      // Float_t fexptimeel=inttime[0];
-      // Float_t fexptimemu=inttime[1];
-      // Float_t fexptimepi=inttime[2];
-      // Float_t fexptimeka=inttime[3];
-      // Float_t fexptimepr=inttime[4];  
-
+   
       
       if(fTreeOption) {
 	
@@ -1536,8 +1392,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	
 	track->p          = p;
 	track->pt         = pt;
-	//	  track->ptcon   = pt_con;
-	//	  track->tpcchi  = tpcchi;
 	track->eta        = eta;
 	track->phi        = phi;
 	track->q          = charge;
@@ -1545,18 +1399,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	track->ncl        = ncl;
 	track->neff       = neff;
 	track->dedx       = dedx;
-
-	//track->isTOFout   = IsTOFout;
-	//track->hasTOFtime = HasTOFTime;
-	//track->isTOFmatched = IsMatched;
-	//track->flength    = lengthtrack;
-	//track->ftimetof   = timeTOF;
-	//track->exptoftimeel = fexptimeel;
-	//track->exptoftimemu = fexptimemu;
-	//track->exptoftimepi = fexptimepi;
-	//track->exptoftimeka = fexptimeka;
-	//track->exptoftimepr = fexptimepr;
-
 	track->dcaxy      = dcaxy;
 	track->dcaz       = dcaz;
 	track->pid        = pidCode;
@@ -1593,7 +1435,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	// take the B-field from the ESD, no 3D fieldMap available at this point
 	Bool_t relate = false;
 	relate = trackTPC->RelateToVertexTPC(vtxSPD,ESDevent->GetMagneticField(),
-					   kVeryBig,&exParam);
+					     kVeryBig,&exParam);
 	if(!relate){
 	  delete trackTPC;
 	  continue;
@@ -1613,16 +1455,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
       // Track was accepted
       //      
       
-      // Here we want to add histograms!
-      
+     
       if (trackTPC->Pt() < fMinPt) {
 	
 	// Keep small fraction of low pT tracks
 	if(fRandom->Rndm() > fLowPtFraction)
 	  continue;
-      } // else {
-      // Here we want to add the high pt part of the histograms!
-      //    }
+      } 
       
       Short_t charge  = trackTPC->Charge();
       Float_t pt      = trackTPC->Pt();
@@ -1693,15 +1532,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
       }
     
     
-      //TOF
-      /*
-      Float_t beta = -99;
-      if (esdTrack->GetStatus()&AliESDtrack::kTOFpid){
-	if ((esdTrack->GetIntegratedLength() != 0) && (esdTrack->GetTOFsignal() != 0))
-	  beta = esdTrack->GetIntegratedLength()/esdTrack->GetTOFsignal()/fgkClight;
-      }
-      */
-      if(fTreeOption) {
+        if(fTreeOption) {
 	
 	DeDxTrack* tracktpc = new((*fTrackArrayTPCPar)[nadded]) DeDxTrack();
 	nadded++;
@@ -1717,19 +1548,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	tracktpc->ncl        = ncl;
 	tracktpc->neff       = neff;
 	tracktpc->dedx       = dedx;
-
-	//tracktpc->isTOFout   = 0;
-	//tracktpc->hasTOFtime = 0;
-	//tracktpc->isTOFmatched = 0;
-	//tracktpc->flength    = 0;
-	//tracktpc->ftimetof   = 0;
-	//tracktpc->exptoftimeel = 0;
-	//tracktpc->exptoftimemu = 0;
-	//tracktpc->exptoftimepi = 0;
-	//tracktpc->exptoftimeka = 0;
-	//tracktpc->exptoftimepr = 0;
-
-
 	tracktpc->dcaxy      = dcaxy;
 	tracktpc->dcaz       = dcaz;
 	tracktpc->pid        = pidCode;
@@ -1756,11 +1574,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
       
       fEvent->trackmult = trackmult;
       fEvent->n         = nadded;
-
-      //fEvent->sphericity         = sphericity;
-      //fEvent->spherocity         = spherocity;
-      //fEvent->sphericityTPC      = sphericityTPC;
-      //fEvent->spherocityTPC      = spherocityTPC;
 
     }
     else if( analysisMode==kTPCTrk ){
@@ -1799,7 +1612,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   if( analysisMode==kGlobalTrk ){  
  
     
-     const AliAODVertex* vertex = AODevent->GetPrimaryVertex();
+    const AliAODVertex* vertex = AODevent->GetPrimaryVertex();
     for(Int_t iT = 0; iT < nAODTracks; iT++) {
       
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
@@ -1877,27 +1690,17 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       Int_t sharedtpcclusters=sharedTPC.CountBits(0)-sharedTPC.CountBits(159);
  
 
-
-      // As I understand this routine recalculates the momentum so it should be called first!
-      // Double_t b[2], cov[3];
-      
-      
       // if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
       // 	filterFlag = 32; // propagation failed!!!!!
       
       if(TMath::Abs(aodTrack->Eta()) > fEtaCut)
 	continue;
       if (aodTrack->Pt() < fMinPt) {
-	
 	// Keep small fraction of low pT tracks
 	if(fRandom->Rndm() > fLowPtFraction)
 	  continue;
-      } // else {
-      // Here we want to add the high pt part of the histograms!
-      //    }
-     
-     
-
+      }
+      
       
       Short_t charge  = aodTrack->Charge();
       Float_t pt      = aodTrack->Pt();
@@ -1909,71 +1712,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       Short_t neff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
       //	  Short_t nclf    = aodTrack->GetTPCNclsF();
       Float_t dedx    = -10;
-      // Bool_t IsTOFout=kFALSE;
-      // Bool_t HasTOFTime=kTRUE;
-      // Bool_t IsMatched=kFALSE;
-      // Float_t lengthtrack=-999;//in aod we do not have that information, beta must be: beta=inttime/timeTOF 
-	
-      // Float_t timeTOF=-999;
-      // Float_t fexptimeel=-999;
-      // Float_t fexptimemu=-999;
-      // Float_t fexptimepi=-999;
-      // Float_t fexptimeka=-999;
-      // Float_t fexptimepr=-999;  
-
-
-      //Float_t beta = -99;
+ 
       if(aodPid) {
 	ncl     = aodPid->GetTPCsignalN();
 	dedx    = aodPid->GetTPCsignal();
-	//TOF
-	/*
-	if (aodTrack->GetStatus()&AliESDtrack::kTOFpid){
-	  Double_t tof[5];
-	  aodPid->GetIntegratedTimes(tof);
-	  beta = tof[0]/aodPid->GetTOFsignal();
-	  }*/
-
-
-
-	// if ((aodTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-	//   IsTOFout=kTRUE;
-	
-
-	// if ((aodTrack->GetStatus()&AliESDtrack::kTIME)==0)
-	//   HasTOFTime=kFALSE;
-	
-
-	// if (!(aodTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-	//   IsMatched=kFALSE;
-	// else
-	//   IsMatched=kTRUE;
-	
-	// lengthtrack=-999;//in aod we do not have that information, beta must be: beta=inttime/timeTOF 
-	
-	// timeTOF=aodPid->GetTOFsignal();
-	
-	// Double_t inttime[5]={0,0,0,0,0}; 
-	// aodPid->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
-	// fexptimeel=inttime[0];
-	// fexptimemu=inttime[1];
-	// fexptimepi=inttime[2];
-	// fexptimeka=inttime[3];
-	// fexptimepr=inttime[4];  
-	
-
-
       }
   
-      //	Float_t tpcchi = aodTrack->Chi2perNDF();
-      
-      // Double_t p_con[3] = {0, 0, 0};
-      // aodTrack->GetConstrainedPxPyPz(p_con);
-      //	Float_t pt_con = 0; // This is not there! (Float_t)TMath::Sqrt(p_con[0]*p_con[0] + p_con[1]*p_con[1]);
-      // const AliExternalTrackParam* tpcParam = aodTrack->GetTPCInnerParam();
-      // Float_t pttpc   = tpcParam->Pt();
-      // Float_t ptpc    = tpcParam->P();
-      
       Float_t ptMC        = 0;
       Short_t pidCode     = 0; // 0 = real data / no mc track!
       Short_t primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -2017,8 +1761,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	
 	track->p          = p;
 	track->pt         = pt;
-	//	  track->ptcon   = pt_con;
-	//	  track->tpcchi  = tpcchi;
 	track->eta        = eta;
 	track->phi        = phi;
 	track->q          = charge;
@@ -2026,18 +1768,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	track->ncl        = ncl;
 	track->neff       = neff;
 	track->dedx       = dedx;
-	//track->beta       = beta;
-	//track->isTOFout   = IsTOFout;
-	//track->hasTOFtime = HasTOFTime;
-	//track->isTOFmatched = IsMatched;
-	//track->flength    = lengthtrack;
-	//track->ftimetof   = timeTOF;
-	//track->exptoftimeel = fexptimeel;
-	//track->exptoftimemu = fexptimemu;
-	//track->exptoftimepi = fexptimepi;
-	//track->exptoftimeka = fexptimeka;
-	//track->exptoftimepr = fexptimepr;
-
 	track->dcaxy      = dcaxy;
 	track->dcaz       = dcaz;
 	track->pid        = pidCode;
@@ -2094,13 +1824,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       Float_t dcaxy   = b[0];
       Float_t dcaz    = b[1];
 
-
-
-
-      // As I understand this routine recalculates the momentum so it should be called first!
-      // Double_t b[2], cov[3];
-  
-      
+    
       // if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
       // 	filterFlag = 32; // propagation failed!!!!!
       
@@ -2111,12 +1835,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	// Keep small fraction of low pT tracks
 	if(fRandom->Rndm() > fLowPtFraction)
 	  continue;
-      } // else {
-      // Here we want to add the high pt part of the histograms!
-      //    }
-     
-     
-
+      } 
       
       Short_t charge  = aodTrack->Charge();
       Float_t pt      = aodTrack->Pt();
@@ -2132,67 +1851,49 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       if(aodPid) {
 	ncl     = aodPid->GetTPCsignalN();
 	dedx    = aodPid->GetTPCsignal();
-	//TOF
-	/*
-	if (aodTrack->GetStatus()&AliESDtrack::kTOFpid){
-	  Double_t tof[5];
-	  aodPid->GetIntegratedTimes(tof);
-	  beta = tof[0]/aodPid->GetTOFsignal();
-	  }*/
       }
-      //	Float_t tpcchi = aodTrack->Chi2perNDF();
-      
-      // Double_t p_con[3] = {0, 0, 0};
-      // aodTrack->GetConstrainedPxPyPz(p_con);
-      //	Float_t pt_con = 0; // This is not there! (Float_t)TMath::Sqrt(p_con[0]*p_con[0] + p_con[1]*p_con[1]);
-      // const AliExternalTrackParam* tpcParam = aodTrack->GetTPCInnerParam();
-      // Float_t pttpc   = tpcParam->Pt();
-      // Float_t ptpc    = tpcParam->P();
-      
       Float_t ptMC        = 0;
       Short_t pidCode     = 0; // 0 = real data / no mc track!
       Short_t primaryFlag = 0; // 0 = real data / not primary mc track  
       Int_t   pdgMother   = 0;
-      
+	
       if(fAnalysisMC) {
-	
+	  
 	const Int_t label = TMath::Abs(aodTrack->GetLabel());
-	
+	  
 	AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(label));
 	if (mcTrack){
-	  
+	    
 	  if(mcTrack->IsPhysicalPrimary())
 	    primaryFlag = 1;
-
-	  
+	    
+	    
 	  Int_t pdgCode = mcTrack->GetPdgCode();
 	  pidCode = GetPidCode(pdgCode);
-	  
+	    
 	  TString genname;
 	  Bool_t yesno=fMC->GetCocktailGenerator(label, genname);
-	  //    if(!yesno) Printf("no cocktail header list was found for this event");
+	    
 	  if(yesno) {
 	    if(!genname.Contains("Hijing")) 
 	      pidCode +=10;
 	  }
-
+	    
 	  ptMC      = mcTrack->Pt();
-	  
+	    
 	  AliAODMCParticle* mother = FindPrimaryMotherAOD(mcTrack);
 	  pdgMother = mother->GetPdgCode();	    
 	}
       }
-    
-    
-      if(fTreeOption) {
 	
+	
+      if(fTreeOption) {
+	  
 	DeDxTrack* tracktpc = new((*fTrackArrayTPCPar)[nadded]) DeDxTrack();
 	nadded++;
 	
 	tracktpc->p          = p;
 	tracktpc->pt         = pt;
-	//	  track->ptcon   = pt_con;
-	//	  track->tpcchi  = tpcchi;
 	tracktpc->eta        = eta;
 	tracktpc->phi        = phi;
 	tracktpc->q          = charge;
@@ -2200,20 +1901,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	tracktpc->ncl        = ncl;
 	tracktpc->neff       = neff;
 	tracktpc->dedx       = dedx;
-	//tracktpc->beta       = beta;
-
-	//tracktpc->isTOFout   = 0;
-	//tracktpc->hasTOFtime = 0;
-	//tracktpc->isTOFmatched = 0;
-	//tracktpc->flength    = 0;
-	//tracktpc->ftimetof   = 0;
-	//tracktpc->exptoftimeel = 0;
-	//tracktpc->exptoftimemu = 0;
-	//tracktpc->exptoftimepi = 0;
-	//tracktpc->exptoftimeka = 0;
-	//tracktpc->exptoftimepr = 0;
-
-
 	tracktpc->dcaxy      = dcaxy;
 	tracktpc->dcaz       = dcaz;
 	tracktpc->pid        = pidCode;
@@ -2310,13 +1997,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-        //Pre-selection to reduce output size
-        // Pt cut on decay products
-        if (esdV0->Pt() < fMinPtV0) continue;
-        // No point in keeping low cospa values...
-        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
-        //Reject on-the-fly tracks too
-        if (esdV0->GetOnFlyStatus() != 0 ) continue;
+      //Pre-selection to reduce output size
+      // Pt cut on decay products
+      if (esdV0->Pt() < fMinPtV0) continue;
+      // No point in keeping low cospa values...
+      if (esdV0->GetV0CosineOfPointingAngle() < fCosPACut ) continue;
+      //Reject on-the-fly tracks too
+      if (esdV0->GetOnFlyStatus() != 0 ) continue;
         
 
       //filter for positive track
@@ -2345,9 +2032,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  filterFlag_p +=4;
 	}
       }
-      
-
-    
       
 
       //filter for negative track
@@ -2379,9 +2063,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       
 
 
-    
-
-
       // Check if switch does anything!
       Bool_t isSwitched = kFALSE;
       if (pTrack->GetSign() < 0) { // switch
@@ -2400,6 +2081,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       esdV0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
       
       Double_t lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
+      if (lV0Radius < fDecayRCut ) continue;
+     
       Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
 					    TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
 					    TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2 ));
@@ -2459,7 +2142,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
 	 TMath::Abs(deltaInvMassL) > fMassCut &&
 	 TMath::Abs(deltaInvMassAntiL) > fMassCut &&
-	TMath::Abs(deltaInvMassG) > fMassCut )
+	 TMath::Abs(deltaInvMassG) > fMassCut )
 	continue;
 
       
@@ -2475,39 +2158,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Float_t pdedx    = pTrack->GetTPCsignal();
       Int_t   psharedtpcclusters = pTrack->GetTPCnclsS();
       
-      // Float_t ptpcchi  = 0;
-      // if(pTrack->GetTPCNcls() > 0)
-      // 	ptpcchi = pTrack->GetTPCchi2()/Float_t(pTrack->GetTPCNcls());
-      
-
-      // Bool_t pIsTOFout=kFALSE;
-      // if ((pTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-      // 	pIsTOFout=kTRUE;
-      
-      // Bool_t pHasTOFTime=kTRUE;
-      // if ((pTrack->GetStatus()&AliESDtrack::kTIME)==0)
-      // 	pHasTOFTime=kFALSE;
-      
-      // Bool_t pIsMatched=kFALSE;
-      // if (!(pTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-      // 	pIsMatched=kFALSE;
-      // else
-      // 	pIsMatched=kTRUE;
-
-      // Float_t plengthtrack=pTrack->GetIntegratedLength();
-
-      // Float_t ptimeTOF=pTrack->GetTOFsignal();
-
-      // Double_t pinttime[5]={0,0,0,0,0}; 
-      // pTrack->GetIntegratedTimes(pinttime);// Returns the array with integrated times for each particle hypothesis
-      // Float_t pfexptimeel=pinttime[0];
-      // Float_t pfexptimemu=pinttime[1];
-      // Float_t pfexptimepi=pinttime[2];
-      // Float_t pfexptimeka=pinttime[3];
-      // Float_t pfexptimepr=pinttime[4];  
-
-
-
+  
 
       Short_t ncharge  = nTrack->Charge();
       Float_t npt      = nTrack->Pt();
@@ -2519,39 +2170,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Float_t ndedx    = nTrack->GetTPCsignal();
       Int_t   nsharedtpcclusters = nTrack->GetTPCnclsS();
 
-      // Float_t ntpcchi  = 0;
-      // if(nTrack->GetTPCNcls() > 0)
-      // 	ntpcchi = nTrack->GetTPCchi2()/Float_t(nTrack->GetTPCNcls());
-      
-
-
-      // Bool_t nIsTOFout=kFALSE;
-      // if ((nTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-      // 	nIsTOFout=kTRUE;
-      
-      // Bool_t nHasTOFTime=kTRUE;
-      // if ((nTrack->GetStatus()&AliESDtrack::kTIME)==0)
-      // 	nHasTOFTime=kFALSE;
-      
-      // Bool_t nIsMatched=kFALSE;
-      // if (!(nTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-      // 	nIsMatched=kFALSE;
-      // else
-      // 	nIsMatched=kTRUE;
-
-      // Float_t nlengthtrack=nTrack->GetIntegratedLength();
-
-      // Float_t ntimeTOF=nTrack->GetTOFsignal();
-
-      // Double_t ninttime[5]={0,0,0,0,0}; 
-      // nTrack->GetIntegratedTimes(ninttime);// Returns the array with integrated times for each particle hypothesis
-      // Float_t nfexptimeel=ninttime[0];
-      // Float_t nfexptimemu=ninttime[1];
-      // Float_t nfexptimepi=ninttime[2];
-      // Float_t nfexptimeka=ninttime[3];
-      // Float_t nfexptimepr=ninttime[4];  
-
-
+  
 
       Float_t b[2];
       Float_t bCov[3];
@@ -2607,25 +2226,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  p_ptMC      = p_mcTrack->Pt();
 	  
 	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-		//				  p_mother_steps);
-		//Replace with simple mother check
+	  //				  p_mother_steps);
+	  //Replace with simple mother check
 	  p_mother_label = p_mcTrack->GetMother(0); 
 	  
-	  //____________15sep2015____________
-	  // lblMotherPosV0Dghter = p_mcTrack->GetFirstMother();
-	  // TParticle* pThisV0 = lMCstack->Particle(lblMotherPosV0Dghter);
-	  // if(!fMC->IsFromBGEvent(lblMotherPosV0Dghter)){ //fMC, fMCStack, fMCArray?
-	  //   if (!(pThisV0->GetFirstMother()<0))
-	  //     {
-	  // 	injectedFlag = 0;
-	  //     }
-	  // }
-	  //________________________________
-
 
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
-			p_grandmother_label = p_mother->GetMother(0); 
+	    p_grandmother_label = p_mother->GetMother(0); 
 	    p_pdgMother = p_mother->GetPdgCode();
 	  }
 	}
@@ -2650,13 +2258,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  n_ptMC      = n_mcTrack->Pt();
 	  
 	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-		//				  p_mother_steps);
-		//Replace with simple mother check
+	  //				  p_mother_steps);
+	  //Replace with simple mother check
 	  n_mother_label = n_mcTrack->GetMother(0); 
 
 	  if(n_mother_label>0) {
 	    TParticle* n_mother = fMCStack->Particle(n_mother_label);
-			n_grandmother_label = n_mother->GetMother(0);
+	    n_grandmother_label = n_mother->GetMother(0);
 	    n_pdgMother = n_mother->GetPdgCode();
 	  }
 	}
@@ -2704,7 +2312,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->status  = esdV0->GetOnFlyStatus();
 	v0data->chi2    = esdV0->GetChi2V0();
 	v0data->cospt   = esdV0->GetV0CosineOfPointingAngle(); 
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0data->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0data->primary = primaryV0;
@@ -2723,17 +2330,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->ptrack.neff    = pneff;
 	v0data->ptrack.dedx    = pdedx;
 
-
-	//v0data->ptrack.isTOFout   = pIsTOFout;
-	//v0data->ptrack.hasTOFtime = pHasTOFTime;
-	//v0data->ptrack.isTOFmatched = pIsMatched;
-	//v0data->ptrack.flength    =   plengthtrack;
-	//v0data->ptrack.ftimetof   = ptimeTOF;
-	//v0data->ptrack.exptoftimeel = pfexptimeel;
-	//v0data->ptrack.exptoftimemu = pfexptimemu;
-	//v0data->ptrack.exptoftimepi = pfexptimepi;
-	//v0data->ptrack.exptoftimeka = pfexptimeka;
-	//v0data->ptrack.exptoftimepr = pfexptimepr;
 
 	v0data->ptrack.dcaxy   = pdcaxy;
 	v0data->ptrack.dcaz    = pdcaz;
@@ -2755,18 +2351,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->ntrack.ncl     = nncl;
 	v0data->ntrack.neff    = nneff;
 	v0data->ntrack.dedx    = ndedx;
-
-	//v0data->ntrack.isTOFout   = nIsTOFout;
-	//v0data->ntrack.hasTOFtime = nHasTOFTime;
-	//v0data->ntrack.isTOFmatched = nIsMatched;
-	//v0data->ntrack.flength    =   nlengthtrack;
-	//v0data->ntrack.ftimetof   = ntimeTOF;
-	//v0data->ntrack.exptoftimeel = nfexptimeel;
-	//v0data->ntrack.exptoftimemu = nfexptimemu;
-	//v0data->ntrack.exptoftimepi = nfexptimepi;
-	//v0data->ntrack.exptoftimeka = nfexptimeka;
-	//v0data->ntrack.exptoftimepr = nfexptimepr;
-
 
 	v0data->ntrack.dcaxy   = ndcaxy;
 	v0data->ntrack.dcaz    = ndcaz;
@@ -2894,13 +2478,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrackTPC->Eta()) > fEtaCut || TMath::Abs(nTrackTPC->Eta()) > fEtaCut)
 	continue;
       
-        //Pre-selection to reduce output size
-        // Pt cut on decay products
-        if (esdV0->Pt() < fMinPtV0) continue;
-        // No point in keeping low cospa values...
-        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
-        //Reject on-the-fly tracks too
-        if (esdV0->GetOnFlyStatus() != 0 ) continue;
+      //Pre-selection to reduce output size
+      // Pt cut on decay products
+      if (esdV0->Pt() < fMinPtV0) continue;
+      // No point in keeping low cospa values...
+      if (esdV0->GetV0CosineOfPointingAngle() < fCosPACut ) continue;
+      //Reject on-the-fly tracks too
+      if (esdV0->GetOnFlyStatus() != 0 ) continue;
  
       
       // Check if switch does anything!
@@ -2965,6 +2549,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       esdV0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
       
       Double_t lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
+      if (lV0Radius < fDecayRCut ) continue;
       Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
 					    TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
 					    TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2 ));
@@ -3001,12 +2586,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 
       } else { // switch + and - 
 	/*
-	negEKF  = new AliKFParticle( *(esdV0->GetParamP()) , 11);
-	posEKF  = new AliKFParticle( *(esdV0->GetParamN()) ,-11);
-	negPiKF = new AliKFParticle( *(esdV0->GetParamP()) ,-211);
-	posPiKF = new AliKFParticle( *(esdV0->GetParamN()) , 211);
-	posPKF  = new AliKFParticle( *(esdV0->GetParamN()) , 2212);
-	negAPKF = new AliKFParticle( *(esdV0->GetParamP()) ,-2212);
+	  negEKF  = new AliKFParticle( *(esdV0->GetParamP()) , 11);
+	  posEKF  = new AliKFParticle( *(esdV0->GetParamN()) ,-11);
+	  negPiKF = new AliKFParticle( *(esdV0->GetParamP()) ,-211);
+	  posPiKF = new AliKFParticle( *(esdV0->GetParamN()) , 211);
+	  posPKF  = new AliKFParticle( *(esdV0->GetParamN()) , 2212);
+	  negAPKF = new AliKFParticle( *(esdV0->GetParamP()) ,-2212);
 	*/
 
 	negEKF  = new AliKFParticle(  *(dynamic_cast<AliVTrack*>(pTrackTPC)), 11);
@@ -3107,13 +2692,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  p_ptMC      = p_mcTrack->Pt();
 	  
 	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-		//				  p_mother_steps);
-		//Replace with simple mother check
+	  //				  p_mother_steps);
+	  //Replace with simple mother check
 	  p_mother_label = p_mcTrack->GetMother(0); 
 
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
-			p_grandmother_label = p_mother->GetMother(0); 
+	    p_grandmother_label = p_mother->GetMother(0); 
 	    p_pdgMother = p_mother->GetPdgCode();
 	  }
 	}
@@ -3141,13 +2726,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  n_ptMC      = n_mcTrack->Pt();
 	  
 	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-		//				  p_mother_steps);
-		//Replace with simple mother check
+	  //				  p_mother_steps);
+	  //Replace with simple mother check
 	  n_mother_label = n_mcTrack->GetMother(0); 
 
 	  if(n_mother_label>0) {
 	    TParticle* n_mother = fMCStack->Particle(n_mother_label);
-			n_grandmother_label = n_mother->GetMother(0); 
+	    n_grandmother_label = n_mother->GetMother(0); 
 	    n_pdgMother = n_mother->GetPdgCode();
 	  }
 	}
@@ -3155,14 +2740,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-      if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
-        primaryV0 = 1;
+	  if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
+	    primaryV0 = 1;
 	  }
-		//store also PDG of the grandmother 
-		if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
-			TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
-			pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
-		}
+	  //store also PDG of the grandmother 
+	  if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+	    TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+	    pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
+	  }
 	}
       }
       
@@ -3192,7 +2777,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->status  = esdV0->GetOnFlyStatus();
 	v0datatpc->chi2    = esdV0->GetChi2V0();
 	v0datatpc->cospt   = esdV0->GetV0CosineOfPointingAngle(); 
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0datatpc->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0datatpc->primary = primaryV0;
@@ -3210,19 +2794,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->ptrack.ncl     = pncl;
 	v0datatpc->ptrack.neff    = pneff;
 	v0datatpc->ptrack.dedx    = pdedx;
-
-	//v0datatpc->ptrack.isTOFout   = 0;
-	//v0datatpc->ptrack.hasTOFtime = 0;
-	//v0datatpc->ptrack.isTOFmatched = 0;
-	//v0datatpc->ptrack.flength    =   0;
-	//v0datatpc->ptrack.ftimetof   = 0;
-	//v0datatpc->ptrack.exptoftimeel = 0;
-	//v0datatpc->ptrack.exptoftimemu = 0;
-	//v0datatpc->ptrack.exptoftimepi = 0;
-	//v0datatpc->ptrack.exptoftimeka = 0;
-	//v0datatpc->ptrack.exptoftimepr = 0;
-
-
 	v0datatpc->ptrack.dcaxy   = pdcaxy;
 	v0datatpc->ptrack.dcaz    = pdcaz;
 	v0datatpc->ptrack.pid     = p_pidCode;
@@ -3244,18 +2815,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->ntrack.ncl     = nncl;
 	v0datatpc->ntrack.neff    = nneff;
 	v0datatpc->ntrack.dedx    = ndedx;
-
-	//v0datatpc->ntrack.isTOFout   = 0;
-	//v0datatpc->ntrack.hasTOFtime = 0;
-	//v0datatpc->ntrack.isTOFmatched = 0;
-	//v0datatpc->ntrack.flength    =   0;
-	//v0datatpc->ntrack.ftimetof   = 0;
-	//v0datatpc->ntrack.exptoftimeel = 0;
-	//v0datatpc->ntrack.exptoftimemu = 0;
-	//v0datatpc->ntrack.exptoftimepi = 0;
-	//v0datatpc->ntrack.exptoftimeka = 0;
-	//v0datatpc->ntrack.exptoftimepr = 0;
-
 	v0datatpc->ntrack.dcaxy   = ndcaxy;
 	v0datatpc->ntrack.dcaz    = ndcaz;
 	v0datatpc->ntrack.pid     = n_pidCode;
@@ -3349,13 +2908,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-        //Pre-selection to reduce output size
-        // Pt cut on decay products
-        if (aodV0->Pt() < fMinPtV0) continue;
-        // No point in keeping low cospa values...
-        if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
-        //Reject on-the-fly tracks too
-        if (aodV0->GetOnFlyStatus() != 0 ) continue;
+      //Pre-selection to reduce output size
+      // Pt cut on decay products
+      if (aodV0->Pt() < fMinPtV0) continue;
+      if (aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
+      //Reject on-the-fly tracks too
+      if (aodV0->GetOnFlyStatus() != 0 ) continue;
       
 
 
@@ -3378,9 +2936,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  filterFlag_p +=2;	  
 	}
       }
-
-
-
 
 
       if(pTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
@@ -3436,6 +2991,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       // Double_t pVtxPos= v0->PrimaryVtxPosition();      
       
       Double_t lV0Radius      = aodV0->RadiusV0();
+      if (lV0Radius < fDecayRCut ) continue;
       Double_t lV0DecayLength = aodV0->DecayLength(myBestPrimaryVertex);
       
       Double_t deltaInvMassG     = aodV0->InvMass2Prongs(0,1,11,11);
@@ -3456,19 +3012,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       // Double_t ptL          = v0LambdaKF.GetPt();
       // Double_t ptAntiL      = v0AntiLambdaKF.GetPt();     
       
-      // Extract track information
-      
-      //      Double_t b[2], cov[3];
-      // if(!pTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-      // 	filterFlag_p += 32; // propagation failed!!!!!
-      
-      // Float_t pdcaxy   = b[0];
-      // Float_t pdcaz    = b[1];
-      // if(!nTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-      // 	filterFlag_n += 32; // propagation failed!!!!!
-      // Float_t ndcaxy   = b[0];
-      // Float_t ndcaz    = b[1];
-      
+       
       Short_t pcharge  = pTrack->Charge();
       Float_t ppt      = pTrack->Pt();
       Float_t pp       = pTrack->P(); 
@@ -3481,60 +3025,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Short_t pneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
       Float_t pdedx    = -10;
    
-      // Bool_t pIsTOFout=kFALSE;
-      // Bool_t pHasTOFTime=kTRUE;
-      // Bool_t pIsMatched=kFALSE;
-      // Float_t plengthtrack=-999;//in aod we do not have that information, beta must be: beta=inttime/timeTOF 
-      // Float_t ptimeTOF=-999;
-      // Float_t pfexptimeel=-999;
-      // Float_t pfexptimemu=-999;
-      // Float_t pfexptimepi=-999;
-      // Float_t pfexptimeka=-999;
-      // Float_t pfexptimepr=-999;  
-
-
+   
       if(pPid) {
 	pncl     = pPid->GetTPCsignalN();
 	pdedx    = pPid->GetTPCsignal();
-	//TOF
-
-	/*
-	if (pTrack->GetStatus()&AliESDtrack::kTOFpid){
-	  Double_t tof[5];
-	  pPid->GetIntegratedTimes(tof);
-	  pbeta = tof[0]/pPid->GetTOFsignal();
-	}
-	*/
-
-
-	// if ((pTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-	//   pIsTOFout=kTRUE;
-	
-
-	// if ((pTrack->GetStatus()&AliESDtrack::kTIME)==0)
-	//   pHasTOFTime=kFALSE;
-	
-
-	// if (!(pTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-	//   pIsMatched=kFALSE;
-	// else
-	//   pIsMatched=kTRUE;
-	
-	// ptimeTOF=pPid->GetTOFsignal();
-	
-	// Double_t pinttime[5]={0,0,0,0,0}; 
-	// pPid->GetIntegratedTimes(pinttime);// Returns the array with integrated times for each particle hypothesis
-	// pfexptimeel=pinttime[0];
-	// pfexptimemu=pinttime[1];
-	// pfexptimepi=pinttime[2];
-	// pfexptimeka=pinttime[3];
-	// pfexptimepr=pinttime[4];  
-
-
-
-
-
       }
+      
       TBits psharedTPC=pTrack->GetTPCSharedMap();
       Int_t psharedtpcclusters=psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
 
@@ -3554,54 +3050,11 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Short_t nncl     = -10;
       Short_t nneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
       Float_t ndedx    = -10;
-      //Float_t nbeta = -99;
 
-      // Bool_t nIsTOFout=kFALSE;
-      // Bool_t nHasTOFTime=kTRUE;
-      // Bool_t nIsMatched=kFALSE;
-      // Float_t nlengthtrack=-999;//in aod we do not have that information, beta must be: beta=inttime/timeTOF 
-      // Float_t ntimeTOF=-999;
-      // Float_t nfexptimeel=-999;
-      // Float_t nfexptimemu=-999;
-      // Float_t nfexptimepi=-999;
-      // Float_t nfexptimeka=-999;
-      // Float_t nfexptimepr=-999;  
-
-
+  
       if(pPid) {
 	nncl     = nPid->GetTPCsignalN();
 	ndedx    = nPid->GetTPCsignal();
-	//TOF
-	/*
-	if (nTrack->GetStatus()&AliESDtrack::kTOFpid){
-	  Double_t tof[5];
-	  nPid->GetIntegratedTimes(tof);
-	  nbeta = tof[0]/nPid->GetTOFsignal();
-	  }*/
-
-
-	// if ((nTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-	//   nIsTOFout=kTRUE;
-	
-
-	// if ((nTrack->GetStatus()&AliESDtrack::kTIME)==0)
-	//   nHasTOFTime=kFALSE;
-	
-	// if (!(nTrack->GetStatus()&AliESDtrack::kTOFmismatch)==0)
-	//   nIsMatched=kFALSE;
-	// else
-	//   nIsMatched=kTRUE;
-       
-	// ntimeTOF=nPid->GetTOFsignal();
-	
-	// Double_t ninttime[5]={0,0,0,0,0}; 
-	// nPid->GetIntegratedTimes(ninttime);// Returns the array with integrated times for each particle hypothesis
-	// nfexptimeel=ninttime[0];
-	// nfexptimemu=ninttime[1];
-	// nfexptimepi=ninttime[2];
-	// nfexptimeka=ninttime[3];
-	// nfexptimepr=ninttime[4];  
-
       }
       
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
@@ -3688,7 +3141,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	    primaryV0 = 1;
 	  }
 	}
-    }
+      }
     
       
       
@@ -3720,7 +3173,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->status  = aodV0->GetOnFlyStatus();
 	v0data->chi2    = aodV0->Chi2V0();
 	v0data->cospt   = aodV0->CosPointingAngle(myBestPrimaryVertex);
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0data->dcav0   = aodV0->DcaV0ToPrimVertex();
 	v0data->dcadaughters = aodV0->DcaV0Daughters();
@@ -3728,34 +3180,15 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->pdg     = pdgV0;
 	v0data->pdgmother     = pdgmotherV0;
 	
-	//hljunggr 
-	//	v0data->y = aodV0->Y(pdgV0);
-	
 	// positive track
 	v0data->ptrack.p       = pp;
 	v0data->ptrack.pt      = ppt;
-	//	  v0data->ptrack.ptcon   = ppt_con;
-	//	  v0data->ptrack.tpcchi  = ptpcchi;
 	v0data->ptrack.eta     = peta;
 	v0data->ptrack.phi     = pphi;
 	v0data->ptrack.q       = pcharge;
 	v0data->ptrack.ncl     = pncl;
 	v0data->ptrack.neff    = pneff;
 	v0data->ptrack.dedx    = pdedx;
-	
-	//v0data->ptrack.isTOFout   = pIsTOFout;
-	//v0data->ptrack.hasTOFtime = pHasTOFTime;
-	//v0data->ptrack.isTOFmatched = pIsMatched;
-	//v0data->ptrack.flength    =   plengthtrack;
-	//v0data->ptrack.ftimetof   = ptimeTOF;
-	//v0data->ptrack.exptoftimeel = pfexptimeel;
-	//v0data->ptrack.exptoftimemu = pfexptimemu;
-	//v0data->ptrack.exptoftimepi = pfexptimepi;
-	//v0data->ptrack.exptoftimeka = pfexptimeka;
-	//v0data->ptrack.exptoftimepr = pfexptimepr;
-	
-	// v0data->ptrack.dcaxy   = pdcaxy;
-	// v0data->ptrack.dcaz    = pdcaz;
 	v0data->ptrack.pid     = p_pidCode;
 	v0data->ptrack.primary = p_primaryFlag;
 	v0data->ptrack.pttrue  = p_ptMC;
@@ -3763,34 +3196,15 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->ptrack.filter  = filterFlag_p;
 	v0data->ptrack.tpcnclS    = psharedtpcclusters;
 	
-	
-	
-	
 	// negative track
 	v0data->ntrack.p       = np;
 	v0data->ntrack.pt      = npt;
-	//	  v0data->ntrack.ptcon   = npt_con;
-	//	  v0data->ntrack.tpcchi  = ntpcchi;
 	v0data->ntrack.eta     = neta;
 	v0data->ntrack.phi     = nphi;
 	v0data->ntrack.q       = ncharge;
 	v0data->ntrack.ncl     = nncl;
 	v0data->ntrack.neff    = nneff;
 	v0data->ntrack.dedx    = ndedx;
-	/*
-	  v0data->ntrack.isTOFout   = nIsTOFout;
-	  v0data->ntrack.hasTOFtime = nHasTOFTime;
-	  v0data->ntrack.isTOFmatched = nIsMatched;
-	  v0data->ntrack.flength    =   nlengthtrack;
-	  v0data->ntrack.ftimetof   = ntimeTOF;
-	  v0data->ntrack.exptoftimeel = nfexptimeel;
-	  v0data->ntrack.exptoftimemu = nfexptimemu;
-	  v0data->ntrack.exptoftimepi = nfexptimepi;
-	  v0data->ntrack.exptoftimeka = nfexptimeka;
-	  v0data->ntrack.exptoftimepr = nfexptimepr;
-	*/
-	// v0data->ntrack.dcaxy   = ndcaxy;
-	// v0data->ntrack.dcaz    = ndcaz;
 	v0data->ntrack.pid     = n_pidCode;
 	v0data->ntrack.primary = n_primaryFlag;
 	v0data->ntrack.pttrue  = n_ptMC;
@@ -3810,192 +3224,191 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     
     
     // ################################
-    // #### BEGINNING OF V0 CODE ######
+    // #### BEGINNING OF V0 CODE ###### AOD
     // ################################
     // This is the begining of the V0 loop  
     
     
     
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) {
-       AliAODv0 *aodV0 = AODevent->GetV0(iV0);
-       if (!aodV0) continue;
+      AliAODv0 *aodV0 = AODevent->GetV0(iV0);
+      if (!aodV0) continue;
        
-       // common part
+      // common part
        
-       // AliAODTrack (V0 Daughters)
-       AliAODVertex* vertex = aodV0->GetSecondaryVtx();
-       if (!vertex) {
-	 Printf("ERROR: Could not retrieve vertex");
-	 continue;
-       }
+      // AliAODTrack (V0 Daughters)
+      AliAODVertex* vertex = aodV0->GetSecondaryVtx();
+      if (!vertex) {
+	Printf("ERROR: Could not retrieve vertex");
+	continue;
+      }
        
-       AliAODTrack *pTrack = (AliAODTrack*)vertex->GetDaughter(0);
-       AliAODTrack *nTrack = (AliAODTrack*)vertex->GetDaughter(1);
-       if (!pTrack || !nTrack) {
-	 Printf("ERROR: Could not retrieve one of the daughter track");
-	 continue;
-       }
-       
-       
-       // Remove like-sign
-       if (pTrack->Charge() == nTrack->Charge()) {
-	 //cout<< "like sign, continue"<< endl;
-	 continue;
-       } 
-       
-       // Make sure charge ordering is ok
-       if (pTrack->Charge() < 0) {
-	 AliAODTrack* helpTrack = pTrack;
-	 pTrack = nTrack;
-	 nTrack = helpTrack;
-       } 
-       
-       // Eta cut on decay products
-       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
-	 continue;
-       
-       cout<<"Eta positive track:"<<pTrack->Eta()<<endl;
+      AliAODTrack *pTrack = (AliAODTrack*)vertex->GetDaughter(0);
+      AliAODTrack *nTrack = (AliAODTrack*)vertex->GetDaughter(1);
+      if (!pTrack || !nTrack) {
+	Printf("ERROR: Could not retrieve one of the daughter track");
+	continue;
+      }
        
        
-       TBits psharedTPC=pTrack->GetTPCSharedMap();
-       Int_t psharedtpcclusters=psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
+      // Remove like-sign
+      if (pTrack->Charge() == nTrack->Charge()) {
+	//cout<< "like sign, continue"<< endl;
+	continue;
+      } 
        
-       TBits nsharedTPC=nTrack->GetTPCSharedMap();
-       Int_t nsharedtpcclusters=nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
+      // Make sure charge ordering is ok
+      if (pTrack->Charge() < 0) {
+	AliAODTrack* helpTrack = pTrack;
+	pTrack = nTrack;
+	nTrack = helpTrack;
+      } 
+       
+      // Eta cut on decay products
+      if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
+	continue;
+       
+      cout<<"Eta positive track:"<<pTrack->Eta()<<endl;
        
        
-       //Pre-selection to reduce output size
-       // Pt cut on decay products
-       if (aodV0->Pt() < fMinPtV0) continue;
-       // No point in keeping low cospa values...
-       if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
-       //Reject on-the-fly tracks too
-       if (aodV0->GetOnFlyStatus() != 0 ) continue;
+      TBits psharedTPC=pTrack->GetTPCSharedMap();
+      Int_t psharedtpcclusters=psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
+       
+      TBits nsharedTPC=nTrack->GetTPCSharedMap();
+      Int_t nsharedtpcclusters=nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
+       
+       
+      //Pre-selection to reduce output size
+      // Pt cut on decay products
+      if (aodV0->Pt() < fMinPtV0) continue;
+      // No point in keeping low cospa values...
+      if (aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
+      //Reject on-the-fly tracks too
+      if (aodV0->GetOnFlyStatus() != 0 ) continue;
          
        
-       //check positive tracks
-       UShort_t filterFlag_p = 0;
+      //check positive tracks
+      UShort_t filterFlag_p = 0;
        
-       // TPC only cuts is bit 1 according to above macro
-       // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-       if(pTrack->TestFilterBit(128)) {
-	 cout<<"este track paso el corte bit 128"<<endl;
-	 filterFlag_p +=1;
-       }
-       cout<<"filterFlag_p="<<filterFlag_p<<endl;      
-       
-       
-       
-       
-       //check negative tracks
-       UShort_t filterFlag_n = 0;
-       
-       // TPC only cuts is bit 1 according to above macro
-       // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-       if(nTrack->TestFilterBit(128)) {
-	 filterFlag_n +=1;
-       }
+      // TPC only cuts is bit 1 according to above macro
+      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
+      if(pTrack->TestFilterBit(128)) {
+	cout<<"este track paso el corte bit 128"<<endl;
+	filterFlag_p +=1;
+      }
+      cout<<"filterFlag_p="<<filterFlag_p<<endl;      
        
        
        
-       Float_t alpha = aodV0->AlphaV0();
-       Float_t ptarm = aodV0->PtArmV0();
-       // Double_t pVtxPos= v0->PrimaryVtxPosition();      
        
-       Double_t lV0Radius      = aodV0->RadiusV0();
-       Double_t lV0DecayLength = aodV0->DecayLength(myBestPrimaryVertex);
+      //check negative tracks
+      UShort_t filterFlag_n = 0;
        
-       Double_t deltaInvMassG     = aodV0->InvMass2Prongs(0,1,11,11);
-       Double_t deltaInvMassK0s   = aodV0->MassK0Short()-0.498;
-       Double_t deltaInvMassL     = aodV0->MassLambda()-1.116;
-       Double_t deltaInvMassAntiL = aodV0->MassAntiLambda()-1.116;
+      // TPC only cuts is bit 1 according to above macro
+      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
+      if(nTrack->TestFilterBit(128)) {
+	filterFlag_n +=1;
+      }
        
        
-       if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
-	  TMath::Abs(deltaInvMassL) > fMassCut &&
-	  TMath::Abs(deltaInvMassAntiL) > fMassCut &&
-	  TMath::Abs(deltaInvMassG) > fMassCut )
-	 continue;
+       
+      Float_t alpha = aodV0->AlphaV0();
+      Float_t ptarm = aodV0->PtArmV0();
+      // Double_t pVtxPos= v0->PrimaryVtxPosition();      
+       
+      Double_t lV0Radius      = aodV0->RadiusV0();
+      if (lV0Radius < fDecayRCut ) continue;
+      Double_t lV0DecayLength = aodV0->DecayLength(myBestPrimaryVertex);
+       
+      Double_t deltaInvMassG     = aodV0->InvMass2Prongs(0,1,11,11);
+      Double_t deltaInvMassK0s   = aodV0->MassK0Short()-0.498;
+      Double_t deltaInvMassL     = aodV0->MassLambda()-1.116;
+      Double_t deltaInvMassAntiL = aodV0->MassAntiLambda()-1.116;
        
        
-       // TODO: Why should these be different? Different mass hypothesis = energy loss
-       // This is not important for us as we focus on the decay products!
-       // Double_t ptK0s        = v0K0sKF.GetPt(); 
-       // Double_t ptL          = v0LambdaKF.GetPt();
-       // Double_t ptAntiL      = v0AntiLambdaKF.GetPt();     
+      if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
+	 TMath::Abs(deltaInvMassL) > fMassCut &&
+	 TMath::Abs(deltaInvMassAntiL) > fMassCut &&
+	 TMath::Abs(deltaInvMassG) > fMassCut )
+	continue;
        
-       // Extract track information
        
-       // Double_t b[2], cov[3];
-       // if(!pTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
-       // 	 filterFlag_p += 32; // propagation failed!!!!!
+      // TODO: Why should these be different? Different mass hypothesis = energy loss
+      // This is not important for us as we focus on the decay products!
+      // Double_t ptK0s        = v0K0sKF.GetPt(); 
+      // Double_t ptL          = v0LambdaKF.GetPt();
+      // Double_t ptAntiL      = v0AntiLambdaKF.GetPt();     
        
-       // Float_t pdcaxy   = b[0];
-       // Float_t pdcaz    = b[1];
-       // if(!nTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
-       // 	 filterFlag_n += 32; // propagation failed!!!!!
-       // Float_t ndcaxy   = b[0];
-       // Float_t ndcaz    = b[1];
+      // Extract track information
        
-       Short_t pcharge  = pTrack->Charge();
-       Float_t ppt      = pTrack->Pt();
-       Float_t pp       = pTrack->P(); 
-       Float_t peta     = pTrack->Eta();
-       Float_t pphi     = pTrack->Phi();
-       //	Float_t ptpcchi  = pTrack->Chi2perNDF();
+      // Double_t b[2], cov[3];
+      // if(!pTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	 filterFlag_p += 32; // propagation failed!!!!!
        
-       AliAODPid* pPid = pTrack->GetDetPid();
-       Short_t pncl     = -10;
-       Short_t pneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
-       Float_t pdedx    = -10;
-       //       Float_t pbeta = -99;
-       if(pPid) {
-	 pncl     = pPid->GetTPCsignalN();
-	 pdedx    = pPid->GetTPCsignal();
-	 //TOF
-	 if (pTrack->GetStatus()&AliESDtrack::kTOFpid){
-	   Double_t tof[5];
-	   pPid->GetIntegratedTimes(tof);
-	   //	   pbeta = tof[0]/pPid->GetTOFsignal();
-	 }
-       }
+      // Float_t pdcaxy   = b[0];
+      // Float_t pdcaz    = b[1];
+      // if(!nTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	 filterFlag_n += 32; // propagation failed!!!!!
+      // Float_t ndcaxy   = b[0];
+      // Float_t ndcaz    = b[1];
        
-       Short_t ncharge  = nTrack->Charge();
-       Float_t npt      = nTrack->Pt();
-       Float_t np       = nTrack->P(); 
-       Float_t neta     = nTrack->Eta();
-       Float_t nphi     = nTrack->Phi();
-       //	Float_t ntpcchi  = nTrack->Chi2perNDF();
+      Short_t pcharge  = pTrack->Charge();
+      Float_t ppt      = pTrack->Pt();
+      Float_t pp       = pTrack->P(); 
+      Float_t peta     = pTrack->Eta();
+      Float_t pphi     = pTrack->Phi();
+      //	Float_t ptpcchi  = pTrack->Chi2perNDF();
        
-       AliAODPid* nPid = nTrack->GetDetPid();
-       Short_t nncl     = -10;
-       Short_t nneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
-       Float_t ndedx    = -10;
-       //       Float_t nbeta = -99;
-       if(pPid) {
-	 nncl     = nPid->GetTPCsignalN();
-	 ndedx    = nPid->GetTPCsignal();
-	 //TOF
-	 if (nTrack->GetStatus()&AliESDtrack::kTOFpid){
-	   Double_t tof[5];
-	   nPid->GetIntegratedTimes(tof);
-	   //	   nbeta = tof[0]/nPid->GetTOFsignal();
-	 }
-       }
-       
-       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
-       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
-       Int_t   pdgmotherV0   = 0; 
-       Float_t p_ptMC        = 0;
-       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
-       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
-       Int_t   p_pdgMother   = 0;
-       Float_t n_ptMC        = 0;
-       Short_t n_pidCode     = 0; // 0 = real data / no mc track!
-       Short_t n_primaryFlag = 0; // 0 = real data / not primary mc track  
-       Int_t   n_pdgMother   = 0;
+      AliAODPid* pPid = pTrack->GetDetPid();
+      Short_t pncl     = -10;
+      Short_t pneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
+      Float_t pdedx    = -10;
 
-    if(fAnalysisMC) {
+      if(pPid) {
+	pncl     = pPid->GetTPCsignalN();
+	pdedx    = pPid->GetTPCsignal();
+	//TOF
+	if (pTrack->GetStatus()&AliESDtrack::kTOFpid){
+	  Double_t tof[5];
+	  pPid->GetIntegratedTimes(tof);
+	}
+      }
+       
+      Short_t ncharge  = nTrack->Charge();
+      Float_t npt      = nTrack->Pt();
+      Float_t np       = nTrack->P(); 
+      Float_t neta     = nTrack->Eta();
+      Float_t nphi     = nTrack->Phi();
+      //	Float_t ntpcchi  = nTrack->Chi2perNDF();
+       
+      AliAODPid* nPid = nTrack->GetDetPid();
+      Short_t nncl     = -10;
+      Short_t nneff    = 0; // This is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res
+      Float_t ndedx    = -10;
+
+      if(pPid) {
+	nncl     = nPid->GetTPCsignalN();
+	ndedx    = nPid->GetTPCsignal();
+	//TOF
+	if (nTrack->GetStatus()&AliESDtrack::kTOFpid){
+	  Double_t tof[5];
+	  nPid->GetIntegratedTimes(tof);
+	}
+      }
+       
+      Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
+      Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
+      Int_t   pdgmotherV0   = 0; 
+      Float_t p_ptMC        = 0;
+      Short_t p_pidCode     = 0; // 0 = real data / no mc track!
+      Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
+      Int_t   p_pdgMother   = 0;
+      Float_t n_ptMC        = 0;
+      Short_t n_pidCode     = 0; // 0 = real data / no mc track!
+      Short_t n_primaryFlag = 0; // 0 = real data / not primary mc track  
+      Int_t   n_pdgMother   = 0;
+
+      if(fAnalysisMC) {
 	
 	//
 	// The following code was modified by Peter (18/8-2015)
@@ -4067,7 +3480,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	    primaryV0 = 1;
 	  }
 	}
-    }
+      }
      
       
       if(fTreeOption) {
@@ -4090,14 +3503,11 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0datatpc->ptarm   = ptarm;
 	v0datatpc->decayr  = lV0Radius;
 	v0datatpc->decayl  = lV0DecayLength;
-	// v0data->pdca    = TMath::Sqrt(pdcaxy*pdcaxy + pdcaz*pdcaz);
-	// v0data->ndca    = TMath::Sqrt(ndcaxy*ndcaxy + ndcaz*ndcaz);
 	
 	// New parameters
 	v0datatpc->status  = aodV0->GetOnFlyStatus();
 	v0datatpc->chi2    = aodV0->Chi2V0();
 	v0datatpc->cospt   = aodV0->CosPointingAngle(myBestPrimaryVertex);
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0datatpc->dcav0   = aodV0->DcaV0ToPrimVertex();
 	v0datatpc->dcadaughters = aodV0->DcaV0Daughters();
@@ -4108,28 +3518,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	// positive track
 	v0datatpc->ptrack.p       = pp;
 	v0datatpc->ptrack.pt      = ppt;
-	//	  v0data->ptrack.ptcon   = ppt_con;
-	//	  v0data->ptrack.tpcchi  = ptpcchi;
 	v0datatpc->ptrack.eta     = peta;
 	v0datatpc->ptrack.phi     = pphi;
 	v0datatpc->ptrack.q       = pcharge;
 	v0datatpc->ptrack.ncl     = pncl;
 	v0datatpc->ptrack.neff    = pneff;
 	v0datatpc->ptrack.dedx    = pdedx;
-
-	//v0datatpc->ptrack.isTOFout   = 0;
-	//v0datatpc->ptrack.hasTOFtime = 0;
-	//v0datatpc->ptrack.isTOFmatched = 0;
-	//v0datatpc->ptrack.flength    =   0;
-	//v0datatpc->ptrack.ftimetof   = 0;
-	//v0datatpc->ptrack.exptoftimeel = 0;
-	//v0datatpc->ptrack.exptoftimemu = 0;
-	//v0datatpc->ptrack.exptoftimepi = 0;
-	//v0datatpc->ptrack.exptoftimeka = 0;
-	//v0datatpc->ptrack.exptoftimepr = 0;
-	
-	// v0datatpc->ptrack.dcaxy   = pdcaxy;
-	// v0datatpc->ptrack.dcaz    = pdcaz;
 	v0datatpc->ptrack.pid     = p_pidCode;
 	v0datatpc->ptrack.primary = p_primaryFlag;
 	v0datatpc->ptrack.pttrue  = p_ptMC;
@@ -4140,551 +3534,21 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	// negative track
 	v0datatpc->ntrack.p       = np;
 	v0datatpc->ntrack.pt      = npt;
-	//	  v0data->ntrack.ptcon   = npt_con;
-	//	  v0data->ntrack.tpcchi  = ntpcchi;
-	 v0datatpc->ntrack.eta     = neta;
-	 v0datatpc->ntrack.phi     = nphi;
-	 v0datatpc->ntrack.q       = ncharge;
-	 v0datatpc->ntrack.ncl     = nncl;
-	 v0datatpc->ntrack.neff    = nneff;
-	 v0datatpc->ntrack.dedx    = ndedx;
-	 /*
-	   v0datatpc->ntrack.isTOFout   = 0;
-	   v0datatpc->ntrack.hasTOFtime = 0;
-	   v0datatpc->ntrack.isTOFmatched = 0;
-	   v0datatpc->ntrack.flength    =   0;
-	   v0datatpc->ntrack.ftimetof   = 0;
-	   v0datatpc->ntrack.exptoftimeel = 0;
-	   v0datatpc->ntrack.exptoftimemu = 0;
-	   v0datatpc->ntrack.exptoftimepi = 0;
-	   v0datatpc->ntrack.exptoftimeka = 0;
-	   v0datatpc->ntrack.exptoftimepr = 0;
-	 */
-	 // v0datatpc->ntrack.dcaxy   = ndcaxy;
-	 // v0datatpc->ntrack.dcaz    = ndcaz;
-	 v0datatpc->ntrack.pid     = n_pidCode;
-	 v0datatpc->ntrack.primary = n_primaryFlag;
-	 v0datatpc->ntrack.pttrue  = n_ptMC;
-	 v0datatpc->ntrack.mother  = n_pdgMother;
-	 v0datatpc->ntrack.filter  = filterFlag_n;
-	 v0datatpc->ntrack.tpcnclS    = nsharedtpcclusters;
+	v0datatpc->ntrack.eta     = neta;
+	v0datatpc->ntrack.phi     = nphi;
+	v0datatpc->ntrack.q       = ncharge;
+	v0datatpc->ntrack.ncl     = nncl;
+	v0datatpc->ntrack.neff    = nneff;
+	v0datatpc->ntrack.dedx    = ndedx;
+	v0datatpc->ntrack.pid     = n_pidCode;
+	v0datatpc->ntrack.primary = n_primaryFlag;
+	v0datatpc->ntrack.pttrue  = n_ptMC;
+	v0datatpc->ntrack.mother  = n_pdgMother;
+	v0datatpc->ntrack.filter  = filterFlag_n;
+	v0datatpc->ntrack.tpcnclS    = nsharedtpcclusters;
 	 
       }
     }//end v0's loop
-    
-  }  
+  }
 }
-// //_________________________________________
-// Float_t  AliAnalysisTaskHighPtDeDx::GetSpherocity(AliESDEvent *esdevent, AliAnalysisFilter* fTrackFilterCuts, Float_t Absetacut, Float_t ptCut, Bool_t useTPCtrack){
 
-//   const Int_t nESDTracks = esdevent->GetNumberOfTracks();
-//   Int_t ntracksapproved=0;
-//   const AliESDVertex *vtxSPD = esdevent->GetPrimaryVertexSPD();
-//   if(useTPCtrack)
-//     if( vtxSPD->GetNContributors() < 1 || TMath::Abs(vtxSPD->GetZ()) > 10.0 ) 
-//       return -3;
-  
-  
-//   for(Int_t iT = 0; iT < nESDTracks; iT++) {
-    
-
-//     AliESDtrack* esdTrack = esdevent->GetTrack(iT);
-//     Float_t eta=10;
-//     Float_t pt=0;    
-
-//     AliESDtrack *trackTPC = 0;
-
-
-//     if(useTPCtrack){
-
-//       //      AliESDtrack *trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-//       trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-      
-//       if(!trackTPC) continue;
-      
-//       if(fTrackFilterTPC->IsSelected(trackTPC)==kFALSE){
-// 	delete trackTPC;
-// 	continue;
-//       }
-    
-//       if(trackTPC->Pt()>0.){
-// 	// only constrain tracks above threshold
-// 	AliExternalTrackParam exParam;
-// 	// take the B-field from the ESD, no 3D fieldMap available at this point
-// 	Bool_t relate = false;
-// 	relate = trackTPC->RelateToVertexTPC(vtxSPD,esdevent->GetMagneticField(),
-// 					   kVeryBig,&exParam);
-// 	if(!relate){
-// 	  delete trackTPC;
-// 	  continue;
-// 	}
-// 	trackTPC->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),
-// 		      exParam.GetCovariance());
-//       }
-//       else{
-// 	delete trackTPC;
-// 	continue;     
-//       }
-  
-
-//       eta=trackTPC->Eta();
-//       pt=trackTPC->Pt();
-
-
-//     }else{
-//       if(fTrackFilterGolden->IsSelected(esdTrack)==kFALSE)
-// 	continue;
-      
-//       eta=esdTrack->Eta();
-//       pt=esdTrack->Pt();
-//     }
-
-
-
-
-//     if(TMath::Abs(eta)>Absetacut)
-//       continue;
-
-//     if(pt<ptCut)
-//       continue;
-
-//     ntracksapproved++;
-
-//     if(useTPCtrack)
-//       if(trackTPC)
-// 	delete trackTPC;
-
-//   }
-
-//   if(ntracksapproved<3)//events with more than 2 primary charged particles
-//     return -2;
-  
-  
-//   Float_t *pxA=new Float_t[ntracksapproved];
-//   Float_t *pyA=new Float_t[ntracksapproved];
-//   Float_t sumapt=0;
-//   Int_t counter=0;
-//   for(Int_t iT = 0; iT < nESDTracks; iT++) {
-    
-//     AliESDtrack* esdTrack = esdevent->GetTrack(iT);
-//     Float_t eta=10;
-//     Float_t pt=0;    
-//     Float_t px=0;    
-//     Float_t py=0;    
-       
-//     AliESDtrack *trackTPC = 0;
-
-//     if(useTPCtrack){
-      
-//       //      AliESDtrack *trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-//       trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-      
-//       if(!trackTPC) continue;
-      
-//       if(fTrackFilterTPC->IsSelected(trackTPC)==kFALSE){
-// 	delete trackTPC;
-// 	continue;
-//       }
-      
-      
-//       if(trackTPC->Pt()>0.){
-// 	// only constrain tracks above threshold
-// 	AliExternalTrackParam exParam;
-// 	// take the B-field from the ESD, no 3D fieldMap available at this point
-// 	Bool_t relate = false;
-// 	relate = trackTPC->RelateToVertexTPC(vtxSPD,esdevent->GetMagneticField(),
-// 					     kVeryBig,&exParam);
-// 	if(!relate){
-// 	  delete trackTPC;
-// 	  continue;
-// 	}
-// 	trackTPC->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),
-// 		      exParam.GetCovariance());
-//       }
-//       else{
-// 	delete trackTPC;
-// 	continue;     
-//       }
-    
-
-//       eta=trackTPC->Eta();
-//       pt=trackTPC->Pt();
-//       px=trackTPC->Px();
-//       py=trackTPC->Py();
-
-
-//     }else{
-//       if(fTrackFilterGolden->IsSelected(esdTrack)==kFALSE)
-// 	continue;
-      
-//       eta=esdTrack->Eta();
-//       pt=esdTrack->Pt();
-//       px=esdTrack->Px();
-//       py=esdTrack->Py();
-
-
-//     }
-
-
-
-
-//     if(TMath::Abs(eta)>Absetacut)
-//       continue;
-
-//     if(pt<ptCut)
-//       continue;
-
-//     pxA[counter]=px;
-//     pyA[counter]=py;
-//     sumapt+=pt;
-//     counter++;
-
-//     if(useTPCtrack)
-//       if(trackTPC)
-// 	delete trackTPC;
-    
-    
-//   }
-
-//   Float_t pFull = 0;
-//   Float_t Spherocity = 2;
-//   //Getting thrust
-//   for(Int_t i = 0; i < 360; ++i){
-//     Float_t numerador = 0;
-//     Float_t phiparam  = 0;
-//     Float_t nx = 0;
-//     Float_t ny = 0;
-//     phiparam=((TMath::Pi()) * i) / 180; // parametrization of the angle
-//     nx = TMath::Cos(phiparam);            // x component of an unitary vector n
-//     ny = TMath::Sin(phiparam);            // y component of an unitary vector n
-//     for(Int_t i1 = 0; i1 < ntracksapproved; ++i1){
-//       numerador += TMath::Abs(ny * pxA[i1] - nx * pyA[i1]);//product between momentum proyection in XY plane and the unitari vector.
-//     }
-//     pFull=TMath::Power( (numerador / sumapt),2 );
-//     if(pFull < Spherocity)//maximization of pFull
-//       {
-// 	Spherocity = pFull;
-//       }
-//   }
-
-
-//   Float_t spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
-
-//   if(pxA){// clean up array memory used for TMath::Sort
-//     delete[] pxA; 
-//     pxA=0;
-//   }
-//   if(pyA){// clean up array memory used for TMath::Sort
-//     delete[] pyA; 
-//     pyA=0;
-//   }
-
-//   return spherocity;
-
-
-// }
-// //_________________________________________________________________________________________________________________________________________________
-// Float_t  AliAnalysisTaskHighPtDeDx::GetSphericity(AliESDEvent *esdevent, AliAnalysisFilter* fTrackFilterCuts, Float_t Absetacut, Float_t ptCut, Bool_t useTPCtrack){
-
-//   const Int_t nESDTracks = esdevent->GetNumberOfTracks();
-//   Int_t ntracksapproved=0;
-
-//   const AliESDVertex *vtxSPD = esdevent->GetPrimaryVertexSPD();
-//   if(useTPCtrack)
-//     if( vtxSPD->GetNContributors() < 1 || TMath::Abs(vtxSPD->GetZ()) > 10.0 ) 
-//       return -3;
-
-
-//   Double_t s00gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s01gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s10gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s11gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t sumaptg=0;
-
-//   for(Int_t iT = 0; iT < nESDTracks; iT++) {
-    
-//     AliESDtrack* esdTrack = esdevent->GetTrack(iT);
-//     Float_t eta=10;
-//     Float_t pt=0;    
-//     Float_t px=0;    
-//     Float_t py=0;    
-//     AliESDtrack *trackTPC = 0;
-
-//     if(useTPCtrack){
-      
-//       //AliESDtrack *trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-//       trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(esdevent),esdTrack->GetID());
-      
-//       if(!trackTPC) continue;
-      
-//       if(fTrackFilterTPC->IsSelected(trackTPC)==kFALSE){
-// 	delete trackTPC;
-// 	continue;
-//       }
-      
-//       if(trackTPC->Pt()>0.){
-// 	// only constrain tracks above threshold
-// 	AliExternalTrackParam exParam;
-// 	// take the B-field from the ESD, no 3D fieldMap available at this point
-// 	Bool_t relate = false;
-// 	relate = trackTPC->RelateToVertexTPC(vtxSPD,esdevent->GetMagneticField(),
-// 					     kVeryBig,&exParam);
-// 	if(!relate){
-// 	  delete trackTPC;
-// 	  continue;
-// 	}
-// 	trackTPC->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),
-// 		      exParam.GetCovariance());
-//       }
-//       else{
-// 	delete trackTPC;
-// 	continue;     
-//       }
-      
-//       eta=trackTPC->Eta();
-//       pt=trackTPC->Pt();
-//       px=trackTPC->Px();
-//       py=trackTPC->Py();
-
-      
-//     }else{
-//       if(fTrackFilterGolden->IsSelected(esdTrack)==kFALSE)
-// 	continue;
-      
-//       eta=esdTrack->Eta();
-//       pt=esdTrack->Pt();
-//       px=esdTrack->Px();
-//       py=esdTrack->Py();
-      
-
-//     }
-
-
-//     if(TMath::Abs(eta)>Absetacut)
-//       continue;
-
-//     if(pt<ptCut)
-//       continue;
-
-//     ntracksapproved++;
-
-//     sumaptg+=pt;
-
-//     s00gl += (px * px)/ pt;//&&&&&&&&&&&&&&&&&&&&&
-//     s01gl += (px * py)/ pt;//&&&&&&&&&&&&&&&&&&&&&
-//     s10gl += (py * px)/ pt;//&&&&&&&&&&&&&&&&&&&&&
-//     s11gl += (py * py)/ pt;//&&&&&&&&&&&&&&&&&&&&&
-
-//     if(useTPCtrack)
-//       if(trackTPC)
-// 	delete trackTPC;
-    
-    
-//   }
-
-//   if(ntracksapproved<3)
-//     return -2;
-  
-
-//   //SPHERICITY
-//   Double_t S00gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t S01gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   //  Double_t S10gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t S11gl=0;//&&&&&&&&&&&&&&&&&&&&&
-  
-
-//   S00gl=s00gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   S01gl=s01gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   //  S10gl=s10gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   S11gl=s11gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-  
-//   Float_t sphericity=-2;//&&&&&&&&&&&&&&&&&&&&&
-  
-//   Float_t lambda1gl=((S00gl+S11gl)+TMath::Sqrt((S00gl+S11gl)*(S00gl+S11gl)-4*(S00gl*S11gl-S01gl*S01gl)))/2;//&&&&&&&&&&&&&&&&&&&&&
-//   Float_t lambda2gl=((S00gl+S11gl)-TMath::Sqrt((S00gl+S11gl)*(S00gl+S11gl)-4*(S00gl*S11gl-S01gl*S01gl)))/2;//&&&&&&&&&&&&&&&&&&&&&
-//   if((lambda2gl==0)&&(lambda1gl==0))//&&&&&&&&&&&&&&&&&&&&&
-//     sphericity=0;//&&&&&&&&&&&&&&&&&&&&&
-//   if(lambda1gl+lambda2gl!=0) //&&&&&&&&&&&&&&&&&&&&&//&&&&&&&&&&&&&&&&&&&&&
-//     sphericity=2*TMath::Min( lambda1gl,lambda2gl )/( lambda1gl+lambda2gl );//&&&&&&&&&&&&&&&&&&&&&
-  
-//   return sphericity;
-
-
-// }
-
-
-// //_________________________________________
-// Float_t  AliAnalysisTaskHighPtDeDx::GetSpherocityTrue(AliStack *stack, Float_t Absetacut, Float_t ptCut){
-//   Int_t nPrim  = stack->GetNprimary();
- 
-//   Int_t ntracksapproved=0;
-
-//   for(Int_t iMCTracks = 0; iMCTracks < nPrim; iMCTracks++) {
-    
-//     TParticle* trackmc = stack->Particle(iMCTracks);
-//     if (!trackmc) continue;
-//     // Check if particle is charged, and primary
-    
-//     Float_t etamc =trackmc ->Eta();
-//     Double_t ptmc=trackmc->Pt();
-//     //    Int_t pdgCode  = TMath::Abs(trackmc->GetPdgCode());
-    
-//     Bool_t isprimary = stack->IsPhysicalPrimary(iMCTracks);
-//     if(isprimary==0) continue;
-//     TParticlePDG* pdgPart =trackmc ->GetPDG();
-    
-//     if (pdgPart->Charge() == 0)
-//       continue;
-  
-//     if (TMath::Abs(etamc) > Absetacut) continue;
-//     if(ptmc < ptCut) continue;
-    
-//     ntracksapproved++;
-//   }
-
-//   if(ntracksapproved<3)
-//     return -2;
-  
-  
-//   Float_t *pxA=new Float_t[ntracksapproved];
-//   Float_t *pyA=new Float_t[ntracksapproved];
-//   Float_t sumapt=0;
-//   Int_t counter=0;
-
-//   for(Int_t iMCTracks = 0; iMCTracks < nPrim; iMCTracks++) {
-    
-//     TParticle* trackmc = stack->Particle(iMCTracks);
-//     if (!trackmc) continue;
-//     // Check if particle is charged, and primary
-    
-//     Float_t etamc =trackmc ->Eta();
-//     Double_t ptmc=trackmc->Pt();
-//     //    Int_t pdgCode  = TMath::Abs(trackmc->GetPdgCode());
-    
-//     Bool_t isprimary = stack->IsPhysicalPrimary(iMCTracks);
-//     if(isprimary==0) continue;
-//     TParticlePDG* pdgPart =trackmc ->GetPDG();
-    
-//     if (pdgPart->Charge() == 0)
-//       continue;
-  
-//     if (TMath::Abs(etamc) > Absetacut) continue;
-//     if(ptmc < ptCut) continue;
-    
-//     pxA[counter]=trackmc->Px();
-//     pyA[counter]=trackmc->Py();
-//     sumapt+=trackmc->Pt();
-//     counter++;
-
-//   } 
-
-//   Float_t pFull = 0;
-//   Float_t Spherocity = 2;
-//   //Getting thrust
-//   for(Int_t i = 0; i < 360; ++i){
-//     Float_t numerador = 0;
-//     Float_t phiparam  = 0;
-//     Float_t nx = 0;
-//     Float_t ny = 0;
-//     phiparam=((TMath::Pi()) * i) / 180; // parametrization of the angle
-//     nx = TMath::Cos(phiparam);            // x component of an unitary vector n
-//     ny = TMath::Sin(phiparam);            // y component of an unitary vector n
-//     for(Int_t i1 = 0; i1 < ntracksapproved; ++i1){
-//       numerador += TMath::Abs(ny * pxA[i1] - nx * pyA[i1]);//product between momentum proyection in XY plane and the unitari vector.
-//     }
-//     pFull=TMath::Power( (numerador / sumapt),2 );
-//     if(pFull < Spherocity)//maximization of pFull
-//       {
-// 	Spherocity = pFull;
-//       }
-//   }
-
-
-//   Float_t spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
-
-//   if(pxA){// clean up array memory used for TMath::Sort
-//     delete[] pxA; 
-//     pxA=0;
-//   }
-//   if(pyA){// clean up array memory used for TMath::Sort
-//     delete[] pyA; 
-//     pyA=0;
-//   }
-
-//   return spherocity;
-
-
-// }
-// //_________________________________________________________________________________________________________________________________________________
-// Float_t  AliAnalysisTaskHighPtDeDx::GetSphericityTrue(AliStack *stack, Float_t Absetacut, Float_t ptCut){
-
-//   Int_t nPrim  = stack->GetNprimary();
-//   Int_t ntracksapproved=0;
-
-//   Double_t s00gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s01gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s10gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t s11gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t sumaptg=0;
-
-//   for(Int_t iMCTracks = 0; iMCTracks < nPrim; iMCTracks++) {
-    
-//     TParticle* trackmc = stack->Particle(iMCTracks);
-//     if (!trackmc) continue;
-//     // Check if particle is charged, and primary
-    
-//     Float_t etamc =trackmc ->Eta();
-//     Double_t ptmc=trackmc->Pt();
-//     //    Int_t pdgCode  = TMath::Abs(trackmc->GetPdgCode());
-    
-//     Bool_t isprimary = stack->IsPhysicalPrimary(iMCTracks);
-//     if(isprimary==0) continue;
-//     TParticlePDG* pdgPart =trackmc ->GetPDG();
-    
-//     if (pdgPart->Charge() == 0)
-//       continue;
-  
-//     if (TMath::Abs(etamc) > Absetacut) continue;
-//     if(ptmc < ptCut) continue;
-
-//     ntracksapproved++;
-
-//     sumaptg+=trackmc->Pt();
-    
-//     s00gl += (trackmc->Px() * trackmc->Px())/trackmc->Pt();//&&&&&&&&&&&&&&&&&&&&&
-//     s01gl += (trackmc->Px() * trackmc->Py())/trackmc->Pt();//&&&&&&&&&&&&&&&&&&&&&
-//     s10gl += (trackmc->Py() * trackmc->Px())/trackmc->Pt();//&&&&&&&&&&&&&&&&&&&&&
-//     s11gl += (trackmc->Py() * trackmc->Py())/trackmc->Pt();//&&&&&&&&&&&&&&&&&&&&&
-    
-//   }
- 
-
-//   if(ntracksapproved<3)
-//     return -2;
-  
-
-//   //SPHERICITY
-//   Double_t S00gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t S01gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   //  Double_t S10gl=0;//&&&&&&&&&&&&&&&&&&&&&
-//   Double_t S11gl=0;//&&&&&&&&&&&&&&&&&&&&&
-  
-
-//   S00gl=s00gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   S01gl=s01gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   //  S10gl=s10gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-//   S11gl=s11gl/sumaptg;//&&&&&&&&&&&&&&&&&&&&&
-  
-//   Float_t sphericity=-2;//&&&&&&&&&&&&&&&&&&&&&
-  
-//   Float_t lambda1gl=((S00gl+S11gl)+TMath::Sqrt((S00gl+S11gl)*(S00gl+S11gl)-4*(S00gl*S11gl-S01gl*S01gl)))/2;//&&&&&&&&&&&&&&&&&&&&&
-//   Float_t lambda2gl=((S00gl+S11gl)-TMath::Sqrt((S00gl+S11gl)*(S00gl+S11gl)-4*(S00gl*S11gl-S01gl*S01gl)))/2;//&&&&&&&&&&&&&&&&&&&&&
-//   if((lambda2gl==0)&&(lambda1gl==0))//&&&&&&&&&&&&&&&&&&&&&
-//     sphericity=0;//&&&&&&&&&&&&&&&&&&&&&
-//   if(lambda1gl+lambda2gl!=0) //&&&&&&&&&&&&&&&&&&&&&//&&&&&&&&&&&&&&&&&&&&&
-//     sphericity=2*TMath::Min( lambda1gl,lambda2gl )/( lambda1gl+lambda2gl );//&&&&&&&&&&&&&&&&&&&&&
-  
-//   return sphericity;
-
-
-// }

@@ -138,6 +138,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001)
 {
   //
@@ -204,6 +205,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001)
 {
   //
@@ -302,6 +304,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseAdditionalCuts(c.fUseAdditionalCuts),
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
+  fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation)
 {
   //
@@ -358,6 +361,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="D0";
     fDauNames="K+pi";
@@ -372,6 +378,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
       break;
     }
     fPartName="Dstar";
@@ -388,6 +397,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Lambdac";
     fDauNames="V0+bachelor";
@@ -402,6 +414,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
       break;
     }
     fPartName="Dplus";
@@ -418,6 +433,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Lambdac";
     fDauNames="p+K+pi";
@@ -433,6 +451,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Ds";
     fDauNames="K+K+pi";
@@ -447,6 +468,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
       break;
     }
     fPartName="D0";
@@ -892,7 +916,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	AliDebug(3,"MC Lim Acc container filled\n");
 	if (fCFManager->GetParticleContainer()->GetNStep() == kStepGenLimAccNoAcc+1) {
 	  if (!(cfVtxHF-> MCAcceptanceStep())) {
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenLimAccNoAcc, fWeight);
+      if(!fFillMinimumSteps)
+        fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenLimAccNoAcc, fWeight);
 	    icountGenLimAccNoAcc++;
 	    AliDebug(3,"MC Lim Acc No Acc container filled\n");
 	  }
@@ -900,7 +925,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       }
 
       //MC
-      fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
+      if(!fFillMinimumSteps)
+        fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
       icountMC++;
       AliDebug(3,"MC container filled \n");
 
@@ -916,14 +942,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
           // filling the container if the vertex is ok
-          fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
+          if(!fFillMinimumSteps)
+            fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
           AliDebug(3,"Vertex cut passed and container filled\n");
           icountVertex++;
 
           //mc Refit requirement
           Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, &trackCuts[0]);
           if (mcRefitStep){
-            fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
+            if(!fFillMinimumSteps)
+              fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
             AliDebug(3,"MC Refit cut passed and container filled\n");
             icountRefit++;
           }
@@ -963,31 +991,55 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   AliDebug(2,Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
-
   for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
+    fHistEventsProcessed->Fill(2.5);
     AliAODRecoDecayHF* charmCandidate=0x0;
     switch (fDecayChannel){
     case 2:{
       charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate)) continue;
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate)){
+	fHistEventsProcessed->Fill(5.5);
+	continue;
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 21:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE)) continue; //DStar
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE)){
+	fHistEventsProcessed->Fill(5.5);
+	continue; //DStar
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 22:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE)) continue; //Cascade
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE)){ 
+	fHistEventsProcessed->Fill(5.5);
+	continue; //Cascade
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 31:
     case 32:
     case 33:{
       charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate)) continue;
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate)){
+	fHistEventsProcessed->Fill(5.5);
+	continue;
+      }else{
+	fHistEventsProcessed->Fill(4.5);	
+      }
+      break;
     }
     case 4:{
       charmCandidate = (AliAODRecoDecayHF4Prong*)arrayBranch->At(iCandid);
@@ -1069,14 +1121,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
 
       if (recoStep && recoContFilled && vtxCheck){
-        fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
+        if(!fFillMinimumSteps)
+          fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
         icountReco++;
         AliDebug(3,"Reco step  passed and container filled\n");
 
         //Reco in the acceptance -- take care of UNFOLDING!!!!
         Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(&trackCuts[0]);
         if (recoAcceptanceStep) {
-          fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
+          if(!fFillMinimumSteps)
+            fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
           icountRecoAcc++;
           AliDebug(3,"Reco acceptance cut passed and container filled\n");
 
@@ -1089,7 +1143,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
           //Number of ITS cluster requirements
           Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks, aodEvent);
           if (recoITSnCluster){
-            fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
+            if(!fFillMinimumSteps)
+              fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
             icountRecoITSClusters++;
             AliDebug(3,"Reco n ITS cluster cut passed and container filled\n");
 
@@ -1282,9 +1337,24 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       h[2][iC] =   *(cont->ShowProjection(iC,4));
     }
   }
-  else {
+  else if(fConfiguration == kCheetah){
     //h = new TH1D[3][12];
     nvarToPlot = 8;
+    for (Int_t ih = 0; ih<3; ih++){
+      h[ih] = new TH1D[nvarToPlot];
+    }
+    for(Int_t iC=0;iC<nvarToPlot; iC++){
+      // MC-level
+      h[0][iC] =   *(cont->ShowProjection(iC,0));
+      // MC-Acceptance level
+      h[1][iC] =   *(cont->ShowProjection(iC,1));
+      // Reco-level
+      h[2][iC] =   *(cont->ShowProjection(iC,4));
+    }
+  }
+  else if(fConfiguration == kFalcon){
+    //h = new TH1D[3][12];
+    nvarToPlot = 4;
     for (Int_t ih = 0; ih<3; ih++){
       h[ih] = new TH1D[nvarToPlot];
     }
@@ -1354,7 +1424,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       titles[11]="phi (rad)";
     }
   }
-  else {
+  else if(fConfiguration == kCheetah){
     //nvarToPlot = 8;
     titles = new TString[nvarToPlot];
     if (fDecayChannel==22) {
@@ -1375,6 +1445,21 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       titles[5]="centrality";
       titles[6]="fake";
       titles[7]="multiplicity";
+    }
+  }
+  else if(fConfiguration == kFalcon){
+    //nvarToPlot = 4;
+    titles = new TString[nvarToPlot];
+    if (fDecayChannel==22) {
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="centrality";
+      titles[3]="multiplicity";
+    } else {
+      titles[0]="pT_candidate (GeV/c)";
+      titles[1]="rapidity";
+      titles[2]="centrality";
+      titles[3]="multiplicity";
     }
   }
 
@@ -1403,6 +1488,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   c1->Divide(3,4);
   Int_t iPad=1;
   for(Int_t iVar=0; iVar<4; iVar++){
+    if(iVar>=fNvar) continue;
     c1->cd(iPad++);
     h[0][iVar].DrawCopy("p");
     c1->cd(iPad++);
@@ -1411,16 +1497,18 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     h[2][iVar].DrawCopy("p");
   }
 
-  TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
-  c2->Divide(3,4);
-  iPad=1;
-  for(Int_t iVar=4; iVar<8; iVar++){
-    c2->cd(iPad++);
-    h[0][iVar].DrawCopy("p");
-    c2->cd(iPad++);
-    h[1][iVar].DrawCopy("p");
-    c2->cd(iPad++);
-    h[2][iVar].DrawCopy("p");
+  if (fConfiguration == kSnail || fConfiguration == kCheetah){
+    TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
+    c2->Divide(3,4);
+    iPad=1;
+    for(Int_t iVar=4; iVar<8; iVar++){
+      c2->cd(iPad++);
+      h[0][iVar].DrawCopy("p");
+      c2->cd(iPad++);
+      h[1][iVar].DrawCopy("p");
+      c2->cd(iPad++);
+      h[2][iVar].DrawCopy("p");
+    }
   }
 
   if (fConfiguration == kSnail){
@@ -1491,9 +1579,13 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",2,0,2) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",6,0,6) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(4,"Candidates already filled");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(5,"Candidates OK in FillRecoCand");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -1563,6 +1655,20 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5anddataoverLHC16i2a(){
     fUseWeight=kTRUE;
 }
 //_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andLBToverLHC16i2a(){
+    // weight function from the ratio of the LHC16i2a MC
+    // using FONLL*Raa from Xu.Cao.Bass(LBT model)
+    
+    if(fHistoPtWeight) delete fHistoPtWeight;
+    fHistoPtWeight = new TH1F("histoWeight","histoWeight",500,0.,50.);
+    Float_t binc[500]={ -3.491009, -2.151267, -1.169817, -0.462113, 0.038852, 0.385901, 0.620406, 0.774498, 0.872869, 0.934235, 0.972536, 0.997905, 1.017465, 1.035981, 1.056389, 1.080233, 1.108019, 1.139503, 1.173928, 1.210210, 1.247090, 1.283254, 1.317421, 1.348413, 1.375204, 1.396948, 1.413000, 1.422920, 1.426469, 1.423596, 1.414424, 1.399224, 1.378394, 1.352429, 1.321897, 1.287417, 1.249627, 1.209171, 1.166675, 1.122735, 1.077901, 1.032675, 0.987496, 0.942748, 0.898751, 0.855766, 0.813999, 0.773607, 0.734700, 0.697350, 0.661596, 0.627448, 0.594895, 0.563911, 0.534455, 0.506477, 0.479923, 0.454732, 0.430845, 0.408201, 0.386738, 0.366399, 0.347127, 0.328866, 0.311564, 0.295172, 0.279641, 0.264928, 0.250988, 0.237781, 0.248506, 0.240198, 0.232287, 0.224750, 0.217563, 0.210707, 0.204160, 0.197906, 0.191927, 0.186209, 0.180735, 0.175494, 0.170472, 0.165657, 0.161039, 0.156606, 0.152350, 0.148261, 0.144331, 0.140552, 0.136916, 0.133416, 0.130046, 0.126800, 0.123671, 0.120654, 0.117744, 0.114937, 0.112226, 0.109608, 0.107080, 0.104636, 0.102273, 0.099988, 0.097778, 0.095638, 0.093567, 0.091561, 0.089618, 0.087735, 0.085910, 0.084141, 0.082424, 0.080759, 0.079143, 0.077574, 0.076051, 0.074571, 0.073134, 0.071737, 0.070379, 0.069059, 0.067775, 0.066526, 0.065311, 0.064128, 0.062977, 0.061856, 0.060764, 0.059700, 0.058664, 0.057654, 0.056670, 0.055710, 0.054775, 0.053862, 0.052972, 0.052103, 0.051255, 0.050428, 0.049620, 0.048831, 0.048061, 0.047308, 0.046573, 0.045855, 0.045152, 0.044466, 0.043795, 0.043139, 0.042498, 0.041870, 0.041256, 0.040656, 0.040068, 0.039493, 0.038930, 0.038379, 0.037839, 0.037310, 0.036793, 0.036286, 0.035789, 0.035302, 0.034825, 0.034358, 0.033900, 0.033451, 0.033010, 0.032578, 0.032155, 0.031740, 0.031332, 0.030932, 0.030540, 0.030155, 0.029778, 0.029407, 0.029043, 0.028686, 0.028335, 0.027991, 0.027653, 0.027320, 0.026994, 0.026674, 0.026359, 0.026049, 0.025745, 0.025447, 0.025153, 0.024864, 0.024581, 0.024302, 0.024027, 0.023758, 0.023492, 0.023232, 0.022975, 0.022723, 0.022474, 0.022230, 0.021990, 0.021754, 0.021521, 0.021292, 0.021066, 0.020845, 0.020626, 0.020411, 0.020199, 0.019991, 0.019786, 0.019584, 0.019385, 0.019189, 0.018995, 0.018805, 0.018618, 0.018433, 0.018251, 0.018072, 0.017895, 0.017721, 0.017549, 0.017380, 0.017214, 0.017049, 0.016887, 0.016727, 0.016570, 0.016415, 0.016262, 0.016111, 0.015962, 0.015815, 0.015670, 0.015527, 0.015386, 0.015247, 0.015110, 0.014974, 0.014841, 0.014709, 0.014579, 0.014450, 0.014324, 0.014199, 0.014075, 0.013953, 0.013833, 0.013714, 0.013597, 0.013481, 0.013367, 0.013254, 0.013143, 0.013033, 0.012924, 0.012817, 0.012711, 0.012606, 0.012503, 0.012401, 0.012300, 0.012200, 0.012102, 0.012004, 0.011908, 0.011813, 0.011719, 0.011626, 0.011535, 0.011444, 0.011355, 0.011266, 0.011179, 0.011092, 0.011007, 0.010922, 0.010839, 0.010756, 0.010675, 0.010594, 0.010514, 0.010435, 0.010357, 0.010280, 0.010204, 0.010128, 0.010053, 0.009980, 0.009907, 0.009834, 0.009763, 0.009692, 0.009622, 0.009553, 0.009485, 0.009417, 0.009350, 0.009284, 0.009218, 0.009153, 0.009089, 0.009026, 0.008963, 0.008901, 0.008839, 0.008778, 0.008718, 0.008658, 0.008599, 0.008540, 0.008483, 0.008425, 0.008368, 0.008312, 0.008257, 0.008202, 0.008147, 0.008093, 0.008040, 0.007987, 0.007934, 0.007883, 0.007831, 0.007780, 0.007730, 0.007680, 0.007631, 0.007582, 0.007533, 0.007485, 0.007438, 0.007390, 0.007344, 0.007298, 0.007252, 0.007206, 0.007161, 0.007117, 0.007073, 0.007029, 0.006986, 0.006943, 0.006900, 0.006858, 0.006817, 0.006775, 0.006734, 0.006694, 0.006653, 0.006613, 0.006574, 0.006535, 0.006496, 0.006457, 0.006419, 0.006381, 0.006344, 0.006307, 0.006270, 0.006233, 0.006197, 0.006161, 0.006126, 0.006090, 0.006055, 0.006021, 0.005986, 0.005952, 0.005918, 0.005885, 0.005852, 0.005819, 0.005786, 0.005754, 0.005722, 0.005690, 0.005658, 0.005627, 0.005596, 0.005565, 0.005534, 0.005504, 0.005474, 0.005444, 0.005415, 0.005385, 0.005356, 0.005327, 0.005299, 0.005270, 0.005242, 0.005214, 0.005186, 0.005159, 0.005132, 0.005104, 0.005078, 0.005051, 0.005025, 0.004998, 0.004972, 0.004946, 0.004921, 0.004895, 0.004870, 0.004845, 0.004820, 0.004796, 0.004771, 0.004747, 0.004723, 0.004699, 0.004675, 0.004651, 0.004628, 0.004605, 0.004582, 0.004559, 0.004536, 0.004514, 0.004491, 0.004469, 0.004447, 0.004425, 0.004404, 0.004382, 0.004361, 0.004339, 0.004318, 0.004297, 0.004277, 0.004256, 0.004235, 0.004215, 0.004195, 0.004175, 0.004155, 0.004135, 0.004116, 0.004096, 0.004077, 0.004058, 0.004039, 0.004020, 0.004001, 0.003982, 0.003964, 0.003945, 0.003927, 0.003909, 0.003891, 0.003873, 0.003855, 0.003837, 0.003820, 0.003802, 0.003785, 0.003768, 0.003751, 0.003734, 0.003717, 0.003700, 0.003684, 0.003667, 0.003651, 0.003634, 0.003618, 0.003602, 0.003586, 0.003570, 0.003555, 0.003539, 0.003523, 0.003508, 0.003493, 0.003477, 0.003462, 0.003447, 0.003432, 0.003417, 0.003403, 0.003388, 0.003373, 0.003359, 0.003345, 0.003330, 0.003316, 0.003302, 0.003288, 0.003274, 0.003260, 0.003246, 0.003233, 0.003219, 0.003206, 0.003192};
+    for(Int_t i=0; i<500; i++){
+        fHistoPtWeight->SetBinContent(i+1,binc[i]);
+    }
+    //SetWeightHistogram();
+    fUseWeight=kTRUE;
+}
+//_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC16i2abc(){
   // weight function from the ratio of the LHC16i2a+b+c MC
   // and FONLL calculations for pp data
@@ -1602,6 +1708,100 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc(){
   for(Int_t i=0; i<400; i++){
     fHistoPtWeight->SetBinContent(i+1,binc[i]);
   }
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a(){
+  // weight function from the ratio of the LHC16i2a MC
+  // 2.5-14 GeV/c using data and 0-2.5, 14-50 GeV/c using FONLL calculations
+
+  if(fHistoPtWeight) delete fHistoPtWeight;
+  fHistoPtWeight = new TH1F("histoWeight","histoWeight",500,0.,50.);
+  Float_t binc[500]={ 1.977386, 1.092380, 0.982069, 0.990772, 1.031869, 1.075578, 1.121814, 1.160738, 1.194926, 1.223790, 1.248790, 1.265487,
+    1.280118, 1.292664, 1.302578, 1.308750, 1.316914, 1.321336, 1.325862, 1.335865, 1.330973, 1.338854, 1.347197, 1.355202,
+    1.345868, 1.306835, 1.217713, 1.150661, 1.082328, 1.016336, 0.961361, 0.909377, 0.859229, 0.808615, 0.770923, 0.726400,
+    0.690444, 0.656639, 0.626977, 0.601282, 0.565640, 0.541549, 0.517613, 0.492610, 0.467891, 0.450866, 0.427611, 0.405115,
+    0.393432, 0.367097, 0.355256, 0.344176, 0.327230, 0.308159, 0.299667, 0.288000, 0.278949, 0.263341, 0.250445, 0.243064,
+    0.232859, 0.221800, 0.214465, 0.207126, 0.197129, 0.188575, 0.186439, 0.179715, 0.170882, 0.164423, 0.158682, 0.154019,
+    0.150277, 0.144272, 0.137206, 0.135669, 0.128931, 0.125974, 0.121932, 0.119566, 0.113806, 0.112343, 0.107325, 0.106804,
+    0.104220, 0.098339, 0.095757, 0.095992, 0.092098, 0.089896, 0.087719, 0.086209, 0.085378, 0.082050, 0.078781, 0.078904,
+    0.077688, 0.077198, 0.075539, 0.071257, 0.071342, 0.070415, 0.069445, 0.067272, 0.064635, 0.065670, 0.063817, 0.062011,
+    0.060226, 0.058354, 0.058203, 0.057580, 0.055477, 0.055900, 0.054993, 0.053452, 0.052578, 0.051701, 0.050199, 0.049844,
+    0.047829, 0.047402, 0.046873, 0.044984, 0.045633, 0.044068, 0.043317, 0.042371, 0.042091, 0.042391, 0.041007, 0.039471,
+    0.038575, 0.038065, 0.039097, 0.037241, 0.035288, 0.035440, 0.035264, 0.033790, 0.033902, 0.033853, 0.032486, 0.031943,
+    0.031140, 0.030939, 0.030288, 0.029462, 0.029969, 0.028097, 0.028703, 0.028627, 0.027646, 0.027564, 0.026505, 0.026356,
+    0.025599, 0.026124, 0.025300, 0.024600, 0.024092, 0.024186, 0.023315, 0.023520, 0.023087, 0.022226, 0.022345, 0.021455,
+    0.020492, 0.021519, 0.020416, 0.020084, 0.020114, 0.019717, 0.019508, 0.018334, 0.018877, 0.018658, 0.018210, 0.017702,
+    0.018155, 0.017342, 0.016846, 0.017155, 0.016306, 0.016247, 0.016075, 0.015419, 0.015835, 0.016264, 0.015473, 0.015212,
+    0.014994, 0.014338, 0.015062, 0.014039, 0.014740, 0.014412, 0.014111, 0.013556, 0.013372, 0.012951, 0.012977, 0.013086,
+    0.012727, 0.012118, 0.012176, 0.012056, 0.012350, 0.011744, 0.011840, 0.011740, 0.012028, 0.011028, 0.010922, 0.011132,
+    0.011492, 0.010939, 0.011151, 0.010446, 0.010507, 0.009898, 0.010788, 0.010553, 0.010305, 0.010137, 0.009395, 0.009406,
+    0.009338, 0.009635, 0.009477, 0.009497, 0.008915, 0.009116, 0.009080, 0.009294, 0.008765, 0.008222, 0.008483, 0.008666,
+    0.008659, 0.008378, 0.008100, 0.008121, 0.008041, 0.007868, 0.008032, 0.008100, 0.008079, 0.007581, 0.007421, 0.007118,
+    0.007416, 0.007828, 0.007152, 0.007088, 0.007122, 0.007133, 0.006934, 0.007103, 0.006555, 0.007113, 0.006829, 0.006883,
+    0.006288, 0.006291, 0.006312, 0.006090, 0.006457, 0.006410, 0.006449, 0.005728, 0.006082, 0.006032, 0.005872, 0.005989,
+    0.005934, 0.005962, 0.005698, 0.005851, 0.005615, 0.005442, 0.005838, 0.005589, 0.005422, 0.005286, 0.005219, 0.005153,
+    0.005222, 0.005520, 0.004971, 0.005049, 0.005134, 0.004912, 0.004870, 0.004990, 0.005039, 0.004782, 0.004498, 0.004962,
+    0.004755, 0.004995, 0.004437, 0.004686, 0.004753, 0.004703, 0.004486, 0.004614, 0.004152, 0.004107, 0.004131, 0.004349,
+    0.004254, 0.004112, 0.004103, 0.004045, 0.004095, 0.004148, 0.004417, 0.004104, 0.003765, 0.003868, 0.004080, 0.003937,
+    0.004091, 0.003892, 0.003849, 0.003681, 0.003834, 0.003530, 0.003934, 0.003552, 0.003714, 0.003282, 0.003898, 0.003909,
+    0.003685, 0.003800, 0.003469, 0.003311, 0.003483, 0.003242, 0.003083, 0.003145, 0.003158, 0.003073, 0.003331, 0.003388,
+    0.003156, 0.002935, 0.003256, 0.003261, 0.002972, 0.002966, 0.003312, 0.003253, 0.003122, 0.003075, 0.002978, 0.003029,
+    0.002883, 0.002793, 0.003039, 0.002905, 0.002511, 0.002779, 0.002964, 0.002755, 0.002747, 0.002863, 0.002777, 0.002514,
+    0.002775, 0.002845, 0.002427, 0.002540, 0.002406, 0.002490, 0.002592, 0.002457, 0.002560, 0.002223, 0.002582, 0.002725,
+    0.002456, 0.002258, 0.002419, 0.002630, 0.002263, 0.002158, 0.002518, 0.002364, 0.002034, 0.002077, 0.002132, 0.002602,
+    0.002309, 0.002357, 0.002333, 0.002194, 0.002213, 0.002270, 0.002202, 0.002308, 0.002042, 0.002417, 0.002220, 0.002359,
+    0.002305, 0.002082, 0.002036, 0.002075, 0.002176, 0.002291, 0.002174, 0.002057, 0.001983, 0.001972, 0.001997, 0.001875,
+    0.001958, 0.001838, 0.001895, 0.001868, 0.001996, 0.001807, 0.001765, 0.002055, 0.001933, 0.001797, 0.001908, 0.001816,
+    0.001790, 0.001774, 0.001731, 0.002141, 0.001511, 0.001603, 0.002065, 0.001799, 0.001736, 0.001954, 0.001836, 0.001729,
+    0.001817, 0.001671, 0.001766, 0.001652, 0.001706, 0.001519, 0.001649, 0.001518, 0.001505, 0.001552, 0.001531, 0.001730,
+    0.001717, 0.001442, 0.001626, 0.001668, 0.001591, 0.001509, 0.001313, 0.001555, 0.001393, 0.001587, 0.001363, 0.001360,
+    0.001785, 0.001410, 0.001363, 0.001278, 0.001427, 0.001407, 0.001102, 0.001358, 0.001408, 0.001509, 0.001399, 0.001411,
+    0.001391, 0.001284, 0.001641, 0.001205, 0.001172, 0.001277, 0.001163, 0.001321, 0.001243, 0.001284, 0.001353, 0.001219,
+    0.001338, 0.001204, 0.001206, 0.001250, 0.001127, 0.001366, 0.001240, 0.001124 };
+  
+  for(Int_t i=0; i<500; i++){
+    fHistoPtWeight->SetBinContent(i+1,binc[i]);
+  }
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModOhoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PRC 79, 044905 (2009)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,1.02369,1.41492,3.09519);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PLB 663, 55-60 (2008)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,0.9,5.0,2.9);
   fUseWeight=kTRUE;
 }
 
@@ -1727,6 +1927,18 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL8overLHC15l2a2(){
 	if(fFuncWeight) delete fFuncWeight;
 	fFuncWeight=new TF1("funcWeight","(x<28.5)*(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x))+(x>=28.5)*0.140023",0.15,40);
 	fFuncWeight->SetParameters(4.66092e+01, 4.27321e+01, 4.46858e+01, 1.67788e+00, -2.88457e-02, 4.40656e+00, -7.31064e-01, 2.96431e+00, -2.79976e-01);
+	fUseWeight=kTRUE;
+}
+
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL13overLHC17c3a12(){
+	// weight function from the ratio of the LHC17c3a1-LHC17c3a2 MC
+	// and FONLL calculations for pp data
+	// using D0 simulated pt distribution
+	if(fFuncWeight) delete fFuncWeight;
+	fFuncWeight=new TF1("funcWeight","(x<10.71)*(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x))+(x>=10.71)*2.192",0.15,40);
+	fFuncWeight->SetParameters(-8.28294e+04,1.04367e+00,1.43041e+02,1.40041e+00,-7.23198e-03,4.71629e+00,-3.15545e+00,2.36495e+00,-7.08928e-03);
 	fUseWeight=kTRUE;
 }
 

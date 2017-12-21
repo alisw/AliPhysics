@@ -45,6 +45,8 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   void InitSystematics();
   Double_t GetMedian(Double_t *daArray);
   Bool_t CheckMeritCutWinner(int cutChoice, double oldPars[3], double newPars[3]);
+  void BoostCut(TLorentzVector d1, TLorentzVector d2, TLorentzVector parent, Double_t *boostInfo);
+
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
@@ -72,42 +74,42 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   Bool_t fIsPhysicsSelected;
 
   //PID for EtC->Pi+Pi-K+K- Channel  
-  Double_t fPIDTPCMuon[4];
-  Double_t fPIDTPCElectron[4];
-  Double_t fPIDTPCPion[4];
-  Double_t fPIDTPCKaon[4];
-  Double_t fPIDTPCProton[4];
+  Double_t fPIDTPCMuon[7];
+  Double_t fPIDTPCElectron[7];
+  Double_t fPIDTPCPion[7];
+  Double_t fPIDTPCKaon[7];
+  Double_t fPIDTPCProton[7];
   
-  Double_t fPIDTOFMuon[4];
-  Double_t fPIDTOFElectron[4];
-  Double_t fPIDTOFPion[4];
-  Double_t fPIDTOFKaon[4];
-  Double_t fPIDTOFProton[4];
+  Double_t fPIDTOFMuon[7];
+  Double_t fPIDTOFElectron[7];
+  Double_t fPIDTOFPion[7];
+  Double_t fPIDTOFKaon[7];
+  Double_t fPIDTOFProton[7];
 
   //PID for EtC->K0s K+- Pi-+ Channel
-  Double_t fPIDTPCMuonPos[4];
-  Double_t fPIDTPCElectronPos[4];
-  Double_t fPIDTPCPionPos[4];
-  Double_t fPIDTPCKaonPos[4];
-  Double_t fPIDTPCProtonPos[4];
+  Double_t fPIDTPCMuonPos[7];
+  Double_t fPIDTPCElectronPos[7];
+  Double_t fPIDTPCPionPos[7];
+  Double_t fPIDTPCKaonPos[7];
+  Double_t fPIDTPCProtonPos[7];
   
-  Double_t fPIDTOFMuonPos[4];
-  Double_t fPIDTOFElectronPos[4];
-  Double_t fPIDTOFPionPos[4];
-  Double_t fPIDTOFKaonPos[4];
-  Double_t fPIDTOFProtonPos[4];
+  Double_t fPIDTOFMuonPos[7];
+  Double_t fPIDTOFElectronPos[7];
+  Double_t fPIDTOFPionPos[7];
+  Double_t fPIDTOFKaonPos[7];
+  Double_t fPIDTOFProtonPos[7];
  
-  Double_t fPIDTPCMuonNeg[4];
-  Double_t fPIDTPCElectronNeg[4];
-  Double_t fPIDTPCPionNeg[4];
-  Double_t fPIDTPCKaonNeg[4];
-  Double_t fPIDTPCProtonNeg[4];
+  Double_t fPIDTPCMuonNeg[7];
+  Double_t fPIDTPCElectronNeg[7];
+  Double_t fPIDTPCPionNeg[7];
+  Double_t fPIDTPCKaonNeg[7];
+  Double_t fPIDTPCProtonNeg[7];
   
-  Double_t fPIDTOFMuonNeg[4];
-  Double_t fPIDTOFElectronNeg[4];
-  Double_t fPIDTOFPionNeg[4];
-  Double_t fPIDTOFKaonNeg[4];
-  Double_t fPIDTOFProtonNeg[4];
+  Double_t fPIDTOFMuonNeg[7];
+  Double_t fPIDTOFElectronNeg[7];
+  Double_t fPIDTOFPionNeg[7];
+  Double_t fPIDTOFKaonNeg[7];
+  Double_t fPIDTOFProtonNeg[7];
   
   Int_t fVtxContrib;
   Double_t fVtxPos[3];
@@ -118,7 +120,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   Int_t fSpdVtxContrib;
   Double_t fSpdVtxPos[3];
   
-  Bool_t fIsVtxContributor[4];
+  Bool_t fIsVtxContributor[7];
   
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
@@ -166,6 +168,9 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
 
   //My histos and stuff
   TList *fListHist;
+  TList *fListHistKstar;
+  TList *fListHist2Rho4Pion;
+  TList *fListHistK0s3PiPi4K;
 
   TH1D *fHistNeventsEtaC; //Count potential EtaC events at each step
   TH2D *fMPiKvsMPiK; //Dalitz Plot, Mass first PiK combo vs Mass second PiK combo
@@ -185,6 +190,12 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f2KstarMinvFirstKstar;
   //    TH1D *f2KstarMinvSecondKstar;
   TH2D *f2KstarPtVsMinvEtaC;
+  TH2D *f2KstarEtaVsMinvEtaC;
+  TH2D *f2KstarEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f2KstarEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f2KstarSumPzVsMinvEtaC;
+  TH1D *f2KstarScalarSumP;
+  TH1D *f2KstarVectorSumPt;
   //    TH1D *f2KstarMinvEtaC;
   //1 Kstar case
   TH1D *f1KstarPtPiPlus;
@@ -202,6 +213,12 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f1KstarMinvKstar;
   //    TH1D *f1KstarMinvOtherPiKcombo;
   TH2D *f1KstarPtVsMinvEtaC;
+  TH2D *f1KstarEtaVsMinvEtaC;
+  TH2D *f1KstarEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f1KstarEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f1KstarSumPzVsMinvEtaC;
+  TH1D *f1KstarScalarSumP;
+  TH1D *f1KstarVectorSumPt;
   //    TH1D *f1KstarMinvEtaC;
   //0 Kstar case
   TH1D *f0KstarPtPiPlus;
@@ -219,6 +236,12 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f0KstarMinvFirstPiKcombo;
   //    TH1D *f0KstarMinvSecondPiKcombo;
   TH2D *f0KstarPtVsMinvEtaC;
+  TH2D *f0KstarEtaVsMinvEtaC;
+  TH2D *f0KstarEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f0KstarEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f0KstarSumPzVsMinvEtaC;
+  TH1D *f0KstarScalarSumP;
+  TH1D *f0KstarVectorSumPt;
   //    TH1D *f0KstarMinvEtaC;
 
   //K0s Channel
@@ -226,17 +249,24 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *fK0sPosDaughterPt;
   TH1D *fK0sNegDaughterPt;
   TH2D *fK0sPosVsNegDaughterPt;
-  TH1D *fPionK0sChannelPt;
-  TH1D *fKaonK0sChannelPt;
-  TH2D *fK0sPtVsMinv;
+  TH1D *fK0sPionPt;
+  TH1D *fK0sKaonPt;
+  TH2D *fK0sPtVsMinvK0s;
   //  TH1D *fK0sMinv;
   TH2D *fKPiPtVsMinvK0sChannel;
   //  TH1D *fKPiMinvK0sChannel;
-  TH2D *fMK0sVsMKPiK0sChannel; //Dalitz Plot, Mass K0s vs Mass of PiK combo
-  TH2D *fEtaCPtVsMinvK0sChannel;
+  TH2D *fM2K0sVsM2KPiK0sChannel; //Dalitz Plot, Mass K0s vs Mass of PiK combo
+  TH2D *fM2K0sPiVsM2KPiK0sChannel; //Dalitz Plot, Mass K0sPi vs Mass of PiK combo
+  TH2D *fM2K0sKVsM2KPiK0sChannel; //Dalitz Plot, Mass K0sK vs Mass of PiK combo
+  TH2D *fK0sPtVsMinvEtaC;
   //  TH1D *fEtaCMinvK0sChannel;
   TH1D *fK0sDecayLength;
-
+  TH2D *fK0sEtaVsMinvEtaC;
+  TH2D *fK0sEtaVsMinvEtaC400MeVPtMax;
+  TH2D *fK0sEtaVsMinvEtaC100MeVPtMax;
+  TH2D *fK0sSumPzVsMinvEtaC;
+  TH1D *fK0sScalarSumP;
+  TH1D *fK0sVectorSumPt;
 
   TH2D *fHistEtaCMassVsPt;
   TH1D *fHistEtaCMassCoherent;
@@ -275,7 +305,98 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *fV0DecayLength;
   TH1D *fV0Eta;
   TH1D *fCosPointingAngle;
+
+  //RhoRho Channel histos.
+  TH1D *fHistNeventsEtaCRhoChannel;
+  TH2D *f2RhoPtVsMinvRho;
+  TH2D *f4PionPtVsMinvRho;
+  TH2D *f2RhoPtVsMinvEtaC;
+  TH2D *f4PionPtVsMinvEtaC;
+
+  TH2D *f2RhoPtVsMinvOtherRho;
+  TH2D *f2RhoPtVsMinvNonRhoPairs;
+  TH2D *f4PiVs2PiMinv;
+  TH2D *f4PiVs2PiMinvSquared;
+  TH2D *fM2PiPiVsM2PiPi;
+  TH2D *f2RhoEtaVsMinvEtaC;
+  TH2D *f4PionEtaVsMinvEtaC;
+  TH2D *f2RhoEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f4PionEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f2RhoEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f4PionEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f2RhoSumPzVsMinvEtaC;
+  TH2D *f4PionSumPzVsMinvEtaC;
+  TH1D *f2RhoScalarSumP;
+  TH1D *f4PionScalarSumP;
+  TH1D *f2RhoVectorSumPt;
+  TH1D *f4PionVectorSumPt;
+
+  //3PiPi Channel histos
+  TH1D *fHistNeventsEtaC3PiPiChannel;
+  TH2D *f3PiPiPtVsMinvEtaC;
+  TH2D *f3PiPiEtaVsMinvEtaC;
+  TH2D *f3PiPiEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f3PiPiEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f3PiPiSumPzVsMinvEtaC;
+  TH1D *f3PiPiScalarSumP;
+  TH1D *f3PiPiVectorSumPt;
     
+  //Helicity cut histos
+  TH1D *fKstarParentPx;
+  TH1D *fKstarParentPy;
+  TH1D *fKstarParentPz;
+  TH1D *fKstarDaughterParentAngle;
+  TH1D *fKstarDaughterParentCosAngle;
+  TH1D *fKstarDaughterDaughterAngle;
+  TH1D *fKstarDaughterDaughterCosAngle;
+  TH1D *fKstarDaughterPtotal;
+  TH1D *fKstarDaughterPtotalNorm;
+
+  //Helicity cut histos - Check histos
+  TH1D *fKstarParentPxCheck;
+  TH1D *fKstarParentPyCheck;
+  TH1D *fKstarParentPzCheck;
+  TH1D *fKstarDaughterParentAngleCheck;
+  TH1D *fKstarDaughterParentCosAngleCheck;
+  TH1D *fKstarDaughterDaughterAngleCheck;
+  TH1D *fKstarDaughterDaughterCosAngleCheck;
+  TH1D *fKstarDaughterPtotalCheck;
+  TH1D *fKstarDaughterPtotalNormCheck;
+
+  //2Rho0 channel Helicity cut histos
+  TH1D *f2RhoParentPx;
+  TH1D *f2RhoParentPy;
+  TH1D *f2RhoParentPz;
+  TH1D *f2RhoDaughterParentAngle;
+  TH1D *f2RhoDaughterParentCosAngle;
+  TH1D *f2RhoDaughterDaughterAngle;
+  TH1D *f2RhoDaughterDaughterCosAngle;
+  TH1D *f2RhoDaughterPtotal;
+
+  //2Rho0 channel Helicity cut histos - Check histos
+  TH1D *f2RhoParentPxCheck;
+  TH1D *f2RhoParentPyCheck;
+  TH1D *f2RhoParentPzCheck;
+  TH1D *f2RhoDaughterParentAngleCheck;
+  TH1D *f2RhoDaughterParentCosAngleCheck;
+  TH1D *f2RhoDaughterDaughterAngleCheck;
+  TH1D *f2RhoDaughterDaughterCosAngleCheck;
+  TH1D *f2RhoDaughterPtotalCheck;
+
+  //4 Kaon channel
+  TH1D *fHistNeventsEtaC4KaonChannel;
+  TH2D *f4KaonPtVsMinvEtaC;
+  TH2D *f4KaonPtVsMinvKK;
+  TH2D *f4KVs2KMinv;
+  TH2D *f4KVs2KMinvSquared;
+  TH2D *fM2KKVsM2KK;
+  TH2D *f4KaonEtaVsMinvEtaC;
+  TH2D *f4KaonEtaVsMinvEtaC400MeVPtMax;
+  TH2D *f4KaonEtaVsMinvEtaC100MeVPtMax;
+  TH2D *f4KaonSumPzVsMinvEtaC;
+  TH1D *f4KaonScalarSumP;
+  TH1D *f4KaonVectorSumPt;
+
   TH1D *fHistZDCCuts;
   
   TList *fListSystematics;
@@ -287,7 +408,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcEtaC(const AliAnalysisTaskUpcEtaC&); //not implemented
   AliAnalysisTaskUpcEtaC& operator =(const AliAnalysisTaskUpcEtaC&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcEtaC, 4); 
+  ClassDef(AliAnalysisTaskUpcEtaC, 5); 
 };
 
 #endif

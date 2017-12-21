@@ -145,7 +145,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliGammaConversionAODBGHandler**    fBGPi0Handler;          // BG handler for pi0's
     AliVEvent*                          fInputEvent;            // current event
     AliMCEvent*                         fMCEvent;               // corresponding MC event
-    AliStack*                           fMCStack;               // stack belonging to MC event
     TList**                             fCutFolder;             // Array of lists for containers belonging to cut
     TList**                             fESDList;               // Array of lists with histograms with reconstructed properties
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
@@ -164,11 +163,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliCaloPhotonCuts*                  fCaloPhotonCuts;        // CaloPhotonCutObject
     TList*                              fNeutralPionCutArray;   // List with neutral pion cuts
     TList*                              fMesonCutArray;         // List with meson cuts
-    TF1*                                fmaxfit;                // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
-    Double_t                            flowerFactor;           // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
-    Double_t                            fupperFactor;           // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
-    Double_t                            fMinPi0Pt;              // Min Pi0 Pt cut in GeV
-    
+
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
     TH1F**                  fHistoConvGammaR;                   //! histogram conversion photon R
@@ -184,15 +179,15 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoPhotonPairInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoPhotonPairMatchedInvMassPt;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
-    TH2F**                  fHistoMotherMatchedInvMassPt;           //! array of histograms with invariant mass and Pt of rejected omega candidates due to
-                                                                    //! matching between a pcm track and cluster which do not belong to the pair forming pi0
-    TH2F**                  fHistoMotherAngleCutRejectedInvMassPt;  //! array of histograms with invariant mass and Pt of omega candidates rejected by pi0-gamma angle cut
     TH2F**                  fHistoPhotonPairYPt;                //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
     TH2F**                  fHistoPhotonPairAlphaPt;            //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
     TH2F**                  fHistoPhotonPairOpenAnglePt;        //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
     TH2F**                  fHistoPhotonPairEtaPhi;             //! array of histograms with Eta, Phi of pi0 candidates
     TH2F**                  fHistoMotherConvPhotonEtaPhi;       //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherInvMassPt;              //! array of histograms for invariant mass of omega candidates
+    TH2F**                  fHistoMotherMatchedInvMassPt;           //! array of histograms with invariant mass and Pt of rejected omega candidates due to
+                                                                    //! matching between a pcm track and cluster which do not belong to the pair forming pi0
+    TH2F**                  fHistoMotherAngleCutRejectedInvMassPt;  //! array of histograms with invariant mass and Pt of omega candidates rejected by pi0-gamma angle cut
     TH2F**                  fHistoMotherYPt;                    //! array of histograms for Y of omega candidates
     TH2F**                  fHistoMotherAlphaPt;                //! array of histograms with pT, Alpha of omega candidates
     TH2F**                  fHistoMotherEtaPhi;                 //! array of histograms with Eta and Phi of omega candidates
@@ -202,9 +197,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH1F**                  fHistoGammaFromMotherPt;            //! array of histograms with pT of gammas from omega candidates
 
     // BG histograms
-    TH2F**                  fHistoSamePi0DiffGammaBackInvMassPt;//! array of histograms with background generated by combining pi0's from the current event and photons from the handler
     TH2F**                  fHistoDiffPi0SameGammaBackInvMassPt;//! array of histograms with background generated by combining pi0's from the handler and photons from the current event
-    
+    TH2F**                  fHistoSamePi0DiffGammaBackInvMassPt;//! array of histograms with background generated by combining pi0's from the current event and photons from the handler
+
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
@@ -297,8 +292,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedPz;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedE;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackPos;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackNeg;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventPos;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventNeg;                                        //[fNGammaCandidates]
     Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
     Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
@@ -315,13 +310,18 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Int_t                   fReconMethod;                                       // switch for combining photons: PCM-cal,cal = 0; PCM-cal,PCM = 1; cal-cal,cal = 2;
                                                                                 // cal-cal,PCM = 3; PCM-PCM,cal = 4; PCM-PCM,PCM = 5
+    Double_t                flowerFactor;                                       // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
+    Double_t                fupperFactor;                                       // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
+    Double_t                fMinPi0Pt;                                          // Min Pi0 Pt cut in GeV
+    TF1*                    fmaxfit;                                            // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
+
     Bool_t                  fDoPiZeroGammaAngleCut;                             // flag for pi0-gamma angle cut
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 10);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 11);
 };
 
 #endif

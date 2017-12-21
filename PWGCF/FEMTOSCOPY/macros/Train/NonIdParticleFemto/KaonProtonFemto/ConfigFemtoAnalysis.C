@@ -85,11 +85,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
 
   int gammacut = 1;
-  double shqmax = 0.5;
+  double shqmax = 1.0;
   //if (runshlcms) shqmax = 2.0;
   //else shqmax = 0.9;
 
-  int nbinssh = 100;
+  int nbinssh = 200;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
@@ -334,7 +334,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 	  //Spherical harmonics (without kT bins)
 	  if(runSHCorrFctn == 1) {
-	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),1,nbinssh,0.0,shqmax,runshlcms);
+	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
 	    anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
 	  }
 

@@ -54,6 +54,9 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetMinCosPointingAngleV0toXi(double min);
   void SetParticleTypeXi(short x);
 
+  void SetRadiusXiMin(double aRadiusMin);
+  void SetRadiusXiMax(double aRadiusMax);
+
   //-----The fMinvPurityAidHistoXi is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the Xi collection
   void SetMinvPurityAidHistoXi(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidXi=true
   TH1D* GetMinvPurityAidHistoXi();
@@ -86,6 +89,9 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fInvMassXiMax;
   short  fParticleTypeXi;
 
+  double fRadiusXiMin;
+  double fRadiusXiMax;
+
   bool fBuildPurityAidXi;
   TH1D* fMinvPurityAidHistoXi;
 
@@ -97,4 +103,9 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 };
 
 inline TH1D* AliFemtoXiTrackCut::GetMinvPurityAidHistoXi() {return fMinvPurityAidHistoXi;}
+
+inline void AliFemtoXiTrackCut::SetRadiusXiMin(double aRadiusMin) {fRadiusXiMin = aRadiusMin;}
+inline void AliFemtoXiTrackCut::SetRadiusXiMax(double aRadiusMax) {fRadiusXiMax = aRadiusMax;}
+
+
 #endif

@@ -163,6 +163,8 @@ public:
 
   int ChargeXi() const;
 
+  void SetRadiusXi(double aRadiusXi);
+  double RadiusXi() const;
 
 protected: 
   int   fCharge;                           // Charge                
@@ -242,6 +244,8 @@ protected:
   double fTOFProtonTimeBac;
   double fTOFPionTimeBac;
   double fTOFKaonTimeBac;
+
+  double fRadiusXi;
   
 };
 
@@ -382,6 +386,8 @@ inline float AliFemtoXi::BacNSigmaTOFP() const {return fBacNSigmaTOFP;}
 
 inline int AliFemtoXi::ChargeXi() const {return fCharge;}
  
+inline void AliFemtoXi::SetRadiusXi(double aRadiusXi) {fRadiusXi = aRadiusXi;}
+inline double AliFemtoXi::RadiusXi() const {return fRadiusXi;}
 
 #endif
 

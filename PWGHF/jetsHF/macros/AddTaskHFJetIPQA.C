@@ -11,7 +11,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *nrhoMC               = "RhoMC",
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/l/lfeldkam/Weights.root",
                                            TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
-                                           TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/ResulFc.root",
+                                           TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/dummy_ResFct_XYSignificance_pp7TeV.root",
                                            Bool_t GenerateMeanSigmaCorrectionTable=kTRUE,
                                            Int_t nITSReq=6,
                                            const char* suffix = ""
@@ -63,6 +63,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             }
         }
     }
+    
+    
     Printf("%s :: File %s successfully loaded, setting up correction factors.",taskname,PathToWeights.Data());
     
     TString name(taskname),combinedName;
@@ -80,6 +82,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         Printf("%s :: Weights written to analysis task.",taskname);
         if(filecorrectionfactors) filecorrectionfactors->Close();
     }
+    
+    
     // Setup input containers
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
@@ -104,6 +108,12 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->SetMaxTrackPt(1000);
         }
     }
+    //==============================================================================
+    TH1::AddDirectory(0);
+    if( PathToJetProbabilityInput.EqualTo("") ) {
+    } else {
+        jetTask->SetResFunctionPID(PathToJetProbabilityInput.Data());
+    }
     // Set Monte Carlo / Data status
     //==============================================================================
     jetTask->SetIsPythia(isMC);
@@ -111,8 +121,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     //==============================================================================
     DefineCutsTaskpp(jetTask,-1.,100);
     if(IsESD) {
-    // Setup initial ESD track cuts
-    //==============================================================================
+        // Setup initial ESD track cuts
+        //==============================================================================
         jetTask->SetRunESD();
         AliESDtrackCuts * trackCuts = new AliESDtrackCuts();
         // trackCuts->SetMaxFractionSharedTPCClusters(0.4);
@@ -134,8 +144,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         // trackCuts->SetMaxDCAToVertexXY(1E10);
         jetTask->SetESDCuts(new AliESDtrackCuts(*trackCuts));
     }
-    else      jetTask->SetRunESD(kFALSE);
-
+    
     //  Final settings, pass to manager and set the containers
     //==============================================================================
     mgr->AddTask(jetTask);
@@ -143,14 +152,19 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname(combinedName);
     contname += "_histos";
-    
+ 
+
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
+ 
+
     
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
-    
     mgr->ConnectOutput (jetTask, 1, coutput1 );
+
+    
+    
     
     
     return jetTask;

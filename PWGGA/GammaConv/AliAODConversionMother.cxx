@@ -31,7 +31,7 @@ AliAODConversionParticle(),
   
 }
 
-AliAODConversionMother::AliAODConversionMother(AliKFConversionMother *kf):
+AliAODConversionMother::AliAODConversionMother(const AliKFConversionMother *kf):
 AliAODConversionParticle(),
 fMCLabel(kf->GetMCLabel()),
 fChi2(kf->GetChi2()),
@@ -57,7 +57,7 @@ fTrueMeson(0)
     fLabel[2]=0;
 }
 
-AliAODConversionMother::AliAODConversionMother(AliAODConversionPhoton *y1, AliAODConversionPhoton *y2):
+AliAODConversionMother::AliAODConversionMother(const AliAODConversionPhoton *y1, const AliAODConversionPhoton *y2):
 AliAODConversionParticle(),
 fMCLabel(-1),
 fChi2(-1),
@@ -93,7 +93,7 @@ fTrueMeson(0)
     fLabel[2]=0;
 }
 
-AliAODConversionMother::AliAODConversionMother(AliAODConversionMother *meson,AliAODConversionPhoton *gamma):
+AliAODConversionMother::AliAODConversionMother(const AliAODConversionMother *meson, const AliAODConversionPhoton *gamma):
 AliAODConversionParticle(),
 fMCLabel(-1),
 fChi2(-1),
@@ -133,7 +133,7 @@ fTrueMeson(0)
 }
 
 
-AliAODConversionMother::AliAODConversionMother(AliAODConversionMother *meson1,AliAODConversionMother *meson2):
+AliAODConversionMother::AliAODConversionMother(const AliAODConversionMother *meson1, const AliAODConversionMother *meson2):
 AliAODConversionParticle(),
 fMCLabel(-1),
 fChi2(-1),
@@ -173,7 +173,7 @@ fTrueMeson(0)
 }
 
 
-AliAODConversionMother::AliAODConversionMother(AliV0ParticleStrange *v0, AliAODConversionPhoton *gamma):
+AliAODConversionMother::AliAODConversionMother(const AliV0ParticleStrange *v0, const AliAODConversionPhoton *gamma):
 AliAODConversionParticle(),
 fMCLabel(-1),
 fChi2(-1),
@@ -217,17 +217,17 @@ AliAODConversionMother::~AliAODConversionMother() {
     // empty standard destructor
 }
 
-TParticle *AliAODConversionMother::GetMCParticle(AliStack *fMCStack){
-    if(!fMCStack){AliError("MC Stack not defined");return 0x0;}
+TParticle *AliAODConversionMother::GetMCParticle(AliMCEvent *mcEvent){
+    if(!mcEvent){AliError("MCEvent not defined");return 0x0;}
 
     if(fMCLabel>-1){
-		return fMCStack->Particle(fMCLabel);
+        return mcEvent->Particle(fMCLabel);
     }
     return 0x0;
 }
 
-Bool_t AliAODConversionMother::IsTrueMeson(AliStack *fMCStack,Int_t pdgcode){
-    TParticle *part=GetMCParticle(fMCStack);
+Bool_t AliAODConversionMother::IsTrueMeson(AliMCEvent *mcEvent,Int_t pdgcode){
+    TParticle *part=GetMCParticle(mcEvent);
 
     if(part){
 	// Check if it is a true photon
@@ -238,7 +238,7 @@ Bool_t AliAODConversionMother::IsTrueMeson(AliStack *fMCStack,Int_t pdgcode){
     return kFALSE;
 }
 
-Float_t AliAODConversionMother::CalculateDistanceBetweenPhotons(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2 , Double_t prodPoint[3]){
+Float_t AliAODConversionMother::CalculateDistanceBetweenPhotons(const AliAODConversionPhoton* y1, const AliAODConversionPhoton* y2 , Double_t prodPoint[3]){
 
    TVector3 a(y1->GetConversionX(),y1->GetConversionY(),y1->GetConversionZ());
    TVector3 b(y1->GetPx(),y1->GetPy(),y1->GetPz());
@@ -305,7 +305,7 @@ void AliAODConversionMother::CalculateDistanceOfClossetApproachToPrimVtx(const A
 }
 
 ///________________________________________________________________________
-void AliAODConversionMother::DetermineMesonQuality(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2){
+void AliAODConversionMother::DetermineMesonQuality(const AliAODConversionPhoton* y1, const AliAODConversionPhoton* y2){
    UChar_t photonQA1 = y1->GetPhotonQuality();
    UChar_t photonQA2 = y2->GetPhotonQuality();
    

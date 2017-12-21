@@ -31,7 +31,6 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "TChain.h"
-#include "AliStack.h"
 
 class iostream;
 

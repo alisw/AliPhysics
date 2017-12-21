@@ -6,6 +6,48 @@
 
 class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
   public:
+    /**
+     * @enum AcceptanceType_t
+     * @brief Enumeration for acceptance type
+     */
+    enum AcceptanceType_t {
+      kPCMAcceptance = 1,       //!< PCM Acceptance
+      kEMCALAcceptance = 2,     //!< EMCAL Acceptance
+      kPHOSAcceptance = 3       //!< PHOS Acceptance
+    };
+
+    /**
+     * @enum SupportedPdg_t
+     * @brief Definition of constants for PDG codes used within the task
+     */
+    enum SupportedPdg_t {
+      kPdgPi0 = 111,           //!< kPdgPi0
+      kPdgRho0 = 113,          //!< kPdgRho0
+      kPdgK0Long = 130,        //!< kPdgK0Long
+      kPdgPiPlus = 211,        //!< kPdgPiPlus
+      kPdgPiMinus = -211,      //!< kPdgPiMinus
+      kPdgRhoPlus = 213,       //!< kPdgRhoPlus
+      kPdgRhoMinus = -213,     //!< kPdgRhoMinus
+      kPdgEta = 221,           //!< kPdgEta
+      kPdgOmega = 223,         //!< kPdgOmega
+      kPdgK0Short = 310,       //!< kPdgK0Short
+      kPdgKStar = 313,         //!< kPdgKStar
+      kPdgKPlus = 321,         //!< kPdgKPlus
+      kPdgKMinus = -321,       //!< kPdgKMinus
+      kPdgEtaPrime = 331,      //!< kPdgEtaPrime
+      kPdgPhi = 333,           //!< kPdgPhi
+      kPdgJPsi = 443,          //!< kPdgJPsi
+      kPdgDeltaMinus = 1114,   //!< kPdgDeltaMinus
+      kPdgDelta0 = 2114,       //!< kPdgDelta0s
+      kPdgDeltaPlus = 2214,    //!< kPdgDeltaPlus
+      kPdgDeltaPlusPlus = 2224,//!< kPdgDeltaPlusPlus
+      kPdgSigmaMinus = 3112,   //!< kPdgSigmaMinus
+      kPdgSigma0 = 3212,       //!< kPdgSigma0
+      kPdgLambda = 3122,       //!< kPdgLambda
+      kPdgSigmaPlus = 3222,    //!< kPdgSigmaPlus
+      kPdgXiMinus = 3312,      //!< kPdgXiMinus
+      kPdgXi0 = 3322           //!< kPdgXi0
+    };
 
     AliAnalysisTaskGammaPureMC();
     AliAnalysisTaskGammaPureMC(const char *name);
@@ -18,23 +60,21 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    void IsInPCMAcceptance(TParticle* part, Int_t& acceptance);
-    void IsInPHOSAcceptance(TParticle* part, Int_t& acceptance);
-    void IsInEMCalAcceptance(TParticle* part, Int_t& acceptance);
+    bool IsInPCMAcceptance(TParticle* part) const;
+    bool IsInPHOSAcceptance(TParticle* part) const;
+    bool IsInEMCalAcceptance(TParticle* part) const;
     
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);
     void SetLogBinningXTH2(TH2* histoRebin);
+    void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     
   protected:
-    AliVEvent*            fInputEvent;                // current event
-    AliMCEvent*           fMCEvent;                   // corresponding MC event
-    AliStack*             fMCStack;                   // stack belonging to MC event
-    TList*                fOutputContainer;           // Output container
+    TList*                fOutputContainer;           //! Output container
     // histograms events
-    TH1F*                 fHistNEvents;               // number of events histo
-    TH1D*                 fHistXSection;              // xSection
-    TH1F*                 fHistPtHard;                // ptHard 
+    TH1F*                 fHistNEvents;               //! number of events histo
+    TH1D*                 fHistXSection;              //! xSection
+    TH1F*                 fHistPtHard;                //! ptHard 
     // histograms mesons
     TH2F*                 fHistPtYPi0;                //! histo for Pi0s
     TH2F*                 fHistPtYPiPl;               //! histo for Pi+s 
@@ -93,6 +133,24 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtYEtaPrimGGPCMEMCAcc; //! histo for EtaPrims gamma gamma channel, PCM-EMCal acceptance 
     TH2F*                 fHistPtYEtaPrimGGPCMPHOAcc; //! histo for Pi0s gamma gamma channel, PCM-PHOS acceptance
 
+    TH2F*                 fHistPtYPi0FromKGG;         //! histo for Pi0 from K gamma gamma channel
+    TH2F*                 fHistPtYPi0FromKGGPCMAcc;   //! histo for Pi0 from K gamma gamma channel, PCM acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCAcc;   //! histo for Pi0 from K gamma gamma channel, EMC acceptance
+    TH2F*                 fHistPtYPi0FromKGGPCMEMCAcc;//! histo for Pi0 from K gamma gamma channel, PCM-EMC acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCPCMAcc;//! histo for Pi0 from K gamma gamma channel, EMC-PCM acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0
+    TH2F*                 fHistPtYPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance
+    
+    TH2F*                 fHistPtAlphaPi0FromKGG;             //! histo for Pi0 from K gamma gamma channel (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGPCMAcc;       //! histo for Pi0 from K gamma gamma channel, PCM acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAcc;       //! histo for Pi0 from K gamma gamma channel, EMC acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGPCMEMCAcc;    //! histo for Pi0 from K gamma gamma channel, PCM-EMC acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCPCMAcc;    //! histo for Pi0 from K gamma gamma channel, EMC-PCM acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0 (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance (Alpha)
+    
+    
+	Int_t				  fIsK0;					  // k0 flag		
     Int_t                 fIsMC;                      // MC flag
 
     
@@ -100,7 +158,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 1);
+    ClassDef(AliAnalysisTaskGammaPureMC, 2);
 };
 
 #endif

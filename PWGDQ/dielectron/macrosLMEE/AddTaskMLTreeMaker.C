@@ -1,3 +1,4 @@
+
 AliAnalysisTaskMLTreeMaker *AddTaskMLTreeMaker(TString taskname = "ESDExample", 
                                              Double_t etaMin = -0.8,
                                              Double_t etaMax = 0.8,
@@ -21,7 +22,7 @@ if (!mgr->GetInputEventHandler()) {
 TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
  if (analysisType!="ESD"){
-   ::Error("AddTaskMLTreeMaker",  "analysis type NOT ESD --> some variables might not be filled");
+   ::Warning("AddTaskMLTreeMaker",  "analysis type NOT ESD --> some variables might not be filled");
  }
       
 
@@ -30,11 +31,11 @@ AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
    // ==========================================================================
   // user customization part
 
-  taskESD->SetEtaRange(etaMin, etaMax);
-  taskESD->SetPtRange(ptMin, ptMax);
+//  taskESD->SetEtaRange(etaMin, etaMax);
+//  taskESD->SetPtRange(ptMin, ptMax);
   taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
-  taskESD->SetLoCuts(kTRUE);
-  taskESD->SetFilterBit(4);// for AOD analyses: TPC cuts + any SPD hit
+//  taskESD->SetLoCuts(kTRUE);
+//  taskESD->SetFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);// for AOD analyses: TPC cuts + any SPD hit
   // ==========================================================================
 
   mgr->AddTask(taskESD);
@@ -56,4 +57,4 @@ AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
   mgr->ConnectOutput(taskESD, 1, coutESD);
  
  return taskESD;
- }
+}

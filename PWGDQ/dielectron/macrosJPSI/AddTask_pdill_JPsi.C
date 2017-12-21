@@ -1,8 +1,9 @@
 AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
-				    TString cfg="ConfigJpsi_jb_PbPb.C",
+				    TString cfg="ConfigJpsi_pd_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kAnyINT
+				    ULong64_t triggers=AliVEvent::kAnyINT,
+						TString period=""
 				    ){
 
   //get the current analysis manager
@@ -14,11 +15,14 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
   printf("------------------------------------------------\n");
 
   //Do we have an MC handler?
-  TString list = gSystem->Getenv("LIST");
+  TString list = gSystem->Getenv("REFERENCE_PRODUCTION");
   if(!list.IsNull()) {
-    if( list.Contains("LHC10c")   || list.Contains("LHC11h")   ) hasMC=kFALSE;  // add periods
-    if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;   // to be dapated
+    if( list.Contains("LHC16g1") || list.Contains("LHC16j1") || list.Contains("LHC16f5") ) hasMC=kTRUE;
   }
+	TString runNumString = gSystem->Getenv("RUNNO");
+	Int_t runnumber = runNumString.Atoi();
+
+	printf("HalloWelt REF_PROD: %s Run: %d %d\n", list.Data(), runnumber, __LINE__);
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
@@ -99,7 +103,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
       printf("================================================\n Skip config %02d\n",i); continue; }
 
     // load configuration
-    AliDielectron *jpsi=ConfigJpsi_pd_pp(i,hasMC,"");
+    AliDielectron *jpsi=ConfigJpsi_pd_pp(i,hasMC,runnumber,period);
     if(!jpsi) continue;
 
     // create unique title

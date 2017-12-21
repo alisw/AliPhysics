@@ -50,8 +50,14 @@ class AliESDEvent;
 class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
  public:
 
+  enum ETriggerAnalysisType_t {
+    kTriggerOnlineAnalysis,
+    kTriggerOfflineLightAnalysis,
+    kTriggerOfflineExpertAnalysis
+  };
+
   AliEmcalTriggerQATask();
-  AliEmcalTriggerQATask(const char *name, EBeamType_t beamType = kpp, Bool_t online=kFALSE);
+  AliEmcalTriggerQATask(const char *name, EBeamType_t beamType = kpp, ETriggerAnalysisType_t anaType=kTriggerOfflineExpertAnalysis);
   virtual ~AliEmcalTriggerQATask();
 
   void SetTriggerPatchesName(const char *name)      { fTriggerPatchesName      = name; }
@@ -61,10 +67,10 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void SetTimeStampRange(UInt_t min, UInt_t max)    { fMinTimeStamp            = min ; fMaxTimeStamp = max; }
   void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
-  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && i < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
+  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && static_cast<std::size_t>(i) < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
 
-  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", EBeamType_t beamType = kpp, Bool_t online = kFALSE, TString subdir = "", TString suffix = "");
-  static void AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
+  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", EBeamType_t beamType = kpp, ETriggerAnalysisType_t anaType=kTriggerOfflineExpertAnalysis, TString subdir = "", TString suffix = "");
+  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
 
  protected:
   void                                      UserCreateOutputObjects();

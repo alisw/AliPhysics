@@ -35,24 +35,27 @@ AliEmcalJetTask* AddTaskEmcalJet(
   enum EDataType_t {
     kUnknown,
     kESD,
-    kAOD
+    kAOD,
+    kMCgen
   };
 
-  EDataType_t dataType = kUnknown;
+  TString trackName(nTracks);
+  TString clusName(nClusters);
 
+  EDataType_t dataType = kUnknown;
   if (handler->InheritsFrom("AliESDInputHandler")) {
     dataType = kESD;
   }
   else if (handler->InheritsFrom("AliAODInputHandler")) {
     dataType = kAOD;
+  } else if (handler->InheritsFrom("AliMCGenHandler")) {
+    dataType = kMCgen;
   }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString trackName(nTracks);
-  TString clusName(nClusters);
 
   if (trackName == "usedefault") {
     if (dataType == kESD) {
@@ -61,8 +64,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
     else if (dataType == kAOD) {
       trackName = "tracks";
     }
-    else {
-      trackName = "";
+    else if (dataType == kMCgen) {
+      trackName = "mcparticles";
     }
   }
 
@@ -77,6 +80,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
       clusName = "";
     }
   }
+
 
   AliParticleContainer* partCont = 0;
   if (trackName == "mcparticles") {

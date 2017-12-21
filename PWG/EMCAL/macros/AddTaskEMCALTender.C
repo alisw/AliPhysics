@@ -30,7 +30,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Int_t  removeNMCGenerators  = 0,        // set number of accepted MC generators input (only for enableFracEMCRecalc=1)
   Bool_t enableMCGenRemovTrack= 1,        // apply the MC generators rejection also for track matching  
   TString removeMCGen1        = "",       // name of generator input to be accepted
-  TString removeMCGen2        = ""        // name of generator input to be accepted
+  TString removeMCGen2        = "",       // name of generator input to be accepted
+  TString customBCmap         = ""        // location of custom bad channel map (full path including file)
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -89,6 +90,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   if (pass) 
     EMCALSupply->SetPass(pass);
+  if (customBCmap!="") 
+    EMCALSupply->SetCustomBC(customBCmap);
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     #ifdef __CLING__

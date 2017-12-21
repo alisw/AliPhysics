@@ -17,7 +17,10 @@
 #include <TList.h>
 #include <TObjArray.h>
 #include <memory>
+#include <iostream>
 
+#include "AliEmcalESDHybridTrackCuts.h"
+#include "AliEmcalESDTrackCutsGenerator.h"
 #include "AliEmcalTrackSelectionESD.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -25,7 +28,6 @@
 #include "AliLog.h"
 #include "AliPicoTrack.h"
 #include "AliVCuts.h"
-#include "AliEmcalESDTrackCutsGenerator.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTrackSelectionESD)
@@ -50,6 +52,7 @@ AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(ETrackFilterType_t type, co
 
 void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const char* period)
 {
+  using PWG::EMCAL::AliEmcalESDHybridTrackCuts;
   if (fListOfCuts) fListOfCuts->Clear();
   fSelectionModeAny = kTRUE;
 
@@ -62,13 +65,52 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
     AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
     break;
 
+  case kITSPureTracks:
+    AddTrackCuts(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
+    break;
+
+  case kHybridTracks2010wNoRefit:
+  {
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2010);
+    hybridcuts->SetUseNoITSrefitTracks(kTRUE);
+    AddTrackCuts(hybridcuts);
+    break;
+  }
+
+  case kHybridTracks2010woNoRefit:
+  {
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2010);
+    hybridcuts->SetUseNoITSrefitTracks(kFALSE);
+    AddTrackCuts(hybridcuts);
+    break;
+  }   
+
+  case kHybridTracks2011wNoRefit:
+  {
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
+    hybridcuts->SetUseNoITSrefitTracks(kTRUE);
+    AddTrackCuts(hybridcuts);
+    break;
+  }
+
+  case kHybridTracks2011woNoRefit:
+  {
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
+    hybridcuts->SetUseNoITSrefitTracks(kFALSE);
+    AddTrackCuts(hybridcuts);
+    break;
+  }
+
   default:
     break;
   }
 }
 
 bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
-  if (!fListOfCuts) return kTRUE;
+  if (!fListOfCuts){
+    AliDebugStream(2) << "No cut array " << std::endl;
+    return kTRUE;
+  } 
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
   if (!esdt) {
     AliPicoTrack *picoTrack = dynamic_cast<AliPicoTrack *>(trk);
@@ -82,8 +124,10 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   }
 
   fTrackBitmap.ResetAllBits();
-  Int_t cutcounter = 0;
+  UInt_t cutcounter = 0;
+  AliDebugStream(2) << "Found cut array with " << fListOfCuts->GetEntries() << " cuts\n" << std::endl;
   for(auto cutIter : *fListOfCuts){
+    AliDebugStream(3) << "executing nect cut: " << static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject())->GetName() << std::endl;
     if((static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject()))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }

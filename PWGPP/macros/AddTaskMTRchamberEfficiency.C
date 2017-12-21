@@ -44,7 +44,6 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t isMC = kFALSE)
   else {
     TString trigClassPatterns = taskTrigChEff->GetDefaultTrigClassPatterns();
     trigClassPatterns.Prepend("ANY,");
-    if ( ! trigClassPatterns.Contains("!CMUP") ) trigClassPatterns.Append(",!CMUP*");
     taskTrigChEff->SetTrigClassPatterns(trigClassPatterns);
   }
   taskTrigChEff->GetMuonEventCuts()->SetFilterMask(AliMuonEventCuts::kSelectedTrig);

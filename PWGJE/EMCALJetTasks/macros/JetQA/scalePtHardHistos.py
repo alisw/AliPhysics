@@ -2,7 +2,8 @@
 
 # Macro to scale histograms of all Pt-hard bins, using xsec and ntrials from AliAnalysisTaskPWGJEQA.
 # This script expects files X/AnalysisResultsPtHardX.root, and will output scaled histograms
-# to the same file, in a new output list with suffix "Scaled".
+# to the same file, in a new output list with suffix "Scaled". The script will automatically loop over
+# all output lists, subject to some simple criteria that covers basic use cases (can be adapted as needed).
 #
 # To get scale factors from a reference file, use the option "-f".
 #
@@ -20,8 +21,19 @@ def scalePtHardHistos(referenceFile):
   ptHardLo = [ 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235 ]
   ptHardHi = [ 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, -1 ]
   
-  qaListName = "AliAnalysisTaskPWGJEQA_tracks_caloClusters_emcalCells_histos"
-  
+  # Get a list of all the output list names, in order to scale all of them
+  f = ROOT.TFile("1/AnalysisResultsPtHard1.root", "READ")
+  qaListKeys = f.GetListOfKeys()
+  qaListNames = []
+  eventList = ""
+  for key in qaListKeys:
+    name = key.GetName()
+    if "PWGJEQA" in name or "Jet" in name or "Emcal" in name:
+      qaListNames.append(name)
+    if "PWGJEQA" in name or "Jet" in name:
+      eventList = name
+  f.Close()
+
   # Create histogram of NEvents per pT-hard bin
   hNEvents = ROOT.TH1F("hNEvents", "hNEventsAccepted", PtHardBins+1, 0, PtHardBins+1)
   nEventsTotal = 0.
@@ -30,7 +42,7 @@ def scalePtHardHistos(referenceFile):
   for bin in range(0,PtHardBins):
     inputFile = "%d/AnalysisResultsPtHard%d.root" % (bin+1, bin+1)
     f = ROOT.TFile(inputFile, "UPDATE")
-    qaList = f.Get(qaListName)
+    qaList = f.Get(eventList)
     hNEventsPtHard = qaList.FindObject("fHistEventCount")
     nEvents = hNEventsPtHard.GetBinContent(1)
     nEventsTotal += nEvents
@@ -56,18 +68,21 @@ def scalePtHardHistos(referenceFile):
       print("Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
       
-      qaList = f.Get(qaListName)
-      
       hNEvents = f.Get("hNEvents")
       nEvents = hNEvents.GetBinContent(bin+1)
       eventScaleFactor = nEventsAvg/nEvents # also scale to account that there are different number of events in each Pt-hard bin
       
-      # Now, scale all the histograms
-      for obj in qaList:
-        ScaleAllHistograms(obj, scaleFactor * eventScaleFactor, f)
+      for qaListName in qaListNames:
+        qaList = f.Get(qaListName)
       
-      # Write the histograms to file
-      qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
+        # Now, scale all the histograms
+        print "Scaling list: " + qaList.GetName()
+        for obj in qaList:
+          ScaleAllHistograms(obj, scaleFactor * eventScaleFactor, f)
+        
+        # Write the histograms to file
+        qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
+    
       f.Close()
 
   # If no reference file is provided, compute the scale factors and write them, and scale the histos
@@ -89,7 +104,7 @@ def scalePtHardHistos(referenceFile):
       # Fill nEvents histogram, for all Pt-hard bins
       inputFile = "%d/AnalysisResultsPtHard%d.root" % (bin+1, bin+1)
       f = ROOT.TFile(inputFile, "UPDATE")
-      qaList = f.Get(qaListName)
+      qaList = f.Get(eventList)
       hNEventsPtHard = qaList.FindObject("fHistEventCount")
       nEvents = hNEventsPtHard.GetBinContent(1)
       nEventsTotal += nEvents
@@ -106,7 +121,7 @@ def scalePtHardHistos(referenceFile):
       print("Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
 
-      qaList = f.Get(qaListName)
+      qaList = f.Get(qaListName[0])
       
       hXsecPtHard = qaList.FindObject("hXsec")
       hTrialsPtHard = qaList.FindObject("hNtrials")
@@ -134,7 +149,7 @@ def scalePtHardHistos(referenceFile):
       hNTrialsPerEvent.Reset()
       hScaleFactor.Write()
       hScaleFactor.Reset()
-      qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
+      qaList.Write("%sScaled" % qaListName[0], ROOT.TObject.kSingleKey)
       f.Close()
 
 ###################################################################################

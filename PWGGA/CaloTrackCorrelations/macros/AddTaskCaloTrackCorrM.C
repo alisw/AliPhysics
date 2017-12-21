@@ -141,7 +141,7 @@ AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TStrin
     }
     if(!data.Contains("delta")) {
       anaphoton->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
-      anaphoton->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+      anaphoton->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
     }
     else anaphoton->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
     anaphoton->AddToHistogramsName("AnaPhoton_");
@@ -200,7 +200,7 @@ AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TStrin
     anapi0ebe->SetInputAODName(Form("Triggers%s",calorimeter.Data()));
     if(!data.Contains("delta")) {
       anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
-      anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+      anapi0ebe->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
     }
     else  anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
     
@@ -333,7 +333,7 @@ AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TStrin
     fidCut1stYear->SetSimpleCTSFiducialCut(0.8,0.,360.);       
     if(!data.Contains("delta")) {
       anacharge->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
-      anacharge->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+      anacharge->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
     }
     else anacharge->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
     anacharge->AddToHistogramsName("AnaCharge_");

@@ -50,16 +50,11 @@ void DoFillParticleCollection(TrackCutType *cut,
                               TrackCollectionType *track_collection,
                               AliFemtoParticleCollection *output)
 {
-  // lets's just name the iterator type
-  typedef typename TrackCollectionType::iterator TrackCollectionIterType;
-
-  for (TrackCollectionIterType pIter = track_collection->begin();
-                               pIter != track_collection->end();
-                               pIter++) {
-    const Bool_t track_passes = cut->Pass(*pIter);
-    cut->FillCutMonitor(*pIter, track_passes);
+  for (const auto &track : *track_collection) {
+    const Bool_t track_passes = cut->Pass(track);
+    cut->FillCutMonitor(track, track_passes);
     if (track_passes) {
-      output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
+      output->push_back(new AliFemtoParticle(track, cut->Mass()));
     }
   }
 }
@@ -101,8 +96,9 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
     if (performSharedDaughterCut) {
       AliFemtoV0SharedDaughterCut shared_daughter_cut;
       AliFemtoV0Collection v0_coll = shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(hbtEvent->V0Collection(), v0_cut);
-      for (AliFemtoV0Iterator pIter = v0_coll.begin(); pIter != v0_coll.end(); ++pIter) {
-        partCollection->push_back(new AliFemtoParticle(*pIter, v0_cut->Mass()));
+      // for (AliFemtoV0Iterator pIter = v0_coll.begin(); pIter != v0_coll.end(); ++pIter) {
+      for (auto v0 : v0_coll) {
+        partCollection->push_back(new AliFemtoParticle(v0, v0_cut->Mass()));
       }
     } else {
 
@@ -130,7 +126,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
       for (AliFemtoXiIterator pIter = xi_coll.begin(); pIter != xi_coll.end(); ++pIter) {
         partCollection->push_back(new AliFemtoParticle(*pIter, xi_cut->Mass()));
       }
-    } 
+    }
     else
     {
       DoFillParticleCollection(
@@ -162,14 +158,14 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
-  fPicoEventCollectionVectorHideAway(NULL),
-  fPairCut(NULL),
-  fCorrFctnCollection(NULL),
-  fEventCut(NULL),
-  fFirstParticleCut(NULL),
-  fSecondParticleCut(NULL),
-  fMixingBuffer(NULL),
-  fPicoEvent(NULL),
+  fPicoEventCollectionVectorHideAway(nullptr),
+  fPairCut(nullptr),
+  fCorrFctnCollection(nullptr),
+  fEventCut(nullptr),
+  fFirstParticleCut(nullptr),
+  fSecondParticleCut(nullptr),
+  fMixingBuffer(nullptr),
+  fPicoEvent(nullptr),
   fNumEventsToMix(0),
   fNeventsProcessed(0),
   fMinSizePartCollection(0),
@@ -184,14 +180,14 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   AliFemtoAnalysis(),
-  fPicoEventCollectionVectorHideAway(NULL),
-  fPairCut(NULL),
-  fCorrFctnCollection(NULL),
-  fEventCut(NULL),
-  fFirstParticleCut(NULL),
-  fSecondParticleCut(NULL),
-  fMixingBuffer(NULL),
-  fPicoEvent(NULL),
+  fPicoEventCollectionVectorHideAway(nullptr),
+  fPairCut(nullptr),
+  fCorrFctnCollection(nullptr),
+  fEventCut(nullptr),
+  fFirstParticleCut(nullptr),
+  fSecondParticleCut(nullptr),
+  fMixingBuffer(nullptr),
+  fPicoEvent(nullptr),
   fNumEventsToMix(a.fNumEventsToMix),
   fNeventsProcessed(0),
   fMinSizePartCollection(a.fMinSizePartCollection),
@@ -261,8 +257,9 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   if (fVerbose) {
     cout << TString::Format(msg_template, "looking for correlation functions") << endl;
   }
-  for (iter = a.fCorrFctnCollection->begin(); iter != a.fCorrFctnCollection->end(); ++iter) {
-    AliFemtoCorrFctn* fctn = (*iter)->Clone();
+
+  for (auto &cf : *a.fCorrFctnCollection) {
+    AliFemtoCorrFctn* fctn = cf->Clone();
     if (fctn) {
       AddCorrFctn(fctn);
     } else {
@@ -285,7 +282,7 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
 
   // will not double-delete particle cut
   if (fFirstParticleCut == fSecondParticleCut) {
-    fSecondParticleCut = NULL;
+    fSecondParticleCut = nullptr;
   }
 
   delete fPairCut;
@@ -295,16 +292,16 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
 
   // delete every CorrFunction in the collection, then the collection
   if (fCorrFctnCollection) {
-    for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); iter++) {
-      delete *iter;
+    for (auto &cf : *fCorrFctnCollection) {
+      delete cf;
     }
     delete fCorrFctnCollection;
   }
 
   // delete every PicoEvent in the EventMixingBuffer followed by the buffer
   if (fMixingBuffer) {
-    for (AliFemtoPicoEventIterator piter = fMixingBuffer->begin(); piter != fMixingBuffer->end(); ++piter) {
-      delete *piter;
+    for (auto &event : *fMixingBuffer) {
+      delete event;
     }
     delete fMixingBuffer;
   }
@@ -319,7 +316,7 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 
   // clear second particle cut to avoid double delete
   if (fFirstParticleCut == fSecondParticleCut) {
-    fSecondParticleCut = NULL;
+    fSecondParticleCut = nullptr;
   }
 
   // delete current pointers
@@ -330,8 +327,9 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 
   // clear correlation functions out of fCorrFctnCollection
   if (fCorrFctnCollection) {
-    for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); ++iter) {
-      delete *iter;
+    // for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); ++iter) {
+    for (auto &cf : *fCorrFctnCollection) {
+      delete cf;
     }
     fCorrFctnCollection->clear();
   } else {
@@ -382,11 +380,10 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
     cerr << " WARNING [AliFemtoSimpleAnalysis::operator=()] Could not clone second particle cut." << endl;
   }
 
-  for (AliFemtoCorrFctnIterator iter = aAna.fCorrFctnCollection->begin(); iter != aAna.fCorrFctnCollection->end(); ++iter) {
-    AliFemtoCorrFctn* fctn = (*iter)->Clone();
+  for (auto &cf : *aAna.fCorrFctnCollection) {
+    AliFemtoCorrFctn* fctn = cf->Clone();
     if (fctn) AddCorrFctn(fctn);
   }
-
 
   fNumEventsToMix = aAna.fNumEventsToMix;
   fMinSizePartCollection = aAna.fMinSizePartCollection;
@@ -401,8 +398,8 @@ AliFemtoCorrFctn* AliFemtoSimpleAnalysis::CorrFctn(int n)
 {
   /// return pointer to n-th correlation function
 
-  if (n < 0 || n > (int)fCorrFctnCollection->size()) {
-    return NULL;
+  if (n < 0 || fCorrFctnCollection->size() < static_cast<size_t>(n)) {
+    return nullptr;
   }
 
   AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
@@ -415,27 +412,26 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
   /// Create a simple report from the analysis execution
 
   cout << "AliFemtoSimpleAnalysis - constructing Report..."<<endl;
-  string temp = "-----------\nHbt Analysis Report:\n";
-  temp += "\nEvent Cuts:\n";
-  temp += fEventCut->Report();
-  temp += "\nParticle Cuts - First Particle:\n";
-  temp += fFirstParticleCut->Report();
-  temp += "\nParticle Cuts - Second Particle:\n";
-  temp += fSecondParticleCut->Report();
-  temp += "\nPair Cuts:\n";
-  temp += fPairCut->Report();
-  temp += "\nCorrelation Functions:\n";
+  auto report = TString("-----------\nHbt Analysis Report:\n\n");
+
+  report += "Event Cuts:\n" + fEventCut->Report() + "\n";
+  report += "Particle Cuts - First Particle:\n" + fFirstParticleCut->Report() + "\n";
+  report += "Particle Cuts - Second Particle:\n" + fSecondParticleCut->Report() + "\n";
+  report += "Pair Cuts:\n" + fPairCut->Report() + "\n";
+
+  report += "\nCorrelation Functions:\n";
 
   if (fCorrFctnCollection->empty()) {
     cout << "AliFemtoSimpleAnalysis-Warning : no correlations functions in this analysis " << endl;
   }
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); ++iter) {
-    temp += (*iter)->Report();
-    temp += "\n";
+
+  for (auto &cf : *fCorrFctnCollection) {
+    report += cf->Report() + "\n";
   }
-  temp += "-------------\n";
-  AliFemtoString returnThis=temp;
-  return returnThis;
+
+  report += "-------------\n";
+
+  return AliFemtoString((const char *)report);
 }
 //_________________________
 void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
@@ -443,7 +439,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   // Add event to processed events
 
   // We will get a new pico event; NULL now to prevent corr fctn access to old pico event
-  fPicoEvent = NULL;
+  fPicoEvent = nullptr;
 
   // increment number of events processed
   AddEventProcessed();
@@ -471,7 +467,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
                              *collection2 = fPicoEvent->SecondParticleCollection();
 
   // Sanity check that both collections exist
-  if (collection1 == NULL || collection2 == NULL) {
+  if (collection1 == nullptr || collection2 == nullptr) {
     cout << "E-AliFemtoSimpleAnalysis::ProcessEvent: new PicoEvent is missing particle collections!\n";
     EventEnd(hbtEvent);  // cleanup for EbyE
     delete fPicoEvent;
@@ -524,7 +520,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
 
   //------ Make real pairs. If identical, make pairs for one collection ------//
   if (AnalyzeIdenticalParticles()) {
-    collection2 = NULL;
+    collection2 = nullptr;
   }
 
   MakePairs("real", collection1, collection2, EnablePairMonitors());
@@ -534,11 +530,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   }
 
   //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
-  for (AliFemtoPicoEventIterator fPicoEventIter = MixingBuffer()->begin();
-                                 fPicoEventIter != MixingBuffer()->end();
-                               ++fPicoEventIter) {
-
-    AliFemtoPicoEvent *storedEvent = *fPicoEventIter;
+  for (auto storedEvent : *fMixingBuffer) {
 
     // If identical - only mix the first particle collections
     if (AnalyzeIdenticalParticles()) {
@@ -555,7 +547,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   }
 
   if (fVerbose) {
-    cout << " - mixed done   " << endl;
+    cout << " - mixed done   \n";
   }
 
   //--------- If mixing buffer is full, delete oldest event ---------//
@@ -628,7 +620,7 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
     }
 
     // If we have two collections - set the first track
-    if (partCollection2 != NULL) {
+    if (partCollection2 != nullptr) {
       tPair->SetTrack1(*tPartIter1);
     }
 
@@ -637,7 +629,7 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
                                        tPartIter2 != tEndInnerLoop;
                                      ++tPartIter2) {
       // If we have two collections - only set the second track
-      if (partCollection2 != NULL) {
+      if (partCollection2 != nullptr) {
         tPair->SetTrack2(*tPartIter2);
 
       // Swap between first and second particles to avoid biased ordering
@@ -657,12 +649,7 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
 
       // If pair passes cut, loop over CF's and add pair to real/mixed
       if (tmpPassPair) {
-        for (AliFemtoCorrFctnIterator tCorrFctnIter = fCorrFctnCollection->begin();
-                                      tCorrFctnIter != fCorrFctnCollection->end();
-                                    ++tCorrFctnIter) {
-
-          AliFemtoCorrFctn* tCorrFctn = *tCorrFctnIter;
-
+        for (auto &tCorrFctn : *fCorrFctnCollection) {
           if (type == "real")
             tCorrFctn->AddRealPair(tPair);
           else if(type == "mixed")
@@ -671,6 +658,7 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
             cout << "Problem with pair type, type = " << type << endl;
         } // loop over corellatoin functions
       }
+
     }    // loop over second particle
   }      // loop over first particle
 
@@ -686,10 +674,9 @@ void AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev)
   fFirstParticleCut->EventBegin(ev);
   fSecondParticleCut->EventBegin(ev);
   fPairCut->EventBegin(ev);
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                iter != fCorrFctnCollection->end();
-                                ++iter) {
-    (*iter)->EventBegin(ev);
+
+  for (auto &cf : *fCorrFctnCollection) {
+    cf->EventBegin(ev);
   }
 }
 //_________________________
@@ -700,10 +687,9 @@ void AliFemtoSimpleAnalysis::EventEnd(const AliFemtoEvent* ev)
   fFirstParticleCut->EventEnd(ev);
   fSecondParticleCut->EventEnd(ev);
   fPairCut->EventEnd(ev);
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                iter != fCorrFctnCollection->end();
-                                ++iter) {
-    (*iter)->EventEnd(ev);
+
+  for (auto &cf : *fCorrFctnCollection) {
+    cf->EventEnd(ev);
   }
 }
 //_________________________
@@ -711,10 +697,8 @@ void AliFemtoSimpleAnalysis::Finish()
 {
   // Perform finishing operations after all events are processed
 
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                iter != fCorrFctnCollection->end();
-                                ++iter) {
-    (*iter)->Finish();
+  for (auto &cf : *fCorrFctnCollection) {
+    cf->Finish();
   }
 }
 //_________________________
@@ -734,7 +718,7 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
 
   TList *event_cut_settings = fEventCut->ListSettings();
 
-  if (event_cut_settings != NULL) {
+  if (event_cut_settings != nullptr) {
 
     TListIter next_event_setting(event_cut_settings);
     while (TObject *obj = next_event_setting()) {
@@ -748,7 +732,7 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
 
   TList *p1_cut_settings = fFirstParticleCut->ListSettings();
 
-  if (p1_cut_settings != NULL) {
+  if (p1_cut_settings != nullptr) {
 
     TListIter next_p1_setting(p1_cut_settings);
     while (TObject *obj = next_p1_setting()) {
@@ -764,7 +748,7 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
   if (fSecondParticleCut != fFirstParticleCut) {
     TList *p2_cut_settings = fSecondParticleCut->ListSettings();
 
-    if (p2_cut_settings != NULL) {
+    if (p2_cut_settings != nullptr) {
 
       TListIter next_p2_setting(p2_cut_settings);
       while (TObject *obj = next_p2_setting()) {
@@ -780,7 +764,7 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
 
   TList *pair_cut_settings = fPairCut->ListSettings();
 
-  if (pair_cut_settings != NULL) {
+  if (pair_cut_settings != nullptr) {
 
     TListIter next_pair_setting(pair_cut_settings);
     while (TObject *obj = next_pair_setting()) {
@@ -836,11 +820,8 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
   }
   delete eventCut;
 
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                iter != fCorrFctnCollection->end();
-                                ++iter) {
-
-    TList *tListCf = (*iter)->GetOutputList();
+  for (auto &cf : *fCorrFctnCollection) {
+    TList *tListCf = cf->GetOutputList();
 
     TIter nextListCf(tListCf);
     while (TObject *obj = nextListCf()) {

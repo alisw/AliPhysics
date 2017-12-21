@@ -23,6 +23,7 @@ The following correction components are available:
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
+- [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrections) -- Perform PHOS correction via an interface to the PHOS tender.
 
 This new correction task unifies what was previously done by tasks such as:
  - [EMCal Tender](\ref AliEmcalTenderTask)
@@ -58,7 +59,7 @@ For the instructions, please see \subpage READMEemcCorrectionsChange.
 To enable the correction task, add the following lines to your run macro:
 
 ~~~{.cxx}
-AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
+AliEmcalCorrectionTask * correctionTask = AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask();
 correctionTask->SelectCollisionCandidates(kPhysSel);
 // Set the user configuration file, assuming that your file is called "userConfiguration.yaml" and is located in
 // the current directory. This also supports alien:// paths!
@@ -68,13 +69,31 @@ correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
 correctionTask->Initialize();
 ~~~
 
-Don't forget to also load the macro with:
+## LEGO Train Wagon                                             {#emcCorrectionsLEGOTrainWagon}
+
+There are some special procedures for the LEGO train. There will be a centralized EMCal Correction Task wagon which
+contains standard settings such as physics selection, etc. Then the user will create a wagon which calls
+`PWG/EMCAL/macros/ConfigureEmcalCorrectionTaskOnLEGOTrain(std::string suffix)`. This will return an EMCal Correction Task
+for you to configure with your particular YAML configuration file and then initialize.
+
+To setup this wagon, use the macro listed above. One argument is required: the suffix. This suffix should be some unique
+identifier for your analysis - it could be your name, your analysis, whatever you like. The precise value only matters
+if you are using [specialization](\ref emcCorrectionsSpecialization) - in such a case, your suffix for the configuration
+wagon must match the specialization suffix.
+
+Then in the macro customization of your configuration wagon, you specify your YAML configuration file and initialize
+the configuration. It should looks something like the following:
 
 ~~~{.cxx}
-gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C");
+// Set your user configuration
+__R_ADDTASK__->SetUserConfigurationFilename("userConfiguration.yaml");
+// It is extremely important to pass "true" to Initialize().
+__R_ADDTASK__->Initialize(true);
 ~~~
 
-# Configuring Corrections                                      {#configureEMCalCorrections}
+Note that your configuration wagon should depend on the centralized correction task wagon, but your tasks (such as user tasks, user tasks, etc) should depend **only** on the centralized correction task wagon. They should not depend on your configuration wagon!
+
+# Configuring Corrections                                       {#configureEMCalCorrections}
 
 The corrections configuration file is specified via a file written in the YAML markup language. YAML is quite
 readable and is commonly used for configuration files. Although it should be straightforward to read and write,
@@ -86,7 +105,7 @@ The configuration is determined by two files: the base default file (located in 
 as well as the user configuration file. Any changes that you need to make should be done in the user configuration file!
 Note that any setting that you have in the user file will override the default file!
 
-## Introducing features of the configuration file
+## Features of the configuration file
 
 We will discuss a number of features including:
 - Setting cells, clusters, and tracks (input objects)
@@ -247,7 +266,7 @@ configured and created. Consequently, any additional configuration can be done m
 this approach is strongly discouraged. Instead, it is better to change the YAML configuration file so that
 there is a record of settings.
 
-#### Advanced usage options
+### Advanced usage options
 
 There are a number of useful advanced options to make the Corrections Framework simpler and more pleasant to use. These options are described below.
 
@@ -267,9 +286,12 @@ Correction2:
 
 In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and ``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example, "sharedParameters:aMinimumValu")!
 
-#### Running multiple corrections at once ("specializing")
+## Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 
-Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration file:
+Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same
+configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that
+each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration
+file:
 
 ~~~
 inputObjects:
@@ -302,9 +324,13 @@ Clusterizer_mySpecialization:
         - anotherClusterContainer
 ~~~
 
-In this example, two clusterizers are configured: ``Clusterizer`` and ``Clusterizer_mySpecializedClusterizer``. Both have the exact same configuration, with the exception that ``Clusterizer`` uses ``defaultCells`` for cells and ``defaultClusterContainer`` for clusters, while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells and ``anotherClusterContainer`` for clusters (note: the cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
+In this example, two clusterizers are configured: ``Clusterizer`` and ``Clusterizer_mySpecializedClusterizer``. Both have the exact same
+configuration, with the exception that ``Clusterizer`` uses ``defaultCells`` for cells and ``defaultClusterContainer`` for clusters,
+while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells and ``anotherClusterContainer`` for clusters (note: the
+cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
 
-To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask to correspond with the specialization suffix that was set in the YAML file. Continuing with the previous example, we would need to add:
+To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask
+to correspond with the specialization suffix that was set in the YAML file. Continuing with the previous example, we would need to add:
 
 ~~~{.cxx}
 // The default argument is an empty string, so we don't have to set it here.
@@ -313,9 +339,69 @@ AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
 AliEmcalCorrectionTask * correctionTaskSpecialized = AddTaskEmcalCorrectionTask("mySpecialization");
 ~~~
 
-Note that in doing this, it is then required that all additional corrections after the first specialized component are also specialized. This is necessary to make the users intentions clear. Continuing with the two clusterizers example, if we then want to run the cluster-track matcher, then we must created both ``ClusterTrackMatcher`` and ``ClusterTrackMatcher_mySpecialization`` with the proper configuration.
+Note that in doing this, it is then required that all additional corrections after the first specialized component are also specialized.
+This is necessary to make the user's intentions clear. Continuing with the two clusterizers example, if we then want to run the cluster-track
+matcher, then we must created both ``ClusterTrackMatcher`` and ``ClusterTrackMatcher_mySpecialization`` with the proper configuration.
 
-It is extremely important to be careful to avoid apply corrections multiple times to the same collections! For instance, if running two clusterizers on the same cells collection, then the cell corrections must be disabled for one of the two corrections! If the above example had used the same cells, then it would have been required to disable them in one correction task (say, the "mySpecialization" task).
+It is extremely important to be careful to avoid apply corrections multiple times to the same collections! For instance, if running two
+clusterizers on the same cells collection, then the cell corrections must be disabled for one of the two corrections! If the above example
+had used the same cells, then it would have been required to disable them in one correction task (say, the "mySpecialization" task).
+Note that the corrections being disabled by default does not automatically avoid this issue! Consider the following __WRONG__ example:
+
+~~~
+CellEnergy:
+    enabled: true
+    cellsNames:
+        - defaultCells
+Clusterizer:
+    enabled: true
+Clusterizer_example1:
+    someSettings: true
+Clusterizer_example2:
+    someSettings: false
+~~~
+
+For specialized tasks "example1" and "example2", the correction chains are the following:
+
+~~~
+CorrectionTask_example1:
+- CellEnergy
+- Clusterizer_example1
+
+CorrectionTask_example2:
+- CellEnergy
+- Clusterizer_example2
+~~~
+
+So now you've applied the Cell Energy correction twice! Instead, your configuration should look like:
+
+~~~
+CellEnergy:
+    enabled: false
+    cellsNames:
+        - defaultCells
+# This will cause the Cell Energy correction to only be performed in the task "example1".
+CellEnergy_example1:
+    enabled: true
+Clusterizer:
+    enabled: true
+    # .. Can include any other settings
+Clusterizer_example1:
+    someSettings: true
+Clusterizer_example2:
+    someSettings: false
+~~~
+
+Now the correction chain will look like as intended:
+
+~~~
+CorrectionTask_example1:
+- CellEnergy
+- Clusterizer_example1
+
+CorrectionTask_example2:
+- Clusterizer_example2
+~~~
 
 # Using the output of the Correction Task                                    {#emcalCorrectionsOutput}
 

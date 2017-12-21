@@ -10,7 +10,7 @@
 ///
 /// Class that contains the algorithm for the reconstruction of jet, cone around leading particle
 /// The seed is a backward particle (direct photon)
-/// * 1) Take the a trigger particle found stored in AliAODPWG4ParticleCorrelation,
+/// * 1) Take the a trigger particle found stored in AliCaloTrackParticleCorrelation,
 /// * 2) Search for the highest pt leading particle opposite to the trigger within a phi, pt window
 /// * 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
 ///
@@ -117,7 +117,7 @@ public:
   
   Double_t  CalculateJetRatioLimit(Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
   
-  void      FillJetHistos(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector jet,
+  void      FillJetHistos(AliCaloTrackParticleCorrelation * particle, const TLorentzVector jet,
                           const TString & type, const TString & lastname);
   
   TList *   GetOutputContainer()       const { return fOutCont               ; }
@@ -125,14 +125,14 @@ public:
   Bool_t    IsJetSelected(Double_t ptTrig, Double_t ptjet) const ;
   Bool_t    IsParticleInJetCone(Double_t eta, Double_t phi, Double_t etal, Double_t phil) const ;
   
-  void      GetLeadingCharge  (AliAODPWG4ParticleCorrelation * particle) ;
-  void      GetLeadingPi0     (AliAODPWG4ParticleCorrelation * particle) ;
-  Bool_t    GetLeadingParticle(AliAODPWG4ParticleCorrelation * particle) ;
+  void      GetLeadingCharge  (AliCaloTrackParticleCorrelation * particle) ;
+  void      GetLeadingPi0     (AliCaloTrackParticleCorrelation * particle) ;
+  Bool_t    GetLeadingParticle(AliCaloTrackParticleCorrelation * particle) ;
   
   void      MakeAnalysisFillAOD();
   void      MakeAnalysisFillHistograms();
-  void      MakeAODJet(AliAODPWG4ParticleCorrelation * particle) ;
-  void      MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle) ;
+  void      MakeAODJet(AliCaloTrackParticleCorrelation * particle) ;
+  void      MakeJetFromAOD(AliCaloTrackParticleCorrelation * particle) ;
   
   Bool_t    SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   

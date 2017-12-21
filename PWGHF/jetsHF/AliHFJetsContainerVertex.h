@@ -117,7 +117,7 @@ private:
   
   AliHFJetsTaggingVertex *fTagger;    // to use tagging methods
 
-  ClassDef(AliHFJetsContainerVertex, 2)    // containers for HF b-jets analysis
+  ClassDef(AliHFJetsContainerVertex, 3)    // containers for HF b-jets analysis
 };
 
 #endif

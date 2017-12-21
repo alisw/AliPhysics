@@ -1,0 +1,129 @@
+####################### 
+ CHECKING CheckDiff.sh 
+####################### 
+diff: /CheckDiff.sh: File o directory non esistente
+####################### 
+ CHECKING ProducePlotChain.sh 
+####################### 
+diff: /ProducePlotChain.sh: File o directory non esistente
+diff: ProducePlotChain.sh: File o directory non esistente
+####################### 
+ CHECKING DoAverages.sh 
+####################### 
+diff: /DoAverages.sh: File o directory non esistente
+####################### 
+ CHECKING DoSubtractFD.sh
+####################### 
+diff: /DoSubtractFD.sh: File o directory non esistente
+####################### 
+ CHECKING DrawPlotInSubtractFD.sh
+####################### 
+diff: /DrawPlotInSubtractFD.sh: File o directory non esistente
+####################### 
+ CHECKING DoFit.sh
+####################### 
+diff: /DoFit.sh: File o directory non esistente
+####################### 
+ CHECKING DoFitMC.sh
+####################### 
+diff: /DoFitMC.sh: File o directory non esistente
+####################### 
+ CHECKING RunFeedown_pPb_Dplus.C
+####################### 
+diff: /RunFeedown_pPb_Dplus.C: File o directory non esistente
+####################### 
+ CHECKING  RunFeedown_pPb_Dstar.C
+####################### 
+diff: /RunFeedown_pPb_Dstar.C: File o directory non esistente
+####################### 
+ CHECKING RunFeedown_pPb_Dzero.C
+####################### 
+diff: /RunFeedown_pPb_Dzero.C: File o directory non esistente
+####################### 
+ CHECKING RunFeedown_pp_Dplus.C
+####################### 
+diff: /RunFeedown_pp_Dplus.C: File o directory non esistente
+####################### 
+ CHECKING RunFeedown_pp_Dstar.C
+####################### 
+diff: /RunFeedown_pp_Dstar.C: File o directory non esistente
+####################### 
+ CHECKING RunFeedown_pp_Dzero.C
+####################### 
+diff: /RunFeedown_pp_Dzero.C: File o directory non esistente
+####################### 
+ CHECKING MakeAverageDhCorrel.C
+####################### 
+diff: /MakeAverageDhCorrel.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotInSingleCanvas.C
+####################### 
+diff: /DoPlotInSingleCanvas.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotCompare1GeVpPb.C
+####################### 
+diff: /DoPlotCompare1GeVpPb.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotCompare1GeVpp.C
+####################### 
+diff: /DoPlotCompare1GeVpp.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotComparedot3to1pPb.C
+####################### 
+diff: /DoPlotComparedot3to1pPb.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotComparedot3to1pp.C
+####################### 
+diff: /DoPlotComparedot3to1pp.C: File o directory non esistente
+####################### 
+ CHECKING DoComparison_pPbVsMC.C
+####################### 
+diff: /DoComparison_pPbVsMC.C: File o directory non esistente
+####################### 
+ CHECKING DoComparison_ppVsMC.C
+####################### 
+diff: /DoComparison_ppVsMC.C: File o directory non esistente
+####################### 
+ CHECKING DoComparison_ppVspPb.C
+####################### 
+diff: /DoComparison_ppVspPb.C: File o directory non esistente
+####################### 
+ CHECKING FitSystematicsAverage_pp.C
+####################### 
+diff: /FitSystematicsAverage_pp.C: File o directory non esistente
+####################### 
+ CHECKING  FitSystematicsAverage_pPb.C
+####################### 
+diff: /FitSystematicsAverage_pPb.C: File o directory non esistente
+####################### 
+ CHECKING FitPlots.C
+####################### 
+diff: /FitPlots.C: File o directory non esistente
+####################### 
+ CHECKING SubtractFD.C
+####################### 
+diff: /SubtractFD.C: File o directory non esistente
+####################### 
+ CHECKING DoNiceSpecieComparisonPlot.C
+####################### 
+diff: /DoNiceSpecieComparisonPlot.C: File o directory non esistente
+####################### 
+ CHECKING CompareFitResults.C
+####################### 
+diff: /CompareFitResults.C: File o directory non esistente
+####################### 
+ CHECKING DoNiceFitPlots.C
+####################### 
+diff: /DoNiceFitPlots.C: File o directory non esistente
+####################### 
+ CHECKING DoComparison_ppVsMCallPanelsNew.C
+####################### 
+diff: /DoComparison_ppVsMCallPanelsNew.C: File o directory non esistente
+####################### 
+ CHECKING DoComparison_ppVspPballPanels.C
+####################### 
+diff: /DoComparison_ppVspPballPanels.C: File o directory non esistente
+####################### 
+ CHECKING DoPlotInSingleCanvasNoSpaces.C
+####################### 
+diff: /DoPlotInSingleCanvasNoSpaces.C: File o directory non esistente

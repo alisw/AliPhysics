@@ -737,6 +737,7 @@ protected:
      * @return true if low and high cuts are both zero
      */    
     Bool_t IsAllBin() const { return fLow == 0 && fHigh == 0; }
+    Bool_t IsInclusiveBin() const { return fLow == 0 && fHigh == 101; }
     /** 
      * Get the list name 
      * 
@@ -874,8 +875,10 @@ protected:
      * @param color       Color of markers 
      * @param mclist      List of MC data 
      * @param truthlist   List of MC truth data 
+     *
+     * @return true on success
      */
-    virtual void End(TList*      sums, 
+    virtual bool End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
 		     Double_t    trigEff,

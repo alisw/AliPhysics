@@ -267,16 +267,16 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50200013", "30200009007000008250400000");
     cuts.AddCut("52400013", "30200009007000008250400000");
     cuts.AddCut("54800013", "30200009007000008250400000");
-  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  //Full standard cut output open TPC cuts - var #1 for std cuts - TOF and chi2
   } else if (trainConfig == 58) {
-    cuts.AddCut("50200013", "00200009007000008250400000");
-    cuts.AddCut("52400013", "00200009007000008250400000");
-    cuts.AddCut("54800013", "00200009007000008250400000");
-  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+    cuts.AddCut("50200013", "00200009007002008750400000");
+    cuts.AddCut("52400013", "00200009007002008750400000");
+    cuts.AddCut("54800013", "00200009007002008750400000");
+  //Full standard cut output open TPC cuts - var #2 for std cuts - tightening all
   } else if (trainConfig == 59) {
-    cuts.AddCut("50200013", "00200009007000008250400000");
-    cuts.AddCut("52400013", "00200009007000008250400000");
-    cuts.AddCut("54800013", "00200009007000008250400000");
+    cuts.AddCut("50200013", "00200009007002009760600000");
+    cuts.AddCut("52400013", "00200009007002009760600000");
+    cuts.AddCut("54800013", "00200009007002009760600000");
   //systematics 0-20%
   } else if (trainConfig == 60) {
     cuts.AddCut("50200013", "04200009007000008250400000"); //eta cut: |eta| <0.75
@@ -341,6 +341,29 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50100013", "00200009007000008750400000"); //chi2cut = 10
   } else if (trainConfig == 71) { //for dir. photon purity studies
     cuts.AddCut("52400013", "00200009007000008750400000"); //chi2cut = 10
+
+  //Additional systematics 0-20% & 20-40%
+  } else if (trainConfig == 81) {
+    cuts.AddCut("50200013", "00300009007000008250400000"); // 10 < R < 70
+    cuts.AddCut("50200013", "00400009007000008250400000"); // 5 < R < 70
+    cuts.AddCut("52400013", "00300009007000008250400000"); // 10 < R < 70
+    cuts.AddCut("52400013", "00400009007000008250400000"); // 5 < R < 70
+  } else if (trainConfig == 82) {
+    cuts.AddCut("50200013", "05200009007000008250400000"); // |eta| < 0.5
+    cuts.AddCut("50200013", "08200009007000008250400000"); // |eta| < 0.4
+    cuts.AddCut("52400013", "05200009007000008250400000"); // |eta| < 0.5
+    cuts.AddCut("52400013", "08200009007000008250400000"); // |eta| < 0.4
+  //Additional checks purity with semi-closed TPC cuts
+  } else if (trainConfig == 83) {
+    cuts.AddCut("50200013", "00200009207000008250400000"); // TPCe -5,5
+    cuts.AddCut("52400013", "00200009207000008250400000"); // TPCe -5,5
+    cuts.AddCut("50200013", "00200009407000008250400000"); // TPCe -6,7
+    cuts.AddCut("52400013", "00200009407000008250400000"); // TPCe -6,7
+  } else if (trainConfig == 84) {
+    cuts.AddCut("50200013", "00200009017000008250400000"); // TPCpi 0,-10
+    cuts.AddCut("52400013", "00200009017000008250400000"); // TPCpi 0,-10
+    cuts.AddCut("50200013", "00200009097000008250400000"); // TPCpi 1,0.5
+    cuts.AddCut("52400013", "00200009097000008250400000"); // TPCpi 1,0.5
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -400,6 +423,16 @@ void AddTask_GammaConvFlow_PbPb2(
       NFilterBinValues[5] = 5;
       NFilterBinValues[6] = 11;
       NFilterBinValues[7] = 20;
+    } else if(FilterVariable==8 && NFilterBins == 4){
+      task->SetFilterVariable(2,MinFilter,MaxFilter);
+      NFilterBinValues[0] = -20;
+      NFilterBinValues[1] = -13;
+      NFilterBinValues[2] = -11;
+      NFilterBinValues[3] = -6;
+      NFilterBinValues[4] = 0;
+      NFilterBinValues[5] = 5;
+      NFilterBinValues[6] = 11;
+      NFilterBinValues[7] = 20;
     }else{
       task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
       if(NFilterBins > 1){
@@ -414,7 +447,7 @@ void AddTask_GammaConvFlow_PbPb2(
 
     for(Int_t j=0;j<NFilterBins;j++){
       AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
-      if(FilterVariable==7){
+      if(FilterVariable==7 || FilterVariable==8){
         POIfilterVZERO->SetMassMin(NFilterBinValues[2*j]); POIfilterVZERO->SetMassMax(NFilterBinValues[2*j+1]);
       }else{
         POIfilterVZERO->SetMassMin(NFilterBinValues[j]); POIfilterVZERO->SetMassMax(NFilterBinValues[j+1]);

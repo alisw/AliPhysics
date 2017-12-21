@@ -20,13 +20,17 @@
 ClassImp(AliAnalysisTaskNucleiKine);
 
 AliAnalysisTaskNucleiKine::AliAnalysisTaskNucleiKine(const char* name) :
-  AliAnalysisTaskSE(name),
-  fPdgCodes(),
-  fIgnoreCentrality(true),
-  fOutputList(0x0),
-  fEventCounter(0x0),
-  fPtSpectra(0x0),
-  fPtSpectraNoRapidity(0x0)
+  AliAnalysisTaskSE{name},
+  fAfterburner{},
+  fUseAfterburner{false},
+  fPdgCodes{211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334},
+  fParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}",
+      "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"},
+  fIgnoreCentrality{true},
+  fOutputList{nullptr},
+  fEventCounter{nullptr},
+  fPtSpectra{nullptr},
+  fPtSpectraNoRapidity{nullptr}
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -39,15 +43,17 @@ AliAnalysisTaskNucleiKine::~AliAnalysisTaskNucleiKine() {
 void AliAnalysisTaskNucleiKine::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
-  int codes[16] = {211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334};
-  fPdgCodes.resize(16);
-  for (int i = 0; i < 16; ++i) fPdgCodes[i] = codes[i];
 
   double b[] = {0.00,3.50,4.94,6.98,8.55,9.88,11.04};
   fEventCounter = new TH1D("fEventCounter",";Impact parameter (fm); Events",6,b);
   fReactionPlane = new TH1D("fReactionPlane",";#Psi (rad); Events",200,-TMath::PiOver2(),TMath::PiOver2());
   fPtSpectra = new TH3D("fPtSpectra",";Centrality bin;Particle Species;#it{p}_{T} (GeV/#it{c})",6,0.5,6.5,fPdgCodes.size(),-0.5,-0.5 + fPdgCodes.size(),100,0.,10.);
   fPtSpectraNoRapidity = new TH3D("fPtSpectraNoRapidity",";Centrality bin;Particle Species;#it{p}_{T} (GeV/#it{c})",6,0.5,6.5,fPdgCodes.size(),-0.5,-0.5 + fPdgCodes.size(),100,0.,10.);
+  for (int iB = 1; iB <= fParticleNames.size(); ++iB) {
+    fPtSpectra->GetYaxis()->SetBinLabel(iB,fParticleNames[iB-1].data());
+    fPtSpectraNoRapidity->GetYaxis()->SetBinLabel(iB,fParticleNames[iB-1].data());
+  }
+
   fOutputList->Add(fEventCounter);
   fOutputList->Add(fPtSpectra);
   fOutputList->Add(fPtSpectraNoRapidity);
@@ -64,6 +70,11 @@ void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
   AliStack* stack = mcEvent->Stack();
   if (!stack)
     AliFatal("Missing stack.");
+
+  if (fUseAfterburner) {
+    fAfterburner.SetStack(stack);
+    fAfterburner.Generate();
+  }
   int nstack = stack->GetNtrack();
 
   float impact = 1.f;
@@ -72,9 +83,9 @@ void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
     if (!hd)
       AliFatal("Missing collision geometry");
     float impact = hd->ImpactParameter();
-    fEventCounter->Fill(impact);
   }
   int impact_bin = fEventCounter->GetXaxis()->FindBin(impact);
+  fEventCounter->Fill(impact);
 
   for (int iTracks = 0; iTracks < nstack; ++iTracks) {
     TParticle* track = stack->Particle(iTracks);

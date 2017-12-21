@@ -60,6 +60,8 @@ Float_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
 Float_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
 Float_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;
 Float_t pileupSPD,errpileupSPD;
+Float_t diamondX,diamondY,diamondZ;
+Float_t diamondSigX,diamondSigY,diamondSigZ;
 
 ///// SSD Variables (25 variables)
 Float_t MPVL5,MPVErrL5;
@@ -192,7 +194,8 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     sigmaVtxSPDxErr=-999.;sigmaVtxSPDyErr=-999.;sigmaVtxSPDzErr=-999.;
     //
     pileupSPD=-999.;errpileupSPD=-999.;
-    
+    diamondX=-999.;diamondY=-999.;diamondZ=-999.;
+    diamondSigX=-999.;diamondSigY=-999.;diamondSigZ=-999.;
     
     ///// SSD Variables (25 variables)
     MPVL5=-999.;MPVErrL5=-999.;
@@ -369,6 +372,12 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     ttree->Branch("sigmaVtxSPDzErr",&sigmaVtxSPDzErr,"sigmaVtxSPDzErr/F"); // error sigma of tracks vertex position - z
     ttree->Branch("pileupSPD",&pileupSPD,"pileupSPD/F"); // fraction of events with SPD pileup vertex
     ttree->Branch("errpileupSPD",&errpileupSPD,"errpileupSPD/F"); // fraction of events with SPD pileup vertex
+    ttree->Branch("diamondX",&diamondX,"diamondX/F"); // OCDB diamond <x>
+    ttree->Branch("diamondY",&diamondY,"diamondY/F"); // OCDB diamond <y>
+    ttree->Branch("diamondZ",&diamondZ,"diamondZ/F"); // OCDB diamond <z>
+    ttree->Branch("diamondSigX",&diamondSigX,"diamondSigX/F"); // OCDB diamond rms x
+    ttree->Branch("diamondSigY",&diamondSigY,"diamondSigY/F"); // OCDB diamond rms x
+    ttree->Branch("diamondSigZ",&diamondSigZ,"diamondSigZ/F"); // OCDB diamond rms x
 
     // TPC-ITS ME branches
     ttree->Branch("Eff6Pt02",&Eff6Pt02,"Eff6Pt02/F"); // matching efficiency low pt 6 clusters
@@ -818,7 +827,36 @@ void FillVertexBranches(TList * VertxList){
     if(zVtxSPD->GetEntries()==0) zVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexZonly"); // PbPb runs!!!
     TH1F *zVtxSPD_Zonly = (TH1F*)VertxList->FindObject("fhSPDVertexZonly");
     TH1F *zVtxSPDpil = (TH1F*)VertxList->FindObject("fhSPDVertexZPile");
-    
+    TTree *diamTree = (TTree*)VertxList->FindObject("fTreeDiamond");
+    Bool_t diamondExists = kFALSE;
+    Bool_t diamondOK = kFALSE;
+    if(diamTree){
+      diamondExists = kTRUE;
+      UInt_t theRun;
+      Float_t xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam;
+      diamTree->SetBranchAddress("run",&theRun);
+      diamTree->SetBranchAddress("xdiam",&xdiam);
+      diamTree->SetBranchAddress("ydiam",&ydiam);
+      diamTree->SetBranchAddress("zdiam",&zdiam);
+      diamTree->SetBranchAddress("sigxdiam",&sigxdiam);
+      diamTree->SetBranchAddress("sigydiam",&sigydiam);
+      diamTree->SetBranchAddress("sigzdiam",&sigzdiam);
+      for(Int_t j=0; j<diamTree->GetEntriesFast(); j++){
+	diamTree->GetEvent(j);
+	if(theRun==nrun){
+	  myfile << Form("Run %d  Diamond x,y,z (%f,%f,%f)  Diamond rms (%f,%f,%f)\n",theRun,xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam) << endl;
+	  diamondX=xdiam;
+	  diamondY=ydiam;
+	  diamondZ=zdiam;
+	  diamondSigX=sigxdiam;
+	  diamondSigY=sigydiam;
+	  diamondSigZ=sigzdiam;
+	  diamondOK = kTRUE;
+	  break;
+	}
+      }
+    }
+
     if(xVtxTRK){
      TF1 *fxTRK = new TF1("gausx", "gaus", -1, 1);
         if(xVtxTRK->GetEntries()>0){
@@ -955,6 +993,24 @@ void FillVertexBranches(TList * VertxList){
         tVTX2->SetNDC();
         tVTX2->SetTextColor(2);
         tVTX2->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondX,xVtxTRK->GetMinimum(),diamondX,xVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTXd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f #mum}}",diamondX,diamondSigX*10000.));
+	  tVTXd->SetNDC();
+	  tVTXd->SetTextColor(kMagenta+1);
+	  tVTXd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTXd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTXd->SetNDC();
+	    tVTXd->SetTextColor(kMagenta+1);
+	    tVTXd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(2);
@@ -980,6 +1036,24 @@ void FillVertexBranches(TList * VertxList){
         tVTX4->SetNDC();
         tVTX4->SetTextColor(2);
         tVTX4->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondY,yVtxTRK->GetMinimum(),diamondY,yVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTYd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f #mum}}",diamondY,diamondSigY*10000.));
+	  tVTYd->SetNDC();
+	  tVTYd->SetTextColor(kMagenta+1);
+	  tVTYd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTYd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTYd->SetNDC();
+	    tVTYd->SetTextColor(kMagenta+1);
+	    tVTYd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(3);
@@ -1006,6 +1080,24 @@ void FillVertexBranches(TList * VertxList){
         tVTX6->SetNDC();
         tVTX6->SetTextColor(2);
         tVTX6->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondZ,zVtxTRK->GetMinimum(),diamondZ,zVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTZd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f cm}}",diamondZ,diamondSigZ));
+	  tVTZd->SetNDC();
+	  tVTZd->SetTextColor(kMagenta+1);
+	  tVTZd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTZd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTZd->SetNDC();
+	    tVTZd->SetTextColor(kMagenta+1);
+	    tVTZd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(4);
@@ -1041,7 +1133,7 @@ void FillVertexBranches(TList * VertxList){
 //    delete fy;
 //    delete fz;
     
-    } /// end void FillVertexBranches(TList * VertxList)
+} /// end void FillVertexBranches(TList * VertxList)
 
 
    ///////////////////////  SSD
@@ -1364,14 +1456,15 @@ void FillSDDBranches(TList * SDDList){
     if(hgamod){
         if(hgamod->GetEntries()>0){
             Int_t bestMod=0;
-            Int_t deadMod3=0, deadMod4=0;
+//            Int_t deadMod3=0, deadMod4=0;
+            Int_t chOK3=0, chOK4=0;
             for(Int_t iMod=0; iMod<260;iMod++){
                 Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
                 if(gda>bestMod) bestMod=gda;
-                if(gda == 0) {
-                    if(iMod<84) deadMod3+=1;
-                    else deadMod4+=1;
-                }
+//                if(gda == 0) {
+//                    if(iMod<84) deadMod3+=1;
+//                    else deadMod4+=1;
+//                }
             }
     
             Int_t nChunks=1;
@@ -1379,12 +1472,18 @@ void FillSDDBranches(TList * SDDList){
                 nChunks=(Int_t)(bestMod/512.+0.5);
             }
             hgamod->Scale(1./nChunks);
+            for(Int_t iMod=0; iMod<84;iMod++) chOK3 += (Int_t)hgamod->GetBinContent(iMod+1);
+            for(Int_t iMod=84; iMod<260;iMod++) chOK4 += (Int_t)hgamod->GetBinContent(iMod+1);
 
-            fracDead3 = 1.-(Float_t)deadMod3/84;
-            fracDead4 = 1.-(Float_t)deadMod4/176;
-            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
-            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
-            
+//            fracDead3 = 1.-(Float_t)deadMod3/84;
+//            fracDead4 = 1.-(Float_t)deadMod4/176;
+//            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
+//            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
+            fracDead3 = (Float_t)chOK3/(84*512); // fraction of good anodes for layer 3
+            fracDead4 = (Float_t)chOK4/(176*512); // fraction of good anodes for layer 4
+            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/(84*512));         //
+            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/(176*512));
+
             if(fracDead3 > 0.8)FlagSDD1=1.; else FlagSDD1=0.;
             if(fracDead4 > 0.75)FlagSDD2=1.; else FlagSDD2=0.;
         }
@@ -3411,5 +3510,6 @@ Double_t LangausFun(Double_t *x, Double_t *par) {
     
     return (par[2] * step * sum * invsq2pi / par[3]);
 }
+
 
 

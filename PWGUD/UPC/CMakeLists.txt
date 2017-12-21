@@ -43,6 +43,8 @@ set(SRCS
     nanoAOD/AliAODUPCReplicator.cxx
     nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx
     nanoAOD/AliAnalysisTaskUpcNano_MB.cxx
+    AliAnalysisTaskTransTask.cxx
+    AliAnalysisTaskTOFTrigger.cxx
    )
 
 # Headers from sources
@@ -54,7 +56,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Hist Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon TOFbase)
 
 # Generate the ROOT map
 # Dependecies

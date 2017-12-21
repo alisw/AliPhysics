@@ -21,7 +21,6 @@ class AliMCEvent;
 class TList;
 class TLorentzVector;
 class AliCFContainer ;
-class AliStack;
 class AliESDpid ;
 class AliESDtrackCuts ;
 class AliEMCALGeometry ;
@@ -108,11 +107,10 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
     kConvPlan = BIT(22)
   };
   
-		
+  AliMCEvent*           fMCEvent;                                             // corresponding MC event
   AliESDEvent* fESDEvent; //!pointer to the ESDEvent
   AliESDpid * fESDpid ;   //class for Track PID calculation
   AliESDtrackCuts * fESDtrackCuts; //class for charged multiplicity estimation
-  AliStack * fStack;      //! pointer to the MC particle stack
   TList * fOutputContainer; //final histogram container
   TList * fCFOutputContainer; //Correction Fremework conntainer
 
@@ -161,7 +159,7 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   Double_t fptCut ;                  //fptCut
   Double_t fchi2CutConversion ;      //fchi2CutConversion
 
-  ClassDef(AliAnalysisTaskCaloConv, 2); // Analysis task for conversion + calorimeters
+  ClassDef(AliAnalysisTaskCaloConv, 3); // Analysis task for conversion + calorimeters
 };
 
 #endif //ALIANALYSISTASKCALOCO_H

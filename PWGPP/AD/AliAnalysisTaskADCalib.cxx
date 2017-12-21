@@ -476,7 +476,11 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (1c) set up the TF1 depending on the BC
   switch (bc) {
   case  9:
-    f->SetParameters(1024.0, slope/1024.0, 0.0, 0.0);
+    f->SetParameters(1000.0, slope, 0.0, 0.0);
+    f->SetParLimits(0, 512.0*1.9, 1024.0);
+    f->SetParLimits(1,   1.0,   40.0);
+    f->SetParLimits(2,  -5.0,    5.0);
+    f->SetParLimits(3,  -5.0,    5.0);
     break;
   case 10:
     f->SetParameters(0, slope);
@@ -514,9 +518,15 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (2b) fit the profile
   f->FixParameter(1, f->GetParameter(1));
   if (bc == 9) {
-    Double_t q, p=0.9999;
+    Double_t q=0, p=0.9999;
     h->ProjectionX()->GetQuantiles(1, &q, &p);
     h_pfx->Fit(f, "Q0", "", 0, q);
+    AliDebugF(9, "q=%f yMax=%f (%f %f %f %f)",
+              q, yMax,
+              f->GetParameter(0),
+              f->GetParameter(1),
+              f->GetParameter(2),
+              f->GetParameter(3));
   } else {
     h_pfx->Fit(f, "Q0", "", 0, xMax);
   }
@@ -629,9 +639,9 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
     const Double_t largeThr = 1e5;
     for (Int_t bc=0; bc<21; ++bc) {
       switch (bc) {
-      case 9: {
-	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
-	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
+      case  9: {
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0]*TMath::TanH([1]/[0]*(x-[2]))+[3]", 0, 600);
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0]*TMath::TanH([1]/[0]*(x-[2]))+[3]", 0, 600);
 	doExtrapolation[bc] = kTRUE;
 	break;
       }

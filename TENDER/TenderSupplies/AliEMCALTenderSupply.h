@@ -63,6 +63,8 @@ public:
 
   void     SetBasePath(const Char_t *basePath)            { fBasePath = basePath             ;}
  
+  void     SetCustomBC(const Char_t *BCfile)              { fCustomBC = BCfile               ;}
+ 
   void     SetConfigFileName(const char *name)            { fConfigName = name               ;}
 
   void     SetNonLinearityFunction(Int_t fun)             { fNonLinearFunc = fun             ;}
@@ -253,6 +255,7 @@ private:
   Float_t                fEtacut;                 // eta cut for track matching  
   Float_t                fPhicut;                 // phi cut for track matching  
   TString                fBasePath;               // base folder path to get root files 
+  TString                fCustomBC;               // custom BC map file
   Bool_t                 fReClusterize;           // switch for reclustering
   AliEMCALClusterizer   *fClusterizer;            //!clusterizer 
   Bool_t                 fGeomMatrixSet;          // set geometry matrices only once, for the first event.         
@@ -293,6 +296,6 @@ private:
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 19); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 20); // EMCAL tender task
 };
 #endif

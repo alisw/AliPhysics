@@ -66,8 +66,17 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
                                               Int_t & ancPDG, Int_t & ancStatus, 
                                               TLorentzVector & momentum, TVector3 & prodVertex) 
 {  
-  Int_t label1[100];
-  Int_t label2[100];
+  if ( index1 < 0 || index2 < 0 )
+  {
+    ancPDG    = -10000;
+    ancStatus = -10000;
+    momentum.SetXYZT(0,0,0,0);
+    prodVertex.SetXYZ(-10,-10,-10);
+    //printf("\t Negative index (%d, %d)\n",index1,index2);
+  }
+
+  Int_t label1[1000];
+  Int_t label2[1000];
   label1[0]= index1;
   label2[0]= index2;
   Int_t counter1 = 0;
@@ -75,16 +84,15 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
   
   if(label1[0]==label2[0])
   {
-    //printf("AliMCAnalysisUtils::CheckCommonAncestor() - Already the same label: %d\n",label1[0]);
+    //printf("\t Already the same label: %d\n",label1[0]);
     counter1=1;
     counter2=1;
   }
   else
   {
     Int_t label=label1[0];
-    if(label < 0) return -1;
     
-    while(label > -1 && counter1 < 99)
+    while(label > -1 && counter1 < 999)
     {
       counter1++;
       AliVParticle * mom = mcevent->GetTrack(label);
@@ -93,14 +101,13 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
         label  = mom->GetMother() ;
         label1[counter1]=label;
       }
-      //printf("\t counter %d, label %d\n", counter1,label);
+      //printf("\t 1) counter %d, mom label %d, pdg %d\n", counter1,label, mom->PdgCode());
     }
     
     //printf("Org label2=%d,\n",label2[0]);
     label=label2[0];
-    if(label < 0) return -1;
     
-    while(label > -1 && counter2 < 99)
+    while(label > -1 && counter2 < 999)
     {
       counter2++;
       AliVParticle * mom = mcevent->GetTrack(label);
@@ -109,25 +116,27 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
         label  = mom->GetMother() ;
         label2[counter2]=label;
       }
-      //printf("\t counter %d, label %d\n", counter2,label);
+      //printf("\t 2) counter %d, mom label %d, pdg %d \n", counter2,label, mom->PdgCode());
     }
   }//First labels not the same
   
-//  if((counter1==99 || counter2==99) && fDebug >=0)
-//    printf("AliMCAnalysisUtils::CheckCommonAncestor() - Genealogy too large c1: %d, c2= %d\n", counter1, counter2);
+  if((counter1==999 || counter2==999))
+    AliWarning(Form("Genealogy too large, generations: cluster1: %d, cluster2= %d", counter1, counter2));
+  
   //printf("CheckAncestor:\n");
   
-  Int_t commonparents = 0;
+  //Int_t commonparents = 0;
   Int_t ancLabel = -1;
   //printf("counters %d %d \n",counter1, counter2);
   for (Int_t c1 = 0; c1 < counter1; c1++)
   {
     for (Int_t c2 = 0; c2 < counter2; c2++)
     {
-      if(label1[c1]==label2[c2] && label1[c1]>-1)
+      if ( label1[c1]==label2[c2] && label1[c1]>-1 &&
+           ancLabel < label1[c1]                      ) // make sure to take the first common parent, not needed since array is ordered, just in case
       {
         ancLabel = label1[c1];
-        commonparents++;
+        //commonparents++;
         
         AliVParticle * mom = mcevent->GetTrack(label1[c1]);
         
@@ -137,17 +146,21 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
           ancStatus = mom->MCStatusCode();
           momentum.SetPxPyPzE(mom->Px(),mom->Py(),mom->Pz(),mom->E());
           prodVertex.SetXYZ(mom->Xv(),mom->Yv(),mom->Zv());
+          //printf("Ancestor label %d PDG %d, status %d\n",ancLabel,ancPDG,ancStatus);
         }
         
         //First ancestor found, end the loops
-        counter1=0;
-        counter2=0;
+        //counter1=0;
+        //counter2=0;
       }//Ancestor found
     }//second cluster loop
   }//first cluster loop
   
+  //printf("common ancestors %d\n",commonparents);
+  
   if(ancLabel < 0)
   {
+    //printf("No ancestor found!\n");
     ancPDG    = -10000;
     ancStatus = -10000;
     momentum.SetXYZT(0,0,0,0);
@@ -365,7 +378,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   {
     SetTagBit(tag,kMCPhoton);
     
-    if(pPdg == 111)
+    if      ( pPdg == 111 )
     {
       SetTagBit(tag,kMCPi0Decay);
       
@@ -382,7 +395,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       
       //printf("Bit set is Merged %d, Pair in calo %d, Lost %d\n",CheckTagBit(tag, kMCPi0),CheckTagBit(tag,kMCDecayPairInCalo),CheckTagBit(tag,kMCDecayPairLost));
     }
-    else if (pPdg == 221)
+    else if ( pPdg == 221 )
     {
       SetTagBit(tag, kMCEtaDecay);
       
@@ -394,6 +407,12 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCEta) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
         CheckLostDecayPair(arrayCluster,iMom, iParent, mcevent, tag);
+    }
+    else if ( pPdg >  100 )
+    {
+      SetTagBit(tag,kMCOtherDecay);
+      
+      AliDebug(2,Form("Generator decay photon from parent pdg %d",pPdg));
     }
     else if( mom->IsPhysicalPrimary() && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
     {
@@ -407,10 +426,25 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       {
         SetTagBit(tag, kMCISR); //Initial state radiation
       }
-      else SetTagBit(tag,kMCUnknown);
+      else if ( pPdg <  23 )
+      {
+        SetTagBit(tag,kMCFragmentation);
+        
+        AliDebug(2,Form("Generator fragmentation photon from parent pdg %d",pPdg));
+      }
+      else 
+      {
+        AliDebug(2,Form("Generator physical primary (pythia/herwig) unknown photon from parent pdg %d",pPdg));
+
+        SetTagBit(tag,kMCUnknown);
+      }
     }//Physical primary
-    else SetTagBit(tag,kMCOtherDecay);
-    
+    else 
+    {
+      AliDebug(2,Form("Generator unknown photon from parent pdg %d",pPdg));
+
+      SetTagBit(tag,kMCUnknown);
+    }
 //    //Old Herwig selection for ESDs, maybe should be considered.
 //    if(fMCGenerator == kHerwig)
 //    {
@@ -1353,34 +1387,96 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
   printf(" \n");
 } 
 
+//________________________________________________________
+/// Print info of generated particles, for different generations
+/// If no generation specified, all ancestry is printed
+///
+/// \param mcevent access to AliVMCEvent
+/// \param label index of generated particle under investigation
+/// \param nGenerMax limit to the number of generations back to the particle under investigation
+///
+//________________________________________________________
+void AliMCAnalysisUtils::PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t nGenerMax) const
+{
+  AliVParticle * primary = 0;
+  Int_t index = label;
+  Int_t gener = 0;
+  
+  AliInfo("*********** Start");
+  while ( index > 0 )
+  {
+    primary = mcevent->GetTrack(index);
+   
+    if(!primary)
+    {
+      AliWarning("primary pointer not available!!");
+      return;
+    }
+    
+    Float_t eta = 0;
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  
+      eta = -999; 
+    else 
+      eta = primary->Eta();
+    
+    Int_t pdg = primary->PdgCode();
+    
+    printf("generation %d, label %d, %s, pdg %d, status %d, phys prim %d, E %2.2f, pT %2.2f, p(%2.2f,%2.2f,%2.2f) eta %2.2f, phi %2.2f" 
+           " mother %d, n daughters %d, d1 %d, d2 %d\n",
+           gener,index,TDatabasePDG::Instance()->GetParticle(pdg)->GetName(),pdg,primary->MCStatusCode(),primary->IsPhysicalPrimary(),
+           primary->E(),primary->Pt(),primary->Px(),primary->Py(),primary->Pz(),
+           eta,primary->Phi()*TMath::RadToDeg(),
+           primary->GetMother(),primary->GetNDaughters(),primary->GetDaughterLabel(0), primary->GetDaughterLabel(1));
+    
+    gener++;
+    index = primary->GetMother();
+    if ( nGenerMax < gener ) index = -1; // stop digging ancestry
+  } // while
+  
+  AliInfo("*********** End");
+} 
+
+
 //__________________________________________________
 /// Print the assigned origins to this particle.
 //__________________________________________________
 void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
 {  
-  printf("AliMCAnalysisUtils::PrintMCTag() - tag %d \n    photon %d, conv %d, prompt %d, frag %d, isr %d, \n    pi0 decay %d, eta decay %d, other decay %d  pi0 %d,  eta %d \n    electron %d, muon %d,pion %d, proton %d, neutron %d, \n    kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d\n",
-         tag,
-         CheckTagBit(tag,kMCPhoton),
-         CheckTagBit(tag,kMCConversion),
-         CheckTagBit(tag,kMCPrompt),
-         CheckTagBit(tag,kMCFragmentation),
-         CheckTagBit(tag,kMCISR),
-         CheckTagBit(tag,kMCPi0Decay),
-         CheckTagBit(tag,kMCEtaDecay),
-         CheckTagBit(tag,kMCOtherDecay),
-         CheckTagBit(tag,kMCPi0),
-         CheckTagBit(tag,kMCEta),
-         CheckTagBit(tag,kMCElectron),
-         CheckTagBit(tag,kMCMuon), 
-         CheckTagBit(tag,kMCPion),
-         CheckTagBit(tag,kMCProton), 
-         CheckTagBit(tag,kMCAntiNeutron),
-         CheckTagBit(tag,kMCKaon), 
-         CheckTagBit(tag,kMCAntiProton), 
-         CheckTagBit(tag,kMCAntiNeutron),
-         CheckTagBit(tag,kMCUnknown),
-         CheckTagBit(tag,kMCBadLabel)
-         );
+  AliInfo
+  (
+   Form
+   ("Tag %d: photon %d, conv %d, prompt %d, frag %d, isr %d,\n"
+    "        pi0 decay %d, eta decay %d, other decay %d, lost decay %d, in calo decay %d,  pi0 %d,  eta %d,\n"
+    "        electron %d, muon %d,pion %d, proton %d, neutron %d,\n"
+    "        kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d",
+    tag,
+    CheckTagBit(tag,kMCPhoton),
+    CheckTagBit(tag,kMCConversion),
+    CheckTagBit(tag,kMCPrompt),
+    CheckTagBit(tag,kMCFragmentation),
+    CheckTagBit(tag,kMCISR),
+    CheckTagBit(tag,kMCPi0Decay),
+    CheckTagBit(tag,kMCEtaDecay),
+    CheckTagBit(tag,kMCOtherDecay),
+    CheckTagBit(tag,kMCDecayPairLost),
+    CheckTagBit(tag,kMCDecayPairInCalo),
+    CheckTagBit(tag,kMCPi0),
+    CheckTagBit(tag,kMCEta),
+    CheckTagBit(tag,kMCElectron),
+    CheckTagBit(tag,kMCMuon), 
+    CheckTagBit(tag,kMCPion),
+    CheckTagBit(tag,kMCProton), 
+    CheckTagBit(tag,kMCAntiNeutron),
+    CheckTagBit(tag,kMCKaon), 
+    CheckTagBit(tag,kMCAntiProton), 
+    CheckTagBit(tag,kMCAntiNeutron),
+    CheckTagBit(tag,kMCUnknown),
+    CheckTagBit(tag,kMCBadLabel)
+    )
+   );
 } 
 
 //__________________________________________________

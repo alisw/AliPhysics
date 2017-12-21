@@ -18,6 +18,24 @@
 ClassImp(AliRsnMiniParticle)
 
 //__________________________________________________________________________________________________
+void AliRsnMiniParticle::Clear(Option_t *)
+{
+//
+// Clears particle
+//
+   fIndex = -1;
+   fCharge = 0;
+   fPDG = 0;
+   fMother = 0;
+   fMotherPDG = 0;
+   fDCA = 0;
+   fNTotSisters = 0;
+   fIsFromB = kFALSE;
+   fIsQuarkFound = kFALSE;
+   fCutBits = 0;
+}
+
+//__________________________________________________________________________________________________
 void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 {
 //

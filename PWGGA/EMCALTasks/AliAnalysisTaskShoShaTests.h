@@ -1,6 +1,6 @@
 #ifndef AliAnalysisTaskShoShaTests_h
 #define AliAnalysisTaskShoShaTests_h
-
+//task for EMCAL cluster shower shape investigations
 // $Id$
 
 class TH1;
@@ -32,14 +32,18 @@ class AliAnalysisTaskShoShaTests : public AliAnalysisTaskSE {
   Double_t              NeutClusPairInvMass(const AliVCluster *cl1, Int_t ic);
   Int_t                 GetAncestorPdg(const Int_t label);
   void                  FillClusHists();
+  void                  FillChargedClustersShoSha(Int_t trackLabel, AliESDCaloCluster *c, Double_t Et);
+
   void                  SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                  SetGeoName(const char *n)              { fGeoName            = n;       }
   void                  SetPeriod(const char *n)               { fPeriod             = n;       }
   void                  SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   void                  SetTrigThresh(Double_t t)              { fTrigThresh         = t;       }
+
   
  protected:
   TRefArray            *fCaloClusters;            //!pointer to EMCal clusters
+  TClonesArray          *fTracks;                //!track input array
   AliESDCaloCells      *fEMCalCells;              //!pointer to EMCal cells
   AliEMCALGeometry     *fGeom;                    // geometry utils
   TString               fGeoName;                 // geometry name (def = EMCAL_FIRSTYEARV1)
@@ -58,6 +62,7 @@ class AliAnalysisTaskShoShaTests : public AliAnalysisTaskSE {
   AliESDEvent          *fESD;                     //!esd event
   AliMCEvent           *fMCEvent;                 //! MC event object 
   AliStack             *fStack;                   //!MC particles stack object   
+  AliPIDResponse       *fPIDResponse;             //!PID response
   TGeoHMatrix          *fGeomMatrix[12];          //! Geometry misalignment matrices for EMCal
   TList                *fOutputList;              //!output list
   Double_t             *fPvPos;                   //!Prim Vertex position array of coord
@@ -73,7 +78,7 @@ class AliAnalysisTaskShoShaTests : public AliAnalysisTaskSE {
   TH1F                 *fClusEtExoticTM;          //!exotic trigger clusters (TM) Et
   TH1F                 *fClusEtSingleExotic;      //!exotic trigger only clusters Et 
   TH1F                 *fCellEnergy;              //!cell energy spectrum (all)
-  TH1F                 *fInvMassEMCNN;            //!inv mass of EMC neutral cluster pairs
+  TH2F                 *fInvMassEMCNN;            //!inv mass of EMC neutral cluster pairs vs pair pt
   TH2F                 *fM02Et;                   //!M02xEt for  clusters
   TH2F                 *fM02EtPi0MassClCl;        //!M02xEt for  clusters
   TH2F                 *fM02EtPi0MassClClTruPi0;  //!M02xEt for  clusters from pi0 MC truth
@@ -86,6 +91,15 @@ class AliAnalysisTaskShoShaTests : public AliAnalysisTaskSE {
   TH2F                 *fM02EtTM;                 //!M02xEt for  clusters with track matched
   TH2F                 *fM02EtExot;               //!M02xEt for  clusters of exotic
   TH2F                 *fM02EtExotTM;             //!M02xEt for  TM clusters of exotic
+
+  TH2F                 *fElecNSigmaVsP;           //!Electron n-sigma of ESDtracks, vs track->P()
+  TH2F                 *fPionNSigmaVsP;           //!charged pion n-sigma of ESDtracks, vs track->P()
+  TH2F                 *fKaonNSigmaVsP;           //!charged kaon n-sigma of ESDtracks, vs track->P()
+  TH2F                 *fProtNSigmaVsP;           //!Proton n-sigma of ESDtracks, vs track->P()
+  TH2F                 *fM02EtPion;               //!M02 vs Et of clusters matched to a pion (n-sigma)
+  TH2F                 *fM02EtKaon;               //!M02 vs Et of clusters matched to a kaon (n-sigma)
+  TH2F                 *fM02EtProt;               //!M02 vs Et of clusters matched to a proton (n-sigma)
+  TH2F                 *fM02EtElec;               //!M02 vs Et of clusters matched to a electron (n-sigma)
    
   AliAnalysisTaskShoShaTests(const AliAnalysisTaskShoShaTests&); // not implemented
   AliAnalysisTaskShoShaTests& operator=(const AliAnalysisTaskShoShaTests&); // not implemented

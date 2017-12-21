@@ -7,7 +7,8 @@
 // the analysis (histograms/graphs) are stored in the folder which is
 // a data member of AliPerformanceMC.
 //
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 5/11/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -39,12 +40,11 @@
 #include "TAxis.h"
 #include "TF1.h"
 
-#include "AliPerformanceMC.h" 
-#include "AliESDEvent.h" 
+#include "AliPerformanceMC.h"
+#include "AliExternalTrackParam.h"
+#include "AliVEvent.h" 
 #include "AliESDVertex.h"
-#include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDfriend.h"
+#include "AliVfriendEvent.h"
 #include "AliLog.h" 
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
@@ -61,14 +61,21 @@ using namespace std;
 ClassImp(AliPerformanceMC)
 
 //_____________________________________________________________________________
+AliPerformanceMC::AliPerformanceMC(TRootIOCtor* b):
+  AliPerformanceObject(b),
+  fResolHisto(0),
+  fPullHisto(0),
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // io constructor	
+}
+
+//_____________________________________________________________________________
 AliPerformanceMC::AliPerformanceMC(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
   AliPerformanceObject(name,title),
   fResolHisto(0),
   fPullHisto(0),
-
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
 
   // histogram folder 
   fAnalysisFolder(0)
@@ -156,18 +163,12 @@ void AliPerformanceMC::Init(){
   fPullHisto->GetAxis(9)->SetTitle("1/p_{Tmc} (GeV/c)^{-1}");
   fPullHisto->Sumw2();
 
-  // Init cuts 
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-
   // init folder
   fAnalysisFolder = CreateFolder("folderMC","Analysis MC Folder");
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdEvent*/, AliESDfriend *const /*esdFriend*/, const Bool_t bUseMC, const Bool_t /*bUseESDfriend*/)
+void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliVEvent *const /*vEvent*/, AliVfriendEvent *const /*vfriendEvent*/, const Bool_t bUseMC, const Bool_t /*bUseVfriend*/)
 {
   // Process pure MC information 
   //
@@ -225,10 +226,10 @@ void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdE
     Bool_t prim = mcEvent->IsPhysicalPrimary(iPart);
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) break;
+    if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) break;
 
     // exclude electrons
-    if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+    if (fCutsMC.GetEP()==TMath::Abs(particle->GetPdgCode())) return;
 
     AliTrackReference *refTPCIn = 0;
     AliTrackReference *refTPCOut = 0;
@@ -251,7 +252,7 @@ void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdE
       if (ref->R()<rmax) break;
 
       // pt threshold
-      if(ref->Pt() < fCutsRC->GetPtMin()) break;
+      if(ref->Pt() < fCutsRC.GetPtMin()) break;
 
       // TPC
       if(ref->DetectorId()==AliTrackReference::kTPC)
@@ -354,7 +355,7 @@ void AliPerformanceMC::ProcessTPC(AliTrackReference* const refIn, TParticle *con
   Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
-  //if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  //if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   //{ 
     if(mcpt == 0) return;
     

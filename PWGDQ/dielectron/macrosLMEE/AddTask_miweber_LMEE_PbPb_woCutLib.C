@@ -44,7 +44,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   if(!isNano){
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    task->SetRejectPileup();
+    // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
   }
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
@@ -58,6 +58,11 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   //add dielectron analysis with selected cut to the task
   AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA);
   if(diel_low){
+    AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
+    eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
+    eventplaneCuts->Print();
+    diel_low->GetEventFilter().AddCuts(eventplaneCuts);
+  
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }

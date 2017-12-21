@@ -102,7 +102,7 @@ fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
-fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
+			 fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
 fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
 fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
 fhMCEtaMassPtRec(0x0),       fhMCEtaMassPtTrue(0x0),
@@ -116,7 +116,7 @@ fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOp
 fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
 fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
-fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
+fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),   fhMCPi0Radius(0), fhMCEtaRadius(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
 fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0),
 fhEPairDiffTime(0),  
@@ -217,6 +217,19 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhPrimEtaPhiPerGenerator  [igen] = 0;
     fhPrimEtaYPerGenerator    [igen] = 0;
   }
+
+  for(Int_t i = 0; i < 17; i++)
+  {
+    fhMCOrgMass    [i] =0 ;
+    fhMCOrgAsym    [i] =0 ;
+    fhMCOrgDeltaEta[i] =0 ;
+    fhMCOrgDeltaPhi[i] =0 ;
+  }
+  for(Int_t i = 0; i < 3; i++)
+  {
+    fhMCOrgPi0MassPtConversion[i] =0 ;
+    fhMCOrgEtaMassPtConversion[i] =0 ;
+  }
 }
 
 //_____________________
@@ -250,7 +263,7 @@ AliAnaPi0::~AliAnaPi0()
 //______________________________
 void AliAnaPi0::InitParameters()
 {
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("CaloTrackParticle");
   
   AddToHistogramsName("AnaPi0_");
   
@@ -693,7 +706,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     if(fFillOriginHisto)
     {
       // Pi0
-      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhPrimPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtOrigin->SetYTitle("Origin");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -702,10 +715,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K0S");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(11 ,"K0L");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
       outputContainer->Add(fhPrimPi0PtOrigin) ;
       
       fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -727,7 +749,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhPrimPi0PtStatus) ;
-      
+
       // Eta
       fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
       fhPrimEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1367,7 +1389,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1376,10 +1398,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K0S");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(11 ,"K0L");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -1401,7 +1432,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhMCPi0PtStatus) ;
-      
+
       // Eta
       
       fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
@@ -1426,12 +1457,29 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
+
+      fhMCPi0Radius = new TH2F("hPrimPi0Radius",
+			       "Production radius of reconstructed pair from generated #pi^{0} corrected by vertex",
+			       200,0,20,5000,0,500) ;
+      fhMCPi0Radius->SetYTitle("#it{R} (cm)");
+      fhMCPi0Radius->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhMCPi0Radius) ;
+      
+      fhMCEtaRadius = new TH2F("hPrimEtaRadius",
+			       "Production radius of reconstructed pair from generated #eta corrected by vertex",
+			       200,0,20,5000,0,500) ;
+      fhMCEtaRadius->SetYTitle("#it{R} (cm)");
+      fhMCEtaRadius->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhMCEtaRadius) ;
+
       
       // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
-      TString ancestorTitle[] = {"Photon","Electron","Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
-        "Resonances","Strings","Initial state interaction","Final state radiations","Colliding protons","not found"};
+      TString ancestorTitle[] = {"Photon, conversion","Electron, conversion",
+        "Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
+        "Resonances","Strings","Initial state interaction","Final state radiations","Colliding protons",
+        "Pi0Not2SingleGamma","EtaNot2Gamma","Photon, not both conversion","Electron, not both conversion","not found"};
       
-      for(Int_t i = 0; i<13; i++)
+      for(Int_t i = 0; i<17; i++)
       {
         fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1457,6 +1505,44 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #varphi (rad)");
         outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
       }
+
+      //reconstructed gamma clusters coming pi0 (validated in MC true) both not from conversion, with one or two conversions
+      fhMCOrgPi0MassPtConversion[0] = new TH2F("hMCOrgPi0MassPtConversion0","Invariant mass of 2 clusters (ancestor #pi^{0}) not originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[0]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[0]) ;
+
+      fhMCOrgPi0MassPtConversion[1] = new TH2F("hMCOrgPi0MassPtConversion1","Invariant mass of 2 clusters (ancestor #pi^{0}) one from conversion and the other not",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[1]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[1]) ;
+
+      fhMCOrgPi0MassPtConversion[2] = new TH2F("hMCOrgPi0MassPtConversion2","Invariant mass of 2 clusters (ancestor #pi^{0}) originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[2]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[2]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[2]) ;
+
+      //reconstructed gamma clusters coming eta (validated in MC true) both not from conversion, with one or two conversions
+      fhMCOrgEtaMassPtConversion[0] = new TH2F("hMCOrgEtaMassPtConversion0","Invariant mass of 2 clusters (ancestor #eta) not originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[0]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[0]) ;
+
+      fhMCOrgEtaMassPtConversion[1] = new TH2F("hMCOrgEtaMassPtConversion1","Invariant mass of 2 clusters (ancestor #eta) one from conversion and the other not",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[1]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[1]) ;
+
+      fhMCOrgEtaMassPtConversion[2] = new TH2F("hMCOrgEtaMassPtConversion2","Invariant mass of 2 clusters (ancestor #eta) originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[2]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[2]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[2]) ;
       
       if(fMultiCutAnaSim)
       {
@@ -2231,9 +2317,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
   if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
   {
-    TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
-    TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
-
     TString tagBkgNames[] = { 
       "Clean", "HijingBkg", "NotHijingBkg", "HijingAndOtherBkg",
       "Clean_HijingBkg", "Clean_NotHijingBkg", "Clean_HijingAndOtherBkg",
@@ -2734,8 +2817,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
       Int_t momindex = primary->GetMother();
       Int_t mompdg    = -1;
       Int_t momstatus = -1;
+      Int_t uniqueID  = primary->GetUniqueID();
       Int_t status    = -1;
       Float_t momR    =  0;
+      Float_t momRcorr=  0;
+      Double_t vertex[3]={0.,0.,0.};
+      GetVertex(vertex);
       
       if(momindex >= 0 && momindex < nprim)
       {
@@ -2745,24 +2832,59 @@ void AliAnaPi0::FillAcceptanceHistograms()
         momstatus = mother->MCStatusCode();
         //momR      = mother->R();
         momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-        
+	momRcorr  = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				(mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
+	   
         if(pdg == 111)
         {
           fhPrimPi0ProdVertex->Fill(mesonPt, momR  , GetEventWeight()*weightPt);
           fhPrimPi0PtStatus  ->Fill(mesonPt, status, GetEventWeight()*weightPt);
 
-          
-          if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);//parton
-          else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);//quark
+	  if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321)
+	     || mompdg==3212 || mompdg==3222 || mompdg==3112 || mompdg==3322 || mompdg==3212) {
+	    //310 - K0S
+	    //130 - K0L
+	    //3133 - Lambda
+	    //321 - K+-
+	    //3212 - sigma0
+	    //3222,3112 - sigma+-
+	    //3322,3312 - cascades
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 14.5, GetEventWeight()*weightPt);//hadronic interaction
+	  }
+          else if(mompdg==310) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S
+	  }
+	  else if(mompdg    == 130) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 10.5, GetEventWeight()*weightPt);//k0L
+	  }
+	  else if(mompdg==321) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 11.5, GetEventWeight()*weightPt);//k+-
+	  }
+	  else if(mompdg==3122) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 13.5, GetEventWeight()*weightPt);//lambda 
+	  }
+	  else if(momRcorr>0.1) {//in cm
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 15.5, GetEventWeight()*weightPt);//radius too large
+	  }
+	  else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//p,n,pi
+	  }
+	  else if(mompdg==11) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 17.5, GetEventWeight()*weightPt);//e+-
+	  }
+	  else if(mompdg==13) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 18.5, GetEventWeight()*weightPt);//mu+-
+	  }
+          else if(momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);//parton
+          else if(mompdg     < 22  && mompdg!=11 && mompdg!=13) fhPrimPi0PtOrigin->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);//quark
           else if(mompdg     > 2100  && mompdg < 2210)
                                     fhPrimPi0PtOrigin->Fill(mesonPt, 2.5, GetEventWeight()*weightPt);// resonances
           else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(mesonPt, 8.5, GetEventWeight()*weightPt);//eta
           else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(mesonPt, 9.5, GetEventWeight()*weightPt);//eta prime
           else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(mesonPt, 4.5, GetEventWeight()*weightPt);//rho
           else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(mesonPt, 5.5, GetEventWeight()*weightPt);//omega
-          else if(mompdg    >= 310   && mompdg <= 323)
-                                    fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-          else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0L
+          else if(mompdg    >  310   && mompdg <= 323)
+	                            fhPrimPi0PtOrigin->Fill(mesonPt, 12.5, GetEventWeight()*weightPt);//k*
           else if(momstatus == 11 || momstatus == 12 )
                                     fhPrimPi0PtOrigin->Fill(mesonPt, 3.5, GetEventWeight()*weightPt);//resonances
           else                      fhPrimPi0PtOrigin->Fill(mesonPt, 7.5, GetEventWeight()*weightPt);//other?
@@ -3079,248 +3201,418 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   Int_t mompdg    = -1;
   Int_t momstatus = -1;
   Int_t status    = -1;
+  Int_t uniqueID  = -1;
   Float_t prodR = -1;
+  Float_t prodRcorr = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
   Float_t cent   = GetEventCentrality();
-
+  Double_t vertex[3]={0.,0.,0.};
+  GetVertex(vertex);
+  
   if(ancLabel > -1)
   {
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
                     ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
     
-    if(ancPDG==22)
-    {//gamma
-      mcIndex = 0;
+    if ( ancPDG==22 )
+    { // gamma, from conversions?
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
+        mcIndex = 0;
+      else
+        mcIndex = 14;
     }
     else if(TMath::Abs(ancPDG)==11)
-    {//e
-      mcIndex = 1;
+    {// electron, from conversions?
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
+        mcIndex = 1;
+      else
+        mcIndex = 15;
     }
     else if(ancPDG==111)
     {//Pi0
-      mcIndex = 2;
-
-      fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-      fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
-      fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
-      if(IsHighMultiplicityAnalysisOn())
-        fhMCPi0PerCentrality->Fill(pt, cent, GetEventWeight()*weightPt);
-
-      if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
-      {
-        fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-        fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
-        fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
-        if(IsHighMultiplicityAnalysisOn())
-          fhMCPi0PerCentralityMassCut->Fill(pt, cent, GetEventWeight()*weightPt);
-      }
+      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
+      Bool_t ok= kTRUE;
       
-      if(fMultiCutAnaSim)
+      if ( mom->GetNDaughters()!=2 )
       {
-        for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
-        {
-          for(Int_t icell=0; icell<fNCellNCuts; icell++)
-          {
-            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
-            {
-              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
-                 pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
-                 asym   <  fAsymCuts[iasym]                                   &&
-                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
-              {
-                fhMCPi0MassPtRec [index]->Fill(pt    ,mass, GetEventWeight()*weightPt);
-                fhMCPi0MassPtTrue[index]->Fill(ptPrim,mass, GetEventWeight()*weightPt);
-                
-                if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
-                  fhMCPi0PtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
-              }//pass the different cuts
-            }// pid bit cut loop
-          }// icell loop
-        }// pt cut loop
-      }// Multi cut ana sim
+        ok = kFALSE;
+      }
       else
       {
-        fhMCPi0MassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
-        fhMCPi0MassPtRec  [0]->Fill(pt    , mass, GetEventWeight()*weightPt);
-        fhMCPi0PtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
-
-        if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )        
-        {
-          fhMCPi0PtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
-          
-          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
-          status   = ancestor->MCStatusCode();
-          momindex = ancestor->GetMother();
-          
-          Bool_t momOK = kFALSE;
-          if(momindex >= 0) 
-          {
-            AliVParticle* mother = GetMC()->GetTrack(momindex);
-            mompdg    = TMath::Abs(mother->PdgCode());
-            momstatus = mother->MCStatusCode();
-            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-            //prodR = mother->R();
-            //uniqueId = mother->GetUniqueID();
-            momOK = kTRUE;
-          }
-          
-          if(momOK)
-          {
-            //            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
-            //                   pt,prodR,mompdg,momstatus,uniqueId);
-            
-            fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
-            fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
-            
-            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-            else if(mompdg     > 2100  && mompdg   < 2210)
-              fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
-            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
-            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
-            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
-            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
-            else if(mompdg    >= 310   && mompdg    <= 323)
-              fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
-            else if(momstatus == 11 || momstatus  == 12 )
-              fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-            else                      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
-            
-            if(status!=11)
-            {
-              if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-              else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-              else if(mompdg     > 2100  && mompdg   < 2210)
-                fhMCNotResonancePi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
-              else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
-              else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
-              else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
-              else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
-              else if(mompdg    >= 310   && mompdg    <= 323)
-                fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-              else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
-              else if(momstatus == 11 || momstatus  == 12 )
-                fhMCNotResonancePi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-              else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
-            }
-          }
-          
-        }//pi0 mass region
+        AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
+        AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
+        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
       }
       
-      if(fNAngleCutBins > 0)
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0Decay) && ok  )
       {
-        Int_t angleBin = -1;
-        for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+        mcIndex = 2;
+        
+        fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
+        fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+        fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
+        if(IsHighMultiplicityAnalysisOn())
+          fhMCPi0PerCentrality->Fill(pt, cent, GetEventWeight()*weightPt);
+        
+        if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
         {
-          if(angle >= fAngleCutBinsArray[ibin] && 
-             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
+          if(IsHighMultiplicityAnalysisOn())
+            fhMCPi0PerCentralityMassCut->Fill(pt, cent, GetEventWeight()*weightPt);
         }
         
-        if( angleBin >= 0 && angleBin < fNAngleCutBins)
-          fhReOpAngleBinPairClusterMassMCTruePi0[angleBin]->Fill(pt, mass, GetEventWeight()*weightPt);
+        if(fMultiCutAnaSim)
+        {
+          for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+          {
+            for(Int_t icell=0; icell<fNCellNCuts; icell++)
+            {
+              for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+              {
+                Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+                if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                   pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
+                   asym   <  fAsymCuts[iasym]                                   &&
+                   ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
+                {
+                  fhMCPi0MassPtRec [index]->Fill(pt    ,mass, GetEventWeight()*weightPt);
+                  fhMCPi0MassPtTrue[index]->Fill(ptPrim,mass, GetEventWeight()*weightPt);
+                  
+                  if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+                    fhMCPi0PtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
+                }//pass the different cuts
+              }// pid bit cut loop
+            }// icell loop
+          }// pt cut loop
+        }// Multi cut ana sim
+        else
+        {
+          fhMCPi0MassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
+          fhMCPi0MassPtRec  [0]->Fill(pt    , mass, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
+          
+          if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )        
+          {
+            fhMCPi0PtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
+            
+            AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+            status   = ancestor->MCStatusCode();
+            momindex = ancestor->GetMother();
+	    uniqueID = ancestor->GetUniqueID();
+
+            Bool_t momOK = kFALSE;
+            if(momindex >= 0) 
+            {
+              AliVParticle* mother = GetMC()->GetTrack(momindex);
+              mompdg    = TMath::Abs(mother->PdgCode());
+              momstatus = mother->MCStatusCode();
+	      prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+	      prodRcorr = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				      (mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
+              //prodR = mother->R();
+              //uniqueId = mother->GetUniqueID();
+              momOK = kTRUE;
+            }
+            
+            if(momOK)
+            {
+              //            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+              //                   pt,prodR,mompdg,momstatus,uniqueId);
+              
+              fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
+              fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
+	      fhMCPi0Radius    ->Fill(pt, prodRcorr,GetEventWeight()*weightPt);
+ 
+	      if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321)
+		 || mompdg==3212 || mompdg==3222 || mompdg==3112 || mompdg==3322 || mompdg==3212) {
+		//310 - K0S
+		//130 - K0L
+		//3133 - Lambda
+		//321 - K+-
+		//3212 - sigma0
+		//3222,3112 - sigma+-
+		//3322,3312 - cascades
+		fhMCPi0PtOrigin->Fill(pt, 14.5, GetEventWeight()*weightPt);//hadronic interaction
+	      }
+	      else if(mompdg==310) {
+		fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S
+	      }
+              else if(mompdg    == 130) {
+                fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
+              }
+	      else if(mompdg==321) {
+		fhMCPi0PtOrigin->Fill(pt, 11.5, GetEventWeight()*weightPt);//k+-
+	      }
+	      else if(mompdg==3122) {
+		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
+	      }
+	      else if(prodRcorr>0.1) {//in cm
+		fhMCPi0PtOrigin->Fill(pt, 15.5, GetEventWeight()*weightPt);//radius too large
+	      }
+	      else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
+		fhMCPi0PtOrigin->Fill(pt, 16.5, GetEventWeight()*weightPt);//p,n,pi
+	      }
+	      else if(mompdg==11) {
+		fhMCPi0PtOrigin->Fill(pt, 17.5, GetEventWeight()*weightPt);//e+-
+	      }
+	      else if(mompdg==13) {
+		fhMCPi0PtOrigin->Fill(pt, 18.5, GetEventWeight()*weightPt);//mu+-
+	      }
+	      else if     (momstatus  == 21) {
+                fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
+              }
+              else if(mompdg     < 22 && mompdg!=11 && mompdg!=13) {
+                fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark (no e nor mu)
+              }
+              else if(mompdg     > 2100  && mompdg   < 2210) {
+                fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
+              }
+              else if(mompdg    == 221) {
+                fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
+              }
+              else if(mompdg    == 331) {
+                fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
+              }
+              else if(mompdg    == 213) {
+                fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
+              }
+              else if(mompdg    == 223) {
+                fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
+              }
+              else if(mompdg    > 310   && mompdg    <= 323) {
+		fhMCPi0PtOrigin->Fill(pt, 12.5, GetEventWeight()*weightPt);//k*
+              }
+              else if(momstatus == 11 || momstatus  == 12 ) {
+                fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
+              }
+              else {
+                fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
+              }
+              
+              if(status!=11) // all the time for py8
+              {
+                if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
+                else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+                else if(mompdg     > 2100  && mompdg   < 2210)
+                  fhMCNotResonancePi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
+                else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
+                else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
+                else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
+                else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
+                else if(mompdg    >= 310   && mompdg    <= 323)
+                  fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
+                else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
+                else if(momstatus == 12 )
+                  fhMCNotResonancePi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
+                else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
+              }
+            }
+            
+          }//pi0 mass region
+        }
+        
+        if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
+        {
+          Int_t angleBin = -1;
+          for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+          {
+            if(angle >= fAngleCutBinsArray[ibin] && 
+               angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          }
+          
+          if( angleBin >= 0 && angleBin < fNAngleCutBins)
+            fhReOpAngleBinPairClusterMassMCTruePi0[angleBin]->Fill(pt, mass, GetEventWeight()*weightPt);
+        }
       }
-      
+      else
+      {
+        mcIndex = 12; // other decays than pi0->gamma-gamma or merged
+        
+//        printf("Et (%2.2f, %2.2f), Mass %f, decay (%d, %d), merged (%d, %d), conv (%d, %d) ok %d, N daug %d\n",
+//               pt1, pt2, mass,
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0Decay),
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay),
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion),
+//               ok, mom->GetNDaughters());
+//        
+//        if ( mom->GetNDaughters()==2 )
+//        {
+//          AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
+//          AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
+//          printf("\t labels (%d, %d), pdg (%d, %d) \n",
+//                 mom->GetDaughterLabel(0), mom->GetDaughterLabel(1),
+//                 d1->PdgCode()           , d2->PdgCode()            ); 
+//        }
+//        
+//        Int_t first = 0;
+//        AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),iclus1,first);
+//        AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),iclus2,iclus1);
+//        if(!cluster2 || !cluster1) 
+//        { 
+//          AliWarning(Form("Cluster1 %p or Cluster 2 %p not found!",cluster1,cluster2));
+//          return;
+//        }
+//
+//        printf("xxx Cluster1\n");
+//        for(Int_t ilab = 0; ilab < cluster1->GetNLabels(); ilab++ )
+//        {
+//          printf("label %d\n",ilab);
+//          GetMCAnalysisUtils()->PrintAncestry(GetMC(), cluster1->GetLabels()[ilab]);
+//        }
+//
+//        printf("xxx Cluster2\n");
+//        for(Int_t ilab = 0; ilab < cluster2->GetNLabels(); ilab++ )
+//        {
+//          printf("label %d\n",ilab);
+//          GetMCAnalysisUtils()->PrintAncestry(GetMC(), cluster2->GetLabels()[ilab]);
+//        }
+      }
     }
     else if(ancPDG==221)
     {//Eta
-      mcIndex = 3;
-
-      fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-      fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
-      fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
-      if(IsHighMultiplicityAnalysisOn())
-        fhMCEtaPerCentrality->Fill(pt, cent, GetEventWeight()*weightPt);
-
-      if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
+      Bool_t ok= kTRUE;
+      
+      if ( mom->GetNDaughters()!=2 ) 
       {
-        fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-        fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
-        fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
-        if(IsHighMultiplicityAnalysisOn())
-          fhMCEtaPerCentralityMassCut->Fill(pt, cent, GetEventWeight()*weightPt);
+        ok = kFALSE;
       }
-
-      if(fMultiCutAnaSim)
-      {
-        for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
-        {
-          for(Int_t icell=0; icell<fNCellNCuts; icell++)
-          {
-            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
-            {
-              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
-                 pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
-                 asym   <  fAsymCuts[iasym]                                   &&
-                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
-              {
-                fhMCEtaMassPtRec  [index]->Fill(pt    , mass, GetEventWeight()*weightPt);
-                fhMCEtaMassPtTrue [index]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
-                fhMCEtaPtTruePtRec[index]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
-
-                if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
-                    fhMCEtaPtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
-              }//pass the different cuts
-            }// pid bit cut loop
-          }// icell loop
-        }// pt cut loop
-      } //Multi cut ana sim
       else
-      {        
-        fhMCEtaMassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
-        fhMCEtaMassPtRec  [0]->Fill(pt    , mass, GetEventWeight()*weightPt);
-        fhMCEtaPtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
-
-        if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
-        {
-          fhMCEtaPtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
-          
-          Float_t momOK = kFALSE;
-          
-          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
-          momindex  = ancestor->GetMother();
-          if(momindex >= 0) 
-          {
-            AliVParticle* mother = GetMC()->GetTrack(momindex);
-            mompdg    = TMath::Abs(mother->PdgCode());
-            momstatus = mother->MCStatusCode();
-            //prodR = mother->R();
-            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-            momOK = kTRUE;
-          }
-          
-          if(momOK)
-          {
-            fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight()*weightPt);
-            
-            if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-            else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-            else if(mompdg    > 2100  && mompdg  < 2210)
-              fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);//qq resonances
-            else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
-            else if(momstatus == 11 || momstatus == 12 )
-              fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-            else                      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions?
-            //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
-          }
-          
-        }// eta mass region
-    } 
-      if(fNAngleCutBins > 0)
       {
-        Int_t angleBin = -1;
-        for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+        AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
+        AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
+        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
+      }
+      
+      if ( mom->GetNDaughters()!=2 ) ok = kFALSE;
+
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCEtaDecay) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEtaDecay) && ok )
+      {        
+        mcIndex = 3;
+        
+        fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
+        fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+        fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
+        if(IsHighMultiplicityAnalysisOn())
+          fhMCEtaPerCentrality->Fill(pt, cent, GetEventWeight()*weightPt);
+        
+        if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
         {
-          if(angle >= fAngleCutBinsArray[ibin] && 
-             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
+          if(IsHighMultiplicityAnalysisOn())
+            fhMCEtaPerCentralityMassCut->Fill(pt, cent, GetEventWeight()*weightPt);
         }
         
-        if( angleBin >= 0 && angleBin < fNAngleCutBins)
-          fhReOpAngleBinPairClusterMassMCTrueEta[angleBin]->Fill(pt, mass, GetEventWeight()*weightPt);
+        if(fMultiCutAnaSim)
+        {
+          for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+          {
+            for(Int_t icell=0; icell<fNCellNCuts; icell++)
+            {
+              for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+              {
+                Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+                if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                   pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
+                   asym   <  fAsymCuts[iasym]                                   &&
+                   ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
+                {
+                  fhMCEtaMassPtRec  [index]->Fill(pt    , mass, GetEventWeight()*weightPt);
+                  fhMCEtaMassPtTrue [index]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
+                  fhMCEtaPtTruePtRec[index]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
+                  
+                  if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+                    fhMCEtaPtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
+                }//pass the different cuts
+              }// pid bit cut loop
+            }// icell loop
+          }// pt cut loop
+        } //Multi cut ana sim
+        else
+        {        
+          fhMCEtaMassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight()*weightPt);
+          fhMCEtaMassPtRec  [0]->Fill(pt    , mass, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight()*weightPt);
+          
+          if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
+          {
+            fhMCEtaPtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
+            
+            Bool_t momOK = kFALSE;
+            
+            AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+            momindex  = ancestor->GetMother();
+            if(momindex >= 0) 
+            {
+              AliVParticle* mother = GetMC()->GetTrack(momindex);
+              mompdg    = TMath::Abs(mother->PdgCode());
+              momstatus = mother->MCStatusCode();
+              //prodR = mother->R();
+              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+	      prodRcorr = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				      (mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
+              momOK = kTRUE;
+            }
+            
+            if(momOK)
+            {
+              fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight()*weightPt);
+	      fhMCEtaRadius    ->Fill(pt, prodRcorr, GetEventWeight()*weightPt);
+
+	      
+              if     (momstatus == 21 ) { // empty for py8
+                fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
+              }
+              else if(mompdg    < 22  ) {
+                fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark, include parton for py8
+              }
+              else if(mompdg    > 2100  && mompdg  < 2210) {
+                fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);//qq resonances
+              }
+              else if(mompdg    == 331) {
+                fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
+              }
+              else if(momstatus == 11 || momstatus == 12 ) { // empty for py8
+                fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
+              }
+              else {
+                fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions? resonances for py8?
+                //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+	      }
+              
+            }
+            
+          }// eta mass region
+        } 
+        
+        if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
+        {
+          Int_t angleBin = -1;
+          for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+          {
+            if(angle >= fAngleCutBinsArray[ibin] && 
+               angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          }
+          
+          if( angleBin >= 0 && angleBin < fNAngleCutBins)
+            fhReOpAngleBinPairClusterMassMCTrueEta[angleBin]->Fill(pt, mass, GetEventWeight()*weightPt);
+        }
+      } // eta gamma gamma decays
+      else 
+      {
+        mcIndex = 13; // other decays than eta->gamma-gamma or merged
       }
     }
     else if(ancPDG==-2212)
@@ -3337,7 +3629,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     }
     else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7)
     {
-      if(ancStatus==1)
+      if(ancStatus==1) 
       {//Stable particles, converted? not decayed resonances
         mcIndex = 6;
       }
@@ -3348,29 +3640,29 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     }
     else
     {//Partons, colliding protons, strings, intermediate corrections
-      if(ancStatus==11 || ancStatus==12)
+      if(ancStatus == 11 || ancStatus == 12 || ancStatus == 0 )
       {//String fragmentation
         mcIndex = 8;
       }
-      else if (ancStatus==21)
-      {
-        if(ancLabel < 2)
-        {//Colliding protons
-          mcIndex = 11;
-        }//colliding protons
-        else if(ancLabel < 6)
-        {//partonic initial states interactions
-          mcIndex = 9;
-        }
-        else if(ancLabel < 8)
-        {//Final state partons radiations?
-          mcIndex = 10;
-        }
+      //else if (ancStatus==21)
+      //{
+      if(ancLabel < 2)
+      {//Colliding protons
+        mcIndex = 11;
+      }//colliding protons
+      else if(ancLabel < 6)
+      {//partonic initial states interactions, not exactly for py8 it can include few more labels
+        mcIndex = 9;
+      }
+      else if(ancLabel < 8)
+      {//Final state partons radiations?, not exactly for py8 it can include few more labels
+        mcIndex = 10;
+      }
         // else {
         //   printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
         //          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
         // }
-      }//status 21
+      //}//status 21
       //else {
       //  printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check *** Common ancestor label %d, pdg %d, name %s, status %d; \n",
       //         ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
@@ -3381,16 +3673,55 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   { //ancLabel <= -1
     //printf("Not related at all label = %d\n",ancLabel);
     AliDebug(1,"Common ancestor not found");
+
+    mcIndex = 16;
+  }
     
-    mcIndex = 12;
+  if(mcIndex < 0 || mcIndex >= 17) 
+  {
+    AliInfo(Form("Wrong ancestor type %d, set it to unknown (12)",mcIndex));
+    
+    AliInfo(Form("\t Ancestor type not found: label %d, pdg %d, name %s, status %d\n",
+           ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
+    
+    mcIndex = 16;
   }
   
-  if(mcIndex >= 0 && mcIndex < 13)
-  {
-    fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
-    fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
-    fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight()*weightPt);
-    fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight()*weightPt);
+  //printf("Pi0TASK: MC index %d\n",mcIndex);
+  
+  fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
+  fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
+  fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight()*weightPt);
+  fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight()*weightPt);
+
+  if(mcIndex==2) {//pi0 only check conversions
+    if(GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //both conversions
+      fhMCOrgPi0MassPtConversion[2]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else if(!GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+	      !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //no conversion
+      fhMCOrgPi0MassPtConversion[0]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else {
+      //one conversion and one not
+      fhMCOrgPi0MassPtConversion[1]->Fill(pt, mass, GetEventWeight()*weightPt);
+    }
+  }
+
+  if(mcIndex==3) {//eta only, check conversions
+    if(GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //both conversions
+      fhMCOrgEtaMassPtConversion[2]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else if(!GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+	      !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //no conversion
+      fhMCOrgEtaMassPtConversion[0]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else {
+      //one conversion and one not
+      fhMCOrgEtaMassPtConversion[1]->Fill(pt, mass, GetEventWeight()*weightPt);
+    }
   }
   
   if( IsStudyClusterOverlapsPerGeneratorOn() )
@@ -3662,7 +3993,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //---------------------------------
   for(Int_t i1 = 0; i1 < nPhot-last; i1++)
   {
-    AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+    AliCaloTrackParticle * p1 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i1)) ;
 
     // Select photons within a pT range
     if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
@@ -3747,8 +4078,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     for(Int_t i2 = first; i2 < nPhot2; i2++)
     {
-      //AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
-      AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (secondLoopInputData->At(i2)) ;
+      //AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i2)) ;
+      AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (secondLoopInputData->At(i2)) ;
       
       // Select photons within a pT range
       if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
@@ -3864,7 +4195,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Int_t   ancStatus = 0;
       Int_t   ancLabel  =-1;
       Float_t weightPt  = 1;
-      if(IsDataMC())
+      if ( IsDataMC() )
       {
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
                                                              GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
@@ -3881,78 +4212,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //-------------------------------------------------------------------------------------------------
       // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
       //-------------------------------------------------------------------------------------------------
-      if ( a < fAsymCuts[0] && fFillSMCombinations &&
-          module1 >=0 && module1<fNModules        && 
-          module2 >=0 && module2<fNModules           )
-      {
-        if ( !fPairWithOtherDetector )
-        {
-          if ( module1==module2 )
-          {
-            fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
-            if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
-          }
-          else if ( GetCalorimeter()==kEMCAL )
-          {
-            // Same sector
-            Int_t isector1 = module1/2;
-            Int_t isector2 = module2/2;
-            if ( isector1==isector2 ) 
-            {
-              fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
-            }
-            // Same side
-            else if ( TMath::Abs(isector2-isector1) == 1 )
-            {
-              Int_t iside1 = module1;
-              Int_t iside2 = module2;
-              // skip EMCal/DCal combination
-              if(module1 > 11) iside1-=2; 
-              if(module2 > 11) iside2-=2;
-              
-              if     ( module1 < module2 && module2-module1==2 ) 
-                fhMiSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
-              else if( module2 < module1 && module1-module2==2 ) 
-                fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
-            }
-          } // EMCAL
-          else
-          { // PHOS
-            if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==0 && module2==4) || (module1==4 && module2==0)) fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==1 && module2==4) || (module1==4 && module2==1)) fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==2 && module2==4) || (module1==4 && module2==2)) fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
-            if((module1==3 && module2==4) || (module1==4 && module2==3)) fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
-          } // PHOS
-        }
-        else
-        {
-          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
-          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
-          Bool_t etaside = 0;
-          if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
-             || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
-          
-          if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
-          else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
-          else if (    phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320))  fhMiSameSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight());
-          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(280) && phi1 < DegToRad(280) && phi2 < DegToRad(300)) 
-                   || (phi1 > DegToRad(280) && phi2 > DegToRad(260) && phi1 < DegToRad(300) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());  
-          else if (   (phi1 > DegToRad(280) && phi2 > DegToRad(300) && phi1 < DegToRad(300) && phi2 < DegToRad(320)) 
-                   || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhMiDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
-          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
-                   || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
-          else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
-        }            
-      } //  different SM combinations
-
-      
-      
       if ( a < fAsymCuts[0] && fFillSMCombinations &&
            module1 >=0 && module1<fNModules        && 
            module2 >=0 && module2<fNModules           )
@@ -4084,6 +4343,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
               
               fhRe1     [index]->Fill(pt, m, GetEventWeight()*weightPt);
+              
               if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
               
               if(fFillBadDistHisto)
@@ -4241,12 +4501,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           fhReMCFromMixConversion->Fill(pt, m, GetEventWeight()*weightPt);
         }
         
-        if(fFillOriginHisto)
+        if ( fFillOriginHisto )
+        {
           FillMCVersusRecDataHistograms(ancLabel, ancPDG, ancStatus, weightPt,
                                         p1->GetCaloLabel(0), p2->GetCaloLabel(0),
                                         p1->GetTag(),p2->GetTag(),
                                         p1->Pt(), p2->Pt(),
                                         ncell1, ncell2, m, pt, a, deta, dphi, angle);
+        }
       }
       
       //-----------------------
@@ -4317,7 +4579,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //---------------------------------
       for(Int_t i1 = 0; i1 < nPhot; i1++)
       {
-        AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+        AliCaloTrackParticle * p1 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i1)) ;
         
         // Select photons within a pT range
         if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
@@ -4334,7 +4596,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //---------------------------------
         for(Int_t i2 = 0; i2 < nPhot2; i2++)
         {
-          AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
+          AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (ev2->At(i2)) ;
           
           // Select photons within a pT range
           if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
@@ -4702,7 +4964,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 ///  * in the mixed buffer returns -2 if vertex NOK
 ///  * for normal events   returns 0 if vertex OK and -1 if vertex NOK
 //________________________________________________________________________
-Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
+Int_t AliAnaPi0::GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)
 {
   Int_t evtIndex = -1 ;
     

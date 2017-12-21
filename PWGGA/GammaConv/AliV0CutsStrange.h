@@ -7,8 +7,8 @@
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
+#include "AliMCEvent.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -88,7 +88,7 @@ public:
   
   void SetV0ReaderName(TString name){fV0ReaderStrangeName = name; return;}
   
-  Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma);
+  Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma);
   
   AliVTrack * GetTrack(AliVEvent * event, Int_t label);
   AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
@@ -119,6 +119,7 @@ protected:
   
   TString           fV0ReaderStrangeName;
   TObjString*       fCutString;                           // cut number used for analysis
+  TString           fCutStringRead;
   
   Bool_t            fIsQA;
   
@@ -165,7 +166,7 @@ protected:
   
 private:
   
-  ClassDef(AliV0CutsStrange,1)
+  ClassDef(AliV0CutsStrange,2)
 };
 
 #endif

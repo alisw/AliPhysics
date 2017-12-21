@@ -1,7 +1,8 @@
 AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTagging",
 					    const char* options = "",
 					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
-					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
+					    Float_t timeCut = 100.e-9, //accept clusters with |t|<timeCut
+                                            Float_t distCut = 0.) //reject clusters with dist to nearest bad channel < cut (in cm)
 {
   //Add a task AliAnalysisTaskTaggedPhotons to the analysis train
   //Author: Dmitri Peresunko
@@ -20,8 +21,12 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
   AliAnalysisTaskTaggedPhotons* task = new AliAnalysisTaskTaggedPhotons(Form("%sTask", name));
 
   task->SelectCollisionCandidates(offlineTriggerMask);
-//  task->SetInternalTriggerSelection(internalTriggerSelection);
-  
+
+ 
+  task->SetDistanceToBad() ;
+  task->SetTimeCut(25.e-9) ;
+
+ 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   

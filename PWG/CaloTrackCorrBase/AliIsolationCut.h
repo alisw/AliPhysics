@@ -9,7 +9,7 @@
 /// \brief Class with utils to perform Isolation Cuts.
 ///
 /// Class containing methods for the isolation cut.
-/// An AOD candidate (AliAODPWG4ParticleCorrelation type)
+/// An AOD candidate (AliCaloTrackParticleCorrelation type)
 /// is passed. Look in a cone around the candidate and study
 /// the hadronic activity inside to decide if the candidate is isolated
 ///
@@ -24,7 +24,7 @@ class TObjArray ;
 #include <TLorentzVector.h>
 
 // --- ANALYSIS system ---
-class AliAODPWG4ParticleCorrelation ;
+class AliCaloTrackParticleCorrelation ;
 class AliCaloTrackReader ;
 class AliCaloPID;
 
@@ -49,14 +49,14 @@ class AliIsolationCut : public TObject {
 
   TString    GetICParametersList() ;
 
-  Float_t    GetCellDensity(  AliAODPWG4ParticleCorrelation * pCandidate,
+  Float_t    GetCellDensity(  AliCaloTrackParticleCorrelation * pCandidate,
                               AliCaloTrackReader * reader) const ;
 
   void       MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe,
                               AliCaloTrackReader * reader,
                               AliCaloPID * pid,
                               Bool_t bFillAOD,
-                              AliAODPWG4ParticleCorrelation  * pCandidate, TString aodObjArrayName,
+                              AliCaloTrackParticleCorrelation  * pCandidate, TString aodObjArrayName,
                               Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) ;
 
   void       Print(const Option_t * opt) const ;
@@ -77,7 +77,7 @@ class AliIsolationCut : public TObject {
                                                  Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
                                                  Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
 
-  void 	     GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
+  void 	     GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCandidate,
                                  AliCaloTrackReader * reader,
                                  Float_t & coneBadCellsCoeff,
                                  Float_t & etaBandBadCellsCoeff  , Float_t & phiBandBadCellsCoeff) ;

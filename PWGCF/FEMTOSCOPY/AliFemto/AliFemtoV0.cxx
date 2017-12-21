@@ -42,6 +42,8 @@ AliFemtoV0::AliFemtoV0():
   fCorrLam(0.0),
   fCorrLamMinus(0.0),
   fRadiusV0(0.0),
+  fMultiplicity(0),
+  fZvtx(0),
   fHiddenInfo(NULL)
 {
   // Default empty constructor
@@ -110,6 +112,8 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fImpactDmatPos(v.fImpactDmatPos), fImpactDprimNeg(v.fImpactDprimNeg),
   fImpactDweakNeg(v.fImpactDweakNeg), fImpactDmatNeg(v.fImpactDmatNeg),
   fCorrLam(v.fCorrLam), fCorrLamMinus(v.fCorrLamMinus), fRadiusV0(v.fRadiusV0),
+  fMultiplicity(v.fMultiplicity),
+  fZvtx(v.fZvtx),
   fHiddenInfo( v.fHiddenInfo ? v.fHiddenInfo->Clone() : NULL)  /***/
 {
   // copy constructor
@@ -233,6 +237,9 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
 
   fRadiusV0 = aV0.fRadiusV0;
 
+  fMultiplicity = aV0.fMultiplicity;
+  fZvtx = aV0.fZvtx;
+  
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : NULL;// GR 11 DEC 02
   UpdateV0();
@@ -398,3 +405,16 @@ AliFemtoThreeVector AliFemtoV0::NominalTpcPointNeg(int i) const
     return fNominalTpcPointsNeg[8];
   return fNominalTpcPointsNeg[i];
 }
+
+//______________________
+
+void AliFemtoV0::SetMultiplicity(int mult)
+{
+  fMultiplicity=mult;
+}
+//______________________
+void AliFemtoV0::SetZvtx(double vtx)
+{
+  fZvtx=vtx;
+}
+//______________________

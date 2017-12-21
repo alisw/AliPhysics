@@ -62,14 +62,17 @@ class CutHandlerNeutralCalo{
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(    
     Int_t trainConfig                 = 1,
-    Bool_t isMC                       = kFALSE,                         //run MC
-    Bool_t enableQAMesonTask          = kTRUE,                          //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
-    TString fileNameInputForWeighting = "MCSpectraInput.root",          // path to file for weigting input
-    Bool_t doWeighting                = kFALSE,  //enable Weighting
+    Bool_t isMC                       = kFALSE,                             //run MC
+    Int_t enableQAMesonTask           = 1,                                  //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
+    TString fileNameInputForWeighting = "MCSpectraInput.root",              // path to file for weigting input
+    Bool_t doWeighting                = kFALSE,                             //enable Weighting
     TString generatorName             = "HIJING",
     TString cutnumberAODBranch        = "000000006008400001001500000",
     Double_t tolerance                = -1,
-    TString additionalTrainConfig     = "0"                              // additional counter for trainconfig, this has to be always the last parameter
+    TString periodNameV0Reader        = "",                                 // period Name for V0Reader
+    Int_t runLightOutput              = 0,                                  // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Double_t neutralPionPtMin         = 0.4,                                // min pT for cut on neutral meson candidate
+    TString additionalTrainConfig     = "0"                                 // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   //parse additionalTrainConfig flag
@@ -121,6 +124,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -135,6 +139,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      if(runLightOutput>0) fEventCuts->SetLightOutput(kTRUE);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -148,6 +154,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      if(runLightOutput>0) fCuts->SetLightOutput(kTRUE);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -174,6 +181,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
+      if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
+      //if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
@@ -192,6 +201,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
 
   CutHandlerNeutralCalo cuts;
@@ -200,134 +210,256 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   // EMCAL modes
   if( trainConfig == 1 ) {
     // everything open
-    cuts.AddCut("00000113","1111111067032230000","000010400","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","000010400","0103503000000000","0103503000000000");
   } else if( trainConfig == 2 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","1111111067032230000","002010700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010700","0103503000000000","0103503000000000");
   } else if( trainConfig == 3 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","1111111067032230000","002013700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002013700","0103503000000000","0103503000000000");
   } else if( trainConfig == 4 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","1111111067032230000","002016700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002016700","0103503000000000","0103503000000000");
   } else if( trainConfig == 5 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002016700","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002016700","0103503400000000","0103503000000000");
   } else if( trainConfig == 6 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.11 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","1111111067032230000","002016700","0103503200000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002016700","0103503200000000","0103503000000000");
   } else if( trainConfig == 7 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","1111111067032230000","002016700","0103503300000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002016700","0103503300000000","0103503000000000");
   } else if( trainConfig == 8 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","1111111067032230000","002013700","0103503300000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002013700","0103503300000000","0103503000000000");
   } else if( trainConfig == 9 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0153503000000000");
   } else if( trainConfig == 10 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.6, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010703","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010703","0103503400000000","0103503000000000");
   } else if( trainConfig == 11 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.5, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010705","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010705","0103503400000000","0103503000000000");
 
   } else if( trainConfig == 20 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 21 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 22 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 23 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 24 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 25 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 26 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 27 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111113047032230000","002010706","0103503400000000","0103503000000000");
+  } else if( trainConfig == 28)  {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.75, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.155
 
-
+    cuts.AddCut("00000113","1111113047032230000","302010702","0103503900000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00000113","1111113047032230000","302010702","0103503400000000","0153503000000000"); // 0.100 < M_gamma,gamma < 0.150
+    //cuts.AddCut("00000113","1111113047032230000","30a010706","0103503900000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    //cuts.AddCut("00000113","1111113047032230000","302310706","0103503900000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    //cuts.AddCut("00000113","1111113047032230000","302030706","0103503900000000","0153503000000000"); // above + pTmin=0.15
+    //cuts.AddCut("00000113","1111113047032230000","30a330706","0103503900000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 29)  {
+      // eta < 0.9
+      // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.155
+      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal mixing
+//    cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0a53503000000000"); // likesign mixing
+      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0b53503000000000"); // pi0 sideband left 0.180-0.220
+      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0c53503000000000"); // pi0 sideband right 0.01 -0.05
+      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0d53503000000000"); // pi0 sideband both sides (ranges from cut above)
     // PHOS modes
   } else if( trainConfig == 31 ) {
     // everything open
-    cuts.AddCut("00000113","2444400030022000000","000010400","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","000010400","0103503000000000","0103503000000000");
   } else if( trainConfig == 32 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","2444400030022000000","002010700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002010700","0103503000000000","0103503000000000");
   } else if( trainConfig == 33 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","2444400030022000000","002013700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002013700","0103503000000000","0103503000000000");
   } else if( trainConfig == 34 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","2444400030022000000","002016700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002016700","0103503000000000","0103503000000000");
   } else if( trainConfig == 35 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","2444400030022000000","002016700","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002016700","0103503400000000","0103503000000000");
   } else if( trainConfig == 36 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.11 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","2444400030022000000","002016700","0103503200000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002016700","0103503200000000","0103503000000000");
   } else if( trainConfig == 37 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","2444400030022000000","002016700","0103503300000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002016700","0103503300000000","0103503000000000");
   } else if( trainConfig == 38 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("00000113","2444400030022000000","002013700","0103503300000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002013700","0103503300000000","0103503000000000");
   } else if( trainConfig == 39 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","2444400030022000000","002010706","0103503400000000","0103503000000000");
-
+    cuts.AddCut("00000113","2444400043013300000","002010706","0103503400000000","0153503000000000");
+  } else if( trainConfig == 40)  {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.75, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.120 < M_gamma,gamma < 0.145
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    cuts.AddCut("00000113","2444400043013300000","302010702","0103503300000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00000113","2444400043013300000","302010702","0103503200000000","0153503000000000"); // 0.110 < M_gamma,gamma < 0.145
+    cuts.AddCut("00000113","2444400043013300000","302010702","0103503100000000","0153503000000000"); // 0.100 < M_gamma,gamma < 0.145
+    //cuts.AddCut("00000113","2444400043013300000","30a010706","0103503300000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    //cuts.AddCut("00000113","2444400043013300000","302310706","0103503300000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    //cuts.AddCut("00000113","2444400043013300000","302030706","0103503300000000","0153503000000000"); // above + pTmin=0.15
+    //cuts.AddCut("00000113","2444400043013300000","30a330706","0103503300000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 41)  {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.75, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.145
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0153503000000000"); // normal event mixing
+//    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0a53503000000000"); // likesign event mixing
+    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0b53503000000000"); // pi0 sideband mixing right side (0.180-0.220)
+    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0c53503000000000"); // pi0 sideband mixing left side (0.01-0.05)
+    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0d53503000000000"); // pi0 sideband mixing both sides
 
   //8 TeV
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00010113","1111111063032230000","002010706","0163103400000010","0163503000000000");
-    cuts.AddCut("00052113","1111111063032230000","002010706","0163103400000010","0163503000000000");
-    cuts.AddCut("00081113","1111111063032230000","002010706","0163103400000010","0163503000000000");
+    cuts.AddCut("00010113","1111111067032230000","002010706","0163103400000010","0163503000000000");
+    cuts.AddCut("00052113","1111111067032230000","002010706","0163103400000010","0163503000000000");
+    cuts.AddCut("00081113","1111111067032230000","002010706","0163103400000010","0163503000000000");
   } else if( trainConfig == 102 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65/0.7/0.75, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00010113","1111111063032230000","002010706","0163103400000010","0163503000000000");
-    cuts.AddCut("00010113","1111111063032230000","002010707","0163103400000010","0163503000000000");
-    cuts.AddCut("00010113","1111111063032230000","002010702","0163103400000010","0163503000000000");
+    cuts.AddCut("00010113","1111111067032230000","002010706","0163103400000010","0163503000000000");
+    cuts.AddCut("00010113","1111111067032230000","002010707","0163103400000010","0163503000000000");
+    cuts.AddCut("00010113","1111111067032230000","002010702","0163103400000010","0163503000000000");
   } else if( trainConfig == 103 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65/0.7/0.75, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00052113","1111111063032230000","002010706","0163103400000010","0163503000000000");
-    cuts.AddCut("00052113","1111111063032230000","002010707","0163103400000010","0163503000000000");
-    cuts.AddCut("00052113","1111111063032230000","002010702","0163103400000010","0163503000000000");
+    cuts.AddCut("00052113","1111111067032230000","002010706","0163103400000010","0163503000000000");
+    cuts.AddCut("00052113","1111111067032230000","002010707","0163103400000010","0163503000000000");
+    cuts.AddCut("00052113","1111111067032230000","002010702","0163103400000010","0163503000000000");
+  } else if( trainConfig == 104) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    cuts.AddCut("00010113","1111111067032230000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00010113","1111111067032230000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00010113","1111111067032230000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00010113","1111111067032230000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00010113","1111111067032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 105) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    cuts.AddCut("00052113","1111111067032230000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00052113","1111111067032230000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00052113","1111111067032230000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00052113","1111111067032230000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00052113","1111111067032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 106) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    cuts.AddCut("00081113","1111111067032230000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00081113","1111111067032230000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00081113","1111111067032230000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00081113","1111111067032230000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00081113","1111111067032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
 
+    // 8 TeV PHOS
+   } else if( trainConfig == 110) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    cuts.AddCut("00010113","2444400047013300000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00010113","2444400047013300000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00010113","2444400047013300000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00010113","2444400047013300000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00010113","2444400047013300000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 111) {
+   // eta < 0.9
+   // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+   // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+   // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+   cuts.AddCut("00062113","2444400047013300000","302010706","0103503400000000","0153503000000000"); // only cuts above
+   cuts.AddCut("00062113","2444400047013300000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+   cuts.AddCut("00062113","2444400047013300000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+   cuts.AddCut("00062113","2444400047013300000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+   cuts.AddCut("00062113","2444400047013300000","30a330706","0103503400000000","0153503000000000"); // all of the above
+
+   // 13 TeV
+  }else if( trainConfig == 201) {
+      // eta < 0.9
+      // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+      // timing cluster cut open
+      cuts.AddCut("00010113","1111111017032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+      cuts.AddCut("00052113","1111111017032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+      cuts.AddCut("00083113","1111111017032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+      cuts.AddCut("00085113","1111111017032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  }else if( trainConfig == 202) {
+      // eta < 0.9
+      // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.155
+      cuts.AddCut("00010113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: V0AND
+      cuts.AddCut("00052113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: CEMC7: V0AND and EMCAL fired
+      cuts.AddCut("00083113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG1 - CINT7 EG1
+      cuts.AddCut("00085113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG2 - CINT7 EG2
+   // 13 TeV PHOS
+   } else if( trainConfig == 210) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    // timing cluster cut open
+    cuts.AddCut("00010113","2444400017013300000","30a330706","0103503400000000","0153503000000000"); // all of the above
+    cuts.AddCut("00062113","2444400017013300000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 211) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.75, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.145
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    cuts.AddCut("00010113","2444400043013300000","302010708","0103503200000000","0153503000000000"); // normal event mixing; Triggers: V0AND
+    cuts.AddCut("00062113","2444400043013300000","302010708","0103503200000000","0153503000000000"); // normal event mixing; Triggers: V0AND and EMCal fired
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -379,22 +511,27 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
 
     analysisEventCuts[i] = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    if(runLightOutput>0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
       cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
       return 0;
     } else {				
+      analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
       ClusterCutList->Add(analysisClusterCuts[i]);
       analysisClusterCuts[i]->SetFillCutHistograms("");			
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
+    if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
       return 0;
@@ -404,6 +541,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     }
   
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
       return 0;
@@ -415,6 +553,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetClusterCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNeutralPionCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
+    if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
+
         if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
       return 0;
@@ -433,7 +573,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
-  if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
+  task->SetDoMesonQA(enableQAMesonTask );
+
+  // Set pT min for cut on neutral pions
+  task->SetNeutralPionPtMin(neutralPionPtMin);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

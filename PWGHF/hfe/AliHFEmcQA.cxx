@@ -1776,7 +1776,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
   mpt = partMother->Pt();
   Int_t grmaPdgcode = 0;
   Int_t ggrmaPdgcode;
-
+  Double_t gmpt, ggmpt;
    // if the mother is charmed hadron  
 
    if(TMath::Abs(maPdgcode)==443){ // J/spi
@@ -1837,13 +1837,15 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
    } // end of if
    else if ( TMath::Abs(maPdgcode) == 22 ) { //conversion
 
-     tmpMomLabel = partMotherCopy->GetFirstMother();
-     mpt = partMotherCopy->Pt();
+     tmpMomLabel = partMotherCopy->GetFirstMother();//mother of photon
+     mpt = partMotherCopy->Pt();//pT of photon
      if(tmpMomLabel==-1) return kGamma; // no grand mother
      if(tmpMomLabel<0) return -1;
      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(tmpMomLabel)))) return -1;
-     partMother = mctrack->Particle();
-     maPdgcode = partMother->GetPdgCode();
+     partMother = mctrack->Particle();//partMother = photon's mom
+     partMotherCopy = mctrack->Particle();//partMother = photon's mom
+     mpt = partMother->Pt(); //pt of photon's mom
+     maPdgcode = partMother->GetPdgCode();//pdg of photon's mom
 
      // check if the ligth meson is the decay product of heavy mesons
      tmpMomLabel = partMother->GetFirstMother();
@@ -1851,6 +1853,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
       mpt = partMother->Pt();
+      gmpt = partMother->Pt();
 
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
@@ -1860,38 +1863,51 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
        mpt = partMother->Pt();
+       ggmpt = partMother->Pt();
 
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
       } // grandgrandgrandmother
 
       if ( TMath::Abs(maPdgcode) == 111 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-         else if(grmaPdgcode == 310) return kGammaK0s2P;
-         else if(grmaPdgcode == 130) return kGammaK0l2P;
-         else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
-         else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
-         else if(grmaPdgcode == 3222) return kGammaSigma2P;
+        else if(grmaPdgcode == 310) return kGammaK0s2P;
+        else if(grmaPdgcode == 130) return kGammaK0l2P;
+        else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
+        else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
+        else if(grmaPdgcode == 3222) return kGammaSigma2P;
+        mpt = partMotherCopy->Pt();
         return kGammaPi0;
       } 
       else if ( TMath::Abs(maPdgcode) == 221 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        mpt = partMotherCopy->Pt();
         return kGammaEta;
       } 
       else if ( TMath::Abs(maPdgcode) == 223 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        mpt = partMotherCopy->Pt();
         return kGammaOmega;
       } 
       else if ( TMath::Abs(maPdgcode) == 333 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        mpt = partMotherCopy->Pt();
         return kGammaPhi;
       }
       else if ( TMath::Abs(maPdgcode) == 331 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+        mpt = partMotherCopy->Pt();
         return kGammaEtaPrime; 
       }
       else if ( TMath::Abs(maPdgcode) == 113 ) {
+        mpt = gmpt; 
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+        mpt = partMotherCopy->Pt();
         return kGammaRho0;
       }
       else {
@@ -1932,6 +1948,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
       mpt = partMother->Pt();
+      gmpt = partMother->Pt();
 
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kB2M;
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kD2M;
@@ -1941,44 +1958,59 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
        mpt = partMother->Pt();
+       ggmpt = partMother->Pt();
 
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kD2M;
       } //grandgrandmother 
 
       if ( TMath::Abs(maPdgcode) == 111 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-         else if(grmaPdgcode == 310) return kK0s2P;
-         else if(grmaPdgcode == 130) return kK0l2P;
-         else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
-         else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
-         else if(grmaPdgcode == 3222) return kSigma2P;
+        else if(grmaPdgcode == 310) return kK0s2P;
+        else if(grmaPdgcode == 130) return kK0l2P;
+        else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
+        else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
+        else if(grmaPdgcode == 3222) return kSigma2P;
+        mpt = partMotherCopy->Pt();
         return kPi0;
       } 
       else if ( TMath::Abs(maPdgcode) == 221 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        mpt = partMotherCopy->Pt();
         return kEta;
       } 
       else if ( TMath::Abs(maPdgcode) == 223 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        mpt = partMotherCopy->Pt();
         return kOmega;
       } 
       else if ( TMath::Abs(maPdgcode) == 333 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        mpt = partMotherCopy->Pt();
         return kPhi;
       } 
       else if ( TMath::Abs(maPdgcode) == 331 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+        mpt = partMotherCopy->Pt();
         return kEtaPrime;
       } 
       else if ( TMath::Abs(maPdgcode) == 113 ) {
+        mpt = gmpt;
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+        mpt = partMotherCopy->Pt();
         return kRho0;
       } 
       else if ( TMath::Abs(maPdgcode) == 321 ) {
+        mpt = partMotherCopy->Pt();
         return kKe3;
       }
       else if ( TMath::Abs(maPdgcode) == 130 ) {
+        mpt = partMotherCopy->Pt();
         return kK0L;
       }
       else origin = kElse; //grandmother exist but nothing we identify

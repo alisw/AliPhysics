@@ -55,6 +55,7 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliNanoAODHeader.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -98,6 +99,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -138,6 +140,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -209,6 +212,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -249,6 +253,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -520,13 +525,18 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia || fIsHerwig) {
-    fHistEventsAfterSel->Fill(fPtHardBin, 1);
-    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
+    // Protection: In case the pt-hard bin handling is not initialized we fall back to the
+    // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
+    // and after selection
+    fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, 1);
+    fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fNTrials);
+    fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fXsection);
     fHistPtHard->Fill(fPtHard);
-    fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
-    fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
-    fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    if(fPtHardInitialized){
+    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
+    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
+    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    }
   }
 
 
@@ -814,6 +824,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
+  fPtHardInitialized = kFALSE;
   fFileChanged = kTRUE;
   return kTRUE;
 }
@@ -848,7 +859,15 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
 
   fUseXsecFromHeader = false;
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
-  fPtHardBinGlobal = pthardbin;
+  if(fGetPtHardBinFromName) {
+    // Use the bin obtained from the path name
+    fPtHardBinGlobal = pthardbin;
+    fPtHardInitialized = kTRUE;
+  } else {
+    // Put everything in the first bin
+    fPtHardBinGlobal = 0;
+    pthardbin = 0;
+  }
 
   if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
     AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
@@ -1055,7 +1074,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+	 res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -1373,9 +1392,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fBeamType = GetBeamType();
-
+  TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
+    if (header->InheritsFrom("AliNanoAODStorage")){
+       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+       fCent=nanoHead->GetCentr(fCentEst.Data());
+    }else{
       AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
       if (MultSelection) {
         fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
@@ -1383,8 +1406,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else {
         AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       }
+      }
     }
     else { // old centrality estimation < 2015
+    if (header->InheritsFrom("AliNanoAODStorage")){
+       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+       fCent=nanoHead->GetCentr(fCentEst.Data());
+    }else{
       AliCentrality *aliCent = InputEvent()->GetCentrality();
       if (aliCent) {
         fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
@@ -1392,6 +1420,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else {
         AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       }
+    }
     }
 
     if (fNcentBins==4) {
@@ -1431,7 +1460,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
         fCentBin = fNcentBins-1;
       }
     }
-
+    if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fEPV0=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0"));
+        fEPV0A=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0A"));
+        fEPV0C=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0C"));
+    }else{
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
@@ -1439,6 +1473,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
     } else {
       AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
+    }
     }
   }
   else {
@@ -1469,7 +1504,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if(fPtHardBinning.GetSize()){
       // pt-hard binning defined for the corresponding dataset - automatically determine the bin
       for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
-        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+        if (fPtHard >= static_cast<float>(fPtHardBinning[fPtHardBin]) && fPtHard < static_cast<float>(fPtHardBinning[fPtHardBin+1]))
           break;
       }
     } else {
@@ -1477,8 +1512,11 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardBin != fPtHardBinGlobal){
-      AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+    if(fPtHardInitialized){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
     }
 
     fXsection = fPythiaHeader->GetXsection();
@@ -1526,10 +1564,14 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextPartColl(&fParticleCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))){
+    cont->NextEvent(InputEvent());
+  }
 
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))){
+    cont->NextEvent(InputEvent());
+  }
 
   return kTRUE;
 }

@@ -1,65 +1,32 @@
 // -*- C++ -*-
-// $Id$
 
-void MakeLumiRegion_4690() {
-  gROOT->LoadMacro("AliLuminousRegionFit.cxx+");
-  gROOT->LoadMacro("Util.C");
+#include <sstream>
 
-  const ScanData sd[] = {
-    { 4690,
-      11,
-      "root/4690/AnaysisResults_VdM15o_245989.root",
-      "txt/4690/SepVStime.out",
-      "Scan1",
-      "Scan1X", 0, 1449182512, 1449183465, 0,
-      "Scan1Y", 1, 1449183618, 1449184568, 0
-    },
+#include "AliLuminousRegionFit.h"
+#include "AliVdMData.h"
 
-    // { 4690,
-    //   11,
-    //   "root/4690/AnaysisResults_VdM15o_245989.root",
-    //   "txt/4690/SepVStime.out",
-    //   "Scan2",
-    //   "Scan2X", 0, 1449184780, 1449185732, 0,
-    //   "Scan2Y", 1, 1449186726, 1449187677, 0
-    // },
+void MakeLumiRegion()
+{
+  AliVdMData d(AliVdMData::GetFileName("4690/4690.xml"));
 
-    { 4690,
-      11,
-      "root/4690/AnaysisResults_VdM15o_245992.root",
-      "txt/4690/SepVStime.out",
-      "ScanOffset",
-      "ScanOffsetX", 0, 1449189615, 1449190551, -84.7,
-      "ScanOffsetY", 1, 1449190698, 1449191632, -84.7
-    },
+  const TString vtxFileName = "4690/4690_vtx.root";
+  const TCut    vtxCuts     = "ntrksTRKnc>=11 && chi2/ntrksTRKnc<2";
+  const TCut    bkgdCuts    = "timeAD.A>55.7 && timeAD.A<57.8 && timeAD.C>64.3 && timeAD.C<66 && timeV0.C>2.3 && timeV0.C<4.0 && timeV0.A>10.3 && timeV0.A<11.9";
+  const Int_t   minNumTrk   = 11;
+  const Int_t   bcidSel     = -1; // all BCIDs
 
-  };
+  std::for_each(d.GetScansBegin(), d.GetScansEnd(), [&](const AliXMLEngine::Node& n) {
+      std::istringstream iss(n.GetData());
+      if (AliVdMData::GetScanName(n).Contains("Offset")) {
+      AliLuminousRegionFit f(d.GetFillNumber(),
+                             AliVdMData::GetFileName(vtxFileName),
+                             iss);
+      f.DoFit(AliVdMData::GetScanName(n),
+              AliVdMData::GetScanType(n),
+              std::stod(n.GetAttr("offset_um").GetData()),
+              vtxCuts*bkgdCuts,
+              bcidSel);}
+    });
 
-
-  const Int_t n = sizeof(sd)/sizeof(ScanData);
-
-  // fill 4690
-  AliTriggerBCMask mask("BCM1", "2H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L309H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L233H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L37H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L37H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L309H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L35H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L37H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L8H1L3H1L6H");
-
-  TArrayI bcs(mask.GetNUnmaskedBCs() + 1);
-  bcs[0] = -1;
-
-  for (Int_t i=0,counter=1; i<3564; ++i)
-    if (!mask.GetMask(i)) bcs[counter++] = i;
-
-  const Int_t nBCs = bcs.GetSize();
-
-  for (Int_t i=0; i<n; ++i) {
-    CheckCopyFile(sd[i].vtxFileName);
-    //    for (Int_t j=1; j<nBCs; ++j) {
-    for (Int_t j=0; j<1; ++j) {
-      Int_t bcid = bcs[j];
-      AliLuminousRegionFit f(sd[i].fillNumber,
-			     sd[i].minNumberOfTracks,
-			     sd[i].vtxFileName,
-			     sd[i].sepFileName);
-      f.DoFit(sd[i].scanName1, sd[i].t1, sd[i].t2, sd[i].scanType1, sd[i].offset1, bcid);
-      f.DoFit(sd[i].scanName2, sd[i].t3, sd[i].t4, sd[i].scanType2, sd[i].offset2, bcid);
-    }
-  }
+  Printf("#scans: %ld", std::distance(d.GetScansBegin(), d.GetScansEnd()));
 }

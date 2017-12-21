@@ -30,9 +30,18 @@ class AliHFInvMassFitter : public TNamed {
   AliHFInvMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t fittypeb=kExpo, Int_t fittypes=kGaus);
   ~AliHFInvMassFitter();
 
+  void     SetHistogramFit(const TH1F* histoToFit){
+    if (fHistoInvMass) delete fHistoInvMass;
+    fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
+    fHistoInvMass->SetDirectory(0);
+  }
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){
     fMinMass=minvalue; fMaxMass=maxvalue;
   }   
+  void     SetFitFunctions(Int_t fittypeb, Int_t fittypes){
+    fTypeOfFit4Bkg=fittypeb; fTypeOfFit4Sgn=fittypes;
+    SetNumberOfParams();
+  }
 
   void SetUseLikelihoodFit(){fFitOption="L,E";}
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
@@ -79,8 +88,17 @@ class AliHFInvMassFitter : public TNamed {
   Double_t GetMeanUncertainty() const {return fMassErr;}
   Double_t GetSigma()const {return fSigmaSgn;}
   Double_t GetSigmaUncertainty()const { return fSigmaSgnErr;}
+  Double_t GetReflOverSig()const{
+    if(fRflFunc) return fRflFunc->GetParameter(0);
+    else return 0;
+  }
+  Double_t GetReflOverSigUncertainty()const{
+    if(fRflFunc) return fRflFunc->GetParError(0);
+    else return 0;
+  }
   TF1*     GetBackgroundFullRangeFunc(){return fBkgFunc;}
   TF1*     GetBackgroundRecalcFunc(){return fBkgFuncRefit;}
+  TF1*     GetBkgPlusReflFunc(){return fBkRFunc;}
   TF1*     GetMassFunc(){return fTotFunc;}
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();
@@ -94,9 +112,12 @@ class AliHFInvMassFitter : public TNamed {
     if(fTotFunc) return fTotFunc->GetProb();
     else return -1;
   }
+  TH1F*    GetHistoClone() const{
+    TH1F* hout=(TH1F*)fHistoInvMass->Clone(Form("%scloned",fHistoInvMass->GetName()));
+    return hout;
+  }
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
-
   Int_t   MassFitter(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);

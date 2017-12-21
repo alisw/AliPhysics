@@ -65,7 +65,7 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
     Float_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
     Float_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5;
     Float_t fracDead3,errfracDead3,fracDead4,errfracDead4;
-    Float_t FlagSDD1, FlagSDD2; // flag on fraction of SDD modules ON
+    Float_t FlagSDD1, FlagSDD2; // flag on fraction of SDD anodes ON
     Float_t FlagMinTime, FlagMeanTime, FlagdEdx3, FlagdEdx4; // flag on SDD time and charge parameters
   
   ttree->SetBranchAddress("nrun",&nrun);
@@ -104,8 +104,8 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
     ttree->SetBranchAddress("errfracDead3",&errfracDead3); // fraction of bad SDD modules layer 3
     ttree->SetBranchAddress("fracDead4",&fracDead4); // fraction of bad SDD modules layer 4
     ttree->SetBranchAddress("errfracDead4",&errfracDead4); // fraction of bad SDD modules layer 4
-    ttree->SetBranchAddress("FlagSDD1",&FlagSDD1); // flag on fraction of SDD1 modules ON
-    ttree->SetBranchAddress("FlagSDD2",&FlagSDD2); // flag on fraction of SDD2 modules ON
+    ttree->SetBranchAddress("FlagSDD1",&FlagSDD1); // flag on fraction of SDD1 anodes ON
+    ttree->SetBranchAddress("FlagSDD2",&FlagSDD2); // flag on fraction of SDD2 anodes ON
     ttree->SetBranchAddress("FlagMinTime",&FlagMinTime); // flag on min drift time
     ttree->SetBranchAddress("FlagMeanTime",&FlagMeanTime); // flag on mean drift time
     ttree->SetBranchAddress("FlagdEdx3",&FlagdEdx3); // flag on layer 3 dEdx MPV
@@ -122,6 +122,10 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   Float_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
   Float_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
   Float_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;
+  Float_t meanVtxOCDBx,meanVtxOCDBy,meanVtxOCDBz;
+  Float_t sigmaVtxOCDBx,sigmaVtxOCDBy,sigmaVtxOCDBz;
+  Float_t diamondX=-999.,diamondY=-999.,diamondZ=-999.;
+  Float_t diamondSigX=-999.,diamondSigY=-999.,diamondSigZ=-999.;
   Float_t pileupSPD, errpileupSPD;
 
   ttree->SetBranchAddress("meanVtxTRKx",&meanVtxTRKx); // mean of tracks vertex position - x
@@ -148,8 +152,15 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("sigmaVtxSPDxErr",&sigmaVtxSPDxErr); // error sigma of tracks vertex position - x
   ttree->SetBranchAddress("sigmaVtxSPDyErr",&sigmaVtxSPDyErr); // error sigma of tracks vertex position - y
   ttree->SetBranchAddress("sigmaVtxSPDzErr",&sigmaVtxSPDzErr); // error sigma of tracks vertex position - z
-    ttree->SetBranchAddress("pileupSPD",&pileupSPD); // fraction of events with SPD pileup vertex
-    ttree->SetBranchAddress("errpileupSPD",&errpileupSPD); // fraction of events with SPD pileup vertex
+  ttree->SetBranchAddress("diamondX",&meanVtxOCDBx); // mean of OCDB vertex position - x
+  ttree->SetBranchAddress("diamondY",&meanVtxOCDBy); // mean of OCDB vertex position - y
+  ttree->SetBranchAddress("diamondZ",&meanVtxOCDBz); // mean of OCDB vertex position - z
+  ttree->SetBranchAddress("diamondSigX",&sigmaVtxOCDBx); // sigma of OCDB vertex position - x
+  ttree->SetBranchAddress("diamondSigY",&sigmaVtxOCDBy); // sigma of OCDB vertex position - y
+  ttree->SetBranchAddress("diamondSigZ",&sigmaVtxOCDBz); // sigma of CODB vertex position - z
+
+  ttree->SetBranchAddress("pileupSPD",&pileupSPD); // fraction of events with SPD pileup vertex
+  ttree->SetBranchAddress("errpileupSPD",&errpileupSPD); // fraction of events with SPD pileup vertex
 
 
   //************************************************ SSD (25) **************************************************//
@@ -623,6 +634,42 @@ TH1F *hMeanVxSPD = new TH1F("hMeanVxSPD","Track Vertex Vx Distribution",nRuns,0.
     hSigmaVzSPD->SetLineColor(2);
     hSigmaVzSPD->SetMarkerColor(2);
     hSigmaVzSPD->SetMarkerStyle(20);
+
+TH1F *hMeanVxOCDB = new TH1F("hMeanVxOCDB","Diamond OCDB Vx",nRuns,0.,nRuns);
+    hMeanVxOCDB->SetLineWidth(2);
+    hMeanVxOCDB->SetLineColor(kMagenta+2);
+    hMeanVxOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVxOCDB->SetMarkerStyle(25);
+    
+  TH1F *hMeanVyOCDB = new TH1F("hMeanVyOCDB","Diamond OCDB Vy",nRuns,0.,nRuns);
+    hMeanVyOCDB->SetLineWidth(2);
+    hMeanVyOCDB->SetLineColor(kMagenta+2);
+    hMeanVyOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVyOCDB->SetMarkerStyle(25);
+    
+  TH1F *hMeanVzOCDB = new TH1F("hMeanVzOCDB","Diamond OCDB Vz",nRuns,0.,nRuns);
+    hMeanVzOCDB->SetLineWidth(2);
+    hMeanVzOCDB->SetLineColor(kMagenta+2);
+    hMeanVzOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVzOCDB->SetMarkerStyle(25);
+    
+  TH1F *hSigmaVxOCDB = new TH1F("hSigmaVxOCDB","Diamond OCDB SigmaVx",nRuns,0.,nRuns);
+    hSigmaVxOCDB->SetLineWidth(2);
+    hSigmaVxOCDB->SetLineColor(kMagenta+2);
+    hSigmaVxOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVxOCDB->SetMarkerStyle(25);
+  TH1F *hSigmaVyOCDB = new TH1F("hSigmaVyOCDB","Diamond OCDB SigmaVy",nRuns,0.,nRuns);
+    hSigmaVyOCDB->SetLineWidth(2);
+    hSigmaVyOCDB->SetLineColor(kMagenta+2);
+    hSigmaVyOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVyOCDB->SetMarkerStyle(25);
+  TH1F *hSigmaVzOCDB = new TH1F("hSigmaVzOCDB","Diamond OCDB SigmaVz",nRuns,0.,nRuns);
+    hSigmaVzOCDB->SetLineWidth(2);
+    hSigmaVzOCDB->SetLineColor(kMagenta+2);
+    hSigmaVzOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVzOCDB->SetMarkerStyle(25);
+ 
+
   TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",nRuns,0.,nRuns);
         hpileupSPD->SetMarkerStyle(20);
   
@@ -1478,10 +1525,28 @@ TH1F *hMeanVxSPD = new TH1F("hMeanVxSPD","Track Vertex Vx Distribution",nRuns,0.
       hSigmaVzSPD->SetBinContent(i+1,sigmaVtxSPDz);
       hSigmaVzSPD->SetBinError(i+1,sigmaVtxSPDzErr);
       hSigmaVzSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVxOCDB->SetBinContent(i+1,meanVtxOCDBx);
+      hMeanVxOCDB->SetBinError(i+1,0.00000001);
+      hMeanVxOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVyOCDB->SetBinContent(i+1,meanVtxOCDBy);
+      hMeanVyOCDB->SetBinError(i+1,0.00000001);
+      hMeanVyOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVzOCDB->SetBinContent(i+1,meanVtxOCDBz);
+      hMeanVzOCDB->SetBinError(i+1,0.00000001);
+      hMeanVzOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVxOCDB->SetBinContent(i+1,sigmaVtxOCDBx);
+      hSigmaVxOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVxOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVyOCDB->SetBinContent(i+1,sigmaVtxOCDBy);
+      hSigmaVyOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVyOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVzOCDB->SetBinContent(i+1,sigmaVtxOCDBz);
+      hSigmaVzOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVzOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
-        hpileupSPD->SetBinContent(i+1,pileupSPD);
-        hpileupSPD->SetBinError(i+1,errpileupSPD);
-        hpileupSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hpileupSPD->SetBinContent(i+1,pileupSPD);
+      hpileupSPD->SetBinError(i+1,errpileupSPD);
+      hpileupSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
 
       //======= SSD =======
@@ -2053,6 +2118,7 @@ if(hMeanVx->GetEntries()>0){
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
     if(hMeanVxSPD->GetBinContent(1)>-500.)hMeanVxSPD->Draw("same");
+    if(hMeanVxOCDB->GetBinContent(1)>-500.)hMeanVxOCDB->Draw("same");
     TLegend* legVtx=new TLegend(0.70,0.83,1.00,0.93);
     legVtx->SetFillColor(kWhite);
     legVtx->SetFillStyle(1001);
@@ -2061,6 +2127,8 @@ if(hMeanVx->GetEntries()>0){
     entVtx->SetTextColor(hMeanVx->GetMarkerColor());
     entVtx=legVtx->AddEntry(hMeanVxSPD,"Tracklets vertex","PL");
     entVtx->SetTextColor(hMeanVxSPD->GetMarkerColor());
+    entVtx=legVtx->AddEntry(hMeanVxOCDB,"OCDB diamond","PL");
+    entVtx->SetTextColor(hMeanVxOCDB->GetMarkerColor());
     legVtx->Draw();
     
     cVertexDisto->cd(2);
@@ -2076,6 +2144,7 @@ if(hMeanVx->GetEntries()>0){
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
     if(hMeanVySPD->GetBinContent(1)>-500.)hMeanVySPD->Draw("same");
+    if(hMeanVyOCDB->GetBinContent(1)>-500.)hMeanVyOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(3);
@@ -2085,6 +2154,7 @@ if(hMeanVx->GetEntries()>0){
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
         if(hMeanVzSPD->GetBinContent(1)>-500.)hMeanVzSPD->Draw("same");
+	if(hMeanVzOCDB->GetBinContent(1)>-500.)hMeanVzOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(4);
@@ -2094,6 +2164,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVx->GetXaxis()->SetTitle("run number");
         hSigmaVx->Draw();
         if(hSigmaVxSPD->GetBinContent(1)>0)hSigmaVxSPD->Draw("same");
+	if(hSigmaVxOCDB->GetBinContent(1)>-500.)hSigmaVxOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(5);
@@ -2103,6 +2174,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVy->GetXaxis()->SetTitle("run number");
         hSigmaVy->Draw();
         if(hSigmaVySPD->GetBinContent(1)>0)hSigmaVySPD->Draw("same");
+	if(hSigmaVyOCDB->GetBinContent(1)>-500.)hSigmaVyOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(6);
@@ -2112,6 +2184,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVz->GetXaxis()->SetTitle("run number");
         hSigmaVz->Draw();
         if(hSigmaVzSPD->GetBinContent(1)>0)hSigmaVzSPD->Draw("same");
+	if(hSigmaVzOCDB->GetBinContent(1)>-500.)hSigmaVzOCDB->Draw("same");
     legVtx->Draw();
         cVertexDisto->SaveAs("Vertex_trend.pdf");
         //    pdfFileNames+=" Vertex_trend.pdf";
@@ -2314,7 +2387,7 @@ if(histonEvents->GetEntries()>0){
 
 TCanvas* cfrac;
 if(histoFracDead3->GetEntries()>0){
-    cfrac=new TCanvas("cfrac","Fraction of SDD modules ON",900,900);
+    cfrac=new TCanvas("cfrac","Fraction of SDD good anodes",900,900);
     cfrac->Divide(1,3);
     cfrac->cd(1);
     histoFracDead3->SetMinimum(0.0);
@@ -2324,9 +2397,9 @@ if(histoFracDead3->GetEntries()>0){
     histoFracDead3->SetLineColor(kOrange+1);
     histoFracDead3->GetYaxis()->SetRangeUser(0.,1.2);
     histoFracDead3->Draw();
-    histoFracDead3->GetYaxis()->SetTitle("Fraction of Modules ON");
+    histoFracDead3->GetYaxis()->SetTitle("Fraction of good anodes");
     histoFracDead3->GetXaxis()->SetTitle("run number");
-    TLatex* tf3=new TLatex(0.2,0.8,"SDD modules ON - Layer 3 (total: 84)");
+    TLatex* tf3=new TLatex(0.2,0.8,"SDD good anodes - Layer 3 (total: 84*512)");
     tf3->SetNDC();
     tf3->SetTextColor(kOrange+1);
     tf3->Draw();
@@ -2337,9 +2410,9 @@ if(histoFracDead3->GetEntries()>0){
     histoFracDead4->SetLineColor(kAzure+1);
     histoFracDead4->GetYaxis()->SetRangeUser(0.,1.2);
     histoFracDead4->Draw("same");
-    histoFracDead4->GetYaxis()->SetTitle("Fraction of Modules ON");
+    histoFracDead4->GetYaxis()->SetTitle("Fraction of good anodes");
     histoFracDead4->GetXaxis()->SetTitle("run number");
-    TLatex* tf4=new TLatex(0.2,0.5,"SDD modules ON - Layer 4 (total: 176)");
+    TLatex* tf4=new TLatex(0.2,0.5,"SDD good anodes - Layer 4 (total: 176*512)");
     tf4->SetNDC();
     tf4->SetTextColor(kAzure+1);
     tf4->Draw();
@@ -2380,8 +2453,8 @@ if(histoFracDead3->GetEntries()>0){
     tf4_1->SetTextColor(1);
     tf4_1->Draw();
     
-    cfrac->SaveAs("SDDmodulesON_trend.pdf");
-    //    pdfFileNames+=" SDDmodulesON_trend.pdf";
+    cfrac->SaveAs("SDDanodesON_trend.pdf");
+    //    pdfFileNames+=" SDDanodesON_trend.pdf";
     cfrac->Update();
 }
 
@@ -3530,7 +3603,7 @@ TCanvas* cpu;
     if(h12->GetEntries()>0 && h12->GetBinContent(1)>0.) pdfFileNames+=" Frac_track_SA_trend.pdf";
 //    if(histoEvwSDD->GetEntries()>0 && histoEvwSDD->GetBinContent(1)>0.) pdfFileNames+=" NoFast_trend.pdf";
     if(histonEvents->GetEntries()>0 && histonEvents->GetBinContent(1)>0.) pdfFileNames+=" RunEvents_trend.pdf";
-    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDmodulesON_trend.pdf";
+    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDanodesON_trend.pdf";
     if(histodEdxLay5->GetEntries()>0) pdfFileNames+=" SDD_SSD_drift_charge_trend.pdf";
     if(histoFlagCR5->GetEntries()>0) pdfFileNames+=" SDDSSD_alarm_trend.pdf";
     if(histoFracBadn5->GetEntries()>0) pdfFileNames+=" SSD_BadStripsFrac_trend.pdf";

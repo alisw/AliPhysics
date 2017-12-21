@@ -37,19 +37,19 @@
   /// \endcond
 #endif
 
-#if !(ST_NO_NAMESPACES)
-  using namespace units;
-#endif
-
+using namespace units;
 using namespace std;
+
 //____________________________
 AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
+  fAODheader(nullptr),
   fFileName(" "),
   fConstrained(true),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
-  fGenHeader(0x0),
+  fEvent(nullptr),
+  fGenHeader(nullptr),
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
@@ -61,26 +61,20 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
 //__________________
 AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(const AliFemtoEventReaderAODKinematicsChain& aReader):
   AliFemtoEventReader(aReader),
+  fAODheader(nullptr),
   fFileName(" "),
-  fConstrained(true),
-  fNumberofEvent(0),
-  fCurEvent(0),
-  fCurFile(0),
-  fGenHeader(0x0),
-  fEstEventMult(kGlobalCount),
-  fRotateToEventPlane(0),
-  fReadOnlyPrimaries(true),
-  fReadPrimariesSecWeakMaterial(false)
+  fConstrained(aReader.fConstrained),
+  fNumberofEvent(aReader.fNumberofEvent),
+  fCurEvent(aReader.fCurEvent),
+  fCurFile(aReader.fCurFile),
+  fEvent(nullptr),
+  fGenHeader(nullptr),
+  fEstEventMult(aReader.fEstEventMult),
+  fRotateToEventPlane(aReader.fRotateToEventPlane),
+  fReadOnlyPrimaries(aReader.fReadOnlyPrimaries),
+  fReadPrimariesSecWeakMaterial(aReader.fReadPrimariesSecWeakMaterial)
 {
   // Copy constructor
-  fConstrained = aReader.fConstrained;
-  fNumberofEvent = aReader.fNumberofEvent;
-  fCurEvent = aReader.fCurEvent;
-  fCurFile = aReader.fCurFile;
-  fEstEventMult = aReader.fEstEventMult;
-  fRotateToEventPlane = aReader.fRotateToEventPlane;
-  fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
-  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
 }
 //__________________
 AliFemtoEventReaderAODKinematicsChain::~AliFemtoEventReaderAODKinematicsChain()
@@ -178,12 +172,12 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
   hbtEvent->SetReactionPlaneAngle(tReactionPlane);
 
   //starting to reading tracks
-  int nofTracks=0;  //number of all tracks in MC event
+  // int nofTracks=0;  //number of all tracks in MC event
   int realnofTracks=0;//number of track which we use in analysis
 
 
-  int tNormMult = 0;
-  int tV0direction = 0;
+  // int tNormMult = 0;
+  // int tV0direction = 0;
 
  //**** getting MC array ******
   AliAODMCHeader *mcH = NULL;
@@ -205,14 +199,14 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
     if (!MCtrk) continue;
 
-    if(fReadOnlyPrimaries)
-      {
-	if(!(MCtrk->IsPhysicalPrimary())) continue;
+    if (fReadOnlyPrimaries) {
+      if(!(MCtrk->IsPhysicalPrimary())) continue;
+    }
+    else if(fReadPrimariesSecWeakMaterial) {
+      if(!(MCtrk->IsPhysicalPrimary() || MCtrk->IsSecondaryFromWeakDecay() || MCtrk->IsSecondaryFromMaterial())) {
+        continue;
       }
-    else if(fReadPrimariesSecWeakMaterial)
-      {
-	if(!(MCtrk->IsPhysicalPrimary() || MCtrk->IsSecondaryFromWeakDecay() || MCtrk->IsSecondaryFromMaterial())) {continue;}
-      }
+    }
 
     AliFemtoTrack* trackCopy = new AliFemtoTrack();
 
@@ -446,7 +440,7 @@ Float_t AliFemtoEventReaderAODKinematicsChain::GetSigmaToVertex(double *impact, 
 
 
 
- void AliFemtoEventReaderAODKinematicsChain::CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0 )
+void AliFemtoEventReaderAODKinematicsChain::CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0)
 {
   tFemtoV0->SetEtaV0(tv0->Eta());
   tFemtoV0->SetEtaV0(tv0->Phi());
@@ -460,9 +454,9 @@ Float_t AliFemtoEventReaderAODKinematicsChain::GetSigmaToVertex(double *impact, 
   tFemtoV0->SetmomV0(momv0);
 
 
+  /*
   TParticle *trackpos;
   TParticle *trackneg;
-  /*
   //daughters
   if(fStack->Particle(tv0->GetDaughter(0))->GetPDG()->Charge()>=0) //first positive, second negative
     {

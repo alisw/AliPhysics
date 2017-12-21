@@ -98,7 +98,7 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotEffScale()
   tree->SetBranchAddress(fJetBranchName,&brJet);
 
   TString hname = TString::Format("invMass_JetPt_%.0f_%.0f", fpTmin, fpTmax);
-  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax);
+  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth / fMassRebin, fmassmin, fmassmax);
   fMassPlot->Sumw2();
 
   for (int k = 0; k < tree->GetEntries(); k++) {
@@ -119,8 +119,6 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotEffScale()
  */
 Bool_t AliDJetTTreeReader::ExtractInputMassPlotSideband()
 {
-  double jetmin = 5, jetmax = 30;
-
   std::cout << "Extracting input mass plot: " << fpTmin << " to " << fpTmax << std::endl;
 
   TTree *tree = GenerateChain();
@@ -135,19 +133,23 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotSideband()
   tree->SetBranchAddress(fJetBranchName,&brJet);
 
   TString hname = TString::Format("invMass_DPt_%.0f_%.0f", fpTmin, fpTmax);
-  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax);
+  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth / fMassRebin, fmassmin, fmassmax);
   fMassPlot->Sumw2();
 
-  fMassVsJetPtPlot = new TH2D("hInvMassJetPt", "hInvMassJetPt", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetbins, fJetbinpTedges);
+  fMassVsJetPtPlot = new TH2D("hInvMassJetPt", "hInvMassJetPt", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetPtbins, fJetPtBinEdges);
   fMassVsJetPtPlot->Sumw2();
+
+  fMassVsJetzPlot = new TH2D("hInvMassJetz", "hInvMassJetz", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetzbins, fJetzBinEdges);
+  fMassVsJetzPlot->Sumw2();
 
   for (int k = 0; k < tree->GetEntries(); k++) {
     tree->GetEntry(k);
     if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
-    if (brJet->fPt < jetmin || brJet->fPt >= jetmax) continue;
+    if (brJet->fPt < fJetPtBinEdges[0] || brJet->fPt >= fJetPtBinEdges[fnJetPtbins]) continue;
     if (brD->fPt < fpTmin || brD->fPt >= fpTmax) continue;
     fMassPlot->Fill(brD->fInvMass);
     fMassVsJetPtPlot->Fill(brD->fInvMass, brJet->fPt);
+    fMassVsJetzPlot->Fill(brD->fInvMass, brJet->fZ);
   }
 
   return kTRUE;

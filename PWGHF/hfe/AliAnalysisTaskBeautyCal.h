@@ -52,6 +52,7 @@ public:
 
     void SetITSchi2(Int_t itschi2){fitschi2 = itschi2;};
     void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
+    void SetEopMim(Double_t mimEop){fmimEop = mimEop;};
 
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -59,10 +60,12 @@ public:
     void SetEtaRange(Int_t etarange){fetarange = etarange;};
 
     void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};  
-
+ 
+    void SetEPana(Int_t EPana){fEPana = EPana;};
+    
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight, Double_t dcaxy);
     void CalInvmassHF(Int_t itrack, AliVTrack *track, Double_t DCAhf);
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
@@ -73,6 +76,7 @@ public:
     Bool_t IsDdecay(int mpid);
     Bool_t IsBdecay(int mpid);
     Bool_t IsPdecay(int mpid);
+    void GetEP(Double_t &evPlaneV0);
 
     void SetHFECuts(AliHFEcuts * const hfecuts) {fhfeCuts = hfecuts;};
 
@@ -84,6 +88,8 @@ private:
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask; //! new Qn vector framework
+    AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
     AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
@@ -116,17 +122,20 @@ private:
     Int_t fcentMax; // max. centrality
     Int_t fitschi2; // max. centrality
     Double_t fmimSig; // max. centrality
+    Double_t fmimEop; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Int_t fetarange;  
     Bool_t fEnablePileupRejVZEROTPCout;   
+    Int_t fEPana;  
 
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
-   
-    //TF1 *fPi3040;
-    //TF1 *fEta3040;
+    Bool_t Bevt; // B->e enahnce evt   
+
+    TF1 *fPi010;
+    TF1 *fEta010;
     TF1 *fPi3040_0;
     TF1 *fPi3040_1;
     TF1 *fEta3040_0;
@@ -135,8 +144,11 @@ private:
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
+    TH1F        *fEPV0;
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fHistClustE;//!cluster energy
+    TH1F        *fHistClustE_etapos;//!cluster energy
+    TH1F        *fHistClustE_etaneg;//!cluster energy
     TH1F        *fHistClustEtime;//!cluster energy
     TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
@@ -163,14 +175,17 @@ private:
     TH2F        *fHistEop;//!pt vs E/p
     TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistEopHad2;//!pt vs E/p
+    TH2F        *fHistEopTrueMC;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
     TH2F        *fM02EovP;//!M20 vs E/p
     TH2F        *fInvmassULS;//!Invmass of ULS
+    TH2F        *fInvmassULSdca;//!Invmass of ULS
     TH2F        *fInvmassULSpi0;//!Invmass of ULS
     TH2F        *fInvmassULSeta;//!Invmass of ULS
     TH2F        *fInvmassLS;//!Invmass of LS
+    TH2F        *fInvmassLSdca;//!Invmass of ULS
     TH2F        *fInvmassLSpi0;//!Invmass of LS
     TH2F        *fInvmassLSeta;//!Invmass of LS
     TH2F        *fInvmassHfULS;//!Invmass of ULS
@@ -180,7 +195,7 @@ private:
     TH1F        *fMCcheckMother;
     //TH1F        *fCheckEta;    
     //TH1F        *fCheckEtaMC;    
-
+   
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
@@ -204,6 +219,14 @@ private:
 
     TH2D        *fHistDCAde;//!ele cand SPD or
     TH2D        *fHistDCAbe;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance;//!ele cand SPD or
+    TH2D        *fHistDCAbeEnhance;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D0;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Ds;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc;//!ele cand SPD or
+    TH2D        *fHistDCAdePureMC;//!ele cand SPD or
+    TH2D        *fHistDCAbePureMC;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
     TH2D        *fHistDCAdeInc;//!ele cand SPD or
     TH2D        *fHistDCAbeInc;//!ele cand SPD or
@@ -230,6 +253,10 @@ private:
     TH1F        *fCheckEtaMC;    
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
+    TH2D        *fTPCcls;
+    TH1F        *fdPhiEP0;
+    TH1F        *fdPhiEP1;
+    TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
 

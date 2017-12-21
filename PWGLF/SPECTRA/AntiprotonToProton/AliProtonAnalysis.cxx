@@ -1547,7 +1547,7 @@ if(fProtonAnalysisBase->IsUsedMultiplicitySelection())
 							  tpcTrack->Pz());
 containerInput[1]=tpcTrack->Pt();
 
-Double_t fPSels[3];
+Double_t fPSels[4];
 
 //fPSels[0]=0.2;
 fPSels[0]=7*fPtDependentDcaXY->Eval(containerInput[1]); //maximum xy DCA 0.2
@@ -1556,7 +1556,7 @@ fPSels[1]=80; // minimum TPC Clusters
 fPSels[2]=3;  // N sigma
 fPSels[3]=10; // z componenta of vertex
 
-Double_t fPSelsMid[3];
+Double_t fPSelsMid[4];
 
 //fPSelsMid[0]=0.2;
 fPSelsMid[0]=7*fPtDependentDcaXY->Eval(containerInput[1]); //maximum xy DCA 0.2
@@ -1565,7 +1565,7 @@ fPSelsMid[1]=80; // minimum TPC Clusters 80
 fPSelsMid[2]=3;  // N sigma 3
 fPSelsMid[3]=10; // z componenta of vertex 10
 
-Double_t fPSelsLow[3];
+Double_t fPSelsLow[4];
 
 //fPSelsLow[0]=0.1;
 fPSelsLow[0]=6*fPtDependentDcaXY->Eval(containerInput[1]); //maximum xy DCA 0.1 0.1
@@ -1574,7 +1574,7 @@ fPSelsLow[1]=70; // minimum TPC Clusters 70
 fPSelsLow[2]=2;  // N sigma 2
 fPSelsLow[3]=8; // z componenta of vertex 8
 
-Double_t fPSelsHigh[3];
+Double_t fPSelsHigh[4];
 
 //fPSelsHigh[0]=0.3;
 fPSelsHigh[0]=8*fPtDependentDcaXY->Eval(containerInput[1]); //maximum xy DCA 0.3 0.3

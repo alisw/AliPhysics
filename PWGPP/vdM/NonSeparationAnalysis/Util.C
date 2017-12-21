@@ -39,13 +39,14 @@ TH1* DrawFrame(TVirtualPad* c,
 	       const char* title,
 	       const char* yTitle,
 	       Bool_t logY=kFALSE,
-	       Double_t xRange=0.65,
+	       Double_t xMin=-0.65,
+	       Double_t xMax= 0.65,
 	       TString label="",
 	       const char* xTitle="Separation [mm]",
 	       Double_t bottomMargin=0.15) {
   c->SetLeftMargin(0.17);
   c->SetBottomMargin(bottomMargin);
-  TH1* hf = c->DrawFrame(-xRange, yMin, +xRange, yMax);
+  TH1* hf = c->DrawFrame(xMin, yMin, xMax, yMax);
   hf->SetTitle(title);
   hf->GetXaxis()->SetTitle(xTitle);
   hf->GetYaxis()->SetTitle(yTitle);

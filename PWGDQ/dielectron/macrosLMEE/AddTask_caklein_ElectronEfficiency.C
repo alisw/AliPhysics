@@ -4,14 +4,15 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
                                                      Char_t* outputFileName="cklein_ElectronEfficiency.root",
                                                      Bool_t forcePhysSelAndTrigMask=kTRUE, // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
-                                                     Int_t triggerNames=(AliVEvent::kINT7),
-                                                     Int_t collCands=AliVEvent::kINT7
+                                                     Int_t triggerNames=(AliVEvent::kMB),
+                                                     Int_t collCands=AliVEvent::kMB,
+                                                     Int_t cutlibPreloaded=0
                                                      )
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_ElectronEfficiency", "No analysis manager found.");
+    Error("AddTask_caklein_ElectronEfficiency", "No analysis manager found.");
     return 0;
   }
 
@@ -28,20 +29,23 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  TString configFilePath(configBasePath+configFile);
-  if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
-    std::cout << "loading config: " << configFilePath.Data() << std::endl;
-    gROOT->LoadMacro(configFilePath.Data());
-  } else {
-    std::cout << "config not found: " << configFilePath.Data() << std::endl;
-    return 0x0; // if return is not called, the job will fail instead of running without this task... (good for local tests, bad for train)
-  }
   TString configLMEECutLib("LMEECutLib_caklein.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
-  if (gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0) {
-    std::cout << "loading config: " << configLMEECutLibPath.Data() << std::endl;
-    gROOT->LoadMacro(configLMEECutLibPath.Data());
-  } else std::cout << "config not found: " << configLMEECutLibPath.Data() << std::endl;
+  TString configFilePath(configBasePath+configFile);
+
+  Bool_t err=kFALSE;
+  if (!cutlibPreloaded) { // should not be needed but seems to be...
+    std::cout << "Cutlib was not preloaded --> Load Cutlib" << std::endl;
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+    std::cout << err << " " << configLMEECutLibPath << std::endl;
+    std::cout << err << " " << configFilePath << std::endl;
+    err |= gROOT->LoadMacro(configFilePath.Data());
+  }
+  else{
+    std::cout << "Cutlib was preloaded in a previous task" << std::endl;
+  }
+  if (err) { Error("AddTask_caklein_ElectronEfficiency","Config(s) could not be loaded!"); return 0x0; }
+
 
   std::cout << "computing binning..." << std::endl;
   Double_t EtaBins[nBinsEta+1];
@@ -88,7 +92,7 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
 
   // resolution calculation
   task->SetCalcResolution(CalcResolution);
-  if(CalcResolution || CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(0));
+  if(CalcResolution || CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings("kPbPb2015_Pt100_ResolutionCuts"));
   if(CalcResolution) {
     task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
     task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
@@ -113,6 +117,8 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   // pair efficiency
   task->SetDoPairing(doPairing);
   if(doPairing){
+    task->SetPtCut(PtMinCut, PtMaxCut);
+    task->SetEtaCut(EtaMinCut, EtaMaxCut);
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(0));
     //task->SetPairCuts(SetupTrackCutsAndSettings(101));
     // SetupTrackCutsAndSettings(101); // this fills the pair cuts into rejCutMee,rejCutTheta,rejCutPhiV
@@ -142,12 +148,17 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   SetupMCSignals(task);
 
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, bESDANA); // main function in config file
+    TString cutDefinition(arrNames->At(i)->GetName());
+    std::cout << "##############################" << std::endl;
+    std::cout << "NEW CUT SETTING WITH CUT NAME: " << cutDefinition << std::endl;
+    Bool_t IsTOFreqCut = false;
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(cutDefinition, bESDANA, IsTOFreqCut); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     if (isPrefilterCutset) {
       Int_t success = SetupPrefilterPairCuts(i);
       if (!success) { std::cout << "WARNING: no/bad Prefilter PairCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     }
+    std::cout << "Is TOFreq setting: " << (IsTOFreqCut ? "true" : "false") << std::endl;
     // fill std vectors with all information which is individual per track setting:
     task->AttachTrackCuts(trackCuts);
     task->AttachDoPrefilterEff(isPrefilterCutset);
@@ -155,8 +166,10 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
     task->AttachRejCutMee(rejCutMee);
     task->AttachRejCutTheta(rejCutTheta);
     task->AttachRejCutPhiV(rejCutPhiV);
+    task->AttachIsTOFrequireCut(IsTOFreqCut);
 
     task->CreateHistograms(names,i);
+    std::cout << "Cutsetting added\n##############################" << std::endl;
   }
 
   mgr->AddTask(task);
@@ -164,13 +177,13 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cklein_ElectronEfficiency", TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("cklein_ElectronEfficiency_%d", cutlibPreloaded), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cklein_supportHistos", TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("cklein_supportHistos_%d", cutlibPreloaded), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cklein_EffTree", TTree::Class(),
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("cklein_EffTree_%d", cutlibPreloaded), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cklein_stats", TH1D::Class(),
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("cklein_stats_%d", cutlibPreloaded), TH1D::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
 
   //connect input/output

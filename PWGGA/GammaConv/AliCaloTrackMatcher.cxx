@@ -51,6 +51,7 @@ ClassImp(AliCaloTrackMatcher)
 AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType) : AliAnalysisTaskSE(name),
   fClusterType(clusterType),
   fV0ReaderName(""),
+  fAnalysisTrainMode("Grid"),
   fMatchingWindow(200),
   fMatchingResidual(0.2),
   fRunNumber(-1),
@@ -91,8 +92,10 @@ AliCaloTrackMatcher::~AliCaloTrackMatcher(){
 
     if(fHistControlMatches) delete fHistControlMatches;
     if(fSecHistControlMatches) delete fSecHistControlMatches;
-    if(fListHistos != NULL){
-      delete fListHistos;
+    if(fAnalysisTrainMode.EqualTo("Grid")){
+        if(fListHistos != NULL){
+            delete fListHistos;
+        }
     }
 }
 
@@ -1236,7 +1239,7 @@ Float_t AliCaloTrackMatcher::SumTrackEtAroundCluster(AliVEvent* event, Int_t clu
   if((Int_t) labelsMatched.size()<1) return sumTrackEt;
 
   TLorentzVector vecTrack;
-  for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
+  for (UInt_t i = 0; i < labelsMatched.size(); i++){
     AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
     if(!currTrack) continue;
     vecTrack.SetPxPyPzE(currTrack->Px(),currTrack->Py(),currTrack->Pz(),currTrack->E());
@@ -1293,7 +1296,7 @@ void AliCaloTrackMatcher::DebugV0Matching(){
     Int_t tempClus = it->second;
     for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it) cout << it->first << " => " << it->second << '\n';
     vector<Int_t> tempTracks = GetMatchedSecTrackIDsForCluster(fInputEvent,tempClus, 5, -5, 0.2, -0.4);
-    for(Int_t iJ=0; iJ<tempTracks.size();iJ++){
+    for(UInt_t iJ=0; iJ<tempTracks.size();iJ++){
       cout << tempClus << " - " << tempTracks.at(iJ) << endl;
     }
   }
@@ -1332,7 +1335,7 @@ void AliCaloTrackMatcher::DebugMatching(){
     Int_t tempClus = it->second;
     for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it) cout << it->first << " => " << it->second << '\n';
     vector<Int_t> tempTracks = GetMatchedTrackIDsForCluster(fInputEvent,tempClus, 5, -5, 0.2, -0.4);
-    for(Int_t iJ=0; iJ<tempTracks.size();iJ++){
+    for(UInt_t iJ=0; iJ<tempTracks.size();iJ++){
       cout << tempClus << " - " << tempTracks.at(iJ) << endl;
     }
   }

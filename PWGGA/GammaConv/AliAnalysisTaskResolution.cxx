@@ -186,7 +186,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 	}
 
    
-	if(fIsHeavyIon > 0 && !fEventCuts->IsCentralitySelected(fESDEvent)) return;
+    if(fIsHeavyIon > 0 && !fEventCuts->IsCentralitySelected(fESDEvent,fMCEvent)) return;
 	fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 	fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
@@ -237,15 +237,12 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 		fGammaRecCoords(4) = gamma->GetConversionZ();
 		fChi2ndf = gamma->GetChi2perNDF();
 		if(MCEvent()){
-// 			cout << "generating MC stack"<< endl;
-			AliStack *fMCStack = fMCEvent->Stack();
-			if (!fMCStack) continue;
-			TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
-			TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
+            TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
+            TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
 // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
-			if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-				Int_t isPosFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fESDEvent);
-				Int_t isNegFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fESDEvent);
+            if(fMCEvent && fEventCuts->GetSignalRejection() != 0){
+                Int_t isPosFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fESDEvent);
+                Int_t isNegFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCEvent, fESDEvent);
 				if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
 			}
 			
@@ -261,12 +258,12 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 				if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
 // 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
 				Int_t pdgCode; 
-				if (gamma->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCStack)->GetPdgCode(); else continue;
+                if (gamma->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCEvent)->GetPdgCode(); else continue;
 // 				cout << "PDG code: " << pdgCode << endl;
 				if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
 					continue;
 				else if ( !(pdgCodeNeg==pdgCodePos)){
-					TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
+                    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
 					if(pdgCode == 111) 
 						continue;
 					else if (pdgCode == 221) 
@@ -274,10 +271,10 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
 						if(pdgCode == 22){
 							fGammaMCCoords(0) = truePhotonCanditate->Pt();
-							fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCStack)->Phi();
-							fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCStack)->Eta();
-							fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCStack)->R();
-							fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCStack)->Vz();
+                            fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCEvent)->Phi();
+                            fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCEvent)->Eta();
+                            fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCEvent)->R();
+                            fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCEvent)->Vz();
 							
 							if (fTreeResolution){
 								fTreeResolution->Fill();
@@ -295,13 +292,7 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 	Int_t fNumberOfESDTracks = 0;
 	if(fInputEvent->IsA()==AliESDEvent::Class()){
 	// Using standard function for setting Cuts
-		
-		AliStack *fMCStack = NULL;
-		if (MCEvent()){
-			fMCStack= fMCEvent->Stack();
-			if (!fMCStack) return 0;
-		}	
-				
+			
 		Bool_t selectPrimaries=kTRUE;
 		AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 		EsdTrackCuts->SetMaxDCAToVertexZ(2);
@@ -313,8 +304,8 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -343,12 +334,6 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 	if(fInputEvent->IsA()==AliESDEvent::Class()){
 		// Using standard function for setting Cuts
 		
-		AliStack *fMCStack = NULL;
-		if (MCEvent()){
-			fMCStack= fMCEvent->Stack();
-			if (!fMCStack) return 0;
-		}	
-
 		AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 		EsdTrackCuts->SetMaxDCAToVertexZ(5);
 		EsdTrackCuts->SetEtaRange(0.9, 1.4);
@@ -359,8 +344,8 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -373,8 +358,8 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	

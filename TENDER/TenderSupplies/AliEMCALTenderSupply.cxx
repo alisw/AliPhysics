@@ -84,6 +84,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fEtacut(-1)
   ,fPhicut(-1)
   ,fBasePath("")
+  ,fCustomBC("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -154,6 +155,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fEtacut(-1)  
   ,fPhicut(-1)  
   ,fBasePath("")
+  ,fCustomBC("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -224,6 +226,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fEtacut(-1)  
   ,fPhicut(-1)  
   ,fBasePath("")
+  ,fCustomBC("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -385,6 +388,7 @@ void AliEMCALTenderSupply::Init()
     AliInfo("------------ Variables -------------------------"); 
     AliInfo(Form("DebugLevel : %d", fDebugLevel)); 
     AliInfo(Form("BasePath : %s", fBasePath.Data())); 
+    AliInfo(Form("CustomBCFile : %s", fCustomBC.Data())); 
     AliInfo(Form("ConfigFileName : %s", fConfigName.Data())); 
     AliInfo(Form("EMCALGeometryName : %s", fEMCALGeoName.Data())); 
     AliInfo(Form("NonLinearityFunction : %d", fNonLinearFunc)); 
@@ -1005,8 +1009,23 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     
     if (fbad) delete fbad;
     
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");    
-  } 
+    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+  }
+  else if (fCustomBC!="")
+  { //if fCustomBC specified in the ->SetCustomBC()
+    if (fDebugLevel>0) AliInfo(Form("Loading Bad Channels OADB from given path %s",fCustomBC.Data()));
+    
+    TFile *fbad=new TFile(Form("%s",fCustomBC.Data()),"read");
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("Input file was not found in the path provided: %s",fCustomBC.Data()));
+      return 0;
+    }
+    
+    if (fbad) delete fbad;
+    
+    contBC->InitFromFile(Form("%s",fCustomBC.Data()),"AliEMCALBadChannels");
+  }
   else 
   { // Else choose the one in the $ALICE_PHYSICS directory
     if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
@@ -1891,7 +1910,6 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
       UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
       
       // Get the digit that originated this cell cluster
-      AliVCaloCells* cells = event->GetEMCALCells();
       
       for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
       {

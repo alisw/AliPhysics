@@ -13,9 +13,9 @@ for scr in "utilities.sh" "alilog4bash.sh"; do
   if [[ -e $scr ]]; then
     echo "Sourcing $scr from current directory"
     source $scr false
-  elif [[ -e $ALICE_PHYSICS/PWGPP/scripts/$scr ]]; then
-    echo "Sourcing $scr from AliPhysics"
-    source $ALICE_PHYSICS/PWGPP/scripts/$scr false
+  elif [[ -e $ALICE_ROOT/libexec/$scr ]]; then
+    echo "Sourcing $scr from AliRoot"
+    source $ALICE_ROOT/libexec/$scr false
   else
     exit 1
   fi

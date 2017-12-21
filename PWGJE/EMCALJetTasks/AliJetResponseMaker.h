@@ -60,6 +60,36 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetDBCAxis(Int_t b)                                             { fDBCAxis           = b         ; }
   void                        SetJetRelativeEPAngleAxis(Int_t b)                              { fJetRelativeEPAngle = b        ; }
 
+  static AliJetResponseMaker * AddTaskJetResponseMaker(
+      const char *ntracks1           = "Tracks",
+      const char *nclusters1         = "CaloClusters",
+      const char *njets1             = "Jets",
+      const char *nrho1              = "Rho",
+      const Double_t    jetradius1         = 0.2,
+      const char *ntracks2           = "MCParticles",
+      const char *nclusters2         = "",
+      const char *njets2             = "MCJets",
+      const char *nrho2              = "",
+      const Double_t    jetradius2         = 0.2,
+      const Double_t    jetptcut           = 1,
+      const Double_t    jetareacut         = 0.557,
+      const Double_t    jetBias            = 5,
+      const Int_t       biasType           = 0,   //  0 = charged, 1 = neutral, 2 = both
+      const AliJetResponseMaker::MatchingType matching = AliJetResponseMaker::kGeometrical,
+      const Double_t    maxDistance1       = 0.25,
+      const Double_t    maxDistance2       = 0.25,
+      const char *cutType            = "TPC",
+      const Int_t       ptHardBin          = -999,
+      const Double_t    minCent            = -999,
+      const Double_t    maxCent            = -999,
+      const char *taskname           = "AliJetResponseMaker",
+      const Bool_t      biggerMatrix       = kFALSE,
+      AliJetResponseMaker* address   = 0,
+      const Double_t    nefmincut          = -10,
+      const Double_t    nefmaxcut          = 10,
+      const Int_t       jetTagging         = 0,
+      const Double_t    maxTrackPt         = 100);
+
  protected:
   void                        ExecOnce();
   void                        DoJetLoop();

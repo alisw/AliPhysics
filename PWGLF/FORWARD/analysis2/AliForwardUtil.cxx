@@ -141,9 +141,30 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
   if (s.Contains("a-p")   || s.Contains("ap"))    return AliForwardUtil::kPbp;
   if (s.Contains("p-p")   || s.Contains("pp"))    return AliForwardUtil::kPP; 
   if (s.Contains("pb-pb") || s.Contains("pbpb"))  return AliForwardUtil::kPbPb;
+  if (s.Contains("xe-xe") || s.Contains("xexe"))  return AliForwardUtil::kXeXe;
+  if (s.Contains("xe54-xe54"))                    return AliForwardUtil::kXeXe;
   if (s.Contains("a-a")   || s.Contains("aa"))    return AliForwardUtil::kPbPb;
   return AliForwardUtil::kUnknown;
 }
+//____________________________________________________________________
+UShort_t
+AliForwardUtil::ParseCollisionSystem(Int_t b1a, Int_t b1z,
+				     Int_t b2a, Int_t b2z,
+				     const char* sys)
+{
+  if (b1a == 129 && b1z == 54 && b2a == 129 && b2z == 54)
+    return AliForwardUtil::kXeXe;
+  if (b1a == 208 && b1z == 82 && b2a == 208 && b2z == 82)
+    return AliForwardUtil::kPbPb;
+  if (b1a == 208 && b1z == 82 && b2a ==   1 && b2z ==  1)
+    return AliForwardUtil::kPbp;
+  if (b1a ==   1 && b1z ==  1 && b2a == 208 && b2z == 82)
+    return AliForwardUtil::kPPb;
+  if (b1a ==   1 && b1z ==  1 && b2a ==   1 && b2z ==  1)
+    return AliForwardUtil::kPP;
+  return ParseCollisionSystem(sys);
+}
+
 //____________________________________________________________________
 const char*
 AliForwardUtil::CollisionSystemString(UShort_t sys)
@@ -167,6 +188,7 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
   case AliForwardUtil::kPbPb: return "PbPb";
   case AliForwardUtil::kPPb:  return "pPb";
   case AliForwardUtil::kPbp:  return "Pbp";
+  case AliForwardUtil::kXeXe: return "XeXe";
   }
   return "unknown";
 }
@@ -221,6 +243,8 @@ namespace {
     if (TMath::Abs(energy - 5000.)  < 10)  return 5000;
     if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
     if (TMath::Abs(energy - 5125.)  < 30)  return 5100;
+    if (TMath::Abs(energy - 5200.)  < 50)  return 5200;
+    if (TMath::Abs(energy - 5440.)  < 20)  return 5440;
     if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
     if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
     if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
@@ -250,10 +274,14 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (sys == AliForwardUtil::kPPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 1, 1);
+  if (sys == AliForwardUtil::kPPb) 
+    energy = CenterOfMassEnergy(beam, 54, 129, 1, 1);
   if (sys == AliForwardUtil::kPbp) 
     energy = CenterOfMassEnergy(beam, 1, 1, 82, 208);
   else if (sys == AliForwardUtil::kPbPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 82, 208);
+  else if (sys == AliForwardUtil::kXeXe) 
+    energy = CenterOfMassEnergy(beam, 54, 129, 54, 129);
   UShort_t ret = CheckSNN(energy);
   if (ret > 1) return ret;
   if (sys == AliForwardUtil::kPbPb ||
@@ -291,9 +319,12 @@ AliForwardUtil::ParseMagneticField(Float_t v)
   // Return:
   //    Short integer value of magnetic field in kG 
   //
-  if (TMath::Abs(v - 5.) < 1 ) return +5;
-  if (TMath::Abs(v + 5.) < 1 ) return -5;
-  if (TMath::Abs(v) < 1)       return 0;
+  if (TMath::Abs(v - 5.)  < 1 ) return +5;
+  if (TMath::Abs(v - 2.5) < 1 ) return +2;
+  if (TMath::Abs(v - 2.5) < 1 ) return -2;
+  if (TMath::Abs(v + 5.)  < 1 ) return -5;
+  if (TMath::Abs(v) < 1)        return 0;
+  ::Warning("ParseMagneticfield", "Magnetic field value: %f not known", v);
   return 999;
 }
 //____________________________________________________________________

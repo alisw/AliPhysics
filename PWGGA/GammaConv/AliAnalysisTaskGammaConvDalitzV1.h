@@ -100,7 +100,6 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		AliGammaConversionAODBGHandler 			**fBGHandler;
 		AliESDEvent 							*fESDEvent;
 		AliMCEvent 								*fMCEvent;
-		AliStack 								*fMCStack;
 		TList 									**fCutFolder;
 		TList 									**fESDList;
 		TList 									**fBackList;
@@ -316,7 +315,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 		AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-        ClassDef( AliAnalysisTaskGammaConvDalitzV1, 7 );
+        ClassDef( AliAnalysisTaskGammaConvDalitzV1, 8 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H

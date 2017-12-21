@@ -4,7 +4,7 @@ ClassImp(AliPicoV0MC)
 
 //_____________________________________________________________________________
 AliPicoV0MC::AliPicoV0MC() :
-AliPicoV0Base(),
+AliPicoV0(),
 fV0PDG(0),
 fV0Status(0),
 fV0Kine(),
@@ -34,18 +34,18 @@ AliPicoV0MC::AliPicoV0MC(UInt_t   wMask,
                          Bool_t   bPosInJC, Bool_t bNegInJC,
                          Int_t idV, UInt_t wsV, Double_t dV0Px, Double_t dV0Py, Double_t dV0Pz, Double_t dV0E,
                          Int_t idM, UInt_t wsM, Double_t dPtM,  Double_t dEtaM, Double_t dRapM) :
-AliPicoV0Base(wMask,
-              dV0Radius,
-              dV0CosPA,
-              dV0DistToPVoverP,
-              dDausDCA,
-              dPosDCAtoPV,
-              dNegDCAtoPV,
-              dDauXrowsTPC,
-              dDauXrowsOverFindableClusTPC,
-              dPosPx, dPosPy, dPosPz,
-              dNegPx, dNegPy, dNegPz,
-              bPosInJC, bNegInJC),
+AliPicoV0(wMask,
+          dV0Radius,
+          dV0CosPA,
+          dV0DistToPVoverP,
+          dDausDCA,
+          dPosDCAtoPV,
+          dNegDCAtoPV,
+          dDauXrowsTPC,
+          dDauXrowsOverFindableClusTPC,
+          dPosPx, dPosPy, dPosPz,
+          dNegPx, dNegPy, dNegPz,
+          bPosInJC, bNegInJC),
 fV0PDG(idV),
 fV0Status(wsV),
 fV0Kine(dV0Px, dV0Py, dV0Pz, dV0E),
@@ -62,7 +62,7 @@ fMotherRap(dRapM)
 
 //_____________________________________________________________________________
 AliPicoV0MC::AliPicoV0MC(const AliPicoV0MC &src) :
-AliPicoV0Base(src),
+AliPicoV0(src),
 fV0PDG(src.fV0PDG),
 fV0Status(src.fV0Status),
 fV0Kine(src.fV0Kine),
@@ -86,7 +86,7 @@ AliPicoV0MC& AliPicoV0MC::operator=(const AliPicoV0MC &src)
 
   if (&src==this) return *this;
 
-  AliPicoV0Base::operator=(src);
+  AliPicoV0::operator=(src);
 
   fV0PDG        = src.fV0PDG;
   fV0Status     = src.fV0Status;
@@ -110,13 +110,15 @@ AliPicoV0MC::~AliPicoV0MC()
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsKshort(Double_t const dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsKshort
+//  Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
 //
 
-  if (!AliPicoV0Base::IsKshort()) return kFALSE;
+  if (!IsKshortMC()) return kFALSE;
+  if (!AliPicoV0::IsKshort()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsKa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;
@@ -125,13 +127,15 @@ Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsLambda(Double_t const dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsLambda
+//  Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
 //
 
-  if (!AliPicoV0Base::IsLambda()) return kFALSE;
+  if (!IsLambdaMC()) return kFALSE;
+  if (!AliPicoV0::IsLambda()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsLa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;
@@ -140,13 +144,15 @@ Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsAntiLa(Double_t const dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsAntiLa
+//  Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9]) const
 //
 
-  if (!AliPicoV0Base::IsAntiLa()) return kFALSE;
+  if (!IsAntiLaMC()) return kFALSE;
+  if (!AliPicoV0::IsAntiLa()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsLa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;
@@ -166,7 +172,7 @@ Bool_t AliPicoV0MC::IsV0InRapAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0MC::GetControlVariables(Float_t d[18])
+void AliPicoV0MC::GetControlVariables(Float_t d[18]) const
 {
 //
 //  AliPicoV0MC::GetControlVariables

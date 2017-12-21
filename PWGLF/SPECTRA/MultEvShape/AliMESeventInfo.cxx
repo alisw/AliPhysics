@@ -48,25 +48,25 @@ void AliMESeventInfo::Clear(Option_t *)
 //______________________________________________________________
 // fill ev shape object
 // directivity
-Bool_t AliMESeventInfo::MakeDirectivity(TObjArray* tracks){
+void AliMESeventInfo::MakeDirectivity(TObjArray* tracks){
+
+  Double_t rv[2] = {-2., -2.};
 
   if(!tracks->GetEntries()){
-    AliInfo("Failed event shape estimation. No tracks in event.");
-    return kFALSE;
+    AliDebug(2, "Failed event shape estimation. No tracks in event.");
+    return;
   }
-  Double_t rv[2] = {0.};
   if((rv[0] = Directivity(tracks, kTRUE)) < 0. ){
-    AliInfo("Failed D+ estimation");
-    return kFALSE;
+    AliDebug(2, "Failed D+ estimation");
+    // return kFALSE;
   }
   if((rv[1] = Directivity(tracks, kFALSE)) < 0. ){
-    AliInfo("Failed D- estimation");
-    return kFALSE;
+    AliDebug(2, "Failed D- estimation");
+    // return kFALSE;
   }
-  // printf("rv[0] = %f \t rv[1] = %f\n\n\n", rv[0], rv[1]);
   memcpy(fEvShape.fDir, rv, 2*sizeof(Double_t));
 
-  return kTRUE;
+  return;
 }
 
 // thrust
@@ -87,20 +87,21 @@ Bool_t AliMESeventInfo::MakeThrust(TObjArray* tracks){
 }
 
 // sphericity
-Bool_t AliMESeventInfo::MakeSphericity(TObjArray* tracks){
+void AliMESeventInfo::MakeSphericity(TObjArray* tracks){
+
+    Double_t rv = -1.;
 
     if(!tracks->GetEntries()){
-      AliInfo("Failed event shape estimation. No tracks in event.");
-      return kFALSE;
+      AliDebug(2, "Failed event shape estimation. No tracks in event.");
+      return;
     }
-    Double_t rv = 0.;
     if((rv = Sphericity(tracks)) < 0. ){
-    AliInfo("Failed Sphericity estimation");
-    //return kFALSE;
+        AliDebug(2, "Failed Sphericity estimation");
+        //return kFALSE;
     }
     fEvShape.fSphericity = rv;
 
-    return kTRUE;
+    return;
 }
 
 // recoil
@@ -141,13 +142,13 @@ Bool_t AliMESeventInfo::MakeFoxWolframMoments(TObjArray* tracks){
 Bool_t AliMESeventInfo::FindLeadingParticle(TObjArray* tracks){
 
     if(!tracks->GetEntries()){
-      AliInfo("Failed event shape estimation. No tracks in event.");
+      AliDebug(2, "Failed event shape estimation. No tracks in event.");
       return kFALSE;
     }
     Double_t rv[2] = {0.};
     if(!LeadingParticleDirection(tracks, rv)){
-    AliInfo("Failed LeadingParticleDirection estimation");
-    //return kFALSE;
+      AliDebug(2, "Failed LeadingParticleDirection estimation");
+      return kFALSE;
     }
     memcpy(fEvShape.fPxyLead, rv, 2*sizeof(Double_t));
 
@@ -158,25 +159,24 @@ Bool_t AliMESeventInfo::FindLeadingParticle(TObjArray* tracks){
 Double_t AliMESeventInfo::Directivity(TObjArray* tracks, Bool_t etaSign)
 {
   // compute directivity
-  // printf("AliMESeventInfo::Directivity - eta = %i\n", etaSign);
   Int_t ntracks(0);
-  if(!(ntracks=tracks->GetEntries())) return -1.;
+  if(!(ntracks=tracks->GetEntries())) return -2.;
 
   Double_t dirx(0.), diry(0.), dir(0.);
   AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+    // printf("part %i:\t", iTracks);
     if(!(track = dynamic_cast<AliMEStrackInfo*> (tracks->At(iTracks)))) continue;
-    if(track->Eta()*(etaSign?1.:-1.) < 0.) continue;
-    if(TMath::Abs(track->Eta()) >= 0.8) continue;
+    // printf("primary: %i, eta: %f\n", track->HasOrigin(AliMEStrackInfo::kPrimary), track->Eta());
     if(! track->HasOrigin(AliMEStrackInfo::kPrimary) ) continue;
-    // printf("Directivity eta = %f\n", track->Eta());
+    if(track->Eta()*(etaSign?1.:-1.) < 0.) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
     dirx+=track->Px();
     diry+=track->Py();
     dir +=track->Pt();
-    // printf("iTracks = %i\n",iTracks);
+    // printf("track selected\n\n");
   }
-  // printf("dir = %f\n", dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-1.);
-  return dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-1.;
+  return dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-2.;
 }
 
 //______________________________________________________________
@@ -261,9 +261,11 @@ Double_t AliMESeventInfo::Sphericity(TObjArray* tracks)
   if(!(ntracks=tracks->GetEntries())) return -1.;
 
   Double_t a(0.), b(0.), c(0.), d(0.);
-  AliVParticle *track(NULL);
+  AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-    if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
+    if(!(track = dynamic_cast<AliMEStrackInfo*> (tracks->At(iTracks)))) continue;
+    if(! track->HasOrigin(AliMEStrackInfo::kPrimary) ) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
     a+=track->Px()*track->Px();
     b+=track->Px()*track->Py();
     d+=track->Py()*track->Py();

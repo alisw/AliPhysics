@@ -32,7 +32,7 @@ Bool_t ConfigPhiPP8TeV
   AliRsnCutSetDaughterParticle* cutSetK;
 
   Int_t MultBins=aodFilterBit/100;
-  aodFilerBit=aodFilterBit%100;
+  aodFilterBit=aodFilterBit%100;
 
   Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
   Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;

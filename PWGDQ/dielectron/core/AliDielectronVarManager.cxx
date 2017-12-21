@@ -58,13 +58,15 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NclsSFracTPC",           "N_{shar.cls}^{TPC}/^{}N_{cls}^{TPC}",                ""},
   {"NclsSITS",               "N_{shar.cls}^{ITS}",                                 ""},
   {"NclsSFracITS",           "N_{shar.cls}^{ITS}/^{}N_{cls}^{ITS}",                ""},
+  {"NclsSMapITS",            "ITS_shared_cluster_map",                             ""},
   {"NclsTPCiter1",           "N_{1st.iter.cls}^{TPC}",                             ""},
   {"NFclsTPC",               "N_{find.cls}^{TPC}",                                 ""},
   {"NFclsTPCrobust",         "N_{cross.rows}^{TPC}",                               ""},
   {"NFclsTPCrobustFraction", "N_{cls}^{TPC}/^{}N_{find.cls}^{TPC}",                ""},//TODO: check
   {"NFclsTPCfracCrossedRows","N_{cross.rows}^{TPC}/^{}N_{find.cls}^{TPC}",         ""},
-  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                   ""},
-  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",  ""},
+  {"Chi2TPCConstrainedVsGlobal",             "Chi^{2}_{TPC-constrained vs. Global}",                                             ""},
+  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                                       ""},
+  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",                      ""},
   {"TPCchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{TPC}",                          ""},
   {"TPCclsDiff",             "N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC}",   ""},
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
@@ -152,6 +154,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPC_nSigma_Kaons",       "n#sigma_{K}^{TPC}",                                  ""},
   {"TPC_nSigma_Protons",     "n#sigma_{p}^{TPC}",                                  ""},
 
+  {"TOF_nSigma_ElectronsRaw","n#sigma_{e}^{TOF} (raw)",                            ""},
   {"TOF_nSigma_Electrons",   "n#sigma_{e}^{TOF}",                                  ""},
   {"TOF_nSigma_Pions",       "n#sigma_{#pi}^{TOF}",                                ""},
   {"TOF_nSigma_Muons",       "n#sigma_{#mu}^{TOF}",                                ""},
@@ -206,6 +209,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ThetaSqCS",              "cos^{2}(#theta_{CS})",                               ""},
   {"PsiPair",                "#Psi^{pair}",                                        "(rad.)"},
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
+  {"ITSscPair",              "ITS shared Cluster of pair",                         ""},
   {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
@@ -560,6 +564,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDAy_FMDCyCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{y}",               ""},
 //
   {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiTrackTPCrpH2",    "#phi^{Track}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiTrackV0CrpH2",    "#phi^{Track}-#Psi^{V0C}",                     ""},
   {"QnDeltaPhiV0ArpH2",         "#phi^{pair}-#Psi^{V0A}",                     ""},
   {"QnDeltaPhiV0CrpH2",         "#phi^{pair}-#Psi^{V0C}",                     ""},
   {"QnDeltaPhiV0rpH2",          "#phi^{pair}-#Psi^{V0}",                      ""},
@@ -576,7 +582,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NVtxContrib",            "N_{vtx. contrib.}",                                  ""},
   {"NVtxContribTPC",         "N_{vtx. contrib.}^{TPC}",                            ""},
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},
-  {"MatchEffITSTPC",         "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9}",  ""},
+  {"MatchEffITSTPC",        "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9}",  ""},
+  {"MatchEffITSTPCinPlane", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #||{#phi^{Track}-#Psi^{TPC}} < #frac{#pi}{4} || #frac{3#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #pi}",  ""},
+  {"MatchEffITSTPCoutPlane", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #frac{#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #frac{3#pi}{4}}",  ""},
+  {"MatchEffITSTPCinPlaneV0C", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #||{#phi^{Track}-#Psi^{V0C}} < #frac{#pi}{4} || #frac{3#pi}{4} < #||{#phi^{Track}-#Psi^{V0C}} < #pi}",  ""},
+  {"MatchEffITSTPCoutPlaneV0C", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #frac{#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #frac{3#pi}{4}}",  ""},
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
   {"NaccTrcklts09",          "N_{acc. trkl} #cbar_{#||{#eta}<0.9}",                ""},
   {"NaccTrcklts10",          "N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                ""},
@@ -606,14 +616,17 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
+  {"NTPCtrkswITSout",         "N_{trk}^{TPCwITSout}",                               ""},
+  {"NTPCclsEvent",    "N_{cls}^{TPC}",                                      ""},
   {"RefMultOvRefMultTPConly",  "N_{trk}/N_{trk}^{TPConly}",                        ""},
-
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"NchJpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.6} without J/#psi daughters ",  ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
   {"Nch05JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<0.5} without J/#psi daughters ",  ""},
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
   {"Nch10JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.0} without J/#psi daughters ",  ""},
+  {"Nch09",                  "N_{ch} #cbar_{#||{#eta}<0.9}",                       ""},
+  {"Nch09JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<0.9} without J/#psi daughters ",  ""},
   {"Centrality",             "centrality_{V0M}",                                  "(%)"},
   {"CentralityV0A",          "centrality_{V0A}",                                  "(%)"},
   {"CentralityV0C",          "centrality_{V0C}",                                  "(%)"},
@@ -630,20 +643,20 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
 
 
-
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
   {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
   {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
-  {"MixingBin",              "mixing bin",                                         ""}
+  {"MixingBin",              "mixing bin",                                         ""},
+  {"LegSource",              "Leg source",                                         ""}
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;
 AliVEvent*      AliDielectronVarManager::fgEvent            = 0x0;
 AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
-TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[6][9] = {{0x0}};
+TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[7][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
 TObject*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 TObject*        AliDielectronVarManager::fgPairEffMap          = 0x0;

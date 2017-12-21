@@ -10,7 +10,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   Double_t    jetareacut         = 0.2,
   const char *cutType            = "TPCfid",
   Int_t       leadhadtype        = 0,
-  const char *suffix             = ""
+  const char *suffix             = "",
+  Bool_t     iMC                 = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -103,11 +104,12 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
   */
 
-  if (trackName == "mcparticles") {
-    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
-  }
-  else if (trackName == "tracks" || trackName == "Tracks") {
+  //if (trackName == "mcparticles") {
+    //AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
+    //mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  //}
+  //else if (trackName == "tracks" || trackName == "Tracks") {
+  if (trackName == "tracks" || trackName == "Tracks") {
     AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
     trackCont->SetFilterHybridTracks(kTRUE);
   }
@@ -146,8 +148,26 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     jetCont->SetLeadingHadronType(leadhadtype);
     jetCont->SetMaxTrackPt(1000);
     jetCont->SetZLeadingCut(0.98,0.98);
-  }
+    }
 
+   if(iMC)
+     {
+     //AliTrackContainer* trackContMC = jetTask->AddTrackContainer("mcparticles");
+      AliMCParticleContainer* trackContMC = jetTask->AddMCParticleContainer("mcparticles");
+      //AliJetContainer* jetContMC = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "JetMC");
+      AliJetContainer* jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
+     if (jetContMC) {
+      //jetCont->SetRhoName(nrho);
+      //if(jetradius==0.3)jetareacut=0.2;
+      jetContMC->SetJetAreaCut(jetareacut);
+      jetContMC->SetJetPtCut(jetptcut);
+      jetContMC->ConnectParticleContainer(trackContMC);
+      jetContMC->ConnectClusterContainer(clusterCont);
+      jetContMC->SetLeadingHadronType(leadhadtype);
+      jetContMC->SetMaxTrackPt(1000);
+      jetContMC->SetZLeadingCut(0.98,0.98);
+     }
+   }
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

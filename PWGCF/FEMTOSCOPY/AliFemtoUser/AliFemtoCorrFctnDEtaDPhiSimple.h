@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// AliFemtoCorrFctnDEtaDPhiSimple - A correlation function that analyzes            //
+// AliFemtoCorrFctnDEtaDPhiSimple - A correlation function that analyzes      //
 // two particle correlations with respect to the azimuthal angle (phi)        //
 // and pseudorapidity (eta) difference                                        //
 //                                                                            //
@@ -11,17 +11,28 @@
 #ifndef ALIFEMTOCORRFCTNDETADPHISIMPLE_H
 #define ALIFEMTOCORRFCTNDETADPHISIMPLE_H
 
-#include "TH1D.h"
-#include "TH2D.h"
-#include "THnSparse.h"
 #include "AliFemtoCorrFctn.h"
+
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TString.h>
 
 class AliFemtoCorrFctnDEtaDPhiSimple : public AliFemtoCorrFctn {
 public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
   typedef enum CorrectionType ReadCorrectionType;
 
-  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7, kLambda=8};
+  enum ParticleType {
+    kNoCorrection=0,
+    kPion=1,
+    kKaon=2,
+    kProton=3,
+    kAll=4,
+    kPionMinus=5,
+    kKaonMinus=6,
+    kProtonMinus=7,
+    kLambda=8
+  };
 
   AliFemtoCorrFctnDEtaDPhiSimple(char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhiSimple(const AliFemtoCorrFctnDEtaDPhiSimple& aCorrFctn);
@@ -41,15 +52,16 @@ public:
   void SetParticle2Type(ParticleType partType);
 
   void SetReadHiddenInfo(bool read);
-  
+
 
   void WriteHistos();
   virtual TList* GetOutputList();
-private:
-  
+
+protected:
+
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
-  
+
   TH2D *fDPhiDEtaHiddenNumerator;          // Numerator of dEta dPhi function from MC
   TH2D *fDPhiDEtaHiddenDenominator;        // Denominator of dEta dPhi function from MC
 
@@ -73,12 +85,12 @@ private:
 
   double fphiL;
   double fphiT;
-  
+
   int fEtaBins;
   int fPhiBins;
 
-  char *ftitle;
-  
+  TString fTitle;
+
   ParticleType part1;
   ParticleType part2;
 

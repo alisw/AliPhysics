@@ -29,7 +29,7 @@
 #include <TList.h>
 #include <TClonesArray.h>
 
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliAODMCParticle.h"
@@ -101,7 +101,7 @@ AliPHOSpPbPi0Header::~AliPHOSpPbPi0Header()
 }
 
 //_____________________________________________________________________________
-void AliPHOSpPbPi0Header::SetEventInfo(AliInputEventHandler* const handler)
+void AliPHOSpPbPi0Header::SetEventInfo(AliVEventHandler* const handler)
 {
   // fill info at event level
 

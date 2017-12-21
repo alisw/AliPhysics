@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: January 26th, 2017.							          //
+	//		version: August 4, 2017.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -106,7 +106,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliAODPWG4Particle.h"
+	//#include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
@@ -154,6 +154,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fPartnerCuts(new AliESDtrackCuts())
 ,fOutputList(0)
 ,fPidResponse(0)
@@ -449,6 +451,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCNcls_EoverP(0)
 ,fTPCNcls_pid(0)
 ,fEta(0)
+,fPt_Eta(0)
+,fPt_Eta_excluding_range(0)
+,fPt_DCAr(0)
+,fPhi_DCAr(0)
+,fPhi_DCAr_neg(0)
+,fPhi_DCAr_pos(0)
 ,fPhi(0)
 ,fR(0)
 ,fR_EoverP(0)
@@ -731,6 +739,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fPartnerCuts(new AliESDtrackCuts())
 ,fOutputList(0)
 ,fPidResponse(0)
@@ -1027,6 +1037,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCNcls_EoverP(0)
 ,fTPCNcls_pid(0)
 ,fEta(0)
+,fPt_Eta(0)
+,fPt_Eta_excluding_range(0)
+,fPt_DCAr(0)
+,fPhi_DCAr(0)
+,fPhi_DCAr_neg(0)
+,fPhi_DCAr_pos(0)
 ,fPhi(0)
 ,fR(0)
 ,fR_EoverP(0)
@@ -1283,11 +1299,9 @@ AliAnalysisTaskEMCalHFEpA::~AliAnalysisTaskEMCalHFEpA()
 	delete fPID;
 	delete fCFM;
 	delete fPIDqa;
-		//added in March 2016 by Cris
 	delete fNonHFE;
-		//added in June 2016 by Cris
-		//if(fTracks_tender) delete fTracks_tender;
-		//if(fCaloClusters_tender)// delete fCaloClusters_tender;
+	if(fTracks_tender) delete fTracks_tender;
+	if(fCaloClusters_tender) delete fCaloClusters_tender;
 	
 	
 
@@ -1809,7 +1823,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fECluster= new TH1F *[3];
 	fEtaPhi= new TH2F *[3];
 	fVtxZ= new  TH1F *[3];
-	fEtad= new  TH1F *[8];
+	
 	fNTracks= new  TH1F *[3];
 	
 	fNTracks_pt= new  TH2F *[3];
@@ -1978,12 +1992,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
 	
-	for(Int_t i = 0; i < 8; i++)
-	{
-		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
-		fOutputList->Add(fEtad[i]);
-		
-	}
+
 	
     //histo for centrality to run just once
 	if(fIsCentralitySys){
@@ -2076,7 +2085,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_eta_electrons=new TH2F *[6];
 	fTPCnsigma_eta_hadrons=new TH2F *[6];
 	
+	fEtad= new  TH1F *[15];
+	fPt_Eta=new TH2F *[15];
+	fPhi_DCAr=new TH2F *[15];
+	fPt_DCAr=new TH2F *[15];
 	
+	fPt_Eta_excluding_range=new TH2F *[3];
+	fPhi_DCAr_neg=new TH2F *[3];
+	fPhi_DCAr_pos=new TH2F *[3];
 	
 	if(fCorrelationFlag)
 	{
@@ -2184,6 +2200,38 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	}
 	
 	
+	//tracking problems studies
+	for(Int_t i = 0; i < 15; i++)
+	{
+		
+		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		fOutputList->Add(fEtad[i]);
+		
+		fPt_Eta[i] = new TH2F(Form("fPt_Eta%d",i),";pT;Eta",60,0,30,40,-1,1);
+		fOutputList->Add(fPt_Eta[i]);
+		
+		fPt_DCAr[i] = new TH2F(Form("fPt_DCAr%d",i),";pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPt_DCAr[i]);
+
+		fPhi_DCAr[i] = new TH2F(Form("fPhi_DCAr%d",i),";Phi;DCAxy",650,0,6.5,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr[i]);
+		
+	
+
+
+	}	
+	for(Int_t i=0; i<3;i++){
+		fPt_Eta_excluding_range[i] = new TH2F(Form("fPt_Eta_excluding_range%d",i),"excluding 2.0 < #eta < 2.7 ;pT;Eta",60,0,30,40,-1,1);
+		fOutputList->Add(fPt_Eta_excluding_range[i]);
+		
+		fPhi_DCAr_pos[i] = new TH2F(Form("fPhi_DCAr_pos%d",i),"positive charged tracks;pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr_pos[i]);
+		
+		fPhi_DCAr_neg[i] = new TH2F(Form("fPhi_DCAr_neg%d",i),"negative charged tracks;pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr_neg[i]);
+
+	
+	}
 	
 	for(Int_t i = 0; i < 6; i++)
 	{
@@ -3098,7 +3146,7 @@ if(!fIspp){
 	if(fUseTender){
 			//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 			//NTracks = fTracks_tender->GetEntries();
-		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		ClsNo0 = fCaloClusters_tender->GetEntries();
 		
 		
@@ -3150,7 +3198,7 @@ if(!fIspp){
 					
 				
 					if(fUseTender){
-						TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+						fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 						ClsNo0 = fCaloClusters_tender->GetEntries();
 					
 					}
@@ -3160,7 +3208,7 @@ if(!fIspp){
 						AliVCluster *clus0 = 0x0;
 						
 						if(fUseTender){
-							TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+							fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 							clus0 = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 						}
 						
@@ -3680,15 +3728,17 @@ if(!fIspp){
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	if(fUseTender){
-		TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+		fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+		//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 		NTracks = fTracks_tender->GetEntries();
-		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		ClsNo = fCaloClusters_tender->GetEntries();
 		
 		
 		//For cluster information from tender
 		for (Int_t i=0; i< ClsNo; i++ ){
-			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 			clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(i));
 			if (!clust) {
 					//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -3783,9 +3833,10 @@ if(!fIspp){
 		*/
 		
 		if(fUseTender){
-			TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+			fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+				//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 			Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
-			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		}
 			
 		if (!Vtrack) 
@@ -3918,9 +3969,7 @@ if(!fIspp){
 			//end of eta correction
 		
 		
-			
-		
-		
+
 		
 		//================================================================================
 		// Checks on SPD hits vs. SPD tracklets
@@ -3971,7 +4020,8 @@ if(!fIspp){
 		Double_t fEMCflag = kFALSE;
 		if(track->GetEMCALcluster()>0)
 		{
-				//fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			
+			//fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
@@ -3981,7 +4031,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4065,6 +4115,33 @@ if(!fIspp){
 		
 		fNClusters[0]->Fill(ClsNo);
 		fTPCNcls_pid[0]->Fill(TPCNcls, TPCNcls_pid);
+		
+		fPt_Eta[0]->Fill(fPt,track->Eta());
+		
+		if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[0]->Fill(fPt,track->Eta());
+		
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[0]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[0]->Fill(track->Phi(),DCAxy);
+			
+			
+			if(track->Charge()<0)  fPhi_DCAr_neg[0]->Fill(track->Phi(),DCAxy);
+			if(track->Charge()>0)  fPhi_DCAr_pos[0]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+		
+
+		
 			//______________________________________________________________
 		
 ///Fill QA plots without track selection
@@ -4100,11 +4177,58 @@ if(!fIspp){
 			if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 		}
 		
+		
+//==============================================================
+		fEtad[9]->Fill(track->Eta());
+		
+		fPt_Eta[9]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[9]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[9]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
 			
 		
 
 			//RecKine: ITSTPC cuts  
 		if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+		
+//==============================================================
+		fEtad[10]->Fill(track->Eta());
+		
+		fPt_Eta[10]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[10]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[10]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+		
+		
+		
+		
+		
 //RecKink
 		if(fRejectKinkMother) 
 		{ 
@@ -4127,22 +4251,115 @@ if(!fIspp){
 			}
 		} 
 		
+		
+		
+//==============================================================
+		fEtad[11]->Fill(track->Eta());
+		
+		fPt_Eta[11]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[11]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[11]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+		
 //RecPrim
-		
-			//it was not working on aod... testing again
-			//July 29th, 2014: aparently working again
-		
-///if(!fIsAOD)
-//{
+//apply DCA cut here!!!
 
 		if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-//}
+		
+//==============================================================
+		fEtad[12]->Fill(track->Eta());
+		
+		fPt_Eta[12]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[12]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[12]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+
 		
 //HFEcuts: ITS layers cuts
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 		
+//==============================================================
+		fEtad[13]->Fill(track->Eta());
+		
+		fPt_Eta[13]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[13]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[13]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+		
+		
+		
+		
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+		
+		
+//==============================================================
+		fEtad[14]->Fill(track->Eta());
+		
+		fPt_Eta[14]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[14]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[14]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+		
+
+		
+		
+		
 		
 //DCA cut done by hand --  has to be in absolute values!!!! Fixed
 //not using because line if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;   already apply DCA cut
@@ -4158,26 +4375,37 @@ if(!fIspp){
 		}
 		*/
 		
+		
+		
 		fEtad[1]->Fill(track->Eta());
+		
+		fPt_Eta[1]->Fill(fPt,track->Eta());
+		
+		if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[1]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[1]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[1]->Fill(track->Phi(),DCAxy);
+			
+			
+			if(track->Charge()<0)  fPhi_DCAr_neg[1]->Fill(track->Phi(),DCAxy);
+			if(track->Charge()>0)  fPhi_DCAr_pos[1]->Fill(track->Phi(),DCAxy);
+
+			
+		}
+		 
 		
 		
 //______________________________________________________________________________________
-		/*
-		if(fIsAOD){	
-				//AOD test -- Francesco suggestion
-				//aod test -- Francesco suggestion
-			AliAODTrack *aod_track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-			
-			Int_t type=aod_track->GetType();
-			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
-			
-				//Int_t type2=track->GetType();
-				//if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
-				//if(type==AliAODTrack::kSecondary) fPtSec2->Fill(track->Pt());
-		}
-		*/
-			
+		
 		
 ///_____________________________________________________________
 ///QA plots after track selection
@@ -4398,6 +4626,33 @@ if(!fIspp){
 		
 		if(track->GetEMCALcluster()>0)
 		{
+			
+			
+			fPt_Eta[2]->Fill(fPt,track->Eta());
+			
+			if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[2]->Fill(fPt,track->Eta());
+			
+			if(fIsAOD){
+				Double_t d0z0[2], cov[3];
+				AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+				track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+				Double_t DCAxy = d0z0[0];
+				Double_t DCAz = d0z0[1];
+				
+				fPt_DCAr[2]->Fill(fPt,DCAxy);
+				
+				fPhi_DCAr[2]->Fill(track->Phi(),DCAxy);
+				
+				if(track->Charge()<0)  fPhi_DCAr_neg[2]->Fill(track->Phi(),DCAxy);
+				if(track->Charge()>0)  fPhi_DCAr_pos[2]->Fill(track->Phi(),DCAxy);
+
+				
+				
+			}
+
+			
+			
+			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
@@ -4405,7 +4660,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4880,7 +5135,26 @@ if(!fIspp){
 	    fpid->Fill(pidpassed);
 		
 	    if(pidpassed==0) continue;
-///________________________________________________________________________		
+///________________________________________________________________________	
+		
+		//after TPC pid without track-matching
+		fPt_Eta[3]->Fill(fPt,track->Eta());
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[3]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[3]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+		
+		
 		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 			fTPCnsigma_pt_2D4->Fill(fPt,fTPCnSigma);
@@ -5122,6 +5396,23 @@ if(!fIspp){
 		if(track->GetEMCALcluster()>0)
 		{
 			
+			
+			fPt_Eta[4]->Fill(fPt,track->Eta());
+			
+			if(fIsAOD){
+				Double_t d0z0[2], cov[3];
+				AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+				track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+				Double_t DCAxy = d0z0[0];
+				Double_t DCAz = d0z0[1];
+				
+				fPt_DCAr[4]->Fill(fPt,DCAxy);
+				
+				fPhi_DCAr[4]->Fill(track->Phi(),DCAxy);
+				
+			}
+			
+			
 			fEtad[4]->Fill(track->Eta());
 
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
@@ -5131,7 +5422,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(track->GetEMCALcluster()>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -5145,6 +5436,24 @@ if(!fIspp){
 			{
 				
 		//________________________________________________________________________		
+				
+				fPt_Eta[5]->Fill(fPt,track->Eta());
+				
+				
+				if(fIsAOD){
+					Double_t d0z0[2], cov[3];
+					AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+					track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+					Double_t DCAxy = d0z0[0];
+					Double_t DCAz = d0z0[1];
+					
+					fPt_DCAr[5]->Fill(fPt,DCAxy);
+					
+					fPhi_DCAr[5]->Fill(track->Phi(),DCAxy);
+					
+				}
+				
+				
 				
 				fEtad[5]->Fill(track->Eta());
 
@@ -5252,6 +5561,22 @@ if(!fIspp){
 				{
 					
 					fEtad[6]->Fill(track->Eta());
+					fPt_Eta[6]->Fill(fPt,track->Eta());
+					
+					if(fIsAOD){
+						Double_t d0z0[2], cov[3];
+						AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+						track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+						Double_t DCAxy = d0z0[0];
+						Double_t DCAz = d0z0[1];
+						
+						fPt_DCAr[6]->Fill(fPt,DCAxy);
+						
+						fPhi_DCAr[6]->Fill(track->Phi(),DCAxy);
+						
+					}
+					
+					
 
 					
 					Float_t Energy	= fClus->E();
@@ -5628,6 +5953,23 @@ if(!fIspp){
 					{	
 						
 						
+						    fPt_Eta[7]->Fill(fPt,track->Eta());
+						
+						if(fIsAOD){
+							Double_t d0z0[2], cov[3];
+							AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+							track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+							Double_t DCAxy = d0z0[0];
+							Double_t DCAz = d0z0[1];
+							
+							fPt_DCAr[7]->Fill(fPt,DCAxy);
+							
+							fPhi_DCAr[7]->Fill(track->Phi(),DCAxy);
+							
+						}
+					
+						
+						
 							fECluster[2]->Fill(Energy);
 							fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
 						
@@ -5678,6 +6020,24 @@ if(!fIspp){
 								//background for triggered data: trigger electron must have same cuts on shower shape  06/Jan/2014
 								if(fUseShowerShapeCut){
 									if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+										
+										fPt_Eta[8]->Fill(fPt,track->Eta());
+										
+										if(fIsAOD){
+											Double_t d0z0[2], cov[3];
+											AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+											track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+											Double_t DCAxy = d0z0[0];
+											Double_t DCAz = d0z0[1];
+											
+											fPt_DCAr[8]->Fill(fPt,DCAxy);
+											
+											fPhi_DCAr[8]->Fill(track->Phi(),DCAxy);
+											
+										 }
+										
+										
+										
 										if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 											Background(track, iTracks, Vtrack, kFALSE, kFALSE, kFALSE);
 										}
@@ -5694,10 +6054,7 @@ if(!fIspp){
 							double emctof2 = fClus->GetTOF();
 							ftimingEle2->Fill(fPt,1e9*emctof2);
 							//Correlation Analysis
-							if(fCorrelationFlag) 
-							{
-								ElectronHadronCorrelation(track, iTracks, Vtrack);
-							}
+							
 						}
 						//_______________________________________________________
 						
@@ -5931,10 +6288,7 @@ if(!fIspp){
 		{
 			fPtElec_Inc->Fill(fPt);
 			
-			if(fCorrelationFlag) 
-			{
-				ElectronHadronCorrelation(track, iTracks, Vtrack);
-			}
+			
 		}
 			//_______________________________________________________
 		
@@ -6450,6 +6804,9 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		if(fChi2CutFlag) fNonHFE->SetChi2OverNDFCut(fChi2Cut);
 		if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
 	
+		//latest change of Henrique
+	    fNonHFE->SetUseITSTPCRefit(kTRUE);
+	
 		//new cuts to be consistent with TPC-only analysis (Henrique changes on AliSelectNonHFE, December, 2016)
 		fNonHFE->SetUseGlobalTracks();	
 		fNonHFE->SetNClustITS(2);	
@@ -6580,7 +6937,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		//----------------------------------------------------------------------------
 		*/	
 		
-		fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
+		if(!fUseTender)fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
+		if(fUseTender)fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent, fTracks_tender, fUseTender);
 		
 			//index of track selected as partner
 		Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
@@ -7506,301 +7864,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 }//end of fPtElec_ULS function
 
 	//______________________________________________________________________
-void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack)
-{
-	
-	///_________________________________________________________________
-	///MC analysis
-	if(fIsMC)
-	{
-		if(track->GetLabel() < 0)
-        {
-			AliWarning(Form("The track %d  have a negative MC label, but we need to use it, taking the absolute value",trackIndex));
-			return;
-        }
-		
-		if(fIsAOD)
-		{
-			fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
-			
-			if(fMCparticle->GetMother()<0) return;
-	        
-	        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-	        
-	        if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
-	        {
-					//Is Background
-				fPtBackgroundBeforeReco->Fill(track->Pt());
-			}
-		}
-		else
-		{
-	        fMCtrack = fMCstack->Particle(TMath::Abs(track->GetLabel()));
-	        
-	        if(fMCtrack->GetFirstMother()<0) return;
-	        
-	        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-	        
-	        if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
-	        {
-					//Is Background
-				fPtBackgroundBeforeReco->Fill(track->Pt());
-			}
-		}
-	}
-		///_________________________________________________________________
-	
-		//________________________________________________
-		//Associated particle cut
-	fPartnerCuts->SetAcceptKinkDaughters(kFALSE);
-    fPartnerCuts->SetRequireITSRefit(kTRUE);
-    fPartnerCuts->SetRequireTPCRefit(kTRUE);
-    fPartnerCuts->SetEtaRange(-0.9,0.9);
-    fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
-    fPartnerCuts->SetMinNClustersTPC(80);
-    fPartnerCuts->SetPtRange(0.3,1e10);
-		//fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-		//fPartnerCuts->SetMaxDCAToVertexXY(1);
-		//fPartnerCuts->SetMaxDCAToVertexZ(3);
-		//_________________________________________________
-	
-		///#################################################################
-		//Non-HFE reconstruction
-	fNonHFE = new AliSelectNonHFE();
-	fNonHFE->SetAODanalysis(fIsAOD);
-	if(fMassCutFlag) fNonHFE->SetInvariantMassCut(fMassCut);
-	if(fAngleCutFlag) fNonHFE->SetOpeningAngleCut(fAngleCut);
-	if(fChi2CutFlag) fNonHFE->SetChi2OverNDFCut(fChi2Cut);
-	if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
-	fNonHFE->SetAlgorithm("DCA"); //KF
-	fNonHFE->SetPIDresponse(fPidResponse);
-	fNonHFE->SetTrackCuts(-3.5,3.5,fPartnerCuts);
-	fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
-	
-	
-	fNonHFE->SetHistAngleBack(fOpAngleBack);
-	fNonHFE->SetHistAngle(fOpAngle);
-	fNonHFE->SetHistDCABack(fDCABack);
-	fNonHFE->SetHistDCA(fDCA);
-	fNonHFE->SetHistMassBack(fInvMassBack);
-	fNonHFE->SetHistMass(fInvMass);
-	
-	fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
-	
-	Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
-	Int_t *fLsPartner = fNonHFE->GetPartnersLS();
-	Bool_t fUlsIsPartner = kFALSE;
-	Bool_t fLsIsPartner = kFALSE;
-		///#################################################################
-	
-	
-		//Electron Information
-	Double_t fPhiE = -999;
-	Double_t fEtaE = -999;
-	Double_t fPhiH = -999;
-	Double_t fEtaH = -999;  
-	Double_t fDphi = -999;
-	Double_t fDeta = -999;
-	Double_t fPtE = -999;
-	Double_t fPtH = -999;
-	
-	Double_t pi = TMath::Pi();
-	
-	fPhiE = track->Phi();
-	fEtaE = track->Eta();
-	fPtE = track->Pt();
-	
-	
-		///_________________________________________________________________
-		///MC analysis
-	if(fIsMC)
-	{
-		if(fIsAOD)
-		{
-			if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
-	        {
-				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-				
-				
-			}
-			
-			if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS());
-			if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS());
-		}
-		else 
-		{
-			if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
-			{
-				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-				
-			}
-			
-			
-		}
-	}
-		///_________________________________________________________________
-	else
-	{
-		if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-		if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-	}
-	
-	
-	
-	
-		//__________________________________________________________________
-		//Event Mixing Analysis - Hadron Loop
-		//Retrieve
-	if(fEventMixingFlag)
-	{
-		fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
-		
-		if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f",fCentrality->GetCentralityPercentile("V0A"), fZvtx));
-		
-		if(fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
-		{
-			fPoolNevents->Fill(fPool->GetCurrentNEvents());
-			
-			for (Int_t jMix = 0; jMix < fPool->GetCurrentNEvents(); jMix++)  // mix with each event in the buffer
-			{
-				TObjArray* bgTracks = fPool->GetEvent(jMix);
-				
-				for (Int_t kMix = 0; kMix < bgTracks->GetEntriesFast(); kMix++)  // mix with each track in the event
-				{
-					const AliEHCParticle* MixedTrack(dynamic_cast<AliEHCParticle*>(bgTracks->At(kMix)));
-					if (NULL == MixedTrack) continue;
-					
-					fPhiH = MixedTrack->Phi();
-					fEtaH = MixedTrack->Eta();
-					fPtH = MixedTrack->Pt();
-					
-					if(fPtH<fAssHadronPtMin || fPtH>fAssHadronPtMax) continue;
-					
-					fDphi = fPhiE - fPhiH;
-					
-					if (fDphi > 3*pi/2) fDphi = fDphi - 2*pi;
-					if (fDphi < -pi/2)  fDphi = fDphi + 2*pi;
-					
-					fDeta = fEtaE - fEtaH;
-					
-					Double_t fPtBin[7] = {1,2,4,6,8,10,15};
-					
-					for(Int_t i = 0; i < 6; i++)
-					{
-					    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
-					    {
-							fCEtaPhi_Inc_EM[i]->Fill(fDphi,fDeta);
-							
-							if(fNonHFE->IsULS()) fCEtaPhi_ULS_EM[i]->Fill(fDphi,fDeta);
-							if(fNonHFE->IsLS()) fCEtaPhi_LS_EM[i]->Fill(fDphi,fDeta);
-							
-							if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-							if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-					    }
-					}
-					
-						// TODO your code: do event mixing with current event and bgTracks
-						// note that usually the content filled now is weighted by 1 / pool->GetCurrentNEvents()
-				}
-			}
-		}
-	}
-		//__________________________________________________________________
-	
-		//__________________________________________________________________
-		//Same Event Analysis - Hadron Loop
-	for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
-	{
-		if(trackIndex==iTracks) continue;
-		
-		AliVParticle* Vtrack2 = fVevent->GetTrack(iTracks);
-		if (!Vtrack2) 
-		{
-			printf("ERROR: Could not receive track %d\n", iTracks);
-			continue;
-		}
-		
-		AliVTrack *track2 = dynamic_cast<AliVTrack*>(Vtrack2);
-		
-		if(track2->Eta()<fEtaCutMin || track2->Eta()>fEtaCutMax ) continue;
-		
-		if(fIsAOD) 
-		{
-			AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
-			if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-			if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-			if(atrack2->GetTPCNcls() < 80) continue; 
-			if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
-		}
-		else
-		{   
-			AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2); 
-			if(!fPartnerCuts->AcceptTrack(etrack2)) continue; 
-		}
-		
-		fPhiH = track2->Phi();
-		fEtaH = track2->Eta();
-		fPtH = track2->Pt();
-		
-		if(fPtH<fAssHadronPtMin || fPtH>fAssHadronPtMax) continue;
-		
-		fDphi = fPhiE - fPhiH;
-		
-		if (fDphi > 3*pi/2) fDphi = fDphi - 2*pi;
-		if (fDphi < -pi/2)  fDphi = fDphi + 2*pi;
-		
-		fDeta = fEtaE - fEtaH;
-		
-		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
-		
-		//______________________________________________________________
-		//Check if this track is a Non-HFE partner
-		fUlsIsPartner = kFALSE;
-		fLsIsPartner = kFALSE;
-		for(Int_t i = 0; i < fNonHFE->GetNULS(); i++)
-		{
-			if(fUlsPartner[i]==iTracks) fUlsIsPartner=kTRUE;
-		}
-		for(Int_t i = 0; i < fNonHFE->GetNLS(); i++)
-		{
-			if(fLsPartner[i]==iTracks) fLsIsPartner=kTRUE;
-		}
-		//______________________________________________________________
-		
-		for(Int_t i = 0; i < 6; i++)
-		{
-		    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
-		    {
-				fCEtaPhi_Inc[i]->Fill(fDphi,fDeta);
-				
-				if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta);
-				if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta);
-					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-					//new September 05, 2015:
-				 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-				
-					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-					//new September 05, 2015:
-				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-				
-				if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-				
-					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-					//new September 05, 2015:
-				if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-				
-					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-					//new September 05, 2015:
-				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
 
-				
-		    }
-		}
-	}
-}
 
 	//____________________________________________________________________________________________________________
 	//Create a TObjArray with selected hadrons, for the mixed event analysis

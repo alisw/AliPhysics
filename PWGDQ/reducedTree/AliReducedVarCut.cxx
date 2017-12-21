@@ -196,7 +196,7 @@ Bool_t AliReducedVarCut::IsSelected(TObject* obj, Float_t* values) {
   // apply cuts
   //
   if(values) return IsSelected(values);
-  if(!values) return IsSelected(obj);
+  else return IsSelected(obj);
 }
 
 

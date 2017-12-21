@@ -144,6 +144,7 @@ protected:
    * 
    * @return true 
    */
+  // temporary remove constness, since event.GetNumberOfPrimaries() was not const
   Bool_t ProcessTracks(const AliMCEvent&   event, 
 		       const TVector3&     ip, 
 		       TH2D*               primary);

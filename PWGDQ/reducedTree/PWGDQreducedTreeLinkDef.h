@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskReducedTreeMaker+;
 #pragma link C++ class AliHistogramManager+;
 #pragma link C++ class AliMixingHandler+;
+#pragma link C++ class AliReducedAnalysisFilterTrees+;
 #pragma link C++ class AliReducedAnalysisJpsi2ee+;
 #pragma link C++ class AliReducedAnalysisJpsi2eeMult+;
 #pragma link C++ class AliReducedAnalysisTaskSE+;
@@ -30,5 +31,6 @@
 #pragma link C++ class AliReducedVarCut+;
 #pragma link C++ class AliReducedVarManager+;
 #pragma link C++ class AliResonanceFits+;
+#pragma link C++ class AliSignalMC+;
 
 #endif

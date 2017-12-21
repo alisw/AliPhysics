@@ -15,10 +15,10 @@
 
 AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT():
   fkT(0),
-  fpTdiff(0),
   fpTsum(0),
-  fMinv(0),
-  fQinv(0)
+  fpTdiff(0),
+  fQinv(0),
+  fMinv(0)
 {
   // Default constructor
   fkT = new TH1D("kT", "k_T ", 100, 0, 4.0);
@@ -26,15 +26,15 @@ AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT():
   fpTsum = new TH1D("pTsum", "p_T", 100, 0, 8.0);
   fMinv = new TH1D("Minv", "m_inv dist", 1000, 0.0, 10.0);
   fQinv = new TH1D("Qinv", "q_inv dist", 100, 0.0, 10.0);
- 
+
 }
 
 AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT(const char *aName, float low_limit, float high_limit):
   fkT(0),
   fpTsum(0),
   fpTdiff(0),
-  fMinv(0),
-  fQinv(0)
+  fQinv(0),
+  fMinv(0)
 {
   // Normal constructor
   char name[200];
@@ -48,16 +48,17 @@ AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT(const char *aName, float low_
   fMinv = new TH1D(name, "m_inv dist", 1000, 0.0, 10.0);
   snprintf(name, 200, "fQinv%s", aName);
   fQinv = new TH1D(name, "q_inv dist", 1000, 0.0, 10.0);
- 
+
 
 }
 
 AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT(const AliFemtoCutMonitorPairKT &aCut):
+  AliFemtoCutMonitor(aCut),
   fkT(0),
-  fpTdiff(0),
   fpTsum(0),
-  fMinv(0),
-  fQinv(0)
+  fpTdiff(0),
+  fQinv(0),
+  fMinv(0)
 {
   // copy constructor
   fkT = new TH1D(*aCut.fkT);
@@ -65,8 +66,6 @@ AliFemtoCutMonitorPairKT::AliFemtoCutMonitorPairKT(const AliFemtoCutMonitorPairK
   fpTsum = new TH1D(*aCut.fpTsum);
   fMinv = new TH1D(*aCut.fMinv);
   fQinv = new TH1D(*aCut.fQinv);
-
-
 }
 
 AliFemtoCutMonitorPairKT::~AliFemtoCutMonitorPairKT()
@@ -76,14 +75,16 @@ AliFemtoCutMonitorPairKT::~AliFemtoCutMonitorPairKT()
   delete fpTdiff;
   delete fpTsum;
   delete fMinv;
-   delete fQinv;
+  delete fQinv;
 }
 
 AliFemtoCutMonitorPairKT& AliFemtoCutMonitorPairKT::operator=(const AliFemtoCutMonitorPairKT& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
+
+  AliFemtoCutMonitor::operator=(aCut);
 
   if (fkT) delete fkT;
   fkT = new TH1D(*aCut.fkT);
@@ -95,15 +96,15 @@ AliFemtoCutMonitorPairKT& AliFemtoCutMonitorPairKT::operator=(const AliFemtoCutM
   fMinv = new TH1D(*aCut.fMinv);
   if (fQinv) delete fQinv;
   fQinv = new TH1D(*aCut.fQinv);
-  
+
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorPairKT::Report(){ 
+AliFemtoString AliFemtoCutMonitorPairKT::Report(){
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorPairKT report"; 
+  string stemp = "*** AliFemtoCutMonitorPairKT report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorPairKT::Fill(const AliFemtoPair* aPair)

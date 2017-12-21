@@ -3,7 +3,6 @@
 
 #include "AliAnalysisCuts.h"
 #include "AliNanoAODCustomSetter.h"
-#include "AliNanoAODCustomSetter.h"
 
 class AliAnalysisNanoAODTrackCuts : public AliAnalysisCuts
 {
@@ -56,7 +55,7 @@ public:
   AliNanoAODSimpleSetter(){;}
   virtual ~AliNanoAODSimpleSetter(){;}
 
-  virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head  );
+  virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head ,TString varListHeader  );
   virtual void SetNanoAODTrack (const AliAODTrack * /*aodTrack*/, AliNanoAODTrack * /*spTrack*/){;}
 
   ClassDef(AliNanoAODSimpleSetter, 1)

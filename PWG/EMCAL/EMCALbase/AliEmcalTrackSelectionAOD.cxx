@@ -19,8 +19,11 @@
 
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
+#include <AliEmcalAODFilterBitCuts.h>
+#include <AliEmcalAODHybridTrackCuts.h>
 #include <AliEmcalTrackSelectionAOD.h>
 #include <AliESDtrack.h>
+#include <AliESDtrackCuts.h>
 #include <AliPicoTrack.h>
 
 /// \cond CLASSIMP
@@ -80,6 +83,45 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
     fFilterTPCTracks = kTRUE;
     break;
 
+  case AliEmcalTrackSelection::kITSPureTracks:
+    if (fListOfCuts) fListOfCuts->Clear();
+    AddTrackCuts(AliESDtrackCuts::GetStandardITSSATrackCuts2010());
+    fFilterHybridTracks = kFALSE;
+    fFilterTPCTracks = kFALSE;
+    fHybridFilterBits[0] = -1;
+    fHybridFilterBits[1] = -1;
+    break;
+
+  case kHybridTracks2010wNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_wNoRefit");
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2010woNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_woNoRefit");
+      trackcuts->SetSelectNonITSrefitTracks(kFALSE);
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2011wNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_wNoRefit");
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2011woNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_woNoRefit");
+      trackcuts->SetSelectNonITSrefitTracks(kFALSE);
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
   default:
     break;
   }
@@ -104,7 +146,7 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   }
 
   fTrackBitmap.ResetAllBits();
-  Int_t cutcounter(0);
+  UInt_t cutcounter(0);
   if (fFilterBits) {
     if(aodt->TestFilterBit(fFilterBits)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
@@ -124,14 +166,7 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){
       AliVCuts *trackCuts = static_cast<AliVCuts*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
-      if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
-        // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
-        AliESDtrack copyTrack(aodt);
-        if (trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
-      }
-      else{
-        if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
-      }
+      if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       cutcounter++;
     }
   }
@@ -157,7 +192,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period == "lhc12i" || period == "lhc13b" || period == "lhc13c" ||
       period == "lhc13d" || period == "lhc13e" || period == "lhc13f" ||
       period == "lhc13g" ||
-      (period.Length() == 6 && period.BeginsWith("lhc15")) // all Run-2 data, excluding MC productions
+      (period.Length() == 6 && (period.BeginsWith("lhc15") || period.BeginsWith("lhc16") || period.BeginsWith("lhc17"))) // all Run-2 data, excluding MC productions
   ) {
     bits[0] = 8;
     bits[1] = 9;
@@ -166,7 +201,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
   else if (period == "lhc10f7a" || period == "lhc12a15e" || period.BeginsWith("lhc12a17") ||
       period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus" || period == "lhc14k1a" || period == "lhc14k1b" || period == "lhc13e4" ||
       period.BeginsWith("lhc14a1") || period.BeginsWith("lhc13b2_efix") ||
-      period.BeginsWith("lhc15g6")) {
+      period.BeginsWith("lhc15g6") || period.BeginsWith("lhc16e1") || period.BeginsWith("lhc17f8")) {
     bits[0] = 8;
     bits[1] = 9;
   }

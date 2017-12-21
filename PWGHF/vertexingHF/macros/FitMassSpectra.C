@@ -80,8 +80,6 @@ Bool_t LoadDsHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadDstarD0piHistos(TObjArray* listFiles, TH1F** hMass);
 
-TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
-
 
 
 
@@ -181,9 +179,14 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
 
   Double_t sig,errsig,s,errs,b,errb;
   for(Int_t iBin=0; iBin<nPtBins; iBin++){
+    hmass[iBin]->SetName(Form("hInvMass_PtBin%d",iBin));
+    hmass[iBin]->SetTitle(Form("%.1f<pt<%.1f",ptlims[iBin],ptlims[iBin+1]));    
     c1->cd(iPad++);
     Int_t origNbins=hmass[iBin]->GetNbinsX();
-    TH1F* hRebinned=RebinHisto(hmass[iBin],rebin[iBin],firstUsedBin[iBin]);
+    TH1F* hRebinned=(TH1F*)AliVertexingHFUtils::RebinHisto(hmass[iBin],rebin[iBin],firstUsedBin[iBin]);
+    hRebinned->GetXaxis()->SetTitle("Invariant Mass (GeV/c^{2})");
+    hRebinned->GetYaxis()->SetTitle(Form("Entries/(%.0f MeV/c^{2})",(hRebinned->GetBinWidth(1)*1000)));
+    hRebinned->GetYaxis()->SetTitleOffset(1.1);
     hmin=TMath::Max(minMassForFit,hRebinned->GetBinLowEdge(2));
     hmax=TMath::Min(maxMassForFit,hRebinned->GetBinLowEdge(hRebinned->GetNbinsX()));
     fitter[iBin]=new AliHFMassFitter(hRebinned,hmin, hmax,1,typeb,types);
@@ -244,7 +247,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     hMass->SetBinContent(iBin+1,mass);
     hMass->SetBinError(iBin+1,0.0001);
     hSigma->SetBinContent(iBin+1,sigma);
-    hSigma->SetBinError(iBin+1,0.0001);
+    hSigma->SetBinError(iBin+1,fitter[iBin]->GetSigmaUncertainty());
     
   }
 
@@ -918,41 +921,3 @@ void CompareFitTypes(TString* paths, TString* legtext,Int_t ncmp=3,TString* file
 }
 
 
-TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse){
-  // Rebin histogram, from bin firstUse to lastUse
-  // Use all bins if firstUse=-1
-
-  Int_t nBinOrig=hOrig->GetNbinsX();
-  Int_t firstBinOrig=1;
-  Int_t lastBinOrig=nBinOrig;
-  Int_t nBinOrigUsed=nBinOrig;
-  Int_t nBinFinal=nBinOrig/reb;
-  if(firstUse>=1){ 
-    firstBinOrig=firstUse;
-    nBinFinal=(nBinOrig-firstUse+1)/reb;
-    nBinOrigUsed=nBinFinal*reb;
-    lastBinOrig=firstBinOrig+nBinOrigUsed-1;
-  }else{
-    Int_t exc=nBinOrigUsed%reb;
-    if(exc!=0){
-      nBinOrigUsed-=exc;
-      firstBinOrig+=exc/2;
-      lastBinOrig=firstBinOrig+nBinOrigUsed-1;
-    }
-  }
-
-  printf("Rebin from %d bins to %d bins -- Used bins=%d in range %d-%d\n",nBinOrig,nBinFinal,nBinOrigUsed,firstBinOrig,lastBinOrig);
-  Float_t lowLim=hOrig->GetXaxis()->GetBinLowEdge(firstBinOrig);
-  Float_t hiLim=hOrig->GetXaxis()->GetBinUpEdge(lastBinOrig);
-  TH1F* hRebin=new TH1F(Form("%s-rebin",hOrig->GetName()),hOrig->GetTitle(),nBinFinal,lowLim,hiLim);
-  Int_t lastSummed=firstBinOrig-1;
-  for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
-    Float_t sum=0.;
-    for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
-      sum+=hOrig->GetBinContent(lastSummed+1);
-      lastSummed++;
-    }
-    hRebin->SetBinContent(iBin,sum);
-  }
-  return hRebin;
-}

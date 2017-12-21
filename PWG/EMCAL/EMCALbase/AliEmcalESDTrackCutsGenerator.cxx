@@ -520,6 +520,14 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc13g") {
     dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16q") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16r") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16s") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16t") {
+    dataSet = kLHC11h;
   } else if (strPeriod == "lhc12a15f") {
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc13b4") {

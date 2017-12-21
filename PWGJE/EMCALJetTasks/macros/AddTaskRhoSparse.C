@@ -41,7 +41,7 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   //-------------------------------------------------------
 
   TString name(Form("%s_%s_%s", taskname, nJetsBkg,cutType));
-  AliAnalysisTaskRhoSparse* mgrTask = mgr->GetTask(name.Data());
+  AliAnalysisTaskRhoSparse* mgrTask = static_cast<AliAnalysisTaskRhoSparse *>(mgr->GetTask(name.Data()));
   if (mgrTask) return mgrTask;
 
   AliAnalysisTaskRhoSparse *rhotask = new AliAnalysisTaskRhoSparse(name, histo);

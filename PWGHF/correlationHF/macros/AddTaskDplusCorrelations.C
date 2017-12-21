@@ -3,6 +3,7 @@
 /* $Id: AddTaskDplusCorrelations.C 58712 2012-09-20 08:38:36Z prino $ */
 //AddTask for the Dplus - Hadron (or Kaon/K0) Corelation with same/mixed event
 //Jitendra Kumar(Last updated on 02.10.2016) //AOD production setting:
+// Shyam Kumar Cut Optimization flag added: 11.11.2017
 AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t useCutFileSBRanges=kFALSE,
                                                              TString fileSignalSBRange="",
@@ -32,7 +33,8 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t LeadPartCorr=kFALSE,
                                                              Double_t massWidth=0.004,
                                                              Bool_t PoolCent = kFALSE,
-                                                             Bool_t autosignalSBrange)
+                                                             Bool_t autosignalSBrange,
+                                                             Bool_t cutOptFlag)
 {
     
     Double_t etacorr  =  0.9;
@@ -150,6 +152,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetAODMismatchProtection(AODproduction);
     dpluscorrTask->SetMinDPt(DPtThrs);
     dpluscorrTask->SetFillTrees(IsfillTrees,fractAccME);
+    dpluscorrTask->SetCutOptimizationFlag(cutOptFlag);
     
     //7. Create container for input/output
     TString finDirname = "";

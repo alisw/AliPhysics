@@ -698,9 +698,6 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 	}
 
 
-	AliStack *fMCStack=NULL;
-	if(fMCEvent)fMCStack=fMCEvent->Stack();
-
 	// Multiplicity
 	Double_t multcharged=fConversionSelection[0]->GetNumberOfChargedTracks(fInputEvent);
 	Double_t multVZERO=fConversionSelection[0]->GetVZEROMult(fInputEvent);
@@ -738,8 +735,8 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 			hGammaPhi[fCentralityBin]->Fill(gamma->Pt(),gamma->Phi());
 			hGammaMultCent->Fill(fCentrality,Float_t(fConversionSelection[0]->GetNumberOfPhotons()));
 
-			if(fMCStack){
-				if(gamma->IsTruePhoton(fMCStack)){
+            if(fMCEvent){
+                if(gamma->IsTruePhoton(fMCEvent)){
 					hGammaMultRECOTRUE->Fill(val);
 					hGammaMultdPhiRECOTRUE->Fill(valdPhi);
 				}
@@ -748,11 +745,11 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 
 		// MC Truth
 		if(fMCEvent){
-			for(Int_t i = 0; i < fMCStack->GetNprimary(); i++) {
-				TParticle* particle = (TParticle *)fMCStack->Particle(i);
+            for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
+                TParticle* particle = (TParticle *)fMCEvent->Particle(i);
 				if (!particle) continue;
-				if(fConversionCuts->PhotonIsSelectedMC(particle,fMCStack)){
-					TParticle *daughter=(TParticle *)fMCStack->Particle(particle->GetDaughter(0));
+                if(fConversionCuts->PhotonIsSelectedMC(particle,fMCEvent)){
+                    TParticle *daughter=(TParticle *)fMCEvent->Particle(particle->GetDaughter(0));
 					if(daughter){
 					val[0]=particle->Pt();
 					val[1]=ncharged;

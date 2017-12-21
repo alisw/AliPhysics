@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <sstream>
+#include <array>
 
 #include <RVersion.h>
 #include <TClonesArray.h>
@@ -25,6 +26,7 @@
 #include <TChain.h>
 #include <TKey.h>
 
+#include "AliGenCocktailEventHeader.h"
 #include "AliStack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -66,7 +68,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fCreateHisto(kTRUE),
   fNeedEmcalGeom(kTRUE),
   fCentBins(),
-  fUseNewCentralityEstimation(kFALSE),
+  fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -91,6 +93,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
+  fSelectGeneratorName(),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -112,6 +116,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
@@ -158,7 +163,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fCreateHisto(kTRUE),
   fNeedEmcalGeom(kTRUE),
   fCentBins(6),
-  fUseNewCentralityEstimation(kFALSE),
+  fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -183,6 +188,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
+  fSelectGeneratorName(),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -204,6 +211,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
@@ -298,10 +306,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
-  if (fForceBeamType == kpp) fCentBins.clear();
+  if (fCentralityEstimation == kNoCentrality) fCentBins.clear();
 
-  if (!fGeneralHistograms)
-    return;
+  if (!fGeneralHistograms) return;
 
   if (fIsPythia) {
     fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
@@ -360,17 +367,19 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fHistZVertexNoSel->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertexNoSel);
 
-  if (fForceBeamType != kpp) {
-    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
+  if (fCentralityEstimation != kNoCentrality) {
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 100, 0, 100);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
 
-    fHistCentralityNoSel = new TH1F("fHistCentralityNoSel","Event centrality distribution (no event selection)", 101, 0, 101);
+    fHistCentralityNoSel = new TH1F("fHistCentralityNoSel","Event centrality distribution (no event selection)", 100, 0, 100);
     fHistCentralityNoSel->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentralityNoSel->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentralityNoSel);
+  }
 
+  if (fForceBeamType != kpp) {
     fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
     fHistEventPlane->GetXaxis()->SetTitle("event plane");
     fHistEventPlane->GetYaxis()->SetTitle("counts");
@@ -382,27 +391,18 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlaneNoSel);
   }
 
-  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",30,0,30);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fHistEventRejection->SetBit(TH1::kCanRebin);
 #else
   fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"MCOutlier");
+  std::array<std::string, 10> labels = {"PhysSel", "Evt Gen Name", "Trg class (acc)", "Trg class (rej)", "Cent", "vertex contr.", "Vz", "VzSPD", "SelPtHardBin", "MCOutlier"};
+  int i = 1;
+  for (auto label : labels) {
+    fHistEventRejection->GetXaxis()->SetBinLabel(i, label.c_str());
+    i++;
+  }
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -456,10 +456,9 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertex->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentrality->Fill(fCent);
-      fHistEventPlane->Fill(fEPV0);
-    }
+    if (fHistCentrality) fHistCentrality->Fill(fCent);
+    if (fHistEventPlane) fHistEventPlane->Fill(fEPV0);
+
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
@@ -472,10 +471,8 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertexNoSel->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentralityNoSel->Fill(fCent);
-      fHistEventPlaneNoSel->Fill(fEPV0);
-    }
+    if (fHistCentralityNoSel) fHistCentralityNoSel->Fill(fCent);
+    if (fHistEventPlaneNoSel) fHistEventPlaneNoSel->Fill(fEPV0);
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClassesNoSel->Fill(fired_trg.c_str(), 1);
   }
@@ -504,37 +501,30 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
-  if (!fLocalInitialized)
-    ExecOnce();
+  if (!fLocalInitialized) ExecOnce();
 
-  if (!fLocalInitialized)
-    return;
+  if (!fLocalInitialized) return;
 
-  if (!RetrieveEventObjects())
-    return;
+  if (!RetrieveEventObjects()) return;
 
-  FillGeneralHistograms(kFALSE);
-
-  if (IsEventSelected()) {
-    if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
-  }
-  else {
-    if (fGeneralHistograms) fHistEventCount->Fill("Rejected",1);
-    return;
-  }
+  Bool_t eventSelected = IsEventSelected();
 
   if (fGeneralHistograms && fCreateHisto) {
-    if (!FillGeneralHistograms(kTRUE))
-      return;
+    if (eventSelected) {
+      fHistEventCount->Fill("Accepted",1);
+    }
+    else {
+      fHistEventCount->Fill("Rejected",1);
+    }
+
+    FillGeneralHistograms(kFALSE);
+    if (eventSelected) FillGeneralHistograms(kTRUE);
   }
 
-  if (!Run())
-    return;
+  Bool_t runOk = kFALSE;
+  if (eventSelected || fEventSelectionAfterRun) runOk = Run();
 
-  if (fCreateHisto) {
-    if (!FillHistograms())
-      return;
-  }
+  if (fCreateHisto && eventSelected && runOk) FillHistograms();
 
   if (fCreateHisto && fOutput) {
     // information for this iteration of the UserExec in the container
@@ -698,7 +688,7 @@ void AliAnalysisTaskEmcalLight::ExecOnce()
     return;
   }
 
-  if (fNeedEmcalGeom) {
+  if (fNeedEmcalGeom && !fGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
       AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).", GetName()));
@@ -821,6 +811,13 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
   if (fTriggerSelectionBitMap != 0 && (fFiredTriggerBitMap & fTriggerSelectionBitMap) == 0) {
     if (fGeneralHistograms) fHistEventRejection->Fill("PhysSel",1);
     return kFALSE;
+  }
+
+  if (!fSelectGeneratorName.IsNull() && !fGeneratorName.IsNull()) {
+    if (!fGeneratorName.Contains(fSelectGeneratorName)) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("Evt Gen Name",1);
+      return kFALSE;
+    }
   }
 
   Bool_t acceptedTrgClassFound = kFALSE;
@@ -988,36 +985,42 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
   fBeamType = GetBeamType();
 
   fCent    = 99;
-  fCentBin = 0;
+  fCentBin = -1;
   fEPV0    = -999;
   fEPV0A   = -999;
   fEPV0C   = -999;
 
-  if (fBeamType == kAA || fBeamType == kpA ) {
-    if (fUseNewCentralityEstimation) {
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+  if (fCentralityEstimation == kNewCentrality) {
+    // New centrality estimation (AliMultSelection)
+    // See https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliMultSelectionCalibStatus for calibration status period-by-period)
+    AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+    if (MultSelection) {
+      fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
     }
-    else { // old centrality estimation < 2015
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+    else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
-
-    fCentBin = -1;
+  }
+  else if (fCentralityEstimation == kOldCentrality) {
+    // Old centrality estimation (AliCentrality, works only on Run-1 PbPb and pPb)
+    AliCentrality *aliCent = InputEvent()->GetCentrality();
+    if (aliCent) {
+      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+    }
+    else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+    }
+  }
+  if (!fCentBins.empty() && fCentralityEstimation != kNoCentrality) {
     for (auto cent_it = fCentBins.begin(); cent_it != fCentBins.end() - 1; cent_it++) {
       if (fCent >= *cent_it && fCent < *(cent_it+1)) fCentBin = cent_it - fCentBins.begin();
     }
+  }
+  else {
+    fCentBin = 0;
+  }
 
+  if (fBeamType == kAA || fBeamType == kpA ) {
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
@@ -1030,20 +1033,19 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
 
   if (fIsPythia) {
     if (MCEvent()) {
-      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-      if (!fPythiaHeader) {
-        // Check if AOD
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-
-        if (aodMCH) {
-          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-            if (fPythiaHeader) break;
-          }
+      AliGenEventHeader* header = MCEvent()->GenEventHeader();
+      if (header->InheritsFrom("AliGenPythiaEventHeader")) {
+        fPythiaHeader = static_cast<AliGenPythiaEventHeader*>(header);
+      }
+      else if (header->InheritsFrom("AliGenCocktailEventHeader")) {
+        AliGenCocktailEventHeader* cocktailHeader = static_cast<AliGenCocktailEventHeader*>(header);
+        TList* headers = cocktailHeader->GetHeaders();
+        for (auto obj : *headers) {
+          fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(obj);
+          if (fPythiaHeader) break;
         }
       }
     }
-
     if (fPythiaHeader) {
       fPtHard = fPythiaHeader->GetPtHard();
       fXsection = fPythiaHeader->GetXsection();
@@ -1051,8 +1053,8 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
     }
   }
 
-  for (auto cont_it : fParticleCollArray) cont_it.second->NextEvent();
-  for (auto cont_it : fClusterCollArray) cont_it.second->NextEvent();
+  for (auto cont_it : fParticleCollArray) cont_it.second->NextEvent(InputEvent());
+  for (auto cont_it : fClusterCollArray) cont_it.second->NextEvent(InputEvent());
 
   return kTRUE;
 }
@@ -1324,7 +1326,7 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRu
   }
   else if ((runnumber > 188356 && runnumber <= 188503) ||  // LHC12g Run-1 (p-Pb pilot)
       (runnumber >= 195164 && runnumber <= 197388) ||      // LHC13b,c,d,e,f Run-1 (p-Pb)
-      (runnumber >= 265077 && runnumber <= 999999)) {      // LHC16 Run-2 (p-Pb)
+      (runnumber >= 265077 && runnumber <= 267166)) {      // LHC16 Run-2 (p-Pb)
     b = kpA;
   }
   return b;

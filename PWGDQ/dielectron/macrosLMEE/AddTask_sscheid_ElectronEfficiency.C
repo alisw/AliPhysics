@@ -65,7 +65,19 @@ AliAnalysisTask *AddTask_sscheid_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   if(CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
-
+  if( doPairing && doWeighting && !efficiencyfile.IsNull() &&
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/supportFiles/%s .",efficiencyfile.Data()))) ){
+      // gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/supportFiles/%s .",efficiencyfile.Data()));
+      task->SetDoWeightingEleEff(doWeighting);
+      TFile *fEff = TFile::Open(Form("%s/%s",gSystem->pwd(),efficiencyfile.Data()),"READ");
+      TList *listEff = (TList *) fEff->Get(efficiencylist);
+      for (Int_t i=0; i<listEff->GetEntries(); ++i) {
+        TH3D* hist = static_cast<TH3D*>(listEff->At(i));
+        if (!hist) continue;
+        hist->SetDirectory(0x0);
+        task->AttachSingleEff(hist);
+      }
+  }
   //event related
   task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
@@ -116,6 +128,7 @@ AliAnalysisTask *AddTask_sscheid_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     task->AttachRejCutPhiV(rejCutPhiV);
 
     task->CreateHistograms(names,i);
+
   }
 
   mgr->AddTask(task);

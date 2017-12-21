@@ -37,6 +37,9 @@ set(SRCS
   AliRhoParameter.cxx
   AliEmcalJetShapeProperties.cxx
   AliDJetVReader.cxx
+  AliEmcalJetConstituent.cxx
+  AliEmcalParticleJetConstituent.cxx
+  AliEmcalClusterJetConstituent.cxx
   )
 
 # Headers from sources

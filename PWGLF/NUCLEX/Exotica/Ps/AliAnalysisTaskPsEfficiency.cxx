@@ -139,12 +139,8 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     const int mult = -1 + 2 * iC;
     const int iS = pdg == 9322134 ? 0 : pdg == 9322136 ? 1 : -1;
     if (iS == -1) continue;
-    FourVector_t moth_vec,tmp_vec;
-    bool visible_dacay = false;
-    moth_vec.SetPt(0.f);
-    moth_vec.SetEta(0.f);
-    moth_vec.SetPhi(0.f);
-    moth_vec.SetM(0.f);
+    FourVector_t moth_vec = {0.f,0.f,0.f,0.f},tmp_vec = {0.f,0.f,0.f,0.f};
+    bool visible_decay = false;
     const int phi_id = part->GetDaughter(0); //Phi meson
     AliAODMCParticle *phi_part = (AliAODMCParticle*)stack->At(TMath::Abs(phi_id));
     int phi_pdg = phi_part->GetPdgCode();
@@ -152,42 +148,22 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     const int kaon1_id = phi_part->GetDaughter(0);
     AliAODMCParticle *kaon1_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon1_id));
     int kaon1_pdg = TMath::Abs(kaon1_part->GetPdgCode());
-    if(kaon1_pdg==321) visible_dacay = true;
-    tmp_vec.SetPt(kaon1_part->Pt());
-    tmp_vec.SetEta(kaon1_part->Eta());
-    tmp_vec.SetPhi(kaon1_part->Phi());
-    tmp_vec.SetM(kaon1_part->M());
+    if(kaon1_pdg==321) visible_decay = true;
+    tmp_vec.SetCoordinates(kaon1_part->Pt(),kaon1_part->Eta(),kaon1_part->Phi(),kaon1_part->M());
     moth_vec+=tmp_vec;
     const int kaon2_id = phi_part->GetDaughter(1);
     AliAODMCParticle *kaon2_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon2_id));
     int kaon2_pdg = TMath::Abs(kaon2_part->GetPdgCode());
-    tmp_vec.SetPt(kaon2_part->Pt());
-    tmp_vec.SetEta(kaon2_part->Eta());
-    tmp_vec.SetPhi(kaon2_part->Phi());
-    tmp_vec.SetM(kaon2_part->M());
+    tmp_vec.SetCoordinates(kaon2_part->Pt(),kaon2_part->Eta(),kaon2_part->Phi(),kaon2_part->M());
     moth_vec+=tmp_vec;
     const int proton_id = part->GetDaughter(1); // Proton
     AliAODMCParticle *proton_part = (AliAODMCParticle*)stack->At(TMath::Abs(proton_id));
     int proton_pdg = TMath::Abs(proton_part->GetPdgCode());
-    tmp_vec.SetPt(proton_part->Pt());
-    tmp_vec.SetEta(proton_part->Eta());
-    tmp_vec.SetPhi(proton_part->Phi());
-    tmp_vec.SetM(proton_part->M());
+    tmp_vec.SetCoordinates(proton_part->Pt(),proton_part->Eta(),proton_part->Phi(),proton_part->M());
     moth_vec+=tmp_vec;
 
-    // std::cout << "Mother #" << numero++ << ":" << std::endl;
-    // std::cout << "  n daughters: " << part->GetNDaughters() << std::endl;
-    // std::cout << "  n daughters phi meson: " << phi_dah_n << std::endl;
-    // std::cout << "  first daughter PDG: " << phi_pdg << std::endl;
-    // std::cout << "  last daughter PDG: " << proton_pdg << std::endl;
-    // std::cout << "  Pt: " << moth_vec.Pt() << std::endl;
-    // std::cout << "  Eta: " << moth_vec.Eta() << std::endl;
-    // std::cout << "  Phi: " << moth_vec.Phi() << std::endl;
-    // std::cout << "  M: " << moth_vec.M() << std::endl;
-    // std::cout << "___________________________________________" <<std::endl;
-
     fProduction[iS][iC]->Fill(part->M(),part->Pt());
-    if(visible_dacay){
+    if(visible_decay){
       if ( (part->Y() < fRequireYmin || part->Y() > fRequireYmax) ) continue;
       fTotal[iS][iC]->Fill(moth_vec.M(),moth_vec.Pt());
     }
@@ -196,8 +172,6 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
   /// Checking how many pentaquarks in acceptance are reconstructed well
   std::vector<mother_struct> mothers;
   mothers.reserve(40);
-  //int protoni = 0;
-  //int kaoni = 0;
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = static_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (track->GetID() <= 0) continue;
@@ -206,20 +180,15 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
     if (pdg != 321 && pdg != 2212) continue;
-    //std::cout << "HasTOF : " << AliAnalysisTaskPsEfficiency::HasTOF(track) << std::endl;
+
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
     if (!mother) continue;
     const int mother_pdg = TMath::Abs(mother->GetPdgCode());
     //Check wheter the track belongs to a proton
     if (pdg == 2212 && (mother_pdg == 9322134 || mother_pdg == 9322136)) {
-      //protoni++;
       if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kProton))>3.) continue;
-      FourVector_t tmp_vec;
-      tmp_vec.SetPt((float)track->Pt());
-      tmp_vec.SetEta((float)track->Eta());
-      tmp_vec.SetPhi((float)track->Phi());
-      tmp_vec.SetM((float)track->M(AliAODTrack::kProton));
+      FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kProton)};
       auto it = std::find(mothers.begin(),mothers.end(), mother_id);
       if (it == mothers.end()){
         mother_struct tmp_mum;
@@ -244,12 +213,7 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
       if (!ancestor) continue;
       const int ancestor_pdg = TMath::Abs(ancestor->GetPdgCode());
       if (ancestor_pdg == 9322134 || ancestor_pdg == 9322136) {
-        //kaoni++;
-        FourVector_t tmp_vec;
-        tmp_vec.SetPt((float)track->Pt());
-        tmp_vec.SetEta((float)track->Eta());
-        tmp_vec.SetPhi((float)track->Phi());
-        tmp_vec.SetM((float)track->M(AliAODTrack::kKaon));
+        FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kKaon)};
         auto it = std::find(mothers.begin(),mothers.end(), ancestor_id);
         if (it == mothers.end()){
           mother_struct tmp_mum;
@@ -262,7 +226,7 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
         }
         else{
           it->n_daughters++;
-          it->phi_tof*=AliAnalysisTaskPsEfficiency::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kKaon))<3.);
+          it->phi_tof *= AliAnalysisTaskPsEfficiency::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kKaon))<3.);
           it->vec+=tmp_vec;
         }
       }
@@ -270,23 +234,9 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
 
   } // End AOD track loop
 
-  // int numero = 0;
-  // int part_numero = 0;
-  // std::cout << "LISTING ALL THE MOTHERS: "<<std::endl<<std::endl;
   for (const auto& mum : mothers) {
-    // std::cout << "Mother #" << part_numero++ << ":" << std::endl;
-    // std::cout << "  ID:" << mum.id << std::endl;
-    // std::cout << "  Daughters: " << mum.n_daughters << std::endl;
-    // std::cout << "  Phi tof: " << mum.phi_tof << std::endl;
-    // std::cout << "  Proton tof: " << mum.proton_tof << std::endl;
-    // std::cout << "  Pt: " << mum.vec.Pt() << std::endl;
-    // std::cout << "  Eta: " << mum.vec.Eta() << std::endl;
-    // std::cout << "  Phi: " << mum.vec.Phi() << std::endl;
-    // std::cout << "  M: " << mum.vec.M() << std::endl;
-    // std::cout << "___________________________________________" <<std::endl;
     if (mum.n_daughters != 3) continue;
     if (mum.vec.Rapidity() < fRequireYmin || mum.vec.Rapidity() > fRequireYmax) continue;
-    //numero++;
     AliAODMCParticle *part = static_cast<AliAODMCParticle*>(stack->At(mum.id));
     const int iC = part->Charge() > 0 ? 1 : 0;
     const int pdg = TMath::Abs(part->GetPdgCode());
@@ -297,10 +247,7 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     if(mum.phi_tof && mum.proton_tof) fReconstructed[iS][iC][1]->Fill(mass_rec,pt_rec);
     if(mum.proton_tof) fReconstructed[iS][iC][2]->Fill(mass_rec,pt_rec);
   }
-  // std::cout << "Number of selected protons: " << protoni << std::endl;
-  // std::cout << "Number of selected kaons: " << kaoni << std::endl;
-  // std::cout << "Number of reconstructed (at least partially): " << mothers.size() << std::endl;
-  // std::cout << "Number of reconstructed: " << numero << std::endl;
+
   //  Post output data.
   PostData(1,fList);
 }
