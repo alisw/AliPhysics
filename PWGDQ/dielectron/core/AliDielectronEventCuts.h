@@ -44,7 +44,10 @@ public:
   void SetVertexType(EVtxType type)             { fVtxType=type;                }
   void SetVertexZ(Double_t zmin, Double_t zmax) { fVtxZmin=zmin; fVtxZmax=zmax; }
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
-  void SetMaxVertexDifference(Float_t diff = 0.2)    { fVtxDiff = diff;              }
+  void SetMaxVertexDifference(Float_t diff = 0.2)     {fVtxDiff = diff;         }
+  void SetMaxSPDVertexResolution(Float_t res = 0.25)  {fVtxResolution = res;    }
+  void SetMaxSPDVertexDispersion(Float_t disp = 0.03) {fVtxDispersion = disp;   }
+  void SetMaxVertexDisplacement (Float_t displacement = 0.5) {fVtxDisplacement = displacement;}
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
   void SetRequireCompleteDAQ(Bool_t req =kTRUE) { f2015IsIncompleteDAQ=req;     }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
@@ -68,6 +71,8 @@ public:
   enum ETRDTriggerClass{ kSE, kQU, kSEorQU, kSEandQU};
   static Bool_t IsTRDTriggerFired( const AliVEvent* event, const ETRDTriggerClass triggerClass, Bool_t &trackMatched, Int_t &bin );
 
+  enum EPileUpTool{kSPD, kSPDInMultBins, kMultiVertexer};
+
   void Print(const Option_t* option = "") const;
 
 private:
@@ -88,6 +93,9 @@ private:
                                     //https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
   Bool_t f2015IsIncompleteDAQ;	    // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
   Float_t fVtxDiff;                 // cut values for a cut on the difference between the position of the vtx from SPD and tracks. Used in LHC15o std. 0.2 plus additional cut on both vtx resolutions
+  Float_t fVtxResolution;           // cut on SPD vertex resolution if only z coordinate is reconstructed and it is determined with poor resolution
+  Float_t fVtxDispersion;           // cut on SPD vertex dispersion (size of the window opened to define the tracklets used int he determination of the vertex)
+  Float_t fVtxDisplacement;         // cut on vertex displacement (absolute value, no additional cuts on both vtx resolutions)
   AliAnalysisUtils fUtils;          //data member to use utility class for event and vertex selection in 2013
 
 
