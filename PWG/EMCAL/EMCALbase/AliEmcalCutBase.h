@@ -24,78 +24,51 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#ifndef ALIEMCALTASKTRACKSELECTIONESD_H_
-#define ALIEMCALTASKTRACKSELECTIONESD_H_
+#ifndef ALIEMCALCUTSBASE_H
+#define ALIEMCALCUTSBASE_H
 
-#include "AliEmcalTrackSelection.h"
-#include "AliEmcalTrackSelResultPtr.h"
+#include <TNamed.h>
+#include <AliEmcalTrackSelResultPtr.h>
 
-class TList;
-class AliVCuts;
-class AliVTrack;
+namespace PWG {
+
+namespace EMCAL {
 
 /**
- * @class AliEmcalTrackSelectionESD
- * @brief Implementation of virtual track selection for ESDs
+ * @class AliEmcalCutBase
+ * @brief Interface for a cut class returning selection status and user information
  * @ingroup EMCALCOREFW
- * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * @date Jul 24, 2015
- *
- * Implementation of the track selection for the analysis on ESDs using
- * AliESDtrackCuts as underlying structure
+ * @author: Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Dec 11, 2017
+ * 
+ * This class extends the functionality of AliVCuts in the way that the cut implementation
+ * can add user information to the selection results: The method IsSelected of class AliVCuts
+ * returns a bool, representing whether an object was selected or not. For some selections,
+ * i.e. the hybrid track selection, where certain track types are defined, this is oversimplified.
+ * Instead one wants to return a selection status (track selected or not) and a user information
+ * which in case of hybrid tracks stores the hybrid track type. This is done using a smart pointer
+ * approach implemented in AliEmcalTrackSelResultPtr. 
+ * 
+ * User classes inheriting from AliEmcalCutBase must implement the function IsSelected(const TObject *),
+ * this time returning an AliEmcalTrackSelResultPtr with
+ * - Selection Status
+ * - Pointer to track processed
+ * - User information (optional)
  */
-class AliEmcalTrackSelectionESD: public AliEmcalTrackSelection {
+class AliEmcalCutBase : public TNamed {
 public:
+  AliEmcalCutBase() {}
+  AliEmcalCutBase(const char *name, const char *title);
+  virtual ~AliEmcalCutBase() {}
 
-  /**
-   * @brief Dummy constructor
-   */
-	AliEmcalTrackSelectionESD();
+  virtual AliEmcalTrackSelResultPtr IsSelected(TObject *o) = 0;
 
-	/**
-	 * @brief Constructor with cuts
-	 */
-	AliEmcalTrackSelectionESD(AliVCuts *cuts);
+private:
 
-	/**
-	 * @brief Constructor, initalising track cuts depending on the requested type of filtering
-	 *
-	 * @param[in] type Track filtering type
-	 * @param[in] period  Period string (e.g. LHC11h)
-	 */
-	AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period = "");
-
-	/**
-	 * @brief Destructor
-	 *
-	 * Cleaning up memory. AliESDtrackCuts objects which are
-	 * stored in the QA output are not handled in the destructor
-	 * as ownership changed.
-	 */
-	virtual ~AliEmcalTrackSelectionESD() {}
-
-	/**
-	 * @brief Automatically generates track cuts depending on the requested type of filtering
-	 *
-	 * @param[in] type    Track filtering type
-	 * @param[in] period  Period string (e.g. LHC11h)
-	 */
-	virtual void GenerateTrackCuts(ETrackFilterType_t type, const char* period = "");
-
-	/**
-	 * @brief Check whether track is accepted.
-	 *
-	 * Iterates over all cuts assigned to the track selection.
-	 * @param[in] trk Track to check
-	 * @return true if selected, false otherwise
-	 */
-	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk);
-
-  virtual void SaveQAObjects(TList *outputList);
-
-	/// \cond CLASSIMP
-	ClassDef(AliEmcalTrackSelectionESD,1);
-	/// \endcond
+  ClassDef(AliEmcalCutBase, 1);
 };
 
-#endif /* ALIEMCALPTTASKTRACKSELECTIONESD_H_ */
+}
+
+}
+#endif

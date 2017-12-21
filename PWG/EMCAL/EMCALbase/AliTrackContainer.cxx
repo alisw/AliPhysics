@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <bitset>
 #include <iostream>
 #include <TClonesArray.h>
@@ -26,6 +38,9 @@
 #include "AliTLorentzVector.h"
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelResultPtr.h"
+#include "AliEmcalTrackSelResultCombined.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 #include "AliTrackContainer.h"
 
 /// \cond CLASSIMP
@@ -46,7 +61,7 @@ AliTrackContainer::AliTrackContainer():
   fAODFilterBits(0),
   fTrackCutsPeriod(),
   fEmcalTrackSelection(0),
-  fFilteredTracks(0),
+  fFilteredTracks(),
   fTrackTypes(5000)
 {
   fBaseClassName = "AliVTrack";
@@ -68,7 +83,7 @@ AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   fAODFilterBits(0),
   fTrackCutsPeriod(period),
   fEmcalTrackSelection(0),
-  fFilteredTracks(0),
+  fFilteredTracks(),
   fTrackTypes(5000)
 {
   fBaseClassName = "AliVTrack";
@@ -159,18 +174,26 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
 
   fTrackTypes.Reset(kUndefined);
   if (fEmcalTrackSelection) {
-    fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
+    auto acceptedTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
 
-    const TClonesArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
-    AliDebugStream(1) << "AliTrackContainer: Found Array with " << trackBitmaps->GetEntries() << " Tracks" << std::endl;
+    TObjArray *trackarray(fFilteredTracks.GetData());
+    if(!trackarray){
+      trackarray = new TObjArray;
+      trackarray->SetOwner(false);
+      fFilteredTracks.SetObject(trackarray);
+      fFilteredTracks.SetOwner(true);
+    } else {
+      trackarray->Clear();
+    }
+
     int naccepted(0), nrejected(0), nhybridTracks1(0), nhybridTracks2(0), nhybridTracks3(0);
-    TIter nextBitmap(trackBitmaps);
-    TBits* bits = 0;
     Int_t i = 0;
-    while ((bits = static_cast<TBits*>(nextBitmap()))) {
+    for(auto accresult : *acceptedTracks) {
       if (i >= fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
-      AliVTrack* vTrack = static_cast<AliVTrack*>(fFilteredTracks->At(i));
-      if (!vTrack) {
+      PWG::EMCAL::AliEmcalTrackSelResultPtr *selectionResult = static_cast<PWG::EMCAL::AliEmcalTrackSelResultPtr *>(accresult);
+      AliVTrack *vTrack = selectionResult->GetTrack();
+      trackarray->AddLast(vTrack);
+      if (!(*selectionResult) || !vTrack) {
         nrejected++;
         fTrackTypes[i] = kRejected;
       }
@@ -178,41 +201,23 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
         // track is accepted;
         naccepted++;
         if (IsHybridTrackSelection()) {
-          // Use determination based on ITS information
-          if(fITSHybridTrackDistinction){
-            std::bitset<8> itsbits(vTrack->GetITSClusterMap());
-            auto hasSPD = (itsbits.test(0) || itsbits.test(1));
-            if(hasSPD) {
+          switch(GetHybridDefinition(*selectionResult)) {
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridGlobal:
               fTrackTypes[i] = kHybridGlobal;
               nhybridTracks1++;
-            }
-            else {
-              if(vTrack->GetStatus() & AliVTrack::kITSrefit){
-                fTrackTypes[i] = kHybridConstrained;
-                nhybridTracks2++;
-              }
-              else {
-                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
-                nhybridTracks3++;
-              }
-            }
-          } else {
-            // Legacy code - to be removed soon
-            if (bits->FirstSetBit() == 0) {
-              fTrackTypes[i] = kHybridGlobal;
-              nhybridTracks1++;
-            }
-            else if (bits->FirstSetBit() == 1) {
-              if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
-                fTrackTypes[i] = kHybridConstrained;
-                nhybridTracks2++;
-              }
-              else {
-                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
-                nhybridTracks3++;
-              }
-            }
-          }
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrained:
+              fTrackTypes[i] = kHybridConstrained;
+              nhybridTracks2++;
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit:
+              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+              nhybridTracks3++;
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined:
+              fTrackTypes[i] = kRejected; // should in principle never happen
+              break;
+          };
         }
       }
      i++;
@@ -220,7 +225,8 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
     AliDebugStream(1) << "Accepted: " << naccepted << ", Rejected: " << nrejected << ", hybrid: (" << nhybridTracks1 << " | " << nhybridTracks2 << " | " << nhybridTracks3 << ")" << std::endl;
   }
   else {
-    fFilteredTracks = fClArray;
+    fFilteredTracks.SetOwner(false);
+    fFilteredTracks.SetObject(fClArray);
   }
 }
 
@@ -233,8 +239,8 @@ AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
 {
   //Get i^th jet in array
 
-  if (i < 0 || i >= fFilteredTracks->GetEntriesFast()) return 0;
-  AliVTrack *vp = static_cast<AliVTrack*>(fFilteredTracks->At(i));
+  if (i < 0 || i >= fFilteredTracks.GetData()->GetEntriesFast()) return 0;
+  AliVTrack *vp = static_cast<AliVTrack*>(fFilteredTracks.GetData()->At(i));
   return vp;
 }
 
@@ -300,7 +306,7 @@ AliVTrack* AliTrackContainer::GetNextTrack()
  */
 Char_t AliTrackContainer::GetTrackType(const AliVTrack* track) const
 {
-  Int_t id = fFilteredTracks->IndexOf(track);
+  Int_t id = fFilteredTracks.GetData()->IndexOf(track);
   if (id >= 0) {
     return fTrackTypes[id];
   }
@@ -603,6 +609,21 @@ bool AliTrackContainer::IsHybridTrackSelection() const {
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
 }
 
+PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHybridDefinition(const PWG::EMCAL::AliEmcalTrackSelResultPtr &selectionResult) const {
+  PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t hybridDefinition = PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined;
+  if(auto hybriddata = dynamic_cast<const PWG::EMCAL::AliEmcalTrackSelResultHybrid *>(selectionResult.GetUserInfo())) {
+    hybridDefinition = hybriddata->GetHybridTrackType();
+  } else {
+    if(auto combineddata = dynamic_cast<const PWG::EMCAL::AliEmcalTrackSelResultCombined *>(selectionResult.GetUserInfo())){
+      for(int icut = 0; icut < combineddata->GetNumberOfSelectionResults(); icut++){
+        auto cutresult = GetHybridDefinition((*combineddata)[icut]);
+        if(cutresult != PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined) hybridDefinition = cutresult;
+      }
+    }
+  }
+  return hybridDefinition;
+}
+
 /**
  * Create an iterable container interface over all objects in the
  * EMCAL container.
@@ -656,4 +677,63 @@ TString AliTrackContainer::GetDefaultArrayName(const AliVEvent *const ev) const 
   if(ev->IsA() == AliAODEvent::Class()) return "tracks";
   else if(ev->IsA() == AliESDEvent::Class()) return "Tracks";
   else return "";
+}
+
+AliTrackContainer::TrackOwnerHandler::TrackOwnerHandler():
+  TObject(),
+  fManagedObject(nullptr),
+  fOwnership(false)
+{
+  
+}
+
+AliTrackContainer::TrackOwnerHandler::TrackOwnerHandler(TObjArray *managedobject, Bool_t ownership):
+  TObject(),
+  fManagedObject(managedobject),
+  fOwnership(ownership)
+{
+
+}
+
+AliTrackContainer::TrackOwnerHandler::TrackOwnerHandler(const AliTrackContainer::TrackOwnerHandler &other) :
+  TObject(other),
+  fManagedObject(other.fManagedObject),
+  fOwnership(false)
+{
+
+}
+
+AliTrackContainer::TrackOwnerHandler &AliTrackContainer::TrackOwnerHandler::operator=(const AliTrackContainer::TrackOwnerHandler &other) {
+  TObject::operator=(other);
+  if(this != &other) {
+    if(fOwnership && fManagedObject) delete fManagedObject;
+    fManagedObject = other.fManagedObject;
+    fOwnership = false;
+  }
+  return *this;
+}
+
+AliTrackContainer::TrackOwnerHandler::~TrackOwnerHandler() {
+  if(fOwnership && fManagedObject) delete fManagedObject;
+}
+
+void AliTrackContainer::TrackOwnerHandler::SetObject(TObjArray *obj) {
+  if(fOwnership && fManagedObject) delete fManagedObject;
+  fManagedObject = obj;
+}
+
+void AliTrackContainer::TrackOwnerHandler::SetOwner(Bool_t owner) {
+  fOwnership = owner;  
+}
+
+void AliTrackContainer::TrackOwnerHandler::TransferOwnershipTo(AliTrackContainer::TrackOwnerHandler &target) {
+  if(fOwnership) target.SetOwner(fOwnership);
+  fOwnership = false;
+}
+
+void AliTrackContainer::TrackOwnerHandler::ReceiveOwnershipFrom(AliTrackContainer::TrackOwnerHandler &source) {
+  if(source.IsOwner()) {
+    fOwnership = true;
+    source.SetOwner(false);
+  }
 }

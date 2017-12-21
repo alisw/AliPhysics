@@ -37,8 +37,11 @@ set(SRCS
   AliEmcalContainer.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalCutBase.cxx
+  AliEmcalVCutsWrapper.cxx
   AliEmcalAODFilterBitCuts.cxx
   AliEmcalAODHybridTrackCuts.cxx
+  AliEmcalAODTPCOnlyTrackCuts.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalESDHybridTrackCuts.cxx
@@ -47,6 +50,8 @@ set(SRCS
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
   AliEmcalTrackSelResultPtr.cxx
+  AliEmcalTrackSelResultCombined.cxx
+  AliEmcalTrackSelResultHybrid.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx
@@ -99,3 +104,27 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Unit tests
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelResultPtr
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelResultPtr.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalAODHybridTrackCuts
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalAODHybridTrackCuts.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelectionAOD
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelectionAOD.C)")
+    

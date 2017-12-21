@@ -24,78 +24,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#ifndef ALIEMCALTASKTRACKSELECTIONESD_H_
-#define ALIEMCALTASKTRACKSELECTIONESD_H_
+#include "AliEmcalTrackSelResultCombined.h"
 
-#include "AliEmcalTrackSelection.h"
-#include "AliEmcalTrackSelResultPtr.h"
+/// \cond CLASSIMP
+ClassImp(PWG::EMCAL::AliEmcalTrackSelResultCombined)
+/// \endcond
 
-class TList;
-class AliVCuts;
-class AliVTrack;
+using namespace PWG::EMCAL;
 
-/**
- * @class AliEmcalTrackSelectionESD
- * @brief Implementation of virtual track selection for ESDs
- * @ingroup EMCALCOREFW
- * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * @date Jul 24, 2015
- *
- * Implementation of the track selection for the analysis on ESDs using
- * AliESDtrackCuts as underlying structure
- */
-class AliEmcalTrackSelectionESD: public AliEmcalTrackSelection {
-public:
+AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined():
+  TObject(),
+  fData()
+{
 
-  /**
-   * @brief Dummy constructor
-   */
-	AliEmcalTrackSelectionESD();
+}
 
-	/**
-	 * @brief Constructor with cuts
-	 */
-	AliEmcalTrackSelectionESD(AliVCuts *cuts);
+AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const TObjArray &singleSelPointers):
+  TObject(),
+  fData()
+{
+  for(auto o  : singleSelPointers) fData.Add(new AliEmcalTrackSelResultPtr(*(static_cast<AliEmcalTrackSelResultPtr *>(o))));
+}
 
-	/**
-	 * @brief Constructor, initalising track cuts depending on the requested type of filtering
-	 *
-	 * @param[in] type Track filtering type
-	 * @param[in] period  Period string (e.g. LHC11h)
-	 */
-	AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period = "");
+AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) const {
+  if(index < 0 || index >= fData.GetEntriesFast()) throw IndexException(index);
+  return *(static_cast<AliEmcalTrackSelResultPtr *>(fData.At(index)));
+}
 
-	/**
-	 * @brief Destructor
-	 *
-	 * Cleaning up memory. AliESDtrackCuts objects which are
-	 * stored in the QA output are not handled in the destructor
-	 * as ownership changed.
-	 */
-	virtual ~AliEmcalTrackSelectionESD() {}
-
-	/**
-	 * @brief Automatically generates track cuts depending on the requested type of filtering
-	 *
-	 * @param[in] type    Track filtering type
-	 * @param[in] period  Period string (e.g. LHC11h)
-	 */
-	virtual void GenerateTrackCuts(ETrackFilterType_t type, const char* period = "");
-
-	/**
-	 * @brief Check whether track is accepted.
-	 *
-	 * Iterates over all cuts assigned to the track selection.
-	 * @param[in] trk Track to check
-	 * @return true if selected, false otherwise
-	 */
-	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk);
-
-  virtual void SaveQAObjects(TList *outputList);
-
-	/// \cond CLASSIMP
-	ClassDef(AliEmcalTrackSelectionESD,1);
-	/// \endcond
-};
-
-#endif /* ALIEMCALPTTASKTRACKSELECTIONESD_H_ */
+Int_t AliEmcalTrackSelResultCombined::GetNumberOfSelectionResults() const {
+  return fData.GetEntriesFast();
+}

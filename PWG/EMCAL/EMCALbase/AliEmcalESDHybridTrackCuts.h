@@ -27,7 +27,7 @@
 #ifndef ALIEMCALESDHYBRIDTRACKCUTS_H
 #define ALIEMCALESDHYBRIDTRACKCUTS_H
 
-#include "AliVCuts.h"
+#include "AliEmcalCutBase.h"
 
 class AliESDtrackCuts;
 
@@ -47,7 +47,7 @@ namespace EMCAL {
  * cathegories (global, constrained, complementary), and a track is selected 
  * as hybrid track if at least one of the three cases is fulfilled.
  */
-class AliEmcalESDHybridTrackCuts : public AliVCuts {
+class AliEmcalESDHybridTrackCuts : public AliEmcalCutBase {
 public:
   
   /**
@@ -84,7 +84,7 @@ public:
    * @return true Track is accepted as hybrid track
    * @return false Track is not accepted as hybrid track or track is not an AliESDtrack
    */
-  virtual bool IsSelected(TObject *o);
+  virtual AliEmcalTrackSelResultPtr IsSelected(TObject *o);
 
   /**
    * @brief Set the hybrid track definition used in the hybrid track selection
