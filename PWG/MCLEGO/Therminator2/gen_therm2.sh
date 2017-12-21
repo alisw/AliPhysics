@@ -9,7 +9,8 @@ fi
 echo "running in `pwd`, writing HepMC to $1"
 
 # prepare environment
-# source /cvmfs/alice.cern.ch/etc/login.sh
+source /cvmfs/alice.cern.ch/etc/login.sh
+eval $(alienv printenv Therminator2::v2.0.3-1)
 
 if [ -d events/ ];
 then
