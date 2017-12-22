@@ -5,29 +5,39 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
   // settings:
   UInt_t offlineTriggerMask = AliVEvent::kINT7;
   Bool_t is2015Data = kFALSE;
-  Bool_t isPbPbAnalysis = kFALSE; 
-  
-  Int_t nBinsMultiplicity = 100; 
+  Bool_t isPbPbAnalysis = kFALSE;
+
+  Int_t maxMultiplicity = 100;
   Float_t etaCut = 0.8;
-  if(controlstring.Contains("eta03")) etaCut = 0.3;  
-  
-  Float_t upperPtCut = 10.; 
+  if(controlstring.Contains("eta03")) etaCut = 0.3;
+
+  Float_t upperPtCut = 10.;
   Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
 
-  
-  if(controlstring.Contains("pp")){    
+
+  if(controlstring.Contains("pp")){
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
-  if(controlstring.Contains("pPb"))  {nBinsMultiplicity = 200; colsys = "pPb";}
-  if(controlstring.Contains("PbPb")) {nBinsMultiplicity = 200; isPbPbAnalysis = kTRUE; is2015Data = kTRUE; colsys = "PbPb";}
+  if(controlstring.Contains("XeXe"))  {maxMultiplicity = 200; colsys = "XeXe";}
+  if(controlstring.Contains("pPb"))  {maxMultiplicity = 200; colsys = "pPb";}
+  if(controlstring.Contains("PbPb")) {maxMultiplicity = 200; isPbPbAnalysis = kTRUE; is2015Data = kTRUE; colsys = "PbPb";}
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
 
   // Binning in Multiplicity
-  const Int_t multNbins = nBinsMultiplicity;
-  Double_t binsMult[multNbins+1];
-  for (Int_t ii = 0; ii <= multNbins; ii++){binsMult[ii] = ii-0.5;}
+
+  // first add zero bin from -0.5 to 0.5 (necessary in order to include efficiency factor in the future)
+
+  // now make actual multiplicity binning (nbins, binwidth)
+  Int_t width = 5;
+  cout << "hallo ";
+  static const Int_t nBinsMult = (Int_t)(maxMultiplicity / width + 1) +1;
+  Double_t binsMult[nBinsMult];
+  binsMult[0] = -0.5;
+  binsMult[1] = 0.5;
+
+  for (Int_t ii = 1; ii < nBinsMult; ii++){binsMult[ii+1] = ii*width+0.5;}
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,12 +58,12 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
 
   AlidNdPtUnifiedAnalysisTask* mainTask = NULL;
 
-  char taskName[100] = ""; 
+  char taskName[100] = "";
 
-  
+
   for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
-    sprintf(taskName, "mkrueger_%s_mult_%d_eta_%.2f_cutMode_%d", colsys.c_str(), multNbins, etaCut, cutMode);
-    
+    sprintf(taskName, "mkrueger_%s_mult_%d_eta_%.2f_cutMode_%d", colsys.c_str(), maxMultiplicity, etaCut, cutMode);
+
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(taskName);
 
     // general cuts
@@ -63,10 +73,10 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
     else task->SetUseAOD();
-    task->SetUseMultiplicity();
+    task->SetUseMultiplicity(kTRUE);
     task->SetUseCountedMult();
     task->SetIncludeSigmas(includeSigmas);		// to cross-check effects of particle composition correction
-    task->SetBinsMultCent(multNbins, binsMult);
+    task->SetBinsMultCent(nBinsMult, binsMult);
 
     // nominal cut-setting:
 
@@ -103,44 +113,44 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     task->SetMinLenghtInActiveZoneTPC(0);
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
     // task->SetMinCrossedRowsTPC(120);
-    
-//MC1--    
+
+//MC1--
       if(cutMode == 100) mainTask = task; // has no particular use... just to return task with nominal cut setting in macro
-    
+
     // cut-variation:
       if(cutMode == 101) {task->SetMaxchi2perITSclu(25.);}
       if(cutMode == 102) {task->SetMaxchi2perITSclu(49.);}
 
       if(cutMode == 103) {task->SetMaxchi2perTPCclu(3); }
       if(cutMode == 104) {task->SetMaxchi2perTPCclu(5); }
-//MC2--	
+//MC2--
       if(cutMode == 105) {task->SetRatioCrossedRowsOverFindableClustersTPC(0.7);}
       if(cutMode == 106) {task->SetRatioCrossedRowsOverFindableClustersTPC(0.9);}
-	
+
       if(cutMode == 107) {task->SetFractionSharedClustersTPC(0.2);}
       if(cutMode == 108) {task->SetFractionSharedClustersTPC(1.0);}
-//MC3--	
+//MC3--
       if(cutMode == 109) {task->SetMaxChi2TPCConstrained(25.);}
       if(cutMode == 110) {task->SetMaxChi2TPCConstrained(49.);}
 
       if(cutMode == 111) {task->SetDCAtoVertexXYPtDep("0.0104+0.0200/pt^1.01");}
       if(cutMode == 112) {task->SetDCAtoVertexXYPtDep("0.0260+0.0500/pt^1.01");}
-//MC4--		  
+//MC4--
       if(cutMode == 113) {task->SetDCAtoVertexZ(1.0);}
       if(cutMode == 114) {task->SetDCAtoVertexZ(5.0);}
 
       if(cutMode == 115) {task->SetClusterReqITS(kFALSE);}
-//MC5--		  
-      if(cutMode == 116) {task->SetGeometricalCut(kTRUE,3,120,1.5,0.85,0.7);}	
-      if(cutMode == 117) {task->SetGeometricalCut(kTRUE,3,140,1.5,0.85,0.7);}	
+//MC5--
+      if(cutMode == 116) {task->SetGeometricalCut(kTRUE,3,120,1.5,0.85,0.7);}
+      if(cutMode == 117) {task->SetGeometricalCut(kTRUE,3,140,1.5,0.85,0.7);}
 
       if(cutMode == 118) {task->SetGeometricalCut(kTRUE,4,130,1.5,0.85,0.7);}
       if(cutMode == 119) {task->SetGeometricalCut(kTRUE,2,130,1.5,0.85,0.7);}
-      
+
 
 
   // hang task in train
-    
+
     mgr->AddTask(task);
 
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -154,10 +164,10 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     mgr->ConnectInput(task, 0, cinput);
     mgr->ConnectOutput(task, 1, coutput);
 
-  
-  }  
-    
-  
+
+  }
+
+
   return mainTask;
 
 }
