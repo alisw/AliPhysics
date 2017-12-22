@@ -15,30 +15,52 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
   Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
 
+  const Int_t nMultSteps = 3;
+  Int_t multSteps[] = {100, 0, 0};
+  Int_t multBinWidth[] = {1,1,1};
 
   if(controlstring.Contains("pp")){
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
-  if(controlstring.Contains("XeXe"))  {maxMultiplicity = 200; colsys = "XeXe";}
-  if(controlstring.Contains("pPb"))  {maxMultiplicity = 200; colsys = "pPb";}
-  if(controlstring.Contains("PbPb")) {maxMultiplicity = 200; isPbPbAnalysis = kTRUE; is2015Data = kTRUE; colsys = "PbPb";}
+  if(controlstring.Contains("XeXe"))  {
+    colsys = "XeXe";
+    multSteps[0] = 100;   multBinWidth[0] = 1;
+    multSteps[1] = 50;    multBinWidth[1] = 5;
+    multSteps[2] = 50;    multBinWidth[2] = 61;
+  }
+  if(controlstring.Contains("pPb"))  {
+    colsys = "pPb";
+    multSteps[0] = 200;   multBinWidth[0] = 1;
+    multSteps[1] = 0;     multBinWidth[1] = 1;
+    multSteps[2] = 0;     multBinWidth[2] = 1;
+  }
+  if(controlstring.Contains("PbPb")) {
+    isPbPbAnalysis = kTRUE;
+    is2015Data = kTRUE;
+    colsys = "PbPb";
+    multSteps[0] = 100;   multBinWidth[0] = 1;
+    multSteps[1] = 50;    multBinWidth[1] = 5;
+    multSteps[2] = 50;    multBinWidth[2] = 61;
+  }
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
 
   // Binning in Multiplicity
 
-  // first add zero bin from -0.5 to 0.5 (necessary in order to include efficiency factor in the future)
+  const Int_t nBinsMult = multSteps[0]+ multSteps[1] + multSteps[2] + 1;
 
-  // now make actual multiplicity binning (nbins, binwidth)
-  Int_t width = 5;
-  cout << "hallo ";
-  static const Int_t nBinsMult = (Int_t)(maxMultiplicity / width + 1) +1;
-  Double_t binsMult[nBinsMult];
-  binsMult[0] = -0.5;
-  binsMult[1] = 0.5;
-
-  for (Int_t ii = 1; ii < nBinsMult; ii++){binsMult[ii+1] = ii*width+0.5;}
-
+  Double_t multBinEdges[nBinsMult+1];
+  multBinEdges[0] = -0.5;
+  multBinEdges[1] = 0.5;
+  Int_t startBin = 1;
+  Int_t endBin = 1;
+  for(Int_t multStep = 0; multStep < nMultSteps; multStep++){
+    endBin += multSteps[multStep];
+    for(Int_t multBin = startBin; multBin < endBin; multBin++)  {
+      multBinEdges[multBin+1] = multBinEdges[multBin] + multBinWidth[multStep];
+    }
+    startBin = endBin;
+  }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -62,7 +84,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
 
 
   for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
-    sprintf(taskName, "mkrueger_%s_mult_%d_eta_%.2f_cutMode_%d", colsys.c_str(), maxMultiplicity, etaCut, cutMode);
+    sprintf(taskName, "mkrueger_%s_eta_%.2f_cutMode_%d", colsys.c_str(), etaCut, cutMode);
 
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(taskName);
 
@@ -76,7 +98,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     task->SetUseMultiplicity(kTRUE);
     task->SetUseCountedMult();
     task->SetIncludeSigmas(includeSigmas);		// to cross-check effects of particle composition correction
-    task->SetBinsMultCent(nBinsMult, binsMult);
+    task->SetBinsMultCent(nBinsMult, multBinEdges);
 
     // nominal cut-setting:
 
