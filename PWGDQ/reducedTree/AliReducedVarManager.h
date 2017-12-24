@@ -549,7 +549,9 @@ class AliReducedVarManager : public TObject {
     // Correlation variables ----------------------------------------------
     kDeltaPhi,          
     kDeltaTheta,        
-    kDeltaEta,          
+    kDeltaEta,
+    kTriggerPt,     // pt of J/psi candidate
+    kAssociatedPt,  // pt of associated track
     kTrackingFlags,
     kTrackingStatus=kTrackingFlags+kNTrackingFlags,
     kNVars=kTrackingStatus+kNTrackingStatus,     
@@ -605,6 +607,7 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedBaseTrack* t, Float_t* values);
+  static void FillCorrelationInfo(AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
@@ -687,7 +690,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 3);
+  ClassDef(AliReducedVarManager, 4);
 };
 
 #endif
