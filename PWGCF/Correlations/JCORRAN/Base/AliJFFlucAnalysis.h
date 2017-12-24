@@ -36,15 +36,15 @@ public:
 	void SetEventCentrality( float cent ){fCent = cent;}
 	void SetEventImpactParameter( float ip ){ fImpactParameter = ip; }
 	void SetEventVertex( double *vtx ){ fVertex = vtx; }
-	void SetIsPhiModule( Bool_t isphi ){ IsPhiModule = isphi ; }
+	//void SetIsPhiModule( Bool_t isphi ){//{ IsPhiModule = isphi ; }
 	void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
 
 	void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; }
 	void SetDebugLevel( int dblv ){ fDebugLevel = dblv; }
 	void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
-	void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
-	void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
-	void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
+	//void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
+	//void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
+	//void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
 	void SetQCEtaCut( Double_t QC_eta_cut_min, Double_t QC_eta_cut_max, Double_t QC_eta_gap_half){
 		fQC_eta_cut_min = QC_eta_cut_min;
 		fQC_eta_cut_max = QC_eta_cut_max;
@@ -60,8 +60,7 @@ public:
 
 	TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
 
-	double Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
-	double Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
+	TComplex Get_Qn_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
 	double Get_QC_Vn( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
 	void Fill_QA_plot(double eta1, double eta2 );
 
@@ -77,9 +76,19 @@ public:
 	// Getter for single vn
 	Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
 
+	enum{
+		FLUC_PHI_MODULATION = 0x1,
+		FLUC_PHI_INVERSE = 0x2,
+		FLUC_SCPT = 0x4,
+		FLUC_EBE_WEIGHTING = 0x8
+	};
+	void AddFlags(UInt_t nflags){
+		flags |= nflags;
+	}
+
 private:
-	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics // do we need vn up to v8? .. yes we need..
-	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order // do we really need vn^8
+	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics
+	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 
 	Long64_t AnaEntry;
 	TClonesArray * fInputList;
@@ -99,12 +108,8 @@ private:
 	float fGlbtrks;
 	float fFB32trks;
 	float fFB32TOFtrks;
-	TString fInFileName;
-	Bool_t IsPhiModule;
-	Bool_t IsSCwithQC; // flag to check SC with QC method
-	Bool_t IsSCptdep;  // flag to check SC pt dep or not
-	Bool_t IsEbEWeighted; // flag for ebe weight for QC method
-	Double_t fSingleVn[kNH][3]; // 3 method
+	UInt_t flags;
+	Double_t fSingleVn[kNH][3]; // 3 methods
 
 	double fEta_min;
 	double fEta_max;

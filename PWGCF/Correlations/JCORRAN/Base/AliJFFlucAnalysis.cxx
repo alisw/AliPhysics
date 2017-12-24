@@ -133,9 +133,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fCBin = -1;
 	fEffMode = 0;
 	fEffFilterBit =0;
-	fInFileName ="";
-	IsPhiModule = kFALSE;
-	IsSCptdep = kFALSE;
+	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
 	fQC_eta_cut_min = -0.8; // default setting
@@ -459,7 +457,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		Double_t ebe_2p_weight = 1.0;
 		Double_t ebe_3p_weight = 1.0;
 		Double_t ebe_4p_weightB = 1.0;
-		if( IsEbEWeighted == kTRUE ){
+		if(flags & FLUC_EBE_WEIGHTING){
 			ebe_2p_weight = N[i][0]*N[i][1];//NSubTracks[kSubA] * NSubTracks[kSubB] ;
 			ebe_3p_weight = ebe_2p_weight*(N[i][1]-1.0);// * (NSubTracks[kSubB]-1.0);
 			ebe_4p_weightB = ebe_3p_weight*(N[i][1]-2.0);// * (NSubTracks[kSubB]-2.0);
@@ -467,7 +465,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		Double_t ebe_2Np_weight[2*nKL] = {
 			ebe_2p_weight,
 		};
-		if( IsEbEWeighted == kTRUE ){
+		if(flags & FLUC_EBE_WEIGHTING){
 			for(int ik=1; ik<2*nKL; ik++){
 				double dk = (double)ik;
 				ebe_2Np_weight[ik] = ebe_2Np_weight[ik-1]*max(N[i][0]-dk,1.0)*max(N[i][1]-dk,1.0);
@@ -592,7 +590,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	Double_t qcn = (M*(M-TComplex(1,0))).Re();
 	Double_t qcn_10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
 	Double_t qw1_4 = 1.0, qw1 = 1.0, qw1_10 = 1.0, qw2_10 = 1.0;
-	if(IsEbEWeighted == kTRUE){
+	if(flags & FLUC_EBE_WEIGHTING){
 		qw1_4 = qcn4;
 		qw1 = qcn;
 		qw1_10 = qcn_10;
@@ -633,7 +631,71 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		}
 	}
 
-	if(IsSCptdep == kTRUE){
+	//cumulants (with mixed harmonics)
+	//Double_t QC_4p_value[kNH][kNH];
+	//Double_t QC_2p_value[kNH];
+
+	Double_t event_weight_four = 1.0;
+	Double_t event_weight_two = 1.0;
+	Double_t event_weight_two_eta10 = 1.0;
+	if(flags & FLUC_EBE_WEIGHTING){
+		event_weight_four = Four(0,0,0,0).Re();
+		event_weight_two = Two(0,0).Re();
+		event_weight_two_eta10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+	}
+
+	for(int ih=2; ih < kNH; ih++){
+		for(int ihh=2; ihh<ih; ihh++){
+			TComplex scfour = Four( ih, ihh, -ih, -ihh ) / Four(0,0,0,0).Re();
+			
+			fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( scfour.Re(), event_weight_four );
+			//QC_4p_value[ih][ihh] = scfour.Re();
+		}
+
+		// Finally we want 2p corr as like
+		// 1/( M*(M-1) ) * [ QQ* - M ]
+		// two(2,2) = Q2 Q2* - Q0 = Q2Q2* - M
+		// two(0,0) = Q0 Q0* - Q0 = M^2 - M
+		//two[ih] = Two(ih, -ih) / Two(0,0).Re();
+		TComplex sctwo = Two(ih, -ih) / Two(0,0).Re();
+		fh_SC_with_QC_2corr[ih][fCBin]->Fill( sctwo.Re(), event_weight_two );
+		//QC_2p_value[ih] = sctwo.Re();
+		// fill single vn  with QC without EtaGap as method 2
+		fSingleVn[ih][2] = TMath::Sqrt(sctwo.Re());
+		
+		TComplex sctwo10 = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+		fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( sctwo10.Re(), event_weight_two_eta10 );
+		// fill single vn with QC method with Eta Gap as method 1
+		fSingleVn[ih][1] = TMath::Sqrt(sctwo10.Re());
+	}
+	
+	//Check evt-by-evt SP/QC ratio. (term-by-term)
+	// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC
+	// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3
+#if 0
+	Double_t SP_4p_value[5] = { nV3V3V2V2.Re(), nV4V4V2V2.Re(), nV5V5V2V2.Re(), nV5V5V3V3.Re(), nV4V4V3V3.Re()};
+	Double_t evtSP_QC_ratio_2p = -99.;
+	Double_t evtSP_QC_ratio_4p = -99.;
+	int har1[5] = {3, 4, 5, 5, 4 }; // m of SC(m,n)
+	int har2[5] = {2, 2, 3, 2, 3 }; // n of SC(m,n)
+	for(int i=0; i<5; i++){ // i array index (for m, n)
+		evtSP_QC_ratio_4p = SP_4p_value[i] / QC_4p_value[har1[i]][har2[i]] ;
+		if( evtSP_QC_ratio_4p < -1 || evtSP_QC_ratio_4p > 5.)
+			evtSP_QC_ratio_4p = -99;
+		fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio_4p );
+		// fh_evt_SP_QC_ratio_4p[ ih ][fCBin] : ih is not harmonics in this histo. ( SC(m,n) case)
+	}
+	// 2p , v2, v3, v4, v5
+	for(int i=0; i<4; i++){
+		Double_t SP_2p_value = vn2[2+i][1];
+		evtSP_QC_ratio_2p = SP_2p_value / QC_2p_value[i+2];
+		if( evtSP_QC_ratio_2p < -1 || evtSP_QC_ratio_2p > 5.)
+			evtSP_QC_ratio_2p = -99;
+		fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio_2p );
+	}
+#endif
+
+	if(flags & FLUC_SCPT){
 		const int SCNH = 9; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
 		Double_t ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
@@ -648,19 +710,14 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			}
 		}
 
-		// calculate Qn for each pt bins
+		// calculate Qn for each pt bin
 		for(int ih=2; ih<SCNH; ih++){
 			for(int ipt=0; ipt<N_ptbins; ipt++){
 				Double_t pt_bin_min = ptbin_borders[ipt];
 				Double_t pt_bin_max = ptbin_borders[ipt+1];
-				Double_t QAReal=Get_Qn_Real_pt( Eta_config[kSubA][0], Eta_config[kSubA][1], ih, ipt, pt_bin_min, pt_bin_max);
-				Double_t QAImag=Get_Qn_Img_pt(  Eta_config[kSubA][0], Eta_config[kSubA][1], ih, ipt, pt_bin_min, pt_bin_max);
+				QnA_pt[ih][ipt] = Get_Qn_pt(Eta_config[kSubA][0], Eta_config[kSubA][1], ih, ipt, pt_bin_min, pt_bin_max);
+				QnB_pt[ih][ipt] = Get_Qn_pt(Eta_config[kSubB][0], Eta_config[kSubB][1], ih, ipt, pt_bin_min, pt_bin_max);
 
-				Double_t QBReal=Get_Qn_Real_pt( Eta_config[kSubB][0], Eta_config[kSubB][1], ih, ipt, pt_bin_min, pt_bin_max);
-				Double_t QBImag=Get_Qn_Img_pt(  Eta_config[kSubB][0], Eta_config[kSubB][1], ih, ipt, pt_bin_min, pt_bin_max);
-
-				QnA_pt[ih][ipt]= TComplex(QAReal, QAImag);
-				QnB_pt[ih][ipt]= TComplex(QBReal, QBImag);
 				QnB_pt_star[ih][ipt] = TComplex::Conjugate( QnB_pt[ih][ipt] ) ;
 			}
 		}
@@ -693,76 +750,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			fh_SC_ptdep_4corr[3][1][4][1][fCBin][ipt]->Fill( nV4V4V3V3_pt.Re() );
 			fh_SC_ptdep_4corr[3][1][5][1][fCBin][ipt]->Fill( nV5V5V3V3_pt.Re() ) ;
 		}
-	}//pt dep done
-
-	if(IsSCwithQC==kTRUE){
-		//cumulants (with mixed harmonics)
-		Double_t QC_4p_value[kNH][kNH];
-		Double_t QC_2p_value[kNH];
-
-		Double_t event_weight_four = 1.0;
-		Double_t event_weight_two = 1.0;
-		Double_t event_weight_two_eta10 = 1.0;
-		if(IsEbEWeighted == kTRUE){
-			event_weight_four = Four(0,0,0,0).Re();
-			event_weight_two = Two(0,0).Re();
-			event_weight_two_eta10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
-		}
-
-		for(int ih=2; ih < kNH; ih++){
-			for(int ihh=2; ihh<ih; ihh++){
-				TComplex scfour = Four( ih, ihh, -ih, -ihh ) / Four(0,0,0,0).Re();
-				
-				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( scfour.Re(), event_weight_four );
-				QC_4p_value[ih][ihh] = scfour.Re();
-			}
-
-			// Finally we want 2p corr as like
-			// 1/( M*(M-1) ) * [ QQ* - M ]
-			// two(2,2) = Q2 Q2* - Q0 = Q2Q2* - M
-			// two(0,0) = Q0 Q0* - Q0 = M^2 - M
-			//two[ih] = Two(ih, -ih) / Two(0,0).Re();
-			TComplex sctwo = Two(ih, -ih) / Two(0,0).Re();
-			fh_SC_with_QC_2corr[ih][fCBin]->Fill( sctwo.Re(), event_weight_two );
-			QC_2p_value[ih] = sctwo.Re();
-			// fill single vn  with QC without EtaGap as method 2
-			fSingleVn[ih][2] = TMath::Sqrt(sctwo.Re());
-			
-			TComplex sctwo10 = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
-			fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( sctwo10.Re(), event_weight_two_eta10 );
-			// fill single vn with QC method with Eta Gap as method 1
-			fSingleVn[ih][1] = TMath::Sqrt(sctwo10.Re());
-		}
-		
-		//Check evt-by-evt SP/QC ratio. (term-by-term)
-		// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC
-		// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3
-#if 0
-		Double_t SP_4p_value[5] = { nV3V3V2V2.Re(), nV4V4V2V2.Re(), nV5V5V2V2.Re(), nV5V5V3V3.Re(), nV4V4V3V3.Re()};
-		Double_t evtSP_QC_ratio_2p = -99.;
-		Double_t evtSP_QC_ratio_4p = -99.;
-		int har1[5] = {3, 4, 5, 5, 4 }; // m of SC(m,n)
-		int har2[5] = {2, 2, 3, 2, 3 }; // n of SC(m,n)
-		for(int i=0; i<5; i++){ // i array index (for m, n)
-			evtSP_QC_ratio_4p = SP_4p_value[i] / QC_4p_value[har1[i]][har2[i]] ;
-			if( evtSP_QC_ratio_4p < -1 || evtSP_QC_ratio_4p > 5.)
-				evtSP_QC_ratio_4p = -99;
-			fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio_4p );
-			// fh_evt_SP_QC_ratio_4p[ ih ][fCBin] : ih is not harmonics in this histo. ( SC(m,n) case)
-		}
-		// 2p , v2, v3, v4, v5
-		for(int i=0; i<4; i++){
-			Double_t SP_2p_value = vn2[2+i][1];
-			evtSP_QC_ratio_2p = SP_2p_value / QC_2p_value[i+2];
-			if( evtSP_QC_ratio_2p < -1 || evtSP_QC_ratio_2p > 5.)
-				evtSP_QC_ratio_2p = -99;
-			fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio_2p );
-		}
-#endif
-
-	} // QC method done.
-
-	//1 evt is done...
+	}
 }
 
 //________________________________________________________________________
@@ -785,14 +773,10 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		Double_t pt = itrack->Pt();
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 		Double_t eta = itrack->Eta();
-		int isub = -1;
-		if( eta < 0 )
-			isub = 0;
-		if( eta > 0 )
-			isub = 1;
+		int isub = (int)(eta > 0);
 		Double_t phi = itrack->Phi();
-		Double_t phi_module_corr =1;
-		if( IsPhiModule == kTRUE){
+		Double_t phi_module_corr = 1;
+		if(flags & FLUC_PHI_MODULATION){
 			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
 		}
 		//
@@ -828,19 +812,18 @@ TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int har
 		if( eta < eta1 || eta > eta2)
 			continue; // eta cut
 
-		Double_t phi_module_corr = 1;
-		int isub = -1;
-		if( eta < 0 )
-			isub = 0;
-		if( eta > 0 )
-			isub = 1;
-		if( IsPhiModule == kTRUE){
+		Double_t phi_module_corr = 1.0;
+		int isub = (int)(eta > 0);
+		if(flags & FLUC_PHI_MODULATION){
 			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi ) )  );
+			if(flags & FLUC_PHI_INVERSE)
+				phi_module_corr = 1.0/phi_module_corr;
 		}
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent );
 
-		Qn += TComplex( 1./effCorr * phi_module_corr * TMath::Cos(ih*phi), 1./effCorr * phi_module_corr * TMath::Sin(ih*phi) );
-		Sub_Ntrk += 1./effCorr * phi_module_corr ;
+		Double_t tf = 1.0/effCorr*phi_module_corr;
+		Qn += TComplex( tf*TMath::Cos(ih*phi), tf*TMath::Sin(ih*phi) );
+		Sub_Ntrk += tf;
 	}
 
 	if( ih !=0)
@@ -861,11 +844,10 @@ Double_t AliJFFlucAnalysis::Get_QC_Vn(Double_t QnA_real, Double_t QnA_img, Doubl
 	return QC_Vn;
 }
 //________________________________________________________________________
-Double_t AliJFFlucAnalysis::Get_Qn_Real_pt(Double_t eta1, Double_t eta2, int harmonics, int ptbin, Double_t pt_min, Double_t pt_max)
+TComplex AliJFFlucAnalysis::Get_Qn_pt(Double_t eta1, Double_t eta2, int harmonics, int ptbin, Double_t pt_min, Double_t pt_max)
 {
-	if( eta1 > eta2) cout << "ERROR eta1 should be smaller than eta2!!!" << endl;
 	int nh = harmonics;
-	Double_t Qn_real = 0;
+	TComplex Qn = TComplex(0,0);
 	Double_t Sub_Ntrk =0;
 
 	Long64_t ntracks = fInputList->GetEntriesFast();
@@ -875,62 +857,28 @@ Double_t AliJFFlucAnalysis::Get_Qn_Real_pt(Double_t eta1, Double_t eta2, int har
 		Double_t pt = itrack->Pt();
 		if( pt > pt_min && pt < pt_max){
 			if( eta>eta1 &&  eta<eta2 ){
-				int isub = -1;
-				if( eta < 0 )
-					isub = 0;
-				if( eta > 0 )
-					isub = 1;
+				int isub = (int)(eta > 0);
 				Double_t phi = itrack->Phi();
-				Double_t phi_module_corr =1;
-				if( IsPhiModule == kTRUE){
+				Double_t phi_module_corr = 1.0;
+				if(flags & FLUC_PHI_MODULATION){
 					phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+					if(flags & FLUC_PHI_INVERSE)
+						phi_module_corr = 1.0/phi_module_corr;
 				}
 				Double_t pt = itrack->Pt();
 				Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-				Qn_real += 1.0 / effCorr * phi_module_corr * TMath::Cos( nh * phi);
-				Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr * phi_module_corr;
+
+				Double_t tf = 1.0/effCorr*phi_module_corr;
+				Qn += TComplex(tf*TMath::Cos(nh*phi),tf*TMath::Sin(nh*phi));
+				Sub_Ntrk += tf;
 			}
 		}
 	}
-	Qn_real /= Sub_Ntrk;
-	int iside = 0; // eta -
-	if (eta1 > 0 )
-		iside = 1; // eta +
-	NSubTracks_pt[iside][ptbin] = Sub_Ntrk; // it will be overwrite for each harmonics but should be same.
+	Qn /= Sub_Ntrk;
+	int iside = (int)(eta1 > 0.0);
+	NSubTracks_pt[iside][ptbin] = Sub_Ntrk;
 
-	return Qn_real;
-}
-//________________________________________________________________________
-Double_t AliJFFlucAnalysis::Get_Qn_Img_pt(Double_t eta1, Double_t eta2, int harmonics, int ptbin, Double_t pt_min, Double_t pt_max)
-{
-	int nh = harmonics;
-	Double_t Qn_img = 0;
-	Double_t Sub_Ntrk =0;
-
-	Long64_t ntracks = fInputList->GetEntriesFast();
-	for( Long64_t it=0; it< ntracks; it++){
-		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
-		Double_t eta = itrack->Eta();
-		Double_t pt = itrack->Pt();
-		if(pt>pt_min && pt<pt_max){
-			if( eta > eta1 && eta < eta2 ){
-				int isub = -1;
-				if( eta < 0 ) isub = 0;
-				if( eta > 0 ) isub = 1;
-				Double_t phi = itrack->Phi();
-				Double_t phi_module_corr =1;
-				if( IsPhiModule == kTRUE){
-					phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-				}
-				Double_t pt = itrack->Pt();
-				Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-				Qn_img += 1./ effCorr * phi_module_corr * TMath::Sin( nh * phi);
-				Sub_Ntrk = Sub_Ntrk + 1./ effCorr * phi_module_corr;
-			}
-		}
-	}
-	Qn_img /= Sub_Ntrk;
-	return Qn_img;
+	return Qn;
 }
 ///________________________________________________________________________
 /* new Function for QC method
@@ -965,12 +913,11 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 
 		for(int ih=0; ih<kNH; ih++){
 			//for(int ik=0; ik<nKL; ik++){
+			//TODO: q weight
 			TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 			QvectorQC[ih] += q;
 			if( TMath::Abs(eta) > fQC_eta_gap_half ){  // this is for normalized SC ( denominator needs an eta gap )
-				int isub = 0;
-				if( eta > 0 )
-					isub = 1;
+				int isub = (int)(eta > 0);
 				QvectorQCeta10[ih][isub] += q;
 			}
 			//}
@@ -979,7 +926,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::Q(int n, int p){
-	// Retrun QvectorQC
+	// Return QvectorQC
 	// Q{-n, p} = Q{n, p}*
 	if(n >= 0)
 		return QvectorQC[n];//[p];
