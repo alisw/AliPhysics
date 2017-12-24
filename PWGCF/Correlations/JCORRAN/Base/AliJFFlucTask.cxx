@@ -64,15 +64,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fPt_min=0;
 	fPt_max=0;
 	fCentDetName="V0M";
-	//IsMC = kFALSE;
-	//IsKineOnly = kFALSE;
-	//IsExcludeWeakDecay = kFALSE;
-	//IsCentFlat = kFALSE;
-	//IsPhiModule = kFALSE;
-	//IsSCptdep = kFALSE;
-	////IsSCwithQC= kFALSE;
-	//IsEbEWeighted = kFALSE;
 	flags = 0;
+
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
@@ -106,14 +99,6 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fPt_min=0;
 	fPt_max=0;
 	fCentDetName="V0M";
-	//IsMC = kFALSE;
-	//IsKineOnly = kFALSE;
-	//IsExcludeWeakDecay = kFALSE;
-	//IsCentFlat = kFALSE;
-	//IsPhiModule = kFALSE;
-	//IsSCptdep = kFALSE;
-	////IsSCwithQC = kFALSE;
-	//IsEbEWeighted = kFALSE;
 	flags = 0;
 
 	fQC_eta_min=-0.8;
@@ -367,7 +352,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
-					if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
 				}
 
@@ -409,7 +394,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
-					if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
 				}
 
@@ -647,7 +632,7 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				int isub = (int)(track->Eta() > 0.0);
 				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 				int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
-				if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+				if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 					continue;
 			}
 
