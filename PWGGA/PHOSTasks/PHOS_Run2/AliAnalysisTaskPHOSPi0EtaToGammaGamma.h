@@ -58,7 +58,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
     void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
-    void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
+    void SetNonLinearityStudy(Bool_t flag, Double_t sf = 1.0) {
+      fIsNonLinStudy = flag;
+      fGlobalEScale = sf;
+    }
 
     void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
 
@@ -342,13 +345,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fForceActiveTRU;
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
+    Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 40);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 41);
 };
 
 #endif

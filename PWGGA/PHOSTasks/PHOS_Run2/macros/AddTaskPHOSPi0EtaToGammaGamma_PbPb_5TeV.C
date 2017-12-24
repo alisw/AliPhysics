@@ -114,11 +114,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
-  if(L1input == 7)       Ethre = 8.0;
-  else if(L1input == 6)  Ethre = 6.0;
-  else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 3.0;//LHC15n
-  else if(L0input == 17) Ethre = 4.0;//LHC17p
+  if(L1input == 7)       Ethre = 0.0;
+  else if(L1input == 6)  Ethre = 0.0;
+  else if(L1input == 5)  Ethre = 0.0;
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n
+  else if(L0input == 17) Ethre = 0.0;//LHC17p
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   task->SelectCollisionCandidates(trigger);
@@ -159,6 +159,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetNpx(1000);
     f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
