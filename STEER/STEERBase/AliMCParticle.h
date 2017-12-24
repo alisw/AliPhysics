@@ -141,7 +141,7 @@ inline Double_t AliMCParticle::Y()         const
     Double_t e  = E();
     Double_t pz = Pz();
     
-    if ( TMath::Abs(e - TMath::Abs(pz)) > FLT_EPSILON ) {
+    if ( e - TMath::Abs(pz) > FLT_EPSILON ) {
 	return 0.5*TMath::Log((e+pz)/(e-pz));
     } else { 
 	return -999.;
