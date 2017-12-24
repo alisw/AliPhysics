@@ -124,7 +124,7 @@ private:
 	Double_t fQC_eta_cut_max;
 	Double_t fQC_eta_gap_half;
 
-	TComplex QvectorQC[kNH];
+	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[kNH][2]; // ksub
 
 	TH1D *h_phi_module[7][2]; // cent, isub

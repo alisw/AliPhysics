@@ -597,6 +597,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex corr10[kNH][nKL];
 
 	for(int ih=2; ih < kNH; ih++){
+		//TODO: fix p-weights
 		four[ih] = ((Q(ih,1)*Q(ih,1)*Q(-ih,1)*Q(-ih,1)+Q(2*ih,1)*Q(-2*ih,1)-TComplex(2,0)*(Q(2*ih,1)*Q(-ih,1)*Q(-ih,1)).Re())
 			-2.0*(2.0*(M-TComplex(2,0))*(Q(ih,1)*Q(-ih,1))-M*(M-TComplex(3,0))))/qcn4;
 		two[ih] = (Q(ih,1)*Q(-ih,1)-M)/(M*(M-TComplex(1,0)));
@@ -775,6 +776,8 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		Double_t phi_module_corr = 1;
 		if(flags & FLUC_PHI_MODULATION){
 			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+			if(flags & FLUC_PHI_INVERSE)
+				phi_module_corr = 1.0/phi_module_corr;
 		}
 		//
 		if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){
@@ -886,7 +889,8 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	// calcualte Q-vector for QC method ( no subgroup )
 	//init
 	for(int ih=0; ih<kNH; ih++){
-		QvectorQC[ih] = TComplex(0, 0);
+		for(int ik=0; ik<nKL; ++ik)
+			QvectorQC[ih][ik] = TComplex(0, 0);
 		for(int isub=0; isub<2; isub++){
 			QvectorQCeta10[ih][isub] = TComplex(0, 0);
 		}
@@ -895,7 +899,6 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	Long64_t ntracks = fInputList->GetEntriesFast(); // all tracks from Task input
 	for( Long64_t it=0; it<ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
-		Double_t phi = itrack->Phi();
 		Double_t eta = itrack->Eta();
 		// track Eta cut Note! pt cuts already applied in AliJFFlucTask.cxx
 		// Do we need arbitary Eta cut for QC method?
@@ -908,16 +911,30 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			continue;
 		/////////////////////////////////////////////////
 
+		int isub = (int)(eta > 0.0);
+		Double_t phi = itrack->Phi();
+		Double_t pt = itrack->Pt();
+
+		Double_t phi_module_corr = 1.0;
+		if(flags & FLUC_PHI_MODULATION){
+			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+			if(flags & FLUC_PHI_INVERSE)
+				phi_module_corr = 1.0/phi_module_corr;
+		}
+		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+
 		for(int ih=0; ih<kNH; ih++){
-			//for(int ik=0; ik<nKL; ik++){
-			//TODO: q weight
-			TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
-			QvectorQC[ih] += q;
-			if( TMath::Abs(eta) > fQC_eta_gap_half ){  // this is for normalized SC ( denominator needs an eta gap )
-				int isub = (int)(eta > 0);
-				QvectorQCeta10[ih][isub] += q;
+			Double_t tf = 1.0;
+			TComplex q[nKL];
+			for(int ik=0; ik<nKL; ik++){
+				q[ik] = TComplex(tf*TMath::Cos(ih*phi),tf*TMath::Sin(ih*phi));
+				QvectorQC[ih][ik] += q[ik];
+				tf *= 1.0/effCorr*phi_module_corr;
 			}
-			//}
+			//this is for normalized SC ( denominator needs an eta gap )
+			if(TMath::Abs(eta) > fQC_eta_gap_half){
+				QvectorQCeta10[ih][isub] += q[1];
+			}
 		}
 	} // track loop done.
 }
@@ -926,8 +943,8 @@ TComplex AliJFFlucAnalysis::Q(int n, int p){
 	// Return QvectorQC
 	// Q{-n, p} = Q{n, p}*
 	if(n >= 0)
-		return QvectorQC[n];//[p];
-	return TComplex::Conjugate( QvectorQC[-n] );//[p] );
+		return QvectorQC[n][p];
+	return TComplex::Conjugate(QvectorQC[-n][p]);
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::Two(int n1, int n2 ){
