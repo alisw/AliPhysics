@@ -86,6 +86,11 @@ public:
 		flags |= nflags;
 	}
 
+	static Double_t CentBin[8];
+	static Double_t pttJacek[74];
+
+	static int GetCentralityClass(Double_t);
+
 private:
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order

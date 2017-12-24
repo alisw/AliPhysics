@@ -218,25 +218,25 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
-		AliMCEvent*  mcEvent = MCEvent();
+		AliMCEvent *mcEvent = MCEvent();
 		if (!mcEvent) {
 			AliError("ERROR: mcEvent not available");
 			return;
 		}
 
 		AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-		if (headerH) {
-			//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
-			Double_t gImpactParameter = headerH->ImpactParameter();
-			fCent = GetCentralityFromImpactPar(gImpactParameter);
-			if(flags & FLUC_ALICE_IPINFO){
-				//force to use ALICE impact parameter setting
-				double ALICE_Cent[8] = {0, 5, 10, 20, 30, 40, 50, 60};
-				double ALICE_IPinfo[8] = {0, 3.50, 4.94, 6.98, 8.55, 9.88, 11.04, 12.09};
-				for(int icent=0; icent<8; icent++){
-					if(fImpactParameter >= ALICE_IPinfo[icent] && fImpactParameter < ALICE_IPinfo[icent+1])
-						fCent = 0.5f*(ALICE_Cent[icent]+ALICE_Cent[icent+1]);
-				}
+		if(!headerH)
+			return;
+		//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
+		Double_t gImpactParameter = headerH->ImpactParameter();
+		fCent = GetCentralityFromImpactPar(gImpactParameter);
+		if(flags & FLUC_ALICE_IPINFO){
+			//force to use ALICE impact parameter setting
+			double ALICE_Cent[8] = {0, 5, 10, 20, 30, 40, 50, 60};
+			double ALICE_IPinfo[8] = {0, 3.50, 4.94, 6.98, 8.55, 9.88, 11.04, 12.09};
+			for(int icent=0; icent<8; icent++){
+				if(fImpactParameter >= ALICE_IPinfo[icent] && fImpactParameter < ALICE_IPinfo[icent+1])
+					fCent = 0.5f*(ALICE_Cent[icent]+ALICE_Cent[icent+1]);
 			}
 		}
 		if( fEvtNum == 1 ){
@@ -244,7 +244,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
-		ReadKineTracks( mcEvent, fInputList ) ; // read tracklist
+		ReadKineTracks( mcEvent, fInputList, fCent ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -271,21 +271,21 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
 
-		if( IsGoodEvent( currentEvent )){
-			ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
-			ReadVertexInfo( currentEvent, fvertex); // read vertex info
-			// Analysis Part
-			fFFlucAna->Init();
-			fFFlucAna->SetInputList( fInputList );
-			fFFlucAna->SetEventCentrality( fCent );
-			fFFlucAna->SetEventImpactParameter( fImpactParameter); // need this??
-			fFFlucAna->SetEventVertex( fvertex );
-			fFFlucAna->SetEtaRange( fEta_min, fEta_max );
-			fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
-			fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
-			fFFlucAna->UserExec(""); // doing some analysis here.
-			//
-		}
+		if(!IsGoodEvent( currentEvent ))
+			return;
+		ReadAODTracks( currentEvent, fInputList, fCent ) ; // read tracklist
+		ReadVertexInfo( currentEvent, fvertex); // read vertex info
+		// Analysis Part
+		fFFlucAna->Init();
+		fFFlucAna->SetInputList( fInputList );
+		fFFlucAna->SetEventCentrality( fCent );
+		fFFlucAna->SetEventImpactParameter( fImpactParameter); // need this??
+		fFFlucAna->SetEventVertex( fvertex );
+		fFFlucAna->SetEtaRange( fEta_min, fEta_max );
+		fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
+		fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
+		fFFlucAna->UserExec(""); // doing some analysis here.
+		//
 	} // AOD
 }
 
@@ -324,7 +324,7 @@ void AliJFFlucTask::Init()
 	AliInfo("Doing initialization") ;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
+void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, float fCent)
 {
 	//aod->Print();
 	if(flags & FLUC_MC){  // how to get a flag to check  MC or not !
@@ -332,10 +332,13 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 		if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
 
 		Int_t nt = mcArray->GetEntriesFast();
-		Int_t ntrack =0;
+		Int_t ntrack = 0;
 		for( int it=0; it < nt ; it++){
 			AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
-			if(!track) { Error("ReadEventAODMC", "Could not receive particle %d",(int) it); continue; };
+			if(!track) {
+				Error("ReadEventAODMC","Could not read particle %d",it);
+				continue;
+			}
 			if( track->IsPhysicalPrimary() ){
 				// insert AMTP weak decay switch here
 				if(flags & FLUC_EXCLUDEWDECAY){
@@ -354,11 +357,20 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 					}
 				} // weak decay particles are exclude
 
-				if( fPt_min > 0){
+				if(fPt_min > 0){
 					double Pt = track->Pt();
 					if( Pt < fPt_min || Pt > fPt_max )
 						continue ; // pt cut
 				}
+
+				if(flags & FLUC_PHI_REJECTION){
+					int isub = (int)(track->Eta() > 0.0);
+					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+					if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+						continue;
+				}
+
 				Int_t pdg = track->GetPdgCode();
 				Char_t ch = (Char_t) track->Charge();
 				// partile charge selection
@@ -392,6 +404,15 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 					if( Pt < fPt_min || Pt > fPt_max )
 						continue ; // pt cut
 				}
+
+				if(flags & FLUC_PHI_REJECTION){
+					int isub = (int)(track->Eta() > 0.0);
+					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+					if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+						continue;
+				}
+
 				if( fPcharge !=0){ // fPcharge 0 : all particle
 					if( fPcharge==1 && ch<0)
 						continue; // 1 for + particle
@@ -594,10 +615,10 @@ void AliJFFlucTask::SetEffConfig( int effMode, int FilterBit)
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList)
+void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent)
 {
 	Int_t nt = mcEvent->GetNumberOfPrimaries();
-	Int_t ntrack =0;
+	Int_t ntrack = 0;
 	for (Int_t it = 0; it < nt; it++) {
 		AliMCParticle* track = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(it));
 		if(mcEvent->IsPhysicalPrimary(it)) {
@@ -620,6 +641,14 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 						}
 					}
 				}
+			}
+			
+			if(flags & FLUC_PHI_REJECTION){
+				int isub = (int)(track->Eta() > 0.0);
+				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+				int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+				if(flags & FLUC_PHI_REJECTION && gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+					continue;
 			}
 
 			Int_t pdg = particle->GetPdgCode();

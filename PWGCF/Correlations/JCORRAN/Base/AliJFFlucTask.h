@@ -64,8 +64,8 @@ public:
 	virtual void Terminate(Option_t* opt="");
 
 	inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}}
-	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
-	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
+	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
+	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent);
 	void SetDebugLevel(int debuglevel){
 		fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
 	//float ReadAODCentrality( AliAODEvent* aod, TString Trig );

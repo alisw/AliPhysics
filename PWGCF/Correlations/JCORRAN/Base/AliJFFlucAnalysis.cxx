@@ -45,6 +45,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
 	fCent(0),
+	fCBin(0),
 	fNJacek(0),
 	fEffMode(0),
 	fEffFilterBit(0),
@@ -71,23 +72,28 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_cn_2c_eta10(),
 	fh_cn_cn_2c_eta10()
 {
-	const int NCent = 7;
-	static Double_t CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
-	fNCent = NCent;
-	fCentBin = CentBin;
+	fDebugLevel = 0;
+	flags = 0;
+	fEta_min = 0;
+	fEta_max = 0;
+	fQC_eta_cut_min = -0.8; // default setting
+	fQC_eta_cut_max = 0.8; // default setting
+	fQC_eta_gap_half = 0.5;
+	fImpactParameter = -1;
 
+	fNCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+	fCentBin = AliJFFlucAnalysis::CentBin;
 
-	// pt bins to check pt dist copied from AliJHistos
-	const int nJacek = 73;
-	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
-		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
-		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
+	fNJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
+	fPttJacek = AliJFFlucAnalysis::pttJacek;
 
-	fNJacek = nJacek;
-	fPttJacek = pttJacek;
-
-	// Constructor
+	for(int icent=0; icent<fNCent; icent++){
+		for(int isub=0; isub<2; isub++){
+			h_phi_module[icent][isub] = NULL;
+		}
+	}
 }
+
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	: AliAnalysisTaskSE(name),
@@ -96,6 +102,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fEfficiency(0),
 	fVertex(0),
 	fCent(0),
+	fCBin(0),
 	fNJacek(0),
 	fEffMode(0),
 	fEffFilterBit(0),
@@ -123,16 +130,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_cn_cn_2c_eta10()
 {
 	cout << "analysis task created " << endl;
-	const int NCent = 7;
-	static Double_t CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
-	fNCent = NCent;
-	fCentBin = CentBin;
 
 	fDebugLevel = 0;
-	fCent = -1;
-	fCBin = -1;
-	fEffMode = 0;
-	fEffFilterBit =0;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -141,20 +140,21 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
 
-	for(int icent=0; icent<NCent; icent++){
-			for(int isub=0; isub<2; isub++){
-					h_phi_module[icent][isub]=NULL;
-			}
-	}
+	fNCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+	fCentBin = AliJFFlucAnalysis::CentBin;
 
-	// pt bins to check pt dist copied from AliJHistos
-	const int nJacek = 73;
-	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
-		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
-		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
-	fNJacek = nJacek;
-	fPttJacek = pttJacek;
+	fNJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
+	fPttJacek = AliJFFlucAnalysis::pttJacek;
+
+	for(int icent=0; icent<fNCent; icent++){
+		for(int isub=0; isub<2; isub++){
+			h_phi_module[icent][isub] = NULL;
+		}
+	}
 }
+
+Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
+Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
@@ -164,6 +164,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
 	fCent(a.fCent),
+	fCBin(a.fCBin),
 	fNJacek(a.fNJacek),
 	fEffMode(a.fEffMode),
 	fEffFilterBit(a.fEffFilterBit),
@@ -392,19 +393,15 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// find Centrality
-	Double_t inputCent = fCent;
-	fCBin = -1;
-	for(int iCbin=0; iCbin<fNCent; iCbin++){
-		if( inputCent > fCentBin[iCbin] && inputCent < fCentBin[iCbin+1] )
-			fCBin = iCbin;
-	}
-	if(fCBin == -1){return;};
+	fCBin = GetCentralityClass(fCent);
+	if(fCBin == -1)
+		return;
 	DEBUG(3, "cent bin found" );
 	int trk_number = fInputList->GetEntriesFast();
 	DEBUG(3, Form("trk number is %d", trk_number) );
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	DEBUG(3, "trk number filled into histo");
-	fh_cent->Fill( inputCent ) ;
+	fh_cent->Fill(fCent) ;
 	DEBUG(3, "filled cent into histo" );
 	fh_ImpactParameter->Fill( fImpactParameter);
 	DEBUG(3, "impact parameter has been filled" );
@@ -954,3 +951,13 @@ void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi
 	// hPhi histo setter
 	h_phi_module[cent][sub] = hModuledPhi;
 }
+
+int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
+	int NCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+	for(int iCbin = 0; iCbin < NCent; iCbin++){
+		if(fCent > CentBin[iCbin] && fCent < CentBin[iCbin+1])
+			return iCbin;
+	}
+	return -1;
+}
+
