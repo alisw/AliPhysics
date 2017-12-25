@@ -166,12 +166,13 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
   TObjArray selectionStatus;
+  selectionStatus.SetOwner(kTRUE);
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       PWG::EMCAL::AliEmcalTrackSelResultPtr cutresults = trackCuts->IsSelected(aodt);
       if (cutresults) trackbitmap.SetBitNumber(cutcounter);
-      selectionStatus.Add(&cutresults);
+      selectionStatus.Add(new PWG::EMCAL::AliEmcalTrackSelResultPtr(cutresults));
       cutcounter++;
     }
   }
