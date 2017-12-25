@@ -21,7 +21,8 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
 	fIsMC(kFALSE),
   fMaxAbsZvtx(10.),
   fRejectPileup(kTRUE),
-  fRejectDAQIncomplete(kTRUE)
+  fRejectDAQIncomplete(kTRUE),
+  fPF(AliPHOSEventCuts::kMultiVertexer)
 {
   // Constructor
 
@@ -92,8 +93,9 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
     }
   }
 
-//  AliAODEvent *fAODEvent = dynamic_cast<AliAODEvent*>(event);
-//  AliESDEvent *fESDEvent = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+
 //  if(fESDEvent){
 //    if(fESDEvent->IsPileupFromSPD()) {
 //      eventPileup = kTRUE;
@@ -118,6 +120,25 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   utils.SetMinWDistMV(minWeiZDiff);
   utils.SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC);
   eventPileup = utils.IsPileUpMV(event);
+
+  switch(fPF){
+    case AliPHOSEventCuts::kSPD:
+      if(esd)      eventPileup = esd->IsPileupFromSPD();
+      else if(aod) eventPileup = aod->IsPileupFromSPD();
+      break;
+
+    case AliPHOSEventCuts::kSPDInMultBins:
+      if(esd)      eventPileup = esd->IsPileupFromSPDInMultBins();
+      else if(aod) eventPileup = aod->IsPileupFromSPDInMultBins();
+      break;
+
+    case AliPHOSEventCuts::kMultiVertexer:
+      eventPileup = utils.IsPileUpMV(event);
+      break;
+    default:
+      eventPileup = kFALSE;
+      break;
+  }
 
   if(IsZvtxOut)                               return kFALSE; //reject event with Zvtx > threshold
   if(fRejectPileup && eventPileup)            return kFALSE; //reject pile up event

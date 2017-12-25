@@ -65,12 +65,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
 
-    void SetEventCuts(Bool_t isMC){
+    void SetEventCuts(Bool_t isMC, AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
       fPHOSEventCuts->SetMCFlag(isMC);
       fPHOSEventCuts->SetMaxAbsZvtx(10.);
       fPHOSEventCuts->SetRejectPileup(kTRUE);
       fPHOSEventCuts->SetRejectDAQIncompleteEvent(kTRUE);
+      fPHOSEventCuts->SetPileupFinder(pf);
     }
 
     void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
@@ -160,10 +161,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
 
-    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC){
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag){
       fIsPHOSTriggerAnalysis = kTRUE;
       fEnergyThreshold = Ethre;
-      fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
     }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
@@ -352,7 +354,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 41);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 42);
 };
 
 #endif
