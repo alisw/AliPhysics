@@ -41,7 +41,8 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kFALSE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE)
 {
   //Constructor
   
@@ -67,7 +68,8 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kFALSE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE)
 {
   //Constructor
    
@@ -123,7 +125,8 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0trigger
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kTRUE),
+  fApplyTOFCut(kFALSE)
 {
   //Constructor
    
@@ -286,7 +289,7 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       if(!cuts->AcceptPhoton(ph)) continue;
-      if(!ph->IsTOFOK()) continue;
+      if(fApplyTOFCut && !ph->IsTOFOK()) continue;
 
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
       //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
