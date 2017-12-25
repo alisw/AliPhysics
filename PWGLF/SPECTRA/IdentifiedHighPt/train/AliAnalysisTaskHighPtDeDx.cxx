@@ -11,12 +11,13 @@
   * 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
   * 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
   * 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
-  * 11 dec 2017: changed to trigger cond 2010 data
   * 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
   * 13 dec 2017: cleanup + filtering to reduce output size: 
                  - eta: 0.9->0.8
                  - setter function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
-  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config), TODO: implement choice of severel trigger types
+  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config)
+  * 18 dec 2017: - centrality selection also for MC
+                 - several trigger settings
 
   Remiders:
   * For pp: remove pile up thing
@@ -76,7 +77,6 @@ using namespace std;
 
 //
 // Responsible:
-// Alexandru Dobrin (Wayne State) 
 // Peter Christiansen (Lund)
 // Tuva Richert (Lund)
 
@@ -117,7 +117,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fVZEROArray(0x0),
   // ftrigBit1(0x0),
   // ftrigBit2(0x0),
-  fTrigType(AliVEvent::kMB),
+  fTrigType1(AliVEvent::kMB),
+  fTrigType2(AliVEvent::kCentral),
+  fTrigType3(AliVEvent::kSemiCentral),
   fVtxCut(10.0),  
   fEtaCut(0.8),  
   fEtaCutStack(1.2),  
@@ -179,8 +181,10 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fVZEROArray(0x0),
   // ftrigBit1(0x0),
   // ftrigBit2(0x0),
-  fTrigType(AliVEvent::kMB),
-  fVtxCut(10.0),  
+  fTrigType1(AliVEvent::kMB),
+  fTrigType2(AliVEvent::kCentral),
+  fTrigType3(AliVEvent::kSemiCentral),
+fVtxCut(10.0),  
   fEtaCut(0.8),
   fEtaCutStack(1.2),    
   fMinPt(0.1),
@@ -227,12 +231,7 @@ AliAnalysisTaskHighPtDeDx::~AliAnalysisTaskHighPtDeDx()
   }
   if (fRandom) delete fRandom;
   fRandom=0;
-  
-  // //for proof running; I cannot create tree do to memory limitations -> work with THnSparse 
-  // if (fListOfObjects  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
-  
-  
-  
+    
 }
 
 //______________________________________________________________________________
@@ -307,9 +306,7 @@ void AliAnalysisTaskHighPtDeDx::UserCreateOutputObjects()
     }
 
 
-
     fTree->SetDirectory(0);
-
     fListOfObjects->Add(fTree);
 
   }
@@ -374,9 +371,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     } else { // AOD
 
       fMC = dynamic_cast<AliMCEvent*>(MCEvent());
-      // if(fMC)
-      // 	fMC->Dump();
-
+ 
       fMCArray = (TClonesArray*)fAOD->FindListObject("mcparticles");
       if(!fMCArray){
 	Printf("%s:%d AOD MC array not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -390,13 +385,15 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Get trigger decision
   fTriggeredEventMB = 0; 
 
-  Bool_t lIsDesiredTrigger = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType);
+  Bool_t lIsDesiredTrigger1 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType1);
+  if(lIsDesiredTrigger1)fTriggeredEventMB = 1;
+ 
+  Bool_t lIsDesiredTrigger2 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType2);
+  if(lIsDesiredTrigger2)fTriggeredEventMB += 2; 
   
-  if(lIsDesiredTrigger){
-    fTriggeredEventMB = 1;
-    fn1->Fill(1);
-  }
-  //TODO: implement fTrigType2 etc, and do if(lIsDesiredTrigger){fTriggeredEventMB = +2;} etc, see "old method"
+  Bool_t lIsDesiredTrigger3 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType3);
+  if(lIsDesiredTrigger3)fTriggeredEventMB += 4; 
+  
 
   
   
@@ -457,11 +454,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   if (fAnalysisMC) {
     
-
-
     if (fAnalysisType == "ESD"){
-
-  
 
       AliHeader* headerMC = fMC->Header();
       if (headerMC) {
@@ -489,16 +482,11 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       }
     } else { // AOD
       
-  
-
       AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject("mcHeader")); 
-
-
+      
       if(mcHeader) {
 	fZvtxMC = mcHeader->GetVtxZ();
 	
-
-
 	if(strstr(mcHeader->GetGeneratorName(), "Pythia")) {
 	  fMcProcessType =  GetPythiaEventProcessType(mcHeader->GetEventType());
 	} else {
@@ -532,7 +520,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	fZvtx  = -999; //vertex = 0x0; //
       else
 	fZvtx = vtxESD->GetZ();
-    }  
+    } 
     else
       fZvtx = vtxESD->GetZ();
     
@@ -555,7 +543,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	  fZvtx  = -1599;
       }
     }
-  }
+  }//if aod
 
   fVtxStatus = -999;
   
@@ -587,24 +575,24 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Float_t centralityCL1 = -10;
 
   // only analyze triggered events
-  //   cout << " fTriggeredEventMB " << fTriggeredEventMB << "fAnalysisType " << fAnalysisType << " fAnalysisPbPb " <<fAnalysisPbPb << endl;
-  if(fTriggeredEventMB) {
-    //cout << "inside triggered !" << endl;
-    if (fAnalysisType == "ESD"){
+  if(fTriggeredEventMB){
+    if(fAnalysisType == "ESD"){
       if(fAnalysisPbPb){
+
 	AliCentrality *centObject = fESD->GetCentrality();
 	centralityV0M = centObject->GetCentralityPercentile("V0M");
 	// centralityV0A = centObject->GetCentralityPercentile("V0A");
  	// centralityZNA = centObject->GetCentralityPercentile("ZNA");
  	// centralityCL1 = centObject->GetCentralityPercentile("CL1");
      
-	//if(  !(fMinCent>=20 && fMaxCent <=40) ) return; //take out //hljunggr
-	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; //hljunggr comment out, put back in!!
-      }
-      fcent->Fill(centralityV0M);
+	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; 
 
+      }
+
+      fcent->Fill(centralityV0M);
       AnalyzeESD(fESD);
-    } else { // AOD
+
+    }else{ // AOD
       if(fAnalysisPbPb){
 	AliCentrality *centObject = fAOD->GetCentrality();
 	if(centObject){
@@ -613,28 +601,28 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	  // centralityZNA = centObject->GetCentralityPercentile("ZNA");
 	  // centralityCL1 = centObject->GetCentralityPercentile("CL1");
 	}
+	
+	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;
 
-	//if(  !(fMinCent>=20 && fMaxCent <=40) ) return; //take out //hljunggr
-	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; //hljunggr comment out, put back in!!
       }
+
       fcent->Fill(centralityV0M);
       AnalyzeAOD(fAOD);
+
     }
-  }
+  }//if triggered
 
   
   // store MC event data no matter what
-  //if(fAnalysisMC && fStoreMcIn) {
   if(fAnalysisMC) {
+    
+    if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
 
-    if (fAnalysisType == "ESD") {
-      ProcessMCTruthESD();
-    } else { // AOD
-
-      ProcessMCTruthAOD();
+    if(fAnalysisType == "ESD") ProcessMCTruthESD();
+    else ProcessMCTruthAOD(); // AOD
   
-    }
-  }    
+  }//if MC
+
   
 
   if( fTreeOption) {
@@ -646,8 +634,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     //fEvent->centV0A      = centralityV0A;
     //fEvent->centZNA      = centralityZNA;
     //fEvent->centCL1      = centralityCL1;
-
-
+    
     fTree->Fill();
     if(fTrackArrayGlobalPar)fTrackArrayGlobalPar->Clear();
     if(fV0ArrayGlobalPar)fV0ArrayGlobalPar->Clear();
@@ -661,8 +648,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
     if (fAnalysisMC)    
       fTrackArrayMC->Clear();
-      
-
   }
   
   // Post output data.
@@ -672,37 +657,17 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
 {
-  fRun  = esdEvent->GetRunNumber();
+  fRun = esdEvent->GetRunNumber();
   fEventId = 0;
   if(esdEvent->GetHeader())
     fEventId = GetEventIdAsLong(esdEvent->GetHeader());
   
-  //  Short_t isPileup = esdEvent->IsPileupFromSPD();
-  /*
-    cout"  nTPCtracks="<<esdEvent->nTPCtracks<<"  nITStracks="<<esdEvent->nITStracks<<endl;
-    if(esdEvent->nTPCtracks==0 && esdEvent->nITStracks==0){
-    cout<<"Evento defectuoso!!"<<endl;
-    }*/
-
-
-  //  Int_t     event     = esdEvent->GetEventNumberInFile();
   UInt_t    time      = esdEvent->GetTimeStamp();
-  //  ULong64_t trigger   = esdEvent->GetTriggerMask();
   Float_t   magf      = esdEvent->GetMagneticField();
-
-
-
-
 
   if(fTriggeredEventMB) {// Only MC case can we have not triggered events
     
-    // accepted event
     fEvents->Fill(0);
-    
-    
-    //Change, 10/04/13. Now accept all events to do a correct normalization
-    //if(fVtxStatus!=1) return; // accepted vertex
-    //    Int_t nESDTracks = esdEvent->GetNumberOfTracks();
     
     ProduceArrayTrksESD( esdEvent, kGlobalTrk );//produce array with global track parameters
     ProduceArrayV0ESD( esdEvent, kGlobalTrk );//v0's
@@ -715,7 +680,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
     fEvents->Fill(1);
     
     if(fVZEROBranch){
-      AliESDVZERO *esdV0 = esdEvent->GetVZEROData();// loop sobre canales del V0 para obtener las multiplicidad
+      AliESDVZERO *esdV0 = esdEvent->GetVZEROData();
       for (Int_t iCh=0; iCh<64; ++iCh) { 
 	Float_t multv=esdV0->GetMultiplicity(iCh); 
 	Int_t intexv=iCh;
@@ -724,27 +689,16 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
 	cellv0->cellmult= multv;
       }   
     }
-
-
-
   } // end if triggered
   
   if(fTreeOption) {
-
     fEvent->run       = fRun;
     fEvent->eventid   = fEventId;
     fEvent->time      = time;
-    //fEvent->cent      = centrality;
     fEvent->mag       = magf;
     fEvent->zvtx      = fZvtx;
     fEvent->vtxstatus = fVtxStatus;
-    //fEvent->pileup    = isPileup;
-
   }
-
-
-
-
 }
 
 //________________________________________________________________________
@@ -754,15 +708,9 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
   fEventId = 0;
   if(aodEvent->GetHeader())
     fEventId = GetEventIdAsLong(aodEvent->GetHeader());
-   
+  
   UInt_t    time      = 0; // Missing AOD info? aodEvent->GetTimeStamp();
   Float_t   magf      = aodEvent->GetMagneticField();
-
-  //Int_t     trackmult = 0; // no pt cuts
-  //Int_t     nadded    = 0;
-  //  Short_t isPileup = aodEvent->IsPileupFromSPD();
-
-  
 
   if(fTriggeredEventMB) {// Only MC case can we have not triggered events
     
@@ -792,24 +740,17 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
       }   
     }
 
-
-
   } // end if triggered
   
   if(fTreeOption) {
 
-    //Sort(fTrackArrayGlobalPar, kFALSE);
-
     fEvent->run       = fRun;
     fEvent->eventid   = fEventId;
     fEvent->time      = time;
-    //fEvent->cent      = centrality;
     fEvent->mag       = magf;
     fEvent->zvtx      = fZvtx;
     fEvent->vtxstatus = fVtxStatus;
-    //fEvent->trackmult = trackmult;
-    //fEvent->n         = nadded;
-    //fEvent->pileup    = isPileup;
+
   }
 }
 
@@ -860,22 +801,13 @@ Short_t AliAnalysisTaskHighPtDeDx::GetPidCode(Int_t pdgCode) const
 //_____________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD() 
 {
-  // Fill the special MC histogram with the MC truth info
-  
  
-  //cout << "mc truth " << " fAnalysisMC " << fAnalysisMC << " fstoremcin " << fStoreMcIn << endl;
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCStack->GetNtrack();
 
-  // Float_t  sphericityMC=GetSphericityTrue(fMCStack, 0.8, 0.5);
-  // Float_t  spherocityMC=GetSpherocityTrue(fMCStack, 0.8, 0.5);
-
-
   for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
     
-   
-
     //Cuts
     if(!(fMCStack->IsPhysicalPrimary(iTracks)))
       continue;
@@ -901,8 +833,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     Short_t pidCodeMC = 0;
     pidCodeMC = GetPidCode(pdgCode);
     
-    // Here we want to add some of the MC histograms!
-    
+
     Bool_t lIsStrangeness = kFALSE; 
     if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
     
@@ -910,17 +841,13 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    } 
     
     // And therefore we first cut here!
     if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction)	continue; 
-    } // else {
-    // Here we want to add the high pt part of the MC histograms!
-    //    }
+    } 
     
     if(fTreeOption) {
       
@@ -945,9 +872,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    //fEvent->sphericityMC         = sphericityMC;
-    //fEvent->spherocityMC         = spherocityMC;
-
+ 
   }
   
 }
@@ -955,12 +880,12 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 //_____________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD() 
 {
-  // Fill the special MC histogram with the MC truth info
+
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCArray->GetEntriesFast();
 
-  for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
+  for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
     //Cuts
     if(!(trackMC->IsPhysicalPrimary()))
@@ -1024,8 +949,6 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    //fEvent->sphericityMC         = 0;
-    //fEvent->spherocityMC         = 0;
 
   }
 }
@@ -1165,7 +1088,6 @@ AliAODMCParticle* AliAnalysisTaskHighPtDeDx::FindPrimaryMotherAOD(AliAODMCPartic
 }
 
 
-//V0______________________________________
 //____________________________________________________________________
 TParticle* AliAnalysisTaskHighPtDeDx::FindPrimaryMotherV0(AliStack* stack, Int_t label)
 {
@@ -2308,17 +2230,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  //Replace with simple mother check
 	  p_mother_label = p_mcTrack->GetMother(0); 
 	  
-	  //____________15sep2015____________
-	  // lblMotherPosV0Dghter = p_mcTrack->GetFirstMother();
-	  // TParticle* pThisV0 = lMCstack->Particle(lblMotherPosV0Dghter);
-	  // if(!fMC->IsFromBGEvent(lblMotherPosV0Dghter)){ //fMC, fMCStack, fMCArray?
-	  //   if (!(pThisV0->GetFirstMother()<0))
-	  //     {
-	  // 	injectedFlag = 0;
-	  //     }
-	  // }
-	  //________________________________
-
 
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);

@@ -67,7 +67,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE)
 {
   //Constructor
    

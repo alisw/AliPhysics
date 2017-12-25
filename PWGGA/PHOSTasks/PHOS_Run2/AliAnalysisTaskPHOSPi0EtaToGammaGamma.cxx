@@ -135,7 +135,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1L(0x0),
   fForceActiveTRU(kFALSE),
   fPIDResponse(0x0),
-  fIsNonLinStudy(kFALSE)
+  fIsNonLinStudy(kFALSE),
+  fGlobalEScale(1.0)
 {
   // Constructor
 
@@ -709,11 +710,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
           Double_t a = -0.09 + 0.01*ia;
           Double_t b =  0.4  + 0.1 *ib;
 
-          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"1.0*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
+          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"[2]*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
           fNonLin[ia][ib]->SetParNames("a","b (GeV)");
           fNonLin[ia][ib]->FixParameter(0,a);
           fNonLin[ia][ib]->FixParameter(1,b);
-
+          fNonLin[ia][ib]->FixParameter(2,fGlobalEScale);
+  
           fOutputContainer->Add(new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,240,0,0.96,NpTgg-1,pTgg));
           fOutputContainer->Add(new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),240,0,0.96,NpTgg-1,pTgg));
         }//end of ib
@@ -3172,6 +3174,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
   TLorentzVector p12, p12core;
   Double_t m12=0,pt12=0;
   Double_t e1=0,e2=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
 
   for(Int_t ia=0;ia<7;ia++){
     for(Int_t ib=0;ib<7;ib++){
@@ -3200,7 +3206,21 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
             pt12 = p12core.Pt();
           }
 
-          FillHistogramTH2(fOutputContainer,Form("hMgg_a%d_b%d",ia,ib),m12,pt12);
+          weight = 1.;
+          if(fIsMC){
+            w1= ph1->GetWeight();
+            primary1 = ph1->GetPrimary();
+
+            w2 = ph2->GetWeight();
+            primary2 = ph2->GetPrimary();
+
+            commonID = FindCommonParent(primary1,primary2);
+            if(commonID > -1) weight = w1;
+            else weight = w1*w2;
+
+          }//end of if fIsMC
+
+          FillHistogramTH2(fOutputContainer,Form("hMgg_a%d_b%d",ia,ib),m12,pt12,weight);
 
         }//end of ph2
       }//end of ph1

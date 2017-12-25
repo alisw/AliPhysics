@@ -147,7 +147,10 @@ public:
     {
         fRunSmearing = value;
     }
-
+    void setGlobalVertex(Bool_t value)
+    {
+        fGlobalVertex = value;
+    }
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
@@ -156,6 +159,11 @@ private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
+    void GetPerpendicularPseudoJet (AliEmcalJet * jet_in, AliEmcalJet  * &pos_perp_jet , AliEmcalJet   *&neg_perp_jet    ); // Generates up to two perpendicular jets for composition analysis
+    void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
+    void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
+
+
     void DoJetLoop(); //jet matching function 2/4
     void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
     void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
@@ -199,6 +207,7 @@ private:
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fRunSmearing;//
+    Bool_t   fGlobalVertex;//
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -296,7 +305,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 24)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 25)
 };
 
 #endif

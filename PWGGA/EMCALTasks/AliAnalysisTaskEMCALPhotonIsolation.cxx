@@ -146,6 +146,7 @@ fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
+fNLM2_NC_Acc_noTcard(0),
 fVz(0),
 fEvents(0),
 fPtaftTime(0),
@@ -192,8 +193,6 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
-// fConeArea(0),
-// fEtaBandArea(0),
 fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormEtaBand(0),
@@ -201,8 +200,6 @@ fPtvsM02vsSumUE_Norm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
 fInvMassM02noiso(0),
-fPtvsM02vsSumPi0(0),
-fPtvsM02vsSumEta(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
 fTrackMultvsSumChargedvsUE(0),
@@ -345,6 +342,7 @@ fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
+fNLM2_NC_Acc_noTcard(0),
 fVz(0),
 fEvents(0),
 fPtaftTime(0),
@@ -391,8 +389,6 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
-// fConeArea(0),
-// fEtaBandArea(0),
 fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormEtaBand(0),
@@ -400,8 +396,6 @@ fPtvsM02vsSumUE_Norm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
 fInvMassM02noiso(0),
-fPtvsM02vsSumPi0(0),
-fPtvsM02vsSumEta(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
 fTrackMultvsSumChargedvsUE(0),
@@ -737,27 +731,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fPtvsM02vsSumUE_Norm = new TH3D("hPtvsM02vsSumUE_Norm","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters (already normalised by the appropriate area)",200,0.,100.,400,0.,4.,220,-10.,100.);
 	  fPtvsM02vsSumUE_Norm->Sumw2();
 	  fOutput->Add(fPtvsM02vsSumUE_Norm);
-	  
-	  // fConeArea = new TH1D("hConeArea","Cone area dist. (depending on the cluster position)", 60, 0., 0.6);
-	  // fConeArea->Sumw2();
-	  // fOutput->Add(fConeArea);
-	  
-	  // fEtaBandArea = new TH1D("hEtaBandArea","Eta-band area dist. (depending on the cluster position)", 60, 0., 0.6);
-	  // fEtaBandArea->Sumw2();
-	  // fOutput->Add(fEtaBandArea);
 
-	  fEtaBandVsConeArea = new TH2F("hEtBandVsConeArea","Eta-band vs. cone area (depending on the cluster position)", 72, 0.16, 0.52, 62, 0.30, 0.61);
+	  fEtaBandVsConeArea = new TH2F("hEtaBandVsConeArea","Eta-band vs. cone area (depending on the cluster position)", 140, 0.16, 0.51, 200, 0.30, 0.80);
 	  fEtaBandVsConeArea->Sumw2();
 	  fOutput->Add(fEtaBandVsConeArea);
 	}
-
-          // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
-          // fPtvsM02vsSumPi0->Sumw2();
-          // fOutput->Add(fPtvsM02vsSumPi0);
-
-          // fPtvsM02vsSumEta = new TH3D("hPtvsM02vsSumEta when pi0+eta rejecting","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0+eta rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
-          // fPtvsM02vsSumPi0->Sumw2();
-          // fOutput->Add(fPtvsM02vsSumEta);
 
 	if(fIsoMethod==0){
 	  fEtIsoCells = new TH1D("hEtIsoCell_NC","E_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Cells",200,-0.25,99.75);

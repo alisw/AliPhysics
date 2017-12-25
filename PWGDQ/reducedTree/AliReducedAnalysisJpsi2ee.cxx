@@ -376,7 +376,7 @@ void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   for(Int_t it=0; it<trackList->GetEntries(); ++it) {
+   for(Int_t it=0; it<fEvent->NTracks1(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
       //cout << "track " << it << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;

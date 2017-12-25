@@ -1198,31 +1198,51 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, I
    Int_t currentGenerationLabel = ipart;
    for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
       if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
+      if(!currentGenerationParticle) return kFALSE;   // if there are sources requested, but MC history finished, evaluate to FALSE
+      
       // check all implemented sources
-      Bool_t decision = kTRUE;
-      if(currentGenerationParticle) {
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary) && !event->IsPhysicalPrimary(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent) && !event->IsFromBGEvent(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay) && !event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial) && !event->IsSecondaryFromMaterial(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent) && !event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay) && !(currentGenerationParticle->GetNDaughters()>2)) 
-            decision = kFALSE;
-         
-         if(!decision && !mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
-         if(decision && mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
+      UInt_t decision = 0;
+      // use logical XOR between the presence of a given source and the exclude flag
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kPhysicalPrimary) != event->IsPhysicalPrimary(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kPhysicalPrimary);
       }
-      else {
-         // In the case there is no current particle (MC history finished), check whether there is a source request.
-         // If no request, the MC test can still pass
-         if(mcSignal->GetSources(0,ig))
-            return kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromBGEvent) != event->IsFromBGEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromBGEvent);
       }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromWeakDecay) != event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromWeakDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromMaterial) != event->IsSecondaryFromMaterial(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromMaterial);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromSubsidiaryEvent) != event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromSubsidiaryEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kRadiativeDecay) != (currentGenerationParticle->GetNDaughters()>2)) 
+            decision |= (UInt_t(1) << AliSignalMC::kRadiativeDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstInStack) != (ipart==0)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondInStack) != (ipart==1)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstTenInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstTenInStack) != (ipart<10)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstTenInStack);
+      }
+      
+      if(!decision) return kFALSE;
+      decision &= mcSignal->GetSources(0,ig);
+      if(mcSignal->GetUseANDonSourceBits(0,ig) && (decision != mcSignal->GetSources(0,ig))) return kFALSE;  // not all req sources are fullfilled
       
       // get the next generation
       currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
@@ -1286,10 +1306,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    
    // We loop over all particles in the MC event
    for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
-      //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
-      if(!(particle->PdgCode()==443 || (TMath::Abs(particle->PdgCode())>500 && TMath::Abs(particle->PdgCode())<600))) continue;
+      
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
       

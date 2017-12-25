@@ -113,7 +113,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
   task->SetMCType(MCtype);
-  task->SetNonLinearityStudy(NonLinStudy);
+  task->SetNonLinearityStudy(NonLinStudy,1.012);
  
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);

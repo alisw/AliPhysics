@@ -5,6 +5,7 @@
 
 #include <TObject.h>
 #include <TBits.h>
+#include "AliEmcalTrackSelResultPtr.h"
 
 class TClonesArray;
 class TList;
@@ -12,6 +13,14 @@ class TObjArray;
 class AliVCuts;
 class AliVEvent;
 class AliVTrack;
+
+namespace PWG {
+namespace EMCAL {
+
+class AliEmcalCutBase;
+
+}
+}
 
 /**
  * @class AliEmcalManagedObject
@@ -219,7 +228,7 @@ public:
 	 * @param[in] trk Track to be checked
 	 * @return True if the track is accepted, false otherwise
 	 */
-	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
+	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk) = 0;
 
 	/**
 	 * @brief Interface for track cut generators
@@ -249,6 +258,14 @@ public:
 	void AddTrackCuts(AliVCuts *cuts);
 
 	/**
+	 * @brief Add track cuts of type AliEmcalCutBase
+	 * 
+	 * Takes ownership over the cuts
+	 * @param[in] cuts New cuts to add
+	 */
+	void AddTrackCuts(PWG::EMCAL::AliEmcalCutBase *cuts);
+
+	/**
 	 * @brief Add new set of track cuts to the list of cuts
 	 *
 	 * Takes ownership over the cuts
@@ -267,19 +284,7 @@ public:
 	 * @param[in] icut Cut at position in array
 	 * @return The cuts (NULL for invalid positions)
 	 */
-	AliVCuts *GetTrackCuts(Int_t icut);
-
-	/**
-	 * @brief Get selection bitmap for the last handled track
-	 * @return Track selection bitmap of the last handled track
-	 */
-	const TBits& GetTrackBitmap() const { return fTrackBitmap; }
-
-	/**
-	 * Get selection bitmaps of all accepted tracks
-	 * @return Bitmaps of all selected tracks
-	 */
-	const TClonesArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
+	PWG::EMCAL::AliEmcalCutBase *GetTrackCuts(Int_t icut);
 
 	/**
 	 * @brief Set selection mode to any
@@ -305,8 +310,6 @@ public:
 
 protected:
 	TObjArray    *fListOfTracks;         ///< TObjArray with accepted tracks
-	TClonesArray *fListOfTrackBitmaps;   ///< TClonesArray with accepted tracks' bit maps
-	TBits         fTrackBitmap;          ///< Bitmap of last accepted/rejected track
 	TObjArray    *fListOfCuts;           ///< List of track cut objects
 	Bool_t        fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 
