@@ -38,12 +38,9 @@ AliMixingHandler::AliMixingHandler() :
   fPoolSize(),
   fIsInitialized(kFALSE),
   fMixLikeSign(kTRUE),
-  fCentralityLimits(),
-  fEventVertexLimits(),
-  fEventPlaneLimits(),
-  fCentralityVariable(AliReducedVarManager::kNothing),
-  fEventVertexVariable(AliReducedVarManager::kNothing),
-  fEventPlaneVariable(AliReducedVarManager::kNothing),
+  fVariableLimits(),
+  fVariables(),
+  fNMixingVariables(0),
   fHistos(0x0),
   fCrossPairsCuts(),
   fLikePairsLeg1Cuts(),
@@ -51,13 +48,13 @@ AliMixingHandler::AliMixingHandler() :
 {
   // 
   // default constructor
-  //
-  Float_t dummyCentRange[2] = {0.0,100.};
-  Float_t dummyZRange[2] = {-10.0,10.};
-  Float_t dummyEPRange[2] = {(Float_t)(-0.5*TMath::Pi()),(Float_t)(0.5*TMath::Pi())};
-  fCentralityLimits.Set(2,dummyCentRange);
-  fEventVertexLimits.Set(2,dummyZRange);
-  fEventPlaneLimits.Set(2,dummyEPRange);
+  //  
+  Float_t dummyRange[2] = {-99999., +99999.};
+  for(Int_t iVar=0; iVar<kNMaxVariables; ++iVar) {
+     fVariableLimits[iVar].Set(2, dummyRange);
+     fVariables[iVar] = AliReducedVarManager::kNothing;
+  }
+  
   fPoolSize.Set(1);
   fCrossPairsCuts.SetOwner(kTRUE);
   fLikePairsLeg1Cuts.SetOwner(kTRUE);
@@ -79,12 +76,9 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   fPoolSize(),
   fIsInitialized(kFALSE),
   fMixLikeSign(kTRUE),
-  fCentralityLimits(),
-  fEventVertexLimits(),
-  fEventPlaneLimits(),
-  fCentralityVariable(AliReducedVarManager::kNothing),
-  fEventVertexVariable(AliReducedVarManager::kNothing),
-  fEventPlaneVariable(AliReducedVarManager::kNothing),
+  fVariableLimits(),
+  fVariables(),
+  fNMixingVariables(0),
   fHistos(0x0),
   fCrossPairsCuts(),
   fLikePairsLeg1Cuts(),
@@ -92,13 +86,13 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
 {
   //
   // Named constructor
-  //
-  Float_t dummyCentRange[2] = {0.0,100.};
-  Float_t dummyZRange[2] = {-10.0,10.};
-  Float_t dummyEPRange[2] = {(Float_t)(-0.5*TMath::Pi()),(Float_t)(0.5*TMath::Pi())};
-  fCentralityLimits.Set(2,dummyCentRange);
-  fEventVertexLimits.Set(2,dummyZRange);
-  fEventPlaneLimits.Set(2,dummyEPRange);
+  //  
+  Float_t dummyRange[2] = {-99999., +99999.};
+  for(Int_t iVar=0; iVar<kNMaxVariables; ++iVar) {
+     fVariableLimits[iVar].Set(2, dummyRange);
+     fVariables[iVar] = AliReducedVarManager::kNothing;
+  }
+  
   fPoolSize.Set(1);
   fCrossPairsCuts.SetOwner(kTRUE);
   fLikePairsLeg1Cuts.SetOwner(kTRUE);
@@ -118,15 +112,19 @@ AliMixingHandler::~AliMixingHandler() {
 
 
 //_________________________________________________________________________
-void AliMixingHandler::SetEventVariables(AliReducedVarManager::Variables cent, AliReducedVarManager::Variables vtx, 
-                                         AliReducedVarManager::Variables ep) {
+void AliMixingHandler::AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Float_t* binLims) {
    //
-   // set the event mixing variables
+   // add a mixing variable
    //
-   fCentralityVariable=cent; fEventVertexVariable=vtx; fEventPlaneVariable=ep;    
-   AliReducedVarManager::SetUseVariable(fCentralityVariable);
-   AliReducedVarManager::SetUseVariable(fEventVertexVariable);
-   AliReducedVarManager::SetUseVariable(fEventPlaneVariable);
+   if(fNMixingVariables>=kNMaxVariables) {
+      cout << "AliMixingHandler::AddMixingVariable(): ERROR Too many variables for the mixing!" << endl;
+      cout << "                  Maximum number of variables: " << kNMaxVariables << endl;
+      return;
+   }
+   fVariables[fNMixingVariables] = var;
+   fVariableLimits[fNMixingVariables].Set(nBins, binLims);
+   fNMixingVariables++;
+   AliReducedVarManager::SetUseVariable(var);
 }
 
 
@@ -134,9 +132,8 @@ void AliMixingHandler::SetEventVariables(AliReducedVarManager::Variables cent, A
 void AliMixingHandler::Init() {
   //
   // Initialization of pools
-  // NOTE: The master array is a 1D array but it will be represented as a 3D array
-  //       in centrality, vtxz and ep.
-  //       The size of the array will be n_cent x n_z x n_ep
+  // NOTE: The master array holding tracks is a 1D array but it will be represented as an n-dim array
+  //       The size of the array will be N_1 x N_2 x ... x N_n
   //       The correct event category will be retrieved using the function FindEventCategory()
   //
   if(!fHistos) {
@@ -153,7 +150,9 @@ void AliMixingHandler::Init() {
     cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << endl;
     return;
   }
-  Int_t size = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
+  //Int_t size = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
+  Int_t size = 1;
+  for(Int_t iVar = 0; iVar<fNMixingVariables; ++iVar) size *= (fVariableLimits[iVar].GetSize()-1);
   fPoolsLeg1.Expand(size); fPoolsLeg1.SetOwner(kTRUE);
   fPoolsLeg2.Expand(size); fPoolsLeg2.SetOwner(kTRUE);
   
@@ -192,7 +191,8 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
     return;
   
   // find the event category
-  Int_t category = FindEventCategory(values[fCentralityVariable], values[fEventVertexVariable], values[fEventPlaneVariable]);
+  //Int_t category = FindEventCategory(values[fCentralityVariable], values[fEventVertexVariable], values[fEventPlaneVariable]);
+  Int_t category = FindEventCategory(values);
   if(category<0) return;   // event characteristics outside the defined ranges
   
   TClonesArray *leg1PoolP = static_cast<TClonesArray*>(fPoolsLeg1.At(category));
@@ -204,15 +204,14 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   
   TClonesArray &leg1Pool=*leg1PoolP;
   TClonesArray &leg2Pool=*leg2PoolP;
-  
   // add the leg lists to the appropriate pools
   TList *list1 = new(leg1Pool[leg1Pool.GetEntries()]) TList();
   TList *list2 = new(leg2Pool[leg2Pool.GetEntries()]) TList();
   list1->SetOwner(kTRUE); list2->SetOwner(kTRUE);
-  for(Int_t it=0; it<leg1List->GetEntries(); ++it) 
-    list1->Add(leg1List->At(it)->Clone());
-  for(Int_t it=0; it<leg2List->GetEntries(); ++it) 
-    list2->Add(leg2List->At(it)->Clone());
+  for(Int_t it=0; it<leg1List->GetEntries(); ++it)
+     list1->Add(leg1List->At(it)->Clone());
+  for(Int_t it=0; it<leg2List->GetEntries(); ++it)
+     list2->Add(leg2List->At(it)->Clone());
     
   // increment the size of the pools in this category
   ULong_t mixingMask = IncrementPoolSizes(leg1List,leg2List,category);
@@ -226,78 +225,69 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
 
 
 //_________________________________________________________________________
-Int_t AliMixingHandler::FindEventCategory(Float_t centrality, Float_t vtxz, Float_t ep) {
-  //
-  // Find the event category corresponding to the centrality, vtxz and ep values 
-  //
-  if(!fIsInitialized) Init();
-  
-  Int_t centBin = TMath::BinarySearch(fCentralityLimits.GetSize(), fCentralityLimits.GetArray(), centrality);
-  if(centBin==-1 || centBin==fCentralityLimits.GetSize()-1) return -1;
-  Int_t zBin = TMath::BinarySearch(fEventVertexLimits.GetSize(), fEventVertexLimits.GetArray(), vtxz);
-  if(zBin==-1 || zBin==fEventVertexLimits.GetSize()-1) return -1;
-  Int_t epBin = TMath::BinarySearch(fEventPlaneLimits.GetSize(), fEventPlaneLimits.GetArray(), ep);
-  if(epBin==-1 || epBin==fEventPlaneLimits.GetSize()-1) return -1;
-  return centBin*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1) + 
-         zBin*(fEventPlaneLimits.GetSize()-1) + epBin; 
+Int_t AliMixingHandler::FindEventCategory(Float_t* values) {
+   //
+   // Find the event category corresponding to the centrality, vtxz and ep values 
+   //
+   if(fNMixingVariables==0) return -1;
+   if(!fIsInitialized) Init();
+   
+   Int_t bin[kNMaxVariables]; 
+   for (Int_t i=0; i<fNMixingVariables; ++i) {
+      bin[i] = TMath::BinarySearch(fVariableLimits[i].GetSize(), fVariableLimits[i].GetArray(), values[fVariables[i]]);
+      if(bin[i]==-1 || bin[i]==fVariableLimits[i].GetSize()-1) return -1;      // all variables must be inside limits
+   }
+   
+   Int_t category = 0; 
+   for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) {
+      Int_t tempCategory = 1;
+      for(Int_t iVar2=iVar; iVar2<fNMixingVariables; ++iVar2) {
+         if(iVar2==iVar) tempCategory *= bin[iVar2];
+         else tempCategory *= (fVariableLimits[iVar2].GetSize()-1);
+      }
+      category += tempCategory;
+   }
+   return category;
 }
 
 
 //_________________________________________________________________________
-Int_t AliMixingHandler::GetEventPlaneBin(Int_t category) {
-  //
-  // Find the bin center of the centrality interval for a given category
-  //
-  return category%(fEventPlaneLimits.GetSize()-1);
+Int_t AliMixingHandler::GetBinFromCategory(Int_t iVar, Int_t category) const {
+   //
+   // find the bin in variable var for the n-dimensional "category"
+   //
+   if(fNMixingVariables==0) return -1;
+   Int_t norm=1;
+   for(Int_t i=fNMixingVariables-1; i>iVar; --i) norm *= (fVariableLimits[i].GetSize()-1);
+   Int_t truncatedCategory = category - (category % norm);
+   truncatedCategory /= norm;
+   return truncatedCategory % (fVariableLimits[iVar].GetSize()-1);
 }
 
 
 //_________________________________________________________________________
-Int_t AliMixingHandler::GetEventVertexBin(Int_t category) {
-  //
-  // Find the bin center of the centrality interval for a given category
-  //
-  Int_t zBin = category-GetEventPlaneBin(category);
-  zBin /= (fEventPlaneLimits.GetSize()-1);
-  return zBin%(fEventVertexLimits.GetSize()-1);
+Int_t AliMixingHandler::GetPoolSize(Int_t cutNumber, Float_t* values) {
+   //
+   // Get the pool size for a given set of (cut,centrality,z,ep)
+   //
+   if(cutNumber<0 || cutNumber>fNParallelCuts) return -1;
+   Int_t eventCategory = FindEventCategory(values);
+   return GetPoolSize(cutNumber, eventCategory);
 }
 
 
 //_________________________________________________________________________
-Int_t AliMixingHandler::GetCentralityBin(Int_t category) {
-  //
-  // Find the bin center of the centrality interval for a given category
-  //
-  Int_t centBin = category-GetEventPlaneBin(category);
-  centBin -= GetEventVertexBin(category)*(fEventPlaneLimits.GetSize()-1);
-  centBin /= (fEventPlaneLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1);
-  return centBin%(fCentralityLimits.GetSize()-1);
-}
-
-
-//_________________________________________________________________________
-Int_t AliMixingHandler::GetPoolSize(Int_t cutNumber, Float_t centrality, Float_t vtxz, Float_t ep) {
-  //
-  // Get the pool size for a given set of (cut,centrality,z,ep)
-  //
-  if(cutNumber<0 || cutNumber>fNParallelCuts) return -1;
-  Int_t eventCategory = FindEventCategory(centrality,vtxz,ep);
-  return GetPoolSize(cutNumber, eventCategory);
-}
-
-
-//_________________________________________________________________________
-Int_t AliMixingHandler::GetPoolSize(Int_t cutNumber, Int_t eventCategory) {
+Int_t AliMixingHandler::GetPoolSize(Int_t cutNumber, Int_t eventCategory) const {
   //
   // Get the pool size for a given set of (cut,centrality,z,ep)
   //
   if(cutNumber<0 || cutNumber>fNParallelCuts) return -1;
   if(eventCategory<0) return -1;
   
-  Int_t pool = cutNumber*(fCentralityLimits.GetSize()-1)
-                        *(fEventVertexLimits.GetSize()-1)
-		        *(fEventPlaneLimits.GetSize()-1) 
-	       + eventCategory;
+  Int_t pool = cutNumber;
+  for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) pool *= (fVariableLimits[iVar].GetSize() - 1);
+  pool += eventCategory;
+  
   return fPoolSize[pool];
 }
 
@@ -307,7 +297,9 @@ void AliMixingHandler::ResetPoolSizes(ULong_t mixingMask, Int_t category) {
   //
   // Reset pool sizes for a given event category and mask
   //
-  Int_t nCategories = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
+  Int_t nCategories = 1;
+  for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) nCategories *= (fVariableLimits[iVar].GetSize() - 1);
+  
   for(Int_t icut=0; icut<fNParallelCuts; ++icut) {
     if(mixingMask&(ULong_t(1)<<icut))
 	fPoolSize[icut*nCategories+category] = 0;
@@ -338,7 +330,8 @@ ULong_t AliMixingHandler::IncrementPoolSizes(TList* list1, TList* list2, Int_t e
   }
     
   // increment the pools for those cuts which got at least one track
-  Int_t nCategories = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
+  Int_t nCategories = 1;
+  for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) nCategories *= (fVariableLimits[iVar].GetSize() - 1);
   Bool_t fullPoolFound = kFALSE;
   for(Int_t icut=0;icut<fNParallelCuts;++icut) {
     if(cutsMask & (ULong_t(1)<<icut))
@@ -346,6 +339,7 @@ ULong_t AliMixingHandler::IncrementPoolSizes(TList* list1, TList* list2, Int_t e
     if(fPoolSize[icut*nCategories+eventCategory]==fPoolDepth) 
       fullPoolFound = kTRUE;          
   }
+  if(!fullPoolFound) return 0;
   
   // If a completely filled pool is found, then look for the other cuts in this event category
   // to see if any of them is above the mixing threshold (fMixingThreshold)
@@ -377,13 +371,12 @@ void AliMixingHandler::RunLeftoverMixing(Int_t type) {
     TClonesArray *leg2Pool = static_cast<TClonesArray*>(fPoolsLeg2.At(icateg));
     if(!leg1Pool) continue;
     if(!leg2Pool) continue;
-    Int_t centBin = GetCentralityBin(icateg);
-    Int_t zBin = GetEventVertexBin(icateg);
-    Int_t epBin = GetEventPlaneBin(icateg);
-    //cout << "epBin/low/high :: " << epBin << "/" << fEventPlaneLimits[epBin] << "/" << fEventPlaneLimits[epBin+1] << endl;
-    values[fCentralityVariable] = 0.5*(fCentralityLimits[centBin]+fCentralityLimits[centBin+1]);
-    values[fEventVertexVariable] = 0.5*(fEventVertexLimits[zBin]+fEventVertexLimits[zBin+1]);
-    values[fEventPlaneVariable] = 0.5*(fEventPlaneLimits[epBin]+fEventPlaneLimits[epBin+1]);
+    
+    for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) {
+       Int_t bin = GetBinFromCategory(iVar, icateg);
+       values[fVariables[iVar]] = 0.5*(fVariableLimits[iVar][bin] + fVariableLimits[iVar][bin+1]);
+    }
+    
     RunEventMixing(leg1Pool,leg2Pool,mixingMask,type,values);
     ResetPoolSizes(mixingMask,icateg);
   }  // end loop over categories
@@ -624,95 +617,84 @@ Bool_t AliMixingHandler::IsPairSelected(Float_t* values, Int_t pairType) {
 
 //_________________________________________________________________________
 void AliMixingHandler::PrintMixingLists(Int_t debugLevel) {
-  //
-  // Print the contents of the mixing pools
-  //
-  if(!fIsInitialized) Init();
+   //
+   // Print the contents of the mixing pools
+   //
+   if(!fIsInitialized) Init();
   
-  if(debugLevel<1) {
-    cout << "Printing the event mixing lists contents. Prepare for a long dump ..." << endl;
-    cout << "Centrality intervals: " << flush;
-    for(Int_t icent=0; icent<fCentralityLimits.GetSize(); ++icent)
-      cout << fCentralityLimits[icent] << " -- " << flush;
-    cout << endl;
-    cout << "Event vertex intervals: " << flush;
-    for(Int_t ivtx=0; ivtx<fEventVertexLimits.GetSize(); ++ivtx)
-      cout << fEventVertexLimits[ivtx] << " -- " << flush;
-    cout << endl;
-    cout << "Event plane intervals: " << flush;
-    for(Int_t iep=0; iep<fEventPlaneLimits.GetSize(); ++iep)
-      cout << fEventPlaneLimits[iep] << " -- " << flush;
-    cout << endl;
+   cout << "Printing the event mixing lists contents. Prepare for a long dump ..." << endl;
+   for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) {
+      cout << "Variable #" << iVar << " (" << AliReducedVarManager::fgVariableNames[fVariables[iVar]].Data() << ") intervals: " << flush;
+      for(Int_t i=0; i<fVariableLimits[iVar].GetSize(); ++i)
+         cout << fVariableLimits[iVar][i] << (i<fVariableLimits[iVar].GetSize()-1 ? " -- " : "") << flush;
+      cout << endl;
+   }
     
-    cout << "Mix LS pairs :: " << fMixLikeSign << endl;
-    cout << "Pool depth :: " << fPoolDepth << endl;
-    cout << "Mixing threshold :: " << fMixingThreshold << endl;
-    cout << "Event downscale :: " << fDownscaleEvents << endl;
-    cout << "Track downscale :: " << fDownscaleTracks << endl;
-    cout << "No. parallel cuts :: " << fNParallelCuts << endl;
-    cout << "Histogram class names :: " << fHistClassNames.Data() << endl;
-  }
+   cout << "Mix LS pairs :: " << fMixLikeSign << endl;
+   cout << "Pool depth :: " << fPoolDepth << endl;
+   cout << "Mixing threshold :: " << fMixingThreshold << endl;
+   cout << "Event downscale :: " << fDownscaleEvents << endl;
+   cout << "Track downscale :: " << fDownscaleTracks << endl;
+   cout << "No. parallel cuts :: " << fNParallelCuts << endl;
+   cout << "Histogram class names :: " << fHistClassNames.Data() << endl;
   
-  if(debugLevel<1) return;
+   if(debugLevel<1) return;
   
-  Int_t nCategories = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
-  AliReducedBaseTrack* track = 0x0;
-  
-  for(Int_t icent=0; icent<fCentralityLimits.GetSize()-1; ++icent) {
-    for(Int_t iz=0; iz<fEventVertexLimits.GetSize()-1; ++iz) {
-      for(Int_t iep=0; iep<fEventPlaneLimits.GetSize()-1; ++iep) {
-	Int_t evCategory = FindEventCategory(fCentralityLimits[icent],fEventVertexLimits[iz],fEventPlaneLimits[iep]);
-        cout << "Event category " << evCategory << " (cent/vtxz/ep) :: [" 
-	     << fCentralityLimits[icent] << ";" << fCentralityLimits[icent+1] << "] -- ["
-	     << fEventVertexLimits[iz] << ";" << fEventVertexLimits[iz+1] << "] -- ["
-	     << fEventPlaneLimits[iep] << ";" << fEventPlaneLimits[iep+1] << "]" << endl;
-	cout << "====================================================================================" << endl;     
-	cout << "Event bins (cent/vtx/ep) :: " << GetCentralityBin(evCategory) << "/"
-	     << GetEventVertexBin(evCategory) << "/" << GetEventPlaneBin(evCategory) << endl;
-	cout << "Current pool sizes :: " << flush;
-	for(Int_t icut=0;icut<fNParallelCuts;++icut) 
-	  cout << fPoolSize[icut*nCategories+evCategory] << " -- " << flush;
-	cout << endl;
-	if(debugLevel<2) continue;
-	
-	TClonesArray *leg1PoolP = static_cast<TClonesArray*>(fPoolsLeg1.At(evCategory));
-	if(!leg1PoolP) continue;
-        TClonesArray &leg1Pool=*leg1PoolP;
-	TClonesArray *leg2PoolP = static_cast<TClonesArray*>(fPoolsLeg2.At(evCategory));
-	
-        TIter iterLeg1Pool(leg1PoolP);
-	TIter iterLeg2Pool(leg2PoolP);
-	for(Int_t iev=0; iev<leg1Pool.GetEntries(); ++iev) {
-	  TList* leg1List = (TList*)iterLeg1Pool();
-	  TList* leg2List = (TList*)iterLeg2Pool();
-	  cout << "	Event #" << iev << ";  No. of tracks (leg1/leg2) :: " 
-	       << leg1List->GetEntries() << " / " << leg2List->GetEntries() << endl;
-	  if(debugLevel<3) continue;
-	  
-	  TIter iterLeg1List(leg1List);
-	  cout << "		Leg1 list" << endl;
-	  for(Int_t itrack=0; itrack<leg1List->GetEntries(); ++itrack) {
-	    track = (AliReducedBaseTrack*)iterLeg1List();
-	    cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
-	         << track->P() << " / " << track->Px() << " / " 
-                 << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
-	    AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
-	    cout << endl;
-	  }  // end loop over tracks
-	  
-	  TIter iterLeg2List(leg2List);
-	  cout << "		Leg2 list" << endl;
-	  for(Int_t itrack=0; itrack<leg2List->GetEntries(); ++itrack) {
-	    track = (AliReducedBaseTrack*)iterLeg2List();
-	    cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
-	         << track->P() << " / " << track->Px() << " / " 
-                 << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
-	    AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
-	    cout << endl;
-	  }  // end loop over tracks
-	  
-	}  // end loop over events
-      }  // end loop over event plane intervals
-    }  // end loop over event vertex intervals
-  }  // end loop over centrality intervals
+   Int_t nCategories = 1;
+   for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) nCategories *= (fVariableLimits[iVar].GetSize() - 1);
+
+   AliReducedBaseTrack* track = 0x0;
+   for(Int_t iCateg=0; iCateg<nCategories; ++iCateg) {
+      Int_t bins[fNMixingVariables];
+      for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar)  bins[iVar] = GetBinFromCategory(iVar, iCateg);
+      cout << "Category #" << iCateg << ", Bins (" << flush;
+      for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) 
+         cout << bins[iVar] << (iVar<fNMixingVariables-1 ? "/" : "") << flush;
+      cout << ")" << endl;
+      for(Int_t iVar=0; iVar<fNMixingVariables; ++iVar) 
+         cout << "[" << fVariableLimits[iVar][GetBinFromCategory(iVar, iCateg)] << ";" << fVariableLimits[iVar][GetBinFromCategory(iVar, iCateg)+1] << "]" << (iVar<fNMixingVariables-1 ? " -- " : "") << flush;
+      cout << endl;
+      cout << "====================================================================================" << endl;     
+      for(Int_t icut=0;icut<fNParallelCuts;++icut) 
+         cout << fPoolSize[icut*nCategories+iCateg] << (icut<fNParallelCuts-1 ? " -- " : "") << flush;
+      cout << endl;
+      if(debugLevel<2) continue;
+      
+      TClonesArray *leg1PoolP = static_cast<TClonesArray*>(fPoolsLeg1.At(iCateg));
+      if(!leg1PoolP) continue;
+      TClonesArray &leg1Pool=*leg1PoolP;
+      TClonesArray *leg2PoolP = static_cast<TClonesArray*>(fPoolsLeg2.At(iCateg));
+      
+      TIter iterLeg1Pool(leg1PoolP);
+      TIter iterLeg2Pool(leg2PoolP);
+      for(Int_t iev=0; iev<leg1Pool.GetEntries(); ++iev) {
+         TList* leg1List = (TList*)iterLeg1Pool();
+         TList* leg2List = (TList*)iterLeg2Pool();
+         cout << "	Event #" << iev << ";  No. of tracks (leg1/leg2) :: " 
+         << leg1List->GetEntries() << " / " << leg2List->GetEntries() << endl;
+         if(debugLevel<3) continue;
+         
+         TIter iterLeg1List(leg1List);
+         cout << "		Leg1 list" << endl;
+         for(Int_t itrack=0; itrack<leg1List->GetEntries(); ++itrack) {
+            track = (AliReducedBaseTrack*)iterLeg1List();
+            cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
+            << track->P() << " / " << track->Px() << " / " 
+            << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
+            AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
+            cout << endl;
+         }  // end loop over tracks
+         
+         TIter iterLeg2List(leg2List);
+         cout << "		Leg2 list" << endl;
+         for(Int_t itrack=0; itrack<leg2List->GetEntries(); ++itrack) {
+            track = (AliReducedBaseTrack*)iterLeg2List();
+            cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
+            << track->P() << " / " << track->Px() << " / " 
+            << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
+            AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
+            cout << endl;
+         }  // end loop over tracks
+      }  // end loop over events
+   }  // end loop over categories  
 }
