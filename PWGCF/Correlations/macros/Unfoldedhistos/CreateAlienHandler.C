@@ -57,7 +57,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
 
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliCSAnalysisCutsBase.cxx "
+  /* plugin->SetAnalysisSource("AliCSAnalysisCutsBase.cxx "
       "AliCSTrackCutsBase.cxx "
       "AliCSTrackMaps.cxx "
       "AliCSEventCuts.cxx "
@@ -66,11 +66,11 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
       "AliCSTrackSelection.cxx "
       "AliDptDptCorrelations.cxx "
       "AliCSPairAnalysis.cxx "
-      "AliAnalysisTaskCorrelationsStudies.cxx");
+      "AliAnalysisTaskCorrelationsStudies.cxx"); */
 
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("AliCSAnalysisCutsBase.cxx AliCSAnalysisCutsBase.h "
+  /* plugin->SetAdditionalLibs("AliCSAnalysisCutsBase.cxx AliCSAnalysisCutsBase.h "
       "AliCSTrackCutsBase.cxx AliCSTrackCutsBase.h "
       "AliCSTrackMaps.cxx AliCSTrackMaps.h "
       "AliCSEventCuts.cxx AliCSEventCuts.h "
@@ -79,10 +79,10 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
       "AliCSTrackSelection.cxx AliCSTrackSelection.h "
       "AliDptDptCorrelations.cxx AliDptDptCorrelations.h "
       "AliCSPairAnalysis.cxx AliCSPairAnalysis.h "
-      "AliAnalysisTaskCorrelationsStudies.h AliAnalysisTaskCorrelationsStudies.cxx");
+      "AliAnalysisTaskCorrelationsStudies.h AliAnalysisTaskCorrelationsStudies.cxx"); */
 
   // alternatively pass a par file with source information
-  // plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
+  plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
 
 // Declare the output file names separated by blanks.
 // (can be like: file.root or file.root@ALICE::Niham::File)
@@ -96,7 +96,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
 // Optionally resubmit threshold.
   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
-  plugin->SetTTL(18000);
+  plugin->SetTTL(30000);
 // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   return plugin;
