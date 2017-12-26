@@ -773,20 +773,13 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		Double_t eta = itrack->Eta();
 		int isub = (int)(eta > 0);
 		Double_t phi = itrack->Phi();
-		Double_t phi_module_corr = 1;
-		if(flags & FLUC_PHI_MODULATION){
-			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-			if(flags & FLUC_PHI_INVERSE)
-				phi_module_corr = 1.0/phi_module_corr;
-		}
-		//
 		if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){
 			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
 			fh_pt[fCBin]->Fill(pt, 1./ effCorr );
 			if( eta < 0 )
-				fh_phi[fCBin][0]->Fill( phi_module_corr * phi, 1./effCorr) ;
+				fh_phi[fCBin][0]->Fill( phi, 1./effCorr) ;
 			if( eta > 0 )
-				fh_phi[fCBin][1]->Fill( phi_module_corr * phi, 1./effCorr) ;
+				fh_phi[fCBin][1]->Fill( phi, 1./effCorr) ;
 		}
 	}
 	for(int iaxis=0; iaxis<3; iaxis++)
