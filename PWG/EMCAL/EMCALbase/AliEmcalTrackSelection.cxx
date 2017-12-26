@@ -136,6 +136,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
 {
   if (!fListOfTracks) {
     fListOfTracks = new TObjArray;
+    fListOfTracks->SetOwner(kTRUE);
   }
   else {
     fListOfTracks->Clear();
@@ -155,6 +156,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
 {
   if (!fListOfTracks) {
     fListOfTracks = new TObjArray;
+    fListOfTracks->SetOwner(kTRUE);
   }
   else {
     fListOfTracks->Clear();

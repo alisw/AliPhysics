@@ -28,7 +28,7 @@
 #define ALIEMCALTRACKSELRESULTCOMBINED_H
 
 #include <TObject.h>
-#include <TObjArray.h>
+#include <TClonesArray.h>
 #include <exception>
 #include <sstream>
 #include <string>
@@ -60,14 +60,14 @@ public:
   };
   
   AliEmcalTrackSelResultCombined();
-  AliEmcalTrackSelResultCombined(const TObjArray &singleSelPointers);
+  AliEmcalTrackSelResultCombined(const TObjArray *singleSelPointers);
   virtual ~AliEmcalTrackSelResultCombined() {}
 
   AliEmcalTrackSelResultPtr &operator[](int index) const;
   Int_t GetNumberOfSelectionResults() const;
 
 private:
-  TObjArray                   fData;    ///< Single 
+  TClonesArray                   fData;    ///< Single 
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTrackSelResultCombined, 1);

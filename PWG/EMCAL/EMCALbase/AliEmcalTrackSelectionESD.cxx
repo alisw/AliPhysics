@@ -152,7 +152,7 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionESD::IsTrackAccepted
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
-  PWG::EMCAL::AliEmcalTrackSelResultPtr result(esdt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
+  PWG::EMCAL::AliEmcalTrackSelResultPtr result(esdt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(&selectionStatus));
   if (fSelectionModeAny){
     result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
   } else {

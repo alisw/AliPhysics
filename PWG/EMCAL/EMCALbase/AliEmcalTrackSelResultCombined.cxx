@@ -39,11 +39,11 @@ AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined():
 
 }
 
-AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const TObjArray &singleSelPointers):
+AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const TObjArray *singleSelPointers):
   TObject(),
-  fData()
+  fData("PWG::EMCAL::AliEmcalTrackSelResultPtr", singleSelPointers->GetEntries())
 {
-  for(auto o  : singleSelPointers) fData.Add(new AliEmcalTrackSelResultPtr(*(static_cast<AliEmcalTrackSelResultPtr *>(o))));
+  for(auto o  : *singleSelPointers) new(fData[fData.GetEntries()]) AliEmcalTrackSelResultPtr(*(static_cast<AliEmcalTrackSelResultPtr *>(o)));
 }
 
 AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) const {

@@ -48,7 +48,8 @@ namespace EMCAL {
  * connected to it via the reference count. Instances can connect and disconnect
  * by the functions Connect and Release.
  * 
- * This class is foreseen to be used only from within AliEmcalTrackSelResultUserPtr.
+ * This class is foreseen to be used only from within AliEmcalTrackSelResultUserPtr. It
+ * is a suicide object which kills itself once it goes out-of-scope.
  */
 class AliEmcalTrackSelResultUserStorage : public TObject {
 public:
@@ -61,14 +62,6 @@ public:
    * @param data 
    */
   AliEmcalTrackSelResultUserStorage(TObject *data);
-  
-  /**
-   * @brief Destructor
-   * 
-   * Deletes the data associated to the storage. Only to be used
-   * from within AliEmcalTrackSelResultUserPtr
-   */
-  virtual ~AliEmcalTrackSelResultUserStorage();
   
   /**
    * @brief Connect new user pointer instance to the storage
@@ -105,6 +98,16 @@ public:
    * @return User data handled by the storage
    */
   TObject *GetData() const { return fData; }
+
+protected:
+
+  /**
+   * @brief Destructor
+   * 
+   * Deletes the data associated to the storage. Only to be used
+   * from within AliEmcalTrackSelResultUserPtr
+   */
+  virtual ~AliEmcalTrackSelResultUserStorage();
 
 private:
   AliEmcalTrackSelResultUserStorage(const AliEmcalTrackSelResultUserStorage &);
