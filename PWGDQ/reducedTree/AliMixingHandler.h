@@ -19,6 +19,11 @@
 #include "AliReducedInfoCut.h"
 
 class AliMixingHandler : public TNamed {
+   
+public:
+   enum Constants {
+      kNMaxVariables = 10
+   };
 
 public:
   AliMixingHandler();
@@ -26,18 +31,15 @@ public:
   virtual ~AliMixingHandler();
   
   // setters
+  void AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Float_t* binLims);
   void SetMixLikeSign(Bool_t flag) {fMixLikeSign = flag;}
   void SetPoolDepth(Int_t n) {fPoolDepth = n;}
   void SetMixingThreshold(Float_t fr) {fMixingThreshold = fr;}
   void SetDownscaleEvents(Float_t ds) {fDownscaleEvents = ds;}
   void SetDownscaleTracks(Float_t ds) {fDownscaleTracks = ds;}
   void SetNParallelCuts(Int_t n) {fNParallelCuts = n;}
-  void SetCentralityLimits(Int_t n, const Float_t* arr)  {fCentralityLimits.Set(n,arr);}
-  void SetEventVertexLimits(Int_t n, const Float_t* arr) {fEventVertexLimits.Set(n,arr);}
-  void SetEventPlaneLimits(Int_t n, const Float_t* arr)  {fEventPlaneLimits.Set(n,arr);}
   void SetHistogramManager(AliHistogramManager* histos) {fHistos = histos;}
   void SetHistClassNames(const Char_t* names) {fHistClassNames = names;}
-  void SetEventVariables(AliReducedVarManager::Variables centVar, AliReducedVarManager::Variables vtxVar, AliReducedVarManager::Variables epVar);
   void AddCrossPairsCut(AliReducedInfoCut* cut) {fCrossPairsCuts.Add(cut);}
   void AddOppositeSignPairsCut(AliReducedInfoCut* cut) {fCrossPairsCuts.Add(cut);}    // synonim function to AddCrossPairsCut() used for charged legs
   void AddLikePairsLeg1Cut(AliReducedInfoCut* cut) {fLikePairsLeg1Cuts.Add(cut);}
@@ -56,15 +58,14 @@ public:
   Float_t GetDownscaleEvents() const {return fDownscaleEvents;}
   Float_t GetDownscaleTracks() const {return fDownscaleTracks;}
   Int_t GetNParallelCuts() const {return fNParallelCuts;}
-  Int_t GetPoolSize(Int_t cut, Float_t centrality, Float_t vtxz, Float_t ep);
-  Int_t GetPoolSize(Int_t cut, Int_t eventCategory);
+  Int_t GetPoolSize(Int_t cut, Float_t* values);
+  Int_t GetPoolSize(Int_t cut, Int_t eventCategory) const;
   TString GetHistClassNames() const {return fHistClassNames;};
+  Int_t GetNMixingVariables() const {return fNMixingVariables;}
   
   void Init();
-  Int_t FindEventCategory(Float_t centrality, Float_t vtxz, Float_t ep);
-  Int_t GetEventPlaneBin(Int_t category);
-  Int_t GetEventVertexBin(Int_t category);
-  Int_t GetCentralityBin(Int_t category);
+  Int_t FindEventCategory(Float_t* values);
+  Int_t GetBinFromCategory(Int_t iVar, Int_t category) const;
   void FillEvent(TList* leg1List, TList* leg2List, Float_t* values, Int_t type);
   Bool_t AcceptTrack();    // randomly accept/reject a track for mixing
   void RunLeftoverMixing(Int_t type);
@@ -89,12 +90,9 @@ private:
   Bool_t fIsInitialized;           // check if the mixing handler is initialized
   Bool_t fMixLikeSign;             // mix or not like-sign tracks (default is true)
   
-  TArrayF fCentralityLimits;
-  TArrayF fEventVertexLimits;
-  TArrayF fEventPlaneLimits;
-  AliReducedVarManager::Variables fCentralityVariable;
-  AliReducedVarManager::Variables fEventVertexVariable;
-  AliReducedVarManager::Variables fEventPlaneVariable;
+  TArrayF fVariableLimits[kNMaxVariables];
+  AliReducedVarManager::Variables fVariables[kNMaxVariables];
+  Int_t  fNMixingVariables;
   
   AliHistogramManager* fHistos;    // histogram manager
   
@@ -106,7 +104,7 @@ private:
   ULong_t IncrementPoolSizes(TList* list1, TList* list2, Int_t eventCategory);
   void ResetPoolSizes(ULong_t mixingMask, Int_t category);  
   
-  ClassDef(AliMixingHandler,1);
+  ClassDef(AliMixingHandler,2);
 };
 
 #endif
