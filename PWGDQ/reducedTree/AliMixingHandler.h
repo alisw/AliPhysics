@@ -22,17 +22,20 @@ class AliMixingHandler : public TNamed {
    
 public:
    enum Constants {
+      kMixResonanceLegs=0,         // event mixing for resonance inv mass bkg
+      kMixCorrelation,                 // event mixing for correlations
       kNMaxVariables = 10
    };
 
 public:
-  AliMixingHandler();
-  AliMixingHandler(const Char_t* name, const Char_t* title);
+  AliMixingHandler(Int_t mixingSetup=kMixResonanceLegs);
+  AliMixingHandler(const Char_t* name, const Char_t* title, Int_t mixingSetup=kMixResonanceLegs);
   virtual ~AliMixingHandler();
   
   // setters
   void AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Float_t* binLims);
   void SetMixLikeSign(Bool_t flag) {fMixLikeSign = flag;}
+  void SetMixLikePairs(Bool_t flag) {SetMixLikeSign(flag);}      // synonim function to SetMixLikeSign
   void SetPoolDepth(Int_t n) {fPoolDepth = n;}
   void SetMixingThreshold(Float_t fr) {fMixingThreshold = fr;}
   void SetDownscaleEvents(Float_t ds) {fDownscaleEvents = ds;}
@@ -62,6 +65,7 @@ public:
   Int_t GetPoolSize(Int_t cut, Int_t eventCategory) const;
   TString GetHistClassNames() const {return fHistClassNames;};
   Int_t GetNMixingVariables() const {return fNMixingVariables;}
+  Int_t GetMixingSetup() const {return fMixingSetup;}
   
   void Init();
   Int_t FindEventCategory(Float_t* values);
@@ -77,6 +81,7 @@ private:
    AliMixingHandler& operator=(const AliMixingHandler& handler);      
    
   // User options
+  Int_t    fMixingSetup;          //  see Constants for various options 
   Int_t fPoolDepth;              // depth of the event mixing pool
   Float_t fMixingThreshold;      // within a (centrality,vtx,ep) mix all pools with entries > fMixingThreshold*fPoolDepth
   Float_t fDownscaleEvents;      // random downscale adding events to the pools
@@ -104,7 +109,7 @@ private:
   ULong_t IncrementPoolSizes(TList* list1, TList* list2, Int_t eventCategory);
   void ResetPoolSizes(ULong_t mixingMask, Int_t category);  
   
-  ClassDef(AliMixingHandler,2);
+  ClassDef(AliMixingHandler,3);
 };
 
 #endif

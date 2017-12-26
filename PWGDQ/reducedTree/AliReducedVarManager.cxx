@@ -1738,11 +1738,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     TVector3 v2(t2->Px(), t2->Py(), t2->Pz());
     values[kPairOpeningAngle] = v1.Angle(v2);
   }
-  values[kDeltaEta] = TMath::Abs( t1->Eta() - t2->Eta()  );
-  values[kDeltaPhi] = TMath::Abs( t1->Phi() - t2->Phi()  );
-
-
-
+  
   if(  t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class()     ) {
     TRACK* ti1=(TRACK*)t1;
     TRACK* ti2=(TRACK*)t2;
@@ -1840,9 +1836,6 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kOneOverPairEff] = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
-
-  values[kDeltaEta] = TMath::Abs( t1->Eta() - t2->Eta()  );
-  values[kDeltaPhi] = TMath::Abs( t1->Phi() - t2->Phi()  );
 }
 
 
@@ -1892,21 +1885,24 @@ void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Flo
 
 
 //__________________________________________________________________
-void AliReducedVarManager::FillCorrelationInfo(PAIR* p, BASETRACK* t, Float_t* values) {
+void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
   //
   // fill pair-track correlation information
   //
+  if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
+  if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
+  
   if(fgUsedVars[kDeltaPhi]) {
-    Double_t delta = p->Phi() - t->Phi();
+    Double_t delta = trig->Phi() - assoc->Phi();
     if(delta>3.0/2.0*TMath::Pi()) delta -= 2.0*TMath::Pi();
     if(delta<-0.5*TMath::Pi()) delta += 2.0*TMath::Pi();
     values[kDeltaPhi] = delta;
   }
   
   if(fgUsedVars[kDeltaTheta]) 
-    values[kDeltaTheta] = p->Theta() - t->Theta();
+    values[kDeltaTheta] = trig->Theta() - assoc->Theta();
   
-  if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = p->Eta() - t->Eta();
+  if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = trig->Eta() - assoc->Eta();
 }
 
 

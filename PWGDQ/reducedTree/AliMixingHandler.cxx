@@ -25,8 +25,9 @@ using std::flush;
 ClassImp(AliMixingHandler);
 
 //_________________________________________________________________________
-AliMixingHandler::AliMixingHandler() :
+AliMixingHandler::AliMixingHandler(Int_t mixingSetup /* = kMixResonanceLegs*/) :
   TNamed(),
+  fMixingSetup(mixingSetup),
   fPoolDepth(100),
   fMixingThreshold(1.0),
   fDownscaleEvents(1.0),
@@ -63,8 +64,9 @@ AliMixingHandler::AliMixingHandler() :
 
 
 //_________________________________________________________________________
-AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
+AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title, Int_t mixingSetup /* = kMixResonanceLegs*/) :
   TNamed(name,title),
+  fMixingSetup(mixingSetup),
   fPoolDepth(100),
   fMixingThreshold(1.0),
   fDownscaleEvents(1.0),
@@ -145,7 +147,10 @@ void AliMixingHandler::Init() {
     return;
   }
   TObjArray* histClassArr = fHistClassNames.Tokenize(";");
-  if(histClassArr->GetEntries()!=3*fNParallelCuts) {       // 3 because there is one class of histograms for each pair type: ++,+- and --
+  Int_t nClassesPerCut = 0;
+  if(fMixingSetup==kMixResonanceLegs) nClassesPerCut = 3;
+  if(fMixingSetup==kMixCorrelation) nClassesPerCut = 1;
+  if(histClassArr->GetEntries()!=nClassesPerCut*fNParallelCuts) {  
     cout << "AliMixingHandler::Init(): ERROR The number of cuts and the number of hist class names provided do not match!" << endl;
     cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << endl;
     return;
@@ -428,14 +433,18 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  if(!testFlags2) continue;
 	  
 	  // fill cross-pairs (leg1 - leg2) for the enabled bits
-	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
+          if(fMixingSetup==kMixResonanceLegs) AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
+          if(fMixingSetup==kMixCorrelation) AliReducedVarManager::FillCorrelationInfo(ev1Leg1, ev2Leg2, values);
           if(!IsPairSelected(values, 1)) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
-            if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
+            if((testFlags2)&(ULong_t(1)<<ibit)) { 
+               if(fMixingSetup==kMixResonanceLegs) fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
+               if(fMixingSetup==kMixCorrelation) fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+            }
           }  
 	}  // end loop over the ev2-leg2 list
 	
+	if(fMixingSetup==kMixCorrelation) continue;
 	if(!fMixLikeSign) continue;
 	// loop over the ev2-leg1 list
 	TIter iterLeg1LS(ev2Leg1List);
@@ -455,6 +464,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	}  // end loop over the ev2-leg1 list
       }  // end loop over the ev1-leg1 list
       
+      if(fMixingSetup==kMixCorrelation) continue;
       if(!fMixLikeSign) continue;
       //loop over the ev1-leg2 list
       TIter iterLeg2(ev1Leg2List);
