@@ -213,6 +213,12 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgAnchorPeriod = kLHC16l;
     fgEnergy = k13TeV;
 
+  // LHC17 XeXe periods
+  } else if (szLHCPeriod.CompareTo("LHC17n") == 0) {
+    fgDataPeriod = kLHC17n;
+    fgAnchorPeriod = kLHC17n;
+    fgEnergy = kXeXe5440GeV;
+
   // LHC10x anchored MCs
   } else if (szLHCPeriod.CompareTo("LHC10d1") == 0){
     fgDataPeriod = kLHC10d1;
