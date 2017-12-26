@@ -351,7 +351,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 				if(flags & FLUC_PHI_REJECTION){
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
 					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
 				}
@@ -379,7 +379,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 		for( int it=0; it<nt ; it++){
 			AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 			if(!track){
-				Error("ReadEventAOD", "Could not receive partice %d", (int) it);
+				Error("ReadEventAOD", "Could not read particle %d", (int) it);
 				continue;
 			}
 			if(track->TestFilterBit( fFilterBit )){ //
@@ -393,7 +393,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 				if(flags & FLUC_PHI_REJECTION){
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
 					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
 				}
@@ -631,7 +631,7 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 			if(flags & FLUC_PHI_REJECTION){
 				int isub = (int)(track->Eta() > 0.0);
 				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-				int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(track->Phi());
+				int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
 				if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 					continue;
 			}
