@@ -616,8 +616,12 @@ PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHyb
   } else {
     if(auto combineddata = dynamic_cast<const PWG::EMCAL::AliEmcalTrackSelResultCombined *>(selectionResult.GetUserInfo())){
       for(int icut = 0; icut < combineddata->GetNumberOfSelectionResults(); icut++){
-        auto cutresult = GetHybridDefinition((*combineddata)[icut]);
-        if(cutresult != PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined) hybridDefinition = cutresult;
+        try{
+          auto cutresult = GetHybridDefinition((*combineddata)[icut]);
+          if(cutresult != PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined) hybridDefinition = cutresult;
+        } catch(PWG::EMCAL::AliEmcalTrackSelResultCombined::IndexException &e) {
+          AliErrorStream() << "Index error: " << e.what() << std::endl;
+        }
       }
     }
   }
