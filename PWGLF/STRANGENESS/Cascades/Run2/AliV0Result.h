@@ -48,6 +48,7 @@ public:
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
     
     void SetCutV0Radius       ( Double_t lCut ) { fCutV0Radius         = lCut; }
+    void SetCutMaxV0Radius    ( Double_t lCut ) { fCutMaxV0Radius      = lCut; }
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
     void SetCutDCAV0Daughters ( Double_t lCut ) { fCutDCAV0Daughters   = lCut; }
@@ -108,6 +109,7 @@ public:
     Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
     
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
+    Double_t GetCutMaxV0Radius    () const { return fCutMaxV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
     Double_t GetCutDCAPosToPV     () const { return fCutDCAPosToPV; }
     Double_t GetCutDCAV0Daughters () const { return fCutDCAV0Daughters; }
@@ -168,6 +170,7 @@ private:
     Double_t fCutMaxRapidity; //max rapidity
     
     Double_t fCutV0Radius;
+    Double_t fCutMaxV0Radius;
     Double_t fCutDCANegToPV;
     Double_t fCutDCAPosToPV;
     Double_t fCutDCAV0Daughters;
@@ -228,5 +231,6 @@ private:
     //15 - added proton profile (dummy as of now)
     //16 - added configurable AP cut
     //17 - added real possibility of having proton profiles (re-analysis material)
+    //18 - added configurable max V0 radius
 };
 #endif

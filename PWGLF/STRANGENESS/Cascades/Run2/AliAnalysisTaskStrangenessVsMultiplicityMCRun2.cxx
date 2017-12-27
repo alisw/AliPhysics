@@ -2011,7 +2011,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
         
         //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
+        //if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
         
         //Extra track quality: Chi2/cluster for cross-checks
         Float_t lBiggestChi2PerCluster = -1;
@@ -2349,6 +2349,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 3: Topological Variables
                 fTreeVariableV0Radius > lV0Result->GetCutV0Radius() &&
+                fTreeVariableV0Radius < lV0Result->GetCutMaxV0Radius() &&
                 fTreeVariableDcaNegToPrimVertex > lV0Result->GetCutDCANegToPV() &&
                 fTreeVariableDcaPosToPrimVertex > lV0Result->GetCutDCAPosToPV() &&
                 fTreeVariableDcaV0Daughters < lV0Result->GetCutDCAV0Daughters() &&

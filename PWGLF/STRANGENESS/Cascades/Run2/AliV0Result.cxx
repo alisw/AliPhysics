@@ -20,6 +20,7 @@ fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -65,6 +66,7 @@ fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -117,6 +119,7 @@ fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -174,6 +177,7 @@ fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -227,6 +231,7 @@ fCutMinRapidity(lCopyMe.fCutMinRapidity),
 fCutMaxRapidity(lCopyMe.fCutMaxRapidity),
 //Topological
 fCutV0Radius(lCopyMe.fCutV0Radius),
+fCutMaxV0Radius(lCopyMe.fCutMaxV0Radius),
 fCutDCANegToPV(lCopyMe.fCutDCANegToPV),
 fCutDCAPosToPV(lCopyMe.fCutDCAPosToPV),
 fCutDCAV0Daughters(lCopyMe.fCutDCAV0Daughters),
@@ -293,6 +298,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
     
     fCutV0Radius = lCopyMe->GetCutV0Radius();
+    fCutMaxV0Radius = lCopyMe->GetCutMaxV0Radius();
     fCutDCANegToPV = lCopyMe->GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe->GetCutDCAPosToPV();
     fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
@@ -377,6 +383,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMaxRapidity = lCopyMe.GetCutMaxRapidity(),
     
     fCutV0Radius = lCopyMe.GetCutV0Radius();
+    fCutMaxV0Radius = lCopyMe.GetCutMaxV0Radius();
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV();
     fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
@@ -501,6 +508,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutDCAV0Daughters - lCompareV0->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutV0CosPA - lCompareV0->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutV0Radius - lCompareV0->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxV0Radius - lCompareV0->GetCutMaxV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareV0->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
 
@@ -563,6 +571,7 @@ void AliV0Result::Print()
         cout<<" ^--Constant........: "<<fCutVarV0CosPA_Const<<endl;
     }
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
+    cout<<" V0 2D Radius (max).: "<<fCutMaxV0Radius<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
