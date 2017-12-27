@@ -47,6 +47,7 @@
 #include "AliRsnMiniParticle.h"
 
 #include "AliRsnMiniAnalysisTask.h"
+#include "AliRsnMiniResonanceFinder.h"
 
 
 ClassImp(AliRsnMiniAnalysisTask)
@@ -101,7 +102,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(kFALSE)
+   fRsnTreeInFile(kFALSE),
+   fResonanceFinder(0x0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -158,7 +160,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(saveRsnTreeInFile)
+   fRsnTreeInFile(saveRsnTreeInFile),
+   fResonanceFinder(0x0)
 {
 //
 // Default constructor.
@@ -221,7 +224,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
-   fRsnTreeInFile(copy.fRsnTreeInFile)
+   fRsnTreeInFile(copy.fRsnTreeInFile),
+   fResonanceFinder(0x0)
 {
 //
 // Copy constructor.
@@ -301,6 +305,7 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
       delete fEvBuffer;
+      delete fResonanceFinder;
    }
 }
 
@@ -453,6 +458,8 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // fill a mini-event from current
    // and skip this event if no tracks were accepted
    FillMiniEvent(check);
+
+   if(fResonanceFinder) fResonanceFinder->RunResonanceFinder(fMiniEvent);
 
    // fill MC based histograms on mothers,
    // which do need the original event

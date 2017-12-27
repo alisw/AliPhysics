@@ -32,6 +32,7 @@ public:
       kTrack,
       kV0,
       kCascade,
+      kResonance,
       kNoType
    };
 
@@ -45,6 +46,9 @@ public:
       kLambda,
       kXi,
       kOmega,
+      kKstar0,
+      kPhi,
+      kLambdastar,
       kUnknown
    };
 
@@ -217,6 +221,10 @@ inline AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
       case kXi:
       case kOmega:
          return kCascade;
+      case kKstar0:
+      case kPhi:
+      case kLambdastar:
+	 return kResonance;
       default:
          return kNoType;
    }
