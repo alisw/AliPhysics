@@ -40,9 +40,10 @@ public:
 
   // setters
   void AddAssociatedTrackCut(AliReducedInfoCut* cut);
-  void SetElectronBit(Int_t bit) {fElectronBit = bit;}
+  void AddJpsiElectronCut(AliReducedInfoCut* cut) {AddTrackCut(cut);}      // synonim function to AddTrackCut
+  //void SetElectronBit(Int_t bit) {fElectronBit = bit;}
   void SetRunCorrelation(Bool_t option) {fOptionRunCorrelation = option;}
-  void SetAssociatedTracksSecondArray(Bool_t option) {fOptionAssociatedTracks = option;}
+  //void SetAssociatedTracksSecondArray(Bool_t option) {fOptionAssociatedTracks = option;}
   void SetLoopOverTracks(Bool_t option) {
     fOptionLoopOverTracks = option;
     if(!fOptionLoopOverTracks) {fOptionRunPairing = kFALSE; fOptionRunMixing = kFALSE; fOptionRunLikeSignPairing = kFALSE; fOptionRunCorrelation = kFALSE;}
@@ -51,15 +52,17 @@ public:
   // getters
   Int_t GetNAssociatedTrackCuts() const {return fAssociatedTrackCuts.GetEntries();}
   const Char_t* GetAssociatedTrackCutName(Int_t i) const {return (i<fAssociatedTrackCuts.GetEntries() ? fAssociatedTrackCuts.At(i)->GetName() : "");}
-  Int_t GetElectronBit() {return fElectronBit;}
+  //Int_t GetElectronBit() {return fElectronBit;}
   Bool_t GetRunCorrelation() {return fOptionRunCorrelation;}
 
 protected:
-  Int_t   fElectronBit;                           // toggled BIT in fQualityFlags for electron/positron selection
-  Float_t fValues2[AliReducedVarManager::kNVars]; // array of values to hold information for associated tracks for histograms
+   // TODO: add mixing handler for correlations
+   
+  //Int_t   fElectronBit;                           // toggled BIT in fQualityFlags for electron/positron selection
+  //Float_t fValues2[AliReducedVarManager::kNVars]; // array of values to hold information for associated tracks for histograms
 
   Bool_t fOptionRunCorrelation;   // true: run correlation of candidates and associated tracks, false: apply only associated track cuts
-  Bool_t fOptionAssociatedTracks; // true: associated tracks are to be take from second track array, false: first track array
+  //Bool_t fOptionAssociatedTracks; // true: associated tracks are to be take from second track array, false: first track array
 
   TList fAssociatedTrackCuts;   // array of associated track cuts
   TList fAssociatedTracks;      // list of selected associated tracks
@@ -72,7 +75,7 @@ protected:
   void FillAssociatedTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "AssociatedTrack");
   void FillCorrelationHistograms(ULong_t maskTrack, ULong_t maskAssocTrack, TString corrClass="CorrSE", Bool_t isMCTruth=kFALSE);
 
-  ClassDef(AliReducedAnalysisJpsi2eeCorrelations, 1);
+  ClassDef(AliReducedAnalysisJpsi2eeCorrelations, 2);
 };
 
 #endif
