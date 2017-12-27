@@ -685,7 +685,7 @@ void AliJFFlucTask::EnableCentFlat(const TString fname){
 }
 
 void AliJFFlucTask::EnablePhiModule(const TString fname){
-	flags |= FLUC_PHI_MODULATION;
+	//flags |= FLUC_PHI_MODULATION;
 	cout << "Setting InFIle as " << fname.Data() << endl;
 	TGrid::Connect("alien:");
 	TFile *inclusFile = TFile::Open( fname.Data() , "read" );
