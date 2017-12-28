@@ -55,6 +55,7 @@ void runCorrelationsStudiesConfigMacro() {
   szAliPhysicsVersion = "vAN-20171222-1";
 
   /* the number of files we want to test */
+  nNoOfInputFiles = 30;
   nNoOfTestFiles = 2;
 
   /* load the run numbers */
@@ -73,7 +74,6 @@ void runCorrelationsStudiesConfigMacro() {
   load2017nRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
-  nNoOfInputFiles = 30;
 
   /* local file list */
   szLocalFileList = (bMC? "filelist_mc.txt" : "filelist.txt");
@@ -470,7 +470,7 @@ void load2017nRunNumbers() {
   bUseAOD                   = !bUseESD;
 
   /* the GRID working directory */
-  szGridWorkingDir = "CorrelationStudiesXeXe2080_2017n";
+  szGridWorkingDir = "CorrelationStudiesXeXe_2017n";
 
   /* reco pass */
   szpass = "1";
@@ -479,6 +479,10 @@ void load2017nRunNumbers() {
   szDataDir = "/alice/data/2017/LHC17n";
   /* 2015o HIR */
   szDataPattern = "*/pass1/AOD/*/AliAOD.root";
+
+  /* heavy data files */
+  nNoOfInputFiles = 20;
+  nNoOfTestFiles = 1;
 
   /* the list of runs to analyze 2015o HIR*/
   listOfActiveRuns.Add(new TObjString("280234"));
