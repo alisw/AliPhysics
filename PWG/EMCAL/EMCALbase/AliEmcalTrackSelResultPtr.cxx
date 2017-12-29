@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <iostream>
 #include <TNamed.h> // for user object
+#include <TClass.h>
 #include "AliEmcalTrackSelResultPtr.h"
 #include "AliVTrack.h"
 
@@ -138,6 +139,11 @@ std::ostream &PWG::EMCAL::operator<<(std::ostream &stream, const PWG::EMCAL::Ali
   return stream;
 }
 
+/*************************************************************
+ *                                                           *
+ * Content of class AliEmcalTrackSelResultUserStorage        *
+ *                                                           *
+ *************************************************************/
 
 AliEmcalTrackSelResultUserStorage::AliEmcalTrackSelResultUserStorage():
   TObject(),
@@ -152,10 +158,10 @@ AliEmcalTrackSelResultUserStorage::AliEmcalTrackSelResultUserStorage(TObject *da
   fData(data),
   fReferenceCount(1)
 {
-  
 }
 
 AliEmcalTrackSelResultUserStorage::~AliEmcalTrackSelResultUserStorage(){
+  //std::cout << "Destructing user storage with reference count 0" << std::endl;
   if(fData) delete fData;
 }
 
@@ -167,6 +173,12 @@ void AliEmcalTrackSelResultUserStorage::Release(){
   fReferenceCount--;
 }
 
+/*************************************************************
+ *                                                           *
+ * Content of class AliEmcalTrackSelResultUserPtr            *
+ *                                                           *
+ *************************************************************/
+
 AliEmcalTrackSelResultUserPtr::AliEmcalTrackSelResultUserPtr():
   TObject(),
   fUserStorage(nullptr)
@@ -176,9 +188,9 @@ AliEmcalTrackSelResultUserPtr::AliEmcalTrackSelResultUserPtr():
 
 AliEmcalTrackSelResultUserPtr::AliEmcalTrackSelResultUserPtr(TObject *data):
   TObject(),
-  fUserStorage(new AliEmcalTrackSelResultUserStorage(data))
+  fUserStorage(nullptr)
 {
-  
+  if(data) fUserStorage = new AliEmcalTrackSelResultUserStorage(data);
 }
 
 AliEmcalTrackSelResultUserPtr::AliEmcalTrackSelResultUserPtr(const AliEmcalTrackSelResultUserPtr &ref):
@@ -208,7 +220,7 @@ AliEmcalTrackSelResultUserPtr &AliEmcalTrackSelResultUserPtr::operator=(const Al
   if(&ref != this){
     if(fUserStorage) {
       fUserStorage->Release();
-      if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
+     // if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
     } 
 
     if(ref.fUserStorage) {
@@ -225,7 +237,7 @@ AliEmcalTrackSelResultUserPtr &AliEmcalTrackSelResultUserPtr::operator=(AliEmcal
   if(&ref != this){
     if(fUserStorage) {
       fUserStorage->Release();
-      if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
+      //if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
     } 
 
     if(ref.fUserStorage) {
@@ -241,7 +253,7 @@ AliEmcalTrackSelResultUserPtr::~AliEmcalTrackSelResultUserPtr(){
   if(fUserStorage) {
     fUserStorage->Release();
     // The last pointer connected to the storage deletes it
-    if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
+    //if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
   }
 }
 

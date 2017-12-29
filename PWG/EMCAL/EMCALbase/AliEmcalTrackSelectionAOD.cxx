@@ -165,19 +165,19 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   TBits trackbitmap(64);
   trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
-  TObjArray selectionStatus;
+  TClonesArray selectionStatus("PWG::EMCAL::AliEmcalTrackSelResultPtr", fListOfCuts->GetEntries());
   selectionStatus.SetOwner(kTRUE);
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       PWG::EMCAL::AliEmcalTrackSelResultPtr cutresults = trackCuts->IsSelected(aodt);
       if (cutresults) trackbitmap.SetBitNumber(cutcounter);
-      selectionStatus.Add(new PWG::EMCAL::AliEmcalTrackSelResultPtr(cutresults));
+      new(selectionStatus[selectionStatus.GetEntries()]) PWG::EMCAL::AliEmcalTrackSelResultPtr(cutresults);
       cutcounter++;
     }
   }
 
-  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
+  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(&selectionStatus));
   if (fSelectionModeAny){
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
     result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
