@@ -171,6 +171,7 @@ void AliEmcalTrackSelResultUserStorage::Connect() {
 
 void AliEmcalTrackSelResultUserStorage::Release(){
   fReferenceCount--;
+  if(!fReferenceCount) delete this;
 }
 
 /*************************************************************
