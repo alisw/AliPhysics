@@ -28,6 +28,7 @@ AliRsnMiniResonanceFinder::AliRsnMiniResonanceFinder(const char *name) :
    fPair(),
    fSel1(0),
    fSel2(0),
+   fPairMode(0),
    fEvent(0x0)
 {
 //
@@ -48,6 +49,7 @@ AliRsnMiniResonanceFinder::AliRsnMiniResonanceFinder(const AliRsnMiniResonanceFi
    fPair(),
    fSel1(0),
    fSel2(0),
+   fPairMode(copy.fPairMode),
    fEvent(copy.fEvent)
 {
 //
@@ -73,6 +75,7 @@ AliRsnMiniResonanceFinder &AliRsnMiniResonanceFinder::operator=(const AliRsnMini
    fCutIDrsn = copy.fCutIDrsn;
    fMotherMass = copy.fMotherMass;
    fPairCuts = copy.fPairCuts;
+   fPairMode = copy.fPairMode;
    fEvent = copy.fEvent;
 
    Int_t i;
@@ -86,6 +89,16 @@ AliRsnMiniResonanceFinder &AliRsnMiniResonanceFinder::operator=(const AliRsnMini
    fSel2.Set(0);
 
    return (*this);
+}
+
+//__________________________________________________________________________________________________
+AliRsnMiniResonanceFinder::~AliRsnMiniResonanceFinder()
+{
+//
+// Destructor.
+//
+
+  return;
 }
 
 //__________________________________________________________________________________________________
@@ -152,23 +165,33 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
 
          // check pair against cuts
          if (fPairCuts) {
-            if (!fPairCuts->IsSelected(&fPair)) continue;
+	   if (!fPairCuts->IsSelected(&fPair)) continue;
          }
          // package the pair as a mini particle
 
-         mother = event->AddParticle();
-	     mother->Clear();
-	     mother->Index() = -1;
-	     mother->IndexV0Pos() = p1->Index();
-	     mother->IndexV0Neg() = p2->Index();
-	     mother->Charge() = '0';
-	     mother->SetCutBit(fCutIDrsn);
+	 if(fPairMode==1 && (p1->Mother()<0 || p1->Mother()!=p2->Mother())) continue;// use only true pairs (MC)
+	 if(fPairMode==2 &&  p1->Mother()>=0 && p1->Mother()==p2->Mother()) continue;// use only false pairs (MC)
 
-	     mother->PrecX() = fPair.Sum(0).X();
-	     mother->PrecY() = fPair.Sum(0).Y();
-	     mother->PrecZ() = fPair.Sum(0).Z();
+         mother = event->AddParticle();
+	 mother->Clear();
+	 mother->Index() = -2;
+	 mother->Charge() = '0';
+	 mother->SetCutBit(fCutIDrsn);
+
+	 if(p1->Charge()=='+' && p2->Charge()=='-'){
+	   mother->IndexV0Pos() = p1->Index();
+	   mother->IndexV0Neg() = p2->Index();
+	 }else{
+	   mother->IndexV0Pos() = p2->Index();
+	   mother->IndexV0Neg() = p1->Index();
+	 }
+
+	 mother->PrecX() = fPair.Sum(0).X();
+	 mother->PrecY() = fPair.Sum(0).Y();
+	 mother->PrecZ() = fPair.Sum(0).Z();
+	 mother->SetMass(fPair.InvMass(0),0);
           
-         if(p1->Mother() == p2->Mother()){
+         if(p1->Mother()>=0 && p1->Mother()==p2->Mother()){
             mother->PsimX() = p1->PmotherX();
             mother->PsimY() = p1->PmotherY();
             mother->PsimZ() = p1->PmotherZ();
@@ -178,6 +201,9 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
             mother->PsimY() = fPair.Sum(1).Y();
             mother->PsimZ() = fPair.Sum(1).Z();
          }
+	 mother->SetMass(fPair.InvMass(1),1);
+
+	 mother->PmotherX()=mother->PmotherY()=mother->PmotherZ()=-1.0;
 
          nadded++;
       } // end internal loop

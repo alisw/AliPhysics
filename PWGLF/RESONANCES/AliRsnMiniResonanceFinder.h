@@ -31,14 +31,16 @@ public:
    RSNPID          GetDaughter(Int_t i) const {if (i <= 0) return fDaughter[0]; else return fDaughter[1];}
    Double_t        GetMass(Int_t i)     const {return AliRsnDaughter::SpeciesMass(GetDaughter(i));}
    Int_t           GetPDG(Int_t i)      const {return AliRsnDaughter::SpeciesPDG(GetDaughter(i));}
-   Int_t           GetCharge(Int_t i)   const {if (i <= 0) return fCharge[0]; else return fCharge[1];}
+   Char_t          GetCharge(Int_t i)   const {if (i <= 0) return fCharge[0]; else return fCharge[1];}
    Double_t        GetMotherMass()      const {return fMotherMass;}
+   Short_t         GetPairMode()        const {return fPairMode;}
 
    void            SetCutID(Int_t i, Int_t   value)   {if (i <= 0) fCutID [0] = value; else fCutID [1] = value;}
    void            SetDaughter(Int_t i, RSNPID value) {if (i <= 0) fDaughter[0] = value; else fDaughter[1] = value;}
    void            SetCharge(Int_t i, Char_t  value)  {if (i <= 0) fCharge[0] = value; else fCharge[1] = value;}
    void            SetMotherMass(Double_t mass)       {fMotherMass = mass;}
    void            SetPairCuts(AliRsnCutSet *set)     {fPairCuts = set;}
+   void            SetPairMode(Short_t s)             {fPairMode = s;}
 
    Int_t           ConnectTo(AliRsnMiniAnalysisTask* task);
    // IMPORTANT: Do not assign any additional track cuts to the AliRsnMiniAnalysisTask
@@ -58,6 +60,7 @@ private:
    AliRsnMiniPair   fPair;             //! minipair for computations
    TArrayI          fSel1;             // list of selected particles for definition 1
    TArrayI          fSel2;             // list of selected particles for definition 2
+   Short_t          fPairMode;         // 0: use all pairs; 1: use only true pairs (MC); 2: use only false pairs (MC)
 
    AliRsnMiniEvent *fEvent;            // mini event to be used
 

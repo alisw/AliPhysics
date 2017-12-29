@@ -7,8 +7,6 @@
 // -- definition of output histogram
 //
 
-#include "Riostream.h"
-
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -498,6 +496,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *p1, *p2;
+   Double_t mass1, mass2;
 
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
@@ -543,7 +542,17 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             continue;
          }
          // sum momenta
-         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+
+	 mass1 = p1->Mass(kFALSE);
+	 if(mass1<=0.0) mass1 = GetMass(0);// mass not stored in p1, so use PDG mass
+	 else mass1 = -1.0;//use mass(es) stored in p1
+
+	 mass2 = p2->Mass(kFALSE);
+	 if(mass2<=0.0) mass2 = GetMass(1);
+	 else mass2 = -1.0;
+	 
+         fPair.Fill(p1, p2, mass1, mass2, fMotherMass);
+	 
          // do rotation if needed
          if (fComputation == kTrackPairRotated1) fPair.InvertP(kTRUE);
          if (fComputation == kTrackPairRotated2) fPair.InvertP(kFALSE);
