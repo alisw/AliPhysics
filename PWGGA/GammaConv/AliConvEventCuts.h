@@ -340,6 +340,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetVertexCut(Int_t vertexCut);
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
+      void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
       void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ;
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
@@ -625,6 +626,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
+      TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
       AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
       AliEMCALTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 ///< main trigger patch, will be cached after first call

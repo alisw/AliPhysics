@@ -76,6 +76,7 @@ void AddTask_GammaCalo_pPb(
                             TString   periodNameAnchor              = "",               // name of anchor period for weighting
                             Bool_t     enableSortingMCLabels        = kTRUE,            // enable sorting for MC cluster labels
                             Bool_t     runLightOutput               = kFALSE,           // switch to run light output (only essential histograms for afterburner)
+                            TString   corrTaskSetting               = "",                // select which correction task setting to use
                             TString    additionalTrainConfig        = "0"               // additional counter for trainconfig
                            ) {
 
@@ -113,6 +114,7 @@ void AddTask_GammaCalo_pPb(
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCalo_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
   Int_t isHeavyIon = 2;
 
@@ -201,6 +203,7 @@ void AddTask_GammaCalo_pPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(runLightOutput);
 
   //create cut handler
@@ -817,6 +820,7 @@ void AddTask_GammaCalo_pPb(
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -836,6 +840,7 @@ void AddTask_GammaCalo_pPb(
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -845,6 +850,7 @@ void AddTask_GammaCalo_pPb(
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -864,6 +870,7 @@ void AddTask_GammaCalo_pPb(
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA

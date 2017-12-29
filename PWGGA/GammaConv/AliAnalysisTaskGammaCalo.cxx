@@ -66,6 +66,7 @@ ClassImp(AliAnalysisTaskGammaCalo)
 AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fBGHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -334,6 +335,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fBGHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -2127,12 +2129,17 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 {
 
   Int_t nclus = 0;
-  nclus = fInputEvent->GetNumberOfCaloClusters();
-
-//   cout << nclus << endl;
+  TClonesArray * arrClustersProcess = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = fInputEvent->GetNumberOfCaloClusters();
+  } else {
+    arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersProcess->GetEntries();
+  }
 
   if(nclus == 0)  return;
-
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
@@ -2151,8 +2158,17 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   for(Long_t i = 0; i < nclus; i++){
 
     AliVCluster* clus = NULL;
-    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    }
 
     if(!clus) continue;
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
@@ -2245,8 +2261,18 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       if( mapIsClusterAccepted[i] != 1 ) continue;
 
       AliVCluster* clus = NULL;
-      if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-      else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      }
+      
       if(!clus) continue;
 
       Int_t cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
@@ -2291,8 +2317,18 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       if( mapIsClusterAcceptedWithoutTrackMatch[i] != 1 ) continue;
 
       AliVCluster* clus = NULL;
-      if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-      else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      }
+
       if(!clus) continue;
 
       fClusterE = clus->E();
@@ -2387,8 +2423,18 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         if( mapIsClusterAcceptedWithoutTrackMatch[j] != 1 ) continue;
 
         AliVCluster* secondClus = NULL;
-        if(fInputEvent->IsA()==AliESDEvent::Class()) secondClus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
-        else if(fInputEvent->IsA()==AliAODEvent::Class()) secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          if(arrClustersProcess)
+            secondClus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(j));
+          else
+            secondClus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
+        } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+          if(arrClustersProcess)
+            secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(j));
+          else
+            secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+        }
+
         if(!secondClus) continue;
         secondClus->GetPosition(secondClsPos);
         TVector3 secondClsPosVec(secondClsPos);
@@ -3361,8 +3407,23 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 
 //     cout << vertex[0] << "\t" << vertex[1] << "\t" << vertex[2] << endl;
 
+    TClonesArray * arrClustersMesonCand = NULL;
+    if(fCorrTaskSetting.CompareTo(""))
+      arrClustersMesonCand = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+
     AliVCluster* clus1 = NULL;
-    clus1 = fInputEvent->GetCaloCluster(TrueGammaCandidate0->GetCaloClusterRef());
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersMesonCand)
+        clus1 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMesonCand->At(TrueGammaCandidate0->GetCaloClusterRef()));
+      else
+        clus1 = fInputEvent->GetCaloCluster(TrueGammaCandidate0->GetCaloClusterRef());
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersMesonCand)
+        clus1 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMesonCand->At(TrueGammaCandidate0->GetCaloClusterRef()));
+      else
+        clus1 = fInputEvent->GetCaloCluster(TrueGammaCandidate0->GetCaloClusterRef());
+    }
+    
     if (!clus1) return;
     TLorentzVector clusterVector1;
     clus1->GetMomentum(clusterVector1,vertex);
@@ -3375,7 +3436,18 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 
 
     AliVCluster* clus2 = NULL;
-    clus2 = fInputEvent->GetCaloCluster(TrueGammaCandidate1->GetCaloClusterRef());
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersMesonCand)
+        clus2 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMesonCand->At(TrueGammaCandidate1->GetCaloClusterRef()));
+      else
+        clus2 = fInputEvent->GetCaloCluster(TrueGammaCandidate1->GetCaloClusterRef());
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersMesonCand)
+        clus2 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMesonCand->At(TrueGammaCandidate1->GetCaloClusterRef()));
+      else
+        clus2 = fInputEvent->GetCaloCluster(TrueGammaCandidate1->GetCaloClusterRef());
+    }
+
     if (!clus2) return;
     TLorentzVector clusterVector2;
     clus2->GetMomentum(clusterVector2,vertex);
@@ -4382,7 +4454,17 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
   fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
   if(!fOutputLocalDebug.is_open()) return;
 
-  Long_t nclus = fInputEvent->GetNumberOfCaloClusters();
+  Int_t nclus = 0;
+  TClonesArray * arrClustersDebug = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = fInputEvent->GetNumberOfCaloClusters();
+  } else {
+    arrClustersDebug = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersDebug)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersDebug->GetEntries();
+  }
+  
   AliVCaloCells* cells = fInputEvent->GetEMCALCells();
   fOutputLocalDebug << "--event--" << endl;
   fOutputLocalDebug << "nclusters " << nclus << endl;
@@ -4393,8 +4475,17 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
 
   for(Long_t i = 0; i < nclus; i++){
     AliVCluster* clus = NULL;
-    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersDebug)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersDebug->At(i));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersDebug)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersDebug->At(i));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    }
 
     if(!clus) continue;
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
