@@ -1888,7 +1888,8 @@ void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Flo
 void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
   //
   // fill pair-track correlation information
-  //
+  // NOTE:  Add here only NEEDED information because this function is called during event mixing in the innermost loop
+   //
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
   
@@ -1903,6 +1904,7 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
     values[kDeltaTheta] = trig->Theta() - assoc->Theta();
   
   if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = trig->Eta() - assoc->Eta();
+  if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 }
 
 

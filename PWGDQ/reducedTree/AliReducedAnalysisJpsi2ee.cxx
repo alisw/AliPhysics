@@ -27,7 +27,7 @@ ClassImp(AliReducedAnalysisJpsi2ee);
 AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   AliReducedAnalysisTaskSE(),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
-  fMixingHandler(new AliMixingHandler()),
+  fMixingHandler(new AliMixingHandler("J/psi signal extraction","", AliMixingHandler::kMixResonanceLegs)),
   fOptionRunMixing(kTRUE),
   fOptionRunPairing(kTRUE),
   fOptionRunOverMC(kFALSE),
@@ -56,7 +56,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
 AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const Char_t* title) :
   AliReducedAnalysisTaskSE(name,title),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
-  fMixingHandler(new AliMixingHandler()),
+  fMixingHandler(new AliMixingHandler("J/psi signal extraction","", AliMixingHandler::kMixResonanceLegs)),
   fOptionRunMixing(kTRUE),
   fOptionRunPairing(kTRUE),
   fOptionRunOverMC(kFALSE),
@@ -469,6 +469,7 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
                pair->PairType(1);
                pair->SetLegIds(pTrack->TrackId(), nTrack->TrackId());
+               fJpsiCandidates.Add(pair);
             }
          }
       }  // end loop over negative tracks
@@ -491,6 +492,7 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
                   pair->PairType(0);
                   pair->SetLegIds(pTrack->TrackId(), pTrack2->TrackId());
+                  fJpsiCandidates.Add(pair);
                }
             }
          }  // end loop over positive tracks
@@ -517,8 +519,9 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                   pair->PtPhiEta(fValues[AliReducedVarManager::kPt], fValues[AliReducedVarManager::kPhi], fValues[AliReducedVarManager::kEta]);
                   pair->SetMass(fValues[AliReducedVarManager::kMass]);
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
-                  pair->PairType(1);
+                  pair->PairType(2);
                   pair->SetLegIds(nTrack->TrackId(), nTrack2->TrackId());
+                  fJpsiCandidates.Add(pair);
                }
             }
          }  // end loop over negative tracks

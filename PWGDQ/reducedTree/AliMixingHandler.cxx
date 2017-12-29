@@ -362,7 +362,7 @@ void AliMixingHandler::RunLeftoverMixing(Int_t type) {
   // Run event mixing over all event categories
   //
   cout << "========================================================================" << endl;
-  cout << "                            Leftover mixing " << endl;
+  cout << "      Leftover mixing for Mixing Handler " << GetName() << endl;
   cout << "========================================================================" << endl;
   
   // create a mixing mask which enables all cuts

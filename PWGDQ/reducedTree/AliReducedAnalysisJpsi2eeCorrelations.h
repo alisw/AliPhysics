@@ -20,6 +20,7 @@
 #include "AliReducedBaseEvent.h"
 #include "AliReducedBaseTrack.h"
 #include "AliReducedTrackInfo.h"
+#include "AliReducedPairInfo.h"
 #include "AliHistogramManager.h"
 #include "AliMixingHandler.h"
 
@@ -41,39 +42,38 @@ public:
   // setters
   void AddAssociatedTrackCut(AliReducedInfoCut* cut);
   void AddJpsiElectronCut(AliReducedInfoCut* cut) {AddTrackCut(cut);}      // synonim function to AddTrackCut
-  //void SetElectronBit(Int_t bit) {fElectronBit = bit;}
   void SetRunCorrelation(Bool_t option) {fOptionRunCorrelation = option;}
-  //void SetAssociatedTracksSecondArray(Bool_t option) {fOptionAssociatedTracks = option;}
   void SetLoopOverTracks(Bool_t option) {
     fOptionLoopOverTracks = option;
     if(!fOptionLoopOverTracks) {fOptionRunPairing = kFALSE; fOptionRunMixing = kFALSE; fOptionRunLikeSignPairing = kFALSE; fOptionRunCorrelation = kFALSE;}
   }
+  void SetRunCorrelationMixing(Bool_t option) {fOptionRunCorrelationMixing = option;};
 
   // getters
   Int_t GetNAssociatedTrackCuts() const {return fAssociatedTrackCuts.GetEntries();}
   const Char_t* GetAssociatedTrackCutName(Int_t i) const {return (i<fAssociatedTrackCuts.GetEntries() ? fAssociatedTrackCuts.At(i)->GetName() : "");}
-  //Int_t GetElectronBit() {return fElectronBit;}
   Bool_t GetRunCorrelation() {return fOptionRunCorrelation;}
-
+  AliMixingHandler* GetCorrelationMixingHandler() const {return fCorrelationsMixingHandler;};
+  Bool_t GetRunCorrelationMixing() const {return fOptionRunCorrelationMixing;}
+  
 protected:
    // TODO: add mixing handler for correlations
+   AliMixingHandler* fCorrelationsMixingHandler;
    
-  //Int_t   fElectronBit;                           // toggled BIT in fQualityFlags for electron/positron selection
-  //Float_t fValues2[AliReducedVarManager::kNVars]; // array of values to hold information for associated tracks for histograms
-
   Bool_t fOptionRunCorrelation;   // true: run correlation of candidates and associated tracks, false: apply only associated track cuts
-  //Bool_t fOptionAssociatedTracks; // true: associated tracks are to be take from second track array, false: first track array
-
+  Bool_t fOptionRunCorrelationMixing;    // true: run the event mixing for the correlation function
+  
   TList fAssociatedTrackCuts;   // array of associated track cuts
   TList fAssociatedTracks;      // list of selected associated tracks
 
   Bool_t IsAssociatedTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
 
   void RunAssociatedTrackSelection();
+  void LoopOverAssociatedTracks(Int_t arrayOption =1);
   void RunSameEventCorrelation(TString pairClass="PairSE");
   void FillAssociatedTrackHistograms(TString trackClass = "AssociatedTrack");
   void FillAssociatedTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "AssociatedTrack");
-  void FillCorrelationHistograms(ULong_t maskTrack, ULong_t maskAssocTrack, TString corrClass="CorrSE", Bool_t isMCTruth=kFALSE);
+  void FillCorrelationHistograms(AliReducedPairInfo* jpsi, AliReducedBaseTrack* assoc, TString corrClass="CorrSE", Bool_t isMCTruth=kFALSE);
 
   ClassDef(AliReducedAnalysisJpsi2eeCorrelations, 2);
 };
