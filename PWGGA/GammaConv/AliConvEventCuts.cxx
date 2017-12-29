@@ -2967,7 +2967,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
       if(!arrClustersMimic)
         AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
-      nclus = arrClustersProcess->GetEntries();
+      nclus = arrClustersMimic->GetEntries();
     }
 
     if(nclus == 0)  return kFALSE;
@@ -2976,12 +2976,12 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Bool_t eventIsAccepted = kFALSE;
     for(Int_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
-      if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(event->IsA()==AliESDEvent::Class()){
         if(arrClustersMimic)
           clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
         else
           clus = event->GetCaloCluster(i);
-      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      } else if(event->IsA()==AliAODEvent::Class()){
         if(arrClustersMimic)
           clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
         else
@@ -3025,13 +3025,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 
       TClonesArray * arrClustersMimic = NULL;
+      Int_t nclus = 0;
       if(!fCorrTaskSetting.CompareTo("")){
         nclus = event->GetNumberOfCaloClusters();
       } else {
         arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
         if(!arrClustersMimic)
           AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
-        nclus = arrClustersProcess->GetEntries();
+        nclus = arrClustersMimic->GetEntries();
       }
 
       if(nclus == 0)  return kFALSE;
@@ -3040,12 +3041,12 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
-        if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(event->IsA()==AliESDEvent::Class()){
           if(arrClustersMimic)
             clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
           else
             clus = event->GetCaloCluster(i);
-        } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        } else if(event->IsA()==AliAODEvent::Class()){
           if(arrClustersMimic)
             clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
           else
@@ -3088,7 +3089,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
         if(!arrClustersMimic)
           AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
-        nclus = arrClustersProcess->GetEntries();
+        nclus = arrClustersMimic->GetEntries();
       }
 
       if(nclus == 0)  return kFALSE;
@@ -3097,12 +3098,12 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
-        if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(event->IsA()==AliESDEvent::Class()){
           if(arrClustersMimic)
             clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
           else
             clus = event->GetCaloCluster(i);
-        } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        } else if(event->IsA()==AliAODEvent::Class()){
           if(arrClustersMimic)
             clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
           else
