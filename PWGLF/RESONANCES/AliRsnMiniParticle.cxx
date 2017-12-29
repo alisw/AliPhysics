@@ -6,8 +6,6 @@
 // to allow an event mixing.
 //
 
-#include "Riostream.h"
-
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 
