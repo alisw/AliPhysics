@@ -127,7 +127,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
     fTrackQualityCutTPCrefit        (kTRUE),
     fTrackQualityCutnTPCcls         (kTRUE),
     fMinnTPCcls                     (0),
-    fMinTPCcrossrawoverfindable     (0),
     fkExtraSelections               (0),
     fVtxRangeMax                    (0),
     fVtxRangeMin                    (0),
@@ -373,7 +372,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
     fTrackQualityCutTPCrefit        (kTRUE),
     fTrackQualityCutnTPCcls         (kTRUE),
     fMinnTPCcls                     (0),
-    fMinTPCcrossrawoverfindable     (0),
     fkExtraSelections               (0),
     fVtxRangeMax                    (0),
     fVtxRangeMin                    (0),
@@ -1381,19 +1379,19 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
   TString sddstatus = "";
   if      (fCollidingSystem == 0 && fApplyEvSelSDDstatus && fwithSDD)  sddstatus = "_wSDDon";
   else if (fCollidingSystem == 0 && fApplyEvSelSDDstatus && !fwithSDD) sddstatus = "_wSDDoff";
-  TString cfcontname_cascpidximinus = Form("fCFContCascadePIDAsXiMinus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+  TString cfcontname_cascpidximinus = Form("fCFContCascadePIDAsXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
   cfcontname_cascpidximinus.Append(Form("%s",sddstatus.Data()));
   cfcontname_cascpidximinus.Append(Form("%s",fSuffix.Data()));
-  TString cfcontname_cascpidxiplus = Form("fCFContCascadePIDAsXiPlus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+  TString cfcontname_cascpidxiplus = Form("fCFContCascadePIDAsXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
   cfcontname_cascpidxiplus.Append(Form("%s",sddstatus.Data()));
   cfcontname_cascpidxiplus.Append(Form("%s",fSuffix.Data()));
-  TString cfcontname_cascpidomegaminus = Form("fCFContCascadePIDAsOmegaMinus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+  TString cfcontname_cascpidomegaminus = Form("fCFContCascadePIDAsOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
   cfcontname_cascpidomegaminus.Append(Form("%s",sddstatus.Data()));
   cfcontname_cascpidomegaminus.Append(Form("%s",fSuffix.Data()));
-  TString cfcontname_cascpidomegaplus = Form("fCFContCascadePIDAsOmegaPlus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+  TString cfcontname_cascpidomegaplus = Form("fCFContCascadePIDAsOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
   cfcontname_cascpidomegaplus.Append(Form("%s",sddstatus.Data()));
   cfcontname_cascpidomegaplus.Append(Form("%s",fSuffix.Data()));
-  TString cfcontname_casccuts = Form("fCFContAsCascadeCuts_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+  TString cfcontname_casccuts = Form("fCFContAsCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
   cfcontname_casccuts.Append(Form("%s",sddstatus.Data()));
   cfcontname_casccuts.Append(Form("%s",fSuffix.Data()));
   // -- PID container Xi-
@@ -2704,25 +2702,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    //-----------------------------------------	
    // - Loop over the reconstructed candidates
    //-----------------------------------------
-   Int_t nAssoXiMinus     = 0;
-   Int_t nAssoXiPlus      = 0;
-   Int_t nAssoOmegaMinus  = 0;
-   Int_t nAssoOmegaPlus   = 0;
-   Int_t lPosTPCClusters  = 0;
-   Int_t lNegTPCClusters  = 0;
-   Int_t lBachTPCClusters = 0;
-   Int_t lblBachForPID; 
-   Int_t lblPosV0Dghter; 
-   Int_t lblNegV0Dghter; 
-   Int_t lblMotherPosV0Dghter;
-   Int_t lblMotherNegV0Dghter; 
-   Int_t lblBach;
-   Int_t lblGdMotherPosV0Dghter; 
-   Int_t lblGdMotherNegV0Dghter; 
-   Int_t lblMotherBach;
-   Double_t lPosTPCFindClusters         = -1;
-   Double_t lNegTPCFindClusters         = -1;
-   Double_t lBachTPCFindClusters        = -1;
+   Int_t nAssoXiMinus = 0, nAssoXiPlus = 0, nAssoOmegaMinus = 0, nAssoOmegaPlus = 0, lPosTPCClusters = 0, lNegTPCClusters = 0, lBachTPCClusters = 0, 
+         lblBachForPID, lblPosV0Dghter, lblNegV0Dghter, lblMotherPosV0Dghter, lblMotherNegV0Dghter, lblBach, lblGdMotherPosV0Dghter, lblGdMotherNegV0Dghter, lblMotherBach;
    Double_t lDcaXiDaughters = 0., lDcaBachToPrimVertexXi = 0., lXiCosineOfPointingAngle = 0., lXiRadius = 0., lInvMassLambdaAsCascDghter = 0., lDcaV0DaughtersXi = 0., lV0CosineOfPointingAngleXi = 0., 
             lV0CosineOfPointingAngle = 0., lV0RadiusXi = 0., lDcaV0ToPrimVertexXi = 0., lDcaPosToPrimVertexXi = 0., lDcaNegToPrimVertexXi = 0., lChargeXi = 0. , lV0mom = 0., lmcPt = 0., lmcRapCasc = 0., 
             lmcEta = 0., lmcTransvRadius = 0., lrecoPt = 0., lrecoTransvRadius = 0., lDeltaPhiMcReco = 0., lBachTransvMom = 0., lpTrackTransvMom = 0., lnTrackTransvMom = 0., lmcPtPosV0Dghter = 0., 
@@ -2749,7 +2730,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 
 
    //-------------------------------
-   // - Beginning of the Cascade Loop
+   // - Begining of the Cascade Loop
    for (Int_t iXi = 0; iXi < ncascades; iXi++) {
 
         lIsPosInXiProton      = kFALSE;
@@ -2831,22 +2812,13 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                  if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
                  if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
              } 
-             if(fTrackQualityCutnTPCcls){ 
-                lPosTPCClusters = 0;     lPosTPCClusters  = pTrackXi->GetTPCClusterInfo(2,1);      //GetTPCNcls();
-                lNegTPCClusters = 0;     lNegTPCClusters  = nTrackXi->GetTPCClusterInfo(2,1);      //->GetTPCNcls();
-                lBachTPCClusters = 0;    lBachTPCClusters = bachTrackXi->GetTPCClusterInfo(2,1);   //->GetTPCNcls();
-                lPosTPCFindClusters   = pTrackXi->GetTPCNclsF();                  // New
-                lNegTPCFindClusters   = nTrackXi->GetTPCNclsF();                  // New
-                lBachTPCFindClusters  = bachTrackXi->GetTPCNclsF();               // New
-                // - Poor quality related to TPC clusters
+             if(fTrackQualityCutnTPCcls){  // - Poor quality related to TPC clusters
+                lPosTPCClusters = 0;  lPosTPCClusters   = pTrackXi->GetTPCNcls();
+                lNegTPCClusters = 0;  lNegTPCClusters   = nTrackXi->GetTPCNcls();
+                lBachTPCClusters = 0;  lBachTPCClusters  = bachTrackXi->GetTPCNcls();
                 if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
                 if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
                 if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
-                // - Poor quality related to clusters/findable
-                if( lPosTPCFindClusters <= 0 || lNegTPCFindClusters <= 0 || lBachTPCFindClusters ) { AliWarning("Pb / Number of findable cluster <= 0 ... continue!"); continue; }
-                if ((lPosTPCClusters/lPosTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Pos. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
-                if ((lNegTPCClusters/lNegTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Neg. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
-                if ((lBachTPCClusters/lBachTPCFindClusters)  < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / Bach. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
              }
 
              const AliExternalTrackParam *pExtTrack    = pTrackXi->GetInnerParam();
@@ -3094,21 +3066,13 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                  if (!(bachTrackXiaod->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
              }
              if (fTrackQualityCutnTPCcls) {
-                 lPosTPCClusters = 0;  lPosTPCClusters  = pTrackXiaod->GetTPCClusterInfo(2,1);     //->GetTPCNcls();
-                 lNegTPCClusters = 0;  lNegTPCClusters  = nTrackXiaod->GetTPCClusterInfo(2,1);     //->GetTPCNcls();
-                 lBachTPCClusters = 0; lBachTPCClusters = bachTrackXiaod->GetTPCClusterInfo(2,1);  //->GetTPCNcls();
-                 lPosTPCFindClusters   = pTrackXiaod->GetTPCNclsF();                  // New
-                 lNegTPCFindClusters   = nTrackXiaod->GetTPCNclsF();                  // New
-                 lBachTPCFindClusters  = bachTrackXiaod->GetTPCNclsF();               // New
+                lPosTPCClusters = 0;  lPosTPCClusters  = pTrackXiaod->GetTPCNcls();
+                lNegTPCClusters = 0;  lNegTPCClusters  = nTrackXiaod->GetTPCNcls();
+                lBachTPCClusters = 0;  lBachTPCClusters = bachTrackXiaod->GetTPCNcls();
                  // - Poor quality related to TPC clusters
                  if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
                  if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
                  if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
-                 // - Poor quality related to clusters/findable
-                 if( lPosTPCFindClusters <= 0 || lNegTPCFindClusters <= 0 || lBachTPCFindClusters ) { AliWarning("Pb / Number of findable cluster <= 0 ... continue!"); continue; }
-                 if ((lPosTPCClusters/lPosTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Pos. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
-                 if ((lNegTPCClusters/lNegTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Neg. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
-                 if ((lBachTPCClusters/lBachTPCFindClusters)  < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / Bach. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
              }
              etaPos  = pTrackXiaod->Eta();
              etaNeg  = nTrackXiaod->Eta();
@@ -3500,6 +3464,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::Terminate(Option_t *) {
    
   TCanvas *canCheckPerformanceCascade = new TCanvas("AliAnalysisTaskCheckPerformanceCascadepp","Multiplicity",10,10,510,510);
   canCheckPerformanceCascade->cd(1)->SetLogy();
-
  */
 }
+
