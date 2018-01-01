@@ -6,7 +6,8 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     const Double_t BunchSpace  = 25.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
-    const TString period       = "LHC15n"
+    const TString period       = "LHC15n",
+    const Bool_t isCoreEUsed   = kFALSE
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -32,6 +33,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
   task->ExcludeM4(excludeM4);
+  task->SetCoreEFlag(isCoreEUsed);
 
   if(isMC && NonLinCorr){
     TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
@@ -50,6 +52,16 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
       //f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
       //f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
       //f1nonlin->FixParameter(2,0.993);//for core E at ZS 20 MeV with only MIP cut
+    }
+    else if(period.Contains("LHC17p") || period.Contains("LHC17q")){
+      f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,1.012);//for core E at ZS 20 MeV with only MIP cut
+    }
+    else{
+      f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,1.000);//for core E at ZS 20 MeV with only MIP cut
     }
     task->SetUserDefinedNonlinearity(f1nonlin);
 

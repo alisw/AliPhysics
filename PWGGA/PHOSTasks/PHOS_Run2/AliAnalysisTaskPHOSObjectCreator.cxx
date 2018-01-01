@@ -52,7 +52,8 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
   fIsM4Excluded(kTRUE),
-  fEmin(0.2)
+  fEmin(0.2),
+  fIsCoreUsed(kFALSE)
 {
   // Constructor
   for(Int_t i=0;i<3;i++){
@@ -204,13 +205,11 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     cluster = (AliVCluster*)fEvent->GetCaloCluster(iclu);
 
-    if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < fEmin // MIP cut
-//        || cluster->GetNCells() < 2 //accidental noise, effectively remove exotic cluster
-//        || cluster->GetM02() < 0.2 //too small shower shape
-      ) continue;
+    if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
+    if(cluster->E() < 0.05) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
-    //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) continue;//energy is high enough, but eigen value of 2nd momentum of shower shape is too small. -> reject.
+
+    //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
 
     distance = cluster->GetDistanceToBadChannel();//in cm.
 
@@ -243,33 +242,9 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
-    cluster->GetMomentum(p1,fVertex);
-    cluster->GetMomentum(p1core,fVertex);
-
-    p1 *= fUserNonLinCorr->Eval(p1.E());
-
-    new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
-    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
-    ph->SetCluster(cluster);
-    ph->SetModule(module);
-    ph->SetNCells(digMult); 
-    ph->SetTime(tof);//unit of second
-    ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
-    ph->SetDistToBadfp(distance/2.2);//in unit of cells with floating point. 2.2 cm is crystal size
-    ph->SetEMCx((Double_t)position[0]);
-    ph->SetEMCy((Double_t)position[1]);
-    ph->SetEMCz((Double_t)position[2]);
-    ph->SetWeight(1.);
-
-    if(fIsMC){
-      Bool_t sure = kTRUE;
-      Int_t label = FindPrimary(ph,sure);
-      ph->SetPrimary(label);
-    }
 
     if(fUsePHOSTender){
       //When PHOSTender is applied, GetM20(), GetM02() returns M20,M02 of core of cluster respectively.
@@ -313,13 +288,47 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
       else r = 999;//no matched track
     }
 
+    cluster->GetMomentum(p1,fVertex);
+    cluster->GetMomentum(p1core,fVertex);
+
+    p1 *= fUserNonLinCorr->Eval(p1.E());
+    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
+
+    if(fIsCoreUsed){
+        if(p1core.E() < fEmin) continue;
+    }
+    else{//for full energy
+      if(p1.E() < fEmin) continue;
+    }
+
+    new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
+    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
+    ph->SetCluster(cluster);
+    ph->SetModule(module);
+    ph->SetNCells(digMult); 
+    ph->SetTime(tof);//unit of second
+    ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
+    ph->SetDistToBadfp(distance/2.2);//in unit of cells with floating point. 2.2 cm is crystal size
+    ph->SetEMCx((Double_t)position[0]);
+    ph->SetEMCy((Double_t)position[1]);
+    ph->SetEMCz((Double_t)position[2]);
+    ph->SetWeight(1.);
+
+    if(fIsMC){
+      Bool_t sure = kTRUE;
+      Int_t label = FindPrimary(ph,sure);
+      ph->SetPrimary(label);
+    }
+
     ph->SetLambdas(M20,M02);
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
 
-    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
+//    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
+
+    //printf("energy = %e , coreE = %e\n",ph->Energy(),ph->GetMomV2()->Energy());
 
     inPHOS++;
   }

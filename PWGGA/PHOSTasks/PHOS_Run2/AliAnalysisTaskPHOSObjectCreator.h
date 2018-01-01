@@ -26,6 +26,7 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     void SetTenderFlag(Bool_t tender) {fUsePHOSTender = tender;}
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
+    void SetCoreEFlag(Bool_t flag) {fIsCoreUsed = flag;}
 
     void SetPHOSBadMap(Int_t mod,TH2I *h)
     {
@@ -81,12 +82,13 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     TClonesArray *fMCArrayAOD;
     Bool_t fIsM4Excluded;
     Double_t fEmin;
+    Bool_t fIsCoreUsed;
 
   private:
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 14);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 15);
 };
 
 #endif
