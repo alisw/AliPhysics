@@ -558,6 +558,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             }
         }
     }
+    if(fIsPythia)FillParticleCompositionEvent(); //Added  for in cone vs inclusive comparison
+
     for(long itrack= 0; itrack<InputEvent()->GetNumberOfTracks();++itrack)
     {
         trackV = static_cast<AliVTrack*>(InputEvent()->GetTrack(itrack));
@@ -1379,7 +1381,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                                                 fHistManager.CreateTH2("fh2dParticleSpectra_InCone_cjet","fh2dParticleSpectra_InCone_cjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
                                                                 fHistManager.CreateTH2("fh2dParticleSpectra_InCone_lfjet","fh2dParticleSpectra_InCone_lfjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
                                                                 fHistManager.CreateTH2("fh2dParticleSpectra_OutOfCone","fh2dParticleSpectra_OutOfCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-
+                                                                fHistManager.CreateTH2("fh2dParticleSpectra_Event","fh2dParticleSpectra_Event ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
                                                             }
                                                             fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
                                                             fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
@@ -1842,6 +1844,22 @@ void AliAnalysisTaskHFJetIPQA::FillParticleCompositionSpectra(AliEmcalJet * jet,
       double factor = GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
       if(pCorr_indx<0 || factor ==1) continue;
       FillHist(histname,pCorr_indx+0.5,pT, this->fXsectionWeightingFactor  );
+  }
+  return;
+}
+
+
+void AliAnalysisTaskHFJetIPQA::FillParticleCompositionEvent( ){
+    
+    AliVTrack* tr=0x0; 
+    for(Int_t j = 0; j < InputEvent()->GetNumberOfTracks(); ++j) {
+      tr = (AliVTrack*)(InputEvent()->GetTrack(j));
+      if(!tr) continue;
+      double pT=0x0;
+      Int_t pCorr_indx=-1;
+      double factor = GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
+      if(pCorr_indx<0 || factor ==1) continue;
+      FillHist("fh2dParticleSpectra_Event",pCorr_indx+0.5,pT, this->fXsectionWeightingFactor  );
   }
   return;
 }

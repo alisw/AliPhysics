@@ -169,6 +169,7 @@ private:
     AliEmcalJet *  GetPerpendicularPseudoJet (AliEmcalJet*jet_in  , bool rev );
     void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
+    void FillParticleCompositionEvent();
 
 
     void DoJetLoop(); //jet matching function 2/4
