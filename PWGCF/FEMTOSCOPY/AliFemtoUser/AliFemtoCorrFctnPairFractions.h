@@ -21,7 +21,7 @@ public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
   typedef enum CorrectionType ReadCorrectionType;
 
-  AliFemtoCorrFctnPairFractions(char* title);
+  AliFemtoCorrFctnPairFractions(const char* title);
   AliFemtoCorrFctnPairFractions(const AliFemtoCorrFctnPairFractions& aCorrFctn);
   virtual ~AliFemtoCorrFctnPairFractions();
 

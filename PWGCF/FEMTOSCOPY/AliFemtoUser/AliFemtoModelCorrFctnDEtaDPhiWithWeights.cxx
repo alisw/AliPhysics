@@ -14,7 +14,7 @@
 #include <TMath.h>
 #include <stdexcept>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 #endif
 
@@ -30,7 +30,7 @@ ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 //
 
 //____________________________
-AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeights(char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeights(const char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoModelCorrFctn(),
   fDPhiDEtaNumeratorTrue(0),
   fDPhiDEtaNumeratorFake(0),
@@ -119,7 +119,7 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
   char tTitDenDCosPt[101] = "DenDCosPt";
   strncat(tTitDenDCosPt,title, 100);
   fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
-  
+
   // to enable error bar calculation...
   fDPhiDEtaNumeratorTrue->Sumw2();
   fDPhiDEtaNumeratorFake->Sumw2();

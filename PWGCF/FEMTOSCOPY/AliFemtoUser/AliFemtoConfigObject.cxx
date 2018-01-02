@@ -507,6 +507,30 @@ struct ParseError : public std::runtime_error {
 
 #undef DEFINE_PARSING_ERROR
 
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const char *src)
+{
+  std::string s(src);
+  return AliFemtoConfigObject::Parse(s);
+}
+
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TString &src)
+{
+  std::string s(src.Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+/// Create object by parsing TString
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TObjString &src)
+{
+  std::string s(src.GetString().Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+
+
 // public parsing method - This should handle all user-facing parsing errors
 AliFemtoConfigObject
 AliFemtoConfigObject::Parse(const std::string &src)
@@ -737,7 +761,8 @@ AliFemtoConfigObject::ParseMap(StringIter_t& it, const StringIter_t stop)
   it = match[0].second;
 
   // loop until we match right bracket }
-  for (; !std::regex_search(it, stop, match, RBRK_RX); ) {
+  // for (; !std::regex_search(it, stop, match, RBRK_RX); ) {
+  while (!std::regex_search(it, stop, match, RBRK_RX)) {
       // load key
       if (!std::regex_search(it, stop, match, KEY_RX)) {
         // throw std::runtime_error("Expected a Key or '}", it);

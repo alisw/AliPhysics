@@ -15,7 +15,7 @@
 #endif
 
 //____________________________
-AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(char* title,
+AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(const char* title,
 								   double radius=1.2,
 								   const int& aEtaBins=50,
 								   double aEtaRangeLow=0.0,

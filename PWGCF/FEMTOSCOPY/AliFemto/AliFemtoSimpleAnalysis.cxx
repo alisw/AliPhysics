@@ -66,7 +66,7 @@ void DoFillParticleCollection(TrackCutType *cut,
 // The actual loop implementation has been moved to the collection-generic
 // DoFillParticleCollection() function
 void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
-                               AliFemtoEvent *hbtEvent,
+                               const AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut=kFALSE)
 {
@@ -478,14 +478,14 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   // hbtEvent which pass fFirstParticleCut. Uses cut's "Type()" to determine
   // which track collection to pull from hbtEvent.
   FillHbtParticleCollection(fFirstParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
 
   // fill second particle cut if not analyzing identical particles
   if ( !AnalyzeIdenticalParticles() ) {
       FillHbtParticleCollection(fSecondParticleCut,
-                                (AliFemtoEvent*)hbtEvent,
+                                hbtEvent,
                                 fPicoEvent->SecondParticleCollection(),
                                 fPerformSharedDaughterCut);
   }

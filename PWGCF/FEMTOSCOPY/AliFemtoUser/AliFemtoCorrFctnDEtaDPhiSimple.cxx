@@ -22,7 +22,7 @@ ClassImp(AliFemtoCorrFctnDEtaDPhiSimple)
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiSimple::AliFemtoCorrFctnDEtaDPhiSimple(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoCorrFctnDEtaDPhiSimple::AliFemtoCorrFctnDEtaDPhiSimple(const char* title, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),

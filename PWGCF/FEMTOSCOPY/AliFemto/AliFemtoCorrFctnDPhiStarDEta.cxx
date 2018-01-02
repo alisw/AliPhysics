@@ -24,7 +24,7 @@
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDPhiStarDEta::AliFemtoCorrFctnDPhiStarDEta(char* title,
+AliFemtoCorrFctnDPhiStarDEta::AliFemtoCorrFctnDPhiStarDEta(const char* title,
                                                            double radius=0.8,
                                                            const int& aEtaBins=50,
                                                            double aEtaRangeLow=-0.1,

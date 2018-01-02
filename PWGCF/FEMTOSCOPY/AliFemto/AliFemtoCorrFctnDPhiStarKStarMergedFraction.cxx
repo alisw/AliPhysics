@@ -19,12 +19,12 @@
   ClassImp(AliFemtoCorrFctnDPhiStarKStarMergedFraction);
   /// \endcond
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDPhiStarKStarMergedFraction::AliFemtoCorrFctnDPhiStarKStarMergedFraction(char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp):
+AliFemtoCorrFctnDPhiStarKStarMergedFraction::AliFemtoCorrFctnDPhiStarKStarMergedFraction(const char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp):
 AliFemtoCorrFctn(),
   fDPhiStarKStarMergedNumerator(0),
   fDPhiStarKStarTotalNumerator(0),
@@ -47,12 +47,12 @@ AliFemtoCorrFctn(),
   fKStarRangeUp = aKStarRangeUp;
   fDPhiStarRangeLow = aPhiStarRangeLow;
   fDPhiStarRangeUp = aPhiStarRangeUp;
-  
+
   // Calculate parameters:
   fDistanceMax = aDistanceMax;
   fMergedFractionLimit = aMergedFractionLimit;
   fDEtaMax = aDEtaMax;
-  
+
   // Calculate radii range
   fRadiusMin = aRadiusMin;
   fRadiusMax = aRadiusMax;
@@ -125,7 +125,7 @@ AliFemtoCorrFctnDPhiStarKStarMergedFraction::AliFemtoCorrFctnDPhiStarKStarMerged
   fRadiusMin = aCorrFctn.fRadiusMin;
   fRadiusMax = aCorrFctn.fRadiusMax;
   fMagSign = aCorrFctn.fMagSign;
-  
+
 }
 
 //____________________________
@@ -242,15 +242,15 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
 
   // Calculate dEta:
   double deta = eta2 - eta1;
-  
+
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
-    
+
     Double_t badpoints = 0.0;
     Double_t allpoints = 0.0;
-    
+
     // Iterate through all radii in range (fRadiusMin, fRadiusMax):
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-      
+
       // Calculate dPhiStar:
       double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
@@ -265,13 +265,13 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
 	badpoints += 1.0;
       }
       allpoints += 1.0;
-      
+
     }
 
     if(allpoints != 0.0) {
       // Calculate fraction:
       Double_t fraction = badpoints / allpoints;
-      
+
       // Add pair if the fraction is above limit:
       if(fraction > fMergedFractionLimit) {
 	double rad = fRadiusMin;
@@ -327,15 +327,15 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
 
   // Calculate dEta:
   double deta = eta2 - eta1;
-  
+
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
-    
+
     Double_t badpoints = 0.0;
     Double_t allpoints = 0.0;
-    
+
     // Iterate through all radii in range (fRadiusMin, fRadiusMax):
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-      
+
       // Calculate dPhiStar:
       double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
@@ -350,13 +350,13 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
 	badpoints += 1.0;
       }
       allpoints += 1.0;
-      
+
     }
 
     if(allpoints != 0.0) {
       // Calculate fraction:
       Double_t fraction = badpoints / allpoints;
-      
+
       // Add pair if the fraction is above limit:
       if(fraction > fMergedFractionLimit) {
 	double rad = fRadiusMin;
@@ -389,12 +389,12 @@ TList* AliFemtoCorrFctnDPhiStarKStarMergedFraction::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
-  
+
   tOutputList->Add(fDPhiStarKStarMergedNumerator);
   tOutputList->Add(fDPhiStarKStarTotalNumerator);
   tOutputList->Add(fDPhiStarKStarMergedDenominator);
   tOutputList->Add(fDPhiStarKStarTotalDenominator);
-  
+
   return tOutputList;
 }
 
