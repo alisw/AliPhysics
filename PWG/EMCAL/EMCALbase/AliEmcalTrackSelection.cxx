@@ -143,11 +143,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
   }
 
   for(auto mytrack : *tracks) {
-    AliVTrack *track = static_cast<AliVTrack *>(mytrack);
-    PWG::EMCAL::AliEmcalTrackSelResultPtr selectionResult = IsTrackAccepted(track);
-    if(selectionResult) {
-      fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionResult));
-    }
+    fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(IsTrackAccepted(static_cast<AliVTrack *>(mytrack))));
   }
   return fListOfTracks;
 }
@@ -163,10 +159,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
   }
 
   for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
-    AliVTrack *trk = static_cast<AliVTrack*>(event->GetTrack(itrk));
-    PWG::EMCAL::AliEmcalTrackSelResultPtr selectionStatus = IsTrackAccepted(trk);
-    if(selectionStatus)
-      fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionStatus));
+    fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(IsTrackAccepted(static_cast<AliVTrack*>(event->GetTrack(itrk)))));
   }
   return fListOfTracks;
 }

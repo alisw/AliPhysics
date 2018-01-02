@@ -198,19 +198,31 @@ public:
 
   /**
    * @brief Select tracks from a TClonesArray of input tracks
+	 * 
+	 * Running track selection for all tracks in the input array 
+	 * (by calling the IsTrackAccepted function) and storing the track 
+	 * selection result in the output container.
+	 * Attention: The output container contains the result for all
+	 * tracks, not only those selected. It is the user responsibility
+	 * to filter the selected tracks.
    *
    * @param[in] tracks TClonesArray of tracks (must not be null)
-   * @return TObjArray of selected tracks
+   * @return TObjArray of AliEmcalTrackSelResultPtr with the selection status for all tracks
    */
 	TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
 
 	/**
 	 * @brief Select tracks from a virtual event
 	 *
-	 * Delegates selection process to function IsTrackAccepted
-	 *
+	 * Running track selection for all tracks in the input event 
+	 * (by calling the IsTrackAccepted function) and storing the track 
+	 * selection result in the output container.
+	 * Attention: The output container contains the result for all
+	 * tracks, not only those selected. It is the user responsibility
+	 * to filter the selected tracks.
+	 * 
 	 * @param[in] event AliVEvent, via interface of virtual event (must not be null)
-	 * @return TObjArray of selected tracks
+	 * @return TObjArray of AliEmcalTrackSelResultPtr with the selection status for all tracks
 	 */
 	TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 
