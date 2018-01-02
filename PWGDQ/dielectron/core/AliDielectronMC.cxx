@@ -1279,7 +1279,7 @@ Bool_t AliDielectronMC::CheckParticleSource(const AliAODMCParticle *mcPart, AliD
       // particles which are created by the interaction of final state primaries with the detector
       // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
       return (!mcPart->IsPrimary() && !mcPart->IsPhysicalPrimary());
-      // return (mcPart->IsSecondaryFromMaterial() || mcPart->IsSecondaryFromWeakDecay());
+      // return (mcPart->IsSecondaryFromMaterial() || mcPart->IsSecondaryFromWeakDecay()); // potential alternative definition of "secondary". Should be the same but is not tested
       // return (label>=GetNPrimary() && !IsPhysicalPrimary(label)); // old definition
     break;
     case AliDielectronSignalMC::kSecondaryFromWeakDecay :
