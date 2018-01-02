@@ -69,20 +69,20 @@ Clusterizer_S500A100W3:
     enabled: true
     cellE: 0.1
     seedE: 0.5
+    w0: 3
     clusterContainersNames:
         - ClusterContainerS500A100W3
 Clusterizer_S500A100W5:
     enabled: true
     cellE: 0.1
     seedE: 0.5
-    w0: 3
+    w0: 5
     clusterContainersNames:
         - ClusterContainerS500A100W5
 Clusterizer_S400A100:
     enabled: true
     cellE: 0.1
     seedE: 0.4
-    w0: 5
     clusterContainersNames:
         - ClusterContainerS400A100
 Clusterizer_S600A100:
