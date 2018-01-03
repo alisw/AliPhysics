@@ -124,6 +124,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
   fQAHistNits(0),
+  fQAHistEleDCAxy(0),
+  fQAHistEleDCAz(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -221,6 +223,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
   fQAHistNits(0),
+  fQAHistEleDCAxy(0),
+  fQAHistEleDCAz(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -496,6 +500,12 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
  
   fQAHistNits = new TH1F("fQAHistNits","ITS hits",7,-0.5,6.5);
   fOutput->Add(fQAHistNits);
+
+  fQAHistEleDCAxy = new TH2F("fQAHistEleDCAxy","pT ele check DCAxy",40,0,20,200,-10,10);
+  fOutput->Add(fQAHistEleDCAxy);
+
+  fQAHistEleDCAz = new TH2F("fQAHistEleDCAz","pT ele check DCAz",40,0,20,200,-10,10);
+  fOutput->Add(fQAHistEleDCAz);
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutput->Add(fHistClustE);
@@ -947,10 +957,19 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
           if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         //cout << "DCA = " << d0z0[0] << " ; " << d0z0[1] << endl;
 
+        if(fabs(eta)>0.6)continue;
+
+        if(TMath::Abs(MCpdg)==11)
+           {
+	     if(fMCparticle->GetMother()>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+	     Int_t pdgMom = fMCparticleMother->GetPdgCode();
+             iMCHF  = isHeavyFlavour(pdgMom);
+            }
 
         fQAHistTrPhi->Fill(phi); // QA
         fQAHistNits->Fill(atrack->GetITSNcls());
 
+        
         if(iHybrid)
           {
            if(idbHFEj)cout << "Hybrid" << endl;
@@ -964,13 +983,18 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
         //cout << "track cuts ....." << endl;
 
-        //if(pt<0.5)continue;
-        if(fabs(eta)>0.6)continue;
+        if(TMath::Abs(MCpdg)==11 && iMCHF)
+           {
+            fQAHistEleDCAxy->Fill(pt,d0z0[0]);
+            fQAHistEleDCAz->Fill(pt,d0z0[1]);
+           }
+
+        //if(fabs(eta)>0.6)continue;
         if(fabs(d0z0[0])>3.0)continue;
         if(fabs(d0z0[1])>3.0)continue;
         if(track->GetTPCNcls() < 80) continue;
         //if(atrack->GetITSNcls() < 2) continue;   // AOD track level
-        if(atrack->GetITSNcls() < 1) continue;   // AOD track level
+        if(atrack->GetITSNcls() < 0.9) continue;   // AOD track level
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;    // kAny
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         // kink cut
@@ -983,6 +1007,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 		}
 	      }
         if(!kinkmotherpass) continue;
+
 
         // Get TPC nSigma
         Double_t dEdx =-999, fTPCnSigma=-999;
@@ -1362,6 +1387,7 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
         if(fMCparticleMother)pdgMom = fMCparticleMother->GetPdgCode();
         if(idbHFEj)cout << "Mom = " << pdgMom << endl;
         Double_t etaMC = fMCparticle->Eta();
+ 
 
         if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
           {
