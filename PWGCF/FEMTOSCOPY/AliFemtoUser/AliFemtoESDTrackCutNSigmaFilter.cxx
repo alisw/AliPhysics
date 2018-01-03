@@ -21,6 +21,7 @@ AliFemtoESDTrackCutNSigmaFilter::AliFemtoESDTrackCutNSigmaFilter() :
   , fUseCustomKaonNSigmaFilter(false)
   , fUseCustomProtonNSigmaFilter(false)
   , fUseCustomElectronNSigmaFilter(false)
+  , fUseIsProbableElectronMethod(true)
 
   , fPionNSigmaFilter(NULL)
   , fKaonNSigmaFilter(NULL)
@@ -38,6 +39,7 @@ AliFemtoESDTrackCutNSigmaFilter::AliFemtoESDTrackCutNSigmaFilter(const AliFemtoE
   fUseCustomKaonNSigmaFilter(aCut.fUseCustomKaonNSigmaFilter),
   fUseCustomProtonNSigmaFilter(aCut.fUseCustomProtonNSigmaFilter),
   fUseCustomElectronNSigmaFilter(aCut.fUseCustomElectronNSigmaFilter),
+  fUseIsProbableElectronMethod(aCut.fUseIsProbableElectronMethod),
   fPionRejection(aCut.fPionRejection)
 {
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
@@ -58,6 +60,7 @@ AliFemtoESDTrackCutNSigmaFilter& AliFemtoESDTrackCutNSigmaFilter::operator=(cons
   fUseCustomKaonNSigmaFilter = aCut.fUseCustomKaonNSigmaFilter;
   fUseCustomProtonNSigmaFilter = aCut.fUseCustomProtonNSigmaFilter;
   fUseCustomElectronNSigmaFilter = aCut.fUseCustomElectronNSigmaFilter;
+  fUseIsProbableElectronMethod = aCut.fUseIsProbableElectronMethod;
   fPionRejection = aCut.fPionRejection;
 
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
@@ -242,8 +245,15 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
   {
     if(fUseCustomElectronNSigmaFilter)
     {
-//      if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
-      if(IsProbableElectron(track)) return false;
+      if(fUseIsProbableElectronMethod)
+      {
+        if(IsProbableElectron(track)) return false;
+      }
+      else 
+      {
+        if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
+      }
+      
     }
     else
     {

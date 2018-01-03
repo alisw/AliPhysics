@@ -957,6 +957,7 @@ AliFemtoESDTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateESDCut(ESDCut
   if(aCutParams.useCustomMisID) AddCustomESDRejectionFilters(aCutParams.particlePDGType,tESDCut);
 
   tESDCut->SetUseCustomElectronRejection(aCutParams.useCustomElectronRejection);
+  tESDCut->SetUseIsProbableElectronMethod(aCutParams.useIsProbableElectronMethod);
 
   return tESDCut;
 }
@@ -1970,6 +1971,7 @@ AliFemtoAnalysisLambdaKaon::DefaultKchCutParams(int aCharge)
   tReturnParams.useCustomMisID = true;
   tReturnParams.useElectronRejection = true;
   tReturnParams.useCustomElectronRejection = true;
+  tReturnParams.useIsProbableElectronMethod = true;
   tReturnParams.usePionRejection = true;
 
   return tReturnParams;
@@ -2017,6 +2019,7 @@ AliFemtoAnalysisLambdaKaon::DefaultPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2254,6 +2257,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2315,6 +2319,7 @@ AliFemtoAnalysisLambdaKaon::K0ShortPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2380,6 +2385,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityProtonCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
