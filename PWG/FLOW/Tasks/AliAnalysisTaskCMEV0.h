@@ -228,8 +228,13 @@ private:
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
 
   TProfile2D     *fCentV0MvsVzRun; //!
-  TProfile2D     *fCent3pvsVzRun; //!
+  TProfile2D      *fCent3pvsVzRun; //!
+  TH2F           *fTPCvsGlobalTrk; //!
+  TH2F              *fTPCvsITSTrk; //!
+  TH2F             *fITSvsESDMult; //!
+  TH1F            *fGlobalITSMult; //!
   TH3F           *fCentCL1vsVzRun; //!
+
 
 
   //TRandom3                fRand; //!
@@ -252,8 +257,8 @@ private:
   TH3D        *fHCorrectNUAneg[4]; //! 4 centrality bin
 
 
-  TH3F         *fHist3DEtaPhiVz_Pos_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
-  TH3F         *fHist3DEtaPhiVz_Neg_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
+  TH3F         *fHist3DEtaPhiVz_Pos_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
+  TH3F         *fHist3DEtaPhiVz_Neg_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
 
   TH1D         *fFB_Efficiency_Cent[10];  //!
 

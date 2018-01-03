@@ -140,6 +140,10 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fHCorrectV0M(NULL),
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
+  fTPCvsGlobalTrk(NULL),
+  fTPCvsITSTrk(NULL),
+  fITSvsESDMult(NULL),
+  fGlobalITSMult(NULL),
   fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
@@ -148,7 +152,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   }
   for(int i=0;i<90;i++){
     runNums[i] = 0;
-    for(int j=0;j<4;j++){
+    for(int j=0;j<5;j++){
      fHist3DEtaPhiVz_Pos_Run[j][i] = NULL;
      fHist3DEtaPhiVz_Neg_Run[j][i] = NULL;
     }
@@ -357,6 +361,10 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fHCorrectV0M(NULL),
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
+  fTPCvsGlobalTrk(NULL),
+  fTPCvsITSTrk(NULL),
+  fITSvsESDMult(NULL),
+  fGlobalITSMult(NULL),
   fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
@@ -365,7 +373,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   }
   for(int i=0;i<90;i++){
     runNums[i] = 0;
-    for(int j=0;j<4;j++){
+    for(int j=0;j<5;j++){
      fHist3DEtaPhiVz_Pos_Run[j][i] = NULL;
      fHist3DEtaPhiVz_Neg_Run[j][i] = NULL;
     }
@@ -649,21 +657,32 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  Int_t cIndex = 0;
  Int_t cForNUA = 0;
+ Int_t cInputNUA = 0;
 
  if(EvtCent<5.0) {
    cIndex  = 0; 
    cForNUA = 0; //0=0-5,
+   cInputNUA = 0;
  }
  else if(EvtCent>=5.0 && EvtCent<10){
    cIndex  = 1;
    cForNUA = 1; // 1=5-10,
+   cInputNUA = 1;
  }
  else if(EvtCent>=10.0) {
    cIndex = abs(EvtCent/10.0)  +  1;
-   if(EvtCent<40.0) 
-     cForNUA = 2; // 2=10-40,
-   else if(EvtCent>=40.0)
-     cForNUA = 3; // 3=40-90
+   cForNUA = cIndex;  //2 = 10-20,
+
+   if(EvtCent>=10 && EvtCent<40.0)
+     cInputNUA = 2;
+
+   if(EvtCent>=20 && EvtCent<40.0){ 
+     cForNUA = 3; // 3=20-40
+   }
+   if(EvtCent>=40.0){
+     cForNUA = 4; // 4=40-90
+     cInputNUA = 3; 
+   }
  }
 
 
@@ -984,12 +1003,12 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      //get NUA weights: 
      if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
        if(dChrg1>0){
-         iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
-         w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+         iBinNUA = fHCorrectNUApos[cInputNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUApos[cInputNUA]->GetBinContent(iBinNUA);     
        }
        else if(dChrg1<0){
-         iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
-         w1NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+         iBinNUA = fHCorrectNUAneg[cInputNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUAneg[cInputNUA]->GetBinContent(iBinNUA);     
        }
        if(sFileNUA=="OldJ") w1NUA = 1./w1NUA;
      }
@@ -1241,12 +1260,12 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      //get NUA weights: 
        if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
          if(dChrg2>0){
-           iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+           iBinNUA = fHCorrectNUApos[cInputNUA]->FindBin(VtxZ,dPhi2,dEta2);
+           w2NUA = fHCorrectNUApos[cInputNUA]->GetBinContent(iBinNUA);     
          }
          else if(dChrg2<0){
-           iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+           iBinNUA = fHCorrectNUAneg[cInputNUA]->FindBin(VtxZ,dPhi2,dEta2);
+           w2NUA = fHCorrectNUAneg[cInputNUA]->GetBinContent(iBinNUA);     
          }
          if(sFileNUA=="OldJ") w2NUA = 1./w2NUA;
        }
@@ -2400,7 +2419,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
          fPileUpCount->Fill(3.5);
          BisPileup=kTRUE;
       }
-      if(fabs(centrV0M-centrCL1)> 2.5)  {//default: 7.5
+      if(fabs(centrV0M-centrCL1)> 7.5)  {//default: 7.5
          fPileUpCount->Fill(4.5);
          BisPileup=kTRUE;
       }
@@ -2438,6 +2457,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       //Int_t multTrkBefC = 0;
       //Int_t multTrkTOFBefC = 0;
       Int_t multTPC = 0;
+      Int_t multITS = 0;
 
       for(Int_t it = 0; it < nTracks; it++) {
         AliAODTrack* aodTrk = (AliAODTrack*)faod->GetTrack(it);
@@ -2454,22 +2474,32 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
        //}
         if(aodTrk->TestFilterBit(128))
            multTPC++;
+        if(aodTrk->TestFilterBit(96))
+           multITS++;
       } // end of for AOD track loop
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
       Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
 
+      fGlobalITSMult->Fill(multITS);
+
+      fITSvsESDMult->Fill(multEsd,multITS);
+      fTPCvsGlobalTrk->Fill(multEsd,multTPC);
+      fTPCvsITSTrk->Fill(multITS,multTPC);
+
+
+
       /*if(multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
         }*/
-      if(multESDTPCDif > 1500.){ //default: 15000
+      if(multESDTPCDif > 15000.){ //default: 15000
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
       }
       else if(fRejectPileUpTight) {
-        if(multESDTPCDif > 700.) {
+        if(multESDTPCDif > 100.) { //default: 700
           fPileUpCount->Fill(8.5);
           BisPileup=kTRUE;
         }
@@ -2911,6 +2941,21 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
+  fTPCvsGlobalTrk = new TH2F("fAODvsESDTrk","ESDTrk vs TPC(FB128)",4000,0,20000,2000,0,10000);
+  fListCalibs->Add(fTPCvsGlobalTrk);
+
+  fTPCvsITSTrk    = new TH2F("fTPCvsITSTrk","Global(FB96) vs TPC(FB128)",3500,0,3500,5500,0,5500);
+  fListCalibs->Add(fTPCvsITSTrk);
+
+  fITSvsESDMult   = new TH2F("fITSvsESDMult","Global(ESD) vs ITS(FB96) ",4000,0,20000,4000,0,4000);
+  fListCalibs->Add(fITSvsESDMult);
+
+  fGlobalITSMult  = new TH1F("fGlobalITSMult","Global(FB96) Multiplilcity",4000,0,4000);
+  fListCalibs->Add(fGlobalITSMult);
+
+
+
+
 
   //for debug only, remove after stable code
   hUnderOverBinNUApos = new TH1F("hUnderOverBinNUApos","",90,0,90);
@@ -3102,10 +3147,10 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
   
-  Int_t gCentForNUA[5] = {0,5,10,40,90};
+  Int_t gCentForNUA[6] = {0,5,10,20,40,90};
 
   if(bFillEtaPhiNUA) {
-   for(int i=0;i<4;i++){
+   for(int i=0;i<5;i++){
     for(int j=0;j<fRunFlag;j++){
       sprintf(name,"fHistEtaPhiVz_Pos_Cent%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Vz Pos Cent%d-%d%%",gCentForNUA[i],gCentForNUA[i+1]);
@@ -3137,7 +3182,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   }
 
   if(bFillEtaPhiNUA) {
-   for(int i=0;i<4;i++){
+   for(int i=0;i<5;i++){
     for(int j=0;j<fRunFlag;j++){
       sprintf(name,"fHistEtaPhiPt_Pos_Vz%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Pt Pos Vz%d",i);
