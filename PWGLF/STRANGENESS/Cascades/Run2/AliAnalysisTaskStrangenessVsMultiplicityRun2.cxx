@@ -3478,7 +3478,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         lCutsTight[i][ 5] = 3 * lMeanLifetime[i]; //Proper Lifetime (in cm)
         lCutsTight[i][ 6] =    -1; //Track Length
         lCutsTight[i][ 7] = -0.01; //Least Ratio CrdRows/Findable
-        lCutsTight[i][ 8] =     3; //TPC dE/dx
+        lCutsTight[i][ 8] =     8; //TPC dE/dx
         lCutsTight[i][ 9] =   0.2; //AP Parameter
         lCutsTight[i][10] =   100; //V0Radius max
         lCutsTight[i][11] =    70; //Least number of CrdRows
@@ -3514,7 +3514,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( lCutsTight[i][11] ) ;
         lV0Result[lNV0]->SetCutMinTrackLength ( lCutsTight[i][6] ) ; //no cut here
         lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lCutsTight[i][7] ) ;
-        lV0Result[lNV0]->SetCutTPCdEdx               ( lCutsTight[i][8] ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( 1e6 ) ; //no cut here
+        lV0Result[lNV0]->SetCut276TeVLikedEdx        ( kTRUE ) ;
         lV0Result[lNV0]->SetCutArmenterosParameter               ( lCutsTight[i][9] ) ;
         
         //Add result to pool
@@ -3591,7 +3592,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
                 if(iCut ==  5 ) lV0Result[lNV0]->SetCutProperLifetime        ( lCutValue ) ;
                 if(iCut ==  6 ) lV0Result[lNV0]->SetCutMinTrackLength ( lCutValue ) ;
                 if(iCut ==  7 ) lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lCutValue ) ;
-                if(iCut ==  8 ) lV0Result[lNV0]->SetCutTPCdEdx               ( lCutValue ) ;
+                if(iCut ==  8 )
+                {
+                    lV0Result[lNV0]->SetCut276TeVLikedEdx        ( kTRUE ) ;
+                    lV0Result[lNV0]->SetCutTPCdEdx               ( lCutValue ) ;
+                }
                 if(iCut ==  9 ) lV0Result[lNV0]->SetCutArmenterosParameter   ( lCutValue ) ;
                 if(iCut == 10 ) lV0Result[lNV0]->SetCutMaxV0Radius           ( lCutValue ) ;
                 if(iCut == 11 ) lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( lCutValue ) ;
@@ -3666,7 +3671,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     }
     
     cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
-    
 }
 
 //________________________________________________________________________
