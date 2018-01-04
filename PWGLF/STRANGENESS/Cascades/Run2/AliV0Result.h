@@ -95,6 +95,9 @@ public:
     //Use OTF V0s
     void SetUseOnTheFly ( Bool_t lCut ) { fUseOnTheFly = lCut; } 
     
+    //Special dedx
+    void SetCut276TeVLikedEdx ( Bool_t lCut ) { fCut276TeVLikedEdx = lCut; }
+    
     //Feeddown matrix initializer
     void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
                                   Long_t lNXiPtPins, Double_t *lXiPtPins,
@@ -146,6 +149,9 @@ public:
     
     //Use OTF V0s
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
+    
+    //Special dedx
+    Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -208,12 +214,15 @@ private:
     //Master switch to use on-the-fly candidates
     Bool_t fUseOnTheFly; //if zero -> offline, if kTRUE -> go on-the-fly
     
+    //2.76-TeV like dE/dx selection (only baryons at low pT)
+    Bool_t fCut276TeVLikedEdx; 
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
     
-    ClassDef(AliV0Result, 17)
+    ClassDef(AliV0Result, 19)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -232,5 +241,6 @@ private:
     //16 - added configurable AP cut
     //17 - added real possibility of having proton profiles (re-analysis material)
     //18 - added configurable max V0 radius
+    //19 - added 2.76TeV-like dE/dx switch
 };
 #endif

@@ -49,7 +49,8 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -95,7 +96,8 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -148,7 +150,8 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -206,7 +209,8 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE)
 {
     // Constructor
     Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
@@ -260,7 +264,8 @@ fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
 fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
 fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
 fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
-fUseOnTheFly(lCopyMe.fUseOnTheFly)
+fUseOnTheFly(lCopyMe.fUseOnTheFly),
+fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx)
 {
     SetName( lNewName.Data() ); 
     
@@ -334,6 +339,9 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     
     //OTF use
     fUseOnTheFly = lCopyMe -> GetUseOnTheFly();
+    
+    //special dedx
+    fCut276TeVLikedEdx = lCopyMe -> GetCut276TeVLikedEdx();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -419,6 +427,9 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     
     //OTF use
     fUseOnTheFly = lCopyMe.GetUseOnTheFly();
+    
+    //special dedx
+    fCut276TeVLikedEdx = lCopyMe.GetCut276TeVLikedEdx();
     
     if (fHisto) {
         delete fHisto;
@@ -538,6 +549,9 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     //Use OTF
     if( fUseOnTheFly != lCompareV0->GetUseOnTheFly() ) lReturnValue = kFALSE;
     
+    //special dedx
+    if( fCut276TeVLikedEdx != lCompareV0->GetCut276TeVLikedEdx() ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -550,7 +564,8 @@ void AliV0Result::Print()
     cout<<"    AliV0Result Configuration      "<<endl;
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
-    cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl; 
+    cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl;
+    cout<<" 2.76TeV-like dE/dx.: "<<fCut276TeVLikedEdx<<endl;
     cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
