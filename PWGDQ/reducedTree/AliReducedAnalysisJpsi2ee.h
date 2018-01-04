@@ -45,17 +45,21 @@ public:
      fOptionLoopOverTracks = option; 
      if(!fOptionLoopOverTracks) {fOptionRunPairing = kFALSE; fOptionRunMixing = kFALSE; fOptionRunLikeSignPairing = kFALSE;}     
   }
+  void SetRunPrefilter(Bool_t option) {fOptionRunPrefilter = option;}
+  void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
-  Bool_t GetRunOverMC() {return fOptionRunOverMC;};
-  Bool_t GetRunLikeSignPairing() {return fOptionRunLikeSignPairing;}
-  Bool_t GetRunEventMixing() {return fOptionRunMixing;}
-  Bool_t GetRunPairing() {return fOptionRunPairing;}
-  Bool_t GetLoopOverTracks() {return fOptionLoopOverTracks;}
+  Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
+  Bool_t GetRunLikeSignPairing() const {return fOptionRunLikeSignPairing;}
+  Bool_t GetRunEventMixing() const {return fOptionRunMixing;}
+  Bool_t GetRunPairing() const {return fOptionRunPairing;}
+  Bool_t GetLoopOverTracks() const {return fOptionLoopOverTracks;}
+  Bool_t GetRunPrefilter() const {return fOptionRunPrefilter;}
+  Bool_t GetStoreJpsiCandidates() const {return fOptionStoreJpsiCandidates;}
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -66,6 +70,8 @@ protected:
    Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
    Bool_t fOptionRunLikeSignPairing;   // true (default): performs the like sign pairing in addition to the opposite pairing
    Bool_t fOptionLoopOverTracks;       // true (default); if false do not loop over tracks and consequently no pairing
+   Bool_t fOptionRunPrefilter;        // true (default); if false do not run the prefilter
+   Bool_t fOptionStoreJpsiCandidates;   // false (default); if true, store the same event jpsi candidates in a TList 
   
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
@@ -77,6 +83,7 @@ protected:
    TList fNegTracks;              // list of selected negative tracks in the current event
    TList fPrefilterPosTracks;  // list of prefilter selected positive tracks in the current event
    TList fPrefilterNegTracks; // list of prefilter selected negative tracks in the current event
+   TList fJpsiCandidates;       // list of Jpsi candidates --> to be used in analyses inheriting from this 
    
   Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
@@ -90,12 +97,13 @@ protected:
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
   void RunTrackSelection();
+  void LoopOverTracks(Int_t arrayOption=1);
   void FillTrackHistograms(TString trackClass = "Track");
   void FillTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "Track");
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", Bool_t isMCTruth = kFALSE);
   void FillMCTruthHistograms();
   
-  ClassDef(AliReducedAnalysisJpsi2ee,3);
+  ClassDef(AliReducedAnalysisJpsi2ee,4);
 };
 
 #endif

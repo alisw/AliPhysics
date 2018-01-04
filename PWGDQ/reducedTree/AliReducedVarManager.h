@@ -547,7 +547,7 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,          
+    kDeltaPhi,             // shifted to [-pi/2, 3/2 * pi]
     kDeltaTheta,        
     kDeltaEta,
     kTriggerPt,     // pt of J/psi candidate
