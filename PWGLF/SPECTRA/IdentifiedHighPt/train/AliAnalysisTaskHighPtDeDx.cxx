@@ -16,8 +16,8 @@
                  - eta: 0.9->0.8
                  - setter function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
   * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config)
-  * 18 dec 2017: - centrality selection also for MC
-                 - several trigger settings
+  * 18 dec 2017: several trigger settings
+  * 04 jan 2018: changed back to old trigger method
 
   Remiders:
   * For pp: remove pile up thing
@@ -115,11 +115,11 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  // ftrigBit1(0x0),
-  // ftrigBit2(0x0),
-  fTrigType1(AliVEvent::kMB),
-  fTrigType2(AliVEvent::kCentral),
-  fTrigType3(AliVEvent::kSemiCentral),
+  ftrigBit1(0x0),
+  ftrigBit2(0x0),
+  // fTrigType1(AliVEvent::kMB),
+  // fTrigType2(AliVEvent::kCentral),
+  // fTrigType3(AliVEvent::kSemiCentral),
   fVtxCut(10.0),  
   fEtaCut(0.8),  
   fEtaCutStack(1.2),  
@@ -179,11 +179,11 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  // ftrigBit1(0x0),
-  // ftrigBit2(0x0),
-  fTrigType1(AliVEvent::kMB),
-  fTrigType2(AliVEvent::kCentral),
-  fTrigType3(AliVEvent::kSemiCentral),
+  ftrigBit1(0x0),
+  ftrigBit2(0x0),
+  // fTrigType1(AliVEvent::kMB),
+  // fTrigType2(AliVEvent::kCentral),
+  // fTrigType3(AliVEvent::kSemiCentral),
 fVtxCut(10.0),  
   fEtaCut(0.8),
   fEtaCutStack(1.2),    
@@ -385,14 +385,14 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Get trigger decision
   fTriggeredEventMB = 0; 
 
-  Bool_t lIsDesiredTrigger1 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType1);
-  if(lIsDesiredTrigger1)fTriggeredEventMB = 1;
+  // Bool_t lIsDesiredTrigger1 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType1);
+  // if(lIsDesiredTrigger1)fTriggeredEventMB = 1;
  
-  Bool_t lIsDesiredTrigger2 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType2);
-  if(lIsDesiredTrigger2)fTriggeredEventMB += 2; 
+  // Bool_t lIsDesiredTrigger2 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType2);
+  // if(lIsDesiredTrigger2)fTriggeredEventMB += 2; 
   
-  Bool_t lIsDesiredTrigger3 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType3);
-  if(lIsDesiredTrigger3)fTriggeredEventMB += 4; 
+  // Bool_t lIsDesiredTrigger3 = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType3);
+  // if(lIsDesiredTrigger3)fTriggeredEventMB += 4; 
   
 
   
@@ -404,16 +404,16 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Always use if MC
   // Use if 2010 data
 
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit1 ){
-  //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1; // event triggered as minimum bias
-  // }
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit2 ){
-  //   fTriggeredEventMB += 2;  
-  //   fn2->Fill(1);
-  // }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & ftrigBit1 ){
+    fn1->Fill(1);
+    fTriggeredEventMB = 1; // event triggered as minimum bias
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & ftrigBit2 ){
+    fTriggeredEventMB += 2;  
+    fn2->Fill(1);
+  }
   //_____________ end nominal _______________________
 
 
@@ -616,7 +616,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // store MC event data no matter what
   if(fAnalysisMC) {
     
-    if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
+    //   if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
 
     if(fAnalysisType == "ESD") ProcessMCTruthESD();
     else ProcessMCTruthAOD(); // AOD

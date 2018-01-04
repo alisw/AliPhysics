@@ -121,8 +121,10 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetMinPt(0.0); 
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    // taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB); 
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
     //Set Filtesr
@@ -171,9 +173,11 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    //    taskHighPtDeDx->SetTrigger1(kTriggerInt);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    // //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
@@ -230,9 +234,11 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    //    taskHighPtDeDx->SetTrigger1(kTriggerInt);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    // //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
