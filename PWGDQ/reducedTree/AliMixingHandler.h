@@ -70,9 +70,9 @@ public:
   void Init();
   Int_t FindEventCategory(Float_t* values);
   Int_t GetBinFromCategory(Int_t iVar, Int_t category) const;
-  void FillEvent(TList* leg1List, TList* leg2List, Float_t* values, Int_t type);
+  void FillEvent(TList* leg1List, TList* leg2List, Float_t* values, Int_t type=-1);
   Bool_t AcceptTrack();    // randomly accept/reject a track for mixing
-  void RunLeftoverMixing(Int_t type);
+  void RunLeftoverMixing(Int_t type=-1);
   void PrintMixingLists(Int_t debug);  
   Bool_t IsPairSelected(Float_t* values, Int_t pairType);
   
@@ -83,6 +83,8 @@ private:
   // User options
   Int_t    fMixingSetup;          //  see Constants for various options 
   Int_t fPoolDepth;              // depth of the event mixing pool
+  // TODO: Add option to trigger the event mixing when a certain number of tracks in a given pool is reached
+  // TODO: Add option for rolling buffer mixing
   Float_t fMixingThreshold;      // within a (centrality,vtx,ep) mix all pools with entries > fMixingThreshold*fPoolDepth
   Float_t fDownscaleEvents;      // random downscale adding events to the pools
   Float_t fDownscaleTracks;      // random downscale adding tracks fo the pools
