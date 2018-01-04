@@ -75,7 +75,7 @@ public:
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
-    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t &LPinAcceptance, Int_t &LP);
+    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Int_t &LPinAcceptance, Int_t &LP);
 
     //********************MC
     void MCEfficiencyCorrections(const AliVVertex * RecVertex);
@@ -444,11 +444,18 @@ public:
     THnSparse             *fTrueMCHadron;   //!
     TH3F                  *fTrueMCElecHaTriggerEventCuts; //!
     TH3F                  *fTrueMCElecHaTrigger; //!
-
     THnSparse             *fTrueMCLPEventCuts;   //!
     THnSparse             *fTrueMCLP;   //!
     TH3F                  *fTrueMCElecLPTriggerEventCuts; //!
     TH3F                  *fTrueMCElecLPTrigger; //!
+    TH2F                  *fTrueElectronEta; //!
+    TH2F                  *fRecElectronEta; //!
+    TH2F                  *fTrueLPinAcceptanceEta; //!
+    TH2F                  *fTrueLPEta; //!
+    TH2F                  *fRecLPEta; //!
+    TH2F                  *fTrueHadronEta; //!
+    TH2F                  *fRecHadronEta; //!
+    TH3F                  *fCompareLP; //!
 
 
     AliESDv0KineCuts *fV0cutsESD;        //! ESD V0 cuts
