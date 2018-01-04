@@ -256,6 +256,10 @@ private:
     TH2D        *fTPCcls;
     TH1F        *fdPhiEP0;
     TH1F        *fdPhiEP1;
+    TH2D        *fHistMcD0;
+    TH2D        *fHistMcD;
+    TH2D        *fHistMcDs;
+    TH2D        *fHistMcLc;
     TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
