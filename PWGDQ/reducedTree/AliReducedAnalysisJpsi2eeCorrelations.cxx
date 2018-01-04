@@ -123,12 +123,15 @@ void AliReducedAnalysisJpsi2eeCorrelations::Finish() {
 void AliReducedAnalysisJpsi2eeCorrelations::AddAssociatedTrackCut(AliReducedInfoCut* cut) {
   //
   // add a new associated track cut
-  // NOTE: this probably needs some updates for event mixing at some point (see AliReducedAnalysisJpsi2ee::AddTrackCut)
-  // 
+  //
   fAssociatedTrackCuts.Add(cut);
-  fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+1);
+  // NOTE: number of parallel must be equal to number of hist classes in AliMixingHandler::Init()
+  if (fOptionRunLikeSignPairing)  fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+3);
+  else                            fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+1);
   TString histClassNames = fCorrelationsMixingHandler->GetHistClassNames();
-  histClassNames += Form("CorrMEPM_%s;", cut->GetName());
+  if (fOptionRunLikeSignPairing) histClassNames += Form("CorrMEPP_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
+  histClassNames += Form("CorrMEPM_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
+  if (fOptionRunLikeSignPairing) histClassNames += Form("CorrMEMM_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
   fCorrelationsMixingHandler->SetHistClassNames(histClassNames.Data());
 }
   
@@ -282,7 +285,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::FillCorrelationHistograms(AliReduced
   ULong_t mask = jpsi->GetFlags() & assoc->GetFlags();
   for(Int_t iCut=0; iCut<fAssociatedTrackCuts.GetEntries(); ++iCut) {
      if(!(mask & (ULong_t(1)<<iCut))) continue;
-     fHistosManager->FillHistClass(Form("%s_%s", corrClass.Data(), fAssociatedTrackCuts.At(iCut)->GetName()), fValues);
-     if(isMCTruth) fHistosManager->FillHistClass(Form("%s_%s_MCTruth", corrClass.Data(), fAssociatedTrackCuts.At(iCut)->GetName()), fValues);
+     fHistosManager->FillHistClass(Form("%s_%s_%s", corrClass.Data(), fTrackCuts.At(iCut)->GetName(), fAssociatedTrackCuts.At(iCut)->GetName()), fValues);
+     if(isMCTruth) fHistosManager->FillHistClass(Form("%s_%s_%s_MCTruth", corrClass.Data(), fTrackCuts.At(iCut)->GetName(), fAssociatedTrackCuts.At(iCut)->GetName()), fValues);
   }
 }

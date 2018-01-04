@@ -420,26 +420,29 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
       TIter iterLeg1(ev1Leg1List);
       AliReducedBaseTrack* ev1Leg1=0x0;
       while((ev1Leg1=(AliReducedBaseTrack*)iterLeg1())) {
-	// check that this track has at least one common bit with the mixing mask
-	testFlags1 = mixingMask & ev1Leg1->GetFlags();
-	if(!testFlags1) continue;
+        // check that this track has at least one common bit with the mixing mask
+        testFlags1 = mixingMask & ev1Leg1->GetFlags();
+        if(!testFlags1) continue;
 	
-	//loop over the ev2-leg2 list 
-	TIter iterLeg2(ev2Leg2List);
-	AliReducedBaseTrack* ev2Leg2=0x0;
-	while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2())) {
-	  // check that this track has at least one common bit with the mixing mask and with ev1-leg1
-	  testFlags2 = testFlags1 & ev2Leg2->GetFlags();
-	  if(!testFlags2) continue;
+        //loop over the ev2-leg2 list
+        TIter iterLeg2(ev2Leg2List);
+        AliReducedBaseTrack* ev2Leg2=0x0;
+        while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2())) {
+          // check that this track has at least one common bit with the mixing mask and with ev1-leg1
+          testFlags2 = testFlags1 & ev2Leg2->GetFlags();
+          if(!testFlags2) continue;
 	  
-	  // fill cross-pairs (leg1 - leg2) for the enabled bits
+          // fill cross-pairs (leg1 - leg2) for the enabled bits
           if(fMixingSetup==kMixResonanceLegs) AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
-          if(fMixingSetup==kMixCorrelation) AliReducedVarManager::FillCorrelationInfo(ev1Leg1, ev2Leg2, values);
+          if(fMixingSetup==kMixCorrelation)   AliReducedVarManager::FillCorrelationInfo(ev1Leg1, ev2Leg2, values);
           if(!IsPairSelected(values, 1)) continue;   // fill histograms only if pair cuts are fulfilled
-	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
+          for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) { 
-               if(fMixingSetup==kMixResonanceLegs) fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
-               if(fMixingSetup==kMixCorrelation) fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+              if(fMixingSetup==kMixResonanceLegs) fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
+              if(fMixingSetup==kMixCorrelation) {
+                Int_t pairType = (reinterpret_cast<AliReducedPairInfo*>(ev1Leg1))->PairType();
+                fHistos->FillHistClass(histClassArr->At(ibit*3+pairType)->GetName(), values);
+              }
             }
           }  
 	}  // end loop over the ev2-leg2 list
