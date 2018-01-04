@@ -161,6 +161,13 @@ class AliTrackContainer : public AliParticleContainer {
 
   const char*                 GetTitle() const;
 
+  /**
+   * @brief Test function checking whether the entries in the track array are the same as in the input array
+   * 
+   * @return Bool_t CheckArrayConsistency 
+   */
+  Bool_t CheckArrayConsistency() const;
+
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliTrackIterableContainer      all() const;
   const AliTrackIterableContainer      accepted() const;

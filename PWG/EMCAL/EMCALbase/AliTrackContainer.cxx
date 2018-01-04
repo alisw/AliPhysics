@@ -541,6 +541,7 @@ Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReas
  */
 Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
 {
+  if(fTrackTypes[i] == kRejected) return false; // track was rejected by the track selection
   Bool_t r = ApplyTrackCuts(GetTrack(i), rejectionReason);
   if (!r) return kFALSE;
 
@@ -626,6 +627,37 @@ PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHyb
     }
   }
   return hybridDefinition;
+}
+
+Bool_t AliTrackContainer::CheckArrayConsistency() const {
+  bool teststatus = true;
+  auto selected = fFilteredTracks.GetData();
+  if(selected->GetEntries() != fClArray->GetEntries()) {
+    std::cout << "Mismatch array size: selected " << selected->GetEntries() << ", input " << fClArray->GetEntries() << std::endl; 
+    teststatus = false;
+  } else {
+    std::cout << "Array size consistent: " << selected->GetEntries() << std::endl;
+  }
+
+  // Now check whehter tracks are stored in the same indices:
+  if(teststatus){
+    int nmatch(0), nfail(0);
+    for(int i = 0; i < fClArray->GetEntries(); i++) {
+      AliVTrack *trackAll = dynamic_cast<AliVTrack *>(fClArray->At(i));
+      AliVTrack *trackSel = dynamic_cast<AliVTrack *>(selected->At(i));
+      if(trackSel == trackAll) {
+        nmatch++;    
+      } else {
+        std::cout << "Mismatch in array position: " << i << std::endl;
+        nfail++;
+      }
+    }
+    if(nfail) {
+      std::cout << "found " << nfail << "mismatches" << std::endl;
+      teststatus = false;
+    }
+  }
+  return teststatus;
 }
 
 /**

@@ -38,7 +38,7 @@ AliAnalysisTaskRhoMass* AddTaskRhoMass(
   //-------------------------------------------------------
 
   TString name(Form("%s_%s_%s", taskname, nJets,cutType));
-  AliAnalysisTaskRhoMass* mgrTask = mgr->GetTask(name.Data());
+  AliAnalysisTaskRhoMass* mgrTask = dynamic_cast<AliAnalysisTaskRhoMass*>(mgr->GetTask(name.Data()));
   if (mgrTask) return mgrTask;
 
   AliAnalysisTaskRhoMass *rhomtask = new AliAnalysisTaskRhoMass(name, histo);
