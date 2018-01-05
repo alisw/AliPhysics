@@ -3949,7 +3949,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
       if (!MCElectron->IsPhysicalPrimary()) continue; // strong and electronweak decays safe for particles not reaching the detector
       PDGCode = abs(MCElectron->GetPdgCode());
       if (PDGCode==11) {
-	for (Int_t i=0; i<10; i++) { 
+	for (Int_t i=0; i<11; i++) { 
 	  for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE; // reset trigger 
 	}
 	Mother = MCElectron->GetMother();
@@ -4113,7 +4113,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 
 
 	    // fill trigger histogram for electron leading particle
-	    for (Int_t i=0; i<10; i++) { // case
+	    for (Int_t i=0; i<11; i++) { // case
 	      for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
 		if (ElectronIsTrigger[i][j]) {
 		  if (AfterEventCuts) { fTrueMCElecLPTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
