@@ -225,6 +225,11 @@ private:
     TH2D        *fHistDCAdeEnhance_D;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_Ds;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_Lc;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D0_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Ds_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w2;//!ele cand SPD or
     TH2D        *fHistDCAdePureMC;//!ele cand SPD or
     TH2D        *fHistDCAbePureMC;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
