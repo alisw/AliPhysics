@@ -2480,7 +2480,8 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+      //Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+      Double_t multESDTPCDif = multEsdn - multTPCn*3.60;
 
       fGlobalITSMult->Fill(multITS);
 
@@ -2941,13 +2942,13 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  fTPCvsGlobalTrk = new TH2F("fAODvsESDTrk","ESDTrk vs TPC(FB128)",4000,0,20000,2000,0,10000);
+  fTPCvsGlobalTrk = new TH2F("fAODvsESDTrk","ESDTrk vs TPC(FB128)",2000,0,20000,1000,0,10000);
   fListCalibs->Add(fTPCvsGlobalTrk);
 
-  fTPCvsITSTrk    = new TH2F("fTPCvsITSTrk","Global(FB96) vs TPC(FB128)",3500,0,3500,5500,0,5500);
+  fTPCvsITSTrk    = new TH2F("fTPCvsITSTrk","Global(FB96) vs TPC(FB128)",1000,0,5000,1000,0,5000);
   fListCalibs->Add(fTPCvsITSTrk);
 
-  fITSvsESDMult   = new TH2F("fITSvsESDMult","Global(ESD) vs ITS(FB96) ",4000,0,20000,4000,0,4000);
+  fITSvsESDMult   = new TH2F("fITSvsESDMult","ESDTrk vs ITS(FB96) ",2000,0,20000,1000,0,5000);
   fListCalibs->Add(fITSvsESDMult);
 
   fGlobalITSMult  = new TH1F("fGlobalITSMult","Global(FB96) Multiplilcity",4000,0,4000);
