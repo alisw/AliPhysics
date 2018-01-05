@@ -64,6 +64,7 @@ class CEPEventBuffer : public TObject {
     UInt_t   fMCProcessType; 
     TLorentzVector fMCIniSystem, fMCParticle;
     TVector3 fMCVtxPos;
+    Int_t fnMCParticles[6];
     
     // list of tracks
     TObjArray *fCEPTracks;
@@ -120,7 +121,10 @@ class CEPEventBuffer : public TObject {
                                              { fMCVtxPos.SetXYZ(xp,yp,zp); }
     void SetMCIniSystem(TLorentzVector part) { fMCIniSystem = part; }
     void SetMCParticle(TLorentzVector part)  { fMCParticle = part; }
-    
+    void SetMCnParticles(Int_t *nparts)      {
+      for (Int_t ii=0; ii<6; ii++) fnMCParticles[ii]=nparts[ii];
+    }
+
     // Accessors
     Int_t GetRunNumber()     const { return fRunNumber; }
     Int_t GetEventNumber()   const { return fEventNumber; }
@@ -165,7 +169,8 @@ class CEPEventBuffer : public TObject {
     TVector3 GetMCVtxPos()          const { return fMCVtxPos; }
     TLorentzVector GetMCIniSystem() const { return fMCIniSystem; }
     TLorentzVector GetMCParticle()  const { return fMCParticle; }
-  
+    Int_t* GetnMCParticles()              { return fnMCParticles; }
+     
     // readout gap condition
     UInt_t  GetEventCondition() const { return fEventCondition; }
     

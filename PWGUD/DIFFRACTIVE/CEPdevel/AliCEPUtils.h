@@ -36,6 +36,7 @@
 #include "AliCDBEntry.h"
 #include "AliMCEvent.h"
 #include "AliGeomManager.h"
+#include "AliMCEvent.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
@@ -52,6 +53,7 @@
 #include "AliESDPmdTrack.h"
 
 #include "AliCEPBase.h"
+#include "CEPEventBuffer.h"
 
 class AliCEPUtils : public TObject {
 
@@ -125,6 +127,10 @@ class AliCEPUtils : public TObject {
       AliESDEvent *Event,
       TList *lhh,
       Int_t *nCaloCluster, Double_t *CaloEnergy );
+
+    void SetMCTruth (
+      CEPEventBuffer *cepevent,
+      AliMCEvent *mcevent );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 

@@ -149,7 +149,8 @@ class AliCEPBase : public TObject {
     kBitV0Study               = BIT(10), // V0 study
     kBitFMDStudy              = BIT(11), // FMD study
     kBitEMCStudy              = BIT(12), // EMC study
-		kBitConfigurationVersion  = BIT(13)  // always set, last bit
+		kBitRawBuffer             = BIT(13), // save a CEPRawEventBuffer
+		kBitConfigurationVersion  = BIT(14)  // always set, last bit
 	
   };
 

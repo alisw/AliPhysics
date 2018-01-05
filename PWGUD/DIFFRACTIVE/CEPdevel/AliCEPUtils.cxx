@@ -1811,3 +1811,116 @@ void AliCEPUtils::EMCAnalysis (
 }
 
 // ------------------------------------------------------------------------------
+void AliCEPUtils::SetMCTruth (
+  CEPEventBuffer *fCEPEvent,
+  AliMCEvent *fMCEvent )
+{
+
+  //initialisations
+  TVector3 vtx = TVector3(0,0,0);
+  TLorentzVector lvtmp;
+  TLorentzVector lvin   = TLorentzVector(0,0,0,0);
+  TLorentzVector lvprod = TLorentzVector(0,0,0,0);
+  Int_t nMCparts[6] = {0};
+  
+  // MC generator and process type
+  TString fMCGenerator;
+  Int_t fMCProcess; 
+  DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
+  
+  // get stack
+  AliStack *stack = fMCEvent->Stack();
+  
+  // number of MC tracks
+  Int_t nTracks   = stack->GetNtrack();
+  Int_t nPrimaries   = stack->GetNprimary();
+  Int_t nTransported = stack->GetNtransported();
+  //printf("number of tracks - %i, primaries - %i, transported - %i\n",
+  //  nTracks,nPrimaries,nTransported);
+
+  nMCparts[0] = nTracks;
+  nMCparts[1] = nPrimaries;
+  nMCparts[2] = nTransported;
+
+  // count all (exclude first 5 entries)
+  // physical primary tracks and
+  // charged physical primary tracks
+  // all charged physical primary tracks with abs(eta)<1.
+  TParticle *part;
+  Int_t PDGCode;
+  //stack->DumpPStack();
+  for (Int_t ii=5; ii<nTracks; ii++) {
+    //printf("part[%i] %i %i %i\n\n",ii,
+    //  stack->IsPhysicalPrimary(ii),
+    //  stack->IsSecondaryFromWeakDecay(ii),
+    //  stack->IsSecondaryFromMaterial(ii) );
+  
+    // is it a charged particle?
+    // e    11
+    // mu   13
+    // pi  211
+    // K   321
+    // p  2212
+    if ( stack->IsPhysicalPrimary(ii) ) {
+      nMCparts[3]++;
+      part = stack->Particle(ii);
+      PDGCode = abs(part->GetPdgCode());
+      if (PDGCode==11 || PDGCode==13 || PDGCode==211 || PDGCode==321 || PDGCode==2212) {
+        nMCparts[4]++;
+        part->Momentum(lvtmp);
+        if (abs(lvtmp.Eta())<1) nMCparts[5]++;
+      }
+    }
+    
+  }
+  // if ( (nMCparts[3]%2)>0 && nPrimaries<30 ) stack->DumpPStack();
+  
+  // get first particle -> primary vertex position
+  part = stack->Particle(0);
+  vtx = TVector3(part->Vx(),part->Vy(),part->Vz());
+  
+  // incident beam-beam system
+  if (!fMCGenerator.EqualTo("SL")) {
+    part->Momentum(lvtmp);
+    lvin  = lvtmp;
+    stack->Particle(1)->Momentum(lvtmp);
+    lvin += lvtmp;
+  }
+  // lvin.Print();
+  
+  // for DIME, PYTHIA8-CD, and Starlight save the CEP particle
+  // add primaries except for the incoming and outgoing protons
+  lvprod = TLorentzVector(0,0,0,0);
+  if ( fMCGenerator.EqualTo("Dime") ||
+       ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
+     )
+  {
+    stack->Particle(4)->Momentum(lvtmp);
+    lvprod  = lvtmp;
+    for (Int_t ii=5; ii<nPrimaries; ii++) {
+      if (stack->Particle(ii)->GetMother(0)==0) {
+        stack->Particle(ii)->Momentum(lvtmp);
+        lvprod += lvtmp;
+      }
+    }
+  }
+  
+  // in Starlight the initial protons are missing in the stack
+  else if (fMCGenerator.EqualTo("SL")) {
+    stack->Particle(0)->Momentum(lvtmp);
+    lvprod  = lvtmp;
+    stack->Particle(1)->Momentum(lvtmp);
+    lvprod += lvtmp;
+  }
+  // lvprod.Print();
+    
+  // update the event buffer
+  fCEPEvent->SetMCGenerator(fMCGenerator);
+  fCEPEvent->SetMCProcessType(fMCProcess);
+  fCEPEvent->SetMCVtxPos(vtx.X(),vtx.Y(),vtx.Z());
+  fCEPEvent->SetMCIniSystem(lvin);
+  fCEPEvent->SetMCParticle(lvprod);
+  fCEPEvent->SetMCnParticles(nMCparts);
+                      
+}
+                  
