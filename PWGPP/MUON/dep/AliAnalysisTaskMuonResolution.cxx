@@ -103,6 +103,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fMinMomentum(0.),
   fMinPt(0.),
   fSign(0),
+  fUseMCLabel(kFALSE),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -157,6 +158,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fMinMomentum(0.),
   fMinPt(0.),
   fSign(0),
+  fUseMCLabel(kFALSE),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -457,6 +459,9 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     
     // select positive and/or negative tracks
     if (fSign*esdTrack->Charge() < 0) continue;
+    
+    // select only tracks with MC label or not
+    if (fUseMCLabel && esdTrack->GetLabel() < 0) continue;
     
     // skip tracks with not enough clusters
     //if (esdTrack->GetNClusters() < 8) continue;
