@@ -34,7 +34,7 @@ class AliPhysicsSelection;
 #include "AliEventCuts.h"
 #include "AliCEPUtils.h"
 #include "CEPEventBuffer.h"
-
+#include "CEPRawEventBuffer.h"
 
 class AliAnalysisTaskCEP : public AliAnalysisTaskSE
 {
@@ -112,6 +112,8 @@ private:
   TObjArray      *fTracks;        //! array of tracks
   TArrayI        *fTrackStatus;   //! array of TrackStatus
   TString         fLHCPeriod;     //! LHC period
+  
+  CEPRawEventBuffer *fCEPRawEvent;//! raw event buffer
     
   TVector3        fVtxPos;        // vertex position
 
