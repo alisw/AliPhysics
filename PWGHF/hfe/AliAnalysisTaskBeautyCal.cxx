@@ -191,6 +191,11 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAdeEnhance_D(0),
   fHistDCAdeEnhance_Ds(0),
   fHistDCAdeEnhance_Lc(0),
+  fHistDCAdeEnhance_D0_w(0),
+  fHistDCAdeEnhance_D_w(0),
+  fHistDCAdeEnhance_Ds_w(0),
+  fHistDCAdeEnhance_Lc_w(0),
+  fHistDCAdeEnhance_Lc_w2(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
@@ -349,6 +354,11 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAdeEnhance_D(0),
   fHistDCAdeEnhance_Ds(0),
   fHistDCAdeEnhance_Lc(0),
+  fHistDCAdeEnhance_D0_w(0),
+  fHistDCAdeEnhance_D_w(0),
+  fHistDCAdeEnhance_Ds_w(0),
+  fHistDCAdeEnhance_Lc_w(0),
+  fHistDCAdeEnhance_Lc_w2(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
@@ -747,7 +757,22 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAdeEnhance_Lc = new TH2D("fHistDCAdeEnhance_Lc", "DCA of Lc-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdeEnhance_Lc);
+//
+  fHistDCAdeEnhance_D0_w = new TH2D("fHistDCAdeEnhance_D0_w", "DCA of D0-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_D0_w);
 
+  fHistDCAdeEnhance_D_w = new TH2D("fHistDCAdeEnhance_D_w", "DCA of Dp-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_D_w);
+
+  fHistDCAdeEnhance_Ds_w = new TH2D("fHistDCAdeEnhance_Ds_w", "DCA of Ds-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_Ds_w);
+
+  fHistDCAdeEnhance_Lc_w = new TH2D("fHistDCAdeEnhance_Lc_w", "DCA of Lc-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_Lc_w);
+
+  fHistDCAdeEnhance_Lc_w2 = new TH2D("fHistDCAdeEnhance_Lc_w2", "DCA of Lc-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_Lc_w2);
+//
   fHistDCAdePureMC = new TH2D("fHistDCAdePureMC", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdePureMC);
  
@@ -1661,6 +1686,12 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
                   if(abs(pidM)==411)fHistDCAdeEnhance_D->Fill(track->Pt(),DCAxy);
                   if(abs(pidM)==431)fHistDCAdeEnhance_Ds->Fill(track->Pt(),DCAxy);
                   if(abs(pidM)==4122)fHistDCAdeEnhance_Lc->Fill(track->Pt(),DCAxy);
+                  //-------
+                  if(abs(pidM)==421)fHistDCAdeEnhance_D0_w->Fill(track->Pt(),DCAxy,1.0);
+                  if(abs(pidM)==411)fHistDCAdeEnhance_D_w->Fill(track->Pt(),DCAxy,0.793);  // 0.5/0.63 = 0.793
+                  if(abs(pidM)==431)fHistDCAdeEnhance_Ds_w->Fill(track->Pt(),DCAxy,1.9); // 0.4/0.21 = 1.9
+                  if(abs(pidM)==4122)fHistDCAdeEnhance_Lc_w->Fill(track->Pt(),DCAxy,6.6);  // 0.5/0.076 = 6.6
+                  if(abs(pidM)==4122)fHistDCAdeEnhance_Lc_w2->Fill(track->Pt(),DCAxy,14.5);  // 1.1/0.076 = 6.6
                  } 
                }
           if(pid_eleB)
