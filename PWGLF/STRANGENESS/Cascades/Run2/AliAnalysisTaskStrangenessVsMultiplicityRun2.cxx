@@ -3338,7 +3338,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     lMassHypoV0[2] = AliV0Result::kAntiLambda;
     
     //Array of results
-    AliV0Result *lV0Result[500];
+    AliV0Result *lV0Result[1000];
     Long_t lNV0 = 0;
     
     //Central results: Stored in indices 0, 1, 2 (careful!)
