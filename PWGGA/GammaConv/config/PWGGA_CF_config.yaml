@@ -28,17 +28,17 @@ inputObjects:
             branchName: "usedefault"
 CellEnergy:
     createHistos: true
-CellEnergy_defaultSeed:
+CellEnergy_defaultSetting:
     enabled: true
 
 CellBadChannel:
     createHistos: true
-CellBadChannel_defaultSeed:
+CellBadChannel_defaultSetting:
     enabled: true
 
 CellTimeCalib:
     createHistos: true
-CellTimeCalib_defaultSeed:
+CellTimeCalib_defaultSetting:
     enabled: true
 
 Clusterizer:
@@ -52,7 +52,7 @@ Clusterizer:
     diffEAggregation: 0.0
     cellsNames:
         - defaultCells
-Clusterizer_defaultSeed:
+Clusterizer_defaultSetting:
     # w0 standard is 4.5
     enabled: true
     cellE: 0.1
@@ -113,7 +113,7 @@ Clusterizer_S500A150:
 ClusterNonLinearity:
     createHistos: true
     nonLinFunct: kNoCorrection
-ClusterNonLinearity_defaultSeed:
+ClusterNonLinearity_defaultSetting:
     enabled: true
     clusterContainersNames:
         - defaultClusterContainer
