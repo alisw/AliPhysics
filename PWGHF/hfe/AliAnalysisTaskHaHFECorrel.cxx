@@ -3230,7 +3230,7 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
     Bool_t GetCocktailHeader=fMC->GetCocktailGenerator(i,genname);
     if(!GetCocktailHeader) Printf("no cocktail header list was found for this event");
     if(GetCocktailHeader) {
-      //      Printf("cocktail header name is %s", genname.Data()); 
+      //  Printf("cocktail header name is %s", genname.Data()); 
       //you may want to check wether it is Hijing, for example.
       //   if(genname.Contains("Hijing")) Printf("this particle comes from HIJING");
     }
@@ -3817,8 +3817,8 @@ Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Double_t pt, Double_t phi, 
   Int_t Bin = fHadRecEff.FindBin(pt,eta,phi);
   if (fHadRecEff.IsBinUnderflow(Bin) || fHadRecEff.IsBinOverflow(Bin) ) {
     if (pt>0.5) {
-      cout << "HadRecEff" << endl;
-      cout << pt << "\t" << eta << "\t" << phi << endl;
+      //  cout << "HadRecEff" << endl;
+      //cout << pt << "\t" << eta << "\t" << phi << endl;
     }
     return -1.;
   }
@@ -3826,8 +3826,8 @@ Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Double_t pt, Double_t phi, 
   if (RecEff>0.05) return RecEff;
   else {
     if (pt>0.5) {
-      cout << "HadRecEff" << endl;
-      cout << pt << "\t" << eta << "\t" << phi  << endl;
+      // cout << "HadRecEff" << endl;
+      //cout << pt << "\t" << eta << "\t" << phi  << endl;
     }
     return -1.;
   }
@@ -3836,13 +3836,13 @@ Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Double_t pt, Double_t phi, 
 Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
   Int_t Bin = fEleRecEff.FindBin(pt,eta,zVtx);
   if (fEleRecEff.IsBinUnderflow(Bin) || fEleRecEff.IsBinOverflow(Bin)) {
-    cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
+    // cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
     return -1.;
   }
   Double_t RecEff= fEleRecEff.GetBinContent(Bin);
   if (RecEff>0.05) return RecEff;
   else {
-    cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
+    //cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
     return -1.;
   }
 }
@@ -3933,7 +3933,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
   LeadingParticleInAcceptance=-999, LeadingParticle=-999;
   Double_t  LeadingParticlePtInAcceptance=-99, LeadingParticlePt=-99;
 
-  Bool_t **ElectronIsTrigger = new Bool_t*[10]; // Check if electron is trigger for all cases
+  Bool_t **ElectronIsTrigger = new Bool_t*[11]; // Check if electron is trigger for all cases
   for (Int_t i=0; i<11; i++) { // case
     ElectronIsTrigger[i]= new Bool_t[fAssPtHad_Nbins]; // associated hadron bin
     for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE;
@@ -3949,7 +3949,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
       if (!MCElectron->IsPhysicalPrimary()) continue; // strong and electronweak decays safe for particles not reaching the detector
       PDGCode = abs(MCElectron->GetPdgCode());
       if (PDGCode==11) {
-	for (Int_t i=0; i<10; i++) { 
+	for (Int_t i=0; i<11; i++) { 
 	  for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE; // reset trigger 
 	}
 	Mother = MCElectron->GetMother();
@@ -4113,7 +4113,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 
 
 	    // fill trigger histogram for electron leading particle
-	    for (Int_t i=0; i<10; i++) { // case
+	    for (Int_t i=0; i<11; i++) { // case
 	      for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
 		if (ElectronIsTrigger[i][j]) {
 		  if (AfterEventCuts) { fTrueMCElecLPTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
