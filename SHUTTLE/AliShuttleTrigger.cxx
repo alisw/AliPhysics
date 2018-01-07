@@ -390,8 +390,8 @@ Bool_t AliShuttleTrigger::SendMailDiskSpace(Short_t percentage)
   	bodyFileName.Form("%s/mail.body", fShuttle->GetShuttleLogDir());
   	gSystem->ExpandPathName(bodyFileName);
 
-  	ofstream mailBody;
-  	mailBody.open(bodyFileName, ofstream::out);
+  	std::ofstream mailBody;
+  	mailBody.open(bodyFileName, std::ofstream::out);
 
   	if (!mailBody.is_open())
 	{
