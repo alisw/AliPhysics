@@ -43,6 +43,15 @@ CEPRawTrackBuffer::~CEPRawTrackBuffer()
 }
 
 // ____________________________________________________________________________
+void CEPRawTrackBuffer::Copy(TObject &obj) const 
+{
+  if (this==&obj) return;
+  CEPRawTrackBuffer *robj = dynamic_cast<CEPRawTrackBuffer*>(&obj);
+  if (!robj) return; 
+  *robj = *this;
+}
+
+// ____________________________________________________________________________
 void CEPRawTrackBuffer::Reset()
 {
     fTrackLength     = CEPTrackBuffer::kdumval;

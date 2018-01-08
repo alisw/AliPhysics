@@ -41,7 +41,7 @@
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::PseudoTracks+;
 #pragma link C++ class AliCEPBase+;
 #pragma link C++ class AliCEPUtils+;
-#pragma link C++ class CEPRawADCellBuffer+;
+#pragma link C++ class CEPRawADBuffer+;
 #pragma link C++ class CEPRawCaloBuffer+;
 #pragma link C++ class CEPRawCaloClusterTrack+;
 #pragma link C++ class CEPRawEventBuffer+;
