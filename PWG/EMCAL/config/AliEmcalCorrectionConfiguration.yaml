@@ -136,11 +136,14 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     createHistos: false                             # Whether the task should create output histograms
     phiMatch: 0.030                                 # Phi match value
     etaMatch: 0.015                                 # Eta match value
-    hadCorr: 2.                                     # Hadronic correction mode. See the task for further details
+    hadCorr: 2.                                     # Sets the fraction f of track p to subtract from matched cluster. To subtract all tracks within the eta-phi cut set hadCorr = 1+f. To subtract only one track set 0<hadCorr<1 where hadCorr=f.
     Eexcl: 0                                        # Cell energy that cannot be subtracted
     doTrackClus: true                               # Loop over tracks first
     plotOversubtractionHistograms: false            # Compute and plot oversubtracted energy from embedded/signal matches (embedding only)
     doNotOversubtract: false                        # Do not oversubtract energy from cluster (embedding only)
+    useM02SubtractionScheme: false                  # Flag to enable hadronic correction scheme using cluster M02 value
+    useConstantSubtraction: false                   # Flag to perform constant rather than fractional subtract (only applicable if using M02 scheme)
+    constantSubtractionValue: 0.                    # Value to be used for constant subtraction (only applicable if using constant subtraction in M02 scheme)
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
