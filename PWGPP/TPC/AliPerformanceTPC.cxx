@@ -1093,7 +1093,7 @@ return newFolder;
 Long64_t AliPerformanceTPC::Merge(TCollection* list) 
 {
   // Merge list of objects (needed by PROOF)
-
+    
   if (!list)
   return 0;
 
