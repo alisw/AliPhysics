@@ -53,9 +53,6 @@ class AliAnTOFtrack {
   //******************************
 
   //DCA binning
-  ///
-  /// Method to tests the DCA binning
-  void TestDCAXYBinning();
 
   ///
   /// Method to put the DCAxy or DCAz of the class into bins
