@@ -67,7 +67,7 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the value of the track DCA
-  Double_t GetDCA(const Bool_t xy);
+  Double_t GetDCA(const Bool_t xy) const { return xy ? fDCAXY : fDCAZ; }
 
   //TOF utilities
 
