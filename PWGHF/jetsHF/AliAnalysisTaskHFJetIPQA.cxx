@@ -263,7 +263,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
     Double_t d0zn  =d0zmc+dd0zn;
     Double_t dd0rpo=d0rpo-d0rpmc;
     Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
-    Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
+    Double_t dd0mrpn=sd0mrpn-sd0mrpo;
     Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
     Double_t dpt1o =pt1o-pt1mc;
     Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
