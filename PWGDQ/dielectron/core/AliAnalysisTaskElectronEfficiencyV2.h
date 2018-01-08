@@ -104,7 +104,7 @@ public:
    void   AddTrackCuts(AliAnalysisFilter* filter) {fTrackCuts.push_back(filter);}
 
 
-private:
+public:
   class Particle{
   public:
     Particle() :
@@ -125,6 +125,7 @@ private:
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
   };
+private:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kCentralityEvents, kLastBin};
 
   void    SetBinsLinear(const std::string variable, const double min, const double max, const unsigned int steps);
