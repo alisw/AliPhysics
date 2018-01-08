@@ -13,12 +13,12 @@ ClassImp(CEPRawCaloClusterTrack)
 // ____________________________________________________________________________
 CEPRawCaloClusterTrack::CEPRawCaloClusterTrack()
   : TObject()
-  , fE           (0.0)
-  , fShapeDisp   (0.0)
-  , fChi2        (CEPTrackBuffer::kdumval)
-  , fCaloCpvDist (CEPTrackBuffer::kdumval)
-  , fIsPHOS      (kFALSE)  
-  , fIsEMCAL     (kFALSE)  
+  , fE(0.0)
+  , fShapeDisp(0.0)
+  , fChi2(CEPTrackBuffer::kdumval)
+  , fCaloCpvDist(CEPTrackBuffer::kdumval)
+  , fIsPHOS(kFALSE)  
+  , fIsEMCAL(kFALSE)  
 {
 
 }
@@ -27,6 +27,15 @@ CEPRawCaloClusterTrack::CEPRawCaloClusterTrack()
 CEPRawCaloClusterTrack::~CEPRawCaloClusterTrack()
 {
 
+}
+
+// ____________________________________________________________________________
+void CEPRawCaloClusterTrack::Copy(TObject &obj) const
+{
+    if (this==&obj) return;
+    CEPRawCaloClusterTrack *robj = dynamic_cast<CEPRawCaloClusterTrack*>(&obj);
+    if (!robj) return;
+    *robj = *this;
 }
 
 // ____________________________________________________________________________

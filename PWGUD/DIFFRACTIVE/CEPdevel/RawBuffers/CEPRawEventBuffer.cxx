@@ -18,6 +18,18 @@ CEPRawEventBuffer::CEPRawEventBuffer()
     , fEventNumber(CEPTrackBuffer::kdumval)
     , fnTracks(0)  
     , fnCaloTracks(0)  
+    , fADTotalMult(0.)  
+    , fADTotalTime(0.)  
+    , fADTotalCharge(0.)  
+    , fFMDTotalMult(0.)  
+    , fV0TotalMult(0.)  
+    , fV0TotalTime(0.)  
+    , fV0TotalCharge(0.)  
+    , fV0TotalSigWidth(0.)  
+    , fEMCTotalAmplitude(0.)  
+    , fEMCTotalTime(0.)  
+    , fPHOSTotalAmplitude(0.)
+    , fPHOSTotalTime(0.)
     , fCEPRawTracks(new TObjArray())
     , fCEPRawCaloClusterTracks(new TObjArray())
     , fADCellBuffer(0x0)
@@ -25,6 +37,35 @@ CEPRawEventBuffer::CEPRawEventBuffer()
     , fEMCalBuffer(0x0)
     , fPHOSBuffer(0x0)
     , fFMDBuffer(0x0)
+{
+
+}
+
+//______________________________________________________________________________
+CEPRawEventBuffer::CEPRawEventBuffer(const CEPRawEventBuffer& eb)
+    : TObject(eb)
+    , fEventNumber(eb.fEventNumber)
+    , fnTracks(eb.fnTracks)  
+    , fnCaloTracks(eb.fnCaloTracks)  
+    , fADTotalMult(eb.fADTotalMult)  
+    , fADTotalTime(eb.fADTotalTime)  
+    , fADTotalCharge(eb.fADTotalCharge)  
+    , fFMDTotalMult(eb.fFMDTotalMult)  
+    , fV0TotalMult(eb.fV0TotalMult)  
+    , fV0TotalTime(eb.fV0TotalTime)  
+    , fV0TotalCharge(eb.fV0TotalCharge)  
+    , fV0TotalSigWidth(eb.fV0TotalSigWidth)  
+    , fEMCTotalAmplitude(eb.fEMCTotalAmplitude)  
+    , fEMCTotalTime(eb.fEMCTotalTime)  
+    , fPHOSTotalAmplitude(eb.fPHOSTotalAmplitude)  
+    , fPHOSTotalTime(eb.fPHOSTotalTime)  
+    , fCEPRawTracks(new TObjArray(*eb.fCEPRawTracks))
+    , fCEPRawCaloClusterTracks(new TObjArray(*eb.fCEPRawCaloClusterTracks))
+    , fADCellBuffer(new CEPRawADBuffer(*eb.fADCellBuffer))
+    , fV0Buffer(new CEPRawV0Buffer(*eb.fV0Buffer))
+    , fEMCalBuffer(new CEPRawCaloBuffer(*eb.fEMCalBuffer))
+    , fPHOSBuffer(new CEPRawCaloBuffer(*eb.fPHOSBuffer))
+    , fFMDBuffer(new CEPRawFMDBuffer(*eb.fFMDBuffer))
 {
 
 }
@@ -52,11 +93,109 @@ CEPRawEventBuffer::~CEPRawEventBuffer()
     if (fPHOSBuffer)   { delete fPHOSBuffer;    fPHOSBuffer   = 0x0; }
     if (fFMDBuffer)    { delete fFMDBuffer;     fFMDBuffer    = 0x0; }
 }
+
+//______________________________________________________________________________
+void CEPRawEventBuffer::Copy(TObject &obj) const 
+{
+    // interface to TOBject::Copy
+    // Copies the content of this into obj!
+    // bascially obj = *this
+
+    if(this==&obj)return;
+    CEPRawEventBuffer *robj = dynamic_cast<CEPRawEventBuffer*>(&obj);
+    if(!robj)return; // not a CEPRawEventBuffer
+    *robj = *this;
+    return;
+}
+
+///
+/// Assignment operator.
+///
+//__________________________________________________________________________
+CEPRawEventBuffer & CEPRawEventBuffer::operator =(const CEPRawEventBuffer& source)  
+{
+    if (&source == this) return *this;
+
+    TObject::operator=(source); // don't forget to invoke the base class' assignment operator
+
+    Reset();
+  
+    // standard members
+    fEventNumber = source.fEventNumber;
+    fnTracks     = source.fnTracks;
+    fnCaloTracks = source.fnCaloTracks;
+    // AD
+    fADTotalMult   = source.fADTotalMult;
+    fADTotalTime   = source.fADTotalTime;
+    fADTotalCharge = source.fADTotalCharge;
+    // FMD
+    fFMDTotalMult = source.fFMDTotalMult;
+    // V0
+    fV0TotalMult     = source.fV0TotalMult;
+    fV0TotalTime     = source.fV0TotalTime;
+    fV0TotalCharge   = source.fV0TotalCharge;
+    fV0TotalSigWidth = source.fV0TotalSigWidth;
+    // Calo buffers
+    fEMCTotalAmplitude  = source.fEMCTotalAmplitude;
+    fEMCTotalTime       = source.fEMCTotalTime;
+    fPHOSTotalAmplitude = source.fPHOSTotalAmplitude;
+    fPHOSTotalTime      = source.fPHOSTotalTime;
+
+    // object members
+    fADCellBuffer = source.fADCellBuffer;
+    fV0Buffer     = source.fV0Buffer;
+    fEMCalBuffer  = source.fEMCalBuffer;
+    fPHOSBuffer   = source.fPHOSBuffer;
+    fFMDBuffer    = source.fFMDBuffer;
+
+    // Object arrays members
+    if (source.fCEPRawTracks) {
+        if (fCEPRawTracks) *fCEPRawTracks = *(source.fCEPRawTracks); 
+        else fCEPRawTracks = new TObjArray(*(source.fCEPRawTracks));
+    } else {
+        fCEPRawTracks->SetOwner(kTRUE);
+        fCEPRawTracks->Clear();
+        delete fCEPRawTracks;
+        fCEPRawTracks = 0x0;
+    }
+
+    if (source.fCEPRawCaloClusterTracks) {
+        if (fCEPRawCaloClusterTracks) 
+            *fCEPRawCaloClusterTracks = *(source.fCEPRawCaloClusterTracks); 
+        else fCEPRawCaloClusterTracks = new TObjArray(*(source.fCEPRawCaloClusterTracks));
+    } else {
+        fCEPRawCaloClusterTracks->SetOwner(kTRUE);
+        fCEPRawCaloClusterTracks->Clear();
+        delete fCEPRawCaloClusterTracks;
+        fCEPRawCaloClusterTracks = 0x0;
+    }
+
+    return *this;
+}
+
 //______________________________________________________________________________
 void CEPRawEventBuffer::Reset()
 {
     // reset all private variables
-    fEventNumber     = AliCEPBase::kdumval;
+    fEventNumber = AliCEPBase::kdumval;
+    fnTracks     = 0;
+    fnCaloTracks = 0;
+    // AD
+    fADTotalMult   = 0.;
+    fADTotalTime   = 0.;
+    fADTotalCharge = 0.;
+    // FMD
+    fFMDTotalMult = 0.;
+    // V0
+    fV0TotalMult     = 0.;
+    fV0TotalTime     = 0.;
+    fV0TotalCharge   = 0.;
+    fV0TotalSigWidth = 0.;
+    // Calo buffers
+    fEMCTotalAmplitude  = 0.;
+    fEMCTotalTime       = 0.;
+    fPHOSTotalAmplitude = 0.;
+    fPHOSTotalTime      = 0.;
 
     // clear the track list
     fCEPRawTracks->SetOwner(kTRUE);
@@ -157,8 +296,11 @@ Bool_t CEPRawEventBuffer::RemoveCaloCluster(UInt_t ind)
 //______________________________________________________________________________
 void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
 {
+    // Set event number
+    this->SetEventNumber( ESDobj->GetEventNumberInFile() );
+
     // create sub-detector buffers
-    fADCellBuffer = new CEPRawADCellBuffer();
+    fADCellBuffer = new CEPRawADBuffer();
     fV0Buffer     = new CEPRawV0Buffer();
     fEMCalBuffer  = new CEPRawCaloBuffer();
     fPHOSBuffer   = new CEPRawCaloBuffer();
@@ -170,6 +312,23 @@ void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
     fPHOSBuffer->SetCaloVariables(ESDobj->GetPHOSCells()); 
     fFMDBuffer->SetFMDVariables(ESDobj->GetFMDData()); 
     
+    // AD setter
+    this->SetTotalADMult(fADCellBuffer->GetADTotalMultiplicity() );
+    this->SetTotalADTime(fADCellBuffer->GetADTotalTime() );
+    this->SetTotalADCharge(fADCellBuffer->GetADTotalCharge() );
+    // FMD setter
+    this->SetTotalFMDMult(fFMDBuffer->GetFMDTotalMultiplicity() );
+    // V0 setter
+    this->SetTotalV0Mult(fV0Buffer->GetV0TotalMultiplicity() );
+    this->SetTotalV0Time(fV0Buffer->GetV0TotalCharge() );
+    this->SetTotalV0Charge(fV0Buffer->GetV0TotalCharge() );
+    this->SetTotalV0SigWidth(fV0Buffer->GetV0TotalSignalWidth() );
+    // Calo Setter
+    this->SetTotalEMCAmplitude(fEMCalBuffer->GetCaloTotalAmplitude() );
+    this->SetTotalEMCTime(fEMCalBuffer->GetCaloTotalTime() );
+    this->SetTotalPHOSAmplitude(fPHOSBuffer->GetCaloTotalAmplitude() );
+    this->SetTotalPHOSTime(fPHOSBuffer->GetCaloTotalTime() );
+
     // fill in the raw track information
     UInt_t nTracks = ESDobj->GetNumberOfTracks();
     for (UInt_t i(0); i<nTracks; i++)

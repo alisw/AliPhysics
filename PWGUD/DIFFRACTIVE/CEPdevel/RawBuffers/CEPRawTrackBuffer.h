@@ -36,6 +36,8 @@ class CEPRawTrackBuffer : public TObject
                     ~CEPRawTrackBuffer();
     /// Modifiers
     void            Reset();
+
+    void            Copy(TObject &obj) const;
     
  
     /// Setter functions

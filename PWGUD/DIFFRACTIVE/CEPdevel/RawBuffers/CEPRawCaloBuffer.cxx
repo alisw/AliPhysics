@@ -15,12 +15,77 @@ ClassImp(CEPRawCaloBuffer)
 // ____________________________________________________________________________
 CEPRawCaloBuffer::CEPRawCaloBuffer()
   : TObject()
-  , fNCells      (0)
-  , fAmplitude   (0x0)
-  , fCellMCLabel (0x0)
-  , fTime        (0x0)
+  , fNCells(0)
+  , fAmplitude(0x0)
+  , fCellMCLabel(0x0)
+  , fTime(0x0)
 {
 
+}
+
+// as we have pointer member variables we have to add a few things to our class
+//  - a copy constructor
+//  - overwrite the assignment operator
+//  - overwrite the Copy function of TObject
+///
+/// Copy constructor
+///
+// ____________________________________________________________________________
+CEPRawCaloBuffer::CEPRawCaloBuffer(const CEPRawCaloBuffer& cb)
+  : TObject(cb)
+  , fNCells(cb.fNCells)
+  , fAmplitude(0x0)
+  , fCellMCLabel(0x0)
+  , fTime(0x0)
+{
+    fAmplitude   = new Double_t[fNCells];
+    fCellMCLabel = new Int_t[fNCells];
+    fTime        = new Double_t[fNCells];
+
+    for (UInt_t i(0); i<fNCells; i++){
+        fAmplitude[i]   = cb.fAmplitude[i]; 
+        fCellMCLabel[i] = cb.fCellMCLabel[i]; 
+        fTime[i]        = cb.fTime[i]; 
+    }
+
+}
+
+///
+/// Assignment operator.
+///
+//__________________________________________________________________________
+CEPRawCaloBuffer & CEPRawCaloBuffer::operator =(const CEPRawCaloBuffer& source)  
+{
+    if (&source == this) return *this;
+    TObject::operator=(source);
+
+    Reset();
+  
+    fNCells = source.fNCells;
+    if (fNCells>0){
+        fAmplitude   = new Double_t[fNCells];
+        fTime        = new Double_t[fNCells];
+        fCellMCLabel = new Int_t[fNCells];
+        for (UInt_t i(0); i<fNCells; i++){
+            fAmplitude[i]   = source.fAmplitude[i];
+            fTime[i]        = source.fTime[i];
+            fCellMCLabel[i] = source.fCellMCLabel[i];
+        }
+    }
+
+    return *this;
+}
+
+///
+/// This overwrites the virtual TObject::Copy()
+/// to allow run time copying without casting
+// ____________________________________________________________________________
+void CEPRawCaloBuffer::Copy(TObject &obj) const 
+{
+  if(this==&obj)return;
+  CEPRawCaloBuffer *robj = dynamic_cast<CEPRawCaloBuffer*>(&obj);
+  if(!robj)return; // not an CEPRawCaloBuffer
+  *robj = *this;
 }
 
 // ____________________________________________________________________________
@@ -82,6 +147,17 @@ Float_t CEPRawCaloBuffer::GetCaloCellAmplitude(UInt_t i) const
 }
 
 // ____________________________________________________________________________
+Float_t CEPRawCaloBuffer::GetCaloTotalAmplitude() const
+{
+    Float_t totalAmpl(0.0);
+    for (UInt_t i(0); i<fNCells; i++){
+        totalAmpl += fAmplitude[i];
+    }
+
+    return totalAmpl;
+}
+
+// ____________________________________________________________________________
 Int_t CEPRawCaloBuffer::GetCaloCellMCLabel(UInt_t i) const
 {
     return (i<fNCells) ? fCellMCLabel[i] : CEPTrackBuffer::kdumval;
@@ -92,6 +168,19 @@ Float_t CEPRawCaloBuffer::GetCaloCellTime(UInt_t i) const
 {
     return (i<fNCells) ? fTime[i] : CEPTrackBuffer::kdumval;
 }
+
+// ____________________________________________________________________________
+Float_t CEPRawCaloBuffer::GetCaloTotalTime() const
+{
+    Float_t totalTime(0.0);
+    for (UInt_t i(0); i<fNCells; i++){
+        totalTime += fTime[i];
+    }
+
+    return totalTime;
+}
+
+
 
 // ____________________________________________________________________________
 void CEPRawCaloBuffer::SetCaloVariables(AliESDCaloCells* CellsObj)

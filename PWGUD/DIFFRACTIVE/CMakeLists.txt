@@ -58,7 +58,7 @@ set(SRCS
     DGTrigger/AliTriggerStudy0STP.cxx
     CEPdevel/AliCEPBase.cxx
     CEPdevel/AliCEPUtils.cxx
-    CEPdevel/RawBuffers/CEPRawADCellBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawADBuffer.cxx
     CEPdevel/RawBuffers/CEPRawCaloBuffer.cxx
     CEPdevel/RawBuffers/CEPRawCaloClusterTrack.cxx
     CEPdevel/RawBuffers/CEPRawEventBuffer.cxx

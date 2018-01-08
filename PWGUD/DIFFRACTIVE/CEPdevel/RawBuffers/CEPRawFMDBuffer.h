@@ -8,32 +8,35 @@ class CEPRawFMDBuffer : public TObject
 {
 
   private:
-    /// Number of final cells is equal to the number of sectors
-    UShort_t        fNCells;           
-    /// Mulitplicity in certain cell
-    Float_t *       fMult;           
+    /// Number of sectors
+    UShort_t            fNCells;           
+    /// Mulitplicity in sector
+    Float_t             fMult[140];
 
   public:
-                    CEPRawFMDBuffer();
-                    ~CEPRawFMDBuffer();
+                        CEPRawFMDBuffer();
+                        CEPRawFMDBuffer(const CEPRawFMDBuffer& fb);
+                        ~CEPRawFMDBuffer();
     // Modifiers
     /// Reset the member variables
-    void            Reset();
+    void                Reset();
+    void                Copy(TObject &obj) const;
+    CEPRawFMDBuffer &   operator=(const CEPRawFMDBuffer& source);
     
     // Setter functions 
-    /// Set the number of FMD cells to fill
-    void            SetFMDnCells           (UInt_t nCells) { fNCells = nCells; }
     /// Set the cell multiplicity 
-    void            SetFMDCellMultiplicity (Float_t mult, UInt_t i); 
+    void                SetFMDCellMultiplicity(Float_t mult, UInt_t i); 
 
     /// Global variable setter
-    void            SetFMDVariables    (AliESDFMD* FMDObj,   UInt_t nCells=140);
+    void                SetFMDVariables(AliESDFMD* FMDObj);
     
     // Accessors
     /// Returns the number of cells/sectors
-    UInt_t          GetFMDnCells()                   const { return fNCells;  }
+    UInt_t              GetFMDnCells()                   const { return fNCells;  }
+    /// Returns the global multiplicity in all fmd cells
+    Float_t             GetFMDTotalMultiplicity()        const;
     /// Returns the amplitde of a given sector 
-    Float_t         GetFMDCellMultiplicity(UInt_t i) const;
+    Float_t             GetFMDCellMultiplicity(UInt_t i) const;
 
 
     ClassDef(CEPRawFMDBuffer,1)

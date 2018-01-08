@@ -17,23 +17,58 @@ ClassImp(CEPRawFMDBuffer)
 // ____________________________________________________________________________
 CEPRawFMDBuffer::CEPRawFMDBuffer()
   : TObject()
-  , fNCells     (140)
-  , fMult       (0x0)
+  , fNCells(140)
 {
+    this->Reset();
+}
 
+// ____________________________________________________________________________
+CEPRawFMDBuffer::CEPRawFMDBuffer(const CEPRawFMDBuffer& fb)
+  : TObject(fb)
+  , fNCells(fb.fNCells)
+{
+    for (UInt_t i(0); i<fNCells; i++) {
+        fMult[i] = fb.fMult[i]; 
+    }
+}
+
+// ____________________________________________________________________________
+CEPRawFMDBuffer& CEPRawFMDBuffer::operator=(const CEPRawFMDBuffer& source)
+{
+    if(this==&source) return *this;
+    TObject::operator=(source);
+    // Assignment operator
+    fNCells      = source.fNCells;
+
+    for(UInt_t i(0); i<fNCells; i++) {
+       fMult[i] = source.fMult[i];
+    }
+
+    return *this;
+}
+
+// ____________________________________________________________________________
+void CEPRawFMDBuffer::Copy(TObject &obj) const 
+{
+  if (this==&obj) return;
+  CEPRawFMDBuffer *robj = dynamic_cast<CEPRawFMDBuffer*>(&obj);
+  if (!robj) return; 
+  *robj = *this;
 }
 
 // ____________________________________________________________________________
 CEPRawFMDBuffer::~CEPRawFMDBuffer()
 {
-    if (fMult)  { delete [] fMult;   fMult = 0x0;   }
+
 }
 
 // ____________________________________________________________________________
 void CEPRawFMDBuffer::Reset()
 {
     fNCells     = 140;
-    if (fMult)  { delete [] fMult;   fMult = 0x0;   }
+    for (UInt_t i(0); i<fNCells; i++){
+        fMult[i] = 0.0; 
+    }
 }
 
 // ____________________________________________________________________________
@@ -55,11 +90,19 @@ Float_t CEPRawFMDBuffer::GetFMDCellMultiplicity(UInt_t i) const
 }
 
 // ____________________________________________________________________________
-void CEPRawFMDBuffer::SetFMDVariables(AliESDFMD* FMDobj, UInt_t nCells)
+Float_t CEPRawFMDBuffer::GetFMDTotalMultiplicity() const
 {
-    this->SetFMDnCells(nCells);
-    // Global member variable setter
-    fMult = new Float_t[fNCells];
+    Float_t totalMult(0.0);
+    for (UInt_t i(0); i<fNCells; i++) {
+        totalMult += fMult[i];
+    }
+
+    return totalMult;
+}
+
+// ____________________________________________________________________________
+void CEPRawFMDBuffer::SetFMDVariables(AliESDFMD* FMDobj)
+{
     UInt_t cellIdx(0);
     Float_t sumMult(0.0);
    
@@ -86,13 +129,12 @@ void CEPRawFMDBuffer::SetFMDVariables(AliESDFMD* FMDobj, UInt_t nCells)
                     for (UShort_t strip = 0; strip < nstr; strip++) {
                         Float_t mult = FMDobj->Multiplicity(det,ring,sec,strip);
                         if (mult == AliESDFMD::kInvalidMult) continue;
-                        if (mult > 0.005) sumMult += mult;
+                        sumMult += mult;
                     }
                     // fill the cell after sector
                     this->SetFMDCellMultiplicity(sumMult, cellIdx); 
                     cellIdx++;
                     sumMult=0.0;
-                    //std::cout << "Filled " << cellIdx << " times" << std::endl;
                 }
             }
     	}
