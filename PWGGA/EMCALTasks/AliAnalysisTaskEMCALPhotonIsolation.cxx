@@ -2406,8 +2406,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 	if(fIsMC){
 	  int tracklabel = TMath::Abs(eTrack->GetLabel());
 	  AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
-    if(fWho==1)
-      fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
+	  if(fWho==1)
+	    fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
 	}
 	iTracksCone++;
       }
@@ -2649,7 +2649,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
 
-    if( (phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
+    if((phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
         if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius)
@@ -3949,7 +3949,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
   }
   else{
     etaMax = 0.87;
-    if(TMath::Abs(etap) >= etaMax)
+    if(TMath::Abs(etap) >= etaMax) // SHOULD BE HARMONISED WITH (E,P)tIso(Clus,Track)(Eta,Phi)Band
       return;
     else{
       switch(fUEMethod)
@@ -4057,8 +4057,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     cout<<"No stack saved\n"; return;
   }
 
-  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0.;
-  Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
+  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., radius = 0., phip = 0., etap = 0.;
+  Double_t etaMax_fidu = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal_fidu = 0., phiMaxEMCal_fidu = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   if(fAODMCParticles->GetEntries() < 1){
     AliError("number of tracks insufficient");
@@ -4084,17 +4084,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     else
       continue;
   }
-    // AliInfo(Form("number of particles in the array %d",nTracks));
 
-  AliAODMCParticle *mcpart, *mom, *mcpp/*, *mum*/;
-
-    // Bool_t prompt=kFALSE;
+  AliAODMCParticle *mcpart, *mom, *mcpp;
   Int_t pdg, mompdg, photonlabel;
 
-    // AliAODMCParticle *mcfirst = static_cast<AliAODMCParticle*>(fAODMCParticles->At(0));
-    // AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
-
-  for(int iTr=0;iTr<nTracks;iTr++){
+  for(int iTr = 0; iTr < nTracks; iTr ++){
     eT=0.; phi=0.; eta=0.;
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
@@ -4115,41 +4109,40 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     eta = mcpart->Eta();
     phi = mcpart->Phi();
 
-    // Check photons in EMCal
-    if(!fTPC4Iso){
-      etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+    if(!fTPC4Iso){ // Check photons in EMCal
+      etaMax_fidu = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
 
       if(!fPeriod.IsNull()){
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
 	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
 	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
       }
       else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-	phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
+	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	phiMaxEMCal_fidu = TMath::Pi()-0.03-fFiducialCut;
       }
 
-      if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
+      if((TMath::Abs(eta) > etaMax_fidu) || (phi < phiMinEMCal_fidu || phi > phiMaxEMCal_fidu))
 	continue;
     }
-    else{
-      etaMax = 0.87-fFiducialCut;
+    else{ // Check photons in TPC
+      etaMax_fidu = 0.87-fFiducialCut;
 
       if(!fPeriod.IsNull()){
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
 	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
       }
       else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-	phiMaxEMCal = TMath::Pi()-0.03;
+	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03;
+	phiMaxEMCal_fidu = TMath::Pi()-0.03;
       }
 
-      if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
+      if((TMath::Abs(eta) > etaMax_fidu) || (phi < phiMinEMCal_fidu || phi > phiMaxEMCal_fidu))
 	continue;
     }
 
@@ -4157,16 +4150,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     int momidx = mcpart->GetMother();
     if(momidx>0){
-      mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+      mom    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
       mompdg = TMath::Abs(mom->GetPdgCode());
     }
     else
-      mompdg=mcpart->GetPdgCode();
+      mompdg = mcpart->GetPdgCode();
 
-    eT = mcpart->E()*TMath::Sin(mcpart->Theta()); // Transform to transverse Energy
+    eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
 
     if(fWho == 1)
       fphietaPhotons->Fill(eta,phi,eT);
+
     //Taking out this part of code since it introduces a bias in the efficiency
     //computation
     //      bool foundmatch=kFALSE;
@@ -4198,64 +4192,90 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     //      if(foundmatch)
     //        continue;
 
-    distance=0.;
+    radius=0.;
     phip=0., etap=0.;
-    sumEiso=0.,sumUE=0.;
+    sumEiso=0.,sumUE=0.; // Initialisations to be moved in the below loop?
 
-    for(int iTrack=0;iTrack<nTracks;iTrack++){
-      if(iTrack==photonlabel)
+    for(int iTrack = 0; iTrack < nTracks; iTrack ++){
+
+      if(iTrack == photonlabel)
 	continue;
 
       mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-
       if(!mcpp)
 	continue;
 
       if(mcpp->Charge() != 0 && mcpp->GetStatus()<10)
 	fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
 
-      if(fIsoMethod==2){
-	if((mcpp->Charge())==0)
+      if(fIsoMethod == 2){
+	if(mcpp->Charge() == 0)
 	  continue;
       }
-      //only final state PhysicalPrimary and primary particles
-      if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || (!mcpp->IsPrimary())))
+      // Add a else if(fIsoMethod == 3) to avoid counting charged particles?
+
+      // Only final state, physical primary and primary particles
+      if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || !mcpp->IsPrimary()))
 	continue;
 
-      int mumidx=mcpp->GetMother();
-      if(mumidx<0 || mumidx>nTracks)
+      int mumidx = mcpp->GetMother();
+      if(mumidx < 0 || mumidx > nTracks)
 	continue;
 
-      // mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
       if(mumidx == photonlabel)
+	continue;
+
+      if(mcpp->E() < 0.3) // Minimal energy for clusters allowed at reconstructed level
 	continue;
 
       phip = mcpp->Phi();
       etap = mcpp->Eta();
 
-      // Depending on which isolation method and UE method is considered
-      distance = TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
+      // Isolation and UE measurement
+      // (depending on which isolation/UE methods are considered)
 
-      if(distance <= fIsoConeRadius){
-	// cout<<iTrack<<"\t"<<photonlabel<<endl;
-	// mcpp->Print();
-	if(mcpp->E()<0.3)//minimum energy for clusters allowed at reconstructed level
-	  continue;
+      Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
 
-	if(mcpp->Charge()!=0)//using pT for charged particles
-	  sumEiso += mcpp->Pt();
-	else{
-	  if(mcpp->GetPdgCode()==22) //using ET for photons
-	    sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
-	  else //skipping neutral hadrons
-	    continue;
-	}
+      if(fPeriod != ""){
+      	etaMin = fGeom->GetArm1EtaMin()+0.03;
+      	etaMax = fGeom->GetArm1EtaMax()-0.03;
+      	phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+      	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+      	  phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+      	else
+      	  phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
       }
       else{
-	if(mcpp->Charge()==0 && mcpp->GetPdgCode()!=22) //skipping neutral hadrons
-	  continue;
-	else
-	  AddParticleToUEMC(sumUE,mcpp, eta, phi);
+      	phiMin = (4./9.)*TMath::Pi()+0.03;
+      	phiMax = TMath::Pi()-0.03;
+      	etaMin = -0.67;
+      	etaMax = 0.67;
+      }
+
+      if((phip < phiMax) && (phip > phiMin) && (etap < etaMax) && (etap > etaMin)){
+	radius = TMath::Sqrt(TMath::Power(phip-phi,2)+TMath::Power(etap-eta,2));
+
+	if(radius > fIsoConeRadius){ // The cluster is outside the isolation cone -> add the particle pT to pT_UE
+
+	  if(mcpp->Charge() == 0 && mcpp->GetPdgCode() != 22) // Skipping neutral hadrons
+	    continue;
+	  else
+	    AddParticleToUEMC(sumUE, mcpp, eta, phi);
+
+	}
+	else{ // The cluster is inside the isolation cone -> add the particle pT to pT_iso
+
+	  if(mcpp->Charge() != 0)        // Using Pt() for charged particles
+	    sumEiso += mcpp->Pt();
+	  else{
+	    if(mcpp->GetPdgCode() == 22) // Using E_T for photons
+	      sumEiso += mcpp->E()*(TMath::Sin(mcpp->Theta()));
+	    else // Skipping neutral hadrons -------------------------------------------- NOT FOR ISOLATION METHODS WHICH USE CLUSTERS, RIGHT???
+	      continue;
+	  }
+
+	}
       }
     }
 
@@ -4281,7 +4301,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
     if(fWho==2)
-      fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
+      fPtvsSumUE_MC->Fill(eT, sumEiso); // No simulated UE yet
+      // fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
   }
 
   return;
