@@ -5004,15 +5004,31 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17g8c") == 0){
     fPeriodEnum = kLHC17g8c;
     fEnergyEnum = kpPb8TeV;
-  //pp 13 TeV LHC17
-  } else if ( periodName.CompareTo("LHC17k1") ==0 ) return k17k1;
-  } else if ( periodName.CompareTo("LHC17k4") ==0 ) return k17k4; //LHC17i
-  } else if ( periodName.CompareTo("LHC17h11") ==0 ) return k17h11;
-  } else if ( periodName.CompareTo("LHC17h7b") ==0 ) return k17h7b;
-  } else if ( periodName.CompareTo("LHC17h7a") ==0 ) return k17h7a;
-  } else if ( periodName.CompareTo("LHC17j5a") ==0 ) return k17j5a;
-  } else if ( periodName.CompareTo("LHC17j5b") ==0 ) return k17j5b;
-  } else if ( periodName.CompareTo("LHC17j5c") ==0 ) return k17j5c;
+    //pp 13 TeV LHC17
+  } else if ( periodName.CompareTo("LHC17k1") ==0 ){
+      fPeriodEnum = k17k1;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17k4") ==0 ){
+      fPeriodEnum = k17k4; //LHC17i
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17h11") ==0 ){
+      fPeriodEnum = k17h11;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17h7b") ==0 ){
+      fPeriodEnum = k17h7b;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17h7a") ==0 ){
+      fPeriodEnum = k17h7a;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17j5a") ==0 ){
+      fPeriodEnum = k17j5a;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17j5b") ==0 ){
+      fPeriodEnum = k17j5b;
+      fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17j5c") ==0 ){
+      fPeriodEnum = k17j5c;
+      fEnergyEnum = k13TeV;
     // LHC17c anchored MCs
   } else if (periodName.CompareTo("LHC17h1") == 0){
     fPeriodEnum = kLHC17h1;
