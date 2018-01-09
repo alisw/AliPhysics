@@ -295,9 +295,20 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17NomB,         //!< pp 13 TeV nominal B field
         kLHC17LowB,         //!< pp 13 TeV low B field
         kLHC17n,            //!< Xe-Xe 5.44 TeV
+	kLHC17p,            //!< pp 5 TeV
+	kLHC17q,            //!< pp 5 TeV
+        kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
+        kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
+	kLHC17l3b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, fast only
+        kLHC17l3b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT
+        kLHC17l3b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT woSDD
+        kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
+	kLHC17l4b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, fast only
+        kLHC17l4b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT
+        kLHC17l4b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT woSDD
 
-        kLHC17j7,           //!< MC for Xe-Xe 5.44 TeV HIJING
-        //
+
+	//
         kUnknownPeriod//!< kUnknownPeriod
       };
 
@@ -660,7 +671,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,39)
+      ClassDef(AliConvEventCuts,40)
       /// \endcond
 };
 
