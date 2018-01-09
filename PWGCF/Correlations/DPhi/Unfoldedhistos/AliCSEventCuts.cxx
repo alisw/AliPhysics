@@ -683,6 +683,7 @@ void AliCSEventCuts::PrintTrigger(UInt_t &printed, UInt_t trigger, const char *n
 ///    |  AliCSEventCuts::kpp  | **p-p** system |
 ///    |  AliCSEventCuts::kpPb | **p-Pb** system |
 ///    |  AliCSEventCuts::kPbPb  | **Pb-Pb** system |
+///    |  AliCSEventCuts::kXeXe  | **Xe-Xe** system |
 /// \return kTRUE if a proper and supported system
 Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
   switch(system){
@@ -697,6 +698,9 @@ Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
     break;
   case kPbPb:
     fSystem = kPbPb;
+    break;
+  case kXeXe:
+    fSystem = kXeXe;
     break;
   default:
     AliError(Form("SetSystemType not defined %d",Int_t(system)));
@@ -735,6 +739,10 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15oHIR:
     system = kPbPb;
     AliInfo("SYSTEM: Pb-Pb");
+    break;
+  case kLHC17n:
+    system = kXeXe;
+    AliInfo("SYSTEM: Xe-Xe");
     break;
   default:
     system = kNoSystem;
@@ -918,6 +926,7 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   switch (GetGlobalAnchorPeriod()) {
   case kLHC15oLIR:
   case kLHC15oHIR:
+  case kLHC17n:
     AliInfo("Using NEW mulitplicity framework");
     return kTRUE;
   default:
@@ -1242,6 +1251,7 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC15oHIR:
     case kLHC16k:
     case kLHC16l:
+    case kLHC17n:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
       break;
@@ -1614,6 +1624,9 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC15oHIR:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-2500+5.0*x");
       break;
+    case kLHC17n:
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-900+6.0*x");
+      break;
     default:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+2.8*x");
       break;
@@ -1826,6 +1839,12 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     basename = "2011";
     system = "Pb-Pb";
     period = "2015o";
+    break;
+  case kLHC17n:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "Xe-Xe";
+    period = "2017n";
     break;
   default:
     fESDFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();

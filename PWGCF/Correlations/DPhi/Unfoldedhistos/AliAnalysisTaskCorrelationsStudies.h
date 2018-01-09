@@ -110,6 +110,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliCSEventCuts             *fEventCuts;                   ///< the event cuts
     AliCSTrackSelection        *fTrackSelectionCuts;          ///< track cuts to select tracks
 
+    AliCSAnalysisCutsBase::ProdPeriods      fDataPeriod;      ///< the current data period under analysis
+
     Bool_t                      fEnforceEfficiencyProfile;    ///< enforce the efficiency profile, only valid for MC analysis
     onTrueEfficiencyOptions     fOnTrueEfficiencyProfile;     ///< enforce efficiency on true data, only valid for MC analysis
     Bool_t                      fCorrectOnTrueEfficiency;     ///< use the efficiency profile on true data for efficiency correction on true
@@ -199,7 +201,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 3);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 4);
     /// \endcond
 };
 

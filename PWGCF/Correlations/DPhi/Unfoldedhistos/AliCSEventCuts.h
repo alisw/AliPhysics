@@ -70,7 +70,8 @@ public:
     kNoSystem,    ///< no system defined
     kpp,          ///< **p-p** system
     kpPb,         ///< **p-Pb** system
-    kPbPb         ///< **Pb-Pb** system
+    kPbPb,        ///< **Pb-Pb** system
+    kXeXe         ///< **Xe-Xe** system
   };
 
 private:

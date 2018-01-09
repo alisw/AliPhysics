@@ -80,6 +80,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -173,6 +174,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -1355,6 +1357,10 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
   AliCSAnalysisCutsBase::NotifyRunGlobal();
   fEventCuts->NotifyRun();
   fTrackSelectionCuts->NotifyRun();
+
+  /* checks the change in the analysis period */
+  if (AliCSAnalysisCutsBase::GetGlobalPeriod() == fDataPeriod) return;
+  fDataPeriod = AliCSAnalysisCutsBase::GetGlobalPeriod();
 
   /* now we create additional MC histograms if applicable */
   if (AliCSAnalysisCutsBase::IsMC()) {
