@@ -4890,6 +4890,15 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16k3b2") == 0){
     fPeriodEnum = kLHC16k3b2;
     fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC15k5a") == 0 || periodName.CompareTo("LHC15k5a2") == 0){
+    fPeriodEnum = kLHC15k5a;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC15k5b") == 0 || periodName.CompareTo("LHC15k5b2") == 0){
+    fPeriodEnum = kLHC15k5b;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC15k5c") == 0 || periodName.CompareTo("LHC15k5c2") == 0){
+    fPeriodEnum = kLHC15k5c;
+    fEnergyEnum = k13TeV;
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB
