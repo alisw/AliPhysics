@@ -32,8 +32,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
 	TF1 *fit_deut_curve   = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
-	Double_t cut_width    = 2.0;
-	short    do_lead_only = 1;     // 0 = all,  1 = only leading
+	Double_t cut_width    = 3.0;
+	short    do_lead_only = 0;     // 0 = all,  1 = only leading
 
 	Float_t pio2   = TMath::PiOver2();
 	Float_t twopi  = TMath::TwoPi();
@@ -71,6 +71,13 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 m2_pt_neg_cut_A;             // 20
 	TH2F*                 m2_pt_pos_cut_B;             // 21
 	TH2F*                 m2_pt_neg_cut_B;             // 22
+
+	TH2F*                 m2_pt_pos_cut_with_trig_03;
+	TH2F*                 m2_pt_neg_cut_with_trig_03;
+	TH2F*                 m2_pt_pos_cut_with_trig_05;
+	TH2F*                 m2_pt_neg_cut_with_trig_05;
+	TH2F*                 m2_pt_pos_cut_with_trig_08;
+	TH2F*                 m2_pt_neg_cut_with_trig_08;
 	
 	TH2F*                 deut_phi_pt_pos_T;           // 23
 	TH2F*                 deut_phi_pt_neg_T;           // 24
