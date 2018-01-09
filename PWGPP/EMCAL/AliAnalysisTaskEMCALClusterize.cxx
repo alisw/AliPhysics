@@ -1760,7 +1760,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
     
     AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
-    
+      
     //
     // Get the absId of the cells in the cross and same T-Card
     Int_t absIDup = -1;
@@ -1838,10 +1838,11 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
     Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
     
-    AliDebug(1,Form("Fraction for SM %d (min %2.2f, max %2.2f):\n\t up-down   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t up-down-lr: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t left-right: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t 2nd row   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", 
+    AliDebug(1,Form("Fraction for SM %d (min %2.3f, max %2.3f):\n"
+                    "\t up-down   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t up-down-lr: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t left-right: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t 2nd row   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f", 
                     imod, fTCardCorrInduceEnerFracMin[imod], fTCardCorrInduceEnerFracMax[imod],
                     fTCardCorrInduceEner[0][imod],fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
                     fTCardCorrInduceEner[1][imod],fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
@@ -1886,7 +1887,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     
     AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                     indEupdown,indEupdownleri,indEleri,indE2nd));
-    
+  
     //
     // Add the induced energy, check if cell existed
     if ( okup )
@@ -2017,7 +2018,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
                fTCardCorrClusEnerConserv,fRandomizeTCard));
   
-  AliInfo("T-Card emulation super-modules fraction:");
+  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f",
+               fTCardCorrMinAmp,fTCardCorrMaxInduced));
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
@@ -2026,8 +2028,9 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
     
     for(Int_t icell = 0; icell < 4; icell++)
     {
-      printf("\t \t cell type %d, c %2.3e, p0 %2.3e, p1 %2.3e, sigma %2.3e \n",
-             icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
+      printf("\t \t cell type %d, c %2.4e, p0 %2.4e, p1 %2.4e, sigma %2.4e \n",
+             icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],
+             fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
     }
   }
 }
