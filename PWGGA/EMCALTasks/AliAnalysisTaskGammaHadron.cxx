@@ -1637,9 +1637,16 @@ void AliAnalysisTaskGammaHadron::FillTriggerHist(AliTLorentzVector ClusterVec, D
     //fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
 	Double_t evtPlaneAngle= DeltaPhi(ClusterVec,fEPV0);
 	Int_t evtPlaneCategory=-1;
-	if ((TMath::Abs(evtPlaneAngle)<=pi/6.) || (TMath::Abs(evtPlaneAngle-pi)<pi/6.))       evtPlaneCategory=0;
-	else if ((TMath::Abs(evtPlaneAngle) <= pi/3.) || (TMath::Abs(evtPlaneAngle-pi) <= pi/.3)) evtPlaneCategory=1;
-	else evtPlaneCategory=2;
+
+  Double_t angleFromAxis;
+  //..fold around 0 axis
+  angleFromAxis=fabs(evtPlaneAngle);
+  //..fold once more arounad pi/2 axis
+  if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+  //.. --> now we have only one quadrant left 0 to  <pi/2
+  if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+  else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+  else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
 
 	Double_t valueArray[4];
 	valueArray[0]=G_PT_Value;
