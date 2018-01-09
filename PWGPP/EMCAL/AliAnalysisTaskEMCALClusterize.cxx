@@ -690,9 +690,15 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   //Recover the pointer to CaloCells container
   if ( fInputCaloCellsName.Length() == 0 ) 
     fCaloCells = fEvent->GetEMCALCells();
-  else                                  
+  else      
+  {
     fCaloCells = (AliVCaloCells*) fEvent->FindListObject(fInputCaloCellsName);
-    
+    if ( !fCaloCells ) 
+      AliWarning(Form("CaloCells branch <%s> not found use STD!",fInputCaloCellsName.Data()));
+    else 
+      fCaloCells = fEvent->GetEMCALCells();
+  }
+  
   //Process events if there is a high energy cluster
   if(!AcceptEventEMCAL())  { fEvent = 0x0 ; return ; }
   
