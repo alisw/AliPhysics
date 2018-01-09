@@ -704,7 +704,7 @@ Int_t tpcNClMin  = -60.5 + (65./105.)  *( kink->GetR() ) ;
 	//  here the kaons selected by the decay features
         fTPCSignlMotherK->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal() )) ;
 //nsigma cut
-	if ( nsigma > 3.5) continue;
+	if ( nsigma > 3.0) continue;
 	fqT1  ->Fill(qT) ;
 	fqTvsPt->Fill(trackPt, qT);
         fInvMassPt->Fill(invariantMassKmu, trackPt);
