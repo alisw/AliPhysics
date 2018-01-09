@@ -5024,34 +5024,34 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
 
   //pp 13 TeV LHC17
-  }else if ( namePeriod.CompareTo("LHC17k1") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17k1") ==0 ) {
     fPeriodEnum = k17k1;
     fEnergyEnum = k13TeV;
-  }else if ( namePeriod.CompareTo("LHC17k4") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17k4") ==0 ) {
     fPeriodEnum = k17k4;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17h11") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17h11") ==0 ) {
     fPeriodEnum = k17h11;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17h7b") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17h7b") ==0 ) {
     fPeriodEnum = k17h7b;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17h7a") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17h7a") ==0 ) {
     fPeriodEnum = k17h7a;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17j5a") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17j5a") ==0 ) {
     fPeriodEnum = k17j5a;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17j5b") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17j5b") ==0 ) {
     fPeriodEnum = k17j5b;
     fEnergyEnum = k13TeV;
 
-  }else if ( namePeriod.CompareTo("LHC17j5c") ==0 ) {
+  }else if ( periodName.CompareTo("LHC17j5c") ==0 ) {
     fPeriodEnum = k17j5c;
     fEnergyEnum = k13TeV;
 
