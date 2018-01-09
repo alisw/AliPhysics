@@ -235,50 +235,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17a3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17a3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17a3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17a3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17a4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17a4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17a4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17a4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17f2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17f2a_fast_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only  2nd cycle
-        kLHC17f2a_cent_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT       2nd cycle
-        kLHC17f2a_cent_woSDD_fix, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD 2nd cycle
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17f2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17g8a_fast,       //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    fast
-        kLHC17g8a_cent_woSDD, //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    CENT woSDD
+        kLHC17g8a,            //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17f3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17f3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17f3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17f3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17f4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17f4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17f4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
         kLHC17h1,            //!< anchored LHC17c pass 1 - general purpose MC
