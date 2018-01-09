@@ -5400,6 +5400,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC16P1JJLowB") == 0 ||
             namePeriod.CompareTo("LHC17f8b") == 0  )      return k16P1JJLowB;
   else if ( namePeriod.CompareTo("LHC17j7") == 0 )        return k17j7;
+  else if ( namePeriod.CompareTo("LHC17h1") == 0 )        return k17h1;
+  else if ( namePeriod.CompareTo("LHC17h3") == 0 )        return k17h3;
+  else if ( namePeriod.CompareTo("LHC17l5") == 0 )        return k17l5;
 
 
   // data starts here

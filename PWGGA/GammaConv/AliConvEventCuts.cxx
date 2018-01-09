@@ -5023,6 +5023,19 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC17g8c;
     fEnergyEnum = kpPb8TeV;
 
+    // LHC17c anchored MCs
+  } else if (periodName.CompareTo("LHC17h1") == 0){
+    fPeriodEnum = kLHC17h1;
+    fEnergyEnum = k13TeV;
+    // LHC17g anchored MCs
+  } else if (periodName.CompareTo("LHC17h3") == 0){
+    fPeriodEnum = kLHC17h3;
+    fEnergyEnum = k13TeV;
+    // LHC17m anchored MCs
+  } else if (periodName.CompareTo("LHC17l5") == 0){
+    fPeriodEnum = kLHC17l5;
+    fEnergyEnum = k13TeV;
+
   // MC for Xe-Xe
   } else if (periodName.CompareTo("LHC17j7") == 0){         // HIJING
     fPeriodEnum = kLHC17j7;
