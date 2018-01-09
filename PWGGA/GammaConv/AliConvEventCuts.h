@@ -209,6 +209,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16k5a,        //!< anchored LHC15n pass3 - general purpose Pythia8
         kLHC16k5b,        //!< anchored LHC15n pass3 - general purpose Pythia6
         kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
+        kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
+        kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
+        kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses  
+
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
 
