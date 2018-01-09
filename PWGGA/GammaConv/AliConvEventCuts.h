@@ -174,6 +174,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16a2a,        //!< anchored LHC15h pass 1
         kLHC16a2b,        //!< anchored LHC15h pass 1
         kLHC16a2c,        //!< anchored LHC15h pass 1
+	kLHC15P2EPos,     //!< anchored LHC15f pass 2
+        kLHC15P2Pyt8,     //!< anchored LHC15[h,i] pass 2	
         kLHC15l1a2,       //!< anchored LHC15n pass 1
         kLHC15l1b2,       //!< anchored LHC15n pass 1
         kLHC15k1a1,       //!< LHC15o low IR firstPhysics
