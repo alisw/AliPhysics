@@ -5024,14 +5024,14 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
 
   //pp 13 TeV LHC17
-  else if ( namePeriod.CompareTo("LHC17k1") ==0 ) return k17k1;
-  else if ( namePeriod.CompareTo("LHC17k4") ==0 ) return k17k4;
-  else if ( namePeriod.CompareTo("LHC17h11") ==0 ) return k17h11;
-  else if ( namePeriod.CompareTo("LHC17h7b") ==0 ) return k17h7b;
-  else if ( namePeriod.CompareTo("LHC17h7a") ==0 ) return k17h7a;
-  else if ( namePeriod.CompareTo("LHC17j5a") ==0 ) return k17j5a;
-  else if ( namePeriod.CompareTo("LHC17j5b") ==0 ) return k17j5b;
-  else if ( namePeriod.CompareTo("LHC17j5c") ==0 ) return k17j5c;
+  }else if ( namePeriod.CompareTo("LHC17k1") ==0 ) {return k17k1;
+  }else if ( namePeriod.CompareTo("LHC17k4") ==0 ) {return k17k4;
+  }else if ( namePeriod.CompareTo("LHC17h11") ==0 ) {return k17h11;
+  }else if ( namePeriod.CompareTo("LHC17h7b") ==0 ) {return k17h7b;
+  }else if ( namePeriod.CompareTo("LHC17h7a") ==0 ) {return k17h7a;
+  }else if ( namePeriod.CompareTo("LHC17j5a") ==0 ) {return k17j5a;
+  }else if ( namePeriod.CompareTo("LHC17j5b") ==0 ) {return k17j5b;
+  }else if ( namePeriod.CompareTo("LHC17j5c") ==0 ) {return k17j5c;
 
   // MC for Xe-Xe
   } else if (periodName.CompareTo("LHC17j7") == 0){         // HIJING
