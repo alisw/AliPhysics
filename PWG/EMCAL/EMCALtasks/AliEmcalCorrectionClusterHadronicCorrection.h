@@ -51,6 +51,7 @@ protected:
   UInt_t                 GetMomBin(Double_t pt)                    const;
   Double_t               GetPhiMean(Int_t pbin, Int_t centbin)     const;
   Double_t               GetPhiSigma(Int_t pbin, Int_t centbin)    const;
+  Double_t               ComputeM02Subtraction(const AliVCluster* cluster, Double_t energyclus, Int_t Nmatches, Double_t totalTrkP, Double_t hadCorr);
   
   // Task configuration
   Double_t               fPhiMatch;                  ///< phi match value (pp=0.050)
@@ -60,6 +61,9 @@ protected:
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
   Bool_t                 fPlotOversubtractionHistograms; ///< compute and plot oversubtracted energy from embedded/signal matches (embedding only)
   Bool_t                 fDoNotOversubtract;         ///< do not oversubtract energy from cluster (embedding only)
+  Bool_t                 fUseM02SubtractionScheme;   ///< Flag to enable hadronic correction scheme using cluster M02 value
+  Bool_t                 fUseConstantSubtraction;    ///< Flag to perform constant rather than fractional subtract (only applicable if using M02 scheme)
+  Double_t               fConstantSubtractionValue;  ///< Value to be used for constant subtraction (only applicable if using constant subtraction in M02 scheme)
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -99,7 +103,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 4); // EMCal cluster hadronic correction component
+  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 5); // EMCal cluster hadronic correction component
   /// \endcond
 };
 

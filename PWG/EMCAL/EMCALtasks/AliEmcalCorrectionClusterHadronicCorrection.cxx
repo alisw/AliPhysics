@@ -29,6 +29,9 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fEexclCell(0),
   fPlotOversubtractionHistograms(kFALSE),
   fDoNotOversubtract(kFALSE),
+  fUseM02SubtractionScheme(kFALSE),
+  fUseConstantSubtraction(kFALSE),
+  fConstantSubtractionValue(0.),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap(),
   fHistMatchEtaPhiAll(0),
@@ -92,6 +95,9 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("doTrackClus", fDoTrackClus);
   GetProperty("plotOversubtractionHistograms", fPlotOversubtractionHistograms);
   GetProperty("doNotOversubtract", fDoNotOversubtract);
+  GetProperty("useM02SubtractionScheme", fUseM02SubtractionScheme);
+  GetProperty("useConstantSubtraction", fUseConstantSubtraction);
+  GetProperty("constantSubtractionValue", fConstantSubtractionValue);
 
   if (!fEsdMode && fParticleCollArray.GetEntries() > 1) {
     AliWarning("================================================================================");
@@ -746,6 +752,11 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
   if (energyclus < clusEexcl) clusEexcl = energyclus;
   if ((energyclus - Esub) < clusEexcl) Esub = (energyclus - clusEexcl);
   
+  // If enabled, use cluster M02 value to determine how to correct cluster energy.
+  if (fUseM02SubtractionScheme) {
+    Esub = ComputeM02Subtraction(cluster, energyclus, Nmatches, totalTrkP, hadCorr);
+  }
+  
   // embedding
   Double_t EsubMC       = 0;
   Double_t EsubBkg      = 0;
@@ -846,4 +857,46 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
   energyclus -= Esub;
   
   return energyclus;
+}
+
+/**
+ * Use cluster M02 value to determine how to correct cluster energy.
+ */
+Double_t AliEmcalCorrectionClusterHadronicCorrection::ComputeM02Subtraction(const AliVCluster* cluster, Double_t energyclus, Int_t Nmatches, Double_t totalTrkP, Double_t hadCorr)
+{
+  Double_t Esub = 0.;
+  Double_t clusM02 = cluster->GetM02();
+
+  // Note: The comments below give only a rough indication of what particle types appear in each selection.
+  
+  // For M02 in the single photon region, the signal is primarily: Single photons, single electrons, single MIPs
+  if (clusM02 > 0.1 && clusM02 < 0.4) {
+    if (Nmatches == 0) { // Single photon (modulo tracking efficiency)
+      Esub = 0;
+    }
+    else { // Single electron, single MIP
+      Esub = energyclus;
+    }
+  }
+
+  // For large M02, the signal is primarily: Single hadronic shower, photon-photon overlap, photon-MIP overlap, MIP-MIP overlap,
+  // MIP-hadronic shower overlap, hadronic shower - hadronic shower overlap)
+  if (clusM02 > 0.4) {
+    if (Nmatches == 0) { // Single neutral hadronic shower,  photon-photon overlap, photon-neutral had shower overlap, neutral had shower overlap (modulo tracking efficiency)
+      Esub = 0;
+    }
+    else if (Nmatches == 1) { // Single charged hadronic shower, photon-MIP overlap, MIP-MIP overlap, MIP-had shower overlap, had shower-shower overlap
+      if (fUseConstantSubtraction) {
+        Esub = fConstantSubtractionValue;
+      }
+      else {
+        Esub = hadCorr * totalTrkP;
+      }
+    }
+    else if (Nmatches > 1) { // MIP-MIP overlap, had shower-shower overlap
+      Esub = energyclus;
+    }
+  }
+  
+  return Esub;
 }
