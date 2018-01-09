@@ -29,6 +29,7 @@ void load2015oLIRpass4RunNumbers();
 void load2015oHIRRunNumbers();
 void load2015oHIRTestRunNumber();
 void load2016kTestRunNumber();
+void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
 
 void runCorrelationsStudiesConfigMacro() {
@@ -71,7 +72,8 @@ void runCorrelationsStudiesConfigMacro() {
   // load2010hMCRunNumbers();
   // load2016kTestRunNumber();
   // loadMCAMPT2010hCentrality("0-5");
-  load2017nRunNumbers();
+  loadAMPT2015oHIRTestRunNumber();
+  // load2017nRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -443,6 +445,27 @@ void load2015oHIRTestRunNumber() {
   szDataDir = "/alice/data/2015/LHC15o";
   /* 2015o HIR */
   szDataPattern = "*/pass1/*/AliAOD.root";
+
+  /* the list of runs to analyze 2015o HIR*/
+  listOfActiveRuns.Add(new TObjString("246087"));
+}
+
+void loadAMPT2015oHIRTestRunNumber() {
+  bUseESD                    = kFALSE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_AMPT2015oHIR";
+
+  bMC = kTRUE;
+
+  /* reco pass */
+  szpass = "1";
+
+  /* 2017i2 */
+  szDataDir = "/alice/sim/2017/LHC17i2";
+  /* 2017i2 */
+  szDataPattern = "*/AOD/*/AliAOD.root";
 
   /* the list of runs to analyze 2015o HIR*/
   listOfActiveRuns.Add(new TObjString("246087"));

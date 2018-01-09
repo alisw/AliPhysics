@@ -177,6 +177,7 @@ public:
     kLHC16h2b,        ///< anchored LHC15o pass1 - jet-jet 10-50%
     kLHC16h2c,        ///< anchored LHC15o pass1 - jet-jet 50-90%
     kLHC16i3a,        ///< anchored LHC15o HIJING + HF injected with electron decays in central events
+    kLHC17i2,         ///< anchored LHC15o AMPT via AliGenerators
     ///@}
     /// \name 2016
     /// \brief 2016 periods
