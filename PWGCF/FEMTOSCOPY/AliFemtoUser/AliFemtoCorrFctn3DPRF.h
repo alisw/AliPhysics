@@ -14,7 +14,7 @@
 
 class AliFemtoCorrFctn3DPRF : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctn3DPRF(char* title, const int& nbins, const float& QHi);
+  AliFemtoCorrFctn3DPRF(const char* title, const int& nbins, const float& QHi);
   AliFemtoCorrFctn3DPRF(const AliFemtoCorrFctn3DPRF& aCorrFctn);
   virtual ~AliFemtoCorrFctn3DPRF();
 

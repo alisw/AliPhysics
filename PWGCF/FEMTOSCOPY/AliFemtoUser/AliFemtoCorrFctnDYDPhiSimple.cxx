@@ -15,15 +15,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDYDPhiSimple)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDYDPhiSimple::AliFemtoCorrFctnDYDPhiSimple(char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass1=0, const double& mass2=0):
+AliFemtoCorrFctnDYDPhiSimple::AliFemtoCorrFctnDYDPhiSimple(const char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass1=0, const double& mass2=0):
   AliFemtoCorrFctn(),
   fDPhiDYNumerator(0),
   fDPhiDYDenominator(0),
@@ -57,7 +57,7 @@ AliFemtoCorrFctnDYDPhiSimple::AliFemtoCorrFctnDYDPhiSimple(char* title, const in
   char tTitY[101] = "Y";
   strncat(tTitY,title, 100);
   fY = new TH1D(tTitY,title,90,-1.2,1.2);
-  
+
 
   // to enable error bar calculation...
   fDPhiDYNumerator->Sumw2();
@@ -111,7 +111,7 @@ AliFemtoCorrFctnDYDPhiSimple::~AliFemtoCorrFctnDYDPhiSimple(){
   // destructor
   delete fDPhiDYNumerator;
   delete fDPhiDYDenominator;
-  
+
   delete fPhi;
   delete fY;
 
@@ -262,7 +262,7 @@ void AliFemtoCorrFctnDYDPhiSimple::WriteHistos()
 
   fPhi->Write();
   fY->Write();
-  
+
 }
 
 TList* AliFemtoCorrFctnDYDPhiSimple::GetOutputList()

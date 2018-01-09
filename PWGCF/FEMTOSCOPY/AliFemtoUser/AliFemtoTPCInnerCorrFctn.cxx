@@ -11,12 +11,12 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoTPCInnerCorrFctn)
 #endif
 
 //____________________________
-AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   fDTPCNumerator(0),
   fDTPCDenominator(0),
   fRadDNumerator(0),
@@ -221,10 +221,10 @@ TList* AliFemtoTPCInnerCorrFctn::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fDTPCNumerator); 
-  tOutputList->Add(fDTPCDenominator);  
-  tOutputList->Add(fRadDNumerator); 
-  tOutputList->Add(fRadDDenominator);  
+  tOutputList->Add(fDTPCNumerator);
+  tOutputList->Add(fDTPCDenominator);
+  tOutputList->Add(fRadDNumerator);
+  tOutputList->Add(fRadDDenominator);
 
   return tOutputList;
 }

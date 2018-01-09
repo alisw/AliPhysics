@@ -19,7 +19,7 @@
 #endif
 
 //____________________________
-  AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
+  AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
   fNumerator(0),
   fDenominator(0) //,
 							  //  fPairCut(0x0)
