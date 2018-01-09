@@ -187,6 +187,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
         kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
         kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
+	kLHC16i1a,        //!< anchored LHC15o pass1 - LF added (multi-)strange 0-10%
+	kLHC16i1b,        //!<                                                  10-50%
+	kLHC16i1c,        //!<                                                  50-90%
+	kLHC16i2a,        //!< anchored LHC15o pass1 - HF added hadronic decays 0-10%
+	kLHC16i2b,        //!<                                                  10-50%
+	kLHC16i2c,        //!<                                                  50-90%
+	kLHC16i3a,        //!< anchored LHC15o pass1 - HF added electron decays 0-10%
+	kLHC16i3b,        //!<                                                  10-50%
+	kLHC16i3c,        //!<                                                  50-90%
         kLHC16h2a,        //!< anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        //!< anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        //!< anchored LHC15o pass1 - jet-jet 50-90%
