@@ -1182,7 +1182,7 @@ Double_t mctrack= mcEvent->GetNumberOfTracks();
 	//  here the kaons selected by the decay features
         fTPCSignlMotherK->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal() )) ;
 //nsigma cut
-	if ( nsigma > 3.5) continue;
+	if ( nsigma > 3.0) continue;
 	fPtKaon->Fill(track->Pt(), cent);   //
         if(code1>0. ) fPtKaonP->Fill(track->Pt(), cent) ;   //
         if ( code1 <0.)fPtKaonN->Fill(track->Pt(),cent) ;   //
