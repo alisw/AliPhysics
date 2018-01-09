@@ -4908,7 +4908,37 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC16P1JJLowB") == 0 || periodName.CompareTo("LHC17f8b") == 0  ){
     fPeriodEnum = kLHC16P1JJLowB;
     fEnergyEnum = k13TeVLowB;
+    
+  // 13TeV HF-MC anchors LHC16i,j,o,p
+  } else if ( periodName.CompareTo("LHC17h8c") == 0){
+    fPeriodEnum = kLHC17h8c;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16d,e,g,h,j,o,p
+  } else if ( periodName.CompareTo("LHC17h8b") == 0){
+    fPeriodEnum = kLHC17h8b;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16d,e,g,h,j,o,p
+  } else if ( periodName.CompareTo("LHC17h8a") == 0){
+    fPeriodEnum = kLHC17h8a;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16k
+  } else if ( periodName.CompareTo("LHC17c3b1") == 0){
+    fPeriodEnum = kLHC17c3b1;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16k
+  } else if ( periodName.CompareTo("LHC17c3a1") == 0){
+    fPeriodEnum = kLHC17c3a1;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16l
+  } else if ( periodName.CompareTo("LHC17c3b2") == 0){
+    fPeriodEnum = kLHC17c3b2;
+    fEnergyEnum = k13TeV;
+  // 13TeV HF-MC anchors LHC16l
+  } else if ( periodName.CompareTo("LHC17c3a2") == 0){
+    fPeriodEnum = kLHC17c3a2;
+    fEnergyEnum = k13TeV;
 
+    
   // LHC16qt anchored MCs
   } else if (periodName.CompareTo("LHC17f2a") == 0){
     fPeriodEnum = kLHC17f2a;
@@ -4948,6 +4978,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC17g8a_cent_woSDD") == 0){
     fPeriodEnum = kLHC17g8a_cent_woSDD;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17d2a_fast") == 0){
+    fPeriodEnum = kLHC17d2a_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17d2b_fast") == 0){
+    fPeriodEnum = kLHC17d2b_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17d2a_cent") == 0){
+    fPeriodEnum = kLHC17d2a_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17d2b_cent") == 0){
+    fPeriodEnum = kLHC17d2b_fast;
     fEnergyEnum = kpPb5TeV;
     // LHC16r anchored MCs
   } else if (periodName.CompareTo("LHC17a3a") == 0){

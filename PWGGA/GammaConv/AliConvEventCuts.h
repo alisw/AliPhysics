@@ -225,6 +225,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
+        kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8b,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8c,             //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
@@ -277,6 +284,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17h1,            //!< anchored LHC17c pass 1 - general purpose MC
         kLHC17h3,            //!< anchored LHC17g pass 1 - general purpose MC
         kLHC17l5,            //!< anchored LHC17m pass 1 - general purpose MC
+        
+        //heavy flavour MC pPb k17d2a_fast,
+        kLHC17d2a_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
+        kLHC17d2a_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT 
+        kLHC17d2b_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
+        kLHC17d2b_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT
 
         // 2017
         kLHC17NomB,         //!< pp 13 TeV nominal B field

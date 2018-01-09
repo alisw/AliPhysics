@@ -156,6 +156,18 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f4b,
       k17g8b,
       k17g8c,
+      k17h8a,
+      k17h8b,
+      k17h8c,
+      k17c3b1,
+      k17c3a1,
+      k17c3b2,
+      k17c3a2,
+      k17d2a_fast,
+      k17d2a_cent,
+      k17d2b_fast,
+      k17d2b_cent,
+      
       // 13TeV MC anc 2016 pp
       k16P1Pyt8,        //
       k16P1Pyt8LowB,    //
