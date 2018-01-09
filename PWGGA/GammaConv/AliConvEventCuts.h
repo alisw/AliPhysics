@@ -253,9 +253,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
         kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
-        kLHC17h1,            //!< anchored LHC17c pass 1 - general purpose MC
-        kLHC17h3,            //!< anchored LHC17g pass 1 - general purpose MC
-        kLHC17l5,            //!< anchored LHC17m pass 1 - general purpose MC
         
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -278,7 +275,18 @@ class AliConvEventCuts : public AliAnalysisCuts {
 	kLHC17l4b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, fast only
         kLHC17l4b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT
         kLHC17l4b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT woSDD
-
+        //13 TeV LHC2017
+        kLHC17k1,               //!LHC17g added dielectrons from HF
+        kLHC17k4,               //!LHC17i
+        kLHC17h11,              //!LHC17j
+        kLHC17h7b,              //!LHC17j
+        kLHC17h7a,              //!LHC17j
+        kLHC17j5a,              //!LHC17k Strangeness enhanced
+        kLHC17j5b,              //!LHC17l Strangeness enhanced
+        kLHC17j5c,              //!LHC17o Strangeness enhanced
+        kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
+        kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
+        kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
 
 	//
         kUnknownPeriod//!< kUnknownPeriod
@@ -643,7 +651,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,40)
+      ClassDef(AliConvEventCuts,41)
       /// \endcond
 };
 

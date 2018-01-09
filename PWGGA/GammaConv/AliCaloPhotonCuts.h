@@ -178,11 +178,20 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16P1EPOS,        //
       k16P1JJ,          //
       k16P1JJLowB,      //
+      //13 TeV LHC2017
+      k17k1, //LHC17g added dielectrons from HF
+      k17k4, //LHC17i
+      k17h11, //LHC17j
+      k17h7b, //LHC17j
+      k17h7a, //LHC17j
+      k17j5a, //LHC17k Strangeness enhanced
+      k17j5b, //LHC17l Strangeness enhanced
+      k17j5c, //LHC17o Strangeness enhanced
+      k17l5,
       k17h1,
       k17h3,
       // Xe-Xe MC
       k17j7,            // HIJING
-      k17l5,
 
       // Data starts here
       k10pp7TeV,
@@ -203,6 +212,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16pPb8TeV,
       k17pp13TeV,
       k17pp13TeVLow,
+      k17pp13TeVNo,
       k17XeXe5440GeV
     };
 
@@ -544,7 +554,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,52)
+    ClassDef(AliCaloPhotonCuts,53)
 };
 
 #endif
