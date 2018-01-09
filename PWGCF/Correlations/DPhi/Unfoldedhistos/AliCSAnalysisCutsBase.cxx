@@ -575,6 +575,11 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
+  } else if (szLHCPeriod.CompareTo("kLHC17i2")){
+    fgDataPeriod = kLHC17i2;
+    fgAnchorPeriod = kLHC15oHIR;
+    fgIsMC = kTRUE;
+    fgEnergy = kPbPb5TeV;
   // MC upgrade
   } else if (szLHCPeriod.Contains("LHC13d19")){
     fgDataPeriod = kLHC13d19;
