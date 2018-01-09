@@ -265,7 +265,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
-
+	
+	//13 TeV LHC2017
+        k17k1, //LHC17g added dielectrons from HF
+	k17k4, //LHC17i
+	k17h11, //LHC17j
+	k17h7b, //LHC17j
+	k17h7a, //LHC17j
+	k17j5a, //LHC17k Strangeness enhanced
+	k17j5b, //LHC17l Strangeness enhanced
+	k17j5c, //LHC17o Strangeness enhanced
         // 2017
         kLHC17NomB,         //!< pp 13 TeV nominal B field
         kLHC17LowB,         //!< pp 13 TeV low B field
