@@ -5410,11 +5410,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17d2a_cent") == 0 )        return k17d2a_cent;
   else if ( namePeriod.CompareTo("LHC17d2b_fast") == 0 )        return k17d2b_fast;
   else if ( namePeriod.CompareTo("LHC17d2b_cent") == 0 )        return k17d2b_cent;
-  //pp 13 TeV LHC17
   else if ( namePeriod.CompareTo("LHC17j7") == 0 )        return k17j7;
-  else if ( namePeriod.CompareTo("LHC17h1") == 0 )        return k17h1;
-  else if ( namePeriod.CompareTo("LHC17h3") == 0 )        return k17h3;
-  else if ( namePeriod.CompareTo("LHC17l5") == 0 )        return k17l5;
+  //pp 13 TeV LHC17
   else if ( namePeriod.CompareTo("LHC17k1") ==0 ) return k17k1;
   else if ( namePeriod.CompareTo("LHC17k4") ==0 ) return k17k4;
   else if ( namePeriod.CompareTo("LHC17h11") ==0 ) return k17h11;
