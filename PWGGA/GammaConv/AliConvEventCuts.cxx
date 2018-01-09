@@ -1891,9 +1891,13 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
   if (fPeriodEnum == kLHC15n ||                                                                                            // pp 5TeV
       fPeriodEnum == kLHC15o ||                                                                                            // PbPb 5TeV
       fPeriodEnum == kLHC15k1a1 || fPeriodEnum == kLHC15k1a2 || fPeriodEnum == kLHC15k1a3  || fPeriodEnum == kLHC16j7 ||   // MC PbPb 5TeV LowIR
-      fPeriodEnum == kLHC16h4 ||                                                                                           // MC PbPb 5TeV added signals
       fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||       // MC PbPb 5TeV general purpose
-      fPeriodEnum == kLHC16g2 || fPeriodEnum == kLHC16g3 ||
+      fPeriodEnum == kLHC16g2 ||                                                                                           // MC PbPb 5TeV EPOS-LHC
+      fPeriodEnum == kLHC16g3 ||                                                                                           // MC PbPb 5TeV DPMJET
+      fPeriodEnum == kLHC16h4 ||                                                                                           // MC PbPb 5TeV GA added pi0 and eta
+      fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||                                  // MC PbPb 5TeV LF added (multi-)strange
+      fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||                                  // MC PbPb 5TeV HF added hadronic decays
+      fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c ||                                  // MC PbPb 5TeV HF added electron decays
       fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||                                // MC PbPb 5TeV jet-jet
       fPeriodEnum == kLHC15fm || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16LowB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC17LowB || // pp 13TeV
       fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 ||                                                            // MC pp 13TeV
@@ -4815,9 +4819,6 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.Contains("LHC16j7")){
     fPeriodEnum = kLHC16j7;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC16h4")){
-    fPeriodEnum = kLHC16h4;
-    fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16g1")){
     fPeriodEnum = kLHC16g1;
     fEnergyEnum = kPbPb5TeV;
@@ -4835,6 +4836,36 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16g3")){
     fPeriodEnum = kLHC16g3;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h4")){
+    fPeriodEnum = kLHC16h4;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i1a")){
+    fPeriodEnum = kLHC16i1a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i1b")){
+    fPeriodEnum = kLHC16i1b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i1c")){
+    fPeriodEnum = kLHC16i1c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i2a")){
+    fPeriodEnum = kLHC16i2a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i2b")){
+    fPeriodEnum = kLHC16i2b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i2c")){
+    fPeriodEnum = kLHC16i2c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i3a")){
+    fPeriodEnum = kLHC16i3a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i3b")){
+    fPeriodEnum = kLHC16i3b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16i3c")){
+    fPeriodEnum = kLHC16i3c;
     fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16h2a")){
     fPeriodEnum = kLHC16h2a;
