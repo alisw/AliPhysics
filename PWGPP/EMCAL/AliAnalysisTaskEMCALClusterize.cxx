@@ -70,7 +70,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRecParam(0),           fClusterizer(0)
 , fUnfolder(0),           fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),    fOutputAODBranchName("")   
-, fOutputAODCells (0),    fOutputAODCellsName ("")  
+, fOutputAODCells (0),    fOutputAODCellsName (""),   fInputCaloCellsName ("")    
 , fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
@@ -133,7 +133,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRecParam(0),             fClusterizer(0)
 , fUnfolder(0),             fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),      fOutputAODBranchName("")
-, fOutputAODCells (0),      fOutputAODCellsName ("")
+, fOutputAODCells (0),      fOutputAODCellsName (""),  fInputCaloCellsName ("")  
 , fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
@@ -688,7 +688,16 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   }
   
   //Recover the pointer to CaloCells container
-  fCaloCells = fEvent->GetEMCALCells();
+  if ( fInputCaloCellsName.Length() == 0 ) 
+    fCaloCells = fEvent->GetEMCALCells();
+  else      
+  {
+    fCaloCells = (AliVCaloCells*) fEvent->FindListObject(fInputCaloCellsName);
+    if ( !fCaloCells ) 
+      AliWarning(Form("CaloCells branch <%s> not found use STD!",fInputCaloCellsName.Data()));
+    else 
+      fCaloCells = fEvent->GetEMCALCells();
+  }
   
   //Process events if there is a high energy cluster
   if(!AcceptEventEMCAL())  { fEvent = 0x0 ; return ; }
@@ -1982,6 +1991,9 @@ void AliAnalysisTaskEMCALClusterize::PrintParam()
   
   if ( fAccessOCDB ) AliInfo(Form("OCDB path name <%s>", fOCDBpath.Data()));
   if ( fAccessOADB ) AliInfo(Form("OADB path name <%s>", fOADBFilePath.Data()));
+ 
+  if ( fInputCaloCellsName.Length() > 0 ) 
+    AliInfo(Form("Input CaloCells <%s>", fInputCaloCellsName.Data()));
   
   AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>, new cells name <%s>", 
                fJustUnfold, fOutputAODBranchName.Data(), fOutputAODCellsName.Data()));
