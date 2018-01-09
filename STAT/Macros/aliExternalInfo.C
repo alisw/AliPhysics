@@ -93,7 +93,7 @@ void drawLogbookMultiExpr(TString period, TString pass,TString runSelection="", 
   TMultiGraph *m0 = TStatToolkit::MakeMultGraph(treeLogbook, "", varSelection.Data(), runSelection.Data(), "25;21;22;24", "1;2;4", kTRUE, 1, 6, legend);
   m0->Draw("ap");
   legend->Draw();
-  delete tree;
+  delete treeLogbook;
 }
 
 /// drawLogbookMultiCut - example of usage of multigraph

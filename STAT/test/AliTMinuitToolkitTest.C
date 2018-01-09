@@ -1,8 +1,14 @@
-/*
-   .L  $AliRoot_SRC/STAT/test/AliTMinuitToolkitTest.C+
+/// \ingroup STAT/test
+/// \brief  test of AliTMinuiToolkit class - log likelihood  fits
 
-   Demonstrate performance of the AliTMinuitToolkitTest.C
-   later also alarms base on invaraints should be implemented
+
+/*!
+* Example usage:
+\code
+   AliDrawStyle::SetDefaults();
+   AliDrawStyle::ApplyStyle("figTemplate");
+   .L  $AliRoot_SRC/STAT/test/AliTMinuitToolkitTest.C+
+\endcode
 
 */
 
@@ -20,6 +26,7 @@
 #include "AliSysInfo.h"
 #include "TGraphErrors.h"
 #include "TStatToolkit.h"
+#include "AliDrawStyle.h"
 
 Int_t fitEntries=400;
 const Int_t kNDim=10;
@@ -31,107 +38,189 @@ TF1 likeAbs("likeAbs", "abs(x)",-10,10);
 TTree *inputTree=0;
 void GenerateInput();
 void Test1D(Int_t bootStrapIter=400);
-void TestHistogram();
+void AliTMinuitToolkit_TestHistogram(Int_t nIter);   // can be used
 
-void AliTMinuitToolkitTest(Int_t iters, Int_t nPoints=1000){
-  gStyle->SetLabelSize(0.065,"XYZ");
-  gStyle->SetTitleSize(0.065,"XYZ");
-  gStyle->SetLabelSize(0.07,"Y");
-  gStyle->SetTitleSize(0.07,"Y");
-
+/// Run AliTMinuitToolkitTest
+/// \param nIter
+/// \param nPoints
+void AliTMinuitToolkitTest(Int_t nIter, Int_t nPoints=1000){
+  AliDrawStyle::SetDefaults();
+  AliDrawStyle::ApplyStyle("figTemplate");
   fitEntries=nPoints;
-  TestHistogram();
+  AliTMinuitToolkit_TestHistogram(100);
   GenerateInput();
-  Test1D(iters);
+  Test1D(nIter);
 }
 
+
+///\brief Generate input data for the test
 void GenerateInput(){
   //
-  //  0. Generate input data n diminesional array 1,1
+  //  0. Generate input data n dimensional array 1,1
   TTreeSRedirector *pcstream = new TTreeSRedirector("AliTMinuiToolkitTestInput.root","recreate");
   TVectorD xxx(kNDim);
   for (Int_t i=0; i<fitEntries; i++){
     for (Int_t iDim=0; iDim<kNDim; iDim++){
-      xxx[iDim]=2.*(gRandom->Rndm()-0.5);      
+      xxx[iDim]=2.*(gRandom->Rndm()-0.5);
     }
     Double_t noiseG=gRandom->Gaus();
     Double_t noiseL=gRandom->Landau();
     if (inputTree==NULL) {
       (*pcstream)<<"data"<<
-	"x.="<<&xxx<<
-	"noiseG="<<noiseG<<
-	"noiseL="<<noiseL<<
-	"\n";
+                 "x.="<<&xxx<<
+                 "noiseG="<<noiseG<<
+                 "noiseL="<<noiseL<<
+                 "\n";
       inputTree=((*pcstream)<<"data").GetTree();
     }else{
       inputTree->Fill();
     }
   }
-  
   delete pcstream;
   TFile *f = TFile::Open("AliTMinuiToolkitTestInput.root");
   inputTree= (TTree*)f->Get("data");
 }
 
- 
-void TestHistogram() {
-  //
-  // This test function shows the basic working principles of this class 
-  // and illustrates how a robust fit can improve the results for histogram fitting
-  // 
-  // 1. provide some example histogram
-  gStyle->SetOptStat(0);
-  TH1F * hist = new TH1F("test", "AliTMinuitToolkit: Test histogram fit (e^{-x}) with outliers", 20,0,4);
-  hist->SetMarkerStyle(25);
-  TRandom * rand = new TRandom();
-  for (Int_t i = 0; i < 10000; i++) {
-    hist->Fill(rand->Exp(1));
-    if (i < 1000) hist->Fill(3); //"outliers"
-    if (i < 1070) hist->Fill(3.5);
-    if (i < 670) hist->Fill(2);
-    if (i < 770) hist->Fill(1.5);//"outliers"
-    if (i < 740) hist->Fill(1);
-  }
-  TCanvas * canv = new TCanvas();
-  canv->cd(1);hist->Draw("error"); ;hist->Draw("same LHist"); 
-  // declare fit functions
-  TF1 *finput= new TF1("ffit1", "[0]*TMath::Exp(-[1]*x)", 0, 6);
-  TF1 *ffit1 = new TF1("ffit1", "[0]*TMath::Exp(-[1]*x)", 0, 6);
-  TF1 *ffit2 = new TF1("ffit2", "[0]*TMath::Exp(-[1]*x)", 0, 6);
-  TF1 *ffit3 = new TF1("ffit3", "[0]*TMath::Exp(-[1]*x)", 0, 6); 
-  TVectorD oParam(2);
-  TMatrixD initParam(2,4); // param,error,min,max
-  initParam(0,0)=20000; initParam(0,1)=100; initParam(0,2)=0; initParam(0,3)=100000;
-  initParam(1,0)=1; initParam(1,1)=1; initParam(1,2)=0; initParam(1,3)=10;
 
-  // 1.) example fit without robust option
-  AliTMinuitToolkit * tool = new AliTMinuitToolkit();
-  TF1 *aFormExp = new TF1("formExp", "[0]*TMath::Exp(-[1]*x)");
-  tool->SetFitFunction(aFormExp,0);
-  tool->SetInitialParam(&initParam);
-  tool->FitHistogram(hist);
-  ffit1->SetLineColor(1); ffit1->SetParameters(tool->GetParameters()->GetMatrixArray()); ffit1->Draw("same");
-  
-  // 2.) Use "robust" custom user defined log likelihood function e.g gauss+bckg. cachy
-  TF1 * fcost = new TF1("1","abs(x)<10?-log(0.95*exp(-x**2)+0.05/(1+x**2)):-log(0.05/(1+x**2))",-20,20); // 95 % gaus + 5% cachy
-  tool->SetLogLikelihoodFunction(fcost);
-  tool->FitHistogram(hist);
-  ffit2->SetLineColor(2); ffit2->SetParameters(tool->GetParameters()->GetMatrixArray());  ffit2->Draw("same");
-  
-  // 3.) Use predefined huber cost function 
-  tool->SetInitialParam(&initParam); 
-  tool->SetLogLikelihoodFunction(NULL);
-  tool->EnableRobust(true);
-  tool->FitHistogram(hist);
-  ffit3->SetLineColor(4); ffit3->SetParameters(tool->GetParameters()->GetMatrixArray());  ffit3->Draw("same");
-  // 
-  TLegend *legend = new TLegend(0.4,0.7,0.89,0.89,"Test AliTMinuitTolkit - Expontetial fit with outliers");
-  legend->SetBorderSize(0);
-  legend->AddEntry(hist,"Histogram");
-  legend->AddEntry(ffit1,"Default chi2 minimization");
-  legend->AddEntry(ffit2,"User defined likelihood (0.95*gaus+0.05*cachy)");
-  legend->AddEntry(ffit3,"Huber likelihood");
-  legend->Draw();
+/// \brief This test function shows the basic working principles of AliTMinuitToolkit
+///  * illustrates how a robust fit can improve the results for histogram fitting
+///  * low level interface shown
+///    * user create fitter
+///    * define log likelihood function
+///  * Algorithm:
+///   * 0.)  define input:
+///     * 0.1) create example histogram with outliers
+///     * 0.1) create fit functions
+///   * 1.) Make fits
+///     * 1.1) Example fits with chi2 minimization
+///     * 1.2) Use "robust" custom user defined log likelihood function e.g gauss+background cachy
+///     * 1.3) Use predefined huber cost function
+///   * 2.) Use different fit strategies to avoid local minimum
+///
+///  \image html AliTMinuitToolkit_TestHistogram.png
+///  TODO - add exponential fitter to the list of predefined fitters
+/// \param nIter
+void AliTMinuitToolkit_TestHistogram(Int_t nIter) {
+  //
+  gStyle->SetOptStat(0);
+  TCanvas * canvas = new TCanvas("AliTMinuitToolkit_TestHistogram","AliTMinuitToolkit_TestHistogram",1200,1000);
+  canvas->Divide(3,3,0,0);
+  TMatrixD initParam(2, 4); // param,error,min,max
+  initParam(0, 0) = 20000;
+  initParam(0, 1) = 100;
+  initParam(0, 2) = 0;
+  initParam(0, 3) = 100000;
+  initParam(1, 0) = 1;
+  initParam(1, 1) = 1;
+  initParam(1, 2) = 0;
+  initParam(1, 3) = 10;
+  //
+  TTreeSRedirector *pcstream=new TTreeSRedirector("AliTMinuitToolkit_TestHistogram.root","recreate");
+  std::map<string,TF1*> fitMap;
+  TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike, -10, 10, 2);
+  likeGausCachy->SetParameters(0.9, 1);
+  TF1 *likePseudoHuber = new TF1("likePseudoHuber", AliTMinuitToolkit::PseudoHuberLogLike, -10, 10, 2);
+  likePseudoHuber->SetParameter(0,3);
+
+  for (Int_t iter=0; iter<nIter; iter++) {
+    Double_t slope=1+gRandom->Gaus(0,0.1);
+    if (iter <= 9) canvas->cd(iter+1);
+    // 0.1 provide some example histogram
+    TH1F *hist = new TH1F("test", "AliTMinuitToolkit: Test histogram fit (e^{-x}) with outliers", 50, 0, 4);
+    hist->SetMarkerStyle(25);
+    TRandom *random = new TRandom();
+    for (Int_t i = 0; i < 20000; i++) {
+      hist->Fill(random->Exp(slope));
+    }
+    for (Int_t iOutlier = 0; iOutlier < 10; iOutlier++) {
+      Double_t position = gRandom->Rndm() * 4;
+      Double_t value = gRandom->Rndm() * hist->GetEntries();
+      hist->Fill(position, value);
+    }
+    hist->SetMinimum(0);hist->SetMaximum(2500);
+    hist->Draw("error");
+    hist->Draw("same LHist");
+
+    // 0.2 declare fit functions
+    TF1 *finput = new TF1("funFit1", "[0]*TMath::Exp(-[1]*x)", 0, 6);
+    TF1 *funFit1 = new TF1("funFit1", "[0]*TMath::Exp(-[1]*x)", 0, 6);
+    TF1 *funFit2 = new TF1("funFit2", "[0]*TMath::Exp(-[1]*x)", 0, 6);
+    TF1 *funFit3 = new TF1("funFit3", "[0]*TMath::Exp(-[1]*x)", 0, 6);
+    TVectorD oParam(2);
+    // 1.1) example fit without robust option
+    AliTMinuitToolkit *fitter = new AliTMinuitToolkit();
+    TF1 *aFormExp = new TF1("formExp", "[0]*TMath::Exp(-[1]*x)");
+    fitter->SetFitFunction(aFormExp, 0);
+    fitter->SetInitialParam(&initParam);
+    fitter->FitHistogram(hist);
+    funFit1->SetLineColor(1);
+    funFit1->SetParameters(fitter->GetParameters()->GetMatrixArray());
+    funFit1->Draw("same");
+    fitMap["chi2"]=(TF1*)fitter->GetFormula()->Clone();
+    // 1.2) Use "robust" custom user defined log likelihood function e.g gauss+background cachy
+    fitter->SetLogLikelihoodFunction(likeGausCachy);
+    fitter->SetInitialParam(&initParam);
+    fitter->FitHistogram(hist);
+    funFit2->SetLineColor(2);
+    funFit2->SetParameters(fitter->GetParameters()->GetMatrixArray());
+    funFit2->Draw("same");
+    // 1.3) Use predefined huber cost function
+    fitter->SetInitialParam(&initParam);
+    fitter->SetLogLikelihoodFunction(NULL);
+    fitter->EnableRobust(true);
+    fitter->FitHistogram(hist);
+    funFit3->SetLineColor(4);
+    funFit3->SetParameters(fitter->GetParameters()->GetMatrixArray());
+    funFit3->Draw("same");
+    fitMap["huber"]=(TF1*)fitter->GetFormula()->Clone();
+    //
+    // 2.) Test different fit strategies
+    fitter->SetLogLikelihoodFunction(likePseudoHuber);
+    AliTMinuitToolkit::SetPredefinedFitter("ExpFit", fitter);
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "", NULL, "funOption(2,2,1)");
+    fitMap["pseudoHuber"]=(TF1*)fitter->GetFormula()->Clone();
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "misac(10,50)", NULL, "funOption(2,2,1)");
+    fitMap["misacH(10,50)"]=(TF1*)fitter->GetFormula()->Clone();
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "misac(10,100)", NULL, "funOption(4,2,2)");
+    fitMap["misacH(10,100)"]=(TF1*)fitter->GetFormula()->Clone();
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "bootstrap50", NULL, "funOption(6,2,3)");
+    fitMap["bootstrapH50"]=(TF1*)fitter->GetFormula()->Clone();
+    //
+    fitter->SetLogLikelihoodFunction(likeGausCachy);
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "misac(10,50)", NULL, "funOption(2,2,1)");
+    fitMap["misacGC(10,50)"]=(TF1*)fitter->GetFormula()->Clone();
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "misac(10,100)", NULL, "funOption(4,2,2)");
+    fitMap["misacGC(10,100)"]=(TF1*)fitter->GetFormula()->Clone();
+    AliTMinuitToolkit::Fit(hist, "ExpFit", "bootstrap50", NULL, "funOption(6,2,3)");
+    fitMap["bootstrapGC50"]=(TF1*)fitter->GetFormula()->Clone();
+    //
+    //
+    // 2. Draw and save results
+    TLegend *legend = new TLegend(0.4, 0.7, 0.89, 0.89, "Test AliTMinuitToolkit - Exponential fit with outliers");
+    legend->SetBorderSize(0);
+    legend->AddEntry(hist, "Histogram");
+    legend->AddEntry(funFit1, "Default chi2 minimization");
+    legend->AddEntry(funFit2, "User defined likelihood (0.95*gaus+0.05*cachy)");
+    legend->AddEntry(funFit3, "Huber likelihood");
+    legend->Draw();
+    //
+    (*pcstream)<<"test"<<
+               "slope="<<slope<<
+               "his.="<<hist<<
+               "chi2.="<<fitMap["chi2"]<<
+               "huber.="<<fitMap["huber"]<<
+               "pseudoHuber.="<<fitMap["pseudoHuber"]<<
+               "misacH1050.="<<fitMap["misacH(10,50)"]<<
+               "misacH10100.="<<fitMap["misacH(10,100)"]<<
+               "bootstrapH50.="<<fitMap["bootstrapH50"]<<
+               "misacGC1050.="<<fitMap["misacGC(10,50)"]<<
+               "misacGC10100.="<<fitMap["misacGC(10,100)"]<<
+               "bootstrapGC50.="<<fitMap["bootstrapGC50"]<<
+
+              "\n";
+  }
+  canvas->SaveAs("AliTMinuitToolkit_TestHistogram.png");
+  delete pcstream;
 }
 
 
@@ -157,7 +246,7 @@ void Test1D(Int_t bootStrapIter){
   inputTree->SetAlias("X0","x.fElements[0]");
 
   TString  selection="1";
-  AliTMinuitToolkit * tool1D = new AliTMinuitToolkit("AliTMinutiTookitTest1D.root");
+  AliTMinuitToolkit * tool1D = new AliTMinuitToolkit("AliTMinuitToolkitTest1D.root");
   tool1D->SetVerbose(0x1);
   tool1D->SetFitFunction(&formula1D,kTRUE);
   tool1D->SetInitialParam(&initParam);
@@ -219,11 +308,11 @@ void Test1D(Int_t bootStrapIter){
   gr1->SetMaximum(5); gr1->SetMinimum(-5);
 
   gr0->Draw("ap");
-  for (Int_t ifit=0; ifit<5; ifit++){
-    fitFunctions[ifit]->SetLineColor(kLineColors[ifit]);
-    fitFunctions[ifit]->SetLineStyle(kLineStyle[ifit]);
-    fitFunctions[ifit]->SetLineWidth(3);
-    fitFunctions[ifit]->Draw("same");     
+  for (Int_t iFit=0; iFit<5; iFit++){
+    fitFunctions[iFit]->SetLineColor(kLineColors[iFit]);
+    fitFunctions[iFit]->SetLineStyle(kLineStyle[iFit]);
+    fitFunctions[iFit]->SetLineWidth(3);
+    fitFunctions[iFit]->Draw("same");
   }
   latex.SetTextSize(0.07);
   latex.DrawLatexNDC(0.11,0.8,"Input y=0+2*x+#epsilon ");
@@ -232,11 +321,11 @@ void Test1D(Int_t bootStrapIter){
   canvasTest1D->cd(2);
 
   gr1->Draw("ap");
-  for (Int_t ifit=0; ifit<5; ifit++){
-    fitFunctions[ifit]->SetLineColor(kLineColors[ifit]);
-    fitFunctions[ifit]->SetLineStyle(kLineStyle[ifit]);
-    fitFunctions[ifit]->SetLineWidth(3);
-    fitFunctions[ifit]->Draw("same");     
+  for (Int_t iFit=0; iFit<5; iFit++){
+    fitFunctions[iFit]->SetLineColor(kLineColors[iFit]);
+    fitFunctions[iFit]->SetLineStyle(kLineStyle[iFit]);
+    fitFunctions[iFit]->SetLineWidth(3);
+    fitFunctions[iFit]->Draw("same");
   }
   TLegend * legend = new TLegend(0.11,0.7,0.6,0.89,"Unbinned1D fit for different cost function (ZOOM)");
   legend->SetBorderSize(0); legend->SetNColumns(2);  
@@ -248,7 +337,7 @@ void Test1D(Int_t bootStrapIter){
   legend->AddEntry(fitFunctions[4],"Fit: Log(80%Gaus+20%Cauchy)","l");
   legend->Draw();
   //
-  //for (Int_t ifit=0; ifit<3; ifit++) resHistograms[ifit]->Fit("gaus");
+  //for (Int_t iFit=0; iFit<3; iFit++) resHistograms[iFit]->Fit("gaus");
   // TTre
   TVirtualPad *pad =canvasTest1D->cd(3);
   gStyle->SetOptTitle();
@@ -274,13 +363,13 @@ void Test1D(Int_t bootStrapIter){
   latex.DrawLatexNDC(0.3,0.85,"Two fold cross validation. Param0");
   pad->cd(2);
   latex.DrawLatexNDC(0.3,0.85,"Two fold cross validation. Param1");
-  for (Int_t ifit=0; ifit<4; ifit++){ 
+  for (Int_t iFit=0; iFit<4; iFit++){
     pad->cd(1);
-    latex.SetTextColor(kLineColors[ifit+1]);
-    latex.DrawLatexNDC(0.35,0.85-0.05*(ifit+1),TString::Format("%s:  RMS %.2f ",h2D->GetXaxis()->GetBinLabel(1+ifit), grRMS0->GetY()[ifit]).Data());
+    latex.SetTextColor(kLineColors[iFit+1]);
+    latex.DrawLatexNDC(0.35,0.85-0.05*(iFit+1),TString::Format("%s:  RMS %.2f ",h2D->GetXaxis()->GetBinLabel(1+iFit), grRMS0->GetY()[iFit]).Data());
     pad->cd(2);
-    latex.SetTextColor(kLineColors[ifit+1]);
-    latex.DrawLatexNDC(0.35,0.85-0.05*(ifit+1),TString::Format("%s:  RMS %.2f ",h2D->GetXaxis()->GetBinLabel(1+ifit), grRMS1->GetY()[ifit]).Data());
+    latex.SetTextColor(kLineColors[iFit+1]);
+    latex.DrawLatexNDC(0.35,0.85-0.05*(iFit+1),TString::Format("%s:  RMS %.2f ",h2D->GetXaxis()->GetBinLabel(1+iFit), grRMS1->GetY()[iFit]).Data());
   }
   canvasTest1D->SaveAs("AliTMinuitToolkitTest.Test1D.png");
   canvasTest1D->SaveAs("AliTMinuitToolkitTest.Test1D.pdf");
