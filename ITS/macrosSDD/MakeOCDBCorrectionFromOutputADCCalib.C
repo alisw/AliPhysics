@@ -30,13 +30,13 @@ void MakeOCDBCorrectionFromOutputADCCalib(Int_t run = 246994, TString dirname = 
     
   TGrid::Connect("alien:");
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("alien://folder=/alice/data/2015/OCDB");
+  man->SetDefaultStorage("raw://");
   man->SetRun(run);
   AliCDBEntry *pedpul = man->Get("ITS/Calib/CalibSDD");
   TObjArray *calSDD = (TObjArray *)pedpul->GetObject();
- 
+    
   FILE* outtxt=fopen(Form("%s/outlargecorr_%d.txt",dirname.Data(),run),"w");
-
+    
   printf("Opening file CalibResults.root in %s/",dirname.Data());
   TFile *fin = new TFile(Form("%s/SDDADCCalibResults_%d.root",dirname.Data(),run));
   if(fin) {
@@ -84,13 +84,13 @@ void MakeOCDBCorrectionFromOutputADCCalib(Int_t run = 246994, TString dirname = 
     TCanvas *c0=new TCanvas("c0","c0",1400,900);
     c0->Divide(2,2);
     c0->cd(1);
-    hmpvModpar0->DrawClone("HIST");
-    hADCtokeV->DrawClone("HISTSAME");
+    hmpvModpar0->DrawCopy("HIST");
+    hADCtokeV->DrawCopy("HISTSAME");
     TLegend* leg0=new TLegend(0.14,0.75,0.89,0.89);
     leg0->SetMargin(0.15);
     leg0->AddEntry(hmpvModpar0,hmpvModpar0->GetTitle(),"L")->SetTextColor(hmpvModpar0->GetLineColor());
     leg0->AddEntry(hADCtokeV,hADCtokeV->GetTitle(),"L")->SetTextColor(hADCtokeV->GetLineColor());
-    leg0->Draw();
+    leg0->Draw("same");
     c0->cd(3);
     TH1F* hRatioADC=(TH1F*)hmpvModpar0->Clone("hRatioADC");
     hRatioADC->Divide(hmpvModpar0,hADCtokeV);
@@ -106,13 +106,13 @@ void MakeOCDBCorrectionFromOutputADCCalib(Int_t run = 246994, TString dirname = 
     hmpvModpar1->SetName("hADCvsDriftTime");
     hADCvsDriftTime->SetTitle(Form("hADCvsDriftTime %s",OCDBname.Data()));//- Run166530_999999999_v4_s0");
     hADCvsDriftTime->SetLineColor(2);
-    hmpvModpar1->DrawClone("HIST");
-    hADCvsDriftTime->DrawClone("HISTSAME");
+    hmpvModpar1->DrawCopy("HIST");
+    hADCvsDriftTime->DrawCopy("HISTSAME");
     TLegend* leg1=new TLegend(0.14,0.75,0.89,0.89);
     leg1->SetMargin(0.15);
     leg1->AddEntry(hmpvModpar1,hmpvModpar1->GetTitle(),"L")->SetTextColor(hmpvModpar1->GetLineColor());
     leg1->AddEntry(hADCvsDriftTime,hADCvsDriftTime->GetTitle(),"L")->SetTextColor(hADCvsDriftTime->GetLineColor());
-    leg1->Draw();
+    leg1->Draw("same");
     c0->cd(4);
     TH1F* hRatioAvsDT=(TH1F*)hmpvModpar1->Clone("hRatioAvsDT");
     hRatioAvsDT->Divide(hmpvModpar1,hADCvsDriftTime);
@@ -122,29 +122,29 @@ void MakeOCDBCorrectionFromOutputADCCalib(Int_t run = 246994, TString dirname = 
     hRatioAvsDT->SetLineWidth(2);
     hRatioAvsDT->GetYaxis()->SetTitle("Ratio new/OCDB");
     hRatioAvsDT->Draw();
-
+        
     for(Int_t j=1; j<=hRatioADC->GetNbinsX(); j++){
-      Double_t r = hRatioADC->GetBinContent(j);
+      Double_t rr = hRatioADC->GetBinContent(j);
       Int_t theMod=(Int_t)(hRatioADC->GetBinCenter(j)+0.1);
-      if(r<0.96 || r>1.04){ 
-	printf("Large Correction (%f) for module %d",r,theMod);
+      if(rr<0.96 || rr>1.04){
+	printf("Large Correction (%f) for module %d",rr,theMod);
 	AliITSCalibrationSDD *cal=(AliITSCalibrationSDD*)calSDD->At(theMod-240);
 	if(cal->IsBad()) printf("  --> BAD module\n");
-	else{ 
+	else{
 	  printf ("  **** Good module ****\n");
-	  fprintf(outtxt,"Large Correction (%f) for module %d **** Good module with %d dead channels****\n",r,theMod,cal->GetDeadChannels());
+	  fprintf(outtxt,"Large Correction (%f) for module %d **** Good module with %d dead channels****\n",rr,theMod,cal->GetDeadChannels());
 	}
       }
     }
-
+        
     TFile *out=new TFile(Form("%s/CorrectiondEdxSDD_%s_%s_%d.root",dirname.Data(),fperiod.Data(),OCDBname.Data(),run),"recreate");
     hmpvModpar0->Write();
     hmpvModpar1->Write();
     c0->SaveAs(Form("%s/CalibParams_run%d.eps",dirname.Data(),run));
     out->Close();
     delete out;
-
-
+        
+        
   } else printf("no input file!\n");
 } //end main
 
