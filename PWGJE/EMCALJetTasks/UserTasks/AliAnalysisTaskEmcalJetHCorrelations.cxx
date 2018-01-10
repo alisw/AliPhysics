@@ -69,6 +69,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fRequireMatchedJetWhenEmbedding(kTRUE),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -96,6 +97,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fRequireMatchedJetWhenEmbedding(kTRUE),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -385,7 +387,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
-    if (fIsEmbedded) {
+    if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
       if (jet->MatchedJet()) {
         AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
       }
@@ -527,7 +529,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         for (auto jet : jets->accepted()) {
           // Require the found jet to be matched
           // This match should be between detector and particle level MC
-          if (fIsEmbedded) {
+          if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
             if (jet->MatchedJet()) {
               AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
             }
