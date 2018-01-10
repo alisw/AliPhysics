@@ -1127,6 +1127,33 @@ void AliRsnCutSetDaughterParticle::Init()
 			 iCutTPCNSigma->GetName()) ) ;
       break;
 
+      // PID cuts for Kstar analysis:
+      case    AliRsnCutSetDaughterParticle::kTOFTPCpidKstar :      
+	if (fPID==AliPID::kKaon) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	}
+	if (fPID==AliPID::kPion) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.0,1.E20);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 1.E20);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
+
       // PID cuts for Delta analysis:
       case    AliRsnCutSetDaughterParticle::kTOFTPCpidDelta :      
 	if (fPID==AliPID::kProton) {
