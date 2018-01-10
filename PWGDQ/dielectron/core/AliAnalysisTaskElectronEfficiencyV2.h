@@ -92,6 +92,7 @@ public:
 
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
+   void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Generator related setter
@@ -103,8 +104,6 @@ public:
    // Track cuts setter
    void   AddTrackCuts(AliAnalysisFilter* filter) {fTrackCuts.push_back(filter);}
 
-
-public:
   class Particle{
   public:
     Particle() :
@@ -125,6 +124,7 @@ public:
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
   };
+
 private:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kCentralityEvents, kLastBin};
 
@@ -242,8 +242,12 @@ private:
   std::vector<TH2D*> fHistGenPair;
   std::vector<TH2D*> fHistGenSmearedPair;
   std::vector<TH2D*> fHistRecPair;
+  std::vector<TH2D*> fHistGenPair_ULSandLS;
+  std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
+  std::vector<TH2D*> fHistRecPair_ULSandLS;
 
   Bool_t fDoPairing;
+  Bool_t fDoULSandLS;
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
   std::vector<Particle> fRecNegPart;

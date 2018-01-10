@@ -105,6 +105,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // #########################################################
   // Pairing related config
   task->SetDoPairing(DoPairing);
+  task->SetULSandLS(DoULSLS);
 
   // #########################################################
   // #########################################################
