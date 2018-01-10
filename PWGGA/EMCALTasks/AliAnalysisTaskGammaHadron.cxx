@@ -754,7 +754,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistBinCheckEvtPl[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckEvtPl[identifier]);
 
-		fHistBinCheckEvtPl2[identifier]= new TH1F(Form("fHistBinCheckEvtPl2_%0d",identifier),Form("fHistBinCheckEvtPl2_%0d",identifier), 47, -2 , 92);
+		fHistBinCheckEvtPl2[identifier]= new TH1F(Form("fHistBinCheckEvtPl2_%0d",identifier),Form("fHistBinCheckEvtPl2_%0d",identifier), 47, -2, 92);
 		fHistBinCheckEvtPl2[identifier]->GetXaxis()->SetTitle("#Delta#varphi^{#gamma-EvtPl}");
 		fHistBinCheckEvtPl2[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckEvtPl2[identifier]);
@@ -821,7 +821,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//  Eliane's Special Histograms
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	fHistEvsPt = new TH2F("fHistEvsPt","fHistEvsPt", nbins[0], min[0], max[0], 250, 0, 50);
+	fHistEvsPt= new TH2F("fHistEvsPt","fHistEvsPt", nbins[0], min[0], max[0], 250, 0, 50);
 	fHistEvsPt->GetXaxis()->SetTitle("p_{T}_{#gamma}");
 	fHistEvsPt->GetYaxis()->SetTitle("E_{#gamma}");
 	fOutput->Add(fHistEvsPt);
@@ -1635,6 +1635,7 @@ void AliAnalysisTaskGammaHadron::FillTriggerHist(AliTLorentzVector ClusterVec, D
 	//fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
     //fEPV0A = aliEP->GetEventplane("V0A",InputEvent());
     //fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
+
 	Double_t evtPlaneAngle= DeltaPhi(ClusterVec,fEPV0);
 	Int_t evtPlaneCategory=-1;
 
@@ -1689,7 +1690,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 		XI_Value   = TMath::Log(1.0/ZT_Value);
 	}
 	Double_t zVertex = fVertex[2];
-	//..all from EMcal base class : fEPV0,fEPV0A,fEPV0C
+	//..all from EMCal base class : fEPV0,fEPV0A,fEPV0C
 	//fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
 	//fEPV0A = aliEP->GetEventplane("V0A",InputEvent());
 	//fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
@@ -1700,7 +1701,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	angleFromAxis=fabs(evtPlaneAngle);
 	//..fold once more arounad pi/2 axis
 	if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
-	//.. --> now we have only one quadrant left 0 to  <pi/2
+	//.. --> now we have only one quadrant left 0 to <pi/2
 	if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
 	else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
 	else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
@@ -1987,10 +1988,13 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Doubl
 	Double_t pi = TMath::Pi();
 
 	//..delta phi between gamma and evt plane
+	//..phi_g is [80,328] and phi_EVP [-90,90]
 	dPhi = phi_g-phi_EVP;
-
-	//--to create a histogram that starts at -pi and ends at pi
-	if (dPhi > pi)dPhi -= pi;
+	//..to create an angle that starts at 0 and ends at 2pi
+	if (dPhi >= 2*pi)dPhi -= 2*pi;
+	if (dPhi < 0)    dPhi += 2*pi;
+	//..to create an angle that starts at -pi and ends at pi
+	if (dPhi >= pi)dPhi -= 2*pi;
 
 	return dPhi;
 }
