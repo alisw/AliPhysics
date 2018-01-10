@@ -753,6 +753,7 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   AliDielectronCutGroup* trackCuts=0x0;
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+  trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.4, 1e30);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
