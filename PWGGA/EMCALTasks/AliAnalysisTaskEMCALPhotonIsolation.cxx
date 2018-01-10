@@ -202,7 +202,6 @@ fInvMassM02iso(0),
 fInvMassM02noiso(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
-fPtvsM02vsSumUE_LargeRange(0),
 fTrackMultvsSumChargedvsUE(0),
 fTrackMultvsPt(0),
 fTracksConeEtaPt(0),
@@ -399,7 +398,6 @@ fInvMassM02iso(0),
 fInvMassM02noiso(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
-fPtvsM02vsSumUE_LargeRange(0),
 fTrackMultvsSumChargedvsUE(0),
 fTrackMultvsPt(0),
 fTracksConeEtaPt(0),
@@ -711,13 +709,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fPtvsM02vsSum);
 	}
 
-	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,220,-10.,100.);
+	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,700,-100.,250.);
 	fPtvsM02vsSumUE->Sumw2();
 	fOutput->Add(fPtvsM02vsSumUE);
-
-	fPtvsM02vsSumUE_LargeRange = new TH3F("hPtvsM02vsSumUE_LargeRange","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,100,-2000.,2000.);
-	fPtvsM02vsSumUE_LargeRange->Sumw2();
-	fOutput->Add(fPtvsM02vsSumUE_LargeRange);
 
 	if(fAreasPerEvent){
 	  fPtVsConeVsEtaBand = new TH3F("hPtVsConeVsEtaBand","Cluster energy vs. cone energy vs. eta band energy (not normalised)",200,0.,100.,250,0.,100.,250,0.,100.);
@@ -734,7 +728,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fPtVsNormConeVsNormEtaBand->Sumw2();
 	  fOutput->Add(fPtVsNormConeVsNormEtaBand);
 
-	  fPtvsM02vsSumUE_Norm = new TH3D("hPtvsM02vsSumUE_Norm","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters (already normalised by the appropriate area)",200,0.,100.,400,0.,4.,220,-10.,100.);
+	  fPtvsM02vsSumUE_Norm = new TH3D("hPtvsM02vsSumUE_Norm","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters (already normalised by the appropriate area)",200,0.,100.,400,0.,4.,700,-100.,250.);
 	  fPtvsM02vsSumUE_Norm->Sumw2();
 	  fOutput->Add(fPtvsM02vsSumUE_Norm);
 
@@ -865,7 +859,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	// }
 
 	if(fIsMC){
-	  fPtvsSumUE_MC = new TH2D("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters",200,0.,100.,220,-10.,100.);
+	  fPtvsSumUE_MC = new TH2D("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters",200,0.,100.,700,-100.,250.);
 	  fPtvsSumUE_MC->Sumw2();
 	  fOutput->Add(fPtvsSumUE_MC);
 	}
@@ -876,7 +870,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 
     // Initialize the common QA histograms
   if(fQA){
-      // Include QA plots to the OutputList // DEFINE BETTER THE BINNING AND THE AXES LIMITS
+      // Include QA plots to the OutputList
     fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
     fTrackMult->Sumw2();
     fOutput->Add(fTrackMult);
@@ -3312,7 +3306,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         isolation=isolation-ue; // UE subtraction
 
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fEtIsoClust->Fill(vecCOI.Pt(),isolation);
       }
 
@@ -3380,7 +3373,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         isolation=isolation-ue; // UE subtraction
 
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
       }
 
@@ -3456,7 +3448,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
       if(fWho==2){
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3507,7 +3498,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
       if(fWho==2){
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3559,7 +3549,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
       if(fWho==2){
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3612,7 +3601,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
       if(fWho==2){
 	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
-	fPtvsM02vsSumUE_LargeRange->Fill(vecCOI.Pt(),m02COI,isolation);
         // fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
         // fTracksConeEtaPt->Fill(isolation, vecCOI.Eta(), vecCOI.Pt());

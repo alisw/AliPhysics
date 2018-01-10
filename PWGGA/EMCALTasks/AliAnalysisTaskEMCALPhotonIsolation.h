@@ -321,7 +321,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3D                       * fInvMassM02noiso;                //!<!
   TH3D                       * fPtvsM02vsSum;                   //!<!
   TH3D                       * fPtvsM02vsSumUE;                 //!<!
-  TH3F                       * fPtvsM02vsSumUE_LargeRange;      //!<!
   TH3D                       * fTrackMultvsSumChargedvsUE;      //!<!
   TH2D                       * fTrackMultvsPt;                  //!<!
   TH3D                       * fTracksConeEtaPt;                //!<!
