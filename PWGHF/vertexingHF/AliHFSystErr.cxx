@@ -7296,9 +7296,10 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb6080() {
 
   // MC Pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  fMCPtShape->SetBinContent(2,0.05);
-  fMCPtShape->SetBinContent(3,0.01);
-  for(Int_t i=4;i<=24;i++) fMCPtShape->SetBinContent(i,0.0);
+  fMCPtShape->SetBinContent(2,0.10);
+  fMCPtShape->SetBinContent(3,0.05);
+  fMCPtShape->SetBinContent(4,0.01);
+  for(Int_t i=5;i<=24;i++) fMCPtShape->SetBinContent(i,0.0);
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
@@ -7314,7 +7315,7 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb6080() {
 
 //Cutvariations
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  fCutsEff->SetBinContent(2,0.10);
+  fCutsEff->SetBinContent(2,0.08);
   for(Int_t i=3;i<=16;i++) fCutsEff->SetBinContent(i,0.04);
   for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.0);
 
