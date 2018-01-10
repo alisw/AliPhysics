@@ -2480,8 +2480,8 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      //Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
-      Double_t multESDTPCDif = multEsdn - multTPCn*3.60;
+      Double_t multESDTPCDif = multEsdn - multTPCn*3.39;
+      //Double_t multESDTPCDif = multEsdn - multTPCn*3.60;
 
       fGlobalITSMult->Fill(multITS);
 
@@ -2500,7 +2500,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         BisPileup=kTRUE;
       }
       else if(fRejectPileUpTight) {
-        if(multESDTPCDif > 100.) { //default: 700
+        if(multESDTPCDif > 20.) { //default: 700
           fPileUpCount->Fill(8.5);
           BisPileup=kTRUE;
         }
