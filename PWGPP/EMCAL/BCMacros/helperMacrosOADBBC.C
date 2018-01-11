@@ -9,7 +9,7 @@
 ///  Running the macro
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                   <br>
-/// root [0] .L /alice/ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
+/// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
 /// root [1] Sort_RunNumbers("LHC16o",663,"runList.txt")        <br>
 /// root [2] Test_OADB("LHC16k",804,0,"runList16k.txt")         <br>
 /// root [3] Plot_CellList("LHC15o",771,"1","List115o.txt")         <br>
@@ -300,7 +300,19 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 	gStyle->SetPadLeftMargin(0.17);
 	gStyle->SetFrameFillColor(10);
 
-	const Int_t nBlocks=4; //..number of different runblocks of the period
+
+	//......................................................
+	//..Settings
+	const Int_t nBlocks=1; //..number of different runblocks of the period
+
+	Int_t zoomRange=20;
+	Double_t range=5; //10 GeV
+	Double_t tRange1=-200;
+	Double_t	 tRange2=400;
+	//..uncalibrated:
+	//tRange1 =400;
+	//tRange2 =900;
+	Int_t shift=0;
 
 	//......................................................
 	//..open the text file and save the run IDs into the RunId[] array
@@ -342,23 +354,28 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 	for(Int_t iBlock=0;iBlock<nBlocks;iBlock++)
 	{
 		//..mostly set by hand
-		//15l
+		//..15l
+		/*
 		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
 		if(iBlock==1)rootFileName[iBlock]= Form("Version2OADB/%s_INT7_Histograms_V2.root",period.Data());
 		if(iBlock==2)rootFileName[iBlock]= Form("Version3OADB/%s_INT7_Histograms_V3.root",period.Data());
 		if(iBlock==3)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
-
+		 */
 		//..15o
 		/*if(iBlock==0)rootFileName[iBlock]= Form("Version1ManMasked/%s_INT7_Histograms_V1.root",period.Data());
 		if(iBlock==1)rootFileName[iBlock]= Form("Version2ManMasked/%s_INT7_Histograms_V2.root",period.Data());
 		if(iBlock==2)rootFileName[iBlock]= Form("Version3ManMasked/%s_INT7_Histograms_V3.root",period.Data());
 		if(iBlock==3)rootFileName[iBlock]= Form("Version4ManMasked/%s_INT7_Histograms_V4.root",period.Data());
         */
-		/*16s
+		/*
+		//..16s
 		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
 		if(iBlock==1)rootFileName[iBlock]= Form("Version2OADB/%s_INT7_Histograms_V2.root",period.Data());
 		if(iBlock==2)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
 		 */
+		//..16k
+		if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
+
 		outputRoot[iBlock]   = TFile::Open(Form("%s/%s",path.Data(),rootFileName[iBlock].Data()));
 		if(!outputRoot[iBlock])cout<<"File "<<outputRoot[iBlock]->GetName()<<" does not exist"<<endl;
 		h2DAmp[iBlock]     =(TH2F*)outputRoot[iBlock]->Get("hCellAmplitude");
@@ -398,14 +415,6 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 	TLegend *leg2 = new TLegend(0.60,0.60,0.9,0.85);
 	cout<<"    o Fill Canvases with bad cells histograms"<<endl;
 
-	Int_t zoomRange=20;
-	Double_t range=5; //10 GeV
-	Double_t tRange1=-200;
-	Double_t	 tRange2=400;
-	//..uncalibrated:
-	tRange1 =400;
-	tRange2 =900;
-	Int_t shift=0;
 	TH1D *htmpCellAllRuns[nBlocks];
 	TH1D *htmpCellTimeRuns[nBlocks];
 	TH1D *htmpCellRatioAllRuns[nBlocks];
@@ -478,14 +487,22 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 		if(can==0)
 		{
 			//..first pad
-			cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
-			cCompTimeAll[can]    ->Print(Form("%s",pdfName.Data()));
+			if(nCv>1)
+			{
+				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
+				cCompTimeAll[can]->Print(Form("%s",pdfName.Data()));
+			}
+			else
+			{
+				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
+				cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
+			}
 		}
 		else if(can==(nCv-1))//..last canvas
 		{
 			//..last pad
 			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
-			cCompTimeAll[can]    ->Print(Form("%s)",pdfName.Data()));
+			cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
 		}
 		else
 		{
