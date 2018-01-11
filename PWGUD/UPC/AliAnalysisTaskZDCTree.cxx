@@ -11,6 +11,9 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
+ * 																		  *
+ * Based on the class AliAnalysisTaskZDCTreeMaker by Chiara Oppedisano	  *																	  *
+ * Created by Uliana Dmitrieva uliana.dmitrieva@cern.ch on 11/01/2018     *
  **************************************************************************/
 
 /////////////////////////////////////////////////////////////
