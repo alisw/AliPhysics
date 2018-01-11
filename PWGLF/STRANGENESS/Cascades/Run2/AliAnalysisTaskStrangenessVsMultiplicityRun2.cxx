@@ -3198,7 +3198,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     Long_t lPtbinnumbXi = sizeof(lPtbinlimitsXi)/sizeof(Double_t) - 1;
     
     // centrality binning
-    Double_t lCentbinlimitsV0[] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90};
+    Double_t lCentbinlimitsV0[] = {0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 85, 90};
     Long_t lCentbinnumbV0 = sizeof(lCentbinlimitsV0)/sizeof(Double_t) - 1;
     
     // TStrings for output names
@@ -3374,37 +3374,35 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     }
     
     //Central full results
-    if (lUseFull){
-        for(Int_t i = 0 ; i < lNPart ; i ++)
-        {
-            //Central Result, Full: No rebinning. Will use a significant amount of memory,
-            //not to be replicated several times for systematics!
-            lV0Result[lNV0] = new AliV0Result( Form("%s_Central_Full",lParticleNameV0[i].Data() ),lMassHypoV0[i]);
-            lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
-            
-            //feeddown matrix
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
-            
-            //Setters for V0 Cuts
-            lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
-            lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
-            lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
-            lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
-            //Set Variable cut
-            lV0Result[lNV0]->SetCutVarV0CosPA               ( parExp0Const[i][1], parExp0Slope[i][1], parExp1Const[i][1], parExp1Slope[i][1], parConst[i][1] ) ;
-            
-            lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
-            
-            //Miscellaneous
-            lV0Result[lNV0]->SetCutProperLifetime        ( lcutsV0[i][1][ 5] ) ;
-            lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( -1 ) ; //no cut here
-            lV0Result[lNV0]->SetCutMinTrackLength ( lcutsV0[i][1][ 6] ) ;
-            lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lcutsV0[i][1][ 7] ) ;
-            lV0Result[lNV0]->SetCutTPCdEdx               ( lcutsV0[i][1][ 8] ) ;
-            
-            //Add result to pool
-            lNV0++;
-        }
+    for(Int_t i = 0 ; i < lNPart ; i ++)
+    {
+        //Central Result, Full: No rebinning. Will use a significant amount of memory,
+        //not to be replicated several times for systematics!
+        lV0Result[lNV0] = new AliV0Result( Form("%s_Central_Full",lParticleNameV0[i].Data() ),lMassHypoV0[i]);
+        lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
+        
+        //feeddown matrix
+        if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
+        
+        //Setters for V0 Cuts
+        lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
+        lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
+        lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
+        lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+        //Set Variable cut
+        lV0Result[lNV0]->SetCutVarV0CosPA               ( parExp0Const[i][1], parExp0Slope[i][1], parExp1Const[i][1], parExp1Slope[i][1], parConst[i][1] ) ;
+        
+        lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
+        
+        //Miscellaneous
+        lV0Result[lNV0]->SetCutProperLifetime        ( lcutsV0[i][1][ 5] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( -1 ) ; //no cut here
+        lV0Result[lNV0]->SetCutMinTrackLength ( lcutsV0[i][1][ 6] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lcutsV0[i][1][ 7] ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( lcutsV0[i][1][ 8] ) ;
+        
+        //Add result to pool
+        lNV0++;
     }
     
     //Rapidity sweep
@@ -3469,7 +3467,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     Double_t lCutsTight[lNPart][lNCutsForSweep];
     Double_t lCutsLoose[lNPart][lNCutsForSweep];
     
-    Double_t lMeanLifetime[] = {2.6844,7.89,7.89};
+    Double_t lMeanLifetime[] = {2.6844, 7.89, 7.89};
     for(Int_t i = 0 ; i < lNPart ; i ++)
     {
         lCutsTight[i][ 0] =   0.1; //DCANegToPV
@@ -3495,7 +3493,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     //================================================================================
     
     //2.76 TeV analysis cuts
-    Int_t l276CutsIndex = lNV0;
     for(Int_t i = 0 ; i < lNPart ; i ++)
     {
         lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_276Cuts",lParticleNameV0[i].Data() ) );
@@ -3524,6 +3521,48 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         lNV0++;
     }
     
+    // centrality binning for sweeps
+    Double_t lSweepCentBinLimits[] = {0, 90};
+    Long_t lSweepCentBinNumb = sizeof(lSweepCentBinLimits)/sizeof(Double_t) - 1;
+    
+    //Mass binning for sweeps
+    Double_t lNMassBins[] = {400, 400, 400};
+    Double_t lMass[] = {0.498, 1.116, 1.116};
+    Double_t lMassWindow[] = {0.15,0.1,0.1};
+    
+    //Loose cuts for sweeps
+    Int_t lLooseForSweepIndex = lNV0;
+    for(Int_t i = 0 ; i < lNPart ; i++)
+    {
+        //Central result for sweeps
+        lV0Result[lNV0] = new AliV0Result( Form("%s_Central_ForSweep",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lSweepCentBinNumb,lSweepCentBinLimits, lPtbinnumbV0,lPtbinlimitsV0,lNMassBins[i],lMass[i]-lMassWindow[i],lMass[i]+lMassWindow[i]);
+        lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
+        
+        //feeddown matrix
+        if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
+        
+        //Setters for V0 Cuts
+        lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
+        lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
+        lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
+        lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+        //Set Variable cut
+        lV0Result[lNV0]->SetCutVarV0CosPA               ( parExp0Const[i][1], parExp0Slope[i][1], parExp1Const[i][1], parExp1Slope[i][1], parConst[i][1] ) ;
+        
+        lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
+        
+        //Miscellaneous
+        lV0Result[lNV0]->SetCutProperLifetime        ( lcutsV0[i][1][ 5] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( -1 ) ; //no cut here
+        lV0Result[lNV0]->SetCutMinTrackLength ( lcutsV0[i][1][ 6] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lcutsV0[i][1][ 7] ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( lcutsV0[i][1][ 8] ) ;
+        lV0Result[lNV0]->SetCutArmenterosParameter               ( lcutsV0[i][1][ 9] ) ;
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
     //Tightening cuts one by one
     for(Int_t i = 0 ; i < lNPart ; i++)
     {
@@ -3537,7 +3576,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
             {
                 Double_t lCutValue = lCutsLoose[i][iCut] + (iSweep/(Double_t)lNSweep)*(lCutsTight[i][iCut]-lCutsLoose[i][iCut]);
                 
-                lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form( "%s_Central_%s_%d", lParticleNameV0[i].Data(), lCutNameV0[iCut].Data(), iSweep ) );
+                lV0Result[lNV0] = new AliV0Result( lV0Result[lLooseForSweepIndex+i], Form( "%s_Central_%s_%d", lParticleNameV0[i].Data(), lCutNameV0[iCut].Data(), iSweep ) );
                 
                 if(iCut ==  0 ) lV0Result[lNV0]->SetCutDCANegToPV            ( lCutValue ) ;
                 if(iCut ==  1 ) lV0Result[lNV0]->SetCutDCAPosToPV            ( lCutValue ) ;
@@ -3565,6 +3604,36 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         }
     }
     
+    //Tight cuts for sweeps
+    Int_t lTightForSweepIndex = lNV0;
+    for(Int_t i = 0 ; i < lNPart ; i++)
+    {
+        lV0Result[lNV0] = new AliV0Result( lV0Result[lLooseForSweepIndex+i], Form("%s_276Cuts_ForSweep",lParticleNameV0[i].Data() ) );
+        
+        //Setters for V0 Cuts
+        lV0Result[lNV0]->SetCutDCANegToPV            ( lCutsTight[i][0] ) ;
+        lV0Result[lNV0]->SetCutDCAPosToPV            ( lCutsTight[i][1] ) ;
+        lV0Result[lNV0]->SetCutDCAV0Daughters        ( lCutsTight[i][2] ) ;
+        lV0Result[lNV0]->SetCutV0CosPA               ( lCutsTight[i][3] ) ;
+        //Use constant cos(PA) cut
+        lV0Result[lNV0]->SetCutUseVarV0CosPA         ( kFALSE ) ;
+        
+        lV0Result[lNV0]->SetCutV0Radius              ( lCutsTight[i][4] ) ;
+        lV0Result[lNV0]->SetCutMaxV0Radius           ( lCutsTight[i][10] ) ;
+        
+        //Miscellaneous
+        lV0Result[lNV0]->SetCutProperLifetime        ( lCutsTight[i][5] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( lCutsTight[i][11] ) ;
+        lV0Result[lNV0]->SetCutMinTrackLength ( lCutsTight[i][6] ) ; //no cut here
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lCutsTight[i][7] ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( 1e6 ) ; //no cut here
+        lV0Result[lNV0]->SetCut276TeVLikedEdx        ( kTRUE ) ;
+        lV0Result[lNV0]->SetCutArmenterosParameter               ( lCutsTight[i][9] ) ;
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
     //Loosening cuts one by one
     for(Int_t i = 0 ; i < lNPart ; i ++)
     {
@@ -3578,7 +3647,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
             {
                 Double_t lCutValue = lCutsTight[i][iCut] + (iSweep/(Double_t)lNSweep)*(lCutsLoose[i][iCut]-lCutsTight[i][iCut]);
                 
-                lV0Result[lNV0] = new AliV0Result( lV0Result[l276CutsIndex+i], Form( "%s_276Cuts_%s_%d", lParticleNameV0[i].Data(), lCutNameV0[iCut].Data(), iSweep ) );
+                lV0Result[lNV0] = new AliV0Result( lV0Result[lTightForSweepIndex+i], Form( "%s_276Cuts_%s_%d", lParticleNameV0[i].Data(), lCutNameV0[iCut].Data(), iSweep ) );
                 
                 if(iCut ==  0 ) lV0Result[lNV0]->SetCutDCANegToPV            ( lCutValue ) ;
                 if(iCut ==  1 ) lV0Result[lNV0]->SetCutDCAPosToPV            ( lCutValue ) ;
@@ -3667,6 +3736,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
             lNV0++;
         }
     }
+    
     for (Int_t iconf = 0; iconf<lNV0; iconf++){
         cout<<"Adding config named"<<lV0Result[iconf]->GetName()<<endl;
         AddConfiguration(lV0Result[iconf]);
