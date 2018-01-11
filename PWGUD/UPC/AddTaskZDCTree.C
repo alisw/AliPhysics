@@ -1,8 +1,9 @@
-///////////////////////////////////////////////////////////////////
-//                                                               //            
-// AddTaskTrans                                                  //
-//                                                               //
-///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//                                                               			//            
+// AddTaskZDCTree                                      						//
+// Created by  Michal Broz Michal.Broz@cern.ch								//
+// Modified by Uliana Dmitrieva uliana.dmitrieva@cern.ch on 11/01/2018      //
+//////////////////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskZDCTree* AddTaskZDCTree(TString name = "name")
@@ -25,7 +26,7 @@ AliAnalysisTaskZDCTree* AddTaskZDCTree(TString name = "name")
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("fZDCTree", TTree::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer("fOutput", TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
     return task;

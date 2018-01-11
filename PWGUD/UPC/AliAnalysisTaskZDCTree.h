@@ -1,12 +1,13 @@
-#ifndef ALIANALYSISTASKZDCTREE_H
-#define ALIANALYSISTASKZDCTREE_H
+#ifndef AliAnalysisTaskZDCTree_H
+#define AliAnalysisTaskZDCTree_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//------------------------------------------------------
-//   Based on class AliAnalysisTaskZDCTreeMaker by Chiara Oppedisano
-//------------------------------------------------------
+//*****************************************************
+//	Based on the class AliAnalysisTaskZDCTreeMaker by Chiara Oppedisano
+//	Created by Uliana Dmitrieva uliana.dmitrieva@cern.ch on 11/01/2018
+//*****************************************************
 
 #include "AliAnalysisTaskSE.h"
 
@@ -29,20 +30,15 @@ class AliAnalysisTaskZDCTree : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
 
-  virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
-  void SetInput(const char* input) {fAnalysisInput = input;}
-  void SetMCInput() {fIsMCInput = kTRUE;}
-   
-
  private:
 
-  Int_t    fDebug;	   	//  Debug flag
-  TString  fAnalysisInput; 	// "ESD", "AOD"
-  Bool_t   fIsMCInput;          // true when input is MC
+  Int_t			fDebug;			//  Debug flag
+  
+  AliESDEvent	*fESD;			//! input event
+  TList			*fOutput;		//! list send on output slot 0
+  TTree			*fZDCTree;		//! output tree
   //
-  TList   *fOutput;	   	//! list send on output slot 0
-  //
-  TTree   *fZDCTree;     	// output tree
+  Int_t fRunNum;
   //
   Bool_t fIsZEM1;		//
   Bool_t fIsZEM2;		//
@@ -74,7 +70,7 @@ class AliAnalysisTaskZDCTree : public AliAnalysisTaskSE {
   AliAnalysisTaskZDCTree& operator= (const AliAnalysisTaskZDCTree& ana);
   AliAnalysisTaskZDCTree(const AliAnalysisTaskZDCTree& c);
   //
-  ClassDef(AliAnalysisTaskZDCTree,1); 
+  ClassDef(AliAnalysisTaskZDCTree,4); 
 
 };
 
