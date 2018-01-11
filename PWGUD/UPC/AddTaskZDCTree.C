@@ -1,8 +1,9 @@
-///////////////////////////////////////////////////////////////////
-//                                                               //            
-// AddTaskTrans                                                  //
-//                                                               //
-///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//                                                               			//            
+// AddTaskZDCTree                                      						//
+// Created by  Michal Broz Michal.Broz@cern.ch								//
+// Modified by Uliana Dmitrieva uliana.dmitrieva@cern.ch on 11/01/2018      //
+//////////////////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskZDCTree* AddTaskZDCTree(TString name = "name")
