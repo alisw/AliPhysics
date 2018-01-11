@@ -76,21 +76,22 @@ Double_t LangausFun(Double_t *x, Double_t *par) {
 
 //________________________________________________________________________________________
 
-void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString filename ="QAresults_barrel.root"){
+//void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString filename ="QAresults_barrel"){
+void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString filename ="CalibObjects", Int_t year = 2015, TString period = "LHC15o", Bool_t readLocal=kFALSE){
     
-  TFile *fin = new TFile(Form("%s/%s",foldname.Data(),filename.Data()));
-  TDirectory *dirFile = (TDirectory*)fin->Get("ITSAlignQA");
-  TString lname = Form("clistITSAlignQA");
-  TList *cOutput = (TList*)dirFile->Get(lname.Data());
+  //****************** Connection to alien *****************************************
+    
+  TGrid::Connect("alien://",0,0,"t");
+  //TGrid *gGrid = TGrid::Connect("alien");
+  if(!gGrid||!gGrid->IsConnected()) {
+    printf("gGrid not found! exit macro\n");
+    return;
+  }
     
   const Int_t nDrTimeBin = 8;
   const Int_t nModules = 260;
   Float_t drTimeLim[nDrTimeBin+1] = {0,800,1600,2400,3200,4000,4800,5600,6400};
     
-  if(!cOutput) {
-    Printf("E: Cannot open TList %s",lname.Data());
-    return;
-  }
     
   TH2F *hdEdxvsDrTime;
   TF1  *lfun = new TF1("LangausFun",LangausFun,50.,300.,4); //Langaus fit on a DrTime slice
@@ -113,6 +114,38 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString file
   //    chdEdxproj->Divide(4,2);
   //    cmod->Divide(1,3);
     
+  Char_t path[200];
+    
+  //    sprintf(path,"alien:///alice/data/%04i/%s/%09i/cpass1_pass1/QAresults_barrel.root",year,period.Data(),run);
+  //    TFile *fin = TFile::Open(path);
+  //    if(!fin)return;
+  //    TDirectory *dirFile = (TDirectory*)fin->Get("ITSAlignQA");
+  //    TString lname = Form("clistITSAlignQA");
+  //    TList *cOutput = (TList*)dirFile->Get(lname.Data());
+  //    if(!cOutput) {
+  //        Printf("E: Cannot open TList %s",lname.Data());
+  //        return;
+  //    }
+    
+  TFile *fin;
+  if(!readLocal) {
+    sprintf(path,"alien:///alice/data/%04i/%s/%09i/cpass1_pass1/OCDB/CalibObjects.root",year,period.Data(),run);
+    //        sprintf(path,"alien:///alice/data/%04i/%s/%09i/zdc_special_wTPC_cpass1/OCDB/CalibObjects.root",year,period.Data(),run);
+    fin = TFile::Open(path);
+  }
+  else fin = new TFile(Form("%s/%s_%s_Merged.root",foldname.Data(),filename.Data(),period.Data()));
+    
+  if(!fin)return;
+  TString lname = Form("clistSDDCalib");
+  TList *cOutput = (TList*)fin->Get(lname.Data());
+  if(!cOutput) {
+    Printf("E: Cannot open TList %s",lname.Data());
+    return;
+  }
+    
+    
+    
+  //    for(Int_t ihist = 6; ihist < 7; ihist++){//loop on modules
   for(Int_t ihist = 0; ihist < nModules; ihist++){//loop on modules
         
     Int_t imod = ihist+240;
@@ -149,7 +182,6 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString file
       hdEdxproj[idEdx]->Fit(lfun,"0NQLR");
       hdEdxproj[idEdx]->GetXaxis()->SetTitle(Form("dE/dx, time interval %d",idEdx));
       hdEdxproj[idEdx]->GetYaxis()->SetTitle("Events");
-            
       Float_t mpv   = lfun->GetParameter(1);
       Float_t empv  = lfun->GetParError(1);
       Float_t sig   = lfun->GetParameter(3);
@@ -178,6 +210,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString file
       pol1mpv->SetParameter(0,84);
       pol1mpv->SetParameter(1,0);
     }
+    out->cd();
     hmpv->Write();
     hmpvModpar1->Fill(imod,pol1mpv->GetParameter(1));
     hmpvModpar1->SetBinError(hmpvModpar1->FindBin(imod),pol1mpv->GetParError(1));
@@ -242,6 +275,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString file
   TCanvas *chsiglModpar1 = new TCanvas("chsiglModpar1","chsiglModpar1",1000,800);
   hsiglModpar1->Draw();
     
+  out->cd();
   hmpvModpar0->Write();
   hmpvModpar1->Write();
   hsigModpar0->Write();
