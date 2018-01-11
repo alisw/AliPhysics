@@ -297,10 +297,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
       // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
       // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.155
       cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal mixing
+      cuts.AddCut("00000113","1111113047032230000","302410708","0103503900000000","0153503000000000"); // normal mixing (with DCA cut)
+      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0d53503000000000"); // pi0 sideband both sides
+      cuts.AddCut("00000113","1111113047032230000","302410708","0103503900000000","0d53503000000000"); // pi0 sideband both sides (with DCA cut)
 //    cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0a53503000000000"); // likesign mixing
-      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0b53503000000000"); // pi0 sideband left 0.180-0.220
-      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0c53503000000000"); // pi0 sideband right 0.01 -0.05
-      cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0d53503000000000"); // pi0 sideband both sides (ranges from cut above)
+//    cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0b53503000000000"); // pi0 sideband left 0.180-0.220
+//    cuts.AddCut("00000113","1111113047032230000","302010708","0103503900000000","0c53503000000000"); // pi0 sideband right 0.01 -0.05
     // PHOS modes
   } else if( trainConfig == 31 ) {
     // everything open
@@ -352,10 +354,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.145
     // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
     cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0153503000000000"); // normal event mixing
-//    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0a53503000000000"); // likesign event mixing
-    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0b53503000000000"); // pi0 sideband mixing right side (0.180-0.220)
-    cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0c53503000000000"); // pi0 sideband mixing left side (0.01-0.05)
+    cuts.AddCut("00000113","2444400043013300000","302410708","0103503200000000","0153503000000000"); // normal event mixing (with DCA cut)
     cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0d53503000000000"); // pi0 sideband mixing both sides
+    cuts.AddCut("00000113","2444400043013300000","302410708","0103503200000000","0d53503000000000"); // pi0 sideband mixing both sides (with DCA cut)
+//  cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0a53503000000000"); // likesign event mixing
+//  cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0b53503000000000"); // pi0 sideband mixing right side (0.180-0.220)
+//  cuts.AddCut("00000113","2444400043013300000","302010708","0103503200000000","0c53503000000000"); // pi0 sideband mixing left side (0.01-0.05)
 
   //8 TeV
   } else if( trainConfig == 101 ) {
