@@ -295,13 +295,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.125 < M_gamma,gamma < 0.145
-    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    // maxChi2 per cluster TPC <4, require TPC refit
     cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal mixing
+    cuts.AddCut("00000113","00200009327000008250400000","302410708","0103503800000000","0153503000000000"); // normal mixing (with DCA cut)
+    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
+    cuts.AddCut("00000113","00200009327000008250400000","302410708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides (with DCA cut)
 //    cuts.AddCut("00000113","00200009327000008250400000","302040708","0103503800000000","0153503000000000"); // normal mixing + charged pion pt > 400 MeV
 //    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
   //8 TeV
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
