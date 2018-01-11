@@ -21,6 +21,7 @@
 
 #include "AliAnalysisTaskConversionQA.h"
 #include "TChain.h"
+#include "TRandom.h"
 #include "AliAnalysisManager.h"
 #include "TParticle.h"
 #include "TVectorF.h"
@@ -420,7 +421,8 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
   if(ffillTree){
     fTreeList = new TList();
     fTreeList->SetOwner(kTRUE);
-    fTreeList->SetName("TreeList");
+    if(ffillTree>1) fTreeList->SetName(Form("TreeList_%d",ffillTree));
+    else fTreeList->SetName("TreeList");
     fOutputList->Add(fTreeList);
 
     fTreeQA = new TTree("PhotonQA","PhotonQA");   
@@ -514,8 +516,16 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     RelabelAODPhotonCandidates(kTRUE);  // In case of AODMC relabeling MC
     fV0Reader->RelabelAODs(kTRUE);
   }
-    
-    
+
+  // reduce event statistics in the tree by a factor ffilltree
+  Bool_t ffillTreeNew = ffillTree;
+  if (ffillTree>1) {
+    gRandom->SetSeed(0);
+    if(gRandom->Uniform(ffillTree)>1.0) {
+      ffillTreeNew = kFALSE;
+    }
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
@@ -529,7 +539,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       continue;
     }
 
-    if(ffillTree) ProcessQATree(gamma);
+    if(ffillTreeNew) ProcessQATree(gamma);
     if(ffillHistograms) ProcessQA(gamma);
   }
   

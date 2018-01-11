@@ -44,7 +44,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
 
-    void FillType                           ( Bool_t fillTree, 
+    void FillType                           ( Int_t fillTree,
                                               Bool_t fillHistorams)                       {
                                                                                             ffillTree = fillTree                ;
                                                                                             ffillHistograms = fillHistorams     ;
@@ -80,7 +80,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     AliMCEvent*                 fMCEvent;                   //
     TTree*                      fTreeQA;                    //
     Bool_t                      fIsHeavyIon;                //
-    Bool_t                      ffillTree;                  //
+    Int_t                       ffillTree;                  //
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
     TList*                      fTreeList;                  //
