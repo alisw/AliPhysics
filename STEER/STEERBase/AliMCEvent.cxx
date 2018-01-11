@@ -168,6 +168,7 @@ void AliMCEvent::ConnectTreeTR (TTree* tree)
 {
     // Connect the track reference tree
     fTreeTR = tree;
+    if (!fTreeTR) return; // just disconnect
     
     if (fTreeTR->GetBranch("AliRun")) {
 	if (fTmpFileTR) {
