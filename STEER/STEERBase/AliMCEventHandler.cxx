@@ -197,8 +197,8 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
 	if (!fFileTR) {
 	    AliError(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
-	    fInitOk = kFALSE;
-	    return kTRUE;
+	    //fInitOk = kFALSE;
+	    //return kTRUE;
 	}
     }
     //
