@@ -25,6 +25,7 @@
 #include <TString.h>
 #include <TCanvas.h>
 
+#include "TChain.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
@@ -34,16 +35,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDZDC.h"
 #include "AliMultiplicity.h"
-#include "AliAODHandler.h"
-#include "AliAODEvent.h"
-#include "AliAODHeader.h"
-#include "AliAODVZERO.h"
-#include "AliAODZDC.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
 #include "AliHeader.h"
-#include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -60,10 +52,10 @@ ClassImp(AliAnalysisTaskZDCTree)
 AliAnalysisTaskZDCTree::AliAnalysisTaskZDCTree():
   AliAnalysisTaskSE(),
     fDebug(0),
-    fAnalysisInput("ESD"),
-    fIsMCInput(kFALSE),
+    fESD(0),
     fOutput(0x0),
     fZDCTree(0x0),
+    fRunNum(0),
     fIsZEM1(kFALSE),
     fIsZEM2(kFALSE),
     fIsZNC(kFALSE),
@@ -79,34 +71,19 @@ AliAnalysisTaskZDCTree::AliAnalysisTaskZDCTree():
     fZEM1Energy(0), 
     fZEM2Energy(0)
 
-{   
-   // Default constructor
-
-  
-  for(Int_t itow=0; itow<5; itow++){
-     fZNCtower[itow]=0.;  
-     fZPCtower[itow]=0.;  
-     fZNAtower[itow]=0.;  
-     fZPAtower[itow]=0.;  
-  }
-  
-  for(Int_t ihit=0; ihit<4; ihit++){
-     fZNCTDC[ihit]=9999.;  
-     fZPCTDC[ihit]=9999.;  
-     fZNATDC[ihit]=9999.;  
-     fZPATDC[ihit]=9999.;
-  }
- 
+{
+    // default constructor, don't allocate memory here!
+    // this is used by root for IO purposes, it needs to remain empty
 }   
 
 //________________________________________________________________________
 AliAnalysisTaskZDCTree::AliAnalysisTaskZDCTree(const char *name):
   AliAnalysisTaskSE(name),
     fDebug(0),
-    fAnalysisInput("ESD"),
-    fIsMCInput(kFALSE),
+    fESD(0),
     fOutput(0x0),
     fZDCTree(0x0),
+    fRunNum(0),
     fIsZEM1(kFALSE),
     fIsZEM2(kFALSE),
     fIsZNC(kFALSE),
@@ -126,35 +103,20 @@ AliAnalysisTaskZDCTree::AliAnalysisTaskZDCTree(const char *name):
 {
   // Default constructor
    
-  for(Int_t itow=0; itow<5; itow++){
-     fZNCtower[itow]=0.;  
-     fZPCtower[itow]=0.;  
-     fZNAtower[itow]=0.;  
-     fZPAtower[itow]=0.;  
+  for(Int_t itow=0; itow<5; itow++)		fZNCtower[itow]= fZPCtower[itow]= fZNAtower[itow]= fZPAtower[itow]= 0.;  
      
-  }
-  
-  
-  for(Int_t ihit=0; ihit<4; ihit++){
-     fZNCTDC[ihit]=9999.;  
-     fZPCTDC[ihit]=9999.;  
-     fZNATDC[ihit]=9999.; 
-     fZNATDC[ihit]=9999.; 
-  }
-  
-  // Output slot #1 writes into a TList container
-  DefineOutput(1, TList::Class()); 
-  //DefineOutput(1, TTree::Class()); 
-  
+  for(Int_t ihit=0; ihit<4; ihit++)		fZNCTDC[ihit]= fZPCTDC[ihit]= fZNATDC[ihit]= fZNATDC[ihit]= 9999.; 
+    
+  // constructor
+    DefineInput(0, TChain::Class());   
+    DefineOutput(1, TList::Class()); 
 }
  
 //________________________________________________________________________
 AliAnalysisTaskZDCTree::~AliAnalysisTaskZDCTree()
 {
   // Destructor
-  if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
-    delete fOutput; fOutput=0;
-  } 
+  if(fOutput){   delete fOutput;  } 
 
 }
 //________________________________________________________________________
@@ -163,13 +125,14 @@ void AliAnalysisTaskZDCTree::UserCreateOutputObjects()
   // Create the output containers
   if(fDebug>1) printf("AliAnalysisTaskZDCTree::UserCreateOutputObjects() \n");
 
-
-  // Several histograms are more conveniently managed in a TList
-  fOutput = new TList;
-  fOutput->SetOwner();
+	// Several histograms are more conveniently managed in a TList
+	fOutput = new TList;
+	fOutput->SetOwner(kTRUE);
  
-
+	//define tree
     fZDCTree = new TTree("fZDCTree", "ZDC tree");
+    
+    fZDCTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
     
     fZDCTree->Branch("isZEM1",&fIsZEM1,"isZEM1/O");
     fZDCTree->Branch("isZEM2",&fIsZEM2,"isZEM2/O");
@@ -199,31 +162,25 @@ void AliAnalysisTaskZDCTree::UserCreateOutputObjects()
     fZDCTree->Branch("znaTDC", fZNATDC, "znaTDC[4]/F");
     fZDCTree->Branch("zpaTDC", fZPATDC, "zpaTDC[4]/F");
   
-    fOutput->Add(fZDCTree);      
+   fOutput->Add(fZDCTree);   
     PostData(1, fOutput);
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskZDCTree::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event:
-  if(fDebug>1) printf(" **** AliAnalysisTaskZDCTree::UserExec() \n");
-  
-  if (!InputEvent()) {
-    Printf("ERROR: InputEvent not available");
-    return;
-  }
-
+	// Execute analysis for current event:
+	if(fDebug>1) printf(" **** AliAnalysisTaskZDCTree::UserExec() \n");
   
       
-      AliESDEvent* esd = dynamic_cast<AliESDEvent*> (InputEvent());
-      if(!esd) return;
+      fESD = dynamic_cast<AliESDEvent*> (InputEvent());
+      if(!fESD) return;
       
-      // Select PHYSICS events (type=7, for data)
-      if(!fIsMCInput && esd->GetEventType()!=7) return; 
-      
+      //event info
+      fRunNum = fESD->GetRunNumber();
+            
       // ***** Trigger selection
-      TString triggerClass = esd->GetFiredTriggerClasses();
+      TString triggerClass = fESD->GetFiredTriggerClasses();
        
        Bool_t isZED = kFALSE;
        Bool_t isCTRUE = kFALSE;
@@ -238,7 +195,7 @@ void AliAnalysisTaskZDCTree::UserExec(Option_t */*option*/)
 
       if (!(isCTRUE || isZED)) return;
         
-      AliESDZDC *esdZDC = esd->GetESDZDC();
+      AliESDZDC *esdZDC = fESD->GetESDZDC();
       
       fIsZEM1 = Bool_t (esdZDC->IsZEM1hit());
       fIsZEM2 = Bool_t (esdZDC->IsZEM2hit());
@@ -279,7 +236,7 @@ void AliAnalysisTaskZDCTree::UserExec(Option_t */*option*/)
       
          
   fZDCTree->Fill();
- 
+
   PostData(1, fOutput);
 
    
