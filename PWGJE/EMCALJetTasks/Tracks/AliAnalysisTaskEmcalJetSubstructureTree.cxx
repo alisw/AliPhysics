@@ -380,7 +380,9 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
     std::vector<std::string> clusternames;
     for(auto c : trg->GetClusters()) {
       AliTriggerCluster *clust = static_cast<AliTriggerCluster *>(c);
-      clusternames.emplace_back(clust->GetName());
+      std::string clustname = clust->GetName();
+      if(clustname.find("CENT") == std::string::npos && clustname.find("CALO") == std::string::npos) continue;  // only select CENT + CALO clusters 
+      clusternames.emplace_back(clustname);
    }
 
     // Set the x-axis of the luminosity monitor histogram
