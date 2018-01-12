@@ -381,7 +381,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
     for(auto c : trg->GetClusters()) {
       AliTriggerCluster *clust = static_cast<AliTriggerCluster *>(c);
       std::string clustname = clust->GetName();
-      if(clustname.find("CENT") == std::string::npos && clustname.find("CALO") == std::string::npos) continue;  // only select CENT + CALO clusters 
+      auto iscent = clustname.find("CENT") != std::string::npos, iscalo = clustname.find("CALO") != std::string::npos; 
+      if(!(iscalo || iscent)) continue;
       clusternames.emplace_back(clustname);
    }
 
@@ -489,8 +490,14 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
     AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
     if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) {
       for(auto trigger : DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
-        if(trigger.IsTriggerClass("INT7") && trigger.fBunchCrossing == "B" && trigger.fPastFutureProtection == "NOPF"){
-          fLumiMonitor->Fill(trigger.fTriggerCluster.data(), 1./downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName()));
+        auto int7trigger = trigger.IsTriggerClass("INT7");
+        auto bunchcrossing = trigger.fBunchCrossing == "B";
+        auto nopf = trigger.fPastFutureProtection == "NOPF";
+        AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.fTriggerCluster << std::endl;
+        if(int7trigger && bunchcrossing && nopf) {
+          double downscale = downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName());
+          AliDebugStream(5) << "Using downscale " << downscale << std::endl;
+          fLumiMonitor->Fill(trigger.fTriggerCluster.data(), 1./downscale);
         }
       }
     }
@@ -682,7 +689,8 @@ std::vector<Triggerinfo> AliAnalysisTaskEmcalJetSubstructureTree::DecodeTriggerS
   std::vector<Triggerinfo> result;
   std::stringstream triggerparser(triggerstring);
   std::string currenttrigger;
-  while(std::getline(triggerparser, currenttrigger, ',')){
+  while(std::getline(triggerparser, currenttrigger, ' ')){
+    if(!currenttrigger.length()) continue;
     std::vector<std::string> tokens;
     std::stringstream triggerdecoder(currenttrigger);
     std::string token;
