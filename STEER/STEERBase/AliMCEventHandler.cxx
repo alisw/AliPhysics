@@ -197,8 +197,8 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
 	if (!fFileTR) {
 	    AliError(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
-	    fInitOk = kFALSE;
-	    return kTRUE;
+	    //fInitOk = kFALSE;
+	    //return kTRUE;
 	}
     }
     //
@@ -283,7 +283,7 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
     TTreeCache::SetLearnEntries(1);
     fTreeK->AddBranchToCache("*",kTRUE);
     if (firsttree) Info("LoadEvent","Read cache enabled %lld bytes for TreeK",fCacheSize);
-    if (fTreeTR) {
+    if (fDirTR && fTreeTR) {
       fTreeTR->SetCacheSize(fCacheSize);
       fCacheTR = (TTreeCache*) fFileTR->GetCacheRead(fTreeTR);
       TTreeCache::SetLearnEntries(1);
@@ -544,11 +544,11 @@ void AliMCEventHandler::ResetIO()
     
 // Delete Tree E
     delete fTreeE; fTreeE = 0;
-     
+    
 // Reset files
     if (fFileE)  {delete fFileE;  fFileE  = 0;}
     if (fFileK)  {delete fFileK;  fFileK  = 0;}
-    if (fFileTR) {delete fFileTR; fFileTR = 0;}
+    if (fFileTR) {delete fFileTR; fFileTR = 0; fMCEvent->ConnectTreeTR(0);}
     fkExtension="";
     fInitOk = kFALSE;
 
