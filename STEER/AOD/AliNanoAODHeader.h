@@ -21,16 +21,16 @@ public:
   // AliNanoAODHeader(const AliVHeader& evt); 
   AliNanoAODHeader& operator=(const AliNanoAODHeader& evt);
   
-  virtual UShort_t  GetBunchCrossNumber()   const { NotImplemented();return 0;}
-  virtual UInt_t    GetOrbitNumber()        const { NotImplemented();return 0;}
-  virtual UInt_t    GetPeriodNumber()       const { NotImplemented();return 0;}
+  virtual UShort_t  GetBunchCrossNumber()   const { return UShort_t(GetVarInt(fBunchCrossNumber));}
+  virtual UInt_t    GetOrbitNumber()        const { return UInt_t(GetVarInt(fOrbitNumber));}
+  virtual UInt_t    GetPeriodNumber()       const { return UInt_t(GetVarInt(fPeriodNumber));}
   virtual UInt_t    GetTimeStamp()          const { NotImplemented();return 0;}
   virtual ULong64_t GetTriggerMask()        const { NotImplemented();return 0;}
   virtual ULong64_t GetTriggerMaskNext50()  const { NotImplemented();return 0;}
   virtual UChar_t   GetTriggerCluster()     const { NotImplemented();return 0;}
   virtual UInt_t    GetEventType()          const { NotImplemented();return 0;}
 
-  virtual Bool_t   InitMagneticField()             const    {NotImplemented(); return 0;};
+  virtual Bool_t   InitMagneticField()             const    { NotImplemented(); return 0;};
   virtual void     SetRunNumber(Int_t /*n*/)                    {NotImplemented();};
   virtual void     SetMagneticField(Double_t /*magFld*/)        {NotImplemented();};
   virtual void     SetMuonMagFieldScale(Double_t /*magFldScl*/) {NotImplemented();};
@@ -45,9 +45,9 @@ public:
   virtual Double_t GetSigma2DiamondY()             const    {NotImplemented(); return 0;};
   virtual Double_t GetSigma2DiamondZ()             const    {NotImplemented(); return 0;};
 
-  virtual void     SetOrbitNumber(UInt_t /* nOr */)           {NotImplemented(); };
-  virtual void     SetPeriodNumber(UInt_t /* nPer */)         {NotImplemented(); };
-  virtual void     SetBunchCrossNumber(UShort_t /* nBx */)    {NotImplemented(); };
+  virtual void     SetBunchCrossNumber(UShort_t nBx )    { SetVarInt(Int_t(fBunchCrossNumber), nBx); };
+  virtual void     SetOrbitNumber(UInt_t nOr)           { SetVarInt(Int_t(fOrbitNumber), nOr); };
+  virtual void     SetPeriodNumber(UInt_t nPer)         { SetVarInt(Int_t(fPeriodNumber), nPer); };
   virtual void     SetTimeStamp(UInt_t /* t */)               {NotImplemented(); };
   virtual void     SetEventType(UInt_t /* evttype */)         {NotImplemented(); };
   virtual void     SetTriggerMask(ULong64_t /* trigMsk */)    {NotImplemented(); };
@@ -96,6 +96,9 @@ public:
   TString GetCentralityMethod() const {return fCentralityMethod;}
   void SetCentralityMethod(const char * method)  { fCentralityMethod = method; } 
 
+  void SetBunchCrossNumberIndex(Int_t var) { fBunchCrossNumber     = var; }
+  void SetOrbitNumberIndex(Int_t var) { fOrbitNumber     = var; }
+  void SetPeriodNumberIndex(Int_t var) { fPeriodNumber     = var; }
   void SetCentrIndex      (Int_t var) { fCentr     = var; }
   void SetCentrTRKIndex   (Int_t var) { fCentrTRK  = var; }
   void SetCentrCL0Index   (Int_t var) { fCentrCL0  = var; }
@@ -105,7 +108,10 @@ public:
   void SetOfflineTriggerIndex   (Int_t var) { fOfflineTrigger  = var; }
   void SetRunNumberIndex  (Int_t var) { fRunNumber = var; }
 
-
+  
+  Int_t GetBunchCrossNumberIndex      () { return fBunchCrossNumber     ; }
+  Int_t GetOrbitNumberIndex      () { return fOrbitNumber     ; }
+  Int_t GetPeriodNumberIndex      () { return fPeriodNumber     ; }
   Int_t GetCentrIndex      () { return fCentr     ; }
   Int_t GetCentrTRKIndex   () { return fCentrTRK  ; }
   Int_t GetCentrCL0Index   () { return fCentrCL0  ; }
@@ -129,6 +135,9 @@ private:
   TString fCentralityMethod;
 
 
+  Int_t fBunchCrossNumber;      // index of stored variable
+  Int_t fOrbitNumber;// index of stored variable
+  Int_t fPeriodNumber;// index of stored variable
   Int_t fCentr;      // index of stored variable
   Int_t fCentrTRK;   // index of stored variable
   Int_t fCentrCL0;   // index of stored variable
