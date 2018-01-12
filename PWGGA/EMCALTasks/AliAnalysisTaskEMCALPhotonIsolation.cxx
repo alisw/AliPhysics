@@ -4289,8 +4289,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
     if(fWho==2)
-      fPtvsSumUE_MC->Fill(eT, sumEiso); // No simulated UE yet
-      // fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
+      // fPtvsSumUE_MC->Fill(eT, sumEiso); // No simulated UE yet
+      fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
   }
 
   return;
