@@ -37,7 +37,7 @@ public:
 
   AliAnalysisTaskElectronEfficiencyV2(const char* name);
   // class destructor
-   virtual ~ AliAnalysisTaskElectronEfficiencyV2(){};
+   virtual ~AliAnalysisTaskElectronEfficiencyV2();
    // called once at beginning or runtime
    virtual void UserCreateOutputObjects();
    // called for each event
@@ -176,8 +176,6 @@ private:
   TH2D* fThetaGen_DeltaTheta;
   TH2D* fPhiGen_DeltaPhi;
 
-  std::vector<TList*> fVecSingleElectronRecList;
-  std::vector<TList*> fVecPairRecList;
 
   std::vector<double> fPtBins;
   std::vector<double> fEtaBins;
