@@ -192,7 +192,7 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 
 
 //________________________________________________________________
-AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasTITS = kTRUE)
+AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 {
   std::cout << "SetupTrackCuts()" <<std::endl;
   //AliAnalysisCuts* trackCuts=0x0;
