@@ -315,12 +315,12 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fEtaBandVsConeArea;              //!<! Eta-band vs. cone area distribution (depending on the cluster position)
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<! Energy cone clusters vs tracks test (area normalised)
-  TH3D                       * fPtvsM02vsSumUE_Norm;
+  TH3F                       * fPtvsM02vsSumUE_Norm;
   TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D                       * fInvMassM02iso;                  //!<!
   TH3D                       * fInvMassM02noiso;                //!<!
-  TH3D                       * fPtvsM02vsSum;                   //!<!
-  TH3D                       * fPtvsM02vsSumUE;                 //!<!
+  TH3F                       * fPtvsM02vsSum;                   //!<!
+  TH3F                       * fPtvsM02vsSumUE;                 //!<!
   TH3D                       * fTrackMultvsSumChargedvsUE;      //!<!
   TH2D                       * fTrackMultvsPt;                  //!<!
   TH3D                       * fTracksConeEtaPt;                //!<!
