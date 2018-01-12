@@ -50,7 +50,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fTreeList(NULL),
@@ -141,7 +141,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fTreeList(NULL),
@@ -418,10 +418,10 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     }
   }
   
-  if(ffillTree){
+  if(ffillTree>=1.0){
     fTreeList = new TList();
     fTreeList->SetOwner(kTRUE);
-    if(ffillTree>1) fTreeList->SetName(Form("TreeList_%d",ffillTree));
+    if(ffillTree>1.0) fTreeList->SetName(Form("TreeList_%f",ffillTree));
     else fTreeList->SetName("TreeList");
     fOutputList->Add(fTreeList);
 
@@ -518,11 +518,14 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   }
 
   // reduce event statistics in the tree by a factor ffilltree
-  Bool_t ffillTreeNew = ffillTree;
-  if (ffillTree>1) {
-    gRandom->SetSeed(0);
-    if(gRandom->Uniform(ffillTree)>1.0) {
-      ffillTreeNew = kFALSE;
+  Bool_t ffillTreeNew = kFALSE;
+  if(ffillTree>=1.0) {
+    ffillTreeNew = kTRUE;
+    if (ffillTree>1.0) {
+      gRandom->SetSeed(0);
+      if(gRandom->Uniform(ffillTree)>1.0) {
+	ffillTreeNew = kFALSE;
+      }
     }
   }
 
