@@ -29,10 +29,13 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <exception>
+#include <vector>
+#include <string>
 #include <TString.h>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/JetDefinition.hh>
 
+class TH1;
 class THistManager;
 class TTree;
 class AliClusterContainer;
@@ -95,6 +98,16 @@ struct AliJetSubstructureSettings {
 struct AliJetSubstructureData {
   AliSoftDropParameters fSoftDrop;
   AliNSubjettinessParameters fNsubjettiness;
+};
+
+struct Triggerinfo {
+  std::string fTriggerClass;
+  std::string fBunchCrossing;
+  std::string fPastFutureProtection;
+  std::string fTriggerCluster;
+
+  std::string ExpandClassName() const; 
+  bool IsTriggerClass(const std::string &triggerclass) const;
 };
 
 /**
@@ -206,6 +219,7 @@ protected:
 	virtual void UserCreateOutputObjects();
 	virtual bool Run();
 	virtual void RunChanged(Int_t newrun);
+  virtual void UserExecOnce();
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
@@ -219,9 +233,14 @@ protected:
 
 	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
 
+  void FillLuminosity();
+
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
   void LinkOutputBranch(const TString &branchname, Double_t *datalocation);
+
+  std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
+  TString MatchTrigger(const TString &triggerclass) const;
 
   bool IsPartBranch(const TString &branchname) const;
   bool IsAcceptanceBranch(const TString &branchname) const;
@@ -235,6 +254,7 @@ private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
 	THistManager                *fQAHistos;                   //!<! QA histos
+  TH1                         *fLumiMonitor;                //!<! Luminosity monitor
 
 	Double_t                     fSDZCut;                     ///< Soft drop z-cut
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
