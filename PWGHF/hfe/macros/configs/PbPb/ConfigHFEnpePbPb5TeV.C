@@ -26,24 +26,27 @@ TF1* GetEtaCorrection(){
 }
 
   // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added
-Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double TOFs, double ITSsMin, double ITSsMax){
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax){
   //TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version 
   TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version 
   gROOT->cd();
   //int isig = static_cast<int>(sigma * 100.);  // original
   int isig      = static_cast<int>(sigma * 1000.);   
+  int isigTPChigh = static_cast<int>(sigmaTPChigh * 1000.);   
   int nTOFsigma = static_cast<int>(TOFs*10);
   int nITSsigmaMin = static_cast<int>(ITSsMin*10);
   int nITSsigmaMax = static_cast<int>(ITSsMax*10);
 
   printf("File opened: %s\n", in->GetName());
-  printf("Getting hadron background for the sigma cut: %d\n", isig);
+  printf("Getting hadron background for the TPC sigmaLow cut: %d\n", isig);
+  printf("Getting hadron background for the TPC sigmaHigh cut: %d\n", isigTPChigh);
   printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
   printf("Getting hadron background for ITS sigma MIN (INTEGER*10): %d and ITS sigma MAX (INTEGER*10) %d\n", nITSsigmaMin,nITSsigmaMax);
   bool status = kTRUE;
 
   for(int icent = 0; icent < 12; icent++){
     //functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));        // original
+/*
     if(isig<0)  // --- case of negative low TPC cut ---
     {
         int isigSignSwitched = 0-isig;  // sign switched 
@@ -56,6 +59,34 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
         if( nITSsigmaMin==0-nITSsigmaMax || (nITSsigmaMin==0 && nITSsigmaMax==0) ) functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITS%d_TOF%d_%d_%d", nITSsigmaMax, nTOFsigma, isig, icent)));
         else                            functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITSMinm%dMax%d_TOF%d_%d_%d", 0-nITSsigmaMin, nITSsigmaMax, nTOFsigma, isig, icent)));
     }
+*/
+    TString funcName="hback_ITS";
+    if( (nITSsigmaMin==0-nITSsigmaMax) || (nITSsigmaMin==0 && nITSsigmaMax==0) )        funcName += nITSsigmaMax;
+    else{
+        int switchnITSsigmaMin = 0-nITSsigmaMin;        // switched sign for the name
+        funcName += "Minm";
+        funcName += switchnITSsigmaMin;
+        funcName += "Max";
+        funcName += nITSsigmaMax;
+    }
+    funcName += "_TOF";
+    funcName += nTOFsigma;
+    funcName += "_";
+ 
+    if(isig<0){
+        int isigSignSwitched = 0-isig;  // sign switched    
+            funcName += "m";
+            funcName += isigSignSwitched;     
+    }
+    else        funcName += isig;
+    if(sigmaTPChigh<3.){
+        funcName += "_";
+        funcName += isigTPChigh;
+    }
+    funcName += "_";
+    funcName += icent;
+    functions[icent] = dynamic_cast<TF1 *>(in->Get(funcName.Data()));
+
     if(functions[icent]) printf("Config for centrality class %d found - function name: %s\n", icent, functions[icent]->GetName());
     else{
       printf("Config for the centrality class %d not found\n", icent);
@@ -317,11 +348,17 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   if(!useMC){
     Bool_t status = kTRUE;
     TF1 *hBackground[12];                                                                                // TOF sigma and ITS sigma added
-    status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsMin, ITSsMax);     // mfaggin 15-Dec-2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsMin, ITSsMax);     // mfaggin 15-Dec-2017
+
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_attempt19072017.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 19/07/2017
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_22072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 22/07/2017
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
+    // new case considered for ITS cut [-4,2] (mfaggin, 09 January 2018)
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_TPCcut47_5percent.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsMin, ITSsMax);     // mfaggin 09-Jan-2018
+
+    status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 11-Jan-2018
+
 
   for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
