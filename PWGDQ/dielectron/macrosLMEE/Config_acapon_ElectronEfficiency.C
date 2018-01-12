@@ -151,7 +151,7 @@ AliAnalysisCuts* SetupEventCuts()
 }
 
 //________________________________________________________________
-AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
+AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t hasITS = kTRUE)
 {
 	  std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
 	  AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
@@ -165,7 +165,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
    
 	// produce analysis filter by using functions in this config:
 	// -----
-	anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
+	anaFilter->AddCuts( SetupTrackCuts(cutInstance, hasITS) );
 	//anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
 	std::cout << "...cuts added!" <<std::endl; 
 	  
@@ -192,7 +192,7 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 
 
 //________________________________________________________________
-AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
+AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasTITS = kTRUE)
 {
   std::cout << "SetupTrackCuts()" <<std::endl;
   //AliAnalysisCuts* trackCuts=0x0;
@@ -200,8 +200,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
     
     //Cuts implemented in TreeMaker
-	//FilterBit 4 used to filter AODs
-	//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
+		//FilterBit 4 used to filter AODs
+		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
     fesdTrackCuts->SetMinNCrossedRowsTPC(70);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -210,20 +210,20 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     fesdTrackCuts->SetRequireTPCRefit(kTRUE);
     fesdTrackCuts->SetRequireITSRefit(kTRUE);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-	fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+		fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     fesdTrackCuts->SetMaxChi2PerClusterITS(36);
 
-	//Manually set by fitler bit 4
-	////Override setting in TrackCuts2011
+		//Manually set by fitler bit 4
+		////Override setting in TrackCuts2011
     fesdTrackCuts->SetMaxDCAToVertexXY(2.4); 
     fesdTrackCuts->SetMaxDCAToVertexZ(3.2); 
     fesdTrackCuts->SetDCAToVertex2D(kTRUE);
 
-	//Manually implemented track cuts in TreeMaker
-	//General
-	fesdTrackCuts->SetPtRange(0.2, 10);
+		//Manually implemented track cuts in TreeMaker
+		//General
+		fesdTrackCuts->SetPtRange(0.2, 10);
     fesdTrackCuts->SetEtaRange(-0.8, 0.8);
-	fesdTrackCuts->SetMaxDCAToVertexZ(3.0); 
+		fesdTrackCuts->SetMaxDCAToVertexZ(3.0); 
     fesdTrackCuts->SetMaxDCAToVertexXY(1.0);
 
     //TPC
@@ -234,7 +234,12 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     fesdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
     
     //ITS
-    fesdTrackCuts->SetMinNClustersITS(4);
+		if(hasITS){
+			fesdTrackCuts->SetMinNClustersITS(4);
+		}else{
+			fesdTrackCuts->SetMinNClustersITS(4);
+		}
+			
     
 
     //Cuts implemented during analysis step 
