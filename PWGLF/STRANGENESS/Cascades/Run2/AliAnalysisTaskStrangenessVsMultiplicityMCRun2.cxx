@@ -5645,7 +5645,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
         lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
         
         //feeddown matrix
-        if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
+        if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lSweepCentBinNumb,lSweepCentBinLimits);
         
         //Setters for V0 Cuts
         lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
@@ -5690,7 +5690,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
                 if(iCut ==  3 )
                 {
                     lV0Result[lNV0]->SetCutV0CosPA               ( lCutValue ) ;
-                    lV0Result[lNV0]->SetCutVarV0CosPA            ( parExp0Const[i][1]*(1-iSweep/(Double_t)lNSweep), parExp0Slope[i][1], parExp1Const[i][1]*(1-iSweep/(Double_t)lNSweep), parExp1Slope[i][1], parConst[i][1] + (iSweep/(Double_t)lNSweep)*(lCutsTight[i][iCut]-parConst[i][1]) ) ;
+                    lV0Result[lNV0]->SetCutVarV0CosPA            ( parExp0Const[i][1]*(1-iSweep/(Double_t)lNSweep), parExp0Slope[i][1], parExp1Const[i][1]*(1-iSweep/(Double_t)lNSweep), parExp1Slope[i][1], parConst[i][1] + (iSweep/(Double_t)lNSweep)*(TMath::ACos(lCutsTight[i][iCut])-parConst[i][1]) ) ;
                 }
                 if(iCut ==  4 ) lV0Result[lNV0]->SetCutV0Radius              ( lCutValue ) ;
                 
@@ -5761,7 +5761,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
                 if(iCut ==  3 )
                 {
                     lV0Result[lNV0]->SetCutV0CosPA               ( lCutValue ) ;
-                    lV0Result[lNV0]->SetCutVarV0CosPA            ( parExp0Const[i][1]*(iSweep/(Double_t)lNSweep), parExp0Slope[i][1], parExp1Const[i][1]*(iSweep/(Double_t)lNSweep), parExp1Slope[i][1], lCutsTight[i][iCut] + (iSweep/(Double_t)lNSweep)*(parConst[i][1]-lCutsTight[i][iCut]) ) ;
+                    lV0Result[lNV0]->SetCutVarV0CosPA            ( parExp0Const[i][1]*(iSweep/(Double_t)lNSweep), parExp0Slope[i][1], parExp1Const[i][1]*(iSweep/(Double_t)lNSweep), parExp1Slope[i][1], TMath::ACos(lCutsTight[i][iCut]) + (iSweep/(Double_t)lNSweep)*(parConst[i][1]-TMath::ACos(lCutsTight[i][iCut])) ) ;
                 }
                 if(iCut ==  4 ) lV0Result[lNV0]->SetCutV0Radius              ( lCutValue ) ;
                 
@@ -5849,7 +5849,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     }
     
     cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
-    
 }
 
 //________________________________________________________________________
