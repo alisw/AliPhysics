@@ -114,6 +114,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetEminForEtaMeson(Double_t Emin) {fEminForEta = Emin;}
+
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
@@ -349,12 +351,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fIsNonLinStudy;
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
+    Double_t fEminForEta;
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 42);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 43);
 };
 
 #endif
