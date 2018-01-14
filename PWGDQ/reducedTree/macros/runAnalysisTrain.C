@@ -170,7 +170,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
 
      //===== ADD PID RESPONSE: ===
      Bool_t tuneOnData = kTRUE;
-     Int_t recoPass = 1;
+     TString recoPass = "1";
 #ifdef __CLING__
      // ROOT6 version
      std::stringstream pidresp;
