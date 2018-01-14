@@ -80,7 +80,13 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Double_t multbins[200];
   int j,nmult=0;
-  if(triggerMask==AliVEvent::kHighMultV0){
+  if(isMC){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
+    for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
+  }else if(triggerMask==AliVEvent::kHighMultV0){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
     for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
@@ -146,7 +152,7 @@ Bool_t ConfigPhiPP13TeV_PID
 
   if(isMC){   
     //get mothers for phi PDG = 333
-    AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"SPARSE","MOTHER");
+    AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"HIST","MOTHER");
     outm->SetDaughter(0,AliRsnDaughter::kKaon);
     outm->SetDaughter(1,AliRsnDaughter::kKaon);
     outm->SetMotherPDG(333);
@@ -154,12 +160,13 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,200,0.,20.);
-    if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
-    else outm->AddAxis(centID,161,-0.5,160.5);
+    outm->AddAxis(centID,nmult,multbins);
+    //if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
+    //else outm->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
-    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
+    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"HIST","MOTHER");
     outmf->SetDaughter(0,AliRsnDaughter::kKaon);
     outmf->SetDaughter(1,AliRsnDaughter::kKaon);
     outmf->SetMotherPDG(333);
@@ -167,8 +174,9 @@ Bool_t ConfigPhiPP13TeV_PID
     outmf->SetPairCuts(cutsPair);
     outmf->AddAxis(imID,215,0.985,1.2);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
-    else outmf->AddAxis(centID,161,-0.5,160.5);
+    outmf->AddAxis(centID,nmult,multbins);
+    //if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
+    //else outmf->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
