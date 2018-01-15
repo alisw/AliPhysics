@@ -3895,8 +3895,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 
   Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
-  Double_t etap=mcpp->Eta();
-  Double_t phip=mcpp->Phi();
+  Double_t etap = mcpp->Eta();
+  Double_t phip = mcpp->Phi();
 
   if(!fTPC4Iso){
     etaMax = fGeom->GetArm1EtaMax()-0.03;
@@ -3912,76 +3912,80 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
       phiMaxEMCal = TMath::Pi()-0.03;
     }
 
-    if(TMath::Abs(etap) >= etaMax || (phip <= phiMinEMCal || phip >= phiMaxEMCal))
-      return;
-    else{
-      switch(fUEMethod)
-      {
-        case 0: // Phi band
-          if(TMath::Abs(eta-etap)<fIsoConeRadius)
-            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-          else
-            return;
-
-          break;
-
-        case 1: // Eta band
-          if(TMath::Abs(phi-phip)<fIsoConeRadius)
-            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-          else
-            return;
-
-          break;
-      }
-    }
-  }
-  else{
-    etaMax = 0.87;
-    if(TMath::Abs(etap) >= etaMax) // SHOULD BE HARMONISED WITH (E,P)tIso(Clus,Track)(Eta,Phi)Band
-      return;
-    else{
+    if((phip < phiMaxEMCal) && (phip > phiMinEMCal) && (TMath::Abs(etap) < etaMax)){
       switch(fUEMethod)
       {
         case 0:{ // Phi band
-          if(TMath::Abs(eta-etap)<fIsoConeRadius)
-            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-          else
-            return;
+
+          if(TMath::Abs(eta-etap) < fIsoConeRadius){
+	    if(mcpp->Charge() != 0)
+	      sumUE += mcpp->Pt();
+	    else if(mcpp->GetPdgCode() == 22)
+	      sumUE += mcpp->E()*(TMath::Sin(mcpp->Theta()));
+	  }
 
           break;
         }
+
         case 1:{ // Eta band
-          if(TMath::Abs(phi-phip)<fIsoConeRadius)
-            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-          else
-            return;
+
+          if(TMath::Abs(phi-phip) < fIsoConeRadius){
+	    if(mcpp->Charge() != 0)
+	      sumUE += mcpp->Pt();
+	    else if(mcpp->GetPdgCode() == 22)
+	      sumUE += mcpp->E()*(TMath::Sin(mcpp->Theta()));
+	  }
 
           break;
         }
+      }
+    }
+  }
+  else{ // TPC for isolation/UE : charged particles only (implies Pt() instead of E_T)
+    etaMax = 0.87;
+
+    if(TMath::Abs(etap) < etaMax){
+      switch(fUEMethod)
+      {
+        case 0:{ // Phi band
+	  
+          if(TMath::Abs(eta-etap) < fIsoConeRadius)
+	    sumUE += mcpp->Pt();
+	  
+          break;
+        }
+
+        case 1:{ // Eta band
+
+          if(TMath::Abs(phi-phip) < fIsoConeRadius)
+	    sumUE += mcpp->Pt();
+
+          break;
+        }
+
         case 2:{ // Orthogonal Cones
-          double etacone1= eta;
-          double etacone2= eta;
-          double phicone1= phi - TMath::PiOver2();
-          double phicone2= phi + TMath::PiOver2();
+          double etacone1 = eta;
+          double etacone2 = eta;
+          double phicone1 = phi - TMath::PiOver2();
+          double phicone2 = phi + TMath::PiOver2();
 
           if(phicone1 < 0.)
             phicone1 += 2*TMath::Pi();
 
-          if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
-             TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius)
+          if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2)) < fIsoConeRadius ||
+             TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2)) < fIsoConeRadius)
             sumUE += mcpp->Pt();
-          else
-            return;
 
           break;
         }
         case 3:{ // Full TPC
 
-            // Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
-            // Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
-            //
-            // if(phip < phidown || phip > phiup ) // TO BE CHECKED
-            // continue;
+	  // Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
+	  // Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
+	  //
+	  // if(phip < phidown || phip > phiup ) // TO BE CHECKED
+	  // continue;
+
           break;
         }
       }
@@ -4182,7 +4186,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     radius=0.;
     phip=0., etap=0.;
-    sumEiso=0.,sumUE=0.; // Initialisations to be moved in the below loop?
+    sumEiso=0.,sumUE=0.;
 
     for(int iTrack = 0; iTrack < nTracks; iTrack ++){
 
@@ -4196,11 +4200,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(mcpp->Charge() != 0 && mcpp->GetStatus()<10)
 	fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
 
-      if(fIsoMethod == 2){
-	if(mcpp->Charge() == 0)
-	  continue;
-      }
-      // Add a else if(fIsoMethod == 3) to avoid counting charged particles?
+      if(fIsoMethod == 2 && mcpp->Charge() == 0)
+	continue;
+      else if(fIsoMethod == 3 && mcpp->Charge() != 0)
+	continue;
 
       // Only final state, physical primary and primary particles
       if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || !mcpp->IsPrimary()))
@@ -4220,7 +4223,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       etap = mcpp->Eta();
 
       // Isolation and UE measurement
-      // (depending on which isolation/UE methods are considered)
 
       Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
 
@@ -4259,7 +4261,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	  else{
 	    if(mcpp->GetPdgCode() == 22) // Using E_T for photons
 	      sumEiso += mcpp->E()*(TMath::Sin(mcpp->Theta()));
-	    else // Skipping neutral hadrons -------------------------------------------- NOT FOR ISOLATION METHODS WHICH USE CLUSTERS, RIGHT???
+	    else // Skipping neutral hadrons
 	      continue;
 	  }
 
@@ -4289,7 +4291,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
     if(fWho==2)
-      // fPtvsSumUE_MC->Fill(eT, sumEiso); // No simulated UE yet
       fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
   }
 
