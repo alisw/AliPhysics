@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include "AliMTRChEffAnalysis.h"
+#include <array>
 
 // ROOT includes
 #include <Riostream.h>
@@ -43,6 +44,7 @@
 #include "TLatex.h"
 #include "TFileMerger.h"
 #include "TFitResultPtr.h"
+#include "THashList.h"
 
 #include "AliLog.h"
 #include "AliMergeableCollection.h"
@@ -558,7 +560,7 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 //________________________________________________________________________
 Int_t AliMTRChEffAnalysis::ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
-  /// Copute the efficiency for the selected condition and compare them
+  /// Compute the efficiency for the selected condition and compare them
   TString srcs(sources);
   TObjArray* sourceList = srcs.Tokenize(",");
   TObjArray effHistoLists;
@@ -1269,6 +1271,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
 
   Int_t nCanvas = perRPC ? 4 : 18;
   TObjArray canList(nCanvas);
+  THashList legList;
 
   for ( Int_t irpc=0; irpc<18; irpc++ ) {
     Int_t icount = AliTrigChEffOutput::kBothPlanesEff;
@@ -1301,11 +1304,12 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
 
         TString legendName = Form("%s_%i",can->GetName(),currDE);
-        TLegend* leg = static_cast<TLegend*>(gPad->GetListOfPrimitives()->FindObject(legendName.Data()));
+        TLegend* leg =  static_cast<TLegend*>(legList.FindObject(legendName.Data()));
         if ( ! leg ) {
           leg = new TLegend(0.2,0.15,0.8,0.4);
           leg->SetHeader(Form("%s %i",perRPC?"RPC":"Board",currDE));
           leg->SetName(legendName.Data());
+          legList.Add(leg);
         }
 
         if ( ! perRPC ) {
@@ -1324,7 +1328,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
 
         trendGraph->Draw(drawOpt.Data());
         leg->AddEntry(trendGraph,Form("Chamber %i",11+ich),"lp");
-        leg->Draw();
+        if ( perRPC || ich == 3 ) leg->Draw();
         for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
           // Store only the run when the change applies
           if ( ichange%2 == 1 ) continue;
@@ -1668,6 +1672,7 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
     Int_t currBin = histo->GetXaxis()->FindBin(idetelem);
     outHisto->SetBinContent(ibin,histo->GetBinContent(currBin));
     outHisto->SetBinError(ibin,histo->GetBinError(currBin));
+    // if ( idetelem == 99 ) printf("Type %i  count %i  ch %i  bin %i (%i)  val %g\n",itype,icount,ichamber,ibin,currBin,histo->GetBinContent(currBin)); // REMEMBER TO CUT
   }
   if ( outHisto ) outHisto->GetXaxis()->LabelsOption("v");
   return outHisto;
@@ -1965,7 +1970,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   /// (this happens when one local board is dead)
   /// and attribute the efficiency measured in the past
   /// In particular, the efficiency of the run referenceRun will be used.
-  /// If this vaue is negative, then the last run in the runList will be used for the new efficiency
+  /// If this value is negative, then the last run in the runList will be used for the new efficiency
   /// Include the fluctuation of efficiency over the specified run list
   /// as an additional systematic uncertainty
 
@@ -1985,8 +1990,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   TString currName = "";
   for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
     TList* effList = obj->GetEffHistoList(fConditions->UncheckedAt(0)->GetName());
-    std::vector<TH1*> histoList;
-    histoList.reserve(16);
+    std::array<TH1*,16> histoList;
     for ( Int_t ich=0; ich<4; ich++ ) {
       for ( Int_t icount=0; icount<4; icount++ ) {
         currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
