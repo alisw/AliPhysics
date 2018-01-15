@@ -1697,17 +1697,17 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_akt02();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_akt02();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==6) && (Beta==1.0) && (Option==0))){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_onepassca();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==6) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_onepassca();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==1) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==6) && (Beta==1.0) && (Option==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_onepassca();
     } 
     else{
       Algorithm=fReclusteringAlgorithm;
