@@ -65,6 +65,7 @@ ClassImp(AliAnalysisTaskGammaCaloMerged)
 AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fDoLightOutput(kFALSE),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -219,6 +220,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fDoLightOutput(kFALSE),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -1413,7 +1415,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
 
   Int_t nclus = 0;
-  nclus = fInputEvent->GetNumberOfCaloClusters();
+  TClonesArray * arrClustersProcess = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = fInputEvent->GetNumberOfCaloClusters();
+  } else {
+    arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCaloMerged! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersProcess->GetEntries();
+  }
 
 //   cout << nclus << endl;
 
@@ -1441,8 +1451,17 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
     // select clusters with open cuts for normalizations histos
     AliVCluster* clus = NULL;
-    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    }
 
     if (!clus){
       delete clus;
@@ -1617,8 +1636,17 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
         for (Int_t j = 0; j < nclus; j++){
           if (j == i) continue;
           AliVCluster* clusTemp   = NULL;
-          if(fInputEvent->IsA()==AliESDEvent::Class()) clusTemp = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
-          else if(fInputEvent->IsA()==AliAODEvent::Class()) clusTemp = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+          if(fInputEvent->IsA()==AliESDEvent::Class()){
+            if(arrClustersProcess)
+              clusTemp = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(j));
+            else
+              clusTemp = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
+          } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+            if(arrClustersProcess)
+              clusTemp = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(j));
+            else
+              clusTemp = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+          }
 
           if (!clusTemp){
             delete clusTemp;

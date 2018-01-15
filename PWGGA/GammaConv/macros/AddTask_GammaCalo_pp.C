@@ -77,9 +77,9 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             Bool_t    runLightOutput                = kFALSE,                       // switch to run light output (only essential histograms for afterburner)
                             TString   additionalTrainConfig         = "0"                           // additional counter for trainconfig
 ) {
-
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString corrTaskSetting = ""; // sets which correction task setting to use
   Int_t localDebugFlag = 0;
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -111,6 +111,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
         tempType.Replace(0,14,"");
         localDebugFlag = tempType.Atoi();
         cout << "INFO: debug flag set to '" << localDebugFlag << "'" << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pp will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
@@ -119,6 +123,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCalo_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
   Int_t isHeavyIon = 0;
 
@@ -210,6 +215,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
 
   //create cut handler
   CutHandlerCalo cuts;
@@ -1187,6 +1193,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -1232,6 +1239,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -1241,6 +1249,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -1261,6 +1270,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonAnalysis(kTRUE);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);

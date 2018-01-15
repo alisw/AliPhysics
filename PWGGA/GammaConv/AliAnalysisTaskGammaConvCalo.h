@@ -36,6 +36,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
@@ -141,6 +143,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
     TString                             fV0ReaderName;
+    TString                             fCorrTaskSetting;       // Correction Task Special Name
     AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           // BG handler for Conversion (possibility to mix with respect to RP)
     AliGammaConversionAODBGHandler**    fBGClusHandler;         // BG handler for Cluster
@@ -481,7 +484,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 41);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 42);
 };
 
 #endif
