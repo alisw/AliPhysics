@@ -78,10 +78,10 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Double_t  minEnergyForExoticsCut      = 1.0,                // minimum energy to be used for exotics CutHandler
                                   Bool_t    runQAForExotics             = kFALSE,             // switch to run QA for exotic clusters
                                   Bool_t    runDetailedM02              = kFALSE,             // switch on very detailed M02 distribution
-                                  TString   corrTaskSetting             = "",                // select which correction task setting to use
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, always has to be last parameter
 ) {
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString corrTaskSetting = ""; // sets which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCaloMerged_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -103,6 +103,10 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCaloMerged_pp will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }

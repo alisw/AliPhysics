@@ -75,11 +75,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             TString   periodNameAnchor              = "",                           // name of anchor period for weighting
                             Bool_t    enableSortingMCLabels         = kTRUE,                        // enable sorting for MC cluster labels
                             Bool_t    runLightOutput                = kFALSE,                       // switch to run light output (only essential histograms for afterburner)
-                            TString   corrTaskSetting               = "",                // select which correction task setting to use
                             TString   additionalTrainConfig         = "0"                           // additional counter for trainconfig
 ) {
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString corrTaskSetting = ""; // sets which correction task setting to use
   Int_t localDebugFlag = 0;
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -111,6 +111,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
         tempType.Replace(0,14,"");
         localDebugFlag = tempType.Atoi();
         cout << "INFO: debug flag set to '" << localDebugFlag << "'" << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pp will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
