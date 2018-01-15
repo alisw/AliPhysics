@@ -17,6 +17,7 @@
 #include <bitset>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALTriggerTRUDCSConfig) ;
@@ -59,4 +60,18 @@ std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerTRUDCSConfig
 		stream << "Reg" << ireg << ": " << std::bitset<sizeof(UInt_t) *8>(conf.fMaskReg[ireg]) << std::endl;
 	}
 	return stream;
+}
+
+std::string AliEMCALTriggerTRUDCSConfig::ToJSON() const {
+	std::stringstream jsonstring;
+	jsonstring << "{"
+						 << "\"fSELPF\":" << fSELPF << ","
+						 << "\"fL0SEL\":" << fL0SEL << ","
+						 << "\"fL0COSM\":" << fL0COSM << ","
+						 << "\"fGTHRL0\":" << fGTHRL0 << ","
+						 << "\"fRLBKSTU\":" << fRLBKSTU << ","
+						 << "\"fFw\":" << fFw << ","
+						 << "\"fMaskReg\":[" << fMaskReg[0] << "," << fMaskReg[1] << "," << fMaskReg[2] << "," << fMaskReg[3] << "," << fMaskReg[4] << "," << fMaskReg[5] << "]"
+						 << "}";
+	return jsonstring.str();
 }

@@ -5,6 +5,7 @@
 
 #include "TObject.h"
 #include <iosfwd>
+#include <string>
 
 class TVector2;
 class TClonesArray;
@@ -80,6 +81,13 @@ public:
    * error counters
    */
   friend std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerSTUDCSConfig &config);
+
+  /**
+   * @brief Serialize object to JSON format
+   * 
+   * @return JSON-serialized TRU DCS config object 
+   */
+  std::string ToJSON() const;
   
   void    SetG(Int_t i, Int_t j, Int_t gv) { fG[i][j]    = gv; }
   void    SetJ(Int_t i, Int_t j, Int_t jv) { fJ[i][j]    = jv; }

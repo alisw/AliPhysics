@@ -22,6 +22,7 @@
 // Standard libraries
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALTriggerSTUDCSConfig) ;
@@ -200,4 +201,19 @@ std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerSTUDCSConfig
          << config.fPHOSScale[0] << ", " << config.fPHOSScale[1] << ", " << config.fPHOSScale[2] << ", " << config.fPHOSScale[3]
          << ")" << std::endl;
   return stream;
+}
+
+std::string AliEMCALTriggerSTUDCSConfig::ToJSON() const {
+  std::stringstream jsonstring;
+  jsonstring << "{" 
+             << "\"fG\":[[" << fG[0][0] << "," << fG[1][0] << "," << fG[2][0] << "],[" << fG[0][1] << "," << fG[1][1] << "," << fG[2][1] <<"]],"
+             << "\"fJ\":[[" << fJ[0][0] << "," << fJ[1][0] << "," << fJ[2][0] << "],[" << fJ[0][1] << "," << fJ[1][1] << "," << fJ[2][1] <<"]],"
+             << "\"fRawData\":" << fGetRawData << ","
+             << "\"fRegion\":" << fRegion << ","
+             << "\"fFirmware\":" << fFw << ","
+             << "\"fMedian\":" << fMedian << ","
+             << "\"fPHOSScale\":[" << fPHOSScale[0] << "," << fPHOSScale[1] << "," << fPHOSScale[2] << "," << fPHOSScale[3] << "]"
+             << "}";
+
+  return jsonstring.str();
 }

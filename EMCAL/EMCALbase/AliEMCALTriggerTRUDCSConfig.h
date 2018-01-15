@@ -40,6 +40,13 @@ public:
 	 */
 	friend std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerTRUDCSConfig &other);
 
+	/**
+	 * @brief Serialize object to JSON format
+	 * 
+	 * @return JSON-serialized TRU DCS config object 
+	 */
+	std::string ToJSON() const;
+
 	void    SetSELPF(  UInt_t pf)              { fSELPF  = pf;        }
 	void    SetL0SEL(  UInt_t la)              { fL0SEL  = la;        }
 	void    SetL0COSM( UInt_t lc)              { fL0COSM = lc;        }

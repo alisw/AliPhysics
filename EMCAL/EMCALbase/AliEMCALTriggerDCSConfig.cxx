@@ -16,6 +16,7 @@
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include <sstream>
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALTriggerDCSConfig) ;
@@ -49,11 +50,11 @@ bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other
   bool isequal = true;
   if(fSTUObj && other.fSTUObj) {
     if(!(*fSTUObj == *other.fSTUObj)) isequal == false; // both EMCAL STU objects there, but not the same
-  } else if((fSTUObj && !other.fSTUObj) || (!fSTUObj && other.fSTUObj)) isequal == false; // one of the two missing
+  } else if((fSTUObj && !other.fSTUObj) || (!fSTUObj && other.fSTUObj)) isequal = false; // one of the two missing
 
   if(fSTUDCAL && other.fSTUDCAL) {
     if(!(*fSTUDCAL == *other.fSTUDCAL)) isequal == false; // both DCAL STU objects there, but not the same
-  } else if((fSTUDCAL && !other.fSTUDCAL) || (!fSTUDCAL && other.fSTUDCAL)) isequal == false; // one of the two missing
+  } else if((fSTUDCAL && !other.fSTUDCAL) || (!fSTUDCAL && other.fSTUDCAL)) isequal = false; // one of the two missing
 
   // check TRUs
   if(fTRUArr->GetEntries() != other.fTRUArr->GetEntries()){
@@ -69,4 +70,18 @@ bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other
     }
   }
   return isequal;
+}
+
+std::string AliEMCALTriggerDCSConfig::ToJSON() const {
+  std::stringstream jsonstring;
+  jsonstring << "{";
+  if(fSTUObj) jsonstring << "\"fSTUObj\":" << fSTUObj->ToJSON() << ",";
+  if(fSTUDCAL) jsonstring << "\"fSTUDCAL\":" << fSTUDCAL->ToJSON() << ",";
+  jsonstring << "fTRUArr:[";
+  for(int ien  = 0; ien < fTRUArr->GetEntries(); ien++){
+    jsonstring << "{\"TRU" << ien << "\":" << static_cast<AliEMCALTriggerTRUDCSConfig *>(fTRUArr->At(ien))->ToJSON() << "}";
+    if(ien != fTRUArr->GetEntries()-1) jsonstring << ",";
+  }
+  jsonstring << "]}";
+  return jsonstring.str();
 }
