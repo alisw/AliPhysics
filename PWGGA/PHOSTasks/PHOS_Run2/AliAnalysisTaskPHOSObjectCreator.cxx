@@ -48,12 +48,9 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fUsePHOSTender(kTRUE),
   fIsMC(kFALSE),
   fBunchSpace(25.),
-  fObjectArrayName("PHOSClusterArray"),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fIsM4Excluded(kTRUE),
-  fEmin(0.2),
-  fIsCoreUsed(kFALSE)
+  fIsM4Excluded(kTRUE)
 {
   // Constructor
   for(Int_t i=0;i<3;i++){
@@ -206,8 +203,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     cluster = (AliVCluster*)fEvent->GetCaloCluster(iclu);
 
     if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
-    if(cluster->E() < 0.05) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
-
+    if(cluster->E() < 0.1) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
     //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
 
@@ -294,12 +290,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     p1 *= fUserNonLinCorr->Eval(p1.E());
     p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
 
-    if(fIsCoreUsed){
-        if(p1core.E() < fEmin) continue;
-    }
-    else{//for full energy
-      if(p1.E() < fEmin) continue;
-    }
+    if(p1.E() < 0.2) continue;//minimum energy cut after NL correciton. Note Ecore <= Efull
 
     new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
@@ -324,8 +315,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
-
-//    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
 
     //printf("energy = %e , coreE = %e\n",ph->Energy(),ph->GetMomV2()->Energy());
@@ -1024,6 +1013,7 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
     if(ph1->GetNsigmaCoreDisp() > 3.0) continue;
+    if(ph1->Energy() < 0.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);

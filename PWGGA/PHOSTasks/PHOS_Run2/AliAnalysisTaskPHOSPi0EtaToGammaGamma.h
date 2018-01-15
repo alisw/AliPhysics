@@ -114,7 +114,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
-    void SetEminForEtaMeson(Double_t Emin) {fEminForEta = Emin;}
+    void SetEmin(Double_t Emin) {fEmin = Emin;}
 
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
@@ -282,6 +282,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     virtual void DoNonLinearityStudy();
 
+    Bool_t CheckMinimumEnergy(AliCaloPhoton *ph){
+      Double_t e = ph->Energy();
+      if(fUseCoreEnergy) e = (ph->GetMomV2())->Energy();
+
+      if(e < fEmin) return kFALSE;
+      else return kTRUE;
+    }
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -351,13 +359,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fIsNonLinStudy;
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
-    Double_t fEminForEta;
+    Double_t fEmin;
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 43);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 44);
 };
 
 #endif

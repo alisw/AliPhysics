@@ -20,11 +20,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = 0,//minimum distance to bad channel.
+    const Double_t Emin = 0.2,//minimum energy for photon selection in GeV
     const Bool_t isJJMC = kFALSE,
     const TString MCtype = "MBMC",
     const Bool_t ForceActiveTRU = kFALSE,
     const Bool_t ApplyTOFTrigger = kFALSE,
-    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer
+    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kSPDInMultBins
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -86,13 +87,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
 
   TString taskname = "";
   if(FlowTask){
-     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC));
+     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
       else{
         ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
         return NULL;
       }
   }
-  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
+  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
   if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
 
   if(ForceActiveTRU) taskname += "_ForceActiveTRU";
@@ -129,6 +130,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   task->SetDepthNMixed(NMixed);
   task->SetQnVectorTask(FlowTask);
   task->SetHarmonics(harmonics);
+
+  //set minimum energy
+  task->SetEmin(Emin);
 
   //centrality setting
   task->SetCentralityEstimator("HybridTrack");

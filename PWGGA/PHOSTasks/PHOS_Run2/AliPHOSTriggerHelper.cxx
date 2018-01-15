@@ -178,7 +178,7 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin)
 {
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
@@ -290,6 +290,8 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       if(!cuts->AcceptPhoton(ph)) continue;
       if(fApplyTOFCut && !ph->IsTOFOK()) continue;
+
+      if(ph->Energy() < Emin) continue;
 
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
       //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
