@@ -1195,7 +1195,6 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       if(!emcaltender)
         emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask_defaultSetting");
     }
-
     if(alitender){
       TIter next(alitender->GetSupplies());
       AliTenderSupply *supply;
@@ -1207,8 +1206,10 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
     } else if(emcalCorrTask){
       AliEmcalCorrectionComponent * emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel_defaultSetting");
-      fEMCALRecUtils        = emcalCorrComponent->GetRecoUtils();
-      fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+      if(emcalCorrComponent){
+        fEMCALRecUtils        = emcalCorrComponent->GetRecoUtils();
+        fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+      }
     }
     if (fEMCALRecUtils) fEMCALInitialized = kTRUE;
 
