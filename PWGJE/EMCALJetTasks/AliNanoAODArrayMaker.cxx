@@ -58,6 +58,19 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   // Main loop
   // Called for each event
   if(fIsFirstLoop){
+    //add dummy arrays so that the clean up for Nano AOD arrays works, this is necessary because normal AODs contain more arrays in the AOD event in the standard format. Only Arrays after these standard events will be resetted for the next AOD event. These dummy arrays ensure that the arrays added further below are properly resetted in the framework
+    TClonesArray* dummy[30];
+
+    int number_dummy = 22-InputEvent()->GetList()->GetSize();//22 is the number of entries in the standard AODs
+    if(number_dummy<0)
+      number_dummy=0;
+    
+    for(int i=0; i<number_dummy; i++){
+      dummy[i] = new TClonesArray(Form("dummy%i", i));//due to the definition of the content to be dummy this array cannot be filled or deleted
+      dummy[i]->SetName(Form("dummy%i", i));
+      InputEvent()->AddObject(dummy[i]);
+    }
+    
     InputEvent()->AddObject(fOutputArray);
     InputEvent()->AddObject(fPythiaArray);
     InputEvent()->AddObject(fDataArray);
@@ -78,11 +91,6 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
 
   AliAODTrack* newTrack = new AliAODTrack();
 
-  //Delte array members from the previous event
-  fPythiaArray->Delete();
-  fOutputArray->Delete();
-  fDataArray->Delete();
-  
   //loop over particles in the event and add them to the correct arrays
   for(Int_t iPart=0; iPart<nTracks; iPart++){
    AliNanoAODTrack *nanoTrack = (AliNanoAODTrack*) particleArray->At(iPart);
@@ -98,6 +106,7 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
       new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
       accTracksData++;
     }
+
     accTracks++;
   }
   
@@ -120,7 +129,8 @@ void AliNanoAODArrayMaker::GetAODTrack(AliAODTrack* newTrack, AliNanoAODTrack* t
   newTrack->SetPhi(track->Phi());
   newTrack->SetCharge(track->Charge());
   newTrack->SetLabel(track->GetLabel());
-  if (index==-1 || track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal();
+  if (index==-1 || track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal(true);
+  else newTrack->SetIsHybridGlobalConstrainedGlobal(false);
   newTrack->SetFilterMap(track->GetFilterMap());
 
 }
