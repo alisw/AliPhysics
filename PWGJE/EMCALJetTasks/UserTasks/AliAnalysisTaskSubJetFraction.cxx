@@ -1697,7 +1697,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_akt02();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_akt02();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==6) && (Beta==1.0) && (Option==0))){
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==6) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_onepassca();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_onepassca();
     }
