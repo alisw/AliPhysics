@@ -62,6 +62,8 @@ class AliPHOSTriggerHelper : public TObject {
       if(fApplyTOFCut) AliInfo("Applying TOF cut in trigger analysis");
     }
 
+    void SetDummyRunNumber(Int_t dummy){fDRN = dummy;}
+
     Double_t GetMatchingDeltaR(){return fMatchingDeltaR;}
     Bool_t IsDeltaRUsed() {return fUseDeltaRMatching;}
     Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin);
@@ -86,12 +88,14 @@ class AliPHOSTriggerHelper : public TObject {
     Int_t fRunNumber;
     Bool_t fUseDeltaRMatching;
     Bool_t fApplyTOFCut;
+    Int_t fDRN;
+
 
   private:
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 16);
+    ClassDef(AliPHOSTriggerHelper, 17);
 
 };
 

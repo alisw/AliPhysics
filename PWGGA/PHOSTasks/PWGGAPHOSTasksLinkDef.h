@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskPHOSEmbeddedDiffObjectCreator+;
 #pragma link C++ class AliAnalysisTaskPHOSEmbedding+;
 #pragma link C++ class AliAnalysisTaskPHOSEmbeddingEfficiency+;
+#pragma link C++ class AliAnalysisTaskPHOSSingleSim+;
 
 
 // PHOS_pp_8TeV_2012 
