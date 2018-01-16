@@ -77,7 +77,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // #########################################################
   // #########################################################
   // Set Binning
-  task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
+  if (usePtVector == true) {
+    std::vector<double> ptBinsVec;
+    for (unsigned int i = 0; i < nBinsPt+1; ++i){
+      ptBinsVec.push_back(ptBins[i]);
+    }
+    task->SetPtBins(ptBinsVec);
+  }
+  else task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
