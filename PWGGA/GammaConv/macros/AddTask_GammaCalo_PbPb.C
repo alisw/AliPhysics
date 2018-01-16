@@ -546,55 +546,55 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
 
   // trainconfig for PbPb studies in 5 TeV with TB nonlin
   } else if (trainConfig == 214){
-    cuts.AddCut("10100113","11111020530a2230000","01631031000000d0"); // 0-10 V0M  // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("11200113","11111020530a2230000","01631031000000d0"); // 10-20 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("20100113","11111020530a2230000","01631031000000d0"); // 0-5 V0M   // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("21100113","11111020530a2230000","01631031000000d0"); // 5-10 V0M  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("10110113","11111020530a2230000","01631031000000d0"); // 0-10 V0M  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("11210113","11111020530a2230000","01631031000000d0"); // 10-20 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("20110113","11111020530a2230000","01631031000000d0"); // 0-5 V0M   // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("21110113","11111020530a2230000","01631031000000d0"); // 5-10 V0M  // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 215){
-    cuts.AddCut("12300113","11111020530a2230000","01631031000000d0"); // 20-30 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("13400113","11111020530a2230000","01631031000000d0"); // 30-40 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("14500113","11111020530a2230000","01631031000000d0"); // 40-50 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("15600113","11111020530a2230000","01631031000000d0"); // 50-60 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("12310113","11111020530a2230000","01631031000000d0"); // 20-30 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("13410113","11111020530a2230000","01631031000000d0"); // 30-40 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("14510113","11111020530a2230000","01631031000000d0"); // 40-50 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("15610113","11111020530a2230000","01631031000000d0"); // 50-60 V0M // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 216){
-    cuts.AddCut("16700113","11111020530a2230000","01631031000000d0"); // 60-70 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("17800113","11111020530a2230000","01631031000000d0"); // 70-80 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("18900113","11111020530a2230000","01631031000000d0"); // 80-90 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("14600113","11111020530a2230000","01631031000000d0"); // 40-60 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("16800113","11111020530a2230000","01631031000000d0"); // 60-80 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("16710113","11111020530a2230000","01631031000000d0"); // 60-70 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("17810113","11111020530a2230000","01631031000000d0"); // 70-80 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("18910113","11111020530a2230000","01631031000000d0"); // 80-90 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("14610113","11111020530a2230000","01631031000000d0"); // 40-60 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("16810113","11111020530a2230000","01631031000000d0"); // 60-80 V0M // reproduce Astrids cuts with opening angle cut
   // trainconfig for PbPb studies in 5 TeV with no  nonlin
   } else if (trainConfig == 217){
-    cuts.AddCut("10100113","11111000530a2230000","01631031000000d0"); // 0-10 V0M  // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("11200113","11111000530a2230000","01631031000000d0"); // 10-20 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("20100113","11111000530a2230000","01631031000000d0"); // 0-5 V0M   // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("21100113","11111000530a2230000","01631031000000d0"); // 5-10 V0M  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("10110113","11111000530a2230000","01631031000000d0"); // 0-10 V0M  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("11210113","11111000530a2230000","01631031000000d0"); // 10-20 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("20110113","11111000530a2230000","01631031000000d0"); // 0-5 V0M   // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("21110113","11111000530a2230000","01631031000000d0"); // 5-10 V0M  // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 218){
-    cuts.AddCut("12300113","11111000530a2230000","01631031000000d0"); // 20-30 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("13400113","11111000530a2230000","01631031000000d0"); // 30-40 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("14500113","11111000530a2230000","01631031000000d0"); // 40-50 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("15600113","11111000530a2230000","01631031000000d0"); // 50-60 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("12310113","11111000530a2230000","01631031000000d0"); // 20-30 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("13410113","11111000530a2230000","01631031000000d0"); // 30-40 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("14510113","11111000530a2230000","01631031000000d0"); // 40-50 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("15610113","11111000530a2230000","01631031000000d0"); // 50-60 V0M // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 219){
-    cuts.AddCut("16700113","11111000530a2230000","01631031000000d0"); // 60-70 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("17800113","11111000530a2230000","01631031000000d0"); // 70-80 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("18900113","11111000530a2230000","01631031000000d0"); // 80-90 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("14600113","11111000530a2230000","01631031000000d0"); // 40-60 V0M // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("16800113","11111000530a2230000","01631031000000d0"); // 60-80 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("16710113","11111000530a2230000","01631031000000d0"); // 60-70 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("17810113","11111000530a2230000","01631031000000d0"); // 70-80 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("18910113","11111000530a2230000","01631031000000d0"); // 80-90 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("14610113","11111000530a2230000","01631031000000d0"); // 40-60 V0M // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("16810113","11111000530a2230000","01631031000000d0"); // 60-80 V0M // reproduce Astrids cuts with opening angle cut
     // trainconfig for PbPb studies in 5 TeV with TB nonlin
   } else if (trainConfig == 220){
-    cuts.AddCut("50100113","11111020530a2230000","01631031000000d0"); // 0-10 TM  // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("51200113","11111020530a2230000","01631031000000d0"); // 10-20 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("60100113","11111020530a2230000","01631031000000d0"); // 0-5 TM   // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("61100113","11111020530a2230000","01631031000000d0"); // 5-10 TM  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("50110113","11111020530a2230000","01631031000000d0"); // 0-10 TM  // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("51210113","11111020530a2230000","01631031000000d0"); // 10-20 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("60110113","11111020530a2230000","01631031000000d0"); // 0-5 TM   // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("61110113","11111020530a2230000","01631031000000d0"); // 5-10 TM  // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 221){
-    cuts.AddCut("52300113","11111020530a2230000","01631031000000d0"); // 20-30 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("53400113","11111020530a2230000","01631031000000d0"); // 30-40 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("54500113","11111020530a2230000","01631031000000d0"); // 40-50 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("55600113","11111020530a2230000","01631031000000d0"); // 50-60 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("52310113","11111020530a2230000","01631031000000d0"); // 20-30 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("53410113","11111020530a2230000","01631031000000d0"); // 30-40 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("54510113","11111020530a2230000","01631031000000d0"); // 40-50 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("55610113","11111020530a2230000","01631031000000d0"); // 50-60 TM // reproduce Astrids cuts with opening angle cut
   } else if (trainConfig == 222){
-    cuts.AddCut("56700113","11111020530a2230000","01631031000000d0"); // 60-70 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("57800113","11111020530a2230000","01631031000000d0"); // 70-80 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("58900113","11111020530a2230000","01631031000000d0"); // 80-90 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("54600113","11111020530a2230000","01631031000000d0"); // 40-60 TM // reproduce Astrids cuts with opening angle cut
-    cuts.AddCut("56800113","11111020530a2230000","01631031000000d0"); // 60-80 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("56710113","11111020530a2230000","01631031000000d0"); // 60-70 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("57810113","11111020530a2230000","01631031000000d0"); // 70-80 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("58910113","11111020530a2230000","01631031000000d0"); // 80-90 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("54610113","11111020530a2230000","01631031000000d0"); // 40-60 TM // reproduce Astrids cuts with opening angle cut
+    cuts.AddCut("56810113","11111020530a2230000","01631031000000d0"); // 60-80 TM // reproduce Astrids cuts with opening angle cut
 
   // Xe-xe configurations
   } else if (trainConfig == 300){ // EMCAL clusters - 0-90% centrality for XeXe EMCal cluster QA
