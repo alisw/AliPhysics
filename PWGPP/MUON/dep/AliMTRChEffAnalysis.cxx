@@ -1916,6 +1916,56 @@ AliTrigChEffOutput* AliMTRChEffAnalysis::Namer () const
   return fNamer;
 }
 
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::PatchEfficiency ( const char* inputEff, const char* patchEff, const char* boardsToPatch, const char* outFilename ) const
+{
+  /// Replace the efficiency in inputEff using the efficiency in patchEff
+  /// for the specified local boards.
+  /// boardsToPatch is the name of a txt file with one or two columns:
+  /// boardId chamberId
+  /// with 1 <= boardId <= 234
+  /// and optionally 11 <= chamberId <= 14
+
+  TList* inEffList = ReadEffHistoList(inputEff);
+  TList* patchEffList = ReadEffHistoList(patchEff);
+  if ( ! inEffList || ! patchEffList ) return kFALSE;
+  ifstream inFile(gSystem->ExpandPathName(boardsToPatch));
+  if ( ! inFile.is_open() ) {
+    AliError(Form("Cannot open %s",boardsToPatch));
+    return kFALSE;
+  }
+  TString line;
+  while ( ! inFile.eof() ) {
+    line.ReadLine(inFile);
+    if ( line.IsNull() ) continue;
+    TObjArray* arr = line.Tokenize(" ");
+    Int_t iboard = static_cast<TObjString*>(arr->UncheckedAt(0))->String().Atoi();
+    if ( iboard <= 0 ) continue;
+    Int_t firstCh = 11, lastCh = 14;
+    if ( arr->GetEntries() == 2 ) {
+      Int_t currCh = static_cast<TObjString*>(arr->UncheckedAt(1))->String().Atoi();
+      if ( currCh >= firstCh && currCh <= lastCh ) {
+        firstCh = currCh;
+        lastCh = currCh;
+      }
+    }
+    for ( Int_t ich=0; ich<4; ich++ ) {
+      for ( Int_t icount=0; icount<4; icount++ ) {
+        TString currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
+        TH1* inHisto = static_cast<TH1*>(inEffList->FindObject(currName.Data()));
+        TH1* patchHisto = static_cast<TH1*>(patchEffList->FindObject(currName.Data()));
+        inHisto->SetBinContent(iboard,patchHisto->GetBinContent(iboard));
+      }
+    }
+  }
+  inFile.close();
+
+  TFile* outFile = TFile::Open(gSystem->ExpandPathName(outFilename),"create");
+  inEffList->Write("triggerChamberEff",TObject::kSingleKey);
+  outFile->Close();
+
+  return kTRUE;
+}
 
 //________________________________________________________________________
 TList* AliMTRChEffAnalysis::ReadEffHistoList ( const char* src ) const
@@ -2200,33 +2250,74 @@ Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t wr
       continue;
     }
 
-    // Write OCDB object
-    Int_t firstRun = obj->GetMinRun();
-    Int_t lastRun = obj->GetMaxRun();
-
-    // If an object is already there, ask to remove it or keep it
-    for ( Int_t irun=0; irun<2; irun++ ) {
-      Int_t runnr = ( irun == 0 ) ? firstRun : lastRun;
-      specificStorage->QueryCDB(runnr);
-      TObjArray* allIdsForRun = specificStorage->GetQueryCDBList();
-      TIter nextId(allIdsForRun);
-      AliCDBId* id = 0x0;
-      while ((id = static_cast<AliCDBId*>(nextId()))) {
-        TString path(id->GetPath());
-        Int_t foundFirst = id->GetFirstRun();
-        Int_t foundLast = id->GetLastRun();
-        Int_t version = id->GetVersion();
-        Int_t subversion = TMath::Max(id->GetSubVersion(),0);
-        TString fullPath = Form("%s/%s/Run%d_%d_v%d_s%d.root",baseOutDir.Data(),path.Data(),foundFirst,foundLast,version,subversion);
-        ExecCommand(Form("%s %s",rmCommand.Data(),fullPath.Data()), kTRUE);
-      }
-    }
-
-    // Save the CDB object in the specific storage
-    AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(CloneEffHistoList(effHistos));
-    AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
-    delete effMap; // CAVEAT: effMap is owner of effHistos
+    WriteToOCDB(effHistos,outputCDB,obj->GetMinRun(),obj->GetMaxRun());
   }
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::WriteToOCDB ( const char* inFilename, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB ) const
+{
+  /// Write the efficiency object in the file to the OCDB
+  TList* effHistos = ReadEffHistoList ( inFilename );
+  if ( ! effHistos ) return kFALSE;
+  return WriteToOCDB(effHistos,outputCDB,firstRun,lastRun,defaultOCDB);
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::WriteToOCDB ( TList* effHistos, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB ) const
+{
+  /// Write the efficiency to the OCDB
+  AliInfo("Writing merged efficiencies to OCDB");
+
+  TString outCDB(outputCDB);
+  if ( ! outCDB.Contains("://") || outCDB == "raw://" ) {
+    AliError("Invalid CDB output dir");
+    return kFALSE;
+  }
+
+  TString rmCommand = "rm";
+  if ( outCDB.BeginsWith("alien://") && ! gGrid ) {
+    TGrid::Connect("alien://");
+    rmCommand = "alien_rm";
+    if ( ! gGrid ) {
+      AliError("Cannot open grid connection");
+      return kFALSE;
+    }
+  }
+
+  AliCDBManager* mgr = AliCDBManager::Instance();
+  if ( ! mgr->GetDefaultStorage() ) mgr->SetDefaultStorage(defaultOCDB);
+
+  TString trigEffCDBdir = "MUON/Calib/TriggerEfficiency";
+  mgr->SetSpecificStorage(trigEffCDBdir.Data(),outCDB.Data());
+
+  AliCDBStorage* specificStorage = mgr->GetSpecificStorage(trigEffCDBdir.Data());
+  TString baseOutDir = specificStorage->GetBaseFolder();
+
+  // If an object is already there, ask to remove it or keep it
+  for ( Int_t irun=0; irun<2; irun++ ) {
+    Int_t runnr = ( irun == 0 ) ? firstRun : lastRun;
+    specificStorage->QueryCDB(runnr);
+    TObjArray* allIdsForRun = specificStorage->GetQueryCDBList();
+    TIter nextId(allIdsForRun);
+    AliCDBId* id = 0x0;
+    while ((id = static_cast<AliCDBId*>(nextId()))) {
+      TString path(id->GetPath());
+      Int_t foundFirst = id->GetFirstRun();
+      Int_t foundLast = id->GetLastRun();
+      Int_t version = id->GetVersion();
+      Int_t subversion = TMath::Max(id->GetSubVersion(),0);
+      TString fullPath = Form("%s/%s/Run%d_%d_v%d_s%d.root",baseOutDir.Data(),path.Data(),foundFirst,foundLast,version,subversion);
+      ExecCommand(Form("%s %s",rmCommand.Data(),fullPath.Data()), kTRUE);
+    }
+  }
+
+  // Save the CDB object in the specific storage
+  AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(CloneEffHistoList(effHistos));
+  AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
+  delete effMap; // CAVEAT: effMap is owner of effHistos
+
   return kTRUE;
 }
 

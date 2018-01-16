@@ -49,6 +49,8 @@ class AliMTRChEffAnalysis : public TObject {
   void CompareMergedEfficiencies ( const char* opt ) const;
   Int_t ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "") const;
 
+  Bool_t PatchEfficiency ( const char* inputEff, const char* patchEff, const char* boardsToPatch, const char* outFilename ) const;
+
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
   Bool_t SetDefaultEffConditions ();
   Bool_t SetEffConditions ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
@@ -61,6 +63,7 @@ class AliMTRChEffAnalysis : public TObject {
 
 
   Bool_t WriteMergedToOCDB ( const char* outputCDB = "CDB", Bool_t writeSystematics = kFALSE ) const;
+  Bool_t WriteToOCDB ( const char* inFilename, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB = "local://$ALIROOT_OCDB_ROOT/OCDB" ) const;
   Bool_t DrawSystematicEnvelope ( Bool_t perRPC = kFALSE ) const;
   Bool_t BuildSystematicMap ();
   Bool_t RecoverEfficiency ( const char* runList, const char* ocdb, const char* systOcdb, Int_t referenceRun = -1 );
@@ -103,6 +106,8 @@ class AliMTRChEffAnalysis : public TObject {
   TList* ReadEffHistoList ( const char* src ) const;
 
   Bool_t SetCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod, Bool_t isBasic );
+
+  Bool_t WriteToOCDB ( TList* effHistos, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB = "local://$ALIROOT_OCDB_ROOT/OCDB" ) const;
 
   /// Dummy
   AliMTRChEffAnalysis(const AliMTRChEffAnalysis&);
