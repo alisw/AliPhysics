@@ -6,8 +6,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     const Double_t BunchSpace  = 25.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
-    const TString period       = "LHC15n",
-    const Bool_t isCoreEUsed   = kFALSE
+    const TString period       = "LHC15n"
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -33,7 +32,6 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
   task->ExcludeM4(excludeM4);
-  task->SetCoreEFlag(isCoreEUsed);
 
   if(isMC && NonLinCorr){
     TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
