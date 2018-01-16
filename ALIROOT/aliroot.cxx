@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     
     if (argument=="--version")
     {      
-      cout << "aliroot " << ALIROOT_REVISION << " " << ALIROOT_VERSION << endl;
+      printf("aliroot %s %s\n", ALIROOT_REVISION, ALIROOT_VERSION);
       return 0;
     }    
   }
