@@ -39,13 +39,13 @@ AliFemtoCutValues::AliFemtoCutValues() :
   fProtonPIDThresholdPtTPCLow(0.5),//GeV/c
   fProtonPIDThresholdPtTOFUp(4.05),//GeV/c
   fProtonPIDTPCTOFSwitch(0.75),//GeV/c
-  fProtonPtBinsDCA(20),
-  fProtonPtBinsPurity(33),
-  fProtonTPCCluster(80),
   fProtonDCAxyCut(0.1),//cm
   fProtonDCAzCut(0.2),//cm
   fProtonEtaRange(0.8),
   fProtonNsigma(3.),
+  fProtonPtBinsDCA(20),
+  fProtonPtBinsPurity(33),
+  fProtonTPCCluster(80),
   fPDGDatabase(new TDatabasePDG())
 {
   //Default constructor
@@ -73,13 +73,14 @@ AliFemtoCutValues::AliFemtoCutValues(const AliFemtoCutValues &obj) :
   fProtonPIDThresholdPtTPCLow(obj.fProtonPIDThresholdPtTPCLow),
   fProtonPIDThresholdPtTOFUp(obj.fProtonPIDThresholdPtTOFUp),
   fProtonPIDTPCTOFSwitch(obj.fProtonPIDTPCTOFSwitch),
-  fProtonPtBinsDCA(obj.fProtonPtBinsDCA),
-  fProtonPtBinsPurity(obj.fProtonPtBinsPurity),
-  fProtonTPCCluster(obj.fProtonTPCCluster),
   fProtonDCAxyCut(obj.fProtonDCAxyCut),
   fProtonDCAzCut(obj.fProtonDCAzCut),
   fProtonEtaRange(obj.fProtonEtaRange),
-  fProtonNsigma(obj.fProtonNsigma)
+  fProtonNsigma(obj.fProtonNsigma),
+  fProtonPtBinsDCA(obj.fProtonPtBinsDCA),
+  fProtonPtBinsPurity(obj.fProtonPtBinsPurity),
+  fProtonTPCCluster(obj.fProtonTPCCluster),
+  fPDGDatabase(new TDatabasePDG())
 {
   // copy constructor
 }
@@ -125,9 +126,9 @@ AliFemtoCutValues &AliFemtoCutValues::operator=(const AliFemtoCutValues &obj)
 Int_t AliFemtoCutValues::fFindPtBin(Double_t ptVal,Double_t ptLow,Double_t ptUp,Int_t nBins)
 {
   Int_t ptBin = -9999;
-  
+
   Float_t deltaPt = (ptUp - ptLow)/(Float_t)nBins;
-  
+
   for(int i=0; i<nBins; i++)
     {
       if((ptLow + i*deltaPt) < ptVal && ptVal < (ptLow + (i+1)*deltaPt))
@@ -136,13 +137,13 @@ Int_t AliFemtoCutValues::fFindPtBin(Double_t ptVal,Double_t ptLow,Double_t ptUp,
 	  break;
 	}
     }
-  
+
   return ptBin;
 }
 //_____________________________________________________________________________
 AliFemtoCutValues::~AliFemtoCutValues()
 {
-  if(fPDGDatabase) 
+  if(fPDGDatabase)
     {
       delete fPDGDatabase;
       fPDGDatabase = 0;

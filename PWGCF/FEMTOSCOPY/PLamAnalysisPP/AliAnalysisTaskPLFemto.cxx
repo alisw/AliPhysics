@@ -53,7 +53,7 @@ ClassImp(AliAnalysisTaskPLFemto)
 #endif
 Double_t TPCradii[9] = {85.,105.,125.,145.,165.,185.,205.,225.,245.};//must be global to be used on grid
 //__________________________________________________________________________
-AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():  
+AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   AliAnalysisTaskSE(),
   fEvents(0),
   fUseMCInfo(kFALSE),
@@ -63,9 +63,12 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   fOutputTP(0),
   fOutputPID(0),
   fAODMCEvent(0),
-  fCEvents(0),     
-  fSphericityvalue(-9999.),
+  fCEvents(0),
   fTPCradii(0),
+  fSphericityvalue(-9999.),
+  fwhichV0("Lambda"),
+  fwhichAntiV0("Anti-"+fwhichV0),
+  fwhichV0region("signal"),
   fV0Counter(0),
   fAntiV0Counter(0),
   fProtonCounter(0),
@@ -73,12 +76,9 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   fXiCounter(0),
   fEventNumber(0),
   fWhichfilterbit(128),
-  fwhichV0("Lambda"),
-  fwhichAntiV0("Anti-"+fwhichV0),
-  fwhichV0region("signal"),
   fPIDResponse(0),
   fGTI(0),
-  fTrackBuffSize(1000),  
+  fTrackBuffSize(1000),
   fEC(new AliFemtoLambdaEventCollection2 **[kZVertexBins]),
   fEvt(0),
   fV0cand(new AliFemtoLambdaParticle[kV0TrackLimit]),
@@ -94,11 +94,11 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   //
 
   fTPCradii = TPCradii;
- 
+
   for(Int_t i=0; i<3;i++) fPrimVertex[i] = -9999.;
-  
+
   Info("AliAnalysisTaskPLFemto","Calling default Constructor");
-  
+
   for(UChar_t iZBin=0;iZBin<kZVertexBins;iZBin++)
     {
       fEC[iZBin] = new AliFemtoLambdaEventCollection2 *[kMultiplicityBins];
@@ -108,7 +108,7 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
 	  fEC[iZBin][iMultBin] = new AliFemtoLambdaEventCollection2(kEventsToMix+1,kV0TrackLimit);
 	}
     }
-  
+
   fAnaUtils->SetMinPlpContribSPD(3);
 }
 //___________________________________________________________________________
@@ -122,9 +122,9 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto(const Char_t* name,Bool_t OnlineC
   fOutputTP(0),
   fOutputPID(0),
   fAODMCEvent(0),
-  fCEvents(0),     
-  fSphericityvalue(-9999.),
+  fCEvents(0),
   fTPCradii(0),
+  fSphericityvalue(-9999.),
   fwhichV0(whichV0),
   fwhichAntiV0("Anti-"+whichV0),
   fwhichV0region(whichV0region),
@@ -148,13 +148,13 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto(const Char_t* name,Bool_t OnlineC
   fCuts(new AliFemtoCutValues()),
   fAnaUtils(new AliAnalysisUtils())
 {
-  
+
   Info("AliAnalysisTaskPLFemto","Calling extended Constructor");
-  
+
   fTPCradii = TPCradii;
-  
+
   for(Int_t i=0; i<3;i++) fPrimVertex[i] = -9999.;
-  
+
   for(UChar_t iZBin=0;iZBin<kZVertexBins;iZBin++)
     {
       fEC[iZBin] = new AliFemtoLambdaEventCollection2 *[kMultiplicityBins];
@@ -166,8 +166,8 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto(const Char_t* name,Bool_t OnlineC
     }
 
   DefineOutput(1,TList::Class());  //conters
-  DefineOutput(2,TList::Class());  
-  DefineOutput(3,TList::Class());  
+  DefineOutput(2,TList::Class());
+  DefineOutput(3,TList::Class());
   DefineOutput(4,TList::Class());
 
   fAnaUtils->SetMinPlpContribSPD(3);
@@ -179,17 +179,17 @@ AliAnalysisTaskPLFemto::~AliAnalysisTaskPLFemto() {
   // destructor
   //
   Info("~AliAnalysisTaskPLFemto","Calling Destructor");
-  
+
   delete fOutput;
   delete fOutputSP;
   delete fOutputTP;
   delete fOutputPID;
   delete fCEvents;
-  
+
   if (fGTI)
     delete[] fGTI;
   fGTI=0;
-  
+
   if(fEC)
     {
       for(unsigned short i=0; i<kZVertexBins; i++)
@@ -204,7 +204,7 @@ AliAnalysisTaskPLFemto::~AliAnalysisTaskPLFemto() {
 	}
       delete[] fEC; fEC = NULL;
     }
-  
+
   if(fEC){ delete fEC; fEC = NULL;}
   if(fV0cand) delete[] fV0cand;
   if(fAntiV0cand) delete[] fAntiV0cand;
@@ -233,10 +233,10 @@ Bool_t AliAnalysisTaskPLFemto::GoodTPCFitMapSharedMap(const AliAODTrack *pTrack,
   // This overload is used for positive and negative daughters from V0s
 
   // Get the shared maps
-  
+
   const TBits posSharedMap = pTrack->GetTPCSharedMap();
   const TBits negSharedMap = nTrack->GetTPCSharedMap();
-  
+
   if( ((posSharedMap.CountBits()) >= 1) || ((negSharedMap.CountBits()) >= 1))
     {
       // Bad tracks, have too many shared clusters!
@@ -266,7 +266,7 @@ Double_t AliAnalysisTaskPLFemto::LpCorrfunc(Double_t relk,Double_t source)
 {
   //Dummy Lambda-p correlation function for a simple MC study
   const Double_t hbarc = 0.197;
-  
+
   Double_t qinv = 2. * relk;
 
   return 1. + TMath::Exp(-pow(qinv*source,2.)/pow(hbarc,2.));
@@ -276,12 +276,12 @@ Double_t AliAnalysisTaskPLFemto::ppCorrfunc(Double_t relk,Double_t source)
 {
   //Dummy p-p correlation function for a simple MC study
   const Double_t hbarc = 0.197;
-  
+
   Double_t qinv = 2. * relk;
 
   Double_t rectang = 0.;
   if(relk > 0.4 && relk < 0.6) rectang = 2.; //artificial rectangular weighting
-  
+
   return 1. + TMath::Exp(-qinv*source/hbarc) + rectang; // in this momentum region the first part is zero and the rectang part survives
 }
 //________________________________________________________________________
@@ -295,30 +295,30 @@ Bool_t AliAnalysisTaskPLFemto::AcceptTrack(const AliAODTrack *track,int type)
   // https://alisoft.cern.ch/AliRoot/trunk/TPC/doc/Definitions/Definitions.pdf
   // TPC people describe the cut strategy for the TPC. It is explicitly
   // stated that a cut on the number of crossed rows and a cut on the
-  // number of crossed rows over findable clusters is recommended to 
-  // remove fakes. In the pdf a cut value of .83 on the ratio 
-  // is stated, no value for the number of crossed rows. Looking at the 
+  // number of crossed rows over findable clusters is recommended to
+  // remove fakes. In the pdf a cut value of .83 on the ratio
+  // is stated, no value for the number of crossed rows. Looking at the
   // AliESDtrackCuts.cxx one sees that exactly this cut is used with
   // 0.8 on the ratio and 70 on the crossed rows.
 
   // Checked the filter task and AliAODTrack and AliESDtrack and
   // AliESDtrackCuts and the Definitions.pdf:
   // The function to get the findable clusters is GetTPCNclsF()
-  
+
   // For the number fo crossed rows for ESD tracks, the function
   // GetTPCCrossedRows() usually is used. Looking at the AliESDtrack.cxx
   // one sees that it's just an alias (with additional caching) for
   // GetTPCClusterInfo(2, 1); The identical function exists in the
   // AliAODTrack.cxx
-  
+
   TString fillthis = "";
-  
+
   Float_t nCrossed = track->GetTPCClusterInfo(2,1);
   UShort_t nFindableCluster = track->GetTPCNclsF();
   Float_t ratio = nCrossed / Float_t(nFindableCluster);
 
 
-  
+
   if(type == 4)
     {
       fillthis = "fFindableClusterProton";
@@ -326,7 +326,7 @@ Bool_t AliAnalysisTaskPLFemto::AcceptTrack(const AliAODTrack *track,int type)
 
       fillthis = "fNCrossedRowsProton";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(nCrossed);
-      
+
       fillthis = "fRatioFindableCrossedProton";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(ratio);
     }
@@ -337,7 +337,7 @@ Bool_t AliAnalysisTaskPLFemto::AcceptTrack(const AliAODTrack *track,int type)
 
       fillthis = "fNCrossedRowsAntiProton";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(nCrossed);
-      
+
       fillthis = "fRatioFindableCrossedAntiProton";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(ratio);
     }
@@ -354,7 +354,7 @@ Bool_t AliAnalysisTaskPLFemto::AcceptTrack(const AliAODTrack *track,int type)
 void AliAnalysisTaskPLFemto::ResetGlobalTrackReference()
 {
   //This method was inherited form H. Beck analysis
-  
+
   // Sets all the pointers to zero. To be called at
   // the beginning or end of an event
   for(UShort_t i=0;i<fTrackBuffSize;i++)
@@ -378,7 +378,7 @@ void AliAnalysisTaskPLFemto::StoreGlobalTrackReference(AliAODTrack *track)
   //   return;
   // This is AOD086
   // Another set of tracks was introduced: Global constrained.
-  // We only want filter bit 1 <-- NO! we also want no 
+  // We only want filter bit 1 <-- NO! we also want no
   // filter bit at all, which are the v0 tracks
   //  if(!track->TestFilterBit(1))
   //    return;
@@ -398,7 +398,7 @@ void AliAnalysisTaskPLFemto::StoreGlobalTrackReference(AliAODTrack *track)
   // 	   ,track->GetID(),track->GetFilterMap());
   //   //    return;
   // }
-  
+
   // Check that the id is positive
   if(track->GetID()<0)
     {
@@ -422,10 +422,10 @@ void AliAnalysisTaskPLFemto::StoreGlobalTrackReference(AliAODTrack *track)
       if( (!track->GetFilterMap()) &&
 	  (!track->GetTPCNcls())   )
 	return;
-      
+
     // Imagine the other way around,
     // the zero map zero clusters track
-    // is stored and the good one wants 
+    // is stored and the good one wants
     // to be added. We ommit the warning
     // and just overwrite the 'bad' track
       if( fGTI[track->GetID()]->GetFilterMap() ||
@@ -439,14 +439,14 @@ void AliAnalysisTaskPLFemto::StoreGlobalTrackReference(AliAODTrack *track)
 		 (fGTI[track->GetID()])->GetFilterMap(),track->GetFilterMap());
 	}
     } // Two tracks same id
-  
+
   // // There are tracks with filter bit 0,
   // // do they have TPCNcls stored?
   // if(!track->GetFilterMap()){
   //   printf("Filter map is zero, TPCNcls: %u\n"
   // 	   ,track->GetTPCNcls());
   // }
-  
+
   // Assign the pointer
   (fGTI[track->GetID()]) = track;
 }
@@ -458,8 +458,8 @@ Double_t *AliAnalysisTaskPLFemto::DCAxy(const AliAODTrack *track, const AliVEven
 
   errorVals[0] = -9999.;
   errorVals[1] = -9999.;
-  
-  
+
+
   if(!track)
     {
       printf("Pointer to track is zero!\n");
@@ -467,46 +467,46 @@ Double_t *AliAnalysisTaskPLFemto::DCAxy(const AliAODTrack *track, const AliVEven
     }
 
   // Create an external parameter from the AODtrack
-  AliExternalTrackParam etp; 
+  AliExternalTrackParam etp;
   etp.CopyFromVTrack(track);
-    
+
   Double_t covar[3]={0.,0.,0.};
   if(!etp.PropagateToDCA(evt->GetPrimaryVertex(),evt->GetMagneticField(),10.,DCAVals,covar)) return errorVals;
-  
+
   // return the DCAxy
   delete[] errorVals;
   return DCAVals;
 }
 //_________________________________________________________________
-Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODEvent *aodEvent,Int_t type) 
+Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODEvent *aodEvent,Int_t type)
 {
   TString fillthis = "";
   Double_t *xyz = new Double_t[2];
-  
+
   if(fWhichfilterbit == 128) xyz = DCAxy(fGTI[-AODtrack->GetID()-1],fInputEvent);
   else xyz = DCAxy(AODtrack,fInputEvent);
-  
+
   if(type == 4) //proton
     {
       fillthis = "fProtonDCAxyDCAz";
       ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0],xyz[1]);
-      
+
       fillthis = "fProtonDCAxy";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0]);
-      
+
       if(fabs(xyz[1])<fCuts->GetProtonDCAzCut())//check the influence of z cut on DCAxy
 	{
 	  fillthis = "fProtonDCAxyCutz";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0]);
 	}
-      
+
       fillthis = "fProtonDCAz";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[1]);
 
-      
+
       //Find the pt bin for pt dependent DCA analysis:
       int ptbin = fCuts->FindProtonPtBinDCA(AODtrack->Pt());
-      
+
       if(!fUseMCInfo && ptbin != -9999)
 	{
 	  fillthis = "fProtonDCAxyDCAzPt";
@@ -517,7 +517,7 @@ Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODE
 	{
 	  TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 	  if(!mcarray) return kFALSE;
-	  
+
 	  AliAODMCParticle* mcproton = 0;
 	  if(AODtrack->GetLabel() >=0) mcproton = (AliAODMCParticle*)mcarray->At(AODtrack->GetLabel());
 	  else return kFALSE;
@@ -527,7 +527,7 @@ Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODE
 	  fillthis += "PtBin";
 	  fillthis += ptbin;
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0],xyz[1]);//total amount of protons
-	      
+
 	  //check the DCA of the proton in Monte Carlo
 	  if(mcproton->GetPdgCode() == 2212) //be shure it is a proton
 	    {
@@ -570,16 +570,16 @@ Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODE
     {
       fillthis = "fAntiProtonDCAxyDCAz";
       ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0],xyz[1]);
-      
+
       fillthis = "fAntiProtonDCAxy";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0]);
-      
+
       if(fabs(xyz[1])<fCuts->GetProtonDCAzCut())//check the influence of z cut on DCAxy
 	{
 	  fillthis = "fAntiProtonDCAxyCutz";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[0]);
 	}
-      
+
       fillthis = "fAntiProtonDCAz";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(xyz[1]);
     }
@@ -591,13 +591,13 @@ Bool_t AliAnalysisTaskPLFemto::GoodDCA(const AliAODTrack *AODtrack,const AliAODE
 	  delete[] xyz;
 	  return kTRUE;
 	}
-      else 
+      else
 	{
 	  delete[] xyz;
 	  return kFALSE;
 	}
     }
-  else 
+  else
     {
       delete[] xyz;
       return kFALSE;
@@ -618,27 +618,27 @@ Int_t AliAnalysisTaskPLFemto::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev,Dou
     }
   TString fillthis = "fNTracklets";
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(count);
-   
+
   return count;
 }
 //________________________________________________________________________________________________
 Bool_t AliAnalysisTaskPLFemto::PileUpRejection(AliAODEvent* ev)
 {
   Bool_t isPileUp = kFALSE;
-  
+
   Int_t fNofTracklets = ev->GetMultiplicity()->GetNumberOfTracklets();
   Int_t NofITSClusters1 = ev->GetNumberOfITSClusters(1);
-  
-  
+
+
   TString fillthis = "fEventSPDClusterNTracklets";
   ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(fNofTracklets,NofITSClusters1);
-  
+
   if(!fAnaUtils->IsPileUpEvent(ev))
     {
       fillthis = "fEventSPDClusterNTrackletsPileUpCut";
       ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(fNofTracklets,NofITSClusters1);
     }
-  
+
 
   return isPileUp;
 }
@@ -646,8 +646,8 @@ Bool_t AliAnalysisTaskPLFemto::PileUpRejection(AliAODEvent* ev)
 Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent *aodEvent,Double_t zVertex)
 {
   Int_t *MixingBins = new Int_t[2];
-  
-  
+
+
   Float_t multipl = GetNumberOfTrackletsInEtaRange(aodEvent,-0.8,0.8);//this is the multiplicty calculated with tracklets
   if(multipl <= 0.) //multiplicity estimation fails
     {
@@ -671,11 +671,11 @@ Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent
   else if(multipl <= 60) multBin = 10;
   else if(multipl <= 80) multBin = 11;
   else multBin = 12;
-  
+
   if(multBin+1 > kMultiplicityBins) std::cout << "Change the Multiplicity maximum" << std::endl;
 
   Double_t deltaZ = (kZVertexStop - kZVertexStart)/(Double_t)kZVertexBins;
-  
+
   Int_t zVertexBin = 0;
   for(Int_t i=0;i<kZVertexBins;i++)
     {
@@ -685,9 +685,9 @@ Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent
 	  break;
 	}
     }
-  
-  
-  
+
+
+
   MixingBins[0] = zVertexBin;
   MixingBins[1] = multBin;
 
@@ -701,58 +701,58 @@ Double_t AliAnalysisTaskPLFemto::CalcSphericityEvent(AliAODEvent *aodEvent)
   Double_t s00 = 0.; //Elements of the sphericity matrix
   Double_t s11 = 0.;
   Double_t s10 = 0.;
-  
+
   Int_t numOfTracks = aodEvent->GetNumberOfTracks();
   if(numOfTracks<3) return -9999.;//if already at this point not enough tracks are in the event -> return
-  
+
 
   Int_t nTracks = 0;
   for(Int_t iTrack=0;iTrack<numOfTracks;iTrack++)
     {
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
-      
+
       if(!aodtrack->TestFilterBit(fWhichfilterbit)) continue;
-      
+
       Double_t pt = aodtrack->Pt();
       //Double_t Phi = aodtrack->Phi();
       Double_t px = aodtrack->Px();
       Double_t py = aodtrack->Py();
       Double_t eta = aodtrack->Eta();
-      
+
 
       if(!(eta>-0.8 && eta<0.8)) continue;
       if(pt<0.5) continue;
 
       ptTot += pt;
-      
+
       s00 += px*px/pt;
       s11 += py*py/pt;
       s10 += px*py/pt;
       nTracks++;
     }
-  
+
   if(nTracks<3) return -9999.;//new flag: check
-  
+
   //normalize to total Pt to obtain a linear form:
   if(ptTot == 0.) return -9999.;
   s00 /= ptTot;
   s11 /= ptTot;
   s10 /= ptTot;
-  
+
   //Calculate the trace of the sphericity matrix:
   Double_t T = s00+s11;
-  
+
   //Calculate the determinant of the sphericity matrix:
   Double_t D = s00*s11 - s10*s10;//S10 = S01
 
   //Calculate the eigenvalues of the sphericity matrix:
   Double_t lambda1 = 0.5*(T + TMath::Sqrt(T*T - 4.*D));
   Double_t lambda2 = 0.5*(T - TMath::Sqrt(T*T - 4.*D));
-  
+
   if((lambda1 + lambda2) == 0.) return -9999.;
-  
+
   Double_t ST = -1.;
-  
+
   if(lambda2>lambda1)
     {
       ST = 2.*lambda1/(lambda1+lambda2);
@@ -769,9 +769,9 @@ Bool_t AliAnalysisTaskPLFemto::CheckGlobalTrack(const AliAODTrack *track)
 {
   //Checks if to the corresponding track a global track exists
   //This is especially useful if one has TPC only tracks and needs the PID information
-  
+
   Bool_t isGlobal = kTRUE;
-  
+
   if(!(fGTI[-track->GetID()-1])) isGlobal = kFALSE;
 
   return isGlobal;
@@ -780,7 +780,7 @@ Bool_t AliAnalysisTaskPLFemto::CheckGlobalTrack(const AliAODTrack *track)
 Float_t AliAnalysisTaskPLFemto::GetCorrectedTOFSignal(const AliVTrack *track,const AliAODEvent *aodevent)
 {
   // Return the corrected TOF signal, see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TOF
-  
+
   // Check for the global track
   /*
   if(fWhichfilterbit == 128 && !(fGTI[-track->GetID()-1]))
@@ -792,15 +792,15 @@ Float_t AliAnalysisTaskPLFemto::GetCorrectedTOFSignal(const AliVTrack *track,con
 
 
   // Request the TOFpid bit
-  
+
   //AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fGTI[-track->GetID()-1]);
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
   if(statusTOF != AliPIDResponse::kDetPidOk) return -9999.;
-  
+
   // The expected time
   Double_t expectedTimes[AliPID::kSPECIES];
   //Double_t expectedTimes[AliPID::kProton];
-  
+
   //(fGTI[-track->GetID()-1])->GetIntegratedTimes(expectedTimes);
 
   // Check for TOF header
@@ -810,7 +810,7 @@ Float_t AliAnalysisTaskPLFemto::GetCorrectedTOFSignal(const AliVTrack *track,con
       //return ((fGTI[-track->GetID()-1])->GetTOFsignal() - expectedTimes[AliPID::kProton] - fPIDResponse->GetTOFResponse().GetStartTime(track->P()));
       return (track->GetTOFsignal() - expectedTimes[AliPID::kProton] - fPIDResponse->GetTOFResponse().GetStartTime(track->P()));
     }
-  
+
   // Old AODs with start time already subtracted
   //return ((fGTI[-track->GetID()-1])->GetTOFsignal() - expectedTimes[AliPID::kProton]);
   return (track->GetTOFsignal() - expectedTimes[AliPID::kProton]);
@@ -821,7 +821,7 @@ Bool_t AliAnalysisTaskPLFemto::SingleParticleQualityCuts(const AliAODTrack *aodt
   Double_t eta = aodtrack->Eta();
   Double_t pt = aodtrack->Pt();
   Double_t ch = aodtrack->Charge();
-  
+
   if(ch>0)//protons
     {
       if(fabs(eta) > fCuts->GetProtonEtaRange()) return kFALSE; //should lie within the ALICE acceptance
@@ -832,7 +832,7 @@ Bool_t AliAnalysisTaskPLFemto::SingleParticleQualityCuts(const AliAODTrack *aodt
       //Accept track should be here
       if(!AcceptTrack(aodtrack,4)) return kFALSE;//reject tracks with row crossing
       if(!(SelectPID(aodtrack,aodEvent,4))) return kFALSE; //select protons
-      if(!GoodDCA(aodtrack,aodEvent,4)) return kFALSE; //to increase the probability for primaries     
+      if(!GoodDCA(aodtrack,aodEvent,4)) return kFALSE; //to increase the probability for primaries
     }
   else
     {
@@ -859,7 +859,7 @@ Bool_t AliAnalysisTaskPLFemto::SingleParticleQualityCuts(const AliAODv0 *v0)
   Double_t negeta = negTrack->Eta();
   Double_t posTPCcls = posTrack->GetTPCNcls();
   Double_t negTPCcls = negTrack->GetTPCNcls();
-  
+
   if(v0->GetNDaughters() != 2) return kFALSE;
   if(v0->GetNProngs() != 2) return kFALSE;
   if(v0->GetCharge() != 0) return kFALSE;
@@ -868,7 +868,7 @@ Bool_t AliAnalysisTaskPLFemto::SingleParticleQualityCuts(const AliAODv0 *v0)
   if(fabs(poseta) > fCuts->GetV0EtaRange()) return kFALSE;
   if(fabs(negeta) > fCuts->GetV0EtaRange()) return kFALSE;
   if(v0->Pt() < fCuts->GetV0PIDthrPtLow()) return kFALSE; //below it just enhances background
-  
+
   return kTRUE;
 }
 //________________________________________________________________________
@@ -879,18 +879,18 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
   for(Int_t iTrack=0;iTrack<aodEvent->GetNumberOfTracks();iTrack++)
     {
       AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
-      if(!track) 
+      if(!track)
 	{
 	  AliFatal("Not a standard AOD");
 	  continue;
 	}
-      
+
       TString fillthis = "";
-      
+
 
       //Several selections
       //if(!(track->GetType() == AliAODTrack::kPrimary)) continue; //should select primary tracks (effect?)
-      
+
       if(fWhichfilterbit == 128 && (-track->GetID()-1 >= fTrackBuffSize)) continue; //check if the fGTI array is not too small
       if(!track->TestFilterBit(fWhichfilterbit)) continue;
       if(fWhichfilterbit == 128 && !CheckGlobalTrack(track)) continue; //Does a global track exist for the TPC only track?
@@ -906,7 +906,7 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
 	{
 	  if(fProtonCounter > kProtonTrackLimit) continue;
 	  if(!SingleParticleQualityCuts(track,aodEvent)) continue;//Define additional quality criteria
-	  
+
 	  //fill proton parameters:
 	  //____________________________________________
 	  fProtoncand[fProtonCounter].fPt = track->Pt();
@@ -915,7 +915,7 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
 	  else fProtoncand[fProtonCounter].fID = track->GetID();
 	  fProtoncand[fProtonCounter].fEta = track->Eta();
 	  GetGlobalPositionAtGlobalRadiiThroughTPC(track,aodEvent->GetMagneticField(),fProtoncand[fProtonCounter].fPrimPosTPC,fPrimVertex);
-	  
+
 	  //calculate phi* to check for possible merging/splitting effects:
 	  for(int radius=0;radius<9;radius++)
 	    {
@@ -927,19 +927,19 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
 
 	  fillthis = "fProtonPt";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(track->Pt());
-	  
+
 	  fillthis = "fProtonPhi";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(track->Phi());
 
 	  fillthis = "fProtonEta";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(track->Eta());
-	  
+
 	  //Monte Carlo
 	  if(fUseMCInfo)
 	    {
 	      if(CheckMCPID(aodEvent,track,2212)) fProtoncand[fProtonCounter].fReal = kTRUE;
 	      else fProtoncand[fProtonCounter].fReal = kFALSE;
-	      
+
 	      //Monte Carlo functions:
 	      GetProtonOrigin(track,aodEvent,4);//evaluated with all the cuts applied
 	      double protontruth[3] = {-9999,-9999.,-9999.};
@@ -976,15 +976,15 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
 	{
 	  if(fAntiProtonCounter > kProtonTrackLimit) continue;
 	  if(!SingleParticleQualityCuts(track,aodEvent)) continue;//Define additional quality criteria
-	  
+
 	  //fill Anti-proton parameters:
 	  //____________________________________________
 	  fAntiProtoncand[fAntiProtonCounter].fPt = track->Pt();
 	  fAntiProtoncand[fAntiProtonCounter].fMomentum.SetXYZ(track->Px(),track->Py(),track->Pz());
 	  if(fWhichfilterbit == 128) fAntiProtoncand[fAntiProtonCounter].fID = (fGTI[-track->GetID()-1])->GetID();
-	  else fAntiProtoncand[fAntiProtonCounter].fID = track->GetID(); 
+	  else fAntiProtoncand[fAntiProtonCounter].fID = track->GetID();
 	  fAntiProtoncand[fAntiProtonCounter].fEta = track->Eta();
-	  
+
 	  if(fUseMCInfo)
 	    {
 	      //Monte Carlo functions:
@@ -1026,7 +1026,7 @@ void AliAnalysisTaskPLFemto::ProtonSelector(AliAODEvent *aodEvent)
 	  fillthis = "fAntiProtonPt";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(track->Pt());
 	}
-    } 
+    }
   //LOOP END (PRIMARY) PROTONS_____________________________________________________________
 }
 //________________________________________________________________________
@@ -1035,7 +1035,7 @@ void AliAnalysisTaskPLFemto::V0Selector(AliAODEvent *aodEvent)
   TString fillthis = "";
   fV0Counter = 0;//how many V0 candidates do we have in this event?
   fAntiV0Counter = 0;//how many Anti-V0 candidates do we have in this event?
-  
+
   //Get a V0 from the event:
   TClonesArray *v01 = (TClonesArray*)aodEvent->GetV0s();
   //number of V0s:
@@ -1047,7 +1047,7 @@ void AliAnalysisTaskPLFemto::V0Selector(AliAODEvent *aodEvent)
       AliAODv0 *v0 = aodEvent->GetV0(i);
       if(!v0) continue;
       if(v0->GetNProngs()>2) continue;
-      
+
       if(fOnlineV0)
 	{
 	  if(!(v0->GetOnFlyStatus())) continue; //online v0
@@ -1056,19 +1056,19 @@ void AliAnalysisTaskPLFemto::V0Selector(AliAODEvent *aodEvent)
 	{
 	  if((v0->GetOnFlyStatus())) continue; //offline v0
 	}
-      
+
       // Check that the array fGTI isn't too small
       // for the track ids
       if(v0->GetPosID() >= fTrackBuffSize || v0->GetNegID() >= fTrackBuffSize) continue;
-      
+
       // This is AODs: find the track for given id:
-      AliAODTrack *pTrack = fGTI[v0->GetPosID()]; 
+      AliAODTrack *pTrack = fGTI[v0->GetPosID()];
       AliAODTrack *nTrack = fGTI[v0->GetNegID()];
 
 
       if((!pTrack) || (!nTrack)) continue;
       if(!SingleParticleQualityCuts(v0)) continue;
-      
+
       if(SelectV0PID(v0,fwhichV0))//V0 selection
 	{
 	  FillV0Selection(v0,aodEvent,fwhichV0);
@@ -1085,41 +1085,41 @@ void AliAnalysisTaskPLFemto::XiSelector(AliAODEvent *aodEvent)
   TString fillthis = "";
   //fV0Counter = 0;//how many V0 candidates do we have in this event?
   //fAntiV0Counter = 0;//how many Anti-V0 candidates do we have in this event?
-  
+
   //Get a V0 from the event:
   TClonesArray *Xicand = (TClonesArray*)aodEvent->GetCascades();
   //number of V0s:
   Int_t entriesXi= Xicand->GetEntriesFast();
-  
+
   Double_t xvP = aodEvent->GetPrimaryVertex()->GetX();
   Double_t yvP = aodEvent->GetPrimaryVertex()->GetY();
   Double_t zvP = aodEvent->GetPrimaryVertex()->GetZ();
-  
-    
+
+
   fXiCounter = 0;
   for (Int_t i=0; i<entriesXi; i++)
     {
       AliAODcascade *Xi = aodEvent->GetCascade(i);
       Double_t pointXi = Xi->CosPointingAngleXi(xvP,yvP,zvP);
       if(!Xi) continue;
-      
+
       if(Xi->ChargeXi() > 0)
 	{
 	}
       else if(Xi->ChargeXi() < 0)
 	{
 	  Double_t massXi = Xi->MassXi();
-	  
+
 	  AliAODTrack* pTrack = fGTI[Xi->GetPosID()];
 	  AliAODTrack* nTrack1 = fGTI[Xi->GetBachID()];
 	  AliAODTrack* nTrack2 = fGTI[Xi->GetNegID()];
-	  
+
 	  if((pTrack->GetID() == nTrack1->GetID()) || (pTrack->GetID() == nTrack2->GetID()) || (nTrack1->GetID() == nTrack2->GetID())) continue;
 
 	  Int_t posTPCcluster = pTrack->GetTPCNcls();
 	  Int_t negTPCcluster1 = nTrack1->GetTPCNcls();
 	  Int_t negTPCcluster2 = nTrack2->GetTPCNcls();
-	  
+
 
 	  if(posTPCcluster < 70) continue;
 	  if(negTPCcluster1 < 70) continue;
@@ -1127,7 +1127,7 @@ void AliAnalysisTaskPLFemto::XiSelector(AliAODEvent *aodEvent)
 
 	  fillthis = "fXiInvMasswoCuts";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(massXi);
-	  
+
 	  //Do a rough PID for all daughter tracks:
 	  AliPIDResponse::EDetPidStatus statusPosTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
 	  if(statusPosTPC != AliPIDResponse::kDetPidOk) continue;
@@ -1135,24 +1135,24 @@ void AliAnalysisTaskPLFemto::XiSelector(AliAODEvent *aodEvent)
 	  if(statusNegTPC1 != AliPIDResponse::kDetPidOk) continue;
 	  AliPIDResponse::EDetPidStatus statusNegTPC2 = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack2);
 	  if(statusNegTPC2 != AliPIDResponse::kDetPidOk) continue;
-	  
+
 	  Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,(AliPID::kProton)));
 	  Double_t nSigmaPionTPC1 = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack1,(AliPID::kPion)));
 	  Double_t nSigmaPionTPC2 = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack2,(AliPID::kPion)));
 	  if(nSigmaProtonTPC > 5.) continue;
 	  if(nSigmaPionTPC1 > 5.) continue;
 	  if(nSigmaPionTPC2 > 5.) continue;
-	  
+
 	  if(pointXi<0.98) continue;
 	  Double_t MassV0 = Xi->MassLambda();
 	  fillthis = "fXiInvMassLambda";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
-	  
+
 	  if(!(MassV0>(fCuts->GetHadronMasses(3122)-fCuts->GetV0PID_width()) && MassV0<(fCuts->GetHadronMasses(3122)+fCuts->GetV0PID_width()))) continue;
 	  fillthis = "fXiInvMasswCuts";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(massXi);
-	  
-	  if(massXi>(fCuts->GetHadronMasses(3312)-0.005) && massXi<(fCuts->GetHadronMasses(3312)+0.005)) 
+
+	  if(massXi>(fCuts->GetHadronMasses(3312)-0.005) && massXi<(fCuts->GetHadronMasses(3312)+0.005))
 	    {
 	      fXicand[fXiCounter].fPt = Xi->Pt();
 	      fXicand[fXiCounter].fMass = massXi;
@@ -1172,7 +1172,7 @@ void AliAnalysisTaskPLFemto::XiSelector(AliAODEvent *aodEvent)
 void AliAnalysisTaskPLFemto::FIFOShifter(Int_t zBin,Int_t MultBin)
 {
   //Load the stuff into the buffer:
-  //be careful we load only the tracks from this event in the buffer but 
+  //be careful we load only the tracks from this event in the buffer but
   //the objects fV0cand and fProtoncand are not deleted: they may have information from the last event for i>fV0Counter stored
   fEC[zBin][MultBin]->FIFOShift();
   (fEvt) = fEC[zBin][MultBin]->fEvt;
@@ -1208,15 +1208,15 @@ void AliAnalysisTaskPLFemto::TrackCleaner()
 	    }
 	}
     }
-  
-  
+
+
   if(nDoubleShare>0)
     {
       fillthis = "fNV0TrackSharing";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(nDoubleShare);
     }
 
-  
+
   nDoubleShare = 0;
   //Same for Anti V0
   if(fAntiV0Counter>1)
@@ -1239,14 +1239,14 @@ void AliAnalysisTaskPLFemto::TrackCleaner()
 	    }
 	}
     }
-  
+
   if(nDoubleShare>0)
     {
       fillthis = "fNAntiV0TrackSharing";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(nDoubleShare);
     }
-  
-  
+
+
   //Now check that the proton from V0 and the primary proton are not the same
   for(int i=0; i<fV0Counter;i++)
     {
@@ -1263,8 +1263,8 @@ void AliAnalysisTaskPLFemto::TrackCleaner()
 	}
     }
 
-    
-  
+
+
   //Check that Anti-V0 and proton don't share tracks
   for(int i=0; i<fAntiV0Counter;i++)
     {
@@ -1280,7 +1280,7 @@ void AliAnalysisTaskPLFemto::TrackCleaner()
 	    }
 	}
     }
-  
+
   //Check that Anti-Proton and Anti-V0 don't share tracks
   for(int i=0; i<fAntiV0Counter;i++)
     {
@@ -1325,7 +1325,7 @@ Int_t *AliAnalysisTaskPLFemto::BufferFiller()
 	{
 	  fillthis = "fNLambdasTot";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(2); //fill only unique candidates
-	  
+
 	  (fEvt)->fLambdaParticle[tempV0Counter] = fV0cand[i];
 	  if(fProtonCounter>0)
 	    {
@@ -1335,7 +1335,7 @@ Int_t *AliAnalysisTaskPLFemto::BufferFiller()
 	  tempV0Counter++;
 	}
     }
-  
+
   Int_t tempAntiV0Counter = 0;
   for(int i=0;i<fAntiV0Counter;i++)
     {
@@ -1343,7 +1343,7 @@ Int_t *AliAnalysisTaskPLFemto::BufferFiller()
       if(fAntiV0cand[i].fV0tag) //use only V0s which have a good tag (unique V0s without track sharing with other V0s in the sample)
 	{
 	  (fEvt)->fAntiLambdaParticle[tempAntiV0Counter] = fAntiV0cand[i];
-	  
+
 	  fillthis = "fNAntiLambdasTot";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(2); //fill only unique candidates
 	  if(fAntiProtonCounter>0)
@@ -1373,7 +1373,7 @@ Int_t *AliAnalysisTaskPLFemto::BufferFiller()
       (fEvt)->fAntiProtonParticle[i] = fAntiProtoncand[i];
       tempAntiProtonCounter++;
     }
-  
+
   Int_t tempXiCounter = 0;
   for(int i=0;i<fXiCounter;i++)
     {
@@ -1413,7 +1413,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	    }//Proton Loop
 	}//event Loop
     }//V0 Loop
-  
+
   TString fillthis = "fNProtonLambdaPairs";
   if(NPairs !=0) ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(NPairs);
 
@@ -1442,7 +1442,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	}//event Loop
     }//V0 Loop
 
-  
+
   //Loop for Antip-AntiV0
   for(int i=0; i<(fEvt)->fNumAntiV0s;i++)
     {
@@ -1454,7 +1454,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	    }//Proton Loop
 	}//event Loop
     }//V0 Loop
-  
+
   /*
   for(int i=0; i<(fEvt)->fNumV0s;i++)
     {
@@ -1477,19 +1477,19 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	}
     }
   */
-    
+
   //Loop for p-p
   for(int i=0; i<(fEvt)->fNumProtons;i++)
     {
       for(int evnum=0; evnum<kEventsToMix+1; evnum++)
 	{
 	  int startbin = 0;
-	  if(evnum==0) 
+	  if(evnum==0)
 	    {
 	      startbin=i+1;
 	      if((fEvt)->fProtonParticle[i].fID == (fEvt+evnum)->fProtonParticle[startbin].fID) continue;
 	    }
-	  
+
 	  for(int j=startbin;j<(fEvt+evnum)->fNumProtons;j++)
 	    {
 	      PairAnalysis((fEvt)->fProtonParticle[i],(fEvt+evnum)->fProtonParticle[j],evnum,kProtonProton);
@@ -1503,19 +1503,19 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
       for(int evnum=0; evnum<kEventsToMix+1; evnum++)
 	{
 	  int startbin = 0;
-	  if(evnum==0) 
+	  if(evnum==0)
 	    {
 	      startbin=i+1;
 	      if((fEvt)->fAntiProtonParticle[i].fID == (fEvt+evnum)->fAntiProtonParticle[startbin].fID) continue;
 	    }
-	  
+
 	  for(int j=startbin; j<(fEvt+evnum)->fNumAntiProtons;j++)
 	    {
 	      PairAnalysis((fEvt)->fAntiProtonParticle[i],(fEvt+evnum)->fAntiProtonParticle[j],evnum,kAntiProtonAntiProton);
 	    }//AntiProtonA Loop
 	}//event Loop
     }//AntiProtonB Loop
-  
+
 
   //Loop for Antip-p
   for(int i=0; i<(fEvt)->fNumProtons;i++)
@@ -1524,7 +1524,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	{
 	  for(int j=0; j<(fEvt+evnum)->fNumAntiProtons;j++)
 	    {
-	      if(evnum==0) 
+	      if(evnum==0)
 		{
 		  if((fEvt)->fProtonParticle[i].fID == (fEvt+evnum)->fAntiProtonParticle[j].fID) continue; //should only be set for same events
 		}
@@ -1583,7 +1583,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	}
     }
   */
-    
+
   //Loop for V0-V0
   for(int i=0; i<(fEvt)->fNumV0s;i++)
     {
@@ -1597,8 +1597,8 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	    }//Proton Loop
 	}//event Loop
     }//V0 Loop
-  
-  
+
+
   //Loop for AntiV0-AntiV0
   for(int i=0; i<(fEvt)->fNumAntiV0s;i++)
     {
@@ -1613,7 +1613,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	}//event Loop
     }//V0 Loop
 
-  
+
   //Loop for AntiV0-V0
   for(int i=0; i<(fEvt)->fNumAntiV0s;i++)
     {
@@ -1626,7 +1626,7 @@ void AliAnalysisTaskPLFemto::ParticlePairer()
 	}//event Loop
     }//V0 Loop
 
-  
+
   //calculate decay matrix for residual correlations:
   //we take it from another model
   //CalculateDecayMatrix();
@@ -1639,7 +1639,7 @@ void AliAnalysisTaskPLFemto::CalculateDecayMatrix()
     {
       Bool_t proton_from_weak = kFALSE;
       Bool_t lambda_from_weak = kFALSE;
-      
+
       //This vectors are needed to obtain the matrix:
       std::vector<AliFemtoProtonParticle> proton_vec;
       std::vector<AliFemtoProtonParticle> proton_from_weak_vec;
@@ -1648,9 +1648,9 @@ void AliAnalysisTaskPLFemto::CalculateDecayMatrix()
       //Protons feed down correlations:
       if((fEvt)->fNumProtons>1)
 	{
-	  for(int i=0;i<(fEvt)->fNumProtons;i++) 
+	  for(int i=0;i<(fEvt)->fNumProtons;i++)
 	    {
-	      if((fEvt)->fProtonParticle[i].fPDGCodeMother>0) 
+	      if((fEvt)->fProtonParticle[i].fPDGCodeMother>0)
 		{
 		  proton_from_weak = kTRUE;
 		  proton_from_weak_vec.push_back((fEvt)->fProtonParticle[i]);
@@ -1660,7 +1660,7 @@ void AliAnalysisTaskPLFemto::CalculateDecayMatrix()
 		  proton_vec.push_back((fEvt)->fProtonParticle[i]);
 		}
 	    }
-	  
+
 	  if(proton_from_weak && proton_from_weak_vec.size() == 1) //Only one feed down proton
 	    {
 	      for(std::vector<AliFemtoProtonParticle>::iterator protonA = proton_vec.begin(); protonA != proton_vec.end(); protonA++)
@@ -1672,30 +1672,30 @@ void AliAnalysisTaskPLFemto::CalculateDecayMatrix()
 		}
 	    }
 	}
-      
+
       proton_vec.clear();
       proton_from_weak_vec.clear();
 
       //Lambdas feed down correlations:
       if((fEvt)->fNumProtons>0 && (fEvt)->fNumV0s>0)
 	{
-	  for(int i=0;i<(fEvt)->fNumV0s;i++) 
+	  for(int i=0;i<(fEvt)->fNumV0s;i++)
 	    {
-	      if((fEvt)->fLambdaParticle[i].fPDGCodeMother>0) 
+	      if((fEvt)->fLambdaParticle[i].fPDGCodeMother>0)
 		{
 		  lambda_from_weak = kTRUE;
 		  lambda_from_weak_vec.push_back((fEvt)->fLambdaParticle[i]);
 		}
 	    }
-	  
-	  for(int i=0;i<(fEvt)->fNumProtons;i++) 
+
+	  for(int i=0;i<(fEvt)->fNumProtons;i++)
 	    {
-	      if((fEvt)->fProtonParticle[i].fPDGCodeMother == 0) 
+	      if((fEvt)->fProtonParticle[i].fPDGCodeMother == 0)
 		{
 		  proton_vec.push_back((fEvt)->fProtonParticle[i]);
 		}
 	    }
-	  
+
 
 	  if(lambda_from_weak && lambda_from_weak_vec.size() == 1) //Only one feed down V0
 	    {
@@ -1725,12 +1725,12 @@ Float_t AliAnalysisTaskPLFemto::PhiS(AliAODTrack *track,const Float_t bfield,con
   //now the ugly solution of the system of equations:
   Float_t firstTerm = (magCurv + xD)*(Radius*Radius + 2*magCurv*xD + xD*xD + yD*yD);
   Float_t secondTerm = -yD*yD*((2*magCurv-Radius+xD)*(Radius+xD) + yD*yD)*((xD-Radius)*(2*magCurv+Radius + xD)+yD*yD);
-  
+
   if(secondTerm<0) return -9999.;
-  
+
   Float_t nominator = firstTerm - TMath::Sqrt(secondTerm);
   Float_t denominator = 2*((magCurv+xD)*(magCurv+xD) + yD*yD);
-  
+
   //intersection point:
   Float_t interX = nominator/denominator;
 
@@ -1744,7 +1744,7 @@ Float_t AliAnalysisTaskPLFemto::PhiS(AliAODTrack *track,const Float_t bfield,con
   const Float_t phi0 = track->Phi();//angle at primary vertex
   const Float_t pt = track->Pt();
   const Float_t chg = track->Charge();
-  
+
   //To use the following equation:
   //pt must be given in GeV/c
   //bfield in T
@@ -1752,15 +1752,15 @@ Float_t AliAnalysisTaskPLFemto::PhiS(AliAODTrack *track,const Float_t bfield,con
   //radius in m
 
   //0.3 is a conversion factor for pt and bfield can be plugged in in terms of GeV/c and electric charge, 0.1 converts the magnetic field to Tesla, 0.01 transforms the radius from cm to m
-  Float_t phis = phi0 + TMath::ASin(0.1*chg*bfield*0.3*Radius*0.01/(2.*pt)); 
-    
+  Float_t phis = phi0 + TMath::ASin(0.1*chg*bfield*0.3*Radius*0.01/(2.*pt));
+
   return phis;
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskPLFemto::EtaS(const Float_t zVertex, const Float_t Radius)
 {
   Float_t thetaS = TMath::Pi()/2. - TMath::ATan(zVertex/Radius);
-  
+
   return -TMath::Log( TMath::Tan(thetaS/2.) );
 }
 //________________________________________________________________________
@@ -1769,7 +1769,7 @@ Bool_t AliAnalysisTaskPLFemto::ClosePairRejecter(Float_t deltaPhiS,Float_t delta
   Bool_t isTooClose = kFALSE;
 
   if(fabs(deltaPhiS)<0.045 && fabs(deltaEta)<0.01) isTooClose = kTRUE;
-  
+
   return isTooClose;
 }
 //________________________________________________________________________
@@ -1780,14 +1780,14 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
     Error("UserExec","NO EVENT FOUND!");
     return;
   }
-  
+
   fEvents++;
   TString fillthis = "";
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   fAODMCEvent = MCEvent(); //return NULL pointer in case of exp event, no problem
-  
+
   fCEvents->Fill(1);
-  
+
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
   fCEvents->Fill(2);
@@ -1808,10 +1808,10 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
   fillthis = "fVtxZ";
   ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(fPrimVertex[2]);
 
-  
+
   if(fPrimVertex[2] < fCuts->GetEvtzVertexLow() || fPrimVertex[2] > fCuts->GetEvtzVertexUp()) return;
   fCEvents->Fill(4);
-  
+
   //find the centrality and zBin for mixed event: 0=zBin, 1=MultBin
   Int_t *MixingBins = MultiplicityBinFinderzVertexBinFinder(aodEvent,fPrimVertex[2]);
   if(MixingBins[0]==-9999 || MixingBins[1]==-9999) return;//Multiplicity estimation fails
@@ -1822,11 +1822,11 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MultBin);
   fillthis = "fNBinsVertexmixing";
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(zBin);
-  
 
-  Bool_t isPileUp = PileUpRejection(aodEvent);
+
+  PileUpRejection(aodEvent);
   if(!aodEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)) fCEvents->Fill(7);
-  
+
   if(fAnaUtils->IsPileUpEvent(aodEvent)) return;//pile up rejection
   fCEvents->Fill(6);
 
@@ -1838,7 +1838,7 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
       AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
       if(!track) AliFatal("Not a standard AOD");
       if(!track) continue;
-      
+
       // Store the reference of the global tracks
       StoreGlobalTrackReference(track);
     }
@@ -1846,27 +1846,27 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
   fEventNumber++;
   //Calculate event shape (sphericity):
   fSphericityvalue = CalcSphericityEvent(aodEvent);
-    
+
   FIFOShifter(zBin,MultBin);//Put the information into the FIFO
   ProtonSelector(aodEvent); //Select primary protons
-  
+
   V0Selector(aodEvent); //Select V0s
   XiSelector(aodEvent); //Select Xis
 
   if(fProtonCounter>0 && fV0Counter>0) {fCEvents->Fill(8);}
   if(fAntiProtonCounter>0 && fAntiV0Counter>0) {fCEvents->Fill(9);}
-  
+
   TrackCleaner(); //Check for unique V0s and no track sharing between V0 daughter tracks and primary tracks
   Int_t *NumberOfParticles = new Int_t[2];
   NumberOfParticles = BufferFiller();//Fill the candidates to the buffer: 0=V0,1=Proton
   ParticlePairer(); //at this point the relevant distributions for the CF are built and mixing takes place
-  
+
   fillthis = "fNProtonsPerevent";
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(NumberOfParticles[1]);
-  
+
   fillthis = "fNLambdasPerevent";
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(NumberOfParticles[0]); //fill only unique candidates
-    
+
   PostData(1,fOutput);
   PostData(2,fOutputSP);
   PostData(3,fOutputPID);
@@ -1878,17 +1878,17 @@ Double_t AliAnalysisTaskPLFemto::Qinv(TLorentzVector trackV0,TLorentzVector trac
   // Copied from Hans Beck analysis who copied it from NA49:
   // Copied from NA49. See http://na49info.web.cern.ch/na49info/na49/Software/minidst/ana/html/src/T49Tool.cxx.html#T49Tool:Qinv
   //  Always using lambda mass (no mass difference found yet for lam <-> alam (see PDG))
-  
+
   TLorentzVector trackQ, trackP;
   trackQ = trackV0 - trackProton;
   trackP = trackV0 + trackProton;
-  
+
   Double_t qinvL = trackQ.Mag2();
   Double_t qP = trackQ.Dot(trackP);
   Double_t pinv = trackP.Mag2();
-  
+
   Double_t QinvLP = TMath::Sqrt(qP*qP/pinv - qinvL);
-  
+
   return QinvLP;
 }
 //________________________________________________________________________
@@ -1906,15 +1906,15 @@ Double_t AliAnalysisTaskPLFemto::relKcalc(TLorentzVector track1,TLorentzVector t
 
   track1cms = track1;
   track2cms = track2;
-  
+
   track1cms.Boost(-betax,-betay,-betaz);
   track2cms.Boost(-betax,-betay,-betaz);
 
   TLorentzVector trackRelK;
-  
+
   trackRelK = track1cms - track2cms;
   Double_t relK = 0.5*trackRelK.P();
-  
+
 
   return relK;
 }
@@ -1927,38 +1927,38 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v0,const
   trackV0.SetXYZM(v0.fMomentum.X(),v0.fMomentum.Y(),v0.fMomentum.Z(),fCuts->GetHadronMasses(3122));
   trackV0posdaughter.SetXYZM(v0.fMomentumPosDaughter.X(),v0.fMomentumPosDaughter.Y(),v0.fMomentumPosDaughter.Z(),fCuts->GetHadronMasses(2212));
   trackProton.SetXYZM(proton.fMomentum.X(),proton.fMomentum.Y(),proton.fMomentum.Z(),fCuts->GetHadronMasses(2212));
-  
+
   trackSum = trackV0 + trackProton;
-  
+
   Double_t relK = relKcalc(trackV0,trackProton);
   Double_t relKPPdaughter = relKcalc(trackProton,trackV0posdaughter);
   Double_t pairKT = 0.5*trackSum.Pt();
   double averageMass = 0.5*(fCuts->GetHadronMasses(3122) + fCuts->GetHadronMasses(2212));
   double pairMT = TMath::Sqrt(pow(pairKT,2.) + pow(averageMass,2.));
-  
+
 
   if(REorME == 0 && inputPair == kProtonV0)//real event
     {
       TString fillthis = "fPairkTLp";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairKT);
-            
+
       fillthis = "fProtonLambdaMT";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairMT);
-      
+
       fillthis = "fProtonLambdaRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fProtonLambdaPosDaughterRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relKPPdaughter);
 
       fillthis = "fNPairStatistics";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(1);
-      
+
       if(relK<0.15)
 	{
 	  fillthis = "fNPairStatistics";
 	  ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(2);
-	  
+
 	  fillthis = "fProtonLambdaMTrelKcut";
 	  ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairMT);
 	}
@@ -1967,17 +1967,17 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v0,const
     {
       TString fillthis = "fProtonLambdaRelKME";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fProtonLambdaPosDaughterRelKME";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relKPPdaughter);
-      
+
       if(fUseMCInfo) GetMomentumMatrix(v0,proton);//determines the amount of momentum resolution (from mixed event to enlarge statistics)
     }
   else if(REorME == 0 && inputPair == kAntiProtonV0)//real event
     {
       TString fillthis = "fAntiProtonLambdaRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fAntiProtonAntiLambdaPosDaughterRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relKPPdaughter);
     }
@@ -1986,7 +1986,7 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v0,const
     {
       TString fillthis = "fAntiProtonLambdaRelKME";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fAntiProtonAntiLambdaPosDaughterRelKME";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relKPPdaughter);
     }
@@ -2028,9 +2028,9 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoXiParticle &xi,const Ali
   TLorentzVector trackXi,trackProton;
   trackXi.SetXYZM(xi.fMomentum.X(),xi.fMomentum.Y(),xi.fMomentum.Z(),fCuts->GetHadronMasses(3312));
   trackProton.SetXYZM(proton.fMomentum.X(),proton.fMomentum.Y(),proton.fMomentum.Z(),fCuts->GetHadronMasses(2212));
-  
+
   Double_t relK = relKcalc(trackXi,trackProton);
-  
+
   if(REorME == 0 && inputPair == kProtonXi)//real event
     {
       TString fillthis = "fProtonXiRelK";
@@ -2056,13 +2056,13 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoXiParticle &xi,const Ali
 void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v01,const AliFemtoLambdaParticle &v02,Int_t REorME,pairType inputPair)
 {
   TLorentzVector trackV01,trackV02;
-  
+
   trackV01.SetXYZM(v01.fMomentum.X(),v01.fMomentum.Y(),v01.fMomentum.Z(),fCuts->GetHadronMasses(3122));
   trackV02.SetXYZM(v02.fMomentum.X(),v02.fMomentum.Y(),v02.fMomentum.Z(),fCuts->GetHadronMasses(3122));
-  
+
   Double_t relK = relKcalc(trackV01,trackV02);
-  
-  
+
+
   if(REorME == 0 && inputPair == kV0V0)//real event
     {
       TString fillthis = "fLambdaLambdaRelK";
@@ -2098,15 +2098,15 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v01,cons
 void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,const AliFemtoProtonParticle &protonB,Int_t REorME,pairType inputPair)
 {
   //This method analyses p-p correlations
-  
+
   TLorentzVector trackProtonA,trackProtonB,trackSum;
   TString fillthis = "";
-  
+
   trackProtonA.SetXYZM(protonA.fMomentum.X(),protonA.fMomentum.Y(),protonA.fMomentum.Z(),fCuts->GetHadronMasses(2212));
   trackProtonB.SetXYZM(protonB.fMomentum.X(),protonB.fMomentum.Y(),protonB.fMomentum.Z(),fCuts->GetHadronMasses(2212));
 
   trackSum = trackProtonA + trackProtonB;
-  
+
   Double_t relK = relKcalc(trackProtonA,trackProtonB);
   Double_t pairKT = 0.5*trackSum.Pt();
   Double_t pairMT = TMath::Sqrt(pow(pairKT,2.) + pow(fCuts->GetHadronMasses(2212),2.));
@@ -2115,32 +2115,32 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,
     {
       fillthis = "fProtonProtonRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fPairkTpp";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairKT);
-      
+
       fillthis = "fProtonProtonMT";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairMT);
-            
+
       fillthis = "fNPairStatistics";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(6);
-      
+
       if(relK < 0.15)
 	{
 	  fillthis = "fProtonProtonMTrelKcut";
 	  ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairMT);
-	  
+
 	  fillthis = "fNPairStatistics";
 	  ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(7);
 	}
-	
+
 
       //check for splitting/merging in angle space
       for(int radius=0; radius<9; radius++)
 	{
 	  Double_t deltaEta = protonA.fEta - protonB.fEta;
 	  Double_t deltaPhistar = protonA.fPhistar[radius] - protonB.fPhistar[radius];
-	  
+
 	  fillthis = "fDeltaEtaDeltaPhiTPCradpp";
 	  fillthis += radius;
 	  ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEta),TMath::Abs(deltaPhistar));
@@ -2150,7 +2150,7 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,
     {
       fillthis = "fProtonProtonRelKME";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       if(fUseMCInfo) GetMomentumMatrix(protonA,protonB);//Determine the momentum resolution (from mixed event to enlarge statistics)
 
 
@@ -2159,7 +2159,7 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,
 	{
 	  Double_t deltaEta = protonA.fEta - protonB.fEta;
 	  Double_t deltaPhistar = protonA.fPhistar[radius] - protonB.fPhistar[radius];
-	  
+
 	  fillthis = "fDeltaEtaDeltaPhiTPCradppME";
 	  fillthis += radius;
 	  ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEta),TMath::Abs(deltaPhistar));
@@ -2175,7 +2175,7 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,
 
       fillthis = "fNPairStatistics";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(8);
-      
+
       if(relK < 0.15)
 	{
 	  fillthis = "fNPairStatistics";
@@ -2191,7 +2191,7 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoProtonParticle &protonA,
     {
       fillthis = "fAntiProtonProtonRelK";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(relK);
-      
+
       fillthis = "fPairkTApp";
       ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairKT);
     }
@@ -2211,8 +2211,8 @@ void AliAnalysisTaskPLFemto::TripleAnalysis(const AliFemtoLambdaParticle &v0,con
   trackProton1.SetXYZM(proton1.fMomentum.X(),proton1.fMomentum.Y(),proton1.fMomentum.Z(),fCuts->GetHadronMasses(2212));
   trackProton2.SetXYZM(proton2.fMomentum.X(),proton2.fMomentum.Y(),proton2.fMomentum.Z(),fCuts->GetHadronMasses(2212));
   trackV0.SetXYZM(v0.fMomentum.X(),v0.fMomentum.Y(),v0.fMomentum.Z(),fCuts->GetHadronMasses(3122));
-  
-  
+
+
   Double_t relK12 = relKcalc(trackProton1,trackProton2);
   Double_t relK13 = relKcalc(trackProton1,trackV0);
   Double_t relK23 = relKcalc(trackProton2,trackV0);
@@ -2268,15 +2268,15 @@ void AliAnalysisTaskPLFemto::TripleAnalysis(const AliFemtoProtonParticle &proton
 Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *aodEvent,TString ParOrAPar)
 {
   //This function selects the V0s according to given criteria which were studied with Monte Carlo
-  
+
   TString fillthis = "";
-  
+
   // Get the coordinates of the primary vertex
   Double_t xvP = aodEvent->GetPrimaryVertex()->GetX();
   Double_t yvP = aodEvent->GetPrimaryVertex()->GetY();
   Double_t zvP = aodEvent->GetPrimaryVertex()->GetZ();
-  Double_t vecTarget[3]={xvP,yvP,zvP}; 
-  Double_t vV0[3]; 
+  Double_t vecTarget[3]={xvP,yvP,zvP};
+  Double_t vV0[3];
 
   v0->GetXYZ(vV0);
   Double_t V0pt = v0->Pt();
@@ -2290,27 +2290,27 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
   Double_t point = v0->CosPointingAngle(vecTarget);
   Double_t transverseRadius = v0->DecayLengthXY(vecTarget);
 
-  
+
   if(ParOrAPar == fwhichV0)
     {
       fillthis = "fLambdaDCADaughterTracks";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaV0Dau);
-  
+
       fillthis = "fLambdaDCAPrimVertex";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaPrim);
-      
+
       fillthis = "fLambdaDCAPosdaughPrimVertex";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaPrimPos);
-  
+
       fillthis = "fLambdaDCANegdaughPrimVertex";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaPrimNeg);
-  
+
       fillthis = "fLambdaDecaylength";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(lenDecay);
-  
+
       fillthis = "fLambdaCosPointingAngle";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(point);
-  
+
       fillthis = "fLambdaTransverseRadius";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(transverseRadius);
     }
@@ -2318,12 +2318,12 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
     {
       //conditions for AntiV0 must be implemented!
     }
-  
-  
+
+
   if(fUseMCInfo && ParOrAPar == fwhichV0)
     {
       Bool_t realV0 = CheckIfRealV0(v0,aodEvent,3122,2212,211);
-      
+
       if(realV0)
 	{
 	  fillthis = "fDCAV0PosdaughMC";
@@ -2331,13 +2331,13 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
 
 	  fillthis = "fDCAV0NegdaughMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaPrimNeg,V0pt);
-	  
+
 	  fillthis = "fTrRadiusV0MC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(transverseRadius,V0pt);
 
 	  fillthis = "fPoinAngleV0MC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(point,V0pt);
-	  
+
 	  fillthis = "fLambdaV0vertexXMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(vV0[0],V0pt);
 
@@ -2357,13 +2357,13 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
 
 	  fillthis = "fDCAbkgNegdaughMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(dcaPrimNeg,V0pt);
-	  
+
 	  fillthis = "fTrRadiusbkgMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(transverseRadius,V0pt);
 
 	  fillthis = "fPoinAnglebkgMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(point,V0pt);
-	  
+
 	  fillthis = "fLambdabkgvertexXMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(vV0[0],V0pt);
 
@@ -2372,42 +2372,42 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
 
 	  fillthis = "fLambdabkgvertexZMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(vV0[2],V0pt);
-	  
+
 	  fillthis = "fDecayLengthbkgMC";
 	  ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(lenDecay,V0pt);
 	}
     }
-  
+
   //Check if the V0 fulfills the topological cut criteria:
   if(fabs(vV0[0]) > fCuts->GetV0decayvtxcut()) return kFALSE;
   if(fabs(vV0[1]) > fCuts->GetV0decayvtxcut()) return kFALSE;
   if(fabs(vV0[2]) > fCuts->GetV0decayvtxcut()) return kFALSE;
-  
+
   if(transverseRadius < fCuts->GetV0rxylow()) return kFALSE;
   if(transverseRadius > fCuts->GetV0rxyup()) return kFALSE;
   if(dcaPrimPos < fCuts->GetV0DCAtrPV()) return kFALSE;
   if(dcaPrimNeg < fCuts->GetV0DCAtrPV())  return kFALSE;
   if(dcaV0Dau > fCuts->GetV0DCAtracksV0decay()) return kFALSE;
-  
+
 
   //Fill the pointing angle as a function of pt
   int ptbin = fCuts->FindV0PtBinCPA(V0pt);
-  
+
   if(ParOrAPar == fwhichV0 && ptbin != -9999)
     {
       Double_t MassV0 = v0->MassLambda();
-      
+
       fillthis = "fLambdaCPAPtBin";
       fillthis += ptbin;
       if(MassV0>(fCuts->GetHadronMasses(3122)-fCuts->GetV0PID_width()) && MassV0<(fCuts->GetHadronMasses(3122)+fCuts->GetV0PID_width()) && ParOrAPar == fwhichV0)
 	{
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(point);//Fill pointing angle only for Lambda candidates
 	}
-          
+
       if(fUseMCInfo)
 	{
 	  Bool_t realV0 = CheckIfRealV0(v0,aodEvent,3122,2212,211);
-	  
+
 	  if(realV0)//these are true MC V0s
 	    {
 	      TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -2416,11 +2416,11 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
 	      Int_t label = v0->MatchToMC(3122,mcarray,2,daugh);
 	      AliAODMCParticle *MCv0 = (AliAODMCParticle*)mcarray->At(label);
 	      if(!MCv0) return kFALSE;;
-	      
+
 	      fillthis = "fLambdaCPAAllPtBin";
 	      fillthis += ptbin;
 	      ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(point);
-	      
+
 	      if(MCv0->IsPhysicalPrimary() && !MCv0->IsSecondaryFromWeakDecay())
 		{
 		  fillthis = "fLambdaCPAPrimaryPtBin";
@@ -2450,29 +2450,29 @@ Bool_t AliAnalysisTaskPLFemto::V0TopologicalSelection(AliAODv0 *v0,AliAODEvent *
 		  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(point);//Fill background only in the selection region
 		}
 	    }
-      
+
 	}
     }
-  
+
 
   if(point < fCuts->GetV0pointing()) return kFALSE;
-  
+
   return kTRUE;
 }
 //________________________________________________________________________
 inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* aodEvent,TString ParOrAPar)
 {
   Double_t MassV0 = 0.;
-  
+
   TString fillthis = "";
-  
-  if(ParOrAPar == fwhichV0) 
+
+  if(ParOrAPar == fwhichV0)
     {
       Double_t MassK0 = v0->MassK0Short();
       MassV0 = v0->MassLambda();
       fillthis = "fInvMassMissIDK0s";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassK0);
-      
+
       if(MassK0 < fCuts->GetK0sAntiCutLow() || fCuts->GetK0sAntiCutUp() < MassK0)
 	{
 	  //This cuts out the peak of the K0s
@@ -2480,7 +2480,7 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassK0);
 	}
       else return;
-      
+
     }
   else if(ParOrAPar == fwhichAntiV0)
     {
@@ -2488,7 +2488,7 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
       Double_t MassK0 = v0->MassK0Short();
       fillthis = "fInvMassMissIDK0s";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassK0);
-      
+
       if(MassK0 < fCuts->GetK0sAntiCutLow() || fCuts->GetK0sAntiCutUp() < MassK0)
 	{
 	  fillthis = "fInvMassMissIDK0swCuts";
@@ -2497,13 +2497,13 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
       else return;
     }
   else if(ParOrAPar == "Kaon" || ParOrAPar == "Anti-Kaon") MassV0 = v0->MassK0Short();
-  
-  
+
+
   Bool_t V0Cuts = V0TopologicalSelection(v0,aodEvent,ParOrAPar);//calculates the topological cut conditions
   Double_t xvP = aodEvent->GetPrimaryVertex()->GetX();
   Double_t yvP = aodEvent->GetPrimaryVertex()->GetY();
   Double_t zvP = aodEvent->GetPrimaryVertex()->GetZ();
-  Double_t vecTarget[3]={xvP,yvP,zvP}; 
+  Double_t vecTarget[3]={xvP,yvP,zvP};
   Double_t point = v0->CosPointingAngle(vecTarget);
 
   if(ParOrAPar == fwhichV0)
@@ -2516,22 +2516,22 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
       fillthis = "fInvMassAntiLambdawoCuts";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
     }
-  else 
+  else
     {
       std::cout << "Specify which V0 you want to analyse" << std::endl;
       return;
     }
-  
+
   if(V0Cuts)// apply vertex cuts
     {
       AliAODTrack* pTrack = fGTI[v0->GetPosID()];
       AliAODTrack* nTrack = fGTI[v0->GetNegID()];
-      
+
       if(!pTrack || !nTrack) return;
-      
+
       Double_t charge1 = pTrack->Charge();
       Double_t charge2 = nTrack->Charge();
-  
+
       if(charge1 < 0. && charge2 > 0. && ParOrAPar == fwhichV0)//assign correct charge to tracks from V0
 	{
 	  pTrack = fGTI[v0->GetNegID()];//proton as positive particle
@@ -2542,19 +2542,19 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  pTrack = fGTI[v0->GetNegID()];//anti-proton as negative particle
 	  nTrack = fGTI[v0->GetPosID()];//anti-pion as positive particle
 	}
-      
+
       // Lambda or AntiLambda
       if(ParOrAPar == fwhichV0)
 	{
 	  fillthis = "fInvMassLambdawCuts";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
-	  
+
 	  if(fProtonCounter>0)
 	    {
 	      fillthis = "fInvMassLambdawCutsAfterSelection";
 	      ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
 	    }
-	  
+
 	  Int_t ptbin = fCuts->FindV0PtBinInvMass(v0->Pt());
 
 	  if(ParOrAPar == fwhichV0 && ptbin != -9999)
@@ -2569,12 +2569,12 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  fillthis = "fInvMassAntiLambdawCuts";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
 	}
-      
+
       //Save all the information of the V0
       //_____________________________________________________
       Bool_t which_V0_region = kFALSE;
       Bool_t which_AntiV0_region = kFALSE;
-      
+
       if(fwhichV0region == "left")
 	{
 	  if(MassV0<1.105 && ParOrAPar == fwhichV0) which_V0_region = kTRUE;
@@ -2590,22 +2590,22 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  if(MassV0>(fCuts->GetHadronMasses(3122)-fCuts->GetV0PID_width()) && MassV0<(fCuts->GetHadronMasses(3122)+fCuts->GetV0PID_width()) && ParOrAPar == fwhichV0) which_V0_region = kTRUE;
 	  else if(MassV0>(fCuts->GetHadronMasses(3122)-fCuts->GetV0PID_width()) && MassV0<(fCuts->GetHadronMasses(3122)+fCuts->GetV0PID_width()) && ParOrAPar == fwhichAntiV0) which_AntiV0_region = kTRUE;
 	}
-      
-      
+
+
       if(which_V0_region && ParOrAPar == fwhichV0)
 	{
 	  fillthis = "fLambdaPt";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(v0->Pt());
-	  
+
 	  fillthis = "fLambdaPhi";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(v0->Phi());
-	  
+
 	  fillthis = "fLambdaEta";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(v0->Eta());
 
 	  fillthis = "fInvMassLambdawCutsAfterMassCut";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MassV0);
-	  
+
 	  if(fV0Counter > kV0TrackLimit) return;
 	  if(pTrack->GetID() == nTrack->GetID()) return; //should never happen
 	  fV0cand[fV0Counter].fPt = v0->Pt();
@@ -2620,7 +2620,7 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  fV0cand[fV0Counter].fMomentumNegDaughter.SetXYZ(nTrack->Px(),nTrack->Py(),nTrack->Pz());
 	  GetGlobalPositionAtGlobalRadiiThroughTPC(pTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fPosDaughPosTPC,fPrimVertex);
 	  GetGlobalPositionAtGlobalRadiiThroughTPC(nTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fNegDaughPosTPC,fPrimVertex);
-	  
+
 	  if(fUseMCInfo)// if monte carlo
 	    {
 	      if(CheckMCPID(v0,aodEvent,3122)) fV0cand[fV0Counter].fReal = kTRUE;
@@ -2640,12 +2640,12 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	      fV0cand[fV0Counter].fMomentumMC.SetXYZ(-9999.,-9999.,-9999.);
 	      fV0cand[fV0Counter].fMomentumMCMother.SetXYZ(-9999.,-9999.,-9999.);
 	    }
-	  
+
 	  if(!fV0cand[fV0Counter].fV0tag) std::cout << "something is wrong with the V0 tag" << std::endl;
-	  
+
 	  fillthis = "fNLambdasTot";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(1); //fill only unique candidates
-	  
+
 	  fV0Counter++;//This is a V0 (Lambda) candidate
 	}
       else if(which_AntiV0_region && ParOrAPar == fwhichAntiV0)//fill only in a certain mass range
@@ -2659,7 +2659,7 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  fAntiV0cand[fAntiV0Counter].fMomentum.SetXYZ(v0->Px(),v0->Py(),v0->Pz());
 	  fAntiV0cand[fAntiV0Counter].fMass = MassV0;
 	  fAntiV0cand[fAntiV0Counter].fPointing = point;
-	  
+
 	  fAntiV0cand[fAntiV0Counter].fV0tag = kTRUE;
 	  fAntiV0cand[fAntiV0Counter].fDaughterID1 = pTrack->GetID();
 	  fAntiV0cand[fAntiV0Counter].fDaughterID2 = nTrack->GetID();
@@ -2677,22 +2677,22 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskPLFemto::Terminate(Option_t*)
-{    
+{
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
-  
+
   //Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
-  
+
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutput) {     
+  if (!fOutput) {
     printf("ERROR: fOutput not available\n");
     return;
   }
-  
+
   //fCEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fCEvents"));
-  
+
   fOutputSP = dynamic_cast<TList*> (GetOutputData(2)); //1
   if (!fOutputSP) {
     printf("ERROR: fOutputAll not available\n");
@@ -2703,24 +2703,24 @@ void AliAnalysisTaskPLFemto::Terminate(Option_t*)
     printf("ERROR: fOutputPID not available\n");
     return;
   }
-  
+
   fOutputTP = dynamic_cast<TList*> (GetOutputData(4));//3
   if (!fOutputTP) {
     printf("ERROR: fOutputTP not available\n");
     return;
   }
-  
+
   return;
 }
 //___________________________________________________________________________
-void AliAnalysisTaskPLFemto::UserCreateOutputObjects() 
+void AliAnalysisTaskPLFemto::UserCreateOutputObjects()
 {
   std::cout << "Create Output Objects" << std::endl;
 
  // output
   Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
-  
-  //slot #1  
+
+  //slot #1
   //OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner();
@@ -2729,21 +2729,21 @@ void AliAnalysisTaskPLFemto::UserCreateOutputObjects()
   fOutputPID = new TList();
   fOutputPID->SetOwner();
   fOutputPID->SetName("listPID");
-  
+
   fOutputSP = new TList();
   fOutputSP->SetOwner();
   fOutputSP->SetName("listSP");
-  
+
   fOutputTP = new TList();
   fOutputTP->SetOwner();
   fOutputTP->SetName("listTP");
-  
+
   // define histograms
   DefineHistograms(fwhichV0);
 
-  
-  fGTI = new AliAODTrack *[fTrackBuffSize]; // Array of pointers 
-  
+
+  fGTI = new AliAODTrack *[fTrackBuffSize]; // Array of pointers
+
   //for particle identification
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(!man){AliError("Couldn't get the analysis manager!");}
@@ -2751,12 +2751,12 @@ void AliAnalysisTaskPLFemto::UserCreateOutputObjects()
   if(!inputHandler){AliError("Couldn't get the input handler!");}
   fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse){AliError("Couldn't get the PID response task!");}
-  
+
   PostData(1,fOutput);
   PostData(2,fOutputSP);
   PostData(3,fOutputPID);
   PostData(4,fOutputTP);
-  
+
   return;
 }
 //___________________________________ hiostograms _______________________________________
@@ -2768,7 +2768,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetTitle("1");
   fCEvents->GetYaxis()->SetTitle("counts");
-  
+
   //***************************************************************************
   //Global event histograms
   //***************************************************************************
@@ -2789,10 +2789,10 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fProtonDCAxyValue->SetBinContent(1,fCuts->GetProtonDCAxyCut());
   TH1F* fProtonDCAzValue = new TH1F("fProtonDCAzValue","DCAxy value for protons",10,0,10);
   fProtonDCAzValue->SetBinContent(1,fCuts->GetProtonDCAzCut());
-  
+
   TH1F* fTrackselection = new TH1F("fTrackselection","which filterbit was used to select the tracks",10,0,10);
   fTrackselection->SetBinContent(1,fWhichfilterbit);
-  
+
   //Define single particle histograms event related:
   TH1F* fWhichAnalysis = new TH1F("fWhichAnalysis","Which V0 is correlated, 1:Lambda,2:KOshort",10,0,10);
   TH1F* fWhichV0region = new TH1F("fWhichV0region","Sideband or signal: 1:left sideband,2:signal,3:right sideband",10,0,10);
@@ -2810,7 +2810,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   if(fwhichV0region == "left") fWhichV0region->Fill(1);
   else if(fwhichV0region == "signal") fWhichV0region->Fill(2);
   else if(fwhichV0region == "right") fWhichV0region->Fill(3);
-  
+
   if(fUseMCInfo) fMCorExp->Fill(1);
   else fMCorExp->Fill(2);
 
@@ -2832,7 +2832,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutput->Add(fProtonDCAzValue);
   fOutput->Add(fTrackselection);
   fOutput->Add(fMCorExp);
-  
+
 
   //***************************************************************************
   //***************************************************************************
@@ -2844,7 +2844,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   //***************************************************************************
   Float_t invMassLow = 0.;
   Float_t invMassUp = 0.;
-  
+
   if(whichV0=="Lambda")
     {
       invMassLow = 1.;
@@ -2855,15 +2855,15 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
       invMassLow = 0.4;
       invMassUp = 0.6;
     }
-  
+
   TH1F* fInvMassLambdawCuts = new TH1F("fInvMassLambdawCuts","Invariant mass of Lambda(p #pi) (GeV/c) with topological cuts",400,invMassLow,invMassUp);
   TH1F* fInvMassLambdawoCuts = new TH1F("fInvMassLambdawoCuts","Invariant mass of Lambda(p #pi) (GeV/c) without topological cuts",400,invMassLow,invMassUp);
   TH1F* fInvMassLambdawCutsAfterSelection = new TH1F("fInvMassLambdawCutsAfterSelection","Invariant mass of Lambda(p #pi) (GeV/c) with topological cuts and after proton selection",400,invMassLow,invMassUp);
   TH1F* fInvMassLambdawCutsAfterMassCut = new TH1F("fInvMassLambdawCutsAfterMassCut","Invariant mass of Lambda(p #pi) (GeV/c) with vertex cuts and Mass cut of 4 MeV/c²",400,invMassLow,invMassUp);
-  
+
   //Differential Analysis in Pt:
   TH1F* fInvMassLambdawCutsPtBin[fCuts->GetV0PtBinsInvMass()];
-  
+
   for(Int_t i=0; i<fCuts->GetV0PtBinsInvMass(); i++)
     {
       TString HistName = "fInvMassLambdawCutsPtBin";
@@ -2878,7 +2878,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 
   TH1F* fInvMassMissIDK0s = new TH1F("fInvMassMissIDK0s","Invariant mass of K0s under the hypothesis we have a lambda",400,0.4,0.6);
   TH1F* fInvMassMissIDK0swCuts = new TH1F("fInvMassMissIDK0swCuts","Invariant mass of K0s after mass cut applied",400,0.4,0.6);
-  
+
 
   TH1F* fXiInvMasswoCuts = new TH1F("fXiInvMasswoCuts","Invariant mass of Xi candidate",300,1.2,1.5);
   TH1F* fXiInvMasswCuts = new TH1F("fXiInvMasswCuts","Invariant mass of Xi candidate with topological cuts",300,1.2,1.5);
@@ -2902,7 +2902,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 
   TH2F* fProtonDCAxyDCAzMCPtBin[5][fCuts->GetPtBinsDCA()];
   TH2F* fProtonDCAxyDCAzPt[fCuts->GetPtBinsDCA()];
-  
+
   for(int ProtonCases = 0; ProtonCases < 5; ProtonCases++)//primary, secondary, ....
     {
       for(int ptbins = 0; ptbins < fCuts->GetPtBinsDCA(); ptbins++)
@@ -2911,7 +2911,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 	  HistName += ProtonCases;
 	  HistName += "PtBin";
 	  HistName += ptbins;
-	  
+
 	  fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins] = new TH2F(HistName.Data(),"DCAz vs DCAxy for different pt Bins",500,-5,5,500,-5,5);
 	  fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins]->Sumw2();
 	  if(fUseMCInfo) fOutputSP->Add(fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins]);
@@ -2928,21 +2928,21 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 	    }
 	}
     }
-  
+
   TH1F* fLambdaCPAPtBin[fCuts->GetV0PtBinsCPA()];
   TH1F* fLambdaCPAAllPtBin[fCuts->GetV0PtBinsCPA()];
   TH1F* fLambdaCPAPrimaryPtBin[fCuts->GetV0PtBinsCPA()];
   TH1F* fLambdaCPASecondaryPtBin[fCuts->GetV0PtBinsCPA()];
   TH1F* fLambdaCPAMaterialPtBin[fCuts->GetV0PtBinsCPA()];
   TH1F* fLambdaCPABkgPtBin[fCuts->GetV0PtBinsCPA()];
-  
+
   for(int ptbins = 0; ptbins < fCuts->GetV0PtBinsCPA(); ptbins++)
     {
       TString HistName = "fLambdaCPAPtBin";
       HistName += ptbins;
       fLambdaCPAPtBin[ptbins] = new TH1F(HistName.Data(),"Cosine of pointing angle as function of pt for all V0s",100,0.99,1);
       fOutputSP->Add(fLambdaCPAPtBin[ptbins]);
-      
+
       if(fUseMCInfo)
 	{
 	  HistName = "fLambdaCPAAllPtBin";
@@ -2954,7 +2954,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 	  HistName += ptbins;
 	  fLambdaCPAPrimaryPtBin[ptbins] = new TH1F(HistName.Data(),"Cosine of pointing angle as function of pt for primary real V0s",100,0.99,1);
 	  fOutputSP->Add(fLambdaCPAPrimaryPtBin[ptbins]);
-	  
+
 	  HistName = "fLambdaCPASecondaryPtBin";
 	  HistName += ptbins;
 	  fLambdaCPASecondaryPtBin[ptbins] = new TH1F(HistName.Data(),"Cosine of pointing angle as function of pt for secondary real V0s",100,0.99,1);
@@ -2972,7 +2972,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 	}
     }
 
-  
+
   TH1F* fLambdaPt = new TH1F("fLambdaPt","Transverse momentum spectrum of V0s",50,0.,10.);
   TH1F* fLambdaPhi = new TH1F("fLambdaPhi","Phi angle spectrum of V0s",300,-1,2.*TMath::Pi());
   TH1F* fLambdaEta = new TH1F("fLambdaEta","Eta spectrum of V0s",400,-2,2);
@@ -2982,7 +2982,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH1F* fProtonEta = new TH1F("fProtonEta","Pseudorapidity spectrum of protons",400,-2,2);
 
   TH1F* fAntiProtonPt = new TH1F("fAntiProtonPt","Transverse momentum spectrum of Anti-protons",50,0.,10.);
-  
+
   TH2F* fLambdaV0vertexXMC = new TH2F("fLambdaV0vertexXMC","Vertex X of V0 decay vertex",800,-300,300,100,0,10);
   TH2F* fLambdaV0vertexYMC = new TH2F("fLambdaV0vertexYMC","Vertex Y of V0 decay vertex",800,-300,300,100,0,10);
   TH2F* fLambdaV0vertexZMC = new TH2F("fLambdaV0vertexZMC","Vertex Z of V0 decay vertex",800,-300,300,100,0,10);
@@ -3014,8 +3014,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH1F* fNV0protonSharedTracks = new TH1F("fNV0protonSharedTracks","How often share a V0 and a proton the same track?",10,0,10);
   TH1F* fNAntiV0protonSharedTracks = new TH1F("fNAntiV0protonSharedTracks","How often share a Anti-V0 and a proton the same track?",10,0,10);
   TH1F* fNAntiV0AntiprotonSharedTracks = new TH1F("fNAntiV0AntiprotonSharedTracks","How often share a Anti-V0 and a Anti-proton the same track?",10,0,10);
-  
-  
+
+
   TH1F* fFeeddownProton = new TH1F("fFeeddownProton","1: total number of protons, 2: Primary, 3: from weak decays, 4: from material",10,0,10);
   TH1F* fFeeddownProtonFromWeakPDG = new TH1F("fFeeddownProtonFromWeakPDG","Protons stemming from weak decays",213,3121,3334);
   TH1F* fFeeddownV0 = new TH1F("fFeeddownV0","1: total number of protons, 2: Primary, 3: from weak decays, 4: from material",10,0,10);
@@ -3027,7 +3027,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH1F* fFindableClusterAntiProton = new TH1F("fFindableClusterAntiProton","Number of findable cluster for protons",200,0,200);
   TH1F* fNCrossedRowsAntiProton = new TH1F("fNCrossedRowsAntiProton","Number of crossed rows for protons",200,0,200);
   TH1F* fRatioFindableCrossedAntiProton = new TH1F("fRatioFindableCrossedAntiProton","Number of crossed rows over findable cluster for protons",200,0,1.5);
-  
+
 
   fInvMassLambdawCuts->Sumw2();
   fInvMassAntiLambdawCuts->Sumw2();
@@ -3037,13 +3037,13 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fInvMassLambdawCutsAfterSelection->Sumw2();
   fInvMassMissIDK0s->Sumw2();
   fInvMassMissIDK0swCuts->Sumw2();
-  
+
   fXiInvMasswoCuts->Sumw2();
   fXiInvMasswCuts->Sumw2();
 
   fProtonDCAxy->Sumw2();
   fProtonDCAxyCutz->Sumw2();
-  fProtonDCAz->Sumw2();  
+  fProtonDCAz->Sumw2();
   fProtonDCAxyDCAz->Sumw2();
   fAntiProtonDCAxy->Sumw2();
   fAntiProtonDCAxyCutz->Sumw2();
@@ -3056,13 +3056,13 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputSP->Add(fInvMassLambdawCuts);
   fOutputSP->Add(fInvMassLambdawoCuts);
   fOutputSP->Add(fInvMassLambdawCutsAfterSelection);
-    
+
   fOutputSP->Add(fInvMassLambdawCutsAfterMassCut);
   fOutputSP->Add(fInvMassAntiLambdawCuts);
   fOutputSP->Add(fInvMassAntiLambdawoCuts);
   fOutputSP->Add(fInvMassMissIDK0s);
   fOutputSP->Add(fInvMassMissIDK0swCuts);
-  
+
   fOutputSP->Add(fXiInvMasswoCuts);
   fOutputSP->Add(fXiInvMasswCuts);
   fOutputSP->Add(fXiInvMassLambda);
@@ -3087,7 +3087,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputSP->Add(fNAntiV0protonSharedTracks);
   fOutputSP->Add(fNAntiV0AntiprotonSharedTracks);
 
-  
+
   if(fUseMCInfo)
     {
       fOutputSP->Add(fLambdaV0vertexXMC);
@@ -3107,7 +3107,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
       fOutputSP->Add(fDecayLengthV0MC);
       fOutputSP->Add(fDecayLengthbkgMC);
     }
-  
+
 
   fOutputSP->Add(fLambdaDCADaughterTracks);
   fOutputSP->Add(fLambdaDCAPrimVertex);
@@ -3124,7 +3124,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputSP->Add(fAntiProtonDCAxyCutz);
   fOutputSP->Add(fAntiProtonDCAz);
   fOutputSP->Add(fAntiProtonDCAxyDCAz);
-  
+
   if(fUseMCInfo)
     {
       fOutputSP->Add(fFeeddownProton);
@@ -3149,7 +3149,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH1F* fProtonLambdaPosDaughterRelKME = new TH1F("fProtonLambdaPosDaughterRelKME","Relative momentum of daughter proton and primary proton ME",150,0.,3.);
   TH1F* fAntiProtonAntiLambdaPosDaughterRelK = new TH1F("fAntiProtonAntiLambdaPosDaughterRelK","Relative momentum of daughter anti-proton and primary anti-proton RE",150,0.,3.); //first choice was 300 bins
   TH1F* fAntiProtonAntiLambdaPosDaughterRelKME = new TH1F("fAntiProtonAntiLambdaPosDaughterRelKME","Relative momentum of daughter anti-proton and primary anti-proton ME",150,0.,3.);
-  
+
 
   //Antip-Antilambda
   TH1F* fAntiProtonAntiLambdaRelK = new TH1F("fAntiProtonAntiLambdaRelK","Relative momentum of Anti-V0-Antip RE",500,0.,3.); //first choice was 300 bins
@@ -3163,17 +3163,17 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH1F* fAntiProtonLambdaRelKME = new TH1F("fAntiProtonLambdaRelKME","Relative momentum of V0-Anti-p ME",150,0.,3.);
   TH1F* fProtonAntiLambdaRelK = new TH1F("fProtonAntiLambdaRelK","Relative momentum of Anti-V0-p RE",150,0.,3.);
   TH1F* fProtonAntiLambdaRelKME = new TH1F("fProtonAntiLambdaRelKME","Relative momentum of Anti-V0-p ME",150,0.,3.);
-  
+
   //p-Xi
   TH1F* fProtonXiRelK = new TH1F("fProtonXiRelK","Relative momentum of Xi-p RE",150,0.,3.);
   TH1F* fProtonXiRelKME = new TH1F("fProtonXiRelKME","Relative momentum of Xi-p ME",150,0.,3.);
-  TH1F* fAntiProtonXiRelK = new TH1F("fAntiProtonXiRelK","Relative momentum of Xi-Antip RE",150,0.,3.); 
+  TH1F* fAntiProtonXiRelK = new TH1F("fAntiProtonXiRelK","Relative momentum of Xi-Antip RE",150,0.,3.);
   TH1F* fAntiProtonXiRelKME = new TH1F("fAntiProtonXiRelKME","Relative momentum of Xi-Antip ME",150,0.,3.);
-  
+
   //p-p
   TH1F* fProtonProtonRelK = new TH1F("fProtonProtonRelK","Relative momentum of pp RE",750,0.,3.);
   TH1F* fProtonProtonRelKME = new TH1F("fProtonProtonRelKME","Relative momentum of pp ME",750,0.,3.);
-  
+
   TH1F* fProtonProtonMT = new TH1F("fProtonProtonMT","Transverse mass of pp",1000,0.,10.);
   TH1F* fProtonProtonMTrelKcut = new TH1F("fProtonProtonMTrelKcut","Transverse mass of pp with relative momentum cut",1000,0.,10.);
 
@@ -3184,38 +3184,38 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   //p-p-V0
   TH1F* fProtonProtonLambdaRelK = new TH1F("fProtonProtonLambdaRelK","Relative momentum of p-p-Lambda RE",300,0.,6.);
   TH1F* fProtonProtonLambdaRelKME = new TH1F("fProtonProtonLambdaRelKME","Relative momentum of p-p-Lambda ME",300,0.,6.);
-  
-  
+
+
   //Antip-Antip
   TH1F* fAntiProtonAntiProtonRelK = new TH1F("fAntiProtonAntiProtonRelK","Relative momentum of antip-antip RE",750,0.,3.);
   TH1F* fAntiProtonAntiProtonRelKME = new TH1F("fAntiProtonAntiProtonRelKME","Relative momentum of antip-antip ME",750,0.,3.);
-  
+
   //Antip-p
   TH1F* fAntiProtonProtonRelK = new TH1F("fAntiProtonProtonRelK","Relative momentum of antip-p RE",300,0.,3.);
   TH1F* fAntiProtonProtonRelKME = new TH1F("fAntiProtonProtonRelKME","Relative momentum of p-antip ME",300,0.,3.);
-  
+
   //Lambda-Lambda
   TH1F* fLambdaLambdaRelK = new TH1F("fLambdaLambdaRelK","Relative momentum of V0-V0 RE",150,0.,3.);
   TH1F* fLambdaLambdaRelKME = new TH1F("fLambdaLambdaRelKME","Relative momentum of V0-V0 ME",150,0.,3.);
-  
+
   //AntiLambda-Lambda
   TH1F* fAntiLambdaLambdaRelK = new TH1F("fAntiLambdaLambdaRelK","Relative momentum of AntiV0-V0 RE",150,0.,3.);
   TH1F* fAntiLambdaLambdaRelKME = new TH1F("fAntiLambdaLambdaRelKME","Relative momentum of V0-V0 ME",150,0.,3.);
-  
+
   //AntiLambda-AntiLambda
   TH1F* fAntiLambdaAntiLambdaRelK = new TH1F("fAntiLambdaAntiLambdaRelK","Relative momentum of AntiV0-AntiV0 RE",150,0.,3.);
   TH1F* fAntiLambdaAntiLambdaRelKME = new TH1F("fAntiLambdaAntiLambdaRelKME","Relative momentum of AntiV0-AntiV0 ME",150,0.,3.);
-  
+
   TH1F* fNProtonLambdaPairs = new TH1F("fNProtonLambdaPairs","Number of V0-p pairs in an event",200,0,100);
   TH1F* fNPairStatistics = new TH1F("fNPairStatistics","Number of pairs under certain condition",40,0,10);
-  
+
 
   TH1F* fPairkTLp = new TH1F("fPairkTLp","total transverse momentum of V0-p pair",1000,0.,10.);
   TH1F* fPairkTpp = new TH1F("fPairkTpp","total transverse momentum of p-p pair",1000,0.,10.);
   TH1F* fPairkTApAp = new TH1F("fPairkTApAp","total transverse momentum of Ap-Ap pair",1000,0.,10.);
   TH1F* fPairkTApp = new TH1F("fPairkTApp","total transverse momentum of Ap-p pair",1000,0.,10.);
   const Int_t NumberTPCrad = 9;
-  
+
   TH2F* fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton[NumberTPCrad];
   TH2F* fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME[NumberTPCrad];
   TH2F* fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion[NumberTPCrad];
@@ -3256,7 +3256,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
       fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
       fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i]->Sumw2();
       fOutputTP->Add(fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i]);
-      
+
       HistDesc = "#Delta #eta vs. #Delta #phi for proton-proton pairs evaluated at TPCradnum = ";
       HistDesc += i;
       HistName = "fDeltaEtaDeltaPhiTPCradpp";
@@ -3275,7 +3275,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     }
 
 
-  
+
   TH2F* fV0PtTrueReco = new TH2F("fV0PtTrueReco","V0: true transverse momentum vs. reconstructed momentum pt",200,0,10,200,0,10);
   TH2F* fV0PtResoRecoRotated = new TH2F("fV0PtResoRecoRotated","V0: true transverse momentum vs. reconstructed momentum pt",200,0,10,1000,-1,1);
   TH2F* fV0PhiResoRecoRotated = new TH2F("fV0PhiResoRecoRotated","V0: true phi vs. reconstructed momentum pt",200,0,10,3000,-1,1);
@@ -3311,14 +3311,14 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fAntiProtonXiRelKME->Sumw2();
   fProtonProtonMT->Sumw2();
   fProtonProtonMTrelKcut->Sumw2();
-    
+
   fProtonProtonRelK->Sumw2();
   fProtonProtonRelKME->Sumw2();
   fProtonProtonLambdaRelK->Sumw2();
   fProtonProtonLambdaRelKME->Sumw2();
   fProtonProtonProtonRelK->Sumw2();
   fProtonProtonProtonRelKME->Sumw2();
-  
+
   fAntiProtonAntiProtonRelK->Sumw2();
   fAntiProtonAntiProtonRelKME->Sumw2();
   fAntiProtonProtonRelK->Sumw2();
@@ -3367,7 +3367,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputTP->Add(fAntiLambdaAntiLambdaRelKME);
   fOutputTP->Add(fAntiLambdaLambdaRelK);
   fOutputTP->Add(fAntiLambdaLambdaRelKME);
-  
+
   fOutputTP->Add(fNProtonLambdaPairs);
   fOutputTP->Add(fNPairStatistics);
 
@@ -3375,7 +3375,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputTP->Add(fPairkTpp);
   fOutputTP->Add(fPairkTApAp);
   fOutputTP->Add(fPairkTApp);
-  
+
 
   if(fUseMCInfo)
     {
@@ -3400,7 +3400,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   TH2F* fTOFSignalVsP = new TH2F ("fTOFSignalVsP","tof signal vs p (positives);p [GeV/c];t_{meas} - t_{0} - t_{expected} [ps]",20,0.0,5.0,120,-10000.0,5000.0);
   TH2F* fProtonNSigmaTPC = new TH2F("fProtonNSigmaTPC","nsigma_TPC of protons for P<0.75 GeV/c without TOF signal",100,0,1,100,-1.,5.);
   TH2F* fProtonNSigmaCombined = new TH2F("fProtonNSigmaCombined","nsigma_combined of protons for P>0.75 GeV/c",500,0.5,7,100,-1.,5.);
-  
+
   TH2F* fNsigmaTOFTPCPtBin[fCuts->GetPtBinsPurity()];
   TH2F* fNsigmaTOFTPCHypothesisIncludedPtBin[fCuts->GetPtBinsPurity()];
   TH1F* fProtonPurityTOFTPCcombinedMCPtBin[fCuts->GetPtBinsPurity()];
@@ -3427,7 +3427,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 	  HistName += i;
 	  Description = "Total: 1, Signal: 2, Background: 3, purity for protons with kaon rejection and n#sigma_{combined}<3 in momentum bin ";
 	  Description += i;
-      
+
 	  fProtonPurityTOFTPCcombinedMCPtBin[i] = new TH1F(HistName.Data(),Description.Data(),4,0,4);
 	  fOutputPID->Add(fProtonPurityTOFTPCcombinedMCPtBin[i]);
 	}
@@ -3437,7 +3437,7 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
   fOutputPID->Add(fTOFSignalVsP);
   fOutputPID->Add(fProtonNSigmaTPC);
   fOutputPID->Add(fProtonNSigmaCombined);
-  
+
   return;
 }
 
@@ -3448,14 +3448,14 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
   Double_t charge = track->Charge();
   if(type == 4 && charge<0.) return kFALSE;
   else if(type == -4 && charge>0.) return kFALSE;
-  
+
 
   const AliAODTrack *globaltrack;
   if(fWhichfilterbit == 128) globaltrack = fGTI[-track->GetID()-1];
   else globaltrack = track;
-  
+
   Bool_t isparticle = kFALSE;
-  
+
   TClonesArray *mcarray = 0;
   AliAODMCParticle* mcproton = 0;
   if(fUseMCInfo)
@@ -3478,7 +3478,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 
   TString fillthis = "fdEdxVsP";
   ((TH2F*)(fOutputPID->FindObject(fillthis)))->Fill(globaltrack->GetTPCmomentum(),globaltrack->GetTPCsignal());
-  
+
   //Now do particle identification:
   if(globaltrack->GetTPCmomentum() <= fCuts->GetProtonPIDTOFTPCSwitch())//for P<0.75 use TPC
     {
@@ -3490,13 +3490,13 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
   else if(globaltrack->GetTPCmomentum() > fCuts->GetProtonPIDTOFTPCSwitch())//for P>0.75 GeV/c use TPC&TOF
     {
       if(!TOFisthere) return kFALSE;//makes only sense if TOF PID is available (TPC signal was checked already at the beginning)
-      
+
       Double_t corrTOFsignal = GetCorrectedTOFSignal(globaltrack,aodevent);
-      
+
       Double_t nSigmaTPCproton = fPIDResponse->NumberOfSigmasTPC(globaltrack,(AliPID::kProton));
       Double_t nSigmaTOFproton = fPIDResponse->NumberOfSigmasTOF(globaltrack,(AliPID::kProton));
       Double_t nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
-      
+
       //if(type == 4 && GoodDCA(track,aodevent,kTRUE,type))
       if(type == 4)
 	{
@@ -3506,7 +3506,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 	  ((TH2F*)(fOutputPID->FindObject(fillthis)))->Fill(globaltrack->GetTPCmomentum(),corrTOFsignal);
 	}
       if(nSigmaTPCTOFcombined < fCuts->GetProtonnsigma() && TestPIDHypothesis(globaltrack,type)) isparticle = kTRUE;//full PID for high momentum region
-      
+
 
       //QA the PID differentially as a function of pt
       Int_t ptbin = fCuts->FindProtonPtBinPurity(globaltrack->GetTPCmomentum());
@@ -3519,7 +3519,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 	      fillthis = "fNsigmaTOFTPCPtBin";
 	      fillthis += ptbin;
 	      ((TH2F*)(fOutputPID->FindObject(fillthis)))->Fill(nSigmaTPCproton,nSigmaTOFproton);
-	      
+
 	      if(TestPIDHypothesis(globaltrack,type))
 		{
 		  fillthis = "fNsigmaTOFTPCHypothesisIncludedPtBin";
@@ -3527,7 +3527,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 		  ((TH2F*)(fOutputPID->FindObject(fillthis)))->Fill(nSigmaTPCproton,nSigmaTOFproton);
 		}
 	    }
-	  
+
 
 	  //Investigate the purity for the selected particles (in Monte Carlo):
 	  if(isparticle)
@@ -3535,19 +3535,19 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 	      if(fUseMCInfo)
 		{
 		  //check with monte carlo the purity:
-		  if(type == 4) 
+		  if(type == 4)
 		    {
 		      fillthis = "fProtonPurityTOFTPCcombinedMCPtBin";
 		      fillthis += ptbin;
 		      ((TH1F*)(fOutputPID->FindObject(fillthis)))->Fill(1);
 		    }
-		  if(type == 4 && mcproton->GetPdgCode() == 2212) 
+		  if(type == 4 && mcproton->GetPdgCode() == 2212)
 		    {
 		      fillthis = "fProtonPurityTOFTPCcombinedMCPtBin";
 		      fillthis += ptbin;
 		      ((TH1F*)(fOutputPID->FindObject(fillthis)))->Fill(2);
 		    }
-		  else if(type == 4 && mcproton->GetPdgCode() != 2212) 
+		  else if(type == 4 && mcproton->GetPdgCode() != 2212)
 		    {
 		      fillthis = "fProtonPurityTOFTPCcombinedMCPtBin";
 		      fillthis += ptbin;
@@ -3564,7 +3564,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectPID(const AliAODTrack *track,const AliAODEv
 Bool_t AliAnalysisTaskPLFemto::TestPIDHypothesis(const AliAODTrack *track,Int_t type)
 {
   //For P>0.75 GeV/c the TPC dE/dx bands start to merge, we apply an additional test to the PID of the particle (proton)
-  
+
   //const AliAODTrack *globaltrack;
   //if(fWhichfilterbit == 128) globaltrack = fGTI[-track->GetID()-1];
   //else globaltrack = track;
@@ -3572,7 +3572,7 @@ Bool_t AliAnalysisTaskPLFemto::TestPIDHypothesis(const AliAODTrack *track,Int_t 
   Double_t charge = track->Charge();
   if(type == 4 && charge<0.) return kFALSE;
   else if(type == -4 && charge>0.) return kFALSE;
-  
+
   Bool_t keepParticle = kTRUE;
   if(track->GetTPCmomentum() <= fCuts->GetProtonPIDTOFTPCSwitch()) return kTRUE;//don't check for low momentum tracks
   else
@@ -3581,17 +3581,17 @@ Bool_t AliAnalysisTaskPLFemto::TestPIDHypothesis(const AliAODTrack *track,Int_t 
       AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
       if(!statusTPC) return kTRUE; //TPC signal must be present
       if(!statusTOF) return kTRUE; //TOF signal must be present
-      
+
       Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::kProton)));
       Double_t nSigmaKaonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::kKaon)));
       Double_t nSigmaPionTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::kPion)));
       Double_t nSigmaElectronTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::kElectron)));
-      
+
       Double_t nSigmaProtonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::kProton)));
       Double_t nSigmaKaonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::kKaon)));
       Double_t nSigmaPionTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::kPion)));
       Double_t nSigmaElectronTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::kElectron)));
-      
+
       //Form the combination:
       Double_t nSigmaProtonCombined = TMath::Sqrt(pow(nSigmaProtonTPC,2.) + pow(nSigmaProtonTOF,2.));
       Double_t nSigmaKaonCombined = TMath::Sqrt(pow(nSigmaKaonTPC,2.) + pow(nSigmaKaonTOF,2.));
@@ -3600,9 +3600,9 @@ Bool_t AliAnalysisTaskPLFemto::TestPIDHypothesis(const AliAODTrack *track,Int_t 
 
       //The other hypothesis fits better:
       if((nSigmaKaonCombined < nSigmaProtonCombined) || (nSigmaPionCombined < nSigmaProtonCombined) || (nSigmaElectronCombined < nSigmaProtonCombined)) keepParticle = kFALSE;
-      
+
     }
-  
+
   return keepParticle;
 }
 
@@ -3610,10 +3610,10 @@ Bool_t AliAnalysisTaskPLFemto::SelectV0PID(const AliAODv0 *v0,TString ParOrAPar)
 {
   AliAODTrack* pTrack = fGTI[v0->GetPosID()];
   AliAODTrack* nTrack = fGTI[v0->GetNegID()];
-  
+
   Double_t charge1 = pTrack->Charge();
   Double_t charge2 = nTrack->Charge();
-  
+
   if(charge1 < 0. && charge2 > 0. && ParOrAPar == fwhichV0)//assign correct charge to tracks from V0
     {
       pTrack = fGTI[v0->GetNegID()];//proton as positive particle
@@ -3640,12 +3640,12 @@ Bool_t AliAnalysisTaskPLFemto::SelectV0PID(const AliAODv0 *v0,TString ParOrAPar)
   Bool_t isPion = kFALSE;
 
   Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,(AliPID::kProton)));
-  
+
   if(nSigmaProtonTPC < fCuts->GetV0nsigma()) isProton = kTRUE;
-  
+
   Double_t nSigmaPionTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,(AliPID::kPion)));
   if(nSigmaPionTPC < fCuts->GetV0nsigma()) isPion = kTRUE;
-  
+
   if(isProton && isPion) isV0 = kTRUE;
 
   return isV0;
@@ -3658,7 +3658,7 @@ void AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliA
   // track is the track you want to propagate
   // bfield is the magnetic field of your event
   // globalPositionsAtRadii is the array of global positions in the radii and xyz
-  
+
   // Initialize the array to something indicating there was no propagation
   for(Int_t i=0;i<9;i++)
     {
@@ -3672,37 +3672,37 @@ void AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliA
   AliExternalTrackParam etp; etp.CopyFromVTrack(track);
   //printf("\nAfter CopyFromVTrack\n");
   //etp.Print();
- 
+
   // The global position of the the track
-  Double_t xyz[3]={-9999.,-9999.,-9999.};  
+  Double_t xyz[3]={-9999.,-9999.,-9999.};
 
   // Counter for which radius we want
-  Int_t iR=0; 
+  Int_t iR=0;
   // The radii at which we get the global positions
   // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
   //Float_t Rwanted[9]={85.,105.,125.,145.,165.,185.,205.,225.,245.};
-  
+
 
   // The global radius we are at
   Float_t globalRadius=0;
-  
+
   // Propagation is done in local x of the track
   for (Float_t x = etp.GetX();x<247.;x+=1.)
-    { 
+    {
       // GetX returns local coordinates
       // Starts at the tracks fX and goes outwards. x = 245 is the outer radial limit
       // of the TPC when the track is straight, i.e. has inifinite pt and doesn't get bent.
       // If the track's momentum is smaller than infinite, it will develop a y-component, which
       // adds to the global radius
-      
+
       // Stop if the propagation was not succesful. This can happen for low pt tracks
       // that don't reach outer radii
       if(!etp.PropagateTo(x,bfield)) break;
       etp.GetXYZ(xyz); // GetXYZ returns global coordinates
 
       globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
-      
-      
+
+
 
       // Roughly reached the radius we want
       if(globalRadius > fTPCradii[iR])
@@ -3714,11 +3714,11 @@ void AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliA
 	      //printf("propagating to x %5.2f\n",x);
 	      if(!etp.PropagateTo(x,bfield)) break;
 	      etp.GetXYZ(xyz); // GetXYZ returns global coordinates
-	      
+
 	      globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
 	    }
 	  //printf("At Radius:%05.2f (local x %5.2f). Setting position to x %4.1f y %4.1f z %4.1f\n",globalRadius,x,xyz[0],xyz[1],xyz[2]);
-	  
+
 	  globalPositionsAtRadii[iR][0]=xyz[0];
 	  globalPositionsAtRadii[iR][1]=xyz[1];
 	  globalPositionsAtRadii[iR][2]=xyz[2];
@@ -3726,11 +3726,11 @@ void AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliA
 	  globalPositionsAtRadii[iR][0] -= PrimaryVertex[0];
 	  globalPositionsAtRadii[iR][1] -= PrimaryVertex[1];
 	  globalPositionsAtRadii[iR][2] -= PrimaryVertex[2];
-	  
-	  // Indicate we want the next radius    
+
+	  // Indicate we want the next radius
 	  iR+=1;
 	}
-      
+
       if(iR>8) return; //TPC edge reached
     }
 }
@@ -3744,14 +3744,14 @@ Double_t AliAnalysisTaskPLFemto::DEtacalc(const double zprime1, const double zpr
   double etaS2 = -TMath::Log(TMath::Tan(thetaS2/2.));
 
   double detaS = etaS1 - etaS2;
-  
+
   return detaS;
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskPLFemto::DPhicalc(const double dxprime, const double dyprime, const double radius)
 {
   double dist = TMath::Sqrt(pow(dxprime,2.) + pow(dyprime,2.));
-  
+
   double dphi = 2.*TMath::ATan(dist/(2.*radius));
 
   return dphi;
@@ -3765,14 +3765,14 @@ void AliAnalysisTaskPLFemto::GetAverageSeparation(const double globalPositions1s
   double avgSeparationTotal = 0.;
   double avgSeparationTransverse = 0.;
   double avgSeparationZ = 0.;
-  
+
   for(int RadiusNumber = 0; RadiusNumber <9; RadiusNumber++)
     {
       double sumsquareTotal = 0.;
       double sumsquareTransverse = 0.;
       double sumsquareZ = 0.;
-      
-      
+
+
       //Calculate different separations:
       for(int Component = 0; Component <3; Component++)
 	{
@@ -3791,7 +3791,7 @@ void AliAnalysisTaskPLFemto::GetAverageSeparation(const double globalPositions1s
       double dphiS = DPhicalc(dxprime,dyprime,fTPCradii[RadiusNumber]);
       detaS = TMath::Abs(detaS);
       dphiS = TMath::Abs(dphiS);
-      
+
 
       if(REorME == 0 && whichpair=="Proton-V0,pp")
 	{
@@ -3822,14 +3822,14 @@ void AliAnalysisTaskPLFemto::GetAverageSeparation(const double globalPositions1s
       avgSeparationTransverse += sqrt(sumsquareTransverse);
       avgSeparationZ += sqrt(sumsquareZ);
     }
-  
-  if(numPoints != 0) 
+
+  if(numPoints != 0)
     {
       avgSeparationTotal /= (Double_t)numPoints;
       avgSeparationTransverse /= (Double_t)numPoints;
       avgSeparationZ /= (Double_t)numPoints;
     }
-  else 
+  else
     {
       avgSeparationTotal = -9999.;
       avgSeparationTransverse = -9999.;
@@ -3846,18 +3846,18 @@ Bool_t AliAnalysisTaskPLFemto::CheckIfRealV0(AliAODv0 *v0,AliAODEvent *aodEvent,
 {
 
   //Checks according to daughter tracks and mother PDG if the V0 is real or fake
-  
+
   Bool_t realV0 = kFALSE;
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcarray) return kFALSE;
-  
+
   //Int_t daugh[2] = {2212,211};//daughter IDs of Lambda
   Int_t daugh[2];
   daugh[0] = PDGdaugh1;
   daugh[1] = PDGdaugh2;
   Int_t label = v0->MatchToMC(PDGmother,mcarray,2,daugh);
   //Int_t label = v0->MatchToMC(PDGmother,mcarray);
-  
+
   if(label >= 0) realV0 = kTRUE;
 
   return realV0;
@@ -3866,22 +3866,22 @@ Bool_t AliAnalysisTaskPLFemto::CheckIfRealV0(AliAODv0 *v0,AliAODEvent *aodEvent,
 void AliAnalysisTaskPLFemto::GetV0Origin(AliAODv0 *v0,AliAODEvent *aodEvent)
 {
   //Checks where the V0 comes from, e.g. feed-down or primary
-  
+
   TString fillthis = "";
 
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!mcarray) return;
-  
+
   Int_t daugh[2] = {2212,211};//daughter IDs of Lambda
   Int_t label = v0->MatchToMC(3122,mcarray,2,daugh);
   if(label<0) return;// only "true" if it is a real v0
-	    
+
   AliAODMCParticle *MCv0 = (AliAODMCParticle*)mcarray->At(label);
   if(!MCv0) return;
 
   fillthis = "fFeeddownV0";
   ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(1);
-  
+
   if(MCv0->IsPhysicalPrimary() && !MCv0->IsSecondaryFromWeakDecay())
     {
       fillthis = "fFeeddownV0";
@@ -3890,10 +3890,10 @@ void AliAnalysisTaskPLFemto::GetV0Origin(AliAODv0 *v0,AliAODEvent *aodEvent)
   else if(MCv0->IsSecondaryFromWeakDecay())
     {
       AliAODMCParticle* MCv0Mother = (AliAODMCParticle*)mcarray->At(MCv0->GetMother());
-      
+
       fillthis = "fFeeddownV0";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(3);
-      
+
       fillthis = "fFeeddownV0FromWeakPDG";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(MCv0Mother->PdgCode());
     }
@@ -3917,21 +3917,21 @@ void AliAnalysisTaskPLFemto::GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *
   TString fillthis = "";
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!mcarray) return;
-  
+
   if(AODtrack->GetLabel() < 0) return;
-  
+
   AliAODMCParticle* mcproton = (AliAODMCParticle*)mcarray->At(AODtrack->GetLabel());
   if(!mcproton) return;
-  
+
   if(mcproton->GetPdgCode() != desiredPDGcode) return; //be shure it is a proton/antiproton
 
-  
+
   //check where the proton comes from in Monte Carlo:
   if(type == 4)
     {
       fillthis = "fFeeddownProton";
       ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(1);//total amount of protons
-            
+
       if(mcproton->IsPhysicalPrimary() && !mcproton->IsSecondaryFromWeakDecay())
 	{
 	  fillthis = "fFeeddownProton";
@@ -3940,10 +3940,10 @@ void AliAnalysisTaskPLFemto::GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *
       else if(mcproton->IsSecondaryFromWeakDecay() && !mcproton->IsSecondaryFromMaterial())
 	{
 	  AliAODMCParticle* mcprotonMother = (AliAODMCParticle*)mcarray->At(mcproton->GetMother());
-	  
+
 	  fillthis = "fFeeddownProton";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(3);//from weak decay
-	  
+
 	  fillthis = "fFeeddownProtonFromWeakPDG";
 	  ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(mcprotonMother->PdgCode());
 	}
@@ -3958,12 +3958,12 @@ void AliAnalysisTaskPLFemto::GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *
 void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoLambdaParticle &v0,const AliFemtoProtonParticle &proton)
 {
   //This function calculates the effect of the finite momentum resolution of ALICE for v0s
-  
+
   TLorentzVector trackV0,trackProton,trackV0MC,trackProtonMC;
-  
+
   trackV0.SetXYZM(v0.fMomentum.X(),v0.fMomentum.Y(),v0.fMomentum.Z(),fCuts->GetHadronMasses(3122));
   trackProton.SetXYZM(proton.fMomentum.X(),proton.fMomentum.Y(),proton.fMomentum.Z(),fCuts->GetHadronMasses(2212));
-  
+
   trackV0MC.SetXYZM(v0.fMomentumMC.X(),v0.fMomentumMC.Y(),v0.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
   trackProtonMC.SetXYZM(proton.fMomentumMC.X(),proton.fMomentumMC.Y(),proton.fMomentumMC.Z(),fCuts->GetHadronMasses(2212));
 
@@ -3971,13 +3971,13 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoLambdaParticle &v0,
   if(trackV0MC.Y() == -9999. || trackProtonMC.Y() == -9999.) return;
   if(trackV0MC.Z() == -9999. || trackProtonMC.Z() == -9999.) return;
 
-  
+
   Double_t relK = relKcalc(trackV0,trackProton);
   Double_t relKMC = relKcalc(trackV0MC,trackProtonMC);
-  
+
   TString fillthis = "fV0pRelKTrueReco";
   ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(relKMC,relK);
-  
+
   Double_t relKTruePrime = 1./TMath::Sqrt(2.)*(relKMC - relK);
   Double_t relKRecoPrime = 1./TMath::Sqrt(2.)*(relKMC + relK);
   fillthis = "fV0pRelKTrueRecoRotated";
@@ -3988,12 +3988,12 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoProtonParticle &pro
 {
   //This function calculates the effect of the finite momentum resolution of ALICE for protons
   //It takes the input of the proton momentum and the reconstructed momentum
-  
+
   TLorentzVector trackProton1,trackProton2,trackProton1MC,trackProton2MC;
-  
+
   trackProton1.SetXYZM(proton1.fMomentum.X(),proton1.fMomentum.Y(),proton1.fMomentum.Z(),fCuts->GetHadronMasses(2212));
   trackProton2.SetXYZM(proton2.fMomentum.X(),proton2.fMomentum.Y(),proton2.fMomentum.Z(),fCuts->GetHadronMasses(2212));
-  
+
   trackProton1MC.SetXYZM(proton1.fMomentumMC.X(),proton1.fMomentumMC.Y(),proton1.fMomentumMC.Z(),fCuts->GetHadronMasses(2212));
   trackProton2MC.SetXYZM(proton2.fMomentumMC.X(),proton2.fMomentumMC.Y(),proton2.fMomentumMC.Z(),fCuts->GetHadronMasses(2212));
 
@@ -4001,7 +4001,7 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoProtonParticle &pro
   if(trackProton1MC.Y() == -9999. || trackProton2MC.Y() == -9999.) return;
   if(trackProton1MC.Z() == -9999. || trackProton2MC.Z() == -9999.) return;
 
-  
+
   Double_t relK = relKcalc(trackProton1,trackProton2);
   Double_t relKMC = relKcalc(trackProton1MC,trackProton2MC);
 
@@ -4012,7 +4012,7 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoProtonParticle &pro
   fillthis = "fPpRelKTrueRecoFB";
   ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(relKMC,relK);
 
-  
+
   Double_t relKTruePrime = 1./TMath::Sqrt(2.)*(relKMC - relK);
   Double_t relKRecoPrime = 1./TMath::Sqrt(2.)*(relKMC + relK);
   fillthis = "fPpRelKTrueRecoRotated";
@@ -4022,12 +4022,12 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoProtonParticle &pro
 Bool_t AliAnalysisTaskPLFemto::CheckMCPID(AliAODEvent *aodEvent, AliAODTrack* aodtrack,int pdg)
 {
   //Checks the input track according to given PDG value
-  
+
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcarray) return kFALSE;
-  
+
   if(aodtrack->GetLabel() < 0) return kFALSE;
-  
+
   AliAODMCParticle* mcPart = (AliAODMCParticle*)mcarray->At(aodtrack->GetLabel());
   if(!mcPart) return kFALSE;
   if(mcPart->GetPdgCode() == pdg) return kTRUE;
@@ -4037,10 +4037,10 @@ Bool_t AliAnalysisTaskPLFemto::CheckMCPID(AliAODEvent *aodEvent, AliAODTrack* ao
 Bool_t AliAnalysisTaskPLFemto::CheckMCPID(AliAODv0 *v0,AliAODEvent* aodEvent,int pdg)
 {
   //Checks if the input v0 is a real V0
-  
+
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcarray) return kFALSE;
-  
+
   Int_t daugh[2] = {2212,211};//daughter IDs of Lambda
   Int_t label = v0->MatchToMC(3122,mcarray,2,daugh);
   if(label<0) return kFALSE;// only "true" if it is a real v0
@@ -4054,55 +4054,55 @@ Bool_t AliAnalysisTaskPLFemto::CheckMCPID(AliAODv0 *v0,AliAODEvent* aodEvent,int
 void AliAnalysisTaskPLFemto::GetMCMomentum(AliAODTrack *aodtrack,double *Protontruth,double *ProtontruthMother,double *ProtontruthMotherParton,int *PDGcodes,AliAODEvent *aodEvent, Int_t type)
 {
   TString fillthis = "";
-  
+
   if(aodtrack->GetLabel() < 0) return; //reject fakes
-  
+
   AliAODMCParticle *mcproton  = (AliAODMCParticle*)fAODMCEvent->GetTrack(aodtrack->GetLabel());
   if(!mcproton) return;
   if(type == 4 && mcproton->GetPdgCode() != 2212) return;
   else if(type == -4 && mcproton->GetPdgCode() != -2212) return;
   if(!mcproton->PxPyPz(Protontruth)) std::cout << "Err copying true momentum" << std::endl;
 
-  
+
   fillthis = "fProtonPtTrueReco";
   if(mcproton->Pt() && aodtrack->Pt())((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(mcproton->Pt(),aodtrack->Pt());
 
-  
+
   if(Protontruth[0] != -9999.)
     {
       TLorentzVector protonVec;//needed if mass is involved
       protonVec.SetXYZM(aodtrack->Px(),aodtrack->Py(),aodtrack->Pz(),fCuts->GetHadronMasses(2212));
-      
+
       Double_t ptTrue = mcproton->Pt();
       Double_t ptReco = aodtrack->Pt();
       Double_t ptTruePrime = 1./TMath::Sqrt(2.)*(ptTrue - ptReco);
-      Double_t ptRecoPrime = 1./TMath::Sqrt(2.)*(ptTrue + ptReco);
-      
+      // Double_t ptRecoPrime = 1./TMath::Sqrt(2.)*(ptTrue + ptReco);
+
       Double_t phiTrue = mcproton->Phi();
       Double_t phiReco = aodtrack->Phi();
       Double_t phiTruePrime = phiTrue - phiReco;
-      
+
       Double_t thetaTrue = mcproton->Theta();
       Double_t thetaReco = aodtrack->Theta();
       Double_t thetaTruePrime = thetaTrue - thetaReco;
-      
+
       fillthis = "fProtonPtResoRecoRotated";
       ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(ptReco,ptTruePrime);
-      
+
       fillthis = "fProtonPhiResoRecoRotated";
       ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(ptReco,phiTruePrime);
 
       fillthis = "fProtonThetaResoRecoRotated";
       ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(ptReco,thetaTruePrime);
     }
-  
+
 
   //check if proton is from feed-down
   if(mcproton->IsSecondaryFromWeakDecay())
     {
       //AliAODMCParticle* mcproton_motherWeak = (AliAODMCParticle*)mcarray->At(mcproton->GetMother());
       AliAODMCParticle* mcprotonMotherWeak = (AliAODMCParticle*)fAODMCEvent->GetTrack(mcproton->GetMother());
-      
+
       if(!mcprotonMotherWeak->PxPyPz(ProtontruthMother)) std::cout << "Err copying true momentum" << std::endl;
       PDGcodes[0] = mcprotonMotherWeak->PdgCode();
     }
@@ -4114,14 +4114,14 @@ void AliAnalysisTaskPLFemto::GetMCMomentum(AliAODv0 *v0,double *V0momtruth,doubl
   //Momentum Matrix for single-particle quantities
   //MCv0 is the v0 from MC (checked for correct daughter tracks and if its not a fake)
   //v0 is the reconstructed v0
-  
+
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!mcarray) return;
 
   Int_t daugh[2] = {2212,211};//daughter IDs of Lambda
   Int_t label = v0->MatchToMC(3122,mcarray,2,daugh);
   if(label<0) return;// only "true" if it is a real v0
-	    
+
   AliAODMCParticle *MCv0 = (AliAODMCParticle*)mcarray->At(label);
   if(!MCv0) return;
   if(!MCv0->PxPyPz(V0momtruth)) std::cout << "Err copying true momentum" << std::endl;
@@ -4130,14 +4130,14 @@ void AliAnalysisTaskPLFemto::GetMCMomentum(AliAODv0 *v0,double *V0momtruth,doubl
   fillthis = "fV0PtTrueReco";
   if(MCv0->Pt() && v0->Pt())((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(MCv0->Pt(),v0->Pt());
 
-  
+
   if(V0momtruth[0] != -9999.)
     {
       Double_t ptTrue = MCv0->Pt();
       Double_t ptReco = v0->Pt();
       Double_t ptTruePrime = 1./TMath::Sqrt(2.)*(ptTrue - ptReco);
-      Double_t ptRecoPrime = 1./TMath::Sqrt(2.)*(ptTrue + ptReco);
-      
+      // Double_t ptRecoPrime = 1./TMath::Sqrt(2.)*(ptTrue + ptReco);
+
       Double_t phiTrue = MCv0->Phi();
       Double_t phiReco = v0->Phi();
       Double_t phiTruePrime = phiTrue - phiReco;
@@ -4145,7 +4145,7 @@ void AliAnalysisTaskPLFemto::GetMCMomentum(AliAODv0 *v0,double *V0momtruth,doubl
       Double_t thetaTrue = MCv0->Theta();
       Double_t thetaReco = v0->Theta();
       Double_t thetaTruePrime = thetaTrue - thetaReco;
-      
+
       fillthis = "fV0PtResoRecoRotated";
       ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(ptReco,ptTruePrime);
 

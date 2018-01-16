@@ -240,11 +240,11 @@ void AliFemtoModelCorrFctnWithWeights::AddRealPair(AliFemtoPair* aPair)
   double y2 = aPair->Track2()->FourMomentum().Rapidity();
   double px1 = aPair->Track1()->Track()->P().x();
   double py1 = aPair->Track1()->Track()->P().y();
-  double pz1 = aPair->Track1()->Track()->P().z();
+  //double pz1 = aPair->Track1()->Track()->P().z();
 
   double px2 = aPair->Track2()->Track()->P().x();
   double py2 = aPair->Track2()->Track()->P().y();
-  double pz2 = aPair->Track2()->Track()->P().z();
+  // double pz2 = aPair->Track2()->Track()->P().z();
 
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
@@ -270,11 +270,11 @@ void AliFemtoModelCorrFctnWithWeights::AddMixedPair(AliFemtoPair* aPair)
   double y2 = aPair->Track2()->FourMomentum().Rapidity();
   double px1 = aPair->Track1()->Track()->P().x();
   double py1 = aPair->Track1()->Track()->P().y();
-  double pz1 = aPair->Track1()->Track()->P().z();
+  //double pz1 = aPair->Track1()->Track()->P().z();
 
   double px2 = aPair->Track2()->Track()->P().x();
   double py2 = aPair->Track2()->Track()->P().y();
-  double pz2 = aPair->Track2()->Track()->P().z();
+  //double pz2 = aPair->Track2()->Track()->P().z();
 
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
@@ -283,15 +283,17 @@ void AliFemtoModelCorrFctnWithWeights::AddMixedPair(AliFemtoPair* aPair)
   double weight2 = filterHist2->GetBinContent(filterHist2->FindBin(y2, pt2));
   double totalWeight = weight*weight1*weight2;
 
-  fNumeratorFake->Fill(aPair->QInv(), totalWeight);
-  fDenominator->Fill(aPair->QInv(), 1.0*weight1*weight2);
+  const double qinv = aPair->QInv();
+
+  fNumeratorFake->Fill(qinv, totalWeight);
+  fDenominator->Fill(qinv, weight1*weight2);
 
   Double_t tQinvTrue = GetQinvTrue(aPair);
 
   fNumeratorFakeIdeal->Fill(tQinvTrue, totalWeight);
-  fDenominatorIdeal->Fill(tQinvTrue, 1.0*weight1*weight2);
+  fDenominatorIdeal->Fill(tQinvTrue, weight1*weight2);
 
-  fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+  fQgenQrec->Fill(tQinvTrue, qinv);
 }
 
 //_______________________

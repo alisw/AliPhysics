@@ -15,10 +15,15 @@
 
 #include "TH1D.h"
 
-class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
-{
-  public:
-  enum XiType {kXiMinus = 0, kXiPlus=1, kAll = 99, kXiMinusMC = 101, kXiPlusMC=102};
+class AliFemtoXiTrackCut : public AliFemtoV0TrackCut {
+public:
+  enum XiType {
+    kXiMinus = 0,
+    kXiPlus = 1,
+    kAll = 99,
+    kXiMinusMC = 101,
+    kXiPlusMC = 102
+  };
   typedef enum XiType AliFemtoXiType;
 
 
@@ -29,6 +34,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   AliFemtoXiTrackCut& operator=(const AliFemtoXiTrackCut& aCut);
   virtual AliFemtoXiTrackCut* Clone();
 
+  virtual bool Pass(const AliFemtoV0* v0);
   virtual bool Pass(const AliFemtoXi* aXi);
 
   virtual AliFemtoString Report();
@@ -71,7 +77,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   int fChargeXi;  //!!!!!!!!!!!!!!!!!! To be deleted!!!  Currently, this member is not used anywhere in the code.
 		  // It seems redundant to set both fParticleTypeXi and fChargeXi.  Also, removing this member will
 		  // eliminate any error caused by a user, for instance, setting fParticleTypeXi=kXiMinus and fCharge=+1,
-		  // especially since fCharge is currently initiated in the constructor to 
+		  // especially since fCharge is currently initiated in the constructor to
 
   double fMaxEtaBac;
   double fMinPtBac;
@@ -107,5 +113,12 @@ inline TH1D* AliFemtoXiTrackCut::GetMinvPurityAidHistoXi() {return fMinvPurityAi
 inline void AliFemtoXiTrackCut::SetRadiusXiMin(double aRadiusMin) {fRadiusXiMin = aRadiusMin;}
 inline void AliFemtoXiTrackCut::SetRadiusXiMax(double aRadiusMax) {fRadiusXiMax = aRadiusMax;}
 
+inline bool AliFemtoXiTrackCut::Pass(const AliFemtoV0 *v0)
+{
+  if (const AliFemtoXi *xi = dynamic_cast<const AliFemtoXi*>(v0)) {
+    return Pass(xi);
+  }
+  return false;
+}
 
 #endif
