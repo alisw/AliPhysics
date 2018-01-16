@@ -55,6 +55,11 @@ public:
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     
+    //Check MC type
+    Bool_t IsHijing()  const;
+    Bool_t IsDPMJet()  const;
+    Bool_t IsEPOSLHC() const;
+    
 //---------------------------------------------------------------------------------------
 
 private:
@@ -69,15 +74,15 @@ private:
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
     TH2D *fHistNchVsV0MMult;
-    //TH1D *fHistNpart;
-    //TH2D *fHistNchVsNpart;
-    //TH1D *fHistB;
-    //TH2D *fHistNchVsB;
+    TH1D *fHistNpart;
+    TH2D *fHistNchVsNpart;
+    TH1D *fHistB;
+    TH2D *fHistNchVsB;
     
     TH1D *fHistPt[9];              //! for keeping track of base spectra
     TH2D *fHistPtVsV0MMult[9];     //! for keeping track of base spectra
-    //TH2D *fHistPtVsNpart[9];     //! for keeping track of base spectra
-    //TH2D *fHistPtVsB[9];     //! for keeping track of base spectra
+    TH2D *fHistPtVsNpart[9];       //! for keeping track of base spectra
+    TH2D *fHistPtVsB[9];           //! for keeping track of base spectra
     
     AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
     AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented

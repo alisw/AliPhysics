@@ -81,6 +81,11 @@ class AliAODv0;
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 
+#include "AliGenHijingEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
+
 
 using std::cout;
 using std::endl;
@@ -92,7 +97,11 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 fListHist(0),
 fHistEventCounter(0),
 fHistV0MMult(0),
-fHistNchVsV0MMult(0)
+fHistNchVsV0MMult(0),
+fHistNpart(0),
+fHistNchVsNpart(0),
+fHistB(0),
+fHistNchVsB(0)
 {
 
 }
@@ -102,11 +111,17 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name)
 fListHist(0),
 fHistEventCounter(0),
 fHistV0MMult(0),
-fHistNchVsV0MMult(0)
+fHistNchVsV0MMult(0),
+fHistNpart(0),
+fHistNchVsNpart(0),
+fHistB(0),
+fHistNchVsB(0)
 {
     for(Int_t ih=0; ih<9; ih++){
         fHistPt[ih]          = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
+        fHistPtVsNpart[ih]   = 0x0;
+        fHistPtVsB[ih]       = 0x0;
     }
     DefineOutput(1, TList::Class()); // Event Counter Histo
 }
@@ -135,20 +150,6 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
-    if(! fHistEventCounter ) {
-        //Histogram Output: Event-by-Event
-        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",1,0,1);
-        //Keeps track of some basics
-        fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
-        fListHist->Add(fHistEventCounter);
-    }
-    
-    //Identified Particles
-    Int_t lPDGCodes[9] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313};
-    TString lPartNames[9] = {
-        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar"
-    };
-    
     //Settings for transverse momentum
     Int_t lNPtBins = 200;
     Double_t lMaxPt = 20.0;
@@ -158,6 +159,39 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
+    if(! fHistEventCounter ) {
+        //Histogram Output: Event-by-Event
+        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",1,0,1);
+        //Keeps track of some basics
+        fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
+        fListHist->Add(fHistEventCounter);
+    }
+    
+    if(! fHistV0MMult ) {
+        //Histogram Output: Event-by-Event
+        fHistV0MMult = new TH1D( "fHistEventCounter", ";V0M Mult;Count",lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistV0MMult);
+    }
+    if(! fHistNpart ) {
+        //Histogram Output: Event-by-Event
+        fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",500,-0.5,499.5);
+        //Keeps track of some basics
+        fListHist->Add(fHistNpart);
+    }
+    if(! fHistB ) {
+        //Histogram Output: Event-by-Event
+        fHistB = new TH1D( "fHistB", ";b;Count",400,0,20);
+        //Keeps track of some basics
+        fListHist->Add(fHistB);
+    }
+    
+    //Identified Particles
+    Int_t lPDGCodes[9] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313};
+    TString lPartNames[9] = {
+        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar"
+    };
+
     //Main Output: Histograms
     
     //Event counter histogram: Multiplicity, Npart, b (if available)
@@ -169,6 +203,14 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         if(! fHistPtVsV0MMult[ih] ) {
             fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBins,lLowNchBound,lHighNchBound,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsV0MMult[ih]);
+        }
+        if(! fHistPtVsNpart[ih] ) {
+            fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",500,-0.5,499.5,lNPtBins,0,lMaxPt);
+            fListHist->Add(fHistPtVsNpart[ih]);
+        }
+        if(! fHistPtVsB[ih] ) {
+            fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",400,0,20,lNPtBins,0,lMaxPt);
+            fListHist->Add(fHistPtVsB[ih]);
         }
     }
 
@@ -247,18 +289,68 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     //----- End Loop on Stack ------------------------------------------------------------
     
     //------------------------------------------------
+    // Acquire information on Npart, Ncoll, b
+    //------------------------------------------------
+    
+    //Npart and Ncoll information
+    AliGenHijingEventHeader* hHijing=0;
+    AliGenDPMjetEventHeader* dpmHeader=0;
+    AliGenEventHeader* mcGenH = lMCevent->GenEventHeader();
+    
+    Int_t fMC_NPart = -1;
+    Int_t fMC_NColl = -1;
+    Float_t fMC_b = -1;
+    
+    //DPMJet/HIJING info if available
+    if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+    hHijing = (AliGenHijingEventHeader*)mcGenH;
+    else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+        TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+        hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+        if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+        if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+    }
+    else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+        dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+    }
+    if(hHijing)   {
+        fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+        fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+    }
+    if(dpmHeader) {
+        fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
+        fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+    }
+    
+    //check EPOS info, if available
+    if ( IsEPOSLHC() ){
+        AliGenHepMCEventHeader *lHepMCHeader = 0x0;
+        if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
+        lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+        
+        if (lHepMCHeader ){
+            fMC_NPart = lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ();
+            fMC_NColl = lHepMCHeader->N_Nwounded_collisions() +
+            lHepMCHeader->Nwounded_N_collisions() +
+            lHepMCHeader->Nwounded_Nwounded_collisions();
+            
+            fMC_b = lHepMCHeader->impact_parameter();
+        }
+    }
+    
+    //------------------------------------------------
     // Fill Event Counters
     //------------------------------------------------
 
     //Basics: All Processed
     fHistEventCounter->Fill(0.5);
     
-    fHistV0MMult -> Fill ( lNchVZEROA+lNchVZEROC );
-    fHistNchVsV0MMult -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
-    //fHistNpart
-    //fHistNchVsNpart
-    //fHistB
-    //fHistNchVsB
+    fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
+    fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
+    fHistNpart          -> Fill ( fMC_NPart );
+    fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
+    fHistB              -> Fill ( fMC_b );
+    fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
     
     //------------------------------------------------
     // Fill Spectra as Needed
@@ -275,6 +367,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     Double_t lThisRap  = 0;
     Double_t lThisPt   = 0;
     Bool_t lIsPhysicalPrimary = kFALSE;
+    
     
     //----- Loop on Stack Starts Here ---------------
     for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
@@ -308,6 +401,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt[ih]->Fill(lThisPt);
                 fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+                fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+                fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
             }
         }
     }//End of loop on tracks
@@ -343,7 +438,7 @@ void AliAnalysisTaskMCPredictions::Terminate(Option_t *)
     fHistEventCounter->DrawCopy("E");
 }
 
-//----------------------------------------------------------------------------
+//______________________________________________________________________
 Double_t AliAnalysisTaskMCPredictions::MyRapidity(Double_t rE, Double_t rPz) const
 {
     // Local calculation for rapidity
@@ -353,3 +448,60 @@ Double_t AliAnalysisTaskMCPredictions::MyRapidity(Double_t rE, Double_t rPz) con
     }
     return ReturnValue;
 }
+
+
+//______________________________________________________________________
+Bool_t AliAnalysisTaskMCPredictions::IsHijing() const {
+    //Function to check if this is Hijing MC
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
+            //Option 1: Just Hijing
+            lReturnValue = kTRUE;
+        } else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+            //Option 2: cocktail involving Hijing
+            TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+            TIter next(headers);
+            while (const TObject *obj=next()){
+                //Look for an object inheriting from the hijing header class
+                if ( obj->InheritsFrom(AliGenHijingEventHeader::Class()) ){ lReturnValue = kTRUE; }
+            }
+        }
+    }
+    return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliAnalysisTaskMCPredictions::IsDPMJet() const {
+    //Function to check if this is DPMJet
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+            //DPMJet Header is there!
+            lReturnValue = kTRUE;
+        }
+    }
+    return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliAnalysisTaskMCPredictions::IsEPOSLHC() const {
+    //Function to check if this is DPMJet
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        //A bit uncivilized, but hey, if it works...
+        TString lHeaderTitle = mcGenH->GetName();
+        if (lHeaderTitle.Contains("EPOSLHC")) {
+            //This header has "EPOS" in its title!
+            lReturnValue = kTRUE;
+        }
+    }
+    return lReturnValue;
+}
+
