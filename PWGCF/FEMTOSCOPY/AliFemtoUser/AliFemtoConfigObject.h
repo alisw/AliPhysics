@@ -251,7 +251,7 @@ public:
       BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(val))); return *this; }
     #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype>(val)))); return *this; }
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype &&>(val)))); return *this; }
 #else
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, val)); return *this; }
@@ -978,6 +978,7 @@ AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   orig._DeleteValue();
   orig.fTypeTag = kEMPTY;
   orig.fPainter = nullptr;
+  fPainter.fData = this;
 }
 
 /// Move assignment-operator

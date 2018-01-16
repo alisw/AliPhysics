@@ -86,8 +86,8 @@
 
 
 AliFemtoESDTrackCut::AliFemtoESDTrackCut():
-    fCharge(0),
-    fLabel(0),
+    fCharge(0), // takes both charges 0
+    fLabel(false),
     fStatus(0),
     fPIDMethod(knSigma),
     fNsigmaTPCTOF(kFALSE),
@@ -119,26 +119,16 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut():
     fElectronRejection(0)
 {
   // Default constructor
-  fNTracksPassed = fNTracksFailed = 0;
-  fCharge = 0;  // takes both charges 0
   fPt[0]=0.0;              fPt[1] = 100.0;//100
   fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
   fEta[0]=-2;       fEta[1]=2;//-2 2
-  fPidProbElectron[0]=-1;fPidProbElectron[1]=2;
-  fPidProbPion[0]=-1;    fPidProbPion[1]=2;
-  fPidProbKaon[0]=-1;fPidProbKaon[1]=2;
-  fPidProbProton[0]=-1;fPidProbProton[1]=2;
-  fPidProbMuon[0]=-1;fPidProbMuon[1]=2;
+
+  // all Probabilities range from [-1.0, 2.0]
+  fPidProbElectron[0] = fPidProbPion[0] = fPidProbKaon[0] = fPidProbProton[0] = fPidProbMuon[0] = -1.0;
+  fPidProbElectron[1] = fPidProbPion[1] = fPidProbKaon[1] = fPidProbProton[1] = fPidProbMuon[1] = 2.0;
+
   for (Int_t i = 0; i < 3; i++)
     fCutClusterRequirementITS[i] = AliESDtrackCuts::kOff;
-  fLabel=false;
-  fStatus=0;
-  fminTPCclsF=0;
-  fminITScls=0;
-  fPIDMethod=knSigma;
-  fNsigmaTPCTOF=kFALSE;
-  fNsigmaTPConly=kFALSE;
-  fNsigma=3.;
 }
 //------------------------------
 AliFemtoESDTrackCut::~AliFemtoESDTrackCut()
