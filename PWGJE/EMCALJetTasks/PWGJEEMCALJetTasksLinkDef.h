@@ -246,5 +246,6 @@
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
+#pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #endif
 #endif

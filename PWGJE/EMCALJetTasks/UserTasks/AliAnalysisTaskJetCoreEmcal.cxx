@@ -461,8 +461,8 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 
   DoJetLoop();
   DoTrackLoop();
-  DoClusterLoop();
-  DoCellLoop();
+  //DoClusterLoop();
+  //DoCellLoop();
 	DoJetCoreLoop();
 
   return kTRUE;
@@ -472,7 +472,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 {
 
 	// Do jet core analysis and fill histograms.
-	AliEmcalJet* jet1 = NULL;
 	AliJetContainer *jetCont = GetJetContainer(fJetContName);
 	if(!jetCont) {
 		AliError(Form("jet container not found - check name %s",fJetContName.Data()));
@@ -529,7 +528,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 		if(fDebug) Printf("trigger particle pt = %f \teta = %f \t phi = %f",partback->Pt(),partback->Eta(),partback->Phi());
 		//     if(partback->Pt()<8) continue;
 
-		Double_t accep=2.*TMath::Pi()*1.8;
 		Int_t injet4=0;
 		Int_t injet=0; 
 
@@ -542,14 +540,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 		Double_t ptbig=0;
 		Double_t areabig=0;
 		Double_t phibig=0.;
-		Double_t etasmall=0;
-		Double_t ptsmall=0;
 		//   Double_t areasmall=0;
-		Double_t phismall=0.;
-
-		Int_t iCount=0; 
-		Int_t trigJet=-1;
-		Int_t trigBBTrack=-1;
 
 		TString histname;
 		TString groupname;
@@ -899,7 +890,6 @@ Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Doub
 	Int_t im=0;
 
 	TString groupname = "";
-	UInt_t sumAcceptedTracks = 0;
 	AliParticleContainer* partCont = GetParticleContainer(0);
 	groupname = partCont->GetName();
 	UInt_t iCount = 0;
