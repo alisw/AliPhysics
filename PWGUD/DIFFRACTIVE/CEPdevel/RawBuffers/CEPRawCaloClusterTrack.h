@@ -22,12 +22,9 @@ class CEPRawCaloClusterTrack : public TObject {
 
   public:
                     CEPRawCaloClusterTrack();
-                    CEPRawCaloClusterTrack(const CEPRawCaloClusterTrack & cb);
-                    ~CEPRawCaloClusterTrack();
+    virtual         ~CEPRawCaloClusterTrack() {};
     /// Modifiers
     void            Reset();
-    void            Copy(TObject &obj) const;
-    
  
     /// Setter functions
     void            SetCaloClusterE          (Double_t e)              { fE           = e;      }

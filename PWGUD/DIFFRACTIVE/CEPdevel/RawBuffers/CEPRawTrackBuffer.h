@@ -33,13 +33,10 @@ class CEPRawTrackBuffer : public TObject
 
   public:
                     CEPRawTrackBuffer();
-                    ~CEPRawTrackBuffer();
+    virtual         ~CEPRawTrackBuffer() {};
     /// Modifiers
     void            Reset();
 
-    void            Copy(TObject &obj) const;
-    
- 
     /// Setter functions
     void            SetTrackLenght (Double_t trackLen)          { fTrackLength      = trackLen;  }
     void            SetGlobalChi2  (Double_t globChi2)          { fGlobalChi2       = globChi2;  }

@@ -24,21 +24,6 @@ CEPRawCaloClusterTrack::CEPRawCaloClusterTrack()
 }
 
 // ____________________________________________________________________________
-CEPRawCaloClusterTrack::~CEPRawCaloClusterTrack()
-{
-
-}
-
-// ____________________________________________________________________________
-void CEPRawCaloClusterTrack::Copy(TObject &obj) const
-{
-    if (this==&obj) return;
-    CEPRawCaloClusterTrack *robj = dynamic_cast<CEPRawCaloClusterTrack*>(&obj);
-    if (!robj) return;
-    *robj = *this;
-}
-
-// ____________________________________________________________________________
 void CEPRawCaloClusterTrack::Reset()
 {
     fE           = 0.0;

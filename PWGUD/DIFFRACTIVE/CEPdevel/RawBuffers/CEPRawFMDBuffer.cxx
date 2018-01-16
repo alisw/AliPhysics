@@ -23,46 +23,6 @@ CEPRawFMDBuffer::CEPRawFMDBuffer()
 }
 
 // ____________________________________________________________________________
-CEPRawFMDBuffer::CEPRawFMDBuffer(const CEPRawFMDBuffer& fb)
-  : TObject(fb)
-  , fNCells(fb.fNCells)
-{
-    for (UInt_t i(0); i<fNCells; i++) {
-        fMult[i] = fb.fMult[i]; 
-    }
-}
-
-// ____________________________________________________________________________
-CEPRawFMDBuffer& CEPRawFMDBuffer::operator=(const CEPRawFMDBuffer& source)
-{
-    if(this==&source) return *this;
-    TObject::operator=(source);
-    // Assignment operator
-    fNCells      = source.fNCells;
-
-    for(UInt_t i(0); i<fNCells; i++) {
-       fMult[i] = source.fMult[i];
-    }
-
-    return *this;
-}
-
-// ____________________________________________________________________________
-void CEPRawFMDBuffer::Copy(TObject &obj) const 
-{
-  if (this==&obj) return;
-  CEPRawFMDBuffer *robj = dynamic_cast<CEPRawFMDBuffer*>(&obj);
-  if (!robj) return; 
-  *robj = *this;
-}
-
-// ____________________________________________________________________________
-CEPRawFMDBuffer::~CEPRawFMDBuffer()
-{
-
-}
-
-// ____________________________________________________________________________
 void CEPRawFMDBuffer::Reset()
 {
     fNCells     = 140;

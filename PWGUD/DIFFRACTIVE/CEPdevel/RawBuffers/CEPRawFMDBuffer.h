@@ -15,13 +15,10 @@ class CEPRawFMDBuffer : public TObject
 
   public:
                         CEPRawFMDBuffer();
-                        CEPRawFMDBuffer(const CEPRawFMDBuffer& fb);
-                        ~CEPRawFMDBuffer();
+    virtual             ~CEPRawFMDBuffer() {};
     // Modifiers
     /// Reset the member variables
     void                Reset();
-    void                Copy(TObject &obj) const;
-    CEPRawFMDBuffer &   operator=(const CEPRawFMDBuffer& source);
     
     // Setter functions 
     /// Set the cell multiplicity 
