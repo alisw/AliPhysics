@@ -19,6 +19,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 100.,//bunch space in ns.
     const Double_t distBC = 0.0,//minimum distance to bad channel.
+    const Double_t Emin = 0.2,
     const Bool_t isJJMC = kFALSE,
     const TString MCtype = "MBMC"
     )
@@ -70,13 +71,13 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 
   TString taskname = "";
   if(FlowTask){
-     if(harmonics > 0) taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC));
+     if(harmonics > 0) taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell_Emin%dMeV",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
       else{
         ::Error("AddTaskPHOSEmbeddingEfficiency", "Qn flow vector correction is ON, but you do not set harmonics.");
         return NULL;
       }
   }
-  else taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
+  else taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
   AliAnalysisTaskPHOSEmbeddingEfficiency* task = new AliAnalysisTaskPHOSEmbeddingEfficiency(taskname);
   task->SelectCollisionCandidates(trigger);
@@ -102,6 +103,9 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   task->SetDepthNMixed(NMixed);
   task->SetQnVectorTask(FlowTask);
   task->SetHarmonics(harmonics);
+
+  //set minimum energy
+  task->SetEmin(Emin);
 
   //centrality setting
   task->SetCentralityEstimator("V0M");
@@ -148,6 +152,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
         f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0]*TMath::Power(x,-([1] + [2]/(TMath::Power(x,[3]) + [4])))",0,100);//this is iterative procedure.
         f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+        f1weightPi0[icen]->SetNpx(1000);
         farray_Pi0->Add(f1weightPi0[icen]);
       }
       task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
@@ -178,6 +183,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       for(Int_t icen=0;icen<Ncen_Eta-1;icen++){
         f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"[0]*TMath::Power(x,-([1] + [2]/(TMath::Power(x,[3]) + [4])))",0,100);//this is iterative procedure.
         f1weightEta[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+        f1weightEta[icen]->SetNpx(1000);
         farray_Eta->Add(f1weightEta[icen]);
       }
       task->SetAdditionalEtaPtWeightFunction(centarray_Eta,farray_Eta);
@@ -208,6 +214,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
         f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0]*TMath::Power(x,-([1] + [2]/(TMath::Power(x,[3]) + [4])))",0,100);//this is iterative procedure.
         f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+        f1weightGamma[icen]->SetNpx(1000);
         farray_Gamma->Add(f1weightGamma[icen]);
       }
       task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);
