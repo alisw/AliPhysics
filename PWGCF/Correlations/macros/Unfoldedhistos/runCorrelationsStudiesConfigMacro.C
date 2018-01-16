@@ -31,6 +31,7 @@ void load2015oHIRTestRunNumber();
 void load2016kTestRunNumber();
 void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
+void load2017nMCRunNumbers();
 
 void runCorrelationsStudiesConfigMacro() {
 
@@ -502,6 +503,33 @@ void load2017nRunNumbers() {
   szDataDir = "/alice/data/2017/LHC17n";
   /* 2015o HIR */
   szDataPattern = "*/pass1/AOD/*/AliAOD.root";
+
+  /* heavy data files */
+  nNoOfInputFiles = 20;
+  nNoOfTestFiles = 1;
+
+  /* the list of runs to analyze 2015o HIR*/
+  listOfActiveRuns.Add(new TObjString("280234"));
+  listOfActiveRuns.Add(new TObjString("280235"));
+}
+
+void load2017nMCRunNumbers() {
+  /* the Xe-Xe dataset */
+  bUseESD                   = kFALSE;
+  bUseAOD                   = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudiesXeXe_2017nMC";
+
+  bMC = kTRUE;
+
+  /* reco pass */
+  szpass = "1";
+
+  /* 2017n */
+  szDataDir = "/alice/sim/2017/LHC17j7";
+  /* 2015o HIR */
+  szDataPattern = "*/AOD/*/AliAOD.root";
 
   /* heavy data files */
   nNoOfInputFiles = 20;

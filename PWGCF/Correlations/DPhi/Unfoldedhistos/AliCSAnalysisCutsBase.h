@@ -190,6 +190,12 @@ public:
     ///@{
     kLHC17n,          ///< XeXe 5.44 TeV
     ///@}
+    /// \name 2017MC
+    /// \brief MC's corresponding to 2017 data
+    ///@{
+    kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
+    kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
+    ///@}
   };
 
   /// \enum EnergyValue
