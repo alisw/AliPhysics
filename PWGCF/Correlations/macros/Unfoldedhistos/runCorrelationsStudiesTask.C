@@ -156,6 +156,7 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     TString secondline;
     TString thirdline;
     TString fourthline;
+    TString fifthline;
 
     line.ReadLine(configfile);
     while ((line.BeginsWith("#") || line.IsWhitespace()) && !configfile.eof()) line.ReadLine(configfile);
@@ -174,8 +175,12 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     while ((line.BeginsWith("#") || line.IsWhitespace()) && !configfile.eof()) line.ReadLine(configfile);
     fourthline = line;
 
-    if (firstline.Length() && secondline.Length() && thirdline.Length() && fourthline.Length())
-      AddCorrelationsStudiesTask(firstline.Data(),secondline.Data(),thirdline.Data(),fourthline.Data());
+    line.ReadLine(configfile);
+    while ((line.BeginsWith("#") || line.IsWhitespace()) && !configfile.eof()) line.ReadLine(configfile);
+    fifthline = line;
+
+    if (firstline.Length() && secondline.Length() && thirdline.Length() && fourthline.Length() && fifthline.Length())
+      AddCorrelationsStudiesTask(firstline.Data(),secondline.Data(),thirdline.Data(),fourthline.Data(),fifthline.Data());
     else {
       cout << "Wrong configuration file. ABORTING!!!" << endl;
       return;
