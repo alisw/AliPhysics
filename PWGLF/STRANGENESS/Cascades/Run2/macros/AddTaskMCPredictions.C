@@ -35,5 +35,5 @@ AliAnalysisTaskMCPredictions *AddTaskMCPredictions( const TString lMasterJobSess
     mgr->ConnectInput (taskMCPred, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskMCPred, 1, coutputList);
     
-    return taskAuxiliary;
+    return taskMCPred;
 }   
