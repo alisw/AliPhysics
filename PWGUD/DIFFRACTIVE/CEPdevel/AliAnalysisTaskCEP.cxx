@@ -533,7 +533,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::UserExec(Option_t *)
 {
-
+  
   // update stats flow
   // events running through UserExec - thus all analyzed events
   fhStatsFlow->Fill(AliCEPBase::kBinTotalInput);

@@ -21,56 +21,6 @@ CEPRawV0Buffer::CEPRawV0Buffer()
 }
 
 // ____________________________________________________________________________
-CEPRawV0Buffer::CEPRawV0Buffer(const CEPRawV0Buffer& vb)
-  : TObject(vb)
-  , fNCells(vb.fNCells)
-  , fNPMV0A(vb.fNPMV0A)
-  , fNPMV0C(vb.fNPMV0C)
-{
-    for (UInt_t i(0); i<fNCells; i++){
-        fMult[i]     = vb.fMult[i]; 
-        fAdc[i]      = vb.fAdc[i]; 
-        fTime[i]     = vb.fTime[i]; 
-        fSigWidth[i] = vb.fSigWidth[i]; 
-    }
-}
-
-// ____________________________________________________________________________
-CEPRawV0Buffer::~CEPRawV0Buffer()
-{
-  
-}
-
-// ____________________________________________________________________________
-CEPRawV0Buffer& CEPRawV0Buffer::operator=(const CEPRawV0Buffer& source)
-{
-    if(this==&source) return *this;
-    TObject::operator=(source);
-    // Assignment operator
-    fNCells = source.fNCells;
-    fNPMV0A = source.fNPMV0A;
-    fNPMV0C = source.fNPMV0C;
-
-    for(UInt_t i(0); i<fNCells; i++) {
-       fMult[i]     = source.fMult[i];
-       fAdc[i]      = source.fAdc[i];
-       fTime[i]     = source.fTime[i];
-       fSigWidth[i] = source.fSigWidth[i];
-    }
-
-    return *this;
-}
-
-// ____________________________________________________________________________
-void CEPRawV0Buffer::Copy(TObject &obj) const 
-{
-    if (this==&obj) return;
-    CEPRawV0Buffer *robj = dynamic_cast<CEPRawV0Buffer*>(&obj);
-    if (!robj) return; 
-    *robj = *this;
-}
-
-// ____________________________________________________________________________
 void CEPRawV0Buffer::Reset()
 {
     fNCells   = 64;
