@@ -25,9 +25,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
   }
   if(controlstring.Contains("XeXe"))  {
     colsys = "XeXe";
-    multSteps[0] = 100;   multBinWidth[0] = 1;
-    multSteps[1] = 50;    multBinWidth[1] = 5;
-    multSteps[2] = 50;    multBinWidth[2] = 61;
+    multSteps[0] = 200;  multBinWidth[0] = 15;
+    multSteps[1] = 0;    multBinWidth[1] = 1;
+    multSteps[2] = 0;    multBinWidth[2] = 1;
   }
   if(controlstring.Contains("pPb"))  {
     colsys = "pPb";
@@ -39,9 +39,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     isPbPbAnalysis = kTRUE;
     is2015Data = kTRUE;
     colsys = "PbPb";
-    multSteps[0] = 100;   multBinWidth[0] = 1;
-    multSteps[1] = 50;    multBinWidth[1] = 5;
-    multSteps[2] = 50;    multBinWidth[2] = 61;
+    multSteps[0] = 200;   multBinWidth[0] = 15;
+    multSteps[1] = 0;    multBinWidth[1] = 1;
+    multSteps[2] = 0;    multBinWidth[2] = 1;
   }
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
 
