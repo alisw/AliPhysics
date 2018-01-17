@@ -399,9 +399,9 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
     AliJetContainer* jetCont = 0;
     TIter next(&fJetCollArray);
     
-    TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
-    if(!triggerpatches)
-        AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
+    //TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
+    //if(!triggerpatches)
+    //    AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
     
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupname = jetCont->GetName();
