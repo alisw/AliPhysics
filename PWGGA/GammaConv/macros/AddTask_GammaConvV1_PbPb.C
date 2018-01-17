@@ -1938,7 +1938,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("52500023", "00216609247002008857404000", "0152501500000000"); // asym > 8GeV
     cuts.AddCut("52500023", "00216609247002008850004000", "0152501500000000"); // cosPA off
 
-  } else if ( trainConfig == 357){ // RP EM V0 mult background
+  } else if ( trainConfig == 357){ // meson STD cut with pileup removal
     cuts.AddCut("60100713", "00200009247602008850404000", "0652501500000000"); //
     cuts.AddCut("61200713", "00200009247602008850404000", "0652501500000000"); //
     cuts.AddCut("50100713", "00200009247602008850404000", "0652501500000000"); //
@@ -1973,14 +1973,39 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("52400023", "00216609247002008250404000", "0152501500000000"); // 30+0.1 2D
     cuts.AddCut("52500023", "00216609247002008250404000", "0152501500000000"); // 30+0.1 2D
 
-  } else if ( trainConfig == 367){ // dir photons
+  } else if ( trainConfig == 367){ // dir photons finer cent
     cuts.AddCut("52300013", "00200009247002008850404000", "0152501500000000"); //
     cuts.AddCut("53400013", "00200009247002008850404000", "0152501500000000"); //
     cuts.AddCut("54500013", "00200009247002008850404000", "0152501500000000"); //
-  } else if ( trainConfig == 368){ //
+  } else if ( trainConfig == 368){ // with phi cut
     cuts.AddCut("52300013", "00216609247002008850404000", "0152501500000000"); //
     cuts.AddCut("53400013", "00216609247002008850404000", "0152501500000000"); //
     cuts.AddCut("54500013", "00216609247002008850404000", "0152501500000000"); //
+  } else if ( trainConfig == 369){ //
+    cuts.AddCut("52300023", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("53400023", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("54500023", "00200009247002008850404000", "0152501500000000"); //
+  } else if ( trainConfig == 370){ //
+    cuts.AddCut("52300023", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("53400023", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("54500023", "00216609247002008850404000", "0152501500000000"); //
+
+  } else if ( trainConfig == 371){ // dir photons finer cent
+    cuts.AddCut("60100013", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("61200013", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("51200013", "00200009247002008850404000", "0152501500000000"); //
+  } else if ( trainConfig == 372){ // with phi cut
+    cuts.AddCut("60100013", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("61200013", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("51200013", "00216609247002008850404000", "0152501500000000"); //
+  } else if ( trainConfig == 373){ //
+    cuts.AddCut("60100023", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("61200023", "00200009247002008850404000", "0152501500000000"); //
+    cuts.AddCut("51200023", "00200009247002008850404000", "0152501500000000"); //
+  } else if ( trainConfig == 374){ //
+    cuts.AddCut("60100023", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("61200023", "00216609247002008850404000", "0152501500000000"); //
+    cuts.AddCut("51200023", "00216609247002008850404000", "0152501500000000"); //
 
   // Xe-Xe configurations
   } else if (trainConfig == 400){
@@ -2299,6 +2324,28 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
         if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
       }
     }
+    if (trainConfig == 369   || trainConfig == 370){
+      if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+        if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+      }
+    }
+    if(trainConfig == 371 || trainConfig == 372){
+      if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
+        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
+        if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_1020TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_1020TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M","Eta_Fit_Data_PbPb_2760GeV_1020V0M");
+      }
+    }
+    if (trainConfig == 373   || trainConfig == 374){
+      if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
+        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
+        if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_1020TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_1020TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M","Eta_Fit_Data_PbPb_2760GeV_1020V0M");
+      }
+    }
+
 
     if (trainConfig == 237   || trainConfig == 238   || trainConfig == 239   || trainConfig == 240  || trainConfig == 241  || trainConfig == 242){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
