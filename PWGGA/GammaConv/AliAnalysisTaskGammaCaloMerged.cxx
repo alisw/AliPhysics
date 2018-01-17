@@ -415,20 +415,20 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     ptBinsLog                                 = 250;
     startPtLog                                = 20;
     endPtLog                                  = 70;
-  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ){
-    ptBins                                    = 900;
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
+  ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
+    ptBins                                    = 950;
     startPt                                   = 10;
-    endPt                                     = 190;
-    ptBinsLog                                 = 450;
+    endPt                                     = 200;
+    ptBinsLog                                 = 475;
     startPtLog                                = 10;
-    endPtLog                                  = 190;
+    endPtLog                                  = 200;
     ptBinsDefClus                             = 1000;
     startPtDefClus                            = 0;
     endPtDefClus                              = 200;
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV  ){
     ptBins                                    = 900;
     startPt                                   = 10;
     endPt                                     = 100;
