@@ -51,6 +51,7 @@ ClassImp(AliMergeableCollection)
 #include <cassert>
 #include <vector>
 #include "TBrowser.h"
+#include "TMethodCall.h"
 
 //_____________________________________________________________________________
 AliMergeableCollection::AliMergeableCollection(const char* name, const char* title) 
@@ -989,9 +990,10 @@ Bool_t AliMergeableCollection::MergeObject(TObject* baseObject, TObject* objToAd
   TList list;
   list.Add(objToAdd);
   
-  TString listArgs = Form("((TCollection*)0x%lx)", (ULong_t)&list);
-  Int_t error = 0;
-  baseObject->Execute("Merge", listArgs.Data(), &error);
+  TMethodCall callEnv;
+  callEnv.InitWithPrototype(baseObject->IsA(), "Merge", "TCollection*");
+  callEnv.SetParam((Long_t) (&list));
+  callEnv.Execute(baseObject);
   return kTRUE;
 }
 
