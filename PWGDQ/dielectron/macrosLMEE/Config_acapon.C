@@ -235,6 +235,11 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
     histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",300,-50,250,AliDielectronVarManager::kCentralityNew);
     histos->UserHistogram("Event","CentralityV0Mzoomed","Centrality V0 zoomed;V0M percentile",200,0,2,AliDielectronVarManager::kCentralityNew);
 
+		//-------For spectra scaling
+		histos->UserHistogram("Event","RefMultVsMult","#Charged Tracks Multiplicity (%);Ref. Mult", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult TPC only", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulOvRefMultTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult Over Ref Mult TPC only", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultOvRefMultTPConly);
+
 
     //add histograms to Track classes
     histos->UserHistogram("Track","Pt",";Pt [GeV];#tracks",100,0,5.,AliDielectronVarManager::kPt);
