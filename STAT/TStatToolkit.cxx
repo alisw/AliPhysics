@@ -2648,6 +2648,10 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     delete pcstream;
   */
   //
+  if (histo->GetNdimensions()<=1) {
+    ::Error("TStatToolkit::MakeDistortionMapFast","Invalid dimension of input histogram");
+    return;
+  }
   const Double_t kMinEntries=30, kUseLLFrom=20;
   const Float_t  kDumpHistoFraction = TString(gSystem->Getenv("gDumpHistoFraction")).Atof();  // in debug mode - controlled by env variable "gDumpHistoFraction" fractio of histogram + fits dumped to the file 
   char tname[100];
@@ -2831,7 +2835,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	m3=hfit->GetSkewness();
 	m4=hfit->GetKurtosis();
       }
-      fgaus.SetRange(limits[0]-rms, limits[1]+rms);
+      // fgaus.SetRange(limits[0]-rms, limits[1]+rms);   //TODO - to fix bug in range limits
     }else{
       fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
     }
@@ -2844,7 +2848,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       fgaus.SetParError(1,rms);
       fgaus.SetParError(2,rms);
       //grafFit.Fit(&fgaus,/*maxVal<kUseLLFrom ? "qnrl":*/"qnr");
-      TFitResultPtr fitPtr= hfit->Fit(&fgaus,maxVal<kUseLLFrom ? "qnrlS":"qnrS");
+      TFitResultPtr fitPtr= hfit->Fit(&fgaus,maxVal<kUseLLFrom ? "qnrlS+":"qnrS+");
       //TFitResultPtr fitPtr= hfit->Fit(&fgaus,"qnrlS");
       entriesG = fgaus.GetParameter(0);
       meanG = fgaus.GetParameter(1);
@@ -2861,6 +2865,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       hDump=hfit;
     }
     if (hDump){
+      hfit->GetListOfFunctions()->AddLast(&fgaus);
       (*pcstream)<<TString::Format("%sDump", tname).Data()<<
 	"entries="<<nrm<<     // number of entries
 	"isFitValid="<<isFitValid<< // true if the gaus fit converged
@@ -2879,7 +2884,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	"chi2G="<<chi2G;      // chi2 of the gaus fit      
       for (Int_t iest=1; iest<nestimators; iest++) 
 	(*pcstream)<<TString::Format("%sDump", tname).Data()<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
-      
+
     }
 
     (*pcstream)<<tname<<
@@ -2925,7 +2930,10 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
        }      
     } 
     (*pcstream)<<tname<<"\n";
-    if (hDump)	(*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
+    if (hDump)	{
+      (*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
+      hfit->GetListOfFunctions()->RemoveLast();
+    }
     // << ------------- do fit
     //
     if ( fitProgress>0 && nfits>0) { 
