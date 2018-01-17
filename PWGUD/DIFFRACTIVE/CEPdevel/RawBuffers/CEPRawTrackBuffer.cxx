@@ -9,7 +9,6 @@
 //
 //
 // ____________________________________________________________________________
-#include "AliCEPBase.h"
 #include "CEPTrackBuffer.h"
 #include "CEPRawTrackBuffer.h"
 
@@ -20,10 +19,10 @@ CEPRawTrackBuffer::CEPRawTrackBuffer()
   : TObject()
   , fTrackLength(CEPTrackBuffer::kdumval)
   , fGlobalChi2(CEPTrackBuffer::kdumval)
-  , fPIDITSsignal(0)
-  , fPIDHMPIDsignal(0)
-  , fPIDTRDsignal(0)
-  , fPIDTOFsignalRaw(0)
+  , fPIDITSsignal(CEPTrackBuffer::kdumval)
+  , fPIDHMPIDsignal(CEPTrackBuffer::kdumval)
+  , fPIDTRDsignal(CEPTrackBuffer::kdumval)
+  , fPIDTOFsignalRaw(CEPTrackBuffer::kdumval)
   , fXY(CEPTrackBuffer::kdumval)
   , fZ(CEPTrackBuffer::kdumval)
   , fDx(CEPTrackBuffer::kdumval)
@@ -37,29 +36,14 @@ CEPRawTrackBuffer::CEPRawTrackBuffer()
 }
 
 // ____________________________________________________________________________
-CEPRawTrackBuffer::~CEPRawTrackBuffer()
-{
-  
-}
-
-// ____________________________________________________________________________
-void CEPRawTrackBuffer::Copy(TObject &obj) const 
-{
-  if (this==&obj) return;
-  CEPRawTrackBuffer *robj = dynamic_cast<CEPRawTrackBuffer*>(&obj);
-  if (!robj) return; 
-  *robj = *this;
-}
-
-// ____________________________________________________________________________
 void CEPRawTrackBuffer::Reset()
 {
     fTrackLength     = CEPTrackBuffer::kdumval;
     fGlobalChi2      = CEPTrackBuffer::kdumval;
-    fPIDITSsignal    = 0;
-    fPIDHMPIDsignal  = 0;
-    fPIDTRDsignal    = 0;
-    fPIDTOFsignalRaw = 0;
+    fPIDITSsignal    = CEPTrackBuffer::kdumval;
+    fPIDHMPIDsignal  = CEPTrackBuffer::kdumval;
+    fPIDTRDsignal    = CEPTrackBuffer::kdumval;
+    fPIDTOFsignalRaw = CEPTrackBuffer::kdumval;
     fXY              = CEPTrackBuffer::kdumval;
     fZ               = CEPTrackBuffer::kdumval;
     fDx              = CEPTrackBuffer::kdumval;

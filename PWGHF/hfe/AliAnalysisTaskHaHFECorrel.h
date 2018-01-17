@@ -75,7 +75,7 @@ public:
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
-    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Int_t &LPinAcceptance, Int_t &LP);
+    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
 
     //********************MC
     void MCEfficiencyCorrections(const AliVVertex * RecVertex);
@@ -113,7 +113,10 @@ public:
       fCorrHadron = kFALSE;
       fCorrLParticle = kFALSE;
       fMixedEvent = kFALSE;
+      fMCTrueCorrelation = kFALSE;
     }
+
+    
 
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
@@ -140,9 +143,31 @@ public:
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
 
   
-    void SetHadronCorrelation(Bool_t CorrHadron) {fCorrHadron = CorrHadron;};
-    void SetLPCorrelation(Bool_t CorrLP) {fCorrLParticle = CorrLP;};
-    
+    void SetHadronCorrelation(Bool_t CorrHadron) {
+      fCorrHadron = CorrHadron;
+      if (CorrHadron) {
+	fTagEff=kFALSE;
+	fRecEff=kFALSE;
+	fHadCont=kFALSE;
+      }
+    };
+    void SetLPCorrelation(Bool_t CorrLP) {
+      fCorrLParticle = CorrLP;
+      if (CorrLP) {
+	fTagEff=kFALSE;
+	fRecEff=kFALSE;
+	fHadCont=kFALSE;
+      }
+    };
+    void SetMCTruthCorrelation(Bool_t MCTruthCorr) {
+      fMCTrueCorrelation = MCTruthCorr;
+      if (MCTruthCorr) {
+	fTagEff=kTRUE;
+	fRecEff=kTRUE;
+	fHadCont=kTRUE;
+      }
+    };
+
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
@@ -150,7 +175,7 @@ public:
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
-    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -217,8 +242,11 @@ public:
     Bool_t                fCorrHadron;              // Choose Hadron-HFE Correl
     Bool_t                fCorrLParticle;           // Choose LP-HFE Correl
     Bool_t                fMixedEvent;              // Fill Mixed Event for the cases chosen above
-    Bool_t                fLParticle;               //! Is LP found?
-
+    Bool_t                fPionEtaProduction;       //
+    Bool_t                fRecEff;                  //
+    Bool_t                fTagEff;                  //
+    Bool_t                fHadCont;                 //
+    Bool_t                fLParticle;               // Is LP found?
 
     AliESDEvent           *fESD;                    //! ESD object
     AliESDtrackCuts       *fesdTrackCuts;           //!
@@ -324,7 +352,7 @@ public:
     TH1F                  fCorrectPiontoData;      
     TH1F                  fCorrectEtatoData;       
     TH3F                  fHadRecEff;
-    TH3F                  fEleRecEff;
+    TH2F                  fEleRecEff;
 
     Int_t                 fAssPtHad_Nbins;
     TArrayF               fAssPtHad_Xmin;
@@ -439,12 +467,16 @@ public:
     THnSparse             *fMCPiPlusProdV2;          //!
     THnSparse             *fMCLeadingParticle;       //!
 
-
+    AliEventPoolManager   *fMCTruePoolMgr;           //! event pool manager
     THnSparse             *fTrueMCHadronEventCuts;   //!
-    THnSparse             *fTrueMCHadron;   //!
+    THnSparse             *fTrueMCHadronEventCutsZvtx; //!
+    THnSparse             *fTrueMCHadronEventCutsZvtxMEv; //!
+    THnSparse             *fTrueMCHadron;            //!
     TH3F                  *fTrueMCElecHaTriggerEventCuts; //!
     TH3F                  *fTrueMCElecHaTrigger; //!
     THnSparse             *fTrueMCLPEventCuts;   //!
+    THnSparse             *fTrueMCLPEventCutsZvtx; //!
+    THnSparse             *fTrueMCLPEventCutsZvtxMEv; //!
     THnSparse             *fTrueMCLP;   //!
     TH3F                  *fTrueMCElecLPTriggerEventCuts; //!
     TH3F                  *fTrueMCElecLPTrigger; //!

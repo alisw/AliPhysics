@@ -1,5 +1,5 @@
 
-TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq");
+TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;kPbPb2015_Pt400_looseTOFif_0SITSCl;kPbPb2015_Pt400_tightTOFreq_0SITSCl;kPbPb2015_Pt400_looseTOFif_ITSMAP;kPbPb2015_Pt400_tightTOFreq_ITSMAP");
 bool DoPairing = kTRUE;
 bool DoULSLS = true;
 
@@ -33,17 +33,24 @@ const double maxEtaCut = 0.8;
 
 
 // binning of single leg histograms
+bool usePtVector = true;
+double ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+  1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+  4.00,5.0,6.0,7.0,8.0
+  };
+const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
+
 const double minPtBin = 0;
 const double maxPtBin = 8;
 const int    stepsPtBin = 800;
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
-const int    stepsEtaBin = 40;
+const int    stepsEtaBin = 20;
 
 const double minPhiBin = 0;
 const double maxPhiBin =  TMath::TwoPi();
-const int    stepsPhiBin = 60;
+const int    stepsPhiBin = 30;
 
 const double minThetaBin = 0;
 const double maxThetaBin =  TMath::TwoPi();
@@ -111,6 +118,30 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
     AnaCut.SetStandardCut();
   }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_0SITSCl"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_0SITSCl);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_0SITSCl"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_0SITSCl);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_ITSMAP"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_ITSMAP);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_ITSMAP"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_ITSMAP);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
 
   if (!isAOD) anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
   anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
@@ -151,7 +182,7 @@ void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   eleFinalStateFromPion.SetMotherPDGs(111, 111); // open charm mesons and baryons together
   eleFinalStateFromPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   task->AddSingleLegMCSignal(eleFinalStateFromPion);
-
+  //
   AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
   eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
   eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -159,7 +190,7 @@ void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   eleFinalStateFromD.SetMotherPDGs(402, 402); // open charm mesons and baryons together
   eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
-
+  //
   AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
   eleFinalStateFromB.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
   eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -202,26 +233,16 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     //mother
     pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_pion.SetMotherPDGs(111,111); //
-    pair_sameMother_pion.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
     task->AddPairMCSignal(pair_sameMother_pion);
 
-    // AliDielectronSignalMC pair_sameGrandMotherFromD("sameGrandMotherFromD","sameGrandMotherFromD");
-    // pair_sameGrandMotherFromD.SetLegPDGs(11,-11);
-    // pair_sameGrandMotherFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    // pair_sameGrandMotherFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    // AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
+    // pair_sameMother_eta.SetLegPDGs(11,-11);
+    // pair_sameMother_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    // pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     // //mother
-    // pair_sameGrandMotherFromD.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    // pair_sameGrandMotherFromD.SetMotherPDGs(402,402); // exclude conversion electrons. should have no effect on final state ele.
-    // task->AddPairMCSignal(pair_sameGrandMotherFromD);
-    //
-    // AliDielectronSignalMC pair_sameGrandMotherFromB("sameGrandMotherFromB","sameGrandMotherFromB");
-    // pair_sameGrandMotherFromB.SetLegPDGs(11,-11);
-    // pair_sameGrandMotherFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    // pair_sameGrandMotherFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    // //mother
-    // pair_sameGrandMotherFromB.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    // pair_sameGrandMotherFromB.SetMotherPDGs(502,502); // exclude conversion electrons. should have no effect on final state ele.
-    // task->AddPairMCSignal(pair_sameGrandMotherFromB);
+    // pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
+    // pair_sameMother_eta.SetMotherPDGs(221,221); //
+    // task->AddPairMCSignal(pair_sameMother_eta);
 
     // AliDielectronSignalMC pair_conversion("pair_conversion","pair_conversion");
     // pair_conversion.SetLegPDGs(11,-11);

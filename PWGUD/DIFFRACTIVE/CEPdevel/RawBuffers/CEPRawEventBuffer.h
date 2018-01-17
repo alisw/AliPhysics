@@ -54,13 +54,10 @@ class CEPRawEventBuffer : public TObject
     
   public:
                                 CEPRawEventBuffer();
-                                CEPRawEventBuffer(const CEPRawEventBuffer& eb);
-                                ~CEPRawEventBuffer();
-    void                        Copy(TObject &obj)      const;
-    CEPRawEventBuffer &         operator=(const CEPRawEventBuffer& source);
+    virtual                     ~CEPRawEventBuffer();
     
     void                        AddTrack(CEPRawTrackBuffer* trk);
-    void                        AddTrack(CEPRawCaloClusterTrack* caloTrk);
+    void                        AddCaloTrack(CEPRawCaloClusterTrack* caloTrk);
     
     /// Setter
     void                        SetEventNumber(Int_t evnum)         { fEventNumber = evnum; }

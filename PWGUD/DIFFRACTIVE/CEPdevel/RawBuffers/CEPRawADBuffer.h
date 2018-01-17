@@ -25,20 +25,13 @@ class CEPRawADBuffer : public TObject
   public:
     /// Constructor
                         CEPRawADBuffer();
-    /// Copy constructor
-                        CEPRawADBuffer(const CEPRawADBuffer& adb);
     /// Destructor
-                        ~CEPRawADBuffer();
+    virtual             ~CEPRawADBuffer() {};
 
     // Modifiers
     /// Reset member variables
     void                Reset();
 
-    /// Overwrite the virtual TObject::Copy()   
-    void                Copy(TObject &obj) const;
-    /// Overwrite the = operator
-    CEPRawADBuffer &    operator=(const CEPRawADBuffer& source);
- 
     // Setter functions
     /*! \brief Set the multiplicity in a certain AD cell. 
      *

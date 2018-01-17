@@ -153,6 +153,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   fV0ReaderName(""),
+  fCorrTaskSetting(""),
   fCaloTriggers(NULL),
   fTriggerPatchInfo(NULL),
   fMainTriggerPatchEMCAL(NULL),
@@ -266,6 +267,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   fV0ReaderName(ref.fV0ReaderName),
+  fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTriggers(NULL),
   fTriggerPatchInfo(NULL),
   fMainTriggerPatchEMCAL(NULL),
@@ -2957,9 +2959,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     }
 
 //     cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
-
     Int_t nclus = 0;
-    nclus = event->GetNumberOfCaloClusters();
+    TClonesArray * arrClustersMimic = NULL;
+    if(!fCorrTaskSetting.CompareTo("")){
+      nclus = event->GetNumberOfCaloClusters();
+    } else {
+      arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+      if(!arrClustersMimic)
+        AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
+      nclus = arrClustersMimic->GetEntries();
+    }
 
     if(nclus == 0)  return kFALSE;
 
@@ -2967,7 +2976,18 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Bool_t eventIsAccepted = kFALSE;
     for(Int_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
-      clus = event->GetCaloCluster(i);
+      if(event->IsA()==AliESDEvent::Class()){
+        if(arrClustersMimic)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
+        else
+          clus = event->GetCaloCluster(i);
+      } else if(event->IsA()==AliAODEvent::Class()){
+        if(arrClustersMimic)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
+        else
+          clus = event->GetCaloCluster(i);
+      }
+
       if (!clus) continue;
       if (!clus->IsEMCAL()) continue;
       if (clus->GetM02()<0.1) continue;
@@ -3004,8 +3024,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 
+      TClonesArray * arrClustersMimic = NULL;
       Int_t nclus = 0;
-      nclus = event->GetNumberOfCaloClusters();
+      if(!fCorrTaskSetting.CompareTo("")){
+        nclus = event->GetNumberOfCaloClusters();
+      } else {
+        arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+        if(!arrClustersMimic)
+          AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
+        nclus = arrClustersMimic->GetEntries();
+      }
 
       if(nclus == 0)  return kFALSE;
 
@@ -3013,7 +3041,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
-        clus = event->GetCaloCluster(i);
+        if(event->IsA()==AliESDEvent::Class()){
+          if(arrClustersMimic)
+            clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
+          else
+            clus = event->GetCaloCluster(i);
+        } else if(event->IsA()==AliAODEvent::Class()){
+          if(arrClustersMimic)
+            clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
+          else
+            clus = event->GetCaloCluster(i);
+        }
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
         if (clus->GetM02()<0.1) continue;
@@ -3044,7 +3082,15 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 //       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
 
       Int_t nclus = 0;
-      nclus = event->GetNumberOfCaloClusters();
+      TClonesArray * arrClustersMimic = NULL;
+      if(!fCorrTaskSetting.CompareTo("")){
+        nclus = event->GetNumberOfCaloClusters();
+      } else {
+        arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+        if(!arrClustersMimic)
+          AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
+        nclus = arrClustersMimic->GetEntries();
+      }
 
       if(nclus == 0)  return kFALSE;
 
@@ -3052,7 +3098,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
-        clus = event->GetCaloCluster(i);
+        if(event->IsA()==AliESDEvent::Class()){
+          if(arrClustersMimic)
+            clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
+          else
+            clus = event->GetCaloCluster(i);
+        } else if(event->IsA()==AliAODEvent::Class()){
+          if(arrClustersMimic)
+            clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
+          else
+            clus = event->GetCaloCluster(i);
+        }
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
         if (clus->GetM02()<0.1) continue;

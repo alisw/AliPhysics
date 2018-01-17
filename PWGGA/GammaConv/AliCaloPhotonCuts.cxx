@@ -46,6 +46,8 @@
 #include "AliTrackerBase.h"
 #include "AliVCaloCells.h"
 #include "AliVCluster.h"
+#include "AliEmcalCorrectionTask.h"
+#include "AliEmcalCorrectionComponent.h"
 #include "AliTender.h"
 #include "AliTenderSupply.h"
 #include "AliEMCALTenderSupply.h"
@@ -109,6 +111,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fCaloTrackMatcherName("CaloTrackMatcher_1"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
@@ -281,6 +284,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fIsMC(ref.fIsMC),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName(ref.fV0ReaderName),
+  fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
   fPeriodName(ref.fPeriodName),
   fCurrentMC(ref.fCurrentMC),
@@ -1180,12 +1184,17 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
   if (fClusterType == 1 || fClusterType == 3){
     AliTender* alitender=0x0;
     AliEmcalTenderTask* emcaltender=0x0;
-
-    if(event->IsA()==AliESDEvent::Class())
+    AliEmcalCorrectionTask* emcalCorrTask=0x0;
+    if(event->IsA()==AliESDEvent::Class()){
       alitender         = (AliTender*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliTender");
-    else if( event->IsA()==AliAODEvent::Class())
+      if(!alitender){
+        emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask_defaultSetting");
+      }
+    } else if( event->IsA()==AliAODEvent::Class()){
       emcaltender       = (AliEmcalTenderTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalTenderTask");
-
+      if(!emcaltender)
+        emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask_defaultSetting");
+    }
     if(alitender){
       TIter next(alitender->GetSupplies());
       AliTenderSupply *supply;
@@ -1195,6 +1204,12 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
     } else if(emcaltender){
       fEMCALRecUtils        = ((AliEMCALTenderSupply*)emcaltender->GetEMCALTenderSupply())->GetRecoUtils();
       fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+    } else if(emcalCorrTask){
+      AliEmcalCorrectionComponent * emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel_defaultSetting");
+      if(emcalCorrComponent){
+        fEMCALRecUtils        = emcalCorrComponent->GetRecoUtils();
+        fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+      }
     }
     if (fEMCALRecUtils) fEMCALInitialized = kTRUE;
 
@@ -1776,7 +1791,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
   Int_t* nCellsBigger100MeV;
   Int_t* nCellsBigger1500MeV;
   Double_t* EnergyOfMod;
-
   if( (fClusterType == 1 || fClusterType == 3) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
 
@@ -1861,12 +1875,30 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
   delete[] EnergyOfMod;EnergyOfMod=0x0;
 
   //fill distClusterTo_withinTiming/outsideTiming
-  Int_t nclus = event->GetNumberOfCaloClusters();
+  Int_t nclus = 0;
+  TClonesArray * arrClustersExtQA = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = event->GetNumberOfCaloClusters();
+  } else {
+    arrClustersExtQA = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersExtQA)
+      AliFatal(Form("%sClustersBranch was not found in AliCaloPhotonCuts::FillHistogramsExtendedQA! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersExtQA->GetEntries();
+  }
   AliVCluster* cluster = 0x0;
   AliVCluster* clusterMatched = 0x0;
   for(Int_t iClus=0; iClus<nclus ; iClus++){
-    if(event->IsA()==AliESDEvent::Class()) cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus));
-    else if(event->IsA()==AliAODEvent::Class()) cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus));
+    if(event->IsA()==AliESDEvent::Class()){
+      if(arrClustersExtQA)
+        cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus));
+      else
+        cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus));
+    } else if(event->IsA()==AliAODEvent::Class()){
+      if(arrClustersExtQA)
+        cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus));
+      else
+        cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus));
+    }
 
     if( (fClusterType == 1 || fClusterType == 3) && !cluster->IsEMCAL()){delete cluster; continue;}
     if( fClusterType == 2 && cluster->GetType() !=AliVCluster::kPHOSNeutral){delete cluster; continue;}
@@ -1903,8 +1935,17 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(largestCelliMod < 0) AliFatal("FillHistogramsExtendedQA: GetModuleNumberAndCellPosition found SM with ID<0?");
 
     for(Int_t iClus2=iClus+1; iClus2<nclus; iClus2++){
-      if(event->IsA()==AliESDEvent::Class()) clusterMatched = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus2));
-      else if(event->IsA()==AliAODEvent::Class()) clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus2));
+      if(event->IsA()==AliESDEvent::Class()){
+        if(arrClustersExtQA)
+          clusterMatched = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus2));
+        else
+          clusterMatched = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus2));
+      } else if(event->IsA()==AliAODEvent::Class()){
+        if(arrClustersExtQA)
+          clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus2));
+        else
+          clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus2));
+      }
 
       if( (fClusterType == 1 || fClusterType == 3) && !clusterMatched->IsEMCAL()){delete clusterMatched; continue;}
       if( fClusterType == 2 && clusterMatched->GetType() !=AliVCluster::kPHOSNeutral){delete clusterMatched; continue;}
@@ -1992,7 +2033,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
     delete cluster;
   }
-
   return;
 }
 
@@ -2754,7 +2794,16 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 
   fVectorMatchedClusterIDs.clear();
 
-  Int_t nClus = event->GetNumberOfCaloClusters();
+  Int_t nClus = 0;
+  TClonesArray * arrClustersMatch = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nClus = event->GetNumberOfCaloClusters();
+  } else {
+    arrClustersMatch = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersMatch)
+      AliFatal(Form("%sClustersBranch was not found in AliCaloPhotonCuts::FillHistogramsExtendedQA! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nClus = arrClustersMatch->GetEntries();
+  }
   //Int_t nModules = 0;
 
   if(fClusterType == 1 || fClusterType == 3){
@@ -2845,15 +2894,23 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 
     Float_t clsPos[3] = {0.,0.,0.};
     for(Int_t iclus=0;iclus < nClus;iclus++){
-      AliVCluster* cluster = event->GetCaloCluster(iclus);
+      AliVCluster * cluster = NULL;
+      if(arrClustersMatch){
+        if(esdev)
+            cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMatch->At(iclus));
+        else if(aodev)
+            cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMatch->At(iclus));
+      } else {
+        cluster = event->GetCaloCluster(iclus);
+      }
+
       if (!cluster) continue;
       Float_t dEta, dPhi;
       if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)) continue;
       cluster->GetPosition(clsPos);
       Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
-//      cout << "dEta/dPhi: " << dEta << ", " << dPhi << " - ";
-//      cout << dR2 << endl;
+
       if(isEMCalOnly && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
       if(isEMCalOnly && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
       if(isEMCalOnly && fHistClusterRBeforeQA) fHistClusterRBeforeQA->Fill(clusterR, weight);
@@ -2881,6 +2938,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 
       Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
       Bool_t match_dPhi = kFALSE;
+      
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
@@ -2894,7 +2952,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 
       if(match_dEta && match_dPhi){
         fVectorMatchedClusterIDs.push_back(cluster->GetID());
-//        cout << "MATCHED!!!!!!!!!!!!!!!!!!!!!!!!! - " << cluster->GetID() << endl;
+       // cout << "MATCHED!!!!!!!!!!!!!!!!!!!!!!!!! - " << cluster->GetID() << endl;
         if(isEMCalOnly){
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
@@ -2909,7 +2967,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           else fHistClusterdEtadPhiNegTracksAfterQA->Fill(dEta, dPhi, weight);
           fHistClusterM20M02AfterQA->Fill(clusM20, clusM02, weight);
         }
-//        cout << "no match" << endl;
+       // cout << "no match" << endl;
       }
     }
 
@@ -3164,6 +3222,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
   if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
   if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
+  printf("Correction Task Setting: %s \n",fCorrTaskSetting.Data());
 
   printf("NonLinearity Correction: \n");
   printf("VO Reader name: %s \n",fV0ReaderName.Data());

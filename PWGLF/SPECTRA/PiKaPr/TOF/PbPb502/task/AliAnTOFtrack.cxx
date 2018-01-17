@@ -49,26 +49,32 @@ AliAnTOFtrack::AliAnTOFtrack()
     , fNTOFClusters(-999)
     , fTPCSignal(-999)
 // fT0TrkSigma(-999)
-{
+{ // standard constructur which should be used
 
-  //
-  // standard constructur which should be used
-  //
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** CONSTRUCTOR CALLED ****");
+#endif
+
   for (Int_t i = 0; i < kExpSpecies; i++) {
     fTOFExpTime[i] = -999;
     fTOFExpSigma[i] = -999;
   }
 
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** END OF CONSTRUCTOR ****");
+#endif
 }
 
 //________________________________________________________________________
 AliAnTOFtrack::~AliAnTOFtrack()
 { //Destructor
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** DESTRUCTOR CALLED ****");
+#endif
 
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** END OF DESTRUCTOR ****");
+#endif
 }
 
 ///////////////////

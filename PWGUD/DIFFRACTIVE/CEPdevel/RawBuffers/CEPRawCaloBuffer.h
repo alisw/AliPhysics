@@ -21,13 +21,10 @@ class CEPRawCaloBuffer : public TObject {
                         CEPRawCaloBuffer();
                         // necessary as we have pointer variables
                         CEPRawCaloBuffer(const CEPRawCaloBuffer& cb);   
-                        ~CEPRawCaloBuffer();
+    virtual             ~CEPRawCaloBuffer();
     /// Modifiers
     void                Reset();
 
-    // necessary as we have pointer variables
-    void                Copy(TObject &obj) const;
-    // necessary as we have pointer variables
     CEPRawCaloBuffer &  operator=(const CEPRawCaloBuffer& source);
       
     /// Setter functions

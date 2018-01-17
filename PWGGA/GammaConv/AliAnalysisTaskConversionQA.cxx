@@ -21,6 +21,7 @@
 
 #include "AliAnalysisTaskConversionQA.h"
 #include "TChain.h"
+#include "TRandom.h"
 #include "AliAnalysisManager.h"
 #include "TParticle.h"
 #include "TVectorF.h"
@@ -49,7 +50,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fTreeList(NULL),
@@ -140,7 +141,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fTreeList(NULL),
@@ -417,10 +418,11 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     }
   }
   
-  if(ffillTree){
+  if(ffillTree>=1.0){
     fTreeList = new TList();
     fTreeList->SetOwner(kTRUE);
-    fTreeList->SetName("TreeList");
+    if(ffillTree>1.0) fTreeList->SetName(Form("TreeList_%f",ffillTree));
+    else fTreeList->SetName("TreeList");
     fOutputList->Add(fTreeList);
 
     fTreeQA = new TTree("PhotonQA","PhotonQA");   
@@ -514,8 +516,19 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     RelabelAODPhotonCandidates(kTRUE);  // In case of AODMC relabeling MC
     fV0Reader->RelabelAODs(kTRUE);
   }
-    
-    
+
+  // reduce event statistics in the tree by a factor ffilltree
+  Bool_t ffillTreeNew = kFALSE;
+  if(ffillTree>=1.0) {
+    ffillTreeNew = kTRUE;
+    if (ffillTree>1.0) {
+      gRandom->SetSeed(0);
+      if(gRandom->Uniform(ffillTree)>1.0) {
+	ffillTreeNew = kFALSE;
+      }
+    }
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
@@ -529,7 +542,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       continue;
     }
 
-    if(ffillTree) ProcessQATree(gamma);
+    if(ffillTreeNew) ProcessQATree(gamma);
     if(ffillHistograms) ProcessQA(gamma);
   }
   

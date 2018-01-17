@@ -176,7 +176,7 @@ public:
     kLHC16h2a,        ///< anchored LHC15o pass1 - jet-jet 0-10%
     kLHC16h2b,        ///< anchored LHC15o pass1 - jet-jet 10-50%
     kLHC16h2c,        ///< anchored LHC15o pass1 - jet-jet 50-90%
-    kLHC16i3a,        ///< anchored LHC15o HIJING + HF injected with electron decays in central events
+    kLHC16i3,         ///< anchored LHC15o HIJING + HF injected with electron decays
     kLHC17i2,         ///< anchored LHC15o AMPT via AliGenerators
     ///@}
     /// \name 2016
@@ -189,6 +189,12 @@ public:
     /// \brief 2017 periods
     ///@{
     kLHC17n,          ///< XeXe 5.44 TeV
+    ///@}
+    /// \name 2017MC
+    /// \brief MC's corresponding to 2017 data
+    ///@{
+    kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
+    kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
     ///@}
   };
 

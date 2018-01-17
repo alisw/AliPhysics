@@ -59,7 +59,7 @@ CEPRawCaloBuffer & CEPRawCaloBuffer::operator =(const CEPRawCaloBuffer& source)
     if (&source == this) return *this;
     TObject::operator=(source);
 
-    Reset();
+    this->Reset();
   
     fNCells = source.fNCells;
     if (fNCells>0){
@@ -76,18 +76,6 @@ CEPRawCaloBuffer & CEPRawCaloBuffer::operator =(const CEPRawCaloBuffer& source)
     return *this;
 }
 
-///
-/// This overwrites the virtual TObject::Copy()
-/// to allow run time copying without casting
-// ____________________________________________________________________________
-void CEPRawCaloBuffer::Copy(TObject &obj) const 
-{
-  if(this==&obj)return;
-  CEPRawCaloBuffer *robj = dynamic_cast<CEPRawCaloBuffer*>(&obj);
-  if(!robj)return; // not an CEPRawCaloBuffer
-  *robj = *this;
-}
-
 // ____________________________________________________________________________
 CEPRawCaloBuffer::~CEPRawCaloBuffer()
 {
@@ -102,7 +90,7 @@ void CEPRawCaloBuffer::Reset()
     if (fAmplitude)     { delete [] fAmplitude;   fAmplitude = 0x0;   }
     if (fCellMCLabel)   { delete [] fCellMCLabel; fCellMCLabel = 0x0; }
     if (fTime)          { delete [] fTime;        fTime = 0x0;        }
-    fNCells      = 0;
+    fNCells = 0;
 }
 
 // ____________________________________________________________________________

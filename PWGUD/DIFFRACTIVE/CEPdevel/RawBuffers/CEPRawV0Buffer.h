@@ -23,13 +23,9 @@ class CEPRawV0Buffer : public TObject
 
   public:
                         CEPRawV0Buffer();
-                        CEPRawV0Buffer(const CEPRawV0Buffer& vb);
-                        ~CEPRawV0Buffer();
+    virtual             ~CEPRawV0Buffer() {};
     /// Modifiers
     void                Reset();
-    void                Copy(TObject& obj) const;
-    CEPRawV0Buffer &    operator=(const CEPRawV0Buffer& source);
-    
  
     /// Setter functions
     void                SetV0Multiplicity (Float_t mult,   UInt_t i)  { fMult[i]     = mult;   }

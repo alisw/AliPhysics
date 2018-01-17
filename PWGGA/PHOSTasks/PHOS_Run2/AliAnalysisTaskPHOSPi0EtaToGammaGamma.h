@@ -114,6 +114,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetEmin(Double_t Emin) {fEmin = Emin;}
+
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
@@ -161,11 +163,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
 
-    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag){
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
       fIsPHOSTriggerAnalysis = kTRUE;
       fEnergyThreshold = Ethre;
       fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
       fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
     }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
@@ -280,6 +283,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     virtual void DoNonLinearityStudy();
 
+    Bool_t CheckMinimumEnergy(AliCaloPhoton *ph){
+      Double_t e = ph->Energy();
+      if(fUseCoreEnergy) e = (ph->GetMomV2())->Energy();
+
+      if(e < fEmin) return kFALSE;
+      else return kTRUE;
+    }
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -349,12 +360,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fIsNonLinStudy;
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
+    Double_t fEmin;
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 42);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 45);
 };
 
 #endif

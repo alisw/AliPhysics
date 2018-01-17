@@ -100,7 +100,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
     : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
       fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
-      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
+      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
       fDownscaleFactor(2.0), //2.0: no downscaling
       fRand(0),
@@ -162,7 +162,9 @@ AliMultSelectionTask::AliMultSelectionTask()
       fEvSel_HasGoodVertex2016(0),
       fEvSel_TriggerMask(0),
       fnContributors(0),
-      fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), 
+      fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0),
+      fTrackCutsFiltBit32(0),
+      fTrackCutsFiltBit64(0),
       fZnaFired(0),
       fZncFired(0),
       fZpaFired(0),
@@ -171,6 +173,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
       fNTracksITSsa2010(0),
+      fNTracksINELgtONE(0),
+      fNPartINELgtONE(0),
       fCurrentRun(-1),
       fQuantiles{0.}, /*added Hans*/
       fEvSelCode(0),
@@ -199,6 +203,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQA_ZNC(0),
       fHistQA_ZNApp(0),
       fHistQA_ZNCpp(0),
+      fHistQA_NTracksINELgtONE(0),
+      fHistQA_NPartINELgtONE(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
@@ -213,6 +219,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQASelected_ZNC(0),
       fHistQASelected_ZNApp(0),
       fHistQASelected_ZNCpp(0),
+      fHistQASelected_NTracksINELgtONE(0),
+      fHistQASelected_NPartINELgtONE(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -241,7 +249,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
       fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
-      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
+      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
       fDownscaleFactor(2.0), //2.0: no downscaling
       fRand(0),
@@ -267,6 +275,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
       fNTracksITSsa2010(0),
+      fNTracksINELgtONE(0),
+      fNPartINELgtONE(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -295,6 +305,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fnSPDClusters0(0),
       fnSPDClusters1(0),
       fnContributors(0),
+      fTrackCutsFiltBit32(0),
+      fTrackCutsFiltBit64(0),
       fRefMultEta5(0),
       fRefMultEta8(0),
       fRunNumber(0),
@@ -337,6 +349,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQA_ZNC(0),
       fHistQA_ZNApp(0),
       fHistQA_ZNCpp(0),
+      fHistQA_NTracksINELgtONE(0),
+      fHistQA_NPartINELgtONE(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
@@ -351,6 +365,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQASelected_ZNC(0),
       fHistQASelected_ZNApp(0),
       fHistQASelected_ZNCpp(0),
+      fHistQASelected_NTracksINELgtONE(0),
+      fHistQASelected_NPartINELgtONE(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -385,10 +401,12 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
     // A - Debug AliCentrality
     // B - Debug AliPPVsMultUtils
     // M - Extra MC variables
+    // T - Extra TH2D N gen particles vs N reco tracks
 
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
     if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE;
+    if ( lExtraOptions.Contains("T") ) fkDebugAdditional2DHisto = kTRUE;
 }
 
 
@@ -417,6 +435,14 @@ AliMultSelectionTask::~AliMultSelectionTask()
     if ( fTrackCutsGlobal2015 ){
         delete fTrackCutsGlobal2015;
         fTrackCutsGlobal2015 = 0x0;
+    }
+    if(fTrackCutsFiltBit32){
+        delete fTrackCutsFiltBit32;
+        fTrackCutsFiltBit32 = 0x0;
+    }
+    if(fTrackCutsFiltBit64){
+        delete fTrackCutsFiltBit64;
+        fTrackCutsFiltBit64 = 0x0;
     }
     if ( fUtils) {
         delete fUtils;
@@ -514,6 +540,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fNTracksGlobal2015Trigger->SetIsInteger(kTRUE);
     fNTracksITSsa2010 =         new AliMultVariable("fNTracksITSsa2010");
     fNTracksITSsa2010->SetIsInteger(kTRUE);
+    fNTracksINELgtONE =       new AliMultVariable("fNTracksINELgtONE");
+    fNPartINELgtONE   =       new AliMultVariable("fNPartINELgtONE");
 
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
 
@@ -564,6 +592,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fNTracksGlobal2015        );
     fInput->AddVariable( fNTracksGlobal2015Trigger );
     fInput->AddVariable( fNTracksITSsa2010         );
+    fInput->AddVariable( fNTracksINELgtONE         );
+    fInput->AddVariable( fNPartINELgtONE           );
     fInput->AddVariable( fEvSel_VtxZ );
 
     if( fkCalibration ) {
@@ -663,6 +693,20 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 	//Initial set of cuts - to be adjusted
         fTrackCutsGlobal2015->SetPtRange(0.15);  
         fTrackCutsGlobal2015->SetEtaRange(-1.0, 1.0);
+    }
+    
+    //create ESD track cuts corresponding to filter bit32 and 64
+    if(! fTrackCutsFiltBit32 ) {
+        fTrackCutsFiltBit32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        fTrackCutsFiltBit32->SetPtRange(0.4);
+        fTrackCutsFiltBit32->SetEtaRange(-0.8, 0.8);
+    }
+    if(! fTrackCutsFiltBit64 ) {
+        fTrackCutsFiltBit64 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        fTrackCutsFiltBit64->SetPtRange(0.4);
+        fTrackCutsFiltBit64->SetEtaRange(-0.8, 0.8);
+        fTrackCutsFiltBit64->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+        fTrackCutsFiltBit64->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
     }
 
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -781,6 +825,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQA_ZNCpp = new TH1D("fHistQA_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_ZNCpp);
     }
+    if ( !fHistQA_NTracksINELgtONE ){
+        fHistQA_NTracksINELgtONE = new TH1D("fHistQA_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_NTracksINELgtONE);
+    }
+    if ( !fHistQA_NPartINELgtONE ){
+        fHistQA_NPartINELgtONE = new TH1D("fHistQA_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_NPartINELgtONE);
+    }
     //To compare SPD tracklets in data and MC
     if ( !fHistQA_TrackletsVsV0M ) {
         fHistQA_TrackletsVsV0M = new TProfile("fHistQA_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
@@ -839,6 +891,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQASelected_ZNCpp ) {
         fHistQASelected_ZNCpp = new TH1D("fHistQASelected_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_ZNCpp);
+    }
+    if ( !fHistQASelected_NTracksINELgtONE ){
+        fHistQASelected_NTracksINELgtONE = new TH1D("fHistQASelected_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_NTracksINELgtONE);
+    }
+    if ( !fHistQASelected_NPartINELgtONE ){
+        fHistQASelected_NPartINELgtONE = new TH1D("fHistQASelected_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_NPartINELgtONE);
     }
     //To compare SPD tracklets in data and MC
     if ( !fHistQASelected_TrackletsVsV0M ) {
@@ -905,6 +965,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQASelected_PtITSsaVsCL1 = new TProfile("fHistQASelected_PtITSsaVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_PtITSsaVsCL1);
     }
+    // Additional histogram to get the anchor percentage for INELgtONE estimator
+    if ( fkDebugIsMC && fkDebugAdditional2DHisto ){
+        TH2D *hist_NpartVsNtracks= new TH2D("hist_NpartVsNtracks", ";N_{charged};N Tracks", 200,0.,200.,200,0.,200.);
+        fListHist->Add(hist_NpartVsNtracks);
+    }
 
     //List of Histograms: Normal
     PostData(1, fListHist);
@@ -956,6 +1021,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fMC_NchEta05 = -1;
     fMC_NchEta08 = -1;
     fMC_NchEta10 = -1;
+    Float_t npartINELgtONE = -1.;
 
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
@@ -1063,6 +1129,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fMC_NchEta05 = 0;
             fMC_NchEta08 = 0;
             fMC_NchEta10 = 0;
+            npartINELgtONE = 0.;
             //----- Loop on Stack ----------------------------------------------------------------
             for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
             {   // This is the begining of the loop on tracks
@@ -1073,7 +1140,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 if(TMath::Abs(lThisCharge)<0.001) continue;
                 if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
 
-                //Double_t gpt = particleOne -> Pt();
+                Double_t gpt = particleOne -> Pt();
                 Double_t geta = particleOne -> Eta();
 
                 if( 2.8 < geta && geta < 5.1 ) fMC_NchV0A++;
@@ -1081,8 +1148,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 if(TMath::Abs( geta ) < 1.0 ) fMC_NchEta10++;
                 if(TMath::Abs( geta ) < 0.8 ) fMC_NchEta08++;
                 if(TMath::Abs( geta ) < 0.5 ) fMC_NchEta05++;
+                if(TMath::Abs( geta ) < 0.8 && gpt>0.4) npartINELgtONE++;
             }//End of loop on tracks
             //----- End Loop on Stack ------------------------------------------------------------
+            fNPartINELgtONE->SetValue(npartINELgtONE);
         }
     }
     //------------------------------------------------
@@ -1363,6 +1432,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
     //Count tracks with various selections
+    Float_t ntrackINELgtONE=0.;
     for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
         AliVTrack *track = lVevent -> GetVTrack( itrack );
         if ( !track ) continue;
@@ -1370,6 +1440,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Only ITSsa tracks
         if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
             fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
+        }
+        
+        // N tracks INEL>1
+        if(lVevent->InheritsFrom("AliESDEvent")){
+          if(fTrackCutsFiltBit32 -> AcceptVTrack (track) || fTrackCutsFiltBit64 -> AcceptVTrack (track)) ntrackINELgtONE+=1.;
         }
         
         if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
@@ -1438,12 +1513,18 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
         fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
         fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
-
+        
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
         fRefMultEta5 -> SetValueInteger ( header->GetRefMultiplicityComb05() );
         fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
+        
+        for(Long_t itrack = 0; itrack<aodevent->GetNumberOfTracks(); itrack++) {
+            AliAODTrack *aodt=(AliAODTrack*)aodevent->GetTrack(itrack);
+            if ( !aodt )  { continue; }
+            if( (aodt->TestFilterBit(BIT(5)) || aodt->TestFilterBit(BIT(6))) && aodt->Pt()>0.4 && TMath::Abs(aodt->Eta())<0.8 ) ntrackINELgtONE+=1.;
+        }
 
         //FIXME: get ZDC information in AOD in a fully consistent way
         AliAODZDC *lAODZDC = aodevent->GetZDCData();
@@ -1467,6 +1548,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
         }
     }
+    fNTracksINELgtONE->SetValue(ntrackINELgtONE);
+    if(fkDebugIsMC && fkDebugAdditional2DHisto) ((TH2D*)(fListHist->FindObject("hist_NpartVsNtracks"))) -> Fill(npartINELgtONE,ntrackINELgtONE);
     
     fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
     fHistEventSelections -> Fill ( fEvSel_VtxZCut       , 1.5 ); 
@@ -1606,6 +1689,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Float_t lZNApp = lSelection->GetMultiplicityPercentile("ZNApp");
         Float_t lZNCpp = lSelection->GetMultiplicityPercentile("ZNCpp");
         Int_t ltracklets = fnTracklets->GetValueInteger();
+        Float_t lINELgtONEtracks = lSelection->GetMultiplicityPercentile("INELgtONETracks");
+        Float_t lINELgtONEpart = -1.;
+        if(fkDebugIsMC) lINELgtONEpart = lSelection->GetMultiplicityPercentile("INELgtONEParticles");
 
         fHistQA_V0M -> Fill( lV0M );
         fHistQA_V0A -> Fill( lV0A );
@@ -1618,6 +1704,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQA_ZNC -> Fill( lZNC );
         fHistQA_ZNApp -> Fill( lZNApp );
         fHistQA_ZNCpp -> Fill( lZNCpp );
+        fHistQA_NTracksINELgtONE -> Fill( lINELgtONEtracks );
+        if(fkDebugIsMC) fHistQA_NPartINELgtONE   -> Fill( lINELgtONEpart );
         
         fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
@@ -1634,6 +1722,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         lZNC = lSelection->GetMultiplicityPercentile("ZNC",kTRUE);
         lZNApp = lSelection->GetMultiplicityPercentile("ZNApp",kTRUE);
         lZNCpp = lSelection->GetMultiplicityPercentile("ZNCpp",kTRUE);
+        lINELgtONEtracks = lSelection->GetMultiplicityPercentile("INELgtONETracks",kTRUE);
+        if(fkDebugIsMC)lINELgtONEpart = lSelection->GetMultiplicityPercentile("INELgtONEParticles",kTRUE);
         
         fHistQASelected_V0M -> Fill( lV0M );
         fHistQASelected_V0A -> Fill( lV0A );
@@ -1645,6 +1735,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_ZNC -> Fill( lZNC );
         fHistQASelected_ZNApp -> Fill( lZNApp );
         fHistQASelected_ZNCpp -> Fill( lZNCpp );
+        fHistQASelected_NTracksINELgtONE -> Fill( lINELgtONEtracks );
+        if(fkDebugIsMC) fHistQASelected_NPartINELgtONE   -> Fill( lINELgtONEpart );
         
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
@@ -2442,7 +2534,9 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
+    if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lProductionName = "LHC17k";
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p"; 
+    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
@@ -2512,7 +2606,9 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
+    if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lSystemType = "pp";
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";

@@ -541,6 +541,7 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgDataPeriod = kLHC16h4c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
+  // LHC15x anchored MCs
   } else if (szLHCPeriod.Contains("LHC16g1")){
     fgDataPeriod = kLHC16g1;
     fgAnchorPeriod = kLHC15oHIR;
@@ -570,16 +571,29 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgDataPeriod = kLHC16h2c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.CompareTo("kLHC16i3a")){
-    fgDataPeriod = kLHC16i3a;
+  } else if (szLHCPeriod.Contains("kLHC16i3")){
+    fgDataPeriod = kLHC16i3;
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.CompareTo("kLHC17i2")){
+  } else if (szLHCPeriod.Contains("kLHC17i2")){
     fgDataPeriod = kLHC17i2;
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
+
+  // LHC17x anchored MCs
+  } else if (szLHCPeriod.Contains("LHC17j6")) {
+    fgDataPeriod = kLHC17j6;
+    fgAnchorPeriod = kLHC17n;
+    fgIsMC = kTRUE;
+    fgEnergy = kXeXe5440GeV;
+  } else if (szLHCPeriod.Contains("LHC17j7")) {
+    fgDataPeriod = kLHC17j7;
+    fgAnchorPeriod = kLHC17n;
+    fgIsMC = kTRUE;
+    fgEnergy = kXeXe5440GeV;
+
   // MC upgrade
   } else if (szLHCPeriod.Contains("LHC13d19")){
     fgDataPeriod = kLHC13d19;

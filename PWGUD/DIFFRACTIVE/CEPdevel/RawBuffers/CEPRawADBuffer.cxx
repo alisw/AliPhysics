@@ -21,54 +21,6 @@ CEPRawADBuffer::CEPRawADBuffer()
 }
 
 // ____________________________________________________________________________
-CEPRawADBuffer::CEPRawADBuffer(const CEPRawADBuffer& adb)
-  : TObject(adb)
-  , fNCells(adb.fNCells)  
-  , fDecisionADA (adb.fDecisionADA)
-  , fDecisionADC (adb.fDecisionADC)
-{
-    for (UInt_t i(0); i<fNCells; i++) {
-        fMult[i] = adb.fMult[i]; 
-        fAdc[i]  = adb.fAdc[i]; 
-        fTime[i] = adb.fTime[i]; 
-    }
-}
-
-// ____________________________________________________________________________
-CEPRawADBuffer& CEPRawADBuffer::operator=(const CEPRawADBuffer& source)
-{
-    if(this==&source) return *this;
-    TObject::operator=(source);
-    // Assignment operator
-    fNCells      = source.fNCells;
-    fDecisionADA = source.fDecisionADA;
-    fDecisionADC = source.fDecisionADC;
-
-    for(UInt_t i(0); i<fNCells; i++) {
-       fMult[i] = source.fMult[i];
-       fAdc[i]  = source.fAdc[i];
-       fTime[i] = source.fTime[i];
-    }
-
-    return *this;
-}
-
-// ____________________________________________________________________________
-void CEPRawADBuffer::Copy(TObject &obj) const 
-{
-    if (this==&obj) return;
-    CEPRawADBuffer *robj = dynamic_cast<CEPRawADBuffer*>(&obj);
-    if (!robj) return; 
-    *robj = *this;
-}
-
-// ____________________________________________________________________________
-CEPRawADBuffer::~CEPRawADBuffer()
-{
-  
-}
-
-// ____________________________________________________________________________
 void CEPRawADBuffer::Reset()
 {
     fNCells      = 16;

@@ -29,6 +29,7 @@ ClassImp(AliMESppColTask)
 AliMESppColTask::AliMESppColTask()
   : AliMESbaseTask()
   ,fPoolMgr(0x0)
+  ,fPoolMgrMC(0x0)
 {
   //
   // Constructor
@@ -39,6 +40,7 @@ AliMESppColTask::AliMESppColTask()
 AliMESppColTask::AliMESppColTask(const char *name)
   : AliMESbaseTask(name)
   ,fPoolMgr(0x0)
+  ,fPoolMgrMC(0x0)
 {
   //
   // Constructor
@@ -51,6 +53,7 @@ AliMESppColTask::~AliMESppColTask()
 {
   //deconstructor
   if(fPoolMgr) {delete fPoolMgr; fPoolMgr=0;}
+  if(fPoolMgrMC) {delete fPoolMgrMC; fPoolMgrMC=0;}
 }
 
 //________________________________________________________________________
@@ -59,13 +62,12 @@ void AliMESppColTask::UserCreateOutputObjects()
   //define user data containers
   
   AliMESbaseTask::UserCreateOutputObjects();
+
   
-  Bool_t DefPool = DefineMixedEventPool();
-  if(!DefPool){
-    AliInfo("UserCreateOutput: Pool is not defined properly");
-    return;
-  }
-    
+	DefineMixedEventPool(0);   
+	if(HasMCdata()){
+		DefineMixedEventPool(1);
+	}
 }
 
 //________________________________________________________________________
@@ -88,7 +90,6 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
     
 	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
-	Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M); // V0M percentile
 	// event shape for data (from ESD)
 	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
 	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
@@ -98,33 +99,29 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	hNoEvts->Fill(vec_hNoEvts);
 	
 
-	// select events with both dirs in the same interval
-	const Int_t lenght = 4;
-	Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
-	// NOTE: the intervals are considered half-closed: (a,b]
-	if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
-	vec_hNoEvts[0] = 1.;
-	hNoEvts->Fill(vec_hNoEvts);
-	if( (directivity_minus < intervals[0]) || (directivity_minus > intervals[lenght-1]) ) return;
-	vec_hNoEvts[0] = 2.;
-	hNoEvts->Fill(vec_hNoEvts);
-  
-	Int_t first = -1;
-	for(Int_t i=1; i<lenght; i++){
-		if(directivity_plus <= intervals[i]){
-			first = i;
-			break;
-		}
-	}
-	if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
-	vec_hNoEvts[0] = 3.;
-	hNoEvts->Fill(vec_hNoEvts);
+// 	// select events with both dirs in the same interval
+// 	const Int_t lenght = 4;
+// 	Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
+// 	// NOTE: the intervals are considered half-closed: (a,b]
+// 	if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
+// 	vec_hNoEvts[0] = 1.;
+// 	hNoEvts->Fill(vec_hNoEvts);
+// 	if( (directivity_minus < intervals[0]) || (directivity_minus > intervals[lenght-1]) ) return;
+// 	vec_hNoEvts[0] = 2.;
+// 	hNoEvts->Fill(vec_hNoEvts);
+//   
+// 	Int_t first = -1;
+// 	for(Int_t i=1; i<lenght; i++){
+// 		if(directivity_plus <= intervals[i]){
+// 			first = i;
+// 			break;
+// 		}
+// 	}
+// 	if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
+// 	vec_hNoEvts[0] = 3.;
+// 	hNoEvts->Fill(vec_hNoEvts);
 	
 	Double_t directivity = (directivity_plus + directivity_minus) / 2.0;
-	
-//   if (directivity_minus <= 0.0 || directivity_minus > 0.3) return;
-//   if (directivity_plus <= 0.0 || directivity_plus > 0.3) return;
-//   if (mult_comb08<30 || mult_comb08>39) return;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
@@ -137,14 +134,12 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	Double_t MC_directivity_minus = 0;
 	Double_t MC_directivity = 0;
 	Double_t MC_mult_glob08 = 0;
-	Double_t MC_mult_V0M = 0;
 	Double_t MC_sfer = 0;
 	if( HasMCdata() ){ // run only on MC
 		MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
 		MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
 		MC_directivity = (MC_directivity_plus + MC_directivity_minus) / 2.0;
 		MC_mult_glob08 = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-		MC_mult_V0M = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
 		MC_sfer = fMCevInfo->GetEventShape()->GetSphericity();
 		vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
 		vec_hNoEvts[5] = MC_directivity;
@@ -155,33 +150,33 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	hNoEvts->Fill(vec_hNoEvts);
 	
 	
-	// ESD track loop
-	AliMEStrackInfo *t(NULL), *tMC(NULL);
-	const Int_t nMult(12);
-	Int_t multBin[nMult+1] = {1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80};
-	
-	TObjArray *selectedTracks=FindLeadingObjects(fTracks);
-	if(!selectedTracks) return;
-	selectedTracks->SetOwner(kTRUE);
-	
+	// ESD tracks
+	Int_t ESD=1;
     
-// NOTE: the intervals are considered half-closed: (a,b]
-    if(directivity_plus>0.3 && directivity_plus<=0.6 && directivity_minus>0.3 && directivity_minus<=0.6){
-      FillCorrelationSE(mult_comb08, selectedTracks);
-      FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks);
-	}
+    do{
+      TObjArray *selectedTracks=FindLeadingObjects(fTracks, 0);
+      if(!selectedTracks) break;
+      selectedTracks->SetOwner(kTRUE);
+      
+ // NOTE: the intervals are considered half-closed: (a,b]
+      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0){
+        FillCorrelationSE(mult_comb08, selectedTracks, 0);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks, 0);
+      }
+      ESD=0;
+    }while(ESD==1);
 
   
 	if( HasMCdata() ){// run only on MC  
-		TObjArray *selectedTracksMC=FindLeadingObjects(fMCtracks);
+		TObjArray *selectedTracksMC=FindLeadingObjects(fMCtracks, 1);
 		if(!selectedTracksMC) return;
 		selectedTracksMC->SetOwner(kTRUE);
     // NOTE: the intervals are considered half-closed: (a,b]
-		if(MC_directivity_plus>0.3 && MC_directivity_plus<=0.6 && MC_directivity_minus>0.3 && MC_directivity_minus<=0.6){
-			FillCorrelationSE(MC_mult_glob08, selectedTracksMC);
-			FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC);
+		if(MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0){
+			FillCorrelationSE(MC_mult_glob08, selectedTracksMC, 1);
+			FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC, 1);
 		}
-  }
+    }
 }
   
 //________________________________________________________________________
@@ -216,34 +211,60 @@ TObjArray* AliMESppColTask::CloneTracks(TObjArray* tracks)
 
 //________________________________________________________________________
 
-TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj)
+TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj, Int_t MC)
 {
-	// Returns an array of charged particles ordered according to their pT.
-	Int_t nTracks = obj->GetEntries();
+// Returns an array of charged particles ordered according to their pT.
+  	Int_t nTracks = obj->GetEntries();
 	if( !nTracks ) return 0;
-	// Define array of AliMEStrackInfo objects
-	TObjArray* tracks = new TObjArray(nTracks);
-	AliMEStrackInfo* part(NULL);
+    
+        // Define array of AliMEStrackInfo objects
+    TObjArray* tracks = new TObjArray(nTracks);
+    TObjArray* tracksMC = new TObjArray(nTracks);
+    AliMEStrackInfo* partMC(NULL);
+    AliMEStrackInfo* part(NULL);
+    
+  if(MC==0){
 	// Loop over tracks
-	for (Int_t ipart=0; ipart<nTracks; ++ipart) {
-		if(!(part = (AliMEStrackInfo*)obj ->At(ipart))) continue;
-		if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-	// Accept tracks in a limited pT & rapidity range
-		if(part->Pt()<1.0 || part->Pt()>2.0) continue;
-		if( TMath::Abs(part->Eta())> 0.8 ) continue;
-		tracks->AddLast(part);
-	}
-
-	// Order tracks by pT, first track is LeadingParticle
+      for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+        if(!(part = (AliMEStrackInfo*)obj->At(ipart))) continue;
+          if(HasMCdata() && MC==0){
+            if(!(partMC=(AliMEStrackInfo*)fMCtracks->At(part->GetLabel()))) continue;
+          }
+          if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+      // Accept tracks in a limited pT & rapidity range
+          if(part->Pt()<1.0 || part->Pt()>2.0) continue;
+          if( TMath::Abs(part->Eta())> 0.8 ) continue;
+          tracks->AddLast(part);
+    }
+    // Order tracks by pT, first track is LeadingParticle
 	QSortTracks( *tracks, 0, tracks->GetEntriesFast() );
 	nTracks = tracks->GetEntriesFast();
 	if( !nTracks ) return 0;
-
+    
 	TObjArray* ClonedTracks = CloneTracks(tracks);
 	ClonedTracks->SetOwner(kTRUE);
+    return ClonedTracks;
+    }
 	
-	return ClonedTracks;
-}
+	if(HasMCdata() && MC==1){
+        for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+          if(!(partMC = (AliMEStrackInfo*)obj ->At(ipart))) continue;
+          if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
+        // Accept tracks in a limited pT & rapidity range
+          if(partMC->Pt()<1.0 || partMC->Pt()>2.0) continue;
+          if( TMath::Abs(partMC->Eta())> 0.8 ) continue;
+          tracksMC->AddLast(partMC);
+        }
+      QSortTracks( *tracksMC, 0, tracksMC->GetEntriesFast() );
+      nTracks = tracksMC->GetEntriesFast();
+      if( !nTracks ) return 0;
+
+      TObjArray* ClonedTracksMC = CloneTracks(tracksMC);
+      ClonedTracksMC->SetOwner(kTRUE);
+      return ClonedTracksMC;
+    }
+
+  }
 
 void  AliMESppColTask::QSortTracks(TObjArray &a, Int_t first, Int_t last)
 {
@@ -292,25 +313,34 @@ Double_t AliMESppColTask::RangePhi(Double_t DPhi)
 	return DPhi;    
 }
 
-Bool_t AliMESppColTask::DefineMixedEventPool()
+Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
 {
-  Int_t PoolMaxNEvents = 6000;
-  Int_t PoolMinNTracks = 50000;
+  Int_t PoolMaxNEvents = 200;
+  Int_t PoolMinNTracks = 20000;
   
   Int_t NMultBins = 12;
   Double_t MultBins[] = { 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80. };
   Int_t NzVtxBins = 5;
   Double_t ZvtxBins[] = {  -10., -5., -2.5, 2.5, 5.,  10. }; 
   
+    if(HasMCdata() && MC==1){
+    fPoolMgrMC = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins, NzVtxBins, ZvtxBins);
+    fPoolMgrMC->SetDebug(0);
+//     if(!fPoolMgrMC) return kFALSE;
+  }
+  
+  if(MC==0){
   fPoolMgr = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins, NzVtxBins, ZvtxBins);
   fPoolMgr->SetDebug(0);
-  if(!fPoolMgr) return kFALSE;
+//   if(!fPoolMgr) return kFALSE;
+  }
+  
   
   return kTRUE;
 
 }
     
-void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selectedArray)
+void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selectedArray, Int_t MC)
 {
 	const Int_t nMult(12);
 	Double_t multBin[nMult+1] = {1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80.};
@@ -338,22 +368,27 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 		if( TMath::Abs(associate->Eta())> 0.8 ) continue;
 
 		Double_t ptAs = associate->Pt();
-        Double_t phiAs = associate->Phi();
-        Double_t etaAs = associate->Eta();
+		Double_t phiAs = associate->Phi();
+		Double_t etaAs = associate->Eta();
 
-//                                 if(ptAs>ptL) continue;
 		Double_t dPhi(-999.), dEta(-999.);
 		if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                   
 			dPhi = RangePhi(phiL-phiAs);
 			dEta=etaL-etaAs;
-			Int_t bin=(1+jm);
-			((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
+			if(MC==0){
+				Int_t bin=(1+jm);
+				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
+			}
+			if(HasMCdata() && MC==1){
+				Int_t bin=(25+jm);
+				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
+			}
       }
 	}
 }
 
 //---------------------------------------------------------------------------------------
-void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Zvtx, Double_t poolmax, Double_t poolmin, TObjArray*selectedArray)
+void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Zvtx, Double_t poolmax, Double_t poolmin, TObjArray*selectedArray, Int_t MC)
 {
 	const Int_t nMult(12);
 	Int_t multBin[nMult+1] = {1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80};
@@ -370,45 +405,50 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
       return;
 	}
 
-	AliEventPool* pool = fPoolMgr->GetEventPool(MultipOrCentMix, Zvtx);
-	if (!pool){
+	if(MC==0)
+    {
+		 AliInfo("Bucla de reconstruite!!!!!!!!");
+      AliEventPool* pool = fPoolMgr->GetEventPool(MultipOrCentMix, Zvtx);
+      if (!pool){
 		AliInfo(Form("No pool found for mult/cent = %f, zVtx = %f", MultipOrCentMix, Zvtx));
 		return;
-	}
-// 	pool->PrintInfo();
+      }
+      pool->PrintInfo();
+// 		pool->SetTargetEvents(5);
 
-	if (pool->IsReady() || pool->NTracksInPool() > 1000  || pool->GetCurrentNEvents() > 5){
-// 		AliInfo("InBucla!!!!!!!");
-      Int_t nMix = pool->GetCurrentNEvents();
-      for (Int_t jMix=0; jMix<nMix; jMix++){
-// 			AliInfo("InBucla2!!!!!!!");
-        TObjArray* mixEvents = pool->GetEvent(jMix);
-        AliBasicParticle* trigger = (AliBasicParticle*)selectedArray->At(0);
-        if(!trigger) continue;
-        Double_t ptL  = trigger->Pt();
-        Double_t phiL = trigger->Phi();
-        Double_t etaL = trigger->Eta();
-        if(trigger->Pt()<1.0 || trigger->Pt()>2.0) continue;
-        if( TMath::Abs(trigger->Eta())> 0.8 ) continue;
+      if (pool->IsReady() || pool->GetCurrentNEvents() > 5){
+			AliInfo("Pool este Ready!!!!!!!!");
+        Int_t nMix = pool->GetCurrentNEvents();
+        for (Int_t jMix=0; jMix<nMix; jMix++){
+          TObjArray* mixEvents = pool->GetEvent(jMix);
+          AliBasicParticle* trigger = (AliBasicParticle*)selectedArray->At(0);
+          if(!trigger) continue;
+          Double_t ptL  = trigger->Pt();
+          Double_t phiL = trigger->Phi();
+          Double_t etaL = trigger->Eta();
+          if(trigger->Pt()<1.0 || trigger->Pt()>2.0) continue;
+          if( TMath::Abs(trigger->Eta())> 0.8 ) continue;
       
-        for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-          AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
-          if(!associate)continue;
-          if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-          if( TMath::Abs(associate->Eta())> 0.8 ) continue;
-          Double_t ptAs= associate->Pt();
-          Double_t phiAs= associate->Phi();
-          Double_t etaAs= associate->Eta();
-          Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
-          if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
-            dPhi = RangePhi(phiL-phiAs);
-            dEta=etaL-etaAs;
-            Int_t bin=(13+jm);
-            ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
+          for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
+				 AliInfo("In a doua bucla!!!!!!");
+            AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
+            if(!associate)continue;
+            if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
+            if( TMath::Abs(associate->Eta())> 0.8 ) continue;
+            Double_t ptAs= associate->Pt();
+            Double_t phiAs= associate->Phi();
+            Double_t etaAs= associate->Eta();
+            Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+            if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
+              dPhi = RangePhi(phiL-phiAs);
+              dEta=etaL-etaAs;
+              Int_t bin=(13+jm);
+				  AliInfo("Inainte de fill!!!!!!!!");
+              ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
+            }
           }
         }
       }
-    }
 
         TObjArray* tracksClone = new TObjArray;
         tracksClone->SetOwner(kTRUE);
@@ -418,6 +458,57 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
           tracksClone->AddLast(particle);
         }
           pool->UpdatePool(tracksClone);
+    }
+    
+    if(HasMCdata() && MC==1){
+      AliEventPool* poolMC = fPoolMgrMC->GetEventPool(MultipOrCentMix, Zvtx);
+      if (!poolMC){
+		AliInfo(Form("No pool found for mult/cent = %f, zVtx = %f", MultipOrCentMix, Zvtx));
+		return;
+      }
+      poolMC->PrintInfo();
+// 		poolMC->SetTargetEvents(5);
+
+      if (poolMC->IsReady() || poolMC->GetCurrentNEvents() > 5){
+        Int_t nMix = poolMC->GetCurrentNEvents();
+        for (Int_t jMix=0; jMix<nMix; jMix++){
+          TObjArray* mixEvents = poolMC->GetEvent(jMix);
+          AliBasicParticle* trigger = (AliBasicParticle*)selectedArray->At(0);
+          if(!trigger) continue;
+          Double_t ptL  = trigger->Pt();
+          Double_t phiL = trigger->Phi();
+          Double_t etaL = trigger->Eta();
+          if(trigger->Pt()<1.0 || trigger->Pt()>2.0) continue;
+          if( TMath::Abs(trigger->Eta())> 0.8 ) continue;
+      
+          for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
+            AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
+            if(!associate)continue;
+            if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
+            if( TMath::Abs(associate->Eta())> 0.8 ) continue;
+            Double_t ptAs= associate->Pt();
+            Double_t phiAs= associate->Phi();
+            Double_t etaAs= associate->Eta();
+            Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+            if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
+              dPhi = RangePhi(phiL-phiAs);
+              dEta=etaL-etaAs;
+              Int_t bin=(37+jm);
+              ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
+            }
+          }
+        }
+      }
+
+        TObjArray* tracksCloneMC = new TObjArray;
+        tracksCloneMC->SetOwner(kTRUE);
+        
+        for (Int_t i=0; i<selectedArray->GetEntriesFast(); i++){
+          AliBasicParticle* particleMC = (AliBasicParticle*) selectedArray->At(i);
+          tracksCloneMC->AddLast(particleMC);
+        }
+          poolMC->UpdatePool(tracksCloneMC);
+    }
 }
 
 //________________________________________________________
@@ -443,10 +534,19 @@ Bool_t AliMESppColTask::BuildQAHistos()
   TH2F *hSE[nMult] = {NULL};
   TH2F *hME[nMult] = {NULL};
   for(Int_t im(0); im<nMult; im++){
-       hSE[im] = new TH2F(Form("hS%02d", im), Form("Mult [%2d-%2d]", multBin[im], multBin[im+1]-1), 33, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+       hSE[im] = new TH2F(Form("hS%02d", im), Form("MultS[%2d-%2d]", multBin[im], multBin[im+1]-1), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
        fHistosQA->AddAt(hSE[im], im+1);
-       hME[im] = new TH2F(Form("hE%02d", im), Form("MultE [%2d-%2d]", multBin[im], multBin[im+1]-1), 33, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+       hME[im] = new TH2F(Form("hE%02d", im), Form("MultE[%2d-%2d]", multBin[im], multBin[im+1]-1), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
        fHistosQA->AddAt(hME[im], im+13);
+    }
+    
+  TH2F *hSEMC[nMult] = {NULL};
+  TH2F *hMEMC[nMult] = {NULL};
+  for(Int_t im(0); im<nMult; im++){
+       hSEMC[im] = new TH2F(Form("hSMC%02d", im), Form("MultSMC[%2d-%2d]", multBin[im], multBin[im+1]-1), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+       fHistosQA->AddAt(hSEMC[im], im+25);
+       hMEMC[im] = new TH2F(Form("hEMC%02d", im), Form("MultEMC[%2d-%2d]", multBin[im], multBin[im+1]-1), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+       fHistosQA->AddAt(hMEMC[im], im+37);
     }
   return kTRUE;
 }
