@@ -54,6 +54,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fAnalysisUtil(NULL),
   fListHistos(NULL),
   fListCalibs(NULL),
+  fListNUAHist(NULL),
   fListFBHijing(NULL),
   fListNUACorr(NULL),
   fListZDNCorr(NULL),
@@ -81,6 +82,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fHarmonicN(1),
   fHarmonicM(1),
   fHarmonicPsi(2),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
   fHist_Event_count(NULL),
   fPileUpMultSelCount(NULL),
   fPileUpCount(NULL),
@@ -146,7 +149,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fGlobalITSMult(NULL),
   fCentCL1vsVzRun(NULL)
 {
-  for(int i=0;i<4;i++){
+  for(int i=0;i<5;i++){
     fHCorrectNUApos[i] = NULL;
     fHCorrectNUAneg[i] = NULL;
   }
@@ -267,6 +270,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
 
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
+  DefineOutput(3,TList::Class());
+
 }//-------- real ---------
 
 AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
@@ -275,6 +280,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fAnalysisUtil(NULL),
   fListHistos(NULL),
   fListCalibs(NULL),
+  fListNUAHist(NULL),
   fListFBHijing(NULL),
   fListNUACorr(NULL),
   fListZDNCorr(NULL),
@@ -302,6 +308,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fHarmonicN(1),
   fHarmonicM(1),
   fHarmonicPsi(2),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
   fHist_Event_count(NULL),
   fPileUpMultSelCount(NULL),
   fPileUpCount(NULL),
@@ -367,7 +375,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fGlobalITSMult(NULL),
   fCentCL1vsVzRun(NULL)
 {
-  for(int i=0;i<4;i++){
+  for(int i=0;i<5;i++){
     fHCorrectNUApos[i] = NULL;
     fHCorrectNUAneg[i] = NULL;
   }
@@ -535,6 +543,9 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
  fListCalibs = new TList();
  fListCalibs->SetOwner(kTRUE);
 
+ fListNUAHist = new TList();
+ fListNUAHist->SetOwner(kTRUE);
+
  this->DefineHistograms();
 
 
@@ -550,17 +561,16 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
 
 AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 {
-  delete                 fListHistos;        
-  delete                 fListCalibs;         
+  delete                     fListHistos;        
+  delete                     fListCalibs;         
 
-  delete              fMultSelection; 
-  delete               fAnalysisUtil; // it is '= new' !!!
+  if(fAnalysisUtil) delete fAnalysisUtil; // it is '= new' !!!
 
   delete        fHCentBinTrkRecenter;
 
   if(fHCorrectV0M) delete fHCorrectV0M;
 
-  for(int i=0;i<4;i++){
+  for(int i=0;i<5;i++){
     if(fHCorrectNUApos[i]) delete fHCorrectNUApos[i];
     if(fHCorrectNUAneg[i]) delete fHCorrectNUAneg[i];
   }
@@ -792,7 +802,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  
 
 
- if(sumMa < 0 || sumMc < 0)   return;
+ if(sumMa <= 0 || sumMc <= 0)   return;
  fHist_Event_count->Fill(stepCount); //5
  stepCount++;
 
@@ -1001,7 +1011,17 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
    if(bApplyNUACorr){
      //get NUA weights: 
-     if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
+     if(sFileNUA=="New2018"){
+       if(dChrg1>0){
+         iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+       }
+       else if(dChrg1<0){
+         iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+       }
+     }
+     else if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
        if(dChrg1>0){
          iBinNUA = fHCorrectNUApos[cInputNUA]->FindBin(VtxZ,dPhi1,dEta1);
          w1NUA = fHCorrectNUApos[cInputNUA]->GetBinContent(iBinNUA);     
@@ -1258,7 +1278,17 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
      if(bApplyNUACorr) {
      //get NUA weights: 
-       if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
+      if(sFileNUA=="New2018"){
+        if(dChrg2>0){
+          iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+          w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+        }
+        else if(dChrg2<0){
+          iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+          w1NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+        }
+      }
+       else if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
          if(dChrg2>0){
            iBinNUA = fHCorrectNUApos[cInputNUA]->FindBin(VtxZ,dPhi2,dEta2);
            w2NUA = fHCorrectNUApos[cInputNUA]->GetBinContent(iBinNUA);     
@@ -1389,8 +1419,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
+ PostData(3,fListNUAHist);   // Store NUA for all Runs including bad one. 
+ if(isBadRun) return;  
 
- if(isBadRun) return;
 
  fHist_Event_count->Fill(stepCount); //7
  stepCount++;
@@ -1803,40 +1834,42 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
-
-   //V0A-V0C SP resolution:
-   fHist_Reso2n_SP_Norm_Det[QAindex][0]->Fill(EvtCent, (QxcnCor*QxanCor+QycnCor*QyanCor));
-   //V0A-TPC SP resolution:
-   fHist_Reso2n_SP_Norm_Det[QAindex][1]->Fill(EvtCent, (QTPCRe*QxanCor+QTPCIm*QyanCor));
-   //V0C-TPC SP resolution:
-   fHist_Reso2n_SP_Norm_Det[QAindex][2]->Fill(EvtCent, (QTPCRe*QxcnCor+QTPCIm*QycnCor));
+   if(MPOIpos>1 && MPOIneg>1){
+     //V0A-V0C SP resolution:
+     fHist_Reso2n_SP_Norm_Det[QAindex][0]->Fill(EvtCent, (QxcnCor*QxanCor+QycnCor*QyanCor));
+     //V0A-TPC SP resolution:
+     fHist_Reso2n_SP_Norm_Det[QAindex][1]->Fill(EvtCent, (QTPCRe*QxanCor+QTPCIm*QyanCor));
+     //V0C-TPC SP resolution:
+     fHist_Reso2n_SP_Norm_Det[QAindex][2]->Fill(EvtCent, (QTPCRe*QxcnCor+QTPCIm*QycnCor));
+  
 
    //V0A-V0C:
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 0., (QxcnCor*QxanCor+QycnCor*QyanCor)); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 1., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZPA); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 2., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZPC); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 3., (QxcnCor*QxanCor+QycnCor*QyanCor)*(energyZPA+energyZPC)); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 4., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZNA); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 5., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZNC); 
-   fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 6., (QxcnCor*QxanCor+QycnCor*QyanCor)*(energyZNA+energyZNC)); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 0., (QxcnCor*QxanCor+QycnCor*QyanCor)); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 1., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZPA); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 2., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZPC); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 3., (QxcnCor*QxanCor+QycnCor*QyanCor)*(energyZPA+energyZPC)); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 4., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZNA); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 5., (QxcnCor*QxanCor+QycnCor*QyanCor)*energyZNC); 
+     fHist_Reso2n_ZDN_SP_Det[0]->Fill(EvtCent, 6., (QxcnCor*QxanCor+QycnCor*QyanCor)*(energyZNA+energyZNC)); 
 
    //V0A-TPC 
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 0., (QTPCRe*QxanCor+QTPCIm*QyanCor));
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 1., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZPA);
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 2., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZPC);
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 3., (QTPCRe*QxanCor+QTPCIm*QyanCor)*(energyZPA+energyZPC));
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 4., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZNA);
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 5., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZNC);
-   fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 6., (QTPCRe*QxanCor+QTPCIm*QyanCor)*(energyZNA+energyZNC));
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 0., (QTPCRe*QxanCor+QTPCIm*QyanCor));
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 1., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZPA);
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 2., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZPC);
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 3., (QTPCRe*QxanCor+QTPCIm*QyanCor)*(energyZPA+energyZPC));
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 4., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZNA);
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 5., (QTPCRe*QxanCor+QTPCIm*QyanCor)*energyZNC);
+     fHist_Reso2n_ZDN_SP_Det[1]->Fill(EvtCent, 6., (QTPCRe*QxanCor+QTPCIm*QyanCor)*(energyZNA+energyZNC));
 
   //V0C-TPC
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 0., (QTPCRe*QxcnCor+QTPCIm*QycnCor));
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 1., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZPA);
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 2., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZPC);
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 3., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*(energyZPA+energyZPC));
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 1., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNA);
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 2., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNC);
-   fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 3., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*(energyZNA+energyZNC));
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 0., (QTPCRe*QxcnCor+QTPCIm*QycnCor));
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 1., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZPA);
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 2., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZPC);
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 3., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*(energyZPA+energyZPC));
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 1., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNA);
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 2., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNC);
+     fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 3., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*(energyZNA+energyZNC));
+   }
 
  }//---- SP method -------
 
@@ -1957,7 +1990,14 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, TString sfileNUA)
     fHCorrectNUAneg = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",centBin,run));
   } */
 
-  if(sfileNUA=="NewR" && fListNUACorr){
+  if(sfileNUA=="New2018" && fListNUACorr){
+    for(int i=0;i<5;i++){
+      fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run));
+      fHCorrectNUAneg[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",i,run));
+    }
+    //cout<<"\n sfileNUA = "<<sfileNUA<<" opening Rihan's NUA file.\n "<<endl;
+  }
+  else if(sfileNUA=="NewR" && fListNUACorr){
     for(int i=0;i<4;i++){
       fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run));
       fHCorrectNUAneg[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",i,run));
@@ -1999,7 +2039,16 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, TString sfileNUA)
 
   if(!fHCorrectNUApos[0] || !fHCorrectNUAneg[0]){
     printf("\n\n ******** could not open NUA Histograms for run %d, Use Wgt = 1.0 *********\n\n",run);
-    if(sfileNUA=="OldJ"|| sfileNUA=="NewR"){
+    if(sfileNUA=="New2018"){
+     for(int i=0;i<5;i++){
+        fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUApos[i]->SetBinContent(1,1,1,1.0);
+        fHCorrectNUAneg[i]->SetBinContent(1,1,1,1.0);
+      //exit(1);
+     }
+    }
+    else if(sfileNUA=="OldJ"|| sfileNUA=="NewR"){
      for(int i=0;i<4;i++){
         fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
         fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
@@ -2419,7 +2468,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
          fPileUpCount->Fill(3.5);
          BisPileup=kTRUE;
       }
-      if(fabs(centrV0M-centrCL1)> 7.5)  {//default: 7.5
+      if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5
          fPileUpCount->Fill(4.5);
          BisPileup=kTRUE;
       }
@@ -2480,8 +2529,8 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      Double_t multESDTPCDif = multEsdn - multTPCn*3.39;
-      //Double_t multESDTPCDif = multEsdn - multTPCn*3.60;
+      //Double_t multESDTPCDif = multEsdn - multTPCn*3.39;
+      Double_t multESDTPCDif = multEsdn - multTPCn*fPileUpSlopeParm;
 
       fGlobalITSMult->Fill(multITS);
 
@@ -2500,7 +2549,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         BisPileup=kTRUE;
       }
       else if(fRejectPileUpTight) {
-        if(multESDTPCDif > 20.) { //default: 700
+        if(multESDTPCDif > fPileUpConstParm) { //default: 700
           fPileUpCount->Fill(8.5);
           BisPileup=kTRUE;
         }
@@ -2620,11 +2669,12 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
   fPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultiplicityComb08");
   fPileUpCount->GetXaxis()->SetBinLabel(4,"IncompleteDAQ");
-  fPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>7.5");
+  fPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>5.0");
   fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif=15000");
-  fPileUpCount->GetXaxis()->SetBinLabel(9,"multESDTPCDif=700");
+  Int_t puConst = fPileUpConstParm;
+  fPileUpCount->GetXaxis()->SetBinLabel(9,Form("multESDTPCDif>%d",puConst));
   fPileUpCount->GetXaxis()->SetBinLabel(10,"extraPileUpMultSel");
   fListHistos->Add(fPileUpCount);
 
@@ -3134,18 +3184,22 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
+
+
+
+
+  //======== Following are eta,phi plots and written in List: fListNUAHist ================
+
   for(int i=0;i<10;i++){
     sprintf(name,"fHistChPosvsEtaPtRun_Cent%d",i);
     sprintf(title,"Pos Ch, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
     fHistChPosvsEtaPtRun[i]  = new TH3F(name,title,25,0.2,5.2,16,-0.8,0.8,fRunFlag,0,fRunFlag);
-    fListCalibs->Add(fHistChPosvsEtaPtRun[i]);
+    fListNUAHist->Add(fHistChPosvsEtaPtRun[i]);
     sprintf(name,"fHistChNegvsEtaPtRun_Cent%d",i);
     sprintf(title,"Neg Ch, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
     fHistChNegvsEtaPtRun[i]  = new TH3F(name,title,25,0.2,5.2,16,-0.8,0.8,fRunFlag,0,fRunFlag);
-    fListCalibs->Add(fHistChNegvsEtaPtRun[i]);
+    fListNUAHist->Add(fHistChNegvsEtaPtRun[i]);
   }
-
-
 
   
   Int_t gCentForNUA[6] = {0,5,10,20,40,90};
@@ -3156,24 +3210,21 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       sprintf(name,"fHistEtaPhiVz_Pos_Cent%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Vz Pos Cent%d-%d%%",gCentForNUA[i],gCentForNUA[i+1]);
       fHist3DEtaPhiVz_Pos_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-      fListCalibs->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
+      fListNUAHist->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
 
       sprintf(name,"fHistEtaPhiVz_Neg_Cent%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Vz Pos Cent%d-%d%%",gCentForNUA[i],gCentForNUA[i+1]);
       fHist3DEtaPhiVz_Neg_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-      fListCalibs->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
+      fListNUAHist->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
     }
    }
   }
 
-
-
-
-  fVzBinFinderForNUA = new TH1F("fVzBinFinderForNUA","",4,-10,10);
-  fListCalibs->Add(fVzBinFinderForNUA);
+  fVzBinFinderForNUA = new TH1F("fVzBinFinderForNUA","",4,-10,10); //only needed for pT dependent NUA.
+  fListNUAHist->Add(fVzBinFinderForNUA);
 
   /*
-  //pT Dependent NUA correction:
+  //  pT Dependent NUA correction:
   Double_t pTbinNUA[16] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.6,3.0,3.5,4.0,5.0};
   Double_t etabinNUA[9] = {-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8}; 
   Double_t phibinNUA[51] = {0.,};
@@ -3188,16 +3239,15 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       sprintf(name,"fHistEtaPhiPt_Pos_Vz%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Pt Pos Vz%d",i);
       fHist3DEtaPhiVz_Pos_Run[i][j] = new TH3F(name,title,15,pTbinNUA,50,phibinNUA,8,etabinNUA); 
-      fListCalibs->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
+      fListNUAHist->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
 
       sprintf(name,"fHistEtaPhiPt_Neg_Vz%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Pt Pos Vz%d",i);
       fHist3DEtaPhiVz_Neg_Run[i][j] = new TH3F(name,title,15,pTbinNUA,50,phibinNUA,8,etabinNUA); 
-      fListCalibs->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
+      fListNUAHist->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
     }
    }
-  }
-  */
+  }  */
 
 
 

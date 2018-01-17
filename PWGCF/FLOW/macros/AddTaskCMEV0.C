@@ -2,11 +2,11 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0;
 
- AliAnalysisTaskCMEV0* AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90., Int_t gFilterBit = 768, Int_t gClusterTPC = 70, 
- Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", 
- TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
- Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, 
- TString sCentEstimator = "V0", Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
+ AliAnalysisTaskCMEV0* AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
+ Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", TString sDataSet = "2015", TString sAnalysisType = "AUTOMATIC", 
+ TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., 
+ Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Float_t fPileUpSlope = 3.43, Float_t fPileUpConst = 43.0, TString sCentEstimator = "V0",
+ Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root",
  TString sFBEffiDimension = "1D", 
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
@@ -24,7 +24,8 @@ class AliAnalysisTaskCMEV0;
   //Fixed Track cuts: only vary for systematic check
   Double_t dDCAxy = 2.4;
   Double_t dDCAz  = 3.2;
-
+  Double_t dcentrMin=0;
+  Double_t dcentrMax=90.;
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -217,7 +218,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
   taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
   taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
-
+  taskQC_prot->SetPileUpCutParam(fPileUpSlope,fPileUpConst);
 
 
   if(bFBeffi){
@@ -358,15 +359,19 @@ class AliAnalysisTaskCMEV0;
 
   TString fZDCCont1;
   fZDCCont1.Form("ResultsZDCCME_%s", suffix);
-
   AliAnalysisDataContainer *coutputSP1 = mgr->CreateContainer(fZDCCont1,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 1, coutputSP1);
 
   TString fZDCCont2;
   fZDCCont2.Form("QAandCalibHist_%s", suffix);
-
   AliAnalysisDataContainer *coutputSP2 = mgr->CreateContainer(fZDCCont2,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 2, coutputSP2);
+
+
+  TString fZDCCont3;
+  fZDCCont3.Form("NUACorrectionHist_%s", suffix);
+  AliAnalysisDataContainer *coutputSP3 = mgr->CreateContainer(fZDCCont3,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
+  mgr->ConnectOutput(taskQC_prot, 3, coutputSP3);
 
   //if(!mgr->InitAnalysis())  // check if we can initialize the manager
   //{

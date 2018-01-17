@@ -67,7 +67,7 @@ public:
   void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
   void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
   void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
-
+  void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
 
 
 private:
@@ -96,6 +96,7 @@ private:
 
   TList*                 fListHistos;         //! collection of output
   TList*                 fListCalibs;         //! collection of Calib Histos
+  TList*                fListNUAHist;         //! collection of NUA Histograms
 
   TList*               fListFBHijing;         // Hijing Efficiency list
   TList*                fListNUACorr;         // NUA Correction List
@@ -130,6 +131,9 @@ private:
   Int_t                   fHarmonicN;         //   Harmonic n
   Int_t                   fHarmonicM;         //   Harmonic m
   Int_t                 fHarmonicPsi;         //   Harmonic psi
+  Float_t           fPileUpSlopeParm;         //
+  Float_t           fPileUpConstParm;         //
+
 
   TH1F            *fHist_Event_count;         //!  event count with different cuts
   TH1F          *fPileUpMultSelCount;         //!
@@ -253,8 +257,8 @@ private:
 
 
   //  [ Arrays of Histrograms here: ]
-  TH3D        *fHCorrectNUApos[4]; //! 4 centrality bin
-  TH3D        *fHCorrectNUAneg[4]; //! 4 centrality bin
+  TH3D        *fHCorrectNUApos[5]; //! 5 centrality bin
+  TH3D        *fHCorrectNUAneg[5]; //! 5 centrality bin
 
 
   TH3F         *fHist3DEtaPhiVz_Pos_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
