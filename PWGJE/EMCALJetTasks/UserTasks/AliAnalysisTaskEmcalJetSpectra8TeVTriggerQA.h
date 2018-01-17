@@ -50,7 +50,7 @@ public:
 
     void                        UserCreateOutputObjects()                         ;
     void                        Terminate(Option_t *option)                       ;
-      void                            ExtractMainPatch();
+    void                        ExtractMainPatch()                                ;
 
 protected:
     void                        ExecOnce()                                        ;
@@ -65,7 +65,7 @@ protected:
     void                        DoJetLoop()                                       ;
     void                        DoTrackLoop()                                     ;
     void                        DoClusterLoop()                                   ;
-    void                        DoCellLoop();
+    void                        DoCellLoop()                                      ;
     Bool_t                      fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
     Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
     Bool_t                      SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
@@ -73,8 +73,13 @@ protected:
 
 private:
 
-    TH1F                          *fHistNumbJets;//!  Numb Jets Per Event
-    TH1F                          *fHistJetPt;//!  Jet Pt Dist
+    TH1F                          *fHistNumbJets;//!           Numb Jets Per Event
+    TH1F                          *fHistJetPt;//!              Jet Pt Dist
+    TH1F                          *fHistJetJetPatchE;//!       Jet-Jet Trigger Patch E
+    TH1F                          *fHistJetGammaPatchE;//!     Jet-Gamma Trigger Patch E
+    TH1F                          *fHistJetJetPatchPt;//!      Jet-Jet Trigger Patch Pt
+    TH1F                          *fHistJetGammaPatchPt;//!    Jet-Gamma Trigger Patch Pt
+    TH1F                          *fHistTriggerPatchE;//!      EMCal Trigger Patch E
 
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA &operator=(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&); // not implemented
