@@ -2064,8 +2064,8 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
       if ( nDead > 0 ) {
         if ( nUnknown == 3 ) {
           for ( Int_t ich=0; ich<4; ich++ ) {
-            AliInfo(Form("Recovering board %i in ch %i",ibin,11+ich));
             if ( ! isUnknown[ich] ) continue;
+            AliInfo(Form("Recovering board %i in ch %i",ibin,11+ich));
             if ( readEffLists.size() == 0 ) {
               // Initialize once all needed objects for recovery
               rList = GetRunList(runList);
@@ -2087,21 +2087,33 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
                   // We only need the systematics for the chosen run
                   if ( itype == 1 && ! isRefRun ) continue;
                   TList* readList = ReadEffHistoList(Form("%s?%s",currOcdb.Data(),runObj->GetName()));
+                  readList->SetName(Form("%s_%s",baseName.Data(),runObj->GetName()));
                   readEffLists.push_back(readList);
-
-                  // The systematic efficiency list is a clone of the merged efficiency object
-                  // We will copy later on the recovered efficiency ONLY for the missing boards
-                  TList* systEffList = CloneEffHistoList(effList);
-                  systEffList->SetName(Form("%s_%s",baseName.Data(),runObj->GetName()));
-                  systLists.push_back(systEffList);
 
                   if ( isRefRun && itype == 0 ) {
                     refRead = readList;
-                    refSyst = systEffList;
                   }
                 } // loop on runs
               } // loop on standard or systematic OCDB
             }
+
+            if ( systLists.size() == 0 ) {
+              for ( UInt_t imap=0; imap<readEffLists.size(); imap++ ) {
+                // The systematic efficiency list is a clone of the merged efficiency object
+                // where we only modify the efficiency of the recovered board with either:
+                // - the systematic uncertainty of the reference efficiency
+                // - the efficiency for the other runs
+                //   (in this way the fluctuations of the efficiency with time
+                //    will be treated as systematic variations)
+                TList* systEffList = CloneEffHistoList(effList);
+                systEffList->SetName(readEffLists[imap]->GetName());
+                systLists.push_back(systEffList);
+                // This is dummy. The read efficiency is the one we will use to patch
+                // the missing efficiency. So it will not enter the systematic uncertainties
+                if ( readEffLists[imap] == refRead ) refSyst = systEffList;
+              }
+            }
+
             for ( UInt_t imap=0; imap<readEffLists.size(); imap++ ) {
               TList* readList = readEffLists[imap];
               for ( Int_t icount=0; icount<4; icount++ ) {
@@ -2117,13 +2129,22 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
       }
     } // loop on local boards
     for ( TList* systEffHistoList : systLists ) {
-      if ( systEffHistoList == refSyst ) continue;
+      if ( systEffHistoList == refSyst ) {
+        delete systEffHistoList;
+        // Otherwise it will never be deleted since this "systematic" is dummy
+        // and will not be added to the object
+        continue;
+      }
       obj->AddEffHistoList(systEffHistoList->GetName(),systEffHistoList);
     }
+    // CAVEAT: we do not delete the objects in systLists
+    // since they where added to the list of systematics uncertainties of the merged object
+    // If we delete them, this will result in memory issues
+    // when building the systematic uncertainties
+    systLists.clear();
   } // loop on merged objects
 
   // Delete objects
-  for ( TList* obj : systLists ) delete obj;
   readEffLists.clear();
   delete rList;
 
@@ -2367,7 +2388,9 @@ AliMTRChEffAnalysis::AliMTRChEffInnerObj::AliMTRChEffInnerObj ( const char* file
 AliMTRChEffAnalysis::AliMTRChEffInnerObj::~AliMTRChEffInnerObj ()
 {
   /// Destructor
-  for ( auto& mapEntry : fEffLists ) delete mapEntry.second;
+  for ( auto& mapEntry : fEffLists ) {
+    delete mapEntry.second;
+  }
   fEffLists.clear();
 }
 
