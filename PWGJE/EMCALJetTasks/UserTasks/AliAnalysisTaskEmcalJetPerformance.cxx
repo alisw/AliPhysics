@@ -1003,16 +1003,16 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::Run()
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     TString jetContName = jetCont->GetName();
     
-    // Compute the full jet background scale factor and delta-pt
-    if (fComputeBackground) {
-      ComputeBackground();
-    }
-    
     // Do a simple trigger simulation (if requested)
     if (fDoTriggerSimulation) {
       DoTriggerSimulation();
     }
     
+  }
+  
+  // Compute the full jet background scale factor and delta-pt
+  if (fComputeBackground) {
+    ComputeBackground();
   }
   
   // Only fill the embedding qa plots if:
@@ -1786,36 +1786,45 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     
     // Loop over tracks. Sum the track pT:
     // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
-    AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+    // Note: Loops over all det-level track containers. For data there should be only one. For embedding, there should be signal+background tracks.
+    AliParticleContainer * partCont = 0;
     AliTLorentzVector track;
     Double_t trackEta;
     Double_t trackPhi;
     Double_t trackPt;
     Double_t deltaR;
-    for (auto trackIterator : trackCont->accepted_momentum() ) {
+    TIter nextPartCont(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
       
-      track.Clear();
-      track = trackIterator.first;
-      trackEta = track.Eta();
-      trackPhi = track.Phi_0_2pi();
-      trackPt = track.Pt();
-      
-      // (1)
-      if (TMath::Abs(trackEta) < etaTPC) {
-        trackPtSumTPC += trackPt;
+      TString partContName = partCont->GetName();
+      if (!partContName.CompareTo("tracks")) {
+        
+        AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(partCont);
+        for (auto trackIterator : trackCont->accepted_momentum() ) {
+          
+          track.Clear();
+          track = trackIterator.first;
+          trackEta = track.Eta();
+          trackPhi = track.Phi_0_2pi();
+          trackPt = track.Pt();
+          
+          // (1)
+          if (TMath::Abs(trackEta) < etaTPC) {
+            trackPtSumTPC += trackPt;
+          }
+          
+          // (2)
+          if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
+            trackPtSumEMCal += trackPt;
+          }
+          
+          // (3)
+          deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
+          if (deltaR < jetR) {
+            trackPtSumEMCalRC += trackPt;
+          }
+        }
       }
-      
-      // (2)
-      if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
-        trackPtSumEMCal += trackPt;
-      }
-      
-      // (3)
-      deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
-      if (deltaR < jetR) {
-        trackPtSumEMCalRC += trackPt;
-      }
-      
     }
     
     // Loop over clusters. Sum the cluster ET:
@@ -2234,7 +2243,7 @@ AliAnalysisTaskEmcalJetPerformance* AliAnalysisTaskEmcalJetPerformance::AddTaskE
   }
   
   /////////////////////////////////////////////////////////////
-  // Configure di-jet task
+  // Configure jet performance task
   AliAnalysisTaskEmcalJetPerformance* task = new AliAnalysisTaskEmcalJetPerformance(name);
   
   /////////////////////////////////////////////////////////////
