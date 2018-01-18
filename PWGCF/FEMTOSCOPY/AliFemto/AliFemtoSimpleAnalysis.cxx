@@ -59,6 +59,7 @@ void DoFillParticleCollection(TrackCutType *cut,
   }
 }
 
+
 // This little function is used to apply ParticleCuts (TrackCuts or V0Cuts) and
 // fill ParticleCollections from tacks in picoEvent. It is called from
 // AliFemtoSimpleAnalysis::ProcessEvent().
@@ -156,6 +157,17 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   partCut->FillCutMonitor(hbtEvent, partCollection);
 }
+
+// Leave this here to appease any legacy code that expected a non-const AliFemtoEvent
+void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
+                               AliFemtoEvent *hbtEvent,
+                               AliFemtoParticleCollection *partCollection,
+                               bool performSharedDaughterCut)
+{
+  FillHbtParticleCollection(partCut, const_cast<const AliFemtoEvent*>(hbtEvent), partCollection, performSharedDaughterCut);
+}
+
+
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fPicoEventCollectionVectorHideAway(nullptr),

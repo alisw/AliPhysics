@@ -19,7 +19,7 @@ AliFemtoParticleCut* copyTheCut(AliFemtoParticleCut*);
 AliFemtoCorrFctn*    copyTheCorrFctn(AliFemtoCorrFctn*);
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
-                                      AliFemtoEvent* currentEvent,
+                                      const AliFemtoEvent* currentEvent,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
@@ -85,9 +85,9 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
     return;
   }
   
-  FillHbtParticleCollection(fFirstParticleCut, (AliFemtoEvent*)currentEvent,collection1,fPerformSharedDaughterCut);
-  FillHbtParticleCollection(fSecondParticleCut,(AliFemtoEvent*)currentEvent,collection2,fPerformSharedDaughterCut);
-  FillHbtParticleCollection(fThirdParticleCut, (AliFemtoEvent*)currentEvent,collection3,fPerformSharedDaughterCut);
+  FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection1,fPerformSharedDaughterCut);
+  FillHbtParticleCollection(fSecondParticleCut,currentEvent,collection2,fPerformSharedDaughterCut);
+  FillHbtParticleCollection(fThirdParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
 
   fEventCut->FillCutMonitor(currentEvent, tmpPassEvent);
 
