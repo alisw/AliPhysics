@@ -2938,7 +2938,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 
       Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
       Bool_t match_dPhi = kFALSE;
-      
+
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
@@ -4817,11 +4817,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           } else if( (fCurrentMC==k17e2 || fCurrentMC==k16k5a) && fClusterType==3) {
             energy /= (FunctionNL_DPOW(energy, 0.9943969544,-0.0181151588,-0.4999998851,1.0288066416,-0.0367913727,-0.4995137932));
             energy /= FunctionNL_DPOW(energy, 1.0055560859, -0.0213391278, -0.4999999991, 1.1047136553, -0.1141567995, -0.1573142879);
+            if( fCurrentMC==k16k5a ) {
+              energy /= FunctionNL_DPOW(energy, 0.9875048430, -0.0699070999, -0.4999999967, 1.0934513466, -0.1775170928, -0.2099590700);
+            }
+          }
 
-          }
-          if( fCurrentMC==k16k5a && fClusterType==3) {
-            energy /= FunctionNL_DPOW(energy, 0.9875048430, -0.0699070999, -0.4999999967, 1.0934513466, -0.1775170928, -0.2099590700);
-          }
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9842689920, 0.9150246921, -3.6796298486, 1.0113148506, 0.6876891951, -3.1672234730));
           if(fClusterType==3) {
