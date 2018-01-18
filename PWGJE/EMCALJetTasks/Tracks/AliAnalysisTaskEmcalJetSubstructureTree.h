@@ -237,18 +237,19 @@ protected:
 
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  void LinkOutputBranch(const TString &branchname, Double_t *datalocation);
+  void LinkOutputBranch(const std::string &branchname, Double_t *datalocation);
 
   std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
-  TString MatchTrigger(const TString &triggerclass) const;
+  std::string MatchTrigger(const std::string &triggerclass) const;
+  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
-  bool IsPartBranch(const TString &branchname) const;
-  bool IsAcceptanceBranch(const TString &branchname) const;
-  bool IsRhoBranch(const TString &branchname) const;
-  bool IsMassBranch(const TString &branchname) const;
-  bool IsSoftdropBranch(const TString &branchname) const;
-  bool IsNSubjettinessBranch(const TString &branchname) const;
-  bool IsStructbranch(const TString &branchname) const;
+  bool IsPartBranch(const std::string &branchname) const;
+  bool IsAcceptanceBranch(const std::string &branchname) const;
+  bool IsRhoBranch(const std::string &branchname) const;
+  bool IsMassBranch(const std::string &branchname) const;
+  bool IsSoftdropBranch(const std::string &branchname) const;
+  bool IsNSubjettinessBranch(const std::string &branchname) const;
+  bool IsStructbranch(const std::string &branchname) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
