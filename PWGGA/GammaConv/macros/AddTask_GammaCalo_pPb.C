@@ -885,8 +885,8 @@ void AddTask_GammaCalo_pPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCalo_%i",trainConfig), TList::Class(),
-          AliAnalysisManager::kOutputContainer,Form("GammaCalo_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i",trainConfig) : Form("GammaCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i.root",trainConfig) : Form("GammaCalo_%i_%s.root",trainConfig,corrTaskSetting.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

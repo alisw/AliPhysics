@@ -1062,8 +1062,8 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCaloMerged_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i",trainConfig) : Form("GammaCaloMerged_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i.root",trainConfig) : Form("GammaCaloMerged_%i_%s.root",trainConfig,corrTaskSetting.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, cinput);
