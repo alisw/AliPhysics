@@ -166,24 +166,46 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
         fListHist->Add(fHistEventCounter);
     }
-    
+    //___________________________________________________
     if(! fHistV0MMult ) {
         //Histogram Output: Event-by-Event
-        fHistV0MMult = new TH1D( "fHistEventCounter", ";V0M Mult;Count",lNNchBins,lLowNchBound,lHighNchBound);
+        fHistV0MMult = new TH1D( "fHistV0MMult", ";V0M Mult;Count",lNNchBins,lLowNchBound,lHighNchBound);
         //Keeps track of some basics
         fListHist->Add(fHistV0MMult);
     }
+    if(! fHistNchVsV0MMult ) {
+        //Histogram Output: Event-by-Event
+        fHistNchVsV0MMult = new TH2D( "fHistNchVsV0MMult", ";V0M Mult;Count",
+                                     lNNchBins,lLowNchBound,lHighNchBound,
+                                     lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistNchVsV0MMult);
+    }
+    //___________________________________________________
     if(! fHistNpart ) {
         //Histogram Output: Event-by-Event
         fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",500,-0.5,499.5);
         //Keeps track of some basics
         fListHist->Add(fHistNpart);
     }
+    if(! fHistNchVsNpart ) {
+        //Histogram Output: Event-by-Event
+        fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",500,-0.5,499.5,lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistNchVsNpart);
+    }
+    //___________________________________________________
     if(! fHistB ) {
         //Histogram Output: Event-by-Event
         fHistB = new TH1D( "fHistB", ";b;Count",400,0,20);
         //Keeps track of some basics
         fListHist->Add(fHistB);
+    }
+    if(! fHistNchVsB ) {
+        //Histogram Output: Event-by-Event
+        fHistNchVsB = new TH2D( "fHistNchVsB", ";b;Count",400,0,20,lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistNchVsB);
     }
     
     //Identified Particles
