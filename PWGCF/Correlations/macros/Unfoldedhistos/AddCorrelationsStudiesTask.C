@@ -1,3 +1,5 @@
+#ifdef __ECLIPSE_IDE
+//  few includes and external declarations just for the IDE
 #include "Riostream.h"
 #include "TROOT.h"
 #include "AliLog.h"
@@ -7,6 +9,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskCorrelationsStudies.h"
+#endif
 
 AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *mincenstr, const char *maxcenstr, const char *configstring, const char *corrconfigstring, const char *corrbinning) {
 
