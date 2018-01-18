@@ -79,6 +79,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
 
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString corrTaskSetting = ""; // sets which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCaloMerged_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -103,6 +104,10 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCaloMerged_pPb will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
@@ -112,6 +117,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCaloMerged_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
   Int_t isHeavyIon = 2;
 
@@ -201,6 +207,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(runLightOutput);
 
   //create cut handler
@@ -317,6 +324,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -327,6 +335,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -337,6 +346,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -348,6 +358,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterMergedCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterMergedCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterMergedCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
@@ -367,6 +378,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetCaloMergedCutList(numberOfCuts,ClusterMergedCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
@@ -376,8 +388,8 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCaloMerged_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i",trainConfig) : Form("GammaCaloMerged_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i.root",trainConfig) : Form("GammaCaloMerged_%i_%s.root",trainConfig,corrTaskSetting.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
