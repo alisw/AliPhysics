@@ -107,7 +107,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fTree->Branch("Deuteron", &fDeuteronVector);
   fTree->Branch("PiPlus", &fPiPlusVector);
   fTree->Branch("PiMinus", &fPiMinusVector);
-  fTree->Branch("EventInfo", &fZvtx);
+  fTree->Branch("ZVertex", &fZvtx);
   fTree->SetAutoSave(100000000);
   PostData(2,fTree);
 
