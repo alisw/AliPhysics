@@ -549,16 +549,22 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 
    fhTestQ->Fill(pion->Charge(),triton->Charge());
 
+
+
+
    Float_t isHele=0;
    Int_t nTrackletsPID=0;
-   
-   Float_t eleEff[3] = {0.85,0.90,0.95}; 
+  
+   Float_t eleEff[3] = {0.85,0.9,0.95}; 
+   AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD,triton);
+   if(pidStatus!=AliPIDResponse::kDetPidOk) isHele = -1;  
+    else {
+     for(Int_t iEff=0; iEff<3; iEff++)  {
+      Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(triton,nTrackletsPID,eleEff[iEff],percentile,AliTRDPIDResponse::kLQ2D);
+      if(isEle && nTrackletsPID>3) isHele += TMath::Power(10,iEff);
+     }
+    }
 
-
-   for(Int_t iEff=0; iEff<3; iEff++)  {
-    Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(triton,nTrackletsPID,eleEff[iEff],percentile,AliTRDPIDResponse::kLQ2D);
-    if(isEle && nTrackletsPID>3) isHele += TMath::Power(10,iEff);
-   }
    
    if(fMC){
     Double_t pdgPion=-1, pdgTriton=-1, pdgPionMum=-1, pdgTritonMum=-1;
