@@ -49,6 +49,7 @@ class AliESDv0;
 #include "AliInputEventHandler.h"
 #include "AliAnalysisTaskLNNntuple.h"
 #include "AliCentrality.h"
+#include "AliTRDPIDResponse.h"
 #include "TString.h"
 #include <TDatime.h>
 #include <TRandom3.h>
@@ -291,10 +292,10 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  {
   if(!fMC){
 
-   fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:dcaTriTot:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus");
+   fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus");
    fListHist->Add (fNt);
   } else {
-   fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:dcaTriTot:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode");
+   fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode");
    fListHist->Add (fNt);
 
   }
@@ -359,8 +360,9 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager ();
  AliInputEventHandler *inputHandler = (AliInputEventHandler *) (man->GetInputEventHandler ());
  if(!inputHandler->IsEventSelected ()){
- Printf("Event not selected, skipping... \n");
- return;
+ Printf("Event not selected, patch for local MC analysis... \n");
+ //Printf("Event not selected, skipping... \n");
+ //return;
  }
 
  //*****************//  
@@ -535,7 +537,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
    triton->GetDZ (Vtxpos[0], Vtxpos[1], Vtxpos[2], lESDevent->GetMagneticField (), dcaTri);
    //dca to primary vertex  
    Float_t dcaPi= pion->GetD(Vtxpos[0],Vtxpos[1],lESDevent->GetMagneticField());
-   Float_t dcaTriTot = triton->GetD(Vtxpos[0],Vtxpos[1],lESDevent->GetMagneticField());
+   //Float_t dcaTriTot = triton->GetD(Vtxpos[0],Vtxpos[1],lESDevent->GetMagneticField()); -> same as dcaTri[1]
    Double_t nSPiFromPiTof = fPIDResponse->NumberOfSigmasTOF (pion,(AliPID::EParticleType) 2);
    Double_t nSPrTof = fPIDResponse->NumberOfSigmasTOF (triton,(AliPID::EParticleType) 4); //check if 3H is identified as proton in TOF PID
    Double_t nSPiTof = fPIDResponse->NumberOfSigmasTOF (triton,(AliPID::EParticleType) 2); // check if 3H is identified as pion TOF PID
@@ -547,6 +549,17 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 
    fhTestQ->Fill(pion->Charge(),triton->Charge());
 
+   Float_t isHele=0;
+   Int_t nTrackletsPID=0;
+   
+   Float_t eleEff[3] = {0.85,0.90,0.95}; 
+
+
+   for(Int_t iEff=0; iEff<3; iEff++)  {
+    Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(triton,nTrackletsPID,eleEff[iEff],percentile,AliTRDPIDResponse::kLQ2D);
+    if(isEle && nTrackletsPID>3) isHele += TMath::Power(10,iEff);
+   }
+   
    if(fMC){
     Double_t pdgPion=-1, pdgTriton=-1, pdgPionMum=-1, pdgTritonMum=-1;
     if(TMath::Abs(pion->GetLabel()<nbMcTracks)) {
@@ -570,7 +583,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
      tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
      v0s->P (), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
      v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
-     dcaPi,dcaTriTot,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),
+     dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),
      pdgPion,pdgTriton,pdgPionMum,pdgTritonMum};
 
     fNt->Fill (ntuple);
@@ -580,7 +593,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
      tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
      v0s->Pt(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
      v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
-     dcaPi,dcaTriTot,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters()};
+     dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters()};
     fNt->Fill (ntuple);
    }
   } // loop over V0s
