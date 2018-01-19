@@ -16,8 +16,10 @@
 #include <Rtypes.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
 #include "AliPID.h"
+
 #include <TMath.h>
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
@@ -88,6 +90,8 @@ private:
 
   TTree                *fTree;                      //!<!
   TTree                *fMCTree;                    //!<!
+
+  Short_t               fZvtx;                      //<
 
   vector<daughter_struct>   fDeuteronVector;        //<
   vector<daughter_struct>   fPiPlusVector;          //<
