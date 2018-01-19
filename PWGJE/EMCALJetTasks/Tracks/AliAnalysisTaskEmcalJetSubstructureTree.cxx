@@ -89,6 +89,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
+    fNameTriggerDecisionContainer("EmcalTriggerDecision"),
     fUseDownscaleWeight(false),
     fFillPart(true),
     fFillAcceptance(true),
@@ -111,6 +112,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
+    fNameTriggerDecisionContainer("EmcalTriggerDecision"),
     fUseDownscaleWeight(false),
     fFillPart(true),
     fFillAcceptance(true),
@@ -243,15 +245,13 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
     } else {
       if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
         // Simulation - do EMCAL trigger selection from trigger selection object
-        PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"));
+        PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
         AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
-        if(fTriggerSelectionString.Length()){
-          if(!mctrigger){
-            AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
-            return false;
-          }
-          if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
+        if(!mctrigger){
+          AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
+          return false;
         }
+        if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
       }
     }
   }

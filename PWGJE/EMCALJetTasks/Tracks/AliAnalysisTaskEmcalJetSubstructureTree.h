@@ -198,6 +198,7 @@ public:
 	void SetTriggerBits(UInt_t triggersel) { fTriggerSelectionBits = triggersel; }
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
 	void SetUseDownscaleWeight(Bool_t usedownscale) { fUseDownscaleWeight = usedownscale; }
+  void SetGlobalTriggerDecisionContainerName(const char *name) { fNameTriggerDecisionContainer = name; }
 
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
@@ -263,6 +264,7 @@ private:
 
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
+  TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container
   Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
 
   // Fill levels for tree (save disk space when information is not needed)
