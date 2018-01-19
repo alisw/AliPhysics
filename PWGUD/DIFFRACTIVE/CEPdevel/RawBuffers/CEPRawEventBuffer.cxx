@@ -10,6 +10,7 @@
 #include "CEPTrackBuffer.h"
 #include "AliCEPBase.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 
 ClassImp(CEPRawEventBuffer)
 
@@ -124,7 +125,7 @@ void CEPRawEventBuffer::AddCaloTrack(CEPRawCaloClusterTrack* caloTrk)
 CEPRawTrackBuffer* CEPRawEventBuffer::GetTrack(UInt_t ind)
 {
     // initialize the result track
-    CEPRawTrackBuffer *trk = NULL;
+    CEPRawTrackBuffer *trk = 0x0;
 
     if (fCEPRawTracks->GetEntries() > ind) 
     {
@@ -138,7 +139,7 @@ CEPRawTrackBuffer* CEPRawEventBuffer::GetTrack(UInt_t ind)
 CEPRawCaloClusterTrack* CEPRawEventBuffer::GetCaloClusterTrack(UInt_t ind)
 {
     // initialize the result track
-    CEPRawCaloClusterTrack *caloTrk = NULL;
+    CEPRawCaloClusterTrack *caloTrk = 0x0;
 
     if (fCEPRawCaloClusterTracks->GetEntries() > ind) 
     {
@@ -153,7 +154,7 @@ Bool_t CEPRawEventBuffer::RemoveTrack(UInt_t ind)
 {
     // initialize the result track
     Bool_t done = kFALSE;
-    CEPRawTrackBuffer *trk = NULL;
+    CEPRawTrackBuffer *trk = 0x0;
 
     if (fCEPRawTracks->GetEntries() > ind) {
         trk = (CEPRawTrackBuffer*) fCEPRawTracks->RemoveAt(ind);
@@ -172,7 +173,7 @@ Bool_t CEPRawEventBuffer::RemoveCaloCluster(UInt_t ind)
 {
     // initialize the result track
     Bool_t done = kFALSE;
-    CEPRawCaloClusterTrack *caloTrk = NULL;
+    CEPRawCaloClusterTrack *caloTrk = 0x0;
 
     if (fCEPRawCaloClusterTracks->GetEntries() > ind) {
         caloTrk = (CEPRawCaloClusterTrack*) fCEPRawCaloClusterTracks->RemoveAt(ind);
@@ -219,15 +220,16 @@ void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
 
     // fill in the raw track information
     UInt_t nTracks = ESDobj->GetNumberOfTracks();
+    AliESDVertex* vertex = (AliESDVertex*)ESDobj->GetPrimaryVertex(); 
     for (UInt_t i(0); i<nTracks; i++)
     {
         // Initialize track
-        AliESDtrack* aliTrk = NULL;
+        AliESDtrack* aliTrk = 0x0;
         CEPRawTrackBuffer* trk = new CEPRawTrackBuffer();
         // get a track from the ESD object
         aliTrk = (AliESDtrack*)ESDobj->GetTrack(i);
         // fill raw track buffer
-        trk->SetTrackVariables(aliTrk);
+        trk->SetTrackVariables(aliTrk, vertex);
         // add track to the CEPRawEventBuffer
         AddTrack(trk);
     }
@@ -236,7 +238,7 @@ void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
     for (UInt_t i(0); i<nCaloTracks; i++)
     {
         // Initialize calo cluster
-        AliESDCaloCluster* aliCluster = NULL;
+        AliESDCaloCluster* aliCluster = 0x0;
         CEPRawCaloClusterTrack* caloTrk = new CEPRawCaloClusterTrack();
         // get calo cluster from the ESD object
         aliCluster = (AliESDCaloCluster*)ESDobj->GetCaloCluster(i);
