@@ -107,6 +107,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fTree->Branch("Deuteron", &fDeuteronVector);
   fTree->Branch("PiPlus", &fPiPlusVector);
   fTree->Branch("PiMinus", &fPiMinusVector);
+  fTree->Branch("ZVertex", &fZvtx);
   fTree->SetAutoSave(100000000);
   PostData(2,fTree);
 
@@ -145,12 +146,12 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   if (!stack)
   ::Fatal("AliAnalysisTaskdStar::UserExec","MC analysis requested on a sample without the MC particle array.");
 
+  const AliVVertex *vertex = static_cast<const AliVVertex*>(fEventCut.GetPrimaryVertex());
+  fZvtx = vertex->GetZ();
+
   fMCDeuteronVector.clear();
-  fMCDeuteronVector.reserve(40);
   fMCPiPlusVector.clear();
-  fMCPiPlusVector.reserve(800);
   fMCPiMinusVector.clear();
-  fMCPiMinusVector.reserve(800);
 
   // need comment
   for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
