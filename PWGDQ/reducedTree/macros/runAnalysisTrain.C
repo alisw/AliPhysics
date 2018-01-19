@@ -22,7 +22,7 @@ TChain* makeChain(const Char_t* filename, const Char_t* inputType);
 //______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
                                      Int_t reducedEventType = -1, Bool_t writeTree = kFALSE, TString tasks="dst", TString prod = "LHC10h",
-                      Int_t nEntries=1234567890, Int_t firstEntry=0, TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros")
+                      Int_t nEntries=-1, Int_t firstEntry=0, TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros")
 {
    //
    // infile: list of input files if mode is local, or list of runs for job submission if mode is grid
@@ -230,6 +230,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    
    mgr->PrintStatus();
    // Start analysis
+   if(nEntries==-1) nEntries=1234567890;
    if(runmodestr.Contains("local"))
       mgr->StartAnalysis("local", chain, nEntries, firstEntry);
    if(runmodestr.Contains("proof"))
