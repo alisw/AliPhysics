@@ -103,7 +103,12 @@ fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0)
 {
-
+    for(Int_t ih=0; ih<9; ih++){
+        fHistPt[ih]          = 0x0;
+        fHistPtVsV0MMult[ih] = 0x0;
+        fHistPtVsNpart[ih]   = 0x0;
+        fHistPtVsB[ih]       = 0x0;
+    }
 }
 
 AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name)
@@ -145,7 +150,6 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     //------------------------------------------------
     // Histograms: Basic Analysis Output
     //------------------------------------------------
-    
     // Create histograms
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
@@ -217,19 +221,25 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     //Main Output: Histograms
     
     //Event counter histogram: Multiplicity, Npart, b (if available)
-    for(Long_t ih=0;ih<9;ih++){
+    for(Int_t ih=0; ih<9; ih++){
         if(! fHistPt[ih] ) {
             fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt[ih]);
         }
+    }
+    for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MMult[ih] ) {
             fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBins,lLowNchBound,lHighNchBound,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsV0MMult[ih]);
         }
+    }
+    for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsNpart[ih] ) {
             fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",500,-0.5,499.5,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsNpart[ih]);
         }
+    }
+    for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsB[ih] ) {
             fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",400,0,20,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsB[ih]);
