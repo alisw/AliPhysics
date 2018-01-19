@@ -507,7 +507,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );   
     fOutput->Add(fhJetPt);
     //fhJetPhi= new TH1F("fhJetPhi", "Jet Phi", Phi_Bins, Phi_Low, Phi_Up);
-    fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    // fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",780 , -7, 7);
     fOutput->Add(fhJetPhi);
     fhJetEta= new TH1F("fhJetEta", "Jet Eta", Eta_Bins, Eta_Low, Eta_Up);
     fOutput->Add(fhJetEta);
@@ -1145,8 +1146,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  JetCounter++;
 	  fhJetPt->Fill(Jet1->Pt());    
 	  JetPhi=Jet1->Phi();
-	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
-	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+	  //if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+	  //else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
 	  fhJetMass->Fill(Jet1->M());
