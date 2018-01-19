@@ -652,8 +652,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replayed, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replayed, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[c,h,i,j,k,l,m,o]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l,m,o,r]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l,m,o,r]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
@@ -666,7 +666,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     ((TH1F*)flQArnum->At(4))->Fill(fRun);
   
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
-  // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
   // the trigger needs to be replayed
   // different triggers are considered
@@ -675,14 +674,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
   
   // The following is needed to replay the DG trigger
-  // The STG trigger in 2016 required two online tracklets without additional
+  // The OSTG trigger in 2016 required two online tracklets without additional
   // topology (dphiMin=0)
-  // The STRtrigger in 2017 requiered two online tracklets with
+  // The OSTG trigger in 2017 required two online tracklets with
   // min opening angle >=54 deg (dphiMin=4)
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
   
-  // each bit of fisSTGTriggerFired corresponds to a specific dphiMin
+  // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a specific
+  // dphiMin
+  // fisSTGTriggerFired & (1<<0): OSTG 2016
+  // fisSTGTriggerFired & (1<<4): OSTG 2017
   fisSTGTriggerFired  = IsSTGFired(&foMap,0) ? (1<<0) : 0;
   for (Int_t ii=1; ii<=10; ii++)
     fisSTGTriggerFired |= IsSTGFired(&foMap,ii) ? (1<<ii) : 0;
@@ -691,12 +693,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isReplay) {
     
     // this part of the code was proposed by Evgeny Kryshen
-    // to replay the DG trigger in MC data
+    // to replay the DG trigger in MC data, counts number of hits in V0
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
     AliVVZERO* esdV0 = fEvent->GetVZEROData();
-    for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
-    for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
+    for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);  // V0A
+    for (Int_t i=0;  i<32; i++) isV0Cfired |= esdV0->GetBBFlag(i);  // V0C
 
     isDGTrigger = (fisSTGTriggerFired & (1<<0)) && !isV0Afired && !isV0Cfired;
     
@@ -736,6 +738,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   // get the number of fired FastOR trigger chips
+  // this is needed to replay OSMB = IFO>=1 & OFO>=1
+  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
+  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
+  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
+  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
   Short_t nFiredChips[4] = {0};
   nFiredChips[0] = mult->GetNumberOfFiredChips(0);
   nFiredChips[1] = mult->GetNumberOfFiredChips(1);
