@@ -528,7 +528,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] =jet1->Phi();
-      if(fJetShapeType==kData) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
+      if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
 	//GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
       //fShapesVar[5] = GetJetCircularity(jet1,0);
