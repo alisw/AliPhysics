@@ -2575,7 +2575,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
       return kFALSE;
     }
     //Select PHOS cluster
-    if (fClusterType == 2 && !cluster->IsPHOS()){
+    if (fClusterType == 2 && !( cluster->GetType() == AliVCluster::kPHOSNeutral)){
       FillClusterCutIndex(kDetector);
       return kFALSE;
     }
