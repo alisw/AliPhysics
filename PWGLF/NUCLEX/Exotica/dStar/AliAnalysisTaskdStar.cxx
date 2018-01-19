@@ -146,8 +146,8 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   if (!stack)
   ::Fatal("AliAnalysisTaskdStar::UserExec","MC analysis requested on a sample without the MC particle array.");
 
-  const AliESDVertex *vertex = static_cast<const AliESDVertex*>(fEventCut.GetPrimaryVertex());
-  fVtx = vertex->GetZ();
+  const AliVVertex *vertex = static_cast<const AliVVertex*>(fEventCut.GetPrimaryVertex());
+  fZvtx = vertex->GetZ();
 
   fMCDeuteronVector.clear();
   fMCPiPlusVector.clear();
