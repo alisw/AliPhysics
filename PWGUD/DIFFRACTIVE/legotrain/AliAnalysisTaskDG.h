@@ -3,6 +3,7 @@
 #define ALIANALYSISTASKDG_H
 
 class TH1;
+class THnBase;
 class TTree;
 class TList;
 
@@ -244,22 +245,25 @@ protected:
   static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
   void FillSPDFOEffiencyHistograms(const AliESDEvent* );
-  void FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w=1);
+  void FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t w=1);
 
   void FillTriggerIR(const AliESDHeader* );
 
+  // TH1-derived histograms
   enum {
     kHistTrig,
+    kNHist
+  };
+  // THnBase-derived histograms
+  enum {
     kHistSPDFiredTrk,
     kHistSPDFOTrk,
     kHistSPDFOFiredTrk,
+
     kHistSPDFiredTrkVsMult,
     kHistSPDFOTrkVsMult,
     kHistSPDFOFiredTrkVsMult,
-    kHistSPDFiredVsMult,
-    kHistSPDFOVsMult,
-    kHistSPDFOFiredVsMult,
-    kNHist
+    kNHistN
   };
 
 private:
@@ -279,6 +283,7 @@ private:
 
   TList           *fList;                //!
   TH1             *fHist[kNHist];        //!
+  THnBase         *fHistN[kNHistN];      //!
   TTree           *fTE;                  //!
   TBits            fIR1InteractionMap;   //!
   TBits            fIR2InteractionMap;   //!
@@ -302,7 +307,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 17);
+  ClassDef(AliAnalysisTaskDG, 18);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
