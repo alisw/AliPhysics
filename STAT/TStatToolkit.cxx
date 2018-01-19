@@ -2864,6 +2864,9 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if (nrm>=kMinEntries&& kDumpHistoFraction>0 && (gRandom->Rndm()<kDumpHistoFraction ||  isFitValid!=kTRUE)){
       hDump=hfit;
     }
+    if (kDumpHistoFraction>=1.){ /// dump all histograms fraction>=1 independent of the status
+      hDump=hfit;
+    }
     if (hDump){
       hfit->GetListOfFunctions()->AddLast(&fgaus);
       (*pcstream)<<TString::Format("%sDump", tname).Data()<<
