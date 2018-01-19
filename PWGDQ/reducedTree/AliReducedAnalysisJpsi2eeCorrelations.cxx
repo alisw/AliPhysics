@@ -160,6 +160,8 @@ void AliReducedAnalysisJpsi2eeCorrelations::RunAssociatedTrackSelection() {
   // loop over the track list and evaluate all the track cuts
   LoopOverAssociatedTracks(1);
   LoopOverAssociatedTracks(2);
+  // set number of associated tracks
+  fValues[AliReducedVarManager::kNtracksAnalyzed]   = fAssociatedTracks.GetEntries();
 }
 
 //___________________________________________________________________________
@@ -201,7 +203,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::RunSameEventCorrelation(TString pair
    if(fJpsiCandidates.GetEntries()==0) return;
    if(fAssociatedTracks.GetEntries()==0) return;
    TString pairTypeNames[3] = {"PP","PM","MM"};
-   
+
   TIter nextAssocTrack(&fAssociatedTracks);
   TIter nextJpsi(&fJpsiCandidates);
   
