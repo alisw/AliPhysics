@@ -123,18 +123,18 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   
  protected:
   
-  void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI );                          // Fill some QA histograms
-  void                         EtIsoCellPhiBand      ( TLorentzVector c, Double_t &etIso, Double_t &phiBand );              // EIsoCone via Cells UE via PhiBand EMCal
-  void                         EtIsoCellEtaBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand );              // EIsoCone via Cells UE via EtaBand EMCal
+  void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI                          ); // Fill some QA histograms
+  void                         EtIsoCellPhiBand      ( TLorentzVector c, Double_t &etIso, Double_t &phiBand              ); // EIsoCone via Cells UE via PhiBand EMCal
+  void                         EtIsoCellEtaBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand              ); // EIsoCone via Cells UE via EtaBand EMCal
   void                         EtIsoClusPhiBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
   void                         EtIsoClusEtaBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
-  void                         PtIsoTrackPhiBand     ( TLorentzVector c, Double_t &ptIso, Double_t &phiBand );              // PIsoCone via Track UE via PhiBand TPC
-  void                         PtIsoTrackEtaBand     ( TLorentzVector c, Double_t &ptIso, Double_t &etaBand );              // PIsoCone via Track UE via EtaBand TPC
-  void                         PtIsoTrackOrthCones   ( TLorentzVector c, Double_t &ptIso, Double_t &cones );                // PIsoCone via Tracks UE via Orthogonal Cones in Phi
-  void                         PtIsoTrackFullTPC     ( TLorentzVector c, Double_t &ptIso, Double_t &full );                 // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
-  void                         ComputeConeArea       ( TLorentzVector c, Double_t &coneArea );                              // Isolation cone area depending on the cluster position
-  void                         ComputeEtaBandArea    ( TLorentzVector c, Double_t &etaBandArea_InclCone );                  // Eta-band area depending on the cluster position
-  void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI );                               // Applying smearing on MC
+  void                         PtIsoTrackPhiBand     ( TLorentzVector c, Double_t &ptIso, Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
+  void                         PtIsoTrackEtaBand     ( TLorentzVector c, Double_t &ptIso, Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
+  void                         PtIsoTrackOrthCones   ( TLorentzVector c, Double_t &ptIso, Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
+  void                         PtIsoTrackFullTPC     ( TLorentzVector c, Double_t &ptIso, Double_t &full                 ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
+  void                         ComputeConeArea       ( Double_t etaCand, Double_t phiCand, Double_t &coneArea            ); // Isolation cone area depending on the cluster position
+  void                         ComputeEtaBandArea    ( Double_t phiCand, Double_t coneArea, Double_t &etaBandArea        ); // Eta-band area depending on the cluster position
+  void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI                               ); // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching    ( AliVCluster * emccluster, Bool_t candidate );
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells );
@@ -157,7 +157,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         IsolationAndUEinEMCAL ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
   void                         IsolationAndUEinTPC   ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
   void                         AddParticleToUEMC     ( Double_t &sumUE, AliAODMCParticle * mcpp, Double_t eta, Double_t phi );
-  void                         CalculateUEDensityMC  ( Double_t &sumUE );
+  void                         CalculateUEDensityMC  ( Double_t etaCand, Double_t phiCand, Double_t &sumUE );
 
 
   using AliAnalysisTaskEmcal::FillGeneralHistograms;
