@@ -86,6 +86,8 @@ fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fDoWeighting(kFALSE),
+fCheckmee(kFALSE),
+fLimitmee(0.02),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
@@ -305,6 +307,8 @@ fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fDoWeighting(kFALSE),
+fCheckmee(kFALSE),
+fLimitmee(0.02),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
@@ -1170,6 +1174,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       Bool_t truth1 = AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1);
       if (!truth1) continue;
 
+      if(fCheckmee) {
+	if(CheckInvariantMassSM(mcEvent,iMCtrack) || CheckInvariantMassHF(mcEvent,iMCtrack)) continue;
+      }
+      
       AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
       if (!mctrack) continue;
       Double_t mcP     = mctrack->P();
@@ -2687,4 +2695,133 @@ Double_t AliAnalysisTaskElectronEfficiency::GetSingleEff(TH3D* h, Double_t pt, D
   // printf("BinContent EffiFile%f\n",  h->GetBinContent(h->FindBin(pt,eta,phi)) );
   return h->GetBinContent(h->FindBin(pt,eta,phi));
   // return 1.;
+}
+//______________________________________________________________________________________
+Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassHF(AliMCEvent* mcEventLocal,Int_t label)
+{
+  //
+  // Check if find partner with small invariant mass
+  //
+  if((!mcEventLocal) || (label<0)) {
+    return kFALSE;
+  }
+  
+  // Take the particle and its mother
+  AliMCParticle *mcpart = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(label));
+  if(!mcpart) return kFALSE;
+  Int_t pdgref = mcpart->PdgCode();
+  if(TMath::Abs(pdgref!=11)) return kFALSE; // take only true electrons
+  Int_t motherlabel = mcpart->GetMother();
+  AliMCParticle *motherpart(0x0);
+  if(motherlabel >= 0) motherpart = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(motherlabel));
+  if(!motherpart) {
+    printf("No mother for MC particle\n");
+    return kFALSE;
+  }
+  Int_t pdgmotherref = motherpart->PdgCode();
+  Bool_t iscorb = kFALSE;
+  if ( int(TMath::Abs(pdgmotherref)/100.) == 4 || int(TMath::Abs(pdgmotherref)/1000.) == 4  || int(TMath::Abs(pdgmotherref)/100.) == 5 || int(TMath::Abs(pdgmotherref)/1000.) == 5) iscorb = kTRUE;
+  if(!iscorb) return kFALSE; // Take only electrons from D or B Meson/Baryons
+
+
+  //
+  // Loop over tracks to check the partner
+  //
+  Int_t nMCtracks = mcEventLocal->GetNumberOfTracks();
+  Bool_t findpartner = kFALSE;
+  
+  for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
+    
+    if(iMCtrack==label) continue; // not the same track
+    // Take the track and its mother
+    AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(iMCtrack));
+    if (!mctrack) continue;
+    Int_t pdgtrack = mctrack->PdgCode();
+    Int_t mLab = mctrack->GetMother();
+    AliMCParticle *mother(0x0);
+    if(mLab >= 0) mother = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(mLab));
+    if(!mother) continue;
+    Int_t pdgmother = mother->PdgCode();
+    // Check if also from D or B Meson/Baryons
+    Bool_t iscorbtrack = kFALSE;
+    if ( int(TMath::Abs(pdgmother)/100.) == 4 || int(TMath::Abs(pdgmother)/1000.) == 4  || int(TMath::Abs(pdgmother)/100.) == 5 || int(TMath::Abs(pdgmother)/1000.) == 5) iscorbtrack = kTRUE;
+    if(!iscorbtrack) continue;
+    // Check ULS
+    if((TMath::Abs(pdgtrack)==TMath::Abs(pdgref)) && (pdgtrack*pdgref<0.)) {
+      // ULS from charm, beauty or cross
+      // calculate the mee
+      TLorentzVector Lvec1;
+      TLorentzVector Lvec2;
+      Lvec1.SetPtEtaPhiM(mcpart->Pt(), mcpart->Eta(), mcpart->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+      Lvec2.SetPtEtaPhiM(mctrack->Pt(), mctrack->Eta(), mctrack->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+      TLorentzVector LvecM = Lvec1 + Lvec2;
+      double mass = LvecM.M();
+      if(mass < fLimitmee) findpartner = kTRUE;
+    } // condition of ULS
+
+
+  } // Loop on MC track
+
+  return findpartner;
+  
+}
+//______________________________________________________________________________________
+Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassSM(AliMCEvent* mcEventLocal,Int_t label)
+{
+  //
+  // Check if find partner with small invariant mass and same mother
+  //
+  if((!mcEventLocal) || (label<0)) {
+    return kFALSE;
+  }
+  
+  // Take the particle and its mother
+  AliMCParticle *mcpart = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(label));
+  if(!mcpart) return kFALSE;
+  Int_t pdgref = mcpart->PdgCode();
+  if(TMath::Abs(pdgref!=11)) return kFALSE; // take only true electrons
+  Int_t motherlabel = mcpart->GetMother();
+  AliMCParticle *motherpart(0x0);
+  if(motherlabel >= 0) motherpart = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(motherlabel));
+  if(!motherpart) {
+    printf("No mother for MC particle\n");
+    return kFALSE;
+  }
+  int k1 = motherpart->GetFirstDaughter();
+  int k2 = motherpart->GetLastDaughter();
+ 
+
+  //
+  // Loop over daughters
+  //
+  Bool_t findpartner = kFALSE;
+  for(int d=k1; d <= k2; d++) {
+    if(d==label) continue; // not the same
+    // Take the track and its mother
+    AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(d));
+    if (!mctrack) continue;
+    Int_t pdgtrack = mctrack->PdgCode();
+
+    //Int_t mLab = part->GetMother();
+    //AliMCParticle *mother(0x0);
+    //if(mLab >= 0) mother = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(mLab));
+    //if(!mother) continue;
+    //Int_t pdgmother = mother->PdgCode();
+   
+    // Check ULS
+    if((TMath::Abs(pdgtrack)==TMath::Abs(pdgref)) && (pdgtrack*pdgref<0.)) {
+      // calculate the mee
+      TLorentzVector Lvec1;
+      TLorentzVector Lvec2;
+      Lvec1.SetPtEtaPhiM(mcpart->Pt(), mcpart->Eta(), mcpart->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+      Lvec2.SetPtEtaPhiM(mctrack->Pt(), mctrack->Eta(), mctrack->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+      TLorentzVector LvecM = Lvec1 + Lvec2;
+      double mass = LvecM.M();
+      if(mass < fLimitmee) findpartner = kTRUE;
+    } // condition of ULS
+
+  } // Loop over daughter tracks
+
+  return findpartner;
+  
 }
