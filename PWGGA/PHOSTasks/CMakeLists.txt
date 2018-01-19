@@ -122,6 +122,7 @@ set(SRCS
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddedDiffObjectCreator.cxx
     PHOS_Run2/AliAnalysisTaskPHOSEmbedding.cxx
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx

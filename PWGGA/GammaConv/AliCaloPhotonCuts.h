@@ -156,12 +156,40 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f4b,
       k17g8b,
       k17g8c,
+      k17h8a,
+      k17h8b,
+      k17h8c,
+      k17c3b1,
+      k17c3a1,
+      k17c3b2,
+      k17c3a2,
+      k17d2a_fast,
+      k17d2a_cent,
+      k17d2b_fast,
+      k17d2b_cent,
+      // 13TeV MC anc 2015 pp
+      k15k5,
+      k15P2Pyt8,
+      k15P2EPos,
+
       // 13TeV MC anc 2016 pp
       k16P1Pyt8,        //
       k16P1Pyt8LowB,    //
       k16P1EPOS,        //
       k16P1JJ,          //
       k16P1JJLowB,      //
+      //13 TeV LHC2017
+      k17k1, //LHC17g added dielectrons from HF
+      k17k4, //LHC17i
+      k17h11, //LHC17j
+      k17h7b, //LHC17j
+      k17h7a, //LHC17j
+      k17j5a, //LHC17k Strangeness enhanced
+      k17j5b, //LHC17l Strangeness enhanced
+      k17j5c, //LHC17o Strangeness enhanced
+      k17l5,
+      k17h1,
+      k17h3,
       // Xe-Xe MC
       k17j7,            // HIJING
 
@@ -184,6 +212,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16pPb8TeV,
       k17pp13TeV,
       k17pp13TeVLow,
+      k17pp13TeVNo,
       k17XeXe5440GeV
     };
 
@@ -330,7 +359,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
-
+    
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
+    
     AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
     AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
 
@@ -359,6 +391,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader
+    TString   fCorrTaskSetting;                         // Name of Correction Task Setting
     TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
@@ -525,7 +558,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,52)
+    ClassDef(AliCaloPhotonCuts,53)
 };
 
 #endif

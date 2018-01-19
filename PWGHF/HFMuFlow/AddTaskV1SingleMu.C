@@ -13,7 +13,8 @@
 #include "AliAnalysisTaskV1SingleMu.h"
 #endif
 
-AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString changeName = "", Bool_t centCut = kTRUE)
+AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString changeName = "", Bool_t centCut = kTRUE, Bool_t zdcCalibRuns = kTRUE,
+  Int_t nPtBins=160,Int_t nEtaBins=3,Int_t nSPBins=500,Int_t nCentBins=50,Int_t nPhiBins=50)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -55,6 +56,14 @@ AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString chang
   AliAnalysisTaskV1SingleMu *v1SingleMuTask = new AliAnalysisTaskV1SingleMu("V1SingleMuTask");
   v1SingleMuTask->SetMuonEventCuts(muonEventCuts);
   v1SingleMuTask->SetMuonTrackCuts(muonTrackCuts);
+  v1SingleMuTask->UseZDCCalibRuns(zdcCalibRuns);
+  v1SingleMuTask->SetNPtBins  (nPtBins);
+  v1SingleMuTask->SetNEtaBins (nEtaBins);
+  v1SingleMuTask->SetNSPBins  (nSPBins);
+  v1SingleMuTask->SetNCentBins(nCentBins);
+  v1SingleMuTask->SetNPhiBins (nPhiBins);
+
+
   mgr->AddTask(v1SingleMuTask);
 
   // Connect containers

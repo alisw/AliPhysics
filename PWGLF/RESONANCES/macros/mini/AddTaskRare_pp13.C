@@ -20,7 +20,7 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   // retrieve analysis manager
   AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
-    ::Error("AddTaskPhiPP13TeV_PID", "No analysis manager to connect to.");
+    ::Error("AddTaskRare_pp13", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -106,6 +106,19 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   }
 
   // ----- EVENT-ONLY COMPUTATIONS -----
+    
+  Double_t multbins[1000];
+  int j,nmult=0;
+  if(!MultBins){
+    for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }
+  nmult--;
 
   //vertex
   Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
@@ -115,24 +128,17 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   //multiplicity or centrality
   Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
   AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
-  if(isPP && !MultBins) outMult->AddAxis(multID,400,0.5,400.5);
-  else outMult->AddAxis(multID,110,0.,110.);
+  outMult->AddAxis(multID,nmult+1,multbins);
 
-  Double_t multbins[200];
-  int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-  for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-  nmult--;
   TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
   task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
+    
+  double ybins[1000];
+  for(j=0;j<=240;j++) ybins[j]=-12+0.1*j;
 
-  TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
+  TH2F* hvz=new TH2F("hVzVsCent","",nmult,multbins, 240,ybins);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-  double ybins[500];
   for(j=0;j<=401;j++) ybins[j]=j-0.5;
 
   TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
@@ -282,11 +288,14 @@ Bool_t Config_pikx(
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -382,45 +391,47 @@ Bool_t Config_pik0(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
-
-  // selections for pion daugthers of K0S
-
-  Float_t pi_k0s_PIDCut=5.0;
-  Int_t   NTPCcluster=70;
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+    
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
+    
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
+    
   // selections for K0S
-  
-  Float_t massTol=0.03;
-  Float_t massTolVeto=0.004;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;   
-  Bool_t  Switch=kFALSE;
-  Float_t k0sDCA=0.3;
+  Float_t k0s_piPIDCut=5.;
+  Float_t k0sDaughDCA=1.;
+  Float_t k0sDCA=1.e10;//0.3;
+  Float_t k0s_pLife=20.;
+  Float_t k0s_radiuslow=0.5;
+  Float_t k0s_radiushigh=200.;
+  Float_t k0s_massTol=0.03;
+  Float_t k0s_massTolVeto=0.004;
+  Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
-  Float_t k0sDaughDCA=1.0;
-
+    
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
-  cutK0s->SetPIDCutPion(pi_k0s_PIDCut);// PID for the pion daughter of K0S
+  cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
   cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
   cutK0s->SetMaxDCAVertex(k0sDCA);
+  cutK0s->SetfLife(k0s_pLife);
+  cutK0s->SetfLowRadius(k0s_radiuslow);
+  cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetTolerance(k0s_massTol);
+  cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutK0s->SetSwitch(k0sSwitch);
   cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-  cutK0s->SetTolerance(massTol);
-  cutK0s->SetToleranceVeto(massTolVeto);//Rejection range for Competing V0 Rejection
-  cutK0s->SetSwitch(Switch);    
-  cutK0s->SetfLife(pLife); 
-  cutK0s->SetfLowRadius(radiuslow); 
-  cutK0s->SetfHighRadius(radiushigh); 
-  cutK0s->SetMaxRapidity(2.0);
-
+  cutK0s->SetMaxRapidity(2.);
+  cutK0s->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
   cutSetK0s->AddCut(cutK0s);
   cutSetK0s->SetCutScheme(cutK0s->GetName());
@@ -463,11 +474,14 @@ Bool_t Config_pik0(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -595,11 +609,14 @@ Bool_t Config_kxkx(
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -696,45 +713,47 @@ Bool_t Config_kxk0(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutKx=task->AddTrackCuts(cutSetKx);
-
-  // selections for pion daugthers of K0S
-
-  Float_t pi_k0s_PIDCut=5.0;
-  Int_t   NTPCcluster=70;
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+    
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
+    
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
+    
   // selections for K0S
-  
-  Float_t massTol=0.03;
-  Float_t massTolVeto=0.004;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;   
-  Bool_t  Switch=kFALSE;
-  Float_t k0sDCA=0.3;
+  Float_t k0s_piPIDCut=5.;
+  Float_t k0sDaughDCA=1.;
+  Float_t k0sDCA=1.e10;//0.3;
+  Float_t k0s_pLife=20.;
+  Float_t k0s_radiuslow=0.5;
+  Float_t k0s_radiushigh=200.;
+  Float_t k0s_massTol=0.03;
+  Float_t k0s_massTolVeto=0.004;
+  Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
-  Float_t k0sDaughDCA=1.0;
-
+    
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
-  cutK0s->SetPIDCutPion(pi_k0s_PIDCut);// PID for the pion daughter of K0S
+  cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
   cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
   cutK0s->SetMaxDCAVertex(k0sDCA);
+  cutK0s->SetfLife(k0s_pLife);
+  cutK0s->SetfLowRadius(k0s_radiuslow);
+  cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetTolerance(k0s_massTol);
+  cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutK0s->SetSwitch(k0sSwitch);
   cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-  cutK0s->SetTolerance(massTol);
-  cutK0s->SetToleranceVeto(massTolVeto);//Rejection range for Competing V0 Rejection
-  cutK0s->SetSwitch(Switch);    
-  cutK0s->SetfLife(pLife); 
-  cutK0s->SetfLowRadius(radiuslow); 
-  cutK0s->SetfHighRadius(radiushigh); 
-  cutK0s->SetMaxRapidity(2.0);
-
+  cutK0s->SetMaxRapidity(2.);
+  cutK0s->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
   cutSetK0s->AddCut(cutK0s);
   cutSetK0s->SetCutScheme(cutK0s->GetName());
@@ -777,11 +796,14 @@ Bool_t Config_kxk0(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -925,11 +947,14 @@ Bool_t Config_pkx(
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -1027,45 +1052,47 @@ Bool_t Config_pk0(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutP=task->AddTrackCuts(cutSetP);
-
-  // selections for pion daugthers of K0S
-
-  Float_t pi_k0s_PIDCut=5.0;
-  Int_t   NTPCcluster=70;
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+    
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
+    
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
+    
   // selections for K0S
-  
-  Float_t massTol=0.03;
-  Float_t massTolVeto=0.004;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;   
-  Bool_t  Switch=kFALSE;
-  Float_t k0sDCA=0.3;
+  Float_t k0s_piPIDCut=5.;
+  Float_t k0sDaughDCA=1.;
+  Float_t k0sDCA=1.e10;//0.3;
+  Float_t k0s_pLife=20.;
+  Float_t k0s_radiuslow=0.5;
+  Float_t k0s_radiushigh=200.;
+  Float_t k0s_massTol=0.03;
+  Float_t k0s_massTolVeto=0.004;
+  Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
-  Float_t k0sDaughDCA=1.0;
-
+    
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
-  cutK0s->SetPIDCutPion(pi_k0s_PIDCut);// PID for the pion daughter of K0S
+  cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
   cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
   cutK0s->SetMaxDCAVertex(k0sDCA);
+  cutK0s->SetfLife(k0s_pLife);
+  cutK0s->SetfLowRadius(k0s_radiuslow);
+  cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetTolerance(k0s_massTol);
+  cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutK0s->SetSwitch(k0sSwitch);
   cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-  cutK0s->SetTolerance(massTol);
-  cutK0s->SetToleranceVeto(massTolVeto);//Rejection range for Competing V0 Rejection
-  cutK0s->SetSwitch(Switch);    
-  cutK0s->SetfLife(pLife); 
-  cutK0s->SetfLowRadius(radiuslow); 
-  cutK0s->SetfHighRadius(radiushigh); 
-  cutK0s->SetMaxRapidity(2.0);
-
+  cutK0s->SetMaxRapidity(2.);
+  cutK0s->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
   cutSetK0s->AddCut(cutK0s);
   cutSetK0s->SetCutScheme(cutK0s->GetName());
@@ -1108,11 +1135,14 @@ Bool_t Config_pk0(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -1218,67 +1248,73 @@ Bool_t Config_Lambdapi(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
-
-  // selections for the proton and pion daugthers of Lambda and AntiLambda
-  Float_t L_piPIDCut=3.0;
-  Float_t L_pPIDCut=3.0;
-  Int_t   NTPCcluster=70;
-
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterLambda");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+    
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
+    
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
+    
   // selections for Lambda
-  Float_t massTol=0.006;
-  //Float_t massTolVeto=0.004;
-  Float_t lambdaDCA=0.3;
-  Float_t lambdaCosPoinAn=0.99;
-  Float_t lambdaDaughDCA=0.5;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;
-  Bool_t  Switch=kFALSE;
-
+  Float_t lambda_piPIDCut=5.;
+  Float_t lambda_pPIDCut=5.;
+  Float_t lambdaDaughDCA=1.0;//0.5;
+  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambda_pLife=30.;
+  Float_t lambda_radiuslow=0.5;
+  Float_t lambda_radiushigh=200.;
+  Float_t lambda_massTol=0.006;
+  Float_t lambda_massTolVeto=0.004;
+  Bool_t  lambdaSwitch=kFALSE;
+  Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+  // selections for the proton and pion daugthers of Lambda
+    
   AliRsnCutV0* cutLambda=new AliRsnCutV0("cutLambda",kLambda0,AliPID::kProton,AliPID::kPion);
-  cutLambda->SetPIDCutProton(L_pPIDCut); // PID for the proton daughter of Lambda
-  cutLambda->SetPIDCutPion(L_piPIDCut);  // PID for the pion daughter of Lambda 
+  cutLambda->SetPIDCutProton(lambda_pPIDCut); // PID for the proton daughter of Lambda
+  cutLambda->SetPIDCutPion(lambda_piPIDCut);  // PID for the pion daughter of Lambda
   cutLambda->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of Lambda
   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutLambda->SetMaxDCAVertex(lambdaDCA);
+  cutLambda->SetfLife(lambda_pLife);
+  cutLambda->SetfLowRadius(lambda_radiuslow);
+  cutLambda->SetfHighRadius(lambda_radiushigh);
+  cutLambda->SetTolerance(lambda_massTol);
+  cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutLambda->SetSwitch(lambdaSwitch);
   cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutLambda->SetTolerance(massTol);
-  cutLambda->SetSwitch(Switch);
-  cutLambda->SetfLife(pLife); 
-  cutLambda->SetfLowRadius(radiuslow); 
-  cutLambda->SetfHighRadius(radiushigh); 
   cutLambda->SetMaxRapidity(2.);
-  cutLambda->SetMinTPCcluster(NTPCcluster);
-
+  cutLambda->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
   cutSetLambda->AddCut(cutLambda);
   cutSetLambda->SetCutScheme(cutLambda->GetName());
   Int_t iCutLambda=task->AddTrackCuts(cutSetLambda);
-
+    
   // selections for AntiLambda
   AliRsnCutV0* cutAntiLambda=new AliRsnCutV0("cutAntiLambda",kLambda0Bar,AliPID::kProton,AliPID::kPion);
-  cutAntiLambda->SetPIDCutProton(L_pPIDCut);
-  cutAntiLambda->SetPIDCutPion(L_piPIDCut);
+  cutAntiLambda->SetPIDCutProton(lambda_pPIDCut);
+  cutAntiLambda->SetPIDCutPion(lambda_piPIDCut);
   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
+  cutAntiLambda->SetfLife(lambda_pLife);
+  cutAntiLambda->SetfLowRadius(lambda_radiuslow);
+  cutAntiLambda->SetfHighRadius(lambda_radiushigh);
+  cutAntiLambda->SetTolerance(lambda_massTol);
+  cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutAntiLambda->SetSwitch(lambdaSwitch);
   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutAntiLambda->SetTolerance(massTol);
-  cutAntiLambda->SetSwitch(Switch);
-  cutAntiLambda->SetfLife(pLife); 
-  cutAntiLambda->SetfLowRadius(radiuslow); 
-  cutAntiLambda->SetfHighRadius(radiushigh); 
   cutAntiLambda->SetMaxRapidity(2.);
-  cutAntiLambda->SetMinTPCcluster(NTPCcluster);
-
+  cutAntiLambda->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
   cutSetAntiLambda->AddCut(cutAntiLambda);
   cutSetAntiLambda->SetCutScheme(cutAntiLambda->GetName());
@@ -1336,11 +1372,14 @@ Bool_t Config_Lambdapi(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -1448,44 +1487,49 @@ Bool_t Config_Lambdakx(
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutK=task->AddTrackCuts(cutSetK);
 
-  // selections for the proton and pion daugthers of Lambda and AntiLambda
-  Float_t L_piPIDCut=3.;
-  Float_t L_pPIDCut=3.;
-  Int_t   NTPCcluster=70;
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
 
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterLambda");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
 
   // selections for Lambda
-  Float_t massTol=0.006;
-  //Float_t massTolVeto=0.004;
-  Float_t lambdaDCA=0.3;
-  Float_t lambdaCosPoinAn=0.99;
-  Float_t lambdaDaughDCA=0.5;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;
-  Bool_t  Switch=kFALSE;
+  Float_t lambda_piPIDCut=5.;
+  Float_t lambda_pPIDCut=5.;
+  Float_t lambdaDaughDCA=1.0;//0.5;
+  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambda_pLife=30.;
+  Float_t lambda_radiuslow=0.5;
+  Float_t lambda_radiushigh=200.;
+  Float_t lambda_massTol=0.006;
+  Float_t lambda_massTolVeto=0.004;
+  Bool_t  lambdaSwitch=kFALSE;
+  Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+
+  // selections for the proton and pion daugthers of Lambda
 
   AliRsnCutV0* cutLambda=new AliRsnCutV0("cutLambda",kLambda0,AliPID::kProton,AliPID::kPion);
-  cutLambda->SetPIDCutProton(L_pPIDCut); // PID for the proton daughter of Lambda
-  cutLambda->SetPIDCutPion(L_piPIDCut);  // PID for the pion daughter of Lambda 
+  cutLambda->SetPIDCutProton(lambda_pPIDCut); // PID for the proton daughter of Lambda
+  cutLambda->SetPIDCutPion(lambda_piPIDCut);  // PID for the pion daughter of Lambda 
   cutLambda->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of Lambda
   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutLambda->SetMaxDCAVertex(lambdaDCA);
+  cutLambda->SetfLife(lambda_pLife); 
+  cutLambda->SetfLowRadius(lambda_radiuslow); 
+  cutLambda->SetfHighRadius(lambda_radiushigh); 
+  cutLambda->SetTolerance(lambda_massTol);
+  cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutLambda->SetSwitch(lambdaSwitch);
   cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutLambda->SetTolerance(massTol);
-  cutLambda->SetSwitch(Switch);
-  cutLambda->SetfLife(pLife); 
-  cutLambda->SetfLowRadius(radiuslow); 
-  cutLambda->SetfHighRadius(radiushigh); 
   cutLambda->SetMaxRapidity(2.);
-  cutLambda->SetMinTPCcluster(NTPCcluster);
+  cutLambda->SetMinTPCcluster(-1);
 
   AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
   cutSetLambda->AddCut(cutLambda);
@@ -1494,19 +1538,20 @@ Bool_t Config_Lambdakx(
 
   // selections for AntiLambda
   AliRsnCutV0* cutAntiLambda=new AliRsnCutV0("cutAntiLambda",kLambda0Bar,AliPID::kProton,AliPID::kPion);
-  cutAntiLambda->SetPIDCutProton(L_pPIDCut);
-  cutAntiLambda->SetPIDCutPion(L_piPIDCut);
+  cutAntiLambda->SetPIDCutProton(lambda_pPIDCut);
+  cutAntiLambda->SetPIDCutPion(lambda_piPIDCut);
   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
+  cutAntiLambda->SetfLife(lambda_pLife); 
+  cutAntiLambda->SetfLowRadius(lambda_radiuslow); 
+  cutAntiLambda->SetfHighRadius(lambda_radiushigh);
+  cutAntiLambda->SetTolerance(lambda_massTol);
+  cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutAntiLambda->SetSwitch(lambdaSwitch);
   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutAntiLambda->SetTolerance(massTol);
-  cutAntiLambda->SetSwitch(Switch);
-  cutAntiLambda->SetfLife(pLife); 
-  cutAntiLambda->SetfLowRadius(radiuslow); 
-  cutAntiLambda->SetfHighRadius(radiushigh); 
   cutAntiLambda->SetMaxRapidity(2.);
-  cutAntiLambda->SetMinTPCcluster(NTPCcluster);
+  cutAntiLambda->SetMinTPCcluster(-1);
 
   AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
   cutSetAntiLambda->AddCut(cutAntiLambda);
@@ -1569,7 +1614,10 @@ Bool_t Config_Lambdakx(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -1663,45 +1711,45 @@ Bool_t Config_Lambdak0(
   sprintf(suffix,"_%s",lname.Data());
   Bool_t enableMonitor=kTRUE;
 
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;   
-  Bool_t  Switch=kFALSE;
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
 
-  // selections for the proton and pion daugthers
-  Float_t piPIDCut=3.;
-  Float_t L_pPIDCut=3.;
-  Int_t   NTPCcluster=70;
-
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
 
-  // selections for K0S
-  
+  // selections for K0S 
+  Float_t k0s_piPIDCut=5.;
+  Float_t k0sDaughDCA=1.;
+  Float_t k0sDCA=1.e10;//0.3;
+  Float_t k0s_pLife=20.;
+  Float_t k0s_radiuslow=0.5;
+  Float_t k0s_radiushigh=200.;
   Float_t k0s_massTol=0.03;
   Float_t k0s_massTolVeto=0.004;
-  Float_t k0sDCA=0.3;
-  Float_t k0sCosPoinAn=0.97;
-  Float_t k0sDaughDCA=1.0;
+  Bool_t  k0sSwitch=kFALSE;
+  Float_t k0sCosPoinAn=0.97;  
 
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
-  cutK0s->SetPIDCutPion(piPIDCut);// PID for the pion daughters of K0S
+  cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
   cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
   cutK0s->SetMaxDCAVertex(k0sDCA);
-  cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
+  cutK0s->SetfLife(k0s_pLife);
+  cutK0s->SetfLowRadius(k0s_radiuslow);
+  cutK0s->SetfHighRadius(k0s_radiushigh);
   cutK0s->SetTolerance(k0s_massTol);
   cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
-  cutK0s->SetSwitch(Switch);    
-  cutK0s->SetfLife(pLife); 
-  cutK0s->SetfLowRadius(radiuslow); 
-  cutK0s->SetfHighRadius(radiushigh); 
+  cutK0s->SetSwitch(k0sSwitch);
+  cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
   cutK0s->SetMaxRapidity(2.);
+  cutK0s->SetMinTPCcluster(-1);
 
   AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
   cutSetK0s->AddCut(cutK0s);
@@ -1709,26 +1757,35 @@ Bool_t Config_Lambdak0(
   Int_t iCutK0s=task->AddTrackCuts(cutSetK0s);
 
   // selections for Lambda
+  Float_t lambda_piPIDCut=5.;
+  Float_t lambda_pPIDCut=5.;
+  Float_t lambdaDaughDCA=1.;//0.5;
+  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambda_pLife=30.;
+  Float_t lambda_radiuslow=0.5;
+  Float_t lambda_radiushigh=200.;
   Float_t lambda_massTol=0.006;
-  //Float_t lambda_massTolVeto=0.004;
-  Float_t lambdaDCA=0.3;
-  Float_t lambdaCosPoinAn=0.99;
-  Float_t lambdaDaughDCA=0.5;
+  Float_t lambda_massTolVeto=0.004;
+  Bool_t  lambdaSwitch=kFALSE;
+  Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+
+  // selections for the proton and pion daugthers of Lambda
 
   AliRsnCutV0* cutLambda=new AliRsnCutV0("cutLambda",kLambda0,AliPID::kProton,AliPID::kPion);
-  cutLambda->SetPIDCutProton(L_pPIDCut); // PID for the proton daughter of Lambda
-  cutLambda->SetPIDCutPion(piPIDCut);  // PID for the pion daughter of Lambda 
+  cutLambda->SetPIDCutProton(lambda_pPIDCut); // PID for the proton daughter of Lambda
+  cutLambda->SetPIDCutPion(lambda_piPIDCut);  // PID for the pion daughter of Lambda 
   cutLambda->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of Lambda
   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutLambda->SetMaxDCAVertex(lambdaDCA);
-  cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
+  cutLambda->SetfLife(lambda_pLife); 
+  cutLambda->SetfLowRadius(lambda_radiuslow); 
+  cutLambda->SetfHighRadius(lambda_radiushigh); 
   cutLambda->SetTolerance(lambda_massTol);
-  cutLambda->SetSwitch(Switch);
-  cutLambda->SetfLife(pLife); 
-  cutLambda->SetfLowRadius(radiuslow); 
-  cutLambda->SetfHighRadius(radiushigh); 
+  cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutLambda->SetSwitch(lambdaSwitch);
+  cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
   cutLambda->SetMaxRapidity(2.);
-  cutLambda->SetMinTPCcluster(NTPCcluster);
+  cutLambda->SetMinTPCcluster(-1);
 
   AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
   cutSetLambda->AddCut(cutLambda);
@@ -1737,19 +1794,20 @@ Bool_t Config_Lambdak0(
 
   // selections for AntiLambda
   AliRsnCutV0* cutAntiLambda=new AliRsnCutV0("cutAntiLambda",kLambda0Bar,AliPID::kProton,AliPID::kPion);
-  cutAntiLambda->SetPIDCutProton(L_pPIDCut);
-  cutAntiLambda->SetPIDCutPion(piPIDCut);
+  cutAntiLambda->SetPIDCutProton(lambda_pPIDCut);
+  cutAntiLambda->SetPIDCutPion(lambda_piPIDCut);
   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
-  cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
+  cutAntiLambda->SetfLife(lambda_pLife); 
+  cutAntiLambda->SetfLowRadius(lambda_radiuslow); 
+  cutAntiLambda->SetfHighRadius(lambda_radiushigh);
   cutAntiLambda->SetTolerance(lambda_massTol);
-  cutAntiLambda->SetSwitch(Switch);
-  cutAntiLambda->SetfLife(pLife); 
-  cutAntiLambda->SetfLowRadius(radiuslow); 
-  cutAntiLambda->SetfHighRadius(radiushigh); 
+  cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutAntiLambda->SetSwitch(lambdaSwitch);
+  cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
   cutAntiLambda->SetMaxRapidity(2.);
-  cutAntiLambda->SetMinTPCcluster(NTPCcluster);
+  cutAntiLambda->SetMinTPCcluster(-1);
 
   AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
   cutSetAntiLambda->AddCut(cutAntiLambda);
@@ -1818,11 +1876,14 @@ Bool_t Config_Lambdak0(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
@@ -1929,67 +1990,73 @@ Bool_t Config_Lambdap(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutP=task->AddTrackCuts(cutSetP);
-
-  // selections for the proton and pion daugthers of Lambda and AntiLambda
-  Float_t piPIDCut=3.0;
-  Float_t L_pPIDCut=3.0;
-  Int_t   NTPCcluster=70;
-
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterLambda");   
-  esdTrackCuts->SetPtRange(0.15,1.E10);
+    
+  // selections for V0 daughters
+  Int_t v0d_xrows=70;
+  Float_t v0d_rtpc=0.8;
+  Float_t v0d_dcaxy=0.06;
+    
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();
   esdTrackCuts->SetAcceptKinkDaughters(0);
-  esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
+  esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(v0d_rtpc);
+  esdTrackCuts->SetMinDCAToVertexXY(v0d_dcaxy);
+    
   // selections for Lambda
-  Float_t massTol=0.006;
-  //Float_t massTolVeto=0.004;
-  Float_t lambdaDCA=0.3;
-  Float_t lambdaCosPoinAn=0.99;
-  Float_t lambdaDaughDCA=0.5;
-  Float_t pLife=20.;
-  Float_t radiuslow=0.5;
-  Float_t radiushigh=200.;
-  Bool_t  Switch=kFALSE;
-
+  Float_t lambda_piPIDCut=5.;
+  Float_t lambda_pPIDCut=5.;
+  Float_t lambdaDaughDCA=1.0;//0.5;
+  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambda_pLife=30.;
+  Float_t lambda_radiuslow=0.5;
+  Float_t lambda_radiushigh=200.;
+  Float_t lambda_massTol=0.006;
+  Float_t lambda_massTolVeto=0.004;
+  Bool_t  lambdaSwitch=kFALSE;
+  Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+  // selections for the proton and pion daugthers of Lambda
+    
   AliRsnCutV0* cutLambda=new AliRsnCutV0("cutLambda",kLambda0,AliPID::kProton,AliPID::kPion);
-  cutLambda->SetPIDCutProton(L_pPIDCut); // PID for the proton daughter of Lambda
-  cutLambda->SetPIDCutPion(piPIDCut);  // PID for the pion daughter of Lambda 
+  cutLambda->SetPIDCutProton(lambda_pPIDCut); // PID for the proton daughter of Lambda
+  cutLambda->SetPIDCutPion(lambda_piPIDCut);  // PID for the pion daughter of Lambda
   cutLambda->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of Lambda
   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutLambda->SetMaxDCAVertex(lambdaDCA);
+  cutLambda->SetfLife(lambda_pLife);
+  cutLambda->SetfLowRadius(lambda_radiuslow);
+  cutLambda->SetfHighRadius(lambda_radiushigh);
+  cutLambda->SetTolerance(lambda_massTol);
+  cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutLambda->SetSwitch(lambdaSwitch);
   cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutLambda->SetTolerance(massTol);
-  cutLambda->SetSwitch(Switch);
-  cutLambda->SetfLife(pLife); 
-  cutLambda->SetfLowRadius(radiuslow); 
-  cutLambda->SetfHighRadius(radiushigh); 
   cutLambda->SetMaxRapidity(2.);
-  cutLambda->SetMinTPCcluster(NTPCcluster);
-
+  cutLambda->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
   cutSetLambda->AddCut(cutLambda);
   cutSetLambda->SetCutScheme(cutLambda->GetName());
   Int_t iCutLambda=task->AddTrackCuts(cutSetLambda);
-
+    
   // selections for AntiLambda
   AliRsnCutV0* cutAntiLambda=new AliRsnCutV0("cutAntiLambda",kLambda0Bar,AliPID::kProton,AliPID::kPion);
-  cutAntiLambda->SetPIDCutProton(L_pPIDCut);
-  cutAntiLambda->SetPIDCutPion(piPIDCut);
+  cutAntiLambda->SetPIDCutProton(lambda_pPIDCut);
+  cutAntiLambda->SetPIDCutPion(lambda_piPIDCut);
   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
+  cutAntiLambda->SetfLife(lambda_pLife);
+  cutAntiLambda->SetfLowRadius(lambda_radiuslow);
+  cutAntiLambda->SetfHighRadius(lambda_radiushigh);
+  cutAntiLambda->SetTolerance(lambda_massTol);
+  cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  cutAntiLambda->SetSwitch(lambdaSwitch);
   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutAntiLambda->SetTolerance(massTol);
-  cutAntiLambda->SetSwitch(Switch);
-  cutAntiLambda->SetfLife(pLife); 
-  cutAntiLambda->SetfLowRadius(radiuslow); 
-  cutAntiLambda->SetfHighRadius(radiushigh); 
   cutAntiLambda->SetMaxRapidity(2.);
-  cutAntiLambda->SetMinTPCcluster(NTPCcluster);
-
+  cutAntiLambda->SetMinTPCcluster(-1);
+    
   AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
   cutSetAntiLambda->AddCut(cutAntiLambda);
   cutSetAntiLambda->SetCutScheme(cutAntiLambda->GetName());
@@ -2047,11 +2114,14 @@ Bool_t Config_Lambdap(
   AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
   cutsPairMix->AddCut(cutY);
   cutsPairMix->SetCutScheme(cutY->GetName());
-
+    
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  if(!trigger){
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;

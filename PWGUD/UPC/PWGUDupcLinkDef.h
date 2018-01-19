@@ -20,5 +20,6 @@
 #pragma link C++ class AliAnalysisTaskUpcNano_MB+;
 #pragma link C++ class AliAnalysisTaskTransTask+;
 #pragma link C++ class AliAnalysisTaskTOFTrigger+;
+#pragma link C++ class AliAnalysisTaskZDCTree+;
 
 #endif

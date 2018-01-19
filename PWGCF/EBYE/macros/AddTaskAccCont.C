@@ -4,6 +4,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 						Int_t gFilterBit = 768, Int_t nsigma = 3,
 						Double_t ptMin=0, Double_t ptMax=10,
 						Double_t etaMin=-0.8, Double_t etaMax=0.8,
+						Bool_t DCAext = kFALSE,
 						Bool_t PID = kFALSE,
 						AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
 						TString fileNameBase="AnalysisResults") {
@@ -33,6 +34,13 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
     suffixName[iCentralityBin] += gCentrality[iCentralityBin];
     suffixName[iCentralityBin] += "To";
     suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixName[iCentralityBin] += "_fb";
+    suffixName[iCentralityBin] += gFilterBit;
+
+    if(PID){
+    suffixName[iCentralityBin] += "_PID_";
+    suffixName[iCentralityBin] += particleType;
+    }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -68,15 +76,22 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
   task[iCentralityBin]->UsePileUpCuts();
   
+  if(DCAext){
+  task[iCentralityBin]->USEextendedDCA();
+  }
+  
   //PID
   if(PID){
   task[iCentralityBin]->UsePID();
   task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);
+  mgr->AddTask(task[iCentralityBin]);  
   }
   
+  else if(!PID){ 
   mgr->AddTask(task[iCentralityBin]);
-    
+  }  
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //===========================================================================

@@ -4,7 +4,7 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
                                  Bool_t kNPERefTPConly = kFALSE,
                                  Int_t RunSystematic = 0 // select systematic type
 ){
-     enum SystematicType
+      enum SystematicType
     {
         kSystMultiple = 1, // ITS, hadron contamination, SPD kAny, PrimaryVertexTyp
         kSystTPCcluster= 2,
@@ -12,7 +12,8 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
         //        kSystAsociatedMultiple = 6, // ITS hits & standalone, TPC PID, TOF PID
         kSystAsociatedDCA = 4,
         kSystAsociatedTPCcluster = 5,
-        kSystAsociatedMinpTWeights = 6
+        kSystAsociatedMinpTWeights = 6,
+	kSystTrackPIDMixedCuts = 7
     };
 
     // Default settings (TOF-TPC pp)
@@ -137,7 +138,7 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
             
         }
         
-    }
+   
 
   if (!MCthere){
             switch (RunSystematic) {
@@ -292,6 +293,61 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
                 //                break;
 
 
+
+	case kSystTrackPIDMixedCuts:
+
+               RegisterTaskNPEpp( MCthere, isAOD, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 105, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 110, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+               
+                RegisterTaskNPEpp( MCthere, isAOD, 130, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 80, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 85, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 95, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 100, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 90, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 95, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, 125, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                break;
+
        case kSystAsociatedDCA:
                 // DCA associated cuts
                 RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
@@ -365,7 +421,7 @@ case kSystAsociatedMinpTWeights:
         }
         
         
-    //}
+    }
     if(kNPERefTPConly){
         // **************************************************************
         //

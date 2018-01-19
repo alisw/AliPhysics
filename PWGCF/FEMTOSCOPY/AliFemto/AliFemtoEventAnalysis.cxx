@@ -23,7 +23,7 @@ AliFemtoParticleCut* copyTheCut(AliFemtoParticleCut*);
 AliFemtoCorrFctn*    copyTheCorrFctn(AliFemtoCorrFctn*);
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
-                                      AliFemtoEvent* hbtEvent,
+                                      const AliFemtoEvent* hbtEvent,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
@@ -279,12 +279,12 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   }
   
   FillHbtParticleCollection(fFirstParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
   
   FillHbtParticleCollection(fSecondParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->SecondParticleCollection(),
                             fPerformSharedDaughterCut);
   

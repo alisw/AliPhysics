@@ -18,6 +18,7 @@
 #include "TProfile2D.h"
 #include "TProfile.h"
 #include "TString.h"
+//#include "TRandom3.h"
 #include "AliAnalysisTaskSE.h"
 
 
@@ -46,6 +47,7 @@ public:
   void    SetInputListNUA(TList *finputNUA)           {this->fListNUACorr       =    finputNUA;}
   void    SetGainCorrZDNP(TList *finputZDN)           {this->fListZDNCorr       =    finputZDN;}
   void    SetFBEfficiencyList(TList *fFBlist)         {this->fListFBHijing      =      fFBlist;}
+  void    SetInputListforV0M(TList *finputV0M)        {this->fListV0MCorr       =    finputV0M;}
   void    SetRejectPileUp(Bool_t  pileup)             {this->fRejectPileUp      =       pileup;}
   void    SetRejectPileUpTight(Bool_t  pileupt8)      {this->fRejectPileUpTight =     pileupt8;}
   void    SetStoreTPCQnAvg(Bool_t bstoreTPCQn)        {this->bFillAvgTPCQn      =  bstoreTPCQn;} 
@@ -60,10 +62,12 @@ public:
   void    SetPsiHarmonic(Int_t nforpsi)               {this->fHarmonicPsi       =      nforpsi;}
   void    SetApplyNUAinEP(Bool_t bApplyNUAEP)         {this->bApplyNUAforEP     =  bApplyNUAEP;}
   void    SetSourceFileNUA(TString sfilenua)          {this->sFileNUA           =     sfilenua;}
-
-
-
-
+  void    SetFillZDNCalHist(Bool_t bfillZDC)          {this->bFillZDCinfo       =     bfillZDC;}
+  void    SetSkipNestedLoop(Bool_t bskipNest)         {this->bSkipNestedTrk     =    bskipNest;}
+  void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
+  void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
+  void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
+  void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
 
 
 private:
@@ -80,6 +84,7 @@ private:
   void DefineHistograms();
   void GetNUACorrectionHist(Int_t run, TString sfileNUA);
   void GetZDCCorrectionHist(Int_t run);
+  void GetV0MCorrectionHist(Int_t run);
 
   void InitializeRunArray(TString sPeriod);
   Int_t GetCurrentRunIndex(Int_t  run);
@@ -91,9 +96,12 @@ private:
 
   TList*                 fListHistos;         //! collection of output
   TList*                 fListCalibs;         //! collection of Calib Histos
+  TList*                fListNUAHist;         //! collection of NUA Histograms
+
   TList*               fListFBHijing;         // Hijing Efficiency list
   TList*                fListNUACorr;         // NUA Correction List
   TList*                fListZDNCorr;         // ZDC gain Correction Wgts
+  TList*                fListV0MCorr;
 
   Bool_t               fRejectPileUp;         //
   Bool_t          fRejectPileUpTight;         //
@@ -102,12 +110,18 @@ private:
   Bool_t               bApplyNUACorr;         //
   Bool_t               bApplyZDCCorr;         //
   Bool_t              bApplyNUAforEP;         //
-
+  Bool_t                bFillZDCinfo;         //
+  Bool_t              bSkipNestedTrk;         //
+  Bool_t              bRemNegTrkRndm;         //
+  Bool_t               bApplyV0MCorr;         //
 
   TString                   sDataSet;         // Dataset: 2010, 2011, or 2015.
   TString               sAnalysisSet;         // Values: recenter1,recenter2,analysis1
   TString             sCentEstimator;         // Centrality Estimator
   TString                   sFileNUA;         // NUA source file.
+  TString               sMCdimension;         // Dimention for MC effi Correction
+
+
 
   Int_t                  runNums[90];         //!  array of runnumbers
   Int_t                     fRunFlag;         //!  number of total run
@@ -117,6 +131,9 @@ private:
   Int_t                   fHarmonicN;         //   Harmonic n
   Int_t                   fHarmonicM;         //   Harmonic m
   Int_t                 fHarmonicPsi;         //   Harmonic psi
+  Float_t           fPileUpSlopeParm;         //
+  Float_t           fPileUpConstParm;         //
+
 
   TH1F            *fHist_Event_count;         //!  event count with different cuts
   TH1F          *fPileUpMultSelCount;         //!
@@ -205,20 +222,53 @@ private:
   TH1F        *fEtaBinFinderForQA;   //!
   TH1F        *fVzBinFinderForNUA;   //!
 
+  TH2F            *fHistVtxZvsRun; //!
+  TH2F            *fHistVtxXvsRun; //!
+  TH2F            *fHistVtxYvsRun; //!
+
+  TProfile2D    *fRejectRatioVsCR; //!
+
+  TH2F            *fCentDistvsRun; //! 
+  TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
+
+  TProfile2D     *fCentV0MvsVzRun; //!
+  TProfile2D      *fCent3pvsVzRun; //!
+  TH2F           *fTPCvsGlobalTrk; //!
+  TH2F              *fTPCvsITSTrk; //!
+  TH2F             *fITSvsESDMult; //!
+  TH1F            *fGlobalITSMult; //!
+  TH3F           *fCentCL1vsVzRun; //!
+
+
+
+  //TRandom3                fRand; //!
+
+
+
+
+
+
+
+
+
 
 
 
 
 
   //  [ Arrays of Histrograms here: ]
-  TH3D        *fHCorrectNUApos[4]; //! 4 centrality bin
-  TH3D        *fHCorrectNUAneg[4]; //! 4 centrality bin
+  TH3D        *fHCorrectNUApos[5]; //! 5 centrality bin
+  TH3D        *fHCorrectNUAneg[5]; //! 5 centrality bin
 
 
-  TH3F         *fHist3DEtaPhiVz_Pos_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
-  TH3F         *fHist3DEtaPhiVz_Neg_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
+  TH3F         *fHist3DEtaPhiVz_Pos_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
+  TH3F         *fHist3DEtaPhiVz_Neg_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
 
   TH1D         *fFB_Efficiency_Cent[10];  //!
+
+  TH3F          *fFB_Efficiency_Pos[10];  //!  3d correction Map
+  TH3F          *fFB_Efficiency_Neg[10];  //!
+
 
   //CME using scalar product method:
   TProfile     *fHist_Corr3p_SP_Norm_PN[2][3];  //! Norm = 10 centrality bins along X

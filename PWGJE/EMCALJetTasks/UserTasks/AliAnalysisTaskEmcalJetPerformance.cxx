@@ -54,7 +54,7 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
-#include "AliMCAnalysisUtils.h"
+#include "AliMCEvent.h"
 
 #include "AliAnalysisTaskEmcalJetPerformance.h"
 
@@ -396,6 +396,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   Double_t *cellBins = GenerateFixedBinArray(nCellBins, -0.5, 29.5);
   const Int_t nMatchedTrackBins = 5;
   Double_t *matchedTrackBins = GenerateFixedBinArray(nMatchedTrackBins, -0.5, 4.5);
+  const Int_t nDeltaEtaBins = 60;
+  Double_t *deltaEtaBins = GenerateFixedBinArray(nDeltaEtaBins, -0.015, 0.015);
   
   //////////////////////////////////////////////
   ////// Plot M02 studies
@@ -453,6 +455,15 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
   
+  // Plot clus-track deltaEta of matched tracks (deltaEta, Eclus, M02)
+  histname = "ClusterHistograms/hDeltaEtaCentral";
+  htitle = histname + ";#eta_{track} - #eta_{clus};#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), nDeltaEtaBins, deltaEtaBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  histname = "ClusterHistograms/hDeltaEtaPeripheral";
+  htitle = histname + ";#eta_{track} - #eta_{clus};#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), nDeltaEtaBins, deltaEtaBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
   //////////////////////////////////////////////
   ////// Plot E/p studies
   
@@ -498,6 +509,10 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); #frac{#DeltaE_{clus}}{E_{clus}}";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
   
+  // Plot total track multiplicity
+  histname = "ClusterHistograms/hTrackMultiplicity";
+  htitle = histname + ";N_{tracks};Centrality (%)";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1000, 0, 10000, 20, 0, 100);
 }
 
 /*
@@ -512,10 +527,10 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   const Int_t nRejBins = 32;
   Double_t* rejReasonBins = new Double_t[nRejBins+1];
   GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
-  const Int_t nContributorTypes = 12;
-  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 7.5);
-  const Int_t nParticleTypes = 15;
-  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 14.5);
+  const Int_t nContributorTypes = 11;
+  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 10.5);
+  const Int_t nParticleTypes = 17;
+  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 16.5);
   
   AliEmcalContainer* cont = 0;
   TIter nextClusColl(&fClusterCollArray);
@@ -530,11 +545,23 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   // M02 vs. Energy vs. Particle type
   histname = "ClusterHistogramsMC/hM02VsParticleTypeCentral";
   htitle = histname + ";M02;#it{E}_{clus} (GeV); Particle type";
-  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  TH3* hM02VsParticleTypeCentral = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  SetParticleTypeLabels(hM02VsParticleTypeCentral->GetZaxis());
   
   histname = "ClusterHistogramsMC/hM02VsParticleTypePeripheral";
   htitle = histname + ";M02;#it{E}_{clus} (GeV); Particle type";
-  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  TH3* hM02VsParticleTypePeripheral = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  SetParticleTypeLabels(hM02VsParticleTypePeripheral->GetZaxis());
+  
+  // Plot photon energy in photon-hadron overlap clusters (Centrality, Photon energy, M02)
+  histname = "ClusterHistogramsMC/hPhotonHadronPhotonEnergy";
+  htitle = histname + ";Centrality (%);M02;#it{E}_{photon} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins);
+  
+  // Plot hadron energy in hadron-photon overlap clusters (Centrality, Photon energy, M02)
+  histname = "ClusterHistogramsMC/hHadronPhotonHadronEnergy";
+  htitle = histname + ";Centrality (%);M02;#it{E}_{hadron} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins);
   
   if (fPlotJetHistograms) {
   
@@ -639,6 +666,30 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
     
   }
   
+}
+
+/*
+ * This function sets axis labels for particle type histograms.
+ */
+void AliAnalysisTaskEmcalJetPerformance::SetParticleTypeLabels(TAxis* axis)
+{
+  axis->SetBinLabel(1,  "SinglePhoton");
+  axis->SetBinLabel(2,  "SingleElectron");
+  axis->SetBinLabel(3,  "SingleChargedPion");
+  axis->SetBinLabel(4,  "SingleProton");
+  axis->SetBinLabel(5,  "SingleAntiProton");
+  axis->SetBinLabel(6,  "SingleChargedKaon");
+  axis->SetBinLabel(7,  "SingleK0L");
+  axis->SetBinLabel(8,  "SingleNeutron");
+  axis->SetBinLabel(9,  "SingleAntiNeutron");
+  axis->SetBinLabel(10, "SingleOther");
+  axis->SetBinLabel(11, "PhotonHadron");
+  axis->SetBinLabel(12, "HadronPhoton");
+  axis->SetBinLabel(13, "MergedPi0");
+  axis->SetBinLabel(14, "PhotonPhotonOther");
+  axis->SetBinLabel(15, "HadronHadron");
+  axis->SetBinLabel(16, "TwoContributorsOther");
+  axis->SetBinLabel(17, "MoreThanTwoContributors");
 }
       
 /*
@@ -952,16 +1003,16 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::Run()
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     TString jetContName = jetCont->GetName();
     
-    // Compute the full jet background scale factor and delta-pt
-    if (fComputeBackground) {
-      ComputeBackground();
-    }
-    
     // Do a simple trigger simulation (if requested)
     if (fDoTriggerSimulation) {
       DoTriggerSimulation();
     }
     
+  }
+  
+  // Compute the full jet background scale factor and delta-pt
+  if (fComputeBackground) {
+    ComputeBackground();
   }
   
   // Only fill the embedding qa plots if:
@@ -1248,8 +1299,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       
       Double_t trackPhi = TVector2::Phi_0_2pi(track->GetTrackPhiOnEMCal());
       Double_t trackEta = track->GetTrackEtaOnEMCal();
-      Double_t deta = TMath::Abs(clusPhi - trackPhi);
-      Double_t dphi = TMath::Abs(clusEta - trackEta);
+      Double_t deta = TMath::Abs(clusEta - trackEta);
+      Double_t dphi = TMath::Abs(clusPhi - trackPhi);
       
       if (deta < fTrackMatchingDeltaEtaMax && dphi < fTrackMatchingDeltaPhiMax) {
         trackPSum += track->P();
@@ -1327,11 +1378,31 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
+    // Plot clus-track deltaEta if there is one matched track (deltaEta, Eclus, M02)
+    if (nTracksMatched == 1) {
+      
+      const AliVTrack* track = dynamic_cast<AliVTrack*>(clus->GetTrackMatched(0));
+      if (track) {
+        Double_t trackEta = track->GetTrackEtaOnEMCal();
+        Double_t deta = trackEta - clusEta;
+        
+        if (fCent > 0 && fCent < 10) {
+          histname = "ClusterHistograms/hDeltaEtaCentral";
+          fHistManager.FillTH3(histname.Data(), deta, clus->GetNonLinCorrEnergy(), clus->GetM02());
+        }
+        
+        if (fCent > 50 && fCent < 90) {
+          histname = "ClusterHistograms/hDeltaEtaPeripheral";
+          fHistManager.FillTH3(histname.Data(), deta, clus->GetNonLinCorrEnergy(), clus->GetM02());
+        }
+      }
+    }
+    
     //////////////////////////////////////////////
     ////// Plot E/p studies
 
     // Plot E/p vs. M02 for 0-10% and 50-90% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
-    if (fCent < 10) {
+    if (fCent > 0 && fCent < 10) {
       histname = "ClusterHistograms/hEoverPM02Central";
       fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), EoverP, clus->GetM02());
     }
@@ -1376,6 +1447,12 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     }
     
   }
+  
+  // Fill total track multiplicity
+  histname = "ClusterHistograms/hTrackMultiplicity";
+  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+  Int_t nTracks = trackCont->GetNAcceptedTracks();
+  fHistManager.FillTH2(histname.Data(), nTracks, fCent);
 
 }
 
@@ -1412,15 +1489,13 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
   AliClusterContainer* clusters = GetClusterContainer(0);
   const AliVCluster* clus;
   std::vector<ContributorType> vecContributorTypes;
+  std::vector<Int_t> vecContributorLabels;
   for (auto it : clusters->accepted_momentum()) {
     
     clus = it.second;
     
-    // Include only EMCal clusters (reject DCal and PHOS clusters)
+    // Include only EMCal/DCal clusters (reject PHOS clusters)
     if (!clus->IsEMCAL()) {
-      continue;
-    }
-    if (it.first.Phi_0_2pi() > fgkEMCalDCalPhiDivide) {
       continue;
     }
     
@@ -1428,24 +1503,23 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     ParticleType particleType = kNotDefined;
     ContributorType contributorType = kUndefined;
     const Int_t nLabels = clus->GetNLabels();
-    Printf("nLabels: %d", nLabels);
     
     // Create a vector to store the contributor types for PhysicalPrimary particles
     vecContributorTypes.clear();
+    vecContributorLabels.clear();
     for (Int_t iLabel=0; iLabel<nLabels; iLabel++) {
       
       Int_t label = clus->GetLabels()[iLabel];
       if (TMath::Abs(label) > 0) { // if the particle has a truth-level match, the label is nonzero
         contributorType = GetContributorType(clus, mcevent, label);
-        Printf("contributorType: %d", contributorType);
         if (contributorType != kUndefined) {
           vecContributorTypes.push_back(contributorType);
+          vecContributorLabels.push_back(label);
         }
       }
     }
     
     Int_t nLabelsPhysPrim = vecContributorTypes.size();
-    Printf("nLabelsPhysPrim: %d", nLabelsPhysPrim);
     
     if (nLabelsPhysPrim == 1) {
       
@@ -1466,8 +1540,11 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       else if (contributorType == kAntiProton) {
         particleType = kSingleAntiProton;
       }
-      else if (contributorType == kKaon) {
-        particleType = kSingleKaon;
+      else if (contributorType == kChargedKaon) {
+        particleType = kSingleChargedKaon;
+      }
+      else if (contributorType == kK0L) {
+        particleType = kSingleK0L;
       }
       else if (contributorType == kNeutron) {
         particleType = kSingleNeutron;
@@ -1482,25 +1559,64 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     }
     else if (nLabelsPhysPrim == 2) {
       
+      // Get the contributor particle types
       ContributorType contributorType1 = vecContributorTypes[0];
       ContributorType contributorType2 = vecContributorTypes[1];
       
-      Bool_t isHadron1 = (contributorType1 == kChargedPion) || (contributorType1 == kProton) || (contributorType1 == kAntiProton) || (contributorType1 == kKaon) || (contributorType1 == kNeutron) || (contributorType1 == kAntiNeutron);
-      Bool_t isHadron2 = (contributorType2 == kChargedPion) || (contributorType2 == kProton) || (contributorType2 == kAntiProton) || (contributorType2 == kKaon) || (contributorType2 == kNeutron) || (contributorType2 == kAntiNeutron);
+      // Get the fraction of cluster energy from each contributor
+      //Double_t frac0 = clus->GetClusterMCEdepFraction(0);
+      Double_t frac1 = clus->GetClusterMCEdepFraction(1);
+      
+      // Check whether the leading/subleading contributors are photons/hadrons
+      Bool_t isHadron1 = IsHadron(contributorType1);
+      Bool_t isHadron2 = IsHadron(contributorType2);
       Bool_t isPhoton1 = contributorType1 == kPhoton;
       Bool_t isPhoton2 = contributorType2 == kPhoton;
       
       if (isHadron1 && isHadron2) {
         particleType = kHadronHadron;
       }
-      else if ((isHadron1 && isPhoton2) || (isHadron2 && isPhoton1)) {
+      else if (isPhoton1 && isHadron2) {
         particleType = kPhotonHadron;
+        
+        // Plot cluster energy when subleading hadron is subtracted
+        Double_t photonEnergy = clus->GetNonLinCorrEnergy() * (1 - frac1);
+        histname = "ClusterHistogramsMC/hPhotonHadronPhotonEnergy";
+        fHistManager.FillTH3(histname.Data(), fCent, clus->GetM02(), photonEnergy);
+      }
+      else if (isHadron1 && isPhoton2) {
+        particleType = kHadronPhoton;
+        
+        // Plot cluster energy when subleading hadron is subtracted
+        Double_t hadronEnergy = clus->GetNonLinCorrEnergy() * (1 - frac1);
+        histname = "ClusterHistogramsMC/hHadronPhotonHadronEnergy";
+        fHistManager.FillTH3(histname.Data(), fCent, clus->GetM02(), hadronEnergy);
       }
       else if (isPhoton1 && isPhoton2) {
-        particleType = kPhotonPhoton;
+        
+        // By default, assume the two photons are not a merged pi0
+        particleType = kPhotonPhotonOther;
+
+        // Using the vector of accepted contributor labels, check whether the two photons are from the same pi0
+        AliAODMCParticle *part1 = fGeneratorLevel->GetMCParticleWithLabel(vecContributorLabels[0]);
+        AliAODMCParticle *part2 = fGeneratorLevel->GetMCParticleWithLabel(vecContributorLabels[1]);
+        if (part1 && part2) {
+          Int_t iMother1 = part1->GetMother();
+          Int_t iMother2 = part2->GetMother();
+          AliVParticle *mother1 = mcevent->GetTrack(iMother1);
+          AliVParticle *mother2 = mcevent->GetTrack(iMother2);
+          
+          if (mother1 && mother2) {
+            if ( (mother1->PdgCode() == 111) && (mother2->PdgCode() == 111) ) {
+              if (iMother1 == iMother2) {
+                particleType = kMergedPi0;
+              }
+            }
+          }
+        }
       }
       else {
-        particleType = kTwoContributorsOther;
+        particleType = kTwoContributorsOther; // this includes partially contained conversion overlaps
       }
       
     }
@@ -1528,9 +1644,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
 {
   TString histname;
   
-  AliClusterContainer* clusters = GetClusterContainer(0);
   const AliVCluster* clus;
-
   AliJetContainer* jets = GetJetContainer(0); // there is only a single, det-level jet finder here
   for (const auto jet : jets->accepted()) {
     
@@ -1548,19 +1662,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
       clus = jet->Cluster(iClus);
       
       // Get the particle type of the cluster
-      ContributorType contributorTypeFromUtils = kUndefined;
+      ContributorType contributorType = kUndefined;
       Int_t label = TMath::Abs(clus->GetLabel());
       if (label > 0) {
-        contributorTypeFromUtils = GetContributorTypeFromUtils(clus, mcevent, clusters->GetArray());
+        contributorType = GetContributorType(clus, mcevent, label);
       }
       
       // Plot M02 for each particle type
       histname = "JetPerformanceMC/hM02VsContributorTypeJets";
-      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), contributorTypeFromUtils, jetPt};
+      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), contributorType, jetPt};
       fHistManager.FillTHnSparse(histname, x);
       
       // If the cluster is a hadron, sum its energy to compute the jet's hadronic calo energy
-      Bool_t isHadron = (contributorTypeFromUtils == kChargedPion) || (contributorTypeFromUtils == kProton) || (contributorTypeFromUtils == kAntiProton) || (contributorTypeFromUtils == kKaon) || (contributorTypeFromUtils == kNeutron) || (contributorTypeFromUtils == kAntiNeutron);
+      Bool_t isHadron = IsHadron(contributorType);
       if (isHadron) {
         Bool_t hasMatchedTrack = (clus->GetNTracksMatched() > 0);
         //Bool_t hasMatchedTrack = ((clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy()) > 1e-3);
@@ -1593,7 +1707,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
     histname = "JetPerformanceMC/hJetComposition";
     for (Int_t type = 0; type < 8; type++) {
       
-      ContributorType contributorTypeFromUtils = kUndefined;
+      ContributorType contributorType = kUndefined;
       Double_t nSum = 0;
       Double_t pTsum = 0;
       
@@ -1604,10 +1718,10 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
         
         Int_t label = TMath::Abs(clus->GetLabel());
         if (label > 0) {
-          contributorTypeFromUtils = GetContributorTypeFromUtils(clus, mcevent, clusters->GetArray());
+          contributorType = GetContributorType(clus, mcevent, label);
         }
         
-        if (type == contributorTypeFromUtils) {
+        if (type == contributorType) {
           nSum++;
           pTsum += clus->GetNonLinCorrEnergy();
         }
@@ -1672,36 +1786,45 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     
     // Loop over tracks. Sum the track pT:
     // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
-    AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+    // Note: Loops over all det-level track containers. For data there should be only one. For embedding, there should be signal+background tracks.
+    AliParticleContainer * partCont = 0;
     AliTLorentzVector track;
     Double_t trackEta;
     Double_t trackPhi;
     Double_t trackPt;
     Double_t deltaR;
-    for (auto trackIterator : trackCont->accepted_momentum() ) {
+    TIter nextPartCont(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
       
-      track.Clear();
-      track = trackIterator.first;
-      trackEta = track.Eta();
-      trackPhi = track.Phi_0_2pi();
-      trackPt = track.Pt();
-      
-      // (1)
-      if (TMath::Abs(trackEta) < etaTPC) {
-        trackPtSumTPC += trackPt;
+      TString partContName = partCont->GetName();
+      if (!partContName.CompareTo("tracks")) {
+        
+        AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(partCont);
+        for (auto trackIterator : trackCont->accepted_momentum() ) {
+          
+          track.Clear();
+          track = trackIterator.first;
+          trackEta = track.Eta();
+          trackPhi = track.Phi_0_2pi();
+          trackPt = track.Pt();
+          
+          // (1)
+          if (TMath::Abs(trackEta) < etaTPC) {
+            trackPtSumTPC += trackPt;
+          }
+          
+          // (2)
+          if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
+            trackPtSumEMCal += trackPt;
+          }
+          
+          // (3)
+          deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
+          if (deltaR < jetR) {
+            trackPtSumEMCalRC += trackPt;
+          }
+        }
       }
-      
-      // (2)
-      if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
-        trackPtSumEMCal += trackPt;
-      }
-      
-      // (3)
-      deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
-      if (deltaR < jetR) {
-        trackPtSumEMCalRC += trackPt;
-      }
-      
     }
     
     // Loop over clusters. Sum the cluster ET:
@@ -1926,77 +2049,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 }
 
 /*
- * Compute the MC particle type using AliMCAnalysisUtils.
- * The basic method is: Given a photon cluster, get the leading cluster, and its parent. If it is a pi0, and has exactly two decay photons,
- * get the two decay photons. If both decay photons contribute to the original cluster, we call it a merged pi0. If not, we also check if the
- * cluster contains a particle (an electron) whose parent is one of the decay photons, in which case we call it a pi0 and a conversion.
- */
-AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerformance::GetContributorTypeFromUtils(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray)
-{
-  ContributorType contributorType = kUndefined;
-  
-  AliMCAnalysisUtils mcUtils;
-  Int_t tag = mcUtils.CheckOrigin(clus->GetLabels(), clus->GetNLabels(), mcevent, clusArray);
-
-  Bool_t isPhoton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
-  Bool_t isPi0 = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0);
-  Bool_t isConversion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion);
-  Bool_t isEta = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta);
-  Bool_t isPion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPion);
-  Bool_t isKaon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCKaon);
-  Bool_t isProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCProton);
-  Bool_t isAntiProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiProton);
-  Bool_t isNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCNeutron);
-  Bool_t isAntiNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiNeutron);
-  Bool_t isElectron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron);
-  Bool_t isMuon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCMuon);
-  
-  if (isPi0) {
-    if (isConversion) {
-      contributorType = kPi0Conversion;
-    }
-    else {
-      contributorType = kPi0;
-    }
-  }
-  else if (isEta) {
-    contributorType = kEta;
-  }
-  else if (isPhoton) {
-    contributorType = kPhoton;
-  }
-  else if (isPion) {
-    contributorType = kChargedPion;
-  }
-  else if (isKaon) {
-    contributorType = kKaon;
-  }
-  else if (isProton) {
-    contributorType = kProton;
-  }
-  else if (isAntiProton) {
-    contributorType = kAntiProton;
-  }
-  else if (isNeutron) {
-    contributorType = kNeutron;
-  }
-  else if (isAntiNeutron) {
-    contributorType = kAntiNeutron;
-  }
-  else if (isElectron) {
-    contributorType = kElectron;
-  }
-  else if (isMuon) {
-    contributorType = kMuon;
-  }
-  else {
-    contributorType = kOther;
-  }
-  return contributorType;
-}
-
-/*
- * Compute the MC particle type of a given cluster contributor, using the MC particle container (and AliMCAnalysisUtils to find merged pi0)
+ * Compute the MC particle type of a given cluster contributor, using the MC particle container
  */
 AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerformance::GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label)
 {
@@ -2018,26 +2071,7 @@ AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerfo
       Int_t pdg = part->PdgCode();
       
       if (pdg == 22) { // gamma 22
-        
-        AliMCAnalysisUtils mcUtils;
-        Int_t tag;
-        mcUtils.CheckOverlapped2GammaDecay(clus->GetLabels(), clus->GetNLabels(), part->GetMother(), mcevent, tag);
-        
-        if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)) {
-          if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)) {
-            contributorType = kPi0Conversion;
-          }
-          else {
-            contributorType = kPi0;
-          }
-        }
-        else if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)) {
-          contributorType = kEta;
-        }
-        else { // direct photon
-          contributorType = kPhoton;
-        }
-        
+        contributorType = kPhoton;
       }
       else if (TMath::Abs(pdg) == 211) { // pi+ 211 (abs value ensures both particles and antiparticles are included)
         contributorType = kChargedPion;
@@ -2049,7 +2083,10 @@ AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerfo
         contributorType = kAntiProton;
       }
       else if (TMath::Abs(pdg) == 321) {  // K+ 321
-        contributorType = kKaon;
+        contributorType = kChargedKaon;
+      }
+      else if (pdg == 130) {  // K0L 130
+        contributorType = kK0L;
       }
       else if (pdg == 2112) { // neutron 2112
         contributorType = kNeutron;
@@ -2106,6 +2143,14 @@ Double_t AliAnalysisTaskEmcalJetPerformance::GetJetPt(const AliEmcalJet* jet, Do
 {
   Double_t pT = jet->Pt() - rho * jet->Area();
   return pT;
+}
+
+/**
+ * Return whether a contributor is a stable hadron
+ */
+Bool_t AliAnalysisTaskEmcalJetPerformance::IsHadron(const ContributorType contributor)
+{
+  return (contributor == kChargedPion) || (contributor == kProton) || (contributor == kAntiProton) || (contributor == kChargedKaon) || (contributor == kK0L) || (contributor == kNeutron) || (contributor == kAntiNeutron);
 }
 
 /**
@@ -2198,7 +2243,7 @@ AliAnalysisTaskEmcalJetPerformance* AliAnalysisTaskEmcalJetPerformance::AddTaskE
   }
   
   /////////////////////////////////////////////////////////////
-  // Configure di-jet task
+  // Configure jet performance task
   AliAnalysisTaskEmcalJetPerformance* task = new AliAnalysisTaskEmcalJetPerformance(name);
   
   /////////////////////////////////////////////////////////////

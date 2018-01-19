@@ -40,22 +40,19 @@ class AliAnTOFtrack {
   Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
   Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
   Float_t fT0TrkTime;                //T0 best for the event
-  Int_t fTOFchan;                    //Channel of the matched track
+  Double32_t fTOFchan;               //[-1.5,262142.5,18]  Channel of the matched track
   Float_t fEta;                      //Eta distribution of the track
-  Float_t fPhi;                      //Phi distribution of the track
+  Double32_t fPhi;                   //[0,6.5536,16]  Phi distribution of the track
   Float_t fPt;                       //Transverse momentum
-  Float_t fPTPC;                     //Momentum in the TPC
-  Int_t fNTOFClusters;               //Number of clusters matchable to the one matched
-  Float_t fTPCSignal;                //Signal in the TPC
+  Double32_t fPTPC;                  //[0,40,19]  Momentum in the TPC
+  Double32_t fNTOFClusters;          //[-1.5,1022.5,10]  Number of clusters matchable to the one matched
+  Double32_t fTPCSignal;             //[0,1000,20]  Signal in the TPC
 
   //******************************
   ////////Utility methods/////////
   //******************************
 
   //DCA binning
-  ///
-  /// Method to tests the DCA binning
-  void TestDCAXYBinning();
 
   ///
   /// Method to put the DCAxy or DCAz of the class into bins
@@ -67,7 +64,7 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the value of the track DCA
-  Double_t GetDCA(const Bool_t xy);
+  Double_t GetDCA(const Bool_t xy) const { return xy ? fDCAXY : fDCAZ; }
 
   //TOF utilities
 

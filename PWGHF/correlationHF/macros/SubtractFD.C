@@ -1290,18 +1290,18 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    
    printf("Number of deltaPhi bins where we apply modulation: %d (it HAS to be 32)\n",h->GetNbinsX());
 
-   Int_t bin1L = h->GetXaxis()->FindBin(0.1);
-   Int_t bin1R = h->GetXaxis()->FindBin(-0.1);
-   Int_t bin2L = h->GetXaxis()->FindBin(0.3);
-   Int_t bin2R = h->GetXaxis()->FindBin(-0.3);
-   Int_t bin3L = h->GetXaxis()->FindBin(0.5);
-   Int_t bin3R = h->GetXaxis()->FindBin(-0.5);
-   Int_t bin4L = h->GetXaxis()->FindBin(0.7);
-   Int_t bin4R = h->GetXaxis()->FindBin(-0.7);
-   Int_t bin5L = h->GetXaxis()->FindBin(0.9);
-   Int_t bin5R = h->GetXaxis()->FindBin(-0.9);
-   Int_t bin6L = h->GetXaxis()->FindBin(1.1);
-   Int_t bin6R = h->GetXaxis()->FindBin(-1.1);
+   Int_t bin1L = h->GetXaxis()->FindBin(-0.1);
+   Int_t bin1R = h->GetXaxis()->FindBin(0.1);
+   Int_t bin2L = h->GetXaxis()->FindBin(-0.3);
+   Int_t bin2R = h->GetXaxis()->FindBin(0.3);
+   Int_t bin3L = h->GetXaxis()->FindBin(-0.5);
+   Int_t bin3R = h->GetXaxis()->FindBin(0.5);
+   Int_t bin4L = h->GetXaxis()->FindBin(-0.7);
+   Int_t bin4R = h->GetXaxis()->FindBin(0.7);
+   Int_t bin5L = h->GetXaxis()->FindBin(-0.9);
+   Int_t bin5R = h->GetXaxis()->FindBin(0.9);
+   Int_t bin6L = h->GetXaxis()->FindBin(-1.1);
+   Int_t bin6R = h->GetXaxis()->FindBin(1.1);
 
    Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
    AliHFCorrelationUtils::GetMCClosureModulation(ptD,ptTrmin,ptTrmax,mod,system,centbin);

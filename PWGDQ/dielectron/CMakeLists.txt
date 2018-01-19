@@ -75,6 +75,7 @@ set(SRCS
       core/AliAnalysisTaskMultiDielectron.cxx
       core/AliAnalysisTaskRandomRejection.cxx
       core/AliAnalysisTaskElectronEfficiency.cxx
+      core/AliAnalysisTaskElectronEfficiencyV2.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx

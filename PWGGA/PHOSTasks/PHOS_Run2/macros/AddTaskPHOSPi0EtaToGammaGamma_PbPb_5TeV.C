@@ -22,8 +22,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 100.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
+    const Double_t Emin = 0.2,//minimum energy for photon selection in GeV
     const Bool_t isJJMC = kFALSE,
-    const TString MCtype = "MBMC"
+    const TString MCtype = "MBMC",
+    const Bool_t ForceActiveTRU = kFALSE,
+    const Bool_t ApplyTOFTrigger = kFALSE,
+    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -106,21 +110,26 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       return NULL;
     }
 
-    taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC));
+    taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
   }
-  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
+  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
+
+  if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
+
+  if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
-  if(L1input == 7)       Ethre = 8.0;
-  else if(L1input == 6)  Ethre = 6.0;
-  else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 3.0;//LHC15n
-  else if(L0input == 17) Ethre = 4.0;//LHC17p
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
+  if(L1input == 7)       Ethre = 0.0;
+  else if(L1input == 6)  Ethre = 0.0;
+  else if(L1input == 5)  Ethre = 0.0;
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n
+  else if(L0input == 17) Ethre = 0.0;//LHC17p
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
   task->SelectCollisionCandidates(trigger);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
@@ -133,7 +142,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetMCFlag(isMC);
   task->SetCoreEnergyFlag(useCoreE);
 
-  task->SetEventCuts(isMC);
+  task->SetEventCuts(isMC,pf);
   task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
 
   task->SetCentralityMin(CenMin);
@@ -159,6 +168,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetNpx(1000);
     f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }

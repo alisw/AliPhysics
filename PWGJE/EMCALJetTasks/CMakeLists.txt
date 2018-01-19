@@ -237,6 +237,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
+				UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

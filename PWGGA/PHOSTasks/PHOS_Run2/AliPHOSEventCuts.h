@@ -13,6 +13,13 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     AliPHOSEventCuts(const char *name = "AliPHOSEventCuts");
     virtual ~AliPHOSEventCuts(); 
 
+    enum PileupFinder {
+      kNone = -1,
+      kSPD = 0,
+      kSPDInMultBins = 1,
+      kMultiVertexer = 2
+    };
+
     virtual Bool_t IsSelected(TObject* obj) {return AcceptEvent((AliVEvent*)obj);}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
     Bool_t AcceptEvent(AliVEvent *event);
@@ -21,6 +28,7 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     void SetMaxAbsZvtx(Double_t maxZ) {fMaxAbsZvtx = maxZ;}
     void SetRejectPileup(Bool_t reject) {fRejectPileup = reject;}
     void SetRejectDAQIncompleteEvent(Bool_t reject) {fRejectDAQIncomplete = reject;}
+    void SetPileupFinder(AliPHOSEventCuts::PileupFinder pf) {fPF = pf;}
 
     Bool_t IsMC() {return fIsMC;}
 
@@ -29,12 +37,13 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     Double_t fMaxAbsZvtx;
     Bool_t fRejectPileup;
     Bool_t fRejectDAQIncomplete;
+    PileupFinder fPF;
 
   private:
     AliPHOSEventCuts(const AliPHOSEventCuts&);
     AliPHOSEventCuts& operator=(const AliPHOSEventCuts&);
 
-    ClassDef(AliPHOSEventCuts, 8);
+    ClassDef(AliPHOSEventCuts, 9);
 };
 
 #endif

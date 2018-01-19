@@ -118,6 +118,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    * reflected in the stored YAML configuration.
    */
   const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
+  AliEmcalCorrectionComponent * GetCorrectionComponent(const std::string & name) const;
 
   // Containers and cells
   AliParticleContainer       *AddParticleContainer(const char *n)                   { return AliEmcalContainerUtils::AddContainer<AliParticleContainer>(n, fParticleCollArray); }

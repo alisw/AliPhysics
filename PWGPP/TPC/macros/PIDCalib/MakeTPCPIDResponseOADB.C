@@ -195,10 +195,15 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   // ===| 2017 |================================================================
   //
   //
-  // For the moment use 17c for 17a-m
+  // For the moment use 17c for 17a-f
+  //                    17g for 17g (low field)
+  //                    17c for 17h-m // no splines will be loaded
   //                    17n for 17n onwards
   // ---| pass1 |---------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 268198, 280154, "1"); 
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 268198, 270870, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17g.pass1/splines_17G_pass1.root",     270871, 271785, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 271786, 280154, "1");
+
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17n.pass1/splines_17n.pass1.root",280155, 999999, "1", "",
                               "9.135699e-07,-8.855631e-05,-3.877750e-03,1.729602e-02,0 ; 1.029664e-06,-4.357166e-07, -0.5 ; 0.,0.,0.,0."); 
 

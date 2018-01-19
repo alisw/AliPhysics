@@ -925,31 +925,37 @@ void AliReducedVarManager::FillITSlayerFlag(TRACK* track, Int_t layer, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L0 trigger inputs
   //
   values[kL0TriggerInput] = -1.0;
   if(fgUsedVars[kL0TriggerInput] && event->L0TriggerInput(input)) values[kL0TriggerInput] = input;
+  values[kL0TriggerInput2] = -1.0;
+  if(fgUsedVars[kL0TriggerInput2] && event->L0TriggerInput(input2)) values[kL0TriggerInput2] = input2;
 }
 
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL1TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL1TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L1 trigger inputs
   //
   values[kL1TriggerInput] = -1.0;
   if(fgUsedVars[kL1TriggerInput] && event->L1TriggerInput(input)) values[kL1TriggerInput] = input;
+  values[kL1TriggerInput2] = -1.0;
+  if(fgUsedVars[kL1TriggerInput2] && event->L1TriggerInput(input2)) values[kL1TriggerInput2] = input2;
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL2TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL2TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L2 trigger inputs
   //
   values[kL2TriggerInput] = -1.0;
   if(fgUsedVars[kL2TriggerInput] && event->L2TriggerInput(input)) values[kL2TriggerInput] = input;
+  values[kL2TriggerInput2] = -1.0;
+  if(fgUsedVars[kL2TriggerInput2] && event->L2TriggerInput(input2)) values[kL2TriggerInput2] = input2;
 }
 
 //_________________________________________________________________
@@ -1004,21 +1010,36 @@ void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackQualityFlag(BASETRACK* track, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillTrackQualityFlag(BASETRACK* track, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
   //
   // fill the track quality flag
   //
   values[kTrackQualityFlag] = -1;
   if(track->TestQualityFlag(flag)) values[kTrackQualityFlag] = flag;
+  values[kTrackQualityFlag2] = -1;
+  if(track->TestQualityFlag(flag2)) values[kTrackQualityFlag2] = flag2;
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillTrackMCFlag(BASETRACK* track, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
+   //
+   // fill the track MC flag
+   //
+   values[kTrackMCFlag] = -1;
+   if(flag<32 && track->TestMCFlag(flag)) values[kTrackMCFlag] = flag;
+   values[kTrackMCFlag2] = -1;
+   if(flag2<32 && track->TestMCFlag(flag2)) values[kTrackMCFlag2] = flag2;
+}
+
+//_________________________________________________________________
+void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
   //
   // fill the pair quality flag
   //
   values[kPairQualityFlag] = -1;
   if(p->TestQualityFlag(flag)) values[kPairQualityFlag] = flag;
+  values[kPairQualityFlag2] = -1;
+  if(p->TestQualityFlag(flag2)) values[kPairQualityFlag2] = flag2;
 }
 
 //_________________________________________________________________
@@ -1032,16 +1053,18 @@ void AliReducedVarManager::FillEventOnlineTriggers(AliReducedEventInfo* event, F
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values) {
+void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values, UShort_t triggerBit2 /*=999*/) {
   //
   // fill the trigger bit input
+  //  The second trigger bit (triggerBit2) is used for correlation histograms between the different trigger inputs
   //
   if(triggerBit>=64) return;
   if(!fgEvent) return;
-  ULong64_t trigger = 1;
   values[kOnlineTrigger] = triggerBit;
-  values[kOnlineTriggerFired] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(trigger<<triggerBit) ? 1.0 : 0.0);
-  values[kOnlineTriggerFired2] = (values[kOnlineTriggerFired]>0.01 ? triggerBit : -1.0); 
+  values[kOnlineTriggerFired] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit) ? triggerBit : -1.0);
+  values[kOnlineTriggerFired2] = 0.0;
+  if(triggerBit<64)
+     values[kOnlineTriggerFired2] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit2) ? triggerBit2 : -1.0);
 }
 
 //_________________________________________________________________
@@ -1161,7 +1184,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     values[kOneOverPairEff] = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
-  
+
   // Fill VZERO flow variables
   for(Int_t iVZEROside=0; iVZEROside<3; ++iVZEROside) {
      for(Int_t ih=0; ih<6; ++ih) {
@@ -1193,6 +1216,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kTPCuQ+ih]) {tpcEPUsed = kTRUE; break;}
      if(fgUsedVars[kTPCuQsine+ih]) {tpcEPUsed = kTRUE; break;}
   }
+
   if(tpcEPUsed) {
      Float_t tpcEPsubtracted[6] = {0.0};
      Double_t qVec[6][2] = {{0.0}};
@@ -1203,6 +1227,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,-0.8,-0.5*fgkTPCQvecRapGap);
         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
      }
+
      // TODO: Make sure the pair legs are properly subtracted from the TPC event plane calculation
      //              For the moment this part of the code is commented out
      /* else if((p->IsA() == AliReducedPairInfo::Class()) && eventInfo) {
@@ -1215,7 +1240,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      // recalculate the TPC event plane
      for(Int_t ih=0; ih<6;++ih) 
         tpcEPsubtracted[ih] = TMath::ATan2(qVec[ih][1], qVec[ih][0])/Double_t(ih+1);
-     
      for(Int_t ih=0; ih<6; ++ih) {
         // vn using Psi_n
         if(fgUsedVars[kTPCFlowVn+ih])
@@ -1232,10 +1256,10 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
         }
      }
   }
-  
+
   if(p->IsA()!=TRACK::Class()) return;
   TRACK* pinfo = (TRACK*)p;
-  
+
   values[kPtTPC]       = pinfo->PtTPC();
   values[kTrackLength] = pinfo->TrackLength();
   values[kChi2TPCConstrainedVsGlobal] = pinfo->Chi2TPCConstrainedVsGlobal();
@@ -1248,7 +1272,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kDcaXYTPC]    = pinfo->DCAxyTPC();
   values[kDcaZTPC]     = pinfo->DCAzTPC();
   values[kCharge]      = pinfo->Charge();
-  
+
   if(fgUsedVars[kITSncls]) values[kITSncls] = pinfo->ITSncls();
   values[kITSsignal] = pinfo->ITSsignal();
   values[kITSchi2] = pinfo->ITSchi2();
@@ -1290,7 +1314,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     Int_t nbits = pinfo->TPCClusterMapBitsFired();
     values[kTPCclustersPerBit] = (nbits>0 ? values[kTPCncls]/Float_t(nbits) : 0.0);
   }
-  
+
   values[kTOFbeta] = pinfo->TOFbeta();
   values[kTOFdeltaBC] = pinfo->TOFdeltaBC();
   values[kTOFtime] = pinfo->TOFtime();
@@ -1298,7 +1322,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTOFdz] = pinfo->TOFdz();
   values[kTOFmismatchProbability] = pinfo->TOFmismatchProbab();
   values[kTOFchi2] = pinfo->TOFchi2();
-    
+
   for(Int_t specie=kElectron; specie<=kProton; ++specie) {
     values[kITSnSig+specie] = pinfo->ITSnSig(specie);
     values[kTPCnSig+specie] = pinfo->TPCnSig(specie);
@@ -1324,7 +1348,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDpidProbabilitiesLQ2D+1] = pinfo->TRDpidLQ2D(1);
   values[kTRDntracklets]    = pinfo->TRDntracklets(0);
   values[kTRDntrackletsPID] = pinfo->TRDntracklets(1);
-  
+
   if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP]) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
     if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
@@ -1337,7 +1361,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
 
   FillTrackingStatus(pinfo,values);
   //FillTrackingFlags(pinfo,values);
-  
+
   if(pinfo->HasMCTruthInfo()) {
      if(fgUsedVars[kPtMC]) values[kPtMC] = pinfo->PtMC();
      if(fgUsedVars[kPMC]) values[kPMC] = pinfo->PMC();
@@ -1714,11 +1738,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     TVector3 v2(t2->Px(), t2->Py(), t2->Pz());
     values[kPairOpeningAngle] = v1.Angle(v2);
   }
-  values[kDeltaEta] = TMath::Abs( t1->Eta() - t2->Eta()  );
-  values[kDeltaPhi] = TMath::Abs( t1->Phi() - t2->Phi()  );
-
-
-
+  
   if(  t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class()     ) {
     TRACK* ti1=(TRACK*)t1;
     TRACK* ti2=(TRACK*)t2;
@@ -1816,9 +1836,6 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kOneOverPairEff] = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
-
-  values[kDeltaEta] = TMath::Abs( t1->Eta() - t2->Eta()  );
-  values[kDeltaPhi] = TMath::Abs( t1->Phi() - t2->Phi()  );
 }
 
 
@@ -1868,22 +1885,51 @@ void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Flo
 
 
 //__________________________________________________________________
-void AliReducedVarManager::FillCorrelationInfo(PAIR* p, BASETRACK* t, Float_t* values) {
+void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
   //
   // fill pair-track correlation information
-  //
+  // NOTE:  Add here only NEEDED information because this function is called during event mixing in the innermost loop
+   //
+  if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
+  if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
+  
   if(fgUsedVars[kDeltaPhi]) {
-    Double_t delta = p->Phi() - t->Phi();
+    Double_t delta = trig->Phi() - assoc->Phi();
     if(delta>3.0/2.0*TMath::Pi()) delta -= 2.0*TMath::Pi();
     if(delta<-0.5*TMath::Pi()) delta += 2.0*TMath::Pi();
     values[kDeltaPhi] = delta;
   }
   
   if(fgUsedVars[kDeltaTheta]) 
-    values[kDeltaTheta] = p->Theta() - t->Theta();
+    values[kDeltaTheta] = trig->Theta() - assoc->Theta();
   
-  if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = p->Eta() - t->Eta();
+  if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = trig->Eta() - assoc->Eta();
+  if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 }
+
+
+//__________________________________________________________________
+void AliReducedVarManager::FillCorrelationInfo(BASETRACK* t, Float_t* values) {
+  //
+  // fill pair-track correlation information
+  //
+
+  if (fgUsedVars[kTriggerPt])
+    values[kTriggerPt] = values[kPt];
+
+  if (fgUsedVars[kAssociatedPt])
+    values[kAssociatedPt] = t->Pt();
+
+  if (fgUsedVars[kDeltaPhi])  // gets filled in FillPairInfo...
+    values[kDeltaPhi] = TMath::Abs(values[kPhi] - t->Phi());
+
+  if (fgUsedVars[kDeltaTheta])
+    values[kDeltaTheta] = TMath::Abs(values[kTheta] - t->Theta());
+
+  if (fgUsedVars[kDeltaEta])  // gets filled in FillPairInfo...
+    values[kDeltaEta] = TMath::Abs(values[kEta] - t->Eta());
+}
+
 
 //________________________________________________________________
 Double_t AliReducedVarManager::DeltaPhi(Double_t phi1, Double_t phi2) {
@@ -1993,9 +2039,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   
   fgVariableNames[kEventTag]             = "Event tag";                       fgVariableUnits[kEventTag]             = "";
   fgVariableNames[kEventNumberInFile]    = "Event no. in ESD file";           fgVariableUnits[kEventNumberInFile]    = "";
-  fgVariableNames[kL0TriggerInput]       = "L0 trigger inputs";               fgVariableUnits[kL0TriggerInput]       = "";
-  fgVariableNames[kL1TriggerInput]       = "L1 trigger inputs";               fgVariableUnits[kL1TriggerInput]       = "";
-  fgVariableNames[kL2TriggerInput]       = "L2 trigger inputs";               fgVariableUnits[kL2TriggerInput]       = "";
+  fgVariableNames[kL0TriggerInput]       = "  ";               fgVariableUnits[kL0TriggerInput]       = "";
+  fgVariableNames[kL1TriggerInput]       = "  ";               fgVariableUnits[kL1TriggerInput]       = "";
+  fgVariableNames[kL2TriggerInput]       = "  ";               fgVariableUnits[kL2TriggerInput]       = "";
+  fgVariableNames[kL0TriggerInput2]       = "  ";               fgVariableUnits[kL0TriggerInput2]       = "";
+  fgVariableNames[kL1TriggerInput2]       = "  ";               fgVariableUnits[kL1TriggerInput2]       = "";
+  fgVariableNames[kL2TriggerInput2]       = "  ";               fgVariableUnits[kL2TriggerInput2]       = "";
   fgVariableNames[kRunNo]                = "Run number";                      fgVariableUnits[kRunNo]                = "";
   fgVariableNames[kRunID]                = "Run number";                      fgVariableUnits[kRunID]                = "";
   fgVariableNames[kLHCFillNumber]        = "LHC fill number";                 fgVariableUnits[kLHCFillNumber]        = ""; 
@@ -2016,8 +2065,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEventType]            = "Event type";                      fgVariableUnits[kEventType]            = "";
   fgVariableNames[kTriggerMask]          = "Trigger mask";                    fgVariableUnits[kTriggerMask]          = "";
   fgVariableNames[kOnlineTrigger]        = "Online trigger";                  fgVariableUnits[kOnlineTrigger]        = "";
-  fgVariableNames[kOnlineTriggerFired]   = "Online trigger fired";            fgVariableUnits[kOnlineTriggerFired]   = "";
-  fgVariableNames[kOnlineTriggerFired2]  = "Online trigger fired2";           fgVariableUnits[kOnlineTriggerFired2]  = "";
+  fgVariableNames[kOnlineTriggerFired]   = "  ";            fgVariableUnits[kOnlineTriggerFired]   = "";
+  fgVariableNames[kOnlineTriggerFired2]  = "  ";           fgVariableUnits[kOnlineTriggerFired2]  = "";
   fgVariableNames[kIsPhysicsSelection]   = "Physics selection ON";            fgVariableUnits[kIsPhysicsSelection]   = "";
   fgVariableNames[kIsSPDPileup]          = "SPD pileup ON";                   fgVariableUnits[kIsSPDPileup]          = "";
   fgVariableNames[kIsSPDPileup5]          = "SPD pileup (5 contributors) ON";                   fgVariableUnits[kIsSPDPileup5]          = "";
@@ -2543,7 +2592,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kDeltaPhi]     = "#Delta #varphi"; fgVariableUnits[kDeltaPhi] = "rad.";  
   fgVariableNames[kDeltaTheta]   = "#Delta #theta";  fgVariableUnits[kDeltaTheta] = "rad.";
   fgVariableNames[kDeltaEta]     = "#Delta #eta";    fgVariableUnits[kDeltaEta] = "";
-  
+  fgVariableNames[kTriggerPt]    = "p_{T} trigger particle";    fgVariableUnits[kTriggerPt] = "GeV/c";
+  fgVariableNames[kAssociatedPt] = "p_{T} associated particle"; fgVariableUnits[kAssociatedPt] = "GeV/c";
 }
 
 

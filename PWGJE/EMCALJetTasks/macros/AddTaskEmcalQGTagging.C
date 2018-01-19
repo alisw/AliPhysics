@@ -15,10 +15,10 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
-						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
-						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = 0 ) {
+						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType = AliAnalysisTaskEmcalQGTagging::kMCTrue,
+						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub = AliAnalysisTaskEmcalQGTagging::kNoSub,
+						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection = AliAnalysisTaskEmcalQGTagging::kInclusive,
+                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalQGTagging::kSecondOrder ) {
  
 
   

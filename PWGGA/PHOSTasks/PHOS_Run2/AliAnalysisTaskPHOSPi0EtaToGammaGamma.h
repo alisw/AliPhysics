@@ -58,16 +58,20 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
     void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
-    void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
+    void SetNonLinearityStudy(Bool_t flag, Double_t sf = 1.0) {
+      fIsNonLinStudy = flag;
+      fGlobalEScale = sf;
+    }
 
     void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
 
-    void SetEventCuts(Bool_t isMC){
+    void SetEventCuts(Bool_t isMC, AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
       fPHOSEventCuts->SetMCFlag(isMC);
       fPHOSEventCuts->SetMaxAbsZvtx(10.);
       fPHOSEventCuts->SetRejectPileup(kTRUE);
       fPHOSEventCuts->SetRejectDAQIncompleteEvent(kTRUE);
+      fPHOSEventCuts->SetPileupFinder(pf);
     }
 
     void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
@@ -109,6 +113,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         fAdditionalGammaPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
     }
+
+    void SetEmin(Double_t Emin) {fEmin = Emin;}
 
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
@@ -157,10 +163,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
 
-    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC){
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
       fIsPHOSTriggerAnalysis = kTRUE;
       fEnergyThreshold = Ethre;
-      fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
     }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
@@ -275,6 +283,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     virtual void DoNonLinearityStudy();
 
+    Bool_t CheckMinimumEnergy(AliCaloPhoton *ph){
+      Double_t e = ph->Energy();
+      if(fUseCoreEnergy) e = (ph->GetMomV2())->Energy();
+
+      if(e < fEmin) return kFALSE;
+      else return kTRUE;
+    }
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -342,13 +358,15 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fForceActiveTRU;
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
+    Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
+    Double_t fEmin;
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 40);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 45);
 };
 
 #endif

@@ -29,10 +29,13 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <exception>
+#include <vector>
+#include <string>
 #include <TString.h>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/JetDefinition.hh>
 
+class TH1;
 class THistManager;
 class TTree;
 class AliClusterContainer;
@@ -97,6 +100,16 @@ struct AliJetSubstructureData {
   AliNSubjettinessParameters fNsubjettiness;
 };
 
+struct Triggerinfo {
+  std::string fTriggerClass;
+  std::string fBunchCrossing;
+  std::string fPastFutureProtection;
+  std::string fTriggerCluster;
+
+  std::string ExpandClassName() const; 
+  bool IsTriggerClass(const std::string &triggerclass) const;
+};
+
 /**
  * @class AliAnalysisTaskEmcalJetSubstructureTree
  * @brief Tree with jet substructure information
@@ -138,40 +151,44 @@ public:
     kTPtJetSim = 3,
     kTEJetRec = 4,
     kTEJetSim = 5,
-    kTRhoPtRec = 6,
-    kTRhoPtSim = 7,
-    kTRhoMassRec = 8,
-    kTRhoMassSim = 9,
-    kTAreaRec = 10,
-    kTAreaSim = 11,
-    kTNEFRec = 12,
-    kTNEFSim = 13,
-    kTMassRec = 14,
-    kTMassSim = 15,
-    kTZgMeasured = 16,
-    kTZgTrue = 17,
-    kTRgMeasured = 18,
-    kTRgTrue = 19,
-    kTMgMeasured = 20,
-    kTMgTrue = 21,
-    kTPtgMeasured = 22,
-    kTPtgTrue = 23,
-    kTMugMeasured = 24,
-    kTMugTrue = 25,
-    kTOneNSubjettinessMeasured = 26,
-    kTOneNSubjettinessTrue = 27,
-    kTTwoNSubjettinessMeasured = 28,
-    kTTwoNSubjettinessTrue = 29,
-    kTAngularityMeasured = 30,
-    kTAngularityTrue = 31,
-    kTPtDMeasured = 32,
-    kTPtDTrue = 33,
-    kTNCharged = 34,
-    kTNNeutral = 35,
-    kTNConstTrue = 36,
-    kTNDroppedMeasured = 37,
-    kTNDroppedTrue = 38,
-    kTNVar = 39
+    kTEtaRec = 6,
+    kTEtaSim = 7,
+    kTPhiRec = 8,
+    kTPhiSim = 9,
+    kTRhoPtRec = 10,
+    kTRhoPtSim = 11,
+    kTRhoMassRec = 12,
+    kTRhoMassSim = 13,
+    kTAreaRec = 14,
+    kTAreaSim = 15,
+    kTNEFRec = 16,
+    kTNEFSim = 17,
+    kTMassRec = 18,
+    kTMassSim = 19,
+    kTZgMeasured = 20,
+    kTZgTrue = 21,
+    kTRgMeasured = 22,
+    kTRgTrue = 23,
+    kTMgMeasured = 24,
+    kTMgTrue = 25,
+    kTPtgMeasured = 26,
+    kTPtgTrue = 27,
+    kTMugMeasured = 28,
+    kTMugTrue = 29,
+    kTOneNSubjettinessMeasured = 30,
+    kTOneNSubjettinessTrue = 31,
+    kTTwoNSubjettinessMeasured = 32,
+    kTTwoNSubjettinessTrue = 33,
+    kTAngularityMeasured = 34,
+    kTAngularityTrue = 35,
+    kTPtDMeasured = 36,
+    kTPtDTrue = 37,
+    kTNCharged = 38,
+    kTNNeutral = 39,
+    kTNConstTrue = 40,
+    kTNDroppedMeasured = 41,
+    kTNDroppedTrue = 42,
+    kTNVar = 43
   };
 
 	AliAnalysisTaskEmcalJetSubstructureTree();
@@ -189,6 +206,7 @@ public:
 	}
 
   void SetFillPartLevelBranches(Bool_t doFill) { fFillPart = doFill; }
+  void SetFillAcceptance(Bool_t doFill) { fFillAcceptance = doFill; }
   void SetFillRhoBranches(Bool_t doFill) { fFillRho = doFill; }
   void SetFillMassBranches(Bool_t doFill) { fFillMass = doFill; }
   void SetFillSoftdropBranches(Bool_t doFill) { fFillSoftDrop = doFill; }
@@ -201,6 +219,7 @@ protected:
 	virtual void UserCreateOutputObjects();
 	virtual bool Run();
 	virtual void RunChanged(Int_t newrun);
+  virtual void UserExecOnce();
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
@@ -214,21 +233,29 @@ protected:
 
 	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
 
+  void FillLuminosity();
+
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  void LinkOutputBranch(const TString &branchname, Double_t *datalocation);
+  void LinkOutputBranch(const std::string &branchname, Double_t *datalocation);
 
-  bool IsPartBranch(const TString &branchname) const;
-  bool IsRhoBranch(const TString &branchname) const;
-  bool IsMassBranch(const TString &branchname) const;
-  bool IsSoftdropBranch(const TString &branchname) const;
-  bool IsNSubjettinessBranch(const TString &branchname) const;
-  bool IsStructbranch(const TString &branchname) const;
+  std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
+  std::string MatchTrigger(const std::string &triggerclass) const;
+  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+
+  bool IsPartBranch(const std::string &branchname) const;
+  bool IsAcceptanceBranch(const std::string &branchname) const;
+  bool IsRhoBranch(const std::string &branchname) const;
+  bool IsMassBranch(const std::string &branchname) const;
+  bool IsSoftdropBranch(const std::string &branchname) const;
+  bool IsNSubjettinessBranch(const std::string &branchname) const;
+  bool IsStructbranch(const std::string &branchname) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
 	THistManager                *fQAHistos;                   //!<! QA histos
+  TH1                         *fLumiMonitor;                //!<! Luminosity monitor
 
 	Double_t                     fSDZCut;                     ///< Soft drop z-cut
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
@@ -240,6 +267,7 @@ private:
 
   // Fill levels for tree (save disk space when information is not needed)
   Bool_t                       fFillPart;                   ///< Fill particle level information
+  Bool_t                       fFillAcceptance;             ///< Fill acceptance (eta-phi)
   Bool_t                       fFillRho;                    ///< Fill rho parameters
   Bool_t                       fFillMass;                   ///< Fill jet mass
   Bool_t                       fFillSoftDrop;               ///< Fill soft drop parameters

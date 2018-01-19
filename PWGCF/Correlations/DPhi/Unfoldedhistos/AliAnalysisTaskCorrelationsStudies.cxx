@@ -34,6 +34,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TH3I.h"
 #include "TProfile3D.h"
 #include "TCanvas.h"
 #include "TList.h"
@@ -79,6 +80,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -144,6 +146,8 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fhPt3DB(NULL),
     fhPt3DA(NULL),
     fhTruePt3D(NULL),
+    fh3Dn1B(NULL),
+    fh3Dn1A(NULL),
     fhLambdaVsMultiplicity(NULL),
     fhAcceptedVsMultiplicity(NULL),
     fhTrueLambdaVsPrimaries(NULL),
@@ -170,6 +174,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -235,6 +240,8 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fhPt3DB(NULL),
     fhPt3DA(NULL),
     fhTruePt3D(NULL),
+    fh3Dn1B(NULL),
+    fh3Dn1A(NULL),
     fhLambdaVsMultiplicity(NULL),
     fhAcceptedVsMultiplicity(NULL),
     fhTrueLambdaVsPrimaries(NULL),
@@ -1280,6 +1287,9 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fhPt3DB = new TProfile3D(Form("fhPt3DB_%s",fTaskConfigurationString.Data()),"p_{T} vs #eta, #phi and vtx_{z} before;#eta;#phi;vtx_{z}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),zvtxbins,zvtxlow,zvtxup);
   fhPt3DA = new TProfile3D(Form("fhPt3DA_%s",fTaskConfigurationString.Data()),"p_{T} vs #eta, #phi and vtx_{z};#eta;#phi;vtx_{z}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),zvtxbins,zvtxlow,zvtxup);
 
+  fh3Dn1B = new TH3I(Form("fh3Dn1B_%s",fTaskConfigurationString.Data()),"n_{1} vs #eta, #phi and p_{T} before;#eta;#varphi;p_{T}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),ptbins,ptlow,ptup);
+  fh3Dn1A = new TH3I(Form("fh3Dn1A_%s",fTaskConfigurationString.Data()),"n_{1} vs #eta, #phi and p_{T};#eta;#varphi;p_{T}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),ptbins,ptlow,ptup);
+
   /* the tracking of the event multiplicity distribution for evaluating the lambda angle */
   Int_t mBins[2] = {4000,4000};
   Double_t mLow[2] = {0.0,0.0};
@@ -1309,6 +1319,8 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fOutput->Add(fhPtVsEtaA);
   fOutput->Add(fhPt3DB);
   fOutput->Add(fhPt3DA);
+  fOutput->Add(fh3Dn1B);
+  fOutput->Add(fh3Dn1A);
   fOutput->Add(fhAcceptedVsMultiplicity);
   fOutput->Add(fhLambdaVsMultiplicity);
 
@@ -1345,6 +1357,10 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
   AliCSAnalysisCutsBase::NotifyRunGlobal();
   fEventCuts->NotifyRun();
   fTrackSelectionCuts->NotifyRun();
+
+  /* checks the change in the analysis period */
+  if (AliCSAnalysisCutsBase::GetGlobalPeriod() == fDataPeriod) return;
+  fDataPeriod = AliCSAnalysisCutsBase::GetGlobalPeriod();
 
   /* now we create additional MC histograms if applicable */
   if (AliCSAnalysisCutsBase::IsMC()) {
@@ -1595,6 +1611,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
       fhEtaVsPhiB->Fill(vtrack->Phi()*180.0/TMath::Pi(),vtrack->Eta());
       fhPtVsEtaB->Fill(vtrack->Eta(),vtrack->Pt());
       fhPt3DB->Fill(vtrack->Eta(),vtrack->Phi(),vertexz,vtrack->Pt());
+      fh3Dn1B->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
     }
 
     if (bTrackAccepted) {
@@ -1629,6 +1646,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
         fhEtaVsPhiA->Fill(vtrack->Phi()*180.0/TMath::Pi(),vtrack->Eta());
         fhPtVsEtaA->Fill(vtrack->Eta(),vtrack->Pt());
         fhPt3DA->Fill(vtrack->Eta(),vtrack->Phi(),vertexz,vtrack->Pt());
+        fh3Dn1A->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
         fhLambdaVsMultiplicity->Fill(ntracks,TMath::PiOver2() - vtrack->Theta());
 
         /* fill the constrained vs not constrained histograms */

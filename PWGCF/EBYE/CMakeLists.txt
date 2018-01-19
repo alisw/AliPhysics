@@ -52,6 +52,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
   BalanceFunctions/AliPidBFBase.cxx   
   BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx

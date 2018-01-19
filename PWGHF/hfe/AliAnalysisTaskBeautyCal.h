@@ -175,6 +175,7 @@ private:
     TH2F        *fHistEop;//!pt vs E/p
     TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistEopHad2;//!pt vs E/p
+    TH2F        *fHistEopTrueMC;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
@@ -222,7 +223,13 @@ private:
     TH2D        *fHistDCAbeEnhance;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_D0;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_D;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Ds;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_Lc;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D0_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Ds_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w2;//!ele cand SPD or
     TH2D        *fHistDCAdePureMC;//!ele cand SPD or
     TH2D        *fHistDCAbePureMC;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
@@ -254,6 +261,10 @@ private:
     TH2D        *fTPCcls;
     TH1F        *fdPhiEP0;
     TH1F        *fdPhiEP1;
+    TH2D        *fHistMcD0;
+    TH2D        *fHistMcD;
+    TH2D        *fHistMcDs;
+    TH2D        *fHistMcLc;
     TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;

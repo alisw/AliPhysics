@@ -16,7 +16,7 @@
 
 class AliFemtoCorrFctn3DSphericalEMCIC : public AliFemtoCorrFctn{
 public:
-  AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
+  AliFemtoCorrFctn3DSphericalEMCIC(const char* title,
 			      const int& nqbins, const float& QLo, const float& QHi,
 			      const int& nphibins, const int& ncthetabins);
   AliFemtoCorrFctn3DSphericalEMCIC(const AliFemtoCorrFctn3DSphericalEMCIC& aCorrFctn);
@@ -36,7 +36,7 @@ public:
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
 
  private:
-  
+
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator
   //EMCIC histograms:

@@ -155,7 +155,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fGoldenChi2(-999)
     , fLengthActiveZone(-999)
     , fLength(-999)
-    , fLengthRatio(-999)
+    , fLengthRatio(-1)
     , fEta(-999)
     , fPhi(-999)
     , fP(-999)
@@ -1786,7 +1786,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 
       if (clsindex > -1) {
         fTOFMismatchTime = fTOFcls->GetTime(clsindex);
-        fLengthRatio = fLength > 0 ? fTOFcls->GetLength(clsindex) / fLength : -999;
+        fLengthRatio = fLength > 0 ? fTOFcls->GetLength(clsindex) / fLength : -1;
       }
     }
 
@@ -2314,7 +2314,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar()
   fGoldenChi2 = -999;
   fLengthActiveZone = -999;
   fLength = -999;
-  fLengthRatio = -999;
+  fLengthRatio = -1;
   fSign = kFALSE;
   fTOFTime = -999;
   fTOFMismatchTime = -999;

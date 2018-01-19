@@ -44,6 +44,15 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   /// Set muon track cuts
   void SetMuonTrackCuts ( AliMuonTrackCuts* muonTrackCuts ) { fMuonTrackCuts = *muonTrackCuts; }
 
+  void UseZDCCalibRuns ( Bool_t b ) { fZdcCalibOnly = b; }
+
+  void SetNPtBins  ( Int_t nBins ) { fNPtBins=nBins; }
+  void SetNEtaBins ( Int_t nBins ) { fNEtaBins=nBins; }
+  void SetNSPBins  ( Int_t nBins ) { fNSPBins=nBins; }
+  void SetNCentBins( Int_t nBins ) { fNCentBins=nBins; }
+  void SetNPhiBins ( Int_t nBins ) { fNPhiBins=nBins; }
+
+
   enum {
     kStepReconstructed,  ///< Reconstructed tracks
     kStepGeneratedMC,    ///< Generated tracks (MC)
@@ -88,11 +97,16 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   AliMuonTrackCuts fMuonTrackCuts;  ///< Muon event cuts
   AliUtilityMuonAncestor* fUtilityMuonAncestor; ///< Utility to get the muon ancestor for MC
   Int_t fNPtBins;
+  Int_t fNEtaBins;
+  Int_t fNSPBins;
+  Int_t fNCentBins;
+  Int_t fNPhiBins;
   Int_t fHarmonic;
   AliMergeableCollection* fMergeableCollection; //!<! collection of mergeable objects
+  Bool_t fZdcCalibOnly;
   THnSparse* fSparse; ///< CF container
 
-  ClassDef(AliAnalysisTaskV1SingleMu, 2); // Single muon v1 analysis
+  ClassDef(AliAnalysisTaskV1SingleMu, 3); // Single muon v1 analysis
 };
 
 #endif

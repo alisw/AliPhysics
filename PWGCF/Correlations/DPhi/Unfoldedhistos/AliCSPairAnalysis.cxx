@@ -170,8 +170,10 @@ void AliCSPairAnalysis::ConfigureBinning(const char *confstring) {
 
   Double_t min_pt, max_pt, width_pt;
   Double_t min_eta, max_eta, width_eta;
+  Char_t buffer[24];
 
-  sscanf(confstring, "phishift:%lf;%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+  sscanf(confstring, "halfsymm:%3s;phishift:%lf;%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+      buffer,
       &fNBinsPhiShift,
       &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
       &min_pt, &max_pt, &width_pt,

@@ -746,6 +746,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   // need the centrality for everything (MC also)
   fCentralityF = -1;
   if(!ReadCentrality()) fCentralityF = -1;
+        if(IsPbPb() && fCentralityF==-1) return;
   //printf("pass centrality\n");
   //printf("Reading fCentralityF %d\n",fCentralityF);
 

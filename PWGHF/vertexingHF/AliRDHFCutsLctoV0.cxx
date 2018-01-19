@@ -57,7 +57,8 @@ fV0Type(0),
 fHighPtCut(2.5),
 fLowPtCut(1.0),
 fExcludedCut(-1),
-fMinCombinedProbability(0)
+fMinCombinedProbability(0),
+fBzkG(0)
 {
   //
   // Default Constructor
@@ -162,7 +163,8 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fHighPtCut(source.fHighPtCut),
   fLowPtCut(source.fLowPtCut),
   fExcludedCut(source.fExcludedCut),
-  fMinCombinedProbability(0)
+  fMinCombinedProbability(0),
+  fBzkG(source.fBzkG)
 {
   //
   // Copy constructor
@@ -195,7 +197,7 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
     fLowPtCut = source.fLowPtCut;
 
     if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
-
+    fBzkG = source.fBzkG;
   }
 
   return *this;

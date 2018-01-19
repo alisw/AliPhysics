@@ -14,9 +14,11 @@
 #include <vector>
 #include <ostream>
 #include <iostream>
+#include <iterator>
 
 #include <TBuffer.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TText.h>
 #include <TPaveText.h>
 
@@ -153,9 +155,17 @@ protected:
   // template <TypeTagEnum_t> struct type_from_enum { };
 
 public:
+  /// Create object by parsing cstring
+  static AliFemtoConfigObject Parse(const char*);
 
   /// Create object by parsing string
   static AliFemtoConfigObject Parse(const std::string &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TString &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TObjString &);
 
   /// Create object from string; if a map, also parse defaults and
   /// insert any values missing in object with defaults.
@@ -178,16 +188,22 @@ public:
   /// Assign value
   AliFemtoConfigObject& operator=(AliFemtoConfigObject const &);
 
+  // I don't know why this needs to be specified explicitly
+  // instead of the macro-generated ones below
+  AliFemtoConfigObject(const char * v):
+    fTypeTag(kSTRING), fValueString(v), fPainter(nullptr) { }
+
   // define constructors
   #define ConstructorDef(__type, __tag, __dest) \
-    AliFemtoConfigObject(const __type &v): fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
+    AliFemtoConfigObject(const __type &v):      \
+      fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
 
+    // ConstructorDef(char*, kSTRING, fValueString);
 
     // constructors with all associated value-types (IntValue_t, MapValue_t, etc..)
     FORWARD_STANDARD_TYPES(ConstructorDef);
 
     //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
-    ConstructorDef(char *, kSTRING, fValueString);
     ConstructorDef(int, kINT, fValueInt);
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
@@ -264,6 +280,26 @@ public:
   // ========================
   //      C++ Operators
   // ========================
+
+  /// Comparison based on the hash of the object.
+  ///
+  /// Note this guarantees transativity of config objects, but holds
+  /// NO gurantees on the ordering of the values within the config
+  /// object; if two objects containing integers, cfg1 & cfg2, are
+  /// compared and cfg1 < cfg2 is true, the integer value of cfg1 is
+  /// not necessarily less than the one in cfg2 (but is guaranteed to
+  /// be not equal)
+  ///
+  /// This operator should mostly be used for ordering purposes (such
+  /// as storage classes), and not for
+  /// values extracted for comparison.
+  ///
+  /// Note that this may be an expensive operation for complex
+  /// structures like Map and List, as a hash is computed for every
+  /// contained value.
+  ///
+  bool operator<(const AliFemtoConfigObject &rhs) const { return Hash() < rhs.Hash(); };
+
   bool operator==(const AliFemtoConfigObject &rhs) const;
   bool operator!=(const AliFemtoConfigObject &rhs) const { return !(*this == rhs); }
   #define IMPL_EQUALITY(__type, __tag, __target) \
@@ -323,11 +359,11 @@ public:
   /// Copies item identified by *key*, returns true if found
   #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
     bool find_and_load(const Key_t &key, __dest_type &dest) const { \
-      if (!is_map()) { return false; }                        \
-      auto found = fValueMap.find(key);                       \
-      if (found == fValueMap.end()) { return false; }         \
-      if (found->second.fTypeTag != __tag) { return false; }  \
-      dest = found->second. __source;                         \
+      if (!is_map()) { return false; }                              \
+      MapValue_t::const_iterator found = fValueMap.find(key);       \
+      if (found == fValueMap.cend()) { return false; }              \
+      if (found->second.fTypeTag != __tag) { return false; }        \
+      dest = found->second. __source;                               \
       return true; }
 
     FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
@@ -375,8 +411,8 @@ public:
   #define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
     bool pop_and_load(const Key_t &key, __dest_type &dest) { \
       if (!is_map()) { return false; }                       \
-      auto found = fValueMap.find(key);                      \
-      if (found == fValueMap.end()) { return false; }        \
+      MapValue_t::const_iterator found = fValueMap.find(key);\
+      if (found == fValueMap.cend()) { return false; }       \
       if (found->second.fTypeTag != __tag) { return false; } \
       dest = found->second. __source;                        \
       fValueMap.erase(found); return true; }
@@ -390,6 +426,186 @@ public:
   #undef IMPL_POPANDLOAD
 
   /// @}
+
+  /// \class list_iterator
+  /// \brief Iterates over object if it is a list
+  ///
+  /// Use this class by calling `list_begin()` and `list_end()` on a
+  /// config object.
+  /// If the object is not a list, then list_begin() will return the
+  /// same value as list_end(), and there is no iteration (using
+  /// standard iteration rules)
+  ///
+  class list_iterator : public std::iterator<std::bidirectional_iterator_tag, ArrayValue_t::value_type> {
+    AliFemtoConfigObject *fParent;
+    bool fIsArray;
+    ArrayValue_t::iterator fInternal;
+    friend class AliFemtoConfigObject;
+
+    list_iterator(AliFemtoConfigObject *obj, ArrayValue_t::iterator it):
+      fParent(obj), fIsArray(true), fInternal(it) {}
+
+  public:
+    /// construct from config object
+    list_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsArray(obj.is_array()) {
+      if (fIsArray) {
+        fInternal = obj.fValueArray.begin();
+      }
+    }
+
+    list_iterator(const list_iterator &orig): fParent(orig.fParent), fIsArray(orig.fParent) {
+      if (fIsArray) {
+        fInternal = orig.fInternal;
+      }
+    }
+
+    value_type& operator*() {
+      return *fInternal;
+    }
+
+    list_iterator& operator++() {
+      fInternal++;
+      return *this;
+    }
+
+    list_iterator operator++(int) {
+      list_iterator temp(*this);
+      fInternal++;
+      return temp;
+    }
+
+    bool operator!=(const list_iterator &rhs) const {
+      return rhs.fParent != fParent                  // if we don't have same parent - different
+          || fIsArray ? (fInternal != rhs.fInternal) // if array, compare internal iterator
+                      : false;                       // if not array, we are equal
+    }
+  };
+
+  /// Iterator to first element of list
+  ///
+  /// If this value is not a list the value returned is equal to
+  /// `list_end`, making it safe to use in a for look without
+  /// doing a type check.
+  ///
+  list_iterator list_begin() {
+    return list_iterator(*this);
+  }
+
+  /// Iterator to 'end' of list
+  ///
+  /// If this config object is a list, the iterator returned is
+  /// equivalent to the value returned by a standard `std::end()`
+  /// function call; otherwise it returns a unique value which should
+  /// be compared to the value returned by `list_begin`.
+  ///
+  list_iterator list_end() {
+    if (is_array()) {
+      return list_iterator(this, fValueArray.end());
+    }
+    return list_iterator(*this);
+  }
+
+  /// \class iterator_over_list
+  /// \brief Returned by method `items_in_list` for c++11 foreach
+  ///        loop syntax
+  ///
+  /// ```cpp
+  /// for (const auto &obj : container.items_in_list()) {
+  ///   ...
+  /// }
+  /// ```
+  ///
+  class iterator_over_list {
+    AliFemtoConfigObject *fParent;
+  public:
+    iterator_over_list(AliFemtoConfigObject &obj): fParent(&obj) {}
+    list_iterator begin() { return fParent->list_begin(); }
+    list_iterator end() { return fParent->list_end(); }
+  };
+
+  iterator_over_list items_in_list() {
+    return iterator_over_list(*this);
+  }
+
+
+  /// \class map_iterator
+  /// \brief Iterates over object if it is a map
+  ///
+  /// Use this class by calling `map_begin()` and `map_end()` on a
+  /// config object.
+  /// If the object is not a list, then map_begin() will return the
+  /// same value as map_end(), and there is no iteration (using
+  /// standard iteration rules)
+  ///
+  class map_iterator : public std::iterator<std::bidirectional_iterator_tag, MapValue_t::value_type> {
+    AliFemtoConfigObject *fParent;
+    bool fIsMap;
+    MapValue_t::iterator fInternal;
+    friend class AliFemtoConfigObject;
+
+    map_iterator(AliFemtoConfigObject *obj, MapValue_t::iterator it):
+      fParent(obj), fIsMap(true), fInternal(it) {}
+
+  public:
+    /// construct from config object
+    map_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsMap(obj.is_map()) {
+      if (fIsMap) {
+        fInternal = obj.fValueMap.begin();
+      }
+    }
+
+    value_type& operator*() {
+      return *fInternal;
+    }
+
+    map_iterator& operator++(int) {
+      fInternal++;
+      return *this;
+    }
+
+    bool operator!=(map_iterator const &rhs) const {
+      return rhs.fParent != fParent                // if we don't have same parent - different
+          || fIsMap ? (fInternal != rhs.fInternal) // if array, compare internal iterator
+                    : false;                       // if not array, we are equal
+    }
+  };
+
+  /// Begin looping over map pairs
+  map_iterator map_begin() {
+    return map_iterator(*this);
+  }
+
+  /// Ending of map iteration
+  map_iterator map_end() {
+    if (is_map()) {
+      return map_iterator(this, fValueMap.end());
+    }
+    return map_iterator(*this);
+  }
+
+  /// \class iterator_over_map
+  /// \brief Returned by method `items_in_map` for c++11 foreach
+  ///        loop syntax
+  ///
+  /// ```cpp
+  /// for (const auto &pair : container.items_in_map()) {
+  ///   ...
+  /// }
+  /// ```
+  ///
+  class iterator_over_map {
+    AliFemtoConfigObject *fParent;
+  public:
+    iterator_over_map(AliFemtoConfigObject &obj): fParent(&obj) {}
+    map_iterator begin() { return fParent->map_begin(); }
+    map_iterator end() { return fParent->map_end(); }
+  };
+
+  /// Simplified loop-over-map syntax function
+  iterator_over_map items_in_map() {
+    return iterator_over_map(*this);
+  }
+
 
   /// \class Popper
   /// \brief Struct used for 'poping' many values from object
@@ -552,7 +768,7 @@ private:
   void _DeleteValue();
   void _CopyConstructValue(const AliFemtoConfigObject &);
 #ifdef ENABLE_MOVE_SEMANTICS
-  void _MoveConstructValue(const AliFemtoConfigObject &&);
+  void _MoveConstructValue(AliFemtoConfigObject &&);
 #endif
 
   ClassDef(AliFemtoConfigObject, 1);
@@ -671,6 +887,33 @@ void AliFemtoConfigObject::_CopyConstructValue(const AliFemtoConfigObject &src)
 
   #undef COPY
 }
+
+#ifdef ENABLE_MOVE_SEMANTICS
+
+inline
+void AliFemtoConfigObject::_MoveConstructValue(AliFemtoConfigObject &&src)
+{
+  #define MOVE(__type, __dest) new (& __dest) __type (std::move(src. __dest))
+
+  switch (src.fTypeTag) {
+    case kEMPTY: break;
+    case kBOOL: MOVE(BoolValue_t, fValueBool); break;
+    case kINT: MOVE(IntValue_t, fValueInt); break;
+    case kFLOAT: MOVE(FloatValue_t, fValueFloat); break;
+    case kSTRING: MOVE(StringValue_t, fValueString); break;
+    case kARRAY: MOVE(ArrayValue_t, fValueArray); break;
+    case kMAP: MOVE(MapValue_t, fValueMap); break;
+    case kRANGE: MOVE(RangeValue_t, fValueRange); break;
+    case kRANGELIST: MOVE(RangeListValue_t, fValueRangeList); break;
+  }
+
+  src._DeleteValue();
+  src.fTypeTag = kEMPTY;
+
+  #undef MOVE
+}
+
+#endif
 
 inline
 AliFemtoConfigObject::AliFemtoConfigObject():

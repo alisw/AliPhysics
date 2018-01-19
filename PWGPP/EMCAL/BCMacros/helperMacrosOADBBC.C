@@ -9,7 +9,7 @@
 ///  Running the macro
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                   <br>
-/// root [0] .L helperMacrosOADBBC.C++                          <br>
+/// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
 /// root [1] Sort_RunNumbers("LHC16o",663,"runList.txt")        <br>
 /// root [2] Test_OADB("LHC16k",804,0,"runList16k.txt")         <br>
 /// root [3] Plot_CellList("LHC15o",771,"1","List115o.txt")         <br>
@@ -292,20 +292,36 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 /// suggestions from other users that think certain
 /// channels should be masked. You can look at them here
 ///________________________________________________________________________
-void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5",TString cellList="")
+void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList="")
 {
 	gStyle->SetPadTopMargin(0.05);//0.05
 	gStyle->SetPadBottomMargin(0.18);//0.15
 	gStyle->SetPadRightMargin(0.05);
 	gStyle->SetPadLeftMargin(0.17);
 	gStyle->SetFrameFillColor(10);
+
+
+	//......................................................
+	//..Settings
+	const Int_t nBlocks=1; //..number of different runblocks of the period
+
+	Int_t zoomRange=20;
+	Double_t range=5; //10 GeV
+	Double_t tRange1=-200;
+	Double_t	 tRange2=400;
+	//..uncalibrated:
+	//tRange1 =400;
+	//tRange2 =900;
+	Int_t shift=0;
+
 	//......................................................
 	//..open the text file and save the run IDs into the RunId[] array
-	cout<<"o o o Open .txt suggested cell IDs. Name = " << cellList << endl;
-	FILE *pFile = fopen(cellList.Data(), "r");
+	TString ListName  = Form("./AnalysisOutput/%s/Train_%i/%s",period.Data(),trainNo,cellList.Data());
+	cout<<"o o o Open .txt suggested cell IDs. Name = " << ListName << endl;
+	FILE *pFile = fopen(ListName.Data(), "r");
 	if(!pFile)
 	{
-		cout<<"couldn't open file "<<cellList<<"!"<<endl;
+		cout<<"couldn't open file "<<ListName<<"!"<<endl;
 		return;
 	}
 	Int_t q;
@@ -329,36 +345,52 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5"
 	//......................................................
 	//..Get the .root file with the original histogram to compare if they coincide
 	TString path        = Form("./AnalysisOutput/%s/Train_%i",period.Data(),trainNo);
+	TString rootFileName[nBlocks];
+	TFile* outputRoot[nBlocks];
+	TH2F* h2DAmp[nBlocks];
+	TH2F* h2DRatio[nBlocks];
+	TH2F* h2DCellTime[nBlocks];
 	//TString rootFileName= Form("Version%s/%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
-	TString rootFileName1= Form("Version1ManMasked/%s_INT7_Histograms_V1.root",period.Data());
-	TString rootFileName2= Form("Version2ManMasked/%s_INT7_Histograms_V2.root",period.Data());
-	TString rootFileName3= Form("Version3ManMasked/%s_INT7_Histograms_V3.root",period.Data());
-	TString rootFileName4= Form("Version4ManMasked/%s_INT7_Histograms_V4.root",period.Data());
-	TFile* outputRoot1   = TFile::Open(Form("%s/%s",path.Data(),rootFileName1.Data()));
-	if(!outputRoot1)cout<<"File "<<outputRoot1->GetName()<<" does not exist"<<endl;
-	TH2F* h2DAmp1   =(TH2F*)outputRoot1->Get("hCellAmplitude");
-	TH2F* h2DRatio1 =(TH2F*)outputRoot1->Get("ratio2DAmp");
-	TFile* outputRoot2   = TFile::Open(Form("%s/%s",path.Data(),rootFileName2.Data()));
-	if(!outputRoot2)cout<<"File "<<outputRoot2->GetName()<<" does not exist"<<endl;
-	TH2F* h2DAmp2   =(TH2F*)outputRoot2->Get("hCellAmplitude");
-	TH2F* h2DRatio2 =(TH2F*)outputRoot2->Get("ratio2DAmp");
-	TFile* outputRoot3   = TFile::Open(Form("%s/%s",path.Data(),rootFileName3.Data()));
-	if(!outputRoot3)cout<<"File "<<outputRoot3->GetName()<<" does not exist"<<endl;
-	TH2F* h2DAmp3   =(TH2F*)outputRoot3->Get("hCellAmplitude");
-	TH2F* h2DRatio3 =(TH2F*)outputRoot3->Get("ratio2DAmp");
-	TFile* outputRoot4   = TFile::Open(Form("%s/%s",path.Data(),rootFileName4.Data()));
-	if(!outputRoot3)cout<<"File "<<outputRoot4->GetName()<<" does not exist"<<endl;
-	TH2F* h2DAmp4   =(TH2F*)outputRoot4->Get("hCellAmplitude");
-	TH2F* h2DRatio4 =(TH2F*)outputRoot4->Get("ratio2DAmp");
+	for(Int_t iBlock=0;iBlock<nBlocks;iBlock++)
+	{
+		//..mostly set by hand
+		//..15l
+		/*
+		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
+		if(iBlock==1)rootFileName[iBlock]= Form("Version2OADB/%s_INT7_Histograms_V2.root",period.Data());
+		if(iBlock==2)rootFileName[iBlock]= Form("Version3OADB/%s_INT7_Histograms_V3.root",period.Data());
+		if(iBlock==3)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
+		 */
+		//..15o
+		/*if(iBlock==0)rootFileName[iBlock]= Form("Version1ManMasked/%s_INT7_Histograms_V1.root",period.Data());
+		if(iBlock==1)rootFileName[iBlock]= Form("Version2ManMasked/%s_INT7_Histograms_V2.root",period.Data());
+		if(iBlock==2)rootFileName[iBlock]= Form("Version3ManMasked/%s_INT7_Histograms_V3.root",period.Data());
+		if(iBlock==3)rootFileName[iBlock]= Form("Version4ManMasked/%s_INT7_Histograms_V4.root",period.Data());
+        */
+		/*
+		//..16s
+		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
+		if(iBlock==1)rootFileName[iBlock]= Form("Version2OADB/%s_INT7_Histograms_V2.root",period.Data());
+		if(iBlock==2)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
+		 */
+		//..16k
+		if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
+
+		outputRoot[iBlock]   = TFile::Open(Form("%s/%s",path.Data(),rootFileName[iBlock].Data()));
+		if(!outputRoot[iBlock])cout<<"File "<<outputRoot[iBlock]->GetName()<<" does not exist"<<endl;
+		h2DAmp[iBlock]     =(TH2F*)outputRoot[iBlock]->Get("hCellAmplitude");
+		h2DRatio[iBlock]   =(TH2F*)outputRoot[iBlock]->Get("ratio2DAmp");
+		h2DCellTime[iBlock]=(TH2F*)outputRoot[iBlock]->Get("hCellTime");
+	}
 
 	TCanvas *c1 = new TCanvas(1);
 	c1->Divide(2);
 	c1->cd(1);
-	SetHisto(h2DAmp1,"","");
-	h2DAmp1->Draw("colz");
+	SetHisto(h2DAmp[0],"","");
+	h2DAmp[0]->Draw("colz");
 	c1->cd(2);
-	SetHisto(h2DRatio1,"","");
-	h2DRatio1->Draw("colz");
+	SetHisto(h2DRatio[0],"","");
+	h2DRatio[0]->Draw("colz");
 
 	//.. be aware of the special sturcture of the canvas
 	//.. canvas has totalperCv*2 pads
@@ -370,79 +402,84 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5"
 
 	cout<<"    o create: "<<nCv<<" Canvases with "<<nPad*nPad<<" pads"<<endl;
 	//..to compare specific cells over the runs
-	TCanvas **cCompAll  = new TCanvas*[nCv];
+	TCanvas **cCompAll      = new TCanvas*[nCv];
+	TCanvas **cCompTimeAll  = new TCanvas*[nCv];
 	for(Int_t i=0;i<nCv;i++)
 	{
 		cCompAll[i] = new TCanvas(TString::Format("CompareGoodAll%d", i), TString::Format("V) Both (%d/%d)", i+1, nCv), 1000,750);
 		CanvasPartition(cCompAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
+		cCompTimeAll[i] = new TCanvas(TString::Format("CompareGoodTimeAll%d", i), TString::Format("V) Time (%d/%d)", i+1, nCv), 1000,750);
+		cCompTimeAll[i]->Divide(4,4,0.001,0.001);
+		//CanvasPartition(cCompTimeAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
 	}
 	TLegend *leg2 = new TLegend(0.60,0.60,0.9,0.85);
 	cout<<"    o Fill Canvases with bad cells histograms"<<endl;
 
-	Int_t zoomRange=20;
-	Double_t range=10;
-	Int_t shift=0;
+	TH1D *htmpCellAllRuns[nBlocks];
+	TH1D *htmpCellTimeRuns[nBlocks];
+	TH1D *htmpCellRatioAllRuns[nBlocks];
 	cout<<"cell number: "<<endl;
 	for(Int_t icell = 0; icell < nCells; icell++)
 	{
 		Int_t cellID=cellIdVec.at(icell);
 		cout<<cellID<<", "<<flush;
 
-		TH1D *htmpCellAllRuns1     =h2DAmp1->ProjectionX(TString::Format("hIDProj1_cell%d", cellID), cellID+1, cellID+1);
-		SetHisto(htmpCellAllRuns1,Form("Energy [cell %i]",cellID),"Number of Hits/Events");
-
-		TH1D *htmpCellRatioAllRuns1=h2DRatio1->ProjectionX(TString::Format("hIDRProj1_cell%d", cellID), cellID+1, cellID+1);
-		SetHisto(htmpCellRatioAllRuns1,Form("Energy [cell %i]",cellID),"No. Hits/av. No. Hits");
-
-		TH1D *htmpCellAllRuns2     =h2DAmp2->ProjectionX(TString::Format("hIDProj2_cell%d", cellID), cellID+1, cellID+1);
-		TH1D *htmpCellRatioAllRuns2=h2DRatio2->ProjectionX(TString::Format("hIDRProj2_cell%d", cellID), cellID+1, cellID+1);
-		TH1D *htmpCellAllRuns3     =h2DAmp3->ProjectionX(TString::Format("hIDProj3_cell%d", cellID), cellID+1, cellID+1);
-		TH1D *htmpCellRatioAllRuns3=h2DRatio3->ProjectionX(TString::Format("hIDRProj3_cell%d", cellID), cellID+1, cellID+1);
-		TH1D *htmpCellAllRuns4     =h2DAmp4->ProjectionX(TString::Format("hIDProj4_cell%d", cellID), cellID+1, cellID+1);
-		TH1D *htmpCellRatioAllRuns4=h2DRatio4->ProjectionX(TString::Format("hIDRProj4_cell%d", cellID), cellID+1, cellID+1);
-
-		if(((icell)%8)<4) shift=0;
-		else              shift=8;
-		cCompAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
-		htmpCellAllRuns1->GetXaxis()->SetRangeUser(0,range);
-		htmpCellAllRuns1->Draw("hist");
-		htmpCellAllRuns2->SetLineColor(kBlue-7);
-		htmpCellAllRuns2->DrawCopy("same hist");
-		htmpCellAllRuns3->SetLineColor(kGreen-2);
-		htmpCellAllRuns3->DrawCopy("same hist");
-		htmpCellAllRuns4->SetLineColor(kViolet-1);
-		htmpCellAllRuns4->DrawCopy("same hist");
-
-		if(icell==0)
+		for(Int_t iBlock=0;iBlock<nBlocks;iBlock++)
 		{
-			leg2->AddEntry(htmpCellAllRuns1,"Block1","l");
-			leg2->AddEntry(htmpCellAllRuns2,"Block2","l");
-			leg2->AddEntry(htmpCellAllRuns3,"Block3","l");
-			leg2->AddEntry(htmpCellAllRuns4,"Block4","l");
-			leg2->SetTextSize(0.07);
-			leg2->SetBorderSize(0);
-			leg2->SetFillColorAlpha(10, 0);
-			leg2->Draw("same");
-		}
-		else if((icell)%4==0)
-		{
-			leg2->Draw("same");
-		}
+			htmpCellAllRuns[iBlock]       =h2DAmp[iBlock]  ->ProjectionX(TString::Format("hIDProj%i_cell%d",iBlock, cellID), cellID+1, cellID+1);
+			SetHisto(htmpCellAllRuns[iBlock],Form("Energy [cell %i]",cellID),"Number of Hits/Events");
+			htmpCellRatioAllRuns[iBlock]  =h2DRatio[iBlock]->ProjectionX(TString::Format("hIDRProj%i_cell%d", iBlock, cellID), cellID+1, cellID+1);
+			SetHisto(htmpCellRatioAllRuns[iBlock],Form("Energy [cell %i]",cellID),"No. Hits/av. No. Hits");
 
-		cCompAll[(icell)/totalperCv]->cd(((icell)%4)+5+shift)->SetLogy();
-		htmpCellRatioAllRuns1->GetXaxis()->SetRangeUser(0,range);
-		//htmpCellRatioAllRuns1->GetYaxis()->SetRangeUser(0,5);
-		htmpCellRatioAllRuns1->Draw("hist");
-		htmpCellRatioAllRuns2->SetLineColor(kBlue-7);
-		htmpCellRatioAllRuns2->Draw("same hist");
-		htmpCellRatioAllRuns3->SetLineColor(kGreen-2);
-		htmpCellRatioAllRuns3->Draw("same hist");
-		htmpCellRatioAllRuns4->SetLineColor(kViolet-1);
-		htmpCellRatioAllRuns4->Draw("same hist");
+			htmpCellTimeRuns[iBlock]  =h2DCellTime[iBlock]->ProjectionX(TString::Format("hIDTimeProj%i_cell%d", iBlock, cellID), cellID+1, cellID+1);
+			SetHisto(htmpCellTimeRuns[iBlock],Form("Time, ns [cell %i]",cellID),"Entries/Events");
 
+			if(((icell)%8)<4) shift=0;
+			else              shift=8;
+			//..Amplitude
+			cCompAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
+			if(iBlock==0)htmpCellAllRuns[iBlock]->GetXaxis()->SetRangeUser(0,range);
+			if(iBlock==0)htmpCellAllRuns[iBlock]->Draw("hist");
+			if(iBlock==1)htmpCellAllRuns[iBlock]->SetLineColor(kBlue-7);
+			if(iBlock==2)htmpCellAllRuns[iBlock]->SetLineColor(kGreen-2);
+			if(iBlock==3)htmpCellAllRuns[iBlock]->SetLineColor(kViolet-1);
+			if(iBlock>0)htmpCellAllRuns[iBlock]->DrawCopy("same hist");
+
+			if(icell==0)
+			{
+				leg2->AddEntry(htmpCellAllRuns[iBlock],Form("Block%i",iBlock),"l");
+				leg2->SetTextSize(0.07);
+				leg2->SetBorderSize(0);
+				leg2->SetFillColorAlpha(10, 0);
+				leg2->Draw("same");
+			}
+			else if((icell)%4==0)
+			{
+				leg2->Draw("same");
+			}
+
+			//..Ratio
+			cCompAll[(icell)/totalperCv]->cd(((icell)%4)+5+shift)->SetLogy();
+			if(iBlock==0)htmpCellRatioAllRuns[iBlock]->GetXaxis()->SetRangeUser(0,range);
+			if(iBlock==0)htmpCellRatioAllRuns[iBlock]->Draw("hist");
+			if(iBlock==1)htmpCellRatioAllRuns[iBlock]->SetLineColor(kBlue-7);
+			if(iBlock==2)htmpCellRatioAllRuns[iBlock]->SetLineColor(kGreen-2);
+			if(iBlock==3)htmpCellRatioAllRuns[iBlock]->SetLineColor(kViolet-1);
+			if(iBlock>0)htmpCellRatioAllRuns[iBlock]->DrawCopy("same hist");
+
+			//..Time
+			cCompTimeAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
+			if(iBlock==0)htmpCellTimeRuns[iBlock]->GetXaxis()->SetRangeUser(tRange1,tRange2);
+			if(iBlock==0)htmpCellTimeRuns[iBlock]->Draw("hist");
+			if(iBlock==1)htmpCellTimeRuns[iBlock]->SetLineColor(kBlue-7);
+			if(iBlock==2)htmpCellTimeRuns[iBlock]->SetLineColor(kGreen-2);
+			if(iBlock==3)htmpCellTimeRuns[iBlock]->SetLineColor(kViolet-1);
+			if(iBlock>0)htmpCellTimeRuns[iBlock]->DrawCopy("same hist");
+		}
 	}
 	cout<<endl;
-	TString pdfName= Form("%s_MoreBadCellsCandidates.pdf",period.Data());
+//	TString pdfName= Form("%s_MoreBadCellsCandidates.pdf",period.Data());
+	TString pdfName= Form("./AnalysisOutput/%s/Train_%i/%s_MoreBadCellsCandidates.pdf",period.Data(),trainNo,period.Data());
 	//..plot the canvases of cells into a .pdf file
 	for(Int_t can=0;can<nCv;can++)
 	{
@@ -450,22 +487,33 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5"
 		if(can==0)
 		{
 			//..first pad
-			cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
+			if(nCv>1)
+			{
+				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
+				cCompTimeAll[can]->Print(Form("%s",pdfName.Data()));
+			}
+			else
+			{
+				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
+				cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
+			}
 		}
 		else if(can==(nCv-1))//..last canvas
 		{
 			//..last pad
-			cCompAll[can]    ->Print(Form("%s)",pdfName.Data()));
+			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
+			cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
 		}
 		else
 		{
 			//..all pads in between
 			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
+			cCompTimeAll[can]    ->Print(Form("%s",pdfName.Data()));
 		}
 	}
 }
 ///
-/// Funtion to set TH1 histograms to a similar style
+/// Function to set TH1 histograms to a similar style
 ///
 //________________________________________________________________________
 void SetHisto(TH1 *Histo,TString Xtitel,TString Ytitel)

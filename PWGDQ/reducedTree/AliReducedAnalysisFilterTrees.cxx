@@ -129,9 +129,7 @@ void AliReducedAnalysisFilterTrees::Process() {
   // process the current event
   //  
   if(!fEvent) return;
-  AliReducedEventInfo* eventInfo = NULL;
-  if(fEvent->IsA()==AliReducedEventInfo::Class()) eventInfo = (AliReducedEventInfo*)fEvent;
-  else {
+  if(!(fEvent->IsA()==AliReducedEventInfo::Class())) {
      cout << "ERROR: AliReducedAnalysisFilterTrees::Process() needs AliReducedEventInfo events" << endl;
      return;
   }
@@ -256,8 +254,9 @@ void AliReducedAnalysisFilterTrees::WriteFilteredTracks() {
          }
          TClonesArray& tracks = *(fFilteredEvent->fTracks);
          AliReducedBaseTrack* filteredParticle=NULL;
-         if(fFilteredTreeWritingOption==kBaseEventsWithBaseTracks || fFilteredTreeWritingOption==kFullEventsWithBaseTracks)
+         if(fFilteredTreeWritingOption==kBaseEventsWithBaseTracks || fFilteredTreeWritingOption==kFullEventsWithBaseTracks) {
             filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedBaseTrack(*track);
+         }
          if(fFilteredTreeWritingOption==kBaseEventsWithFullTracks || fFilteredTreeWritingOption==kFullEventsWithFullTracks) {
             AliReducedTrackInfo* tempTrack = dynamic_cast<AliReducedTrackInfo*>(track);
             filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedTrackInfo(*tempTrack);

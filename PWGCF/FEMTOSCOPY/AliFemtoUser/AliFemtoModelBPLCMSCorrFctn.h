@@ -24,7 +24,7 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
     fQinvHisto(0),
     fPairCut(0),
     fUseRPSelection(0){}
-  AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoModelBPLCMSCorrFctn(const char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn);
   virtual ~AliFemtoModelBPLCMSCorrFctn();
 

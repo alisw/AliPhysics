@@ -21,7 +21,7 @@ public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
   typedef enum CorrectionType ReadCorrectionType;
 
-  AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoCorrFctnDEtaDPhi(const char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPhi& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhi();
 
@@ -38,7 +38,7 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
-  
+
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
@@ -61,7 +61,7 @@ private:
   TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
-  TH2D *fYtYtDenominator; 
+  TH2D *fYtYtDenominator;
 
   CorrectionType fIfCorrectionHist;
   THnSparseF *fPtCorrectionsNum;

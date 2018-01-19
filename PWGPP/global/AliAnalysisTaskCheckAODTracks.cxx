@@ -149,7 +149,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistTPCcluPtFiltBit[jb]=0x0;
     fHistTPCcrrowsPtFiltBit[jb]=0x0;
     fHistTPCCrowOverFindPtFiltBit[jb]=0x0;
-    fHistTPCChi2ndfPtFiltBit[jb]=0x0;
+    fHistTPCChi2clusPtFiltBit[jb]=0x0;
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
   }
   DefineInput(0, TChain::Class());
@@ -229,7 +229,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
       delete fHistTPCcluPtFiltBit[jb];
       delete fHistTPCcrrowsPtFiltBit[jb];
       delete fHistTPCCrowOverFindPtFiltBit[jb];      
-      delete fHistTPCChi2ndfPtFiltBit[jb];
+      delete fHistTPCChi2clusPtFiltBit[jb];
       delete fHistChi2TPCConstrVsGlobPtFiltBit[jb];
     }
     delete fTrackTree;
@@ -425,8 +425,8 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fHistSPDcluPtFiltBit[jb]->GetYaxis()->SetBinLabel(4,"kBoth");
     fHistTPCcluPtFiltBit[jb] = new TH2F(Form("hTPCcluPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; n TPC clusters",50,0.,10.,161,-0.5,160.5);  
     fHistTPCcrrowsPtFiltBit[jb] = new TH2F(Form("hTPCcrrowsPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; n TPC Crossed Rows",50,0.,10.,161,-0.5,160.5);  
-    fHistTPCCrowOverFindPtFiltBit[jb] = new TH2F(Form("hTPCCrowOverFindPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/ndf",50,0.,10.,100,0.,2.);    
-    fHistTPCChi2ndfPtFiltBit[jb] = new TH2F(Form("hTPCChi2ndfPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/ndf",50,0.,10.,160,0.,8.);
+    fHistTPCCrowOverFindPtFiltBit[jb] = new TH2F(Form("hTPCCrowOverFindPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; nTPCCrossedRows / nTPCFindableClusters",50,0.,10.,100,0.,2.);    
+    fHistTPCChi2clusPtFiltBit[jb] = new TH2F(Form("hTPCChi2clusPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",50,0.,10.,160,0.,8.);
     fHistChi2TPCConstrVsGlobPtFiltBit[jb] = new TH2F(Form("hChi2TPCConstrVsGlobPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; golden #chi^{2}",50,0.,10.,160,0.,40.);
     fOutput->Add(fHistEtaPhiPtFiltBit[jb]);
     fOutput->Add(fHistImpParXYPtMulFiltBit[jb]);
@@ -434,7 +434,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistSPDcluPtFiltBit[jb]);
     fOutput->Add(fHistTPCcluPtFiltBit[jb]);
     fOutput->Add(fHistTPCcrrowsPtFiltBit[jb]);
-    fOutput->Add(fHistTPCChi2ndfPtFiltBit[jb]);
+    fOutput->Add(fHistTPCChi2clusPtFiltBit[jb]);
     fOutput->Add(fHistChi2TPCConstrVsGlobPtFiltBit[jb]);
     fOutput->Add(fHistTPCCrowOverFindPtFiltBit[jb]);
   }
@@ -683,11 +683,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Float_t dedx=track->GetTPCsignal();
     Int_t  filtmap=track->GetFilterMap();
     
-    Double_t nSigmaTPC[9]={-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
+    Double_t nSigmaTPC[AliPID::kSPECIESC];
+    for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTPC[jsp]=-999.;
     if(pidResp){
       AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
       if (status == AliPIDResponse::kDetPidOk){
-	for(Int_t jsp=0; jsp<9; jsp++){
+	for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
 	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
 	}
       }
@@ -731,7 +732,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       fTreeVarFloat[26]=phigen;
       if (fUseMCId) {
         int pdg = TMath::Abs(part->GetPdgCode());
-        for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
+        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
           if (pdg == AliPID::ParticleCode(iS)) hadronSpecies=iS;
         }
       }
@@ -752,7 +753,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
  	fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
 	fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
 	fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
-	fHistTPCChi2ndfPtFiltBit[jb]->Fill(pttrack,chi2clus);
+	fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
 	fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
       }
     }
@@ -794,11 +795,11 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(spdAny) fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
     }
 
-    bool pid[AliPID::kSPECIESCN] = {false};
+    bool pid[AliPID::kSPECIESC] = {false};
     if (fReadMC && fUseMCId) {
       if (hadronSpecies > -1) pid[hadronSpecies] = true;
     } else {
-      for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS)
+      for (int iS = 0; iS < AliPID::kSPECIESC; ++iS)
         pid[iS] = TMath::Abs(nSigmaTPC[iS])<3;
     }
     bool isProton = pid[AliPID::kProton];

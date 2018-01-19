@@ -304,14 +304,14 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fTracks = new TObjArray();
   // fTrackStatus
   fTrackStatus = new TArrayI();
-
+  
   // fPhysicsSelection
   //fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection = static_cast<AliPhysicsSelection*> (fInputHandler->GetEventSelection());
   
   // fTrigger
   fTrigger = new AliTriggerAnalysis();
-   fTrigger->SetDoFMD(kTRUE);
+  fTrigger->SetDoFMD(kTRUE);
   fTrigger->SetFMDThreshold(0.3,0.5);
   fTrigger->ApplyPileupCuts(kTRUE);
  
@@ -519,6 +519,13 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   Int_t bsize = 16000; 
   fCEPtree->Branch("CEPEvents","CEPEventBuffer",&fCEPEvent, bsize, split);
   
+  // fCEPRawEvent
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitRawBuffer,AliCEPBase::kBitRawBuffer)) {
+    fCEPRawEvent = new CEPRawEventBuffer();
+    fCEPtree->Branch("CEPRawEvents","CEPRawEventBuffer",&fCEPRawEvent, bsize, split);
+  }
+
   PostOutputs();
   
 }
@@ -526,7 +533,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::UserExec(Option_t *)
 {
-
+  
   // update stats flow
   // events running through UserExec - thus all analyzed events
   fhStatsFlow->Fill(AliCEPBase::kBinTotalInput);
@@ -1037,6 +1044,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // set event status word
     fCEPEvent->SetEventCondition(fEventCondition);
 
+    // fill and add raw event buffer
+    if (fCEPUtil->checkstatus(fAnalysisStatus,
+      AliCEPBase::kBitRawBuffer,AliCEPBase::kBitRawBuffer)) {
+      
+      fCEPRawEvent->SetEventVariables(fESDEvent);
+      
+    }
+    
     // number of tracklets and residuals, vertex
     fCEPEvent->SetnTracksTotal(nTracks);
     fCEPEvent->SetnTracklets(nTracklets);
@@ -1056,51 +1071,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // and save it into the event buffer
     AliStack *stack = NULL;
     if (fMCEvent) {
-      
-      // MC generator and process type
-      TString fMCGenerator;
-      Int_t fMCProcess; 
-      fCEPUtil->DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
-      
-      // get MC vertex
-      TParticle *part = NULL;
-      TLorentzVector lvtmp, lvin, lvprod;
       stack = fMCEvent->Stack();
-      if (stack) {
-        Int_t nPrimaries = stack->GetNprimary();
-        //printf("number of tracks: primaries - %i, reconstructed - %i\n",
-        //  nPrimaries,nTracks);
-        
-        // incident beam-beam system
-        part = stack->Particle(0);
-        part->Momentum(lvtmp);
-        lvin  = lvtmp;
-        stack->Particle(1)->Momentum(lvtmp);
-        lvin += lvtmp;
-        
-        // for DIME and PYTHIA8-CD save the CEP particle
-        // add primaries except for the incoming and outgoing protons
-        lvprod = TLorentzVector(0,0,0,0);
-        if ( fMCGenerator.EqualTo("Dime") ||
-             ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
-           )
-        {
-          stack->Particle(4)->Momentum(lvtmp);
-          lvprod  = lvtmp;
-          for (Int_t ii=5; ii<nPrimaries; ii++) {
-            stack->Particle(ii)->Momentum(lvtmp);
-            lvprod += lvtmp;
-          }
-        }
-        
-        // update the event buffer
-        fCEPEvent->SetMCGenerator(fMCGenerator);
-        fCEPEvent->SetMCProcessType(fMCProcess);
-        fCEPEvent->SetMCVtxPos(part->Vx(),part->Vy(),part->Vz());
-        fCEPEvent->SetMCIniSystem(lvin);
-        fCEPEvent->SetMCParticle(lvprod);
-        
-      }
+      
+      // update fCEPEvent with MC truth
+      fCEPUtil->SetMCTruth(fCEPEvent,fMCEvent);
+                     
     }
     
     // add tracks
@@ -1108,7 +1083,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
-    
+
       // proper pointer into fTracks and fTrackStatus
       Int_t trkIndex = TTindices->At(ii);
       
@@ -1171,11 +1146,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
+      // printf("MCind %i\n",MCind);
       if (fMCEvent && MCind >= 0) {
         
         TParticle* part = stack->Particle(MCind);
         // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
-        //  ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
         
         // set MC mass and momentum
         TLorentzVector lv;
@@ -1189,6 +1165,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
       // add track to the CEPEventBuffer
       fCEPEvent->AddTrack(trk);
+      
     
     }
     

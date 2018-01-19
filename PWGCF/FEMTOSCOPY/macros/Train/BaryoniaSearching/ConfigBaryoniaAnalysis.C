@@ -21,9 +21,11 @@ const double distMax[nSys]      = {  2.5 ,  2.5 ,  2.0 };
 const double distBinWidth[nSys] = { 0.001, 0.001, 0.001};
 
 bool separationCuts;
+bool ppCollisions;
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis);
 AliFemtoBaryoniaAnalysis* GetAnalysis();
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoESDTrackCut* GetTrackCut(EPart particle);
@@ -31,16 +33,21 @@ AliFemtoTrioCut* GetTrioCut(ESys system);
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false)
 {
   separationCuts = sepCuts;
+  ppCollisions = ppAnalysis;
   
   // create analysis managers
   AliFemtoManager* Manager = new AliFemtoManager();
   AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
   
   // add event reader
-  if(year==2015){
+  if(ppAnalysis){
+    AliFemtoEventReaderAODChain* ReaderPP = GetReaderPP(mcAnalysis);
+    Manager->SetEventReader(ReaderPP);
+  }
+  else if(year==2015){
     AliFemtoEventReaderAODMultSelection* Reader2015 = GetReader2015(mcAnalysis);
     Manager->SetEventReader(Reader2015);
   }
@@ -108,7 +115,7 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
   
   return Reader;
 }
@@ -121,7 +128,20 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
+  
+  return Reader;
+}
+
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  Reader->SetFilterBit(128);
+  Reader->SetReadV0(true);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+  Reader->SetMinPlpContribSPD(3);
+  Reader->SetIsPileUpEvent(true);
+  Reader->SetReadMC(mcAnalysis);
   
   return Reader;
 }
@@ -162,8 +182,8 @@ AliFemtoESDTrackCut* GetTrackCut(EPart particle)
   
   particleCut->SetPt(0.14,1.5);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetMaxImpactXY(0.2);
-  particleCut->SetMaxImpactZ(0.25);
+  particleCut->SetMaxImpactZ( ppCollisions ? 9999999 : 0.25);
+  particleCut->SetMaxImpactXY(ppCollisions ? 9999999 : 0.20);
   particleCut->SetStatus(AliESDtrack::kTPCin);
   particleCut->SetminTPCncls(80);
   particleCut->SetRemoveKinks(kTRUE);

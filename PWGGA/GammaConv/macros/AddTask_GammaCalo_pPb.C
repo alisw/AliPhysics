@@ -81,6 +81,7 @@ void AddTask_GammaCalo_pPb(
 
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString corrTaskSetting = ""; // select which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -105,6 +106,10 @@ void AddTask_GammaCalo_pPb(
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pPb will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
@@ -113,6 +118,7 @@ void AddTask_GammaCalo_pPb(
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCalo_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
   Int_t isHeavyIon = 2;
 
@@ -201,6 +207,7 @@ void AddTask_GammaCalo_pPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(runLightOutput);
 
   //create cut handler
@@ -311,6 +318,21 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","11111410570322a0000","01631031000000d0"); // 0.33
     cuts.AddCut("80000113","11111410570322b0000","01631031000000d0"); // 0.28
     cuts.AddCut("80000113","11111410570322c0000","01631031000000d0"); // 0.32
+  } else if (trainConfig == 24){ // default cutstring, cluster energy variations, decreased tender thresholds
+    cuts.AddCut("80000113","1111141057012230000","01631031000000d0"); // E cluster > 0.5
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // E cluster > 0.7
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
+  } else if (trainConfig == 25){ // default cutstring, cluster energy variations, same tender thresholds
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // E cluster > 0.7
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
+  } else if (trainConfig == 26){ // default cutstring, cluster energy variations, increased tender thresholds
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB
   //-----------------------------------------------------------------------------------------------
@@ -352,17 +374,22 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","1111143057032230000","0163103100000060"); // CCRF testbeam nonlin
     cuts.AddCut("80000113","1111144057032230000","0163103100000060"); // CRF testbeam nonlin
     cuts.AddCut("80000113","1111102057032230000","0163103100000060"); // testbeam nonlin
-  } else if (trainConfig == 37){ // TM variations
-    cuts.AddCut("80000113","11111410570322c0000","01631031000000d0"); // MB std
-    cuts.AddCut("80000113","1111141057032200000","01631031000000d0"); // no M02
-    cuts.AddCut("80000113","11111410570322k0000","01631031000000d0"); // M02, pT-dep with 0.27-0.5
-    cuts.AddCut("80000113","11111410570322l0000","01631031000000d0"); // M02, pT-dep with 0.32-0.5
-    cuts.AddCut("80000113","11111410570322m0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7
-  } else if (trainConfig == 38){ // TM variations
-    cuts.AddCut("80000113","11111410570322n0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7
-    cuts.AddCut("80000113","11111410570322o0000","01631031000000d0"); // M02, pT-dep with 0.27-0.7
-    cuts.AddCut("80000113","11111410570322p0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7
-    cuts.AddCut("80000113","11111410570322q0000","01631031000000d0"); // M02, pT-dep with 0.34-0.7
+
+  } else if (trainConfig == 37){
+    cuts.AddCut("80000113","11111410570322l0000","01631031000000d0"); // M02 pt dep with new std: 0.32, 0.0072, 0.5
+    cuts.AddCut("80000113","11111410570322d0000","01631031000000d0"); // M02, pt dep with  0.27, 0.0072, 0.4
+    cuts.AddCut("80000113","11111410570322e0000","01631031000000d0"); // M02, pt dep with  0.31, 0.0072, 0.5
+    cuts.AddCut("80000113","11111410570322f0000","01631031000000d0"); // M02, pt dep with  0.36, 0.0072, 0.7
+  } else if (trainConfig == 38){
+    cuts.AddCut("80000113","11111410570322m0000","01631031000000d0"); // M02, pt dep with  0.32, 0.0152, 0.5
+    cuts.AddCut("80000113","11111410570322g0000","01631031000000d0"); // M02, pt dep with  0.37, 0.0072, 0.7
+    cuts.AddCut("80000113","11111410570322h0000","01631031000000d0"); // M02, pT-dep with  0.30, 0.0072, 0.5
+    cuts.AddCut("80000113","11111410570322i0000","01631031000000d0"); // M02, pT-dep with  0.35, 0.0072, 0.7
+  } else if (trainConfig == 39){
+    cuts.AddCut("80000113","11111410570322j0000","01631031000000d0"); // M02, pT-dep with  0.25, 0.0072, 0.39
+    cuts.AddCut("80000113","11111410570322r0000","01631031000000d0"); // M02, pT-dep with  0.25, 0.0072, 0.5
+    cuts.AddCut("80000113","11111410570322s0000","01631031000000d0"); // M02, pT-dep with  0.32, 0.0238, 0.7
+    cuts.AddCut("80000113","11111410570322n0000","01631031000000d0"); // M02, pT-dep with  0.32, 0.0238, 0.7
 
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 0-20
@@ -704,10 +731,10 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80010513","2446641051013200000","0163103100000010"); // non lin 0-100%
     cuts.AddCut("80010513","2446651051013200000","0163103100000010"); // non lin 0-100%
   } else if (trainConfig == 349) {  // PHOS  INT7 with cents
-    cuts.AddCut("80210513","2446641051013200000","0163103100000010"); // non lin 0-20%
-    cuts.AddCut("82410513","2446641051013200000","0163103100000010"); // non lin 20-40%
-    cuts.AddCut("84610513","2446641051013200000","0163103100000010"); // non lin 40-60%
-    cuts.AddCut("86010513","2446641051013200000","0163103100000010"); // non lin 60-100%
+    cuts.AddCut("80210513","2446601051013200000","0163103100000010"); // non lin 0-20%
+    cuts.AddCut("82410513","2446601051013200000","0163103100000010"); // non lin 20-40%
+    cuts.AddCut("84610513","2446601051013200000","0163103100000010"); // non lin 40-60%
+    cuts.AddCut("86010513","2446601051013200000","0163103100000010"); // non lin 60-100%
 
   // Cent dependent
   } else if (trainConfig == 350) {  // PHOS INT7,
@@ -797,6 +824,7 @@ void AddTask_GammaCalo_pPb(
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -816,6 +844,7 @@ void AddTask_GammaCalo_pPb(
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -825,6 +854,7 @@ void AddTask_GammaCalo_pPb(
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -844,6 +874,7 @@ void AddTask_GammaCalo_pPb(
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
@@ -854,8 +885,8 @@ void AddTask_GammaCalo_pPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCalo_%i",trainConfig), TList::Class(),
-          AliAnalysisManager::kOutputContainer,Form("GammaCalo_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i",trainConfig) : Form("GammaCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i.root",trainConfig) : Form("GammaCalo_%i_%s.root",trainConfig,corrTaskSetting.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

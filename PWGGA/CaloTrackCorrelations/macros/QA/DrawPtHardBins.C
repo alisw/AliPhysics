@@ -44,6 +44,7 @@
 #include "TLegend.h"
 #include "TMath.h"
 #include "TGaxis.h"
+#include "TLine.h"
 
 #endif
 
@@ -73,6 +74,9 @@ void DrawPtHardBins
 
   TH1F * hPtHard[nBin][2];
   TH1F * hPtHardSum[2];
+
+  TH1F * hCent[nBin][2];
+  TH1F * hCentSum[2];
   
   TH1F * hClusterE[nBin][2];
   TH1F * hClusterESum[2];
@@ -105,15 +109,17 @@ void DrawPtHardBins
   TH2F * hCellEtaPhi [nBin][2];
   TH2F * hTrackEtaPhi[nBin][2];
   
-  TH2F * hIMEMCal[nBin][2];
-  TH2F * hIMDCal [nBin][2];
+  const Int_t nCent = 10;
+  TString cenLegend[] = {"0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"};
+  TH2F * hIMEMCal[nBin][2][nCent];
+  TH2F * hIMDCal [nBin][2][nCent];
   
   TH2F * hEtaPhiSum     [2];
   TH2F * hCellEtaPhiSum [2];
   TH2F * hTrackEtaPhiSum[2];
   
-  TH2F * hIMEMCalSum[2];
-  TH2F * hIMDCalSum [2];
+  TH2F * hIMEMCalSum[2][nCent];
+  TH2F * hIMDCalSum [2][nCent];
     
   TH2F* hTrackPhiGlobal[nBin][2];
   TH2F* hTrackPhiNoSPD [nBin][2];  
@@ -151,6 +157,14 @@ void DrawPtHardBins
         hPtHard[i][k]->SetLineColor(color[i]);
         hPtHard[i][k]->SetLineWidth(2);
         //hPtHard[i][k]->SetAxisRange(minE, maxE,"X");
+      }
+ 
+      hCent[i][k] = (TH1F*) f[i][k]->Get("hCentrality");
+      if(hCent[i][k])
+      {
+        hCent[i][k]->SetLineColor(color[i]);
+        hCent[i][k]->SetLineWidth(2);
+        //hCent[i][k]->SetAxisRange(minE, maxE,"X");
       }
       
       // Recover scaling parameters
@@ -255,9 +269,12 @@ void DrawPtHardBins
         hGamD[i][k]->SetAxisRange(minE, maxE,"X");
       }
       
-      hIMEMCal[i][k] = (TH2F*) f[i][k]->Get("AnaPi0_Calo0_hRe_cen0_pidbit0_asy0_dist1");
-      hIMDCal [i][k] = (TH2F*) f[i][k]->Get("AnaPi0_Calo1_hRe_cen0_pidbit0_asy0_dist1");
-
+      for(Int_t icent = 0; icent < nCent; icent++)
+      {
+        hIMEMCal[i][k][icent] = (TH2F*) f[i][k]->Get(Form("AnaPi0_Calo0_hRe_cen%d_pidbit0_asy0_dist1",icent));
+        hIMDCal [i][k][icent] = (TH2F*) f[i][k]->Get(Form("AnaPi0_Calo1_hRe_cen%d_pidbit0_asy0_dist1",icent));
+      }
+      
       hTrackPhiGlobal[i][k] = (TH2F*) f[i][k]->Get("AnaHadrons_hEtaPhiSPDRefitPt02");
       hTrackPhiNoSPD [i][k] = (TH2F*) f[i][k]->Get("AnaHadrons_hEtaPhiNoSPDRefitPt02");
       
@@ -269,6 +286,7 @@ void DrawPtHardBins
       if(k==0)
       {
         if(hPtHard  [i][k]) hPtHard  [i][k]->Sumw2();
+        if(hCent    [i][k]) hCent    [i][k]->Sumw2();
         hClusterE[i][k]->Sumw2();
         if(hClusterD[i][k]) hClusterD[i][k]->Sumw2();
         
@@ -283,11 +301,16 @@ void DrawPtHardBins
         {
           if(hTrackPt[i][k][j])hTrackPt[i][k][j]->Sumw2();
         }
+        
         //hEtaPhi     [i][k]->Sumw2();
         //hCellEtaPhi [i][k]->Sumw2();
         //hTrackEtaPhi[i][k]->Sumw2();
-        hIMEMCal [i][k]->Sumw2();
-        if(hIMDCal[i][k]) hIMDCal[i][k]->Sumw2();
+        
+        for(Int_t icent = 0; icent < nCent; icent++)
+        {
+          if(hIMEMCal[i][k][icent]) hIMEMCal[i][k][icent]->Sumw2();
+          if(hIMDCal [i][k][icent]) hIMDCal [i][k][icent]->Sumw2();
+        }
         
         hTrackPhiNoSPD [i][k]->Sumw2();
         hTrackPhiGlobal[i][k]->Sumw2();
@@ -296,13 +319,20 @@ void DrawPtHardBins
       // Recover the summed histograms, or scale sum 
       if ( k==1 || (k==0 && !scaleHisto))
       {
-        
         hPtHardSum[k] = (TH1F*) fTot[k]->Get("hPtHard");
         if(hPtHardSum[k])
         {
           hPtHardSum[k]->SetLineColor(1);
           hPtHardSum[k]->SetLineWidth(2);
           //hPtHardSum[k]->SetAxisRange(minE, maxE,"X");
+        }
+ 
+        hCentSum[k] = (TH1F*) fTot[k]->Get("hCentrality");
+        if(hCentSum[k])
+        {
+          hCentSum[k]->SetLineColor(1);
+          hCentSum[k]->SetLineWidth(2);
+          //hCentSum[k]->SetAxisRange(minE, maxE,"X");
         }
         
         hClusterESum[k] = (TH1F*) fTot[k]->Get("AnaPhoton_Calo0_hEPhoton");
@@ -320,10 +350,12 @@ void DrawPtHardBins
         
         for(Int_t j = 0; j < 3; j++)
         {
-          if(!hTrackPtSum[k][j]) continue;
           if(j==0) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPt");
           if(j==1) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtSPDRefit");
           if(j==2) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtNoSPDRefit");
+          
+          if(!hTrackPtSum[k][j]) continue;
+
           hTrackPtSum[k][j]->SetLineColor(1);
           hTrackPtSum[k][j]->SetLineWidth(2);
           hTrackPtSum[k][j]->SetLineStyle(j);
@@ -378,9 +410,12 @@ void DrawPtHardBins
           hGamDSum[k]->SetAxisRange(minE, maxE,"X");
         }
         
-        hIMEMCalSum[k] = (TH2F*) fTot[k]->Get("AnaPi0_Calo0_hRe_cen0_pidbit0_asy0_dist1");
-        hIMDCalSum [k] = (TH2F*) fTot[k]->Get("AnaPi0_Calo1_hRe_cen0_pidbit0_asy0_dist1");
-
+        for(Int_t icent = 0; icent < nCent; icent++)
+        {
+          hIMEMCalSum[k][icent] = (TH2F*) fTot[k]->Get(Form("AnaPi0_Calo0_hRe_cen%d_pidbit0_asy0_dist1",icent));
+          hIMDCalSum [k][icent] = (TH2F*) fTot[k]->Get(Form("AnaPi0_Calo1_hRe_cen%d_pidbit0_asy0_dist1",icent));
+        }
+        
         hTrackPhiGlobalSum[k] = (TH2F*) fTot[k]->Get("AnaHadrons_hEtaPhiSPDRefitPt02");
         hTrackPhiNoSPDSum [k] = (TH2F*) fTot[k]->Get("AnaHadrons_hEtaPhiNoSPDRefitPt02");
         
@@ -415,6 +450,7 @@ void DrawPtHardBins
       else if ( scaleHisto && k == 0 )
       {
         if(hPtHard  [i][k])hPtHard[i][k]->Scale(scale[i]);
+        if(hCent    [i][k])hCent  [i][k]->Scale(scale[i]);
         hClusterE[i][k]->Scale(scale[i]);
         if(hClusterD[i][k])hClusterD[i][k]->Scale(scale[i]);
         
@@ -431,9 +467,12 @@ void DrawPtHardBins
         hCellEtaPhi [i][k]->Scale(scale[i]);
         hTrackEtaPhi[i][k]->Scale(scale[i]);
         
-        hIMEMCal[i][k]->Scale(scale[i]);
-        if(hIMDCal[i][k])hIMDCal[i][k]->Scale(scale[i]);
-
+        for(Int_t icent = 0; icent < nCent; icent++)
+        {
+          if(hIMEMCal[i][k][icent]) hIMEMCal[i][k][icent]->Scale(scale[i]);
+          if(hIMDCal [i][k][icent]) hIMDCal [i][k][icent]->Scale(scale[i]);
+        }
+        
         hTrackPhiNoSPD [i][k]->Scale(scale[i]);
         hTrackPhiGlobal[i][k]->Scale(scale[i]);
 
@@ -443,6 +482,12 @@ void DrawPtHardBins
           {
             hPtHardSum[k] = (TH1F*) hPtHard[i][k]->Clone("hPtHardSum");
             hPtHardSum[k]->SetLineColor(1);
+          }
+ 
+          if(hCentSum[k])
+          {
+            hCentSum[k] = (TH1F*) hPtHard[i][k]->Clone("hCentSum");
+            hCentSum[k]->SetLineColor(1);
           }
           
           hClusterESum[k] = (TH1F*) hClusterE[i][k]->Clone("hClusterESum");
@@ -471,6 +516,7 @@ void DrawPtHardBins
           
           for(Int_t j = 0; j < 3; j++)
           {
+            if(!hTrackPtSum[k][j]) continue;
             hTrackPtSum[k][j] = (TH1F*) hTrackPt[i][k][j]->Clone(Form("%sSum",hTrackPt[i][k][j]->GetName()));
             hTrackPtSum[k][j]->SetLineColor(1);
           }
@@ -479,8 +525,13 @@ void DrawPtHardBins
           hCellEtaPhiSum [k] = (TH2F*) hEtaPhi [i][k]->Clone("hCellEtaPhiSum");
           hTrackEtaPhiSum[k] = (TH2F*) hTrackEtaPhi [i][k]->Clone("hTrackEtaPhiSum");
           
-          hIMEMCalSum[k] = (TH2F*) hIMEMCal[i][k]->Clone("hIMEMCalSum");
-          if(hIMDCal[i][k])hIMDCalSum [k] = (TH2F*) hIMDCal [i][k]->Clone("hIMDCalSum");
+          for(Int_t icent = 0; icent < nCent; icent++)
+          {
+            if(hIMEMCal[i][k][icent]) hIMEMCalSum[k][icent] = (TH2F*) hIMEMCal[i][k][icent]->Clone(Form("hIMEMCalSum_Cent%d",icent));
+            else hIMEMCalSum[k][icent] = 0;
+            if(hIMDCal [i][k][icent]) hIMDCalSum [k][icent] = (TH2F*) hIMDCal [i][k][icent]->Clone(Form("hIMDCalSum_Cent%d" ,icent));
+            else hIMDCalSum [k][icent] = 0;
+          }
           
           hTrackPhiGlobalSum[k] = (TH2F*) hTrackPhiGlobal[i][k]->Clone("hTrackPhiGlobalSum");
           hTrackPhiNoSPDSum [k] = (TH2F*) hTrackPhiNoSPD [i][k]->Clone("hTrackPhiNoSPDSum");
@@ -488,6 +539,7 @@ void DrawPtHardBins
         else 
         {
           if(hPtHardSum[k])hPtHardSum[k]->Add(hPtHard[i][k]);
+          if(hCentSum  [k])hCentSum  [k]->Add(hCent  [i][k]);
 
           hClusterESum[k]->Add(hClusterE[i][k]);
           if(hClusterD[i][k])hClusterDSum[k]->Add(hClusterD[i][k]);
@@ -500,14 +552,21 @@ void DrawPtHardBins
           if(hGamD[i][k])hGamESum[k]->Add(hGamE[i][k]);
           if(hGamD[i][k])hGamDSum[k]->Add(hGamD[i][k]);
           
-          for(Int_t j = 0; j < 3; j++) hTrackPtSum[k][j]->Add(hTrackPt[i][k][j]);
+          for(Int_t j = 0; j < 3; j++) 
+          {
+            if(!hTrackPtSum[k][j]) continue;
+            hTrackPtSum[k][j]->Add(hTrackPt[i][k][j]);
+          }
           
           hEtaPhiSum     [k]->Add(hEtaPhi     [i][k]);
           hCellEtaPhiSum [k]->Add(hCellEtaPhi [i][k]);
           hTrackEtaPhiSum[k]->Add(hTrackEtaPhi[i][k]);
           
-          hIMEMCalSum[k]->Add(hIMEMCal[i][k]);
-          if(hIMDCal[i][k])hIMDCalSum[k]->Add(hIMDCal[i][k]);
+          for(Int_t icent = 0; icent < nCent; icent++)
+          {
+            if(hIMEMCal[i][k][icent]) hIMEMCalSum[k][icent]->Add(hIMEMCal[i][k][icent]);
+            if(hIMDCal [i][k][icent]) hIMDCalSum [k][icent]->Add(hIMDCal [i][k][icent]);
+          }
           
           hTrackPhiNoSPDSum [k]->Add(hTrackPhiNoSPD [i][k]);
           hTrackPhiGlobalSum[k]->Add(hTrackPhiGlobal[i][k]);
@@ -626,12 +685,43 @@ void DrawPtHardBins
     
       cHard->Print(Form("PtHard_%s.eps",scaleCase[k].Data()));
     }
+ 
+    //
+    // Centrality
+    //
+    if(hCentSum[k])
+    {
+      TCanvas * cCent = new TCanvas(Form("cCent%d",k),Form("Centrality %s", scaleCase[k].Data()), 200,200);
+      
+      gPad->SetLogy();
+      //gPad->SetLogx();
+      
+      hCentSum[k]->SetTitle(Form("Centrality, %s",scaleTitle[k].Data()));
+      hCentSum[k]->Draw("H");
+      //hCentSum[k]->SetMinimum(1);
+      
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+        
+        if(!hCent[i][k]) continue;
+        hCent[i][k]->Draw("H same");
+      }
+      
+      hCentSum[k]->Draw("H same");
+      
+      l.Draw();
+      
+      cCent->Print(Form("Centrality_%s.eps",scaleCase[k].Data()));
+    }
     
     //
     // TRACK spectra
     //
     for(Int_t j=0; j<3; j++)
     {
+      if(!hTrackPtSum[k][j]) continue;
+
       TCanvas * cTr = new TCanvas(Form("cTrackPt%d_Type%d",k,j),
                                   Form("Track Pt Type %s, %s",trackTitle[j].Data(),scaleTitle[k].Data()), 
                                   200,200);
@@ -813,55 +903,129 @@ void DrawPtHardBins
     ////////////////////////////
     // Inv. Mass. Projections //
     ////////////////////////////
-    Int_t binmin = hIMEMCalSum[k]->GetXaxis()->FindBin(5);
-    Int_t binmax = hIMEMCalSum[k]->GetXaxis()->FindBin(10);
-    //printf("Bins Min %d, Max %d\n",binmin,binmax);
+    TLine pi0Mass(0.135,0,0.135,1e6);
+    pi0Mass.SetLineColor(2);
+    pi0Mass.SetLineStyle(2);
     
-    TH1F * hInvMassEMC = (TH1F*) hIMEMCalSum[k]->ProjectionY(Form("hEMCInvMass%d",k),binmin,binmax);
-    hInvMassEMC->SetLineColor(1);
+    Bool_t allCent = kFALSE;
+    for(Int_t icent = 1; icent < nCent; icent++) { if ( hIMEMCalSum[k][icent] ) allCent = kTRUE; }
+    if ( !allCent ) cenLegend[0] = "";
     
-    TH1F * hInvMassDMC = 0;
-    if(hIMDCalSum[k])
+    for(Int_t icent = 0; icent < nCent; icent++)
     {
-      hInvMassDMC = (TH1F*) hIMDCalSum[k] ->ProjectionY(Form("hDMCInvMass%d",k),binmin,binmax);
-      hInvMassDMC->SetLineColor(4);
-    }
+      if ( !hIMEMCalSum[k][icent] ) continue;
+      
+      if ( icent > 0 && !allCent ) continue;
+      
+      Int_t binmin = hIMEMCalSum[k][icent]->GetXaxis()->FindBin(5);
+      Int_t binmax = hIMEMCalSum[k][icent]->GetXaxis()->FindBin(10);
+      //printf("Bins Min %d, Max %d\n",binmin,binmax);
     
-    TCanvas * cIMProj = new TCanvas(Form("cIMProj%d",k),Form("DCal/EMCa; Inv. Mass; %s",scaleCase[k].Data()), 200,200);
+      TH1F * hInvMassEMC = (TH1F*) hIMEMCalSum[k][icent]->ProjectionY(Form("hEMCInvMass%d_Cent%d",k,icent),binmin,binmax);
+      hInvMassEMC->SetLineColor(1);
     
-    //gPad->SetLogz();
-    gPad->SetGridx();
+      TH1F * hInvMassDMC = 0;
+      if(hIMDCalSum[k])
+      {
+        hInvMassDMC = (TH1F*) hIMDCalSum[k][icent] ->ProjectionY(Form("hDMCInvMass%d_Cent%d",k,icent),binmin,binmax);
+        hInvMassDMC->SetLineColor(4);
+      }
     
-    hInvMassEMC->SetAxisRange(0.05, 0.3);
-    hInvMassEMC->SetMinimum(1);
+      TCanvas * cIMProj = new TCanvas(Form("cIMProj%d_Cent%d",k,icent),
+                                      Form("DCal/EMCa; Inv. Mass; %s %s",scaleCase[k].Data(),cenLegend[icent].Data()), 
+                                      200,200);
     
-    hInvMassEMC->SetTitle(Form("Cluster pair M in #pi^{0} region, %s",scaleTitle[k].Data()));
+      //gPad->SetLogz();
+      gPad->SetGridx();
+    
+      hInvMassEMC->SetAxisRange(0.05, 0.3);
+      hInvMassEMC->SetMinimum(1);
+    
+      hInvMassEMC->SetTitle(Form("Cluster pair M in #pi^{0} region, %s %s",scaleTitle[k].Data(),cenLegend[icent].Data()));
 
-    Double_t intE = hInvMassEMC->Integral();
-    if(intE > 0) hInvMassEMC->Scale(1./intE);
-    Double_t maxE = hInvMassEMC->GetMaximum();
-    hInvMassEMC->SetYTitle("1/N dN / dM ");
-    hInvMassEMC->Draw("H");
+      Double_t intE = hInvMassEMC->Integral();
+      if(intE > 0) hInvMassEMC->Scale(1./intE);
+      Double_t maxE = hInvMassEMC->GetMaximum();
+      hInvMassEMC->SetYTitle("1/N dN / dM ");
+      hInvMassEMC->Draw("H");
     
-    TLegend lim(0.68,0.6,0.98,0.8);
-    lim.SetHeader("5 < E < 10 GeV ");
-    lim.AddEntry(hInvMassEMC,"EMCal","L");
+      TLegend lim(0.68,0.6,0.98,0.8);
+      lim.SetHeader("5 < E < 10 GeV");
+      lim.AddEntry(hInvMassEMC,"EMCal","L");
     
-    if(hInvMassDMC)
-    {
-      Double_t intD = hInvMassDMC->Integral();
-      if(intD > 0) hInvMassDMC->Scale(1./intD);
+      if(hInvMassDMC)
+      {
+        Double_t intD = hInvMassDMC->Integral();
+        if(intD > 0) hInvMassDMC->Scale(1./intD);
       
-      Double_t maxD = hInvMassDMC->GetMaximum();
-      if(maxD > maxE) hInvMassEMC->SetMaximum(hInvMassEMC->GetMaximum()*1.1);
+        Double_t maxD = hInvMassDMC->GetMaximum();
+        if(maxD > maxE) hInvMassEMC->SetMaximum(hInvMassEMC->GetMaximum()*1.1);
       
-      hInvMassDMC->Draw("H same");
-      lim.AddEntry(hInvMassDMC,"DCal","L");
+        hInvMassDMC->Draw("H same");
+        lim.AddEntry(hInvMassDMC,"DCal","L");
+      }
+      pi0Mass.Draw();
+      lim.Draw();
+    
+      cIMProj->Print(Form("InvMassDCalEMCal_5_10GeV_%s_Cen%d.eps",scaleCase[k].Data(),icent));
+    
+      // Projection 2
+      binmin = hIMEMCalSum[k][icent]->GetXaxis()->FindBin(2);
+      binmax = hIMEMCalSum[k][icent]->GetXaxis()->FindBin(4);
+      //printf("Bins Min %d, Max %d\n",binmin,binmax);
+    
+      hInvMassEMC = (TH1F*) hIMEMCalSum[k][icent]->ProjectionY(Form("hEMCInvMass2_%d_Cen%d",k,icent),binmin,binmax);
+      hInvMassEMC->SetLineColor(1);
+    
+      hInvMassDMC = 0;
+      if(hIMDCalSum[k])
+      {
+        hInvMassDMC = (TH1F*) hIMDCalSum[k][icent] ->ProjectionY(Form("hDMCInvMass2_%d_Cen%d",k,icent),binmin,binmax);
+        hInvMassDMC->SetLineColor(4);
+      }
+    
+      TCanvas * cIMProj2 = new TCanvas(Form("cIMProj2_%d",k),
+                                       Form("DCal/EMCa; Inv. Mass; %s %s",scaleCase[k].Data(),cenLegend[icent].Data()), 
+                                       200,200);
+    
+      //gPad->SetLogy();
+      gPad->SetGridx();
+    
+      hInvMassEMC->SetAxisRange(0.05, 0.3);
+      hInvMassEMC->SetMinimum(1);
+    
+      hInvMassEMC->SetTitle(Form("Cluster pair M in #pi^{0} region, %s %s",scaleTitle[k].Data(),cenLegend[icent].Data()));
+    
+      intE = hInvMassEMC->Integral();
+      if(intE > 0) hInvMassEMC->Scale(1./intE);
+      maxE = hInvMassEMC->GetMaximum();
+      hInvMassEMC->SetYTitle("1/N dN / dM ");
+      hInvMassEMC->Draw("H");
+    
+      TLegend lim2(0.68,0.6,0.98,0.8);
+      lim2.SetHeader("2 < E < 4 GeV");
+      lim2.AddEntry(hInvMassEMC,"EMCal","L");
+    
+      if(hInvMassDMC)
+      {
+        Double_t intD = hInvMassDMC->Integral();
+        if(intD > 0) hInvMassDMC->Scale(1./intD);
+      
+        Double_t maxD = hInvMassDMC->GetMaximum();
+        if(maxD > maxE) hInvMassEMC->SetMaximum(hInvMassEMC->GetMaximum()*1.1);
+
+        Double_t minD = hInvMassDMC->GetMinimum();
+        if(minD < hInvMassEMC->GetMinimum()) hInvMassEMC->SetMinimum(hInvMassDMC->GetMinimum());
+       
+        hInvMassDMC->Draw("H same");
+        lim2.AddEntry(hInvMassDMC,"DCal","L");
+      }
+    
+      pi0Mass.Draw();
+      lim2.Draw();
+    
+      cIMProj2->Print(Form("InvMassDCalEMCal_2_4GeV_%s_Cen%d.eps",scaleCase[k].Data(),icent));
     }
- 
-    lim.Draw();
-    
-    cIMProj->Print(Form("InvMassDCalEMCal_5_10GeV_%s.eps",scaleCase[k].Data()));
     
     ////////////////////////////
     // Track Phi Projections //
@@ -949,43 +1113,54 @@ void DrawPtHardBins
     
     cTrackEtaPhi->Print(Form("EtaPhi_Track_%s.eps",scaleCase[k].Data()));
 
-    //////////////////////
-    // EMCal Invariant mass
-    //////////////////////
-    TCanvas * cIM = new TCanvas(Form("cIM%d",k),Form("EMCal Inv. Mass, %s",scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogz();
-    //gPad->SetLogx();
-    
-    hIMEMCalSum[k]->SetAxisRange(4,20,"X");
-    
-    hIMEMCalSum[k]->SetTitle(Form("EMCal cluster invariant mass, %s",scaleTitle[k].Data()));
-    
-    hIMEMCalSum[k]->Draw("colz");
-    
-    cIM->Print(Form("InvMassEMCal_%s.eps",scaleCase[k].Data()));
-    
-    //////////////////////
-    // DCal Invariant mass
-    //////////////////////
-    if(hIMDCalSum[k])
+    for(Int_t icent = 0; icent < nCent; icent++)
     {
-      TCanvas * cIMD = new TCanvas(Form("cIMD%d",k),Form("DCal Inv. Mass, %s",scaleCase[k].Data()), 200,200);
+      if ( !hIMEMCalSum[k][icent] ) continue;
       
+      if ( icent > 0 && !allCent ) continue;
+      //////////////////////
+      // EMCal Invariant mass
+      //////////////////////
+      TCanvas * cIM = new TCanvas(Form("cIM%d_Cen%d",k,icent),
+                                  Form("EMCal Inv. Mass, %s %s",scaleCase[k].Data(),cenLegend[icent].Data()), 
+                                  200,200);
+    
       gPad->SetLogz();
       //gPad->SetLogx();
+    
+      hIMEMCalSum[k][icent]->SetAxisRange(4,20,"X");
+    
+      hIMEMCalSum[k][icent]->SetTitle(Form("EMCal cluster invariant mass, %s %s",
+                                           scaleTitle[k].Data(),cenLegend[icent].Data()));
+    
+      hIMEMCalSum[k][icent]->Draw("colz");
+    
+      cIM->Print(Form("InvMassEMCal_%s_Cen%d.eps",scaleCase[k].Data(),icent));
+    
+      //////////////////////
+      // DCal Invariant mass
+      //////////////////////
+      if(hIMDCalSum[k])
+      {
+        TCanvas * cIMD = new TCanvas(Form("cIMD%d_Cen%d",k,icent),
+                                     Form("DCal Inv. Mass, %s %s",scaleCase[k].Data(),cenLegend[icent].Data()),
+                                     200,200);
       
-      hIMDCalSum[k]->SetAxisRange(4,20,"X");
+        gPad->SetLogz();
+        //gPad->SetLogx();
       
-      hIMDCalSum[k]->SetTitle(Form("DCal cluster invariant mass, %s",scaleTitle[k].Data()));
+        hIMDCalSum[k][icent]->SetAxisRange(4,20,"X");
       
-      hIMDCalSum[k]->Draw("colz");
+        hIMDCalSum[k][icent]->SetTitle(Form("DCal cluster invariant mass, %s %s",
+                                            scaleTitle[k].Data(),cenLegend[icent].Data()));
       
-      cIMD->Print(Form("InvMassDCal_%s.eps",scaleCase[k].Data()));
-    }
-       
-   }
-  
+        hIMDCalSum[k][icent]->Draw("colz");
+      
+        cIMD->Print(Form("InvMassDCal_%s_Cen%d.eps",scaleCase[k].Data(),icent));
+      }
+   } // centrality
+    
+  } 
 }
 
 

@@ -118,10 +118,11 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
         case kHighPt:
             mixingHandler = new AliDielectronMixingHandler;
             mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
-            mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
+            //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
+            mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100");
             // for using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
             // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-            mixingHandler->SetDepth(10);
+            mixingHandler->SetDepth(20);
             mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
             break;
         //[...]
@@ -143,14 +144,14 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
     AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
     AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
     AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-    convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.05);
-    convPhiVCut->AddCut(AliDielectronVarManager::kOpeningAngle, 0.05, 3.2);
+    convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.02);
+    convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0, (3/4.)*TMath::Pi());
     convRejCut->AddCut(convMassCut);
     convRejCut->AddCut(convPhiVCut);
 
     //Mass cut to include any pairs with mass greater than 0.05
     AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-    pairMassCut->AddCut(AliDielectronVarManager::kM, 0.05, 5.0);
+    pairMassCut->AddCut(AliDielectronVarManager::kM, 0.02, 5.0);
 
     //OR cut group to accept for above cuts
     AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
@@ -397,9 +398,10 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
             }else{
                 trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0);
             }
+						trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0, 0.1);
             trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       80.0, 200.);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 200.);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       100.0, 200.); //clusters
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 200.); //findable
             //trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);
             //trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1); //Crossed rows over findable

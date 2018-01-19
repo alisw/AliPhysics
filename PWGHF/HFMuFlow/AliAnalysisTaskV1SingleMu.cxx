@@ -95,9 +95,14 @@ ClassImp(AliAnalysisTaskV1SingleMu) // Class implementation in ROOT context
 AliAnalysisTaskV1SingleMu::AliAnalysisTaskV1SingleMu() :
 AliAnalysisTaskSE(),
 fUtilityMuonAncestor(0x0),
-fNPtBins(1),
+fNPtBins(160),
+fNEtaBins(3),
+fNSPBins(500),
+fNCentBins(50),
+fNPhiBins(50),
 fHarmonic(1),
 fMergeableCollection(0x0),
+fZdcCalibOnly(kTRUE),
 fSparse(0x0)
 {
   /// Default ctor.
@@ -109,9 +114,14 @@ AliAnalysisTaskSE(name),
 // fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
 // fMuonTrackCuts(new AliMuonTrackCuts(cuts)),
 fUtilityMuonAncestor(0x0),
-fNPtBins(1),
+fNPtBins(160),
+fNEtaBins(3),
+fNSPBins(500),
+fNCentBins(50),
+fNPhiBins(50),
 fHarmonic(1),
 fMergeableCollection(0x0),
+fZdcCalibOnly(kTRUE),
 fSparse(0x0)
 {
   //
@@ -174,19 +184,19 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   //
 
   //
-  Int_t nCentBins = 50;
+  Int_t nCentBins = fNCentBins;
   Double_t centMin = 0., centMax = 100.;
   TString centName("Centrality"), centTitle("Centrality"), centUnits("\%");
 
-  Int_t nPtBins = 160;
+  Int_t nPtBins = fNPtBins;
   Double_t ptMin = 0., ptMax = 80.;
   TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
 
-  Int_t nEtaBins = 3;
+  Int_t nEtaBins = fNEtaBins;
   Double_t etaMin = -4.5, etaMax = -2.;
   TString etaName("Eta"), etaTitle("#eta"), etaUnits("");
 
-  Int_t nPhiBins = 50;
+  Int_t nPhiBins = fNPhiBins;
   Double_t phiMin = 0., phiMax = 2.*TMath::Pi();
   TString phiTitle("#phi"), phiUnits("rad");
 
@@ -194,7 +204,7 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   Double_t chargeMin = -2, chargeMax = 2.;
   TString chargeName("Charge"), chargeTitle("charge"), chargeUnits("e");
 
-  Int_t nSPBins = 100;
+  Int_t nSPBins = fNSPBins;
   Double_t SPMin = -2, SPMax = 2.;
   TString SPNameA("Scalar product with A"), SPTitleA("SP A"), SPUnits("");
   TString SPNameB("Scalar product with C"), SPTitleB("SP C");
@@ -261,7 +271,7 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
   if ( ! fMuonEventCuts.IsSelected(fInputHandler) ) return;
 
-  if ( !IsZDCCalibrated(aod->GetRunNumber()) ) return;
+  if ( fZdcCalibOnly && !IsZDCCalibrated(aod->GetRunNumber()) ) return;
 
   // //
   // // Global event info
@@ -300,12 +310,22 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
  //Resolution
   // for ( auto& trigClass : selTrigClasses ) {
-    TString identifier = "Qnorm";
+    // TString identifier = "Qnorm";
+    // static_cast<TH1*>(GetMergeableObject(identifier,"hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
+    // static_cast<TH1*>(GetMergeableObject(identifier,"hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
+    // static_cast<TProfile*>(GetMergeableObject(identifier,"hScalProdQAQB"))->Fill(centrality,QA[0]*QB[0] + QA[1]*QB[1]);
+  // }
+
+  std::vector<TString> selTrigClasses;
+  TIter nextTrig(selectTrigClasses);
+  TObject* obj = NULL;
+  while ( (obj = nextTrig()) ) selTrigClasses.push_back(obj->GetName());
+  for ( auto& trigClass : selTrigClasses ) {
+    TString identifier = Form("/%s",trigClass.Data());
     static_cast<TH1*>(GetMergeableObject(identifier,"hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
     static_cast<TH1*>(GetMergeableObject(identifier,"hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
     static_cast<TProfile*>(GetMergeableObject(identifier,"hScalProdQAQB"))->Fill(centrality,QA[0]*QB[0] + QA[1]*QB[1]);
-  // }
-
+  } // loop on selected trigger classes
 
   AliVParticle* track = 0x0;
 
@@ -321,7 +341,6 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
     Int_t nTracks = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetNTracks(InputEvent()) : MCEvent()->GetNumberOfTracks();
     //loop on tracks
-
     // Int_t nSelected = 0;
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
       track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : MCEvent()->GetTrack(itrack);
@@ -365,6 +384,7 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
         static_cast<THnSparse*>(GetMergeableObject(identifier, "MuSparse"))->Fill(containerInput,1.);
       } // loop on selected trigger classes
     } // loop on tracks
+
   }// loop on container steps
 
   PostData(1, fMergeableCollection);

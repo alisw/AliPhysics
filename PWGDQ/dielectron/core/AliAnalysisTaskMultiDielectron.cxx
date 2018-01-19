@@ -31,6 +31,7 @@
 #include <AliTriggerAnalysis.h>
 #include <AliPIDResponse.h>
 #include <AliTPCPIDResponse.h>
+#include <AliAnalysisUtils.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
@@ -55,6 +56,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
+  fPileUpRejTool(AliDielectronEventCuts::kSPD),
   fBeamEnergy(-1.),
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
@@ -86,6 +88,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
+  fPileUpRejTool(AliDielectronEventCuts::kSPD),
   fBeamEnergy(-1.),
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
@@ -338,8 +341,19 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   fEventStat->Fill(kFilteredEvents);
 
   //pileup
-  if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+  if(fRejectPileup){
+    switch(fPileUpRejTool) {
+      case AliDielectronEventCuts::kSPD:
+        if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+        break;
+      case AliDielectronEventCuts::kSPDInMultBins:
+        if ( (InputEvent()->GetMultiplicity()) && (InputEvent()->IsPileupFromSPDInMultBins() == kTRUE) ) return;
+        break;
+      case AliDielectronEventCuts::kMultiVertexer:
+        AliAnalysisUtils utils;
+        if (utils.IsPileUpMV(InputEvent())) return;
+        break;
+    }
   }
   fEventStat->Fill(kPileupEvents);
 

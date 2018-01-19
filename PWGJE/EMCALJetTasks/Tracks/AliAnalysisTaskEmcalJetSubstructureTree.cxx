@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <array>
 #include <iostream>
 #include <string>
 #include <set>
@@ -38,6 +39,7 @@
 #include <TLinearBinning.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include <TObjString.h>
 #include <TString.h>
 #include <TVector3.h>
 
@@ -47,6 +49,8 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskEmcalJetSubstructureTree.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliClusterContainer.h"
 #include "AliJetContainer.h"
 #include "AliEmcalAnalysisFactory.h"
@@ -56,8 +60,10 @@
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliLog.h"
 #include "AliParticleContainer.h"
-#include "AliTrackContainer.h"
 #include "AliRhoParameter.h"
+#include "AliTrackContainer.h"
+#include "AliTriggerCluster.h"
+#include "AliTriggerConfiguration.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 
@@ -77,6 +83,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     AliAnalysisTaskEmcalJet(),
     fJetSubstructureTree(nullptr),
     fQAHistos(nullptr),
+    fLumiMonitor(nullptr),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
@@ -84,6 +91,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fUseDownscaleWeight(false),
     fFillPart(true),
+    fFillAcceptance(true),
     fFillRho(true),
     fFillMass(true),
     fFillSoftDrop(true),
@@ -97,6 +105,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fJetSubstructureTree(nullptr),
     fQAHistos(nullptr),
+    fLumiMonitor(nullptr),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
@@ -104,6 +113,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fUseDownscaleWeight(false),
     fFillPart(true),
+    fFillAcceptance(true),
     fFillRho(true),
     fFillMass(true),
     fFillSoftDrop(true),
@@ -128,6 +138,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
                  m02binning(100, 0., 1.),
                  ncellbinning(101, -0.5, 100.5);
   fQAHistos = new THistManager("QAhistos");
+  fQAHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fQAHistos->CreateTH2("hClusterConstE", "EMCAL cluster energy vs jet pt; p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
   fQAHistos->CreateTH2("hClusterConstTime", "EMCAL cluster time vs. jet pt; p_{t, jet} (GeV/c); t_{cl} (ns)", jetptbinning, timebinning);
   fQAHistos->CreateTH2("hClusterConstM02", "EMCAL cluster M02 vs. jet pt; p{t, jet} (GeV/c); M02", jetptbinning, m02binning);
@@ -147,48 +158,18 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
   OpenFile(2);
-  TString treename = this->GetOutputSlot(2)->GetContainer()->GetName();
-  fJetSubstructureTree = new TTree(treename, "Tree with jet substructure information");
-  TString varnames[kTNVar];
-  varnames[0] = "Radius";
-  varnames[1] = "EventWeight";
-  varnames[2] = "PtJetRec";
-  varnames[3] = "PtJetSim";
-  varnames[4] = "EJetRec";
-  varnames[5] = "EJetSim";
-  varnames[6] = "RhoPtRec";
-  varnames[7] = "RhoPtSim";
-  varnames[8] = "RhoMassRec";
-  varnames[9] = "RhoMassSim";
-  varnames[10] = "AreaRec";
-  varnames[11] = "AreaSim";
-  varnames[12] = "NEFRec";
-  varnames[13] = "NEFSim";
-  varnames[14] = "MassRec";
-  varnames[15] = "MassSim";
-  varnames[16] = "ZgMeasured";
-  varnames[17] = "ZgTrue";
-  varnames[18] = "RgMeasured";
-  varnames[19] = "RgTrue";
-  varnames[20] = "MgMeasured";
-  varnames[21] = "MgTrue";
-  varnames[22] = "PtgMeasured";
-  varnames[23] = "PtgTrue";
-  varnames[24] = "MugMeasured";
-  varnames[25] = "MugTrue";
-  varnames[26] = "OneSubjettinessMeasured";
-  varnames[27] = "OneSubjettinessTrue";
-  varnames[28] = "TwoSubjettinessMeasured";
-  varnames[29] = "TwoSubjettinessTrue";
-  varnames[30] = "AngularityMeasured";
-  varnames[31] = "AngularityTrue";
-  varnames[32] = "PtDMeasured";
-  varnames[33] = "PtDTrue";
-  varnames[34] = "NCharged";
-  varnames[35] = "NNeutral";
-  varnames[36] = "NConstTrue";
-  varnames[37] = "NDroppedMeasured";
-  varnames[38] = "NDroppedTrue";
+  std::string treename = this->GetOutputSlot(2)->GetContainer()->GetName();
+  fJetSubstructureTree = new TTree(treename.data(), "Tree with jet substructure information");
+  std::vector<std::string> varnames = {
+    "Radius", "EventWeight", "PtJetRec", "PtJetSim", "EJetRec",
+    "EJetSim", "EtaRec", "EtaSim", "PhiRec", "PhiSim",
+    "RhoPtRec", "RhoPtSim", "RhoMassRec", "RhoMassSim", "AreaRec",
+    "AreaSim", "NEFRec", "NEFSim", "MassRec", "MassSim",
+    "ZgMeasured", "ZgTrue", "RgMeasured", "RgTrue", "MgMeasured",
+    "MgTrue", "PtgMeasured", "PtgTrue", "MugMeasured", "MugTrue",
+    "OneSubjettinessMeasured", "OneSubjettinessTrue", "TwoSubjettinessMeasured", "TwoSubjettinessTrue", "AngularityMeasured",
+    "AngularityTrue", "PtDMeasured", "PtDTrue", "NCharged", "NNeutral",
+    "NConstTrue", "NDroppedMeasured", "NDroppedTrue" };
 
   for(int ib = 0; ib < kTNVar; ib++){
     LinkOutputBranch(varnames[ib], fJetTreeData + ib);
@@ -197,9 +178,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   PostData(2, fJetSubstructureTree);
 }
 
-void AliAnalysisTaskEmcalJetSubstructureTree::LinkOutputBranch(const TString &branchname, Double_t *datalocation) {
+void AliAnalysisTaskEmcalJetSubstructureTree::LinkOutputBranch(const std::string &branchname, Double_t *datalocation) {
   // Check whether branch is rejected
   if(!fFillPart && IsPartBranch(branchname)) return;
+  if(!fFillAcceptance && IsAcceptanceBranch(branchname)) return;
   if(!fFillRho && IsRhoBranch(branchname)) return;
   if(!fFillMass && IsMassBranch(branchname)) return;
   if(!fFillSoftDrop && IsSoftdropBranch(branchname)) return;
@@ -207,7 +189,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::LinkOutputBranch(const TString &br
   if(!fFillStructGlob && IsStructbranch(branchname)) return;
 
   std::cout << "Adding branch " << branchname << std::endl;
-  fJetSubstructureTree->Branch(branchname, datalocation, Form("%s/D", branchname.Data()));  
+  fJetSubstructureTree->Branch(branchname.data(), datalocation, Form("%s/D", branchname.data()));  
 }
 
 void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
@@ -224,15 +206,20 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
+  FillLuminosity(); // Makes only sense in data
+
   // for(auto e : *(fInputEvent->GetList())) std::cout << e->GetName() << std::endl;
 
-  TString rhoTagData = datajets ? TString::Format("R%02d", static_cast<Int_t>(datajets->GetJetRadius() * 10.)) : "",
-          rhoTagMC = mcjets ? TString::Format("R%02d", static_cast<Int_t>(mcjets->GetJetRadius() * 10.)) : "";
+  std::stringstream rhoTagData, rhoTagMC;
+  if(datajets) rhoTagData << "R" << std::setw(2) << std::setfill('0') << static_cast<Int_t>(datajets->GetJetRadius() * 10.);
+  if(mcjets) rhoTagMC << "R" << std::setw(2) << std::setfill('0') << static_cast<Int_t>(mcjets->GetJetRadius() * 10.);
 
-  AliRhoParameter *rhoPtRec = GetRhoFromEvent("RhoSparse_Full_" + rhoTagData),
-                  *rhoMassRec = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagData),
-                  *rhoPtSim = GetRhoFromEvent("RhoSparse_Full_" + rhoTagMC),
-                  *rhoMassSim = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagMC);
+  std::string rhoSparseData = "RhoSparse_Full_" + rhoTagData.str(), rhoSparseMC = "RhoSparse_Full_" + rhoTagMC.str(), 
+              rhoMassData = "RhoMassSparse_Full_" + rhoTagData.str(), rhoMassMC = "RhoMassSparse_Full_" + rhoTagMC.str();
+  AliRhoParameter *rhoPtRec = GetRhoFromEvent(rhoSparseData.data()),
+                  *rhoMassRec = GetRhoFromEvent(rhoMassData.data()),
+                  *rhoPtSim = GetRhoFromEvent(rhoSparseMC.data()),
+                  *rhoMassSim = GetRhoFromEvent(rhoMassMC.data());
   AliDebugStream(2) << "Found rho parameter for reconstructed pt:    " << (rhoPtRec ? "yes" : "no") << ", value: " << (rhoPtRec ? rhoPtRec->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for sim pt:              " << (rhoPtSim ? "yes" : "no") << ", value: " << (rhoPtSim ? rhoPtSim->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for reconstructed Mass:  " << (rhoMassRec ? "yes" : "no") << ", value: " << (rhoMassRec ? rhoMassRec->GetVal() : 0.) << std::endl;
@@ -242,7 +229,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   double weight = 1.;
   if(fUseDownscaleWeight){
-    weight = AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(this->fTriggerSelectionString);
+    weight = 1./AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fTriggerSelectionString.Data()));
   }
 
   // Run trigger selection (not on pure MCgen train)
@@ -254,18 +241,23 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
       }
     } else {
-      // Simulation - do EMCAL trigger selection from trigger selection object
-      PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"));
-      AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
-      if(fTriggerSelectionString.Length()){
-        if(!mctrigger){
-          AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
-          return false;
+      if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
+        // Simulation - do EMCAL trigger selection from trigger selection object
+        PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"));
+        AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
+        if(fTriggerSelectionString.Length()){
+          if(!mctrigger){
+            AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
+            return false;
+          }
+          if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
         }
-        if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
       }
     }
   }
+
+  // Count events (for spectrum analysis)
+  fQAHistos->FillTH1("hEventCounter", 1);
 
   Double_t rhoparameters[4]; memset(rhoparameters, 0, sizeof(Double_t) * 4);
   if(rhoPtRec) rhoparameters[0] = rhoPtRec->GetVal();
@@ -351,6 +343,31 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   return true;
 }
 
+void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
+  AliCDBManager * cdb = AliCDBManager::Instance();
+  if(!fMCEvent && cdb){
+    // Get List of trigger clusters
+    AliCDBEntry *en = cdb->Get("GRP/CTP/Config");
+    AliTriggerConfiguration *trg = static_cast<AliTriggerConfiguration *>(en->GetObject());
+    std::vector<std::string> clusternames;
+    for(auto c : trg->GetClusters()) {
+      AliTriggerCluster *clust = static_cast<AliTriggerCluster *>(c);
+      std::string clustname = clust->GetName();
+      auto iscent = clustname.find("CENT") != std::string::npos, iscalo = clustname.find("CALO") != std::string::npos; 
+      if(!(iscalo || iscent)) continue;
+      clusternames.emplace_back(clustname);
+   }
+
+    // Set the x-axis of the luminosity monitor histogram
+    fLumiMonitor = new TH1F("hLumiMonitor", "Luminosity monitor", clusternames.size(), 0, clusternames.size());
+    int currentbin(1);
+    for(auto c : clusternames) {
+      fLumiMonitor->GetXaxis()->SetBinLabel(currentbin++, c.data());
+    }
+    fOutput->Add(fLumiMonitor);  
+  }
+}
+
 void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
                                                        const AliEmcalJet *datajet, const AliEmcalJet *mcjet,
                                                        AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcSoftdrop,
@@ -376,6 +393,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
     fJetTreeData[kTNEFRec] = datajet->NEF();
     if(fFillMass) fJetTreeData[kTMassRec] = datajet->M();
     fJetTreeData[kTEJetRec] = datajet->E();
+    if(fFillAcceptance) {
+      fJetTreeData[kTEtaRec] = datajet->Eta();
+      fJetTreeData[kTPhiRec] = datajet->Phi();
+    }
   }
 
   if(fFillPart && mcjet){
@@ -385,6 +406,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
     fJetTreeData[kTNEFSim] = mcjet->NEF();
     if(fFillMass) fJetTreeData[kTMassSim] = mcjet->M();
     fJetTreeData[kTEJetSim] = mcjet->E();
+    if(fFillAcceptance){
+      fJetTreeData[kTEtaSim] = mcjet->Eta();
+      fJetTreeData[kTPhiSim] = mcjet->Phi();
+    }
   }
 
   if(fFillSoftDrop){
@@ -432,6 +457,24 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
   fJetSubstructureTree->Fill();
 }
 
+void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
+  if(fLumiMonitor && fUseDownscaleWeight){
+    AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+    if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) {
+      for(auto trigger : DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
+        auto int7trigger = trigger.IsTriggerClass("INT7");
+        auto bunchcrossing = trigger.fBunchCrossing == "B";
+        auto nopf = trigger.fPastFutureProtection == "NOPF";
+        AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.fTriggerCluster << std::endl;
+        if(int7trigger && bunchcrossing && nopf) {
+          double downscale = downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName());
+          AliDebugStream(5) << "Using downscale " << downscale << std::endl;
+          fLumiMonitor->Fill(trigger.fTriggerCluster.data(), 1./downscale);
+        }
+      }
+    }
+  }
+}
 
 AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
@@ -614,28 +657,77 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
 #endif
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsPartBranch(const TString &branchname) const{
-  return branchname.Contains("Sim") || branchname.Contains("True");
+std::vector<Triggerinfo> AliAnalysisTaskEmcalJetSubstructureTree::DecodeTriggerString(const std::string &triggerstring) const {
+  std::vector<Triggerinfo> result;
+  std::stringstream triggerparser(triggerstring);
+  std::string currenttrigger;
+  while(std::getline(triggerparser, currenttrigger, ' ')){
+    if(!currenttrigger.length()) continue;
+    std::vector<std::string> tokens;
+    std::stringstream triggerdecoder(currenttrigger);
+    std::string token;
+    while(std::getline(triggerdecoder, token, '-')) tokens.emplace_back(token);
+    result.emplace_back(Triggerinfo({tokens[0], tokens[1], tokens[2], tokens[3]}));
+  }
+  return result;
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsRhoBranch(const TString &branchname) const{
-  return branchname.Contains("Rho");
+std::string AliAnalysisTaskEmcalJetSubstructureTree::MatchTrigger(const std::string &triggertoken) const {
+  std::vector<std::string> tokens;
+  std::string result;
+  std::stringstream decoder(fInputEvent->GetFiredTriggerClasses().Data());
+  while(std::getline(decoder, result, ',')) tokens.emplace_back(result); 
+  result.clear();
+  for(auto t : tokens) {
+    if(t.find(triggertoken) != std::string::npos) {
+      // take first occurrence - downscale factor should normally be the same
+      result = t;
+      break;
+    }
+  }
+  return result;
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsMassBranch(const TString &branchname) const{
-  return branchname.Contains("Mass");     // also disable rho mass branch
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsSelectEmcalTriggers(const std::string &triggerstring) const {
+  const std::array<std::string, 8> kEMCALTriggers = {
+    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  };
+  bool isEMCAL = false;
+  for(auto emcaltrg : kEMCALTriggers) {
+    if(triggerstring.find(emcaltrg) != std::string::npos) {
+      isEMCAL = true;
+      break;
+    }
+  }
+  return isEMCAL;
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsSoftdropBranch(const TString &branchname) const{
-  return branchname.Contains("gMeasured") || branchname.Contains("gTrue") || branchname.Contains("NDropped");
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsPartBranch(const std::string &branchname) const{
+  return (branchname.find("Sim") != std::string::npos) || (branchname.find("True") != std::string::npos);
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsNSubjettinessBranch(const TString &branchname) const{
-  return branchname.Contains("Subjettiness");
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsAcceptanceBranch(const std::string &branchname) const {
+  return (branchname.find("Eta") != std::string::npos) || (branchname.find("Phi") != std::string::npos);
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsStructbranch(const TString &branchname) const{
-  return branchname.Contains("Angularity") || branchname.Contains("PtD");
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsRhoBranch(const std::string &branchname) const{
+  return (branchname.find("Rho") != std::string::npos);
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsMassBranch(const std::string &branchname) const{
+  return (branchname.find("Mass") != std::string::npos);     // also disable rho mass branch
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsSoftdropBranch(const std::string &branchname) const{
+  return (branchname.find("gMeasured") != std::string::npos) || (branchname.find("gTrue") != std::string::npos) || (branchname.find("NDropped") != std::string::npos);
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsNSubjettinessBranch(const std::string &branchname) const{
+  return (branchname.find("Subjettiness") != std::string::npos);
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsStructbranch(const std::string &branchname) const{
+  return (branchname.find("Angularity") != std::string::npos) || (branchname.find("PtD") != std::string::npos);
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
@@ -652,7 +744,9 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     }
   }
 
-  AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree("JetSubstructureTreemaker_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger);
+  std::stringstream taskname;
+  taskname << "JetSubstructureTreemaker_R" << std::setw(2) << std::setfill('0') << int(jetradius*10) << trigger;  
+  AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree(taskname.str().data());
   mgr->AddTask(treemaker);
   treemaker->SetMakeGeneralHistograms(kTRUE);
 
@@ -704,26 +798,37 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     treemaker->SetVzRange(-10., 10);
 
     // configure trigger selection
-    TString triggerstring(trigger);
-    if(triggerstring.Contains("INT7")) {
+    std::string triggerstring(trigger);
+    if(triggerstring.find("INT7") != std::string::npos) {
       treemaker->SetTriggerBits(AliVEvent::kINT7);
-    } else if(triggerstring.Contains("EJ1")) {
+    } else if(triggerstring.find("EJ1") != std::string::npos) {
       treemaker->SetTriggerBits(AliVEvent::kEMCEJE);
       treemaker->SetTriggerString("EJ1");
-    } else if(triggerstring.Contains("EJ2")) {
+    } else if(triggerstring.find("EJ2") != std::string::npos) {
       treemaker->SetTriggerBits(AliVEvent::kEMCEJE);
       treemaker->SetTriggerString("EJ2");
     }
   }
 
   // Connecting containers
-  TString outputfile = mgr->GetCommonFileName();
-  outputfile += TString::Format(":JetSubstructure_R%02d_%s", int(jetradius * 10.), trigger);
+  std::stringstream outputfile, histname, treename;
+  outputfile << mgr->GetCommonFileName() << ":JetSubstructure_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  histname << "JetSubstructureHistos_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  treename << "JetSubstructureTree_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
-  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer(histname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile.str().data()));
+  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer(treename.str().data(), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
   return treemaker;
+}
+
+std::string Triggerinfo::ExpandClassName() const {
+  std::string result = fTriggerClass + "-" + fBunchCrossing + "-" + fPastFutureProtection + "-" + fTriggerCluster;
+  return result;
+}
+
+bool Triggerinfo::IsTriggerClass(const std::string &triggerclass) const {
+  return fTriggerClass.substr(1) == triggerclass; // remove C from trigger class part
 }
 
 } /* namespace EmcalTriggerJets */

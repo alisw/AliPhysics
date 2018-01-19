@@ -68,7 +68,14 @@ class AliFemtoCorrFctnDPhiStarDEtaStar : public AliFemtoCorrFctn {
   /**
    * Construct with histogram parameters
    */
-  AliFemtoCorrFctnDPhiStarDEtaStar(char* title, double radius, const int& aEtaBins, double aEtaRangeLow, double aEtaRangeUp, const int& aPhiStarBins, double aPhiStarRangeLow, double aPhiStarRangeUp);
+  AliFemtoCorrFctnDPhiStarDEtaStar(const char* title,
+                                   double radius,
+                                   const int& aEtaBins,
+                                   double aEtaRangeLow,
+                                   double aEtaRangeUp,
+                                   const int& aPhiStarBins,
+                                   double aPhiStarRangeLow,
+                                   double aPhiStarRangeUp);
 
   /// Copy Constructor
   AliFemtoCorrFctnDPhiStarDEtaStar(const AliFemtoCorrFctnDPhiStarDEtaStar& aCorrFctn);
