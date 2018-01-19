@@ -222,8 +222,14 @@ Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float
 
   // 3.) compute detector status graphs
   fStatusGraphM = MakeMultiGraphStatus(fTree,"statusBar", sStatusBarVars+";tagID",sStatusBarNames,cutString.Data(),sCriteria,kTRUE);
-  fStatusGraphM->GetYaxis()->SetTitle("");
-  fStatusGraphM->GetHistogram()->SetTitle("");
+  if(fStatusGraphM==0) {
+    ::Error("AliTreeTrending::InitSummaryTrending","MakeMultiGraphStatus() returned NULL pointer when plotting the following variables: %s", sStatusBarVars.Data());
+    return 0;
+  }
+  else{
+    fStatusGraphM->GetYaxis()->SetTitle("");
+    fStatusGraphM->GetHistogram()->SetTitle("");
+  }
   return kTRUE;
 }
 
@@ -348,10 +354,12 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
         //cgr->SetName(TString((oaStatusBarNames->At(iVar)->GetName())).Data());
       }
     } else {
-      ::Error("AliTreeTrending::MakeMultiGraphStatus", "TStatToolkit::MakeStatusMultGr() returned with error -> next");
+      ::Error("AliTreeTrending::MakeMultiGraphStatus", "TStatToolkit::MakeStatusMultGr(sVar=%s) returned with error -> next",sVar.Data());
       continue;
     }
   }
+  
+  Bool_t added=kFALSE;
   // 2.) Set Y ranges and Y labels for each graph
   Double_t *yBins = new Double_t[nVars+1];
   for(Int_t i=0; i<=nVars;i++) yBins[i] = Double_t(i);
@@ -368,10 +376,19 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
       cgr->SetTitle(""); cgr->GetYaxis()->SetTitle("");
       cgr->GetYaxis()->Set(nVars, yBins);
       cgr->GetYaxis()->SetRangeUser(0,nVars);
-      for (Int_t jgr=0; jgr<nVars; jgr++)  cgr->GetYaxis()->SetBinLabel(jgr+1, graphArray->At(jgr)->GetTitle());
+      for (Int_t jgr=0; jgr<nVars; jgr++)  {
+       if(graphArray->At(jgr)!=NULL)  cgr->GetYaxis()->SetBinLabel(jgr+1, graphArray->At(jgr)->GetTitle());
+      }
       mgrCombined->Add(cgr);
+      added=kTRUE;
     }
   }
+  
+  if(! added) {
+      ::Error("AliTreeTrending::MakeMultiGraphStatus","No graphs could be added to multigraph - returning 0");
+      return 0;
+  }
+  
   mgrCombined->SetMinimum(0); mgrCombined->SetMaximum(nVars);
   // TStatToolkit::DrawMultiGraph(mgrCombined,"ap");
   if (setAxis) {      //TODO  - to get axis graph has to be drawn - is there other option ?
@@ -383,7 +400,7 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
     mgrCombined->GetYaxis()->Set(nVars, yBins);
     mgrCombined->GetYaxis()->SetRangeUser(0, nVars);
     for (Int_t jgr = 0; jgr < nVars; jgr++)
-      mgrCombined->GetYaxis()->SetBinLabel(jgr + 1, graphArray->At(jgr)->GetTitle());
+      if(graphArray->At(jgr)!=NULL) mgrCombined->GetYaxis()->SetBinLabel(jgr + 1, graphArray->At(jgr)->GetTitle());
     mgrCombined->GetYaxis()->SetTitle("");
     mgrCombined->Draw("ap");
   }

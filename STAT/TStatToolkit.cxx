@@ -1876,7 +1876,7 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
       gr->SetTitle(oaAlias->At(i)->GetName());
     }
     else{
-        ::Error("MakeGraphSparse"," returned with error -> returning");
+        ::Error("TStatToolkit::MakeStatusMultGr","MakeGraphSparse() returned with error when called with the following query: %s",query);
         return 0;
     }
   }
