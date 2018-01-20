@@ -260,9 +260,17 @@ void AliRsnEvent::SetDaughterESDv0(AliRsnDaughter &out, Int_t i)
                      //TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother()); // old way to read MC
 
                      if(mom->GetPdgCode() == 310) {
-                        //take the mother of the k0s which is a k0 (311)
-                        out.SetLabel(mom->GetFirstMother());
+                        if(mom->GetFirstMother() >= 0) {
+                           TParticle *mom2 = ((AliMCParticle*)mc->GetTrack(mom->GetFirstMother()))->Particle();
+                           if(mom2 && TMath::Abs(mom2->GetPdgCode()) == 311) {
+                              //take the mother of the k0s which is a k0 (311)
+                              out.SetLabel(mom->GetFirstMother());
+                           }
+                        } else {
+                           out.SetLabel(mom->GetFirstMother());
+                        }
                      }
+
                      SetMCInfoESD(out);
                   }
                }
@@ -582,3 +590,4 @@ Int_t AliRsnEvent::SelectLeadingParticle(AliRsnCutSet *cuts)
 
    return fLeading;
 }
+
