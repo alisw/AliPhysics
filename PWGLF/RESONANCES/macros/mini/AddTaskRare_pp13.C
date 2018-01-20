@@ -970,6 +970,7 @@ Bool_t Config_pkx(
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
   /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
+  /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,         kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,       kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,        kFALSE);
@@ -978,16 +979,16 @@ Bool_t Config_pkx(
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
 
-  Bool_t  use     [12] = {1         ,1         ,1         ,1         ,1       ,1       ,isMC     ,isMC     ,isMC     ,isMC     ,isMC    ,isMC    };
-  Bool_t  useIM   [12] = {1         ,1         ,1         ,1         ,1       ,1       ,1        ,1        ,1        ,1        ,0       ,0       };
-  TString name    [12] = {"UnlikePM","UnlikeMP","MixingPM","MixingMP","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP" };
-  TString comp    [12] = {"PAIR"    ,"PAIR"    ,"MIX"     ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"TRUE"  ,"TRUE"  };
-  TString output  [12] = {"HIST"  ,"HIST"  ,"HIST"  ,"HIST"  ,"HIST","HIST","HIST" ,"HIST" ,"HIST" ,"HIST" ,"HIST","HIST"};
-  Char_t  charge1 [12] = {'+'       ,'-'       ,'+'       ,'-'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-'     };
-  Char_t  charge2 [12] = {'-'       ,'+'       ,'-'       ,'+'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'     };
-  Int_t   cutIDK  [12] = {iCutK     ,iCutK     ,iCutK     ,iCutK     ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK   };
-  Int_t   cutIDP  [12] = {iCutP    ,iCutP    ,iCutP    ,iCutP    ,iCutP  ,iCutP  ,iCutP   ,iCutP   ,iCutP   ,iCutP   ,iCutP  ,iCutP  };
-  Int_t   PDGCode [12] = {3124       ,3124       ,3124       ,3124       ,3124     ,3124     ,3124      ,-3124     ,3124      ,3124      ,3124     ,-3124    };
+  Bool_t  use     [12] = {1         ,1         ,1         ,1         ,1       ,1       ,isMC     ,isMC     ,isMC     ,isMC     ,isMC    ,isMC   };
+  Bool_t  useIM   [12] = {1         ,1         ,1         ,1         ,1       ,1       ,1        ,1        ,1        ,1        ,0       ,0      };
+  TString name    [12] = {"UnlikePM","UnlikeMP","MixingPM","MixingMP","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP"};
+  TString comp    [12] = {"PAIR"    ,"PAIR"    ,"MIX"     ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"TRUE"  ,"TRUE" };
+  TString output  [12] = {"HIST"    ,"HIST"    ,"HIST"    ,"HIST"    ,"HIST"  ,"HIST"  ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"  ,"HIST" };
+  Char_t  charge1 [12] = {'+'       ,'-'       ,'+'       ,'-'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-'    };
+  Char_t  charge2 [12] = {'-'       ,'+'       ,'-'       ,'+'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'    };
+  Int_t   cutIDK  [12] = {iCutK     ,iCutK     ,iCutK     ,iCutK     ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK  };
+  Int_t   cutIDP  [12] = {iCutP     ,iCutP     ,iCutP     ,iCutP     ,iCutP   ,iCutP   ,iCutP    ,iCutP    ,iCutP    ,iCutP    ,iCutP   ,iCutP  };
+  Int_t   PDGCode [12] = {3124      ,3124      ,3124      ,3124      ,3124    ,3124    ,-3124    ,3124     ,-3124    ,3124     ,-3124   ,3124   };
 
   for(Int_t i=0;i<12;i++){
     if(!use[i]) continue;
@@ -1004,7 +1005,7 @@ Bool_t Config_pkx(
 
     // axis X: invmass or resolution
     if(useIM[i]) out->AddAxis(imID,160,1.4,3.);
-    else out->AddAxis(resID,200,-0.02,0.02);
+    else out->AddAxis(diffID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
     out->AddAxis(ptID,200,0.0,20.0);
@@ -1486,6 +1487,8 @@ Bool_t Config_Lambdakx(
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutK=task->AddTrackCuts(cutSetK);
+    
+  V0Cuts=TrackCutsLambda%1024;
 
   // selections for V0 daughters
   Int_t v0d_xrows=70;
@@ -1504,7 +1507,7 @@ Bool_t Config_Lambdakx(
   Float_t lambda_piPIDCut=5.;
   Float_t lambda_pPIDCut=5.;
   Float_t lambdaDaughDCA=1.0;//0.5;
-  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambdaDCA=0.4;//1.e10 0.3
   Float_t lambda_pLife=30.;
   Float_t lambda_radiuslow=0.5;
   Float_t lambda_radiushigh=200.;
@@ -1512,6 +1515,9 @@ Bool_t Config_Lambdakx(
   Float_t lambda_massTolVeto=0.004;
   Bool_t  lambdaSwitch=kFALSE;
   Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+
+  if(V0Cuts==1) lambdaDCA=1.e10;
+  else if(V0Cuts==2) lambdaDaughDCA=0.5;
 
   // selections for the proton and pion daugthers of Lambda
 
@@ -1632,58 +1638,102 @@ Bool_t Config_Lambdakx(
 
   // -- Values ------------------------------------------------------------------------------------                                    
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
-  /* transv. momentum */ Int_t ptID    = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
-  /* centrality       */ Int_t centID  = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-  /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
-  /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
+  /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
+  /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+  /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
+  /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
 
   // -- Create all needed outputs ----------------------------------------------------------------- 
   // use an array for more compact writing, which are different on mixing and charges
   
-  Bool_t   use     [18] = { 1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1          ,  1              ,  1              ,  1              ,  1              ,  1              };
-  Bool_t   useIM   [18] = { 1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1          ,  1              ,  1              ,  1              ,  1              ,  1              };
-  TString  name    [18] = {"LambdapKp"   , "LambdapKm"   , "LambdaaKm"      , "LambdaaKp"      , "LambdapKpMix", "LambdapKmMix", "LambdaaKmMix"   , "LambdaaKpMix"   , "SigmaPt"  , "SigmaMt"  , "ASigmaPt"     , "ASigmaMt"     , "XiM"       , "XiP"           , "Lambda1520P"   , "Lambda1520M"   , "Lambda1520PBar", "Lambda1520MBar"};
-  TString  comp    [18] = {"PAIR"     , "PAIR"     , "PAIR"         , "PAIR"         , "MIX"      , "MIX"      , "MIX"          , "MIX"          , "TRUE"     , "TRUE"     , "TRUE"         , "TRUE"         , "TRUE"      , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          };
-  TString  output  [18] = {"HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"      , "HIST"          , "HIST"          , "HIST"          , "HIST"          , "HIST"          };
-  Char_t   charge1 [18] = {'0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'         , '0'             , '0'             , '0'             , '0'             , '0'             };
-  Char_t   charge2 [18] = {'+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '-'         , '+'             , '+'             , '-'             , '-'             , '+'             };
-  Int_t    cutID1  [18] = { iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda ,  iCutAntiLambda ,  iCutLambda     ,  iCutLambda     ,  iCutAntiLambda ,  iCutAntiLambda };
-  Int_t    cutID2  [18] = { iCutK  ,  iCutK  ,  iCutK      ,  iCutK      ,  iCutK  ,  iCutK  ,  iCutK      ,  iCutK      ,  iCutK  ,  iCutK  ,  iCutK      ,  iCutK      ,  iCutK   ,  iCutK       ,  iCutK       ,  iCutK       ,  iCutK       ,  iCutK       };
-  Int_t    ipdg    [18] = { 3224      ,  3114      , -3224          , -3114          ,  3224      ,  3114      , -3224          , -3114          ,  3224      ,  3114      , -3224          , -3114          ,  3312       , -3312           ,  3124           ,  3124           , -3124           , -3124           };
-  Double_t mass    [18] = { 1.3828    ,  1.3872    ,  1.3828        ,  1.3872        ,  1.3828    ,  1.3872    ,  1.3828        ,  1.3872        ,  1.3828    ,  1.3872    ,  1.3828        ,  1.3872        ,  1.32171    ,  1.32171        ,  1.5195         ,  1.5195         ,  1.5195         ,  1.5195         };
+  Int_t    use     [14] = { 1         ,  1        ,  1           ,  1           ,  1           ,  1           ,  1           ,  1           ,
+                              2            , 2            , 2             , 2            , 2             , 2            };
+  Bool_t   useIM   [14] = { 1         ,  1        ,  1           ,  1           ,  1           ,  1           ,  1           ,  1           ,
+                              1            , 1            , 1             , 0            , 1             , 0            };
+  TString  name    [14] = {"LambdapKp","LambdapKm","LambdaaKm"   , "LambdaaKp"  ,"LambdapKpMix","LambdapKmMix","LambdaaKmMix","LambdaaKpMix",
+                             "Xi1820_m_gen","Xi1820_p_gen","Xi1820_m_true","Xi1820_m_res","Xi1820_p_true","Xi1820_p_res"};
+  TString  comp    [14] = {"PAIR"     , "PAIR"    , "PAIR"       , "PAIR"       , "MIX"        , "MIX"        , "MIX"        , "MIX"        ,
+                             "MOTHER"      , "MOTHER"     , "TRUE"        , "TRUE"       , "TRUE"        , "TRUE"       };
+  Char_t   charge1 = '0';
+  Char_t   charge2 [14] = {'+'        , '-'       , '-'          , '+'          , '+'          , '-'          , '-'          , '+'          ,
+                             '-'           , '+'          , '-'           , '-'          , '+'           , '+'          };
+  Int_t    cutID1  [14] = { iCutLambda, iCutLambda,iCutAntiLambda,iCutAntiLambda,  iCutLambda  ,  iCutLambda  ,iCutAntiLambda,iCutAntiLambda,
+                             iCutLambda    ,iCutAntiLambda,  iCutLambda   ,  iCutLambda  , iCutAntiLambda,iCutAntiLambda};
+  Int_t    cutID2  = iCutK;
+  Int_t    ipdg    [14] = { 123314    ,  123314   , -123314      , -123314      ,  123314      ,  123314      , -123314      , -123314      ,
+                             123314        , -123314      ,  123314       , 123314       ,  -123314      ,  -123314     };
+  Double_t mass    = 1.8234;
+  Int_t    pairID  [14] = { 0         ,  0        ,  0           ,  0           ,  1           ,  1           ,  1           ,  1           ,
+                              0            ,  0           ,  0            ,  0           ,  0            ,  0           };
 
-  for(Int_t i=0;i<18;i++){
-    if(!use[i]) continue;
+  for(Int_t i=0;i<14;i++){
+    if(!use[i] || (!isMC && use[i]==2)) continue;
     // create output
-    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdakx_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdakx_%s%s",name[i].Data(),suffix),"HIST",comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
-    out->SetCutID(1,cutID2[i]);
+    out->SetCutID(1,cutID2);
     out->SetDaughter(0,AliRsnDaughter::kLambda);
     out->SetDaughter(1,AliRsnDaughter::kKaon);
-    out->SetCharge(0,charge1[i]);
+    out->SetCharge(0,charge1);
     out->SetCharge(1,charge2[i]);
     out->SetMotherPDG(ipdg[i]);
-    out->SetMotherMass(mass[i]);
+    out->SetMotherMass(mass);
     // pair cuts
     if(TrackCutsLambda & 1024){
       out->SetPairCuts(cutsPairMix);
     }else if(TrackCutsLambda & 2048){
       out->SetPairCuts(cutsPairSame);
     }else{
-      if(!(i>=4 && i<=7)) out->SetPairCuts(cutsPairSame);
+      if(!pairID[i]) out->SetPairCuts(cutsPairSame);
       else out->SetPairCuts(cutsPairMix);
     }
-
+        
     // axis X: invmass or resolution
     if(useIM[i]) out->AddAxis(imID,400,1.6,2.4);
-    else out->AddAxis(resID,200,-0.02,0.02);
-    
+    else out->AddAxis(diffID,200,-0.02,0.02);
+        
     // axis Y: transverse momentum
     out->AddAxis(ptID,200,0.,20.);
-    
+        
     // axis Z: centrality-multiplicity
     out->AddAxis(centID,nmult,multbins);
+  }
+    
+  if(isMC){
+    //phase-space histograms
+    //Xi(1820)-
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Xi1820_m_mother_ps%s", suffix),"HIST","TRUE");
+    out->SetCutID(0,iCutLambda);
+    out->SetCutID(1,cutID2);
+    out->SetDaughter(0,AliRsnDaughter::kLambda);
+    out->SetDaughter(1,AliRsnDaughter::kKaon);
+    out->SetCharge(0,charge1);
+    out->SetCharge(1,'-');
+    out->SetMotherPDG(123314);
+    out->SetMotherMass(mass);
+    out->SetPairCuts(cutsPairMix);//just rapidity, no autocorrelation check
+    out->AddAxis(fdpt,100,0.,10.);
+    out->AddAxis(sdpt,100,0.,10.);
+    out->AddAxis(ptID,40,0.,20.);
+      
+    //anti-Xi(1820)+
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Xi1820_p_mother_ps%s", suffix),"HIST","TRUE");
+    out->SetCutID(0,iCutAntiLambda);
+    out->SetCutID(1,cutID2);
+    out->SetDaughter(0,AliRsnDaughter::kLambda);
+    out->SetDaughter(1,AliRsnDaughter::kKaon);
+    out->SetCharge(0,charge1);
+    out->SetCharge(1,'+');
+    out->SetMotherPDG(-123314);
+    out->SetMotherMass(mass);
+    out->SetPairCuts(cutsPairMix);
+    out->AddAxis(fdpt,100,0.,10.);
+    out->AddAxis(sdpt,100,0.,10.);
+    out->AddAxis(ptID,40,0.,20.);
   }
 
   return kTRUE;
@@ -1702,6 +1752,7 @@ Bool_t Config_Lambdak0(
   Int_t       TrackCutsLambda=0,
   Int_t       TrackCutsK=0
 ){
+    
   bool isPP=false;
   if(!system) isPP=true;
   int trigger=EventCuts%10;
@@ -1710,6 +1761,8 @@ Bool_t Config_Lambdak0(
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
   Bool_t enableMonitor=kTRUE;
+    
+  V0Cuts=TrackCutsLambda%1024;
 
   // selections for V0 daughters
   Int_t v0d_xrows=70;
@@ -1727,14 +1780,21 @@ Bool_t Config_Lambdak0(
   // selections for K0S 
   Float_t k0s_piPIDCut=5.;
   Float_t k0sDaughDCA=1.;
-  Float_t k0sDCA=1.e10;//0.3;
+  Float_t k0sDCA=0.3;//1.e10 0.3
   Float_t k0s_pLife=20.;
   Float_t k0s_radiuslow=0.5;
   Float_t k0s_radiushigh=200.;
-  Float_t k0s_massTol=0.03;
+  Float_t k0s_massTol=0.02;//0.03
   Float_t k0s_massTolVeto=0.004;
   Bool_t  k0sSwitch=kFALSE;
-  Float_t k0sCosPoinAn=0.97;  
+  Float_t k0sCosPoinAn=0.97;
+    
+  if(V0Cuts==1){
+    k0sDCA=1.e10;
+    k0s_massTol=0.03;
+  }else if(V0Cuts==2) k0sDaughDCA=0.5;
+  else if(V0Cuts==3) k0s_massTol=0.03;
+  else if(V0Cuts==4) task->SetCheckDecay(false);
 
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
   cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -1759,8 +1819,8 @@ Bool_t Config_Lambdak0(
   // selections for Lambda
   Float_t lambda_piPIDCut=5.;
   Float_t lambda_pPIDCut=5.;
-  Float_t lambdaDaughDCA=1.;//0.5;
-  Float_t lambdaDCA=1.e10;//0.3;
+  Float_t lambdaDaughDCA=1.;//0.5
+  Float_t lambdaDCA=0.4;//1.e10 0.3
   Float_t lambda_pLife=30.;
   Float_t lambda_radiuslow=0.5;
   Float_t lambda_radiushigh=200.;
@@ -1768,6 +1828,9 @@ Bool_t Config_Lambdak0(
   Float_t lambda_massTolVeto=0.004;
   Bool_t  lambdaSwitch=kFALSE;
   Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+  if(V0Cuts==1) lambdaDCA=1.e10;
+  else if(V0Cuts==2) lambdaDaughDCA=0.5;
 
   // selections for the proton and pion daugthers of Lambda
 
@@ -1898,58 +1961,94 @@ Bool_t Config_Lambdak0(
 
   // -- Values ------------------------------------------------------------------------------------                                    
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
-  /* transv. momentum */ Int_t ptID    = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
-  /* centrality       */ Int_t centID  = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-  /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
-  /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
+  /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
+  /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+  /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
+  /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
 
   // -- Create all needed outputs ----------------------------------------------------------------- 
   // use an array for more compact writing, which are different on mixing and charges
-
-  Bool_t   use     [4] = { 1         ,  1         ,  1             ,  1};
-  Bool_t   useIM   [4] = { 1         ,  1         ,  1             ,  1};
-  TString  name    [4] = {"LambdapK0"   , "LambdaaK0"   , "LambdapK0Mix"      , "LambdaaK0Mix"};
-  TString  comp    [4] = {"PAIR"     , "PAIR"     ,  "MIX"      , "MIX"};
-  TString  output  [4] = {"HIST"     , "HIST"     , "HIST"         , "HIST"};
-  Char_t   charge1 [4] = {'0'        , '0'        , '0'            , '0'};
-  Char_t   charge2 [4] = {'0'        , '0'        , '0'            , '0'};
-  Int_t    cutID1  [4] = { iCutLambda,  iCutAntiLambda,  iCutLambda, iCutAntiLambda};
-  Int_t    cutID2  [4] = { iCutK0s  ,  iCutK0s  ,  iCutK0s      ,  iCutK0s};
-  Int_t    ipdg    [4] = { 3224      ,  3114      , -3224          , -3114};
-  Double_t mass    [4] = { 1.3828    ,  1.3872    ,  1.3828        ,  1.3872};
    
-  for(Int_t i=0;i<4;i++){
-    if(!use[i]) continue;
+  Bool_t   use     [10] = { 1         ,  1           ,  1           ,  1           ,  2            ,  2            ,  2             ,  2            ,  2             ,  2            };
+  Bool_t   useIM   [10] = { 1         ,  1           ,  1           ,  1           ,  1            ,  1            ,  1             ,  0            ,  1             ,  0            };
+  TString  name    [10] = {"LambdapK0", "LambdaaK0"  ,"LambdapK0Mix","LambdaaK0Mix","Xi1820_0p_gen","Xi1820_0a_gen","Xi1820_0p_true","Xi1820_0p_res","Xi1820_0a_true","Xi1820_0a_res"};
+  TString  comp    [10] = {"PAIR"     , "PAIR"       ,  "MIX"       , "MIX"        , "MOTHER"      , "MOTHER"      , "TRUE"         , "TRUE"        , "TRUE"         , "TRUE"        };
+  Char_t   charge1 = '0';
+  Char_t   charge2 = '0';
+  Int_t    cutID1  [10] = {iCutLambda ,iCutAntiLambda, iCutLambda   ,iCutAntiLambda,  iCutLambda   , iCutAntiLambda,  iCutLambda    ,  iCutLambda   , iCutAntiLambda , iCutAntiLambda};
+  Int_t    cutID2  = iCutK0s;
+  Int_t    ipdg    [10] = { 123324    ,  -123324     , 123324       , -123324      , 123324        , -123324       , 123324         , 123324        , -123324        , -123324       };
+  Double_t mass    = 1.8234;
+  Int_t    pairID  [10] = { 0         ,  0           ,  1           ,  1           ,  0            ,  0            ,  0             ,  0            ,  0             ,  0            };
+    
+  for(Int_t i=0;i<10;i++){
+    if(!use[i] || (!isMC && use[i]==2)) continue;
     // create output
-    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdak0_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdak0_%s%s",name[i].Data(),suffix),"HIST",comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
-    out->SetCutID(1,cutID2[i]);
+    out->SetCutID(1,cutID2);
     out->SetDaughter(0,AliRsnDaughter::kLambda);
     out->SetDaughter(1,AliRsnDaughter::kKaon0);
-    out->SetCharge(0,charge1[i]);
-    out->SetCharge(1,charge2[i]);
+    out->SetCharge(0,charge1);
+    out->SetCharge(1,charge2);
     out->SetMotherPDG(ipdg[i]);
-    out->SetMotherMass(mass[i]);
+    out->SetMotherMass(mass);
     // pair cuts
     if(TrackCutsLambda & 1024){
       out->SetPairCuts(cutsPairMix);
     }else if(TrackCutsLambda & 2048){
       out->SetPairCuts(cutsPairSame);
     }else{
-      if(i<=1) out->SetPairCuts(cutsPairSame);
+      if(!pairID[i]) out->SetPairCuts(cutsPairSame);
       else out->SetPairCuts(cutsPairMix);
     }
-
+        
     // axis X: invmass or resolution
     if(useIM[i]) out->AddAxis(imID,400,1.6,2.4);
-    else out->AddAxis(resID,200,-0.02,0.02);
-    
+    else out->AddAxis(diffID,200,-0.02,0.02);
+        
     // axis Y: transverse momentum
     out->AddAxis(ptID,200,0.,20.);
-    
+        
     // axis Z: centrality-multiplicity
     out->AddAxis(centID,nmult,multbins);
+  }
+    
+  if(isMC){
+    //phase-space histograms
+    //Xi(1820)0
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Xi1820_0p_mother_ps%s", suffix),"HIST","TRUE");
+    out->SetCutID(0,iCutLambda);
+    out->SetCutID(1,cutID2);
+    out->SetDaughter(0,AliRsnDaughter::kLambda);
+    out->SetDaughter(1,AliRsnDaughter::kKaon0);
+    out->SetCharge(0,charge1);
+    out->SetCharge(1,charge2);
+    out->SetMotherPDG(123324);
+    out->SetMotherMass(mass);
+    out->SetPairCuts(cutsPairMix);//just rapidity, no autocorrelation check
+    out->AddAxis(fdpt,100,0.,10.);
+    out->AddAxis(sdpt,100,0.,10.);
+    out->AddAxis(ptID,40,0.,20.);
+      
+    //anti-Xi(1820)0
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Xi1820_0a_mother_ps%s", suffix),"HIST","TRUE");
+    out->SetCutID(0,iCutAntiLambda);
+    out->SetCutID(1,cutID2);
+    out->SetDaughter(0,AliRsnDaughter::kLambda);
+    out->SetDaughter(1,AliRsnDaughter::kKaon0);
+    out->SetCharge(0,charge1);
+    out->SetCharge(1,charge2);
+    out->SetMotherPDG(-123324);
+    out->SetMotherMass(mass);
+    out->SetPairCuts(cutsPairMix);
+    out->AddAxis(fdpt,100,0.,10.);
+    out->AddAxis(sdpt,100,0.,10.);
+    out->AddAxis(ptID,40,0.,20.);
   }
 
   return kTRUE;
