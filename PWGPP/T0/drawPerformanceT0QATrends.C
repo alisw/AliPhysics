@@ -186,9 +186,9 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   limitsOR[3] = new TLine(min,orMaxNoCalib,max,orMaxNoCalib);limitsOR[3]->SetLineColor(kRed);  limitsOR[3]->SetLineWidth(3);
   
   grSum->Draw("AP");
-  //outOfLimits->Draw("same");
-  //limitsNoCalib->Draw("same");
-  //limitsCalib->Draw("same");
+  outOfLimits->Draw("same");
+  limitsNoCalib->Draw("same");
+  limitsCalib->Draw("same");
 //   for(Int_t i=0;i<nRuns-1;i++)
 //   {
 //       ((TLine*)(TLine::DrawLine(min,oraplusorcMin,min,oraplusorcMax)));//x[i]+0.5,oraplusorcMin,x[i]+0.5,oraplusorcMax)));//->SetLineStyle(2);
@@ -197,32 +197,28 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   grORA->Draw("psame");
   grORC->Draw("psame");
   for(Int_t i=0;i<4;i++)limitsOR[i]->Draw("same");
-  TLegend *leg = new TLegend(0.15,0.75,0.3,0.95," ","brNDC");
-  leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(1);leg->SetColumnSeparation(1);
+  TLegend *leg = new TLegend(0.1,0.85,0.3,0.95," ","brNDC");
+  leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(3);leg->SetColumnSeparation(1);
   leg->AddEntry(grORA,"ORA","p"); 
   leg->AddEntry(grORC,"ORC","p"); 
   leg->AddEntry(grSum,"(ORA+ORC)/2","p"); 
   leg->Draw(); 
  
   grSum->GetXaxis()->LabelsOption("v");
-  c1->SaveAs("meanT0OrAPlusOrC_vs_run.gif");
+  c1->SaveAs("meanT0OrAPlusOrC_vs_run.png");
  
   /****** T0 Resolution ******/
   TGraphErrors *gr = MakeGraphSparse(tree,"resolution:run","");
-  double resolutionGood = 50.;
-  TLine* limitResolution = new TLine(min,resolutionGood,max,resolutionGood);
-  limitResolution->SetLineColor(kRed);limitResolution->SetLineWidth(3);
   gr->SetMarkerStyle(20);
   gr->SetMarkerSize(1.0);
-  gr->SetMarkerColor(kBlue);
+  gr->SetMarkerColor(2);
   gr->GetHistogram()->SetMinimum(resolutionMin);
   gr->GetHistogram()->SetMaximum(resolutionMax);
   gr->Draw("AP");
-  limitResolution->Draw("same");
   gr->GetXaxis()->LabelsOption("v");
   gr->GetHistogram()->SetYTitle("sigma [ps]");
   gr->GetHistogram()->SetTitle("T0 resolution (ORA -ORC)/2");
-  c1->SaveAs("sigmaResolutionT0_vs_run.gif");
+  c1->SaveAs("sigmaResolutionT0_vs_run.png");
  
 
    /****** Mean T0 OR A ******/
@@ -283,7 +279,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
     //   gr->GetHistogram()->SetMaximum(amplMax);
     gr->Draw("AP");
     gr->GetXaxis()->LabelsOption("v");
-    c1->SaveAs(Form("meanAmplPMT%d_vs_run.gif",ipmt));
+    c1->SaveAs(Form("meanAmplPMT%d_vs_run.png",ipmt));
   }
   /****** Mean Time in PMT ******/
   for(int ipmt=1;ipmt<=kNPMTs; ipmt++){
@@ -335,27 +331,26 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
     //leg->AddEntry(grDelay,"Time Delay OCDB","p"); 
     leg->Draw(); 
  
-    c1->SaveAs(Form("meanTimePMT%d_vs_run.gif",ipmt));
+    c1->SaveAs(Form("meanTimePMT%d_vs_run.png",ipmt));
   }
-  TGraphErrors *grEfficiency0TVX_SPD = MakeGraphSparse(tree,"efficiency0TVX_SPD:run","");
-  grEfficiency0TVX_SPD->GetYaxis()->SetRangeUser(0.,1.);
-  grEfficiency0TVX_SPD->SetMarkerStyle(20);
-  grEfficiency0TVX_SPD->SetMarkerSize(1.0);
-  grEfficiency0TVX_SPD->SetMarkerColor(1);
-  grEfficiency0TVX_SPD->GetXaxis()->LabelsOption("v");
-  grEfficiency0TVX_SPD->SetTitle("T0 to SPD ratio;run;0TVX/SPD");
-  grEfficiency0TVX_SPD->Draw("AP");
-  c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
+//   TGraphErrors *grEfficiencySPD = MakeGraphSparse(tree,"efficiencySPD:run","");
+//   grEfficiencySPD->SetMarkerStyle(25);
+//   grEfficiencySPD->SetMarkerSize(1.0);
+//   grEfficiencySPD->SetMarkerColor(1);
+//   grEfficiencySPD->GetXaxis()->LabelsOption("v");
+//   grEfficiencySPD->SetTitle("T0 to SPD ratio;run;Nevts_{T0}/Nevts_{SPD}");
+//   grEfficiencySPD->Draw("AP");
+  //c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
   
   TGraphErrors *grEfficiency0TVX_CINT7 = MakeGraphSparse(tree,"efficiency0TVX_CINT7:run","");
   grEfficiency0TVX_CINT7->GetYaxis()->SetRangeUser(0.,1.);
-  grEfficiency0TVX_CINT7->SetMarkerStyle(21);
+  grEfficiency0TVX_CINT7->SetMarkerStyle(25);
   grEfficiency0TVX_CINT7->SetMarkerSize(1.0);
   grEfficiency0TVX_CINT7->SetMarkerColor(1);
   grEfficiency0TVX_CINT7->GetXaxis()->LabelsOption("v");
   grEfficiency0TVX_CINT7->SetTitle("T0 to V0 ratio;run;0TVX/CINT7");
   grEfficiency0TVX_CINT7->Draw("AP");
-  c1->SaveAs("efficiencyT0toV0_vs_run.gif");
+  c1->SaveAs("efficiencyT0toV0_vs_run.png");
   
   TGraphErrors *grEfficiency0TVX_CADAND = MakeGraphSparse(tree,"efficiency0TVX_CADAND:run","");
   grEfficiency0TVX_CADAND->GetYaxis()->SetRangeUser(0.,1.);
@@ -365,7 +360,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   grEfficiency0TVX_CADAND->GetXaxis()->LabelsOption("v");
   grEfficiency0TVX_CADAND->SetTitle("T0 to AD ratio;run;0TVX/CADAND");
   grEfficiency0TVX_CADAND->Draw("AP");
-  c1->SaveAs("efficiencyT0toAD_vs_run.gif");
+  c1->SaveAs("efficiencyT0toAD_vs_run.png");
   
   //leg->Clear();
 //   TLegend *leg = new TLegend(0.1,0.8,0.3,0.95," ","efficiency");
