@@ -357,7 +357,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     // new case considered for ITS cut [-4,2] (mfaggin, 09 January 2018)
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_TPCcut47_5percent.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsMin, ITSsMax);     // mfaggin 09-Jan-2018
 
-    status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 11-Jan-2018
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc2018Jan17.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 17-Jan-2018
+    status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 19-Jan-2018
 
 
   for(Int_t a=0;a<12;a++) {
