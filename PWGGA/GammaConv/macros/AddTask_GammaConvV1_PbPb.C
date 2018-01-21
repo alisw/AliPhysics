@@ -2009,12 +2009,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 
   // Xe-Xe configurations
   } else if (trainConfig == 400){
-    cuts.AddCut("10910113","00200009327000008250400000","0163103100000000"); // 0-90
+    cuts.AddCut("10810113","00200009327000008250400000","0163103100000000"); // 0-80
   } else if (trainConfig == 401){
     cuts.AddCut("10210113","00200009327000008250400000","0163103100000000"); // 0-20
     cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // 20-40
     cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
-    cuts.AddCut("14910113","00200009327000008250400000","0163103100000000"); // 40-90
+    cuts.AddCut("14810113","00200009327000008250400000","0163103100000000"); // 40-80
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

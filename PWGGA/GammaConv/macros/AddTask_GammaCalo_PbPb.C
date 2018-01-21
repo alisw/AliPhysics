@@ -611,36 +611,36 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("56810113","11111020530a2230000","01631031000000d0"); // 60-80 TM // reproduce Astrids cuts with opening angle cut
 
   // Xe-xe configurations
-  } else if (trainConfig == 300){ // EMCAL clusters - 0-90% centrality for XeXe EMCal cluster QA
-    cuts.AddCut("10910113","1111100007032230000","01631031000000d0"); // 0-90
-  } else if (trainConfig == 301){ // EMCAL clusters - 0-90% centrality for XeXe EMCal cluster QA
+  } else if (trainConfig == 300){ // EMCAL clusters - 0-80% centrality for XeXe EMCal cluster QA
+    cuts.AddCut("10810113","1111100007032230000","01631031000000d0"); // 0-80
+  } else if (trainConfig == 301){ // EMCAL clusters - 0-80% centrality for XeXe EMCal cluster QA
     cuts.AddCut("10210113","1111100007032230000","01631031000000d0"); // 0-20
     cuts.AddCut("12410113","1111100007032230000","01631031000000d0"); // 20-40
     cuts.AddCut("10410113","1111100007032230000","01631031000000d0"); // 0-40
-    cuts.AddCut("14910113","1111100007032230000","01631031000000d0"); // 40-90
-  } else if (trainConfig == 302){ // EMCAL clusters - 0-90% centrality for XeXe EMCal cluster QA - TB nl
-    cuts.AddCut("10910113","1111102007032230000","01631031000000d0"); // 0-90
+    cuts.AddCut("14810113","1111100007032230000","01631031000000d0"); // 40-80
+  } else if (trainConfig == 302){ // EMCAL clusters - 0-80% centrality for XeXe EMCal cluster QA - TB nl
+    cuts.AddCut("10810113","1111102007032230000","01631031000000d0"); // 0-80
   } else if (trainConfig == 303){ // EMCAL clusters - diff centralities for XeXe EMCal cluster QA - TB nl
     cuts.AddCut("10210113","1111102007032230000","01631031000000d0"); // 0-20
     cuts.AddCut("12410113","1111102007032230000","01631031000000d0"); // 20-40
     cuts.AddCut("10410113","1111102007032230000","01631031000000d0"); // 0-40
-    cuts.AddCut("14910113","1111102007032230000","01631031000000d0"); // 40-90
+    cuts.AddCut("14810113","1111102007032230000","01631031000000d0"); // 40-80
 
 
   // Xe-Xe configurations PHOS
-  } else if (trainConfig == 400){ // PHOS clusters - 0-90% centrality for XeXe PHOS cluster QA
-    cuts.AddCut("10910113","2446600040013300000","0163103100000010"); // 0-90
-    cuts.AddCut("10910113","2446601040013300000","0163103100000010"); // 0-90
+  } else if (trainConfig == 400){ // PHOS clusters - 0-80% centrality for XeXe PHOS cluster QA
+    cuts.AddCut("10810113","2446600040013300000","0163103100000010"); // 0-80
+    cuts.AddCut("10810113","2446601040013300000","0163103100000010"); // 0-80
   } else if (trainConfig == 401){ // PHOS clusters - centrality for XeXe PHOS cluster QA
     cuts.AddCut("10210113","2446600040013300000","0163103100000010"); // 0-20
     cuts.AddCut("12410113","2446600040013300000","0163103100000010"); // 20-40
     cuts.AddCut("10410113","2446600040013300000","0163103100000010"); // 0-40
-    cuts.AddCut("14910113","2446600040013300000","0163103100000010"); // 40-90
-  } else if (trainConfig == 401){ // PHOS clusters - centrality for XeXe PHOS cluster QA
+    cuts.AddCut("14810113","2446600040013300000","0163103100000010"); // 40-80
+  } else if (trainConfig == 402){ // PHOS clusters - centrality for XeXe PHOS cluster QA
     cuts.AddCut("10210113","2446601040013300000","0163103100000010"); // 0-20
     cuts.AddCut("12410113","2446601040013300000","0163103100000010"); // 20-40
     cuts.AddCut("10410113","2446601040013300000","0163103100000010"); // 0-40
-    cuts.AddCut("14910113","2446601040013300000","0163103100000010"); // 40-90
+    cuts.AddCut("14810113","2446601040013300000","0163103100000010"); // 40-80
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
