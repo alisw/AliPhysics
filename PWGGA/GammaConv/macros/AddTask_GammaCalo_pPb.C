@@ -755,6 +755,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84610113","2446601011013200000","0163103100000010"); // PHOS group standard 40-60%
     cuts.AddCut("86810113","2446601011013200000","0163103100000010"); // PHOS group standard 60-800%
     cuts.AddCut("88010113","2446601011013200000","0163103100000010"); // PHOS group standard 80-100%
+  } else if (trainConfig == 352) {  // PHOS  INT7
+    cuts.AddCut("80010513","2446601051013200000","0163103100000010"); // PHOS non lin lin 0-100%
 
   // PHI7 triggers
   } else if (trainConfig == 360) {  // PHOS PHI7
