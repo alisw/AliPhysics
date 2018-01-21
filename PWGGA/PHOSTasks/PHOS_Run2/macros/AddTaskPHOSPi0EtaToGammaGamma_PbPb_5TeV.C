@@ -153,6 +153,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetFlowMethod(FlowMethod);
   task->SetQnDetector(QnDetector);
 
+  //set minimum energy
+  task->SetEmin(Emin);
 
   //centrality setting
   task->SetCentralityEstimator("V0M");
