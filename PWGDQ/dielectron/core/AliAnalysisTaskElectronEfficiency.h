@@ -92,6 +92,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
   void          SetDoWeightingEleEff(Bool_t b=kTRUE)                {fDoWeighting=b;}
+  void          SetCheckInvMee(Bool_t b=kTRUE)                      {fCheckmee=b;}
+  void          SetLimitmee(Double_t limit)                         {fLimitmee=limit;}
   void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
   void          SetMakeResolutionSparse(Bool_t b=kTRUE)             {fMakeResolutionSparse=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
@@ -171,6 +173,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TVectorD*     GetPDGcodes();
   Double_t      GetSmearing(TObjArray *arr, Double_t x);
   Double_t      GetSingleEff(TH3D *h, Double_t pt, Double_t eta, Double_t phi);
+  Bool_t        CheckInvariantMassSM(AliMCEvent* mcEventLocal,Int_t label);
+  Bool_t        CheckInvariantMassHF(AliMCEvent* mcEventLocal,Int_t label);
   // TH3D*         GetSingleEff(int i) {return static_cast<TH3D*> fSingleEff.At(i); }
 
   AliESDEvent*      fESD;
@@ -187,6 +191,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   Bool_t            fDoPairing;
   Bool_t            fDoWeighting;             // Switch for the calculation of pair efficiency with the weights of the single leg efficiencies.
+  Bool_t            fCheckmee;                // Check mee with partner for factorization's check
+  Double_t          fLimitmee;                // Limit on mee
   Bool_t            fSelectPhysics;           // Whether to use physics selection
   UInt_t            fTriggerMask;             // Event trigger mask
   AliAnalysisCuts*  fEventFilter;             // event filter
@@ -458,7 +464,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiency, 8);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 9);
 };
 
 #endif
