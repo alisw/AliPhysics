@@ -179,6 +179,8 @@ fPhiBandUECells(0),
 fEtaBandUECells(0),
 fPhiBandUETracks(0),
 fEtaBandUETracks(0),
+fEtaBandUENeutral_MC(0),
+fEtaBandUECharged_MC(0),
 fPerpConesUETracks(0),
 fTPCWithoutIsoConeB2BbandUE(0),
 fNTotClus10GeV(0),
@@ -375,6 +377,8 @@ fPhiBandUECells(0),
 fEtaBandUECells(0),
 fPhiBandUETracks(0),
 fEtaBandUETracks(0),
+fEtaBandUENeutral_MC(0),
+fEtaBandUECharged_MC(0),
 fPerpConesUETracks(0),
 fTPCWithoutIsoConeB2BbandUE(0),
 fNTotClus10GeV(0),
@@ -789,6 +793,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fEtaBandUETracks->SetYTitle("#Sigma #it{p}_{T}^{UE}");
 	  fEtaBandUETracks->Sumw2();
 	  fOutput->Add(fEtaBandUETracks);
+
+	  if(fIsMC){
+	    fEtaBandUENeutral_MC = new TH1D("hEtaBandUE_Neutral_MC", "Neutral UE estimation with Eta Band (generated)",250,0.,100.);
+	    fEtaBandUENeutral_MC->Sumw2();
+	    fOutput->Add(fEtaBandUENeutral_MC);
+
+	    fEtaBandUECharged_MC = new TH1D("hEtaBandUE_Charged_MC", "Charged UE Estimation with Eta Band (generated)",250,0.,100.);
+	    fEtaBandUECharged_MC->Sumw2();
+	    fOutput->Add(fEtaBandUECharged_MC);
+	  }
         }
 
 	if(fUEMethod==2){
@@ -3889,7 +3903,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ApplySmearing(AliVCluster *coi, Double
 
   //_________________________________________________________________________
 
-void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp, Double_t eta,Double_t phi){
+void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, AliAODMCParticle* mcpp, Double_t eta, Double_t phi){
 
   Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
@@ -3915,7 +3929,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
       {
         case 0:{ // Phi band
 
-          if(TMath::Abs(eta-etap) < fIsoConeRadius){
+          if(TMath::Abs(etap-eta) < fIsoConeRadius){
 	    if(mcpp->Charge() != 0)
 	      sumUE += mcpp->Pt();
 	    else if(mcpp->GetPdgCode() == 22)
@@ -3927,11 +3941,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 
         case 1:{ // Eta band
 
-          if(TMath::Abs(phi-phip) < fIsoConeRadius){
-	    if(mcpp->Charge() != 0)
+          if(TMath::Abs(phip-phi) < fIsoConeRadius){
+	    if(mcpp->Charge() != 0){
 	      sumUE += mcpp->Pt();
-	    else if(mcpp->GetPdgCode() == 22)
+	      fEtaBandUENeutral_MC->Fill(sumUE);
+	    }
+	    else if(mcpp->GetPdgCode() == 22){
 	      sumUE += mcpp->E()*(TMath::Sin(mcpp->Theta()));
+	      fEtaBandUECharged_MC->Fill(sumUE);
+	    }
 	  }
 
           break;
@@ -3947,7 +3965,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
       {
         case 0:{ // Phi band
 	  
-          if(TMath::Abs(eta-etap) < fIsoConeRadius)
+          if(TMath::Abs(etap-eta) < fIsoConeRadius)
 	    sumUE += mcpp->Pt();
 	  
           break;
@@ -3955,7 +3973,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 
         case 1:{ // Eta band
 
-          if(TMath::Abs(phi-phip) < fIsoConeRadius)
+          if(TMath::Abs(phip-phi) < fIsoConeRadius)
 	    sumUE += mcpp->Pt();
 
           break;

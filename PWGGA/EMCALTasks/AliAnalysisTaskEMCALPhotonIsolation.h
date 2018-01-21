@@ -298,6 +298,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D                       * fEtaBandUECells;                 //!<! UE with Eta Band (Cells)
   TH2D                       * fPhiBandUETracks;                //!<! UE with Phi Band (Tracks)
   TH2D                       * fEtaBandUETracks;                //!<! UE with Eta Band (Tracks)
+  TH1D                       * fEtaBandUENeutral_MC;            //!<! UE with Eta Band (neutral, generated MC)
+  TH1D                       * fEtaBandUECharged_MC;            //!<! UE with Eta Band (charged, generated MC)
   TH2D                       * fPerpConesUETracks;              //!<! UE with Cones (Tracks ONLY)
   TH2D                       * fTPCWithoutIsoConeB2BbandUE;     //!<! UE with Full TPC except IsoCone and EtaBand in Back2Back
   TH1D                       * fNTotClus10GeV;                  //!<! Number of TOTAL clusters with Energy bigger than 10 GeV
