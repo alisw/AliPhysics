@@ -51,6 +51,7 @@ AliDJetVReader::AliDJetVReader():
   fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
   fMassRebin(1),
+  fEfficiencyWeightSB(kFALSE),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
   fMassVsJetzPlot(nullptr)
@@ -73,6 +74,7 @@ AliDJetVReader::AliDJetVReader(const AliDJetVReader &source):
   fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
   fMassRebin(source.fMassRebin),
+  fEfficiencyWeightSB(source.fEfficiencyWeightSB),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
   fMassVsJetzPlot(nullptr)

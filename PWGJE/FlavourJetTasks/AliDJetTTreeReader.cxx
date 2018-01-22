@@ -105,10 +105,10 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotEffScale()
     tree->GetEntry(k);
     if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
     if (brJet->fPt < fpTmin || brJet->fPt >= fpTmax) continue;
-    for (int j = 0; j < fnDbins; j++) {
-      if (brD->fPt < fDbinpTedges[j] || brD->fPt >= fDbinpTedges[j + 1]) continue;
-      fMassPlot->Fill(brD->fInvMass, 1. / fDEffValues[j]);
-    }//end of D-meson pT bin loop
+    int j = 0;
+    while (brD->fPt >= fDbinpTedges[j + 1] && j < fnDbins) j++;
+    if (brD->fPt < fDbinpTedges[j] || brD->fPt >= fDbinpTedges[j + 1]) continue;
+    fMassPlot->Fill(brD->fInvMass, 1. / fDEffValues[j]);
   }
 
   return kTRUE;
@@ -136,20 +136,36 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotSideband()
   fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth / fMassRebin, fmassmin, fmassmax);
   fMassPlot->Sumw2();
 
-  fMassVsJetPtPlot = new TH2D("hInvMassJetPt", "hInvMassJetPt", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetPtbins, fJetPtBinEdges);
-  fMassVsJetPtPlot->Sumw2();
+  if (fnJetPtbins > 1) {
+    fMassVsJetPtPlot = new TH2D("hInvMassJetPt", "hInvMassJetPt", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetPtbins, fJetPtBinEdges);
+    fMassVsJetPtPlot->Sumw2();
+  }
 
-  fMassVsJetzPlot = new TH2D("hInvMassJetz", "hInvMassJetz", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetzbins, fJetzBinEdges);
-  fMassVsJetzPlot->Sumw2();
+  if (fnJetzbins > 1) {
+    fMassVsJetzPlot = new TH2D("hInvMassJetz", "hInvMassJetz", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetzbins, fJetzBinEdges);
+    fMassVsJetzPlot->Sumw2();
+  }
+
+  if (fpTmin < fDbinpTedges[0] || fpTmax > fDbinpTedges[fnDbins]) {
+    AliErrorStream() << "Efficiency bin edges " << fDbinpTedges[0] << ", " << fDbinpTedges[fnDbins] <<
+        " do not include the current bin " << fpTmin << ", " << fpTmax << std::endl;
+    throw;
+  }
 
   for (int k = 0; k < tree->GetEntries(); k++) {
     tree->GetEntry(k);
     if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
-    if (brJet->fPt < fJetPtBinEdges[0] || brJet->fPt >= fJetPtBinEdges[fnJetPtbins]) continue;
+    if (fnJetPtbins > 0 && (brJet->fPt < fJetPtBinEdges[0] || brJet->fPt >= fJetPtBinEdges[fnJetPtbins])) continue;
     if (brD->fPt < fpTmin || brD->fPt >= fpTmax) continue;
-    fMassPlot->Fill(brD->fInvMass);
-    fMassVsJetPtPlot->Fill(brD->fInvMass, brJet->fPt);
-    fMassVsJetzPlot->Fill(brD->fInvMass, brJet->fZ);
+    Double_t w = 1.0;
+    if (fEfficiencyWeightSB) {
+      int j = 0;
+      while (brD->fPt >= fDbinpTedges[j + 1] && j < fnDbins) j++;
+      w /= fDEffValues[j];
+    }
+    fMassPlot->Fill(brD->fInvMass, w);
+    if (fMassVsJetPtPlot) fMassVsJetPtPlot->Fill(brD->fInvMass, brJet->fPt, w);
+    if (fMassVsJetzPlot) fMassVsJetzPlot->Fill(brD->fInvMass, brJet->fZ, w);
   }
 
   return kTRUE;
