@@ -339,6 +339,27 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   ratioYAxisTitle = "Ratio: run / all runs"
     
   plotSpectra(hPtSum, hPtSumRef, hPtGlobal, hPtComplementary, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width", "w/ SPD & ITSrefit", "w/o SPD & w/ ITSrefit")
+  
+  # Plot also ratio of central track spectrum to peripheral track spectrum
+  trackTHnSparse.GetAxis(0).SetRangeUser(0,10)
+  hPt010 = trackTHnSparse.Projection(1)
+  hPt010.SetName("hPt010")
+  
+  trackTHnSparse.GetAxis(0).SetRangeUser(50,90)
+  hPt5090 = trackTHnSparse.Projection(1)
+  hPt5090.SetName("hPt5090")
+  
+  outputFilename = os.path.join(outputDirTracks, "hTrackPtRatio" + fileFormat)
+  xRangeMax = 75
+  yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{T}} [GeV^{-1}]"
+  legendTitle = "Tracks"
+  h1legendLabel = "50-90 %"
+  h2legendLabel = "0-10 %"
+  ratioYAxisTitle = "Central / Peripheral"
+  yRatioMax = 12
+  plotSpectraCent(hPt5090, hPt010, "", nEvents, ispp, outputFilename, xRangeMax, yAxisTitle, ratioYAxisTitle, legendTitle, h1legendLabel, h2legendLabel, "", "width", yRatioMax)
+  
+  trackTHnSparse.GetAxis(0).SetRangeUser(0,90)
 
   #---------------------------------------------------------------------------------------------------
   #                        pT resolution of hybrid tracks -- from track fitting
@@ -1701,6 +1722,137 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
   if hRef:
     leg2.AddEntry(hRef, legendRefLabel, "l")
   leg2.Draw("same")
+  
+  c.SaveAs(outputFilename)
+  c.Close()
+
+########################################################################################################
+# Plot spectra and ratio (h2,h3 will be divided by h)   ################################################
+########################################################################################################
+def plotSpectraCent(h, h2, h3, nEvents, ispp, outputFilename, xRangeMax, yAxisTitle, ratioYAxisTitle, legendTitle, h1legendLabel, h2legendLabel, h3legendLabel = "", scalingOptions = "", yRatioMax = 32):
+  
+  h.SetLineColor(4)
+  if not h3:
+    h.SetLineColor(2)
+  h.SetLineWidth(2)
+  h.SetLineStyle(1)
+  
+  h.Scale(1./nEvents, scalingOptions)
+
+  h.GetYaxis().SetTitle(yAxisTitle)
+  h.GetYaxis().SetTitleSize(0.06)
+  h.GetXaxis().SetRangeUser(0,xRangeMax)
+  h.GetYaxis().SetRangeUser(2e-9,2e3)
+  if ispp:
+    h.GetYaxis().SetRangeUser(2e-11,20)
+  h.GetYaxis().SetLabelFont(43)
+  h.GetYaxis().SetLabelSize(20)
+  
+  h2.SetLineColor(1)
+  h2.SetLineWidth(2)
+  h2.SetLineStyle(1)
+  h2.Scale(1./nEvents, scalingOptions)
+  h2.GetYaxis().SetTitle(yAxisTitle)
+  h2.GetYaxis().SetTitleSize(0.06)
+  h2.GetXaxis().SetRangeUser(0,xRangeMax)
+  h2.GetYaxis().SetRangeUser(2e-9,2e3)
+  if ispp:
+    h2.GetYaxis().SetRangeUser(2e-11,20)
+  h2.GetYaxis().SetLabelFont(43)
+  h2.GetYaxis().SetLabelSize(20)
+  if h3:
+    h3.SetLineStyle(1)
+    h3.SetLineColor(2)
+    h3.SetLineWidth(2)
+    h3.Scale(1./nEvents, scalingOptions)
+
+  c = ROOT.TCanvas("c","c: pT",800,850)
+  c.cd()
+  pad1 = ROOT.TPad("pad1", "pad1", 0, 0.3, 1, 1.0)
+  pad1.SetBottomMargin(0)
+  pad1.SetLeftMargin(0.15)
+  pad1.SetRightMargin(0.05)
+  pad1.SetTopMargin(0.05)
+  pad1.SetLogy()
+  pad1.Draw()
+  pad1.cd()
+  
+  if h3:
+    h2.Draw("hist E")
+    h3.Draw("hist E same")
+    h.Draw("hist E same")
+  else:
+    h2.Draw("hist E")
+    h.Draw("hist E same")
+
+  c.cd()
+  pad2 = ROOT.TPad("pad2", "pad2", 0, 0.05, 1, 0.3)
+  pad2.SetTopMargin(0)
+  pad2.SetBottomMargin(0.35)
+  pad2.SetLeftMargin(0.15)
+  pad2.SetRightMargin(0.05)
+  pad2.Draw()
+  pad2.cd()
+
+  hRatio = h2.Clone()
+  hRatio.Divide(h)
+
+  hRatio.SetMarkerStyle(21)
+  hRatio.SetMarkerColor(1)
+
+  if h3:
+    hRatio2 = h3.Clone()
+    hRatio2.Divide(h)
+    hRatio2.SetMarkerStyle(21)
+    hRatio2.SetMarkerColor(2)
+    
+    hRatio2.GetYaxis().SetTitle(ratioYAxisTitle)
+    hRatio2.GetYaxis().SetTitleSize(20)
+    hRatio2.GetYaxis().SetTitleFont(43)
+    hRatio2.GetYaxis().SetTitleOffset(2.2)
+    hRatio2.GetYaxis().SetLabelFont(43)
+    hRatio2.GetYaxis().SetLabelSize(20)
+    hRatio2.GetYaxis().SetNdivisions(505)
+    hRatio2.GetYaxis().SetRangeUser(0,yRatioMax)
+    hRatio2.GetXaxis().SetRangeUser(0,xRangeMax)
+    hRatio2.GetXaxis().SetTitleSize(30)
+    hRatio2.GetXaxis().SetTitleFont(43)
+    hRatio2.GetXaxis().SetTitleOffset(4.)
+    hRatio2.GetXaxis().SetLabelFont(43)
+    hRatio2.GetXaxis().SetLabelSize(20)
+    
+    hRatio2.Draw("P E")
+    hRatio.Draw("P E same")
+  else:
+    hRatio.GetYaxis().SetTitle(ratioYAxisTitle)
+    hRatio.GetYaxis().SetTitleSize(20)
+    hRatio.GetYaxis().SetTitleFont(43)
+    hRatio.GetYaxis().SetTitleOffset(2.2)
+    hRatio.GetYaxis().SetLabelFont(43)
+    hRatio.GetYaxis().SetLabelSize(20)
+    hRatio.GetYaxis().SetNdivisions(505)
+    hRatio.GetYaxis().SetRangeUser(0,yRatioMax)
+    
+    hRatio.GetXaxis().SetRangeUser(0,xRangeMax)
+    hRatio.GetXaxis().SetTitleSize(30)
+    hRatio.GetXaxis().SetTitleFont(43)
+    hRatio.GetXaxis().SetTitleOffset(4.)
+    hRatio.GetXaxis().SetLabelFont(43)
+    hRatio.GetXaxis().SetLabelSize(20)
+    
+    hRatio.Draw("P E")
+
+  pad1.cd()
+  leg = ROOT.TLegend(0.3,0.7,0.88,0.93,legendTitle)
+  leg.SetFillColor(10)
+  leg.SetBorderSize(0)
+  leg.SetFillStyle(0)
+  leg.SetTextSize(0.04)
+  leg.AddEntry(h2, h2legendLabel, "l")
+  if h3:
+    leg.AddEntry(h3, h3legendLabel, "l")
+  leg.AddEntry(h, h1legendLabel, "l")
+  leg.Draw("same")
   
   c.SaveAs(outputFilename)
   c.Close()
