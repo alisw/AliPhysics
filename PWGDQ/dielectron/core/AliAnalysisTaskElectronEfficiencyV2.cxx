@@ -172,12 +172,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   }
 
   if (fCocktailFilename != ""){
-    fResoFile = TFile::Open(fCocktailFilename.c_str());
-    if (fResoFile == 0x0){
+    fCocktailFile = TFile::Open(fCocktailFilename.c_str());
+    if (fCocktailFile == 0x0){
       std::cout << "Location in AliEN: " << fCocktailFilenameFromAlien << std::endl;
       gSystem->Exec(Form("alien_cp alien://%s .", fCocktailFilenameFromAlien.c_str()));
       std::cout << "Copy cocktail weighting from Alien" << std::endl;
-      fResoFile = TFile::Open(fCocktailFilename.c_str());
+      fCocktailFile = TFile::Open(fCocktailFilename.c_str());
     }
   }
 
@@ -1181,7 +1181,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
   else if (var == "pairpt") fPairPtBins.clear();
 
   const double stepSize = (max - min) / steps;
-  for (unsigned int i = 0; i < steps; ++i){
+  for (unsigned int i = 0; i < steps+1; ++i){
     if      (var == "pt")     fPtBins.push_back(i * stepSize + min);
     else if (var == "eta")    fEtaBins.push_back(i * stepSize + min);
     else if (var == "phi")    fPhiBins.push_back(i * stepSize + min);
