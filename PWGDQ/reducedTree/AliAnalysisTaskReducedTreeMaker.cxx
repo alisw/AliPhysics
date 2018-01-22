@@ -1262,7 +1262,6 @@ UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
    if(!nMCsignals) return 0;
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
-   AliVParticle* particle = event->GetTrack(iparticle);
    
    UInt_t mcSignalsMap = 0;
    for(Int_t isig=0; isig<nMCsignals; ++isig) {
@@ -1343,6 +1342,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
          reducedParticle=new(tracks[currentTrackIdx]) AliReducedTrackInfo();
       
       reducedParticle->fMCFlags = mcSignalsMap;
+      reducedParticle->fIsMCTruth = kTRUE;
       reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
       reducedParticle->Charge(particle->Charge());
    
@@ -1657,6 +1657,12 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
    
     // If we want to write only AliReducedBaseTrack objects, then we stop here
     if (fSelectedTrackIsBaseTrack) {
+       if(fFillMCInfo && hasMC) {
+          AliVParticle* mcTruth = AliDielectronMC::Instance()->GetMCTrack(particle);
+          if(mcTruth)
+             reducedParticle->fMCFlags = MatchMCsignals(mcTruth->GetLabel());    // check which MC signals match this particle
+       }
+       
       fReducedEvent->fNtracks[1] += 1;
       continue;
     }
@@ -1774,6 +1780,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
+           trackInfo->fMCFlags = MatchMCsignals(truthParticle->GetLabel());    // check which MC signals match this particle and fill the bit map
+                      
            trackInfo->fMCMom[0] = truthParticle->Px();
            trackInfo->fMCMom[1] = truthParticle->Py();
            trackInfo->fMCMom[2] = truthParticle->Pz();
@@ -1870,6 +1878,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
+            trackInfo->fMCFlags = MatchMCsignals(aodTrack->GetLabel());    // check which MC signals match this particle and fill the bit map
+            
             trackInfo->fMCMom[0] = truthParticle->Px();
             trackInfo->fMCMom[1] = truthParticle->Py();
             trackInfo->fMCMom[2] = truthParticle->Pz();

@@ -50,6 +50,7 @@ AliResonanceFits::AliResonanceFits() :
   fMEOS(0x0),
   fMELSleg1(0x0),
   fMELSleg2(0x0),
+  fSEOS_MCtruth(0x0),
   fNVariables(0),
   fVariables(),
   fVarLimits(),
@@ -74,6 +75,7 @@ AliResonanceFits::AliResonanceFits() :
   fBkg(0x0),
   fSig(0x0),
   fSoverB(0x0),
+  fSignalMCshape(0x0),
   fFitValues(),
   fMatchingIsDone(kFALSE),
   fMinuitFitter(0x0)
@@ -101,6 +103,7 @@ AliResonanceFits::~AliResonanceFits()
   if(fSELSleg2) delete fSELSleg2;
   if(fMELSleg1) delete fMELSleg1;
   if(fMELSleg2) delete fMELSleg2;
+  if(fSEOS_MCtruth) delete fSEOS_MCtruth;
   if(fMinuitFitter) delete fMinuitFitter;
 }
 
@@ -167,10 +170,29 @@ void AliResonanceFits::SetVarRange(Int_t var, Double_t* lims) {
    Int_t idx = -1;
    for(Int_t i=0; i<fNVariables; ++i)
       if(fVariables[i]==var) 
-         idx = fVarIndices[i];
-   if(idx==-1) return;
+         idx = i;
+   if(idx==-1)
+      return;
    fVarLimits[idx][0] = lims[0]+1.0e-6;
    fVarLimits[idx][1] = lims[1]-1.0e-6;
+   fMatchingIsDone = kFALSE;
+}
+
+//_______________________________________________________________________________
+void AliResonanceFits::SetVarRange(Int_t var, Double_t min, Double_t max) {
+   //
+   // set the user range for variable var 
+   // NOTE: Variable var is encoded using the AliReducedVarManager::Variables enum
+   // NOTE: If the var is not found in fVariables, nothing happens
+   // NOTE: The user provided limits are slightly modified to avoid bin edge problems
+   Int_t idx = -1;
+   for(Int_t i=0; i<fNVariables; ++i)
+      if(fVariables[i]==var) 
+         idx = i;
+      if(idx==-1)
+         return;
+   fVarLimits[idx][0] = min+1.0e-6;
+   fVarLimits[idx][1] = max-1.0e-6;
    fMatchingIsDone = kFALSE;
 }
 
@@ -312,9 +334,10 @@ Bool_t AliResonanceFits::Initialize() {
    if(fSELSleg2) ApplyUserRanges(fSELSleg2);
    if(fMELSleg1) ApplyUserRanges(fMELSleg1);
    if(fMELSleg2) ApplyUserRanges(fMELSleg2);
+   if(fSEOS_MCtruth) ApplyUserRanges(fSEOS_MCtruth);
    
    // Print summary of all the options
-   Print();
+   //Print();
    
    return kTRUE;
 }
@@ -909,11 +932,23 @@ Double_t* AliResonanceFits::ComputeOutputValues(Double_t minMass, Double_t maxMa
       fFitValues[kSig] = ((TH2*)fSig)->IntegralAndError(minMassBin, maxMassBin, minPtBin, maxPtBin, fFitValues[kSigErr]);
       fFitValues[kBkg] = ((TH2*)fBkg)->IntegralAndError(minMassBin, maxMassBin, minPtBin, maxPtBin, fFitValues[kBkgErr]);
       fFitValues[kSplusB] = ((TH2*)fSplusB)->IntegralAndError(minMassBin, maxMassBin, minPtBin, maxPtBin, fFitValues[kSplusBerr]);
+      
+      // make the projection of the signal MC
+      if(!fSignalMCshape && fSEOS_MCtruth) {
+         fSignalMCshape = (TH2D*)fSEOS_MCtruth->Projection(fVarIndices[fNVariables-2], fVarIndices[fNVariables-1]);
+         fSignalMCshape->SetName(Form("fSignalMCshape_%.6f", gRandom->Rndm()));
+      }
    }
    else {
       fFitValues[kSig] = fSig->IntegralAndError(minMassBin, maxMassBin, fFitValues[kSigErr]);
       fFitValues[kBkg] = fBkg->IntegralAndError(minMassBin, maxMassBin, fFitValues[kBkgErr]);
       fFitValues[kSplusB] = fSplusB->IntegralAndError(minMassBin, maxMassBin, fFitValues[kSplusBerr]);
+      
+      // make the projection of the signal MC
+      if(!fSignalMCshape && fSEOS_MCtruth) {
+         fSignalMCshape = (TH1D*)fSEOS_MCtruth->Projection(fVarIndices[fNVariables-1]);
+         fSignalMCshape->SetName(Form("fSignalMCshape_%.6f", gRandom->Rndm()));
+      }
    }
    if(fOptionScaleSummedBkg) {
       // Update the signal error with the error from the bkg scaling
@@ -929,7 +964,36 @@ Double_t* AliResonanceFits::ComputeOutputValues(Double_t minMass, Double_t maxMa
       fFitValues[kSignif] = ((fFitValues[kSig]+fFitValues[kBkg]>0.001) ? (fFitValues[kSig]/(TMath::Sqrt(fFitValues[kSig]+fFitValues[kBkg]))) : 0.0);
    if(fOptionBkgMethod==kBkgLikeSign)
       fFitValues[kSignif] = ((fFitValues[kSig]+2.0*fFitValues[kBkg]>0.001) ? (fFitValues[kSig]/(TMath::Sqrt(fFitValues[kSig]+2.0*fFitValues[kBkg]))) : 0.0);
-   fFitValues[kChisqSideBands] = Chi2(fSig, fBkg, 1.0, 0.0);
+   fFitValues[kChisqSideBands] = Chi2(fSplusB, fBkg, 1.0, 0.0);
+   
+   // scale the signal MC background
+   if(fSignalMCshape) {
+      Double_t sigMC = 0.0;
+      Double_t errSigMC = 0.0;
+      Double_t sigMCtotal = 0.0;
+      Int_t minMassBinMC = fSignalMCshape->GetXaxis()->FindBin(minMass+1.0e-6);
+      Int_t maxMassBinMC = fSignalMCshape->GetXaxis()->FindBin(maxMass-1.0e-6);
+      if(fgOptionUse2DMatching) {
+         Int_t minPtBinMC = fSignalMCshape->GetYaxis()->FindBin(minPt+1.0e-6);
+         Int_t maxPtBinMC = fSignalMCshape->GetYaxis()->FindBin(maxPt-1.0e-6);
+         sigMCtotal = ((TH2*)fSignalMCshape)->IntegralAndError(1, fSignalMCshape->GetXaxis()->GetNbins(), minPtBinMC, maxPtBinMC, errSigMC);
+         sigMC = ((TH2*)fSignalMCshape)->IntegralAndError(minMassBinMC, maxMassBinMC, minPtBinMC, maxPtBinMC, errSigMC);
+      }
+      else {
+         sigMCtotal = fSignalMCshape->IntegralAndError(1, fSignalMCshape->GetXaxis()->GetNbins(), errSigMC);
+         sigMC = fSignalMCshape->IntegralAndError(minMassBinMC, maxMassBinMC, errSigMC);
+      }
+      
+      Double_t scaleMC = (sigMC>0. ? fFitValues[kSig] / sigMC : 0.0);
+      
+      fSignalMCshape->Scale(scaleMC);
+      // compute the chi2 between the MC signal shape and the signal
+      Double_t oldExclRange[2] = {fgMassExclusionRange[0], fgMassExclusionRange[1]};
+      fgMassExclusionRange[0] = -1.; fgMassExclusionRange[1] = -1;  // to allow computing the Chi2 over the full mass range
+      fFitValues[kChisqMCTotal] = Chi2(fSig, fSignalMCshape, 1.0, 0.0);
+      fgMassExclusionRange[0] = oldExclRange[0]; fgMassExclusionRange[1] = oldExclRange[1];
+      fFitValues[kMCYieldFraction] = (sigMCtotal>0. ? sigMC / sigMCtotal : 0.);
+   }
    
    return fFitValues;
 }
@@ -954,6 +1018,10 @@ void AliResonanceFits::PrintFitValues() {
    cout << setw(20) << "Chi2" << " :: " << fFitValues[kChisqSideBands] << endl;
    if(fOptionScaleSummedBkg)
       cout << setw(20) << "Bkg scale" << " :: " << fFitValues[kBkgScale] << " +/- " << fFitValues[kBkgScaleErr] << endl;
+   if(fSignalMCshape) {
+      cout << setw(20) << "Chi2 (MC)" << " :: " << fFitValues[kChisqMCTotal] << endl;
+      cout << setw(20) << "Yield fraction (MC)" << " :: " << fFitValues[kMCYieldFraction] << endl;
+   }
    cout << "===================================================================" << endl;
 }
 
@@ -970,6 +1038,7 @@ void AliResonanceFits::Print() {
    if(fSELSleg2) cout << "fSELSleg2 ::\t" << fSELSleg2 << endl;
    if(fMELSleg1) cout << "fMELSleg1 ::\t" << fMELSleg1 << endl;
    if(fMELSleg2) cout << "fMELSleg2 ::\t" << fMELSleg2 << endl;
+   if(fSEOS_MCtruth) cout << "fSEOS_MCtruth ::\t" << fSEOS_MCtruth << endl;
    cout << "fNVariables ::\t" << fNVariables << endl << endl;
    for(Int_t i=0; i<fNVariables; ++i) {
       cout << "Dim #" << i << "   Name: " << std::left << setw(25) << AliReducedVarManager::fgVariableNames[fVariables[i]] << "  ";
