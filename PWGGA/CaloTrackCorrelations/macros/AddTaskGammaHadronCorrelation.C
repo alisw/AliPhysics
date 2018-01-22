@@ -449,6 +449,22 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 //    reader->SetPtHardAndClusterPtFactor(1.5);
   }
   
+  //---------------------------
+  // Detectors acceptance, open
+  //---------------------------
+
+  reader->SwitchOnFiducialCut();
+  
+  // Tracks
+  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
+  
+  // EMCal/DCal
+  if      ( calorimeter == "EMCAL" ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 187) ;
+  else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
+  
+  //PHOS
+  reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ; 
+  
   //------------------------
   // Detector input filling
   //------------------------
@@ -479,9 +495,6 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(0,50);
-  
-  reader->SwitchOnFiducialCut();
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
   
   reader->SwitchOffUseTrackDCACut();
   //reader->SetTrackDCACut(0,0.0105);
@@ -546,7 +559,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   if(nonLinOn) reader->SwitchOnClusterELinearityCorrection();
   else         reader->SwitchOffClusterELinearityCorrection();
   
-  if(calorimeter == "EMCAL")
+  if(calorimeter == "EMCAL" || calorimeter == "DCAL" )
   {
     reader->SwitchOnEMCALCells();
     reader->SwitchOnEMCAL();
@@ -765,8 +778,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   ana->SwitchOffFiducialCut();
   
   ana->SetCalorimeter(calorimeter);
-  
-  ana->SetFirstSMCoveredByTRD(6);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
   
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
@@ -832,7 +848,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
   
   if(ana->GetFirstSMCoveredByTRD() > 0)
-    printf(">>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
+    printf("AddTaskGammaHadronCorrelation() >>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
   
   // Number of particle type MC histograms
   ana->FillNOriginHistograms (17); // 18 max
@@ -875,6 +891,11 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   ana->SwitchOffTMHistoFill() ;
   
   ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("%s%sTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
@@ -907,7 +928,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
     }
     
-    if(calorimeter=="EMCAL" && !simulation) ana->SetPairTimeCut(100);
+    if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
     
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
@@ -1040,6 +1061,11 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   ana->SetMinPt(5);
   ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
   
   ana->SwitchOffUEBandSubtractionHistoFill();
   ana->SwitchOffCellHistoFill() ;
@@ -1076,19 +1102,17 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   ana->SetFirstSMCoveredByTRD(6);
   
   if(!tm)  ana->SwitchOnTMHistoFill();
-  else      ana->SwitchOffTMHistoFill();
+  else     ana->SwitchOffTMHistoFill();
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
   ana->SwitchOnRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
   
-  if(calorimeter=="EMCAL")
-  {
-    // Avoid borders of EMCal
-    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 86, 174) ;
-    
-  }
+  // Avoid borders of calorimeter
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
+  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
   
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
   if(particle=="Hadron"  || particle.Contains("CTS"))
@@ -1348,12 +1372,10 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SwitchOnFiducialCut();
   
-  if(calorimeter=="EMCAL")
-  {
-    // Avoid borders of EMCal, same as for isolation
-    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
-    
-  }
+  // Avoid borders of calorimeter, same as for isolation
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
+  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
   
   // Input / output delta AOD settings
   
@@ -1420,10 +1442,15 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   
   ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
   
   ana->SetTimeCut(-1e10,1e10); // Open time cut
   
-  ana->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
+  ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
   
   ana->SwitchOnRealCaloAcceptance();
   
@@ -1456,14 +1483,31 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t con
   
   // Trigger detector, acceptance and pT cut
   ana->SetTriggerDetector(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetTriggerDetector(calo);
+  }
+  
   ana->SetMinPt(2); // Trigger photon, pi0 minimum pT
-  ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.4, 90, 170);
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
+  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
   
   // Particles associated to trigger or isolation cone acceptance and pT cut
   ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
+  
   ana->SetMinChargedPt(0.2);
   ana->SetMinNeutralPt(0.3);
-  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.65, 81, 179);
+  
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 174) ;
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
+  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ;   
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360);
   
   // Isolation paramters
@@ -1502,6 +1546,8 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   
   if(calorimeter=="EMCAL")
   {
+    ana->SetFirstSMCoveredByTRD(-1);
+    
     if ( year == 2010 )
     {
       histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
@@ -1510,19 +1556,32 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
     }
     else if ( year < 2014 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 104) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
-      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA  
+      
+      if     (year == 2011) ana->SetFirstSMCoveredByTRD( 6);
+      else if(year == 2012 ||
+              year == 2013) ana->SetFirstSMCoveredByTRD( 4);
     }
     else // Run2
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
-      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
-      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
+      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
+      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
+      ana->SetFirstSMCoveredByTRD( 0);
     }
     
     histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
   }
+  else if(calorimeter=="DCAL")
+  {
+    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 67) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
+    histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
+    ana->SetFirstSMCoveredByTRD( 0);
+  } 
   else if(calorimeter=="PHOS")
   {
     histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
@@ -1583,14 +1642,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
-  //
-  // TRD SM
-  //
-  if     (year == 2011) ana->SetFirstSMCoveredByTRD( 6);
-  else if(year == 2012 ||
-          year == 2013) ana->SetFirstSMCoveredByTRD( 4);
-  else                  ana->SetFirstSMCoveredByTRD(-1);
   
   //
   // MC histograms?
