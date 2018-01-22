@@ -21,6 +21,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include <TString.h>
+#include <TSystem.h>
 #include <TROOT.h>
 
 #include "AliLog.h"
@@ -159,7 +160,50 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  const char *trigSuffix = "EMC7"
 )
 {
+  // Check the global variables, and reset the provided ones if empty.
+  //
   TString trigger = trigSuffix;
+  
+  TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
+  TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+
+  TString period = prodTag; // move period to one of the AddTask parameters, not for the moment!!!
+
+  if(col=="") // Check the alien environment 
+  {
+    if      (colType.Contains( "PbPb")) col = "PbPb"; 
+    else if (colType.Contains( "XeXe")) col = "PbPb"; 
+    else if (colType.Contains( "AA"  )) col = "PbPb"; 
+    else if (colType.Contains( "pA"  )) col = "pPb"; 
+    else if (colType.Contains( "Ap"  )) col = "pPb";     
+    else if (colType.Contains( "pPb" )) col = "pPb"; 
+    else if (colType.Contains( "Pbp" )) col = "pPb"; 
+    else if (colType.Contains( "pp"  )) col = "pp" ; 
+    
+    // Check if production is MC or data, of data recover period name
+    if   ( prodType.Contains("MC") ) simulation = kTRUE;
+    else                             simulation = kFALSE;
+    
+    //if   ( !simulation && period!="" ) period = prodTag;
+    
+    // print check on global settings once
+    if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") )
+    printf("AddTaskPi0IMGammaCorrQA() - Get the data features from global parameters: collision <%s> (<%s>), "
+           "period <%s>, tag <%s>, type <%s>, MC bool <%d> \n",
+           colType.Data(),col.Data(),
+           period.Data(),prodType.Data(),prodTag.Data(),simulation);
+  }
+  
+  if ( year < 2009 && !simulation )
+  {
+    if     (period.Contains("16")) year = 2016;
+    else if(period.Contains("15")) year = 2015;
+    else if(period.Contains("13")) year = 2013;
+    else if(period.Contains("12")) year = 2012;
+    else if(period.Contains("11")) year = 2011;
+    else if(period.Contains("10")) year = 2010;
+  }
   
   printf("Passed settings:\n calorimeter <%s>, simulation <%d>, year <%d>,\n col <%s>, trigger <%s>, reject EMC <%d>, clustersArray <%s>, tender <%d>, non linearity <%d>\n shshMax <%2.2f>, isoCone <%2.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,\n leading <%d>, tm <%d>, minCen <%d>, maxCen <%d>, mixOn <%d>,\n qaAn <%d>, chargedAn <%d>, outputfile <%s>, printSettings <%d>, debug <%d>\n",
          calorimeter.Data(),simulation,year,col.Data(),trigger.Data(), rejectEMCTrig, clustersArray.Data(),tender, nonLinOn, shshMax,
