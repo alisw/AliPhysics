@@ -221,13 +221,13 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    TChain* chain = NULL;
    if(!runmodestr.Contains("grid"))
       chain = makeChain(infile, inputType);
-   
+
    TProof* proof=0x0;
    if(runmodestr.Contains("proof")) {
       proof = TProof::Open("");
       chain->SetProof();
    }
-   
+
    mgr->PrintStatus();
    // Start analysis
    if(nEntries==-1) nEntries=1234567890;
@@ -237,6 +237,58 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
       mgr->StartAnalysis("proof", chain, nEntries, firstEntry);
    if(runmodestr.Contains("grid"))
       mgr->StartAnalysis("grid", nEntries, firstEntry);
+
+  // piping additional histograms from tree file into analysis output
+  TObjArray* taskArr = tasks.Tokenize(";");
+  if ((!writeTree && taskArr->GetEntries()>0) ||
+      (writeTree && taskArr->GetEntries()>1)) {
+    ifstream in;
+    in.open(infile);
+    TObjArray* histArr = new TObjArray();
+
+    // loop over keys in file
+    TString line;
+    Int_t nFile = 0;
+    while(in.good()) {
+      in >> line;
+      if (!line.IsNull()) {
+        nFile++;
+        TFile* tmpFile = TFile::Open(Form("%s",line.Data()));
+        cout << "Looking for histograms in " << tmpFile->GetName() << ": " << endl;
+        TIter next(tmpFile->GetListOfKeys());
+        TKey* key;
+        while ((key = (TKey*)next())) {
+          TClass *cl = gROOT->GetClass(key->GetClassName());
+          if (!cl->InheritsFrom("TH1")) continue;
+          TH1 *h = (TH1*)key->ReadObj();
+          cout << " " << h->GetName();
+          if (nFile==1) {
+            cout << " -> added" << endl;
+            histArr->Add(h);
+          } else {
+            if (histArr->FindObject(h->GetName())) {
+              cout << " -> merged" << endl;
+              ((TH1*)histArr->FindObject(h->GetName()))->Add(h);
+            } else {
+              cout << " -> added" << endl;
+              histArr->Add(h);
+            }
+          }
+        }
+      }
+    }
+
+    // write histograms to output file
+    TObjArray* outputs = mgr->GetOutputs();
+    for (Int_t i=0; i<outputs->GetEntries(); i++) {
+      TFile* tmpOut = (TFile*)mgr->OpenFile((AliAnalysisDataContainer*)outputs->At(i), "UPDATE", kTRUE);
+      if (!tmpOut) continue;
+      if (((TString)tmpOut->GetName()).Contains("dstTree")) continue;
+      cout << "Writing histograms to " << tmpOut->GetName() << endl;
+      for (Int_t j=0; j<histArr->GetEntries(); j++) histArr->At(j)->Write();
+      tmpOut->Close();
+    }
+  }
 };
 
 //_______________________________________________________________________________
