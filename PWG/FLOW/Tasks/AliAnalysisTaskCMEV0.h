@@ -238,9 +238,7 @@ private:
   TH2F             *fITSvsESDMult; //!
   TH1F            *fGlobalITSMult; //!
   TH3F           *fCentCL1vsVzRun; //!
-
-
-
+  TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
 
 
@@ -257,6 +255,8 @@ private:
 
 
   //  [ Arrays of Histrograms here: ]
+
+
   TH3D        *fHCorrectNUApos[5]; //! 5 centrality bin
   TH3D        *fHCorrectNUAneg[5]; //! 5 centrality bin
 
