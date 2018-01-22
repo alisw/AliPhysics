@@ -57,7 +57,7 @@ AliCaloTrackReader  * ConfigureReader        (TString col,           Bool_t simu
                                               Int_t   minCen,        Int_t  maxCen,
                                               Bool_t  printSettings, Int_t  debug       );
 AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
-                                                                     Bool_t tender,
+                                              Bool_t tender,         TString calorimeter,
                                               Bool_t  nonLinOn,      Int_t  year,
                                               Bool_t  printSettings, Int_t  debug            );
 AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
@@ -107,7 +107,7 @@ TString kAnaGammaHadronCorr = "";
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
 ///
 /// The options that can be passed to the macro are:
-/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param simulation : A bool identifying the data as simulation
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
@@ -134,7 +134,7 @@ TString kAnaGammaHadronCorr = "";
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 (
- TString  calorimeter   = "EMCAL",
+ TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
  Bool_t   simulation    = kFALSE,
  Int_t    year          = 2011,
  TString  col           = "pp",
@@ -246,7 +246,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   
   // General frame setting and configuration
   maker->SetReader   ( ConfigureReader   (col,simulation,clustersArray,tender,calorimeter,nonLinOn,trigger,rejectEMCTrig,minCen,maxCen,printSettings,debug) );
-  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,tender,nonLinOn,year,printSettings,debug) );
+  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,              tender,calorimeter,nonLinOn,year,printSettings,debug) );
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
@@ -628,7 +628,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 /// Configure the class handling the calorimeter clusters specific methods
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,    Bool_t simulation,
-                                        Bool_t  tender, Bool_t nonLinOn,      
+                                        Bool_t  tender, TString calorimeter,
+                                        Bool_t nonLinOn,      
                                         Int_t   year,   Bool_t printSettings, 
                                         Int_t   debug)
 {
@@ -642,12 +643,39 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,    Bool_t simulation,
   
   cu->SetNumberOfSuperModulesUsed(10);
   
-  if     (year == 2010) cu->SetNumberOfSuperModulesUsed(4);
-  else if(year <= 2013) cu->SetNumberOfSuperModulesUsed(10);
-  else if(year >  2013) cu->SetNumberOfSuperModulesUsed(20);
-  else                  cu->SetNumberOfSuperModulesUsed(10);
-  
-  printf("xxx Number of SM set to <%d> xxx\n",cu->GetNumberOfSuperModulesUsed());
+  if ( calorimeter == "PHOS" )
+  {
+    if(year < 2014) cu->SetNumberOfSuperModulesUsed(3);
+    else            cu->SetNumberOfSuperModulesUsed(4);
+  }
+  else 
+  {
+    Int_t nSM     = 20;
+    Int_t lastEMC = 11;
+    if      (year == 2010) { nSM =  4; lastEMC = 3; }// EMCAL first year
+    else if (year <  2014) { nSM = 10; lastEMC = 9; }// EMCAL active 2011-2013
+    
+    cu->SetNumberOfSuperModulesUsed(nSM);
+    
+    if      (calorimeter.Contains("EMCAL"))
+    {
+      cu->SetFirstSuperModuleUsed( 0);
+      cu->SetLastSuperModuleUsed (lastEMC);
+    }
+    else if (calorimeter.Contains("DCAL"))
+    {
+      cu->SetFirstSuperModuleUsed(12);
+      cu->SetLastSuperModuleUsed (19);
+    }
+    else
+    {
+      cu->SetFirstSuperModuleUsed(0);
+      cu->SetLastSuperModuleUsed (cu->GetNumberOfSuperModulesUsed()-1);
+    }
+    
+    printf("AddTaskGammaHadronCorrelation::CalorimeterUtils() - nSM %d, first %d, last %d\n",
+           cu->GetNumberOfSuperModulesUsed(),cu->GetFirstSuperModuleUsed(), cu->GetLastSuperModuleUsed());
+  }
   
   // Search of local maxima in cluster
   if(col=="pp")
