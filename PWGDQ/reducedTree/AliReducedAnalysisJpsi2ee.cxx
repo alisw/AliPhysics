@@ -400,7 +400,8 @@ void AliReducedAnalysisJpsi2ee::LoopOverTracks(Int_t arrayOption /*=1*/) {
    //
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = (arrayOption==1 ? fEvent->GetTracks() : fEvent->GetTracks2());
-   
+   if (!trackList) return;
+
    TIter nextTrack(trackList);
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
