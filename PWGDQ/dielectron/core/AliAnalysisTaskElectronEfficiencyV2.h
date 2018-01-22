@@ -57,6 +57,9 @@ public:
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
 
+   // Generator
+   void   SetGeneratorName(TString generatorName) { fGeneratorName = generatorName;}
+
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
    void   SetTriggerMask(Int_t triggermask)                 {fTriggerMask = triggermask;}
@@ -94,6 +97,10 @@ public:
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+
+   // Set Cocktail waiting
+   void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
+   void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
 
    // Generator related setter
    void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
@@ -133,6 +140,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
+  bool    CheckGenerator(int trackID, TString generator);
 
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -202,6 +210,8 @@ private:
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
 
+  TString fGeneratorName;
+
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
   AliMCEvent*     fMC;
@@ -250,6 +260,10 @@ private:
   std::vector<Particle> fGenPosPart;
   std::vector<Particle> fRecNegPart;
   std::vector<Particle> fRecPosPart;
+
+  std::string fCocktailFilename;
+  std::string fCocktailFilenameFromAlien;
+  TFile* fCocktailFile;
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
