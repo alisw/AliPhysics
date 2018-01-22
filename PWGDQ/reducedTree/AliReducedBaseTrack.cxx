@@ -19,7 +19,8 @@ AliReducedBaseTrack::AliReducedBaseTrack() :
   fCharge(0),
   fFlags(0),
   fQualityFlags(0),
-  fMCFlags(0)
+  fMCFlags(0),
+  fIsMCTruth(kFALSE)
 {
   //
   // Constructor
@@ -35,7 +36,8 @@ AliReducedBaseTrack::AliReducedBaseTrack(const AliReducedBaseTrack &c) :
   fCharge(c.Charge()),
   fFlags(c.GetFlags()),
   fQualityFlags(c.GetQualityFlags()),
-  fMCFlags(c.GetMCFlags())
+  fMCFlags(c.GetMCFlags()),
+  fIsMCTruth(c.IsMCTruth())
 {
   //
   // Copy constructor

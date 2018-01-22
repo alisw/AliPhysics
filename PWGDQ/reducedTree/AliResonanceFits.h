@@ -124,7 +124,8 @@ class AliResonanceFits : public TObject {
     kSignifErr,                 // significance error
     kChisqSideBands,     // chi2/ndf in the side bands around peak
     kChisqMCPeak,          // chi2/ndf wrt MC signal shape in the peak region
-    kChisqMCTotal,     // chi2/ndf wrt MC signal shape in the side bands
+    kChisqMCTotal,     // chi2/ndf wrt MC signal shape
+    kMCYieldFraction,     // yield fraction in counting window
     kBkgScale,                     // scale factor for the bkg
     kBkgScaleErr,              // error on the scale factor
     kNFitValues
@@ -143,11 +144,14 @@ class AliResonanceFits : public TObject {
   void SetSELSHistograms(THnF* hLeg1, THnF* hLeg2) {fSELSleg1 = hLeg1; fSELSleg2 = hLeg2; fMatchingIsDone = kFALSE;};
   void SetMEOSHistogram(THnF* hist) {fMEOS = hist; fMatchingIsDone = kFALSE;};
   void SetMELSHistograms(THnF* hLeg1, THnF* hLeg2) {fMELSleg1 = hLeg1; fMELSleg2 = hLeg2; fMatchingIsDone = kFALSE;}
+  void SetSEOSMCHistogram(THnF* hist) {fSEOS_MCtruth = hist;}
+  void SetSignalMCshape(TH1* shape) {fSignalMCshape = shape;}
   
   // add variables and set ranges on the THnF
   void AddVariables(Int_t nVars, Int_t* vars, Int_t* indices);
   void AddVariable(Int_t var, Int_t index);
   void SetVarRange(Int_t var, Double_t* lims);
+  void SetVarRange(Int_t var, Double_t min, Double_t max);
   
   // indicate the special mass and pt variables
   void SetMassVariable(Int_t var) {fMassVariable = var; fMatchingIsDone = kFALSE;}
@@ -182,13 +186,18 @@ class AliResonanceFits : public TObject {
   /*void SetEffHistogram(TH2D* eff)  {fEffVsPtCent = eff;}
   void SetWeightHistogram(TH1D* weights)  {fWeightVsCent = weights;}
   void SetEventsHistogram(TH1F* events) {fEventVsCent = events;}
-  void SetSignalMCshape(TH1* shape) {fSignalMCshape = shape;}
+  
   */
   // Getters
   TH1* GetSplusB() const {return (fMatchingIsDone ? fSplusB : 0x0);}
   TH1* GetBkg() const {return (fMatchingIsDone ? fBkg : 0x0);}
   TH1* GetSignal() const {return (fMatchingIsDone ? fSig : 0x0);}
   TH1* GetSoverB() const {return (fMatchingIsDone ? fSoverB : 0x0);}
+  TH1* GetSignalMC() const {return (fMatchingIsDone ? fSignalMCshape : 0x0);}
+  
+  Int_t GetBkgMethod() const {return fOptionBkgMethod;}
+  Double_t* GetMassFitRange() const {return fgMassFitRange;}
+  const Double_t* GetFitValues() const {return fFitValues;}
   
   
  private:
@@ -199,6 +208,7 @@ class AliResonanceFits : public TObject {
    THnF*    fMEOS;
    THnF*    fMELSleg1;
    THnF*    fMELSleg2;
+   THnF*    fSEOS_MCtruth;                          // signal histogram
   
    Int_t  fNVariables;                                                                           // number of variables to be handled
    Int_t  fVariables[kNMaxVariables];                                                  // list of variables
@@ -219,16 +229,16 @@ class AliResonanceFits : public TObject {
    static TH1*  fgTempBkg;             // pointer to temporary bkg histogram used during fitting
   
    // User options --------------------------------------------------------------------------------------------------
-   static Bool_t fgOptionUse2DMatching;        // FALSE (default): match inv.mass projections;  TRUE: match (m,pt) projections
-   Int_t    fOptionBkgMethod;               // either one of these: kBkgMixedEvent (default), kBkgLikeSign, kBkgFunction
-   static Int_t  fgOptionMEMatching;               // either one of these: kMatchSEOS (default), kMatchSELS
-   Bool_t fOptionUseRfactorCorrection;     // if true apply R-factor correction; default is FALSE
-   Int_t    fOptionScale;                         // either one of these: kScaleEntries (default), kScaleWeightedAverage, kScaleFit
-   Int_t    fOptionLSmethod;                 // either one of : kLSGeometricMean (default), kLSArithmeticMean (used for low stat situations)
-   Double_t  fWeightedAveragePower;    // (default is 2.0) power of the inverse statistical error used as weights for the weighted average
-   Int_t    fOptionMinuit;                // either kMinuitMethodChi2 (default) or kMinuitMethodLikelihood
-   static Bool_t fgOptionUseSignificantZero;    // if true, assume zero entries as significant and error of 1 during the chi2 calculation
-   Bool_t fOptionScaleSummedBkg;       // if true, run the matching procedure on the summed S+B and bkg (default is false)
+   static Bool_t     fgOptionUse2DMatching;        // FALSE (default): match inv.mass projections;  TRUE: match (m,pt) projections
+             Int_t        fOptionBkgMethod;               // either one of these: kBkgMixedEvent (default), kBkgLikeSign, kBkgFunction
+   static Int_t        fgOptionMEMatching;               // either one of these: kMatchSEOS (default), kMatchSELS
+             Bool_t     fOptionUseRfactorCorrection;     // if true apply R-factor correction; default is FALSE
+             Int_t        fOptionScale;                         // either one of these: kScaleEntries (default), kScaleWeightedAverage, kScaleFit
+             Int_t        fOptionLSmethod;                 // either one of : kLSGeometricMean (default), kLSArithmeticMean (used for low stat situations)
+             Double_t fWeightedAveragePower;    // (default is 2.0) power of the inverse statistical error used as weights for the weighted average
+             Int_t        fOptionMinuit;                // either kMinuitMethodChi2 (default) or kMinuitMethodLikelihood
+   static Bool_t      fgOptionUseSignificantZero;    // if true, assume zero entries as significant and error of 1 during the chi2 calculation
+             Bool_t      fOptionScaleSummedBkg;       // if true, run the matching procedure on the summed S+B and bkg (default is false)
   
    // Matching / fit ranges
    // NOTE: Mass and pt ranges used for matching / fitting can in principle be different (a sub-interval only) wrt ranges in fVarLimits
@@ -245,6 +255,7 @@ class AliResonanceFits : public TObject {
    TH1* fBkg;                    //  background projection
    TH1* fSig;                    // signal projection
    TH1* fSoverB;              // S/B projection
+   TH1* fSignalMCshape;    // MC truth signal shape
    Double_t fFitValues[kNFitValues];       // array used to store information on the signal fit
    Bool_t fMatchingIsDone;                  // set to true if the matching procedure was succesfully run; false if the object is in any other state
    
@@ -261,13 +272,8 @@ class AliResonanceFits : public TObject {
    void  FitScale(TH1* sig, TH1* bkg, Bool_t fixScale=kFALSE);
    static void Fcn(Int_t&, Double_t*, Double_t &f, Double_t *par, Int_t);
    static Double_t Chi2(TH1* sig, TH1* bkg, Double_t scale, Double_t scaleError=0.0);
-  /*
   
-  Int_t    fPlottingOption;          // (default is 0) 0 - mass projection; 1 - pt projection; 2 - (mass,pt) projection
- 
-*/
-  
-  ClassDef(AliResonanceFits, 2);
+  ClassDef(AliResonanceFits, 3);
 };
 
 #endif

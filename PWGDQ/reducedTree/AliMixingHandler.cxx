@@ -129,6 +129,16 @@ void AliMixingHandler::AddMixingVariable(AliReducedVarManager::Variables var, In
    AliReducedVarManager::SetUseVariable(var);
 }
 
+//_________________________________________________________________________
+void AliMixingHandler::AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Double_t* binLims) {
+   //
+   // copy of the AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Float_t* binLims) function
+   //   just to support also Double array as bin limits
+   //
+   Float_t* bins = new Float_t[nBins];
+   for(Int_t i=0;i<nBins;++i) bins[i] = binLims[i];
+   AddMixingVariable(var, nBins, bins);
+}
 
 //_________________________________________________________________________
 void AliMixingHandler::Init() {

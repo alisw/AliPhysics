@@ -1082,11 +1082,11 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    if(fgUsedVars[kPhiMC]) values[kPhiMC] = p->PhiMC();
    if(fgUsedVars[kMassMC]) {
       if(TMath::Abs(p->MCPdg(0))==443)
-      values[kMassMC] = 3.1;   // TODO: use correct PDG mass
+      values[kMassMC] = fgkPairMass[AliReducedPairInfo::kJpsiToEE];  
    }
    if(fgUsedVars[kRapMC]) {
       if(TMath::Abs(p->MCPdg(0))==443)
-         values[kRapMC] = p->RapidityMC(3.1);   // TODO: use correct PDG mass
+         values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]); 
    }
    
    // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
@@ -1362,20 +1362,23 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   FillTrackingStatus(pinfo,values);
   //FillTrackingFlags(pinfo,values);
 
-  if(pinfo->HasMCTruthInfo()) {
-     if(fgUsedVars[kPtMC]) values[kPtMC] = pinfo->PtMC();
-     if(fgUsedVars[kPMC]) values[kPMC] = pinfo->PMC();
-     values[kPxMC] = pinfo->MCmom(0);
-     values[kPyMC] = pinfo->MCmom(1);
-     values[kPzMC] = pinfo->MCmom(2);
-     if(fgUsedVars[kThetaMC]) values[kThetaMC] = pinfo->ThetaMC();
-     if(fgUsedVars[kEtaMC]) values[kEtaMC] = pinfo->EtaMC();
-     if(fgUsedVars[kPhiMC]) values[kPhiMC] = pinfo->PhiMC();
-     //TODO: add also the massMC and RapMC   
-     values[kPdgMC] = pinfo->MCPdg(0);
-     values[kPdgMC+1] = pinfo->MCPdg(1);
-     values[kPdgMC+2] = pinfo->MCPdg(2);
-     values[kPdgMC+3] = pinfo->MCPdg(3);
+  if(fgUsedVars[kPtMC]) values[kPtMC] = pinfo->PtMC();
+  if(fgUsedVars[kPMC]) values[kPMC] = pinfo->PMC();
+  values[kPxMC] = pinfo->MCmom(0);
+  values[kPyMC] = pinfo->MCmom(1);
+  values[kPzMC] = pinfo->MCmom(2);
+  if(fgUsedVars[kThetaMC]) values[kThetaMC] = pinfo->ThetaMC();
+  if(fgUsedVars[kEtaMC]) values[kEtaMC] = pinfo->EtaMC();
+  if(fgUsedVars[kPhiMC]) values[kPhiMC] = pinfo->PhiMC();
+  //TODO: add also the massMC and RapMC   
+  values[kPdgMC] = pinfo->MCPdg(0);
+  values[kPdgMC+1] = pinfo->MCPdg(1);
+  values[kPdgMC+2] = pinfo->MCPdg(2);
+  values[kPdgMC+3] = pinfo->MCPdg(3);
+  
+  if(fgUsedVars[kRap] && pinfo->IsMCKineParticle())  {
+     if(pinfo->MCPdg(0)==443) values[kRap] = p->Rapidity(fgkPairMass[AliReducedPairInfo::kJpsiToEE]);
+     if(TMath::Abs(pinfo->MCPdg(0))==11) values[kRap] = p->Rapidity(fgkParticleMass[AliReducedVarManager::kElectron]);
   }
 }
 
@@ -1582,14 +1585,18 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      if(fgUsedVars[kPairLxy]) values[kPairLxy] =  ( (pairKF.X() - primVtx.X())*p.Px() + (pairKF.Y() - primVtx.Y())*p.Py() )/p.Pt(); // = values[kPseudoProperDecayTime]*(p.Pt()/PAIR::fgkPairMass[type]);
   }
   
-  if(p.PairType()==1 && t1->HasMCTruthInfo() && t2->HasMCTruthInfo()) {
+  // fill MC information
+  if(p.PairType()==1) {
      TRACK* pinfo1 = 0x0;
      if(t1->IsA()==TRACK::Class()) pinfo1 = (TRACK*)t1;
      TRACK* pinfo2 = 0x0;
      if(t2->IsA()==TRACK::Class()) pinfo2 = (TRACK*)t2;
      
      PAIR pMC;
-     pMC.PxPyPz(pinfo1->MCmom(0)+pinfo2->MCmom(0), pinfo1->MCmom(1)+pinfo2->MCmom(1), pinfo1->MCmom(2)+pinfo2->MCmom(2));
+     if(pinfo1 && pinfo2 && !pinfo1->IsMCTruth() && !pinfo2->IsMCTruth())
+        pMC.PxPyPz(pinfo1->MCmom(0)+pinfo2->MCmom(0), pinfo1->MCmom(1)+pinfo2->MCmom(1), pinfo1->MCmom(2)+pinfo2->MCmom(2));
+     else
+        pMC.PxPyPz(t1->Px()+t2->Px(), t1->Py()+t2->Py(), t1->Pz()+t2->Pz());
      pMC.CandidateId(type);
      if(fgUsedVars[kPtMC]) values[kPtMC] = pMC.Pt();
      if(fgUsedVars[kPMC]) values[kPMC] = pMC.P();
@@ -1600,15 +1607,18 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
      if(fgUsedVars[kPhiMC]) values[kPhiMC] = pMC.Phi();
      if(fgUsedVars[kMassMC]) {
-        values[kMassMC] = m1*m1+m2*m2 + 
-            2.0*(TMath::Sqrt(m1*m1+pinfo1->PMC()*pinfo1->PMC())*TMath::Sqrt(m2*m2+pinfo2->PMC()*pinfo2->PMC()) - 
-            pinfo1->MCmom(0)*pinfo2->MCmom(0) - pinfo1->MCmom(1)*pinfo2->MCmom(1) - pinfo1->MCmom(2)*pinfo2->MCmom(2));
+        if(pinfo1 && pinfo2 && !pinfo1->IsMCTruth() && !pinfo2->IsMCTruth())
+           values[kMassMC] = m1*m1+m2*m2 + 
+              2.0*(TMath::Sqrt(m1*m1+pinfo1->PMC()*pinfo1->PMC())*TMath::Sqrt(m2*m2+pinfo2->PMC()*pinfo2->PMC()) - 
+              pinfo1->MCmom(0)*pinfo2->MCmom(0) - pinfo1->MCmom(1)*pinfo2->MCmom(1) - pinfo1->MCmom(2)*pinfo2->MCmom(2));
+         else
+            values[kMassMC] = m1*m1+m2*m2 + 
+               2.0*(TMath::Sqrt(m1*m1+t1->P()*t1->P())*TMath::Sqrt(m2*m2+t2->P()*t2->P()) - 
+               t1->Px()*t2->Px() - t1->Py()*t2->Py() - t1->Pz()*t2->Pz());
          if(values[kMassMC]<0.0) {
             cout << "FillPairInfo(track, track, type, values): Warning: Very small squared mass found. "
             << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
             cout << "   massMC2: " << values[kMassMC] << endl;
-            cout << "p1(p,x,y,z): " << pinfo1->PMC() << ", " << pinfo1->MCmom(0) << ", " << pinfo1->MCmom(1) << ", " << pinfo1->MCmom(2) << endl;
-            cout << "p2(p,x,y,z): " << pinfo2->PMC() << ", " << pinfo2->MCmom(0) << ", " << pinfo2->MCmom(1) << ", " << pinfo2->MCmom(2) << endl;
             values[kMassMC] = 0.0;
          }
          else

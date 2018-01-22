@@ -34,6 +34,7 @@ public:
   
   // setters
   void AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Float_t* binLims);
+  void AddMixingVariable(AliReducedVarManager::Variables var, Int_t nBins, const Double_t* binLims);
   void SetMixLikeSign(Bool_t flag) {fMixLikeSign = flag;}
   void SetMixLikePairs(Bool_t flag) {SetMixLikeSign(flag);}      // synonim function to SetMixLikeSign
   void SetPoolDepth(Int_t n) {fPoolDepth = n;}
