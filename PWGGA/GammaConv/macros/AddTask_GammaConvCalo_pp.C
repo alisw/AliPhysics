@@ -1403,7 +1403,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvCalo_%i",trainConfig) : Form("GammaConvCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,!(corrTaskSetting.CompareTo("")) ? Form("GammaConvCalo_%i.root",trainConfig) : Form("GammaConvCalo_%i_%s.root",trainConfig,corrTaskSetting.Data()));
+              AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
