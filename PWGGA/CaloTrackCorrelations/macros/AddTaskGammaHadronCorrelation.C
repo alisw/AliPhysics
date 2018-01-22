@@ -16,86 +16,86 @@
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
-//// Set includes for compilation
-//
-//#if !defined(__CINT__) || defined(__MAKECINT__)
-//
-//#include <TString.h>
-//#include <TROOT.h>
-//
-//#include "AliLog.h"
-//#include "AliAnalysisTaskCaloTrackCorrelation.h"
-//#include "AliCaloTrackESDReader.h"
-//#include "AliCaloTrackAODReader.h"
-//#include "AliCalorimeterUtils.h"
-//#include "AliAnaPhoton.h"
-//#include "AliAnaPi0EbE.h"
-//#include "AliHistogramRanges.h"
-//#include "AliAnaParticleIsolation.h"
-//#include "AliAnaParticleHadronCorrelation.h"
-//#include "AliAnaChargedParticles.h"
-//#include "AliAnaCalorimeterQA.h"
-//#include "AliAnaGeneratorKine.h"
-//#include "AliAnalysisTaskCaloTrackCorrelation.h"
-//#include "AliAnaCaloTrackCorrMaker.h"
-//#include "AliAnalysisManager.h"
-//#include "AliInputEventHandler.h"
-//#include "AliVTrack.h"
-//#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-//#include "AliESDtrackCuts.h"
-//#include "CreateTrackCutsPWGJE.C"
-//#include "ConfigureEMCALRecoUtils.C"
-//#endif
-//
-//// Declare methods for compilation
-//
-//AliCaloTrackReader  * ConfigureReader        (TString col,           Bool_t simulation,
-//                                              TString clustersArray, Bool_t tender,
-//                                              TString calorimeter,   Bool_t nonLinOn,
-//                                              TString trigger,       Bool_t rejectEMCTrig,
-//                                              Int_t   minCen,        Int_t  maxCen,
-//                                              Bool_t  printSettings, Int_t  debug       );
-//AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
-//                                                                     Bool_t tender,
-//                                              Bool_t  nonLinOn,      Int_t  year,
-//                                              Bool_t  printSettings, Int_t  debug            );
-//AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
-//                                              TString calorimeter,   Int_t  year,  Int_t tm,
-//                                              Bool_t  printSettings, Int_t  debug            );
-//AliAnaPi0EbE        * ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
-//                                              Bool_t useSSIso,       Bool_t useAsy,
-//                                              TString col,           Bool_t simulation,
-//                                              TString calorimeter,   Int_t  year, Int_t tm,
-//                                              Bool_t  printSettings, Int_t  debug            );
-//AliAnaParticleIsolation* ConfigureIsolationAnalysis
-//                                             (TString particle,      Int_t   leading,
-//                                              Int_t partInCone,      Int_t   thresType,
-//                                              Float_t cone,          Float_t pth,      Bool_t multi,
-//                                              TString col,           Bool_t  simulation,
-//                                              TString calorimeter,   Int_t   year,      Int_t tm,
-//                                              Bool_t  printSettings, Int_t   debug                    );
-//AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
-//                                             (TString particle,      Int_t   leading,
-//                                              Bool_t  bIsolated,     Float_t shshMax,
-//                                              Int_t partInCone,      Int_t   thresType,
-//                                              Float_t cone,          Float_t pth,      Bool_t mixOn,
-//                                              TString col,           Bool_t  simulation,
-//                                              TString calorimeter,   Int_t   year,     Int_t tm,
-//                                              Bool_t  printSettings, Int_t   debug                     );
-//AliAnaChargedParticles* ConfigureChargedAnalysis
-//                                             (Bool_t simulation,     Bool_t  printSettings, Int_t   debug);
-//AliAnaCalorimeterQA * ConfigureQAAnalysis    (TString col,           Bool_t  simulation,
-//                                              TString calorimeter,   Int_t   year,
-//                                              Bool_t  printSettings, Int_t   debug                     );
-//AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t cone,      Float_t pth,
-//                                              TString col,           Bool_t  simulation,
-//                                              TString calorimeter,   Int_t   year,
-//                                              Bool_t  printSettings, Int_t   debug                     );
-//
-//void SetAnalysisCommonParameters             (AliAnaCaloTrackCorrBaseClass* ana,
-//                                              TString calorimeter , Int_t  year,
-//                                              TString col         , Bool_t simulation,
-//                                              Bool_t printSettings, Int_t  debug);
+// Set includes for compilation
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TString.h>
+#include <TROOT.h>
+
+#include "AliLog.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnaPhoton.h"
+#include "AliAnaPi0EbE.h"
+#include "AliHistogramRanges.h"
+#include "AliAnaParticleIsolation.h"
+#include "AliAnaParticleHadronCorrelation.h"
+#include "AliAnaChargedParticles.h"
+#include "AliAnaCalorimeterQA.h"
+#include "AliAnaGeneratorKine.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
+#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "AliESDtrackCuts.h"
+#include "CreateTrackCutsPWGJE.C"
+#include "ConfigureEMCALRecoUtils.C"
+#endif
+
+// Declare methods for compilation
+
+AliCaloTrackReader  * ConfigureReader        (TString col,           Bool_t simulation,
+                                              TString clustersArray, Bool_t tender,
+                                              TString calorimeter,   Bool_t nonLinOn,
+                                              TString trigger,       Bool_t rejectEMCTrig,
+                                              Int_t   minCen,        Int_t  maxCen,
+                                              Bool_t  printSettings, Int_t  debug       );
+AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
+                                                                     Bool_t tender,
+                                              Bool_t  nonLinOn,      Int_t  year,
+                                              Bool_t  printSettings, Int_t  debug            );
+AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
+                                              TString calorimeter,   Int_t  year,  Int_t tm,
+                                              Bool_t  printSettings, Int_t  debug            );
+AliAnaPi0EbE        * ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
+                                              Bool_t useSSIso,       Bool_t useAsy,
+                                              TString col,           Bool_t simulation,
+                                              TString calorimeter,   Int_t  year, Int_t tm,
+                                              Bool_t  printSettings, Int_t  debug            );
+AliAnaParticleIsolation* ConfigureIsolationAnalysis
+                                             (TString particle,      Int_t   leading,
+                                              Int_t partInCone,      Int_t   thresType,
+                                              Float_t cone,          Float_t pth,      Bool_t multi,
+                                              TString col,           Bool_t  simulation,
+                                              TString calorimeter,   Int_t   year,      Int_t tm,
+                                              Bool_t  printSettings, Int_t   debug                    );
+AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
+                                             (TString particle,      Int_t   leading,
+                                              Bool_t  bIsolated,     Float_t shshMax,
+                                              Int_t partInCone,      Int_t   thresType,
+                                              Float_t cone,          Float_t pth,      Bool_t mixOn,
+                                              TString col,           Bool_t  simulation,
+                                              TString calorimeter,   Int_t   year,     Int_t tm,
+                                              Bool_t  printSettings, Int_t   debug                     );
+AliAnaChargedParticles* ConfigureChargedAnalysis
+                                             (Bool_t simulation,     Bool_t  printSettings, Int_t   debug);
+AliAnaCalorimeterQA * ConfigureQAAnalysis    (TString col,           Bool_t  simulation,
+                                              TString calorimeter,   Int_t   year,
+                                              Bool_t  printSettings, Int_t   debug                     );
+AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t cone,      Float_t pth,
+                                              TString col,           Bool_t  simulation,
+                                              TString calorimeter,   Int_t   year,
+                                              Bool_t  printSettings, Int_t   debug                     );
+
+void SetAnalysisCommonParameters             (AliAnaCaloTrackCorrBaseClass* ana,
+                                              TString calorimeter , Int_t  year,
+                                              TString col         , Bool_t simulation,
+                                              Bool_t printSettings, Int_t  debug);
 
 
 /// Global name to be composed of the settings, used to set the AOD branch name
