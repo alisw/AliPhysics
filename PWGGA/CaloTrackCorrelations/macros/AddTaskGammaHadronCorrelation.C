@@ -398,10 +398,11 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   {
     // Event rejection cuts for jet-jet simulations, do not use in other
     reader->SetPtHardAndJetPtComparison(kTRUE);
-    reader->SetPtHardAndJetPtFactor(4);
+    reader->SetPtHardAndJetPtFactor(2);
     
-    reader->SetPtHardAndClusterPtComparison(kTRUE);
-    reader->SetPtHardAndClusterPtFactor(1.5);
+    // Event rejection more suitable for gamma-jet simulations, do not use in other
+//    reader->SetPtHardAndClusterPtComparison(kTRUE);
+//    reader->SetPtHardAndClusterPtFactor(1.5);
   }
   
   //------------------------
