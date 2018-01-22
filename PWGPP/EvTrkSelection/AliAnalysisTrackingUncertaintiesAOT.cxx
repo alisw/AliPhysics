@@ -461,31 +461,33 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     track->GetImpactParameters(dca, cov);
     if(fMC){
       part    = (TParticle*)stack->Particle(TMath::Abs(track->GetLabel()));
-      pdgPart = part->GetPDG();
-      code    = pdgPart->PdgCode();
-      if(stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
-      else {
-	isph = 0;
-	uniqueID = part->GetUniqueID();
+      if(part){
+	pdgPart = part->GetPDG();
+	code    = pdgPart->PdgCode();
+	if(stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
+	else {
+	  isph = 0;
+	  uniqueID = part->GetUniqueID();
+	}
+	Int_t indexMoth=part->GetFirstMother();
+	if(indexMoth>=0){
+	  TParticle* moth = stack->Particle(indexMoth);
+	  Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+	  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+	}
+	if(track->GetLabel()<0.) label = -1;
+	if(isph==1) {
+	  partType = 0; //primaries in MC
+	}
+	else if(isph==0) {
+	  if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
+	  else partType = 2;  //from material
+	}
+	if(TMath::Abs(code)==11)   specie = 0;
+	if(TMath::Abs(code)==211)  specie = 1;
+	if(TMath::Abs(code)==321)  specie = 2;
+	if(TMath::Abs(code)==2212) specie = 3;
       }
-      Int_t indexMoth=part->GetFirstMother();
-      if(indexMoth>=0){
-	TParticle* moth = stack->Particle(indexMoth);
-	Float_t codemoth = TMath::Abs(moth->GetPdgCode());
-	mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-      }
-      if(track->GetLabel()<0.) label = -1;
-      if(isph==1) {
-	partType = 0; //primaries in MC
-      }
-      else if(isph==0) {
-	if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
-	else partType = 2;  //from material
-      }
-      if(TMath::Abs(code)==11)   specie = 0;
-      if(TMath::Abs(code)==211)  specie = 1;
-      if(TMath::Abs(code)==321)  specie = 2;
-      if(TMath::Abs(code)==2212) specie = 3;
     }
     //
     // relevant variables
