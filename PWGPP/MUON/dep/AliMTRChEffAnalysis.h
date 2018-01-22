@@ -49,7 +49,8 @@ class AliMTRChEffAnalysis : public TObject {
   void CompareMergedEfficiencies ( const char* opt ) const;
   Int_t ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "") const;
 
-  Bool_t PatchEfficiency ( const char* inputEff, const char* patchEff, const char* boardsToPatch, const char* outFilename ) const;
+  Bool_t PatchEfficiency ( const char* effToModify, const char* fromEff, const char* boardsToPatch, const char* outFilename ) const;
+  Bool_t AdditionalSystematics ( const char* additionalSystematics, const char* affectedBoards ) const;
 
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
   Bool_t SetDefaultEffConditions ();
@@ -102,6 +103,8 @@ class AliMTRChEffAnalysis : public TObject {
   Bool_t HasMergedResults () const;
 
   TArrayI MergeRangesForStat ( TArrayI runRanges, Double_t averageStatError, Bool_t excludePeriphericBoards = kTRUE ) const;
+
+  Bool_t PatchEffLists ( TList* listToModify, TList* fromList, const char* boardsToPatch ) const;
 
   TList* ReadEffHistoList ( const char* src ) const;
 

@@ -1917,18 +1917,16 @@ AliTrigChEffOutput* AliMTRChEffAnalysis::Namer () const
 }
 
 //________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::PatchEfficiency ( const char* inputEff, const char* patchEff, const char* boardsToPatch, const char* outFilename ) const
+Bool_t AliMTRChEffAnalysis::PatchEffLists ( TList* listToModify, TList* fromList, const char* boardsToPatch ) const
 {
-  /// Replace the efficiency in inputEff using the efficiency in patchEff
+  /// Replace the efficiency in inEffList using the efficiency in patchEffList
   /// for the specified local boards.
   /// boardsToPatch is the name of a txt file with one or two columns:
   /// boardId chamberId
   /// with 1 <= boardId <= 234
   /// and optionally 11 <= chamberId <= 14
 
-  TList* inEffList = ReadEffHistoList(inputEff);
-  TList* patchEffList = ReadEffHistoList(patchEff);
-  if ( ! inEffList || ! patchEffList ) return kFALSE;
+  if ( ! listToModify || ! fromList ) return kFALSE;
   ifstream inFile(gSystem->ExpandPathName(boardsToPatch));
   if ( ! inFile.is_open() ) {
     AliError(Form("Cannot open %s",boardsToPatch));
@@ -1949,22 +1947,68 @@ Bool_t AliMTRChEffAnalysis::PatchEfficiency ( const char* inputEff, const char* 
         lastCh = currCh;
       }
     }
-    for ( Int_t ich=0; ich<4; ich++ ) {
+    firstCh -= 11;
+    lastCh -= 11;
+    for ( Int_t ich=firstCh; ich<=lastCh; ich++ ) {
+      AliInfo(Form("Patching efficiency of board %i  in ch %i",iboard,11+ich));
       for ( Int_t icount=0; icount<4; icount++ ) {
         TString currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
-        TH1* inHisto = static_cast<TH1*>(inEffList->FindObject(currName.Data()));
-        TH1* patchHisto = static_cast<TH1*>(patchEffList->FindObject(currName.Data()));
-        inHisto->SetBinContent(iboard,patchHisto->GetBinContent(iboard));
+        TH1* histoToPatch = static_cast<TH1*>(listToModify->FindObject(currName.Data()));
+        TH1* fromHisto = static_cast<TH1*>(fromList->FindObject(currName.Data()));
+        histoToPatch->SetBinContent(iboard,fromHisto->GetBinContent(iboard));
       }
     }
   }
   inFile.close();
 
-  TFile* outFile = TFile::Open(gSystem->ExpandPathName(outFilename),"create");
-  inEffList->Write("triggerChamberEff",TObject::kSingleKey);
-  outFile->Close();
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::AdditionalSystematics ( const char* additionalSystematics, const char* affectedBoards ) const
+{
+  /// Add systematic uncertainties
+  if ( ! HasMergedResults() ) return kFALSE;
+
+  AliInfo(Form("Additional systematic uncertainties from %s",additionalSystematics));
+
+  TList* additionalSystList = ReadEffHistoList(additionalSystematics);
+  TString systName = gSystem->BaseName(additionalSystematics);
+  systName.Remove(0,systName.Index("?")+1);
+  systName.Prepend("added_syst_from_");
+
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
+    TList* effList = obj->GetEffHistoList(fConditions->UncheckedAt(0)->GetName());
+    TList* newSyst = CloneEffHistoList(effList);
+    newSyst->SetName(systName.Data());
+    if ( PatchEffLists(newSyst,additionalSystList,affectedBoards) ) {
+      obj->AddEffHistoList(systName.Data(),newSyst);
+    }
+    else delete newSyst;
+  }
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::PatchEfficiency ( const char* effToModify, const char* fromEff, const char* boardsToPatch, const char* outFilename ) const
+{
+  /// Replace the efficiency in inputEff using the efficiency in patchEff
+  /// for the specified local boards.
+  /// See PatchEffLisrs for further details
+
+  TList* listToModify = ReadEffHistoList(effToModify);
+  TList* fromList = ReadEffHistoList(fromEff);
+
+  Bool_t isOk = PatchEffLists(listToModify,fromList,boardsToPatch);
+
+  if ( isOk ) {
+    TFile* outFile = TFile::Open(gSystem->ExpandPathName(outFilename),"create");
+    listToModify->Write("triggerChamberEff",TObject::kSingleKey);
+    outFile->Close();
+  }
+
+  return isOk;
 }
 
 //________________________________________________________________________
