@@ -48,7 +48,7 @@ AliAnalysisTask* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=
        mgr->ConnectInput(task, 0, cReducedEvent);
   
      AliAnalysisDataContainer *cOutputHist = mgr->CreateContainer("testHistos", THashList::Class(),
-                                                                  AliAnalysisManager::kOutputContainer, "dstAnalysisHistograms.root");
+                                                                  AliAnalysisManager::kOutputContainer, "AnalysisHistograms_testTask.root");
      mgr->ConnectOutput(task, 1, cOutputHist );
   }
   
@@ -97,9 +97,12 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   // add pure MC filter names
   if(processor->ProcessMC()) {
      processor->AddMCBitNames("JpsiInclusive;JpsiFromB;JpsiNotFromB;");
-     processor->AddMCBitNames("JpsiInclusiveRadiative;JpsiInclusiveNonRadiative;JpsiFromBRadiative;JpsiFromBNonRadiative;");
+     processor->AddMCBitNames("JpsiInclusiveRadiative;JpsiInclusiveNonRadiative;");
+     processor->AddMCBitNames("electronFromJpsi;photonFromJpsiDecay;");
   }
-  processor->SetTrackFilterBitNames("JpsiElectrons;AssocHadr;AssocHadr_noITS;AssocHadr_Pion;AssocHadr_Kaon;AssocHadr_Proton;");
+  processor->AddTrackFilterBitNames("basicCuts;spdAny;spdFirst;tpc100;tpc120;tpcChi2_3;itsChi2_10;");
+  processor->AddTrackFilterBitNames("eleInclusion_35;eleInclusion_30;protRej_30;protRej_35;protRej_40;");
+  processor->AddTrackFilterBitNames("pionRej_30;pionRej_35;pionRej_40;basicCutRandom;");
   
   SetupHistogramManager(processor, processor->GetHistogramManager(), prod);
 }
