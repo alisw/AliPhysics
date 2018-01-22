@@ -38,6 +38,7 @@
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
+#include "AliNanoAODTrack.h"
 #include "AliFlowEvent.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCMEV0.h"
@@ -147,7 +148,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fTPCvsITSTrk(NULL),
   fITSvsESDMult(NULL),
   fGlobalITSMult(NULL),
-  fCentCL1vsVzRun(NULL)
+  fCentCL1vsVzRun(NULL),
+  fVzDistribuion(NULL)
 {
   for(int i=0;i<5;i++){
     fHCorrectNUApos[i] = NULL;
@@ -373,7 +375,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fTPCvsITSTrk(NULL),
   fITSvsESDMult(NULL),
   fGlobalITSMult(NULL),
-  fCentCL1vsVzRun(NULL)
+  fCentCL1vsVzRun(NULL),
+  fVzDistribuion(NULL)
 {
   for(int i=0;i<5;i++){
     fHCorrectNUApos[i] = NULL;
@@ -811,6 +814,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t VtxZ    =   pVertex->GetZ();
  Double_t VtxX    =   pVertex->GetX();
  Double_t VtxY    =   pVertex->GetY();
+
+ fVzDistribuion->Fill(VtxZ);
 
  if(sDataSet=="2015pPb" || sDataSet=="pPb"){
 
@@ -2430,7 +2435,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       }
     } ////------ dataset 2010,2011 pile up ---------
 
-    else{ //------------ pileup for 2015 data ----------------- 
+    else { //------------ pileup for 2015 data ----------------- 
       if(!fMultSelection->GetThisEventIsNotPileup())
          fPileUpMultSelCount->Fill(0.5);
       if(!fMultSelection->GetThisEventIsNotPileupMV())
@@ -2505,9 +2510,34 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       //Int_t multTrk = 0;
       //Int_t multTrkBefC = 0;
       //Int_t multTrkTOFBefC = 0;
+      Int_t multGlobal = 0;
       Int_t multTPC = 0;
       Int_t multITS = 0;
 
+
+      for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
+          AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));
+         if(!track)  continue;
+         if(track->Pt()<0.2 || track->Pt()>5.0 || TMath::Abs(track->Eta())>0.8 || track->GetTPCNcls()<70 || track->GetTPCsignal()<10.0)
+            continue;
+         if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPC++;
+         if(!track->TestFilterBit(16) || track->Chi2perNDF()<0.1) continue;
+                
+         Double_t b[2]    = {-99., -99.};
+         Double_t bCov[3] = {-99., -99., -99.};
+                
+         AliNanoAODTrack copy(*track);
+         Double_t magField = faod->GetMagneticField();
+                
+         if(magField!=0){     
+           if(track->PropagateToDCA(faod->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;    
+         }
+      }
+
+      Double_t multTPCGlobDif = multTPC - fPileUpSlopeParm*multGlobal;
+
+
+      /*
       for(Int_t it = 0; it < nTracks; it++) {
         AliAODTrack* aodTrk = (AliAODTrack*)faod->GetTrack(it);
         if(!aodTrk) {
@@ -2526,11 +2556,14 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         if(aodTrk->TestFilterBit(96))
            multITS++;
       } // end of for AOD track loop
+     
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      //Double_t multESDTPCDif = multEsdn - multTPCn*3.39;
       Double_t multESDTPCDif = multEsdn - multTPCn*fPileUpSlopeParm;
+      */
+
+
 
       fGlobalITSMult->Fill(multITS);
 
@@ -2544,12 +2577,13 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
         }*/
-      if(multESDTPCDif > 15000.){ //default: 15000
+      /*if(multESDTPCDif > 15000.){ //default: 15000
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
-      }
-      else if(fRejectPileUpTight) {
-        if(multESDTPCDif > fPileUpConstParm) { //default: 700
+       }*/
+
+       if(fRejectPileUpTight) {
+        if(multTPCGlobDif > fPileUpConstParm) { 
           fPileUpCount->Fill(8.5);
           BisPileup=kTRUE;
         }
@@ -2674,7 +2708,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif=15000");
   Int_t puConst = fPileUpConstParm;
-  fPileUpCount->GetXaxis()->SetBinLabel(9,Form("multESDTPCDif>%d",puConst));
+  fPileUpCount->GetXaxis()->SetBinLabel(9,Form("multGlobTPCDif>%d",puConst));
   fPileUpCount->GetXaxis()->SetBinLabel(10,"extraPileUpMultSel");
   fListHistos->Add(fPileUpCount);
 
@@ -2973,6 +3007,9 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
   fListCalibs->Add(fHist_Event_count);
+
+  fVzDistribuion = new TH1F("fVzDistribuion","Vz (cm)",100,-10,10);
+  fListCalibs->Add(fVzDistribuion);
 
   fEventStatvsRun = new TH1F("fEventStatvsRun","Event stat per run",fRunFlag,0,fRunFlag);
   fListCalibs->Add(fEventStatvsRun);
