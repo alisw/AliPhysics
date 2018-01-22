@@ -966,7 +966,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
             if(isSelected) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(8);
     
         
-        if(!isSelected) {if(fDevelopeMode)std::cout<<"Event Rejected"<<std::endl; return;}
+        if(!isSelectedkINT7) {if(fDevelopeMode)std::cout<<"Event Rejected"<<std::endl; return;}
 
     
     ///////////////////////////////////////////////////////////
@@ -1041,10 +1041,10 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         AliMultSelection *MultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
 
         Float_t lPerc = 300; //nonsense
-	if(MultSelection){
+    if(MultSelection){
          lPerc = MultSelection->GetMultiplicityPercentile("V0M");
-	 //Quality check
-	 Int_t lEvSelCode = MultSelection->GetEvSelCode();
+     //Quality check
+     Int_t lEvSelCode = MultSelection->GetEvSelCode();
          if(lEvSelCode > 0) lPerc = lEvSelCode; //disregard!
          }
          else{
@@ -1054,13 +1054,13 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         if(fDevelopeMode)std::cout << "Multiplicity: " << lPerc << std::endl;
         ((TH1F*)fOutputList->FindObject("fMultDist_pp"))->Fill(lPerc);
         
-	// After the AliMulti
-	((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(1);
+    // After the AliMulti
+    ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(1);
         
         //if(lPerc > 100) return;
         
-	// After the AliMulti 0-100 cut
-	//((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(2);
+    // After the AliMulti 0-100 cut
+    //((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(2);
         
         ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fESD->GetNumberOfTracks());
         PrimaryVertexESD = fESD->GetPrimaryVertex();
@@ -1333,9 +1333,9 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         
 
         
-        AliESDtrack *pTrackXi	= fESD->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
-        AliESDtrack *nTrackXi	= fESD->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
-        AliESDtrack *bTrackXi	= fESD->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+        AliESDtrack *pTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+        AliESDtrack *nTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+        AliESDtrack *bTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
         // Standard track QA cuts
         if(!fTrackCut->AcceptTrack(pTrackXi)) continue;
