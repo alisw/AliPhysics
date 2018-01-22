@@ -282,7 +282,7 @@ namespace AliAnalysisCODEX {
         }
       }
 
-      // returns the vector of TLorentzVector stored in the
+      // returns the vector of FourVector_t stored in the mPool
       vector<FourVector_t> GetVectorFV(int c, float v, int p, int d) {
         if (fabs(v) < mVMax && c < mCMax) {
           int cbin = c / mCWBin;
