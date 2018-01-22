@@ -110,10 +110,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t GetWriteAdditionalOutput() const { return fWriteAdditionalOutput; };
   virtual void   SetWriteAdditionalOutput(Bool_t flag = kTRUE) { fWriteAdditionalOutput = flag; };
 
-  
   virtual Int_t GetV0motherIndex(Int_t trackIndex) const;
   virtual Int_t GetV0motherPDG(Int_t trackIndex) const;
-  
   //
   // static functions for postprocessing
   //
@@ -157,6 +155,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Bool_t TPCCutMIGeo(const AliVTrack* track, const AliInputEventHandler* evtHandler, TTreeStream* streamer = 0x0)
     { if (!evtHandler) return kFALSE; return TPCCutMIGeo(track, evtHandler->GetEvent(), streamer); };
 
+  static TString GetStringFitType(Int_t fitType);  
+    
   protected:
   static Double_t fgCutGeo;  // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
@@ -164,6 +164,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
+  static Double_t Aleph(Double_t* xx, Double_t* par);
   
   static void BinLogAxis(THnSparseF *h, Int_t axisNumber);
   static THnSparseF* InitialisePIDQAHist(TString name, TString title);
@@ -259,6 +260,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   AliTPCcalibResidualPID(const AliTPCcalibResidualPID&); // not implemented
   AliTPCcalibResidualPID& operator=(const AliTPCcalibResidualPID&); // not implemented
   
-  ClassDef(AliTPCcalibResidualPID, 5); 
+  ClassDef(AliTPCcalibResidualPID, 6); 
 };
+
 #endif
