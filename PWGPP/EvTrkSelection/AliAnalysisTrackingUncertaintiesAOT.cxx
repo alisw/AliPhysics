@@ -60,10 +60,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fMaxDCAxy(2.4),
   fMaxDCAz(3.2),
   fMaxEta(0.8),
-  fSPDlayerReq(AliESDtrackCuts::kAny),
   fCrossRowsOverFndCltTPC(0.8),
   fminCent(0.),
   fmaxCent(100.),
+  fSPDlayerReq(AliESDtrackCuts::kAny),
   fTriggerClass("CINT1B"),
   fTriggerMask(AliVEvent::kMB),
   fESD(0),
@@ -82,10 +82,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fUseFinePtAxis(kFALSE),
   fUseGenPt(kFALSE),
   fDoCutV0multTPCout(kFALSE),
+  fMultSelectionObjectName("MultSelection"),
   fListHist(0x0),
   fESDtrackCuts(0x0),
-  fVertex(0x0),
-  fMultSelectionObjectName("MultSelection")
+  fVertex(0x0)
 {
     
 }
@@ -96,10 +96,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fMaxDCAxy(2.4),
     fMaxDCAz(3.2),
     fMaxEta(0.8),
-    fSPDlayerReq(AliESDtrackCuts::kAny),
     fCrossRowsOverFndCltTPC(0.8),
     fminCent(0.),
     fmaxCent(100.),
+    fSPDlayerReq(AliESDtrackCuts::kAny),
     fTriggerClass("CINT1B"),
     fTriggerMask(AliVEvent::kMB),
     fESD(0),
@@ -118,10 +118,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fUseFinePtAxis(kFALSE),
     fUseGenPt(kFALSE),
     fDoCutV0multTPCout(kFALSE),
+    fMultSelectionObjectName("MultSelection"),
     fListHist(0x0),
     fESDtrackCuts(0x0),
-    fVertex(0x0),
-    fMultSelectionObjectName("MultSelection")
+    fVertex(0x0)
 {
   //
   // standard constructur
@@ -499,7 +499,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     Float_t chi2TPC     = track->GetTPCchi2();
     Float_t ncrTPC      = track->GetTPCCrossedRows();
     Int_t nclsTPCF      = track->GetTPCNclsF();
-    Float_t nCRoverFC   = track->GetTPCCrossedRows();
     Double_t chi2ITS    = track->GetITSchi2();
     Int_t nclsITS       = track->GetITSclusters(0);
         
@@ -509,6 +508,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
       chi2TPC = 999.;
     }
         
+    Float_t nCRoverFC   = ncrTPC;
     if (nclsTPCF !=0) {
       nCRoverFC /= nclsTPCF;
     } else {
