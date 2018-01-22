@@ -85,6 +85,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayPi0 = centarray;
+
+      for(Int_t i=0;i<10;i++){
+        delete fAdditionalPi0PtWeight[i];
+        fAdditionalPi0PtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalPi0PtWeight[icen] = (TF1*)funcarray->At(icen);
       }
@@ -93,14 +99,40 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalK0SPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayK0S = centarray;
+
+      for(Int_t i=0;i<10;i++){
+        delete fAdditionalK0SPtWeight[i];
+        fAdditionalK0SPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalK0SPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
     }//adjust charged K/pi ratio
 
+    void SetAdditionalL0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
+      Int_t Ncen = centarray->GetSize();
+      fCentArrayL0 = centarray;
+
+      for(Int_t i=0;i<10;i++){
+        delete fAdditionalL0PtWeight[i];
+        fAdditionalL0PtWeight[i] = 0x0;
+      }
+
+      for(Int_t icen=0;icen<Ncen-1;icen++){
+        fAdditionalL0PtWeight[icen] = (TF1*)funcarray->At(icen);
+      }
+    }//adjust charged L0/K0S, L0/pi ratio
+
     void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayEta = centarray;
+
+      for(Int_t i=0;i<10;i++){
+        delete fAdditionalEtaPtWeight[i];
+        fAdditionalEtaPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalEtaPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
@@ -109,6 +141,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayGamma = centarray;
+
+      for(Int_t i=0;i<10;i++){
+        delete fAdditionalGammaPtWeight[i];
+        fAdditionalGammaPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalGammaPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
@@ -250,6 +288,17 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         return fAdditionalK0SPtWeight[0];
     }
 
+    TF1 *GetAdditionalL0PtWeightFunction(Float_t centrality){
+      if(fCentArrayL0){
+        Int_t lastBinUpperIndex = fCentArrayL0->GetSize()-1;
+        Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayL0->GetArray(), centrality);
+        return fAdditionalL0PtWeight[index];
+      }
+      else 
+        return fAdditionalL0PtWeight[0];
+    }
+
+
     TF1 *GetAdditionalEtaPtWeightFunction(Float_t centrality){
       if(fCentArrayEta){
         Int_t lastBinUpperIndex = fCentArrayEta->GetSize()-1;
@@ -310,10 +359,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fAdditionalEtaPtWeight[10];//weight function for pT distribution
     TF1 *fAdditionalGammaPtWeight[10];//weight function for pT distribution
     TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
+    TF1 *fAdditionalL0PtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
     TArrayD *fCentArrayPi0;
     TArrayD *fCentArrayEta;
     TArrayD *fCentArrayGamma;
     TArrayD *fCentArrayK0S;
+    TArrayD *fCentArrayL0;
 
     THashList *fOutputContainer;
     AliVEvent *fEvent;
@@ -366,7 +417,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 45);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 46);
 };
 
 #endif
