@@ -90,6 +90,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fClusterCuts(NULL),
   fTreePiPiSameMother(NULL),
   fTreePiPiPiSameMother(NULL),
+  fTreeEventInfoOmega(NULL),
+  fTreeEventInfoEta(NULL),
   fCasePiPi(-1),
   fSamePiPiMotherID(-1),
   fSamePiPiMotherInvMass(-1),
@@ -97,6 +99,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fSamePiPiPiMotherID(-1),
   fSamePiPiPiMotherInvMass(-1),
   fSamePiPiPiMotherPt(-1),
+  fV0MultiplicityOmegaEvent(-1),
+  fTrackMultiplicityOmegaEvent(-1),
+  fZVertexOmegaEvent(-1),
+  fPtOmega(-1),
+  fV0MultiplicityEtaEvent(-1),
+  fTrackMultiplicityEtaEvent(-1),
+  fZVertexEtaEvent(-1),
+  fPtEta(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -212,8 +222,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1),
-  fNeutralPionPtMin(0.)
+  fTolerance(-1)
 {
 
 }
@@ -255,6 +264,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fClusterCuts(NULL),
   fTreePiPiSameMother(NULL),
   fTreePiPiPiSameMother(NULL),
+  fTreeEventInfoOmega(NULL),
+  fTreeEventInfoEta(NULL),
   fCasePiPi(-1),
   fSamePiPiMotherID(-1),
   fSamePiPiMotherInvMass(-1),
@@ -262,6 +273,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fSamePiPiPiMotherID(-1),
   fSamePiPiPiMotherInvMass(-1),
   fSamePiPiPiMotherPt(-1),
+  fV0MultiplicityOmegaEvent(-1),
+  fTrackMultiplicityOmegaEvent(-1),
+  fZVertexOmegaEvent(-1),
+  fPtOmega(-1),
+  fV0MultiplicityEtaEvent(-1),
+  fTrackMultiplicityEtaEvent(-1),
+  fZVertexEtaEvent(-1),
+  fPtEta(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -377,8 +396,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1),
-  fNeutralPionPtMin(0.)
+  fTolerance(-1)
 {
   DefineOutput(1, TList::Class());
 }
@@ -875,6 +893,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
                 fTrueTreeList                                           = new TList*[fnCuts];
                 fTreePiPiSameMother                                     = new TTree*[fnCuts];
                 fTreePiPiPiSameMother                                   = new TTree*[fnCuts];
+                fTreeEventInfoOmega                                     = new TTree*[fnCuts];
+                fTreeEventInfoEta                                       = new TTree*[fnCuts];
             }
         }
     }
@@ -1066,6 +1086,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
                   fTreePiPiPiSameMother[iCut]->Branch("fSamePiPiPiMotherInvMass", &fSamePiPiPiMotherInvMass, "fSamePiPiPiMotherInvMass/F");
                   fTreePiPiPiSameMother[iCut]->Branch("fSamePiPiPiMotherPt", &fSamePiPiPiMotherPt, "fSamePiPiPiMotherPt/F");
                   fTrueTreeList[iCut]->Add(fTreePiPiPiSameMother[iCut]);
+
+                  fTreeEventInfoOmega[iCut]                         = new TTree("TreeEventInfoOmega","TreeEventInfoOmega");
+                  fTreeEventInfoOmega[iCut]->Branch("fV0MultiplicityOmegaEvent", &fV0MultiplicityOmegaEvent, "fV0MultiplicityOmegaEvent/F");
+                  fTreeEventInfoOmega[iCut]->Branch("fTrackMultiplicityOmegaEvent", &fTrackMultiplicityOmegaEvent, "fTrackMultiplicityOmegaEvent/F");
+                  fTreeEventInfoOmega[iCut]->Branch("fZVertexOmegaEvent", &fZVertexOmegaEvent, "fZVertexOmegaEvent/F");
+                  fTreeEventInfoOmega[iCut]->Branch("fPtOmega", &fPtOmega, "fPtOmega/F");
+                  fTrueTreeList[iCut]->Add(fTreeEventInfoOmega[iCut]);
+
+                  fTreeEventInfoEta[iCut]                         = new TTree("TreeEventInfoEta","TreeEventInfoEta");
+                  fTreeEventInfoEta[iCut]->Branch("fV0MultiplicityEtaEvent", &fV0MultiplicityEtaEvent, "fV0MultiplicityEtaEvent/F");
+                  fTreeEventInfoEta[iCut]->Branch("fTrackMultiplicityEtaEvent", &fTrackMultiplicityEtaEvent, "fTrackMultiplicityEtaEvent/F");
+                  fTreeEventInfoEta[iCut]->Branch("fZVertexEtaEvent", &fZVertexEtaEvent, "fZVertexEtaEvent/F");
+                  fTreeEventInfoEta[iCut]->Branch("fPtEta", &fPtEta, "fPtEta/F");
+                  fTrueTreeList[iCut]->Add(fTreeEventInfoEta[iCut]);
               }
           }
       }
@@ -2494,9 +2528,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
       AliAODConversionMother *neutralPion=dynamic_cast<AliAODConversionMother*>(fNeutralPionCandidates->At(mesonIndex));
       if (neutralPion==NULL) continue;
 
-      // cut on pT of neutralPion
-      if(neutralPion->Pt() < fNeutralPionPtMin) continue;
-
       for(Int_t virtualParticleIndex=0;virtualParticleIndex<fGoodVirtualParticles->GetEntries();virtualParticleIndex++){
 
                 AliAODConversionPhoton *vParticle=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualParticles->At(virtualParticleIndex));
@@ -2505,7 +2536,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 
         AliAODConversionMother *mesoncand = new AliAODConversionMother(neutralPion,vParticle);
         mesoncand->SetLabels(mesonIndex,virtualParticleIndex);
-        if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesoncand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())) ){
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesoncand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 
           AliESDtrack *negPionCandidatetmp = (AliESDtrack*) fESDEvent->GetTrack(vParticle->GetTrackLabel(1));
           if(negPionCandidatetmp==NULL){ delete mesoncand; continue;}
@@ -2601,9 +2632,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
          EventPiZeroGoodMeson = (AliAODConversionMother*)(fNeutralPionCandidates->At(iCurrentPi0));
      }
 
-    // Check if current pi0 fullfills Pt criteria dependend on NeutralPionMode
-    if(EventPiZeroGoodMeson->Pt() < fNeutralPionPtMin) continue;
-
 if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing())){
     // Begin loop over BG events for Pi+
     for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
@@ -2659,7 +2687,8 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
               AliAODConversionMother *PiPlPiMiPiZeroBackgroundCandidate = new AliAODConversionMother(PiPlPiZeroBackgroundCandidate,&EventPiMiGoodMeson);
 
               // Check if candidate survives meson cut
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+              if(  ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+
                 // Check if candidate survives kinematic cut
                 if(KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson,EventPiZeroGoodMeson,PiPlPiMiPiZeroBackgroundCandidate)){
                   // Create temporary mesons to be able to fix pz
@@ -2743,7 +2772,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
           AliAODConversionMother *PiPlPiMiPiZeroBackgroundCandidate = new AliAODConversionMother(PiPlPiZeroBackgroundCandidate,&EventPiNegGoodMeson);
 
           // Check if candidate survives meson cut
-          if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 
             // Check if candidate survives kinematic cut
             if(KinematicCut(&EventPiNegGoodMeson, &EventPiPlGoodMeson, EventPiZeroGoodMeson,PiPlPiMiPiZeroBackgroundCandidate)){
@@ -2823,7 +2852,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
           AliAODConversionMother *PiPlPiMiPiZeroBackgroundCandidate = new AliAODConversionMother(PiMiPiZeroBackgroundCandidate,&EventPiPlGoodMeson);
 
           // Check if candidate survives meson cut
-          if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 
             // Check if candidate survives kinematic cut
             if(KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson, EventPiZeroGoodMeson,PiPlPiMiPiZeroBackgroundCandidate)){
@@ -2892,7 +2921,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
                   AliAODConversionMother *PiPlPiPlPiZeroBackgroundCandidate = new AliAODConversionMother(PiPlPiZeroBackgroundCandidate, &EventPiPlGoodMeson2);
 
                   // Check if candidate survives meson cut
-                  if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+                  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiPlPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 
                     // Check if candidate survives kinematic cut
                     if(KinematicCut(&EventPiPlGoodMeson, &EventPiPlGoodMeson2, EventPiZeroGoodMeson,PiPlPiPlPiZeroBackgroundCandidate)){
@@ -2952,7 +2981,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
                   AliAODConversionMother *PiMiPiMiPiZeroBackgroundCandidate = new AliAODConversionMother(PiMiPiZeroBackgroundCandidate, &EventPiMiGoodMeson2);
 
                   // Check if candidate survives meson cut
-                  if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+                  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiMiPiZeroBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 
                     // Check if candidate survives kinematic cut
                     if(KinematicCut(&EventPiMiGoodMeson, &EventPiMiGoodMeson2, EventPiZeroGoodMeson,PiMiPiMiPiZeroBackgroundCandidate)){
@@ -3095,6 +3124,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
       delete PosPiontmp; PosPiontmp = 0x0;
       delete NegPiontmp; NegPiontmp = 0x0;
 
+      // Fill tree to get info about event that the eta was found in
+      if(fDoMesonQA>1 && (!fDoLightOutput)){
+         fV0MultiplicityEtaEvent = fMCEvent->GetNumberOfV0s();
+         fTrackMultiplicityEtaEvent = fMCEvent->GetNumberOfTracks();
+         fZVertexEtaEvent = fMCEvent->GetPrimaryVertex()->GetZ();
+         fPtEta = mesoncand->Pt();
+
+         fTreeEventInfoEta[fiCut]->Fill();
+      }
       if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,pi0MotherLabel) && (!fDoLightOutput)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
     } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                 == 223){
       // omega was found
@@ -3106,6 +3144,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
       AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
       NegPiontmp->SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
       if(!fDoLightOutput) fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp->Angle(mesoncand->Vect()))+(NegPiontmp->Angle(PosPiontmp->Vect()))+(PosPiontmp->Angle(TrueNeutralPionCandidate->Vect()))));
+
+      // Fill tree to get info about event that the omega was found in
+      if(fDoMesonQA>1 && (!fDoLightOutput)){
+         fV0MultiplicityOmegaEvent = fMCEvent->GetNumberOfV0s();
+         fTrackMultiplicityOmegaEvent = fMCEvent->GetNumberOfTracks();
+         fZVertexOmegaEvent = fMCEvent->GetPrimaryVertex()->GetZ();
+         fPtOmega = mesoncand->Pt();
+
+         fTreeEventInfoOmega[fiCut]->Fill();
+      }
 
       if (CheckVectorForDoubleCount(fVectorDoubleCountTrueOmegas,pi0MotherLabel) && (!fDoLightOutput)) fHistoDoubleCountTrueOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
     } else{
