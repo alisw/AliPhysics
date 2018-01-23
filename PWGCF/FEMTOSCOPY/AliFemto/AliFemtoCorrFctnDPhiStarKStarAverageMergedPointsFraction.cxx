@@ -11,7 +11,6 @@
 
 #include "AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h"
 #include "AliFemtoModelHiddenInfo.h"
-//#include "AliFemtoHisto.hh"
 #include <cstdio>
 #include <TMath.h>
 
@@ -26,36 +25,21 @@
 
 //____________________________
 AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(const char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp):
-AliFemtoCorrFctn(),
-  fDPhiStarKStarMergedNumerator(0),
-  fDPhiStarKStarTotalNumerator(0),
-  fDPhiStarKStarMergedDenominator(0),
-  fDPhiStarKStarTotalDenominator(0),
-  fKStarRangeLow(0),
-  fKStarRangeUp(0),
-  fDPhiStarRangeLow(0),
-  fDPhiStarRangeUp(0),
-  fDistanceMax(0.0),
-  fDEtaMax(0.0),
-  fRadiusMin(0.8),
-  fRadiusMax(2.5),
+  AliFemtoCorrFctn(),
+  fDPhiStarKStarMergedNumerator(nullptr),
+  fDPhiStarKStarTotalNumerator(nullptr),
+  fDPhiStarKStarMergedDenominator(nullptr),
+  fDPhiStarKStarTotalDenominator(nullptr),
+  fDPhiStarRangeLow(aPhiStarRangeLow),
+  fDPhiStarRangeUp(aPhiStarRangeUp),
+  fKStarRangeLow(aKStarRangeLow),
+  fKStarRangeUp(aKStarRangeUp),
+  fDistanceMax(aDistanceMax),
+  fDEtaMax(aDEtaMax),
+  fRadiusMin(aRadiusMin),
+  fRadiusMax(aRadiusMax),
   fMagSign(1)
 {
-
-  // Calculate lower and upper range of Eta and PhiStar:
-  fKStarRangeLow = aKStarRangeLow;
-  fKStarRangeUp = aKStarRangeUp;
-  fDPhiStarRangeLow = aPhiStarRangeLow;
-  fDPhiStarRangeUp = aPhiStarRangeUp;
-
-  // Calculate parameters:
-  fDistanceMax = aDistanceMax;
-  fDEtaMax = aDEtaMax;
-
-  // Calculate radii range:
-  fRadiusMin = aRadiusMin;
-  fRadiusMax = aRadiusMax;
-
   // Set up numerator:
   char tTitMergedNum[101] = "NumDPhiStarKStarAverageMergedPoints";
   strncat(tTitMergedNum, title, 100);
@@ -80,53 +64,31 @@ AliFemtoCorrFctn(),
 
 //____________________________
 AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(const AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fDPhiStarKStarMergedNumerator(0),
-  fDPhiStarKStarTotalNumerator(0),
-  fDPhiStarKStarMergedDenominator(0),
-  fDPhiStarKStarTotalDenominator(0),
-  fKStarRangeLow(0),
-  fKStarRangeUp(0),
-  fDPhiStarRangeLow(0),
-  fDPhiStarRangeUp(0),
-  fDistanceMax(0.0),
-  fDEtaMax(0.0),
-  fRadiusMin(0.8),
-  fRadiusMax(2.5),
-  fMagSign(1)
+  AliFemtoCorrFctn(aCorrFctn),
+  fDPhiStarKStarMergedNumerator(nullptr),
+  fDPhiStarKStarTotalNumerator(nullptr),
+  fDPhiStarKStarMergedDenominator(nullptr),
+  fDPhiStarKStarTotalDenominator(nullptr),
+  fDPhiStarRangeLow(aCorrFctn.fDPhiStarRangeLow),
+  fDPhiStarRangeUp(aCorrFctn.fDPhiStarRangeUp),
+  fKStarRangeLow(aCorrFctn.fKStarRangeLow),
+  fKStarRangeUp(aCorrFctn.fKStarRangeUp),
+  fDistanceMax(aCorrFctn.fDistanceMax),
+  fDEtaMax(aCorrFctn.fDEtaMax),
+  fRadiusMin(aCorrFctn.fRadiusMin),
+  fRadiusMax(aCorrFctn.fRadiusMax),
+  fMagSign(aCorrFctn.fMagSign)
 {
   // Copy constructor
-  if (aCorrFctn.fDPhiStarKStarMergedNumerator)
-    fDPhiStarKStarMergedNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedNumerator);
-  else
-    fDPhiStarKStarMergedNumerator = 0;
-  if (aCorrFctn.fDPhiStarKStarTotalNumerator)
-    fDPhiStarKStarTotalNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalNumerator);
-  else
-    fDPhiStarKStarTotalNumerator = 0;
-  if (aCorrFctn.fDPhiStarKStarMergedDenominator)
-    fDPhiStarKStarMergedDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedDenominator);
-  else
-    fDPhiStarKStarMergedDenominator = 0;
-  if (aCorrFctn.fDPhiStarKStarTotalDenominator)
-    fDPhiStarKStarTotalDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalDenominator);
-  else
-    fDPhiStarKStarTotalDenominator = 0;
-
-  fKStarRangeLow = aCorrFctn.fKStarRangeLow;
-  fKStarRangeUp = aCorrFctn.fKStarRangeUp;
-  fDPhiStarRangeLow = aCorrFctn.fDPhiStarRangeLow;
-  fDPhiStarRangeUp = aCorrFctn.fDPhiStarRangeUp;
-  fDistanceMax = aCorrFctn.fDistanceMax;
-  fDEtaMax = aCorrFctn.fDEtaMax;
-  fRadiusMin = aCorrFctn.fRadiusMin;
-  fRadiusMax = aCorrFctn.fRadiusMax;
-  fMagSign = aCorrFctn.fMagSign;
-
+  fDPhiStarKStarMergedNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedNumerator);
+  fDPhiStarKStarTotalNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalNumerator);
+  fDPhiStarKStarMergedDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedDenominator);
+  fDPhiStarKStarTotalDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalDenominator);
 }
 
 //____________________________
-AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::~AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(){
+AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::~AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction()
+{
   // Destructor
   delete fDPhiStarKStarMergedNumerator;
   delete fDPhiStarKStarMergedDenominator;
@@ -141,22 +103,10 @@ AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction& AliFemtoCorrFctnDPhiSt
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fDPhiStarKStarMergedNumerator)
-    fDPhiStarKStarMergedNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedNumerator);
-  else
-    fDPhiStarKStarMergedNumerator = 0;
-  if (aCorrFctn.fDPhiStarKStarTotalNumerator)
-    fDPhiStarKStarTotalNumerator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalNumerator);
-  else
-    fDPhiStarKStarTotalNumerator = 0;
-  if (aCorrFctn.fDPhiStarKStarMergedDenominator)
-    fDPhiStarKStarMergedDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarMergedDenominator);
-  else
-    fDPhiStarKStarMergedDenominator = 0;
-  if (aCorrFctn.fDPhiStarKStarTotalDenominator)
-    fDPhiStarKStarTotalDenominator = new TH2D(*aCorrFctn.fDPhiStarKStarTotalDenominator);
-  else
-    fDPhiStarKStarTotalDenominator = 0;
+  *fDPhiStarKStarMergedNumerator = *aCorrFctn.fDPhiStarKStarMergedNumerator;
+  *fDPhiStarKStarTotalNumerator = *aCorrFctn.fDPhiStarKStarTotalNumerator;
+  *fDPhiStarKStarMergedDenominator = *aCorrFctn.fDPhiStarKStarMergedDenominator;
+  *fDPhiStarKStarTotalDenominator = *aCorrFctn.fDPhiStarKStarTotalDenominator;
 
   fKStarRangeLow = aCorrFctn.fKStarRangeLow;
   fKStarRangeUp = aCorrFctn.fKStarRangeUp;
@@ -204,8 +154,9 @@ AliFemtoString AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::Report(
 //____________________________
 void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliFemtoPair* pair){
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -261,7 +212,7 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
-	fDPhiStarKStarMergedNumerator->Fill(kstar, dphistar_radiusmin);
+        fDPhiStarKStarMergedNumerator->Fill(kstar, dphistar_radiusmin);
       }
       fDPhiStarKStarTotalNumerator->Fill(kstar, dphistar_radiusmin);
     }
@@ -271,8 +222,9 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
 //____________________________
 void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( AliFemtoPair* pair){
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -328,7 +280,7 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( Ali
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
-	fDPhiStarKStarMergedDenominator->Fill(kstar, dphistar_radiusmin);
+        fDPhiStarKStarMergedDenominator->Fill(kstar, dphistar_radiusmin);
       }
       fDPhiStarKStarTotalDenominator->Fill(kstar, dphistar_radiusmin);
     }

@@ -171,6 +171,10 @@ public:
   /// insert any values missing in object with defaults.
   static AliFemtoConfigObject ParseWithDefaults(const std::string &, const std::string &defaults);
 
+  /// Create object from string; if a map, also parse defaults and
+  /// insert any values missing in object with defaults.
+  static AliFemtoConfigObject ParseWithDefaults(const std::string &, const AliFemtoConfigObject &defaults);
+
   /// Create object in empty state
   AliFemtoConfigObject();
 
@@ -251,7 +255,7 @@ public:
       BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(val))); return *this; }
     #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype>(val)))); return *this; }
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype &&>(val)))); return *this; }
 #else
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, val)); return *this; }
@@ -375,6 +379,15 @@ public:
   #undef IMPL_FINDANDLOAD
   /// @}
 
+  /// Checks for existence of key in this object.
+  /// Returns false if this is not a map or key is not found.
+  /// Does not check sub-objects (but this SHOULD be done at
+  /// some point)
+  bool has_key(const Key_t key) const
+  {
+    return fTypeTag == kMAP
+           && fValueMap.find(key) != fValueMap.end();
+  }
 
   /// Remove and returns pointer to object at *index* if an array
   ///
@@ -424,6 +437,26 @@ public:
     IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
 
   #undef IMPL_POPANDLOAD
+
+  /// Find object by key and move value into another object
+  ///
+  /// Returns true if the object was found; false if not found, or
+  /// this object is not a map.
+  ///
+  bool pop_and_load(const Key_t &key, AliFemtoConfigObject &dest)
+  {
+    if (!is_map()) {
+      return false;
+    }
+    MapValue_t::const_iterator found = fValueMap.find(key);
+    if (found == fValueMap.cend()) {
+      return false;
+    }
+    dest = found->second;
+    fValueMap.erase(found);
+    return true;
+  }
+
 
   /// @}
 
@@ -526,7 +559,6 @@ public:
   iterator_over_list items_in_list() {
     return iterator_over_list(*this);
   }
-
 
   /// \class map_iterator
   /// \brief Iterates over object if it is a map
@@ -978,6 +1010,7 @@ AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   orig._DeleteValue();
   orig.fTypeTag = kEMPTY;
   orig.fPainter = nullptr;
+  fPainter.fData = this;
 }
 
 /// Move assignment-operator

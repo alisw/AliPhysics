@@ -10,29 +10,70 @@
 
 
 //------------------------------
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMinCosPointingAngleV0toXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fParticleTypeXi(kXiMinus), fRadiusXiMin(0.), fRadiusXiMax(99999.0), fBuildPurityAidXi(false), fMinvPurityAidHistoXi(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut():
+  AliFemtoV0TrackCut()
+  , fMaxEtaXi(100)
+  , fMinPtXi(0)
+  , fMaxPtXi(100)
+  , fChargeXi(1.0)
+  , fMaxEtaBac(100)
+  , fMinPtBac(0)
+  , fMaxPtBac(100)
+  , fTPCNclsBac(0)
+  , fNdofBac(100)
+  , fStatusBac(0)
+  , fMaxDcaXi(0)
+  , fMinDcaXiBac(0)
+  , fMaxDcaXiDaughters(0)
+  , fMinCosPointingAngleXi(0)
+  , fMinCosPointingAngleV0toXi(0)
+  , fMaxDecayLengthXi(100.0)
+  , fInvMassXiMin(0)
+  , fInvMassXiMax(1000)
+  , fParticleTypeXi(kXiMinus)
+  , fRadiusXiMin(0.)
+  , fRadiusXiMax(99999.0)
+  , fBuildPurityAidXi(false)
+  , fMinvPurityAidHistoXi(nullptr)
 {
   // Default constructor
 }
 
 //------------------------------
-AliFemtoXiTrackCut::~AliFemtoXiTrackCut(){
+AliFemtoXiTrackCut::~AliFemtoXiTrackCut()
+{
   /* noop */
 }
 
 //------------------------------
 AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
-  AliFemtoV0TrackCut(aCut),
-  fMaxEtaXi(aCut.fMaxEtaXi),fMinPtXi(aCut.fMinPtXi),fMaxPtXi(aCut.fMaxPtXi),fChargeXi(aCut.fChargeXi),
-  fMaxEtaBac(aCut.fMaxEtaBac),fMinPtBac(aCut.fMinPtBac),fMaxPtBac(aCut.fMaxPtBac),fTPCNclsBac(aCut.fTPCNclsBac),
-  fNdofBac(aCut.fNdofBac),fStatusBac(aCut.fStatusBac),fMaxDcaXi(aCut.fMaxDcaXi),fMinDcaXiBac(aCut.fMinDcaXiBac),
-  fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters),fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi), fMinCosPointingAngleV0toXi(aCut.fMinCosPointingAngleV0toXi),
-  fMaxDecayLengthXi(aCut.fMaxDecayLengthXi),fInvMassXiMin(aCut.fInvMassXiMin),fInvMassXiMax(aCut.fInvMassXiMax),
-  fParticleTypeXi(aCut.fParticleTypeXi), fRadiusXiMin(aCut.fRadiusXiMin), fRadiusXiMax(aCut.fRadiusXiMax), fBuildPurityAidXi(aCut.fBuildPurityAidXi)
+  AliFemtoV0TrackCut(aCut)
+  , fMaxEtaXi(aCut.fMaxEtaXi)
+  , fMinPtXi(aCut.fMinPtXi)
+  , fMaxPtXi(aCut.fMaxPtXi)
+  , fChargeXi(aCut.fChargeXi)
+  , fMaxEtaBac(aCut.fMaxEtaBac)
+  , fMinPtBac(aCut.fMinPtBac)
+  , fMaxPtBac(aCut.fMaxPtBac)
+  , fTPCNclsBac(aCut.fTPCNclsBac)
+  , fNdofBac(aCut.fNdofBac)
+  , fStatusBac(aCut.fStatusBac)
+  , fMaxDcaXi(aCut.fMaxDcaXi)
+  , fMinDcaXiBac(aCut.fMinDcaXiBac)
+  , fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters)
+  , fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi)
+  , fMinCosPointingAngleV0toXi(aCut.fMinCosPointingAngleV0toXi)
+  , fMaxDecayLengthXi(aCut.fMaxDecayLengthXi)
+  , fInvMassXiMin(aCut.fInvMassXiMin)
+  , fInvMassXiMax(aCut.fInvMassXiMax)
+  , fParticleTypeXi(aCut.fParticleTypeXi)
+  , fRadiusXiMin(aCut.fRadiusXiMin)
+  , fRadiusXiMax(aCut.fRadiusXiMax)
+  , fBuildPurityAidXi(aCut.fBuildPurityAidXi)
+  , fMinvPurityAidHistoXi(nullptr)
 {
   //copy constructor
-  if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
-  else fMinvPurityAidHistoXi = 0;
+  if (aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
 }
 
 //------------------------------
@@ -66,8 +107,16 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fRadiusXiMax = aCut.fRadiusXiMax;
   fBuildPurityAidXi = aCut.fBuildPurityAidXi;
 
-  if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
-  else fMinvPurityAidHistoXi = 0;
+  if (aCut.fMinvPurityAidHistoXi != nullptr) {
+    if (fMinvPurityAidHistoXi == nullptr) {
+      fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
+    } else {
+      *fMinvPurityAidHistoXi = *aCut.fMinvPurityAidHistoXi;
+    }
+  } else if (fMinvPurityAidHistoXi) {
+    delete fMinvPurityAidHistoXi;
+    fMinvPurityAidHistoXi = nullptr;
+  }
 
   return *this;
 }
@@ -193,13 +242,10 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 AliFemtoString AliFemtoXiTrackCut::Report()
 {
   // Prepare report from the execution
-  string tStemp;
-  char tCtemp[100];
-
-
-  AliFemtoString returnThis = tStemp;
-  return returnThis;
+  TString report;
+  return AliFemtoString(report.Data());
 }
+
 TList *AliFemtoXiTrackCut::ListSettings()
 {
   // return a list of settings in a writable form

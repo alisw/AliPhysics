@@ -282,12 +282,13 @@ void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
 }
 
 //____________________________
-void AliFemtoQinvCorrFctnWithWeights::AddMixedPair(AliFemtoPair* pair){
+void AliFemtoQinvCorrFctnWithWeights::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
 
-  double weight = 1.0;
+  // double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   double ptv1 = pair->Track1()->Track()->Pt();
   double ptv2 = pair->Track2()->Track()->Pt();
