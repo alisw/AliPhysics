@@ -182,6 +182,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhEventCounter_2;
   TH1F                                *fhPhiTriggerHadronJet;
   TH1F                                *fhPhiTriggerHadronEventPlane;
+  TH1F                                *fhTrackPhi;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH2F                                *fh2PtTriggerHadronJet;
   TH2F                                *fh2PtRatio; 

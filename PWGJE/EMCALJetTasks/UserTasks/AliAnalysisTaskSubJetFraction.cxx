@@ -145,6 +145,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhTrackPhi(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -300,6 +301,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhTrackPhi(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -532,6 +534,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJetCounter);
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
     fOutput->Add(fhEventCounter);
+    fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
     fhSubJettiness1_FJ_KT= new TH1D("fhSubJettiness1_FJ_KT","fhSubJettiness1_FJ_KT",400,-2,2);
@@ -768,6 +772,55 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
+
+  ////Filling Track Phi
+  AliTrackContainer *PartCont_Particles = NULL;
+  AliParticleContainer *PartContMC_Particles = NULL;
+  
+  if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC_Particles = GetParticleContainer(1);
+    else PartCont_Particles = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC_Particles = GetParticleContainer(0);
+    else PartCont_Particles = GetTrackContainer(0);
+  }
+  
+  TClonesArray *TracksArray_Particles = NULL;
+  TClonesArray *TracksArrayMC_Particles = NULL;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) TracksArrayMC_Particles = PartContMC_Particles->GetArray();
+  else TracksArray_Particles = PartCont_Particles->GetArray();
+
+  AliAODTrack *Track_Particles = 0x0;
+  Int_t NTracks_Particles=0;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) NTracks_Particles = TracksArrayMC_Particles->GetEntriesFast();
+  else NTracks_Particles = TracksArray_Particles->GetEntriesFast();
+
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    if (PartContMC_Particles && TracksArrayMC_Particles){
+      for(Int_t i=0; i < NTracks_Particles; i++){
+	if((Track_Particles = static_cast<AliAODTrack*>(PartContMC_Particles->GetAcceptParticle(i)))){
+	  if (!Track_Particles) continue;
+	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
+	  if (Track_Particles->Pt()<0.15) continue;
+	  fhTrackPhi->Fill(Track_Particles->Phi());
+	}
+      }
+    }
+  }
+  else{
+    if (PartCont_Particles && TracksArray_Particles){
+      for(Int_t i=0; i < NTracks_Particles; i++){
+	if((Track_Particles = static_cast<AliAODTrack*>(PartCont_Particles->GetAcceptTrack(i)))){
+	  if (!Track_Particles) continue;
+	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
+	  if (Track_Particles->Pt()<0.15) continue;
+	  fhTrackPhi->Fill(Track_Particles->Phi());
+	}
+      }
+    }
+  }
+  ////
 
   AliAODTrack *TriggerHadron = 0x0;
   if (fJetSelection == kRecoil) {
