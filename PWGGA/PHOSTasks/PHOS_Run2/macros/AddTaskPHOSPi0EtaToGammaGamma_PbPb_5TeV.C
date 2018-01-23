@@ -181,25 +181,49 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
     //task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
 
+    //for K0S
     const Int_t Ncen_K0S = 7;
     const Double_t centrality_K0S[Ncen_K0S] = {0,5,10,20,40,60,100};
     TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
 
     TObjArray *farray_K0S = new TObjArray(Ncen_K0S-1);
     TF1 *f1weightK0S[Ncen_K0S-1];
-    const Double_t p0[Ncen_K0S-1] = {  1.81,   1.83,   1.81,   1.70,   1.91,   1.85};
-    const Double_t p1[Ncen_K0S-1] = {  1.38,   1.31,   1.27,   1.30,   1.61,   1.06};
-    const Double_t p2[Ncen_K0S-1] = {-0.373, -0.398, -0.424, -0.565, -0.640, -0.714};
-    const Double_t p3[Ncen_K0S-1] = {  3.93,   3.70,   4.14,   4.88,  0.542,   1.30};
-    const Double_t p4[Ncen_K0S-1] = {-0.235, -0.279, -0.435,  -2.56, -0.356, -0.543};
+    const Double_t p0_K0S[Ncen_K0S-1] = {  1.81,   1.83,   1.81,   1.70,   1.91,   1.85};
+    const Double_t p1_K0S[Ncen_K0S-1] = {  1.38,   1.31,   1.27,   1.30,   1.61,   1.06};
+    const Double_t p2_K0S[Ncen_K0S-1] = {-0.373, -0.398, -0.424, -0.565, -0.640, -0.714};
+    const Double_t p3_K0S[Ncen_K0S-1] = {  3.93,   3.70,   4.14,   4.88,  0.542,   1.30};
+    const Double_t p4_K0S[Ncen_K0S-1] = {-0.235, -0.279, -0.435,  -2.56, -0.356, -0.543};
 
     for(Int_t icen=0;icen<Ncen_K0S-1;icen++){
       f1weightK0S[icen] = new TF1(Form("f1weightK0S_%d",icen),"[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1) )",0,100);
-      f1weightK0S[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+      f1weightK0S[icen]->SetParameters(p0_K0S[icen],p1_K0S[icen],p2_K0S[icen],p3_K0S[icen],p4_K0S[icen]);
       farray_K0S->Add(f1weightK0S[icen]);
     }
 
     task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
+
+     //for L0
+    const Int_t Ncen_L0 = 7;
+    const Double_t centrality_L0[Ncen_L0] = {0,5,10,20,40,60,100};
+    TArrayD *centarray_L0 = new TArrayD(Ncen_L0,centrality_L0);
+
+    TObjArray *farray_L0 = new TObjArray(Ncen_L0-1);
+    TF1 *f1weightL0[Ncen_L0-1];
+    const Double_t p0_L0[Ncen_L0-1] = {27.2   ,272    ,548    , 496    ,1880   ,2220  };
+    const Double_t p1_L0[Ncen_L0-1] = {0.0562 ,0.0420 ,0.0385 , 0.0420 ,0.0442 ,0.0562};
+    const Double_t p2_L0[Ncen_L0-1] = {-7.79  ,-11.6  ,-12.8  , -12.2  ,-13.1  ,-11.7 };
+    const Double_t p3_L0[Ncen_L0-1] = {0.231  ,0.245  ,0.286  , 0.371  ,0.470  ,0.570 };
+
+    for(Int_t icen=0;icen<Ncen_L0-1;icen++){
+      f1weightL0[icen] = new TF1(Form("f1weightL0_%d",icen),"[0] * TMath::Power(x,4) * TMath::Exp(-[1] * TMath::Power(x-[2],2)) + [3]",0,100);
+      f1weightL0[icen]->SetParameters(p0_L0[icen],p1_L0[icen],p2_L0[icen],p3_L0[icen]);
+      farray_L0->Add(f1weightL0[icen]);
+    }
+
+    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
+
+
+
   }
 
   mgr->AddTask(task);
