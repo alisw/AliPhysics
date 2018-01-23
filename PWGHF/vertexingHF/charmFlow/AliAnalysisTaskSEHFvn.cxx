@@ -139,6 +139,7 @@ AliAnalysisTaskSE(),
   fDeltaEtaDmesonq2(0.),
   fEPVsq2VsCent(kFALSE),
   fEnableNtrklHistos(kFALSE),
+  fRemoverSoftPionFromq2(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -203,6 +204,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fDeltaEtaDmesonq2(0.),
   fEPVsq2VsCent(kFALSE),
   fEnableNtrklHistos(kFALSE),
+  fRemoverSoftPionFromq2(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -1134,7 +1136,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       else if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fRemoveDauFromq2>0 && ismassrange) { //remove daughter tracks from q2
         Int_t nDau=3;
-        if(fDecChannel==1) {nDau=2;}
+        if(fDecChannel==1 || (fDecChannel==2 && !fRemoverSoftPionFromq2)) {nDau=2;}
         AliAODTrack *dautrack[3] = {0x0,0x0,0x0};
         Double_t daueta = 0.;
         Double_t dauphi = 0.;
@@ -1151,7 +1153,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
           AliAODRecoDecayHF2Prong* theD0particle = ((AliAODRecoCascadeHF*)d)->Get2Prong();
           dautrack[0] = (AliAODTrack*)theD0particle->GetDaughter(0);
           dautrack[1] = (AliAODTrack*)theD0particle->GetDaughter(1);
-          dautrack[2] = ((AliAODRecoCascadeHF*)d)->GetBachelor();
+          if(fRemoverSoftPionFromq2) dautrack[2] = ((AliAODRecoCascadeHF*)d)->GetBachelor();
         }
         if(fOnTheFlyTPCq2) {
           for(Int_t iDauTrk=0; iDauTrk<nDau; iDauTrk++) { //remove daughter tracks from q2

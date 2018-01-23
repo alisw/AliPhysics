@@ -79,11 +79,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0.){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0., Bool_t removesoftpionfromq2=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
     fRequireMassForDauRemFromq2=requiremass;
+    fRemoverSoftPionFromq2=removesoftpionfromq2;
     if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
       fRemoveNdauRandomTracks=kFALSE;
@@ -209,10 +210,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
   Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
-
+  Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
+  
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,13); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,14); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
