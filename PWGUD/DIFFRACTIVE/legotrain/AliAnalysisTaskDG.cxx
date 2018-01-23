@@ -464,7 +464,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
   const Int_t    bins[4] = { 1200,    4,   10,   20 };
   const Double_t xMin[4] = {   -0.5, -0.5, -0.5, -2.0 };
-  const Double_t xMax[4] = { 1999.5,  3.5,  9.5,  2.0 };
+  const Double_t xMax[4] = { 1199.5,  3.5,  9.5,  2.0 };
   fHistN[kHistSPDFiredTrk] = new THnD("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta", 4, bins, xMin, xMax);
   fList->Add(fHistN[kHistSPDFiredTrk]);
 
