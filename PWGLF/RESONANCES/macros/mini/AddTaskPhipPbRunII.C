@@ -64,7 +64,7 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
    task->UseMC(isMC);
    ::Info("AddTaskKStarPbPbRunTwo", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n", nmix, maxDiffVzMix, maxDiffMultMix));
    
-     mgr->AddTask(task);      
+   mgr->AddTask(task);      
    AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
    cutEventUtils->SetCheckAcceptedMultSelection();
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -102,8 +102,7 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhipPbRunII.C");
-   //   gROOT->LoadMacro("ConfigPhipPbRunII.C");
-   if (!ConfigKStarPbPbRunII(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,nsigmaK,nsigmatof,enableMonitor)) return 0x0;
+   if (!ConfigPhipPbRunII(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,nsigmaK,nsigmatof,enableMonitor)) return 0x0;
  
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
