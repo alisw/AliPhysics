@@ -99,6 +99,17 @@ public:
 
 	void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 
+	// B jet tracks selection
+
+	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
+	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
+	void SetITSHitsMin(Int_t val){ fTCMinHitsITS = val;}
+	void SetMaxChi2perNDF(Double_t val){ fTCMaxChi2pNDF = val;}
+	void SetMaxIPxy(Double_t val){ fTCMaxIPxy = val;}
+	void SetMaxIPz(Double_t val){ fTCMaxIPz = val;}
+	void SetMaxbDecayLength(Double_t val){ fTCMaxDecayLength = val;}
+	void SetMaxDCATrackJet(Double_t val){ fTCMaxDCATrackJet = val;}
+
 private:
 
 	AliV0ReaderV1*           fV0Reader; //
@@ -147,6 +158,17 @@ private:
 	TH2D * fh1dVertexR;//!
 	TH2D * fh1dVertexRAccepted;//!
 
+
+	// Bjet cuts
+	Double_t fTCMinTrackPt;
+	Int_t    fTCMinClusTPC;
+	Int_t 	 fTCMinHitsITS;
+	Double_t fTCMaxChi2pNDF;
+	Double_t fTCMaxIPxy;
+	Double_t fTCMaxIPz;
+	Double_t fTCMaxDecayLength;
+	Double_t fTCMaxDCATrackJet;
+	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
 	TH1D * fhistcJetCuts;//!
