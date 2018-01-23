@@ -571,6 +571,16 @@ AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const std::strin
   return obj;
 }
 
+AliFemtoConfigObject
+AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const AliFemtoConfigObject &defaults)
+{
+  AliFemtoConfigObject obj = Parse(src);
+  if (obj.is_map()) {
+    obj.SetDefault(defaults);
+  }
+  return obj;
+}
+
 void
 AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
 {
