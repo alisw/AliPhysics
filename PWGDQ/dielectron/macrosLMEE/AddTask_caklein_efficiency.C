@@ -114,6 +114,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // #########################################################
   // #########################################################
   // Set Cocktail weighting
+  task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
   task->SetCocktailWeightingFromAlien(CocktailFilenameFromAlien);
 

@@ -99,6 +99,7 @@ public:
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Set Cocktail waiting
+   void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
    void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
    void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
 
@@ -114,11 +115,13 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), isMCSignal(), isReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), isMCSignal(), isReconstructed() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
     void SetTrackID(int id) {fTrackID = id;}
+    void SetMotherID(int id) {fMotherID = id;}
     int  GetTrackID() {return fTrackID;}
+    int  GetMotherID() {return fMotherID;}
 
     double  fPt;
     double  fEta;
@@ -128,6 +131,7 @@ public:
     double  fEta_smeared;
     double  fPhi_smeared;
     int     fTrackID;
+    int     fMotherID;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
   };
@@ -153,6 +157,7 @@ private:
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
 
+  double GetWeight(Particle part1, Particle part2, double motherpt);
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -261,9 +266,17 @@ private:
   std::vector<Particle> fRecNegPart;
   std::vector<Particle> fRecPosPart;
 
+  bool fDoCocktailWeighting;
   std::string fCocktailFilename;
   std::string fCocktailFilenameFromAlien;
   TFile* fCocktailFile;
+  TH1F* fPtPion;
+  TH1F* fPtEta;
+  TH1F* fPtEtaPrime;
+  TH1F* fPtRho;
+  TH1F* fPtOmega;
+  TH1F* fPtPhi;
+  TH1F* fPtJPsi;
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
