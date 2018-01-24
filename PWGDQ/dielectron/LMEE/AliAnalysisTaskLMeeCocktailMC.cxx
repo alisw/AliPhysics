@@ -870,8 +870,8 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT)
-        Float_t DCAtemplateLowEdge[nbDCAtemplate] = {0., .3, .4, .6, 1., 2. };
-        Float_t DCAtemplateUpEdge[nbDCAtemplate]  =     {.3, .4, .6, 1., 2., 100000.}  ;
+        Float_t DCAtemplateLowEdge[] = {0., .3, .4, .6, 1., 2. };
+        Float_t DCAtemplateUpEdge[]  =     {.3, .4, .6, 1., 2., 100000.}  ;
         for(int jj=0;jj<nbDCAtemplate;jj++){ //loop over DCA templates
          if(dau1.Pt()>=DCAtemplateLowEdge[jj]&&dau1.Pt()<DCAtemplateUpEdge[jj]){fd1DCA=fh_DCAtemplates[jj]->GetRandom();};
          if(dau2.Pt()>=DCAtemplateLowEdge[jj]&&dau2.Pt()<DCAtemplateUpEdge[jj]){fd2DCA=fh_DCAtemplates[jj]->GetRandom();};
