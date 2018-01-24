@@ -60,7 +60,7 @@
 ClassImp(AliAnalysisTaskSE)
 
 ////////////////////////////////////////////////////////////////////////
-AliVHeader*      AliAnalysisTaskSE::fgAODHeader         = NULL;
+AliAODHeader*    AliAnalysisTaskSE::fgAODHeader         = NULL;
 AliTOFHeader*    AliAnalysisTaskSE::fgTOFHeader         = NULL;
 AliAODVZERO*     AliAnalysisTaskSE::fgAODVZERO          = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODTracks         = NULL;
@@ -431,7 +431,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    if ((handler->NeedsHeaderReplication() || merging) && (fgAODHeader))
 	    {
 	      // copy the contents by assigment
-	      *fgAODHeader =  *(aod->GetHeader());
+	      *fgAODHeader =  *((AliAODHeader*)aod->GetHeader());
 	    }
             if ((handler->NeedsTOFHeaderReplication() || merging) && (fgTOFHeader))
             {

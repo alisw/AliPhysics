@@ -98,7 +98,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // Output histos for QA
     TList*                fHistosQA;        //! Output histos for QA
     // Provisions for replication
-    static AliVHeader*      fgAODHeader;        //! Header for replication
+    static AliAODHeader*    fgAODHeader;        //! Header for replication
     static AliTOFHeader*    fgTOFHeader;        //! TOFHeader for replication
     static AliAODVZERO*     fgAODVZERO;         //! VZERO for replication
     static TClonesArray*    fgAODTracks;        //! Tracks for replication
