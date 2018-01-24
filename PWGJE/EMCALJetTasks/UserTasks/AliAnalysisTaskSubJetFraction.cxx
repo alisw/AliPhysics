@@ -788,13 +788,13 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   
   TClonesArray *TracksArray_Particles = NULL;
   TClonesArray *TracksArrayMC_Particles = NULL;
-  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) TracksArrayMC_Particles = PartContMC_Particles->GetArray();
-  else TracksArray_Particles = PartCont_Particles->GetArray();
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly && PartContMC_Particles) TracksArrayMC_Particles = PartContMC_Particles->GetArray();
+  else if(PartCont_Particles) TracksArray_Particles = PartCont_Particles->GetArray();
 
   AliAODTrack *Track_Particles = 0x0;
   Int_t NTracks_Particles=0;
-  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) NTracks_Particles = TracksArrayMC_Particles->GetEntriesFast();
-  else NTracks_Particles = TracksArray_Particles->GetEntriesFast();
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly && TracksArrayMC_Particles) NTracks_Particles = TracksArrayMC_Particles->GetEntriesFast();
+  else if(TracksArray_Particles) NTracks_Particles = TracksArray_Particles->GetEntriesFast();
 
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
     if (PartContMC_Particles && TracksArrayMC_Particles){
