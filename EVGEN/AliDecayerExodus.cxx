@@ -51,11 +51,13 @@ AliDecayerExodus::AliDecayerExodus():
     fEPMassPion(0),
     fEPMassEta(0),
     fEPMassEtaPrime(0),
+    fEPMassEtaPrime_toOmega(0),
     fEPMassRho(0),
     fEPMassOmega(0),
     fEPMassOmegaDalitz(0),
     fEPMassPhi(0),
     fEPMassPhiDalitz(0),
+    fEPMassPhiDalitz_toPi0(0),
     fEPMassJPsi(0),
     fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)), /* Polarization Function for resonances */
     fInit(0)
@@ -71,16 +73,16 @@ void AliDecayerExodus::Init()
 // Initialisation
 //
    Int_t ibin, nbins;
-   Double_t min, maxpion, maxeta, maxomega, maxetaprime, maxphi, binwidth_pion, binwidth_eta, binwidth_omega, binwidth_etaprime, binwidth_phi;
+   Double_t min, maxpion, maxeta, maxomega, maxetaprime, maxetaprime_toOmega, maxphi, maxphi_toPi0, binwidth_pion, binwidth_eta, binwidth_omega, binwidth_etaprime, binwidth_etaprime_toOmega, binwidth_phi, binwidth_phi_toPi0;
    Double_t pionmass, etamass, omegamass, etaprimemass, phimass, emass, proton_mass, omasspion, omasseta, omassgamma;
-   Double_t epsilon_pion, epsilon_eta, epsilon_omega, epsilon_etaprime, epsilon_phi;
-   Double_t delta_pion, delta_eta, delta_omega, delta_etaprime, delta_phi;
-   Double_t mLL_pion, mLL_eta, mLL_omega, mLL_etaprime, mLL_phi;
-   Double_t q_pion, q_eta, q_omega, q_etaprime, q_phi;
-   Double_t kwHelp_pion, kwHelp_eta, kwHelp_omega, kwHelp_etaprime, kwHelp_phi;
-   Double_t krollWada_pion, krollWada_eta, krollWada_omega, krollWada_etaprime, krollWada_phi;
-   Double_t formFactor_pion, formFactor_eta, formFactor_omega, formFactor_etaprime, formFactor_phi;
-   Double_t weight_pion, weight_eta, weight_omega_dalitz, weight_etaprime, weight_phi_dalitz;
+   Double_t epsilon_pion, epsilon_eta, epsilon_omega, epsilon_etaprime, epsilon_etaprime_toOmega, epsilon_phi, epsilon_phi_toPi0;
+   Double_t delta_pion, delta_eta, delta_omega, delta_etaprime, delta_etaprime_toOmega, delta_phi, delta_phi_toPi0;
+   Double_t mLL_pion, mLL_eta, mLL_omega, mLL_etaprime, mLL_etaprime_toOmega, mLL_phi, mLL_phi_toPi0;
+   Double_t q_pion, q_eta, q_omega, q_etaprime, q_etaprime_toOmega, q_phi, q_phi_toPi0;
+   Double_t kwHelp_pion, kwHelp_eta, kwHelp_omega, kwHelp_etaprime, kwHelp_etaprime_toOmega, kwHelp_phi, kwHelp_phi_toPi0;
+   Double_t krollWada_pion, krollWada_eta, krollWada_omega, krollWada_etaprime, krollWada_etaprime_toOmega, krollWada_phi, krollWada_phi_toPi0;
+   Double_t formFactor_pion, formFactor_eta, formFactor_omega, formFactor_etaprime, formFactor_etaprime_toOmega, formFactor_phi, formFactor_phi_toPi0;
+   Double_t weight_pion, weight_eta, weight_omega_dalitz, weight_etaprime, weight_etaprime_toOmega, weight_phi_dalitz, weight_phi_dalitz_toPi0;
 
    Float_t  binwidth;
    Float_t  mass_bin, mass_min, mass_max;
@@ -113,37 +115,47 @@ void AliDecayerExodus::Init()
     maxeta      = etamass - omassgamma;
     maxomega    = omegamass - pionmass;
     maxetaprime = etaprimemass - omassgamma;
+    maxetaprime_toOmega = etaprimemass - omegamass;
     maxphi      = phimass - omasseta; 
+    maxphi_toPi0      = phimass - pionmass; 
 
     binwidth_pion     = (maxpion - min) / (Double_t)nbins;
     binwidth_eta      = (maxeta - min) / (Double_t)nbins;
     binwidth_omega    = (maxomega - min) / (Double_t)nbins;
     binwidth_etaprime = (maxetaprime - min) / (Double_t)nbins;
+    binwidth_etaprime_toOmega = (maxetaprime_toOmega - min) / (Double_t)nbins;
     binwidth_phi      = (maxphi - min) / (Double_t)nbins;
+    binwidth_phi_toPi0      = (maxphi_toPi0 - min) / (Double_t)nbins;
 
 
     epsilon_pion     = (emass / pionmass) * (emass / pionmass);
     epsilon_eta      = (emass / etamass) * (emass / etamass);
     epsilon_omega    = (emass / omegamass) * (emass / omegamass);
     epsilon_etaprime = (emass / etaprimemass) * (emass / etaprimemass);
+    epsilon_etaprime_toOmega = (emass / etaprimemass) * (emass / etaprimemass);
     epsilon_phi      = (emass / phimass) * (emass / phimass);    
+    epsilon_phi_toPi0      = (emass / phimass) * (emass / phimass);    
 
 
     delta_pion       = (omassgamma / pionmass) * (omassgamma / pionmass);
     delta_eta        = (omassgamma / etamass) * (omassgamma / etamass);
     delta_omega      = (omasspion / omegamass) * (omasspion / omegamass);
     delta_etaprime   = (omassgamma / etaprimemass) * (omassgamma / etaprimemass);
+    delta_etaprime_toOmega   = (omegamass / etaprimemass) * (omegamass / etaprimemass);
     delta_phi        = (omasseta / phimass) * (omasseta / phimass);    
+    delta_phi_toPi0        = (pionmass / phimass) * (pionmass / phimass);    
 
     // create pair mass histograms for Dalitz decays of pi0, eta, omega, eta' and phi
     if (!fEPMassPion)          {delete fEPMassPion;        fEPMassPion          = new TH1F("fEPMassPion", "Dalitz electron pair from pion", nbins, min, maxpion); }
     if (!fEPMassEta)           {delete fEPMassEta;         fEPMassEta           = new TH1F("fEPMassEta", "Dalitz electron pair from eta", nbins, min, maxeta);}
     if (!fEPMassOmegaDalitz)   {delete fEPMassOmegaDalitz; fEPMassOmegaDalitz   = new TH1F("fEPMassOmegaDalitz", "Dalitz electron pair from omega ", nbins, min, maxomega);}
     if (!fEPMassEtaPrime)      {delete fEPMassEtaPrime;    fEPMassEtaPrime      = new TH1F("fEPMassEtaPrime", "Dalitz electron pair from etaprime", nbins, min, maxetaprime);}
+    if (!fEPMassEtaPrime_toOmega)      {delete fEPMassEtaPrime_toOmega;    fEPMassEtaPrime_toOmega      = new TH1F("fEPMassEtaPrime_toOmega", "Dalitz electron pair from etaprime_toOmega", nbins, min, maxetaprime_toOmega);}
     if (!fEPMassPhiDalitz)     {delete fEPMassPhiDalitz;   fEPMassPhiDalitz     = new TH1F("fEPMassPhiDalitz", "Dalitz electron pair from phi ", nbins, min, maxphi);}
+    if (!fEPMassPhiDalitz_toPi0)     {delete fEPMassPhiDalitz_toPi0;   fEPMassPhiDalitz_toPi0     = new TH1F("fEPMassPhiDalitz_toPi0", "Dalitz electron pair from phi_toPi0 ", nbins, min, maxphi_toPi0);}
 
 
-    mLL_pion =  mLL_eta = mLL_omega = mLL_etaprime = mLL_phi = 0.;
+    mLL_pion =  mLL_eta = mLL_omega = mLL_etaprime = mLL_etaprime_toOmega = mLL_phi = mLL_phi_toPi0 = 0.;
 
     for (ibin = 1; ibin <= nbins; ibin++ )
         {
@@ -151,16 +163,20 @@ void AliDecayerExodus::Init()
          mLL_eta      = min + (Double_t)(ibin - 1) * binwidth_eta + binwidth_eta / 2.0;
          mLL_omega    = min + (Double_t)(ibin - 1) * binwidth_omega + binwidth_omega / 2.0;
          mLL_etaprime = min + (Double_t)(ibin - 1) * binwidth_etaprime + binwidth_etaprime / 2.0;
+         mLL_etaprime_toOmega = min + (Double_t)(ibin - 1) * binwidth_etaprime_toOmega + binwidth_etaprime_toOmega / 2.0;
          mLL_phi      = min + (Double_t)(ibin - 1) * binwidth_phi + binwidth_phi / 2.0;
+         mLL_phi_toPi0      = min + (Double_t)(ibin - 1) * binwidth_phi_toPi0 + binwidth_phi_toPi0 / 2.0;
 
 
          q_pion        = (mLL_pion / pionmass) * (mLL_pion / pionmass);
          q_eta         = (mLL_eta / etamass) * (mLL_eta / etamass);
          q_omega       = (mLL_omega / omegamass)*(mLL_omega / omegamass);
          q_etaprime    = (mLL_etaprime / etaprimemass) * (mLL_etaprime / etaprimemass);
+         q_etaprime_toOmega    = (mLL_etaprime_toOmega / etaprimemass) * (mLL_etaprime_toOmega / etaprimemass);
          q_phi         = (mLL_phi / phimass) * (mLL_phi / phimass);
+         q_phi_toPi0         = (mLL_phi_toPi0 / phimass) * (mLL_phi_toPi0 / phimass);
 
-    if ( q_pion <= 4.0 * epsilon_pion || q_eta <= 4.0 * epsilon_eta || q_omega <= 4.0 * epsilon_omega || q_etaprime <= 4.0 * epsilon_etaprime || q_phi <= 4.0 * epsilon_phi )
+    if ( q_pion <= 4.0 * epsilon_pion || q_eta <= 4.0 * epsilon_eta || q_omega <= 4.0 * epsilon_omega || q_etaprime <= 4.0 * epsilon_etaprime || q_etaprime_toOmega <= 4.0 * epsilon_etaprime_toOmega || q_phi <= 4.0 * epsilon_phi || q_phi_toPi0 <= 4.0 * epsilon_phi_toPi0  )
        {
          AliFatal("Error in calculating Dalitz mass histogram binning!");
        }
@@ -177,14 +193,18 @@ void AliDecayerExodus::Init()
 
     kwHelp_etaprime = (1.0 + q_etaprime /  (1.0 - delta_etaprime)) * (1.0 + q_etaprime / (1.0 - delta_etaprime))
                                          - 4.0 * q_etaprime / ((1.0 - delta_etaprime) * (1.0 - delta_etaprime));
+    kwHelp_etaprime_toOmega = (1.0 + q_etaprime_toOmega /  (1.0 - delta_etaprime_toOmega)) * (1.0 + q_etaprime_toOmega / (1.0 - delta_etaprime_toOmega))
+                                    - 4.0 * q_etaprime_toOmega / ((1.0 - delta_etaprime_toOmega) * (1.0 - delta_etaprime_toOmega));
 
     kwHelp_phi      = (1.0 + q_phi /  (1.0 - delta_phi)) * (1.0 + q_phi / (1.0 - delta_phi))
                                     - 4.0 * q_phi / ((1.0 - delta_phi) * (1.0 - delta_phi));
+    kwHelp_phi_toPi0      = (1.0 + q_phi_toPi0 /  (1.0 - delta_phi_toPi0)) * (1.0 + q_phi_toPi0 / (1.0 - delta_phi_toPi0))
+                                    - 4.0 * q_phi_toPi0 / ((1.0 - delta_phi_toPi0) * (1.0 - delta_phi_toPi0));
 
 
 
 
-    if ( kwHelp_pion <= 0.0 || kwHelp_eta <= 0.0 || kwHelp_omega <= 0.0 || kwHelp_etaprime <= 0.0 || kwHelp_phi <= 0.0 )
+    if ( kwHelp_pion <= 0.0 || kwHelp_eta <= 0.0 || kwHelp_omega <= 0.0 || kwHelp_etaprime <= 0.0 || kwHelp_etaprime_toOmega <= 0.0 || kwHelp_phi <= 0.0 || kwHelp_phi_toPi0 <= 0.0 )
        {
          AliFatal("Error in calculating Dalitz mass histogram binning!");
     
@@ -212,11 +232,21 @@ void AliDecayerExodus::Init()
       krollWada_etaprime = (2.0 / mLL_etaprime) * TMath::Exp(1.5 * TMath::Log(kwHelp_etaprime))
                                                 * TMath::Sqrt(1.0 - 4.0 * epsilon_etaprime / q_etaprime)
                                                 * (1.0 + 2.0 * epsilon_etaprime / q_etaprime);
-   
+      krollWada_etaprime_toOmega = (2.0 / mLL_etaprime_toOmega) * TMath::Exp(1.5 * TMath::Log(kwHelp_etaprime_toOmega))
+                                                * TMath::Sqrt(1.0 - 4.0 * epsilon_etaprime_toOmega / q_etaprime_toOmega)
+                                                * (1.0 + 2.0 * epsilon_etaprime_toOmega / q_etaprime_toOmega);
+
+  
+ 
       krollWada_phi      = (2.0 / mLL_phi) * TMath::Exp(1.5 * TMath::Log(kwHelp_phi))
                                            * TMath::Sqrt(1.0 - 4.0 * epsilon_phi / q_phi)
                                            * (1.0 + 2.0 * epsilon_phi / q_phi);   
 
+
+
+      krollWada_phi_toPi0      = (2.0 / mLL_phi_toPi0) * TMath::Exp(1.5 * TMath::Log(kwHelp_phi_toPi0))
+                                           * TMath::Sqrt(1.0 - 4.0 * epsilon_phi_toPi0 / q_phi_toPi0)
+                                           * (1.0 + 2.0 * epsilon_phi_toPi0 / q_phi_toPi0);
 
 
     // Form factors from Lepton-G  
@@ -228,7 +258,11 @@ void AliDecayerExodus::Init()
     formFactor_etaprime = (TMath::Power(TMath::Power(0.764,2),2))
                           /(TMath::Power(TMath::Power(0.764,2)-TMath::Power(mLL_etaprime, 2), 2)
                           + TMath::Power(0.1020, 2)*TMath::Power(0.764, 2));
+    formFactor_etaprime_toOmega = (TMath::Power(TMath::Power(0.764,2),2))
+                          /(TMath::Power(TMath::Power(0.764,2)-TMath::Power(mLL_etaprime_toOmega, 2), 2)
+                          + TMath::Power(0.1020, 2)*TMath::Power(0.764, 2));
     formFactor_phi      = 1.0; 
+    formFactor_phi_toPi0      = 1.0; 
 
 
 
@@ -237,7 +271,9 @@ void AliDecayerExodus::Init()
     weight_eta          = krollWada_eta * formFactor_eta * formFactor_eta;
     weight_omega_dalitz = krollWada_omega * formFactor_omega;
     weight_etaprime     = krollWada_etaprime * formFactor_etaprime;
+    weight_etaprime_toOmega     = krollWada_etaprime_toOmega * formFactor_etaprime_toOmega;
     weight_phi_dalitz   = krollWada_phi * formFactor_phi * formFactor_phi;
+    weight_phi_dalitz_toPi0   = krollWada_phi_toPi0 * formFactor_phi_toPi0 * formFactor_phi_toPi0;
 
 
     // Fill histograms of electron pair masses from dalitz decays
@@ -245,7 +281,9 @@ void AliDecayerExodus::Init()
     fEPMassEta        ->AddBinContent(ibin, weight_eta);
     fEPMassOmegaDalitz->AddBinContent(ibin, weight_omega_dalitz);
     fEPMassEtaPrime   ->AddBinContent(ibin, weight_etaprime);
+    fEPMassEtaPrime_toOmega   ->AddBinContent(ibin, weight_etaprime_toOmega);
     fEPMassPhiDalitz  ->AddBinContent(ibin, weight_phi_dalitz);
+    fEPMassPhiDalitz_toPi0  ->AddBinContent(ibin, weight_phi_dalitz_toPi0);
     }
 
 
@@ -339,11 +377,6 @@ Double_t AliDecayerExodus::Lorentz(Float_t mass, Double_t vmass, Double_t vwidth
 // using Lorentz function
 
   Double_t weight;
-
-  if( vwidth < 1e-6 ){
-    AliWarning(Form("Width = %f (Mass = %f) < 1e-6, set to 1e-6",vwidth,vmass));
-    vwidth = 1e-6;
-  }
   
   weight = (vwidth*vwidth/4.0)/(vwidth*vwidth/4.0+(vmass-mass)*(vmass-mass));
 
@@ -359,6 +392,11 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
         fInit=1;  
     }
 
+
+   // -------- get id of the partner from idpart  ------- //
+   Int_t idpartner=idpart/1000;
+   idpart=idpart%1000;
+
    //local variables for dalitz/2-body decay:
    Double_t pmass, epmass, realp_mass, e1, p1, e3, p3;
    Double_t wp_res, mp_res, md_res, epmass_res, Ed_res, pd_res;
@@ -373,12 +411,13 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
    Int_t idEtaPrime=331;
 
    // Get the particle masses of daughters
-   Double_t emass, proton_mass, omass_pion, omass_eta, omass_gamma;
+   Double_t emass, proton_mass, omass_pion, omass_eta, omass_gamma, omass_omega;
    emass       = (TDatabasePDG::Instance()->GetParticle(11)) ->Mass();  
    proton_mass = (TDatabasePDG::Instance()->GetParticle(2212)) ->Mass();  
    omass_pion  = (TDatabasePDG::Instance()->GetParticle(111))->Mass();
    omass_eta   = (TDatabasePDG::Instance()->GetParticle(221))->Mass();  
    omass_gamma = (TDatabasePDG::Instance()->GetParticle(22)) ->Mass();   
+   omass_omega = (TDatabasePDG::Instance()->GetParticle(223)) ->Mass();   
 
    //flat angular distributions
    Double_t costheta, sintheta, cosphi, sinphi, phi;
@@ -394,7 +433,7 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
 //             Generate Dalitz decays: Pi0/Eta/Omega/EtaPrime/Phi              //
 //-----------------------------------------------------------------------------//
 
-  if(idpart==idPi0||idpart==idEta||idpart==idOmega||idpart==idEtaPrime||idpart==idPhi){
+  if((idpart==idPi0||idpart==idEta||idpart==idOmega||idpart==idEtaPrime||idpart==idPhi)&&(idpartner!=0)){
 
    //get the parent mass
    pmass = pparent->M();
@@ -411,11 +450,22 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
          epmass = fEPMassOmegaDalitz->GetRandom();
          realp_mass=omass_pion;
         }else if(idpart==idEtaPrime){
-         epmass = fEPMassEtaPrime->GetRandom();
-         realp_mass=omass_gamma;
+         if(idpartner==22){
+          epmass = fEPMassEtaPrime->GetRandom();
+          realp_mass=omass_gamma;
+         }else if (idpartner==223){
+          epmass = fEPMassEtaPrime_toOmega->GetRandom();
+          realp_mass=omass_omega;
+         }
         }else if(idpart==idPhi){
-         epmass = fEPMassPhiDalitz->GetRandom();
-         realp_mass=omass_eta;
+         if(idpartner==221){
+          epmass = fEPMassPhiDalitz->GetRandom();
+          realp_mass=omass_eta;
+         }else if (idpartner==111){
+          epmass = fEPMassPhiDalitz_toPi0->GetRandom();
+          realp_mass=omass_pion;
+         }
+
         }else{ printf(" Exodus ERROR: Dalitz mass parametrization not found \n");
                return;
         }
@@ -517,7 +567,7 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
 //             Generate 2-body resonance decays: Rho/Omega/Phi/JPsi            //
 //-----------------------------------------------------------------------------//
    
-  if(idpart==idRho||idpart==idOmega||idpart==idPhi||idpart==idJPsi){
+  if((idpart==idRho||idpart==idOmega||idpart==idPhi||idpart==idJPsi)&&(idpartner==0)){
 
 
    //get the parent mass
@@ -809,7 +859,7 @@ void AliDecayerExodus::Decay(TClonesArray *array)
   if((dp3[0]->GetPdgCode() != 22) && (TMath::Abs(dp3[1]->GetPdgCode()) != 11))   continue;
 
   TLorentzVector Pizero(part->Px(), part->Py(), part->Pz(), part->Energy());
-  Decay(111, &Pizero);
+  Decay(111+1000*dp3[0]->GetPdgCode(), &Pizero);
   for (j = 0; j < 3; j++) dp3[j]->SetMomentum(fProducts_pion[2-j]);
   }
 
@@ -831,7 +881,7 @@ void AliDecayerExodus::Decay(TClonesArray *array)
   if((dp3[0]->GetPdgCode() != 22) && ((TMath::Abs(dp3[1]->GetPdgCode()) != 11)))   continue;
 
   TLorentzVector Eta(part->Px(), part->Py(), part->Pz(), part->Energy());
-  Decay(221, &Eta);
+  Decay(221+1000*dp3[0]->GetPdgCode(), &Eta);
   for (j = 0; j < 3; j++) dp3[j]->SetMomentum(fProducts_eta[2-j]);
   }
 
@@ -873,7 +923,7 @@ void AliDecayerExodus::Decay(TClonesArray *array)
   if( dp3[0]->GetPdgCode() != 111 && (TMath::Abs(dp3[1]->GetPdgCode()) != 11)) continue;
 
   TLorentzVector Omegadalitz(part->Px(), part->Py(), part->Pz(), part->Energy());
-  Decay(223, &Omegadalitz);
+Decay(223+1000*dp3[0]->GetPdgCode(), &Omegadalitz);
   for (j = 0; j < 3; j++) dp3[j]->SetMomentum(fProducts_omega_dalitz[2-j]);
   }
 
@@ -902,10 +952,10 @@ void AliDecayerExodus::Decay(TClonesArray *array)
 
   for (j = 0; j < 3; j++) dp3[j] = (TParticle*) (array->At(fd3+j));
 
-  if((dp3[0]->GetPdgCode() != 22) && ((TMath::Abs(dp3[1]->GetPdgCode()) != 11)))   continue;
+  if((dp3[0]->GetPdgCode() != 22 && dp3[0]->GetPdgCode() != 223) && ((TMath::Abs(dp3[1]->GetPdgCode()) != 11)))   continue;
 
   TLorentzVector Etaprime(part->Px(), part->Py(), part->Pz(), part->Energy());
-  Decay(331, &Etaprime);
+  Decay(331+1000*dp3[0]->GetPdgCode(), &Etaprime);
   for (j = 0; j < 3; j++) dp3[j]->SetMomentum(fProducts_etaprime[2-j]);
   }
 
@@ -923,7 +973,7 @@ void AliDecayerExodus::Decay(TClonesArray *array)
   if( dp3[0]->GetPdgCode() != 221 && (TMath::Abs(dp3[1]->GetPdgCode()) != 11)) continue;
 
   TLorentzVector Phidalitz(part->Px(), part->Py(), part->Pz(), part->Energy());
-  Decay(333, &Phidalitz);
+  Decay(333+1000*dp3[0]->GetPdgCode(), &Phidalitz);
   for (j = 0; j < 3; j++) dp3[j]->SetMomentum(fProducts_phi_dalitz[2-j]);
   } 
 
