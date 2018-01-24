@@ -435,9 +435,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tXiCut[aniter]->SetPtXi(0.8,100);
 					tXiCut[aniter]->SetEtaXi(0.8);
 					tXiCut[aniter]->SetMass(XiMass);
-					tXiCut[aniter]->SetInvariantMassXi(XiMass-0.003,XiMass+0.003);
+					tXiCut[aniter]->SetInvariantMassXi(XiMass-0.006,XiMass+0.006);
 					tXiCut[aniter]->SetMaxDecayLengthXi(100.);
-					tXiCut[aniter]->SetMinCosPointingAngleXi(0.9992);
+					tXiCut[aniter]->SetMinCosPointingAngleXi(0.99);
 					tXiCut[aniter]->SetMaxDcaXi(100);
 					//XiDaughters
 					tXiCut[aniter]->SetMaxDcaXiDaughters(0.3);
@@ -489,9 +489,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tAXiCut[aniter]->SetPtXi(0.8,100);
 					tAXiCut[aniter]->SetEtaXi(0.8);
 					tAXiCut[aniter]->SetMass(XiMass);
-					tAXiCut[aniter]->SetInvariantMassXi(XiMass-0.003,XiMass+0.003);
+					tAXiCut[aniter]->SetInvariantMassXi(XiMass-0.006,XiMass+0.006);
 					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
-					tAXiCut[aniter]->SetMinCosPointingAngleXi(0.9992);
+					tAXiCut[aniter]->SetMinCosPointingAngleXi(0.99);
 					tAXiCut[aniter]->SetMaxDcaXi(100);
 					//XiDaughters
 					tAXiCut[aniter]->SetMaxDcaXiDaughters(0.3);
