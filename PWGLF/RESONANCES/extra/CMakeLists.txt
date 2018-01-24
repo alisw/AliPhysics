@@ -36,7 +36,9 @@ set(SRCS
   AliRsnAnalysisPhi7TeV.cxx 
   AliAnalysisTaskSigma1385.cxx
   AliXiStar.cxx
+  AliXiStarpp13TeV.cxx
   AliXiStarEventCollection.cxx
+  AliXiStarpp13TeVEventCollection.cxx
   AliAnalysisTaskLambdaStar.cxx
   AliAnalysisTaskSEF01710fromAODtracks.cxx
   AliRsnf0f2Task.cxx
@@ -77,5 +79,4 @@ install(FILES ${HDRS} DESTINATION include)
 install(FILES AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskLambda.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)
-install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
-
+install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
