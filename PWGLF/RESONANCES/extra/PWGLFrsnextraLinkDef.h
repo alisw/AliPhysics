@@ -9,7 +9,7 @@
 #pragma link C++ class AliXiStarpp13TeV+;
 #pragma link C++ class AliXiStarpp13TeVEventCollection+;
 #pragma link C++ class AliXiStarEventCollection+;
-#pragma link C++ class AliXiStarpp13TeVEventStruct+
+#pragma link C++ class AliXiStarpp13TeVEventStruct+;
 #pragma link C++ class AliXiStarEventStruct+;
 #pragma link C++ class AliXiStarpp13TeVTrackStruct+;
 #pragma link C++ class AliXiStarTrackStruct+;
