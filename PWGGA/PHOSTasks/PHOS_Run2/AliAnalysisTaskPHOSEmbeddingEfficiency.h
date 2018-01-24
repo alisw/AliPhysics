@@ -26,6 +26,7 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
     void UserExec(Option_t *option);
     void Terminate(Option_t *option);
     void GetEmbeddedMCInfo();
+    virtual void EstimatePIDCutEfficiency();
 
     virtual void ProcessMC();
     void SetWeightToClusters();
@@ -46,7 +47,7 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
     AliAnalysisTaskPHOSEmbeddingEfficiency(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
     AliAnalysisTaskPHOSEmbeddingEfficiency& operator=(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 8); // example of analysis
+    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 9); // example of analysis
 };
 
 #endif
