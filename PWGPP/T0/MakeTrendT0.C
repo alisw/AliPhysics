@@ -1,13 +1,13 @@
 #define NPMTs 24
 
 int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
-
+  /*
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
-
+  */
   char *outfile = "trending.root";
  
   if(!infile) return -1;
@@ -18,7 +18,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
     printf("File %s not available\n", infile);
     return -1;
   }
-
+  TH1I* fTriggerCounter=0;
   //            LOAD HISTOGRAMS FROM QAresults.root   
   TObjArray   *fTzeroObject = (TObjArray*) f->Get("T0_Performance/QAT0chists");
   TObjArray   *fSPDObject   = (TObjArray*) f->Get("SPD_Performance/coutput1");
@@ -30,8 +30,8 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
 
   TH1F* fSPDVertexZ      =(TH1F*) ((TH1F*) fSPDObject->FindObject("hVertexZ"))->Clone("E");
   TH1F* f0TVX            =(TH1F*) ((TH1F*) fTzeroObject->FindObject("f0TVX"))->Clone("F");
-  TH1I* fTriggerCounter  =(TH1I*) ((TH1I*) fTzeroObject->FindObject("fTriggerCounter"))->Clone("F");
-  
+  if( fTzeroObject->FindObject("fTriggerCounter") )
+    fTriggerCounter  =(TH1I*) ((TH1I*) fTzeroObject->FindObject("fTriggerCounter"))->Clone("F");
   TH2F *fTimeVSAmplitude[NPMTs];//counting PMTs from 0
   TH1D *fAmplitude[NPMTs];
   TH1D *fTime[NPMTs];
@@ -107,14 +107,15 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
   (fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1));
   //efficiency of triggers
   double nspd   = double(fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1));
-  double otvx   = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("C0TVX-B")));cout << "0TVX: " << otvx << "\t";
-  double cint7  = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CINT7-B")));cout << "CINT7: " << cint7 << "\t";
-  double cadand = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CADAND-B")));cout << "CADAND: " << cadand << "\n";
-  
-  efficiency0TVX_SPD    = (nspd>0?otvx/nspd:-1.);    cout << "efficiency0TVX_SPD: " << efficiency0TVX_SPD << "\t";
-  efficiency0TVX_CINT7  = (cint7>0?otvx/cint7:-1.);  cout << "efficiency0TVX_CINT7: " << efficiency0TVX_CINT7 << "\t";
-  efficiency0TVX_CADAND = (cadand>0?otvx/cadand:-1); cout << "efficiency0TVX_CADAND: " << efficiency0TVX_CADAND << "\n";
-  
+  if (fTriggerCounter) {
+    double otvx   = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("C0TVX-B")));cout << "0TVX: " << otvx << "\t";
+    double cint7  = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CINT7-B")));cout << "CINT7: " << cint7 << "\t";
+    double cadand = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CADAND-B")));cout << "CADAND: " << cadand << "\n";
+    
+    efficiency0TVX_SPD    = (nspd>0?otvx/nspd:-1.);    cout << "efficiency0TVX_SPD: " << efficiency0TVX_SPD << "\t";
+    efficiency0TVX_CINT7  = (cint7>0?otvx/cint7:-1.);  cout << "efficiency0TVX_CINT7: " << efficiency0TVX_CINT7 << "\t";
+    efficiency0TVX_CADAND = (cadand>0?otvx/cadand:-1); cout << "efficiency0TVX_CADAND: " << efficiency0TVX_CADAND << "\n";
+  }
 
   //-----> analyze the new histogram here and set mean/sigma
 
