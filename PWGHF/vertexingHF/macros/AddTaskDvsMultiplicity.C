@@ -1,18 +1,18 @@
 AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
-                                                         Bool_t readMC=kFALSE,
-                                                         Int_t MCOption=0,
-                                                         Int_t pdgMeson=411,
-                                                         TString finDirname="Loose",
-                                                         TString filename="",
-                                                         TString finAnObjname="AnalysisCuts",
-                                                         TString estimatorFilename="",
-                                                         Double_t refMult=9.26,
-                                                         Bool_t subtractDau=kFALSE,
-                                                         Int_t NchWeight=0,
-                                                         Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
-                                                         Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
-                                                         Bool_t isPPbData=kFALSE,
-                                                         Int_t year = 16)
+							 Bool_t readMC=kFALSE,
+							 Int_t MCOption=0,
+							 Int_t pdgMeson=4122,
+							 TString finDirname="Lc2pK0S",
+							 TString filename="",
+							 TString finAnObjname="LctoV0AnalysisCuts",
+							 TString estimatorFilename="",
+							 Double_t refMult=9.26,
+							 Bool_t subtractDau=kFALSE,
+							 Int_t NchWeight=0,
+							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
+							 Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
+							 Bool_t isPPbData=kFALSE,
+							 Int_t year = 16)
 {
   //
   // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity
@@ -73,6 +73,14 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
     Name="Ds";
+  }else if(pdgMeson==4122){
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsLctoV0();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
+    }
+    else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
+    Name="Lc2pK0S";
   }
     
   AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
@@ -124,6 +132,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   if(pdgMeson==421) {
     dMultTask->SetMassLimits(1.5648,2.1648);
     dMultTask->SetNMassBins(200);
+  } else if(pdgMeson==4122) {
+    dMultTask->SetMassLimits(pdgMeson,0.250);
+    dMultTask->SetNMassBins(1000);
   }else if(pdgMeson==411)dMultTask->SetMassLimits(pdgMeson,0.2);
     
   if(estimatorFilename.EqualTo("") ) {
