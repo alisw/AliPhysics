@@ -57,6 +57,9 @@ public:
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
 
+   // Generator
+   void   SetGeneratorName(TString generatorName) { fGeneratorName = generatorName;}
+
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
    void   SetTriggerMask(Int_t triggermask)                 {fTriggerMask = triggermask;}
@@ -95,6 +98,11 @@ public:
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
+   // Set Cocktail waiting
+   void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
+   void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
+   void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
+
    // Generator related setter
    void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
    void   SetMaxPtGen(double ptMax)   {fPtMaxGen = ptMax;};
@@ -107,11 +115,13 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), isMCSignal(), isReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), isMCSignal(), isReconstructed() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
     void SetTrackID(int id) {fTrackID = id;}
+    void SetMotherID(int id) {fMotherID = id;}
     int  GetTrackID() {return fTrackID;}
+    int  GetMotherID() {return fMotherID;}
 
     double  fPt;
     double  fEta;
@@ -121,6 +131,7 @@ public:
     double  fEta_smeared;
     double  fPhi_smeared;
     int     fTrackID;
+    int     fMotherID;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
   };
@@ -133,6 +144,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
+  bool    CheckGenerator(int trackID, TString generator);
 
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -145,6 +157,7 @@ private:
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
 
+  double GetWeight(Particle part1, Particle part2, double motherpt);
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -202,6 +215,8 @@ private:
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
 
+  TString fGeneratorName;
+
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
   AliMCEvent*     fMC;
@@ -250,6 +265,18 @@ private:
   std::vector<Particle> fGenPosPart;
   std::vector<Particle> fRecNegPart;
   std::vector<Particle> fRecPosPart;
+
+  bool fDoCocktailWeighting;
+  std::string fCocktailFilename;
+  std::string fCocktailFilenameFromAlien;
+  TFile* fCocktailFile;
+  TH1F* fPtPion;
+  TH1F* fPtEta;
+  TH1F* fPtEtaPrime;
+  TH1F* fPtRho;
+  TH1F* fPtOmega;
+  TH1F* fPtPhi;
+  TH1F* fPtJPsi;
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented

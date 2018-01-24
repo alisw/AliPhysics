@@ -1,11 +1,20 @@
 
-TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;kPbPb2015_Pt400_looseTOFif_0SITSCl;kPbPb2015_Pt400_tightTOFreq_0SITSCl;kPbPb2015_Pt400_looseTOFif_ITSMAP;kPbPb2015_Pt400_tightTOFreq_ITSMAP");
+TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;NewPID;kPbPb2015_Pt400_looseTOFif_0SITSCl;kPbPb2015_Pt400_tightTOFreq_0SITSCl;NewPID_0SITSCl;kPbPb2015_Pt400_looseTOFif_ITSMAP;kPbPb2015_Pt400_tightTOFreq_ITSMAP;NewPID_ITSMAP");
+
+TString generatorName = "";
+// TString generatorName = "Hijing_0";
+// TString generatorName = "Jpsi2ee_1";
+
 bool DoPairing = kTRUE;
 bool DoULSLS = true;
 
 bool GetResolutionFromAlien = kTRUE;
 std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP.root";
 std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/resolution_PbPb2015_0080_deltaXvsP.root";
+
+bool GetCocktailFromAlien = kTRUE;
+std::string CocktailFilename = "cocktail_PbPb0080_5TeV.root";
+std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/cocktail_PbPb0080_5TeV.root";
 
 bool GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
@@ -49,7 +58,7 @@ const double maxEtaBin =  1.0;
 const int    stepsEtaBin = 20;
 
 const double minPhiBin = 0;
-const double maxPhiBin =  TMath::TwoPi();
+const double maxPhiBin =  6.3;
 const int    stepsPhiBin = 30;
 
 const double minThetaBin = 0;
@@ -118,6 +127,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
     AnaCut.SetStandardCut();
   }
+  else if (cutDefinition == "NewPID_0SITSCl"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_0SITSCl);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
   else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_0SITSCl"){
     AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_0SITSCl);
@@ -127,6 +142,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_0SITSCl"){
     AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_0SITSCl);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "NewPID_ITSMAP"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst_ITSMAP);
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
     AnaCut.SetStandardCut();
   }

@@ -38,6 +38,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       break;
     }
   }
+  else{
+      triggerSelectionString = AliVEvent::kINT7;
+  }
   //=============================================//
       
   //=============================================//
@@ -46,6 +49,17 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   Double_t gCentrality[nCentralities];
   
   if(isPbPb) {
+    if(!isData) {
+      for(Int_t i = 0; i < 9; i++)
+	gCentrality[i] = 0 + i*10;
+    }
+    else {
+      gCentrality[0] = 0; gCentrality[1] = 5;
+      for(Int_t i = 2; i < 10; i++)
+	gCentrality[i] = (i - 1)*10;
+    }
+  }
+  else {
     if(!isData) {
       for(Int_t i = 0; i < 9; i++)
 	gCentrality[i] = 0 + i*10;
@@ -83,6 +97,16 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],qVector,gEtaGap,isVZERO,isPbPb,gAODfilterBit,whichData,gDCAvtxXY,gDCAvtxZ,gChargePOI,doQA);
     
     if(isPbPb) {
+      suffixName[iCentralityBin] += "Centrality";
+      suffixName[iCentralityBin] += gCentrality[iCentralityBin];
+      suffixName[iCentralityBin] += "To";
+      suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
+      if(gChargePOI == 1) 
+	suffixName[iCentralityBin] += "PlusPlus";
+      else if(gChargePOI == -1) 
+	suffixName[iCentralityBin] += "MinusMinus";
+    }
+    else {
       suffixName[iCentralityBin] += "Centrality";
       suffixName[iCentralityBin] += gCentrality[iCentralityBin];
       suffixName[iCentralityBin] += "To";
@@ -431,7 +455,11 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
       }
       cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
     }
-   
+    else{
+       cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);
+       cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
+       cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE);
+    }  
     
     cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
     cutsEvent->SetQA(doQA);

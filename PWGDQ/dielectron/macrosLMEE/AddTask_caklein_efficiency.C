@@ -50,6 +50,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
 
+  // #########################################################
+  // #########################################################
+  // Possibility to set generator. If nothing set all generators are taken into account
+  task->SetGeneratorName(generatorName);
 
   // #########################################################
   // #########################################################
@@ -102,11 +106,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   task->SetResolutionPhiBinsLinear  (DeltaPhiMin, DeltaPhiMax, NbinsDeltaPhi);
   task->SetResolutionThetaBinsLinear(DeltaThetaMin, DeltaThetaMax, NbinsDeltaTheta);
 
-
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
   task->SetCentralityFile(centralityFilename);
+
+  // #########################################################
+  // #########################################################
+  // Set Cocktail weighting
+  task->SetDoCocktailWeighting(DoCocktailWeighting);
+  task->SetCocktailWeighting(CocktailFilename);
+  task->SetCocktailWeightingFromAlien(CocktailFilenameFromAlien);
 
   // #########################################################
   // #########################################################

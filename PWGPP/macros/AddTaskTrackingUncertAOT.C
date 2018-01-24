@@ -29,6 +29,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     ::Error("AddTaskImpParDistrib", "This task requires an input event handler");
     return NULL;
   }
+  AliInputEventHandler* h=mgr->GetInputEventHandler();
+  h->SetNeedField(kTRUE);
     
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if(type.Contains("AOD")){

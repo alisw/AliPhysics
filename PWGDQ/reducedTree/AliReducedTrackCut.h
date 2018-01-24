@@ -34,12 +34,18 @@ class AliReducedTrackCut : public AliReducedVarCut {
   
   void SetRejectPureMC(Bool_t reject=kTRUE) {fRejectPureMC=reject;}
   
+  void SetMCFilterMap(UInt_t map, Bool_t useAND=kTRUE) {fCutOnMCFilterMap = map; fUseANDonMCFilterMap=useAND;}
+  void SetMCFilterBit(Int_t bit) {if(bit>=0 && bit<32) fCutOnMCFilterMap |= (UInt_t(1)<<bit);}
+  void SetUseANDonMCFilterMap(Bool_t useAND=kTRUE) {fUseANDonMCFilterMap=useAND;}
+  
   Bool_t GetRejectKinks() const {return fRejectKinks;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
   Bool_t GetRejectTaggedPureGamma() const {return fRejectTaggedPureGamma;}
   UInt_t GetTrackFilterMap() const {return fCutOnTrackFilterMap;}
   Bool_t GetUseANDonTrackFilterMap() const {return fUseANDonTrackFilterMap;}
   Bool_t GetRejectPureMC() const {return fRejectPureMC;}
+  UInt_t GetMCFilterMap() const {return fCutOnMCFilterMap;}
+  Bool_t GetUseANDonMCFilterMap() const {return fUseANDonMCFilterMap;}
   Bool_t GetRequestITSrefit() const {return fRequestITSrefit;}
   Bool_t GetRequestTPCrefit() const {return fRequestTPCrefit;}
   UChar_t GetITShitMapRequest() const {return fCutOnITShitMap;}
@@ -60,11 +66,15 @@ class AliReducedTrackCut : public AliReducedVarCut {
   Bool_t    fRejectTaggedPureGamma;  // if true, reject only the high purity tagged gamma conversions
   
   // selections on the track filter map 
-  UInt_t    fCutOnTrackFilterMap;       // map encoding the various requests on track filters
+  UInt_t    fCutOnTrackFilterMap;         // map encoding the various requests on track filters
   Bool_t    fUseANDonTrackFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track filters map
    
    // Reject pure MC tracks
    Bool_t   fRejectPureMC;    
+   
+   // selections on the MC signals bit map 
+   UInt_t    fCutOnMCFilterMap;         // map encoding the various requests on MC signals
+   Bool_t    fUseANDonMCFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track MC signals map
    
    // ITS quantities
   Bool_t    fRequestITSrefit;                // if true, request kITSrefit flag to be on
@@ -89,7 +99,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   AliReducedTrackCut(const AliReducedTrackCut &c);
   AliReducedTrackCut& operator= (const AliReducedTrackCut &c);
   
-  ClassDef(AliReducedTrackCut,2);
+  ClassDef(AliReducedTrackCut,3);
 };
 
 #endif

@@ -141,9 +141,9 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     doTrackClus: true                               # Loop over tracks first
     plotOversubtractionHistograms: false            # Compute and plot oversubtracted energy from embedded/signal matches (embedding only)
     doNotOversubtract: false                        # Do not oversubtract energy from cluster (embedding only)
-    useM02SubtractionScheme: false                  # Flag to enable hadronic correction scheme using cluster M02 value
-    useConstantSubtraction: false                   # Flag to perform constant rather than fractional subtract (only applicable if using M02 scheme)
-    constantSubtractionValue: 0.                    # Value to be used for constant subtraction (only applicable if using constant subtraction in M02 scheme)
+    useM02SubtractionScheme: false                  # Flag to enable hadronic correction scheme using cluster M02 value. Must also use hadCorr>1 in order for this option to be enabled.
+    useConstantSubtraction: false                   # Flag to perform constant rather than fractional subtraction in the case M02>0.4 with a matched track (only applicable if using M02 scheme). If false, uses the fraction f=hadCorr-1.
+    constantSubtractionValue: 0.                    # Value to be used for constant subtraction, in GeV (only applicable if using constant subtraction in M02 scheme).
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

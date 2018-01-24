@@ -171,6 +171,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::LoopOverAssociatedTracks(Int_t array
    //
    AliReducedTrackInfo*  track     = 0x0;
    TClonesArray*         trackList = (arrayOption==1 ? fEvent->GetTracks() : fEvent->GetTracks2());
+   if (!trackList) return;
    TIter nextTrack(trackList);
    for (Int_t itr=0; itr<trackList->GetEntries(); ++itr) {
       track = (AliReducedTrackInfo*)nextTrack();

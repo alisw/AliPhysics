@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -1867,7 +1868,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	fillSparse[2]=phi;
 	fillSparse[3]=pVtx->GetZ();
 	fRecHadPtEtaPhiVtx->Fill(fillSparse);
-	fRecHadPtEtaPhiVtxwW->Fill(fillSparse, 1./recEffH);
+	if (recEffH>0) fRecHadPtEtaPhiVtxwW->Fill(fillSparse, 1./recEffH);
 
 
 	if (fIsAOD && fIsMC) {
@@ -3904,27 +3905,23 @@ void AliAnalysisTaskHaHFECorrel::CheckHadronIsTrigger(Double_t ptE, Bool_t* Hadr
 }
  
 Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
-  Int_t Bin = fHadRecEff.FindBin(pt,phi,zVtx);
+  if (pt<0.5) return -1.;
+  
+  Int_t Bin = fHadRecEff.FindBin(pt,eta,zVtx);
   if (fHadRecEff.IsBinUnderflow(Bin) || fHadRecEff.IsBinOverflow(Bin) ) {
-    if (pt>=0.5) {
-      //  cout << "HadRecEff" << endl;
-      //cout << pt << "\t" << eta << "\t" << phi << endl;
-    }
     return -1.;
   }
   Double_t RecEff = fHadRecEff.GetBinContent(Bin);
   if (RecEff>0.05) return RecEff;
   else {
-    if (pt>=0.5) {
-      // cout << "HadRecEff" << endl;
-      //cout << pt << "\t" << eta << "\t" << phi  << endl;
-    }
     return -1.;
   }
 }
 
 Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
+  if (pt<0.5) return -1;
   Int_t Bin = fEleRecEff.FindBin(zVtx, pt);
+  //  cout << "EleBin " << Bin << endl;
   if (fEleRecEff.IsBinUnderflow(Bin) || fEleRecEff.IsBinOverflow(Bin)) {
     // cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
     return -1.;
