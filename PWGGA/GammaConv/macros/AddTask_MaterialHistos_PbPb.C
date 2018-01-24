@@ -191,7 +191,20 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
     cuts.AddCut("50000013", "00000009247602008850404000");
   } else if ( trainConfig == 4){ // selection for 11h photon cut
     cuts.AddCut("50000013", "00000009247002008850404000");
-
+  } else if ( trainConfig == 5){ // selection for 11h meson cut
+    cuts.AddCut("60100013", "00000009247602008850404000");
+    cuts.AddCut("61200013", "00000009247602008850404000");
+    cuts.AddCut("50100013", "00000009247602008850404000");
+    cuts.AddCut("51200013", "00000009247602008850404000");
+    cuts.AddCut("52500013", "00000009247602008850404000");
+    cuts.AddCut("55800013", "00000009247602008850404000");
+  } else if ( trainConfig == 6){ // selection for 11h photon cut
+    cuts.AddCut("60100013", "00000009247002008850404000");
+    cuts.AddCut("61200013", "00000009247002008850404000");
+    cuts.AddCut("50100013", "00000009247002008850404000");
+    cuts.AddCut("51200013", "00000009247002008850404000");
+    cuts.AddCut("52500013", "00000009247002008850404000");
+    cuts.AddCut("55800013", "00000009247002008850404000");
     // Offline V0Finder is used
   } else  if(trainConfig == 101){ //INT7, CL1
     cuts.AddCut("20010103", "10000009247602008250404000");
@@ -201,6 +214,20 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
     cuts.AddCut("50000013", "10000009247602008850404000");
   } else if ( trainConfig == 104){ // selection for 11h photon cut
     cuts.AddCut("50000013", "10000009247002008850404000");
+  } else if ( trainConfig == 105){ // selection for 11h meson cut
+    cuts.AddCut("60100013", "10000009247602008850404000");
+    cuts.AddCut("61200013", "10000009247602008850404000");
+    cuts.AddCut("50100013", "10000009247602008850404000");
+    cuts.AddCut("51200013", "10000009247602008850404000");
+    cuts.AddCut("52500013", "10000009247602008850404000");
+    cuts.AddCut("55800013", "10000009247602008850404000");
+  } else if ( trainConfig == 106){ // selection for 11h photon cut
+    cuts.AddCut("60100013", "10000009247002008850404000");
+    cuts.AddCut("61200013", "10000009247002008850404000");
+    cuts.AddCut("50100013", "10000009247002008850404000");
+    cuts.AddCut("51200013", "10000009247002008850404000");
+    cuts.AddCut("52500013", "10000009247002008850404000");
+    cuts.AddCut("55800013", "10000009247002008850404000");
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
