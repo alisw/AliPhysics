@@ -148,7 +148,10 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   // ----- CONFIGURE -----
 
   cerr<<"configuring"<<endl;
-  if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kKaon){
+  if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kPion){
+    Config_pipi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
+        
+  }else if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kKaon){
     Config_pikx(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
   }else if(d2==AliRsnDaughter::kPion && d1==AliRsnDaughter::kKaon){
     Config_pikx(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
@@ -211,6 +214,135 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   mgr->ConnectOutput(task, 1, output);
    
   return task;
+}
+
+
+//=============================
+
+
+Bool_t Config_pipi(
+  AliRsnMiniAnalysisTask *task,
+  TString     lname="pipi",
+  Bool_t      isMC=kFALSE,
+  Int_t       system=0,
+  Int_t       EventCuts=0,
+  Int_t       TrackCutsPi=0,
+  Int_t       TrackCuts2=0
+){
+  bool isPP=false;
+  if(!system) isPP=true;
+  int trigger=EventCuts%10;
+  int MultBins=(EventCuts/10)%10;
+
+  char suffix[1000];
+  sprintf(suffix,"_%s",lname.Data());
+  Bool_t enableMonitor=kTRUE;
+  
+  // retrieve mass from PDG database
+  Int_t pdg=TrackCuts2;
+  TDatabasePDG* db=TDatabasePDG::Instance();
+  TParticlePDG* part=db->GetParticle(pdg);
+  Double_t mass=part->Mass();
+  cerr<<"######################## "<<pdg<<" "<<mass<<endl;
+  
+  // set daughter cuts
+  if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
+  Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
+  Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
+  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+
+  AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
+  trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+
+  AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
+
+  AliRsnCutSetDaughterParticle* cutSetPi=0;
+  if(!CutTypePi) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+  else if(CutTypePi==1) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kPion,nsigmaPiTPC,-1.);
+  else if(CutTypePi==2) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPiTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
+  if(!cutSetPi){cerr<<"Error in AddTaskRare_pp13::Config_pipi(): missing cutSetPi"<<endl; return kFALSE;}
+
+  Int_t iCutQ=task->AddTrackCuts(cutSetQ);
+  Int_t iCutPi=task->AddTrackCuts(cutSetPi);
+
+  // monitoring
+  if(enableMonitor){
+    Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
+    AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
+  }
+
+  // pair cuts
+  AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
+  cutY->SetRangeD(-0.5,0.5);
+  AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
+  cutsPair->AddCut(cutY);
+  cutsPair->SetCutScheme(cutY->GetName());
+    
+  // multiplicity binning
+  Double_t multbins[200];
+  int j,nmult=0;
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
+    multbins[nmult]=5.; nmult++;
+    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
+  }
+
+  // -- Values ------------------------------------------------------------------------------------
+  /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
+  /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
+  /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,         kFALSE);
+  /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,       kFALSE);
+  /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,        kFALSE);
+  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
+
+  // -- Create all needed outputs -----------------------------------------------------------------
+  // use an array for more compact writing, which are different on mixing and charges
+    
+    
+  Bool_t  use    [9]={ 1      ,  1     , 1      ,  1     , isMC   , isMC , isMC ,  0       ,  0       };
+  Int_t   useIM  [9]={ 1      ,  1     , 1      ,  1     ,  1     ,  1   ,  0   ,  1       ,  1       };
+  TString name   [9]={"Unlike","Mixing","LikePP","LikeMM","gen"   ,"true","res" ,"MixingPP","MixingMM"};
+  TString comp   [9]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  ,"MOTHER","TRUE","TRUE","MIX"     ,"MIX"     };
+  TString output [9]={"HIST"  ,"HIST"  ,"HIST"  ,"HIST"  ,"HIST"  ,"HIST","HIST","HIST"    ,"HIST"    };
+  Char_t  charge1[9]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'  ,'+'   ,'+'       ,'-'       };
+  Char_t  charge2[9]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'  ,'-'   ,'+'       ,'-'       };
+
+  for(Int_t i=0;i<9;i++){
+    if(!use[i]) continue;
+    AliRsnMiniOutput *out=task->CreateOutput(Form("pipi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    out->SetDaughter(0,AliRsnDaughter::kPion);
+    out->SetDaughter(1,AliRsnDaughter::kPion);
+    out->SetCutID(0,iCutPi);
+    out->SetCutID(1,iCutPi);
+    out->SetCharge(0,charge1[i]);
+    out->SetCharge(1,charge2[i]);
+    out->SetMotherPDG(pdg);
+    out->SetMotherMass(mass);
+    out->SetPairCuts(cutsPair);
+
+    // axis X: invmass or resolution
+    if(useIM[i]) out->AddAxis(imID,173,0.27,2.);
+    else out->AddAxis(resID,200,-0.02,0.02);
+    
+    // axis Y: transverse momentum
+    out->AddAxis(ptID,200,0.0,20.0);
+    
+    // axis Z: centrality-multiplicity
+    out->AddAxis(centID,nmult,multbins);
+  }
+  return kTRUE;
 }
 
 
@@ -1680,7 +1812,7 @@ Bool_t Config_Lambdakx(
     out->SetDaughter(1,AliRsnDaughter::kKaon);
     out->SetCharge(0,charge1);
     out->SetCharge(1,charge2[i]);
-    out->SetMotherPDG(ipdg[i]);
+      out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
     // pair cuts
     if(TrackCutsLambda & 1024){
