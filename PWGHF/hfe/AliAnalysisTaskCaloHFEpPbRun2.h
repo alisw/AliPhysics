@@ -1,0 +1,204 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
+/* See cxx source for full Copyright notice */
+/* $Id$ */
+
+#ifndef AliAnalysisTaskCaloHFEpPbRun2_H
+#define AliAnalysisTaskCaloHFEpPbRun2_H
+
+// classes for MC
+class AliAODMCHeader;
+class AliAODMCParticle;
+
+#include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
+
+class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
+{
+    public:
+                                AliAnalysisTaskCaloHFEpPbRun2();
+                                AliAnalysisTaskCaloHFEpPbRun2(const char *name);
+        virtual                 ~AliAnalysisTaskCaloHFEpPbRun2();
+
+        virtual void            UserCreateOutputObjects();
+        virtual void            UserExec(Option_t* option);
+        virtual void            Terminate(Option_t* option);
+        //--- MC Switch ---//
+        void SetMC(Bool_t flagMC) {fFlagMC = flagMC;};
+        //---EMCal/DCal switch---//
+        void SetClusterTypeEMC(Bool_t flagClsEMCal) {fFlagClsTypeEMCal = flagClsEMCal;};
+        void SetClusterTypeDCAL(Bool_t flagClsDCal) {fFlagClsTypeDCal = flagClsDCal;};
+        //---EMCal Correction switch---//
+        void SetEMCalCorrection(Bool_t flagEMCalCorrection) {fFlagEMCalCorrection = flagEMCalCorrection;};
+        //---Trigger Selection switch---//
+        void SetEG1(Bool_t flagEG1) {fFlagEG1 = flagEG1;};
+        void SetEG2(Bool_t flagEG2) {fFlagEG2 = flagEG2;};
+        void SetDG1(Bool_t flagDG1) {fFlagDG1 = flagDG1;};
+        void SetDG2(Bool_t flagDG2) {fFlagDG2 = flagDG2;};
+        //#########################//
+        //Systematic uncertainties //
+        //#########################//
+        void SetTrackEta(Double_t low, Double_t high) {TrackEtaLow = low, TrackEtaHigh = high;};
+        void SetNsigma(Double_t low, Double_t high) {NsigmaLow = low, NsigmaHigh = high;};
+        void SetEop(Double_t low, Double_t high) {EopLow = low, EopHigh = high;};
+
+        void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
+        Bool_t ConversionCheck(Int_t &pidM);
+        Bool_t DalitzCheck(Int_t &pidM);
+        Bool_t CharmCheck(Int_t &pidM, Int_t &pidGM);
+        Bool_t EnhanceCharmCheck(Int_t &pdgM, Int_t &pdgGM, Int_t &NpureMC, Int_t &labelM, Int_t &labelGM);
+        Bool_t BeautyCheck(Int_t &pidM, Int_t &pidGM);
+        Bool_t EnhanceBeautyCheck(Int_t &pdgM, Int_t &pdgGM, Int_t &NpureMC, Int_t &labelM, Int_t &labelGM);
+        Bool_t PionWeighingCheck(Int_t &pdgM, Int_t &pdgGM, Int_t &labelM, Int_t &labelGM , Int_t &labelGGM, Int_t &NpureMC);
+        Bool_t EtaWeighingCheck(Int_t &pdgM, Int_t &pdgGM, Int_t &labelM, Int_t &labelGM , Int_t &labelGGM, Int_t &NpureMC);
+        Int_t GetNpureMCParticle(AliAODMCHeader* fMCheader);
+
+        private:
+        AliAODEvent*            fAOD;           //! input event
+        TList*                  fOutputList;    //! output list
+        AliVEvent   *fVevent;  //!event object
+        AliEventCuts *fEventCuts;
+        AliPIDResponse *fPIDresponse;
+
+        TClonesArray  *fTracks_tender;//Tender tracks
+        TClonesArray  *fCaloClusters_tender;//Tender cluster
+
+        AliAODMCParticle  *fMCparticle;
+        AliAODMCHeader *fMCheader;
+        TClonesArray  *fMCarray;//! MC array
+
+        Bool_t fFlagMC;
+        Bool_t fFlagClsTypeEMCal;
+        Bool_t fFlagClsTypeDCal;
+        Bool_t fFlagEMCalCorrection;
+        Bool_t fFlagEG1;
+        Bool_t fFlagEG2;
+        Bool_t fFlagDG1;
+        Bool_t fFlagDG2;
+
+        //#########################//
+        //Systematic uncertainties //
+        //#########################//
+        Double_t TrackEtaLow, TrackEtaHigh;
+        Double_t NsigmaLow, NsigmaHigh;
+        Double_t EopLow,EopHigh;
+
+        //################//
+        // Primary Vertex //
+        //################//
+        TH1F *fvtxZ;
+        TH1F *fvtxZ_NoCut;
+        TH1F *fvtxZ_NcontCut;
+        TH1F *fNcontV;
+        TH1F *fNcontVSPD;
+
+        //##############//
+        // Cluster info //
+        //##############//
+        TH1F *fCaloClusterE;
+        TH2F *fCaloClustEtaphi;
+        TH2F *fCaloClustTiming;
+
+        //##############//
+        // Track info //
+        //##############//
+        TH2F *fDCAxy;
+        TH2F *fDCAz;
+	      TH1F *fTrackPt;
+        TH1F *fTracketa;
+        TH1F *fTrackphi;
+        TH2F *fTrackCluster;
+        TH2F *fTrackChi2;
+        TH2F *fTrackITSChi2pTdep;
+
+        //########################//
+        // Mathed track & Cluster //
+        //########################//
+        TH1F *fCaloClusterEAfterMatch;
+        TH2F *fCaloClustEtaPhiAfterMatch;
+        TH1F *fTrackPtAfterMatch;
+        TH1F *fTracketaAfterMatch;
+        TH1F *fTrackphiAfterMatch;
+        TH2F *fM02;
+        TH2F *fM20;
+        TH2F *fdEdx;
+        TH2F *fNSigmaTPC;
+        TH2F *fNSigmaTPCelectron;
+        TH2F *fNSigmaTPChadron;
+        TH2F *fEop;
+        TH2F *fEopElectron;
+        TH2F *fEopHadron;
+        TH2F *fNSigmaEop;
+        //---PHE search by Invariant-mass ---//
+        TH2F *fInvmassLS;
+        TH2F *fInvmassULS;
+        TH1F *fPHEpTLS;
+        TH1F *fPHEpTULS;
+
+        //#########//
+        // MC info //
+        //#########//
+        //--- particle information --//
+        TH1F *fMCPDGcodeM;
+        TH1F *fMCPDGcodeGM;
+        //--- effeciency correction ---//
+        TH1F *fMCTrackPtelectron;
+        TH1F *fMCTrackPtelectron_reco;
+        TH1F *fMCTrackPtelectron_wTPCPID;
+        TH1F *fMCTrackPtelectron_wmatch;
+        TH1F *fMCTrackPtelectron_wEMCALPID;
+        TH1F *fMCTrackPtHFE;
+        TH1F *fMCTrackPtHFE_reco;
+        TH1F *fMCTrackPtHFE_wTPCPID;
+        TH1F *fMCTrackPtHFE_wmatch;
+        TH1F *fMCTrackPtHFE_wEMCALPID;
+        TH2F *fMCHFEResponceMatrix;
+        // --- PID check --- //
+        TH2F *fMCTPCNSigmaelectron;
+        TH2F *fMCEopelectron;
+        //--- DCA for c/b separation ---//
+        TH2F *fMCDCAinclusive;
+        TH2F *fMCDCAconv;
+        TH2F *fMCDCAdalitz;
+        TH2F *fMCDCAcharm;
+        TH2F *fMCDCAbeauty;
+        TH2F *fMCDCAPHE;
+        TH2F *fMCDCAPHEULS;
+        TH2F *fMCDCAPHELS;
+        //--- Non-HFE tagging efficiency ---//
+        TF1 *PionWeight;
+        TF1 *EtaWeight;
+        TH1F *fMCPionInputAll;
+        TH1F *fMCPionInputHijing;
+        TH1F *fMCPionInputEnhanced;
+        TH1F *fMCPionInputOthers;
+        TH1F *fMCEtaInputAll;
+        TH1F *fMCEtaInputHijing;
+        TH1F *fMCEtaInputEnhanced;
+        TH1F *fMCEtaInputOthers;
+        TH1F *fMCTrackPtPHEHijing;
+        TH1F *fMCTrackPtPHEnoweighting;
+        TH1F *fMCTrackPtPHEaftweighting;
+        TH1F *fMCTrackPtPHEHijingwPID;
+        TH1F *fMCTrackPtPHEHijingwMasscut;
+        TH1F *fMCTrackPtPHEwPIDnoweighting;
+        TH1F *fMCTrackPtPHEwPIDaftweighting;
+        TH1F *fMCTrackPtPHEwMasscutnoweighting;
+        TH1F *fMCTrackPtPHEwMasscutaftweighting;
+        // --- D meson & B meson --- //
+        TH1F *fMCDmesonHijing;
+        TH1F *fMCDmesonEnhanced;
+        TH1F *fMCBmesonHijing;
+        TH1F *fMCBmesonEnhanced;
+        // --- c->e & b->e --- //
+        TH1F *fMCDdecayE;
+        TH1F *fMCBdecayE;
+
+
+
+        AliAnalysisTaskCaloHFEpPbRun2(const AliAnalysisTaskCaloHFEpPbRun2&); // not implemented
+        AliAnalysisTaskCaloHFEpPbRun2& operator=(const AliAnalysisTaskCaloHFEpPbRun2&); // not implemented
+
+        ClassDef(AliAnalysisTaskCaloHFEpPbRun2, 1);
+};
+
+#endif
