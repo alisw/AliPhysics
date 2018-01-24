@@ -845,8 +845,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   
   // Response matrix, (centrality, pT-truth, pT-det)
   Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
-  Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
-  Int_t nbinsz = nPtBins; Int_t minz = 0; Int_t maxz = fMaxPt;
+  Int_t nbinsy = fMaxPt; Int_t miny = 0; Int_t maxy = fMaxPt;
+  Int_t nbinsz = fMaxPt; Int_t minz = 0; Int_t maxz = fMaxPt;
   
   histname = "MatchedJetHistograms/hResponseMatrixEMCal";
   title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
