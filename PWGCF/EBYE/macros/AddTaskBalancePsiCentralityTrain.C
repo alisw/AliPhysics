@@ -51,7 +51,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Int_t nCentralityArrayBinsForCorrection = -1,
 						       Double_t *gCentralityArrayForCorrections = 0x0,
 						       Bool_t gRunEbyE = kFALSE,
-						       Bool_t bMomentumOrdering = kTRUE) {
+						       Bool_t bMomentumOrdering = kTRUE,
+						       AliAnalysisTaskBFPsi::eCorrProcedure corrProc = AliAnalysisTaskBFPsi::kNoCorr,
+						       TString nuaCorrFileName = "", TString nueCorrFileName = "") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -254,9 +256,37 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   // vertex cut (x,y,z)
   taskBF->SetVertexDiamond(3.,3.,vertexZ);
+
+  taskBF->SetCorrectionProcedure(corrProc);
+  if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
+
+    TFile* fNUAFile = TFile::Open(nuaCorrFileName,"READ");
+    TFile* fNUEFile = TFile::Open(nueCorrFileName,"READ");
+    
+    if(!fNUAFile) {
+      printf(" *** ERROR: NUA file not found! **EXIT** ");
+    } 
+    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObject("fListNUA"));
+    if(fListNUA){
+      taskBF->SetInputListForNUACorr(fListNUA);
+      else{
+	printf(" *** ERROR: NUA List not found! **EXIT**");
+      }
+    }
+    
+    if(!fNUEFile) {
+      printf(" *** ERROR: NUE file not found! **EXIT** ");
+    } 
+    TList* fListNUE = dynamic_cast<TList*>(fNUEFile->FindObject("fListNUE"));
+    if(fListNUE){
+      taskBF->SetInputListForNUECorr(fListNUE);
+      else{
+	printf(" *** ERROR: NUE List not found! **EXIT**");
+      }
+    }
+  }
+
   
-
-
   //bf->PrintAnalysisSettings();
   mgr->AddTask(taskBF);
   
