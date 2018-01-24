@@ -63,10 +63,20 @@ fRespoPID(0x0),
 fPythiaEventWeight(1.0),
 fDoJetProbabilityAnalysis(kFALSE),
 fDoPtRelAnalysis(0),
+//Bjet Cuts
+fTCMinTrackPt(0.5),
+fTCMinClusTPC(80),
+fTCMinHitsITS(2),
+fTCMaxChi2pNDF(5.),
+fTCMaxIPxy(1.),
+fTCMaxIPz(5.),
+fTCMaxDecayLength(5),
+fTCMaxDCATrackJet(0.07),
 fhistInclusiveJetCuts(0x0),
 fhistbJetCuts(0x0),
 fhistcJetCuts(0x0),
 fhistlfJetCuts(0x0),
+//____
 fh1dEventRejectionRDHFCuts(0x0),
 fh1dVertexZ(0x0),
 fh1dVertexZAccepted(0x0),
@@ -108,12 +118,12 @@ fh1dJetRecPtAccepted(0x0),
 fhnV0InJetK0s(0x0),
 fhnV0InJetLambda(0x0),
 fhnV0InJetALambda(0x0),
-		fh1dJetRecPtAcceptedunCorr(0x0),
-		fhist_Jet_Background_Fluctuation(0x0),
-		fhist_BJet_Background_Fluctuation(0x0),
-		fhist_Rho_Jet(0x0),
-		f2histRhoVsDeltaPt(0x0),
-		fRandom(new TRandom3(0)),
+fh1dJetRecPtAcceptedunCorr(0x0),
+fhist_Jet_Background_Fluctuation(0x0),
+fhist_BJet_Background_Fluctuation(0x0),
+fhist_Rho_Jet(0x0),
+f2histRhoVsDeltaPt(0x0),
+fRandom(new TRandom3(0)),
 fh1dJetRecEtaPhiAccepted(0x0),
 fh1dJetRecPtUnidentified(0x0),
 fh1dJetRecPtudsg(0x0),
@@ -335,10 +345,20 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fHFJetUtils(0x0),
 		fRespoPID(0x0),
 		fPythiaEventWeight(1.0),
+		//Bjet Cuts
+		fTCMinTrackPt(0.5),
+		fTCMinClusTPC(80),
+		fTCMinHitsITS(2),
+		fTCMaxChi2pNDF(5.),
+		fTCMaxIPxy(1.),
+		fTCMaxIPz(5.),
+		fTCMaxDecayLength(5),
+		fTCMaxDCATrackJet(0.07),
 		fhistInclusiveJetCuts(0x0),
 		fhistbJetCuts(0x0),
 		fhistcJetCuts(0x0),
 		fhistlfJetCuts(0x0),
+		//____
 		fh2dPhotonMassVsPt(0x0),
 		fh2dKshortMassVsPt(0x0),
 		fh2dLamdaMassVsPt(0x0),
@@ -836,12 +856,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	AliJetContainer * jetconrec = 0x0;
 	jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
 
-  	TString JetContName = jetconrec->GetName();
+	TString JetContName = jetconrec->GetName();
 	if(JetContName.Contains("PicoTracks")) fUsePicoTracks = kTRUE;
 	else fUsePicoTracks = kFALSE;
 
 	// SetContainer
-	
 	AliJetContainer * jetcongen = 0x0;
 	AliEmcalJet * jetgen  = 0x0;
 	AliAODMCParticle* partonAOD = NULL;
@@ -926,9 +945,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
 			{
-				if(fUsePicoTracks) trackAOD = (AliAODTrack*)((AliPicoTrack*)(jetconrec->GetParticleContainer())->GetParticle(selJet->TrackAt(itrack)))->GetTrack();
-				else trackAOD = (AliAODTrack*)((jetconrec->GetParticleContainer())->GetParticle(selJet->TrackAt(itrack)));
-
+				if(fUsePicoTracks) trackAOD = (AliAODTrack*)((AliPicoTrack*)selJet->Track(itrack))->GetTrack();
+				else trackAOD = (AliAODTrack*)selJet->Track(itrack);
+				
 				if(!trackAOD) 	continue;
 
 				if(IsElectronHF(trackAOD)) ElecJet=kTRUE;
@@ -1084,9 +1103,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				bool NonB = kFALSE;
 
 
-				if(fUsePicoTracks) trackAOD = (AliAODTrack*)((AliPicoTrack*)(jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack)))->GetTrack();
-				else trackAOD = (AliAODTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack)));
-
+				if(fUsePicoTracks) trackAOD = (AliAODTrack*)((AliPicoTrack*)jetrec->Track(itrack))->GetTrack();
+				else trackAOD = (AliAODTrack*)jetrec->Track(itrack);
+				
 				if(!trackAOD) 	continue;
 
 				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec);
@@ -1099,6 +1118,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				
 					if(IsElectronHF(trackAOD)){
 					   PtRel = GetPtRel(trackAOD, jetrec, kFALSE);
+					   if(PtRel>2) PtRel=2;
 					   if(CalculateTrackImpactParameter(trackAOD,LepIP,COV)) hasIP=kTRUE;
 					   fhistPtRelVsJetPt->Fill(jetpt, PtRel, fPythiaEventWeight);
 					   if(hasIP) fhistLepIPVsJetPt->Fill(jetpt, GetValImpactParameter(kXY,LepIP,COV), fPythiaEventWeight);
@@ -1188,13 +1208,14 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 				if(hasSIP)
 				{
-					//Select only tracks with dca rphi <1 cm and dca z < 2 cm
-					// linear decay length < 10 cm
+					//Select only tracks with dca rphi <1 cm and dca z < 5 cm
+					// linear decay length < 5 cm
 					// dca track to jet < 0.07 cm
-					if(abs(dca[0])>1.) continue; 	FillCandidateJet(10, jetflavour);
-					if(abs(dca[1])>5.) continue;	FillCandidateJet(11, jetflavour);
-					if(lineardecaylenth > 5.) continue;	FillCandidateJet(12, jetflavour);
-					if (dcatrackjet > 0.07) continue;	FillCandidateJet(13, jetflavour);
+
+					if(abs(dca[0])>fTCMaxIPxy) continue; 	FillCandidateJet(10, jetflavour);
+					if(abs(dca[1])>fTCMaxIPz) continue;	FillCandidateJet(11, jetflavour);
+					if(lineardecaylenth > fTCMaxDecayLength) continue;	FillCandidateJet(12, jetflavour);
+					if(dcatrackjet > fTCMaxDCATrackJet) continue;	FillCandidateJet(13, jetflavour);
 
 
 
@@ -1595,8 +1616,9 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
   for(Int_t itrack = 0; itrack < ntracks; ++itrack)
     {
       AliAODTrack* trackV = 0x0;
-      if(fUsePicoTracks) trackV = (AliAODTrack*)((AliPicoTrack*)(jetconrec->GetParticleContainer())->GetParticle(jet->TrackAt(itrack)))->GetTrack();
-      else trackV = (AliAODTrack*)((jetconrec->GetParticleContainer())->GetParticle(jet->TrackAt(itrack)));
+      if(fUsePicoTracks) trackV = (AliAODTrack*)((AliPicoTrack*)jet->Track(itrack))->GetTrack();
+      else trackV = (AliAODTrack*)jet->Track(itrack);
+      
 
       //class selection
       Int_t QualityClass=0;
@@ -2151,56 +2173,56 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	if(fDoPtRelAnalysis){
 
 		fhistPtRelEvents = new TH1D("fhistPtRelEvents","Number of PtRel Events", 1,0,1);
-		fhistPtRelVsJetPt = new TH2D("fhistPtRelVsJetPt","Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		fhistPtRelVsJetPt = new TH2D("fhistPtRelVsJetPt","Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		fhistLepIPVsJetPt = new TH2D("fhistLepIPVsJetPt","Electron 2D IP Vs Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fHistMcEopEle = new TH2D("fHistMcEopEle","Real Electrons E/P Vs Track p_{T};p_{T,track} (GeV/c); E/P;a.u.",200,0.,50,200,0.4,2);
 		fHistMcEopHad = new TH2D("fHistMcEopHad","Hadrons E/P Vs Track p_{T};p_{T,track} (GeV/c); E/P;a.u.",200,0.,50,200,0.4,2);
 		fTPCnsigMcEle = new TH2D("fTPCnsigMcEle","Real Electrons NsigmaTPC Vs Track p_{T};p_{T,track} (GeV/c); N#sigma_{TPC};a.u.",200,0.,50,200,-10,6);
 		fTPCnsigMcHad = new TH2D("fTPCnsigMcHad","Hadrons NsigmaTPC Vs Track p_{T};p_{T,track} (GeV/c); N#sigma_{TPC};a.u.",200,0.,50,200,-10,6);
 
-		fhistPtRelVsJetPtTaggedFirst = new TH2D("fhistPtRelVsJetPtTaggedFirst","N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		fhistPtRelVsJetPtTaggedFirst = new TH2D("fhistPtRelVsJetPtTaggedFirst","N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		fhistLepIPVsJetPtTaggedFirst = new TH2D("fhistLepIPVsJetPtTaggedFirst","Electron 2D IP Vs N=1 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fhistPtRelVsJetPtTaggedSecond = new TH2D("fhistPtRelVsJetPtTaggedSecond","N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		fhistPtRelVsJetPtTaggedSecond = new TH2D("fhistPtRelVsJetPtTaggedSecond","N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		fhistLepIPVsJetPtTaggedSecond  = new TH2D("fhistLepIPVsJetPtTaggedSecond","Electron 2D IP Vs N=2 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fhistPtRelVsJetPtTaggedThird = new TH2D("fhistPtRelVsJetPtTaggedThird","N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		fhistPtRelVsJetPtTaggedThird = new TH2D("fhistPtRelVsJetPtTaggedThird","N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		fhistLepIPVsJetPtTaggedThird  = new TH2D("fhistLepIPVsJetPtTaggedThird","Electron 2D IP Vs N=3 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 
 		if(fIsPythia){
-		   fhistPtRelVsJetPtUnidentified = new TH2D("fhistPtRelVsJetPtUnidentified","Unidentified Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
-		   fhistPtRelVsJetPtudsg = new TH2D("fhistPtRelVsJetPtudsg","lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
-		   fhistPtRelVsJetPtc = new TH2D("fhistPtRelVsJetPtc","c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
-		   fhistPtRelVsJetPtb = new TH2D("fhistPtRelVsJetPtb","b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtUnidentified = new TH2D("fhistPtRelVsJetPtUnidentified","Unidentified Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtudsg = new TH2D("fhistPtRelVsJetPtudsg","lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtc = new TH2D("fhistPtRelVsJetPtc","c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtb = new TH2D("fhistPtRelVsJetPtb","b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtUnidentified = new TH2D("fhistLepIPVsJetPtUnidentified","Electron 2D IP Vs Unidentified Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   fhistLepIPVsJetPtudsg = new TH2D("fhistLepIPVsJetPtudsg","Electron 2D IP Vs lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   fhistLepIPVsJetPtc = new TH2D("fhistLepIPVsJetPtc","Electron 2D IP Vs c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   fhistLepIPVsJetPtb = new TH2D("fhistLepIPVsJetPtb","Electron 2D IP Vs b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 
 		   //N=1
-		   fhistPtRelVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedFirst","Unidentified N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedFirst","Unidentified N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedFirst","Electron 2D IP Vs Unidentified N=1 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedudsgFirst = new TH2D("fhistPtRelVsJetPtTaggedudsgFirst","N=1 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedudsgFirst = new TH2D("fhistPtRelVsJetPtTaggedudsgFirst","N=1 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedudsgFirst = new TH2D("fhistLepIPVsJetPtTaggedudsgFirst","Electron 2D IP Vs N=1 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedcFirst = new TH2D("fhistPtRelVsJetPtTaggedcFirst","N=1 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedcFirst = new TH2D("fhistPtRelVsJetPtTaggedcFirst","N=1 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedcFirst = new TH2D("fhistLepIPVsJetPtTaggedcFirst","Electron 2D IP Vs N=1 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedbFirst = new TH2D("fhistPtRelVsJetPtTaggedbFirst","N=1 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedbFirst = new TH2D("fhistPtRelVsJetPtTaggedbFirst","N=1 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedbFirst = new TH2D("fhistLepIPVsJetPtTaggedbFirst","Electron 2D IP Vs N=1 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   //N=2
-		   fhistPtRelVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedSecond","Unidentified N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedSecond","Unidentified N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedSecond","Electron 2D IP Vs Unidentified N=2 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedudsgSecond = new TH2D("fhistPtRelVsJetPtTaggedudsgSecond","N=2 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedudsgSecond = new TH2D("fhistPtRelVsJetPtTaggedudsgSecond","N=2 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedudsgSecond = new TH2D("fhistLepIPVsJetPtTaggedudsgSecond","Electron 2D IP Vs N=2 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedcSecond = new TH2D("fhistPtRelVsJetPtTaggedcSecond","N=2 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedcSecond = new TH2D("fhistPtRelVsJetPtTaggedcSecond","N=2 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedcSecond = new TH2D("fhistLepIPVsJetPtTaggedcSecond","Electron 2D IP Vs N=2 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedbSecond = new TH2D("fhistPtRelVsJetPtTaggedbSecond","N=2 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedbSecond = new TH2D("fhistPtRelVsJetPtTaggedbSecond","N=2 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedbSecond = new TH2D("fhistLepIPVsJetPtTaggedbSecond","Electron 2D IP Vs N=2 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   //N=3
-		   fhistPtRelVsJetPtTaggedUnidentifiedThird = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedThird","Unidentified N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedUnidentifiedThird = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedThird","Unidentified N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedUnidentifiedThird = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedThird","Electron 2D IP Vs Unidentified N=3 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedudsgThird = new TH2D("fhistPtRelVsJetPtTaggedudsgThird","N=3 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedudsgThird = new TH2D("fhistPtRelVsJetPtTaggedudsgThird","N=3 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedudsgThird = new TH2D("fhistLepIPVsJetPtTaggedudsgThird","Electron 2D IP Vs N=3 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedcThird = new TH2D("fhistPtRelVsJetPtTaggedcThird","N=3 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedcThird = new TH2D("fhistPtRelVsJetPtTaggedcThird","N=3 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedcThird = new TH2D("fhistLepIPVsJetPtTaggedcThird","Electron 2D IP Vs N=3 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistPtRelVsJetPtTaggedbThird = new TH2D("fhistPtRelVsJetPtTaggedbThird","N=3 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,400,0,4);
+		   fhistPtRelVsJetPtTaggedbThird = new TH2D("fhistPtRelVsJetPtTaggedbThird","N=3 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
 		   fhistLepIPVsJetPtTaggedbThird = new TH2D("fhistLepIPVsJetPtTaggedbThird","Electron 2D IP Vs N=3 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		}
 	}
@@ -2737,16 +2759,16 @@ Double_t AliAnalysisTaskBJetTC::GetValImpactParameter(TTypeImpPar type,double *i
 // ########################################################################################Track Selection
 Bool_t AliAnalysisTaskBJetTC::IsTrackAccepted(AliAODTrack* track){
         if(!(((AliAODTrack*)track)->TestFilterBit(9) || ((AliAODTrack*)track)->TestFilterBit(4)))return kFALSE;
-	if(track->Pt() < 0.5)return kFALSE;
+	if(track->Pt() < fTCMinTrackPt)return kFALSE; //0.5
 	if(TMath::Abs( track->Eta() ) >0.9) return kFALSE;
 	ULong_t status = track->GetStatus();
 	if(!(status & AliAODTrack::kTPCrefit))return kFALSE;
 	if(!(status & AliAODTrack::kITSrefit))return kFALSE;
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) return kFALSE;
 	
-	if(track->GetNcls(1)<80) return kFALSE;
-	if(track->GetNcls(0)<2) return kFALSE;
-	if(track->Chi2perNDF()>=5) return kFALSE;
+	if(track->GetNcls(1)<fTCMinClusTPC) return kFALSE;//80
+	if(track->GetNcls(0)<fTCMinHitsITS) return kFALSE;//2 in case of FAST and CENT_woSDD and 3 if there was an SDD
+	if(track->Chi2perNDF()>=fTCMaxChi2pNDF) return kFALSE;//5
 	return kTRUE;
 }
 // ########################################################################################Track Selection
@@ -2761,7 +2783,7 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedBJetCuts(AliAODTrack* track, Int_t 
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 
-	if(track->Pt() < 0.5)return kFALSE; //Don't forget to change it later
+	if(track->Pt() < fTCMinTrackPt)return kFALSE; //0.5
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 
@@ -2782,15 +2804,15 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedBJetCuts(AliAODTrack* track, Int_t 
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 	
-	if(track->GetNcls(1)<80) return kFALSE;
+	if(track->GetNcls(1)<fTCMinClusTPC) return kFALSE;//80
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 
-	if(track->GetNcls(0)<2) return kFALSE;
+	if(track->GetNcls(0)<fTCMinHitsITS) return kFALSE;//2
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 
-	if(track->Chi2perNDF()>=5) return kFALSE;
+	if(track->Chi2perNDF()>=fTCMaxChi2pNDF) return kFALSE;//5
 	FillCandidateJet(iCutIndex, jetFlavour);
 	iCutIndex++;
 
@@ -2817,27 +2839,27 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedFidutial(AliAODTrack* track){
 }
 // ########################################################################################Track Selection
 Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedQuality(AliAODTrack* track ,AliEmcalJet* Jet, Int_t &QualityClass, double *imp, double * cov, double &sign){
-  
+
   if(!(((AliAODTrack*)track)->TestFilterBit(9) || ((AliAODTrack*)track)->TestFilterBit(4))) return kFALSE;
-  if(track->Pt() < 1.)return kFALSE;
+  if(track->Pt() < fTCMinTrackPt)return kFALSE;//0.5
   if(TMath::Abs( track->Eta() ) >0.9) return kFALSE;
   ULong_t status = track->GetStatus();
   if(!(status & AliAODTrack::kTPCrefit))return kFALSE;
   if(!(status & AliAODTrack::kITSrefit))return kFALSE;
   if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) return kFALSE;
-  if(track->GetNcls(1)<80) return kFALSE;
-  if(track->GetNcls(0)<2) return kFALSE;
-  if(track->Chi2perNDF()>=5) return kFALSE;
+  if(track->GetNcls(1)<fTCMinClusTPC) return kFALSE;//80
+  if(track->GetNcls(0)<fTCMinHitsITS) return kFALSE;//2
+  if(track->Chi2perNDF()>=fTCMaxChi2pNDF) return kFALSE;//5
 
   
   double dcaTrackJet =0,lindeclen =0 ;
 
   if(!CalculateJetSignedTrackImpactParameter(track,Jet,imp,cov,sign,dcaTrackJet,lindeclen)) return kFALSE;
 
-  if(abs(imp[0])>1.) return kFALSE;
-  if(abs(imp[1])>5.) return kFALSE;
-  if(lindeclen > 5.) return kFALSE;
-  if (dcaTrackJet > 0.07) return kFALSE;
+  if(abs(imp[0])>fTCMaxIPxy) return kFALSE;//1cm
+  if(abs(imp[1])>fTCMaxIPz) return kFALSE;//5cm
+  if(lindeclen > fTCMaxDecayLength) return kFALSE;//5cm
+  if (dcaTrackJet > fTCMaxDCATrackJet) return kFALSE;//0.07cm
 
   if(track->Chi2perNDF()>=2) QualityClass=6;
 
