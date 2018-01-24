@@ -1046,7 +1046,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
  
   
-  TList *trackList = new TList();
+  TList trackList;
   Int_t triggers[100];
   for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
   Int_t iTT = 0;
@@ -1082,8 +1082,8 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
   if (iTT == 0) return -99999;
   Int_t nbRn = 0, index = 0 ; 
-  TRandom3* random = new TRandom3(0); 
-  nbRn = random->Integer(iTT);
+  TRandom3 random(0); 
+  nbRn = random.Integer(iTT);
   index = triggers[nbRn];
   //Printf("iTT Total= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
   return index; 
