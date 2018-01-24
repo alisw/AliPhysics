@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
@@ -39,6 +40,14 @@ set(SRCS
         AliAnalysisTaskSigma0.cxx
         AliAnalysisTaskSigma0Spectra.cxx
         AliCaloParticle.cxx
+        AliSigma0ParticleBase.cxx
+        AliSigma0ParticlePhotonMother.cxx
+        AliSigma0ParticleV0.cxx
+        AliSigma0EventCuts.cxx
+        AliSigma0SingleParticleCuts.cxx
+        AliSigma0V0Cuts.cxx
+        AliSigma0PhotonCuts.cxx
+        AliSigma0PhotonMotherCuts.cxx
         AliAnalysisTaskSigma0Run2.cxx
    )
 
