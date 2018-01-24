@@ -2037,6 +2037,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
   TLorentzVector p12, p12core;
   Double_t m12=0;
   Double_t energy=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2061,9 +2065,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         energy = (ph2->GetMomV2())->Energy();
       }
 
-      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy);
+      weight = 1.;
+      if(fIsMC){
+        w1= ph1->GetWeight();
+        primary1 = ph1->GetPrimary();
+
+        w2 = ph2->GetWeight();
+        primary2 = ph2->GetPrimary();
+
+        commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) weight = w1;
+        else weight = w1*w2;
+
+      }//end of if fIsMC
+
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy,weight);
       if(fPHOSClusterCuts->AcceptPhoton(ph2))
-        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy);
+        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy,weight);
 
     }//end of ph2
 
@@ -2094,9 +2112,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
           energy = (ph2->GetMomV2())->Energy();
         }
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy);
+        weight = 1.;
+        if(fIsMC){
+          w1= ph1->GetWeight();
+          w2 = ph2->GetWeight();
+          weight = w1*w2;
+        }//end of if fIsMC
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy,weight);
         if(fPHOSClusterCuts->AcceptPhoton(ph2))
-          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy);
+          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy,weight);
 
       }//end of mix
 
