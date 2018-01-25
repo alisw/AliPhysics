@@ -944,6 +944,27 @@ AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
   return result;
 }
 
+AliFemtoParticleCut*
+AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
+{
+  std::string classname;
+  if (!cfg.pop_and_load("class", classname)) {
+    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    return nullptr;
+  }
+
+  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoParticleCut*)(Configuration<__name>(cfg))
+
+  AliFemtoParticleCut *result = /* TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
+                          //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
+                           : */ nullptr;
+  #undef TRY_CONSTRUCTING_CLASS
+
+  return result;
+
+}
+
 AliFemtoAnalysis*
 AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cfg)
 {
