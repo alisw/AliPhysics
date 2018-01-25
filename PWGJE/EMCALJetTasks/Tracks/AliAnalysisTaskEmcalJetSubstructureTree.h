@@ -214,6 +214,9 @@ public:
   void SetFillNSubjettinessBranches(Bool_t doFill) { fFillNSub = doFill; }
   void SetFillSubstructureBranches(Bool_t doFill) { fFillStructGlob = doFill; }
 
+  void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
+  void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
+
 	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
 protected:
@@ -266,6 +269,8 @@ private:
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container
   Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
+  Bool_t                       fUseChargedConstituents;     ///< Use charged constituents 
+  Bool_t                       fUseNeutralConstituents;     ///< Use neutral constituents
 
   // Fill levels for tree (save disk space when information is not needed)
   Bool_t                       fFillPart;                   ///< Fill particle level information
