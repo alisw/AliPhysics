@@ -102,7 +102,7 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     // Called once
     Int_t phiBin = 100;
     Int_t etaBin = 16;
-    Int_t vertex_bin = 4;
+    Int_t vertex_bin = 9;
     
     Double_t nArrayPhi[phiBin+1];
     for(Int_t iBin = 0; iBin <= phiBin; iBin++)
