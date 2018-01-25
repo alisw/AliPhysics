@@ -3,12 +3,21 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-///
+#if !defined(__CINT__) && !defined(__CLING__)
+
+#include "AliAnalysisTaskFemto.C"
+#include "AliFemtoAnalysisPionPion.h"
+
+#endif
+
+
 /// \brief Adds an AliAnalysisTaskFemto analysis object, constructed
 ///        with parameters provided, to the global AliAnalysisManager.
 ///
-/// This macro creates and returns an AliAnalysisTaskFemto object.
-/// The task object is given a macro is given the config macro "Train/PionPionFemto/ConfigFemtoAnalysis.C"
+/// This macro creates and returns a pointer to an AliAnalysisTaskFemto,
+/// object, which constucts a AliFemtoManager.
+///
+/// The task object is given the config macro "Train/PionPionFemto/ConfigFemtoAnalysis.C"
 /// which is run to create the analysis objects. This is fixed (for now), and
 /// if an alternative is required, you should use the general AddTaskFemto.C
 /// macro.
@@ -60,21 +69,23 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
               , DEFAULT_SUBWAGON_TYPE = "centrality"
               ;
 
-  const std::string CONFIG_DEFAULTS = "{ directory:'$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train'"
-                                      ", container:'femtolist'"
-                                      ", output_container:'PWG2FEMTO'"
-                                      ", task_name:'TaskConfigured'"
-                                      ", subwagon_type:'centrality'"
-                                      "}";
+  const std::string CONFIG_DEFAULTS
+	  = "{ directory:'$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train'"
+            ", container:'femtolist'"
+            ", output_container:'PWG2FEMTO'"
+            ", task_name:'TaskConfigured'"
+            ", subwagon_type:'centrality'"
+            "}";
 
 
-  const AliFemtoConfigObject cfg = AliFemtoConfigObject::ParseWithDefaults(configuration, CONFIG_DEFAULTS);
+  const AliFemtoConfigObject cfg
+	  = AliFemtoConfigObject::ParseWithDefaults(configuration, CONFIG_DEFAULTS);
 
-  const std::string macro_name;
-
+  std::string macro_name;
   if (!cfg.find_and_load("macro", macro_name)) {
     std::cerr << " ** Error - Configuration missing key 'macro'.\n"
-                 "      Please include path to macro file, similar to {macro: '%%/PionPionFemto/ConfigFemtoAnalysis.C'}\n";
+                 "      Please include path to macro file, similar to "
+		 "{macro: '%%/PionPionFemto/ConfigFemtoAnalysis.C'}\n";
     return nullptr;
   }
 
