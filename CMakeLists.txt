@@ -146,6 +146,12 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=delete-non-virtual-dtor")
   endif()
 
+  # Turn OFF some -Werrors
+  check_cxx_compiler_flag(-Wno-error=strict-aliasing CXX_COMPILER_STRICT_ALIASING)
+  if(CXX_COMPILER_STRICT_ALIASING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=strict-aliasing")
+  endif()
+
   # Turn on "all" warnings, but skip missing braces warning
   check_cxx_compiler_flag(-Wall CXX_COMPILER_HAS_WALL)
   if(CXX_COMPILER_HAS_WALL)
