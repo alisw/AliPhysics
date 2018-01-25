@@ -805,8 +805,16 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
       }
     }
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
-    TObjString *Header1 = new TObjString("BOX");
-    HeaderList->Add(Header1);
+    if (headerSelectionInt == 1 || headerSelectionInt == 2 || headerSelectionInt == 3 ){
+      TObjString *Header1 = new TObjString("BOX");
+      HeaderList->Add(Header1);
+    } if (headerSelectionInt == 4 || headerSelectionInt == 5 || headerSelectionInt == 6 ){
+      TObjString *Header1 = new TObjString("PARAM_EMC");
+      HeaderList->Add(Header1);
+    } if (headerSelectionInt == 12 || headerSelectionInt == 13 || headerSelectionInt == 14 ){
+      TObjString *Header1 = new TObjString("PARAM_PHOS");
+      HeaderList->Add(Header1);
+    }
   } else if (periodName.CompareTo("LHC16h4b")==0 || periodName.CompareTo("LHC16h4b2")==0){
     if (headerSelectionInt == 1){
       TObjString *Header1 = new TObjString("Injector (pi0)_1");
@@ -894,12 +902,16 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
       }
     }
 
-//     analysisEventCuts[i]->SetDebugLevel(3);
+    analysisEventCuts[i]->SetDebugLevel(0);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+    if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+      if (headerSelectionInt == 1 || headerSelectionInt == 4 || headerSelectionInt == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
+      if (headerSelectionInt == 2 || headerSelectionInt == 5 || headerSelectionInt == 13 ) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
+    }
 
     analysisClusterCuts[i]  = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);

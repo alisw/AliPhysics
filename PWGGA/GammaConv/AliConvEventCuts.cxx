@@ -3558,25 +3558,38 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         gh                    = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName = gh->GetName();
         lastindexA            = lastindexA + gh->NProduced();
-//         if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
+        if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
-//           if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
-          if(GeneratorName.CompareTo(GeneratorInList) == 0){
-//             if (fDebugLevel > 0 ) cout << "accepted" << endl;
-            if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+          if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
+          if(GeneratorInList.Contains(GeneratorName) ){
+            if (fDebugLevel > 0 ) cout << "accepted" << endl;
+            if (GeneratorInList.BeginsWith("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCEvent){
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
+                  if (fDebugLevel > 2 )cout << "number of produced particle: " <<  gh->NProduced() << endl;
+                  if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  fMCEvent->Particle(firstindexA)->GetPdgCode() << endl;
                   if (fMCEvent->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
-                    if (gh->NProduced() > 10 && fMCEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
-//                       if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                    if (gh->NProduced() > 10 && fMCEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
                       fnHeaders++;
                       continue;
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
                     continue;
                   }
                 } else {
-//                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 }
@@ -3585,27 +3598,40 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                 AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA));
                 if (aodMCParticle && (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c) ){
                   if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
-                    if (gh->NProduced() > 10){
+                    if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0){
                       AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA+10));
                       if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
-//                         if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
+                        if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
                       }
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
                     continue;
                   }
                 } else {
-//                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 }
               }
               continue;
             }
-//             if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
-            fnHeaders++;
-            continue;
+            if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
+              if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
+              fnHeaders++;
+              continue;
+            }
           }
         }
         firstindexA       = firstindexA + gh->NProduced();
@@ -3636,22 +3662,37 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-        if(GeneratorName.CompareTo(GeneratorInList) == 0){
-          if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+        if(GeneratorInList.Contains(GeneratorName) ){
+          if (GeneratorInList.Contains("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
             if(fMCEvent){
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                 if (fMCEvent->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
-//                   if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
-                  if (gh->NProduced() > 10 && fMCEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
-//                     if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
+                  if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
+                  if (gh->NProduced() > 10 && fMCEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                    if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
                     fNotRejectedStart[number] = firstindex;
                     fNotRejectedEnd[number] = lastindex;
                     fGeneratorNames[number] = GeneratorName;
                     number++;
-//                     if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
                     continue;
                   }
                 }
+                continue;
               } else {
                 fNotRejectedStart[number] = firstindex;
                 fNotRejectedEnd[number] = lastindex;
@@ -3664,7 +3705,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
               AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex));
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                 if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
-                  if (gh->NProduced() > 10) {
+                  if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0) {
                     AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex+10));
                     if ( aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
                       fNotRejectedEnd[number] = lastindex;
@@ -3673,7 +3714,22 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                       number++;
                     }
                     continue;
+                  } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
                   }
+                  continue;
                 }
               } else {
                 fNotRejectedStart[number] = firstindex;
@@ -3684,11 +3740,11 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
               }
             }
             continue;
-          } else {
+          } else if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
-//             if (fDebugLevel > 0 )  cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+            if (fDebugLevel > 0 )  cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
             number++;
             continue;
           }
