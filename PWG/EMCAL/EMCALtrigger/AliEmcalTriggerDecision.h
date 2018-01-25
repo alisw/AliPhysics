@@ -72,7 +72,7 @@ public:
   /**
    * @brief Destructor
    */
-  virtual ~AliEmcalTriggerDecision() {}
+  virtual ~AliEmcalTriggerDecision();
 
   /**
    * @brief Get the highest energetic trigger patch of the event firing the trigger
