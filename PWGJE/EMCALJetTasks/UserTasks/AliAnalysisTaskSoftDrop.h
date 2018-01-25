@@ -57,6 +57,7 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
   TH2                        *fhCorrPtZg2;               //!<! other SD settings
   TH2                        *fhCorrPtZgD;               //!<! iterative SD, distribution of zg, jet pt-diff
 
+  TH3                        *fhCorrPtZgRg;              //!<! iterative SD, distribution of zg, jet pt-diff, Rg diff
   TH3                        *fhCorrPtZgSDstep;          //!<! iterative SD, distribution of zg, jet pt-diff, SD step diff
   TH3                        *fhCorrPtRgSDstep;          //!<! iterative SD, distribution of zg, jet pt-diff, SD step diff
 

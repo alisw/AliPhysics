@@ -240,6 +240,9 @@ void AliAnalysisTaskSoftDrop::UserCreateOutputObjects()
   fhCorrPtRgD = new TH2F("fhCorrPtRgD", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
   fOutput->Add(fhCorrPtRgD);
 
+  fhCorrPtZgRg = new TH3F("fhCorrPtZgRg", "fhCorrPtZgRg", 8, 0, 160, 10, 0., 0.5, 10, 0, 0.5);
+  fOutput->Add(fhCorrPtZgRg);
+
   fhCorrPtZgSDstep = new TH3F("fhCorrPtZgSDstep", "fhCorrPtZgSDstep", 16, 0, 160, 20, 0., 0.5, 20, 0, 20);
   fOutput->Add(fhCorrPtZgSDstep);
 
@@ -320,6 +323,7 @@ Bool_t AliAnalysisTaskSoftDrop::FillHistograms()
       fhZg->Fill(jet->GetShapeProperties()->GetSoftDropZg());
       fhCorrPtZg->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropZg() );
       fhCorrPtRg->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropdR() );
+      fhCorrPtZgRg->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropZg(), jet->GetShapeProperties()->GetSoftDropdR() );
       fhCorrPtPtfrac->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropPtfrac() );
       fhCorrPtDropCount->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropDropCount() );
     }
