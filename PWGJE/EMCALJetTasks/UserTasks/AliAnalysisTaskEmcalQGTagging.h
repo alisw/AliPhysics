@@ -67,6 +67,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
+   void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
@@ -115,6 +116,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+  Bool_t                              fTrackCheckPlots;              //switch on qa plots
   Int_t                               fDerivSubtrOrder;
 
   
@@ -129,6 +131,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
   TH1F                                *fhPt;
   TH1F                                *fhPhi;
+  TH1F                                *fhTrackPhi;   //control plot for tracks 
   THnSparse                           *fHLundIterative;// 
   TH2F                                *fNbOfConstvspT;
 
