@@ -135,6 +135,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1M(0x0),
   fPHOSTriggerHelperL1L(0x0),
   fForceActiveTRU(kFALSE),
+  fTRFM(-1),
   fPIDResponse(0x0),
   fIsNonLinStudy(kFALSE),
   fGlobalEScale(1.0),
@@ -1052,6 +1053,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   if(!fIsMC && fIsPHOSTriggerAnalysis){
+    AliInfo(Form("PHOS trigger analysis is ON! RF method = %d",fTRFM));
     TriggerQA();
     SelectTriggeredCluster();
     EstimateTriggerEfficiency();
@@ -1426,7 +1428,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      //if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
@@ -1567,7 +1569,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      //if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
       if(ph->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
     }
@@ -1662,9 +1664,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;//only for kINT7
 
     eta1 = ph1->Eta();
     phi1 = ph1->Phi();
@@ -1675,9 +1678,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+
       if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
-      if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//only for kINT7
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
@@ -1688,7 +1692,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       m12  = p12.M();
       pt12 = p12.Pt();
       phi  = p12.Phi();
-      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));//always full energy
+      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
 
       eta2 = ph2->Eta();
       phi2 = ph2->Phi();
@@ -1814,7 +1818,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
 
@@ -1826,7 +1830,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
-        if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
         if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
         if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
@@ -2361,16 +2365,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   Int_t truch_tag = -1, chX_tag=-1, chZ_tag=-1;
   Int_t truch = -1, chX=-1, chZ=-1;
 
-  Double_t eta_tag = -999;
-  Double_t phi_tag = -999;
-  Double_t DeltaR_tag = -999;
-
-  Double_t eta_probe = -999;
-  Double_t phi_probe = -999;
-  Double_t DeltaR_probe = -999;
-
-  Double_t DeltaRgg = -999;
-  Double_t Rlimit = 0;
+  //Double_t eta_tag = -999;
+  //Double_t phi_tag = -999;
+  //Double_t DeltaR_tag = -999;
+  //Double_t eta_probe = -999;
+  //Double_t phi_probe = -999;
+  //Double_t DeltaR_probe = -999;
+  //Double_t DeltaRgg = -999;
+  //Double_t Rlimit = 0;
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
@@ -2381,7 +2383,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
 
@@ -2393,9 +2395,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     TVector3 global_tag(position);
     fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph1->GetCluster(), cells);
     //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2406,14 +2408,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     tru_tag = fPHOSTriggerHelper->WhichTRU(cellx_tag,cellz_tag);
     truch_tag = fPHOSTriggerHelper->WhichTRUChannel(cellx_tag,cellz_tag,chX_tag,chZ_tag);
 
-    DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
+    //DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2434,9 +2436,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       position[2] = ph2->EMCz();
       TVector3 global_probe(position);
       fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-      eta_probe = global_probe.Eta();
-      phi_probe = global_probe.Phi();
-      if(phi_probe < 0) phi_probe += TMath::TwoPi();
+      //eta_probe = global_probe.Eta();
+      //phi_probe = global_probe.Phi();
+      //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
       //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph2->GetCluster(), cells);
       //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2458,11 +2460,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
        && (TMath::Abs(dz) < 2)
        ) continue;//reject cluster pair where they belong to same 4x4 region.
 
-      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
-      DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
+      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
+      //DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
 
-      Rlimit = DeltaR_tag + DeltaR_probe;
-      DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+      //Rlimit = DeltaR_tag + DeltaR_probe;
+      //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
       //AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
       //if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
 
@@ -2486,20 +2488,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
-    if(!ph1->IsTOFOK()) continue;
 
-    position[0] = ph1->EMCx();
-    position[1] = ph1->EMCy();
-    position[2] = ph1->EMCz();
-    TVector3 global_tag(position);
-    fPHOSGeo->GlobalPos2RelId(global_tag,relId);
+    //position[0] = ph1->EMCx();
+    //position[1] = ph1->EMCy();
+    //position[2] = ph1->EMCz();
+    //TVector3 global_tag(position);
+    //fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2509,8 +2510,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
-        if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-        if(!ph2->IsTOFOK()) continue;
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
@@ -2529,17 +2529,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
         TVector3 global_probe(position);
         fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-        eta_probe = global_probe.Eta();
-        phi_probe = global_probe.Phi();
-        if(phi_probe < 0) phi_probe += TMath::TwoPi();
+        //eta_probe = global_probe.Eta();
+        //phi_probe = global_probe.Phi();
+        //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
         module = relId[0];
         cellx  = relId[2];
         cellz  = relId[3];
         tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
 
-        DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
-        if(DeltaRgg < Rlimit) continue;
+        //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+        //if(DeltaRgg < Rlimit) continue;
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_Trg",m12,energy);
         FillHistogramTH2(fOutputContainer,Form("hMixMgg_Probe_Trg_M%d_TRU%d",module,tru),m12,energy);
