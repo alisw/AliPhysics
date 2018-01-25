@@ -580,6 +580,14 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
       fOutput->Add(hEvPlaneReso2Vsq2);
       TH2F* hEvPlaneReso3Vsq2=new TH2F(Form("hEvPlaneReso3Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{B}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0.,10.);
       fOutput->Add(hEvPlaneReso3Vsq2);
+      
+      // histos for q2 vs. centrality with fine binning (for q2 percentiles calibration)
+      for(Int_t iDet=0; iDet<3; iDet++) {
+        TH2F* hq2vsCentrTPC=new TH2F(Form("hq2vsCentr%s",fDetTPCConfName[iDet].Data()),Form("%s;q_{2}^{%s};Entries",centrname.Data(),fDetTPCConfName[iDet].Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,10000,0.,15.);
+        fOutput->Add(hq2vsCentrTPC);
+        TH2F* hq2vsCentrV0=new TH2F(Form("hq2vsCentr%s",fDetV0ConfName[iDet].Data()),Form("%s;q_{2}^{%s};Entries",centrname.Data(),fDetV0ConfName[iDet].Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,10000,0.,15.);
+        fOutput->Add(hq2vsCentrV0);
+      }
     }
   }
 
@@ -1323,6 +1331,15 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
     }
 
+    //fill q2 vs. centrality histograms
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetTPCConfName[0].Data())))->Fill(centr,q2FullTPC);
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetTPCConfName[1].Data())))->Fill(centr,q2NegTPC);
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetTPCConfName[2].Data())))->Fill(centr,q2PosTPC);
+    Double_t multV0=-1;
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetV0ConfName[0].Data())))->Fill(centr,Getq2(qnlist,kq2VZERO,multV0));
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetV0ConfName[1].Data())))->Fill(centr,Getq2(qnlist,kq2VZEROA,multV0));
+    ((TH2F*)fOutput->FindObject(Form("hq2vsCentr%s",fDetV0ConfName[2].Data())))->Fill(centr,Getq2(qnlist,kq2VZEROC,multV0));
+
     //If enabled, fill EP angle vs. q2 vs. centrality histograms
     if(fEPVsq2VsCent) {
       for(Int_t iDet=0; iDet<3; iDet++) {
@@ -1335,7 +1352,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     ((TH2F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(centr,multQvecRemDauTPC[0]);
     ((TH2F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(centr,multQvecRemDauTPC[1]);
     ((TH2F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(centr,multQvecRemDauTPC[2]);
-
+    
     //fill q2 correlation histograms
     ((TH2F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
     ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
@@ -1365,7 +1382,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
 
     //fill resolution histograms
-    ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso1Vsq2%s",fCentrBinName.Data())))->Fill(planereso,q2); //RP resolution vs q2
+    ((TH2F*)fOutput->FindObject(Form("hEvPlaneReso1Vsq2%s",fCentrBinName.Data())))->Fill(planereso,q2); //RP resolution vs q2
     if(nSubEvents==3){
       ((TH2F*)fOutput->FindObject(Form("hEvPlaneReso2Vsq2%s",fCentrBinName.Data())))->Fill(TMath::Cos(fHarmonic*deltaSubAC),q2);
       ((TH2F*)fOutput->FindObject(Form("hEvPlaneReso3Vsq2%s",fCentrBinName.Data())))->Fill(TMath::Cos(fHarmonic*deltaSubBC),q2);
