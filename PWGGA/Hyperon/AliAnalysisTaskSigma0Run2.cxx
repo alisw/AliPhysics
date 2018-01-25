@@ -23,7 +23,6 @@
 
 #include "AliAODConversionMother.h"
 #include "AliAODConversionPhoton.h"
-#include "AliV0ParticleStrange.h"
 
 ClassImp(AliAnalysisTaskSigma0Run2)
 
