@@ -747,8 +747,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
   // }
   
-  // number of tracklets
+  // number of tracklets and singles
   Int_t nTracklets = mult->GetNumberOfTracklets();
+  Int_t nSingles   = ((AliMultiplicity*)mult)->GetNumberOfSingleClusters();
   
   // get number of ITS cluster
   Short_t nITSCluster[6] = {0};
@@ -1109,6 +1110,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       fCEPEvent->AddTrl2Tr(vec,ii);
     }
     
+    fCEPEvent->SetnSingles(nSingles);
     fCEPEvent->SetnResiduals(fCEPUtil->GetResiduals(fESDEvent));
     fCEPEvent->SetnMSelection(nMartinSel);
     fCEPEvent->SetnV0(fNumV0s);

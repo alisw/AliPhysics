@@ -46,6 +46,8 @@ class CEPEventBuffer : public TObject {
 
     // summary track information
     Int_t fnTracklets;      // total number of tracklets
+    Int_t fnSingles;        // number of clusters on SPD layer 1 and 2
+                            // not associated with a tracklet on other SPD 
     Int_t fnTracksTotal;    // total number of tracks
     Int_t fnTracks;         // number of tracks in fCEPTracks
     Int_t fnTracksCombined; // ITS+TPC
@@ -109,6 +111,7 @@ class CEPEventBuffer : public TObject {
     void SetnTracksTotal(Int_t ntrks)   { fnTracksTotal = ntrks; }
     
     void SetnTracklets(Int_t ntrklts)   { fnTracklets = ntrklts; }
+    void SetnSingles(Int_t nsingle)     { fnSingles = nsingle; }
     void AddTrl2Tr(TVector2 *vec, Int_t pos)        {
       fTrl2Tr->AddAt((TObject*)vec,pos);
     }
@@ -168,6 +171,7 @@ class CEPEventBuffer : public TObject {
     Int_t GetnTracksCombined() const { return fnTracksCombined; }
     Int_t GetnITSpureTracks()  const { return fnTracksITSpure; }
     Int_t GetnTracklets()      const { return fnTracklets; }
+    Int_t GetnSingles()        const { return fnSingles; }
     TObjArray* GetTrl2Tr()           { return fTrl2Tr; }
     Int_t GetnResiduals()      const { return fnResiduals; }
     Int_t GetnMSelection()     const { return fnMSelection; }
