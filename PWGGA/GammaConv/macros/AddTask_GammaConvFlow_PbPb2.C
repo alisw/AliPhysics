@@ -364,6 +364,31 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("52400013", "00200009017000008250400000"); // TPCpi 0,-10
     cuts.AddCut("50200013", "00200009097000008250400000"); // TPCpi 1,0.5
     cuts.AddCut("52400013", "00200009097000008250400000"); // TPCpi 1,0.5
+  } else if (trainConfig == 85) {
+    cuts.AddCut("50200013", "00200009037000008250400000"); // TPCpi 2,5,-10
+    cuts.AddCut("52400013", "00200009037000008250400000"); // TPCpi 2,5,-10
+    cuts.AddCut("50200013", "00200009047000008250400000"); // TPCpi 3,1
+    cuts.AddCut("52400013", "00200009047000008250400000"); // TPCpi 3,1
+  } else if (trainConfig == 86) {
+    cuts.AddCut("50200013", "00200009067000008250400000"); // TPCpi 2, 0,5
+    cuts.AddCut("52400013", "00200009067000008250400000"); // TPCpi 2, 0,5
+    cuts.AddCut("50200013", "00200009087000008250400000"); // TPCpi 2, 1
+    cuts.AddCut("52400013", "00200009087000008250400000"); // TPCpi 2, 1
+  } else if (trainConfig == 87) {
+    cuts.AddCut("50200013", "00200009417000008250400000"); // TPCpi 0,-10, TPCe -6,7
+    cuts.AddCut("52400013", "00200009417000008250400000"); // TPCpi 0,-10, TPCe -6,7
+    cuts.AddCut("50200013", "00200009497000008250400000"); // TPCpi 1,0.5, TPCe -6,7
+    cuts.AddCut("52400013", "00200009497000008250400000"); // TPCpi 1,0.5, TPCe -6,7
+  } else if (trainConfig == 88) {
+    cuts.AddCut("50200013", "00200009437000008250400000"); // TPCpi 2,5,-10, TPCe -6,7
+    cuts.AddCut("52400013", "00200009437000008250400000"); // TPCpi 2,5,-10, TPCe -6,7
+    cuts.AddCut("50200013", "00200009447000008250400000"); // TPCpi 3, 1     TPCe -6,7
+    cuts.AddCut("52400013", "00200009447000008250400000"); // TPCpi 3, 1     TPCe -6,7
+  } else if (trainConfig == 89) {
+    cuts.AddCut("50200013", "00200009467000008250400000"); // TPCpi 2, 0,5, TPCe -6,7
+    cuts.AddCut("52400013", "00200009467000008250400000"); // TPCpi 2, 0,5, TPCe -6,7
+    cuts.AddCut("50200013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
+    cuts.AddCut("52400013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
