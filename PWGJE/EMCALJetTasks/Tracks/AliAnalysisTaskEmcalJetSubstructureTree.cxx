@@ -91,6 +91,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
     fUseDownscaleWeight(false),
+    fUseChargedConstituents(true),
+    fUseNeutralConstituents(true),
     fFillPart(true),
     fFillAcceptance(true),
     fFillRho(true),
@@ -114,6 +116,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
     fUseDownscaleWeight(false),
+    fUseChargedConstituents(true),
+    fUseNeutralConstituents(true),
     fFillPart(true),
     fFillAcceptance(true),
     fFillRho(true),
@@ -387,8 +391,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
   }
   if(datajet) {
     fJetTreeData[kTPtJetRec] = TMath::Abs(datajet->Pt());
-    fJetTreeData[kTNCharged] = datajet->GetNumberOfTracks();
-    fJetTreeData[kTNNeutral] = datajet->GetNumberOfClusters();
+    fJetTreeData[kTNCharged] = fUseChargedConstituents ? datajet->GetNumberOfTracks() : 0.;
+    fJetTreeData[kTNNeutral] = fUseNeutralConstituents ? datajet->GetNumberOfClusters() : 0.;
     fJetTreeData[kTAreaRec] = datajet->Area();
     fJetTreeData[kTNEFRec] = datajet->NEF();
     if(fFillMass) fJetTreeData[kTMassRec] = datajet->M();
@@ -481,14 +485,16 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliTrackContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
-  for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
-    auto track = jet.TrackAt(itrk, tracks->GetArray());
-    fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
-    constituentTrack.set_user_index(jet.TrackAt(itrk));
-    constituents.push_back(constituentTrack);
+  if(tracks && fUseChargedConstituents){
+    for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
+      auto track = jet.TrackAt(itrk, tracks->GetArray());
+      fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
+      constituentTrack.set_user_index(jet.TrackAt(itrk));
+      constituents.push_back(constituentTrack);
+    }
   }
 
-  if(clusters){
+  if(clusters && fUseNeutralConstituents){
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
       auto cluster = jet.ClusterAt(icl, clusters->GetArray());
       TLorentzVector clustervec;
@@ -554,7 +560,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
     throw SubstructureException();
   TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
   Double_t den(0.), num(0.);
-  if(tracks){
+  if(tracks && fUseChargedConstituents){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto track = jet.TrackAt(itrk, tracks->GetArray());
       if(!track){
@@ -567,7 +573,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
       den += +track->Pt();
     }
   }
-  if(clusters) {
+  if(clusters && fUseNeutralConstituents) {
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
       auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
@@ -588,7 +594,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   if (!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
     throw SubstructureException();
   Double_t den(0.), num(0.);
-  if(particles){
+  if(particles && fUseChargedConstituents){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto trk = jet.TrackAt(itrk, particles->GetArray());
       if(!trk){
@@ -599,7 +605,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
       den += trk->Pt();
     }
   }
-  if(clusters){
+  if(clusters && fUseNeutralConstituents){
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
       auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
