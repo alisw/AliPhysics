@@ -14,6 +14,9 @@
 # **************************************************************************
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-error=strict-overflow")
+if(CC_WNOERROR_MISLEADING_INDENTATION)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=misleading-indentation")
+endif()
 
 add_subdirectory(ADbase)
 add_subdirectory(ADrec)

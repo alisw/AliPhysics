@@ -85,6 +85,10 @@ endif()
 # Path to additonal modules
 set(CMAKE_MODULE_PATH "${AliRoot_SOURCE_DIR}/cmake")
 
+# Check some compiler flags
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-Wno-error=misleading-indentation CC_WNOERROR_MISLEADING_INDENTATION)
+
 # AliRoot version extracted from Git repository
 # Sets 4 git variables
 #  - GIT_REFSPEC - complete name of the current reference
