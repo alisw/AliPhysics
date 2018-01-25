@@ -232,10 +232,10 @@ namespace AliAnalysisCODEX {
   // Template that stores tracks from different events used for background estimation
   // with Mixed-Event technique, essentially tracks are stored in a 4D matrix
   // depending on the value of centrality and vertex of the event
-  template <int centr, int vert, int part, int depth> class EventMixingPool {
+  template <int centr, int vert, int part> class EventMixingPool : public TObject {
 
     public:
-      EventMixingPool(int maxcent = 100, float maxvtz = 10.) :
+      EventMixingPool(int maxcent = 100, float maxvtz = 10., int depth=10) :
         mPool(),
         mCentralityBins(centr),
         mVertexBins(vert),
@@ -275,8 +275,7 @@ namespace AliAnalysisCODEX {
           for (int j = 0; j < mVertexBins; j++) {
             for (int k = 0; k < mNparticles; k++) {
               mLevel[i][j][k] = 0;
-              for (int l = 0; l < mDepth; ++l)
-                mPool[i][j][k][l].resize(0);
+              mPool[i][j][k].resize(mDepth);
             }
           }
         }
@@ -318,7 +317,7 @@ namespace AliAnalysisCODEX {
 
     private:
 
-      vector<FourVector_t> mPool[centr][vert][part][depth];
+      vector<vector<FourVector_t> > mPool[centr][vert][part];
       const int mCentralityBins;
       const int mVertexBins;
       const int mNparticles;
