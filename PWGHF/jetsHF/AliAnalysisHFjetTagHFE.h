@@ -52,6 +52,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliMultSelection *fMultSelection;
   TClonesArray  *ftrack;
   TClonesArray  *fCaloClusters;
+  AliAODMCHeader *fMCheader; 
   AliPIDResponse *fpidResponse; //!pid response
 
     Float_t fcentMim; // mim. centrality
