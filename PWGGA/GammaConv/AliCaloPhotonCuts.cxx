@@ -520,13 +520,13 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(2,"timing");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(3,"Exotics");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(4,"minimum energy");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(5,"minimum NCells");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(6,"NLM");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(7,"M02");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(8,"M20");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(9,"dispersion");
-  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(10,"track matching");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(4,"minimum NCells");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(5,"NLM");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(6,"M02");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(7,"M20");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(8,"dispersion");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(9,"track matching");
+  fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(10,"minimum energy");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(11,"out");
   SetLogBinningYTH2(fHistClusterIdentificationCuts);
   fHistograms->Add(fHistClusterIdentificationCuts);
@@ -1495,15 +1495,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }
   cutIndex++;//3, next cut
 
-  // minimum cell energy cut
-  if (fUseMinEnergy){
-    if(cluster->E() < fMinEnergy){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//4
-      return kFALSE;
-    }
-  }
-  cutIndex++;//4, next cut
-
   // minimum number of cells
   if (fUseNCells){
     if(cluster->GetNCells() < fMinNCells) {
@@ -1511,7 +1502,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  cutIndex++;//5, next cut
+  cutIndex++;//4, next cut
 
   // NLM cut
   if (fUseNLM){
@@ -1520,7 +1511,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  cutIndex++;//6, next cut
+  cutIndex++;//5, next cut
 
   // M02 cut
   if (fUseM02 == 1){
@@ -1535,7 +1526,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  cutIndex++;//7, next cut
+  cutIndex++;//6, next cut
 
   // M20 cut
   if (fUseM20){
@@ -1544,7 +1535,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  cutIndex++;//8, next cut
+  cutIndex++;//7, next cut
 
   // dispersion cut
   if (fUseDispersion){
@@ -1553,7 +1544,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  cutIndex++;//9, next cut
+  cutIndex++;//8, next cut
 
 
   // Classify events
@@ -1719,7 +1710,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }
 
 
+  cutIndex++;//9, next cut
+
+  // minimum cluster energy cut
+  if (fUseMinEnergy){
+    if(cluster->E() < fMinEnergy){
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//4
+      return kFALSE;
+    }
+  }
   cutIndex++;//10, next cut
+
 
   // DONE with selecting photons
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//10
