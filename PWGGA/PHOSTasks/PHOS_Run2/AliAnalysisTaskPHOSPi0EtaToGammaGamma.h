@@ -26,10 +26,16 @@ class AliQnCorrectionsManager;
 class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
   public:
 
+    enum TRFMethod{
+      kMB  = -1,//none trigger analysis
+      kTAP = 0, //Tag and Probe method
+      kRFE = 1  //rejection factor x trigger efficiency from a ratio of dN/dpT in kPHI7 to that in kINT7
+    };
+
     enum FlowMethod{
-      kOFF  = -1,
-      kEP   = 0,
-      kSP   = 1
+      kOFF = -1,
+      kEP  = 0,
+      kSP  = 1
     };
 
     enum QnDetector{
@@ -57,13 +63,28 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetHarmonics(Int_t harmonics) {fHarmonics = harmonics;}
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
-    void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
+
+    void SetTOFCutEfficiencyFunction(TF1 *f1){
+      if(fTOFEfficiency){
+        delete fTOFEfficiency;
+        fTOFEfficiency = 0x0;
+      }
+      fTOFEfficiency = f1;
+    }
+
+
     void SetNonLinearityStudy(Bool_t flag, Double_t sf = 1.0) {
       fIsNonLinStudy = flag;
       fGlobalEScale = sf;
     }
 
-    void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
+    void SetTriggerEfficiency(TF1 *f1){
+      if(fTriggerEfficiency){
+        delete fTriggerEfficiency;
+        fTriggerEfficiency = 0x0;
+      }
+      fTriggerEfficiency = f1;
+    }
 
     void SetEventCuts(Bool_t isMC, AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
@@ -195,6 +216,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
       fIsPHOSTriggerAnalysis = kTRUE;
@@ -407,17 +429,19 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1M;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1L;//only for rejection factor in MB
     Bool_t fForceActiveTRU;
+    Int_t fTRFM;//TAP or RFE
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
     Double_t fEmin;
 
+
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 46);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 47);
 };
 
 #endif
