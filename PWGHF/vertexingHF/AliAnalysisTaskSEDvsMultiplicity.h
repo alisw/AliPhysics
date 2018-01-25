@@ -268,7 +268,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,18); /// D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,18); /// charmed hadrons vs. mult task
   /// \endcond
 };
 
