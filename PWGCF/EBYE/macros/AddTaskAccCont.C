@@ -9,7 +9,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 						Bool_t UseRapidity = kFALSE,
 						AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
 					        AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
-						AliAnalysisTaskAccContCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
+						AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
 						TString fileNameBase="AnalysisResults") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
