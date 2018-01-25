@@ -23,7 +23,7 @@ public:
    AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE) {Int_t i = 3; while (i--) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
-   Int_t          &MotherPDG() {return fMotherPDG;}
+   Long_t         &MotherPDG() {return fMotherPDG;}
    Bool_t         &IsFromB()      {return fIsFromB;}
    Bool_t         &IsQuarkFound() {return fIsQuarkFound;}
    Bool_t         &ContainsV0Daughter() {return fContainsV0Daughter;}
@@ -76,14 +76,14 @@ public:
    Double_t       fDCA2;      // 2nd daughter DCA 
    
    Int_t          fMother;    // label of mothers (when common)
-   Int_t          fMotherPDG; // PDG code of mother (when common)
+   Long_t         fMotherPDG; // PDG code of mother (when common)
    Short_t        fNSisters;  // total number of mother's daughters in the MC stack
    Bool_t         fIsFromB;	      // is the particle from B meson flag	
    Bool_t         fIsQuarkFound;      // is the particle from a quark flag (used to reject or accept Hijing event)
    Float_t        fPmother[3];// MC momentum of the pair corresponding mother
    Bool_t         fContainsV0Daughter; // Flag if one of particle is part of V0's daughter
    
-   ClassDef(AliRsnMiniPair,5)
+   ClassDef(AliRsnMiniPair, 6)
      };
 
 #endif
