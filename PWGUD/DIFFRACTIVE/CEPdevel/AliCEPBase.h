@@ -66,7 +66,7 @@ class AliCEPBase : public TObject {
 
     // type of vertex
     kVtxUnknown         = 0,
-    kVtxSPD             = BIT(0),  // from ITS
+    kVtxSPD             = BIT(0),  // from SPD tracklets
     kVtxTracks          = BIT(1),  // from tracks
     kVtxErrRes          = BIT(2),  // z-resolution of SPD vertex is out-of-bounds
     kVtxErrDif          = BIT(3),  // difference in z between SPD and track

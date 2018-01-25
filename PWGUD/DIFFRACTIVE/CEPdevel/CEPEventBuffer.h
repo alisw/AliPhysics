@@ -33,6 +33,8 @@ class CEPEventBuffer : public TObject {
     Bool_t fPhysel;
     Bool_t fisPileup;
     Bool_t fisClusterCut;
+    Short_t fnITSCluster[6];  // Number of ITS clusters on all 6 layers
+                              // and number of offline fired chips
     Short_t fFiredChips[4];   // Number of FastOR chips in the two SPD layers
                               // and number of offline fired chips
     Bool_t fisDGTrigger;
@@ -68,6 +70,9 @@ class CEPEventBuffer : public TObject {
     
     // list of tracks
     TObjArray *fCEPTracks;
+    // tracklet - track associations
+    TObjArray *fTrl2Tr;
+    
     
   public:
     CEPEventBuffer();
@@ -84,9 +89,11 @@ class CEPEventBuffer : public TObject {
     void SetMagnField(Double_t magnf)   { fMagnField = magnf; }
     void SetFiredTriggerClasses(TString ftc)   { fFiredTriggerClasses = ftc; }
     void SetPFFlags(AliVEvent *Event);
+    void SetnITSCluster(Short_t nclus[6]) {
+      for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii]=nclus[ii];
+    }
     void SetnFiredChips(Short_t chips[4]) {
-      fFiredChips[0]=chips[0]; fFiredChips[1]=chips[1]; 
-      fFiredChips[2]=chips[2]; fFiredChips[3]=chips[3]; 
+      for (Int_t ii=0; ii<4; ii++) fFiredChips[ii]=chips[ii];
     }
     void SetisSTGTriggerFired(UInt_t stgtrig) { fisSTGTriggerFired = stgtrig; }
     void SetnTOFmaxipads(Int_t nmaxipads) { fnTOFmaxipads = nmaxipads; }
@@ -100,7 +107,12 @@ class CEPEventBuffer : public TObject {
     // the number of tracklets and residuals, as well as the enumber
     // of tracks passing Martin's selection have to be set separately
     void SetnTracksTotal(Int_t ntrks)   { fnTracksTotal = ntrks; }
+    
     void SetnTracklets(Int_t ntrklts)   { fnTracklets = ntrklts; }
+    void AddTrl2Tr(TVector2 *vec, Int_t pos)        {
+      fTrl2Tr->AddAt((TObject*)vec,pos);
+    }
+      
     void SetnResiduals(Int_t nres)      { fnResiduals = nres; }
     void SetnMSelection(Int_t nMsel)    { fnMSelection = nMsel; }
     
@@ -138,6 +150,8 @@ class CEPEventBuffer : public TObject {
     Bool_t* GetPFBGFlagV0() { return fPFBGFlagV0; }
     Bool_t* GetPFBBFlagAD() { return fPFBBFlagAD; }
     Bool_t* GetPFBGFlagAD() { return fPFBGFlagAD; }
+    Short_t GetnITSCluster(Int_t layer) {
+      return (layer>=0 && layer<=5) ? fnITSCluster[layer] : -1; }
     Short_t GetnFiredChips(Int_t layer) {
       return (layer>=0 && layer<=3) ? fFiredChips[layer] : -1; }
     UInt_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
@@ -154,6 +168,7 @@ class CEPEventBuffer : public TObject {
     Int_t GetnTracksCombined() const { return fnTracksCombined; }
     Int_t GetnITSpureTracks()  const { return fnTracksITSpure; }
     Int_t GetnTracklets()      const { return fnTracklets; }
+    TObjArray* GetTrl2Tr()           { return fTrl2Tr; }
     Int_t GetnResiduals()      const { return fnResiduals; }
     Int_t GetnMSelection()     const { return fnMSelection; }
 
@@ -207,7 +222,7 @@ class CEPEventBuffer : public TObject {
     CEPTrackBuffer* GetTrack(Int_t ind);
     Bool_t RemoveTrack(Int_t ind);
 
-    ClassDef(CEPEventBuffer, 4)     // CEP event buffer
+    ClassDef(CEPEventBuffer, 5)     // CEP event buffer
 
 };
 

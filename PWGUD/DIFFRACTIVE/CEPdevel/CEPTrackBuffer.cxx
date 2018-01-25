@@ -24,6 +24,7 @@ CEPTrackBuffer::CEPTrackBuffer()
   , fTPCncls(CEPTrackBuffer::kdumval)
   , fTRDncls(CEPTrackBuffer::kdumval)
   , fTPCnclsS(CEPTrackBuffer::kdumval)
+  , finVertex(kFALSE)
   , fZv(CEPTrackBuffer::kdumval)
   , fMomentum(TVector3(0,0,0))
   , fPID(0)
@@ -59,6 +60,7 @@ void CEPTrackBuffer::Reset()
   fTPCncls          = CEPTrackBuffer::kdumval;
   fTRDncls          = CEPTrackBuffer::kdumval;
   fTPCnclsS         = CEPTrackBuffer::kdumval;
+  finVertex         = kFALSE;
   fZv               = CEPTrackBuffer::kdumval;
   fMomentum         = TVector3(0,0,0);
   

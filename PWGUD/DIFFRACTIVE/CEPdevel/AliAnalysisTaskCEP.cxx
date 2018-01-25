@@ -77,6 +77,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
+  , fTrl2Tr(0x0)
   , fTrackStatus(0x0)
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
@@ -139,6 +140,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
+  , fTrl2Tr(0x0)
   , fTrackStatus(0x0)
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
@@ -188,6 +190,14 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     fTracks->Clear();
     delete fTracks;
     fTracks = 0x0;
+  }
+
+  // delete array of tracklet-track associations
+  if (fTrl2Tr) {
+    fTrl2Tr->SetOwner(kTRUE);
+    fTrl2Tr->Clear();
+    delete fTrl2Tr;
+    fTrl2Tr = 0x0;
   }
 
   // delete array of TrackStatus
@@ -302,6 +312,8 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fCEPEvent = new CEPEventBuffer();
   // fTracks
   fTracks = new TObjArray();
+  // fTrl2Tr
+  fTrl2Tr = new TObjArray();
   // fTrackStatus
   fTrackStatus = new TArrayI();
   
@@ -636,6 +648,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // -1: no vertex
   //  1: from SPD
   //  2: from tracks
+  const AliESDVertex *vertex = (AliESDVertex*) fEvent->GetPrimaryVertex();
   Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
   if (kVertexType!=AliCEPBase::kVtxUnknown)
     fhStatsFlow->Fill(AliCEPBase::kBinVtx);
@@ -736,6 +749,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
+  
+  // get number of ITS cluster
+  Short_t nITSCluster[6] = {0};
+  for (Int_t ii=0; ii<6; ii++)
+    nITSCluster[ii] = mult->GetNumberOfITSClusters(ii);
   
   // get the number of fired FastOR trigger chips
   // this is needed to replay OSMB = IFO>=1 & OFO>=1
@@ -1041,6 +1059,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    fCEPEvent->SetnITSCluster(nITSCluster);
     fCEPEvent->SetnFiredChips(nFiredChips);
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
@@ -1062,6 +1081,34 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // number of tracklets and residuals, vertex
     fCEPEvent->SetnTracksTotal(nTracks);
     fCEPEvent->SetnTracklets(nTracklets);
+    
+    // tracklet-track associations
+    // To read the assosiations use ...
+    //    Int_t assL1, assL2;
+    //    TObjArray *q = fCEPEvent->GetTrl2Tr();
+    //    for (Int_t jj=0; jj<q->GetEntries(); jj++) {
+    //      assL1 = (Int_t)((TVector2*)q->At(jj))->X(),
+    //      assL2 = (Int_t)((TVector2*)q->At(jj))->Y());
+    //    }
+    Int_t nr;
+    UInt_t refs[5];
+    Double_t ref1, ref2;
+    for (Int_t ii=0; ii<nTracklets; ii++) {
+      
+      // which track uses the tracklet-clusters on layers 1 and 2
+      ref1=-1.; ref2=-1.;
+      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+      if (nr>0) ref1 = refs[0];
+      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+      if (nr>0) ref2 = refs[0];
+      
+      // new tracklet-track association
+      TVector2 *vec = new TVector2(ref1,ref2);
+
+      // add it to CEPEvent
+      fCEPEvent->AddTrl2Tr(vec,ii);
+    }
+    
     fCEPEvent->SetnResiduals(fCEPUtil->GetResiduals(fESDEvent));
     fCEPEvent->SetnMSelection(nMartinSel);
     fCEPEvent->SetnV0(fNumV0s);
@@ -1086,7 +1133,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     }
     
     // add tracks
-    // all tracks are added, independent of the track status
+    // all tracks which fulfill TT requirements
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
@@ -1100,16 +1147,20 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       // create new CEPTrackBuffer and fill it
       CEPTrackBuffer *trk = new CEPTrackBuffer();
       
+      trk->SetTrackIndex((UInt_t) trkIndex);
       trk->SetTrackStatus(fTrackStatus->At(trkIndex));
       trk->SetTOFBunchCrossing(tmptrk->GetTOFBunchCrossing());
       trk->SetChargeSign((Int_t)tmptrk->Charge());
-      trk->SetITSncls(tmptrk->GetNumberOfITSClusters());
+      trk->SetITSncls(tmptrk->GetITSClusterMap());
       trk->SetTPCncls(tmptrk->GetNumberOfTPCClusters());
       trk->SetTRDncls(tmptrk->GetNumberOfTRDClusters());
       trk->SetTPCnclsS(tmptrk->GetTPCnclsS());
       trk->SetZv(tmptrk->Zv());
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));
+      
+      // check if track contributes to main vertex reconstruction
+      trk->SetinVertex(vertex->UsesTrack(trkIndex));      
       
       // set PID information
       // ... TPC
@@ -1172,7 +1223,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
       // add track to the CEPEventBuffer
       fCEPEvent->AddTrack(trk);
-      
     
     }
     
