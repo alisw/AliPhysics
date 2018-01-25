@@ -110,6 +110,7 @@ private:
 
   CEPEventBuffer *fCEPEvent;      //! event buffer
   TObjArray      *fTracks;        //! array of tracks
+  TObjArray      *fTrl2Tr;        //! array of tracklet-track associations
   TArrayI        *fTrackStatus;   //! array of TrackStatus
   TString         fLHCPeriod;     //! LHC period
   
