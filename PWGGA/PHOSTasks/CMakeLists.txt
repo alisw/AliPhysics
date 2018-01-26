@@ -131,7 +131,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskPHOSCluster.cxx
     UserTasks/AliCaloClusterContent.cxx
    )
- 
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -151,7 +151,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library. Note the extra includes (relative paths)
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "CaloCellQA omega3pi PHOS_embedding PHOS_PbPbQA PHOS_pp_pi0 PHOS_TriggerQA")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
