@@ -150,6 +150,11 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
       if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
         continue;
 
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEfficiency < 1.0)
+        if (fTrackEfficiency < fRandom->Rndm())
+          continue;
+
       new ((*fOutputArray)[accTracks]) AliAODTrack(*(GetAODTrack(inputParticle)));
 
       // Randomize on demand
