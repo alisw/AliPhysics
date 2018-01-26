@@ -89,7 +89,7 @@ AliFITv7::AliFITv7():  AliFIT(),
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
   fV0PlusSciWd(2.5),//From V0A
   fV0PlusFraWd(0.2),//From V0A
-  fV0PlusZposition(+325),//Must be changed to specifications from Corrado (meeting 10/11/176)
+  fV0PlusZposition(+316),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
   fV0PlusLightYield(93.75),//From V0A
   fV0PlusLightAttenuation(0.05),//From V0A 
@@ -126,7 +126,7 @@ AliFITv7::AliFITv7(const char *name, const char *title):
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
   fV0PlusSciWd(2.5),//From V0A
   fV0PlusFraWd(0.2),//From V0A
-  fV0PlusZposition(+325),//Must be changed to specifications from Corrado (meeting 10/11/176)
+  fV0PlusZposition(+316),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
   fV0PlusLightYield(93.75),//From V0A
   fV0PlusLightAttenuation(0.05),//From V0A 
@@ -157,14 +157,14 @@ void AliFITv7::CreateGeometry()
 
   Int_t *idtmed = fIdtmed->GetArray();
   Float_t zdetC = 85; //center of mother volume
-  Float_t zdetA = 333;
+  Float_t zdetA = 334;
   
   Int_t idrotm[999];
   Double_t x,y,z;
   //  Float_t pstartC[3] = {6., 20 ,5};
   //  Float_t pstartA[3] = {2.55, 20 ,5};
   Float_t pstartC[3] = {20, 20 ,5};
-  Float_t pstartA[3] = {20, 20 ,5};
+  Float_t pstartA[3] = {20, 20 ,6.3};
   Float_t pinstart[3] = {2.95, 2.95, 2.5};
   Float_t pmcp[3] = {2.949, 2.949, 1.}; //MCP
 
@@ -250,6 +250,18 @@ void AliFITv7::CreateGeometry()
   TGeoVolumeAssembly* stlinA = new TGeoVolumeAssembly("0STL");  // A side mother
   TGeoVolumeAssembly* stlinC = new TGeoVolumeAssembly("0STR");  // C side mother
   //FIT interior
+  // tube inside T0A
+  Float_t pinnertube[3] = {3.9, 4.0, 6.22}; 
+  TVirtualMC::GetMC()->Gsvolu("0TIN","TUBE",idtmed[kAl],pinnertube,3); 
+  TGeoVolume * innertube = gGeoManager->GetVolume("0TIN");
+  stlinA->AddNode(innertube,1,new TGeoTranslation(0,0,0) );
+ // tube around T0A
+  Float_t poutertube[3] = {41, 41.1, 6.54}; 
+  TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kAl],poutertube,3); 
+  TGeoVolume *outertube = gGeoManager->GetVolume("0OUT");
+  stlinA->AddNode(outertube,1,new TGeoTranslation(0,0,0) );
+ 
+
   TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kOpAir],pinstart,3);
   TGeoVolume *ins = gGeoManager->GetVolume("0INS");
   TGeoTranslation *tr[52];
@@ -409,8 +421,6 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   ins->AddNode(altop, 1 , new TGeoTranslation(0,0,z) );
   
   // MCP
-
-
   TVirtualMC::GetMC()->Gsvolu("0MTO", "BOX", idtmed[kOpGlass], pmcptopglass,3); //Op  Glass
   TGeoVolume *mcptop = gGeoManager->GetVolume("0MTO");
   z = - pinstart[2] + 2*pal[2] + 2*ptopref[2] + pmcptopglass[2];
@@ -863,6 +873,22 @@ void AliFITv7::SetVZEROGeo(TGeoVolume *alice)
  
   TGeoRotation *RotSec16 = new TGeoRotation("RotSec16", 90., 15*22.5, 90., 90.+15*22.5, 0., 0.);
   v0Plus->AddNode(v0PlusSec16,15+1,RotSec16);
+ //alla 
+  //support 
+  //Al front disk
+ Int_t *idtmed = fIdtmed->GetArray();
+ Float_t pv0Alfr [3] = {3.94, 81.6, 0.32};
+  TVirtualMC::GetMC()->Gsvolu("VALF","TUBE",idtmed[kAl],pv0Alfr,3); 
+  TGeoVolume *vAlf = gGeoManager->GetVolume("VALF");
+  Float_t z = -fV0PlusSciWd/2. - pv0Alfr[2] - 0.1;
+  v0Plus->AddNode(vAlf,1,new TGeoTranslation(0, 0, z));
+  //back Al
+  Float_t pv0Albo [3] = {3.94, 40.55, 0.25};
+   TVirtualMC::GetMC()->Gsvolu("VALB","TUBE",idtmed[kAl],pv0Albo,3); 
+  TGeoVolume *v0Alb = gGeoManager->GetVolume("VALB");
+   z = fV0PlusSciWd/2. +  pv0Albo[2] +0.1;
+  v0Plus->AddNode(v0Alb,1,new TGeoTranslation(0, 0, z));
+ 
 
   alice->AddNode(v0Plus,1,new TGeoTranslation(0, 0, fV0PlusZposition));
 }    
