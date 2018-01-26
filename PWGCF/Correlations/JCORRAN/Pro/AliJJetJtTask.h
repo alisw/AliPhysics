@@ -81,7 +81,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     bool fDoLog; ///< Whether or not logarithmic histograms should be filled/created
     AliAnalysisUtils *fAnaUtils;
     AliJRunTable *fRunTable;
-    TH1D * fEventHist;
+    AliJTH1D  fEventHist; /// Histogram to store event numbers
 
     ClassDef(AliJJetJtTask, 1); 
 };
