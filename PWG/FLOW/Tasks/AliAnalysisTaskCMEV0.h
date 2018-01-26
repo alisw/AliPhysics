@@ -196,12 +196,18 @@ private:
 
   TH2D          *fHCorrectZDNP; //!
 
-  TProfile2D  *fV0AQnxVsCentRun; //!
-  TProfile2D  *fV0AQnyVsCentRun; //!
-  TProfile2D  *fV0CQnxVsCentRun; //!
-  TProfile2D  *fV0CQnyVsCentRun; //!
-  TProfile2D  *fTPCQnxVsCentRun; //!
-  TProfile2D  *fTPCQnyVsCentRun; //!
+  TProfile2D  *fV0AQ2xVsCentRun; //!
+  TProfile2D  *fV0AQ2yVsCentRun; //!
+  TProfile2D  *fV0CQ2xVsCentRun; //!
+  TProfile2D  *fV0CQ2yVsCentRun; //!
+
+  TProfile2D  *fV0AQ3xVsCentRun; //!
+  TProfile2D  *fV0AQ3yVsCentRun; //!
+  TProfile2D  *fV0CQ3xVsCentRun; //!
+  TProfile2D  *fV0CQ3yVsCentRun; //!
+
+  TProfile2D  *fTPCQ2xVsCentRun; //!
+  TProfile2D  *fTPCQ2yVsCentRun; //!
 
   TList           *mListNUAPos; //!
   TList           *mListNUANeg; //!
@@ -234,9 +240,8 @@ private:
   TProfile2D     *fCentV0MvsVzRun; //!
   TProfile2D      *fCent3pvsVzRun; //!
   TH2F           *fTPCvsGlobalTrk; //!
-  TH2F              *fTPCvsITSTrk; //!
-  TH2F             *fITSvsESDMult; //!
-  TH1F            *fGlobalITSMult; //!
+  TH2F         *fTPCuncutvsGlobal; //!
+  TH1F             *fGlobalTracks; //!
   TH3F           *fCentCL1vsVzRun; //!
   TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!

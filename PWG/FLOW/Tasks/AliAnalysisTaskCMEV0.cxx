@@ -38,7 +38,6 @@
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
-#include "AliNanoAODTrack.h"
 #include "AliFlowEvent.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCMEV0.h"
@@ -115,12 +114,16 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   hUnderOverBinNUAneg(NULL),
   fHCentBinTrkRecenter(NULL),
   fHCorrectZDNP(NULL),
-  fV0AQnxVsCentRun(NULL),
-  fV0AQnyVsCentRun(NULL),
-  fV0CQnxVsCentRun(NULL),
-  fV0CQnyVsCentRun(NULL),
-  fTPCQnxVsCentRun(NULL),
-  fTPCQnyVsCentRun(NULL),
+  fV0AQ2xVsCentRun(NULL),
+  fV0AQ2yVsCentRun(NULL),
+  fV0CQ2xVsCentRun(NULL),
+  fV0CQ2yVsCentRun(NULL),
+  fV0AQ3xVsCentRun(NULL),
+  fV0AQ3yVsCentRun(NULL),
+  fV0CQ3xVsCentRun(NULL),
+  fV0CQ3yVsCentRun(NULL),
+  fTPCQ2xVsCentRun(NULL),
+  fTPCQ2yVsCentRun(NULL),
   mListNUAPos(NULL),
   mListNUANeg(NULL),
   fileNUApos(NULL),
@@ -145,9 +148,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
   fTPCvsGlobalTrk(NULL),
-  fTPCvsITSTrk(NULL),
-  fITSvsESDMult(NULL),
-  fGlobalITSMult(NULL),
+  fTPCuncutvsGlobal(NULL),
+  fGlobalTracks(NULL),
   fCentCL1vsVzRun(NULL),
   fVzDistribuion(NULL)
 {
@@ -342,12 +344,16 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   hUnderOverBinNUAneg(NULL),
   fHCentBinTrkRecenter(NULL),
   fHCorrectZDNP(NULL),
-  fV0AQnxVsCentRun(NULL),
-  fV0AQnyVsCentRun(NULL),
-  fV0CQnxVsCentRun(NULL),
-  fV0CQnyVsCentRun(NULL),
-  fTPCQnxVsCentRun(NULL),
-  fTPCQnyVsCentRun(NULL),
+  fV0AQ2xVsCentRun(NULL),
+  fV0AQ2yVsCentRun(NULL),
+  fV0CQ2xVsCentRun(NULL),
+  fV0CQ2yVsCentRun(NULL),
+  fV0AQ3xVsCentRun(NULL),
+  fV0AQ3yVsCentRun(NULL),
+  fV0CQ3xVsCentRun(NULL),
+  fV0CQ3yVsCentRun(NULL),
+  fTPCQ2xVsCentRun(NULL),
+  fTPCQ2yVsCentRun(NULL),
   mListNUAPos(NULL),
   mListNUANeg(NULL),
   fileNUApos(NULL),
@@ -372,9 +378,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
   fTPCvsGlobalTrk(NULL),
-  fTPCvsITSTrk(NULL),
-  fITSvsESDMult(NULL),
-  fGlobalITSMult(NULL),
+  fTPCuncutvsGlobal(NULL),
+  fGlobalTracks(NULL),
   fCentCL1vsVzRun(NULL),
   fVzDistribuion(NULL)
 {
@@ -551,27 +556,41 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
 
  this->DefineHistograms();
 
+  if(fListFBHijing){
+    fTaskConfigParm->SetBinContent(11,1.0);
+  }
+  if(bApplyNUACorr){
+    fTaskConfigParm->SetBinContent(12,1.0);
+  }
+  if(bApplyV0MCorr){
+    fTaskConfigParm->SetBinContent(13,1.0);
+  }
+  if(bApplyZDCCorr){
+    fTaskConfigParm->SetBinContent(14,1.0);
+  }
 
- fTaskConfigParm->Fill(14.5,fHarmonicN);
- fTaskConfigParm->Fill(15.5,fHarmonicM);
- fTaskConfigParm->Fill(16.5,fHarmonicPsi);
+ fTaskConfigParm->SetBinContent(15,fHarmonicN);
+ fTaskConfigParm->SetBinContent(16,fHarmonicM);
+ fTaskConfigParm->SetBinContent(17,fHarmonicPsi);
 
 
  PostData(1,fListHistos); 
  PostData(2,fListCalibs); 
-
+ PostData(3,fListNUAHist); 
 }
 
 AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 {
   delete                     fListHistos;        
-  delete                     fListCalibs;         
+  delete                     fListCalibs;    
+  delete                    fListNUAHist;     
 
   if(fAnalysisUtil) delete fAnalysisUtil; // it is '= new' !!!
 
-  delete        fHCentBinTrkRecenter;
+  delete            fHCentBinTrkRecenter;
 
-  if(fHCorrectV0M) delete fHCorrectV0M;
+  if(fHCorrectV0M)   delete fHCorrectV0M;
+  if(fHCorrectZDNP)  delete fHCorrectZDNP;
 
   for(int i=0;i<5;i++){
     if(fHCorrectNUApos[i]) delete fHCorrectNUApos[i];
@@ -708,18 +727,18 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  if(runNumber!=fOldRunNum){ 
 
-   if(sDataSet=="2015" || sDataSet=="2015PbPb")
+  
+   if(sDataSet=="2015" || sDataSet=="2015HI"){
      OpenInfoCalbration(runNumber, psiN);
+   }
+   if(bApplyV0MCorr){
+     GetV0MCorrectionHist(runNumber);
+   }
    if(bApplyNUACorr){
      GetNUACorrectionHist(runNumber,sFileNUA);
    }
- //if(bApplyZDCCorr && sDataSet=="2015"){
    if(bApplyZDCCorr && fListZDNCorr){
      GetZDCCorrectionHist(runNumber);
-   }
-
-   if(sDataSet=="2015pPb"||sDataSet=="pPb"){
-     if(bApplyV0MCorr) GetV0MCorrectionHist(runNumber);
    }
 
    fOldRunNum = runNumber;
@@ -740,31 +759,35 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  const AliAODVZERO *fAODV0 = aod->GetVZEROData();
 
 
-
  Double_t QyanCor = 0., QycnCor = 0.;
  Double_t QxanCor = 0., QxcnCor = 0.;
- Double_t Qxan  = 0., Qyan  = 0.;
- Double_t Qxcn  = 0., Qycn  = 0.;
+ Double_t Qxan2  = 0., Qyan2  = 0.;
+ Double_t Qxcn2  = 0., Qycn2  = 0.;
  Double_t sumMa = 0., sumMc = 0.;
  Double_t fMultv0 = 0.;
  Double_t phiV0 = 0.;
 
 
- if(sDataSet=="2015" || sDataSet=="2015PbPb") {
-   GetV0QvectAndMult(fAODV0, psiN, Qxan, Qyan, sumMa, Qxcn, Qycn, sumMc);
+ if(sDataSet=="2015" || sDataSet=="2015HI") {
+   GetV0QvectAndMult(fAODV0, psiN, Qxan2, Qyan2, sumMa, Qxcn2, Qycn2, sumMc);
 
-   QyanCor = (Qyan - fQynmV0A->GetBinContent(iCentSPD+1))/fQynsV0A->GetBinContent(iCentSPD+1);
-   QycnCor = (Qycn - fQynmV0C->GetBinContent(iCentSPD+1))/fQynsV0C->GetBinContent(iCentSPD+1);
+   QyanCor = (Qyan2 - fQynmV0A->GetBinContent(iCentSPD+1))/fQynsV0A->GetBinContent(iCentSPD+1);
+   QycnCor = (Qycn2 - fQynmV0C->GetBinContent(iCentSPD+1))/fQynsV0C->GetBinContent(iCentSPD+1);
 
-   QxanCor = Qxan;
-   QxcnCor = Qxcn;
+   QxanCor = Qxan2;
+   QxcnCor = Qxcn2;
 
    if(psiN != 4.){
-     QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
-     QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
+     QxanCor = (Qxan2 - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
+     QxcnCor = (Qxcn2 - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
    }
  }
- else{
+ //else{
+
+   Double_t Qxan3  = 0., Qyan3  = 0.;
+   Double_t Qxcn3  = 0., Qycn3  = 0.;
+   Qxan2  = 0., Qyan2 = 0.;
+   Qxcn2  = 0., Qycn2 = 0.;
 
    for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
@@ -774,33 +797,52 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        fMultv0 = fMultv0 * fHCorrectV0M->GetBinContent(iV0+1);  // Gain Correction
      }
 
+     fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
+
      phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
  
      if(iV0 < 32){
-       Qxcn  += TMath::Cos(fHarmonicPsi*phiV0) * fMultv0;
-       Qycn  += TMath::Sin(fHarmonicPsi*phiV0) * fMultv0;
+       Qxcn2  += TMath::Cos(2*phiV0) * fMultv0;
+       Qycn2  += TMath::Sin(2*phiV0) * fMultv0;
+       Qxcn3  += TMath::Cos(3*phiV0) * fMultv0;
+       Qycn3  += TMath::Sin(3*phiV0) * fMultv0;
        sumMc += fMultv0;
      }
      else if(iV0 >= 32){
-       Qxan  += TMath::Cos(fHarmonicPsi*phiV0) * fMultv0;
-       Qyan  += TMath::Sin(fHarmonicPsi*phiV0) * fMultv0;
+       Qxan2  += TMath::Cos(2*phiV0) * fMultv0;
+       Qyan2  += TMath::Sin(2*phiV0) * fMultv0;
+       Qxan3  += TMath::Cos(3*phiV0) * fMultv0;
+       Qyan3  += TMath::Sin(3*phiV0) * fMultv0;
        sumMa += fMultv0;
      }
-   }
+   }//channel loop
 
-   QxanCor = Qxan;
+   //For V0-Qn Recenter
+   fV0CQ2xVsCentRun->Fill(centrCL1,runindex,Qxcn2);
+   fV0CQ2yVsCentRun->Fill(centrCL1,runindex,Qycn2);
+   fV0AQ2xVsCentRun->Fill(centrCL1,runindex,Qxan2); 
+   fV0AQ2yVsCentRun->Fill(centrCL1,runindex,Qyan2); 
+
+   fV0CQ3xVsCentRun->Fill(centrCL1,runindex,Qxcn3);
+   fV0CQ3yVsCentRun->Fill(centrCL1,runindex,Qycn3);
+   fV0AQ3xVsCentRun->Fill(centrCL1,runindex,Qxan3); 
+   fV0AQ3yVsCentRun->Fill(centrCL1,runindex,Qyan3); 
+
+ /*QxanCor = Qxan;  //QxanCor are used for event plane.
    QxcnCor = Qxcn;
    QyanCor = Qyan;
-   QycnCor = Qycn;
+   QycnCor = Qycn;*/
    
- }
+ //} else (other than 2015o_pass1 HI data)
 
 
- //Fill V0M Mult for all System:
- for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
+
+ //Fill V0M Mult for all System: filled above
+ /*for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
    fMultv0 = fAODV0->GetMultiplicity(iV0);
    fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
- }
+   }*/
+
 
  
 
@@ -838,7 +880,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
  //Apply Gain Correction:
- if(bApplyZDCCorr && fListZDNCorr){
+ if(fHCorrectZDNP){
    energyZNC = energyZNC * fHCorrectZDNP->GetBinContent((abs(EvtCent)+1),1);
    energyZNA = energyZNA * fHCorrectZDNP->GetBinContent((abs(EvtCent)+1),2);
    energyZPC = energyZPC * fHCorrectZDNP->GetBinContent((abs(EvtCent)+1),3);
@@ -847,11 +889,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  //fill ZDC info: Uses 
  if(bFillZDCinfo){
-   //fHEnergyZNCvsCent->Fill(EvtCent,energyZNC);
-   //fHEnergyZNAvsCent->Fill(EvtCent,energyZNA);
-   //fHEnergyZPCvsCent->Fill(EvtCent,energyZPC);
-   //fHEnergyZPAvsCent->Fill(EvtCent,energyZPA);
- 
+
    fHEnergyZNCvsCentRun->Fill(EvtCent,runindex,energyZNC);
    fHEnergyZNAvsCentRun->Fill(EvtCent,runindex,energyZNA);
    fHEnergyZPCvsCentRun->Fill(EvtCent,runindex,energyZPC);
@@ -948,10 +986,11 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t Psi2V0A = 1./psiN*TMath::ATan2(QyanCor,QxanCor);
  if(Psi2V0A<0.) Psi2V0A += 2*pi/psiN;
 
- fV0AQnxVsCentRun->Fill(centrCL1,runindex,QycnCor); // For V0-Q Recenter QA.
- fV0AQnyVsCentRun->Fill(centrCL1,runindex,QyanCor); 
- fV0CQnxVsCentRun->Fill(centrCL1,runindex,QxcnCor);
- fV0CQnyVsCentRun->Fill(centrCL1,runindex,QycnCor);
+ /*
+ fV0AQ2xVsCentRun->Fill(centrCL1,runindex,QycnCor); // For V0-Q Recenter QA.
+ fV0AQ2yVsCentRun->Fill(centrCL1,runindex,QyanCor); 
+ fV0CQ2xVsCentRun->Fill(centrCL1,runindex,QxcnCor);
+ fV0CQ2yVsCentRun->Fill(centrCL1,runindex,QycnCor);*/
 
 
 
@@ -1393,8 +1432,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    }//nested loop ends
  }//------ track loop ends ------
 
-
-
  fEventStatvsRun->Fill(runindex);
 
  fCentDistvsRun->Fill(EvtCent,runindex);
@@ -1409,25 +1446,21 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
- if(QTPCRe==0 && QTPCIm==0) return; // remove events with |Q| = 0
+ Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
+ if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
 
+ fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+ fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+
+ PostData(3,fListNUAHist);   // Store NUA for all Runs including bad one. 
+
+
+ if(QTPCRe==0 && QTPCIm==0) return;  // is this is one to one with bad run list?
  fHist_Event_count->Fill(stepCount); //6
  stepCount++;
 
 
- Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
- if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
-
- fTPCQnxVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
- fTPCQnyVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
-
-
-
-
- PostData(3,fListNUAHist);   // Store NUA for all Runs including bad one. 
- if(isBadRun) return;  
-
-
+ if(isBadRun) return;       
  fHist_Event_count->Fill(stepCount); //7
  stepCount++;
 
@@ -1974,9 +2007,14 @@ void AliAnalysisTaskCMEV0::GetZDCCorrectionHist(Int_t run)
     fHCorrectZDNP = (TH2D *) fListZDNCorr->FindObject(Form("fHist_ZDC_All_Wgt_VsCent_Run%d",run));
   }
   else{
-    fHCorrectZDNP = NULL;
-    printf("\n\n ********** ZDC Wgt Histograms NotFound ***************\n\n");
-    exit(1);
+    fHCorrectZDNP = new TH2D("fHCorrectZDNP","",100,0,100,4,0,4) ;
+    for(int i=1;i<=100;i++){
+      for(int j=1;j<=4;j++){
+        fHCorrectZDNP->SetBinContent(i,j,1.0);
+      }
+    }
+    //printf("\n\n ********** ZDC Wgt Histograms NotFound ***************\n\n");
+    //exit(1);
   }
 }
 
@@ -2346,7 +2384,7 @@ void AliAnalysisTaskCMEV0::GetV0MCorrectionHist(Int_t run)
     }
     //fV0Qn_AvgCorr = NULL;
     //fV0Qn_SigCorr = NULL;
-    printf("\n\n ********** V0M ch wgt Histograms NotFound, use Wgt = 1.0 ***************\n\n");
+    //printf("\n\n ********** V0M ch wgt Histograms NotFound, use Wgt = 1.0 ***************\n\n");
     //exit(1);
   }
   //fileV0M->Close();
@@ -2386,7 +2424,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
  if(fRejectPileUp && InputEvent()) {
   //if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-    if(sDataSet!="2015") {
+    if(sDataSet!="2015" && sDataSet!="2015LI") {
       if(PileUpMultiVertex(faod)) {
          fPileUpCount->Fill(0.5);
          BisPileup=kTRUE;
@@ -2435,7 +2473,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       }
     } ////------ dataset 2010,2011 pile up ---------
 
-    else { //------------ pileup for 2015 data ----------------- 
+    else { //------------ pileup for 2015 HI, LI data ----------------- 
       if(!fMultSelection->GetThisEventIsNotPileup())
          fPileUpMultSelCount->Fill(0.5);
       if(!fMultSelection->GetThisEventIsNotPileupMV())
@@ -2505,19 +2543,21 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
       //cuts on tracks
       const Int_t nTracks = faod->GetNumberOfTracks();
-      Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+      //Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
 
       //Int_t multTrk = 0;
       //Int_t multTrkBefC = 0;
       //Int_t multTrkTOFBefC = 0;
+      //Int_t multITS = 0;
       Int_t multGlobal = 0;
       Int_t multTPC = 0;
-      Int_t multITS = 0;
-
+      Int_t multTPCuncut = 0;
 
       for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
-          AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));
+	//AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));
+         AliAODTrack* track = (AliAODTrack*)faod->GetTrack(iTracks);
          if(!track)  continue;
+         if(track->TestFilterBit(1))  multTPCuncut++;
          if(track->Pt()<0.2 || track->Pt()>5.0 || TMath::Abs(track->Eta())>0.8 || track->GetTPCNcls()<70 || track->GetTPCsignal()<10.0)
             continue;
          if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPC++;
@@ -2526,7 +2566,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
          Double_t b[2]    = {-99., -99.};
          Double_t bCov[3] = {-99., -99., -99.};
                 
-         AliNanoAODTrack copy(*track);
+         AliAODTrack copy(*track);
          Double_t magField = faod->GetMagneticField();
                 
          if(magField!=0){     
@@ -2565,12 +2605,9 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-      fGlobalITSMult->Fill(multITS);
-
-      fITSvsESDMult->Fill(multEsd,multITS);
-      fTPCvsGlobalTrk->Fill(multEsd,multTPC);
-      fTPCvsITSTrk->Fill(multITS,multTPC);
-
+      fGlobalTracks->Fill(multGlobal);
+      fTPCuncutvsGlobal->Fill(multGlobal,multTPCuncut);
+      fTPCvsGlobalTrk->Fill(multGlobal,multTPC);
 
 
       /*if(multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
@@ -2634,6 +2671,8 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
 
  Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
+ Int_t runArray_2015LI[13] = {244917, 244918, 244975, 244980, 244982, 244983, 245061, 245064, 245066, 245068, 246390, 246391, 246392};
+
 //Int_t runArray_pPb_13cpass2[14] = {195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
 
  Int_t runArray_pPb_16q_pass1[32] = {265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525}; 
@@ -2660,6 +2699,11 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
   fRunFlag = 32;
   for(int i=0;i<fRunFlag;i++)
     runNums[i] = runArray_pPb_16q_pass1[i];
+ }
+ else if(sPeriod=="2015LI"){
+  fRunFlag = 13;
+  for(int i=0;i<fRunFlag;i++)
+    runNums[i] = runArray_2015LI[i];
  }
 
 
@@ -2724,10 +2768,10 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fTaskConfigParm->GetXaxis()->SetBinLabel(8,"PtMax");
   fTaskConfigParm->GetXaxis()->SetBinLabel(9,"DCAxy");
   fTaskConfigParm->GetXaxis()->SetBinLabel(10,"DCAz");
-  fTaskConfigParm->GetXaxis()->SetBinLabel(11,"FiltBit");
-  fTaskConfigParm->GetXaxis()->SetBinLabel(12,"nClustTPC");
-  fTaskConfigParm->GetXaxis()->SetBinLabel(13,"Chi2ClusMin");
-  fTaskConfigParm->GetXaxis()->SetBinLabel(14,"Chi2ClusMax");
+  fTaskConfigParm->GetXaxis()->SetBinLabel(11,"MCcorrected?");
+  fTaskConfigParm->GetXaxis()->SetBinLabel(12,"NUACorrected?");
+  fTaskConfigParm->GetXaxis()->SetBinLabel(13,"V0gainCorr?");
+  fTaskConfigParm->GetXaxis()->SetBinLabel(14,"ZDCgainCorr?");
   fTaskConfigParm->GetXaxis()->SetBinLabel(15,"harmonic N");
   fTaskConfigParm->GetXaxis()->SetBinLabel(16,"harmonic M");
   fTaskConfigParm->GetXaxis()->SetBinLabel(17,"harmonicPsi");
@@ -3029,17 +3073,14 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  fTPCvsGlobalTrk = new TH2F("fAODvsESDTrk","ESDTrk vs TPC(FB128)",2000,0,20000,1000,0,10000);
+  fTPCvsGlobalTrk = new TH2F("fTPCvsGlobalTrk","ESDTrk vs TPC(FB128)",1000,0,5000,1000,0,5000);
   fListCalibs->Add(fTPCvsGlobalTrk);
 
-  fTPCvsITSTrk    = new TH2F("fTPCvsITSTrk","Global(FB96) vs TPC(FB128)",1000,0,5000,1000,0,5000);
-  fListCalibs->Add(fTPCvsITSTrk);
+  fTPCuncutvsGlobal   = new TH2F("fTPCuncutvsGlobal","ESDTrk vs ITS(FB96) ",1000,0,5000,1000,0,5000);
+  fListCalibs->Add(fTPCuncutvsGlobal);
 
-  fITSvsESDMult   = new TH2F("fITSvsESDMult","ESDTrk vs ITS(FB96) ",2000,0,20000,1000,0,5000);
-  fListCalibs->Add(fITSvsESDMult);
-
-  fGlobalITSMult  = new TH1F("fGlobalITSMult","Global(FB96) Multiplilcity",4000,0,4000);
-  fListCalibs->Add(fGlobalITSMult);
+  fGlobalTracks  = new TH1F("fGlobalTracks","Global Multiplilcity",5000,0,5000);
+  fListCalibs->Add(fGlobalTracks);
 
 
 
@@ -3168,24 +3209,6 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   }
 
 
-  fV0MultChVsRun = new TProfile2D("fV0MultChVsRun","1-32 V0C, 33-64 V0A",64,0,64,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fV0MultChVsRun);
-
-
-  fV0AQnxVsCentRun = new TProfile2D("fV0ACos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fV0AQnxVsCentRun);
-  fV0AQnyVsCentRun = new TProfile2D("fV0ASin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fV0AQnyVsCentRun);
-
-  fV0CQnxVsCentRun = new TProfile2D("fV0CCos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fV0CQnxVsCentRun);
-  fV0CQnyVsCentRun = new TProfile2D("fV0CSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fV0CQnyVsCentRun);
-
-  fTPCQnxVsCentRun = new TProfile2D("fTPCCos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fTPCQnxVsCentRun);
-  fTPCQnyVsCentRun = new TProfile2D("fTPCSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
-  fListCalibs->Add(fTPCQnyVsCentRun);
 
 
   //Average Multiplicity, same-sign, opposite-sign pair vs Centrality 1% :
@@ -3225,7 +3248,39 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  //======== Following are eta,phi plots and written in List: fListNUAHist ================
+  //======== Following are all type of NUA written in List: fListNUAHist ================
+
+
+  //---------- V0 histograms --------- 
+  fV0MultChVsRun = new TProfile2D("fV0MultChVsRun","1-32 V0C, 33-64 V0A",64,0,64,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0MultChVsRun);
+
+  fV0AQ2xVsCentRun = new TProfile2D("fV0ACos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0AQ2xVsCentRun);
+  fV0AQ2yVsCentRun = new TProfile2D("fV0ASin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0AQ2yVsCentRun);
+  fV0CQ2xVsCentRun = new TProfile2D("fV0CCos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0CQ2xVsCentRun);
+  fV0CQ2yVsCentRun = new TProfile2D("fV0CSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0CQ2yVsCentRun);
+
+  fV0AQ3xVsCentRun = new TProfile2D("fV0ACos3nVsCentRun","<Cos3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0AQ3xVsCentRun);
+  fV0AQ3yVsCentRun = new TProfile2D("fV0ASin3nVsCentRun","<Sin3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0AQ3yVsCentRun);
+  fV0CQ3xVsCentRun = new TProfile2D("fV0CCos3nVsCentRun","<Cos3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0CQ3xVsCentRun);
+  fV0CQ3yVsCentRun = new TProfile2D("fV0CSin3nVsCentRun","<Sin3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fV0CQ3yVsCentRun);
+  //-----------------------------------
+
+
+  fTPCQ2xVsCentRun = new TProfile2D("fTPCCos2nVsCentRun","<Cos2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fTPCQ2xVsCentRun);
+  fTPCQ2yVsCentRun = new TProfile2D("fTPCSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fTPCQ2yVsCentRun);
+
+
 
   for(int i=0;i<10;i++){
     sprintf(name,"fHistChPosvsEtaPtRun_Cent%d",i);
