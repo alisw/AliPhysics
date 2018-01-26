@@ -8,8 +8,6 @@
 /// produced in QA trains but different data or cuts on the same data
 /// Based on the plots provided by DrawAnaCaloTrackQA.C. 
 ///
-///  *** To be completed with more cases ***
-///
 /// To execute: root -q -b -l DrawProductionComparison.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
 /// The trigger name might change depending on the wagon / data type
@@ -23,7 +21,7 @@
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 /// A plot will be produced for each of the triggers, if they existed in the data.
-
+///
 ///
 /// The input files must be placed in different directories,
 /// each one defined in the string array "prod"m for ex.:
@@ -68,8 +66,13 @@ void ProcessTrigger
  TString fileName = "AnalysisResults.root", 
  TString listName = "Pi0IM_GammaTrackCorr_EMCAL");
 
-void CaloQA    (Int_t icalo);
-void CorrelQA  (Int_t icalo);
+void CaloQA     (Int_t icalo);
+void CorrelQA   (Int_t icalo);
+void IsolQA     (Int_t icalo);
+void ShowerShape(Int_t icalo);
+void InvMass    (Int_t icalo, TString particle, TString fileName);
+
+void CaloParticleMCQA(Int_t icalo, TString particle);
 
 void TrackQA ();
 void VertexQA();
@@ -84,10 +87,17 @@ Bool_t    GetFileAndList(TString fileName, TString listName, TString trigName);
 // Some global variables
 
 /// productions to be compared, directory name
-TString      prod   [] = {"DCAoffPIDoff","DCAonPIDoff","DCAoffPIDon","DCAonPIDon"}; 
+//TString      prod   [] = {"DCAoffPIDoff","DCAonPIDoff","DCAoffPIDon","DCAonPIDon"}; 
 /// productions name used in legends
-TString      prodLeg[] = {"DCA off - PID off","DCA on - PID off","DCA off - PID on","DCA on - PID on"}; 
-const Int_t nProd = 4;       /// total number of productions to compare
+//TString      prodLeg[] = {"DCA off - PID off","DCA on - PID off","DCA off - PID on","DCA on - PID on"};
+
+TString      prod   [] = {"LHC17l3b_fast","LHC17l4b_fast"}; 
+TString      prodLeg[] = {"Geant3, b FAST","Geant4, b FAST"}; 
+
+//TString      prod   [] = {"LHC17l3b_cent","LHC17l4b_cent"}; 
+//TString      prodLeg[] = {"Geant3, b CENT","Geant4, b CENT"};
+
+const Int_t nProd = 2;       /// total number of productions to compare
 
 TDirectoryFile *dir[nProd];  /// TDirectory file where lists per trigger are stored in train ouput
 TList  *histArr[nProd];      /// TList with histograms for a given trigger
@@ -96,6 +106,7 @@ Float_t nEvents[nProd];      /// number of events container
 
 TString histoTag = "";       /// file names tag, basically the trigger and calorimeter combination 
 TString format   = "eps";    /// output plots format: eps, pdf, etc.
+TString errType  = "B";//""; /// Error type in histogram division
 
 /// pre-defined colors list 
 Int_t color[]={kBlack,kRed,kBlue,kOrange+1,kYellow+1,kGreen+2,kCyan+1,kViolet,kMagenta+2,kGray};
@@ -112,7 +123,7 @@ void DrawProductionComparison
 (
  TString listName   = "Pi0IM_GammaTrackCorr_EMCAL",
  TString fileName   = "AnalysisResults.root",
- TString fileFormat = "eps"
+ TString fileFormat = "pdf"
  )
 {
   format  = fileFormat;
@@ -121,7 +132,9 @@ void DrawProductionComparison
   
   // Process each of the triggers
   //
-  ProcessTrigger("default" ,fileName,listName);
+  ProcessTrigger("default" ,fileName,listName); // Data min bias, or only one for MC
+  
+  // EMC/DMC triggered data (not for MC)
   ProcessTrigger("EMCAL_L0",fileName,listName);
   ProcessTrigger("EMCAL_L1",fileName,listName);
   ProcessTrigger("EMCAL_L2",fileName,listName);
@@ -169,7 +182,7 @@ void ProcessTrigger(TString trigName, TString fileName, TString listName)
   
   histoTag = trigName;
   
-  // Plot basic Track QA
+  // Plot basic  Global event and Track QA
   TrackQA();
   
   VertexQA();
@@ -182,6 +195,21 @@ void ProcessTrigger(TString trigName, TString fileName, TString listName)
     
     // Plot basic QA
     CaloQA(icalo);
+      
+    // Plot clusters Origin QA, only MC
+//    CaloParticleMCQA(icalo,"Photon");
+//    CaloParticleMCQA(icalo,"PhotonPi0Decay");
+//    CaloParticleMCQA(icalo,"Pi0");
+//    CaloParticleMCQA(icalo,"Electron");
+
+    // Run before InvMassFit.C
+    //InvMass(icalo,"Pi0",fileName);
+    //InvMass(icalo,"Eta",fileName);
+    
+    ShowerShape(icalo);
+    
+    // Plot basic isolation energy QA
+    IsolQA(icalo);
     
     // Plot basic correlation QA
     CorrelQA(icalo);
@@ -256,6 +284,11 @@ void CaloQA(Int_t icalo)
     
     if(!hRaw[iprod]) return;
     
+    hRaw [iprod]->Rebin(5);
+    hCorr[iprod]->Rebin(5);    
+    hTM  [iprod]->Rebin(5);
+    hShSh[iprod]->Rebin(5);
+    
     hRaw [iprod]->Sumw2();
     hCorr[iprod]->Sumw2();
     hTM  [iprod]->Sumw2();
@@ -296,11 +329,16 @@ void CaloQA(Int_t icalo)
       hRatCorr[iprod-1] = (TH1F*)hCorr[iprod]->Clone(Form("hRatCorr%s_%s",prod[iprod].Data(),histoTag.Data()));
       hRatTM  [iprod-1] = (TH1F*)hTM  [iprod]->Clone(Form("hRatTM%s_%s"  ,prod[iprod].Data(),histoTag.Data()));
       hRatShSh[iprod-1] = (TH1F*)hShSh[iprod]->Clone(Form("hRatShSh%s_%s",prod[iprod].Data(),histoTag.Data()));
+
+      //      hRatRaw [iprod-1]->Divide(hRatRaw [iprod-1],hRaw [0],1.000,1,errType);
+      //      hRatCorr[iprod-1]->Divide(hRatCorr[iprod-1],hCorr[0],0.975,1,errType);
+      //      hRatTM  [iprod-1]->Divide(hRatTM  [iprod-1],hTM  [0],0.950,1,errType);
+      //      hRatShSh[iprod-1]->Divide(hRatShSh[iprod-1],hShSh[0],0.925,1,errType);
       
-      hRatRaw [iprod-1]->Divide(hRatRaw [iprod-1],hRaw [0],1.000,1,"B");
-      hRatCorr[iprod-1]->Divide(hRatCorr[iprod-1],hCorr[0],0.975,1,"B");
-      hRatTM  [iprod-1]->Divide(hRatTM  [iprod-1],hTM  [0],0.950,1,"B");
-      hRatShSh[iprod-1]->Divide(hRatShSh[iprod-1],hShSh[0],0.925,1,"B");
+      hRatRaw [iprod-1]->Divide(hRatRaw [iprod-1],hRaw [0],1.000,1,errType);
+      hRatCorr[iprod-1]->Divide(hRatCorr[iprod-1],hCorr[0],1.000,1,errType);
+      hRatTM  [iprod-1]->Divide(hRatTM  [iprod-1],hTM  [0],1.000,1,errType);
+      hRatShSh[iprod-1]->Divide(hRatShSh[iprod-1],hShSh[0],1.000,1,errType);
     }
     
     // Cluster-Track Matching Residuals
@@ -398,10 +436,10 @@ void CaloQA(Int_t icalo)
       hRatTrackMatchResEtaNeg[iprod-1] = 
       (TH1F*)hTrackMatchResEtaNeg[iprod]->Clone(Form("hRatEtaNeg%s_%s",prod[iprod].Data(),histoTag.Data()));
       
-      hRatTrackMatchResPhiPos[iprod-1]->Divide(hRatTrackMatchResPhiPos[iprod-1],hTrackMatchResPhiPos[0],1.000,1,"B");
-      hRatTrackMatchResPhiNeg[iprod-1]->Divide(hRatTrackMatchResPhiNeg[iprod-1],hTrackMatchResPhiNeg[0],1.000,1,"B");
-      hRatTrackMatchResEtaPos[iprod-1]->Divide(hRatTrackMatchResEtaPos[iprod-1],hTrackMatchResEtaPos[0],1.000,1,"B");
-      hRatTrackMatchResEtaNeg[iprod-1]->Divide(hRatTrackMatchResEtaNeg[iprod-1],hTrackMatchResEtaNeg[0],1.000,1,"B");
+      hRatTrackMatchResPhiPos[iprod-1]->Divide(hRatTrackMatchResPhiPos[iprod-1],hTrackMatchResPhiPos[0],1.000,1,errType);
+      hRatTrackMatchResPhiNeg[iprod-1]->Divide(hRatTrackMatchResPhiNeg[iprod-1],hTrackMatchResPhiNeg[0],1.000,1,errType);
+      hRatTrackMatchResEtaPos[iprod-1]->Divide(hRatTrackMatchResEtaPos[iprod-1],hTrackMatchResEtaPos[0],1.000,1,errType);
+      hRatTrackMatchResEtaNeg[iprod-1]->Divide(hRatTrackMatchResEtaNeg[iprod-1],hTrackMatchResEtaNeg[0],1.000,1,errType);
     }
     
     // pt track bin
@@ -481,10 +519,10 @@ void CaloQA(Int_t icalo)
       hRatTrackMatchResEtaNegTrackPt[iprod-1] = 
       (TH1F*)hTrackMatchResEtaNegTrackPt[iprod]->Clone(Form("hRatEtaNeg%s_%s",prod[iprod].Data(),histoTag.Data()));
       
-      hRatTrackMatchResPhiPosTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiPosTrackPt[iprod-1],hTrackMatchResPhiPosTrackPt[0],1.000,1,"B");
-      hRatTrackMatchResPhiNegTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiNegTrackPt[iprod-1],hTrackMatchResPhiNegTrackPt[0],1.000,1,"B");
-      hRatTrackMatchResEtaPosTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaPosTrackPt[iprod-1],hTrackMatchResEtaPosTrackPt[0],1.000,1,"B");
-      hRatTrackMatchResEtaNegTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaNegTrackPt[iprod-1],hTrackMatchResEtaNegTrackPt[0],1.000,1,"B");
+      hRatTrackMatchResPhiPosTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiPosTrackPt[iprod-1],hTrackMatchResPhiPosTrackPt[0],1.000,1,errType);
+      hRatTrackMatchResPhiNegTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiNegTrackPt[iprod-1],hTrackMatchResPhiNegTrackPt[0],1.000,1,errType);
+      hRatTrackMatchResEtaPosTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaPosTrackPt[iprod-1],hTrackMatchResEtaPosTrackPt[0],1.000,1,errType);
+      hRatTrackMatchResEtaNegTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaNegTrackPt[iprod-1],hTrackMatchResEtaNegTrackPt[0],1.000,1,errType);
     }
     
   } // prod loop
@@ -525,13 +563,16 @@ void CaloQA(Int_t icalo)
     lcl.Draw();
     
     ccalo->cd(2);
+    gPad->SetGridy();
     //gPad->SetLogy();
     //gPad->SetLogx();
     
     hRatCorr[0]->SetTitle("Cluster spectra ratio");
     hRatCorr[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
-    hRatCorr[0]->SetMinimum(0.850);
-    hRatCorr[0]->SetMaximum(1.025);
+//    hRatCorr[0]->SetMinimum(0.850);
+//    hRatCorr[0]->SetMaximum(1.025);
+    hRatCorr[0]->SetMinimum(0.7);
+    hRatCorr[0]->SetMaximum(1.3);
     hRatCorr[0]->Draw("");
     
     for(Int_t iprod = 0; iprod <  nProd-1; iprod++)
@@ -542,15 +583,15 @@ void CaloQA(Int_t icalo)
       hRatShSh[iprod]->Draw("same");
     }
     
-    TLine l1(0,1,30,1);
-    TLine l2(0,0.975,30,0.975);
-    TLine l3(0,0.95,30,0.95);
-    TLine l4(0,0.925,30,0.925);
-    
-    l1.Draw("same");
-    l2.Draw("same");
-    l3.Draw("same");
-    l4.Draw("same");
+//    TLine l1(0,1,30,1);
+//    TLine l2(0,0.975,30,0.975);
+//    TLine l3(0,0.95,30,0.95);
+//    TLine l4(0,0.925,30,0.925);
+//    
+//    l1.Draw("same");
+//    l2.Draw("same");
+//    l3.Draw("same");
+//    l4.Draw("same");
     
     ccalo->Print(Form("%s_ClusterSpectraComp.%s",histoTag.Data(),format.Data()));
   }
@@ -716,6 +757,290 @@ void CaloQA(Int_t icalo)
 }
 
 ///
+/// Plot basic calorimeter QA histograms depending on MC origin of cluster
+/// * cluster spectra from particle
+/// * reconstructed minus generated energy of cluster particle
+///
+/// \param icalo: 0 EMCal, 1 DCal
+/// \param particle: MC origin of cluster: Photon, PhotonPi0Decay, Pi0 (Merged), Electron, ...
+//______________________________________
+void CaloParticleMCQA(Int_t icalo, TString particle)
+{
+  // Declare the different histograms, arrays input is production
+  
+  const Int_t nEbins = 4;
+  Float_t ebins [] = {1,2,4,6,10};
+  
+  TH1F* hParticleRecoE[nProd];
+  TH1F* hRatParticleRecoE [nProd-1];
+ 
+  TH2F* h2ParticleRecoEDelta[nProd];
+  TH1F* hParticleRecoEDelta[nProd][nEbins];
+  
+  //Legend for productions
+  TLegend lprod(0.6,0.475,0.95,0.675);
+  lprod.SetTextSize(0.04);
+  lprod.SetBorderSize(0);
+  lprod.SetFillColor(0);
+  
+  for(Int_t iprod = 0; iprod <  nProd; iprod++)
+  {      
+    hParticleRecoE [iprod] = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hE_MC%s",icalo,particle.Data()),iprod);
+    
+    if(!hParticleRecoE[iprod]) return;
+    
+    hParticleRecoE[iprod]->Rebin(5);
+    hParticleRecoE[iprod]->Sumw2();
+    hParticleRecoE[iprod]->Scale(1./nEvents[iprod]);
+    hParticleRecoE[iprod]->SetMarkerColor(color[iprod]);
+    hParticleRecoE[iprod]->SetMarkerStyle(24);
+    
+    hParticleRecoE[iprod]->SetTitle(Form("Reconstructed cluster spectra from generated %s",particle.Data()));
+    hParticleRecoE[iprod]->SetYTitle("1/N_{events} dN/dp_{T}");
+    
+    hParticleRecoE[iprod]->SetTitleOffset(1.5,"Y");
+    hParticleRecoE[iprod]->SetMarkerColor(color[iprod]);
+    hParticleRecoE[iprod]->SetMarkerStyle(20);
+    hParticleRecoE[iprod]->SetAxisRange(0.,30.,"X");
+    //hParticleRecoE[iprod]->SetMaximum(1.1);
+    //hParticleRecoE[iprod]->SetMinimum(0);
+    
+    if(iprod > 0)
+    {
+      hRatParticleRecoE [iprod-1] = (TH1F*)hParticleRecoE [iprod]->Clone(Form("hRatParticleRecoE%s_MC%s_%s" ,prod[iprod].Data(),particle.Data(),histoTag.Data()));
+      
+      hRatParticleRecoE [iprod-1]->Divide(hRatParticleRecoE [iprod-1],hParticleRecoE [0],1,1,errType);
+    }
+    
+    // Cluster-Track Matching Residuals
+    
+    // E cluster bin
+    h2ParticleRecoEDelta[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hDeltaE_MC%s",icalo,particle.Data()),iprod);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      Float_t binMin = h2ParticleRecoEDelta[iprod]->GetXaxis()->FindBin(ebins[ie]);
+      Float_t binMax = h2ParticleRecoEDelta[iprod]->GetXaxis()->FindBin(ebins[ie+1])-1;
+      
+      hParticleRecoEDelta[iprod][ie] = 
+      (TH1F*) h2ParticleRecoEDelta[iprod]->ProjectionY(Form("DeltaProj_%s_%s_MC%s_ie%d",
+                                                            prod[iprod].Data(),histoTag.Data(),particle.Data(),ie),
+                                                       binMin, binMax);
+      
+      
+      hParticleRecoEDelta[iprod][ie]->SetXTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+      hParticleRecoEDelta[iprod][ie]->SetYTitle("Entries / N events");
+      hParticleRecoEDelta[iprod][ie]->SetTitle(Form("Reco MC %s, %2.1f < #it{E}^{cluster} < %2.1f GeV",particle.Data(),ebins[ie],ebins[ie+1]));
+      hParticleRecoEDelta[iprod][ie]->SetAxisRange(-3,3,"X");
+      hParticleRecoEDelta[iprod][ie]->Sumw2();
+      hParticleRecoEDelta[iprod][ie]->SetMarkerStyle(24);
+      hParticleRecoEDelta[iprod][ie]->SetMarkerColor(color[iprod]);
+      
+      hParticleRecoEDelta[iprod][ie]->Scale(1./nEvents[iprod]);
+      
+      hParticleRecoEDelta[iprod][ie]->SetTitleOffset(1.5,"Y");
+    }
+    
+  } // prod loop
+  
+  
+  /////////////////
+  // Make the plots
+  /////////////////
+  {
+    TCanvas * ccalo = new TCanvas(Form("Cluster_MC%s_%s",particle.Data(),histoTag.Data()),"",1000,500);
+    ccalo->Divide(2,1);
+    
+    ccalo->cd(1);
+    gPad->SetLogy();
+    //gPad->SetLogx();
+    
+    hParticleRecoE[0]->Draw();
+    for(Int_t iprod = 0; iprod <  nProd; iprod++)
+    {
+      hParticleRecoE [iprod]->Draw("same");
+    
+      lprod.AddEntry(hParticleRecoE[iprod],prodLeg[iprod],"P");
+    }
+    
+    lprod.Draw();
+    
+    ccalo->cd(2);
+    gPad->SetGridy();
+    //gPad->SetLogy();
+    //gPad->SetLogx();
+    
+    hRatParticleRecoE[0]->SetTitle(Form("MC %s reco cluster spectra ratio",particle.Data()));
+    hRatParticleRecoE[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    //    hRatParticleRecoE[0]->SetMinimum(0.850);
+    //    hRatParticleRecoE[0]->SetMaximum(1.025);
+    hRatParticleRecoE[0]->SetMinimum(0.7);
+    hRatParticleRecoE[0]->SetMaximum(1.3);
+    hRatParticleRecoE[0]->Draw("");
+    
+    for(Int_t iprod = 0; iprod <  nProd-1; iprod++)
+    {
+      hRatParticleRecoE[iprod]->Draw("same");
+    }
+    
+    ccalo->Print(Form("%s_ClusterSpectra_MC%s.%s",histoTag.Data(),particle.Data(),format.Data()));
+  }
+  
+  // Cluster energy residual
+  {
+    TGaxis::SetMaxDigits(3);
+    
+    TCanvas * ccalo2 = new TCanvas(Form("Resolution_MC%s_%s",particle.Data(),histoTag.Data()),"",1000,1000);
+    ccalo2->Divide(2,2);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      ccalo2->cd(ie+1);
+      //gPad->SetLogy();
+          
+      hParticleRecoEDelta[0][ie]->Draw("");
+      for(Int_t iprod = 0; iprod < nProd; iprod++)
+      {
+        hParticleRecoEDelta[iprod][ie]->Draw("same");
+      }
+      
+      lprod.Draw();
+    }
+    
+    ccalo2->Print(Form("%s_ClusterERecoGenDiff_MC%s.%s",histoTag.Data(),particle.Data(),format.Data()));
+  }
+  
+}
+
+///
+/// Plot basic shower shape
+///
+/// \param icalo: 0 EMCal, 1 DCal
+//______________________________________
+void ShowerShape(Int_t icalo)
+{
+  // Declare the different histograms, arrays input is production
+  
+  const Int_t nEbins = 7;
+  Float_t ebins [] = {2,4,6,8,10,12,16,20};
+  
+  TH2F* h2M02[nProd];
+  TH1F* hM02 [nProd][nEbins]; 
+  TH2F* h2M20[nProd];
+  TH1F* hM20 [nProd][nEbins];
+  
+  //Legend for productions
+  TLegend lprod(0.6,0.475,0.95,0.675);
+  lprod.SetTextSize(0.04);
+  lprod.SetBorderSize(0);
+  lprod.SetFillColor(0);
+  
+  for(Int_t iprod = 0; iprod <  nProd; iprod++)
+  {      
+    // E cluster bin
+    h2M02[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hLam0E",icalo),iprod);
+    h2M20[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hLam1E",icalo),iprod);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      Float_t binMin = h2M02[iprod]->GetXaxis()->FindBin(ebins[ie]);
+      Float_t binMax = h2M02[iprod]->GetXaxis()->FindBin(ebins[ie+1])-1;
+      
+      hM02[iprod][ie] = 
+      (TH1F*) h2M02[iprod]->ProjectionY(Form("DeltaProjM02_%s_MC%s_ie%d",
+                                                            prod[iprod].Data(),histoTag.Data(),ie),
+                                                       binMin, binMax);
+ 
+      hM20[iprod][ie] = 
+      (TH1F*) h2M20[iprod]->ProjectionY(Form("DeltaProjM20_%s_MC%s_ie%d",
+                                             prod[iprod].Data(),histoTag.Data(),ie),
+                                        binMin, binMax);
+      
+      //hM02[iprod][ie]->SetXTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+      hM02[iprod][ie]->SetYTitle("Entries / N events");
+      hM02[iprod][ie]->SetTitle(Form("%2.1f < #it{E}^{cluster} < %2.1f GeV",ebins[ie],ebins[ie+1]));
+      hM02[iprod][ie]->SetAxisRange(0.1,0.8,"X");
+      hM02[iprod][ie]->Sumw2();
+      //hM02[iprod][ie]->SetMarkerStyle(24);
+      hM02[iprod][ie]->SetMarkerColor(color[iprod]);
+      hM02[iprod][ie]->SetLineColor  (color[iprod]);
+      
+      hM02[iprod][ie]->Scale(1./nEvents[iprod]);
+      
+      hM02[iprod][ie]->SetTitleOffset(1.5,"Y");
+      
+      
+      //hM20[iprod][ie]->SetXTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+      hM20[iprod][ie]->SetYTitle("Entries / N events");
+      hM20[iprod][ie]->SetTitle(Form("%2.1f < #it{E}^{cluster} < %2.1f GeV",ebins[ie],ebins[ie+1]));
+      hM20[iprod][ie]->SetAxisRange(0.0,0.5,"X");
+      hM20[iprod][ie]->Sumw2();
+      //hM20[iprod][ie]->SetMarkerStyle(24);
+      hM20[iprod][ie]->SetMarkerColor(color[iprod]);
+      hM20[iprod][ie]->SetLineColor  (color[iprod]);
+      
+      hM20[iprod][ie]->Scale(1./nEvents[iprod]);
+      
+      hM20[iprod][ie]->SetTitleOffset(1.5,"Y");
+    }
+    
+    lprod.AddEntry(hM02[iprod][0],prodLeg[iprod],"LP");
+    
+  } // prod loop
+  
+  
+  /////////////////
+  // Make the plots
+  /////////////////
+ 
+  {
+    TGaxis::SetMaxDigits(3);
+    
+    TCanvas * cM02 = new TCanvas(Form("M02_%s",histoTag.Data()),"",1000,1000);
+    cM02->Divide(2,2);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      cM02->cd(ie+1);
+      //gPad->SetLogy();
+      
+      hM02[0][ie]->Draw("H");
+      for(Int_t iprod = 0; iprod < nProd; iprod++)
+      {
+        hM02[iprod][ie]->Draw("Hsame");
+      }
+      
+      lprod.Draw();
+    }
+    
+    cM02->Print(Form("%s_M02.%s",histoTag.Data(),format.Data()));
+ 
+    TCanvas * cM20 = new TCanvas(Form("M20_%s",histoTag.Data()),"",1000,1000);
+    cM20->Divide(2,2);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      cM20->cd(ie+1);
+      //gPad->SetLogy();
+      
+      hM20[0][ie]->Draw("H");
+      for(Int_t iprod = 0; iprod < nProd; iprod++)
+      {
+        hM20[iprod][ie]->Draw("Hsame");
+      }
+      
+      lprod.Draw();
+    }
+    
+    cM20->Print(Form("%s_M20.%s",histoTag.Data(),format.Data()));
+    
+  }
+  
+}
+
+
+
+///
 /// Hybrid Tracks distributions
 /// To be updated
 //______________________________________
@@ -739,7 +1064,7 @@ void TrackQA()
   TH1F * hRatTrackPhiNoSPD[nProd-1] ;
   
   //Legend for productions
-  TLegend lprod(0.3,0.475,0.84,0.675);
+  TLegend lprod(0.5,0.475,0.84,0.675);
   lprod.SetTextSize(0.04);
   lprod.SetBorderSize(0);
   lprod.SetFillColor(0);
@@ -760,6 +1085,10 @@ void TrackQA()
     hTrackPhiNoSPD   [iprod] = (TH1F*)hTrackEtaPhiNoSPD[iprod]->ProjectionY(Form("hTrackPhiNoSPD%s",prod[iprod].Data()),0,1000);
     hTrackPhi        [iprod] = (TH1F*)hTrackEtaPhi     [iprod]->ProjectionY(Form("hTrackPhi%s"     ,prod[iprod].Data()),0,1000);
     
+    hTrackPt     [iprod]->Rebin(5);
+    hTrackPtSPD  [iprod]->Rebin(5);
+    hTrackPtNoSPD[iprod]->Rebin(5);
+    
     hTrackPt     [iprod]->Sumw2();
     hTrackPtSPD  [iprod]->Sumw2();
     hTrackPtNoSPD[iprod]->Sumw2();
@@ -767,6 +1096,10 @@ void TrackQA()
     hTrackPt     [iprod]->Scale(1./nEvents[iprod]);
     hTrackPtSPD  [iprod]->Scale(1./nEvents[iprod]);
     hTrackPtNoSPD[iprod]->Scale(1./nEvents[iprod]);
+    
+    hTrackPhi     [iprod]->Rebin(5);
+    hTrackPhiSPD  [iprod]->Rebin(5);
+    hTrackPhiNoSPD[iprod]->Rebin(5);
     
     hTrackPhi     [iprod]->Sumw2();
     hTrackPhiSPD  [iprod]->Sumw2();
@@ -806,23 +1139,25 @@ void TrackQA()
     hTrackPhiNoSPD[iprod]->SetMarkerColor(color[iprod]);
     hTrackPhiNoSPD[iprod]->SetMarkerStyle(25);
     
+    lprod.AddEntry(hTrackPt[iprod],prodLeg[iprod],"P");
+    
     if(iprod > 0)
     {
       hRatTrackPhi     [iprod-1] = (TH1F*)hTrackPhi     [iprod]->Clone(Form("hRatTrackPhi%s"     ,prod[iprod].Data()));
       hRatTrackPhiNoSPD[iprod-1] = (TH1F*)hTrackPhiNoSPD[iprod]->Clone(Form("hRatTrackPhiNoSPD%s",prod[iprod].Data()));
       hRatTrackPhiSPD  [iprod-1] = (TH1F*)hTrackPhiSPD  [iprod]->Clone(Form("hRatTrackPhiSPD%s"  ,prod[iprod].Data()));
       
-      hRatTrackPhi     [iprod-1]->Divide(hRatTrackPhi     [iprod-1],hTrackPhi     [0],1.000,1,"B");
-      hRatTrackPhiSPD  [iprod-1]->Divide(hRatTrackPhiSPD  [iprod-1],hTrackPhiSPD  [0],1.000,1,"B");
-      hRatTrackPhiNoSPD[iprod-1]->Divide(hRatTrackPhiNoSPD[iprod-1],hTrackPhiNoSPD[0],1.000,1,"B");
+      hRatTrackPhi     [iprod-1]->Divide(hRatTrackPhi     [iprod-1],hTrackPhi     [0],1.000,1,errType);
+      hRatTrackPhiSPD  [iprod-1]->Divide(hRatTrackPhiSPD  [iprod-1],hTrackPhiSPD  [0],1.000,1,errType);
+      hRatTrackPhiNoSPD[iprod-1]->Divide(hRatTrackPhiNoSPD[iprod-1],hTrackPhiNoSPD[0],1.000,1,errType);
       
       hRatTrackPt     [iprod-1] = (TH1F*)hTrackPt     [iprod]->Clone(Form("hRatTrackPt%s"     ,prod[iprod].Data()));
       hRatTrackPtNoSPD[iprod-1] = (TH1F*)hTrackPtNoSPD[iprod]->Clone(Form("hRatTrackPtNoSPD%s",prod[iprod].Data()));
       hRatTrackPtSPD  [iprod-1] = (TH1F*)hTrackPtSPD  [iprod]->Clone(Form("hRatTrackPtSPD%s"  ,prod[iprod].Data()));
       
-      hRatTrackPt     [iprod-1]->Divide(hRatTrackPt     [iprod-1],hTrackPt     [0],1.000,1,"B");
-      hRatTrackPtSPD  [iprod-1]->Divide(hRatTrackPtSPD  [iprod-1],hTrackPtSPD  [0],1.000,1,"B");
-      hRatTrackPtNoSPD[iprod-1]->Divide(hRatTrackPtNoSPD[iprod-1],hTrackPtNoSPD[0],1.000,1,"B");
+      hRatTrackPt     [iprod-1]->Divide(hRatTrackPt     [iprod-1],hTrackPt     [0],1.000,1,errType);
+      hRatTrackPtSPD  [iprod-1]->Divide(hRatTrackPtSPD  [iprod-1],hTrackPtSPD  [0],1.000,1,errType);
+      hRatTrackPtNoSPD[iprod-1]->Divide(hRatTrackPtNoSPD[iprod-1],hTrackPtNoSPD[0],1.000,1,errType);
     }
   }
   
@@ -846,6 +1181,7 @@ void TrackQA()
     ctrack->cd(1);
     gPad->SetLogy();
     hTrackPt[0]->Draw("");
+    hTrackPt[0]->SetMinimum(1e-8);
     for(Int_t iprod = 0; iprod < nProd; iprod++)
     {
       hTrackPt     [iprod]->Draw("same");
@@ -857,9 +1193,10 @@ void TrackQA()
     lprod.Draw();
     
     ctrack->cd(2);
-    
-    hRatTrackPt[0]->SetMaximum(1.05);
-    hRatTrackPt[0]->SetMinimum(0.95);
+    gPad->SetGridy();
+
+    hRatTrackPt[0]->SetMaximum(1.2);
+    hRatTrackPt[0]->SetMinimum(0.8);
     hRatTrackPt[0]->Draw("");
     hRatTrackPt[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
@@ -870,7 +1207,7 @@ void TrackQA()
     }
     
     ctrack->cd(3);
-    hTrackPhi[0]->SetMaximum(3.);
+    hTrackPhi[0]->SetMaximum(0.2);
     hTrackPhi[0]->SetMinimum(0.);
     hTrackPhi[0]->Draw("");
     for(Int_t iprod = 0; iprod < nProd; iprod++)
@@ -881,9 +1218,9 @@ void TrackQA()
     }
     
     ctrack->cd(4);
-    //gPad->SetLogy();
+    gPad->SetGridy();
     
-    hRatTrackPhi[0]->SetMaximum(1.05);
+    hRatTrackPhi[0]->SetMaximum(1.02);
     hRatTrackPhi[0]->SetMinimum(0.95);
     hRatTrackPhi[0]->Draw("");
     hRatTrackPhi[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
@@ -915,7 +1252,7 @@ void CorrelQA(Int_t icalo)
   TH1F* hRatXEUE[nProd-1];
   
   //Legend for productions
-  TLegend lprod(0.3,0.475,0.84,0.675);
+  TLegend lprod(0.5,0.475,0.84,0.675);
   lprod.SetTextSize(0.04);
   lprod.SetBorderSize(0);
   lprod.SetFillColor(0);
@@ -927,8 +1264,13 @@ void CorrelQA(Int_t icalo)
     
     if ( !h2XE[iprod] ) return;
     
-    Float_t minClusterE = 8;
-    TH1F * hTrigger = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtTrigger",iprod);
+    Float_t minClusterE = 5;
+    TH1F * hTrigger = (TH1F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hPtTrigger",icalo),iprod);
+    if(!hTrigger)
+    {
+      printf("Null trigger histo for prod %d\n",iprod);
+      return;
+    }
     Int_t minClusterEBin = hTrigger->FindBin(minClusterE);
     Float_t nTrig = hTrigger->Integral(minClusterE,100000);
     
@@ -937,6 +1279,9 @@ void CorrelQA(Int_t icalo)
     
     hXE  [iprod]->Sumw2();
     hXEUE[iprod]->Sumw2();
+    
+    hXE  [iprod]->Rebin(5);
+    hXEUE[iprod]->Rebin(5);
     
     hXE  [iprod]->Scale(1./nTrig);
     hXEUE[iprod]->Scale(1./nTrig);
@@ -950,6 +1295,8 @@ void CorrelQA(Int_t icalo)
     //hXE[iprod]->SetMaximum(1.1);
     //hXE[iprod]->SetMinimum(0);
     
+    lprod.AddEntry(hXE[iprod],prodLeg[iprod],"P");
+    
     hXEUE[iprod]->SetMarkerColor(color[iprod]);
     hXEUE[iprod]->SetMarkerStyle(25);
     
@@ -958,8 +1305,8 @@ void CorrelQA(Int_t icalo)
       hRatXE  [iprod-1] = (TH1F*)hXE  [iprod]->Clone(Form("hRatXE%s_%s"  ,prod[iprod].Data(),histoTag.Data()));
       hRatXEUE[iprod-1] = (TH1F*)hXEUE[iprod]->Clone(Form("hRatXEUE%s_%s",prod[iprod].Data(),histoTag.Data()));
       
-      hRatXE  [iprod-1]->Divide(hRatXE  [iprod-1],hXE  [0],1.000,1,"B");
-      hRatXEUE[iprod-1]->Divide(hRatXEUE[iprod-1],hXEUE[0],1.000,1,"B");
+      hRatXE  [iprod-1]->Divide(hRatXE  [iprod-1],hXE  [0],1.000,1,errType);
+      hRatXEUE[iprod-1]->Divide(hRatXEUE[iprod-1],hXEUE[0],1.000,1,errType);
     }
   }
   
@@ -992,8 +1339,8 @@ void CorrelQA(Int_t icalo)
     
     cxe->cd(2);
     
-    hRatXE[0]->SetMaximum(1.05);
-    hRatXE[0]->SetMinimum(0.95);
+    hRatXE[0]->SetMaximum(1.5);
+    hRatXE[0]->SetMinimum(0.5);
     hRatXE[0]->Draw("");
     hRatXE[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
@@ -1003,6 +1350,412 @@ void CorrelQA(Int_t icalo)
     }
     
     cxe->Print(Form("%s_XEComp.%s",histoTag.Data(),format.Data()));
+  }
+  
+}
+
+
+///
+/// isolation cone
+/// 
+/// To be updated
+///
+/// \param icalo: 0 EMCal, 1 DCal
+//______________________________________
+void IsolQA(Int_t icalo)
+{
+  TH2F* h2Ne[nProd];
+  TH2F* h2Ch[nProd];
+  TH1F* hNe[nProd];
+  TH1F* hCh[nProd];
+  TH1F* hRatNe[nProd-1];
+  TH1F* hRatCh[nProd-1];
+  
+  //Legend for productions
+  TLegend lprod(0.15,0.15,0.35,0.35);
+  lprod.SetTextSize(0.04);
+  lprod.SetBorderSize(0);
+  lprod.SetFillColor(0);
+  
+  for(Int_t iprod = 0; iprod <  nProd; iprod++)
+  {
+    h2Ne [iprod]= (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumCluster",icalo),iprod);
+    h2Ch [iprod]= (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumTrack"  ,icalo),iprod);
+    
+    if ( !h2Ne[iprod] ) return;
+    
+    Float_t minClusterE = 5;
+    TH1F * hTrigger = (TH1F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hE",icalo),iprod);
+    hTrigger    ->Add((TH1F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hENoIso",icalo),iprod));
+    if(!hTrigger)
+    {
+      printf("Null trigger histo for prod %d\n",iprod);
+      return;
+    }
+    
+    Int_t minClusterEBin = hTrigger->FindBin(minClusterE);
+    Float_t nTrig = hTrigger->Integral(minClusterE,100000);
+    
+    hNe[iprod] = (TH1F*)h2Ne[iprod]->ProjectionY(Form("hNe%s_%s",prod[iprod].Data(),histoTag.Data()),minClusterEBin,1000);
+    hCh[iprod] = (TH1F*)h2Ch[iprod]->ProjectionY(Form("hCh%s_%s",prod[iprod].Data(),histoTag.Data()),minClusterEBin,1000);
+    
+    hNe[iprod]->Sumw2();
+    hCh[iprod]->Sumw2();
+    
+//    hNe[iprod]->Rebin(5);
+//    hCh[iprod]->Rebin(5);
+    
+    hNe[iprod]->Scale(1./nTrig);
+    hCh[iprod]->Scale(1./nTrig);
+    
+    hNe[iprod]->SetTitle(Form("#Sigma p_{T} in cone R=0.4, p_{T,Trig}>%2.1f GeV/c",minClusterE));
+    hNe[iprod]->SetYTitle("1/N_{trigger} dN/d#Sigma p_{T}");
+    hNe[iprod]->SetTitleOffset(1.5,"Y");
+    hNe[iprod]->SetMarkerColor(color[iprod]);
+    hNe[iprod]->SetMarkerStyle(20);
+    hNe[iprod]->SetAxisRange(0.,30.,"X");
+    //hNe[iprod]->SetMaximum(1.1);
+    //hNe[iprod]->SetMinimum(0);
+    
+    lprod.AddEntry(hNe[iprod],prodLeg[iprod],"P");
+    
+    hCh[iprod]->SetMarkerColor(color[iprod]);
+    hCh[iprod]->SetMarkerStyle(25);
+    
+    if(iprod > 0)
+    {
+      hRatNe[iprod-1] = (TH1F*)hNe[iprod]->Clone(Form("hRatNe%s_%s",prod[iprod].Data(),histoTag.Data()));
+      hRatCh[iprod-1] = (TH1F*)hCh[iprod]->Clone(Form("hRatCh%s_%s",prod[iprod].Data(),histoTag.Data()));
+      
+      hRatNe[iprod-1]->Divide(hRatNe[iprod-1],hNe[0],1.000,1,errType);
+      hRatCh[iprod-1]->Divide(hRatCh[iprod-1],hCh[0],1.000,1,errType);
+    }
+  }
+  
+  /////////////////
+  // Make the plots
+  /////////////////
+  
+  // Ne
+  {
+    TLegend lNe(0.6,0.75,0.84,0.89);
+    lNe.SetTextSize(0.04);
+    //lNe.SetBorderSize(0);
+    lNe.SetFillColor(0);
+    lNe.AddEntry(hNe[0],"Clusters","P");
+    lNe.AddEntry(hCh[0],"Tracks","P");
+    
+    TCanvas * cNe = new TCanvas(Form("SumPtHisto_%s_%s",histoTag.Data(),histoTag.Data()),"",1000,500);
+    cNe->Divide(2,1);
+    cNe->cd(1);
+    gPad->SetLogy();
+    hNe[0]->Draw("");
+    for(Int_t iprod = 0; iprod < nProd; iprod++)
+    {
+      hNe[iprod]->Draw("same");
+      hCh[iprod]->Draw("same");
+    }
+    
+    lNe.Draw();
+    lprod.Draw();
+    
+    cNe->cd(2);
+    
+    hRatNe[0]->SetMaximum(1.5);
+    hRatNe[0]->SetMinimum(0.5);
+    hRatNe[0]->Draw("");
+    hRatNe[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    for(Int_t iprod = 0; iprod < nProd-1; iprod++)
+    {
+      hRatNe  [iprod]->Draw("same");
+      hRatCh[iprod]->Draw("same");
+    }
+    
+    cNe->Print(Form("%s_ConeSumPt.%s",histoTag.Data(),format.Data()));
+  }
+  
+}
+
+
+///
+/// invariant mass plots. Before InvMassFit must run.
+/// 
+/// To be updated
+///
+/// \param icalo: 0 EMCal, 1 DCal
+/// \param particle: Pi0 or Eta
+//______________________________________
+void InvMass(Int_t icalo, TString particle, TString fileName)
+{
+  const Int_t nEbins = 12;
+  TH1F        * hIM   [nProd][nEbins];
+  TGraphErrors* gMass [nProd];
+  TGraphErrors* gWidth[nProd];
+  TGraphErrors* gPt   [nProd];
+  
+  TGraphErrors* gRatMass [nProd];
+  TGraphErrors* gRatWidth[nProd];
+  TGraphErrors* gRatPt   [nProd];
+  
+  // Open files per production and trigger, get histograms/graphs
+  
+  //Legend for productions
+  TLegend lprod(0.6,0.7,0.84,0.89);
+  lprod.SetTextSize(0.04);
+  lprod.SetBorderSize(0);
+  lprod.SetFillColor(0);
+  
+  fileName.ReplaceAll(".root","");
+  
+  TString calorimeter = "EMCAL";
+  if(icalo == 1) calorimeter = "DCAL";
+  
+  for(Int_t iprod = 0; iprod <  nProd; iprod++)
+  {
+    TFile * filIM = TFile::Open(Form("IMfigures/%s_%s_MassWidthPtHistograms_%s_%s_AllSM.root",
+                                     prod[iprod].Data(),calorimeter.Data(),particle.Data(),fileName.Data()));
+//    printf("IMfigures/%s_%s_MassWidthPtHistograms_%s_%s_AllSM.root %p\n",
+//           prod[iprod].Data(),calorimeter.Data(),particle.Data(),fileName.Data(),filIM);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      hIM[iprod][ie] = (TH1F*) filIM->Get(Form("IM_Comb0_PtBin%d",ie));
+      //    
+      // hIM[iprod][ie] ->Rebin(5);
+      //    
+      // hIM[iprod][ie] ->Scale(1./nTrig);
+      hIM[iprod][ie]->SetTitleOffset(1.5,"Y");
+      hIM[iprod][ie]->SetYTitle("1/N_{events} dN/dM");
+      hIM[iprod][ie]->SetMarkerColor(color[iprod]);
+      hIM[iprod][ie]->SetLineColor(color[iprod]);
+      // hIM[iprod][ie]->SetMarkerStyle(20);
+      // hIM[iprod][ie]->SetAxisRange(0.,1.,"X");
+    }
+    
+    gMass [iprod] = (TGraphErrors*) filIM->Get("gMass_AllSM");
+    gWidth[iprod] = (TGraphErrors*) filIM->Get("gWidth_AllSM");
+    gPt   [iprod] = (TGraphErrors*) filIM->Get("gPt_AllSM");
+    
+    gMass [iprod]->SetMarkerColor(color[iprod]);
+    gWidth[iprod]->SetMarkerColor(color[iprod]);
+    gPt   [iprod]->SetMarkerColor(color[iprod]);
+
+    gMass [iprod]->SetMarkerStyle(20);
+    gWidth[iprod]->SetMarkerStyle(20);
+    gPt   [iprod]->SetMarkerStyle(20);
+    
+    lprod.AddEntry(gMass[iprod],prodLeg[iprod],"PL");
+    
+  } // prod
+  
+  // Ratio
+  const Int_t     nPoints = gMass [0]->GetN();
+  Double_t *      x = gMass [0]->GetX();
+  Double_t *     ex = gMass [0]->GetEX();
+  
+  Double_t     massR[nPoints];
+  Double_t    emassR[nPoints]; 
+  Double_t    widthR[nPoints];
+  Double_t   ewidthR[nPoints];
+  Double_t       ptR[nPoints];
+  Double_t      eptR[nPoints];
+  
+  Double_t *   massD = gMass [0]->GetY();
+  Double_t *  emassD = gMass [0]->GetEY();  
+  
+  Double_t *  widthD = gWidth[0]->GetY();
+  Double_t * ewidthD = gWidth[0]->GetEY();
+  
+  Double_t *     ptD = gPt   [0]->GetY();
+  Double_t *    eptD = gPt   [0]->GetEY();
+  
+  for(Int_t iprod = 1; iprod <  nProd; iprod++)
+  {
+    Double_t *   massN = gMass [iprod]->GetY() ;
+    Double_t *  emassN = gMass [iprod]->GetEY();  
+    
+    Double_t *  widthN = gWidth[iprod]->GetY();
+    Double_t * ewidthN = gWidth[iprod]->GetEY();
+    
+    Double_t *     ptN = gPt   [iprod]->GetY();
+    Double_t *    eptN = gPt   [iprod]->GetEY();
+    
+    for(Int_t ie = 0; ie < nPoints ; ie++)
+    {
+      if ( massD[ie] > 0 && massN [ie] > 0 )
+      {
+         massR[ie] = massN[ie]/massD[ie];
+        emassR[ie] = massR[ie] * TMath::Sqrt((emassN[ie]/massN[ie])*(emassN[ie]/massN[ie]) + 
+                                             (emassD[ie]/massD[ie])*(emassD[ie]/massD[ie]));
+      }
+      
+      if ( widthD[ie] > 0 && widthN [ie] > 0 )
+      {
+         widthR[ie] = widthN[ie]/widthD[ie];
+        ewidthR[ie] = widthR[ie] * TMath::Sqrt((ewidthN[ie]/widthN[ie])*(ewidthN[ie]/widthN[ie]) + 
+                                               (ewidthD[ie]/widthD[ie])*(ewidthD[ie]/widthD[ie]));
+      }
+      
+      if ( ptD[ie] > 0 && ptN [ie] > 0 )
+      {
+         ptR[ie] = ptN[ie]/ptD[ie];
+        eptR[ie] = ptR[ie] * TMath::Sqrt((eptN[ie]/ptN[ie])*(eptN[ie]/ptN[ie]) + 
+                                         (eptD[ie]/ptD[ie])*(eptD[ie]/ptD[ie]));
+      }
+      
+    } // points
+    
+    gRatMass [iprod] = new TGraphErrors(nPoints,x,massR ,ex,emassR);
+    gRatWidth[iprod] = new TGraphErrors(nPoints,x,widthR,ex,ewidthR);
+    gRatPt   [iprod] = new TGraphErrors(nPoints,x,ptR   ,ex,eptR);
+    
+    gRatMass [iprod]->SetMarkerColor(color[iprod]);
+    gRatMass [iprod]->SetLineColor(color[iprod]);    
+    gRatWidth[iprod]->SetMarkerColor(color[iprod]);
+    gRatWidth[iprod]->SetLineColor(color[iprod]);    
+    gRatPt   [iprod]->SetMarkerColor(color[iprod]);
+    gRatPt   [iprod]->SetLineColor(color[iprod]);
+    
+  } // prod
+  
+  /////////////////
+  // Make the plots
+  /////////////////
+  
+  // Mass
+  {
+    TCanvas * cMass = new TCanvas(Form("Mass_%s_%s",particle.Data(), histoTag.Data()),"",1000,500);
+    cMass->Divide(2,1);
+    
+    cMass->cd(1);
+    //gPad->SetLogy();
+    
+    gMass[1]->SetMinimum(120);
+    gMass[1]->SetMaximum(170);
+    gMass[0]->Draw("AP");
+    for(Int_t iprod = 0; iprod <  nProd; iprod++)
+    {
+      gMass[iprod]->Draw("P");
+    }
+    
+    lprod.Draw();
+    
+    cMass->cd(2);
+    gPad->SetGridy();
+    
+    gRatMass[1]->SetTitle("Mass Ratio");
+    gRatMass[1]->GetHistogram()->SetXTitle("p_{T} (GeV/c)");
+    gRatMass[1]->GetHistogram()->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    gRatMass[1]->GetHistogram()->SetTitleOffset(1.4,"Y");
+    gRatMass[1]->SetMinimum(0.97);
+    gRatMass[1]->SetMaximum(1.05);
+    gRatMass[1]->Draw("AP");
+    
+    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    {
+      gMass [iprod]->Draw("P");
+    }
+    
+      
+    cMass->Print(Form("%s_Mass_%s.%s",histoTag.Data(),particle.Data(),format.Data()));
+  }
+  // Width
+  {
+    TCanvas * cWidth = new TCanvas(Form("Width_%s_%s",particle.Data(), histoTag.Data()),"",1000,500);
+    cWidth->Divide(2,1);
+    
+    cWidth->cd(1);
+    //gPad->SetLogy();
+    
+    gWidth[0]->SetMinimum(8);
+    gWidth[0]->SetMaximum(20);
+    gWidth[0]->Draw("AP");
+    for(Int_t iprod = 0; iprod <  nProd; iprod++)
+    {
+      gWidth[iprod]->Draw("P");
+    }
+    
+    lprod.Draw();
+    
+    cWidth->cd(2);
+    gPad->SetGridy();
+    
+    gRatWidth[1]->SetTitle("Width Ratio");
+    gRatWidth[1]->GetHistogram()->SetXTitle("p_{T} (GeV/c)");
+    gRatWidth[1]->GetHistogram()->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    gRatWidth[1]->GetHistogram()->SetTitleOffset(1.4,"Y");
+    gRatWidth[1]->SetMinimum(0.9);
+    gRatWidth[1]->SetMaximum(1.1);
+    gRatWidth[1]->Draw("AP");
+    
+    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    {
+      gWidth [iprod]->Draw("P");
+    }
+    
+    
+    cWidth->Print(Form("%s_Width_%s.%s",histoTag.Data(),particle.Data(),format.Data()));
+  }
+  
+  
+  // Pt
+  {
+    TCanvas * cPt = new TCanvas(Form("Pt_%s_%s",particle.Data(), histoTag.Data()),"",1000,500);
+    cPt->Divide(2,1);
+    
+    cPt->cd(1);
+    gPad->SetLogy();
+    
+    gPt[0]->Draw("AP");
+    for(Int_t iprod = 0; iprod <  nProd; iprod++)
+    {
+      gPt[iprod]->Draw("P");
+    }
+    
+    lprod.Draw();
+    
+    cPt->cd(2);
+    gPad->SetGridy();
+    
+    gRatPt[1]->SetTitle("Pt Ratio");
+    gRatPt[1]->GetHistogram()->SetXTitle("p_{T} (GeV/c)");
+    gRatPt[1]->GetHistogram()->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    gRatPt[1]->GetHistogram()->SetTitleOffset(1.4,"Y");
+    gRatPt[1]->SetMinimum(0.7);
+    gRatPt[1]->SetMaximum(1.3);
+    gRatPt[1]->Draw("AP");
+    
+    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    {
+      gPt [iprod]->Draw("P");
+    }
+    
+    
+    cPt->Print(Form("%s_Pt_%s.%s",histoTag.Data(),particle.Data(),format.Data()));
+  }
+  
+  // Invariant Mass
+  {
+    TGaxis::SetMaxDigits(3);
+    
+    TCanvas * cIM = new TCanvas(Form("IM_%s_%s",particle.Data(),histoTag.Data()),"",1000,1000);
+    cIM->Divide(4,3);
+    
+    for(Int_t ie = 0; ie < nEbins; ie++)
+    {
+      cIM->cd(ie+1);
+      //gPad->SetLogy();
+      
+      hIM[0][ie]->Draw("");
+      for(Int_t iprod = 0; iprod < nProd; iprod++)
+      {
+        hIM[iprod][ie]->Draw("same");
+      }
+      
+      lprod.Draw();
+    }
+    
+    cIM->Print(Form("%s_IM_%s.%s",histoTag.Data(),particle.Data(),format.Data()));
   }
   
 }
@@ -1040,12 +1793,13 @@ void CentralityQA()
     //hCen[iprod]->SetAxisRange(0.,30.,"X");
     //hCen[iprod]->SetMaximum(1.1);
     //hCen[iprod]->SetMinimum(0);
-    
+    lprod.AddEntry(hCen[iprod],prodLeg[iprod],"P");
+
     if(iprod > 0)
     {
       hRatCen[iprod-1] = (TH1F*)hCen[iprod]->Clone(Form("hRatCen%s" ,prod[iprod].Data()));
       
-      hRatCen[iprod-1]->Divide(hRatCen[iprod-1],hCen [0],1.000,1,"B");
+      hRatCen[iprod-1]->Divide(hRatCen[iprod-1],hCen [0],1.000,1,errType);
     }
   }
   
@@ -1061,6 +1815,7 @@ void CentralityQA()
     //gPad->SetLogy();
     
     hCen[0]->Draw();
+
     for(Int_t iprod = 0; iprod <  nProd; iprod++)
     {
       hCen[iprod]->Draw("same");
@@ -1141,7 +1896,7 @@ void VertexQA()
       {
         hRatVertex[ivertex][iprod-1] = (TH1F*)hVertex[ivertex][iprod]->Clone(Form("hRatVertex%s_%d" ,prod[iprod].Data(),ivertex));
         
-        hRatVertex[ivertex][iprod-1]->Divide(hRatVertex[ivertex][iprod-1],hVertex[ivertex][0],1.000,1,"B");
+        hRatVertex[ivertex][iprod-1]->Divide(hRatVertex[ivertex][iprod-1],hVertex[ivertex][0],1.000,1,errType);
       }
     }
   }
@@ -1263,4 +2018,5 @@ TObject * GetHisto(TString histoName, Int_t iprod)
   else                  
     return file[iprod]->Get       (histoName);
 }
+
 
