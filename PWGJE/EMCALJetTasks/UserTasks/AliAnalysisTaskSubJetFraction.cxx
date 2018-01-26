@@ -726,6 +726,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter_1);
     fhEventCounter_2= new TH1F("fhEventCounter_2", "Event Counter Particle Level", 15,0.5,15.5);
     fOutput->Add(fhEventCounter_2);
+    fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi);
   }
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
