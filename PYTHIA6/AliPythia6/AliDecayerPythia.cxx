@@ -187,15 +187,19 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     }
     else if(idpart == 331){
       fPythia->SetMDCY(fPythia->Pycomp(22) ,1, 0);
+      fPythia->SetMDCY(fPythia->Pycomp(223) ,1, 0);
       Lu1Ent(0, idpart, energy, theta, phi);
       fPythia->EtaprimeDalitz();
+      fPythia->SetMDCY(fPythia->Pycomp(223) ,1, 1);
       fPythia->SetMDCY(fPythia->Pycomp(22) ,1, 1);
     }
     else if(idpart == 333){
       fPythia->SetMDCY(fPythia->Pycomp(221) ,1, 0);
+      fPythia->SetMDCY(fPythia->Pycomp(111) ,1, 0);
       Lu1Ent(0, idpart, energy, theta, phi);
       fPythia->PhiDirect();
       fPythia->PhiDalitz();
+      fPythia->SetMDCY(fPythia->Pycomp(111) ,1, 1);
       fPythia->SetMDCY(fPythia->Pycomp(221) ,1, 1);
     }
     else if(idpart == 443){
