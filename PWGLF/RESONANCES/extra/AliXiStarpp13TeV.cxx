@@ -423,7 +423,7 @@ void AliXiStarpp13TeV::XiStarInit()
     // 14 = Cos PA Xi
     
     // Set Standard Reconstruction cut values
-    fCutValues[0][0] = 70; fCutValues[0][1] = 70; fCutValues[0][2] = 70; fCutValues[0][3] = 70;
+    fCutValues[0][0] = 50; fCutValues[0][1] = 50; fCutValues[0][2] = 50; fCutValues[0][3] = 50; // for 2010 cut (origin: 70)
     fCutValues[0][4] = 0.04;
     fCutValues[0][5] = 0.04;
     fCutValues[0][6] = 0.05;
@@ -442,7 +442,7 @@ void AliXiStarpp13TeV::XiStarInit()
     }
     
     //systematic variation// Loose
-    fCutValues[1][0] = 60; fCutValues[1][1] = 60; fCutValues[1][2] = 60; fCutValues[1][3] = 60;// 80
+    fCutValues[1][0] = 45; fCutValues[1][1] = 45; fCutValues[1][2] = 45; fCutValues[1][3] = 45;// 60 -> 45
     fCutValues[2][4] = 0.03;
     fCutValues[3][5] = 0.03;
     fCutValues[4][6] = 0.04;
@@ -454,7 +454,7 @@ void AliXiStarpp13TeV::XiStarInit()
     fCutValues[10][12] = 0.965;
 
     //systematic variation// tight
-    fCutValues[11][0] = 80; fCutValues[11][1] = 80; fCutValues[11][2] = 80; fCutValues[11][3] = 80;// 80
+    fCutValues[11][0] = 55; fCutValues[11][1] = 55; fCutValues[11][2] = 55; fCutValues[11][3] = 55;// 70 -> 55
     fCutValues[12][4] = 0.104;
     fCutValues[13][5] = 0.104;
     fCutValues[14][6] = 0.08;
@@ -1219,7 +1219,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
             if(esdtrack->Charge() > 0) positiveTracks++;
             else negativeTracks++;
             
-           if(fTempStruct[myTracks].fNclusTPC < 60) continue;
+           if(fTempStruct[myTracks].fNclusTPC < 50) continue;  //60 to 50
          //   if(dca2[1]>3) continue;
          //   if(dca2[0]>3) continue;
             
@@ -1696,8 +1696,8 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                     if(fDecayParameters[6] < fCutValues[cv][6]) continue;// DCAVtx pion second
                     if(fDecayParameters[7] < fCutValues[cv][7]) continue;// DCAVtx Lambda
                     //if(fDecayParameters[8] > fCutValues[cv][8]) continue; // DCAVtx pion third
-                    if(cv!=8 || cv!=21) {if(fDecayParameters[8] > (0.0105 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;}// DCAVtx pion third
-                    else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}
+                    //if(cv!=8 || cv!=21) {if(fDecayParameters[8] > (0.0105 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.1))) continue;}// DCAVtx pion third
+                    //else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}
                     //0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01 (2010 cut)
                     
                     //
