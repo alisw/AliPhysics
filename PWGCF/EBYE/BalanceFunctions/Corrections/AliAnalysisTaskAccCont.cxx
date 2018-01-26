@@ -102,7 +102,7 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     // Called once
     Int_t phiBin = 100;
     Int_t etaBin = 16;
-    Int_t vertex_bin = 4;
+    Int_t vertex_bin = 9;
     
     Double_t nArrayPhi[phiBin+1];
     for(Int_t iBin = 0; iBin <= phiBin; iBin++)
@@ -143,7 +143,12 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     // QA histograms: multiplicities
     fHistMultiplicity = new TH2F("fHistMultiplicity",";Centrality (%);N_{acc.};Counts",10,0,100,5000,-0.5,4999.5);
     fListQA->Add(fHistMultiplicity);
+  
+    fHistGlobalvsESDBeforePileUpCuts = new TH2F("fHistGlobalvsESDBeforePileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
+    fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
     
+    fListQA->Add(fHistGlobalvsESDBeforePileUpCuts);
+    fListQA->Add(fHistGlobalvsESDAfterPileUpCuts); 
     //====================================================//
     //Results TList
     fListResults = new TList();
@@ -206,21 +211,20 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptchargedminus_ext = new TH3F("fHistDCAxychargedminusext","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
     fHistDCAXYptchargedplus_ext = new TH3F("fHistDCAxychargedplusext","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
- 
-    fHistGlobalvsESDBeforePileUpCuts = new TH2F("fHistGlobalvsESDBeforePileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
-    fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);   
     
     fListResults->Add(fHistEtaPhiVertexPlus);
     fListResults->Add(fHistEtaPhiVertexMinus);
+    if(fUseRapidity){
     fListResults->Add(fHistYPhiVertexPlus);
     fListResults->Add(fHistYPhiVertexMinus);
+    }
     fListResults->Add(fHistDCAXYptchargedminus);
     fListResults->Add(fHistDCAXYptchargedplus);
+    if(fDCAext){
     fListResults->Add(fHistDCAXYptchargedminus_ext);
     fListResults->Add(fHistDCAXYptchargedplus_ext);
-    fListQA->Add(fHistGlobalvsESDBeforePileUpCuts);
-    fListQA->Add(fHistGlobalvsESDAfterPileUpCuts);    
-
+    }
+   
     // Post output data
     PostData(1, fListQA);
     PostData(2, fListResults);
@@ -483,10 +487,9 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                                         }
 						}
 						else {
-                                                	if (fDCAext)
+                                                	fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
+							if (fDCAext)
 								fHistDCAXYptchargedplus_ext->Fill(pt,eta,dca[0]);
-							else if (!fDCAext)
-								fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
 						}
 					}
                                         else if (charge<0){
@@ -508,10 +511,9 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 							}
 						}
 						else {
-                                                        if (fDCAext)
+                                         		fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
+					                if (fDCAext)
 								fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
-							else if (!fDCAext)
-								fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
 						}	
 					}
 		
