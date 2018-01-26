@@ -107,17 +107,15 @@ private:
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
 
-
+/*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
                              Float_t, Int_t);
 
-
+*/
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray,
-                             TObjArray *selectedTrackArray, AliTHn *triggerHist,
-                             AliTHn *associateHist, Bool_t, Float_t, Float_t,
-                             Float_t, Int_t);
+                             TObjArray *selectedTrackArray, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step);
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
                                    Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
@@ -199,6 +197,7 @@ private:
   //	Double_t fPtMinDaughter;
 
   AliAODEvent *fEvent; //  AOD Event
+  AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
   Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
@@ -227,8 +226,17 @@ private:
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
+  AliTHn* fhistmcprim;
+  TH2D*fhmcprimvzeta;
+  TH1D*fhmcprimpdgcode;
+  TH1D*fhrefetaFMD[4];
+  TH1D*fhrefphiFMD[4];
+
+  TH2D*  fh2_FMD_acceptance_prim;
+  TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_FMD_eta_phi;
+  AliTHn* fhistfmd;
 
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
@@ -246,7 +254,6 @@ private:
   TH1F *fHist_V0Stat;
 
   // QA histograms
-
   TH2D *fHistPhiDTPCNSig;
   TH2D *fHistPhiDTOFNSig;
   TH2D *fHistPhiDTPCTOFNSig;
