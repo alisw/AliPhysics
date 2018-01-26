@@ -92,26 +92,35 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hESDConversionRPhi;           //!
 		TH2F**            hESDConversionRZ;             //!
 		TH2F**            hESDConversionRPt;            //!
-		TH2F**            hESDConversionPAsym;          //!
 		TH2F**            hESDConversionREta;           //!
 		TH1F**            hESDConversionDCA;            //!
 		TH1F**            hESDConversionPsiPair;        //!
 		TH1F**            hESDConversionChi2;           //!
 		TH1F**            hESDConversionMass;           //!
+		TH1F**            hESDConversionRRejSmall;      //!
+		TH1F**            hESDConversionRRejLarge;      //!
+
+        TH2F**            hElectronRdEdx;               //!
+        TH2F**            hElectronRNSigmadEdx;         //!
+        TH2F**            hPositronRdEdx;               //!
+        TH2F**            hPositronRNSigmadEdx;         //!
 
  		TH2F**            hMCConversionRPhi;            //!
 		TH2F**            hMCConversionRPt;             //!
 		TH2F**            hMCConversionREta;            //!
+ 		TH1F**            hMCConversionRRejSmall;       //!
+ 		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
 		TH2F**            hMCTrueConversionRPhi;        //!
 		TH2F**            hMCTrueConversionRZ;          //!
 		TH2F**            hMCTrueConversionRPt;         //!
 		TH2F**            hMCTrueConversionREta;        //!
-		TH2F**            hMCTrueConversionPAsym;       //!
 		TH1F**            hMCTrueConversionDCA;         //!
 		TH1F**            hMCTrueConversionPsiPair;     //!
 		TH1F**            hMCTrueConversionChi2;        //!
 		TH1F**            hMCTrueConversionMass;        //!
+ 		TH1F**            hMCTrueConversionRRejSmall;   //!
+ 		TH1F**            hMCTrueConversionRRejLarge;   //!
 
 		TH2F**            hMCTruePi0DalConversionRPt;   //!
 		TH1F**            hMCTruePi0DalConversionEta;   //!
@@ -125,7 +134,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 11);
+        ClassDef(AliAnalysisTaskMaterialHistos, 12);
 };
 
 #endif
