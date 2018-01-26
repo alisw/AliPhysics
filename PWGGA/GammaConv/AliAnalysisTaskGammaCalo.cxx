@@ -259,6 +259,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
   fHistoNGammaCandidates(NULL),
+  fHistoNGammaCandidatesBasic(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
@@ -325,7 +326,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fNCurrentClusterBasic(0)
 {
 
 }
@@ -528,6 +530,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
   fHistoNGammaCandidates(NULL),
+  fHistoNGammaCandidatesBasic(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
@@ -594,7 +597,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fNCurrentClusterBasic(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -756,9 +760,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoJetJetNTrials     = new TH1F*[fnCuts];
   }
 
-  fHistoNGoodESDTracks      = new TH1F*[fnCuts];
-  fHistoVertexZ             = new TH1F*[fnCuts];
-  fHistoNGammaCandidates    = new TH1F*[fnCuts];
+  fHistoNGoodESDTracks        = new TH1F*[fnCuts];
+  fHistoVertexZ               = new TH1F*[fnCuts];
+  fHistoNGammaCandidates      = new TH1F*[fnCuts];
+  fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
   if(!fDoLightOutput){
     fHistoNGoodESDTracksVsNGammaCandidates  = new TH2F*[fnCuts];
     fHistoSPDClusterTrackletBackground      = new TH2F*[fnCuts];
@@ -886,10 +891,22 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks","GoodESDTracks",400,0,400);
     else
       fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks","GoodESDTracks",200,0,200);
+    fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
     fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
 
     fHistoVertexZ[iCut]             = new TH1F("VertexZ","VertexZ",1000,-50,50);
+    fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
     fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+
+    if(fIsHeavyIon == 1)
+      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic","GammaCandidatesBasic",600,0,600);
+    else if(fIsHeavyIon == 2)
+      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic","GammaCandidatesBasic",400,0,400);
+    else
+      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic","GammaCandidatesBasic",100,0,100);
+    fHistoNGammaCandidatesBasic[iCut]->GetXaxis()->SetTitle("#cluster candidates basic");
+    fESDList[iCut]->Add(fHistoNGammaCandidatesBasic[iCut]);
+
 
     if(fIsHeavyIon == 1)
       fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates","GammaCandidates",600,0,600);
@@ -897,6 +914,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates","GammaCandidates",400,0,400);
     else
       fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates","GammaCandidates",100,0,100);
+    fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
     fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
 
     if(!fDoLightOutput){
@@ -930,6 +948,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNGoodESDTracks[iCut]->Sumw2();
       fHistoVertexZ[iCut]->Sumw2();
       fHistoNGammaCandidates[iCut]->Sumw2();
+      fHistoNGammaCandidatesBasic[iCut]->Sumw2();
       if(!fDoLightOutput){
         fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
         fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
@@ -1996,6 +2015,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 
     fiCut = iCut;
 
+    fNCurrentClusterBasic       = 0;
     Bool_t isRunningEMCALrelAna = kFALSE;
     if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
 
@@ -2095,6 +2115,8 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters();            // process calo clusters
 
+    fHistoNGammaCandidatesBasic[iCut]->Fill(fNCurrentClusterBasic, fWeightJetJetMC);
+
     fHistoNGammaCandidates[iCut]->Fill(fClusterCandidates->GetEntries(), fWeightJetJetMC);
     if(!fDoLightOutput) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fClusterCandidates->GetEntries(), fWeightJetJetMC);
     if(fDoMesonAnalysis){ // Meson Analysis
@@ -2128,8 +2150,9 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 void AliAnalysisTaskGammaCalo::ProcessClusters()
 {
 
-  Int_t nclus = 0;
+  Int_t nclus                       = 0;
   TClonesArray * arrClustersProcess = NULL;
+  fNCurrentClusterBasic             = 0;
   if(!fCorrTaskSetting.CompareTo("")){
     nclus = fInputEvent->GetNumberOfCaloClusters();
   } else {
@@ -2173,9 +2196,12 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     if(!clus) continue;
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
       if(fProduceTreeEOverP && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) mapIsClusterAcceptedWithoutTrackMatch[i] = 1;
+      if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsAcceptedForBasicCounting())fNCurrentClusterBasic++;
       delete clus;
       continue;
     }
+    fNCurrentClusterBasic++;
+
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -2272,7 +2298,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         else
           clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
       }
-      
+
       if(!clus) continue;
 
       Int_t cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
@@ -2468,6 +2494,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   if(fProduceCellIDPlots || fProduceTreeEOverP) mapIsClusterAccepted.clear();
 
   if(fLocalDebugFlag == 2) EventDebugMethod();
+
   return;
 }
 
@@ -3423,7 +3450,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       else
         clus1 = fInputEvent->GetCaloCluster(TrueGammaCandidate0->GetCaloClusterRef());
     }
-    
+
     if (!clus1) return;
     TLorentzVector clusterVector1;
     clus1->GetMomentum(clusterVector1,vertex);
@@ -4464,7 +4491,7 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
       AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
     nclus = arrClustersDebug->GetEntries();
   }
-  
+
   AliVCaloCells* cells = fInputEvent->GetEMCALCells();
   fOutputLocalDebug << "--event--" << endl;
   fOutputLocalDebug << "nclusters " << nclus << endl;

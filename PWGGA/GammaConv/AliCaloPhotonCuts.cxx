@@ -67,19 +67,19 @@ ClassImp(AliCaloPhotonCuts)
 
 
 const char* AliCaloPhotonCuts::fgkCutNames[AliCaloPhotonCuts::kNCuts] = {
-  "ClusterType",          //0   0: all,    1: EMCAL,   2: PHOS
-  "EtaMin",               //1   0: -10,    1: -0.6687, 2: -0,5, 3: -2
-  "EtaMax",               //2   0: 10,     1: 0.66465, 2: 0.5,  3: 2
-  "PhiMin",               //3   0: -10000, 1: 1.39626
-  "PhiMax",               //4   0: 10000, 1: 3.125
+  "ClusterType",          //0    0: all,    1: EMCAL,   2: PHOS
+  "EtaMin",               //1    0: -10,    1: -0.6687, 2: -0,5, 3: -2
+  "EtaMax",               //2    0: 10,     1: 0.66465, 2: 0.5,  3: 2
+  "PhiMin",               //3    0: -10000, 1: 1.39626
+  "PhiMax",               //4    0: 10000, 1: 3.125
   "NonLinearity1"         //5
   "NonLinearity2"         //6
-  "DistanceToBadChannel", //7   0: 0,      1: 5
-  "Timing",               //8   0: no cut
-  "TrackMatching",        //9   0: 0,      1: 5
+  "DistanceToBadChannel", //7    0: 0,      1: 5
+  "Timing",               //8    0: no cut
+  "TrackMatching",        //9    0: 0,      1: 5
   "ExoticCluster",        //10   0: no cut
   "MinEnergy",            //11   0: no cut, 1: 0.05,    2: 0.1,  3: 0.15, 4: 0.2, 5: 0.3, 6: 0.5, 7: 0.75, 8: 1, 9: 1.25 (all GeV)
-  "MinNCells",            //12  0: no cut, 1: 1,       2: 2,    3: 3,    4: 4,   5: 5,   6: 6
+  "MinNCells",            //12   0: no cut, 1: 1,       2: 2,    3: 3,    4: 4,   5: 5,   6: 6
   "MinM02",               //13
   "MaxM02",               //14
   "MinM20",               //15
@@ -254,7 +254,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
   fNMaxDCalModules(8),
-  fgkDCALCols(32)
+  fgkDCALCols(32),
+  fIsAcceptedForBasic(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -427,7 +428,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
-  fgkDCALCols(ref.fgkDCALCols)
+  fgkDCALCols(ref.fgkDCALCols),
+  fIsAcceptedForBasic(ref.fIsAcceptedForBasic)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1561,7 +1563,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }
 
   fIsCurrentClusterAcceptedBeforeTM = kTRUE;
-
+  fIsAcceptedForBasic               = kFALSE;
   // classification of clusters for TM efficiency
   // 0: Neutral cluster
   // 1: Neutral cluster sub charged
@@ -1711,6 +1713,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
 
   cutIndex++;//9, next cut
+
+  if(GetClusterType() == 1 || GetClusterType() == 3) {
+    if (cluster->E() > 0.5) fIsAcceptedForBasic = kTRUE;
+  } else if (GetClusterType() == 2 ){
+    if (cluster->E() > 0.3) fIsAcceptedForBasic = kTRUE;
+  }
 
   // minimum cluster energy cut
   if (fUseMinEnergy){
