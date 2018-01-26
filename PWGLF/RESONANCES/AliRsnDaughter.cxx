@@ -89,7 +89,7 @@ void AliRsnDaughter::Reset()
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnDaughter::GetPDG()
+Long_t AliRsnDaughter::GetPDG()
 {
 //
 // Return the PDG code of the particle from MC ref (if any).
@@ -186,7 +186,7 @@ const char *AliRsnDaughter::SpeciesName(ESpecies species)
 }
 
 //______________________________________________________________________________
-Int_t AliRsnDaughter::SpeciesPDG(ESpecies species)
+Long_t AliRsnDaughter::SpeciesPDG(ESpecies species)
 {
 //
 // Return the PDG code of a particle species (abs value)
@@ -216,7 +216,7 @@ Double_t AliRsnDaughter::SpeciesMass(ESpecies species)
    TDatabasePDG *db = TDatabasePDG::Instance();
    TParticlePDG *part = 0x0;
 
-   Int_t pdg = SpeciesPDG(species);
+   Long_t pdg = SpeciesPDG(species);
    if (pdg) {
       part = db->GetParticle(pdg);
       return part->Mass();
