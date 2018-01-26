@@ -49,6 +49,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH1I *hTriggerCounterIR1;		//!
   TH1I *hTriggerCounterIR2;		//!
   TH1F *hNFiredMaxiPads;		//!
+  TH1F *hNTracklets;			//!
   TH1I *hDetIn0;			//!
   TH1I *hDetIn1;			//!
   TH1I *hDetIn2;			//!
@@ -69,7 +70,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
   
-  ClassDef(AliAnalysisTaskTOFTrigger, 3); 
+  ClassDef(AliAnalysisTaskTOFTrigger, 4); 
 };
 
 #endif
