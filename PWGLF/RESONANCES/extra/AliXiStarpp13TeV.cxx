@@ -813,17 +813,17 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
             TString *nameXibar=new TString("fXibar_");
             *nameXi += cv;
             *nameXibar += cv;
-            CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
+            CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
             fOutputList->Add(CutVar[cv].fXi);
-            CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
+            CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
            fOutputList->Add(CutVar[cv].fXibar);
             //
             TString *nameMCrecXi = new TString("fMCrecXi_");
             TString *nameMCrecXibar = new TString("fMCrecXibar_");
             *nameMCrecXi += cv;
             *nameMCrecXibar += cv;
-            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
-           CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
+            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+           CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
             fOutputList->Add(CutVar[cv].fMCrecXi);
             fOutputList->Add(CutVar[cv].fMCrecXibar);
         }
@@ -845,14 +845,14 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
         *nameXiPlusPiPlusbkg += cv;
         *nameXiPlusPiMinusbkg += cv;
         // Change the Y Info to multiplicity -2,2, 200 -> 0,100,100
-        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,40,0,100,100,1.4,1.6);
+        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
         
         fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
@@ -869,8 +869,8 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
         TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
         *nameMCrecXiMinusPiPlus += cv;
         *nameMCrecXiPlusPiMinus += cv;
-        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
-        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
+        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
         fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
         //
@@ -886,25 +886,25 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     
     //
     
-    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
-    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
     fOutputList->Add(fMCinputTotalXiStar1);
     fOutputList->Add(fMCinputTotalXiStarbar1);
     
-    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
-    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi1);
     fOutputList->Add(fMCinputTotalXibar1);
     
     //
     
-    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
-    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
     fOutputList->Add(fMCinputTotalXiStar3);
     fOutputList->Add(fMCinputTotalXiStarbar3);
     
-    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
-    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 40,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi3);
     fOutputList->Add(fMCinputTotalXibar3);
     
@@ -1697,6 +1697,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                     if(fDecayParameters[7] < fCutValues[cv][7]) continue;// DCAVtx Lambda
                     //if(fDecayParameters[8] > fCutValues[cv][8]) continue; // DCAVtx pion third
                     if(cv!=8 || cv!=21) {if(fDecayParameters[8] > (0.0105 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;}// DCAVtx pion third
+                    else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}
                     //0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01 (2010 cut)
                     
                     //
