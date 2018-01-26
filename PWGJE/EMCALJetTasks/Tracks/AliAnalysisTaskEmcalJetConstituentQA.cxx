@@ -183,7 +183,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
 
   std::stringstream contname, outfilename;
   contname << "JetConstituentQA_" << trigger;
-  outfilename << mgr->GetCommonInputContainer() << ":JetConstituentQA_" << trigger;
+  outfilename << mgr->GetCommonFileName() << ":JetConstituentQA_" << trigger;
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
 
