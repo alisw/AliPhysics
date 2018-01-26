@@ -155,12 +155,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     }
   }
 
-  //++++++++++++++++++++++
-  // Efficiency + Contamination corrections
-  // If correctionFileName = "", do not use corrections
-  if(correctionFileName != "")
-    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
-
+  
   //+++++++++++++++++++++
 
   taskBF->SetAnalysisObject(bf);
@@ -258,7 +253,15 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   taskBF->SetVertexDiamond(3.,3.,vertexZ);
 
   taskBF->SetCorrectionProcedure(corrProc);
-  if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
+
+
+  //++++++++++++++++++++++
+  // Efficiency + Contamination corrections
+  // If correctionFileName = "", do not use corrections
+  if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
+    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
+  
+  else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 
     TFile* fNUAFile = TFile::Open(nuaCorrFileName,"READ");
     TFile* fNUEFile = TFile::Open(nueCorrFileName,"READ");
