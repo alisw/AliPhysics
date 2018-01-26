@@ -161,6 +161,7 @@ public:
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
+    virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
 
 private:
     THistManager         fHistManager    ;///< Histogram manager

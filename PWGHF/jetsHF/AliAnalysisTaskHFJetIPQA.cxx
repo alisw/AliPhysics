@@ -2438,7 +2438,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     if (!IsPhysicalPrimary(mcpart)) return kFALSE;
     switch(pdg){
         case bSigmaMinus:
-        Printf("bSigmaMinus");
             idx = bIdxSigmaMinus; // use lambda as proxy
             return kTRUE;
             break;
