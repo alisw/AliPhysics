@@ -1696,9 +1696,9 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                     if(fDecayParameters[6] < fCutValues[cv][6]) continue;// DCAVtx pion second
                     if(fDecayParameters[7] < fCutValues[cv][7]) continue;// DCAVtx Lambda
                     //if(fDecayParameters[8] > fCutValues[cv][8]) continue; // DCAVtx pion third
-                    //if(cv!=8 || cv!=21) {if(fDecayParameters[8] > (0.0105 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.1))) continue;}// DCAVtx pion third
-                    //else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}
-                    //0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01 (2010 cut)
+                    if(cv!=8 || cv!=21) {if(fDecayParameters[8] > (0.0105 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.1))) continue;}// DCAVtx pion third
+                    else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}
+                    //0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.1 (2010 cut)
                     
                     //
                     if(fDecayParameters[9] > fCutValues[cv][9]) continue;// DCAV proton-pion
