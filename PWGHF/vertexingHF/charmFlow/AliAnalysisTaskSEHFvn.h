@@ -128,6 +128,8 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
   void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
 
+  void Setq2PercentileSelection(TString splinesfilepath);
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -211,10 +213,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
+  Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
+  TList* fq2SplinesList; //list of splines used to compute the q2 percentile
   
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,14); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,15); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
