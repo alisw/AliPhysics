@@ -375,7 +375,7 @@ void AliXiStarpp13TeV::XiStarInit()
     fTrackCut->SetRequireTPCRefit(kTRUE);
     fTrackCut->SetMaxChi2PerClusterTPC(4); //From Enrico
     //fTrackCut->SetRequireITSRefit(kTRUE); // Added for 2011 cut
-    fTrackCut->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny); // Added for 2011 cut
+    //fTrackCut->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny); // Added for 2011 cut
     //fTrackCut->SetMaxChi2TPCConstrainedGlobal(36); // Added for 2011 cut
     //fTrackCut->SetMaxChi2PerClusterITS(36); // Added for 2011 cut
 
