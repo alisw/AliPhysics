@@ -1390,8 +1390,8 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     //If enabled, fill EP angle vs. q2 vs. centrality histograms
     if(fEPVsq2VsCent) {
       for(Int_t iDet=0; iDet<3; iDet++) {
-        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2,eventplaneqncorrTPC[iDet]);
-        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2,eventplaneqncorrVZERO[iDet]);
+        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2fill,eventplaneqncorrTPC[iDet]);
+        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2fill,eventplaneqncorrVZERO[iDet]);
       }
     }
 
