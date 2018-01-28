@@ -204,6 +204,15 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
+    Int_t primary = cluster->GetLabel();
+
+    ////if simulated photon energy is less than a half of a cluster energy, reject such cluster.
+    //AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+    //Double_t Etrue = p->E();//energy of photon
+    //if(Etrue < 0.5 * energy){
+    //  AliInfo(Form("energy of photon = %e GeV , reconstructed cluster energy = %e GeV. Eture < 0.5 * Erec. reject this cluster.",Etrue,energy));
+    //  continue;
+    //}
 
     cluster->GetMomentum(p1,fVertex);
     cluster->GetMomentum(p1core,fVertex);
@@ -219,7 +228,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     ph->SetEMCx((Double_t)position[0]);
     ph->SetEMCy((Double_t)position[1]);
     ph->SetEMCz((Double_t)position[2]);
-    Int_t primary = cluster->GetLabel();
 
     //Bool_t sure = kFALSE;
     //Int_t primary = FindPrimary(ph,sure);

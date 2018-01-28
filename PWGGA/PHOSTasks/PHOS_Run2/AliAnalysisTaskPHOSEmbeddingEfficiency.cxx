@@ -82,8 +82,7 @@ ClassImp(AliAnalysisTaskPHOSEmbeddingEfficiency)
 AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(const char *name):
   AliAnalysisTaskPHOSPi0EtaToGammaGamma(name),
   fParticleName(""),
-  fMCArray(0x0),
-  fWeightCen0005(0x0)
+  fMCArray(0x0)
 {
   // Constructor
 
@@ -99,9 +98,6 @@ AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(c
 //________________________________________________________________________
 AliAnalysisTaskPHOSEmbeddingEfficiency::~AliAnalysisTaskPHOSEmbeddingEfficiency()
 {
-  delete fWeightCen0005;
-  fWeightCen0005 = 0x0;
-
 
 }
 //________________________________________________________________________
@@ -109,8 +105,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-  fWeightCen0005 = new TF1("fWeightCen0005" ,"64.41*TMath::Power(x,-(5.88 + -92.9/(TMath::Power(x,4.12) + 54.1)))" ,0.,100.);
-  fWeightCen0005->SetNpx(1000);
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects();
 
@@ -595,7 +589,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
   Double_t value[4] = {};
   Double_t sp1 = -999;
 
-  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Double_t weight = 1., w1 = 1.;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -646,7 +640,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       weight = 1.;
       if(fIsMC){
         w1 = ph1->GetWeight();
-        w2 = ph2->GetWeight();
         weight = w1;//common weighting to all generated particles in embedding.
 
       }//end of if fIsMC
