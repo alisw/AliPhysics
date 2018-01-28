@@ -7,8 +7,10 @@
 #pragma link C++ class AliAnalysisTaskSigma1385+;
 #pragma link C++ class AliXiStar+;
 #pragma link C++ class AliXiStarpp13TeV+;
+#pragma link C++ class AliXiStarPbPb+;
 #pragma link C++ class AliXiStarpp13TeVEventCollection+;
 #pragma link C++ class AliXiStarEventCollection+;
+#pragma link C++ class AliXiStarPbPbEventCollection+;
 #pragma link C++ class AliXiStarpp13TeVEventStruct+;
 #pragma link C++ class AliXiStarEventStruct+;
 #pragma link C++ class AliXiStarpp13TeVTrackStruct+;
