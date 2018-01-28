@@ -160,7 +160,7 @@ void AliRsnDaughter::Print(Option_t *) const
    AliInfo("=== DAUGHTER INFO ======================================================================");
    AliInfo(Form(" (sim) px,py,pz = %6.2f %6.2f %6.2f", fPsim.X(), fPsim.Y(), fPsim.Z()));
    AliInfo(Form(" (rec) px,py,pz = %6.2f %6.2f %6.2f", fPrec.X(), fPrec.Y(), fPrec.Z()));
-   AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4d", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
+   AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4ld", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
    AliInfo("========================================================================================");
 }
 
@@ -263,4 +263,17 @@ AliRsnDaughter::ESpecies AliRsnDaughter::FromAliPID(EPARTYPE pid)
       case AliPID::kKaon0:    return kKaon0;
       default:                return kUnknown;
    }
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnDaughter::IsEquivalentPDGCode(Long_t i1, Long_t i2)
+{
+//
+// Check to see if i1 and i2 are equal, with special treatment for K0.
+//
+
+   if(i1==i2) return kTRUE;
+   if( (i1==130 || i1==310) && TMath::Abs(i2)==311) return kTRUE;
+   if( (i2==130 || i2==310) && TMath::Abs(i1)==311) return kTRUE;
+   return kFALSE;
 }
