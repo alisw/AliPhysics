@@ -1858,7 +1858,8 @@ void AliAnalysisTaskHFJetIPQA::FillParticleCompositionEvent( ){
       double pT=0x0;
       Int_t pCorr_indx=-1;
       double factor = GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
-      if(pCorr_indx<0 || factor ==1) continue;
+
+      if(pCorr_indx<0) continue;
       FillHist("fh2dParticleSpectra_Event",pCorr_indx+0.5,pT, this->fXsectionWeightingFactor  );
   }
   return;
@@ -2259,7 +2260,7 @@ void AliAnalysisTaskHFJetIPQA::DoJetLoop()
         break;
     }
     factor*=flucafactor;
-    if (factor <= 0 || factor > 10.)  {
+    if (factor <= 0 || factor > 100.)  {
         return 1;
     }
     ppt = _particlesourcept;
