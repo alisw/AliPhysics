@@ -12,6 +12,73 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <Riostream.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TChain.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TApplication.h>
+#include <TKey.h>
+#include <TProfile.h>
+#include <TH1F.h>
+
+#include "TGrid.h"
+#include "TGridCollection.h"
+#include "TAlienCollection.h"
+#include "TGridResult.h"
+//#include "TProof.h"
+//#include "TFileCollection.h"
+//#include "TFileInfo.h"
+
+#include "AliLog.h"
+#include "AliAnalysisGrid.h"
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliPhysicsSelection.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnalysisTaskCounter.h"
+#include "AliAnalysisDataContainer.h"
+
+#include "TSystemDirectory.h"
+#include "CreateESDChain.C"
+
+#include "AliPhysicsSelection.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AddTaskPhysicsSelection.C"
+
+#include "AliCentralitySelectionTask.h"
+#include "AliMultSelectionTask.h" 
+#include "AliVZEROEPSelectionTask.h"
+#include "AliEPSelectionTask.h"
+#include "AddTaskCentrality.C"
+#include "AddTaskMultSelection.C"
+#include "AddTaskVZEROEPSelection.C"
+#include "AddTaskEventplane.C"
+
+//#include "CreateAlienHandler.C"
+
+#include "AliAnalysisTaskCounter.h"
+#include "AddTaskCounter.C"
+
+#include "AliAnalysisTaskEMCALClusterize.h"
+#include "AddTaskEMCALClusterize.C"
+#include "AliAnaCalorimeterQA.h"
+#include "AddTaskCalorimeterQA.C"
+#include "AddTaskCaloTrackCorr.C"
+
+#endif
+
 //---------------------------------------------------------------------------
 /// Different analysis modes
 enum anaModes
@@ -27,15 +94,15 @@ enum anaModes
 // The different values are default, they can be set with environmental 
 // variables: INDIR, PATTERN, NFILES, respectivelly
 
-char * kInDir   = "/user/data/files/";  /// Global,  path to data files
-char * kPattern = ""; /// Data are in files kInDir/kPattern+i
+char * kInDir   = (char*)"/user/data/files/";  /// Global,  path to data files
+char * kPattern = (char*)""; /// Data are in files kInDir/kPattern+i
 Int_t  kFile    = 2;  /// Number of files to analyze in local mode.
 
 //---------------------------------------------------------------------------
 // Dataset for proof analysis, mode=mPROOF
 // char * kDataset = "/alice/vernet/PbPb_LHC10h_ESD";
 
-char *  kDatasetPROOF     = "/alice/vernet/LHC11b_149646";
+char *  kDatasetPROOF     = (char*)"/alice/vernet/LHC11b_149646";
 Int_t   kDatasetNMaxFiles = 20;
 TString ccin2p3UserName   = "arbor" ;
 TString alienUserName     = "narbor" ;
@@ -43,21 +110,20 @@ TString alienUserName     = "narbor" ;
 //---------------------------------------------------------------------------
 // Collection file for grid analysis
 
-char * kXML = "collection.xml"; /// Global name for the xml collection file with data on grid
+char * kXML = (char*)"collection.xml"; /// Global name for the xml collection file with data on grid
 
 //---------------------------------------------------------------------------
 // Scale histograms from file. Change to kTRUE when xsection file exists
 // Put name of file containing xsection
 // Put number of events per ESD file
 // This is an specific case for normalization of Pythia files.
-const char * kXSFileName = "pyxsec.root"; /// Name of file with pT-hard cross sections
+const char * kXSFileName = (char*)"pyxsec.root"; /// Name of file with pT-hard cross sections
 
 // Container of xs if xs in file pyxsec_hist.root
 TArrayF* xsArr;
 TArrayI* trArr;
 
 //---------------------------------------------------------------------------
-
 // Set some default values, but used values are set in the code!
 
 Bool_t  kMC        = kFALSE; /// With real data kMC = kFALSE
@@ -69,6 +135,15 @@ TString kTreeName;
 TString kPass      = "";
 char    kTrigger[1024];
 Int_t   kRun       = 0;
+
+//---------------------------------------------------------------------------
+//
+void LoadLibraries(Int_t /*mode*/);
+void SetupPar(char* pararchivename);
+void CheckInputData(const Int_t mode);
+void CreateChain(const Int_t mode, TChain * chain, TChain * chainxs);
+void CheckEnvironmentVariables();
+Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n);
 
 //___________________________
 /// Main execution method. It:
@@ -133,21 +208,21 @@ void ana(Int_t mode=mGRID)
       
       scale = xsection / trials;
       
-      printf("Get Cross section : nfiles  %d, nevents %d, nevents per file %d \n",nfiles, chain->GetEntries(),nEventsPerFile);
-      printf("                    ntrials %d, trials %2.2f, xs %2.2e, scale factor %2.2e\n", ntrials,trials,xsection,scale);
+      printf("Get Cross section : nfiles  %d, nevents %lld, nevents per file %d \n",nfiles, chain->GetEntries(),nEventsPerFile);
+      printf("                    ntrials %2.2f, trials %2.2f, xs %2.2e, scale factor %2.2e\n", ntrials,trials,xsection,scale);
       
-      if(chainxs->GetEntries()!=chain->GetEntries()) printf("CAREFUL: Number of files in data chain %d, in cross section chain %d \n",
+      if(chainxs->GetEntries()!=chain->GetEntries()) printf("CAREFUL: Number of files in data chain %lld, in cross section chain %lld \n",
                                                             chainxs->GetEntries(),chain->GetEntries());
     } // ok
     
     // comment out this line in case the simulation did not have the cross section files produced in the directory
     if( scale <= 0  || !ok)
-    { printf( "STOP, cross section not available! nfiles %d \n", chainxs->GetEntries() ) ; return ; }
+    { printf( "STOP, cross section not available! nfiles %lld \n", chainxs->GetEntries() ) ; return ; }
     
   }
 
   printf("*********************************************\n");
-  printf("number of entries # %lld, skipped %d\n", chain->GetEntries()) ; 	
+  printf("number of entries # %lld \n", chain->GetEntries()) ; 	
   printf("*********************************************\n");
   
   if(!chain)
@@ -162,13 +237,13 @@ void ana(Int_t mode=mGRID)
   //  Alien handler part
   //------------------------------------------
   AliAnalysisGrid *alienHandler=0x0;
-  if(mode==mPlugin)
-  {
-    // Create and configure the alien handler plugin
-    gROOT->LoadMacro("CreateAlienHandler.C");
-    alienHandler = CreateAlienHandler();
-    if (!alienHandler) return;
-  }  
+//  if(mode==mPlugin)
+//  {
+//    // Create and configure the alien handler plugin
+//    gROOT->LoadMacro("CreateAlienHandler.C");
+//    alienHandler = CreateAlienHandler();
+//    if (!alienHandler) return;
+//  }  
   
   //--------------------------------------
   // Make the analysis manager
@@ -223,7 +298,7 @@ void ana(Int_t mode=mGRID)
     // AOD handler
     AliAODInputHandler *aodHandler = new AliAODInputHandler();
     mgr->SetInputEventHandler(aodHandler);
-    if(kInputData == "deltaAOD") aodHandler->AddFriend("deltaAODCaloTrackCorr.root");
+    if(kInputData == "deltaAOD") aodHandler->AddFriend((char*)"deltaAODCaloTrackCorr.root");
     cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
   }
   
@@ -275,10 +350,10 @@ void ana(Int_t mode=mGRID)
   
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
 
-  AliAnalysisTask* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
-  AliAnalysisTask* countmb  = AddTaskCounter("MB"); // Min Bias
-  AliAnalysisTask* countany = AddTaskCounter("Any"); 
-  AliAnalysisTask* countint = AddTaskCounter("AnyINT");// Min Bias
+  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
+  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
+  AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
+  AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
   
   if(!kMC)
   {
@@ -298,10 +373,12 @@ void ana(Int_t mode=mGRID)
       AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
     }
   }  
-  // -----------------
-  // Photon conversion
-  // ----------------- 
+ 
 /*  
+ // -----------------
+ // Photon conversion
+ // ----------------- 
+ 
   if(kInputData=="ESD"){
     printf("* Configure photon conversion analysis in macro \n");
     TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
@@ -319,23 +396,24 @@ void ana(Int_t mode=mGRID)
   }
 */  
   
-  Bool_t kPrint   = kFALSE;
-  Bool_t deltaAOD = kFALSE;
-  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
-  
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
-  //AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+  AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALTriggerQA.C");  
   //AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
   
+  
+  Bool_t kPrint   = kFALSE;
+  Bool_t deltaAOD = kFALSE;
   // Calibration, bad map ...
   
   Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use it or not in any case
   Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use it or not in any case
   if(kRun < 122195 || (kRun > 126437 && kRun < 136851) || kMC) calibTT=kFALSE ; // Recalibration parameters not available for LHC10a,b,c,e,f,g
   Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use it or not in any case  
+  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorr.C");   
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
   
   if(kCollision=="pp")
   {
@@ -382,43 +460,43 @@ void ana(Int_t mode=mGRID)
                                                                    calibEE,badMap,calibTT,clnonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
-    
-    if(!kMC)
-    {
-      
-      AliAnalysisTaskCaloTrackCorrelation *anav1trig   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                              kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM,
-                                                                              -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
-    }
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav1mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                            kYear,kCollision,"AnyINT",arrayNameV1,mixing,reTM,anTM,
-                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
-    
-    
-    
-    //Analysis with clusterizer V2
-    TString arrayNameV2 = "";
-    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,
-                                                                   calibEE,badMap,calibTT,clnonlin);    
-    
-    printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
-    
-    hadron = kFALSE;
-    if(!kMC)
-    {
-      
-      
-      AliAnalysisTaskCaloTrackCorrelation *anav2tr   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                            kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM, 
-                                                                            -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
-    }
-    
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav2mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                            kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM,
-                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
+//    
+//    if(!kMC)
+//    {
+//      
+//      AliAnalysisTaskCaloTrackCorrelation *anav1trig   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                              kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM,
+//                                                                              -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
+//    }
+//    
+//    AliAnalysisTaskCaloTrackCorrelation *anav1mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                            kYear,kCollision,"AnyINT",arrayNameV1,mixing,reTM,anTM,
+//                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
+//    
+//    
+//    
+//    //Analysis with clusterizer V2
+//    TString arrayNameV2 = "";
+//    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
+//                                                                   minEcell,minEseed,dTime,wTime,
+//                                                                   calibEE,badMap,calibTT,clnonlin);    
+//    
+//    printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
+//    
+//    hadron = kFALSE;
+//    if(!kMC)
+//    {
+//      
+//      
+//      AliAnalysisTaskCaloTrackCorrelation *anav2tr   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                            kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM, 
+//                                                                            -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
+//    }
+//    
+//    
+//    AliAnalysisTaskCaloTrackCorrelation *anav2mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                            kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM,
+//                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
   }
   
   if(kCollision=="PbPb")
@@ -531,46 +609,46 @@ void ana(Int_t mode=mGRID)
 //_____________________________
 /// Load analysis libraries.
 //_____________________________
-void  LoadLibraries(Int_t mode)
+void  LoadLibraries(Int_t /*mode*/)
 {
-  if (mode == mPROOF)
-  {
-    //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
-    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
-    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGPPEMCAL");
-    
-    //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
-    
-    //     //proof->ClearPackages();
-    //     proof->UploadPackage("STEERBase");
-    //     proof->UploadPackage("ESD");
-    //     proof->UploadPackage("AOD");
-    //     proof->UploadPackage("ANALYSIS");
-    //     proof->UploadPackage("OADB");
-    //     proof->UploadPackage("ANALYSISalice");
-    //     proof->UploadPackage("CORRFW");
-    //     //proof->UploadPackage("JETAN");
-    //     proof->UploadPackage("PHOSUtils");
-    //     proof->UploadPackage("EMCALUtils");
-    //     proof->UploadPackage("PWGCaloTrackCorrBase");
-    //     proof->UploadPackage("PWGGACaloTrackCorrelations");
-    //     proof->UploadPackage("PWGPPEMCAL");
-    
-    //     proof->EnablePackage("STEERBase");
-    //     proof->EnablePackage("ESD");
-    //     proof->EnablePackage("AOD");
-    //     proof->EnablePackage("ANALYSIS");
-    //     proof->EnablePackage("OADB");
-    //     proof->EnablePackage("ANALYSISalice");
-    //     proof->EnablePackage("CORRFW");
-    //     //proof->EnablePackage("JETAN");
-    //     proof->EnablePackage("PHOSUtils");
-    //     proof->EnablePackage("EMCALUtils");
-    //     proof->EnablePackage("PWGCaloTrackCorrBase");
-    //     proof->EnablePackage("PWGGACaloTrackCorrelations");
-    //     proof->EnablePackage("PWGPPEMCAL");
-    return;
-  }  
+//  if (mode == mPROOF)
+//  {
+//    //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
+//    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
+//    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGPPEMCAL");
+//    
+//    //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
+//    
+//    //     //proof->ClearPackages();
+//    //     proof->UploadPackage("STEERBase");
+//    //     proof->UploadPackage("ESD");
+//    //     proof->UploadPackage("AOD");
+//    //     proof->UploadPackage("ANALYSIS");
+//    //     proof->UploadPackage("OADB");
+//    //     proof->UploadPackage("ANALYSISalice");
+//    //     proof->UploadPackage("CORRFW");
+//    //     //proof->UploadPackage("JETAN");
+//    //     proof->UploadPackage("PHOSUtils");
+//    //     proof->UploadPackage("EMCALUtils");
+//    //     proof->UploadPackage("PWGCaloTrackCorrBase");
+//    //     proof->UploadPackage("PWGGACaloTrackCorrelations");
+//    //     proof->UploadPackage("PWGPPEMCAL");
+//    
+//    //     proof->EnablePackage("STEERBase");
+//    //     proof->EnablePackage("ESD");
+//    //     proof->EnablePackage("AOD");
+//    //     proof->EnablePackage("ANALYSIS");
+//    //     proof->EnablePackage("OADB");
+//    //     proof->EnablePackage("ANALYSISalice");
+//    //     proof->EnablePackage("CORRFW");
+//    //     //proof->EnablePackage("JETAN");
+//    //     proof->EnablePackage("PHOSUtils");
+//    //     proof->EnablePackage("EMCALUtils");
+//    //     proof->EnablePackage("PWGCaloTrackCorrBase");
+//    //     proof->EnablePackage("PWGGACaloTrackCorrelations");
+//    //     proof->EnablePackage("PWGPPEMCAL");
+//    return;
+//  }  
   
   //--------------------------------------
   // Load the needed libraries via par files if modified
@@ -625,7 +703,7 @@ void SetupPar(char* pararchivename)
     if (gSystem->Exec("PROOF-INF/BUILD.sh"))
     {
       Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-      return -1;
+      return ;
     }
   }
   // check for SETUP.C and execute
@@ -645,7 +723,7 @@ void SetupPar(char* pararchivename)
 //______________________________________
 /// Sets input data and tree strings.
 //______________________________________
-void CheckInputData(const anaModes mode)
+void CheckInputData(const Int_t mode)
 {
   TString ocwd = gSystem->WorkingDirectory();
   
@@ -658,7 +736,7 @@ void CheckInputData(const anaModes mode)
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
     
     if(gSystem->Getenv("INDIR"))  
-      kInDir = gSystem->Getenv("INDIR") ; 
+      kInDir = (char*)gSystem->Getenv("INDIR") ; 
     else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
     
     TString sindir(kInDir);
@@ -667,7 +745,7 @@ void CheckInputData(const anaModes mode)
     else if(sindir.Contains("pass3")) kPass = "pass3";
     
     if(gSystem->Getenv("PATTERN"))   
-      kPattern = gSystem->Getenv("PATTERN") ; 
+      kPattern = (char*)gSystem->Getenv("PATTERN") ; 
     else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
     
     cout<<"INDIR   : "<<kInDir<<endl;
@@ -734,10 +812,10 @@ void CheckInputData(const anaModes mode)
         kMC        = kTRUE;
         return;
       }
+      
+      if(fESD) fESD->Close();
+      if(fAOD) fAOD->Close();
     }
-    
-    if(fESD) fESD->Close();
-    if(fAOD) fAOD->Close();
     
   }// local files analysis
   
@@ -749,7 +827,7 @@ void CheckInputData(const anaModes mode)
     //variable XML
     
     if(gSystem->Getenv("XML") )
-      kXML = gSystem->Getenv("XML");
+      kXML = (char*)gSystem->Getenv("XML");
     else
       sprintf(kXML, "collection.xml") ; 
     
@@ -767,8 +845,8 @@ void CheckInputData(const anaModes mode)
     //Feed Grid with collection file
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
-      AliError(Form("%s not found", kXML)) ; 
-      return kFALSE ; 
+      printf("%s not found\n", kXML) ; 
+      return ; 
     }
     TGridResult* result = collection->GetGridResult("",0 ,0);
     
@@ -822,64 +900,64 @@ void CheckInputData(const anaModes mode)
   //------------------------------
   //PROOF files
   //-----------------------------
-  else if(mode == mPROOF){
-    
-    TFileCollection* coll  = gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
-    
-    TIter iter(coll->GetList());
-    
-    TFileInfo* fileInfo = 0;
-    while ((fileInfo = dynamic_cast<TFileInfo*> (iter())))
-    {
-      if (fileInfo->GetFirstUrl()) {
-        TString ProofURL = fileInfo->GetFirstUrl()->GetUrl();
-        cout << "================== " << ProofURL << endl ; 
-        
-        if     (ProofURL.Contains("pass1")) kPass = "pass1";
-        else if(ProofURL.Contains("pass2")) kPass = "pass2";
-        else if(ProofURL.Contains("pass3")) kPass = "pass3";
-        
-        kRun = AliAnalysisManager::GetRunFromAlienPath(ProofURL.Data());
-        printf("Run number from alien path = %d\n",kRun);
-        
-        TFile * fAOD = 0 ; 
-        //Check if file exists and add it, if not skip it
-        if (ProofURL.Contains("AliESDs.root"))  
-        {
-          kTreeName  = "esdTree";
-          kInputData = "ESD";
-          alienURL.ReplaceAll("AliESDs.root","galice.root");
-          if(TFile::Open(ProofURL)) kMC=kTRUE;
-          else kMC = kFALSE;
-          
-          return;
-        }
-        else if(ProofURL.Contains("AliAOD.root"))
-        {
-          kTreeName  = "aodTree";
-          kInputData = "AOD";
-          fAOD = TFile::Open(ProofURL);
-          if(((TTree*) fAOD->Get("aodTree"))->GetBranch("mcparticles")) kMC=kTRUE;
-          else kMC = kFALSE;
-          return;
-        }
-        else if(ProofURL.Contains("embededAOD.root"))
-        {
-          kTreeName  = "aodTree";
-          kInputData = "AOD";
-          kMC=kTRUE;
-          return;
-        }
-        else if(ProofURL.Contains("galice.root"))
-        {
-          kTreeName  = "TE";
-          kInputData = "MC";
-          kMC=kTRUE;
-          return;
-        } 
-      }
-    }
-  }// proof analysis
+//  else if(mode == mPROOF){
+//    
+//    TFileCollection* coll  = gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
+//    
+//    TIter iter(coll->GetList());
+//    
+//    TFileInfo* fileInfo = 0;
+//    while ((fileInfo = dynamic_cast<TFileInfo*> (iter())))
+//    {
+//      if (fileInfo->GetFirstUrl()) {
+//        TString ProofURL = fileInfo->GetFirstUrl()->GetUrl();
+//        cout << "================== " << ProofURL << endl ; 
+//        
+//        if     (ProofURL.Contains("pass1")) kPass = "pass1";
+//        else if(ProofURL.Contains("pass2")) kPass = "pass2";
+//        else if(ProofURL.Contains("pass3")) kPass = "pass3";
+//        
+//        kRun = AliAnalysisManager::GetRunFromAlienPath(ProofURL.Data());
+//        printf("Run number from alien path = %d\n",kRun);
+//        
+//        TFile * fAOD = 0 ; 
+//        //Check if file exists and add it, if not skip it
+//        if (ProofURL.Contains("AliESDs.root"))  
+//        {
+//          kTreeName  = "esdTree";
+//          kInputData = "ESD";
+//          alienURL.ReplaceAll("AliESDs.root","galice.root");
+//          if(TFile::Open(ProofURL)) kMC=kTRUE;
+//          else kMC = kFALSE;
+//          
+//          return;
+//        }
+//        else if(ProofURL.Contains("AliAOD.root"))
+//        {
+//          kTreeName  = "aodTree";
+//          kInputData = "AOD";
+//          fAOD = TFile::Open(ProofURL);
+//          if(((TTree*) fAOD->Get("aodTree"))->GetBranch("mcparticles")) kMC=kTRUE;
+//          else kMC = kFALSE;
+//          return;
+//        }
+//        else if(ProofURL.Contains("embededAOD.root"))
+//        {
+//          kTreeName  = "aodTree";
+//          kInputData = "AOD";
+//          kMC=kTRUE;
+//          return;
+//        }
+//        else if(ProofURL.Contains("galice.root"))
+//        {
+//          kTreeName  = "TE";
+//          kInputData = "MC";
+//          kMC=kTRUE;
+//          return;
+//        } 
+//      }
+//    }
+//  }// proof analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
 }
@@ -887,7 +965,7 @@ void CheckInputData(const anaModes mode)
 //_____________________________________________________________________
 /// Fills chain with data files paths.
 //_____________________________________________________________________
-void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
+void CreateChain(const Int_t mode, TChain * chain, TChain * chainxs)
 {
   TString ocwd = gSystem->WorkingDirectory();
   
@@ -907,11 +985,11 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
     
     if(gSystem->Getenv("INDIR"))
-      kInDir = gSystem->Getenv("INDIR") ;
+      kInDir = (char*)gSystem->Getenv("INDIR") ;
     else cout<<"INDIR not set, use default: "<<kInDir<<endl;
     
     if(gSystem->Getenv("PATTERN"))
-      kPattern = gSystem->Getenv("PATTERN") ;
+      kPattern = (char*)gSystem->Getenv("PATTERN") ;
     else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
     
     if(gSystem->Getenv("NFILES"))
@@ -931,7 +1009,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       //if(gSystem->Getenv("XSFILE"))
       //kXSFileName = gSystem->Getenv("XSFILE") ;
       //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;
-      char * kGener = gSystem->Getenv("GENER");
+      char * kGener = (char*)gSystem->Getenv("GENER");
       if(kGener)
       {
         cout<<"GENER "<<kGener<<endl;
@@ -967,9 +1045,11 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       for (event = 0 ; event < kFile ; event++) {
         sprintf(file,   "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ;
         sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ;
-        TFile * fData = 0 ;
+        
+        TFile * fData = TFile::Open(file) ;
+        
         // Check if file exists and add it, if not skip it
-        if ( fData = TFile::Open(file))
+        if ( fData )
         {
           if ( fData->Get(kTreeName) )
           {
@@ -1042,8 +1122,8 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     //Feed Grid with collection file
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
-      AliError(Form("%s not found", kXML)) ;
-      return kFALSE ;
+      printf("%s not found\n", kXML) ;
+      return ;
     }
     
     TGridResult* result = collection->GetGridResult("",0 ,0);
@@ -1088,10 +1168,10 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
           Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
           fxsec->Close();
           
-          xsArr->SetAt(xsection,event);
-          trArr->SetAt(ntrials,event);
+          xsArr->SetAt(xsection,index);
+          trArr->SetAt(ntrials,index);
           
-          printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
+          printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, index);
           
         } // fxsec exists
       } // xs in AODs
@@ -1101,14 +1181,14 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   //------------------------------
   // PROOF
   //------------------------------
-  else if (mode == mPROOF)
-  {
-    TFileCollection* ds= gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
-    
-    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/dataset_management/CreateChainFromDataSet.C");
-    chain = CreateChainFromDataSet(ds, kTreeName , kDatasetNMaxFiles);
-    printf("chain has %d entries\n",chain->GetEntries());
-  }
+//  else if (mode == mPROOF)
+//  {
+//    TFileCollection* ds= gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
+//    
+//    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/dataset_management/CreateChainFromDataSet.C");
+//    chain = CreateChainFromDataSet(ds, kTreeName , kDatasetNMaxFiles);
+//    printf("chain has %d entries\n",chain->GetEntries());
+//  }
   
   gSystem->ChangeDirectory(ocwd.Data());
 }
@@ -1135,8 +1215,8 @@ void CheckEnvironmentVariables()
     
     TString sRun = "";
     
-    if (!(strcmp(gApplication->Argv(i),"--trigger")))
-      sprintf(trigger,gApplication->Argv(i+1));
+//    if (!(strcmp(gApplication->Argv(i),"--trigger")))
+//      sprintf(trigger,gApplication->Argv(i+1));
     
     if (!(strcmp(gApplication->Argv(i),"--recalibrate")))
       bRecalibrate = atoi(gApplication->Argv(i+1));
@@ -1219,7 +1299,7 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
   xs  = 0;
   ntr = 0;
   n   = 0;
-  if( kInputData != "AOD" &&  tree))
+  if( kInputData != "AOD" &&  tree )
   {
     nfiles =  tree->GetEntries()  ;
     
@@ -1237,7 +1317,7 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
       cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl;
     } // loop
   }
-  else if( kInputData == "AOD" && xsArr))
+  else if( kInputData == "AOD" && xsArr )
   {
     nfiles = xsArr->GetSize();
     

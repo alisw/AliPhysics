@@ -5,8 +5,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
 {
   //
   // add calibration task
-  //
-
+  //  read start and end of run time from GRP
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskT0Calib", "No analysis manager to connect to.");

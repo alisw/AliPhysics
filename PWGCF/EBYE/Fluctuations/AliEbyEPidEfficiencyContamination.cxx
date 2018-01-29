@@ -1282,8 +1282,8 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     }
     else if( fPidStrategy == 1){
       //ITS+TPC, TPC , TPC+TOF
-      if( pt >= 0.3 && pt <= 0.5 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else if( pt >= 0.8 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
       else isAccepted =  isAcceptedTPC;
     }
     else if( fPidStrategy == 2){

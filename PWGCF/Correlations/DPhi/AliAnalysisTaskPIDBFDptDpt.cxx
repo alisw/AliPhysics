@@ -2135,7 +2135,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     }
   else
     {
-      if (_sameFilter)
+      if (_sameFilter) // for like-sign pairs
         {
 	  _n1_1_vsM->Fill(centrality,      __n1_1);
 	  _s1pt_1_vsM->Fill(centrality,    __s1pt_1);
@@ -2177,9 +2177,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_1:" << corr_1 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_1:" << pt_1 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
-			  px_2      = _px_2[i2];          ////cout << "      px_2:" << px_2 << endl;
-			  py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
-			  pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
+			  px_2      = _px_1[i2];          //
+			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
+			  pz_2      = _pz_1[i2];          //
 			  
 			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
 			    {
@@ -2250,9 +2250,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_2:" << corr_2 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_2:" << pt_2 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
-			  px_2      = _px_2[i2];          ////cout << "      px_2:" << px_2 << endl;
-			  py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
-			  pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
+			  px_2      = _px_1[i2];          //
+			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
+			  pz_2      = _pz_1[i2];          //
 			      
 			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
 			    {
@@ -2295,7 +2295,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 } //i1
             }
         }
-      else  // filter 1 and 2 are different -- must do all particle pairs...
+      else  // for like-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
         {
 	  _n1_1_vsM->Fill(centrality,      __n1_1);
 	  _s1pt_1_vsM->Fill(centrality,    __s1pt_1);

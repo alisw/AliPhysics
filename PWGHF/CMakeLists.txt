@@ -19,5 +19,6 @@ add_subdirectory (correlationHF)
 add_subdirectory (hfe)
 add_subdirectory (vertexingHF)
 add_subdirectory (jetsHF)
+add_subdirectory (HFMuFlow)
 
 message(STATUS "PWGHF enabled")

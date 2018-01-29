@@ -1,6 +1,5 @@
 #ifndef ALIANALYSISTASKJETIPQA_H
 #define ALIANALYSISTASKJETIPQA_H
-#include "AliHFJetsTagging.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "TGraph.h"
 #include "THistManager.h"
@@ -16,7 +15,6 @@ class AliPIDResponse;
 class AliHFEpidBayes;
 class TTree;
 class TH2D;
-class AliHFJetsTagging;
 class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
@@ -147,15 +145,34 @@ public:
     {
         fRunSmearing = value;
     }
+    void setGlobalVertex(Bool_t value)
+    {
+        fGlobalVertex = value;
+    }
 
+   void setDoNotCheckIsPhysicalPrimary(Bool_t value)
+    {
+        fDoNotCheckIsPhysicalPrimary = value;
+    }
+     void setDoJetProb(Bool_t value)
+    {
+        fDoJetProb = value;
+    }
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
+    virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
+    AliEmcalJet *  GetPerpendicularPseudoJet (AliEmcalJet*jet_in  , bool rev );
+    void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
+    void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
+    void FillParticleCompositionEvent();
+
+
     void DoJetLoop(); //jet matching function 2/4
     void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
     void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
@@ -166,8 +183,8 @@ private:
     void SubtractMean (Double_t val[2],AliVTrack *track);
     Bool_t IsTrackAccepted(AliVTrack* track,Int_t n=6);
     Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
-    Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx);
-    Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx);
+    Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx, double &ppt);
+    Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx, double &ppt);
     Bool_t ParticleIsPossibleSource(Int_t pdg);
     Bool_t IsSelectionParticle( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
     Bool_t IsSelectionParticleALICE( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
@@ -199,6 +216,9 @@ private:
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fRunSmearing;//
+    Bool_t   fGlobalVertex;//
+    Bool_t fDoNotCheckIsPhysicalPrimary;//
+    Bool_t fDoJetProb;
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -239,8 +259,6 @@ private:
     Double_t fn1_mix ;
     Double_t fn2_mix ;
     Double_t fn3_mix ;
-
-
     Bool_t   fIsMixSignalReady_n1;
     Bool_t   fIsMixSignalReady_n2;
     Bool_t   fIsMixSignalReady_n3;
@@ -296,7 +314,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 24)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 26)
 };
 
 #endif

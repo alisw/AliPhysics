@@ -15,7 +15,7 @@
 
 class AliFemtoModelCorrFctn3DLCMSSpherical : public AliFemtoModelCorrFctn {
 public:
-  AliFemtoModelCorrFctn3DLCMSSpherical(char* title, 
+  AliFemtoModelCorrFctn3DLCMSSpherical(const char* title,
 			      const int& nqbins, const float& QLo, const float& QHi,
 			      const int& nphibins, const int& ncthetabins);
   AliFemtoModelCorrFctn3DLCMSSpherical(const AliFemtoModelCorrFctn3DLCMSSpherical& aCorrFctn);

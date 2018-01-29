@@ -1,3 +1,6 @@
+//#ifndef CONFIGUREEMCALRECOUTILS_C
+//#define CONFIGUREEMCALRECOUTILS_C
+
 ///
 /// \file ConfigureEMCALRecoUtils.C
 /// \ingroup EMCALPerfAddTaskMacros
@@ -5,6 +8,17 @@
 ///
 /// Example of configuration of AliEMCALRecoUtils. Called in different analysis configuration macros.
 /// This class is used to calibrate/correct/accept EMCal clusters.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliEMCALRecoUtils.h"
+
+#endif
+
+/// Main method
 ///
 /// The input parameters:
 /// \param reco: pointer to object to initialize in this macro.
@@ -15,8 +29,7 @@
 /// \param bBad: Bool, indicates if bad channels/clusters are removed.
 /// \param bRecalT: Bool, indicates if time is calibrated.
 /// \param debug: int debug level, print info on settings in the macro
-///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+
 ///
 void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bMC    = kFALSE,
@@ -95,3 +108,6 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   }
   
 }
+
+//#endif //CONFIGUREEMCALRECOUTILS_C
+

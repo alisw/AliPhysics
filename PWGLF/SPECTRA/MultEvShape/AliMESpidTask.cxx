@@ -403,7 +403,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	vec_hPIDQA[6] = t->Getbeta();
 	hPIDQA->Fill(vec_hPIDQA);
 
-
+/*
 	// THIS IS USED ONLY WHEN RUNNING FOR DCA SHAPES (change AliMEStender.cxx line 163 kTRUE->kFALSE)
 
 	Double_t valDCA[12];
@@ -458,7 +458,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 
 	hDCA->Fill(valDCA);
-
+*/
 
 // 	if( HasMCdata() ){ // run only on MC
 	if(DebugLevel()>0){ // used ONLY for systematic studies

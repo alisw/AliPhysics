@@ -70,4 +70,14 @@
 #pragma link C++ class AliAssociatedTrackYS+;
 #pragma link C++ class AliMixTrackYS+;
 #pragma link C++ class AliAssociatedVZEROYS+;
+#pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
+#pragma link C++ class AliCSAnalysisCutsBase+;
+#pragma link C++ class AliCSEventCuts+;
+#pragma link C++ class AliCSPairAnalysis+;
+#pragma link C++ class AliCSPIDCuts+;
+#pragma link C++ class AliCSTrackCutsBase+;
+#pragma link C++ class AliCSTrackCuts+;
+#pragma link C++ class AliCSTrackMaps+;
+#pragma link C++ class AliCSTrackSelection+;
+#pragma link C++ class AliDptDptCorrelations+;
 #endif

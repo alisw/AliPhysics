@@ -1519,7 +1519,7 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent* lMCevent,
     else  continue;
 
     Double_t mcPt  = mcTrk->Pt();
-    if (mcPt < 0.08 || mcPt > 1.0) continue; // pt cut
+    if (mcPt > 1.0) continue; // pt cut
 
     Double_t mcEta = mcTrk->Eta();
     Double_t mcRap = Eta2y(mcPt, mcTrk->GetMass(), mcEta) + fCMSRapFct;

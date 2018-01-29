@@ -32,7 +32,8 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA()
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0), fTzeroTof(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
     fOrAvsNtracks(0x0), fOrCvsNtracks(0x0), fT0vsNtracks(0x0),fT0TimevsT0Tof(0x0),
-  fESDpid(new AliESDpid()), f0TVX(0)
+  fESDpid(new AliESDpid()), f0TVX(0), fTriggerCounter(0x0)
+
 {
   // Constructor
 
@@ -51,7 +52,7 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA(const char *name)
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0), fTzeroTof(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
     fOrAvsNtracks(0x0), fOrCvsNtracks(0x0), fT0vsNtracks(0x0),fT0TimevsT0Tof(0x0),
-    fESDpid(new AliESDpid()), f0TVX(0)
+    fESDpid(new AliESDpid()), f0TVX(0), fTriggerCounter(0x0)
 {
   // Constructor
   // Define input and output slots here
@@ -79,6 +80,7 @@ AliT0AnalysisTaskQA::~AliT0AnalysisTaskQA()
   delete fOrCvsNtracks;
   delete fT0vsNtracks;
   delete fT0TimevsT0Tof;
+  delete fTriggerCounter;
 
   delete fESDpid;
   delete fTzeroObject;
@@ -106,7 +108,15 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fT0vsNtracks  = new TH2F("fT0ACvstrackes", "T0AC vs tracks",100, 0, 100, 200, -1000, 1000); 
   fT0TimevsT0Tof = new TH2F("fT0TimevsT0Tof", "fT0TimevsT0Tof",50, -1000,1000, 50, -1000,1000); 
   f0TVX        = new TH1F("f0TVX","0TVX position [channels]",200,-500,500);// or C spectrum
-
+  fTriggerCounter = new TH1I("fTriggerCounter", "Trigger counter for calculating efficiencies; Trigger; Nevents", 7,0,7);// counter of events satisfying different triggers
+  fTriggerCounter->GetXaxis()->SetBinLabel(1,"All");
+  fTriggerCounter->GetXaxis()->SetBinLabel(2,"NoPileup");
+  fTriggerCounter->GetXaxis()->SetBinLabel(3,"SPD_Vertex");
+  fTriggerCounter->GetXaxis()->SetBinLabel(4,"V0_Time");
+  fTriggerCounter->GetXaxis()->SetBinLabel(5,"CINT7-B"); 
+  fTriggerCounter->GetXaxis()->SetBinLabel(6,"C0TVX-B");
+  fTriggerCounter->GetXaxis()->SetBinLabel(7,"CADAND-B");
+  
   fTzeroObject     = new TObjArray(0);
   fTzeroObject->SetOwner(kTRUE);
   
@@ -125,10 +135,13 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fTzeroObject->AddAtAndExpand(fTzeroTof, 33);
   fTzeroObject->AddAtAndExpand(fT0TimevsT0Tof, 34);
   fTzeroObject->AddAtAndExpand(f0TVX, 35);
+  fTzeroObject->AddAtAndExpand(fTriggerCounter, 36);
 
   PostData(1, fTzeroObject);
   // Called once
 }
+
+
 
 //________________________________________________________________________
 void AliT0AnalysisTaskQA::UserExec(Option_t *) 
@@ -203,7 +216,6 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   }
   
   Double32_t t0vertex = fESD->GetT0zVertex();
-  //  cout << "t0 vertex "<<t0vertex<<endl;
   Double32_t esdzvertex;
   const AliESDVertex * esdvertex = fESD->GetPrimaryVertex();
   Int_t nofcontrib=-1;
@@ -213,7 +225,6 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
       if(nofcontrib>1)
 	{
 	  esdzvertex=esdvertex->GetZ();
-	  //	  cout << "esd vertex "<<esdzvertex<<endl;
 	  fSPDVertexVST0Vertex->Fill(t0vertex,esdzvertex);
 	}
     }
@@ -221,9 +232,42 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   AliESDTZERO* tz= (AliESDTZERO*) fESD->GetESDTZERO();
   Float_t tvdc = tz->GetTVDC(0);
   if (tvdc!=0) f0TVX->Fill(tvdc);
-
-  // printf("%f   %f  %f\n",orA,orC,time);
+  
+  Bool_t fIs0TVX_B,fIsCINT7_B,fIsV0Cut,fIsCADAND_B;
+  ULong64_t fMask0TVX_B,fMaskCINT7_B,fMaskCADAND_B;
+  //Trigger efficiencies
+  Bool_t isPileup = fESD->IsPileupFromSPD();
+  Float_t vertexSPD=-9999.;
+  Int_t ncontSPD = fESD->GetPrimaryVertexSPD()->GetNContributors();
+  if(ncontSPD>=0 ) {
+      vertexSPD = fESD->GetPrimaryVertex()->GetZ();
+  }
+  Float_t timeV0A = fESD->GetVZEROData()->GetV0ATime();
+  Float_t timeV0C = fESD->GetVZEROData()->GetV0CTime();
+  TString triggerName = fESD->GetFiredTriggerClasses();			//! trigger name
+  
+  fTriggerCounter->Fill("All",1);
+  if(!isPileup)fTriggerCounter->Fill("NoPileup",1);
+  {
+      if(vertexSPD>-10. && vertexSPD<10.)
+      {
+          printf("VertexSPD: %f\n",vertexSPD);
+          fTriggerCounter->Fill("SPD_Vertex",1);
+          if((timeV0A+timeV0C)>11.5 && (timeV0A+timeV0C)<17.5 && (timeV0A-timeV0C)>5.5 && (timeV0A-timeV0C)<11.5)
+          {
+	    fTriggerCounter->Fill("V0_Time",1);
+	    if(triggerName.Contains("CINT7-B-NOPF-CENT"))
+		fTriggerCounter->Fill("CINT7-B",1);
+	    if(triggerName.Contains("CADAND-B-NOPF-CENT"))
+	      fTriggerCounter->Fill("CADAND-B",1);
+	    if(triggerName.Contains("C0TVX-B-NOPF-CENT"))
+	      fTriggerCounter->Fill("C0TVX-B",1);
+	    
+          }
+      }
+  }
   PostData(1, fTzeroObject);
+  
 }      
  //________________________________________________________________________
 void AliT0AnalysisTaskQA::Terminate(Option_t *) 

@@ -71,10 +71,11 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fHistMultMCRecEvent(0),		//rename fHistMCRecMultEvent
   fHistMCGenINEL0Event(0),
   fHistMCRecINEL0Event(0),
+  fHistMCTrigINEL0Event(0),
   fHistMultCorrelation(0),		//rename fHistMCMultCorrelationEvent
   fHistMCResponseMat(0),
   fHistMCTrigEvent(0),
-  fHistMCTrigINEL0Event(0),
+
   //Track-Histograms
   fHistTrack(0),
   fHistTrackCharge(0),		//rename fHistChargeTrack?
@@ -122,7 +123,8 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fUpperCentralityBound(0.),
   fIncludeSigmas(kTRUE),
   fHistMCTrackMult(0),
-  fHistV0Amp(0)
+  fHistMCTrackMultGen(0),
+  fHistResPt(0)
 {
   // Set default binning
   Double_t binsMultCentDefault[2] = {0,10000};
@@ -151,9 +153,9 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList -> SetOwner();
 
-  Int_t binsEventCount[3]={2,2,2};
-  Double_t minEventCount[3]={0,0,0};
-  Double_t maxEventCount[3]={2,2,2};
+  Int_t binsEventCount[4]={2,2,2,2};
+  Double_t minEventCount[4]={0,0,0,0};
+  Double_t maxEventCount[4]={2,2,2,2};
 
   /// Standard track histogram pt:eta:zV:multcent
   Int_t nBinsTrack[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
@@ -198,8 +200,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Int_t nBinsMCMultPt[2]={fBinsMultCent->GetSize()-1,fBinsPt->GetSize()-1};
   Double_t minMCMultPt[2]={fBinsMultCent->GetAt(0),fBinsPt->GetAt(0)};
   Double_t maxMCMultPt[2]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1)};
-
-
+  
+  
+  /// test pT vs pT also eta and vz
+  Int_t nBinsMCPtPt[4]={fBinsPt->GetSize()-1,fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1};
+  Double_t minBinsMCPtPt[4]={fBinsPt->GetAt(0),fBinsPt->GetAt(0),fBinsEta->GetAt(0),fBinsZv->GetAt(0)};
+  Double_t maxBinsMCPtPt[4]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsZv->GetSize()-1),fBinsZv->GetAt(fBinsZv->GetSize()-1) };
+  
+  
   fHistTrack = new THnF("fHistTrack", "Histogram for Tracks",4,nBinsTrack,minTrack,maxTrack);
   fHistTrack -> SetBinEdges(0,fBinsPt->GetArray());
   fHistTrack -> SetBinEdges(1,fBinsEta->GetArray());
@@ -229,10 +237,11 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fHistEvent -> Sumw2();
 
 
-  fEventCount = new THnF("fEventCount","trig vs trig+vertex",3,binsEventCount,minEventCount,maxEventCount);
+  fEventCount = new THnF("fEventCount","trig vs trig+vertex",4,binsEventCount,minEventCount,maxEventCount);
   fEventCount->GetAxis(0)->SetTitle("trig");
   fEventCount->GetAxis(1)->SetTitle("trig+vert");
   fEventCount->GetAxis(2)->SetTitle("selected");
+  fEventCount->GetAxis(3)->SetTitle("All");
   fEventCount->Sumw2();
 
   fHistMultEvent = new THnF("fHistMultEvent", "Histogram for MultEvents",3,nBinsMultEvent,minMultEvent,maxMultEvent);
@@ -243,10 +252,6 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fHistMultEvent->GetAxis(1)->SetTitle("Accepted track multiplicity");
   fHistMultEvent->GetAxis(2)->SetTitle("Corrected track multiplicity");
   fHistMultEvent -> Sumw2();
-
-// temporary histogram
-  fHistV0Amp = new TH1D("V0Amp", "V0Amp",2000,0,200);
-  fHistV0Amp -> Sumw2();
 
 
   if(fIsMC){
@@ -436,7 +441,28 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCTrackMult->GetAxis(1)->SetTitle("N_{acc}");
     fHistMCTrackMult->GetAxis(2)->SetTitle("N_{ch}");
     fHistMCTrackMult -> Sumw2();
+
+    fHistMCTrackMultGen = new THnF("fHistMCTrackMultGen", "True Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
+    fHistMCTrackMultGen -> SetBinEdges(0,fBinsPt->GetArray());
+    fHistMCTrackMultGen -> SetBinEdges(1,fBinsMultCent->GetArray());
+    fHistMCTrackMultGen -> SetBinEdges(2,fBinsMultCent->GetArray());
+    fHistMCTrackMultGen->GetAxis(0)->SetTitle("#it{p}_T");
+    fHistMCTrackMultGen->GetAxis(1)->SetTitle("N_{acc}");
+    fHistMCTrackMultGen->GetAxis(2)->SetTitle("N_{ch}");
+    fHistMCTrackMultGen -> Sumw2();
     
+    
+    fHistResPt = new THnF("fHistResPt","Histogram for MC Closure test #it{p}_{T}^{gen.} vs. #it{p}_{T}^{rec.}", 4, nBinsMCPtPt,minBinsMCPtPt,maxBinsMCPtPt);
+    fHistResPt -> SetBinEdges(0,fBinsPt->GetArray());
+    fHistResPt -> SetBinEdges(1,fBinsPt->GetArray());
+    fHistResPt -> SetBinEdges(2,fBinsEta->GetArray());
+    fHistResPt -> SetBinEdges(3,fBinsZv->GetArray());    
+    fHistResPt->GetAxis(0)->SetTitle("p_{T}^{gen.} (GeV/c)");    
+    fHistResPt->GetAxis(1)->SetTitle("p_{T}^{rec.} (GeV/c)");
+    fHistResPt->GetAxis(2)->SetTitle("#eta");
+    fHistResPt->GetAxis(3)->SetTitle("Zv (cm)");
+    fHistResPt -> Sumw2();
+
     /*
        fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
        fHistMCGenTrackINEL0->SetBinEdges(0,fBinsPt->GetArray());
@@ -456,8 +482,6 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fOutputList->Add(fEventCount);
   fOutputList->Add(fHistMultEvent);
   fOutputList->Add(fHistTrackCharge);
-
-  fOutputList->Add(fHistV0Amp);
 
 
   if(fIsMC){
@@ -482,9 +506,12 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCRecINEL0Event);
     fOutputList->Add(fHistMCResponseMat);
     fOutputList->Add(fHistMCMultPt);
+    fOutputList->Add(fHistResPt);
 
     fOutputList->Add(fHistMCTrackMult);
+    fOutputList->Add(fHistMCTrackMultGen);
 
+    
     //     fOutputList->Add(fHistMCGenTrackINEL0);
   }
   PostData(1, fOutputList);
@@ -538,18 +565,15 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   AliVVZERO * vZeroHandler = fEvent->GetVZEROData();
   if (!vZeroHandler) {printf("ERROR: vZeroHandler not available\n"); return;}
-  Double_t v0Mult = (Double_t) vZeroHandler->GetMTotV0A();
+
 
   Bool_t isTrigAndVertex = kFALSE;
   if (fIs2013pA){	isTrigAndVertex = isEventTriggered && IsEventAccepted2013pA(fEvent) && IsEventAcceptedQuality(fEvent);	}
   if (fIs2015data){	isTrigAndVertex = isEventTriggered && IsEventAccepted2015data(fEvent) && IsEventAcceptedQuality(fEvent);	}
 
 
-  Double_t vEventCount[3] = { static_cast<Double_t>((isEventTriggered && kTRUE)) , static_cast<Double_t>(isTrigAndVertex),  static_cast<Double_t>(isTrigAndVertex && (TMath::Abs(zVertEvent) < 10.))};
+  Double_t vEventCount[4] = { static_cast<Double_t>((isEventTriggered && kTRUE)) , static_cast<Double_t>(isTrigAndVertex),  static_cast<Double_t>(isTrigAndVertex && (TMath::Abs(zVertEvent) < 10.)), kTRUE};
   fEventCount->Fill(vEventCount);
-
-  // take a look at the range of V0 amplitude
-  fHistV0Amp->Fill(v0Mult);
 
   Double_t multAccTracks = 0;   	/// N_acc (of tracks!!)
   Double_t multAccCorrTracks = 0;	/// N_acc (of tracks!!) corrected with trk efficiency
@@ -581,10 +605,10 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   }
 
   /// \li Event Acceptance Cuts
-  if(!IsEventAcceptedGeometrics(fEvent)) return;
-  if(!IsEventAcceptedQuality(fEvent)) return;
+  if(!IsEventAcceptedGeometrics(fEvent)) return;   //Requires primary vertex in the limits
+  if(!IsEventAcceptedQuality(fEvent)) return;      //Requires vertex quality
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
-  if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}
+  if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
 
 
   /// ------------------ Reconstructed Events --------------------------------------
@@ -605,7 +629,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
 
       /// \li Acceptance cuts for generated particles
-      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
       if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
 
       if(IsChargedPrimary(iParticle)){
@@ -687,6 +710,12 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       TParticle *mcParticle = fMCStack->Particle(mcLabel);
       if(!mcParticle) {printf("ERROR: mcParticle not available\n"); continue;}
 
+      //_______________________________________________________
+      Double_t trackResolutionPt[4]= {mcParticle->Pt(), track->Pt(), mcParticle->Eta(), zVertEvent};
+//    Double_t trackResolutionPt[2]= {mcParticle->Pt(), track->Pt()};
+      fHistResPt->Fill(trackResolutionPt);
+      //______________________________________________________
+      
       //is original particle also fulfilling the required conditions (not only its reconstructed track)?
       if(!IsTrackAcceptedKinematics(mcParticle)) continue;
 
@@ -738,7 +767,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
 
       /// \li Acceptance cuts for generated particles
-      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
       if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
 
       if(IsChargedPrimary(iParticle)){
@@ -750,6 +778,10 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 	if(multEvent > 0.1){
 	  Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
 	  fHistMCMultPt->Fill(mcMultPt);
+
+	  Double_t trackValuesMult[3] = {mcGenParticle->Pt(), multEvent, multGenPart};
+	  fHistMCTrackMultGen->Fill(trackValuesMult);
+	  
 	}
 
       }
@@ -914,9 +946,11 @@ Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
   }
   else
   {
+  	//printf("--------------- Using V0M -----------------\n");
     Float_t centralityF = -1;
     AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
     if ( MultSelection ){
+    	//printf("--------------- There is MultSelection -----------------\n");
       centralityF = MultSelection->GetMultiplicityPercentile("V0M"/*, lEmbedEventSelection = kFALSE*/);
       if(centralityF>100) return 999;
       return centralityF;
@@ -1000,9 +1034,13 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
 
     const AliESDVertex *vertexSPD = ESDevent->GetPrimaryVertexSPD();
     // always check for SPD vertex
+    const AliESDVertex * trkVertex = ESDevent->GetPrimaryVertexTracks();
     if(!vertexSPD) return kFALSE;
     if(!vertexSPD->GetStatus()) return kFALSE;
-    if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
+    if(!trkVertex->GetStatus()) return kFALSE;
+    if (vertexSPD->IsFromVertexerZ() && !(vertexSPD->GetDispersion()<0.04 && vertexSPD->GetZRes()<0.25)) return kFALSE;
+    //if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
+    if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
   }else{
     //AOD code goes here
   }

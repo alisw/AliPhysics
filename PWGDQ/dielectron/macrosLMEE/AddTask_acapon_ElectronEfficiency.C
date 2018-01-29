@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
+AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE, Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_acapon_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE_output.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
@@ -133,7 +133,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     
   
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i); // main function in config file
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, hasITS); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     if (isPrefilterCutset) {
       Int_t success = SetupPrefilterPairCuts(i);

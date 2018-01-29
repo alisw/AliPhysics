@@ -79,6 +79,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliTrackContainer      *GetTrackContainer(const char* name)              const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                    RemoveParticleContainer(Int_t i=0)                     { fParticleCollArray.RemoveAt(i)                      ; }
   void                    RemoveClusterContainer(Int_t i=0)                      { fClusterCollArray.RemoveAt(i)                       ; }
+  AliEMCALRecoUtils      *GetRecoUtils()  const { return fRecoUtils; }
   AliVCaloCells          *GetCaloCells()  const { return fCaloCells; }
   TList                  *GetOutputList() const { return fOutput; }
   
@@ -124,7 +125,6 @@ class AliEmcalCorrectionComponent : public TNamed {
   Double_t                fMaxBinPt;                      ///< Max pt in histograms
   Double_t                fVertex[3];                     //!<! Event vertex
   AliEMCALGeometry       *fGeom;                          //!<! Geometry object
-  Bool_t                  fIsEmbedded;                    ///< Trigger, embedded signal
   Int_t                   fMinMCLabel;                    ///< Minimum MC label value for the tracks/clusters being considered MC particles
   TObjArray               fClusterCollArray;              ///< Cluster collection array
   TObjArray               fParticleCollArray;             ///< Particle/track collection array
@@ -139,7 +139,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 4); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 5); // EMCal correction component
   /// \endcond
 };
 

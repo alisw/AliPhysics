@@ -11,7 +11,6 @@
 #include "AliFMDCorrNoiseGain.h"
 #include "AliForwardUtil.h"
 #include "AliOADBForward.h"
-#include "AliDataFile.h"
 #include <TString.h>
 #include <AliLog.h>
 #include <TFile.h>
@@ -64,26 +63,41 @@ AliForwardCorrectionManager::AliForwardCorrectionManager(Bool_t d)
   // Parameters:
   //    Not used
   //
-  RegisterCorrection(kIdSecondaryMap, fgkSecondaryMapSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrSecondaryMap::Class(), 
+  RegisterCorrection(kIdSecondaryMap,
+		     fgkSecondaryMapSkel,
+		     fgkSecondaryMapSkel,
+		     AliFMDCorrSecondaryMap::Class(), 
 		     kStandard|kSatellite);
-  RegisterCorrection(kIdELossFits, fgkELossFitsSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrELossFit::Class(), 
+  RegisterCorrection(kIdELossFits,
+		     fgkELossFitsSkel,
+		     fgkELossFitsSkel,
+		     AliFMDCorrELossFit::Class(), 
 		     kRun|kSys|kSNN|kSatellite|kMC /*kFull*/);
-  RegisterCorrection(kIdVertexBias, fgkVertexBiasSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrVertexBias::Class(), 
+  RegisterCorrection(kIdVertexBias,
+		     fgkVertexBiasSkel,
+		     fgkVertexBiasSkel,
+		     AliFMDCorrVertexBias::Class(), 
 		     kStandard|kSatellite);
-  RegisterCorrection(kIdMergingEfficiency, fgkMergingEffSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrMergingEfficiency::Class(), 
+  RegisterCorrection(kIdMergingEfficiency,
+		     fgkMergingEffSkel,
+		     fgkMergingEffSkel,
+		     AliFMDCorrMergingEfficiency::Class(), 
 		     kStandard|kSatellite);
-  RegisterCorrection(kIdDoubleHit, fgkDoubleHitSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrDoubleHit::Class(),
+  RegisterCorrection(kIdDoubleHit,
+		     fgkDoubleHitSkel,
+		     fgkDoubleHitSkel,
+		     AliFMDCorrDoubleHit::Class(),
 		     kStandard|kMC);
-  RegisterCorrection(kIdAcceptance, fgkAcceptanceSkel, 
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrAcceptance::Class(),
+  RegisterCorrection(kIdAcceptance,
+		     fgkAcceptanceSkel,
+		     fgkAcceptanceSkel,
+		     AliFMDCorrAcceptance::Class(),
 		     kRun|kSys|kSNN|kSatellite);
-  RegisterCorrection(kIdNoiseGain, fgkNoiseGainSkel,
-		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliFMDCorrNoiseGain::Class(), kRun);
+  RegisterCorrection(kIdNoiseGain,
+		     fgkNoiseGainSkel,
+		     fgkNoiseGainSkel,
+		     AliFMDCorrNoiseGain::Class(),
+		     kRun);
 }
 //____________________________________________________________________
 Bool_t
@@ -189,18 +203,6 @@ AliForwardCorrectionManager::ParseFields(const TString& fields)
   }
   delete tokens;
   return ret;
-}
-
-
-//____________________________________________________________________
-Bool_t
-AliForwardCorrectionManager::Append(const TString& addition, 
-				    const TString& destination) const
-{
-  TString dest(destination);
-  if (dest.IsNull()) 
-    dest = AliDataFile::GetFileNameOADB("OADB/PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str();
-  return AliCorrectionManagerBase::Append(addition, dest);
 }
 
 

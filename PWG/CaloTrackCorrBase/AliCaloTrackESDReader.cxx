@@ -77,6 +77,8 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
     }
     if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
     {
+      AliDebug(1,Form("Null number of contributors from bad vertex type:: %s",
+                    esdevent->GetPrimaryVertex()->GetName()));
       return kFALSE;
     }
   }

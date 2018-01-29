@@ -59,18 +59,19 @@ void AliPP13PhotonSpectrumSelection::FillClusterHistograms(const AliVCluster * c
 	TLorentzVector p;
 	clus->GetMomentum(p, eflags.vtxBest);
 
-	fSpectrum->FillAll(sm, sm, p.Pt());
+	Float_t eff = 1. / fWeights->Weight(p.E());
+	fSpectrum->FillAll(sm, sm, p.Pt(), eff);
 
 	Bool_t cpv = clus->GetEmcCpvDistance() > fDistanceCPV;
 	if (cpv)
-		fSpectrumCPV->FillAll(sm, sm, p.Pt());
+		fSpectrumCPV->FillAll(sm, sm, p.Pt(), eff);
 
 	Bool_t disp = TestLambda(clus->GetM20(), clus->GetM02(), fDispersionCut);
 
 	if (disp)
-		fSpectrumDisp->FillAll(sm, sm, p.Pt());
+		fSpectrumDisp->FillAll(sm, sm, p.Pt(), eff);
 
 	if (cpv && disp)
-		fSpectrumBoth->FillAll(sm, sm, p.Pt());
+		fSpectrumBoth->FillAll(sm, sm, p.Pt(), eff);
 
 }

@@ -122,6 +122,8 @@ public:
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
   void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
   Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
+  void SetCutMultiplicityOutliers(Bool_t const uPhiEtaW) {this->fCutMultiplicityOutliers = uPhiEtaW;};
+  Bool_t GetCutMultiplicityOutliers() const {return this->fCutMultiplicityOutliers;};
 
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -305,6 +307,7 @@ private:
   Bool_t fUsePhiEtaCuts;              // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;        // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
+  Bool_t fCutMultiplicityOutliers;    // cut on reference multiplicity
   TList *fWeightsList;                // list with weights
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
@@ -379,7 +382,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
 
-  ClassDef(AliAnalysisTaskCRC,13);
+  ClassDef(AliAnalysisTaskCRC,14);
 };
 
 //================================================================================================================

@@ -34,7 +34,7 @@ class AliPhysicsSelection;
 #include "AliEventCuts.h"
 #include "AliCEPUtils.h"
 #include "CEPEventBuffer.h"
-
+#include "CEPRawEventBuffer.h"
 
 class AliAnalysisTaskCEP : public AliAnalysisTaskSE
 {
@@ -97,7 +97,7 @@ private:
   UInt_t fTTmask, fTTpattern;
   
   // some hit information
-  Bool_t fisSTGTriggerFired;
+  UInt_t fisSTGTriggerFired;
   Int_t  fnTOFmaxipads;
 
 	// event information
@@ -110,17 +110,17 @@ private:
 
   CEPEventBuffer *fCEPEvent;      //! event buffer
   TObjArray      *fTracks;        //! array of tracks
+  TObjArray      *fTrl2Tr;        //! array of tracklet-track associations
   TArrayI        *fTrackStatus;   //! array of TrackStatus
   TString         fLHCPeriod;     //! LHC period
+  
+  CEPRawEventBuffer *fCEPRawEvent;//! raw event buffer
     
   TVector3        fVtxPos;        // vertex position
 
 	// analysis task status
 	Long_t fAnalysisStatus; // stores the status bits used to specify
                           // processing steps to be performed
-  // MC CEP system
-  TLorentzVector fMCCEPSystem;
-  
 	// PID information
   AliPIDResponse *fPIDResponse;   //! esd pid object
   AliPIDCombined *fPIDCombined1;  //! PID Combined object with priors
@@ -142,6 +142,7 @@ private:
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
   TList *flFMD     ;    //! list of QA histograms for FMD study
+  TList *flEMC     ;    //! list of QA histograms for EMC study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

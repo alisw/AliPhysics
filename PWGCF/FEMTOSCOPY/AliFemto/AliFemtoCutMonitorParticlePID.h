@@ -15,6 +15,7 @@ class AliFemtoPair; // Gael 12/04/02
 class TH1D;
 class TH2D;
 class TList;
+
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitor.h"
@@ -46,17 +47,19 @@ public:
   void SetUsePt(Bool_t usept){fIfUsePt=usept;}
   virtual TList *GetOutputList();
 
-private:
-  TH2D *fTPCdEdx;     // TPC dEdx information
-  Int_t fTOFParticle; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
-  TH2D *fTOFTime;     // TOF time
-  TH2D *fTOFNSigma;   // TOF NSigma values vs mom
-  TH2D *fTPCNSigma;   // TPC NSigma values vs mom
-  TH2D *fTPCTOFNSigma;   // TPC^2+ TOF^2 NSigma values vs mom
-  TH2D *fTPCvsTOFNSigma; // TPC vs TOF
-  TH1D *fParticleOrigin; //particle origin from MC
-  TH1D *fParticleId;     //true particle identification from MC
-  Bool_t fIfUsePt; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
+protected:
+  Int_t fTOFParticle; ///< Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
+  Bool_t fIfUsePt;    ///< Plot pT instead of p in all momentum histograms
+
+  TH2D *fTPCdEdx;        ///< TPC dEdx information
+  TH2D *fTOFTime;        ///< TOF time
+  TH2D *fTOFNSigma;      ///< TOF NSigma values vs mom
+  TH2D *fTPCNSigma;      ///< TPC NSigma values vs mom
+  TH2D *fTPCTOFNSigma;   ///< TPC^2+ TOF^2 NSigma values vs mom
+  TH2D *fTPCvsTOFNSigma; ///< TPC vs TOF
+
+  TH1D *fParticleOrigin; ///< particle origin from MC
+  TH1D *fParticleId;     ///< true particle identification from MC
 };
 
 #endif

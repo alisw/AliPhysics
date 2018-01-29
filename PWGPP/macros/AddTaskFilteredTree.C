@@ -84,14 +84,14 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
     printf("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF: From env. variable\t%f\n", downscale);
   }else {
     ::Info("AliAnalysisTaskFilteredTree__SetLowPtTrackDownscalingF", "Use default");
-    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%s\n",task->GetLowPtTracksDownscaligF());
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%s\n");
   }
   if (gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")) {
     Float_t downscale=TString(gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")).Atof();
     task->SetLowPtV0DownscaligF(downscale);
     printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF:From enc. variable\t%f\n",downscale);
   }else {
-    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%f\n",task->GetLowPtV0DownscaligF());
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%f\n");
   }
   //task->Dump();
   //task->SetProcessAll(kFALSE);

@@ -38,7 +38,7 @@ AliAnalysisTaskSEHFQA* AddTaskBasicHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,
   
   analysiscuts->SetTriggerClass("");
   analysiscuts->SetTriggerMask(AliVEvent::kAnyINT);
-  analysiscuts->SetUseCentrality(1);
+  analysiscuts->SetUseCentrality(AliRDHFCuts::kCentOff);
 
   AliAODPidHF* pid4hf=new AliAODPidHF();
   Double_t plim[2]={0.6,0.8};

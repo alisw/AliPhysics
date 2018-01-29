@@ -228,8 +228,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
     if(fTriggerMaker->IsConfigured()){
       AliInfoStream() << "Applying configuration for " << dataset << std::endl;
     } else {
-      AliErrorStream() << "No valid configuration found for the given dataset - trigger maker disabled" << std::endl;
-      fLocalInitialized = false;
+      AliErrorStream() << "No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
   }
 
@@ -244,6 +243,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
  * @return True
  */
 Bool_t AliEmcalTriggerMakerTask::Run(){
+  if(!fTriggerMaker->IsConfigured()) return false;    // only run trigger maker in case it is configured
   fCaloTriggersOut->Delete(); // Needed to avoid memory leak
   // prepare trigger maker
   fTriggerMaker->Reset();

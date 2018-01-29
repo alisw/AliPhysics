@@ -54,8 +54,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
@@ -69,6 +69,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// default ctor
@@ -85,8 +86,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
@@ -100,6 +101,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// named ctor
@@ -154,6 +156,11 @@ void AliPHOSTenderSupply::InitTender()
         return ;
       }
     }   
+  }
+
+  if(fIsMC && fDRN > 0){
+    fRunNumber = fDRN;//only for single particle simulation
+    AliInfo(Form("A dummy run number is set. fRunNumber is %d",fRunNumber));
   }
 
   //In MC always reco pass 1
@@ -621,7 +628,7 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
       Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
       clu->SetTrackDistance(dx,dz); 
       Double_t r = 999. ; //Big distance
-      int nTracksMatched = clu->GetNTracksMatched();
+//      int nTracksMatched = clu->GetNTracksMatched();
       if(itr > 0) {
          r=TestCPV(dx, dz, pttrack,charge) ;    
       }
@@ -1176,7 +1183,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
-  Float_t tMaxHG=0.; //HighGain only
+//  Float_t tMaxHG=0.; //HighGain only
   Float_t eMaxHG=0.; //High Gain only
   Bool_t isHGMax=kTRUE;
   Int_t absIdMax=-1,absIdMaxHG=-1 ;

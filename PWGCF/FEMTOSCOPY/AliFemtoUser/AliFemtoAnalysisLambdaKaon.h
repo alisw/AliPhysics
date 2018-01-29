@@ -209,6 +209,7 @@ struct ESDCutParams
   bool useCustomMisID;
   bool useElectronRejection;
   bool useCustomElectronRejection;
+  bool useIsProbableElectronMethod;
   bool usePionRejection;
 };
 

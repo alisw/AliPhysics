@@ -46,7 +46,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   AliAnalysisTaskEbyeIterPID();
   virtual ~AliAnalysisTaskEbyeIterPID();
   
-  enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,kLa=9,kLaLa=10};
+  enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,kLa=9,kLaLa=10,kCh=11,kChCh=12};
   enum momentTypeUnlike {
     kPiPosPiNeg=0,
     kPiPosKaNeg=1,
@@ -58,6 +58,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     kPrPosKaNeg=7,
     kPrPosPrNeg=8,
     kLaPosLaNeg=9,
+    kChPosChNeg=10,
   };
   enum trackCutBit {
     kNCrossedRowsTPC60=0,
@@ -103,6 +104,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)    {fFillCuts            = ifAllCuts;}
   void   SetFillDeDxTree(const Bool_t ifDeDxTree = kFALSE)          {fFillDeDxTree        = ifDeDxTree;}
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)    {fRunFastSimulation   = ifFastSimul;}
+  void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE)  {fRunFastHighMomentCal   = ifFastHighMom;}
   void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)       {fFillDnchDeta        = ifDnchDetaCal;}
   void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)          {fIncludeTOF          = ifIncludeTOF;}
   void   SetUseThnSparse(const Bool_t ifUseThnSparse = kFALSE)    {fUseThnSparse        = ifUseThnSparse;}
@@ -123,6 +125,9 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 20.)      {fdEdxDown            = dEdxLowerEdge;}
   void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 1020.)    {fdEdxUp              = dEdxUpperEdge;}
   void   SetNEtabins(const Int_t nEtaBins = 16)                   {fnEtaBins            = nEtaBins;}
+  void   SetPercentageOfEvents(const Int_t nPercentageOfEvents = 0) {fPercentageOfEvents = nPercentageOfEvents;}
+
+  
   void   SetEtaLowerEdge(const Float_t etaLowerEdge = -0.8)       {fEtaDown             = etaLowerEdge;}
   void   SetEtaUpperEdge(const Float_t etaUpperEdge = 0.8)        {fEtaUp               = etaUpperEdge;}
   void   SetNMomBins(const Int_t nMombins = 150)                  {fnMomBins            = nMombins;}
@@ -133,7 +138,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
   {
     // Create the histograms to be used in the binning of eta, cent and momentum
-    std::cout << " !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
     fhEta  =  new TH1F("fhEta" ,"Eta Bins"       ,fnEtaBins        ,fEtaDown, fEtaUp );
     fhPtot =  new TH1F("fhPtot","Momentum Bins"  ,fnMomBins        ,fMomDown, fMomUp ); 
     fhCent =  new TH1F("fhCent","Centrality Bins",tmpCentbins-1    ,tmpfxCentBins );
@@ -152,7 +157,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCEtaScanArray(const Int_t tmpEtaBinsMC, Float_t tmpetaDownArr[], Float_t tmpetaUpArr[])
   {    
     // set MC eta values to scan 
-    std::cout << " !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
     fnEtaWinBinsMC = tmpEtaBinsMC;
     fetaDownArr = new Float_t[fnEtaWinBinsMC]; 
     fetaUpArr   = new Float_t[fnEtaWinBinsMC]; 
@@ -165,7 +170,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCResonanceArray(const Int_t tmpNRes, TString tmpResArr[])
   {    
     // set MC eta values to scan 
-    std::cout << " !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
     fnResBins = tmpNRes;
     fResonances = new TString[fnResBins]; 
     for (Int_t i=0; i<fnResBins; i++) fResonances[i] = tmpResArr[i]; 
@@ -175,7 +180,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCMomScanArray(const Int_t tmpMomBinsMC, Float_t tmppDownArr[], Float_t tmppUpArr[])
   {       
     // set MC momentum values to scan
-    std::cout << " !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
     fnMomBinsMC = tmpMomBinsMC;
     fpDownArr = new Float_t[fnMomBinsMC]; 
     fpUpArr   = new Float_t[fnMomBinsMC]; 
@@ -183,6 +188,43 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
       fpDownArr[i] =  tmppDownArr[i]; 
       fpUpArr[i]   =  tmppUpArr[i]; 
     }
+  }
+  
+  void SetLookUpTableFirstMoments(TTree *lookUpTree, Int_t partType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
+  {    
+    // set MC eta values to scan 
+    std::cout << " Info::marsland: !!!!!! SetLookUpTableFirstMoments is being set !!!!!!!   " << std::endl;
+    //
+    // fill arrays from lookup table
+    TH1D *h=NULL, *h1=NULL;
+    for (Int_t imom=0; imom<tmpMomBinsMC; imom++){
+        for (Int_t icent=0; icent<tmpCentbins; icent++){
+            for (Int_t ieta=0; ieta<tmpEtaBinsMC; ieta++){
+                //
+                // with resonances
+                lookUpTree->Draw(Form("momentPos.fElements[%d]-momentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h= (TH1D*)lookUpTree->GetHistogram()->Clone(); h-> SetName("Res");
+                if (partType==0)  fPiFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==1)  fKaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==2)  fPrFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==9)  fLaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==11) fChFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                delete h;
+                //
+                // without resonances
+                lookUpTree->Draw(Form("noResmomentPos.fElements[%d]-noResmomentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h1= (TH1D*)lookUpTree->GetHistogram()->Clone(); h1-> SetName("noRes");
+                if (partType==0)  fPiFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==1)  fKaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==2)  fPrFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==9)  fLaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==11) fChFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                delete h1;
+                
+            }
+        }
+    }
+
   }
   
  private:
@@ -198,6 +240,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
    void  FillTPCdEdxCheck();                  // Quick check for the TPC dEdx 
    void  FillTPCdEdxMC();                     // Fill all info + TIdenMC from MC to do MC closure test
    void  FastGen();                           // Run over galice.root for Fastgen
+   void  CalculateFastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
    void  WeakAndMaterial();                   // Look full acceptance, weak decay and material 
    void  FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin  
    void  FillTPCdEdxMCEffMatrix();            // Prepare efficiency matrix
@@ -237,6 +280,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   TTree            * fTreeCuts;               // tree to save all variables for control plots
   TTree            * fTreeMCFullAcc;          // tree with full acceptance filled with MC
   TTree            * fTreeResonance;          // tree with full acceptance filled with MC
+  TTree            * fTreeMCgenMoms;          // tree with higher moment calculations
 
   TH1F             * fhEta;                   // helper histogram for TIdentity tree
   TH1F             * fhCent;                  // helper histogram for TIdentity tree
@@ -253,6 +297,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   Double_t          fEtaDown;
   Double_t          fEtaUp;
   Int_t             fnEtaBins;
+  Int_t             fPercentageOfEvents;     // when only a fPercentageOfEvents is enough
       
   Bool_t            fMCtrue;                 // flag if real data or MC is processed
   Bool_t            fTIdentity;              // flag if tidentity trees are to be filled
@@ -267,6 +312,8 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   Bool_t            fFillDeDxTree;           // switch whether to fill dEdx tree
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
+  Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
+  
   Bool_t            fFillDnchDeta;           // switch on calculation of the dncdeta for fastgens
   Bool_t            fIncludeTOF;             // Include TOF information to investigate the efficiency loss effects on observable
   Bool_t            fUseThnSparse;           // in case thnsparse is filled
@@ -377,6 +424,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   Int_t              fnEtaWinBinsMC;
   Int_t              fnMomBinsMC;
   Int_t              fnCentBinsMC;
+  Int_t              fnResModeMC;
   Int_t              fnCentbinsData;
   Float_t            fMissingCl;
   
@@ -415,7 +463,11 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   Int_t              fSystDCAxy;             // 0 --> default ||| -1 --> -sigma ||| +1 --> +sigma 
   Int_t              fSystChi2;              // 0 -->  4      ||| -1 -->    3   ||| +1 -->   5
   Int_t              fSystVz;                // 0 -->  10     ||| -1 -->    8   ||| +1 -->   12
-  
+  Float_t            fPiFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fKaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fPrFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fLaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fChFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
   Float_t            *fetaDownArr;           //[fnEtaWinBinsMC]
   Float_t            *fetaUpArr;             //[fnEtaWinBinsMC]
   Float_t            *fcentDownArr;          //[fnCentBinsMC]
@@ -439,7 +491,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   THnF             * fHistdEdxTPC;            // 5D hist of dEdx from all TPC
   TH2F             * fHistArmPod;             // control histogram for Armanteros Podolanski plot
    
-  ClassDef(AliAnalysisTaskEbyeIterPID, 1);
+  ClassDef(AliAnalysisTaskEbyeIterPID, 2);
   
 };
 

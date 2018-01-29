@@ -29,6 +29,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnKStar;
 #pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
+#pragma link C++ class AliFemtoModelCorrFctnKK;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
@@ -125,6 +126,13 @@
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
 #pragma link C++ class AliFemtoConfigObject::BuildMap;
+#pragma link C++ class AliFemtoConfigObject::list_iterator;
+#pragma link C++ class AliFemtoConfigObject::map_iterator;
+#pragma link C++ class std::map<std::string, AliFemtoConfigObject>;
+#pragma link C++ class std::vector<AliFemtoConfigObject>;
+#pragma link C++ class std::vector<AliFemtoConfigObject>::iterator;
+#pragma link C++ class std::vector<std::pair<double, double>>;
+// ^ these std:: classes required here for use in ROOT-5 macros (ROOT-6 should be ok)
 
 #pragma link C++ class AliFemtoAnalysisLambdaKaon+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::AnalysisParams+;
@@ -138,5 +146,4 @@
 #pragma link C++ class AliFemtoPairCutMInv;
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;
-
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ3D+;

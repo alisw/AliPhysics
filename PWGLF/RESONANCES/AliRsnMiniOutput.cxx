@@ -555,9 +555,11 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
                continue;
             }
             Bool_t decayMatch = kFALSE;
-            if (p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[0]))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[1])))
                decayMatch = kTRUE;
-            if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[0]))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[1])))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
 	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;

@@ -58,8 +58,4 @@
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
 #pragma link C++ class AliAnalysisTaskGammaConvFlow+;
 
-#pragma link C++ class AliV0ReaderStrange+;
-#pragma link C++ class AliV0CutsStrange+;
-#pragma link C++ class AliV0ParticleStrange+;
-
 #endif

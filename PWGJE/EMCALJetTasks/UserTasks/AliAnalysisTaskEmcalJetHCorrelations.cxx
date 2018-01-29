@@ -5,6 +5,8 @@
 
 #include "AliAnalysisTaskEmcalJetHCorrelations.h"
 
+#include <bitset>
+
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -67,6 +69,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fRequireMatchedJetWhenEmbedding(kTRUE),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -94,6 +97,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fRequireMatchedJetWhenEmbedding(kTRUE),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -293,9 +297,6 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
 {
   UInt_t eventTrigger = 0;
   if (fIsEmbedded) {
-    eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  }
-  else {
     auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
     if (embeddingHelper) {
       auto aodHeader = dynamic_cast<AliVAODHeader *>(embeddingHelper->GetEventHeader());
@@ -309,6 +310,9 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
     else {
       AliErrorStream() << "Failed to retrieve requested embedding helper\n";
     }
+  }
+  else {
+    eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   }
 
   return eventTrigger;
@@ -360,6 +364,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   // Determine the trigger for the current event
   UInt_t eventTrigger = RetrieveTriggerMask();
 
+  AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
+
   // Handle fast partition if selected
   if ((eventTrigger & AliVEvent::kFastOnly) && fDisableFastPartition) {
     AliDebugStream(4) << GetName() << ": Fast partition disabled\n";
@@ -371,12 +377,17 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
   for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
-    if (!(eventTrigger & fTriggerType)) continue;
-    AliDebugStream(5) << "Jet accepted!\nJet: " << jet->toString().Data() << "\n";
+    if (!(eventTrigger & fTriggerType)) {
+      AliDebugStream(5) << "Rejected jets due to physics selection. Phys sel: " << std::bitset<32>(eventTrigger) << ", requested triggers: " << std::bitset<32>(fTriggerType) << " \n";
+      // We can break here - the physics selection is not going to change within an event.
+      break;
+    }
+
+    AliDebugStream(5) << "Jet passed event selection!\nJet: " << jet->toString().Data() << "\n";
 
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
-    if (fIsEmbedded) {
+    if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
       if (jet->MatchedJet()) {
         AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
       }
@@ -407,7 +418,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     if (jet->Pt() > 15) {
 
-      AliDebugStream(4) << "Passed min jet pt cut of 15. \nJet: " << jet->toString().Data() << "\n";
+      AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
       for (auto trackIter : tracks->accepted_momentum()) {
 
         // Get proper track proeprties
@@ -516,6 +527,17 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
         for (auto jet : jets->accepted()) {
+          // Require the found jet to be matched
+          // This match should be between detector and particle level MC
+          if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
+            if (jet->MatchedJet()) {
+              AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+            }
+            else {
+              AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+              continue;
+            }
+          }
 
           // Jet properties
           // Determine if we have the lead jet
@@ -1345,7 +1367,8 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     const double jetConstituentPtCut,
     const double trackEta,
     const double jetRadius,
-    const std::string & jetTag)
+    const std::string & jetTag,
+    const std::string & correlationsTracksCutsPeriod)
 {
   bool returnValue = false;
   AliInfoStream() << "Configuring Jet-H Correlations task for an embedding analysis.\n";
@@ -1390,6 +1413,11 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     particlesForCorrelations->SetMinPt(0.15);
     particlesForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
     particlesForCorrelations->SetIsEmbedding(true);
+    AliTrackContainer * trackCont = dynamic_cast<AliTrackContainer *>(particlesForCorrelations);
+    if (trackCont) {
+      // This option only exists for track containers
+      trackCont->SetTrackCutsPeriod(correlationsTracksCutsPeriod.c_str());
+    }
     // Adopt the container
     this->AdoptParticleContainer(particlesForCorrelations);
   }

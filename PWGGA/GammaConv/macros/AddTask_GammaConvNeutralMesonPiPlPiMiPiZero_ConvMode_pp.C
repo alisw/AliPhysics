@@ -138,6 +138,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       if(runLightOutput>0) fEventCuts->SetLightOutput(kTRUE);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -293,11 +294,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.125 < M_gamma,gamma < 0.145
-    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    // maxChi2 per cluster TPC <4, require TPC refit
     cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal mixing
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
+    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
+//    cuts.AddCut("00000113","00200009327000008250400000","302040708","0103503800000000","0153503000000000"); // normal mixing + charged pion pt > 400 MeV
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
   //8 TeV
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
@@ -360,6 +363,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     cuts.AddCut("00062113","00200009327000008250400000","30a330706","0103503400000000","0153503000000000"); // all of the above
     cuts.AddCut("00083113","00200009327000008250400000","30a330706","0103503400000000","0153503000000000"); // all of the above
     cuts.AddCut("00085113","00200009327000008250400000","30a330706","0103503400000000","0153503000000000"); // all of the above
+  } else if( trainConfig == 202) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.125 < M_gamma,gamma < 0.145
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    cuts.AddCut("00010113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal event mixing; Triggers: V0AND
+    cuts.AddCut("00052113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal event mixing; Triggers: CEMC7: V=AND and EMCAL fired
+    cuts.AddCut("00062113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal event mixing; Triggers: V0AND and EMCal fired
+    cuts.AddCut("00083113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal event mixing; Triggers: 7EG1 - CINT7 EG1
+    cuts.AddCut("00085113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal event mixing; Triggers: 7EG2 - CINT7 EG2
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

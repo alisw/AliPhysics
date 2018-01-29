@@ -6,6 +6,23 @@
 /// branch with those clusters so that it can be used by another analysis
 /// task accessing this cluster branch.
 ///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TROOT.h>
+
+#include "AliAnalysisManager.h"
+
+#include "AliAnalysisTaskEMCALClusterize.h"
+
+//#include "ConfigureEMCALRecoUtils.C"
+
+#endif // CINT
+
+/// Main method
+///
 /// The parameters for the analysis are:
 /// \param arrayName: TString name of new cluster branch.
 /// \param bFillAOD: Bool, keep the new clusters in output file.
@@ -30,12 +47,9 @@
 /// \param nRowDiff: Integer, number of rows for NxM clusterizer
 /// \param nColDiff: Integer, number of collumns for NxM clusterizer
 /// \param skipOrReject: Bool, for unfolding (check)
-/// \param tCardMimic: option for TCard correlation emulation, MC only
+/// \param tCardMimic: option for TCard correlation emulation, MC only. Options: 0 - no emulation; 1 - just add energy to adjacent cells; >1 - add energy to adjacent cells and subtract added energy to reference cell
 /// \param cellUpd: update cells list with cuts
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-///
-
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        TString & arrayName,
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
@@ -60,7 +74,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Int_t   nRowDiff   = 1,
                                                        const Int_t   nColDiff   = 1,
                                                        const Bool_t  skipOrReject = kFALSE,
-                                                       const Int_t   tCardMimic = kFALSE,
+                                                       const Int_t   tCardMimic = 0,
                                                        const Bool_t  cellUpd    = kTRUE
                                                        )
 {  
@@ -87,7 +101,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   printf("\t Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",
          minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
   printf("\t recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
-         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic);
+         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
   
@@ -219,13 +233,17 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Configure AliEMCALRecoUtils
   //-------------------------------------------------------
 
-  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  
+//  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
+
+  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  
-  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
-  
+  //-------------------------------------------------------
   // Do track matching after clusterization
+  //-------------------------------------------------------
   if ( tm > 0 ) 
   {
     clusterize->SwitchOnTrackMatching();
@@ -235,7 +253,6 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   else   clusterize->SwitchOffTrackMatching();
 
-  
   //-------------------------------------------------------
   // Alignment matrices
   //-------------------------------------------------------
@@ -286,10 +303,37 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     if ( tCardMimic == 1 ) clusterize->SwitchOnTCardCorrelation(kFALSE);
     else                   clusterize->SwitchOnTCardCorrelation(kTRUE);
         
-    clusterize->SetInducedEnergyLossFraction     (0.00700, 0.00700, 0.00700, 0.00000);
-    clusterize->SetInducedEnergyLossFractionP1   (0.00060, 0.00060, 0.00060, 0.00000);
-    clusterize->SetInducedEnergyLossFractionWidth(0.00900, 0.00900, 0.00900, 0.00000);
+    // Parameters setting
+    // See related EMCal meeting presentation, 14th december 2017, case E in  slide 13 of:
+    // https://indico.cern.ch/event/650299/contributions/2645134/subcontributions/244024/attachments/1575981/2496596/ShowerShapes_pp7TeV_ClusterV1_MCvsData_TCardMimic_EMCalMeeting141217.pdf
     
+    // Cell E dependent parametrization, pol1
+    // Set the same for all SM
+    Float_t mu1 = 2.20/100./1.10; 
+    Float_t mu2 =-0.09/100.;
+    clusterize->SetInducedEnergyLossFraction  (mu1, mu1, mu1, 0.); // constant
+    clusterize->SetInducedEnergyLossFractionP1(mu2, mu2, mu2, 0.); // slope
+    
+    // Absolute min E fraction
+    // Set the same for all SM
+    Float_t mu1Min = 0.80/100.;
+    for(Int_t ism = 0; ism < 20; ism++)
+      clusterize->SetInducedEnergyLossMinimumFractionPerSM(mu1Min,ism);
+    
+    // Absolute max E fraction
+    // Set the same for all SM
+    Float_t mu1Max = 2.50/100.;
+    for(Int_t ism = 0; ism < 20; ism++)
+      clusterize->SetInducedEnergyLossMaximumFractionPerSM(mu1Max,ism);
+    
+    clusterize->SetInducedTCardMinimumCellEnergy(0) ;
+    clusterize->SeInducedTCardMaximum(100) ;
+    
+    // No randomization of the previosly set parameters
+    clusterize->SwitchOffRandomizeTCardInducedEnergy() ;
+    clusterize->SetInducedEnergyLossFractionWidth(0., 0., 0., 0.);
+    
+    // Set the fraction of events where an SM shows different behavior from default
     clusterize->SetInducedEnergyLossProbabilityPerSM(0.30, 0);
     clusterize->SetInducedEnergyLossProbabilityPerSM(0.60, 1);
     clusterize->SetInducedEnergyLossProbabilityPerSM(0.50, 2);
@@ -300,6 +344,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     clusterize->SetInducedEnergyLossProbabilityPerSM(1.00, 7);
     clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 8);
     clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 9);
+    
+    for(Int_t ism = 10; ism < 20; ism++)
+      clusterize->SetInducedEnergyLossProbabilityPerSM(0., ism);
   }
   
   //-------------------------------------------------------

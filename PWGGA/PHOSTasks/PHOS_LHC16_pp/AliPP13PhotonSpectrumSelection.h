@@ -4,6 +4,7 @@
 // --- Custom header files ---
 #include "AliPP13PhotonSelection.h"
 #include "AliPP13DetectorHistogram.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -12,6 +13,8 @@
 #include <AliVCaloCells.h>
 #include <AliVCluster.h>
 #include <AliLog.h>
+
+// TODO: Remove Exotic cluster cuts from here
 
 class AliPP13PhotonSpectrumSelection : public AliPP13PhotonSelection
 {
@@ -25,8 +28,9 @@ public:
     {
     }
 
-    AliPP13PhotonSpectrumSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, Float_t cpv = 10., Float_t disp = 3.0):
-        AliPP13PhotonSelection(name, title, cuts),
+    AliPP13PhotonSpectrumSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
+        AliPP13SelectionWeights * w, Float_t cpv = 10., Float_t disp = 3.0):
+        AliPP13PhotonSelection(name, title, cuts, w),
         fDistanceCPV(cpv),
         fDispersionCut(disp),
         fSpectrum(0),

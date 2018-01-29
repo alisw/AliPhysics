@@ -12,102 +12,68 @@
 #include <TMath.h>
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
-  fTPCdEdx(0),
-  fTOFParticle(0),
-  fTOFTime(0x0),
-  fTOFNSigma(0),
-  fTPCNSigma(0),
-  fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0),
-  fParticleOrigin(0),
-  fParticleId(0)
+  AliFemtoCutMonitor()
+  , fTOFParticle(0)
+  , fIfUsePt(false)
+  , fTPCdEdx(nullptr)
+  , fTOFTime(nullptr)
+  , fTOFNSigma(nullptr)
+  , fTPCNSigma(nullptr)
+  , fTPCTOFNSigma(nullptr)
+  , fTPCvsTOFNSigma(nullptr)
+  , fParticleOrigin(nullptr)
+  , fParticleId(nullptr)
 {
   // Default constructor
-  fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
-  fTOFTime = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
-  fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+  fTPCdEdx        = new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fTOFTime        = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFNSigma      = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCNSigma      = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCTOFNSigma   = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
   fTPCvsTOFNSigma = new TH2D("TPCvsTOFNSigma","TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
-  fParticleOrigin =  new TH1D("POrigin", "Mothers PDG Codes", 6000, 0.0, 6000.0);
-  fParticleId =  new TH1D("PId", "Particle PDG Codes", 6000, 0.0, 6000.0);
+  fParticleOrigin = new TH1D("POrigin", "Mothers PDG Codes", 6000, 0.0, 6000.0);
+  fParticleId     = new TH1D("PId", "Particle PDG Codes", 6000, 0.0, 6000.0);
 
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle):
-  AliFemtoCutMonitor(),
-  fTPCdEdx(0),
-  fTOFParticle(aTOFParticle),
-  fTOFTime(0x0),
-  fTOFNSigma(0),
-  fTPCNSigma(0),
-  fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0),
-  fParticleOrigin(0),
-  fParticleId(0)
+  AliFemtoCutMonitor()
+  , fTOFParticle(aTOFParticle)
+  , fIfUsePt(false)
+  , fTPCdEdx(nullptr)
+  , fTOFTime(nullptr)
+  , fTOFNSigma(nullptr)
+  , fTPCNSigma(nullptr)
+  , fTPCTOFNSigma(nullptr)
+  , fTPCvsTOFNSigma(nullptr)
+  , fParticleOrigin(nullptr)
+  , fParticleId(nullptr)
 {
   // Normal constructor
-  char name[200];
-  snprintf(name, 200, "TPCdEdx%s", aName);
-  // fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
-  fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
-
-  snprintf(name, 200, "TOFTime%s", aName);
-  fTOFTime = new TH2D(name, "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
-
-  snprintf(name, 200, "TOFNSigma%s", aName);
-  fTOFNSigma = new TH2D(name,"TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-
-  snprintf(name, 200, "TPCNSigma%s", aName);
-  fTPCNSigma = new TH2D(name,"TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-
-  snprintf(name, 200, "TPCTOFNSigma%s", aName);
-  fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
-
-  snprintf(name, 200, "TPCvsTOFNSigma%s", aName);
-  fTPCvsTOFNSigma = new TH2D(name,"TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
-
-  snprintf(name, 200, "POrigin%s", aName);
-  fParticleOrigin =  new TH1D(name, "Mothers PDG Codes", 6000, 0.0, 6000.0);
-
-  snprintf(name, 200, "PId%s", aName);
-  fParticleId =  new TH1D(name, "Particle PDG Codes", 6000, 0.0, 6000.0);
+  fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
+  fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFNSigma      = new TH2D(TString::Format("TOFNSigma%s", aName), "TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCNSigma      = new TH2D(TString::Format("TPCNSigma%s", aName), "TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCTOFNSigma   = new TH2D(TString::Format("TPCTOFNSigma%s", aName), "TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+  fTPCvsTOFNSigma = new TH2D(TString::Format("TPCvsTOFNSigma%s", aName), "TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
+  fParticleOrigin = new TH1D(TString::Format("POrigin%s", aName), "Mothers PDG Codes", 6000, 0.0, 6000.0);
+  fParticleId     = new TH1D(TString::Format("PId%s", aName), "Particle PDG Codes", 6000, 0.0, 6000.0);
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut):
-  AliFemtoCutMonitor(),
-  fTPCdEdx(0),
-  fTOFParticle(0),
-  fTOFTime(0x0),
-  fTOFNSigma(0),
-  fTPCNSigma(0),
-  fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0),
-  fParticleOrigin(0),
-  fParticleId(0)
-
+  AliFemtoCutMonitor(aCut)
+  , fTOFParticle(aCut.fTOFParticle)
+  , fIfUsePt(aCut.fIfUsePt)
+  , fTPCdEdx(new TH2D(*aCut.fTPCdEdx))
+  , fTOFTime(new TH2D(*aCut.fTOFTime))
+  , fTOFNSigma(new TH2D(*aCut.fTOFNSigma))
+  , fTPCNSigma(new TH2D(*aCut.fTPCNSigma))
+  , fTPCTOFNSigma(new TH2D(*aCut.fTPCTOFNSigma))
+  , fTPCvsTOFNSigma(new TH2D(*aCut.fTPCvsTOFNSigma))
+  , fParticleOrigin(new TH1D(*aCut.fParticleOrigin))
+  , fParticleId(new TH1D(*aCut.fParticleId))
 {
   // copy constructor
-  if (fTPCdEdx) delete fTPCdEdx;
-  fTPCdEdx = new TH2D(*aCut.fTPCdEdx);
-
-  if (fTOFTime) delete fTOFTime;
-  fTOFTime = new TH2D(*aCut.fTOFTime);
-
-  if (fTOFNSigma) delete fTOFNSigma;
-  fTOFNSigma= new TH2D(*aCut.fTOFNSigma);
-
-  if (fTPCNSigma) delete fTPCNSigma;
-  fTPCNSigma= new TH2D(*aCut.fTPCNSigma);
-
-  if (fTPCTOFNSigma) delete fTPCTOFNSigma;
-  fTPCTOFNSigma= new TH2D(*aCut.fTPCTOFNSigma);
-
-  if (fParticleOrigin) delete fParticleOrigin;
-  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
-
-  if (fParticleId) delete fParticleId;
-  fParticleId= new TH1D(*aCut.fParticleId);
 }
 
 AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
@@ -121,7 +87,6 @@ AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
   delete fTPCvsTOFNSigma;
   delete fParticleOrigin;
   delete fParticleId;
-
 }
 
 AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const AliFemtoCutMonitorParticlePID& aCut)
@@ -130,45 +95,34 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
   if (this == &aCut)
     return *this;
 
-  if (fTPCdEdx) delete fTPCdEdx;
-  fTPCdEdx = new TH2D(*aCut.fTPCdEdx);
+  AliFemtoCutMonitor::operator=(aCut);
 
-  if (fTOFTime) delete fTOFTime;
-  fTOFTime = new TH2D(*aCut.fTOFTime);
+  fTOFParticle = aCut.fTOFParticle;
+  fIfUsePt = aCut.fIfUsePt;
 
-  if(fTOFNSigma) delete fTOFNSigma;
-  fTOFNSigma = new TH2D(*aCut.fTOFNSigma);
-
-  if(fTPCNSigma) delete fTPCNSigma;
-  fTPCNSigma = new TH2D(*aCut.fTPCNSigma);
-
-  if(fTPCTOFNSigma) delete fTPCTOFNSigma;
-  fTPCTOFNSigma = new TH2D(*aCut.fTPCTOFNSigma);
-
-  if(fTPCvsTOFNSigma) delete fTPCvsTOFNSigma;
-  fTPCvsTOFNSigma = new TH2D(*aCut.fTPCvsTOFNSigma);
-
-  if (fParticleOrigin) delete fParticleOrigin;
-  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
-
-  if (fParticleId) delete fParticleId;
-  fParticleId= new TH1D(*aCut.fParticleId);
+  *fTPCdEdx = *aCut.fTPCdEdx;
+  *fTOFTime = *aCut.fTOFTime;
+  *fTOFNSigma = *aCut.fTOFNSigma;
+  *fTPCNSigma = *aCut.fTPCNSigma;
+  *fTPCTOFNSigma = *aCut.fTPCTOFNSigma;
+  *fTPCvsTOFNSigma = *aCut.fTPCvsTOFNSigma;
+  *fParticleOrigin = *aCut.fParticleOrigin;
+  *fParticleId = *aCut.fParticleId;
 
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorParticlePID::Report(){
+AliFemtoString AliFemtoCutMonitorParticlePID::Report()
+{
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorParticlePID report";
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  TString report = "*** AliFemtoCutMonitorParticlePID report";
+  return AliFemtoString(report.Data());
 }
 
 void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
-  float tMom = aTrack->P().Mag();
-  if(fIfUsePt) tMom = aTrack->Pt();
+  float tMom = (fIfUsePt) ? aTrack->Pt() : aTrack->P().Mag();
   float tdEdx = aTrack->TPCsignal();
   float tTOF = 0.0;
   //  short tchg = aTrack->Charge();

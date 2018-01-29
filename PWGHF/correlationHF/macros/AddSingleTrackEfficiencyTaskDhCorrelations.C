@@ -100,7 +100,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     const Int_t nbinpt_8_16 = 3;  //bins in pt from 8 to 16 GeV
     const Int_t nbinpt_16_24 = 1; //bins in pt from 16 to 24 GeV
     //   A2. Bins variation by hand for other variables
-    const Int_t nbin2 = 18; //bins in eta
+    const Int_t nbin2 = 16; //bins in eta
     const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in phi
     const Int_t nbin4 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in theta
     const Int_t nbin5 = 20; //bins in zvtx

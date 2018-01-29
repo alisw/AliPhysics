@@ -5,28 +5,48 @@
 /// Configuration of task AliAnalysisTaskEMCALPi0CalibSelection, which fills invariant mass
 /// histograms for each of the EMCal channels. It has to be executed in several iterations.
 ///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TString.h>
+#include <TROOT.h>
+#include <TSystem.h>
+
+#include "AliLog.h"
+#include "AliAnalysisTaskEMCALPi0CalibSelection.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "ConfigureEMCALRecoUtils.C"
+
+#endif // CINT
+
+/// Main method
+///
 /// The parameters for the analysis are:
 /// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
-/// \param trigger   : TString, event that triggered must contain this string.
+/// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
 /// \param recalE    : Bool, recalibrate EMCal energy
 /// \param recalT    : Bool, recalibrate EMCal time
 /// \param rmBad     : Bool, remove bad channels
 /// \param nonLin    : Bool, correct cluster non linearity
 /// \param simu      : Bool, simulation or data.
 /// \param outputFile: TString with name of output file (AnalysisResults.root).
+/// \param trigSuffix :  A string with the trigger class, abbreviated, to run multiple triggers in same train
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-///
-
-AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calibPath = "", // "alienpath/RecalibrationFactors.root"
-                                                                   TString trigger   ="CEMC7",
-                                                                   Bool_t  recalE    = kFALSE, 
-                                                                   Bool_t  recalT    = kFALSE,
-                                                                   Bool_t  rmBad     = kFALSE,
-                                                                   Bool_t  nonlin    = kTRUE,
-                                                                   Bool_t  simu      = kFALSE,
-                                                                   TString outputFile = "") // AnalysisResults.root
-
+AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
+(TString calibPath = "", // "alienpath/RecalibrationFactors.root"
+ TString trigger   = "",
+ Bool_t  recalE    = kFALSE, 
+ Bool_t  recalT    = kFALSE,
+ Bool_t  rmBad     = kFALSE,
+ Bool_t  nonlin    = kTRUE,
+ Bool_t  simu      = kFALSE,
+ TString outputFile = "", // AnalysisResults.root
+ const char *trigSuffix = ""
+) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -44,15 +64,14 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
     ::Error("AddTaskEMCALPi0Calibration", "This task requires an input event handler");
     return NULL;
   }
-    
   
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+  TString wagon = trigSuffix;
+  if ( wagon.Length() > 0 ) trigger = wagon;
   
-  AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
+  AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection(Form("EMCALPi0Calibration_%s",trigger.Data()));
   //pi0calib->SetDebugLevel(10); 
   //pi0calib->UseFilteredEventAsInput();
-  pi0calib->SetClusterMinEnergy(0.3);
+  pi0calib->SetClusterMinEnergy(0.7);
   pi0calib->SetClusterMaxEnergy(10.);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
   
@@ -133,10 +152,21 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), 
-                                                           TList::Class(), AliAnalysisManager::kOutputContainer,  
-                                                           outputFile.Data());
-  
+                                                                                                
+                                                                                                
+  AliAnalysisDataContainer *coutput = 0; 
+  if( wagon.Length()==0 )
+  {
+    coutput = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
+                                   AliAnalysisManager::kOutputContainer,outputFile.Data());
+  }
+  else
+  {
+    TString containerName = "Pi0Calibration";
+    coutput = mgr->CreateContainer(wagon, TList::Class(), 
+                                   AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
+  }  
+    
 //  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
 //                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
 //                                                             "AnalysisParameters.root");

@@ -34,7 +34,8 @@ void ExtractOutput(
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
    Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
-   Bool_t subtractSoftPiME=kTRUE) //Removes likely soft pions (via inv.mass cut) also in ME distributions (for OFFLINE, is done via CorrelateOffline.C)
+   Bool_t subtractSoftPiME=kTRUE, //removes likely soft pions (via inv.mass cut) also in ME distributions, though they are fake (shall stay kTRUE)
+   Bool_t useRefl=kTRUE) //includes also the D0 reflection templates in the fits. Need to set the template filename in the SetInputNames
 {
 
   //Create and set the correlation plotter class
@@ -56,12 +57,13 @@ void ExtractOutput(
   plotter->ReadTTreeOutputFiles(treeSE,treeME);
   plotter->SetSubtractSoftPiInMEdistr(subtractSoftPiME);
   plotter->SetUseMassVsCentPlots(use2Dmassplots);
+  plotter->SetUseReflections(useRefl);
   if(use2Dmassplots) plotter->SetCentralitySelection(mincent,maxcent);
   if(!flagSpecie) return;
 
   plotter->SetDebugLevel(0); //0 = get main results; 1 = get full list of plots; 2 = get debug printouts
 
-  SetInputNames(plotter);  // check the names in the method!!
+  SetInputNames(plotter,useRefl);  // check the names in the method!!
 
   Bool_t read = plotter->ReadInputs();
   if(!read) {
@@ -82,7 +84,7 @@ void ExtractOutput(
 }
 
 //________________________________________
-void SetInputNames(AliDhCorrelationExtraction *plotter){
+void SetInputNames(AliDhCorrelationExtraction *plotter, Bool_t useRefl){
 
   plotter->SetInputFilenameMass("./AnalysisResults_pp.root");
   plotter->SetInputFilenameSE("./AnalysisResults_pp.root");
@@ -98,6 +100,11 @@ void SetInputNames(AliDhCorrelationExtraction *plotter){
   plotter->SetSECorrelHistoName("hPhi_Charg_Bin");
   plotter->SetMECorrelHistoNameSuffix("_EvMix");
 
+  if(useRefl) {
+    plotter->SetReflFilename("reflections_fitted_DoubleGaus_pPb2016_0100.root"); //depends on the cuts, and hence on centrality!
+    plotter->SetHistNameRefl("histRflFittedDoubleGaus_ptBin");  //only the suffix (without the ptbin number)
+    plotter->SetHistNameSignal("histSgn_");  //only the suffix (without the ptbin number)
+  }
 /*
  //Dstar paths
   plotter->SetInputFilename("./../AnalysisResults_InvMass_TRAIN_FINALE_pp.root");

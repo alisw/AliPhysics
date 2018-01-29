@@ -33,7 +33,8 @@
  * hello:
  *   world:
  *     exampleValue: 10
- * importantValue:
+ * example: 12.2
+ * importantValues:
  *   - entry1
  *   - entry2
  *   - entry3
@@ -42,7 +43,7 @@
  * To use the class, at least one YAML configuration file must be added to the class. To do so, use:
  *
  * ~~~{.cxx}
- * AliYAMLConfiguration config;
+ * PWG::Tools::AliYAMLConfiguration config;
  * config.AddConfiguration(filename, name);
  * // Will only be checked if a requested value is not in the first configuration.
  * config.AddConfiguration(filename2, name2);
@@ -73,8 +74,25 @@
  * explicitly specify such an initialization as `std::vector<std::string>` if you don't define it as a
  * variable.
  *
+ * Explicitly, this would look like:
+ *
+ * ~~~{.cxx}
+ * int tempInt = 0;
+ * // True specifies that the value must exist in the config
+ * config.GetProperty({"hello", "world", "examplePath"}, tempInt, true);
+ * std::cout << tempInt << "\n"; // Returns "10"
+ * // Alternatively, you could specify the path explicitly (although not recommended)
+ * config.GetProperty("hello:world:exampleValue", tempInt);
+ * // The type specifies what is returned
+ * double tempDouble = 0.;
+ * config.GetProperty("example", tempDouble);
+ * std::vector <std::string> importantValues;
+ * config.GetProperty("importantValues", importantValues);
+ * // The vector "importantValues" now contains three strings
+ * ~~~
+ *
  * That's basically all there is to using it. For more information, look at the documentation of the various
- * GetProperty(...) and WriteProperty(...) functions.
+ * GetProperty(...) and WriteProperty(...) functions. The interfaces to both functions are fairly similar.
  *
  * Notes on using shared parameters:
  *

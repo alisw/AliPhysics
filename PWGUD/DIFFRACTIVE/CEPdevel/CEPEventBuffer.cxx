@@ -36,6 +36,7 @@ CEPEventBuffer::CEPEventBuffer()
   , fnTOFmaxipads(0)
   , fEventCondition(AliCEPBase::kETBaseLine)
   , fnTracklets(0)
+  , fTrl2Tr(new TObjArray())
   , fnTracks(0)
   , fnTracksCombined(0)
   , fnTracksITSpure(0)
@@ -50,6 +51,7 @@ CEPEventBuffer::CEPEventBuffer()
   , fCEPTracks(new TObjArray())
 {
 
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
   for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
 }
@@ -64,6 +66,14 @@ CEPEventBuffer::~CEPEventBuffer()
 		fCEPTracks->Clear();
 		delete fCEPTracks;
 		fCEPTracks = 0x0;
+	}
+
+	// delete fTrl2Tr and all the associations it contains
+  if (fTrl2Tr) {
+		fTrl2Tr->SetOwner(kTRUE);
+		fTrl2Tr->Clear();
+		delete fTrl2Tr;
+		fTrl2Tr = 0x0;
 	}
 
 }
@@ -82,6 +92,7 @@ void CEPEventBuffer::Reset()
   fCollissionType  = AliCEPBase::kBinEventUnknown;
   fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
   for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
   // general event features
@@ -92,6 +103,8 @@ void CEPEventBuffer::Reset()
   fisDGTrigger     = kFALSE;
 
   fnTracklets     = 0;
+  fTrl2Tr->SetOwner(kTRUE);
+  fTrl2Tr->Clear();
   fnTracks        = 0;
   fnTracksCombined= 0;
   fnTracksITSpure = 0;

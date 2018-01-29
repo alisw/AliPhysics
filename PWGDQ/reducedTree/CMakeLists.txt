@@ -40,6 +40,7 @@ set(SRCS
       AliMixingHandler.cxx
       AliReducedAnalysisFilterTrees.cxx
       AliReducedAnalysisJpsi2ee.cxx
+      AliReducedAnalysisJpsi2eeCorrelations.cxx
       AliReducedAnalysisJpsi2eeMult.cxx
       AliReducedAnalysisTaskSE.cxx
       AliReducedAnalysisTest.cxx
@@ -59,6 +60,7 @@ set(SRCS
       AliReducedVarCut.cxx
       AliReducedVarManager.cxx
       AliResonanceFits.cxx
+      AliSignalMC.cxx
    )
 
 # Headers from sources

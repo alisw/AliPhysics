@@ -930,6 +930,9 @@ Bool_t AliPrimaryPionCuts::SetPtCut(Int_t ptCut){
 		case 3: // 0.15 GeV
 			fPtCut	= 0.15;
 			break;
+        case 4: // 0.40 GeV
+            fPtCut  = 0.40;
+            break;
 		default:
 			cout<<"Warning: PtCut not defined "<<ptCut<<endl;
 			return kFALSE;
@@ -968,6 +971,11 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
             fEsdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
             fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+            break;
+        case 4:
+            fEsdTrackCuts->SetMaxDCAToVertexZ(3.);
+            fEsdTrackCuts->SetMaxDCAToVertexXY(0.5);
+            fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             break;
 		default:
 			cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;

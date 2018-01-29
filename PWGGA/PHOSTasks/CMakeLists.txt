@@ -80,17 +80,21 @@ set(SRCS
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
     PHOS_LHC16_pp/AliPP13ClusterCuts.cxx
     PHOS_LHC16_pp/AliPP13DetectorHistogram.cxx
+    PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MesonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MixingSample.cxx
     PHOS_LHC16_pp/AliPP13NonlinearityScanSelection.cxx
+    PHOS_LHC16_pp/AliPP13NonlinearitySelection.cxx
     PHOS_LHC16_pp/AliPP13ParticlesHistogram.cxx
     PHOS_LHC16_pp/AliPP13PhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13PhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PhotonSpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13PhotonTimecutStudySelection.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelection.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PythiaInfoSelection.cxx
     PHOS_LHC16_pp/AliPP13QualityPhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
@@ -119,6 +123,10 @@ set(SRCS
     PHOS_Run2/AliPHOSEventCuts.cxx
     PHOS_Run2/AliPHOSClusterCuts.cxx
     PHOS_Run2/AliAnalysisTaskPHOSPi0EtaToGammaGamma.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSEmbeddedDiffObjectCreator.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSEmbedding.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
@@ -127,7 +135,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskPHOSCluster.cxx
     UserTasks/AliCaloClusterContent.cxx
    )
- 
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -147,7 +155,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library. Note the extra includes (relative paths)
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "CaloCellQA omega3pi PHOS_embedding PHOS_PbPbQA PHOS_pp_pi0 PHOS_TriggerQA")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object

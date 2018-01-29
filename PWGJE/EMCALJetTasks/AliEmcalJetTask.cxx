@@ -378,6 +378,18 @@ void AliEmcalJetTask::ExecOnce()
   }
 
   fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
+  std::cout << GetName() << ": Name of the jet container: " << fJetsName << std::endl;
+  std::cout << "Use this name in order to connect jet containers in your task to connect to the collection of jets found by this jet finder" << std::endl;
+  if(auto partcont = GetParticleContainer(0)) {
+    std::cout << "Found particle container with name " << partcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not particle container found for task" << std::endl;
+  }
+  if(auto clustcont = GetClusterContainer(0)){
+    std::cout << "Found cluster container with name " << clustcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not cluster container found for task" << std::endl;
+  }
 
   // add jets to event if not yet there
   if (!(InputEvent()->FindListObject(fJetsName))) {

@@ -292,6 +292,9 @@ public:
   void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
+  void             SetEMCALCellsListName(TString &name)    { fEMCALCellsListName = name     ; }
+  TString          GetEMCALCellsListName()           const { return fEMCALCellsListName     ; }
+  
   // Arrays with clusters/track/cells access method
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
@@ -442,6 +445,21 @@ public:
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
   Bool_t           IsSelectEventTimeStampOn()              { return  fTimeStampEventSelect   ; }
+
+  // Time Stamp CTP corrected
+    
+  Double_t         GetTimeStampEventCTPBCCorrMin()   const { return fTimeStampEventCTPBCCorrMin ; }
+  Double_t         GetTimeStampEventCTPBCCorrMax()   const { return fTimeStampEventCTPBCCorrMax ; }
+  
+  void             SetTimeStampEventCTPBCCorrRange(Double_t a, Double_t b) { 
+                                                             fTimeStampEventCTPBCCorrMin = a    ;
+                                                             fTimeStampEventCTPBCCorrMax = b    ; } // seconds
+  
+  void             SwitchOnExcludeEventTimeCTPBCCorrStamp() { fTimeStampEventCTPBCCorrExclude = kTRUE   ; }
+  void             SwitchOffExcludeEventTimeCTPBCCorrStamp(){ fTimeStampEventCTPBCCorrExclude = kFALSE  ; }
+  
+  Bool_t           IsExcludeEventTimeStampCTPBCCorrOn()     { return  fTimeStampEventCTPBCCorrExclude ; }
+
   
   // Event tagging as pile-up
   
@@ -681,9 +699,9 @@ public:
   virtual Int_t    GetNumberOfMCGeneratorsToAccept()         const { return fNMCGenerToAccept ; } 
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
   virtual void     SetIndexOfMCGeneratorsToAccept(Int_t ig, Int_t index) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
   virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
   virtual Int_t   GetIndexOfMCGeneratorsToAccept(Int_t ig)  const { return fMCGenerIndexToAccept[ig] ; }
   
@@ -783,7 +801,7 @@ public:
   
   /// Temporal array with EMCAL CaloClusters.
   TObjArray      * fEMCALClusters ;                //-> 
-  
+
   /// Temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits.
   TObjArray      * fDCALClusters ;                 //-> 
   
@@ -868,6 +886,7 @@ public:
   Int_t            fV0Mul[2]    ;                  ///<  Integrated V0 Multiplicity.
 
   TString          fEMCALClustersListName;         ///<  Alternative list of clusters produced elsewhere and not from InputEvent.
+  TString          fEMCALCellsListName;            ///<  Alternative list of cells produced elsewhere and not from InputEvent.
   
   //  Event selection
   
@@ -907,6 +926,10 @@ public:
   Float_t          fTimeStampEventFracMax;         ///<  Maximum value of time stamp fraction event.
   Double_t         fTimeStampRunMin;               ///<  Minimum value of time stamp in run.
   Double_t         fTimeStampRunMax;               ///<  Maximum value of time stamp in run.
+  
+  Bool_t           fTimeStampEventCTPBCCorrExclude; ///<  Activate event selection within a range of data taking time CTP corrected. ESD only.
+  Double_t         fTimeStampEventCTPBCCorrMin;    ///<  Minimum value of time stamp corrected by CTP in run.
+  Double_t         fTimeStampEventCTPBCCorrMax;    ///<  Maximum value of time stamp corrected by CTP in run.
   
   ///< Parameters to pass to method IsPileupFromSPD:
   ///< Int_t minContributors, Double_t minZdist, Double_t nSigmaZdist,Double_t nSigmaDiamXY,Double_t nSigmaDiamZ
@@ -974,7 +997,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,77) ;
+  ClassDef(AliCaloTrackReader,79) ;
   /// \endcond
 
 } ;

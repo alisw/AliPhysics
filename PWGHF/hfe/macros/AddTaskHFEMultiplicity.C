@@ -66,18 +66,21 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     // Create containers for input/output
     TString finDirname         = "_INT7";
     TString outBasicname       = "EID";
-   // TString profname       = "coutputProf";
+    TString profname       = "coutputProf";
         
     finDirname 	      +=   suffixName.Data();
     outBasicname      +=   finDirname.Data();
-    //profname          +=   finDirname.Data();
+    profname          +=   finDirname.Data();
         
         
         
     mgr->ConnectInput(HFEtaskINT7,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(HFEtaskINT7,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-   // mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  }
+     mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+
+   
+
+ }
     
    if(!PhysSelINT7){
      if(ClsTypeEMC){
@@ -117,15 +120,19 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      TString finDirname         = "_TrigGAEG1";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+        
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
-            
+     profname          +=   finDirname.Data();       
             
             
      mgr->ConnectInput(HFEtaskEG1,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(HFEtaskEG1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     // EMCal EGA EG2
+     mgr->ConnectOutput(HFEtaskEG1,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+     
+
+// EMCal EGA EG2
             
      AliAnalysisTaskHFEMultiplicity* HFEtaskEG2 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskEG2);
@@ -162,15 +169,16 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      TString finDirname         = "_TrigGAEG2";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+       
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
-            
+     profname          +=   finDirname.Data();      
             
             
      mgr->ConnectInput(HFEtaskEG2,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(HFEtaskEG2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-            
+       mgr->ConnectOutput(HFEtaskEG2,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));         
      }
         
      if(ClsTypeDCAL){
@@ -210,15 +218,18 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      TString finDirname         = "_TrigGADG1";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+       
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
-            
+     profname          +=   finDirname.Data();       
             
             
      mgr->ConnectInput(HFEtaskDG1,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(HFEtaskDG1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     // DCal EGA DG2
+     mgr->ConnectOutput(HFEtaskDG1,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));      
+
+ // DCal EGA DG2
 
      AliAnalysisTaskHFEMultiplicity* HFEtaskDG2 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskDG2);
@@ -256,15 +267,16 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      TString finDirname         = "_TrigGADG2";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+       
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
-            
+     profname          +=   finDirname.Data();       
             
             
      mgr->ConnectInput(HFEtaskDG2,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(HFEtaskDG2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-            
+     mgr->ConnectOutput(HFEtaskDG2,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));          
      }
      }
     

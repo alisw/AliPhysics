@@ -93,6 +93,7 @@ public:
 
 	AliJTH1D fhLPpt; // pT distribution of leading particles
 	AliJTH1D fhChargedPt, fhChargedPtNoCorr; // Corrected and raw pT distribution of charged particles
+    AliJTH1D fhChargedPtPublished; // Corrected pT distribution of charged particles in published bins
 	AliJTProfile fhTrackingEfficiency; // Tracking efficiency
 	AliJTH1D fhChargedEta; // Charged particle pseudorapidity distribution
 	AliJTH1D fhLPeta; // Leading particle eta distribution

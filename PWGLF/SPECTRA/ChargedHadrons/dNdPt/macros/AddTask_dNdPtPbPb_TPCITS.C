@@ -32,7 +32,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
 
   // Create standard esd track cuts
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
+  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,stControlString);
   if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
   esdTrackCuts->SetHistogramsOn(kTRUE);
 

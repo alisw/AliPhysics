@@ -153,6 +153,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
   void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
+  void                        SelectGeneratorName(TString gen)                      { fSelectGeneratorName = gen                          ; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -240,6 +241,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
   Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
+  TString                     fSelectGeneratorName;        ///< Selects only events produced by a generator that has a name containing a string
 
   // Service fields
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
@@ -265,6 +267,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
+  TString                     fGeneratorName;              //!<!name of the MC generator used to produce the current event (only AOD)
 
   // Output
   TList                      *fOutput;                     //!<!output list
@@ -293,7 +296,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 3);
+  ClassDef(AliAnalysisTaskEmcalLight, 4);
   /// \endcond
 };
 

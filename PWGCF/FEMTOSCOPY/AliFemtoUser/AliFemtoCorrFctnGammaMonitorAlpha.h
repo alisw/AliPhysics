@@ -17,7 +17,7 @@
 
 class AliFemtoCorrFctnGammaMonitorAlpha : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnGammaMonitorAlpha(char* title, const int& aMinvBins, const int& aDAlphaBins);
+  AliFemtoCorrFctnGammaMonitorAlpha(const char* title, const int& aMinvBins, const int& aDAlphaBins);
   AliFemtoCorrFctnGammaMonitorAlpha(const AliFemtoCorrFctnGammaMonitorAlpha& aCorrFctn);
   virtual ~AliFemtoCorrFctnGammaMonitorAlpha();
 
@@ -32,7 +32,7 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
-  
+
   TH2D *fNumPMinvDAlpha;        // Numerator Minv vs. DAlpha Positive kSide
   TH2D *fDenPMinvDAlpha;        // Denominator Minv vs. DAlpha Positive kSide
 

@@ -50,6 +50,7 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   AliAnalysisTaskHFEMultiplicity(const char *name);
   virtual                 ~AliAnalysisTaskHFEMultiplicity();
   virtual void   	  Init();
+  virtual void 		  LocalInit() {Init();}
   virtual void            UserCreateOutputObjects();
   virtual void            UserExec(Option_t* option);
   virtual void            Terminate(Option_t* option);
@@ -59,9 +60,10 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   
   Bool_t  		PassEventSelect(AliAODEvent *fAOD);
   Bool_t		Passtrackcuts(AliAODTrack *atrack);
+  Bool_t 		PassEIDCuts(AliAODTrack *track, AliAODCaloCluster *clust);
   void    		GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff );
   Int_t 		GetNcharged();
-
+  void 			GetElectronFromStack();
   void   	        GetPi0EtaWeight(THnSparse *SparseWeight);
   Bool_t  		GetNMCPartProduced();
   Int_t                 GetPi0EtaType(AliAODMCParticle *part);
@@ -79,15 +81,19 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   Bool_t                GetEMCalTriggerDG1() { return fDCalDG1; };
   Bool_t                GetEMCalTriggerDG2() { return fDCalDG2; };
   void                  SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
-  void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};  
-  void    		SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS);
+  void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
+  Bool_t  		IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);  
+  void    		SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Int_t iMCmom, Int_t MomPDG, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS, Int_t vzeroMultCorr,Int_t correctednAcc);
   void 			SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
 
   void 			SetMultiProfileLHC16s(TProfile * hprof){
-        		fMultEstimatorAvg[0]=hprof;
+			 if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+        		fMultEstimatorAvg[0]=new TProfile(*hprof);
+        		
     			}
   void 			SetMultiProfileLHC16r(TProfile * hprof){
-        		fMultEstimatorAvg[1]=hprof;
+        		 if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+        		 fMultEstimatorAvg[1]=new TProfile(*hprof);
     			}
   
 private:
@@ -108,11 +114,13 @@ private:
   Bool_t                fUseTender;// switch to add tender
   Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
+  Double_t              fTPCnSigma;//!
   Bool_t                fEMCEG1;//EMcal Threshold EG1
   Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
   Bool_t 		fRejectPUFromSPD;
+  Bool_t                fCalculateElectronEffi;//
 
   Bool_t              	fCalculateWeight;//
   Int_t               	fNTotMCpart; //! N of total MC particles produced by generator
@@ -153,12 +161,71 @@ private:
   TH2F*                 fInvmassULSPt;//!
   TH1F*                 fULSElecPt;//!
   TH1F*                 fLSElecPt;//!
+//MC histograms-------------------------------------------
+  TH1F*                	fNonHFePairInvmassLS;//!
+  TH1F*               	fNonHFePairInvmassULS;//!
+  TH1F*                	fNonHFeEmbInvmassLS;//!
+  TH1F*                	fNonHFeEmbInvmassULS;//!
+  TH1F*                	fNonHFeEmbWeightInvmassLS;//!
+  TH1F*                	fNonHFeEmbWeightInvmassULS;//!
+  TH1F*                	fPi0EmbInvmassLS;//!
+  TH1F*                	fPi0EmbInvmassULS;//!
+  TH1F*                	fPi0EmbWeightInvmassLS;//!
+  TH1F*                	fPi0EmbWeightInvmassULS;//!
+  TH1F*                	fEtaEmbInvmassLS;//!
+  TH1F*                	fEtaEmbInvmassULS;//!
+  TH1F*                	fEtaEmbWeightInvmassLS;//!
+  TH1F*                	fEtaEmbWeightInvmassULS;//!
+  TH2F*                	fRecoLSeTrkPt;//!
+  TH2F*                	fRecoLSeEmbTrkPt;//!
+  TH2F*                	fRecoLSeEmbWeightTrkPt;//!
+  TH2F*                	fRecoPi0LSeEmbWeightTrkPt;//!
+  TH2F*                	fRecoEtaLSeEmbWeightTrkPt;//!
+  TH2F*                	fRecoULSeTrkPt;//!
+  TH2F*                	fRecoULSeEmbTrkPt;//!
+  TH2F*                	fRecoULSeEmbWeightTrkPt;//!
+  TH2F*                	fRecoPi0ULSeEmbWeightTrkPt;//!
+  TH2F*                	fRecoEtaULSeEmbWeightTrkPt;//!
 
   Bool_t 		fReadMC;    //flag for access to MC
+  Bool_t                fIsFrmEmbPi0;//!
+  Bool_t                fIsFrmEmbEta;//!
   Int_t                 ftype;//!
   Double_t              fWeight;//!
+  TH2F*                 fInclsElecPt;//!
+  TH1F*                 fInclsElecPtAll;//!
+  TH2F*                 fInclsElecPtReco;//!
+  TH2F*                 fInclseEMCALElecPtReco;//!
+  TH2F*                 fInclseDCALElecPtReco;//!
+  TH2F*			fHFElecPtAll;//!
+  TH2F*			fHFElecPtReco_wTPC;//!
+  TH2F*			fHFElecPtReco_wCalo;//!
+  TH2F*                 fMissingEmbEtaEleTrkPt;//!
+  TF1*                  fPi0Weight;//!
+  TF1*                  fEtaWeight;//!
+  TH2F*                	fNonHFeTrkPt;//!
+  TH2F*              	fNonHFeEmbAllTypeTrkPt;//!
+  TH2F*                	fNonHFeEmbTrkPt;//!
+  TH2F*                	fNonHFeEmbWeightTrkPt;//!
+  TH2F*                	fPi0eEmbWeightTrkPt;//!
+  TH2F*                	fEtaeEmbWeightTrkPt;//!
+  TH2F*                	fRecoNonHFeTrkPt;//!
+  TH2F*                	fRecoNonHFeEmbTrkPt;//!
+  TH2F*                	fRecoNonHFeEmbWeightTrkPt;//!
+  TH2F*                	fRecoPi0eEmbWeightTrkPt;//!
+  TH2F*                	fRecoEtaeEmbWeightTrkPt;//!
 
+  TH2F*                	fNonHFeEmbMomTrkPt;//!
+  TH2F*                	fNonHFeEmbMomWeightTrkPt;//!
+  TH2F*                	fPi0eEmbMomWeightTrkPt;//!
+  TH2F*                	fEtaeEmbMomWeightTrkPt;//!
+  TH2F*                	fRecoNonHFeMomEmbTrkPt;//!
+  TH2F*                	fRecoNonHFeEmbMomWeightTrkPt;//!
+  TH2F*                	fRecoPi0eEmbMomWeightTrkPt;//!
+  TH2F*                	fRecoEtaeEmbMomWeightTrkPt;//!
+  THnSparse*		fSprsPi0EtaWeightCal;//!
 
+//--------------------------------------------------------
   TProfile*		fMultEstimatorAvg[2];
   Double_t 		fRefMult;
   TRandom3*		gRandom;//!< random number generator
@@ -177,8 +244,7 @@ private:
 
  
 
-  THnSparse*		fSprsPi0EtaWeightCal;//!
-
+  
  
 
   AliAnalysisTaskHFEMultiplicity(const AliAnalysisTaskHFEMultiplicity& ); // not implemented

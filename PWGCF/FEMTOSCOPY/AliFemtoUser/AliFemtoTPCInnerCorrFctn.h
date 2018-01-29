@@ -16,7 +16,7 @@
 
 class AliFemtoTPCInnerCorrFctn : public AliFemtoCorrFctn {
 public:
-  AliFemtoTPCInnerCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoTPCInnerCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoTPCInnerCorrFctn(const AliFemtoTPCInnerCorrFctn& aCorrFctn);
   virtual ~AliFemtoTPCInnerCorrFctn();
 
@@ -32,7 +32,7 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
-  
+
   TH2D *fDTPCNumerator;        // Distance at the entrance to the TPC for real pairs
   TH2D *fDTPCDenominator;      // Distance at the entrance to tht TPC for mixed pairs
   TH2D *fRadDNumerator;        // Distance at the radius for real pairs

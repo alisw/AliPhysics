@@ -10,17 +10,22 @@
 #include "AliESDtrack.h"
 #endif
 
-enum ESys  { kAPL , kPAL, nSys };
+
 enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus };
+enum ESys  { kAPL, kPAL, kKKpi, nSys };
 
-const char *sysNames[nSys] = { "APL", "PAL" };
-
-int runSys[nSys] = {1,1};
+const char *sysNames[nSys]      = { "APL", "PAL", "KKpi"};
+const bool runSys[nSys]         = {   1  ,   1  ,   1  };
+const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.0 }; // everything in GeV here
+const double distMax[nSys]      = {  2.5 ,  2.5 ,  2.0 };
+const double distBinWidth[nSys] = { 0.001, 0.001, 0.001};
 
 bool separationCuts;
+bool ppCollisions;
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis);
 AliFemtoBaryoniaAnalysis* GetAnalysis();
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoESDTrackCut* GetTrackCut(EPart particle);
@@ -28,16 +33,21 @@ AliFemtoTrioCut* GetTrioCut(ESys system);
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false)
 {
   separationCuts = sepCuts;
+  ppCollisions = ppAnalysis;
   
   // create analysis managers
   AliFemtoManager* Manager = new AliFemtoManager();
   AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
   
   // add event reader
-  if(year==2015){
+  if(ppAnalysis){
+    AliFemtoEventReaderAODChain* ReaderPP = GetReaderPP(mcAnalysis);
+    Manager->SetEventReader(ReaderPP);
+  }
+  else if(year==2015){
     AliFemtoEventReaderAODMultSelection* Reader2015 = GetReader2015(mcAnalysis);
     Manager->SetEventReader(Reader2015);
   }
@@ -86,7 +96,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
     
     // create m_inv distribution and add to the analysis
-    distribution[anIter] = new AliFemtoTrioMinvFctn(sysNames[iSys],1000,1.0,3.0);
+    distribution[anIter] = new AliFemtoTrioMinvFctn(sysNames[iSys],(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
     distribution[anIter]->SetTrioCut(trioCut);
     
     baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
@@ -105,7 +115,7 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
   
   return Reader;
 }
@@ -118,7 +128,20 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
+  
+  return Reader;
+}
+
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  Reader->SetFilterBit(128);
+  Reader->SetReadV0(true);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+  Reader->SetMinPlpContribSPD(3);
+  Reader->SetIsPileUpEvent(true);
+  Reader->SetReadMC(mcAnalysis);
   
   return Reader;
 }
@@ -157,10 +180,10 @@ AliFemtoESDTrackCut* GetTrackCut(EPart particle)
   if(particle == kKaonPlus || particle == kPionPlus){ particleCut->SetCharge( 1.0); }
   else                                              { particleCut->SetCharge(-1.0); }
   
-  particleCut->SetPt(0.01,5.0);
+  particleCut->SetPt(0.14,1.5);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetMaxImpactXY(0.1);
-  particleCut->SetMaxImpactZ(0.1);
+  particleCut->SetMaxImpactZ( ppCollisions ? 9999999 : 0.25);
+  particleCut->SetMaxImpactXY(ppCollisions ? 9999999 : 0.20);
   particleCut->SetStatus(AliESDtrack::kTPCin);
   particleCut->SetminTPCncls(80);
   particleCut->SetRemoveKinks(kTRUE);
@@ -196,14 +219,19 @@ AliFemtoTrioCut* GetTrioCut(ESys system)
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle)
 {
   if(system == kAPL){
-    firstParticle = kKaonMinus;
+    firstParticle  = kKaonMinus;
     secondParticle = kPionPlus;
-    thirdParticle = kPionMinus;
+    thirdParticle  = kPionMinus;
   }
   if(system == kPAL){
-    firstParticle = kKaonPlus;
+    firstParticle  = kKaonPlus;
     secondParticle = kPionPlus;
-    thirdParticle = kPionMinus;
+    thirdParticle  = kPionMinus;
+  }
+  if(system == kKKpi){
+    firstParticle  = kKaonPlus;
+    secondParticle = kKaonMinus;
+    thirdParticle  = kPionMinus;
   }
 }
 

@@ -1768,6 +1768,44 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a(){
 }
 
 //_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModOhoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PRC 79, 044905 (2009)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,1.02369,1.41492,3.09519);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PLB 663, 55-60 (2008)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,0.9,5.0,2.9);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
   // weight function from the ratio of the LHC13d3 MC
   // and FONLL calculations for pp data

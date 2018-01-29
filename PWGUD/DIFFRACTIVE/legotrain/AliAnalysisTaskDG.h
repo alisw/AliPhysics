@@ -3,6 +3,7 @@
 #define ALIANALYSISTASKDG_H
 
 class TH1;
+class THnBase;
 class TTree;
 class TList;
 
@@ -21,6 +22,10 @@ class AliESDtrackCuts;
 
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
+#include "AliAODVZERO.h"
+#include "AliESDVZERO.h"
+#include "AliAODAD.h"
+#include "AliESDAD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTOFHeader.h"
 #include "AliTriggerAnalysis.h"
@@ -134,6 +139,25 @@ public:
     Bool_t fC;
   };
 
+  struct ZDC {
+    ZDC()
+      : fZNenergy()
+      , fZPenergy()
+      , fZEMenergy()
+      , fZNtower0()
+      , fZPtower0()
+      , fZNTDC() {}
+
+    void Fill(AliVZDC*);
+
+    Float_t fZNenergy[2];
+    Float_t fZPenergy[2];
+    Float_t fZEMenergy[2];
+    Float_t fZNtower0[2];
+    Float_t fZPtower0[2];
+    Float_t fZNTDC[2][4];
+  } ;
+
   class TreeData : public TObject {
   public:
     TreeData()
@@ -142,6 +166,7 @@ public:
       , fV0Info()
       , fADInfo()
       , fFMDInfo()
+      , fZDCInfo()
       , fIsIncompleteDAQ(kFALSE)
       , fIsSPDClusterVsTrackletBG(kFALSE)
       , fIskMB(kFALSE) {}
@@ -150,10 +175,11 @@ public:
     ADV0      fV0Info;
     ADV0      fADInfo;
     FMD       fFMDInfo;
+    ZDC       fZDCInfo;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 8);
+    ClassDef(TreeData, 9);
   } ;
 
   struct TrackData : public TObject {
@@ -219,19 +245,25 @@ protected:
   static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
   void FillSPDFOEffiencyHistograms(const AliESDEvent* );
-  void FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w=1);
+  void FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t w=1);
 
   void FillTriggerIR(const AliESDHeader* );
 
+  // TH1-derived histograms
   enum {
     kHistTrig,
+    kNHist
+  };
+  // THnBase-derived histograms
+  enum {
     kHistSPDFiredTrk,
     kHistSPDFOTrk,
+    kHistSPDFOFiredTrk,
+
     kHistSPDFiredTrkVsMult,
     kHistSPDFOTrkVsMult,
-    kHistSPDFiredVsMult,
-    kHistSPDFOVsMult,
-    kNHist
+    kHistSPDFOFiredTrkVsMult,
+    kNHistN
   };
 
 private:
@@ -251,6 +283,7 @@ private:
 
   TList           *fList;                //!
   TH1             *fHist[kNHist];        //!
+  THnBase         *fHistN[kNHistN];      //!
   TTree           *fTE;                  //!
   TBits            fIR1InteractionMap;   //!
   TBits            fIR2InteractionMap;   //!
@@ -260,6 +293,10 @@ private:
   VtxPairType      fVertexSPD;           //!
   VtxPairType      fVertexTPC;           //!
   VtxPairType      fVertexTracks;        //!
+  typedef std::pair<AliESDVZERO, AliAODVZERO> V0PairType;
+  V0PairType       fV0;                  //!
+  typedef std::pair<AliESDAD, AliAODAD> ADPairType;
+  ADPairType       fAD;                  //!
   AliTOFHeader     fTOFHeader;           //!
   TClonesArray     fTriggerIRs;          //!
   TString          fFiredTriggerClasses; //!
@@ -270,7 +307,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 15);
+  ClassDef(AliAnalysisTaskDG, 18);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

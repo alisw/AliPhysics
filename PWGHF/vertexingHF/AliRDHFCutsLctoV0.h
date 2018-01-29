@@ -67,6 +67,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
 
   Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd, AliAODEvent* aod=0x0) const;
+  Bool_t ApplySingleProtonCuts(AliAODTrack *trk, AliAODEvent* aod);
+  Bool_t ApplySingleK0Cuts(AliAODv0 *v0, AliAODEvent* aod);
+  Bool_t ApplyCandidateCuts(AliAODRecoDecayHF *rd, AliAODEvent* aod, Bool_t spdfirst);
 
   Int_t GetV0Type();
 

@@ -27,6 +27,7 @@
 #pragma link C++ class AliAnalysisTaskDG::EventInfo++;
 #pragma link C++ class AliAnalysisTaskDG::ADV0++;
 #pragma link C++ class AliAnalysisTaskDG::FMD++;
+#pragma link C++ class AliAnalysisTaskDG::ZDC++;
 #pragma link C++ class AliAnalysisTaskDG::SPD_0STG++;
 #pragma link C++ class AliTriggerStudy0STP+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections+;
@@ -40,6 +41,13 @@
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::PseudoTracks+;
 #pragma link C++ class AliCEPBase+;
 #pragma link C++ class AliCEPUtils+;
+#pragma link C++ class CEPRawADBuffer+;
+#pragma link C++ class CEPRawCaloBuffer+;
+#pragma link C++ class CEPRawCaloClusterTrack+;
+#pragma link C++ class CEPRawEventBuffer+;
+#pragma link C++ class CEPRawFMDBuffer+;
+#pragma link C++ class CEPRawTrackBuffer+;
+#pragma link C++ class CEPRawV0Buffer+;
 #pragma link C++ class CEPEventBuffer+;
 #pragma link C++ class CEPTrackBuffer+;
 #pragma link C++ class AliAnalysisTaskCEP+;

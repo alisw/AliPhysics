@@ -99,8 +99,8 @@ AliReducedEventInfo::AliReducedEventInfo() :
 
 
 //____________________________________________________________________________
-AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=kNoInit*/) :
-  AliReducedBaseEvent(name, trackOption),
+AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=AliReducedBaseEvent::kNoInit*/, Int_t track2Option /*=AliReducedBaseEvent::kNoInit*/) :
+  AliReducedBaseEvent(name, trackOption, track2Option),
   fEventNumberInFile(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),

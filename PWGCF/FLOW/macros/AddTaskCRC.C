@@ -298,7 +298,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
   cutsEvent->SetCheckPileup(kFALSE);
   // configure some event cuts, starting with centrality
-  if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
+  if(analysisTypeUser == "MCkine" || analysisTypeUser == "ESD") {
     // method used for centrality determination
     if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
     if(sCentrEstimator=="TRK") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
@@ -313,7 +313,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
     cutsEvent->SetQA(bCutsQA);
   }
-  else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA" || analysisTypeUser == "Tracklets") {
+  else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA" || analysisTypeUser == "Tracklets" || analysisTypeUser == "MCAOD") {
     if (sDataSet == "2010" || sDataSet == "2011") {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
     }
@@ -533,6 +533,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetFlowQCDeltaEta(DeltaEta);
   taskQC->SetUseVZERO(bCalculateCRCVZ);
   taskQC->SetUseZDC(kTRUE);
+  if (analysisTypeUser == "AOD" || analysisTypeUser == "AUTOMATIC") taskQC->SetCutMultiplicityOutliers(kTRUE);
+  else taskQC->SetCutMultiplicityOutliers(kFALSE);
   if (ZDCCalibFileName != "" && bUseZDC) {
     taskQC->SetRecenterZDC(kTRUE);
   }

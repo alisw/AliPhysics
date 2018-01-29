@@ -226,20 +226,17 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
         fList->Add(fDCAz[iT][iC]);
       }
     }
-
-    std::array<std::string,4> norm_labels = {
-      "No cuts",
-      "Event selection",
-      "Vertex reconstruction and quality",
-      "Vertex position"
-    };
-
-    fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
-    for (int iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
-
-    fList->Add(fNormalisationHist);
-
   }
+
+  std::array<std::string,4> norm_labels = {
+    "No cuts",
+    "Event selection",
+    "Vertex reconstruction and quality",
+    "Vertex position"
+  };
+  fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
+  for (int iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
+  fList->Add(fNormalisationHist);
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
   if (fTOFfunctionPars.GetSize() == 4)

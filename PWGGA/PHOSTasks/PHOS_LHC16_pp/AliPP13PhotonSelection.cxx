@@ -126,7 +126,7 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 	fListOfHistos = new TList();
 	fListOfHistos->SetOwner(kTRUE);
 	InitSelectionHistograms();
-
+	
 	TString cuts = Form(
 		 	            ";\nCuts: |Z_{vtx}| < 10 cm, no pileup spd, E_{min}^{clu} = %.2g GeV, A =  %.2g, N_{min}^{cell} = %d, t_{clus} = %0.3g ns", 
 						fCuts.fClusterMinE,
@@ -167,10 +167,12 @@ void AliPP13PhotonSelection::CountMBEvent()
 //________________________________________________________________
 AliPP13PhotonSelection::~AliPP13PhotonSelection()
 {
+	// if (fWeights)
+		// delete fWeights;	
+
 	// Don't delete fEventCounter and other ROOT objects
 	// root has it's own memory management.
 	// 
-	
 	delete fListOfHistos;
 }
 

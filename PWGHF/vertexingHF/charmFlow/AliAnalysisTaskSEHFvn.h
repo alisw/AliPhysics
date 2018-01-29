@@ -79,11 +79,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0.){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0., Bool_t removesoftpionfromq2=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
     fRequireMassForDauRemFromq2=requiremass;
+    fRemoverSoftPionFromq2=removesoftpionfromq2;
     if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
       fRemoveNdauRandomTracks=kFALSE;
@@ -124,7 +125,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   }
   void SetRemoveDaughtersFromq2(Int_t removeDau, Bool_t requiremass) {fRemoveDauFromq2=removeDau; fRequireMassForDauRemFromq2=requiremass;}
   void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
-  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos) {fEPVsq2VsCent=enablehistos;}
+  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
+  void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
+
+  void Setq2PercentileSelection(TString splinesfilepath);
   
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -206,11 +210,15 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
   Bool_t fRequireMassForDauRemFromq2; // flag to activate mass range when removing daughter tracks from q2
   Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
-  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F
-
+  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
+  Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
+  TList* fq2SplinesList; //list of splines used to compute the q2 percentile
+  
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,12); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,15); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

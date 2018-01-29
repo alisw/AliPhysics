@@ -29,7 +29,7 @@ class AliAnalysisFilter;
 class AliCFContainer;
 class TDatabasePDG;
 class AliESDVertex;
-class TClonesArray;
+class AliAnTOFevent;
 class TProfile;
 class TTree;
 class AliTOFT0maker;
@@ -42,7 +42,6 @@ class AliESDTOFCluster;
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
-#include "AliLog.h"
 #include "AliMultSelection.h"
 #include "AliTOFPIDResponse.h"
 #include "AliUtilTOFParams.h"
@@ -58,7 +57,9 @@ using namespace AliUtilTOFParams;
 
 // #define CHECKCOMPUTEDVALUES//Flag to compute the TOF values and compare to the ones expected
 
-// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analasys with and without mismatch with TPC information
+// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analysis with and without mismatch with TPC information
+
+// #define BUILDT0PLOTS// Flag to prepare distributions of T0 for analysis of the correlation with the vertex position
 
 class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   public:
@@ -112,17 +113,14 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print out the configuration flags of the task
-  void PrintStatus()
+  void PrintStatus();
+
+  ///
+  /// Method to obtain the output list for histograms, this is intended so as to check the data size of output
+  TList* GetOutput()
   {
-    AliInfo("- PrintStatus -");
-    AliInfo(Form("Using fHImode %i", fHImode));
-    AliInfo(Form("Using fMCmode %i", fMCmode));
-    AliInfo(Form("Using fTreemode %i", fTreemode));
-    AliInfo(Form("Using fChannelmode %i", fChannelmode));
-    AliInfo(Form("Using fCutmode %i", fCutmode));
-    AliInfo(Form("Using fSimpleCutmode %i", fSimpleCutmode));
-    AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
-  };
+    return fListHist;
+  }
 
   //Utility methods
   ///
@@ -191,49 +189,19 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
     kLimitfMCTrkMask }; //MC information fMCTrkMask
 
   //Implementation of mask read/write
-  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfEvtMask)
-      AliFatal("Bit exceeds limits for fEvtMask");
-    else
-      SetMaskBit(fEvtMask, (Int_t)bit, value);
-  };
+  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value);
   void ResetEvtMaskBit() { ResetMask(fEvtMask); };
 
-  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkMask)
-      AliFatal("Bit exceeds limits for fTrkMask");
-    else
-      SetMaskBit(fTrkMask, (Int_t)bit, value);
-  };
+  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value);
   void ResetTrkMaskBit() { ResetMask(fTrkMask); };
 
-  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTPCPIDMask)
-      AliFatal("Bit exceeds limits for fTPCPIDMask");
-    else
-      SetMaskBit(fTPCPIDMask, (Int_t)bit, value);
-  };
+  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value);
   void ResetTPCPIDMaskBit() { ResetMask(fTPCPIDMask); };
 
-  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkCutMask)
-      AliFatal("Bit exceeds limits for fTrkCutMask");
-    else
-      SetMaskBit(fTrkCutMask, (Int_t)bit, value);
-  };
+  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value);
   void ResetTrkCutMaskBit() { ResetMask(fTrkCutMask); };
 
-  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfMCTrkMask)
-      AliFatal("Bit exceeds limits for fMCTrkMask");
-    else
-      SetMaskBit(fMCTrkMask, (Int_t)bit, value);
-  };
+  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value);
   void ResetMCTrkMaskBit() { ResetMask(fMCTrkMask); };
 
   //Particle kinematics
@@ -249,23 +217,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Find the index of the pt bin of the track
-  void FindPtBin()
-  {
-    if (fBinPtIndex != -999) {
-      AliFatal(Form("Pt bin already assigned to value %i!", fBinPtIndex));
-      return;
-    }
-    for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { ///<  Computes the pt bin
-      if (fPt < fBinPt[ptbin] || fPt >= fBinPt[ptbin + 1])
-        continue;
-      //       AliInfo(Form("Requirement %i : %f < fPt %f < %f", ptbin, fBinPt[ptbin], fPt, fBinPt[ptbin+1]));
-      fBinPtIndex = ptbin;
-      break;
-    }
-    if (fBinPtIndex < 0)
-      AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
-    //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
-  };
+  void FindPtBin();
 
   ///
   /// Method to compute the expected time of a particle from the integrated track length
@@ -300,47 +252,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms containing the values of the variables under cut, the flag is to fill the ones before and after the flag
-  void FillCutVariable(const Bool_t pass = kFALSE)
-  {
-    hTrkTPCCls[pass]->Fill(fTPCClusters);
-    hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
-    hTrkTPCRatioRowsFindCls[pass]->Fill(fTPCCrossedRows / fTPCFindClusters);
-    hTrkTPCChi2NDF[pass]->Fill(fTPCChi2PerNDF);
-    hTrkITSChi2NDF[pass]->Fill(fITSChi2PerNDF);
-    hTrkActiveLength[pass]->Fill(fLengthActiveZone);
-    hTrkITSTPCMatch[pass]->Fill(fITSTPCMatch);
-    hTrkDCAxy[pass]->Fill(fDCAXY);
-    hTrkDCAz[pass]->Fill(fDCAZ);
-#ifdef CHECKTRACKCUTS //Only if required
-    for (Int_t i = 0; i < 3; i++) {
-      Double_t x = 0;
-      switch (i) {
-      case 0:
-        x = fPt;
-        break;
-      case 1:
-        x = fEta;
-        break;
-      case 2:
-        x = fPhi;
-        break;
-      default:
-        AliFatal("index out of bound!");
-        break;
-      }
-
-      hTrkTPCClsCorr[pass][i]->Fill(fTPCClusters, x);
-      hTrkTPCRowsCorr[pass][i]->Fill(fTPCCrossedRows, x);
-      hTrkTPCRatioRowsFindClsCorr[pass][i]->Fill(fTPCCrossedRows / fTPCFindClusters, x);
-      hTrkTPCChi2NDFCorr[pass][i]->Fill(fTPCChi2PerNDF, x);
-      hTrkITSChi2NDFCorr[pass][i]->Fill(fITSChi2PerNDF, x);
-      hTrkActiveLengthCorr[pass][i]->Fill(fLengthActiveZone, x);
-      hTrkITSTPCMatchCorr[pass][i]->Fill(fITSTPCMatch, x);
-      hTrkDCAxyCorr[pass][i]->Fill(fDCAXY, x);
-      hTrkDCAzCorr[pass][i]->Fill(fDCAZ, x);
-    }
-#endif
-  }
+  void FillCutVariable(const Bool_t pass = kFALSE);
 
   ///
   /// Method to start the time usage
@@ -402,7 +314,15 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms used for the Performance
-  void FillPerformanceHistograms();
+  void FillPerformanceHistograms(const AliVTrack* track);
+
+  ///
+  /// Method to define the histograms used for the T0 information
+  void DefineT0Histograms();
+
+  ///
+  /// Method to fill the histograms used for the T0 information
+  Bool_t FillT0Histograms();
 
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
@@ -414,46 +334,13 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   //
   //Single cuts
-  void SetTPCRowsCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMinNCrossedRowsTPC(cut);
-    AliDebug(2, Form("Setting SetMinNCrossedRowsTPC(%f) : %f", cut, fESDtrackCuts->GetMinNCrossedRowsTPC()));
-  };
-  void SetTrkChi2Cut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterTPC(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-  };
-  void SetTrkChi2CutITS(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterITS(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterITS(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterITS()));
-  };
-  void SetDCAxyCut(Double_t cut)
-  {
-    fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    AliDebug(2, Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-  };
-  void SetDCAzCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxDCAToVertexZ(cut);
-    AliDebug(2, Form("Setting SetMaxDCAToVertexZ(%f) : %f", cut, fESDtrackCuts->GetMaxDCAToVertexZ()));
-  };
-  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl)
-  {
-    //Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
-    //Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
-    //Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
-    //Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
-    //Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
-    fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-    AliDebug(2, Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl));
-  }
-  void SetRatioCrossedRowsFindableCls(Double_t cut)
-  {
-    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cut);
-    AliDebug(2, Form("Setting SetMinRatioCrossedRowsOverFindableClustersTPC(%f) : %f", cut, fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
-  };
+  void SetTPCRowsCut(Double_t cut);
+  void SetTrkChi2Cut(Double_t cut);
+  void SetTrkChi2CutITS(Double_t cut);
+  void SetDCAxyCut(Double_t cut);
+  void SetDCAzCut(Double_t cut);
+  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl);
+  void SetRatioCrossedRowsFindableCls(Double_t cut);
 
   ///
   /// Method to initialize the standard cuts
@@ -469,68 +356,11 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print the cut variables for the whole list
-  void PrintCutVariables()
-  {
-    AliInfo("- PrintCutVariables -");
-    AliInfo(Form("Simple cut : %i", fSimpleCutmode));
-    AliInfo(Form("fESDtrackCuts->GetMinNCrossedRowsTPC() : %f", fESDtrackCuts->GetMinNCrossedRowsTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxChi2PerClusterTPC() : %f", fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxDCAToVertexZ() : %f", fESDtrackCuts->GetMaxDCAToVertexZ()));
-    AliInfo(Form("fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep() : %s", fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    fESDtrackCuts->Print();
-    fESDtrackCutsPrm->Print();
-  };
+  void PrintCutVariables();
 
   ///
   /// Method to print the cut variables for the tree only
-  void PrintCutVariablesForTree()
-  {
-    if (!fTreemode || !fCutmode)
-      return;
-    AliInfo("- PrintCutVariablesForTree -");
-    AliInfo(Form("fCutmode cut : %i fTreemode : %i", fCutmode, fTreemode));
-
-    Int_t index = 0;
-    for (UInt_t cut = 0; cut < nCuts; cut++) {
-      for (UInt_t i = 0; i < CutIndex[cut]; i++) {
-        TString c = "";
-        switch (cut) {
-        case kTPCrows: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kTrkChi2: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAz: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAxy: {
-          const TString dep = Form("%f*(%s)", CutValues[cut][i], primfunct.Data());
-          c += dep;
-          break;
-        }
-        case kGeo: {
-          c = "(";
-          for (Int_t j = 0; j < 5; j++)
-            c += Form("%f%s", CutValues[cut][5 * i + j], j < 4 ? ", " : "");
-          c += ")";
-          break;
-        }
-
-        default:
-          AliFatal(Form("Requested %i set for track cuts not implemented!!", cut));
-          break;
-        }
-
-        AliInfo(Form("CutValue%s[%i] : %s", Cuts[cut].Data(), i, c.Data()));
-        if (i != 0)
-          fCutVar[index++]->Print();
-      }
-    }
-  };
+  void PrintCutVariablesForTree();
 
   ///
   ///Bins numbers
@@ -571,10 +401,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   ///////////////////////
   // Output containers //
   ///////////////////////
-  TList* fListHist;         //!<! TList for histograms
-  TTree* fTreeTrack;        //!<! TTree to store information of the single track
-  TClonesArray* ArrayAnTrk; //!<! Array containing all tracks from one event in the format of AliAnTOFtrack
-  TTree* fTreeTrackMC;      //!<! TTree to store MC information of the single track
+  TList* fListHist;           //!<! TList for histograms
+  TTree* fTreeTrack;          //!<! TTree to store information of the single track
+  AliAnTOFevent* fAnTOFevent; //!<! Event container containing all tracks from one event in the format of AliAnTOFtrack
+  TTree* fTreeTrackMC;        //!<! TTree to store MC information of the single track
 
   /////////////////////////
   // Configuration Flags //
@@ -816,7 +646,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2F* hTimeOfFlightResFine;                 ///<  Histogram to compute the Time Of Flight resolution as a function of the matched tracks to TOF
   TH1F* hTimeOfFlightResFinePerEvent;         ///<  Histogram to compute the Time Of Flight resolution per event, this particular one should not be added to the output list as it yields no information but it is rather auxiliary to the computation of the TOF resolution as a function of the TOF tracks
   TH2I* hBeta;                                ///<  Histogram with the track beta vs the track momentum
-  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the exoected time
+  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the expected time
   TProfile* hBetaExpectedTOFPID[kExpSpecies]; ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
   TH2I* hBetaNoMismatch;                      ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
@@ -832,7 +662,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
-  TH2I* hTPCdEdx; ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdxTPCp;                           ///<  Histogram with the track energy loss in the TOC vs the track momentum for TPC
+  TProfile* hdEdxExpected[kExpSpecies + 2];     ///<  TProfile with the track dEdx vs the track momentum
+  TProfile* hdEdxExpectedTPCp[kExpSpecies + 2]; ///<  TProfile with the track dEdx vs the track momentum for TPC
   //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins]; ///<  Histogram with the PID separation of the TPC and TOF signal
 #ifdef CHECKCOMPUTEDVALUES                       // Only if checks on computed values are required
@@ -847,6 +680,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFSigma[kPtBins][kCharges][kSpecies];           ///<  Sigma distributions for T-Texp-T0
   TH1F* hTOFNoMismatch[kPtBins][kCharges][kSpecies];      ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
   TH1F* hTOFSigmaNoMismatch[kPtBins][kCharges][kSpecies]; ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
+#endif
+#ifdef BUILDT0PLOTS
+  TH2F* hT0VsVtxZ[4];     ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C and TOF)
+  TH2F* hT0VsVtxZbest[4]; ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C best)
 #endif
 
   //
@@ -917,7 +754,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 9); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 10); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif

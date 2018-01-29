@@ -98,6 +98,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Float_t fZPAenergy, fZPCenergy;
   Float_t fZNATDCm[4];
   Float_t fZNCTDCm[4];
+  Float_t fZPATDCm[4];
+  Float_t fZPCTDCm[4];
   Int_t fV0Adecision, fV0Cdecision;
   Int_t fADAdecision, fADCdecision;
   //input data
@@ -106,6 +108,9 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Long64_t fEvtNum;
   //spd
   TBits fFOFiredChips;
+  //PF protection
+  TBits fIR1Map;
+  TBits fIR2Map;
   //tracks
   TClonesArray *fJPsiAODTracks;
   TClonesArray *fJPsiESDTracks; 
@@ -142,6 +147,9 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistCcup10TriggersPerRun;
   TH1D *fHistCcup11TriggersPerRun;
   TH1D *fHistCcup12TriggersPerRun;
+  TH1D *fHistCcup25TriggersPerRun;
+  TH1D *fHistCcup26TriggersPerRun;
+  TH1D *fHistCcup27TriggersPerRun;
   TH1D *fHistCtrueTriggersPerRun;
   
   TList *fListHist;

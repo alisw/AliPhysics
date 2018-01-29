@@ -23,6 +23,8 @@
 #pragma link C++ class AliAnalysisTaskParticleStudies+;
 #pragma link C++ class AliAnalysisTaskPIDBF+;
 #pragma link C++ class AliPidBFBase+;
+#pragma link C++ class AliAnalysisTaskAccCont+;
+#pragma link C++ class AliAnalysisTaskPIDMCEffCont+;
 
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;

@@ -26,7 +26,6 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
    mgr->AddTask(task1);
-
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
   //    mgr->AddTask(task2);
 
@@ -79,7 +78,6 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   TString LHCperiod = grpData->GetLHCPeriod();
   Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
   Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
-
   //  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   // AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
   UInt_t timeStart = grpData->GetTimeStart();
@@ -88,7 +86,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   cout<<"T0 start time  "<<timeStart<<" end time "<<timeEnd<<endl;
 
   ::Info("AddTaskT0Calib","LHCperiod:%s  --->  isLHC10b:%d isLHC10c:%d",
-         LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
+	 LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
 
   if(isLHC10b || isLHC10c) mytask-> SetRefPMT(12,2);
 

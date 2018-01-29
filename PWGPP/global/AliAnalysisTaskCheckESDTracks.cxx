@@ -637,7 +637,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
-  esd->InitMagneticField();
 
 
   Int_t ntracks = esd->GetNumberOfTracks();
@@ -671,7 +670,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
   const AliVVertex* vtTrc = esd->GetPrimaryVertex();
   const AliVVertex* vtSPD = esd->GetPrimaryVertexSPD();
-  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  TString titTrc=vtTrc->GetTitle();
+  if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
+  if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
@@ -706,11 +707,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   fHistNtracksSPDanyVsV0aftEvSel->Fill(vZEROampl,ntracksSPDany);
 
 
-  const Int_t ntSize=33;
-  Float_t xnt[ntSize];
-  
-  Int_t nPureSAtracks=0;
-  Int_t nITSTPCtracks=0;
   fHistNTracks->Fill(ntracks);
 
 
@@ -729,10 +725,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
     Int_t chtrack=track->Charge();
     Double_t pttrack=track->Pt();
-    Double_t ptrack=track->P();
-    Double_t pxtrack=track->Px();
-    Double_t pytrack=track->Py();
-    Double_t pztrack=track->Pz();
     Double_t etatrack=track->Eta();
     Double_t phitrack=track->Phi();
     fTreeVarFloat[3]=track->Px();
@@ -800,15 +792,15 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fTreeVarInt[6]=tofOK;
 
     Int_t trlabel=track->GetLabel();
-    Float_t invpttrack=track->OneOverPt();
     Float_t dedx=track->GetTPCsignal();
     Int_t  pidtr=track->GetPIDForTracking();
     
-    Double_t nSigmaTPC[9]={-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
+    Double_t nSigmaTPC[AliPID::kSPECIESC];
+    for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTPC[jsp]=-999.;
     if(pidResp){
       AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
       if (status == AliPIDResponse::kDetPidOk){
-	for(Int_t jsp=0; jsp<9; jsp++){
+	for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
 	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
 	}
       }
@@ -852,7 +844,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       fTreeVarFloat[33]=phigen;
       if (fUseMCId) {
         int pdg = TMath::Abs(part->GetPdgCode());
-        for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
+        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
           if (pdg == AliPID::ParticleCode(iS)) hadronSpecies=iS;
         }
       }
@@ -927,11 +919,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       }
     }
 
-    bool pid[AliPID::kSPECIESCN] = {false};
+    bool pid[AliPID::kSPECIESC] = {false};
     if (fReadMC && fUseMCId) {
       if (hadronSpecies > -1) pid[hadronSpecies] = true;
     } else {
-      for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS)
+      for (int iS = 0; iS < AliPID::kSPECIESC; ++iS)
         pid[iS] = TMath::Abs(nSigmaTPC[iS])<3;
     }
     bool isProton = pid[AliPID::kProton];

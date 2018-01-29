@@ -4,6 +4,7 @@
 // --- Custom header files ---
 #include "AliPP13DetectorHistogram.h"
 #include "AliPP13PhotonSelection.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TH1F.h>
@@ -36,8 +37,8 @@ public:
 	{
 	}
 
-	AliPP13QualityPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
-		AliPP13PhotonSelection(name, title, cuts),
+	AliPP13QualityPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
+		AliPP13PhotonSelection(name, title, cuts, w),
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),

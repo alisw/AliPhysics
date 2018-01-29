@@ -15,12 +15,6 @@
  **************************************************************************/
 
 //***************************************************************************************
-//This AddTask is supposed to set up the main task
-//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskMaterialHistos.cxx) for
-//pp together with all supporting classes
-//***************************************************************************************
-
-//***************************************************************************************
 //CutHandler contains all cuts for a certain analysis and trainconfig,
 //it automatically checks length of cutStrings and takes care of the number of added cuts,
 //no specification of the variable 'numberOfCuts' needed anymore.
@@ -30,64 +24,54 @@ class CutHandlerConv{
   public:
     CutHandlerConv(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = "";}
     }
+
     void AddCut(TString eventCut, TString photonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
       if( eventCut.Length()!=8 || photonCut.Length()!=26  ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=""; clusterCutArray[nCuts]="";
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut;
       nCuts++;
       return;
     }
-    void AddCut(TString eventCut, TString photonCut, TString mesonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
-      nCuts++;
-      return;
-    }
-    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
-      nCuts++;
-      return;
-    }
-
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
-    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
     TString* photonCutArray;
-    TString* mesonCutArray;
-    TString* clusterCutArray;
 };
 
 
 
-void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,                    // change different set of cuts
-                Int_t 	isMC 				= 0,
-				TString periodname                      = "LHC10b",           // period name
-				TString periodNameV0Reader              = "",
-				TString periodNameAnchor                = "",
-				Bool_t 	enableV0findingEffi 		= kFALSE             	// enables V0finding efficiency histograms
-				){
-  
+//***************************************************************************************
+//main function
+//***************************************************************************************
+void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        // change different set of cuts
+                                    Int_t 	isMC 				    = 0,
+                                    TString periodname              = "LHC10b", // period name
+                                    TString periodNameV0Reader      = "",
+                                    TString periodNameAnchor        = "",
+                                    Bool_t 	enableV0findingEffi 	= kFALSE,    // enables V0finding efficiency histograms
+                                    TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
+                                ){
+
   Int_t IsHeavyIon = 1;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
     return ;
   }
-  
+
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   Bool_t isMCForOtherSettings = 0;
@@ -97,23 +81,17 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherSettings);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000000000000000500000000";
-  TString cutnumberEvent = "10000003";
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-
-  Bool_t  enableConstructGamma=kFALSE;
-  if (trainConfig>200){
-    enableConstructGamma=kTRUE;
-  }
   if (trainConfig>100 && trainConfig<200 ){
     cutnumberPhoton = "10000000000000000500000000";
   }
+  TString cutnumberEvent = "10000003";
 
+  Bool_t  enableConstructGamma=kFALSE;
 
-  
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -128,18 +106,19 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
     }
-    
+
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
+
     // Set AnalysisCut Number
     AliConversionPhotonCuts *fCuts=NULL;
     if(cutnumberPhoton!=""){
@@ -152,28 +131,27 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
-    
+
+
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
       fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
-    
+
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
-    
+
     //connect input V0Reader
     mgr->AddTask(fV0ReaderV1);
     mgr->ConnectInput(fV0ReaderV1,0,cinput);
-    
+
   } else {
     Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
-  }   
+  }
 
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //            find input container
-
 
   AliAnalysisTaskMaterialHistos *fMaterialHistos=NULL;
   fMaterialHistos= new AliAnalysisTaskMaterialHistos(Form("MaterialHistos_%i",trainConfig));
@@ -182,21 +160,57 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
 
   CutHandlerConv cuts;
-   if(trainConfig == 1){
-     cuts.AddCut("50000013", "00000009247602008250404000"); // kMB, V0M, std cuts
-  } else  if(trainConfig == 2){
-     cuts.AddCut("50000013", "00000070000000000500004000"); // kMB, V0M, open cuts
-
+  if( trainConfig == 1){ // kMB, V0M, std cuts
+    cuts.AddCut("50000013", "00000009247602008250404000");
+  } else  if( trainConfig == 2){ // kMB, V0M, open cuts
+    cuts.AddCut("50000013", "00000070000000000500004000");
+  } else if ( trainConfig == 3){ // selection for 11h meson cut
+    cuts.AddCut("50000013", "00000009247602008850404000");
+  } else if ( trainConfig == 4){ // selection for 11h photon cut
+    cuts.AddCut("50000013", "00000009247002008850404000");
+  } else if ( trainConfig == 5){ // selection for 11h meson cut
+    cuts.AddCut("60100013", "00000009247602008850404000");
+    cuts.AddCut("61200013", "00000009247602008850404000");
+    cuts.AddCut("50100013", "00000009247602008850404000");
+    cuts.AddCut("51200013", "00000009247602008850404000");
+    cuts.AddCut("52500013", "00000009247602008850404000");
+    cuts.AddCut("55800013", "00000009247602008850404000");
+  } else if ( trainConfig == 6){ // selection for 11h photon cut
+    cuts.AddCut("60100013", "00000009247002008850404000");
+    cuts.AddCut("61200013", "00000009247002008850404000");
+    cuts.AddCut("50100013", "00000009247002008850404000");
+    cuts.AddCut("51200013", "00000009247002008850404000");
+    cuts.AddCut("52500013", "00000009247002008850404000");
+    cuts.AddCut("55800013", "00000009247002008850404000");
     // Offline V0Finder is used
+  } else  if(trainConfig == 101){ //INT7, CL1
+    cuts.AddCut("20010103", "10000009247602008250404000");
+  } else  if( trainConfig == 102){ // kMB, V0M, open cuts
+    cuts.AddCut("50000013", "10000070000000000500004000");
+  } else if ( trainConfig == 103){ // selection for 11h meson cut
+    cuts.AddCut("50000013", "10000009247602008850404000");
+  } else if ( trainConfig == 104){ // selection for 11h photon cut
+    cuts.AddCut("50000013", "10000009247002008850404000");
+  } else if ( trainConfig == 105){ // selection for 11h meson cut
+    cuts.AddCut("60100013", "10000009247602008850404000");
+    cuts.AddCut("61200013", "10000009247602008850404000");
+    cuts.AddCut("50100013", "10000009247602008850404000");
+    cuts.AddCut("51200013", "10000009247602008850404000");
+    cuts.AddCut("52500013", "10000009247602008850404000");
+    cuts.AddCut("55800013", "10000009247602008850404000");
+  } else if ( trainConfig == 106){ // selection for 11h photon cut
+    cuts.AddCut("60100013", "10000009247002008850404000");
+    cuts.AddCut("61200013", "10000009247002008850404000");
+    cuts.AddCut("50100013", "10000009247002008850404000");
+    cuts.AddCut("51200013", "10000009247002008850404000");
+    cuts.AddCut("52500013", "10000009247002008850404000");
+    cuts.AddCut("55800013", "10000009247002008850404000");
 
-  } else  if(trainConfig == 101){
-    cuts.AddCut("20010103", "10000009247602008250404000");  //INT7, CL1
-
-  }else {
+  } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+
 	if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
@@ -204,12 +218,12 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts(); 
-   
+  Int_t numberOfCuts = cuts.GetNCuts();
+
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
 
- 
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -226,19 +240,19 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kTRUE);
-    
+
    }
 
 
 
 
-  fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);   
+  fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);
   fMaterialHistos->SetConversionCutList(numberOfCuts,ConvCutList);
   mgr->AddTask(fMaterialHistos);
 
-   
+
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvMaterial_%i",trainConfig), TList::Class(), 
+    mgr->CreateContainer(Form("GammaConvMaterial_%i",trainConfig), TList::Class(),
 			 AliAnalysisManager::kOutputContainer,Form("GammaConv_Material_%i.root",trainConfig ));
 
   mgr->ConnectInput(fMaterialHistos,  0, cinput );

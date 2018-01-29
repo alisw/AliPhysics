@@ -1,4 +1,6 @@
-AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1)
+TTree *GetLookUpTable(Bool_t fromAlien, Int_t index);
+
+AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1, Int_t lookUpTableIndex = 1)
 {
   //  
   //get the current analysis manager
@@ -47,10 +49,11 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
    *    108.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut 
    *    109.) THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended
    */
-  std::cout << " ===== In the AddTask_marsland_EbyeIterPID ===== " << std::endl;
+  std::cout << " Info::marsland: ===== In the AddTask_marsland_EbyeIterPID ===== " << std::endl;
   //   if (!getFromAlien) {
-  //       settingType = 109;
+  //       settingType = 201;
   //       lhcPeriod = 1;
+  //       lookUpTableIndex =1;
   //   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -71,10 +74,10 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
     gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s .",configFileName.Data()));
     configBasePath=Form("%s/",gSystem->pwd());
   } else {
-    configBasePath = "";
+    configBasePath = "/lustre/nyx/alice/users/marsland/train/trunk/marsland_EbyeRatios/";
   }
   TString configFilePath(configBasePath+configFileName);
-  std::cout << "Configpath:  " << configFilePath << std::endl;  
+  std::cout << "Info::marsland: Configpath:  " << configFilePath << std::endl;  
   gROOT->LoadMacro(configFilePath.Data());
   
   //   gSystem->Load("libANALYSIS");
@@ -82,12 +85,13 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   //   gSystem->AddIncludePath("-I$ALICE_ROOT/include"); 
   //   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
   
-  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(settingType,lhcPeriod);
+  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(settingType,lhcPeriod,lookUpTableIndex);
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
   printf(" ========================= MC info %d ========================= \n",hasMC);
   task->Dump();
   mgr->AddTask(task);
+  mgr->Dump();
   //   
   //==================================================
   //      Add task to the PID Response 
@@ -104,7 +108,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   // ****** Do not forget to "DefineOutput(5, TTree::Class());" In the contructor of the task ******
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *cinput,   *coutput1, *coutput2, *coutput3, *coutput4;
-  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9, *coutput10, *coutput11, *coutput12, *coutput13;
+  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9, *coutput10, *coutput11, *coutput12, *coutput13, *coutput14, *coutput15;
   
   //  find input container // Output files --> File opening order is important
   TString results = "AnalysisResults.root";
@@ -125,6 +129,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   coutput12 = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput13 = mgr->CreateContainer("fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput14 = mgr->CreateContainer("resonance",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  coutput15 = mgr->CreateContainer("mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -139,6 +144,8 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   mgr->ConnectOutput (task,  12, coutput12);
   mgr->ConnectOutput (task,  13, coutput13);
   mgr->ConnectOutput (task,  14, coutput14);
-  std::cout << " === Containers are ready === " << std::endl;
+  mgr->ConnectOutput (task,  15, coutput15);
+  std::cout << " Info::marsland: === Containers are ready === " << std::endl;
   return task;
 }
+

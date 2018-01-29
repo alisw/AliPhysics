@@ -38,18 +38,18 @@ AliEmcalTriggerDecisionContainer::AliEmcalTriggerDecisionContainer():
   TNamed(),
   fContainer()
 {
-  fContainer.SetOwner();
+  fContainer.SetOwner(kTRUE);
 }
 
 AliEmcalTriggerDecisionContainer::AliEmcalTriggerDecisionContainer(const char* name):
   TNamed(name, ""),
   fContainer()
 {
-  fContainer.SetOwner();
+  fContainer.SetOwner(kTRUE);
 }
 
 void AliEmcalTriggerDecisionContainer::Reset() {
-  fContainer.Clear();
+  if(fContainer.GetEntries()) fContainer.Clear();
 }
 
 void AliEmcalTriggerDecisionContainer::AddTriggerDecision(AliEmcalTriggerDecision* const decision) {

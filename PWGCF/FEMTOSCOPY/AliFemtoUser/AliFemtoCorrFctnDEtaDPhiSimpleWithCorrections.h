@@ -19,7 +19,7 @@ class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections : public AliFemtoCorrFctn {
 public:
   enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7, kLambda=8, kLambdaMinus=9};
 
-  AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(char* title, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(const char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(const AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections();
 
@@ -40,7 +40,7 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
-  
+
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
   TH2D *fDPhiDEtaHiddenNumerator;          // Numerator of dEta dPhi function from MC
@@ -63,7 +63,7 @@ private:
 
   TH2D *fDPhiDEtaHiddenSecMatNumeratorData;          // Numerator of dEta dPhi function from MC, secondaries from material, filled with data values
   TH2D *fDPhiDEtaHiddenSecMatDenominatorData;        // Denominator of dEta dPhi function from MC, secondaries from material, filled with data values
-    
+
   double fphiL;
   double fphiT;
 
@@ -71,7 +71,7 @@ private:
   int fPhiBins;
 
   char *ftitle;
-  
+
   ParticleType part1;
   ParticleType part2;
 

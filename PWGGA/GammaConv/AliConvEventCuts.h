@@ -174,6 +174,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16a2a,        //!< anchored LHC15h pass 1
         kLHC16a2b,        //!< anchored LHC15h pass 1
         kLHC16a2c,        //!< anchored LHC15h pass 1
+	kLHC15P2EPos,     //!< anchored LHC15f pass 2
+        kLHC15P2Pyt8,     //!< anchored LHC15[h,i] pass 2	
         kLHC15l1a2,       //!< anchored LHC15n pass 1
         kLHC15l1b2,       //!< anchored LHC15n pass 1
         kLHC15k1a1,       //!< LHC15o low IR firstPhysics
@@ -187,6 +189,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
         kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
         kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
+	kLHC16i1a,        //!< anchored LHC15o pass1 - LF added (multi-)strange 0-10%
+	kLHC16i1b,        //!<                                                  10-50%
+	kLHC16i1c,        //!<                                                  50-90%
+	kLHC16i2a,        //!< anchored LHC15o pass1 - HF added hadronic decays 0-10%
+	kLHC16i2b,        //!<                                                  10-50%
+	kLHC16i2c,        //!<                                                  50-90%
+	kLHC16i3a,        //!< anchored LHC15o pass1 - HF added electron decays 0-10%
+	kLHC16i3b,        //!<                                                  10-50%
+	kLHC16i3c,        //!<                                                  50-90%
         kLHC16h2a,        //!< anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        //!< anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        //!< anchored LHC15o pass1 - jet-jet 50-90%
@@ -200,6 +211,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16k5a,        //!< anchored LHC15n pass3 - general purpose Pythia8
         kLHC16k5b,        //!< anchored LHC15n pass3 - general purpose Pythia6
         kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
+        kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
+        kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
+        kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses  
+
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
 
@@ -216,63 +231,64 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
+        kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8b,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8c,             //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17a3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17a3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17a3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17a3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17a4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17a4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17a4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17a4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17f2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17f2a_fast_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only  2nd cycle
-        kLHC17f2a_cent_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT       2nd cycle
-        kLHC17f2a_cent_woSDD_fix, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD 2nd cycle
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17f2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17g8a_fast,       //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    fast
-        kLHC17g8a_cent_woSDD, //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    CENT woSDD
+        kLHC17g8a,            //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17f3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17f3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17f3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17f3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17f4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17f4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17f4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        
+        //heavy flavour MC pPb k17d2a_fast,
+        kLHC17d2a_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
+        kLHC17d2a_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT 
+        kLHC17d2b_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
+        kLHC17d2b_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT
 
         // 2017
         kLHC17NomB,         //!< pp 13 TeV nominal B field
         kLHC17LowB,         //!< pp 13 TeV low B field
         kLHC17n,            //!< Xe-Xe 5.44 TeV
+	kLHC17p,            //!< pp 5 TeV
+	kLHC17q,            //!< pp 5 TeV
+        kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
+        kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
+	kLHC17l3b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, fast only
+        kLHC17l3b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT
+        kLHC17l3b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT woSDD
+        kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
+	kLHC17l4b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, fast only
+        kLHC17l4b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT
+        kLHC17l4b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT woSDD
+        //13 TeV LHC2017
+        kLHC17k1,               //!LHC17g added dielectrons from HF
+        kLHC17k4,               //!LHC17i
+        kLHC17h11,              //!LHC17j
+        kLHC17h7b,              //!LHC17j
+        kLHC17h7a,              //!LHC17j
+        kLHC17j5a,              //!LHC17k Strangeness enhanced
+        kLHC17j5b,              //!LHC17l Strangeness enhanced
+        kLHC17j5c,              //!LHC17o Strangeness enhanced
+        kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
+        kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
+        kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
 
-        kLHC17j7,           //!< MC for Xe-Xe 5.44 TeV HIJING
-        //
+	//
         kUnknownPeriod//!< kUnknownPeriod
       };
 
@@ -324,6 +340,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetVertexCut(Int_t vertexCut);
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
+      void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
       void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ;
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
@@ -474,7 +491,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
                                       AliMCEvent *mcEvent,
-                                      AliVEvent *event = 0x0);
+                                      AliVEvent *event = 0x0,
+                                      Int_t debug = 0
+                                   );
 
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
@@ -607,6 +626,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
+      TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
       AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
       AliEMCALTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 ///< main trigger patch, will be cached after first call
@@ -633,7 +653,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,39)
+      ClassDef(AliConvEventCuts,42)
       /// \endcond
 };
 

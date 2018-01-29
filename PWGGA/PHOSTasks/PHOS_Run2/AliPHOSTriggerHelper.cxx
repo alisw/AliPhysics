@@ -31,7 +31,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fXmax(3),
   fZmin(-3),
   fZmax(3),
-  fMatchingDeltaR(0.025),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -41,7 +41,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
   
@@ -57,7 +59,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fXmax(3),
   fZmin(-3),
   fZmax(3),
-  fMatchingDeltaR(0.025),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -67,7 +69,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
    
@@ -107,6 +111,64 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
 
 }
 //________________________________________________________________________
+AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0triggerinput, Bool_t isMC):
+  fPHOSGeo(0x0),
+  fXmin(-3),
+  fXmax(3),
+  fZmin(-3),
+  fZmax(3),
+  fMatchingDeltaR(0.020),
+  fEvent(0x0),
+  fESDEvent(0x0),
+  fAODEvent(0x0),
+	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
+	fTriggerInputL0(-1),//9:0PH0
+  fIsMC(kFALSE),
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1),
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
+{
+  //Constructor
+   
+  for(Int_t i=0;i<6;i++){
+    fPHOSTRUBadMap[i] = 0x0;
+  }
+
+  fIsMC = isMC;
+
+  if(L1triggerinput > 0){
+    fTriggerInputL1 = L1triggerinput;
+    fTriggerInputL0 = -1;
+    //STU stores top-left fired channel
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -1;
+    fZmax = 2;
+  }
+  else if(L0triggerinput > 0){
+    fTriggerInputL1 = -1;
+    fTriggerInputL0 = L0triggerinput;
+    //TRU stores bottom-left fired channel.
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -3;
+    fZmax = 0;
+  }
+
+  if(fTriggerInputL1 > 0 && fTriggerInputL0 > 0){
+    AliError("Both L1 and L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
+  }
+
+  if(fTriggerInputL1 < 0 && fTriggerInputL0 < 0){
+    AliError("Neither L1 nor L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
+  }
+
+
+}
+//________________________________________________________________________
 AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 {
 
@@ -119,12 +181,17 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin)
 {
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
   fAODEvent = dynamic_cast<AliAODEvent*>(event);
   Int_t run = fEvent->GetRunNumber();
+
+  if(fIsMC && fDRN > 0){
+    run = fDRN;
+    AliInfo(Form("A dummy run number is set. run number = %d",run));
+  }
 
   if(run<209122) //Run1
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
@@ -207,7 +274,7 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
   }
   else if(fTriggerInputL0 > 0){
-    if(fTriggerInputL0 == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   while(fCaloTrigger->Next()){
@@ -230,7 +297,9 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       if(!cuts->AcceptPhoton(ph)) continue;
-      //if(!ph->IsTOFOK()) continue;
+      if(fApplyTOFCut && !ph->IsTOFOK()) continue;
+
+      if(ph->Energy() < Emin) continue;
 
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
       //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
@@ -455,7 +524,7 @@ Double_t AliPHOSTriggerHelper::GetDistanceToClosestTRUChannel(AliCaloPhoton *ph)
     else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
   }
   else if(fTriggerInputL0 > 0){
-    if(fTriggerInputL0 == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   fCaloTrigger->Reset();

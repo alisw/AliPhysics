@@ -1,5 +1,5 @@
 
-AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP, Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC,Bool_t IsAOD, Bool_t UseTender, Int_t ITSnCut, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
 
   //AliHFEcuts *hfecuts = new AliHFECuts("name", "title");
@@ -24,11 +24,16 @@ AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent
   if (TRDQA) printf("\nPerforming TRDQA");
   task->SetTRDQA(TRDQA);
   if (CorrHadron) printf("\nCorrelating Hadrons");
-  task->SetLPCorrelation(CorrLP);
+  task->SetHadronCorrelation(CorrHadron);
   if (CorrLP) printf("\nCorrelating LP");
+  task->SetLPCorrelation(CorrLP);
+  if (MCTruth) printf("\nCorrelating MCTruh");
+  task->SetMCTruthCorrelation(MCTruth);
 
   task->SetMC(IsMC);
   printf("\nIs MC? %i", IsMC);
+  task->SetAODanalysis(IsAOD);
+  printf("\nIs AOD? %i", IsAOD);
   task->SetTender(UseTender);
   printf("\nUse Tender? %i", UseTender);
  

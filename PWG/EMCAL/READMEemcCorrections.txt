@@ -288,7 +288,10 @@ In the example, any change to ``aMinimumValue`` will be propagated to ``exampleV
 
 ## Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 
-Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration file:
+Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same
+configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that
+each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration
+file:
 
 ~~~
 inputObjects:
@@ -321,9 +324,13 @@ Clusterizer_mySpecialization:
         - anotherClusterContainer
 ~~~
 
-In this example, two clusterizers are configured: ``Clusterizer`` and ``Clusterizer_mySpecializedClusterizer``. Both have the exact same configuration, with the exception that ``Clusterizer`` uses ``defaultCells`` for cells and ``defaultClusterContainer`` for clusters, while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells and ``anotherClusterContainer`` for clusters (note: the cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
+In this example, two clusterizers are configured: ``Clusterizer`` and ``Clusterizer_mySpecializedClusterizer``. Both have the exact same
+configuration, with the exception that ``Clusterizer`` uses ``defaultCells`` for cells and ``defaultClusterContainer`` for clusters,
+while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells and ``anotherClusterContainer`` for clusters (note: the
+cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
 
-To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask to correspond with the specialization suffix that was set in the YAML file. Continuing with the previous example, we would need to add:
+To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask
+to correspond with the specialization suffix that was set in the YAML file. Continuing with the previous example, we would need to add:
 
 ~~~{.cxx}
 // The default argument is an empty string, so we don't have to set it here.
@@ -332,9 +339,69 @@ AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
 AliEmcalCorrectionTask * correctionTaskSpecialized = AddTaskEmcalCorrectionTask("mySpecialization");
 ~~~
 
-Note that in doing this, it is then required that all additional corrections after the first specialized component are also specialized. This is necessary to make the users intentions clear. Continuing with the two clusterizers example, if we then want to run the cluster-track matcher, then we must created both ``ClusterTrackMatcher`` and ``ClusterTrackMatcher_mySpecialization`` with the proper configuration.
+Note that in doing this, it is then required that all additional corrections after the first specialized component are also specialized.
+This is necessary to make the user's intentions clear. Continuing with the two clusterizers example, if we then want to run the cluster-track
+matcher, then we must created both ``ClusterTrackMatcher`` and ``ClusterTrackMatcher_mySpecialization`` with the proper configuration.
 
-It is extremely important to be careful to avoid apply corrections multiple times to the same collections! For instance, if running two clusterizers on the same cells collection, then the cell corrections must be disabled for one of the two corrections! If the above example had used the same cells, then it would have been required to disable them in one correction task (say, the "mySpecialization" task).
+It is extremely important to be careful to avoid apply corrections multiple times to the same collections! For instance, if running two
+clusterizers on the same cells collection, then the cell corrections must be disabled for one of the two corrections! If the above example
+had used the same cells, then it would have been required to disable them in one correction task (say, the "mySpecialization" task).
+Note that the corrections being disabled by default does not automatically avoid this issue! Consider the following __WRONG__ example:
+
+~~~
+CellEnergy:
+    enabled: true
+    cellsNames:
+        - defaultCells
+Clusterizer:
+    enabled: true
+Clusterizer_example1:
+    someSettings: true
+Clusterizer_example2:
+    someSettings: false
+~~~
+
+For specialized tasks "example1" and "example2", the correction chains are the following:
+
+~~~
+CorrectionTask_example1:
+- CellEnergy
+- Clusterizer_example1
+
+CorrectionTask_example2:
+- CellEnergy
+- Clusterizer_example2
+~~~
+
+So now you've applied the Cell Energy correction twice! Instead, your configuration should look like:
+
+~~~
+CellEnergy:
+    enabled: false
+    cellsNames:
+        - defaultCells
+# This will cause the Cell Energy correction to only be performed in the task "example1".
+CellEnergy_example1:
+    enabled: true
+Clusterizer:
+    enabled: true
+    # .. Can include any other settings
+Clusterizer_example1:
+    someSettings: true
+Clusterizer_example2:
+    someSettings: false
+~~~
+
+Now the correction chain will look like as intended:
+
+~~~
+CorrectionTask_example1:
+- CellEnergy
+- Clusterizer_example1
+
+CorrectionTask_example2:
+- Clusterizer_example2
+~~~
 
 # Using the output of the Correction Task                                    {#emcalCorrectionsOutput}
 

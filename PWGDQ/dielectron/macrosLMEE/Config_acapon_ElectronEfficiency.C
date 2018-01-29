@@ -16,16 +16,21 @@ Double_t    rejCutPhiV;
 // eta bins
 const Double_t EtaMin   = -1.;
 const Double_t EtaMax   =  1.;
-const Int_t    nBinsEta = 10; //flexible to rebin
+const Int_t    nBinsEta = 40; //flexible to rebin
 // phi bins
 const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
 const Int_t    nBinsPhi = 60; //flexible to rebin
-const Double_t PtBins[] = {
+
+const Double_t PtBins[] = {0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
+						   0.75, 0.80, 0.85, 0.90, 1.00, 1.10, 1.15, 1.25, 1.35, 1.55, 1.80,
+						   2.05, 2.30, 2.60, 2.90, 3.30, 3.60, 4.00, 5.00, 6.50, 8.00, 10.0};
+//Ivan binning
+/*const Double_t PtBins[] = {
   0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
-  4.00,5.0,6.0,7.0,10.0,20.0
-};
+  4.00,5.0,6.0,7.0,10.0
+};*/
 
 // Bool_t bUseRelPResolution = kTRUE; //not used
 Bool_t bUseEtaResolution = kTRUE; // use eta or theta resolution?
@@ -146,7 +151,7 @@ AliAnalysisCuts* SetupEventCuts()
 }
 
 //________________________________________________________________
-AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
+AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t hasITS = kTRUE)
 {
 	  std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
 	  AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
@@ -160,7 +165,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
    
 	// produce analysis filter by using functions in this config:
 	// -----
-	anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
+	anaFilter->AddCuts( SetupTrackCuts(cutInstance, hasITS) );
 	//anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
 	std::cout << "...cuts added!" <<std::endl; 
 	  
@@ -187,7 +192,7 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 
 
 //________________________________________________________________
-AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
+AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 {
   std::cout << "SetupTrackCuts()" <<std::endl;
   //AliAnalysisCuts* trackCuts=0x0;
@@ -195,8 +200,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
     
     //Cuts implemented in TreeMaker
-	//FilterBit 4 used to filter AODs
-	//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
+		//FilterBit 4 used to filter AODs
+		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
     fesdTrackCuts->SetMinNCrossedRowsTPC(70);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -205,20 +210,20 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     fesdTrackCuts->SetRequireTPCRefit(kTRUE);
     fesdTrackCuts->SetRequireITSRefit(kTRUE);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-	fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+		fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     fesdTrackCuts->SetMaxChi2PerClusterITS(36);
 
-	//Manually set by fitler bit 4
-	////Override setting in TrackCuts2011
+		//Manually set by fitler bit 4
+		////Override setting in TrackCuts2011
     fesdTrackCuts->SetMaxDCAToVertexXY(2.4); 
     fesdTrackCuts->SetMaxDCAToVertexZ(3.2); 
     fesdTrackCuts->SetDCAToVertex2D(kTRUE);
 
-	//Manually implemented track cuts in TreeMaker
-	//General
-	fesdTrackCuts->SetPtRange(0.2, 10);
+		//Manually implemented track cuts in TreeMaker
+		//General
+		fesdTrackCuts->SetPtRange(0.2, 10);
     fesdTrackCuts->SetEtaRange(-0.8, 0.8);
-	fesdTrackCuts->SetMaxDCAToVertexZ(3.0); 
+		fesdTrackCuts->SetMaxDCAToVertexZ(3.0); 
     fesdTrackCuts->SetMaxDCAToVertexXY(1.0);
 
     //TPC
@@ -229,7 +234,12 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     fesdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
     
     //ITS
-    fesdTrackCuts->SetMinNClustersITS(4);
+		if(hasITS){
+			fesdTrackCuts->SetMinNClustersITS(4);
+		}else{
+			fesdTrackCuts->SetMinNClustersITS(4);
+		}
+			
     
 
     //Cuts implemented during analysis step 
@@ -256,7 +266,7 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
   	AliDielectronPID *pid = new AliDielectronPID();
   
 	//The only PID cut applied when creating Trees
-  	pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3, 3, 0, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  	pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4, 4, 0, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
     
   	pidCuts = pid;   
   	return pidCuts;

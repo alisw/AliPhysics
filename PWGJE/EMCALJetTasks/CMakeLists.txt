@@ -133,6 +133,7 @@ set(SRCS
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
+    Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -202,6 +203,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+    UserTasks/AliEmcalJetTaggerTaskFast.cxx
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
     UserTasks/AliAnalysisTaskEmcalJetTree.cxx
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
@@ -231,9 +233,12 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
+	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         UserTasks/AliAnalysisTaskSoftDrop.cxx
+        UserTasks/AliAnalysisTaskSoftDropResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
+				UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

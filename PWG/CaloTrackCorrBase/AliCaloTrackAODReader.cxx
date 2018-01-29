@@ -71,7 +71,7 @@ Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
     }
     else
     {
-      AliWarning(Form("Number of contributors from bad vertex type:: %s",
+      AliDebug(1,Form("Null number of contributors from bad vertex type:: %s",
                       aodevent->GetPrimaryVertex()->GetName()));
       return kFALSE;
     }

@@ -43,7 +43,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -78,7 +77,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -112,7 +110,7 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
     // Handle the "default" value used in MC
-    if (fFilepass == "default") {
+    if (fFilepass == "default" || fFilepass == "usedefault") {
       AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
       fFilepass = "pass1";
     }

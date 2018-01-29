@@ -15,7 +15,7 @@ TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kFALSE; //Needed for LMEEcutlib
-Bool_t isQAtask = kTRUE;
+Bool_t isQAtask =  kFALSE;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
@@ -234,6 +234,11 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
     histos->UserHistogram("Event","ChMultV0","Charged Multiplicity V0;Charged V0M amplitude",1000,-0.5,999.5,AliDielectronVarManager::kVZEROchMult);
     histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",300,-50,250,AliDielectronVarManager::kCentralityNew);
     histos->UserHistogram("Event","CentralityV0Mzoomed","Centrality V0 zoomed;V0M percentile",200,0,2,AliDielectronVarManager::kCentralityNew);
+
+		//-------For spectra scaling
+		histos->UserHistogram("Event","RefMultVsMult","#Charged Tracks Multiplicity (%);Ref. Mult", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult TPC only", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulOvRefMultTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult Over Ref Mult TPC only", 100, 0, 100, 4000, 0, 4000, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultOvRefMultTPConly);
 
 
     //add histograms to Track classes
@@ -464,10 +469,14 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
         //centrality
         histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs",
                               GetVector(kMee), BinsToVector(102,-1,101), 
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality);
+                              AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
         histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
                               GetVector(kPtee), BinsToVector(102,-1,101), 
-                              AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+                              AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
+				histos->UserHistogram("Pair", "InvMass_Centrality_PairPt", ";Inv. Mass [GeV];Centrality;Pair Pt [GeV]",
+                              GetVector(kMee), BinsToVector(102, -1, 101), GetVector(kPtee),
+															AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew, 
+															AliDielectronVarManager::kPt);
     }//End doMixing histograms
 
     //add histograms to Track classes
@@ -589,7 +598,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kM,200,-0.01,3.99); //20Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
   
-  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,5.,10.,20.,30.,50.,80.,100.");
+  cf->AddVariable(AliDielectronVarManager::kCentralityNew,"0.,5.,10.,20.,30.,50.,80.,100.");
   
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,160,0.,8.,kTRUE);

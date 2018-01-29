@@ -196,8 +196,8 @@ public:
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration();
-    void AddStandardCascadeConfiguration();
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE);
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
@@ -414,6 +414,17 @@ private:
     //ChiSquares
     Float_t fTreeCascVarChiSquareV0;
     Float_t fTreeCascVarChiSquareCascade;
+    
+    //Extended information: uncertainties at point closest to pV
+    Float_t fTreeCascVarBachDCAPVSigmaX2; //
+    Float_t fTreeCascVarBachDCAPVSigmaY2; //
+    Float_t fTreeCascVarBachDCAPVSigmaZ2; //
+    Float_t fTreeCascVarPosDCAPVSigmaX2; //
+    Float_t fTreeCascVarPosDCAPVSigmaY2; //
+    Float_t fTreeCascVarPosDCAPVSigmaZ2; //
+    Float_t fTreeCascVarNegDCAPVSigmaX2; //
+    Float_t fTreeCascVarNegDCAPVSigmaY2; //
+    Float_t fTreeCascVarNegDCAPVSigmaZ2; //
 
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218

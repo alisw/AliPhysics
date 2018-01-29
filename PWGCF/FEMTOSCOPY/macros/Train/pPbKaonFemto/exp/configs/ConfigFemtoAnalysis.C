@@ -276,17 +276,17 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis = false) {
 
 
 
-          sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+          //sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
           // sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           // sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
          // sqpcetaphitpc[aniter] = new    AliFemtoShareQualityTPCEntranceSepPairCut();
           //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           //sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
           //sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
-          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-          sqpcetaphitpc[aniter]->SetMaxEEMinv(0.001);
-          sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.033);
-          sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.001); // if 0.0 doesn't work put there 0.001
+          //sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+         // sqpcetaphitpc[aniter]->SetMaxEEMinv(0.001);
+          //sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.033);
+          //sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.001); // if 0.0 doesn't work put there 0.001
 
          // sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.04);
              // sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);

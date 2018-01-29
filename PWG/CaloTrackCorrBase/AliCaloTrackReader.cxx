@@ -102,7 +102,8 @@ fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
-fEMCALClustersListName(""),  fZvtxCut(0.),
+fEMCALClustersListName(""),  fEMCALCellsListName(""),  
+fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
@@ -120,6 +121,8 @@ fUseEventsWithPrimaryVertex(kFALSE),
 fTimeStampEventSelect(0),
 fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
+fTimeStampEventCTPBCCorrExclude(0),
+fTimeStampEventCTPBCCorrMin(0), fTimeStampEventCTPBCCorrMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
 fUseAliCentrality(0),        fCentralityClass(""),            fCentralityOpt(0),
@@ -1115,6 +1118,9 @@ void AliCaloTrackReader::InitParameters()
   fTimeStampEventFracMin = -1;
   fTimeStampEventFracMax = 2;
   
+  fTimeStampEventCTPBCCorrMin = -1;
+  fTimeStampEventCTPBCCorrMax = 1e12;
+  
   for(Int_t i = 0; i < 19; i++)
   {
     fEMCalBCEvent   [i] = 0;
@@ -1290,24 +1296,36 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // Event rejection depending on time stamp
   //------------------------------------------------------
   
-  if(fDataType==kESD && fTimeStampEventSelect)
+  if ( fTimeStampEventSelect )
   {
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-    if(esd)
-    {
-      Int_t timeStamp = esd->GetTimeStamp();
-      Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
-      
-      //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
-      
-      if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
-    }
+    Int_t timeStamp = fInputEvent->GetTimeStamp();
+    Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
+    
+    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
+    
+    if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
     
     AliDebug(1,"Pass Time Stamp rejection");
     
     fhNEventsAfterCut->Fill(8.5);
   }
 
+  if(fDataType==kESD && fTimeStampEventCTPBCCorrExclude)
+  {
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(esd)
+    {
+      Int_t timeStamp = esd->GetTimeStampCTPBCCorr();
+      
+      if(timeStamp > fTimeStampEventCTPBCCorrMin && timeStamp <= fTimeStampEventCTPBCCorrMax) return kFALSE;
+    }
+    
+    AliDebug(1,"Pass Time Stamp CTPBCCorr rejection");
+    
+    fhNEventsAfterCut->Fill(8.5);
+  }
+
+  
   //------------------------------------------------------
   // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
@@ -2403,7 +2421,10 @@ void AliCaloTrackReader::FillInputPHOS()
 //____________________________________________
 void AliCaloTrackReader::FillInputEMCALCells()
 {  
-  fEMCALCells = fInputEvent->GetEMCALCells();
+  if(fEMCALCellsListName.Length() == 0)
+    fEMCALCells = fInputEvent->GetEMCALCells();
+  else
+    fEMCALCells = (AliVCaloCells*) fInputEvent->FindListObject(fEMCALCellsListName);
 }
 
 //___________________________________________

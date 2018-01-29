@@ -70,6 +70,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentMin(0),
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -115,6 +116,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentMin(0),
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -185,12 +187,16 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
+  fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi", 100, 0, 2*TMath::Pi());
+  fOutput->Add(fhTrackPhi);
 
+
+  
    //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {50,50,20,3};
-   const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
-   const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
+   const Int_t dimSpec   = 5;
+   const Int_t nBinsSpec[5]     = {50,50,10,3,10};
+   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
+   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -222,7 +228,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "mJet";
+  fShapesVarNames[3] = "phiJet";
   // fShapesVarNames[4] = "nbOfConst";
   fShapesVarNames[4] = "angularity";
   //fShapesVarNames[5] = "circularity";
@@ -231,7 +237,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   fShapesVarNames[6] = "ptJetMatch"; 
   fShapesVarNames[7] = "ptDJetMatch"; 
-  fShapesVarNames[8] = "mJetMatch";
+  fShapesVarNames[8] = "phiJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
   fShapesVarNames[9] = "angularityMatch";
   //fShapesVarNames[12] = "circularityMatch";
@@ -273,16 +279,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   if (fCentSelectOn)
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   
-  AliAODTrack *triggerHadron = 0x0;
+    AliAODTrack *triggerHadron = 0x0;
   
-  if (fJetSelection == kRecoil) {
-    //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
-    Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
-     
-    
-    if (triggerHadronLabel==-99999) {
-      //Printf ("Trigger Hadron not found, return");
-      return 0;}
 
     AliTrackContainer *PartCont =NULL;
     AliParticleContainer *PartContMC=NULL;
@@ -299,13 +297,27 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
     TClonesArray *TrackArrayMC = NULL;
     if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
     else TrackArray = PartCont->GetArray();    
-    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
-    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
-
-
-
-
     
+    Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) NTracks = TrackArrayMC->GetEntriesFast();
+  else NTracks = TrackArray->GetEntriesFast(); 
+
+
+
+
+  if (fJetSelection == kRecoil) {
+    //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
+    Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
+
+   
+    if (triggerHadronLabel==-99999) {
+      //Printf ("Trigger Hadron not found, return");
+      return 0;}
+
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
+    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
+ 
+    /////////    
     if (!triggerHadron) {
       //Printf("No Trigger hadron with the found label!!");
       return 0;
@@ -316,10 +328,35 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-fangWindowRecoil){
         return 0;}
     }
-   
+
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
+    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
     fhPt->Fill(triggerHadron->Pt());
 
   }
+  
+
+      //here check tracks//
+      AliAODTrack *Track = 0x0;
+     for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	fhTrackPhi->Fill(Track->Phi());
+      }
+    }
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	fhTrackPhi->Fill(Track->Phi());
+      }
+    } 
+  }
+
   
   
   AliParticleContainer *partContAn = GetParticleContainer(0);
@@ -527,7 +564,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] = GetJetMass(jet1,0);
+      fShapesVar[3] =jet1->Phi();
+      if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
+	//GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
       //fShapesVar[5] = GetJetCircularity(jet1,0);
       fShapesVar[5] = GetJetLeSub(jet1,0);
@@ -545,7 +584,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
          ptMatch=jet3->Pt();
          ptDMatch=GetJetpTD(jet3, kMatched);
-         massMatch=GetJetMass(jet3,kMatched);
+         massMatch=jet3->Phi();
+	 // GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
 	 //circMatch=GetJetCircularity(jet3, kMatched);
@@ -559,7 +599,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=GetJetMass(jet3,kMatched);
+        massMatch=jet3->Phi();
+	//GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
 	// circMatch=GetJetCircularity(jet3, kMatched);
@@ -1042,7 +1083,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
  
   
-  TList *trackList = new TList();
+  TList trackList;
   Int_t triggers[100];
   for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
   Int_t iTT = 0;
@@ -1078,8 +1119,8 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
   if (iTT == 0) return -99999;
   Int_t nbRn = 0, index = 0 ; 
-  TRandom3* random = new TRandom3(0); 
-  nbRn = random->Integer(iTT);
+  TRandom3 random(0); 
+  nbRn = random.Integer(iTT);
   index = triggers[nbRn];
   //Printf("iTT Total= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
   return index; 
@@ -1139,14 +1180,15 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-   
+   double ndepth=0;
     while(jj.has_parents(j1,j2)){
+      ndepth=ndepth+1;
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
-    Double_t LundEntries[4] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo};  
+    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
     fHLundIterative->Fill(LundEntries);
     jj=j1;} 
 

@@ -58,6 +58,10 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   /// True if the task should be disabled for the fast parititon
   void                    SetDisableFastPartition(Bool_t b = kTRUE)  { fDisableFastPartition = b; }
   Bool_t                  GetDisableFastPartition() const            { return fDisableFastPartition; }
+  /// Require jet to be matched when embedding
+  Bool_t                  GetRequireMatchedJetWhenEmbedding() const   { return fRequireMatchedJetWhenEmbedding; }
+  void                    SetRequireMatchedJetWhenEmbedding(Bool_t b) { fRequireMatchedJetWhenEmbedding = b; }
+
   // Mixed events
   virtual void            SetEventMixing(Bool_t enable)              { fDoEventMixing = enable;}
   virtual void            SetNumberOfMixingTracks(Int_t tracks)      { fNMixingTracks = tracks; }
@@ -118,7 +122,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
     const double jetConstituentPtCut = 3,
     const double trackEta = 0.8,
     const double jetRadius = 0.2,
-    const std::string & jetTag = "hybridJets");
+    const std::string & jetTag = "hybridJets",
+    const std::string & correlationsTracksCutsPeriod = "lhc11a");
 
  protected:
 
@@ -187,6 +192,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Histogram binning variables
   Bool_t                 fDoLessSparseAxes;        ///< True if there should be fewer THnSparse axes
   Bool_t                 fDoWiderTrackBin;         ///< True if the track pt bins in the THnSparse should be wider
+  Bool_t                 fRequireMatchedJetWhenEmbedding; ///< True if jets are required to be matched (ie. jet->MatchedJet() != nullptr)
 
   // TODO: Consider moving to THistManager
   TH1                   *fHistTrackPt;             //!<! Track pt spectrum
@@ -219,7 +225,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 12);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 13);
   /// \endcond
 };
 #endif

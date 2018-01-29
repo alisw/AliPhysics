@@ -70,6 +70,15 @@ public:
   void Reset();
 
   /**
+   * @brief Clear function of the trigger decision container
+   * 
+   * Overwriting the Clear function preventing to reset the name.
+   * Onlu clearing the trigger decision objects content.
+   * @param option Not used
+   */
+  virtual void Clear(Option_t *option="") { Reset(); }
+
+  /**
    * @brief Add trigger decision to the container
    *
    * @param[in] decision Trigger decision, created by the trigger selection task

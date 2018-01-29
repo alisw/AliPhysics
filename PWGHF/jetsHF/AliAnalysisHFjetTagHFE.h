@@ -52,6 +52,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliMultSelection *fMultSelection;
   TClonesArray  *ftrack;
   TClonesArray  *fCaloClusters;
+  AliAODMCHeader *fMCheader; 
   AliPIDResponse *fpidResponse; //!pid response
 
     Float_t fcentMim; // mim. centrality
@@ -81,6 +82,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistTPCnSigma;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
+  TH2F                        *fHistEopHad;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
@@ -109,16 +111,19 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetParticle;
   TH1F                        *fQAHistJetPhi;
   TH1F                        *fQAHistTrPhiJet;
+  TH1F                        *fQAHistTrPhi;
+  TH1F                        *fQAHistNits;
+  TH2F                        *fQAHistEleDCAxy;
+  TH2F                        *fQAHistEleDCAz;
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
-  TH1F                        *fQAHistTrPhi;
 
 
   AliJetContainer            *fJetsCont;                   //!Jets
+  AliJetContainer            *fJetsContPart;                   //!Jets particle
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
-  AliJetContainer            *fJetsContPart;                   //!Jets particle
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);

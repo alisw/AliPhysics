@@ -45,6 +45,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     cutV = 10.0,
  Int_t       evtCutSetID = 1,
  Bool_t      isGT = 0,
+ Int_t       customQualityCutsID=1,
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  Bool_t      enableSys = kFALSE,
@@ -58,13 +60,14 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     massTolVeto = 0.004,//here
  Float_t     pLife = 20,  
  Float_t     radiuslow = 0.5,
- Float_t     radiushigh = 200,    
+ Float_t     radiushigh = 100,    
  Float_t     MinDCAXY = 0.15,
  Bool_t      Switch = kFALSE,//here
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
+ Float_t     MinRatio = 0.8,
  Float_t     maxDiffVzMix = 1.0,
  Float_t     maxDiffMultMix = 10.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
@@ -118,12 +121,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
    //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);                   
-   //   task->SelectCollisionCandidates(triggerMask);                                                                       
-   
-   if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
-
-
+   task->UseESDTriggerMask(triggerMask);   
+   //task->SelectCollisionCandidates(triggerMask);                                                                       
    
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -195,6 +194,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
 
      task->SetEventCuts(eventCuts);
    }
+
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                       
    //vertex                                                                                                                                
    Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
@@ -246,7 +246,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC,isGT, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix,triggerMask)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC,isGT,customQualityCutsID, cutPiCandidate, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster,MinRatio, "", PairCutsSame,PairCutsMix,triggerMask)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

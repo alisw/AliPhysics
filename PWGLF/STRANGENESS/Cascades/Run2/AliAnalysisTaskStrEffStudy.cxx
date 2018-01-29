@@ -203,6 +203,7 @@ fTreeVariableNegSigmaZ2(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableOTFV0(0x0),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -300,6 +301,7 @@ fTreeCascVarBachPzMC(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarOTFV0(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -424,6 +426,7 @@ fTreeVariableNegSigmaZ2(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableOTFV0(0x0),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -515,6 +518,7 @@ fTreeCascVarBachPzMC(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarOTFV0(0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -707,6 +711,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     if(fkSandboxV0){
         fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
         fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
+        fTreeV0->Branch("fTreeVariableOTFV0", &fTreeVariableOTFV0,16000,99);
         fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
         fTreeV0->Branch("fTreeVariablePosOriginalX",&fTreeVariablePosOriginalX,"fTreeVariablePosOriginalX/F");
         fTreeV0->Branch("fTreeVariableNegOriginalX",&fTreeVariableNegOriginalX,"fTreeVariableNegOriginalX/F");
@@ -815,6 +820,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
+        fTreeCascade->Branch("fTreeCascVarOTFV0", &fTreeCascVarOTFV0,16000,99);
         
         //for sandbox mode
         fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
@@ -1343,6 +1349,38 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableNegTrack = pointnt;
         fTreeVariablePosTrack = pointpt;
         
+        //=================================================================================
+        //OTF loop: try to find equivalent OTF V0, store empty object if not found
+        fTreeVariableOTFV0 = 0x0;
+        
+        //lNegTrackArray[iV0], lPosTrackArray[iV0]
+        Int_t nv0s = lESDevent->GetNumberOfV0s();
+        
+        Bool_t lFoundOTF = kFALSE;
+        
+        for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
+            AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
+            if (!v0) continue;
+            
+            if (v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lPosTrackArray[iV0] && v0->GetNindex() == lNegTrackArray[iV0] ) ||
+                 (v0->GetNindex() == lPosTrackArray[iV0] && v0->GetPindex() == lNegTrackArray[iV0] )
+                 )
+                ){
+                //Found corresponding OTF V0! Save it to TTree, please
+                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
+                fTreeVariableOTFV0 = lPointerToV0ToStore;
+                lFoundOTF = kTRUE;
+                break; //stop looking
+            }
+        }
+        if( !lFoundOTF ) {
+            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+            fTreeVariableOTFV0 = lPointerToV0ToStore;
+        }
+        //=================================================================================
+        
         //Tag OK V0s (will probably tag >99%? will still have to be studied!)
         if ( fTreeVariableNegPropagStatus == kTRUE &&
             fTreeVariablePosPropagStatus == kTRUE )
@@ -1535,6 +1573,39 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDtrack *esdTrackPos  = lESDevent->GetTrack( lCascPosTrackArray[iCasc] );
         AliESDtrack *esdTrackNeg  = lESDevent->GetTrack( lCascNegTrackArray[iCasc] );
         AliESDtrack *esdTrackBach = lESDevent->GetTrack( lCascBachTrackArray[iCasc] );
+        
+        //=================================================================================
+        //OTF loop: try to find equivalent OTF V0, store empty object if not found
+        fTreeCascVarOTFV0 = 0x0;
+        
+        //lNegTrackArray[iV0], lPosTrackArray[iV0]
+        Int_t nv0s = lESDevent->GetNumberOfV0s();
+        
+        Bool_t lFoundOTF = kFALSE;
+        
+        for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
+            AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
+            if (!v0) continue;
+            
+            if ( v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascNegTrackArray[iCasc] ) ||
+                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                 )
+                ){
+                //Found corresponding OTF V0! Save it to TTree, please
+                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
+                fTreeCascVarOTFV0 = lPointerToV0ToStore;
+                lFoundOTF = kTRUE;
+                break; //stop looking
+            }
+        }
+        if( !lFoundOTF ) {
+            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+            fTreeCascVarOTFV0 = lPointerToV0ToStore;
+        }
+        //=================================================================================
+        
         
         //get original X values (sandbox mode)
         fTreeCascVarBachOriginalX = esdTrackBach->GetX();

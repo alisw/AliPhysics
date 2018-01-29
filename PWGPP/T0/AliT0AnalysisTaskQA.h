@@ -42,13 +42,14 @@ class AliT0AnalysisTaskQA : public AliAnalysisTaskSE {
   TH2F        *fT0vsNtracks; //! T0A vs Ntracks
   TH2F        *fT0TimevsT0Tof; //! T0 time vs T0 TOF time 
   TH1F        *f0TVX; //! 0TVX position
-
+  TH1I        *fTriggerCounter; //! number of events satisfying CINT7-B, OTVX-B etc
+  
+  
   AliESDpid* fESDpid;  //! esd pid 
- 
   AliT0AnalysisTaskQA(const AliT0AnalysisTaskQA&); // not implemented
   AliT0AnalysisTaskQA& operator=(const AliT0AnalysisTaskQA&); // not implemented
   
-  ClassDef(AliT0AnalysisTaskQA, 3); // example of analysis
+  ClassDef(AliT0AnalysisTaskQA, 4); // example of analysis
 };
 
 #endif

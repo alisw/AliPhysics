@@ -886,8 +886,16 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     
     //Create input variables in AliMultInput Class
     //V0 related
-    AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
-    AliMultVariable *fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
+    AliMultVariable *fAmplitude_V0A         = new AliMultVariable("fAmplitude_V0A");
+    AliMultVariable *fAmplitude_V0A1        = new AliMultVariable("fAmplitude_V0A1");
+    AliMultVariable *fAmplitude_V0A2        = new AliMultVariable("fAmplitude_V0A2");
+    AliMultVariable *fAmplitude_V0A3        = new AliMultVariable("fAmplitude_V0A3");
+    AliMultVariable *fAmplitude_V0A4        = new AliMultVariable("fAmplitude_V0A4");
+    AliMultVariable *fAmplitude_V0C         = new AliMultVariable("fAmplitude_V0C");
+    AliMultVariable *fAmplitude_V0C1        = new AliMultVariable("fAmplitude_V0C1");
+    AliMultVariable *fAmplitude_V0C2        = new AliMultVariable("fAmplitude_V0C2");
+    AliMultVariable *fAmplitude_V0C3        = new AliMultVariable("fAmplitude_V0C3");
+    AliMultVariable *fAmplitude_V0C4        = new AliMultVariable("fAmplitude_V0C4");
     AliMultVariable *fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
     AliMultVariable *fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
     AliMultVariable *fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
@@ -940,7 +948,15 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
+    fInput->AddVariable( fAmplitude_V0A1 );
+    fInput->AddVariable( fAmplitude_V0A2 );
+    fInput->AddVariable( fAmplitude_V0A3 );
+    fInput->AddVariable( fAmplitude_V0A4 );
     fInput->AddVariable( fAmplitude_V0C );
+    fInput->AddVariable( fAmplitude_V0C1 );
+    fInput->AddVariable( fAmplitude_V0C2 );
+    fInput->AddVariable( fAmplitude_V0C3 );
+    fInput->AddVariable( fAmplitude_V0C4 );
     fInput->AddVariable( fAmplitude_V0Apartial );
     fInput->AddVariable( fAmplitude_V0Cpartial );
     fInput->AddVariable( fAmplitude_V0AEq );

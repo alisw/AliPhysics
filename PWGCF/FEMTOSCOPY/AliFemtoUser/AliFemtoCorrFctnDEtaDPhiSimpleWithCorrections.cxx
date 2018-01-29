@@ -12,15 +12,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(const char* title, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
@@ -37,7 +37,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fDPhiDEtaHiddenSecWeakNumeratorData(0),
   fDPhiDEtaHiddenSecWeakDenominatorData(0),
   fDPhiDEtaHiddenSecMatNumeratorData(0),
-  fDPhiDEtaHiddenSecMatDenominatorData(0),  
+  fDPhiDEtaHiddenSecMatDenominatorData(0),
   fphiL(0),
   fphiT(0),
   fEtaBins(0),
@@ -51,7 +51,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
 
   fEtaBins = aEtaBins;
   fPhiBins = aPhiBins;
-  
+
   ftitle = new char[100];
   strcpy(ftitle,title);
 
@@ -65,12 +65,12 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
 
-  
+
   // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
 
- 
+
 
 
 }
@@ -93,7 +93,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fDPhiDEtaHiddenSecWeakNumeratorData(0),
   fDPhiDEtaHiddenSecWeakDenominatorData(0),
   fDPhiDEtaHiddenSecMatNumeratorData(0),
-  fDPhiDEtaHiddenSecMatDenominatorData(0),  
+  fDPhiDEtaHiddenSecMatDenominatorData(0),
   fphiL(0),
   fphiT(0),
   fEtaBins(0),
@@ -103,11 +103,11 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
 {
   fEtaBins = aCorrFctn.fEtaBins;
   fPhiBins = aCorrFctn.fPhiBins;
-  
+
   ftitle = new char[100];
   strncat(ftitle,aCorrFctn.ftitle,100);
 
-  
+
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
     fDPhiDEtaNumerator = new TH2D(*aCorrFctn.fDPhiDEtaNumerator);
@@ -121,7 +121,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fReadHiddenInfo = aCorrFctn.fReadHiddenInfo;
   if(fReadHiddenInfo)
     {
- 
+
       if (aCorrFctn.fDPhiDEtaHiddenNumerator)
 	fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
       else
@@ -191,7 +191,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
       else
 	fDPhiDEtaHiddenSecMatDenominatorData = 0;
     }
-  
+
 
 
 }
@@ -219,8 +219,8 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::~AliFemtoCorrFctnDEtaDPhiSimpleWi
       delete fDPhiDEtaHiddenSecMatNumeratorData;
       delete fDPhiDEtaHiddenSecMatDenominatorData;
     }
-    
-  
+
+
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::operator=(const AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& aCorrFctn)
@@ -231,7 +231,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWit
 
   fEtaBins = aCorrFctn.fEtaBins;
   fPhiBins = aCorrFctn.fPhiBins;
-  
+
   ftitle = new char[100];
   strncat(ftitle,aCorrFctn.ftitle,100);
 
@@ -267,8 +267,8 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWit
 	fDPhiDEtaHiddenPrimaryDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator);
       else
 	fDPhiDEtaHiddenPrimaryDenominator = 0;
-  
-  
+
+
       if (aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator)
 	fDPhiDEtaHiddenSecWeakNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator);
       else
@@ -321,8 +321,8 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWit
 
     }
 
-  
-    
+
+
 
   return *this;
 }
@@ -386,7 +386,7 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::Report(){
       snprintf(ctemp , 100, "Number of entries in hidden second. material denominator data:\t%E\n",fDPhiDEtaHiddenSecMatDenominatorData->GetEntries());
       stemp += ctemp;
     }
-  
+
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;
   return returnThis;
@@ -411,27 +411,27 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
   float weight = 1;
 
   if(pair->Track1()->Track()){
-    if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
-    else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
+    if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();
+    else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();
     else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();
-    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();  
-    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();  
-    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();  
-    else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
+    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();
+    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();
+    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();
+    else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();
   }
   if(pair->Track1()->V0()){
     if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
-    if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();  
+    if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();
   }
 
   if(pair->Track2()->Track()){
-    if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
-    else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();  
+    if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();
+    else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();
     else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();
-    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();  
-    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();  
-    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();  
-    else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
+    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();
+    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();
+    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();
+    else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();
   }
   if(pair->Track2()->V0()){
     if(part2==kLambda)
@@ -442,7 +442,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 
   fDPhiDEtaNumerator->Fill(dphi, deta, weight);
 
- 
+
 
   if(fReadHiddenInfo)
     {
@@ -470,7 +470,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 	{
 	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
 	  AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum();
-   
+
 	  double hphi1 = v1->Phi();
 	  double hphi2 = v2->Phi();
 	  double heta1 = v1->PseudoRapidity();
@@ -499,10 +499,10 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 	      fDPhiDEtaHiddenSecMatNumerator->Fill(dhphi,dheta,weight);
 	      fDPhiDEtaHiddenSecMatNumeratorData->Fill(dphi,deta,weight);
 	    }
-	  
+
 	}
     }
-  
+
 
 }
 //____________________________
@@ -525,27 +525,27 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
   float weight = 1;
 
   if(pair->Track1()->Track()){
-    if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
-    else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
+    if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();
+    else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();
     else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();
-    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();  
-    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();  
-    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();  
-    else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
+    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();
+    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();
+    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();
+    else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();
    }
   if(pair->Track1()->V0()){
     if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
-    else if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();  
+    else if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();
   }
 
   if(pair->Track2()->Track()){
-    if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
-    else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();  
+    if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();
+    else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();
     else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();
-    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();  
-    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();  
-    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();  
-    else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
+    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();
+    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();
+    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();
+    else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();
    }
   if(pair->Track2()->V0()){
     if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();
@@ -577,13 +577,13 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
 	}
 
- 
+
       if(hInfo1 && hInfo2)
 	{
 	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
-	  AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum(); 
+	  AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum();
 
-      
+
 	  double hphi1 = v1->Phi();
 	  double hphi2 = v2->Phi();
 	  double heta1 = v1->PseudoRapidity();
@@ -594,9 +594,9 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	  while (dhphi<fphiL) dhphi+=PIT;
 	  while (dhphi>fphiT) dhphi-=PIT;
 
-	  double dheta = heta1 - heta2;      
+	  double dheta = heta1 - heta2;
 
-	  
+
 	  fDPhiDEtaHiddenDenominator->Fill(dhphi, dheta,weight);
 	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
 	    {
@@ -614,10 +614,10 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	      fDPhiDEtaHiddenSecMatDenominator->Fill(dphi,deta,weight);
 	    }
 
-	  
+
 	}
     }
-  
+
 
 }
 
@@ -631,7 +631,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::WriteHistos()
     {
       fDPhiDEtaHiddenNumerator->Write();
       fDPhiDEtaHiddenDenominator->Write();
-      
+
       fDPhiDEtaHiddenPrimaryNumerator->Write();
       fDPhiDEtaHiddenPrimaryDenominator->Write();
 
@@ -667,19 +667,19 @@ TList* AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::GetOutputList()
 
       tOutputList->Add(fDPhiDEtaHiddenPrimaryNumerator);
       tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominator);
-      
+
       tOutputList->Add(fDPhiDEtaHiddenSecWeakNumerator);
       tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominator);
-      
+
       tOutputList->Add(fDPhiDEtaHiddenSecMatNumerator);
       tOutputList->Add(fDPhiDEtaHiddenSecMatDenominator);
 
       tOutputList->Add(fDPhiDEtaHiddenPrimaryNumeratorData);
       tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominatorData);
-      
+
       tOutputList->Add(fDPhiDEtaHiddenSecWeakNumeratorData);
       tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominatorData);
-      
+
       tOutputList->Add(fDPhiDEtaHiddenSecMatNumeratorData);
       tOutputList->Add(fDPhiDEtaHiddenSecMatDenominatorData);
     }
@@ -795,5 +795,5 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::SetReadHiddenInfo(bool read)
   fDPhiDEtaHiddenSecWeakDenominatorData->Sumw2();
   fDPhiDEtaHiddenSecMatNumeratorData->Sumw2();
   fDPhiDEtaHiddenSecMatDenominatorData->Sumw2();
-  
+
 }

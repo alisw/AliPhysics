@@ -84,4 +84,5 @@
 
 #pragma link C++ class AliMuonTrackSmearing+;
 #pragma link C++ class AliTaskMuonTrackSmearing+;
+#pragma link C++ class AliTaskMuonTrackSmearingQA+;
 #endif

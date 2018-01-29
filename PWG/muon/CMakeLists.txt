@@ -103,6 +103,7 @@ set(SRCS
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
   AliTaskMuonTrackSmearing.cxx
+  AliTaskMuonTrackSmearingQA.cxx
   AliUtilityDimuonSource.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx
