@@ -11,7 +11,8 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
 							 Int_t SPDreq=4,
 							 Bool_t useCutGeoNcrNcl=kFALSE,
 							 Bool_t fillexpertSparse=kFALSE,
-							 Bool_t usetriggersel=kFALSE)
+							 Bool_t usetriggersel=kFALSE,
+							 Int_t species=-1)
 {
  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -37,6 +38,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
   d0ResTask->SetMultiplicityRange(minmult,maxmult);
   d0ResTask->SetFillSparseForExpert(fillexpertSparse);
   d0ResTask->SetUsePtWeights(0,1.);
+  d0ResTask->SetParticleSpecies(species);
   if(usetriggersel){
     d0ResTask->SetUseTriggerSelection(usetriggersel);
     d0ResTask->SetTriggerClass("");
