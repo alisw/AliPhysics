@@ -19,14 +19,9 @@ TLorentzVector AliPP13PhysPhotonSelectionMC::ClusterMomentum(const AliVCluster *
 
     TLorentzVector p;
     c1->GetMomentum(p, eflags.vtxBest);
-    p *= Nonlinearity(energy);
+    p *= fWeights->Nonlinearity(energy);
 	return p;
 }
 
-//________________________________________________________________
-Float_t AliPP13PhysPhotonSelectionMC::Nonlinearity(Float_t x) const
-{
-	return fGlobalEnergyScale * (1. + fNonA * TMath::Exp(-x / 2. * x / fNonSigma / fNonSigma));
-}
 
 
