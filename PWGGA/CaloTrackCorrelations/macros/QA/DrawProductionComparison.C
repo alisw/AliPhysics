@@ -91,7 +91,8 @@ Bool_t    GetFileAndList(TString fileName, TString listName, TString trigName);
 /// productions name used in legends
 //TString      prodLeg[] = {"DCA off - PID off","DCA on - PID off","DCA off - PID on","DCA on - PID on"};
 
-TString      prod   [] = {"LHC17l3b_fast","LHC17l4b_fast"}; 
+//TString      prod   [] = {"LHC17l3b_fast","LHC17l4b_fast"}; 
+TString      prod   [] = {"LHC17l3b_fast_TM","LHC17l4b_fast_TM"}; 
 TString      prodLeg[] = {"Geant3, b FAST","Geant4, b FAST"}; 
 
 //TString      prod   [] = {"LHC17l3b_cent","LHC17l4b_cent"}; 
@@ -182,9 +183,10 @@ void ProcessTrigger(TString trigName, TString fileName, TString listName)
   
   histoTag = trigName;
   
-  // Plot basic  Global event and Track QA
+  // Plot basic Track QA
   TrackQA();
-  
+
+  // Plot basic Global event QAs
   VertexQA();
   
   CentralityQA();
@@ -193,7 +195,7 @@ void ProcessTrigger(TString trigName, TString fileName, TString listName)
   {
     if(trigName.Contains("default")) histoTag=Form("%s_%s",caloString[icalo].Data(),trigName.Data());
     
-    // Plot basic QA
+    // Plot basic calorimeter QA
     CaloQA(icalo);
       
     // Plot clusters Origin QA, only MC
@@ -270,7 +272,7 @@ void CaloQA(Int_t icalo)
   TH1F* hRatTrackMatchResPhiPosTrackPt[nProd-1];
   
   //Legend for productions
-  TLegend lprod(0.6,0.475,0.95,0.675);
+  TLegend lprod(0.65,0.475,0.95,0.675);
   lprod.SetTextSize(0.04);
   lprod.SetBorderSize(0);
   lprod.SetFillColor(0);
@@ -402,7 +404,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiNeg[iprod]->SetXTitle("#Delta #varphi");
     hTrackMatchResPhiNeg[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
     hTrackMatchResPhiNeg[iprod]->SetYTitle("entries / N events");
-    hTrackMatchResPhiNeg[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiNeg[iprod]->SetAxisRange(-0.035,0.035,"X");
     hTrackMatchResPhiNeg[iprod]->Sumw2();
     hTrackMatchResPhiNeg[iprod]->SetMarkerStyle(24);
     hTrackMatchResPhiNeg[iprod]->SetMarkerColor(color[iprod]);
@@ -411,7 +413,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiPos[iprod]->SetYTitle("Entries / N events");
     hTrackMatchResPhiPos[iprod]->SetXTitle("#Delta #varphi");
     hTrackMatchResPhiPos[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
-    hTrackMatchResPhiPos[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiPos[iprod]->SetAxisRange(-0.035,0.035,"X");
     hTrackMatchResPhiPos[iprod]->SetMarkerStyle(25);
     hTrackMatchResPhiPos[iprod]->SetMarkerColor(color[iprod]);
     
@@ -485,7 +487,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiNegTrackPt[iprod]->SetXTitle("#Delta #varphi");
     hTrackMatchResPhiNegTrackPt[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
     hTrackMatchResPhiNegTrackPt[iprod]->SetYTitle("entries / N events");
-    hTrackMatchResPhiNegTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiNegTrackPt[iprod]->SetAxisRange(-0.035,0.035,"X");
     hTrackMatchResPhiNegTrackPt[iprod]->Sumw2();
     hTrackMatchResPhiNegTrackPt[iprod]->SetMarkerStyle(24);
     hTrackMatchResPhiNegTrackPt[iprod]->SetMarkerColor(color[iprod]);
@@ -494,7 +496,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiPosTrackPt[iprod]->SetYTitle("Entries / N events");
     hTrackMatchResPhiPosTrackPt[iprod]->SetXTitle("#Delta #varphi");
     hTrackMatchResPhiPosTrackPt[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
-    hTrackMatchResPhiPosTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiPosTrackPt[iprod]->SetAxisRange(-0.035,0.035,"X");
     hTrackMatchResPhiPosTrackPt[iprod]->SetMarkerStyle(25);
     hTrackMatchResPhiPosTrackPt[iprod]->SetMarkerColor(color[iprod]);
     
@@ -599,8 +601,6 @@ void CaloQA(Int_t icalo)
   // Cluster-Track Matching Residual
   {
     TGaxis::SetMaxDigits(3);
-
-    TLine l0Eta(0,hTrackMatchResEtaNeg[0]->GetMinimum(),0,hTrackMatchResEtaNeg[0]->GetMaximum());
     
     TLegend lres(0.6,0.75,0.84,0.89);
     lres.SetTextSize(0.04);
@@ -616,7 +616,10 @@ void CaloQA(Int_t icalo)
     ccalo2->cd(1);
     //gPad->SetLogy();
     
-    hTrackMatchResEtaPos[0]->SetMaximum(hTrackMatchResEtaPos[0]->GetMaximum()*1.3);
+    Double_t max = hTrackMatchResEtaPos[0]->GetMaximum();
+    if(max < hTrackMatchResEtaNeg[0]->GetMaximum()) max = hTrackMatchResEtaNeg[0]->GetMaximum();
+    
+    hTrackMatchResEtaPos[0]->SetMaximum(max*1.2);
     
     hTrackMatchResEtaPos[0]->Draw("");
     for(Int_t iprod = 0; iprod < nProd; iprod++)
@@ -625,6 +628,7 @@ void CaloQA(Int_t icalo)
       hTrackMatchResEtaPos[iprod]->Draw("same");
     }
     
+    TLine l0Eta(0,hTrackMatchResEtaPos[0]->GetMinimum(),0,hTrackMatchResEtaPos[0]->GetMaximum());
     l0Eta.SetLineColor(2);
     l0Eta.SetLineWidth(2);
     l0Eta.Draw("same");
@@ -633,6 +637,11 @@ void CaloQA(Int_t icalo)
     lprod.Draw();
     ccalo2->cd(2);
     
+    max = hTrackMatchResPhiPos[0]->GetMaximum();
+    if(max < hTrackMatchResPhiNeg[0]->GetMaximum()) max = hTrackMatchResPhiNeg[0]->GetMaximum();
+    
+    hTrackMatchResPhiPos[0]->SetMaximum(max*1.2);
+    
     hTrackMatchResPhiPos[0]->Draw("");
     for(Int_t iprod = 0; iprod < nProd; iprod++)
     {
@@ -640,7 +649,7 @@ void CaloQA(Int_t icalo)
       hTrackMatchResPhiPos[iprod]->Draw("same");
     }
     
-    TLine l0Phi(0,hTrackMatchResPhiNeg[0]->GetMinimum(),0,hTrackMatchResPhiNeg[0]->GetMaximum());
+    TLine l0Phi(0,hTrackMatchResPhiPos[0]->GetMinimum(),0,hTrackMatchResPhiPos[0]->GetMaximum());
     l0Phi.SetLineColor(2);
     l0Phi.SetLineWidth(2);
     l0Phi.Draw("same");
@@ -648,8 +657,8 @@ void CaloQA(Int_t icalo)
     ccalo2->cd(3);
     //gPad->SetLogy();
     
-    hRatTrackMatchResEtaPos[0]->SetMaximum(1.2);
-    hRatTrackMatchResEtaPos[0]->SetMinimum(0.8);
+    hRatTrackMatchResEtaPos[0]->SetMaximum(1.3);
+    hRatTrackMatchResEtaPos[0]->SetMinimum(0.9);
     hRatTrackMatchResEtaPos[0]->Draw("");
     hRatTrackMatchResEtaPos[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
@@ -662,8 +671,8 @@ void CaloQA(Int_t icalo)
     
     ccalo2->cd(4);
     
-    hRatTrackMatchResPhiPos[0]->SetMaximum(1.2);
-    hRatTrackMatchResPhiPos[0]->SetMinimum(0.8);
+    hRatTrackMatchResPhiPos[0]->SetMaximum(1.3);
+    hRatTrackMatchResPhiPos[0]->SetMinimum(0.9);
     hRatTrackMatchResPhiPos[0]->Draw("");
     hRatTrackMatchResPhiPos[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
