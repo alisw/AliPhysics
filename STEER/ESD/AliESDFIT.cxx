@@ -37,9 +37,10 @@ AliESDFIT::AliESDFIT() :
     fT0[i] = -99999;
     fT0best[i] = -99999;
   }
-  for(int i=0; i<240; i++) {
+  for(int i=0; i<288; i++) {
     fFITtime[i] = -99999;
     fFITamplitude[i] = 0;
+    fFITphotons[i] = 0;
   }
 
 
@@ -54,9 +55,10 @@ AliESDFIT::AliESDFIT(const AliESDFIT &tzero ) :
     fT0[i] = tzero.fT0[i];
     fT0best[i] = tzero.fT0best[i];
   }
-  for(int i=0; i<240; i++) {
+  for(int i=0; i<288; i++) {
     fFITtime[i] = -99999;
     fFITamplitude[i] = 0;
+    fFITphotons[i] = 0;
   }
  }
 //______________________________________________________________________________
@@ -70,9 +72,11 @@ AliESDFIT& AliESDFIT::operator=(const AliESDFIT& tzero){
       fT0best[i] = tzero.fT0best[i];
     }
 
-   for(int i=0; i<240; i++){
+   for(int i=0; i<288; i++){
       fFITtime[i] = tzero.fFITtime[i]; 
       fFITamplitude[i] = tzero.fFITamplitude[i];
+      fFITphotons[i] = tzero.fFITphotons[i];
+
      }
    }
    
@@ -98,8 +102,9 @@ void AliESDFIT::Reset()
 {
   // reset contents
   fFITzVertex = -9999;  
-  for(int i=0; i<240; i++) {
+  for(int i=0; i<288; i++) {
     fFITtime[i] = fFITamplitude[i] =  0;
+    fFITtime[i] = fFITphotons[i] =  0;
   }
   for(int i=0; i<3 ;i++) {
     fT0[i] = -9999;
