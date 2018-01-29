@@ -17,6 +17,7 @@ class AliFITDigit: public AliDigit {
 	      Int_t *labels=0);
   virtual ~AliFITDigit();
   Int_t TimeCFD() {return fTimeCFD;}
+  Int_t TimeLED() {return fTimeLED;}
   Int_t TimeQT0 () {return fTimeQT0;}
   Int_t TimeQT1 () {return fTimeQT1;}
   Int_t NPMT ()  {return fNPMT;}

@@ -50,8 +50,8 @@ AliFITRecoParam::AliFITRecoParam():
   SetName("FIT");
   SetTitle("FIT");
 
-  for (Int_t i=0; i<240; i++) fBadChannels[i]=-1;
-  
+  for (Int_t i=0; i<288; i++) fBadChannels[i]=-1;
+  cout<<"@@@@ AliFITRecoParam::AliFITRecoParam"<<endl;
  
 }
 
@@ -69,8 +69,8 @@ AliFITRecoParam::AliFITRecoParam(const AliFITRecoParam &p):
   AliDetectorRecoParam(p)      
 { 
  //copy constructor
-  for (Int_t i=0; i<240; i++)  
-    fBadChannels[i] = p.fBadChannels[i];
+    for (Int_t i=0; i<288; i++)  
+      fBadChannels[i] = p.fBadChannels[i];
   
 }
 //_____________________________________________________________________________
@@ -85,7 +85,7 @@ AliFITRecoParam& AliFITRecoParam:: operator=(const AliFITRecoParam &p)
     return *this;
   
   AliDetectorRecoParam::operator=(p);
-  for (Int_t i=0; i<240; i++)  fBadChannels[i] = p.fBadChannels[i];
+  for (Int_t i=0; i<288; i++)  fBadChannels[i] = p.fBadChannels[i];
   
  
  return *this;
@@ -98,6 +98,7 @@ AliFITRecoParam *AliFITRecoParam::GetLowFluxParam()
   //
   // make default reconstruction  parameters for low  flux env.
   //
+ cout<<" AliFITRecoParam *AliFITRecoParam::GetLowFluxParam()"<<endl;
   AliFITRecoParam *param = new AliFITRecoParam();
    return param;
 }
@@ -112,24 +113,13 @@ AliFITRecoParam *AliFITRecoParam::GetHighFluxParam()
 
   AliFITRecoParam *param = new AliFITRecoParam();
 
-   param->SetName("High Flux");
+  param->SetName("High Flux");
   param->SetTitle("High Flux");
+  cout<<" AliFITRecoParam *AliFITRecoParam::GetHighFluxParam()"<<endl;
   return param;
 }
 
 
-//_____________________________________________________________________________
-
-AliFITRecoParam *AliFITRecoParam::GetLaserTestParam()
-{
-  //
-  // special setting for laser
-  //
-  AliFITRecoParam *param = new AliFITRecoParam();
-   param->SetName("Laser Flux");
-  param->SetTitle("Laser Flux");
-  return param;
-}
 //_____________________________________________________________________________
 
 void AliFITRecoParam::PrintParameters() const

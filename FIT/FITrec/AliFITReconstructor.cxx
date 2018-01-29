@@ -78,27 +78,25 @@ void AliFITReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTr
   AliFITRawReader myrawreader(rawReader);
   if (myrawreader.Next()) 
     {
-      Int_t allData[1000];
-      for (Int_t i=0; i<1000; i++)  allData[i]=0;
-      for (Int_t i=0; i<1000; i++) 
+      Int_t allData[1200];
+      for (Int_t i=0; i<1200; i++)  allData[i]=0;
+      for (Int_t i=0; i<1152; i++) 
 	if(myrawreader.GetData(i)>0)  { 
 	  allData[i]=myrawreader.GetData(i);
 	}
    
       Int_t timeCFD, timeLED, timeQT1, timeQT0;
-      for (Int_t ipmt=0; ipmt<240; ipmt++) {
+      for (Int_t ipmt=0; ipmt<288; ipmt++) {
 	if(allData[ipmt]>0) {
 	  timeCFD = allData[ipmt];
-	  timeLED = allData[ipmt];
-	  timeQT0= allData[ipmt+240];
-	  timeQT1 = allData[ipmt+480];
+	  timeLED = allData[ipmt+288];
+	  timeQT0= allData[ipmt+576];
+	  timeQT1 = allData[ipmt+864];
 	  //add digit
 	  new((*fDigits)[fDigits->GetEntriesFast()] )
 	    AliFITDigit( ipmt,timeCFD, timeLED, timeQT0, timeQT1, 0);
 	}
       }
-      
-      
       
       digitsTree->Fill(); 
     }
@@ -157,8 +155,8 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
   }
   const Float_t max_time = 1e7;
   Int_t pmt=-1;
-  Float_t  time[240],amp[240];  
-  for(Int_t i=0; i<240; i++)   {  time[i]=max_time; amp[i]=0;}
+  Float_t  time[288],amp[288], photons[288];  
+  for(Int_t i=0; i<288; i++)   {  time[i]=max_time; amp[i]=0; photons[i]=0;}
   
   Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t iev=0; iev<nEntries; iev++) {
@@ -169,13 +167,15 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
       AliFITDigit* digit = (AliFITDigit*) fDigits->At(dig);      
       pmt = digit->NPMT();
       time[pmt] = Float_t (digit->TimeCFD() );
-      amp[pmt] = 0.001 * Float_t (digit->TimeQT1() - digit->TimeQT0() );
-    } 
+      amp[pmt] = Float_t (digit->TimeQT0() );
+      photons[pmt] =  Float_t (digit->TimeQT1() );
+     } 
     fESDFIT->SetFITtime(time);         // best TOF on each PMT 
     fESDFIT->SetFITamplitude(amp);     // number of particles(MIPs) on each 
-     Float_t firsttime[3] = {max_time,max_time,max_time};
-    
-    Float_t vertexFIT = 9999999;
+    fESDFIT->SetFITphotons(photons);     // number of particles(MIPs) on each 
+
+    Float_t firsttime[3] = {max_time,max_time,max_time};
+    Float_t vertexFIT = 0;
     for (Int_t ipmt=0; ipmt<96; ipmt++)//timeC
       if(time[ipmt]<firsttime[2]) firsttime[2]=time[ipmt]; 
     

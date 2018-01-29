@@ -103,9 +103,8 @@ void AliFITDigitizer::Digitize(Option_t* /*option*/)
   
   
   //output loader 
-  //  AliDebug(1,"start...");
-  printf("@@@ start...");
-  //input loader
+   AliDebug(1,"start...");
+   //input loader
   //
   // From hits to digits
   //
@@ -143,7 +142,7 @@ void AliFITDigitizer::Digitize(Option_t* /*option*/)
 void AliFITDigitizer::DigitizeHits()
 {
 
-  Int_t hit, nhits;
+ Int_t hit, nhits;
   Float_t time[300], besttime[300];
   Int_t countE[300], countCh[300];
   Int_t timeCFD, timeLED, timeQT1, timeQT0;
@@ -170,7 +169,7 @@ void AliFITDigitizer::DigitizeHits()
 
   for (Int_t i0=0; i0<300; i0++)
       {
-	time[i0]=0; countE[i0]=0; countCh[i0]=0; besttime[i0]=999999;
+	time[i0]=999999; countE[i0]=0; countCh[i0]=0; besttime[i0]=999999;
       }
   AliRunLoader * inRL = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
   AliLoader * fitLoader = inRL->GetLoader("FITLoader");
@@ -205,7 +204,7 @@ void AliFITDigitizer::DigitizeHits()
 	mcp=startHit->MCP();
 	volume = startHit->Volume();
 	if (volume<2) numpmt=4*(mcp) +pmt-1;
-	if(volume==2) numpmt=pmt;
+	if(volume==2) numpmt=pmt+208;
 	besttime[numpmt] = startHit->Time();
 	if(besttime[numpmt]<time[numpmt]) time[numpmt]=besttime[numpmt];
 	if (ipart==50)	countE[numpmt]++;
@@ -216,13 +215,13 @@ void AliFITDigitizer::DigitizeHits()
   
   for (Int_t ipmt=0; ipmt<288; ipmt++)
     {
-      if (countE[ipmt]>threshold && time[ipmt]<50000 && time[ipmt]>0 ) {
+      if (time[ipmt]<50000 && time[ipmt]>0 ) {
 	//fill ADC
 	// QTC procedure:
 	// 1MIP ->318phe  ;
 	//	qt= countE[ipmt] ;  // !!!!
 	//  fill TDC
-	if (ipmt>95) time[ipmt] = time[ipmt] + eqdistance;
+	//	if (ipmt>95) time[ipmt] = time[ipmt] + eqdistance;
 	timeCFD = Int_t (gRandom->Gaus(time[ipmt], 50)/channelWidth ); 
 	timeLED =  Int_t (time[ipmt]/channelWidth );
 	timeQT0 = countCh[ipmt];

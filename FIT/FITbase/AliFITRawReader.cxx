@@ -81,7 +81,7 @@ Bool_t  AliFITRawReader::Next()
   Bool_t correct=kTRUE;
   Int_t header;
   
-  for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;
+  for ( Int_t k=0; k<1200; k++)   fAllData[k] = -1;
   
   
   do {

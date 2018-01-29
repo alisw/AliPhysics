@@ -22,18 +22,15 @@ class AliFITRecoParam : public AliDetectorRecoParam
   
   static   AliFITRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env
   static   AliFITRecoParam *GetHighFluxParam();       // make reco parameters for high flux env 
-  static   AliFITRecoParam *GetLaserTestParam();  // special setting for laser SetLaserTestParam 
-  //for monitoring
-  //  static   AliFITRecoParam *GetHistRange();  //  limit of monitoring histograms
-  
+   
   //new staff
-  Int_t  GetBadChannels(Int_t i) const {return fBadChannels[i];}
-  void SetBadChannels(Int_t i, Int_t value) {fBadChannels[i] = value;}
+   Int_t  GetBadChannels(Int_t i) const {return fBadChannels[i];}
+  void SetBadChannels(Int_t i,Int_t v) {fBadChannels[i] = v;}
  
   void PrintParameters() const;
   
  protected:
-  Int_t  fBadChannels[240];   // bad channels map
+  Int_t  fBadChannels[288];   // bad channels map
   
   ClassDef(AliFITRecoParam, 1);
  
