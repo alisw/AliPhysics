@@ -150,6 +150,9 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fTPCvsGlobalTrk(NULL),
   fTPCuncutvsGlobal(NULL),
   fGlobalTracks(NULL),
+  fTPCvsITSfb96(NULL),
+  fTPCvsITSfb32(NULL),
+  fTPCFEvsITSfb96(NULL),
   fCentCL1vsVzRun(NULL),
   fVzDistribuion(NULL)
 {
@@ -380,6 +383,9 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fTPCvsGlobalTrk(NULL),
   fTPCuncutvsGlobal(NULL),
   fGlobalTracks(NULL),
+  fTPCvsITSfb96(NULL),
+  fTPCvsITSfb32(NULL),
+  fTPCFEvsITSfb96(NULL),
   fCentCL1vsVzRun(NULL),
   fVzDistribuion(NULL)
 {
@@ -2542,26 +2548,40 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       }
 
       //cuts on tracks
-      const Int_t nTracks = faod->GetNumberOfTracks();
-      //Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
-
       //Int_t multTrk = 0;
       //Int_t multTrkBefC = 0;
       //Int_t multTrkTOFBefC = 0;
-      //Int_t multITS = 0;
-      Int_t multGlobal = 0;
+
       Int_t multTPC = 0;
+      Int_t multITSfb96 = 0;
+      Int_t multITSfb32 = 0;
+
+      Int_t multTPCFE = 0;
+      Int_t multGlobal = 0;
       Int_t multTPCuncut = 0;
+
+      Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+
+      const Int_t nTracks = faod->GetNumberOfTracks();
 
       for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
 	//AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));
          AliAODTrack* track = (AliAODTrack*)faod->GetTrack(iTracks);
          if(!track)  continue;
+	 //---------- old method -----------
+        if(track->TestFilterBit(128))
+	   multTPC++;
+        if(track->TestFilterBit(96))
+           multITSfb96++;
+	//----------------------------------
          if(track->TestFilterBit(1))  multTPCuncut++;
+         if(track->TestFilterBit(32)) multITSfb32++;
+
+
          if(track->Pt()<0.2 || track->Pt()>5.0 || TMath::Abs(track->Eta())>0.8 || track->GetTPCNcls()<70 || track->GetTPCsignal()<10.0)
             continue;
-         if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPC++;
-         if(!track->TestFilterBit(16) || track->Chi2perNDF()<0.1) continue;
+         if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPCFE++;
+         if(!track->TestFilterBit(16) || track->Chi2perNDF()<0.1)   continue;
                 
          Double_t b[2]    = {-99., -99.};
          Double_t bCov[3] = {-99., -99., -99.};
@@ -2573,8 +2593,6 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
            if(track->PropagateToDCA(faod->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;    
          }
       }
-
-      Double_t multTPCGlobDif = multTPC - fPileUpSlopeParm*multGlobal;
 
 
       /*
@@ -2594,20 +2612,25 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         if(aodTrk->TestFilterBit(128))
            multTPC++;
         if(aodTrk->TestFilterBit(96))
-           multITS++;
+           multITSfb96++;
       } // end of for AOD track loop
-     
+    
+      */
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      Double_t multESDTPCDif = multEsdn - multTPCn*fPileUpSlopeParm;
-      */
+ 
+      Double_t multESDTPCDif  = multEsdn  - fPileUpSlopeParm*multTPCn;
+      Double_t multTPCGlobDif = multTPCFE - fPileUpSlopeParm*multGlobal;
 
-
+      fTPCvsITSfb96->Fill(multITSfb96,multTPC);     //multITSfb96 = FB 96, multTPC = FB 128
+      fTPCvsITSfb32->Fill(multITSfb32,multTPC);     //multITSfb32 = FB 32
+      fTPCFEvsITSfb96->Fill(multITSfb96,multTPCFE); //multTPCFE = FB 1
 
       fGlobalTracks->Fill(multGlobal);
+      fTPCvsGlobalTrk->Fill(multGlobal,multTPCFE);
       fTPCuncutvsGlobal->Fill(multGlobal,multTPCuncut);
-      fTPCvsGlobalTrk->Fill(multGlobal,multTPC);
+
 
 
       /*if(multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
@@ -2620,19 +2643,23 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
        }*/
 
        if(fRejectPileUpTight) {
-        if(multTPCGlobDif > fPileUpConstParm) { 
-          fPileUpCount->Fill(8.5);
+       if(multESDTPCDif > fPileUpConstParm) { 
+          fPileUpCount->Fill(7.5);
           BisPileup=kTRUE;
         }
+        if(multTPCGlobDif > fPileUpConstParm) { 
+          fPileUpCount->Fill(8.5);
+          //BisPileup=kTRUE;
+        }
         if(BisPileup==kFALSE) {
-          if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-          if(BisPileup) fPileUpCount->Fill(9.5);
+           if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+           if(BisPileup) fPileUpCount->Fill(9.5);
         }  
       }
     }
@@ -2750,8 +2777,8 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>5.0");
   fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
-  fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif=15000");
   Int_t puConst = fPileUpConstParm;
+  fPileUpCount->GetXaxis()->SetBinLabel(8,Form("multESDTPCDif>%d",puConst));
   fPileUpCount->GetXaxis()->SetBinLabel(9,Form("multGlobTPCDif>%d",puConst));
   fPileUpCount->GetXaxis()->SetBinLabel(10,"extraPileUpMultSel");
   fListHistos->Add(fPileUpCount);
@@ -3073,17 +3100,23 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  fTPCvsGlobalTrk = new TH2F("fTPCvsGlobalTrk","ESDTrk vs TPC(FB128)",1000,0,5000,1000,0,5000);
+  fTPCvsGlobalTrk = new TH2F("fTPCvsGlobalTrk","ESDTrk vs TPC(FB128)",500,0,5000,500,0,5000);
   fListCalibs->Add(fTPCvsGlobalTrk);
 
-  fTPCuncutvsGlobal   = new TH2F("fTPCuncutvsGlobal","ESDTrk vs ITS(FB96) ",1000,0,5000,1000,0,5000);
+  fTPCuncutvsGlobal = new TH2F("fTPCuncutvsGlobal","ESDTrk vs ITS(FB96) ",500,0,5000,500,0,5000);
   fListCalibs->Add(fTPCuncutvsGlobal);
+
+  fTPCvsITSfb96 = new TH2F("fTPCvsITSfb96","FB96 vs TPC(FB128)",500,0,5000,500,0,5000);
+  fListCalibs->Add(fTPCvsITSfb96);
+
+  fTPCvsITSfb32 = new TH2F("fTPCvsITSfb32","FB32 vs TPC(FB128)",500,0,5000,500,0,5000);
+  fListCalibs->Add(fTPCvsITSfb32);
+
+  fTPCFEvsITSfb96 = new TH2F("fTPCFEvsITSfb96","FB96 vs TPC(FB1)",500,0,5000,500,0,5000);
+  fListCalibs->Add(fTPCFEvsITSfb96);
 
   fGlobalTracks  = new TH1F("fGlobalTracks","Global Multiplilcity",5000,0,5000);
   fListCalibs->Add(fGlobalTracks);
-
-
-
 
 
   //for debug only, remove after stable code

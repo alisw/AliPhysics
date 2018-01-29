@@ -242,10 +242,12 @@ private:
   TH2F           *fTPCvsGlobalTrk; //!
   TH2F         *fTPCuncutvsGlobal; //!
   TH1F             *fGlobalTracks; //!
+  TH2F             *fTPCvsITSfb96; //!
+  TH2F             *fTPCvsITSfb32; //!
+  TH2F           *fTPCFEvsITSfb96; //!
   TH3F           *fCentCL1vsVzRun; //!
   TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
-
 
 
 
