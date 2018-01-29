@@ -2,65 +2,64 @@
 #define ALIPP13NONLINEARITYSCANSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelection.h"
+#include "AliPP13SelectionWeights.h"
+#include "AliPP13PhysPhotonSelectionMC.h"
 
 // --- AliRoot header files ---
 #include <AliVCluster.h>
 
-class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelection
+// TODO: Fix logic for pointers
+//
+
+// NB: Don't use pointers in the array, this way will be easier
+//
+class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelectionMC
 {
 	enum ScanSize {kNbinsA = 11, kNbinsSigma = 11};
 public:
-	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelection() {}
-	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
-	                           Float_t nona = 0., Float_t nonsigma = 1., Float_t genergy = 1.):
-		AliPP13PhysPhotonSelection(name, title, cuts),
+	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelectionMC() {}
+	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, 
+			AliPP13SelectionWeightsMC * sw, Float_t precA = 0.01, Float_t precSigma = 0.1):
+		AliPP13PhysPhotonSelectionMC(name, title, cuts, sw),
 		fInvariantMass(),
 		fMixInvariantMass(),
-		fNonA(nona),
-		fNonSigma(nonsigma),
-		fGlobalEnergyScale(genergy),
-		fPrecisionA(0.01),
-		fPrecisionSigma(0.1)
+		fPrecisionA(precA),
+		fPrecisionSigma(precSigma)
 	{
-		fCuts.fTimingCut = 99999; // No timing cut in MC
+
+		Float_t nona = sw->fNonA;
+		Float_t nonSigma = sw->fNonSigma;
+
+		for(Int_t ia = 0; ia < kNbinsA; ++ia)
+		{
+			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
+			{
+				AliPP13SelectionWeightsMC swi;
+				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
+				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
+				fWeightsScan[ia][ib] = swi;
+			}
+		}
 	}
 
 	virtual void InitSelectionHistograms();
 protected:
-
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia = -1, Int_t ib = -1) const;
-	virtual Float_t Nonlinearity(Float_t x, Int_t ia = -1, Int_t ib = -1) const;
 
-	virtual Float_t GetA(Int_t ia) const
-	{
-		if(ia < 0)
-			return fNonA;
-
-		return fNonA - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
-	}
-
-	virtual Float_t GetSigma(Int_t ib) const
-	{
-		if(ib < 0)
-			return fNonSigma;
-
-		return fNonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
-	}
+	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
+	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const;
 
 	AliPP13NonlinearityScanSelection(const AliPP13NonlinearityScanSelection &);
 	AliPP13NonlinearityScanSelection & operator = (const AliPP13NonlinearityScanSelection &);
 
 private:
 
+	// Set of weights that are need for NonlinearityScan
+	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];//!
+
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!
 	TH1 * fMixInvariantMass[kNbinsA][kNbinsSigma]; //!
-
-	Float_t fNonA;
-	Float_t fNonSigma;
-	Float_t fGlobalEnergyScale;
 
 	Float_t fPrecisionA;
 	Float_t fPrecisionSigma;
