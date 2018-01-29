@@ -537,10 +537,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
       fEventQuality = 2;
       return kFALSE;
     }
-    if (!mcHandler->TreeTR() ) {
-      fEventQuality = 2;
-      return kFALSE;
-    }
+    // TrackRefs.root is currently not used by anyone
+    // and was excluded from future MC productions
+    // if (!mcHandler->TreeTR() ) {
+    //   fEventQuality = 2;
+    //   return kFALSE;
+    // }
     isMC = kTRUE;
   }
 
