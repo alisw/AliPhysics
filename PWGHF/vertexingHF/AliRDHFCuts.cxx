@@ -1334,6 +1334,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
     cent=multSelection->GetMultiplicityPercentile("ZNA");
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
+  }else if(estimator==kCentCL0){
+    cent=multSelection->GetMultiplicityPercentile("CL0");
   }else {
     AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
     return cent;
