@@ -616,6 +616,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84600513","1111141057032230000","01631031000000d0"); // 40-60
     cuts.AddCut("86000513","1111141057032230000","01631031000000d0"); // 60-100
 
+  } else if (trainConfig == 211){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing (same as 201 but split)
+    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 212){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing (same as 201 but split)
+    cuts.AddCut("80052113","1111100017032230000","01631031000000d0"); // EMC7
+  } else if (trainConfig == 213){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing (same as 201 but split)
+    cuts.AddCut("80085113","1111100017032230000","01631031000000d0"); // EG2
+  } else if (trainConfig == 214){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing (same as 201 but split)
+    cuts.AddCut("80083113","1111100017032230000","01631031000000d0"); // EG1
   //****************************************************************************************************************
   //************************************************ PHOS clusters *************************************************
   //****************************************************************************************************************
