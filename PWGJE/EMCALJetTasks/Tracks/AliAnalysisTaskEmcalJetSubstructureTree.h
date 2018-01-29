@@ -255,6 +255,8 @@ protected:
   bool IsNSubjettinessBranch(const std::string &branchname) const;
   bool IsStructbranch(const std::string &branchname) const;
 
+  bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
+
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
