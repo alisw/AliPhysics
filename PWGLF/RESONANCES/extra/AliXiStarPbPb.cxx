@@ -53,8 +53,8 @@
 #include "AliCentrality.h"
 #include "AliESDcascade.h"
 
-#include "AliLightV0vertexer.h"
-#include "AliLightCascadeVertexer.h"
+//#include "AliLightV0vertexer.h"
+//#include "AliLightCascadeVertexer.h"
 
 #include "AliXiStarPbPb.h"
 #define PI 3.1415927
@@ -202,7 +202,6 @@ fCutList(CutListOption)
     
     
     //Set Variables for re-running the cascade vertexers
-        // New Loose : 1st step for the 7 TeV pp analysis
         
  /*   fV0VertexerSels[0] =  33.  ;  // max allowed chi2
     fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
@@ -221,23 +220,6 @@ fCutList(CutListOption)
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
 */
-    fV0VertexerSels[0] =  33.  ;  // max allowed chi2
-    fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-    fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-    fV0VertexerSels[5] =   0.2 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-    fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
-    
-    fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-    fCascadeVertexerSels[1] =   0.01 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-    fCascadeVertexerSels[3] =   0.01 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-    fCascadeVertexerSels[6] =   0.2  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-    
     
     
     // Define output for Tree
@@ -453,8 +435,9 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][8] = 2.5;
     fCutValues[0][9] = 0.95;
     fCutValues[0][10] = 0.275;
-    fCutValues[0][11] = 0.95;
-    fCutValues[0][12] = 0.9992;
+    fCutValues[0][11] = 0.998; //old selection of CPA L
+    fCutValues[0][12] = 0.9992; //old selection of CPA Xi
+
     
     
     for(int cv=1; cv<kNCutVariations; cv++){
@@ -472,8 +455,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[6][8] = 3.0;
     fCutValues[7][9] = 1.0;
     fCutValues[8][10] = 0.3;
-    fCutValues[9][11] = 0.94;
-    fCutValues[10][12] = 0.999;
+    fCutValues[9][11] = 0.95; //Open CPA L
+    fCutValues[10][12] = 0.9992;
 
     //systematic variation// tight
     fCutValues[11][0] = 77; fCutValues[11][1] = 77; fCutValues[11][2] = 77; fCutValues[11][3] = 77;// 80
@@ -484,8 +467,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[16][8] = 2.0;
     fCutValues[17][9] = 0.9;
     fCutValues[18][10] = 0.25;
-    fCutValues[19][11] = 0.96;
-    fCutValues[20][12] = 0.9994;
+    fCutValues[19][11] = 0.95;
+    fCutValues[20][12] = 0.95; //Open CPA L and Xi
 
     
     
@@ -962,7 +945,7 @@ void AliXiStarPbPb::Exec(Option_t *)
     //------------------------------------------------
     // Rerun cascade vertexer!
     //------------------------------------------------
-    fESD->ResetCascades();
+   /* fESD->ResetCascades();
     fESD->ResetV0s();
     
     AliLightV0vertexer lV0vtxer;
@@ -973,8 +956,8 @@ void AliXiStarPbPb::Exec(Option_t *)
     
     lV0vtxer.Tracks2V0vertices(fESD);
     lCascVtxer.V0sTracks2CascadeVertices(fESD);
- 
-  
+   */
+    
     //------------------------------------------------
     // Getting: Primary Vertex
     //------------------------------------------------
@@ -1031,7 +1014,10 @@ void AliXiStarPbPb::Exec(Option_t *)
 
     
    // TClonesArray *mcArray       = 0x0;
-    AliStack    *mcstack        = 0x0;
+   // AliStack    *mcstack        = 0x0;
+    
+    AliMCEvent    *mcstack        = 0x0;
+
     TParticle   *MCLamD1esd     = 0x0;
     TParticle   *MCLamD2esd     = 0x0;
     TParticle   *MCLamesd       = 0x0;
@@ -1077,7 +1063,9 @@ void AliXiStarPbPb::Exec(Option_t *)
         
         if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
             if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-                mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+             //   mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+             mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+
         }
         
         
@@ -1095,8 +1083,11 @@ void AliXiStarPbPb::Exec(Option_t *)
             /////////////////////////////////////////////////
             // Lam mc input
             /////////////////////////////////////////////////
-            for (Int_t it = 0; it < mcstack->GetNprimary(); it++) {
-                TParticle *mcInputTrack = (TParticle*)mcstack->Particle(it);
+            for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
+                
+                //TParticle *mcInputTrack = (TParticle*)mcstack->Particle(it);
+                TParticle *mcInputTrack = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
+
                 if (!mcInputTrack) {
                     Error("UserExec", "Could not receive track %d", it);
                     continue;
@@ -1149,7 +1140,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(PrimaryVertexESD->GetNContributors() >= 1) ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(fESD->GetNumberOfTracks());
         if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut
 
-       // Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+        //Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
         bField = fESD->GetMagneticField();
         
         
@@ -1275,8 +1266,10 @@ void AliXiStarPbPb::Exec(Option_t *)
         /////////////////////////////////////////////////
         // Xi mc input
         /////////////////////////////////////////////////
-        for (Int_t it = 0; it < mcstack->GetNprimary(); it++) {
-            TParticle *mcInputTrackXi = (TParticle*)mcstack->Particle(it);
+        for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
+            //TParticle *mcInputTrackXi = (TParticle*)mcstack->Particle(it);
+            TParticle *mcInputTrackXi = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
+
             if (!mcInputTrackXi) {
                 Error("UserExec", "Could not receive track %d", it);
                 continue;
@@ -1299,8 +1292,10 @@ void AliXiStarPbPb::Exec(Option_t *)
         /////////////////////////////////////////////////
         // XiStar mc input
         /////////////////////////////////////////////////
-        for (Int_t it = 0; it < mcstack->GetNprimary(); it++) {
-            TParticle *mcInputTrackXiStar = (TParticle*)mcstack->Particle(it);
+        for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
+            //TParticle *mcInputTrackXiStar = (TParticle*)mcstack->Particle(it);
+            TParticle *mcInputTrackXiStar = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
+
             if (!mcInputTrackXiStar) {
                 Error("UserExec", "Could not receive track %d", it);
                 continue;
@@ -1534,22 +1529,33 @@ void AliXiStarPbPb::Exec(Option_t *)
         mcXiFilled = kFALSE;
         if(fMCcase ){
             
-            MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
+            //MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
+            MCXiD2esd = ((AliMCParticle*)mcstack->GetTrack(abs(bTrackXi->GetLabel())))->Particle();
+
             
             if(abs(MCXiD2esd->GetPdgCode())==kPionCode){
                 
-                MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
-                MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
+              //  MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
+              //  MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
+                
+                MCLamD1esd = ((AliMCParticle*)mcstack->GetTrack(abs(pTrackXi->GetLabel())))->Particle();
+                MCLamD2esd = ((AliMCParticle*)mcstack->GetTrack(abs(nTrackXi->GetLabel())))->Particle();
+
                 
                 if(MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)){
                     if(abs(MCLamD1esd->GetPdgCode())==kProtonCode || abs(MCLamD2esd->GetPdgCode())==kProtonCode) {
                         if(abs(MCLamD1esd->GetPdgCode())==kPionCode || abs(MCLamD2esd->GetPdgCode())==kPionCode) {
                             
-                            MCLamesd = (TParticle*)mcstack->Particle(abs(MCLamD1esd->GetMother(0)));
+                            //MCLamesd = (TParticle*)mcstack->Particle(abs(MCLamD1esd->GetMother(0)));
+                             MCLamesd = ((AliMCParticle*)mcstack->GetTrack(abs(MCLamD1esd->GetMother(0))))->Particle();
+                            
                             if(abs(MCLamesd->GetPdgCode())==kLambdaCode) {
                                 
                                 if(MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)){
-                                    MCXiesd = (TParticle*)mcstack->Particle(abs(MCLamesd->GetMother(0)));
+                                    //MCXiesd = (TParticle*)mcstack->Particle(abs(MCLamesd->GetMother(0)));
+                                    MCXiesd = ((AliMCParticle*)mcstack->GetTrack(abs(MCLamesd->GetMother(0))))->Particle();
+                                    
+                                    
                                     if(abs(MCXiesd->GetPdgCode())==kXiCode) {
                                         mcXiFilled = kTRUE;
 
@@ -1797,12 +1803,16 @@ void AliXiStarPbPb::Exec(Option_t *)
                     
                     
                     if(fMCcase && mcXiFilled && EN==0){// ESD MC's
-                        MCXiStarD2esd = (TParticle*)mcstack->Particle(abs((fEvt)->fTracks[l].fLabel));
+                        //MCXiStarD2esd = (TParticle*)mcstack->Particle(abs((fEvt)->fTracks[l].fLabel));
+                        MCXiStarD2esd = ((AliMCParticle*)mcstack->GetTrack(abs((fEvt)->fTracks[l].fLabel)))->Particle();
                         
                         if(abs(MCXiStarD2esd->GetPdgCode())==kPionCode){
                             if(MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)){
                                 
-                                MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
+                                //MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
+                                
+                                MCXiStaresd = ((AliMCParticle*)mcstack->GetTrack(abs(MCXiesd->GetMother(0))))->Particle();
+                                
                                 if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
                                     ((TH1F*)fOutputList->FindObject("fXiStarYDistMCout"))->Fill(xiStarY);
 
