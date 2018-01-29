@@ -54,6 +54,7 @@
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliITSgeomTGeo.h"
 #include "AliAnalysisTaskSEImpParResSparse.h"
 
@@ -558,6 +559,17 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     Double_t pointz1[5];
     Double_t pointz2[5];
     
+    AliPIDResponse *pidResponse=0x0;
+    if (fParticleSpecies>-1) {
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      pidResponse=(AliPIDResponse*)inputHandler->GetPIDResponse();
+      if (!pidResponse) {
+	AliFatal("AliPIDResponse not added to the analysis train but needed by AliAnalysisTaskSEImpParResSparse");
+	return;
+      }
+    }
+
     //Printf("\nSTART LOOP OVER TRACKS\n");
     
     for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
@@ -670,6 +682,18 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         }
         
         
+	if (fParticleSpecies>-1) {
+	  AliPID::EParticleType type=AliPID::EParticleType(fParticleSpecies);
+	  Float_t nsigma = pidResponse->NumberOfSigmasTPC(vtrack,type);
+	  if (TMath::Abs(nsigma)>3) continue;
+	  AliPIDResponse::EDetPidStatus statusTOFpid = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF,vtrack);
+	  if (statusTOFpid == AliPIDResponse::kDetPidOk) {
+	    nsigma = pidResponse->NumberOfSigmasTOF(vtrack,type);
+	    if (pt>1 && TMath::Abs(nsigma)>3) continue;
+	  }
+	}
+
+
         //Get specific primary vertex--Reconstructed primary vertex do not include the track considering.
         AliVertexerTracks vertexer(event->GetMagneticField());
         vertexer.SetITSMode();
