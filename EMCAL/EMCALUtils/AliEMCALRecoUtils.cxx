@@ -104,15 +104,15 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
-  fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
+  fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(NULL),
   fConstantTimeShift(reco.fConstantTimeShift),  
-  fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
+  fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(NULL),
   fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
-  fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
+  fEMCALBadChannelMap(NULL),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
   fRejectExoticCluster(reco.fRejectExoticCluster),           fRejectExoticCells(reco.fRejectExoticCells), 
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),               
@@ -142,6 +142,27 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
+
+  if(reco.fEMCALBadChannelMap) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALBadChannelMap = new TObjArray(reco.fEMCALBadChannelMap->GetEntries());
+    fEMCALBadChannelMap->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALBadChannelMap->GetEntries(); ism++) fEMCALBadChannelMap->AddAt(reco.fEMCALBadChannelMap->At(ism), ism);
+  }
+
+  if(reco.fEMCALRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALRecalibrationFactors = new TObjArray(reco.fEMCALRecalibrationFactors->GetEntries());
+    fEMCALRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
+  }
+
+  if(reco.fEMCALTimeRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALTimeRecalibrationFactors = new TObjArray(reco.fEMCALTimeRecalibrationFactors->GetEntries());
+    fEMCALTimeRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALTimeRecalibrationFactors->GetEntries(); ism++) fEMCALTimeRecalibrationFactors->AddAt(reco.fEMCALTimeRecalibrationFactors->At(ism), ism);
+  }
 }
 
 ///
@@ -169,11 +190,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fCellsRecalibrated         = reco.fCellsRecalibrated;
   fRecalibration             = reco.fRecalibration;
-  fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
   
   fConstantTimeShift         = reco.fConstantTimeShift;
   fTimeRecalibration         = reco.fTimeRecalibration;
-  fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
   fLowGain                   = reco.fLowGain;
 
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
@@ -183,7 +202,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fRemoveBadChannels         = reco.fRemoveBadChannels;
   fRecalDistToBadChannels    = reco.fRecalDistToBadChannels;
-  fEMCALBadChannelMap        = reco.fEMCALBadChannelMap;
   
   fNCellsFromEMCALBorder     = reco.fNCellsFromEMCALBorder;
   fNoEMCALBorderAtEta0       = reco.fNoEMCALBorderAtEta0;
@@ -286,7 +304,39 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     if (fMatchedClusterIndex) delete fMatchedClusterIndex;
     fMatchedClusterIndex = 0;
   }
+
+  if(fEMCALBadChannelMap) delete fEMCALBadChannelMap;
+  if(reco.fEMCALBadChannelMap) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALBadChannelMap = new TObjArray(reco.fEMCALBadChannelMap->GetEntries());
+    fEMCALBadChannelMap->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALBadChannelMap->GetEntries(); ism++) fEMCALBadChannelMap->AddAt(reco.fEMCALBadChannelMap->At(ism), ism);
+  }
+
+  if(fEMCALRecalibrationFactors) delete fEMCALRecalibrationFactors;
+  if(reco.fEMCALRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALRecalibrationFactors = new TObjArray(reco.fEMCALRecalibrationFactors->GetEntries());
+    fEMCALRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
+  }
   
+  if(fEMCALTimeRecalibrationFactors) delete fEMCALTimeRecalibrationFactors;
+  if(reco.fEMCALTimeRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALTimeRecalibrationFactors = new TObjArray(reco.fEMCALTimeRecalibrationFactors->GetEntries());
+    fEMCALTimeRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALTimeRecalibrationFactors->GetEntries(); ism++) fEMCALTimeRecalibrationFactors->AddAt(reco.fEMCALTimeRecalibrationFactors->At(ism), ism);
+  }
+
+  if(this->fEMCALL1PhaseInTimeRecalibration) delete fEMCALL1PhaseInTimeRecalibration;
+  if(reco.fEMCALL1PhaseInTimeRecalibration) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALL1PhaseInTimeRecalibration = new TObjArray(reco.fEMCALL1PhaseInTimeRecalibration->GetEntries());
+    fEMCALL1PhaseInTimeRecalibration->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALL1PhaseInTimeRecalibration->GetEntries(); ism++) fEMCALL1PhaseInTimeRecalibration->AddAt(reco.fEMCALL1PhaseInTimeRecalibration->At(ism), ism);
+  }
+
   return *this;
 }
 
@@ -298,25 +348,21 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 {  
   if (fEMCALRecalibrationFactors) 
   { 
-    fEMCALRecalibrationFactors->Clear();
     delete fEMCALRecalibrationFactors;
   }  
   
   if (fEMCALTimeRecalibrationFactors) 
   { 
-    fEMCALTimeRecalibrationFactors->Clear();
     delete fEMCALTimeRecalibrationFactors;
   }  
 
   if(fEMCALL1PhaseInTimeRecalibration) 
   {  
-    fEMCALL1PhaseInTimeRecalibration->Clear();
     delete fEMCALL1PhaseInTimeRecalibration;
   }
 
   if (fEMCALBadChannelMap) 
   { 
-    fEMCALBadChannelMap->Clear();
     delete fEMCALBadChannelMap;
   }
  
@@ -3765,6 +3811,121 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
   }
   
   AliDebug(2,"Cluster matched to tracks");  
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors(const TObjArray *map) { 
+  if(fEMCALRecalibrationFactors) fEMCALRecalibrationFactors->Clear();
+  else {
+    fEMCALRecalibrationFactors = new TObjArray(map->GetEntries());
+    fEMCALRecalibrationFactors->SetOwner(true);
+  }
+  if(!fEMCALRecalibrationFactors->IsOwner()){
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALRecalibrationFactors->SetOwner(kTRUE);
+  }
+  for(int i = 0; i < map->GetEntries(); i++){
+    TH2F *hist = dynamic_cast<TH2F *>(map->At(i));
+    if(!hist) continue;
+    this->SetEMCALChannelRecalibrationFactors(i, hist);
+  }
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h) { 
+  if(!fEMCALRecalibrationFactors){
+    fEMCALRecalibrationFactors = new TObjArray(iSM);
+    fEMCALRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALRecalibrationFactors->GetEntries() <= iSM) fEMCALRecalibrationFactors->Expand(iSM+1);
+  if(fEMCALRecalibrationFactors->At(iSM)) fEMCALRecalibrationFactors->RemoveAt(iSM);
+  TH2F *clone = new TH2F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALRecalibrationFactors->AddAt(clone,iSM); 
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelStatusMap(const TObjArray *map) { 
+  if(fEMCALBadChannelMap) fEMCALBadChannelMap->Clear();
+  else {
+    fEMCALBadChannelMap = new TObjArray(map->GetEntries());
+    fEMCALBadChannelMap->SetOwner(true);
+  }
+  if(!fEMCALBadChannelMap->IsOwner()) {
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALBadChannelMap->SetOwner(true);
+  }
+  for(int i = 0; i < map->GetEntries(); i++){
+    TH2I *hist = dynamic_cast<TH2I *>(map->At(i));
+    if(!hist) continue;
+    this->SetEMCALChannelStatusMap(i, hist);
+  }
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h) {
+  if(!fEMCALBadChannelMap){
+    fEMCALBadChannelMap = new TObjArray(iSM);
+    fEMCALBadChannelMap->SetOwner(true);
+  }
+  if(fEMCALBadChannelMap->GetEntries() <= iSM) fEMCALBadChannelMap->Expand(iSM+1);
+  if(fEMCALBadChannelMap->At(iSM)) fEMCALBadChannelMap->RemoveAt(iSM);
+  TH2I *clone = new TH2I(*h);
+  clone->SetDirectory(NULL);
+  fEMCALBadChannelMap->AddAt(clone,iSM); 
+}
+
+void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map) { 
+  if(fEMCALTimeRecalibrationFactors) fEMCALTimeRecalibrationFactors->Clear();
+  else {
+    fEMCALTimeRecalibrationFactors = new TObjArray(map->GetEntries());
+    fEMCALTimeRecalibrationFactors->SetOwner(true);
+  }
+  if(!fEMCALTimeRecalibrationFactors->IsOwner()) {
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
+  }
+  for(int i = 0; i < map->GetEntries(); i++){
+    TH1F *hist = dynamic_cast<TH1F *>(map->At(i));
+    if(!hist) continue;
+    this->SetEMCALChannelTimeRecalibrationFactors(i, hist);
+  }
+}
+
+void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const TH1F* h){ 
+  if(!fEMCALTimeRecalibrationFactors){
+    fEMCALTimeRecalibrationFactors = new TObjArray(bc);
+    fEMCALTimeRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALTimeRecalibrationFactors->GetEntries() <= bc) fEMCALTimeRecalibrationFactors->Expand(bc+1);
+  if(fEMCALTimeRecalibrationFactors->At(bc)) fEMCALTimeRecalibrationFactors->RemoveAt(bc);
+  TH1F *clone = new TH1F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+}
+
+void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map) { 
+  if(fEMCALL1PhaseInTimeRecalibration) fEMCALL1PhaseInTimeRecalibration->Clear();
+  else {
+    fEMCALL1PhaseInTimeRecalibration = new TObjArray(map->GetEntries());
+    fEMCALL1PhaseInTimeRecalibration->SetOwner(true);
+  }
+  if(!fEMCALL1PhaseInTimeRecalibration->IsOwner()) {
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALL1PhaseInTimeRecalibration->SetOwner(true);
+  }
+  for(int i = 0; i < map->GetEntries(); i++) {
+    TH1C *hist = dynamic_cast<TH1C *>(map->At(i));
+    if(!hist) continue;
+    SetEMCALL1PhaseInTimeRecalibrationForAllSM(hist);    
+  }
+}
+
+void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h) { 
+  if(!fEMCALL1PhaseInTimeRecalibration){
+    fEMCALL1PhaseInTimeRecalibration = new TObjArray(1);
+    fEMCALL1PhaseInTimeRecalibration->SetOwner(true);
+  }
+  if(fEMCALL1PhaseInTimeRecalibration->GetEntries()<1) fEMCALL1PhaseInTimeRecalibration->Expand(1); 
+  TH1C *clone = new TH1C(*h);
+  clone->SetDirectory(NULL);
+  fEMCALL1PhaseInTimeRecalibration->AddAt(clone,0); 
 }
 
 ///
