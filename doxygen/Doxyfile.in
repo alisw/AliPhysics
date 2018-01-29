@@ -804,6 +804,12 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/MONITOR \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITORzmq \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITOR \
+                         @CMAKE_SOURCE_DIR@/STEER \
+                         @CMAKE_SOURCE_DIR@/STEER/STEER \
+                         @CMAKE_SOURCE_DIR@/STEER/STEERBase \
+                         @CMAKE_SOURCE_DIR@/STEER/AOD \
+                         @CMAKE_SOURCE_DIR@/STEER/CDB \
+                         @CMAKE_SOURCE_DIR@/STEER/ESD \
                          @CMAKE_SOURCE_DIR@/EMCAL \
                          @CMAKE_SOURCE_DIR@/EMCAL/DA \
                          @CMAKE_SOURCE_DIR@/EMCAL/EMCALbase \
