@@ -485,9 +485,11 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliTrackContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
-  if(tracks && fUseChargedConstituents){
+  if(tracks && (fUseChargedConstituents || isMC)){                    // Neutral particles part of particle container in case of MC
     for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
       auto track = jet.TrackAt(itrk, tracks->GetArray());
+      if(!track->Charge() && !fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(track->Charge() && !fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
@@ -560,13 +562,16 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
     throw SubstructureException();
   TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
   Double_t den(0.), num(0.);
-  if(tracks && fUseChargedConstituents){
+  bool isMC = dynamic_cast<const AliTrackContainer *>(tracks);
+  if(tracks && (fUseChargedConstituents || isMC)){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto track = jet.TrackAt(itrk, tracks->GetArray());
       if(!track){
         AliErrorStream() << "Associated constituent particle / track not found\n";
         continue;
       }
+      if(!track->Charge() && !fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(track->Charge() && !fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
       TVector3 trackvec(track->Px(), track->Py(), track->Pz());
 
       num +=  track->Pt() * trackvec.DrEtaPhi(jetvec);
@@ -594,13 +599,16 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   if (!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
     throw SubstructureException();
   Double_t den(0.), num(0.);
-  if(particles && fUseChargedConstituents){
+  bool isMC = dynamic_cast<const AliTrackContainer *>(particles);
+  if(particles && (fUseChargedConstituents || isMC)){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto trk = jet.TrackAt(itrk, particles->GetArray());
       if(!trk){
         AliErrorStream() << "Associated constituent particle / track not found\n";
         continue;
       }
+      if(!trk->Charge() && !fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(trk->Charge() && !fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
       num += trk->Pt() * trk->Pt();
       den += trk->Pt();
     }
