@@ -19,17 +19,8 @@ TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVClust
 
 	TLorentzVector p;
 	c1->GetMomentum(p, eflags.vtxBest);
-	p *= Nonlinearity(energy, ia, ib);
+	p *= fWeightsScan[ia][ib].Nonlinearity(energy);
 	return p;
-}
-
-//________________________________________________________________
-Float_t AliPP13NonlinearityScanSelection::Nonlinearity(Float_t x, Int_t ia, Int_t ib) const
-{
-	Float_t non_a = GetA(ia);
-	Float_t non_sigma = GetSigma(ib);
-
-	return fGlobalEnergyScale * (1. + non_a * TMath::Exp(-x / 2. * x / non_sigma / non_sigma));
 }
 
 //________________________________________________________________
@@ -47,10 +38,10 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 	{
 		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
 		{
-			Float_t a = GetA(ia);
-			Float_t b = GetSigma(ib);
+			Float_t a = fWeightsScan[ia][ib].fNonA;
+			Float_t b = fWeightsScan[ia][ib].fNonSigma;
 
-			fInvariantMass[ia][ib]    = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
+			fInvariantMass[ia][ib] = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
 			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
 
 			fListOfHistos->Add(fInvariantMass[ia][ib]);
@@ -72,6 +63,8 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 }
 
 
+// NB: We need scan to test all possible nonlinearities
+//________________________________________________________________
 void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	Int_t sm1, sm2, x1, z1, x2, z2;
@@ -89,12 +82,24 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 			if (psum.M2() < 0)
 				return;
 
-			Double_t ma12 = psum.M();
+			Double_t m12 = psum.M();
 			Double_t pt12 = psum.Pt();
-			TH1 * hist = (!eflags.isMixing) ? fInvariantMass[ia][ib] : fMixInvariantMass[ia][ib];
+			TH2 * hist = dynamic_cast<TH2 *> ((!eflags.isMixing) ? fInvariantMass[ia][ib] : fMixInvariantMass[ia][ib]);
 
-			hist->Fill(ma12, pt12);
+			Float_t weight = fWeights->Weight(pt12);
+			hist->Fill(m12, pt12, weight);
 		}
 	}
+}
+
+
+//________________________________________________________________
+TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
+{
+	// NB: Intentionally don't apply nonlinearity Correction here
+    // Float_t energy = c1->E();
+    TLorentzVector p;
+    c1->GetMomentum(p, eflags.vtxBest);
+	return p;
 }
 
