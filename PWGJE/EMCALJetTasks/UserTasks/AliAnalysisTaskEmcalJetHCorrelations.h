@@ -160,6 +160,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Helper functions
   void                   InitializeArraysToZero();
   void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
+  Double_t               GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const;
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
@@ -207,6 +208,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   TH3                   *fHistJHPsi;               //!<! Psi angle distribution
   THnSparse             *fhnMixedEvents;           //!<! Mixed events THnSparse
   THnSparse             *fhnJH;                    //!<! JetH THnSparse
+  THnSparse             *fhnTrigger;               //!<! JetH trigger sparse
 
   // Pb-Pb Efficiency correction coefficients
   static Double_t p0_10SG[17];                    ///< 0-10% centrality semi-good runs
@@ -225,7 +227,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 13);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 14);
   /// \endcond
 };
 #endif

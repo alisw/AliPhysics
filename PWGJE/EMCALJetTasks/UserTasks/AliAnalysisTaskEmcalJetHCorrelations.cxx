@@ -75,7 +75,8 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fHistJetHEtaPhi(nullptr),
   fHistJHPsi(nullptr),
   fhnMixedEvents(nullptr),
-  fhnJH(nullptr)
+  fhnJH(nullptr),
+  fhnTrigger(nullptr)
 {
   // Default Constructor
   InitializeArraysToZero();
@@ -103,7 +104,8 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fHistJetHEtaPhi(nullptr),
   fHistJHPsi(nullptr),
   fhnMixedEvents(nullptr),
-  fhnJH(nullptr)
+  fhnJH(nullptr),
+  fhnTrigger(nullptr)
 {
   // Constructor
   InitializeArraysToZero();
@@ -182,26 +184,33 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
 
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
   if(fDoLessSparseAxes) {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5;
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
   } else {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
-    //cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7;
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
   }
   fhnJH = NewTHnSparseF("fhnJH", cifras);
   fhnJH->Sumw2();
   fOutput->Add(fhnJH);
 
   if(fDoEventMixing){    
+    // The event plane angle does not need to be included because the semi-central determined that the EP angle didn't change
+    // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
+    // analysis if so desired.
     if(fDoLessSparseAxes) { 
-      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5;
+      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
     } else {
-      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
-      //cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7;
+      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
     }
     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
     fhnMixedEvents->Sumw2();
     fOutput->Add(fhnMixedEvents);
   }
+
+  // Trigger THnSparse
+  cifras = 1<<0 | 1<<1 | 1<<9;
+  fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
+  fhnTrigger->Sumw2();
+  fOutput->Add(fhnTrigger);
   
   PostData(1, fOutput);
 
@@ -349,6 +358,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   Double_t deltaPhi = 0;
   Double_t deltaEta = 0;
   Double_t deltaR = 0;
+  Double_t epAngle = 0;
   // Event activity (centrality or multipilicity)
   Double_t eventActivity = 0;
   // Efficiency correction
@@ -405,6 +415,17 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     // Determine if the jet is biased
     biasedJet = BiasedJet(jet);
 
+    // Determine event plane angle
+    epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+
+    // Determine event activity
+    if (fBeamType == kAA || fBeamType == kpA) {
+      eventActivity = fCent;
+    }
+    else if (fBeamType == kpp) {
+      eventActivity = static_cast<Double_t>(tracks->GetNTracks());
+    }
+
     // Calculate vector
     jetVector.SetXYZ(jet->Px(), jet->Py(), jet->Pz());
 
@@ -415,6 +436,12 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     }
 
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
+
+    // Record trigger information
+    if (biasedJet == kTRUE) {
+      const double triggerInfo[] = {eventActivity, jet->Pt(), epAngle};
+      fhnTrigger->Fill(triggerInfo);
+    }
 
     if (jet->Pt() > 15) {
 
@@ -460,18 +487,11 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         if (biasedJet == kTRUE) {
           fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track.Pt());
 
-          if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
-            eventActivity = fCent;
-          }
-          else if (fBeamType == kpp) {
-            eventActivity = static_cast<Double_t>(tracks->GetNTracks());
-          }
-
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
+            Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           } else { 
-            Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
+            Double_t triggerEntries[8] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -547,6 +567,9 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           // Determine if the jet is biased
           biasedJet = BiasedJet(jet);
 
+          // Determine event plane angle
+          epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+
           // Make sure event contains jet above our threshold (reduce stats of sparse)
           if (jet->Pt() < 15) continue;
 
@@ -583,10 +606,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
                 }
 
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
-                  Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
+                  Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
                 } else {
-                  Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
+                  Double_t triggerEntries[8] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
                 }
               }
@@ -642,6 +665,42 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentz
 
   // Adjust to the normal range after the DeltaR caluclation
   deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.);
+}
+
+/**
+ * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
+ * Adapted from AliAnalysisTaskEmcalJetHadEPpid.
+ *
+ * @param jetAngle Phi angle of the jet (could be any particle)
+ * @param epAngle Event plane angle
+ *
+ * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
+ */
+Double_t AliAnalysisTaskEmcalJetHCorrelations::GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const
+{
+  Double_t dphi = (epAngle - jetAngle);
+
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi() ) {
+    dphi = dphi + 1*TMath::Pi();
+  } // this assumes we are doing full jets currently
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ) {
+    // Do nothing! we are in quadrant 1
+  } else if ( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ) {
+    dphi = 1*TMath::Pi() - dphi;
+  } else if ( (dphi<0) && (dphi>-1*TMath::Pi()/2) ) {
+    dphi = std::abs(dphi);
+  } else if ( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ) {
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  // Warn if we are not in the proper range
+  if ( dphi < 0 || dphi > TMath::Pi()/2 ) {
+    AliWarningStream() << GetName() << ": dPHI not in range [0, 0.5*Pi]!\n";
+  }
+
+  return dphi;   // dphi in [0, Pi/2]
 }
 
 /**
@@ -707,7 +766,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       break;
 
     case 1:
-      label = "corrected jet pt";
+      label = "jet pt";
       nbins = 20;
       xmin = 0.;
       xmax = 200.;
@@ -767,6 +826,13 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       nbins = 13;
       xmin = 0;
       xmax = 50;
+      break;
+
+    case 9:
+      label = "event plane angle";
+      nbins = 3;
+      xmin = 0;
+      xmax = TMath::Pi()/2.;
       break;
   }
 }
