@@ -330,8 +330,8 @@ Double_t  AliHelix::GetPhase(Double_t x, Double_t y ) const
   //
   Float_t delta = TMath::Nint((phase2-fHelix[2])/(2.*TMath::Pi()));
   phase2-= 2*TMath::Pi()*delta;
-  if ( (phase2-fHelix[2])>TMath::Pi()) phase2 -=2.*TMath::Pi();
-  if ( (phase2-fHelix[2])<-TMath::Pi()) phase2+=2.*TMath::Pi();
+  while ( (phase2-fHelix[2])>TMath::Pi() ) phase2 -=2.*TMath::Pi();
+  while ( (phase2-fHelix[2])<-TMath::Pi() ) phase2+=2.*TMath::Pi();
 
   Double_t t     = (phase2-fHelix[2]);
   t/=fHelix[4];
