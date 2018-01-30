@@ -657,10 +657,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::BiasedJet(AliEmcalJet * jet)
  */
 void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR)
 {
-  // TODO: Understand order of arguments to DeltaPhi vs DeltaEta
+  // Define dPhi = jet.Phi() - particle.Phi() and similarly for dEta
   // Returns deltaPhi in symmetric range so that we can calculate DeltaR.
-  deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -1.0*TMath::Pi(), TMath::Pi());
-  deltaEta = particleOne.Eta() - particleTwo->Eta();
+  deltaPhi = DeltaPhi(particleOne.Phi(), particleTwo->Phi(), -1.0*TMath::Pi(), TMath::Pi());
+  deltaEta = particleTwo->Eta() - particleOne.Eta();
   deltaR = TMath::Sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
 
   // Adjust to the normal range after the DeltaR caluclation
