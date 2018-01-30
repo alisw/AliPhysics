@@ -30,6 +30,8 @@ inputObjects:                                       # Define all of the input ob
             # This track input takes all default cuts!
         defaultTrackContainer_1:                    # Name of another track input which inherits from defaultTrackContainer
             # The branch name is inherited from defaultTrackContainer!
+            # (Note that we only use this daughter container in the default settings below -- the parent and daughter are in fact
+            #  configured exactly the same here, by default; it is only done for illustration).
             minPt: 0.15                             # Track min pt.
             trackFilterType: kHybridTracks          # Set the track filter type. Check the documentation for possible values
             #aodFilterBits: [16, 1]                 # Can also set AOD filter bits. Check the docuemntation for more information
@@ -149,7 +151,7 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
-        - defaultTrackContainer                     # This object is defined above in the track section of the input objects
+        - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
 PHOSCorrections:                                    # PHOS recalibration component (wraps PHOS Tender Supply)
     enabled: false                                  # Whether to enable the task
     isMC: false                                     # Whether is MC
