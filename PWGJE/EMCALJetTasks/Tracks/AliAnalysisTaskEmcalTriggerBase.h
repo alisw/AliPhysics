@@ -225,9 +225,10 @@ public:
    * @brief Run event loop only on min. bias events.
    *
    * In this case EMCAL triggers are ignored, and the trigger selection code is not run.
+   * Also the calo trigger patch object container is not linked to the task / not required.
    * @param[in] exclusivemb If true only min. bias events are analyzed
    */
-  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; }
+  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; SetCaloTriggerPatchInfoName(""); }
 
 protected:
 
