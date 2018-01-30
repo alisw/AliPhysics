@@ -150,7 +150,6 @@ AliAnalysisTaskSE(),
   // Default constructor
   for(int i = 0; i < 3; i++) {
     fHistCentrality[i]     = 0x0;
-    fHistCentralityV0MCL0CL1[i] = 0x0;
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
@@ -220,7 +219,6 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   // standard constructor
   for(int i = 0; i < 3; i++) {
     fHistCentrality[i]     = 0x0;
-    fHistCentralityV0MCL0CL1[i] = 0x0;
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
@@ -292,7 +290,6 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
   if(fOutput && !fOutput->IsOwner()){
     for(Int_t i=0;i<3;i++){
       delete fHistCentrality[i];
-      delete fHistCentralityV0MCL0CL1[i];
       delete fHistEvPlaneQncorrTPC[i];
       delete fHistEvPlaneQncorrVZERO[i];
     }

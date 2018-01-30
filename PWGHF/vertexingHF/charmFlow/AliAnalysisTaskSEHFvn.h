@@ -182,7 +182,6 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
   TH1F *fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev,out of cent)
-  TH2F *fHistCentralityV0MCL0CL1[3];     //!<!hist. for cent correlation among V0M, CL1 and CL0 estimators
   TH2F *fHistCandVsCent;        //!<!hist. for number of selected candidates vs. cent
   TH2F *fHistCandMassRangeVsCent; //!<!hist. for number of selected candidates in mass range vs. cent
   TList   *fOutput;             //! list send on output slot 2
