@@ -47,7 +47,7 @@
 #pragma link C++ class EventStatStruct+;
 #pragma link C++ class mixedDiClusterStatStruct+;
 
-#pragma link C++ class AliAddedSignalsTask+;
+#pragma link C++ class AliEMCalpi0AddedSignalsTask+;
 #pragma link C++ class ClusterHijingMCStatStruct+;
 #pragma link C++ class ClusterMCStatStruct+;
 #pragma link C++ class ClusterpiMCStatStruct+;

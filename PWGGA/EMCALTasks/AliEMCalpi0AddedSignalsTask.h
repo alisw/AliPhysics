@@ -1,10 +1,10 @@
-#ifndef AliAddedSignalsTask_h
-#define AliAddedSignalsTask_h
+#ifndef AliEMCalpi0AddedSignalsTask_h
+#define AliEMCalpi0AddedSignalsTask_h
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
 // $Id$
-/// \class AliAddedSignalsTask
+/// \class AliEMCalpi0AddedSignalsTask
 /// \Task to analyse AODs for pion/eta studies
 ///
 //  \Astrid Morreale -subatech
@@ -18,12 +18,12 @@ class AliESDEvent;
 
 
 
-class AliAddedSignalsTask : public AliAnalysisTaskSE
+class AliEMCalpi0AddedSignalsTask : public AliAnalysisTaskSE
 {
     public:
-    AliAddedSignalsTask(const char *name = "AliAddedSignalsTask");
+    AliEMCalpi0AddedSignalsTask(const char *name = "AliEMCalpi0AddedSignalsTask");
 
-    virtual ~AliAddedSignalsTask();
+    virtual ~AliEMCalpi0AddedSignalsTask();
 
     // virtual void GetMom(TLorentzVector& p, const AliVCluster *c1, const AliVCluster *c2, Double_t *vertex);
     virtual void UserCreateOutputObjects();
@@ -37,10 +37,10 @@ class AliAddedSignalsTask : public AliAnalysisTaskSE
     private:
 
     /// copy constructor (not implemented )
-    AliAddedSignalsTask( const AliAddedSignalsTask& );
+    AliEMCalpi0AddedSignalsTask( const AliEMCalpi0AddedSignalsTask& );
 
     /// assignment operator (not implemented )
-    AliAddedSignalsTask& operator = ( const AliAddedSignalsTask& );
+    AliEMCalpi0AddedSignalsTask& operator = ( const AliEMCalpi0AddedSignalsTask& );
 
 
 
@@ -62,9 +62,7 @@ class AliAddedSignalsTask : public AliAnalysisTaskSE
     Int_t fClusterpiMCStatCount;
     Int_t fClusterHijingMCStatCount;
 
-
-
-    ClassDef(AliAddedSignalsTask,1)
+    ClassDef(AliEMCalpi0AddedSignalsTask,1)
 
 };
 

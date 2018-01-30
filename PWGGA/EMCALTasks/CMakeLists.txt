@@ -63,7 +63,7 @@ set(SRCS
     AliAnalysisTaskGammaHadron.cxx
     AliAnalysisTaskEMCALPi0GammaCorr.cxx
 
-    AliAddedSignalsTask.cxx
+    AliEMCalpi0AddedSignalsTask.cxx
     AliHijingClusterMCStatStruct.cxx
     AlietaClusterMCStatStruct.cxx
     Alipi0ClusterMCStatStruct.cxx
