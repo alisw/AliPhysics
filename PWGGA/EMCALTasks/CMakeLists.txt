@@ -41,7 +41,7 @@ set(SRCS
     AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
-    AliAnalysisTaskEMCALTrackIsolation.cxx 
+    AliAnalysisTaskEMCALTrackIsolation.cxx
     AliAnalysisTaskEMCALPhotonTagged.cxx
     AliAnalysisTaskEMCALPi0Gamma.cxx
     AliAnalysisTaskEMCALPi0PbPb.cxx
@@ -62,6 +62,12 @@ set(SRCS
     AliAnalysisTaskNeutralMesons.cxx
     AliAnalysisTaskGammaHadron.cxx
     AliAnalysisTaskEMCALPi0GammaCorr.cxx
+
+    AliAddedSignalsTask.cxx
+    AliHijingClusterMCStatStruct.cxx
+    AlietaClusterMCStatStruct.cxx
+    Alipi0ClusterMCStatStruct.cxx
+
    )
 
 # Headers from sources
