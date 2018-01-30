@@ -709,12 +709,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
     fPythiaCrossSection = fPythiaHeader->GetXsection();
     fPythiaTrials = fPythiaHeader->Trials();
     fPythiaPtHard = fPythiaHeader->GetPtHard();
-    // It is identically zero if the available is not available
+    // It is identically zero if the cross section is not available
     if (fPythiaCrossSection == 0.) {
       AliDebugStream(4) << "Taking the pythia cross section avg from the xsec file.\n";
       fPythiaCrossSection = fPythiaCrossSectionFromFile;
     }
-    // It is identically zero if the available is not available
+    // It is identically zero if the number of trials is not available
     if (fPythiaTrials == 0.) {
       AliDebugStream(4) << "Taking the pythia trials avg from the xsec file.\n";
       fPythiaTrials = fPythiaTrialsFromFile;
@@ -763,6 +763,18 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
 {
+  // Check if pt hard bin is 0, indicating a problem with the event or the grid.
+  // In such a case, the event should be rejected.
+  // This condition should only be applied if we have a valid pythia header.
+  // (pt hard should still be set even if the production wasn't done in pt hard bins).
+  if (fPythiaPtHard == 0. && fPythiaHeader) {
+    AliDebugStream(3) << "Event rejected due to pt hard = 0, indicating a problem with the external event.\n";
+    if (fCreateHisto) {
+      fHistManager.FillTH1("fHistEmbeddedEventRejection", "PtHardIs0", 1);
+    }
+    return kFALSE;
+  }
+
   // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
@@ -930,7 +942,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   // Event rejection reason
   histName = "fHistEmbeddedEventRejection";
   histTitle = "Reasons to reject embedded event";
-  std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist"};
+  std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist", "PtHardIs0"};
   auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
   // Set label names
   for (unsigned int i = 1; i <= binLabels.size(); i++) {
