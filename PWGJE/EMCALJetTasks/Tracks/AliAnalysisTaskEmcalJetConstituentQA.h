@@ -45,6 +45,7 @@ public:
 
   static AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger);
 
+  void SetTriggerSelection(const char *trigger) { fTriggerSelectionString = trigger; } 
   void SetNameTrackContainer(const char *name) { fNameTrackContainer = name; }
   void SetNameClusterContainer(const char *name) { fNameClusterContainer = name; }
   void AddNameJetContainer(const char *name) { fNamesJetContainers.Add(new TObjString(name)); }
@@ -60,6 +61,9 @@ private:
   TString                       fNameClusterContainer;      ///< Name of the cluster container
   TObjArray                     fNamesJetContainers;        ///< Names of the connected jet container
   TString                       fTriggerSelectionString;    ///< Trigger selection string
+
+  AliAnalysisTaskEmcalJetConstituentQA(const AliAnalysisTaskEmcalJetConstituentQA &);
+  AliAnalysisTaskEmcalJetConstituentQA &operator=(const AliAnalysisTaskEmcalJetConstituentQA &);
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalJetConstituentQA, 1);
