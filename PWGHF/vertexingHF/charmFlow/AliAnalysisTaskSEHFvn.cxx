@@ -384,7 +384,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
   fhEventsInfo->GetXaxis()->SetBinLabel(9,"n. rejected for vertex out of accept");
   fhEventsInfo->GetXaxis()->SetBinLabel(10,"n. rejected for pileup events");
   fhEventsInfo->GetXaxis()->SetBinLabel(11,Form("no. of out %.0f-%.0f%s centrality events",fRDCuts->GetMinCentrality(),fRDCuts->GetMaxCentrality(),"%"));
-  fhEventsInfo->GetXaxis()->SetBinLabel(12,"n. rejected for bad V0M-CL0 cent corr");
+  fhEventsInfo->GetXaxis()->SetBinLabel(12,"n. rejected for bad cent corr");
   fhEventsInfo->GetXaxis()->SetBinLabel(13,"non valid TPC EP");
   fhEventsInfo->GetXaxis()->SetBinLabel(14,"bad event plane");
   fhEventsInfo->GetXaxis()->SetBinLabel(15,"no. of sel. candidates");
@@ -624,7 +624,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   if(fFlowMethod==kEvShape) {
     //q2 candidate vs. q2 global event
-    TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),500,0.,10.,500,0,10.);
+    TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     fOutput->Add(hq2CandVsq2Event);
 
     CreateSparseForEvShapeAnalysis();
@@ -1385,10 +1385,29 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       if(!q2spline) {AliFatal("Centrality binning and centrality intervals of q2 splines do not match!");}
       q2percentile=q2spline->Eval(q2);
-      for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
-        q2CandFill.push_back(q2spline->Eval(q2Cand[iCand]));
-      }
       q2fill=q2percentile;
+      if(fRemoveDauFromq2==1 || fDeltaEtaDmesonq2>0) {
+        for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
+          q2CandFill.push_back(q2spline->Eval(q2Cand[iCand]));
+        }
+      }
+      else {
+        for(UInt_t iCand=0; iCand<nSelCand; iCand++) {
+          q2CandFill.push_back(q2fill);
+        }
+      }
+    }
+    else {
+      if(fRemoveDauFromq2==1 || fDeltaEtaDmesonq2>0) {
+        for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
+          q2CandFill.push_back(q2Cand[iCand]);
+        }
+      }
+      else {
+        for(UInt_t iCand=0; iCand<nSelCand; iCand++) {
+          q2CandFill.push_back(q2fill);
+        }
+      }
     }
     
     //fill percentile q2 vs. q2 vs. centrality histogram
@@ -1454,7 +1473,6 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     //fill q2Cand vs. q2Event histo and THnSparseF for event-shape engineering
     for(UInt_t iSelCand=0; iSelCand<nSelCand; iSelCand++) {
-      if(fRemoveDauFromq2==2) {q2CandFill.push_back(q2fill);}
       ((TH2F*)fOutput->FindObject("hq2CandVsq2Event"))->Fill(q2fill,q2CandFill[iSelCand]);
 
       if((fDecChannel==0 || fDecChannel==2) && isSelectedCand[iSelCand]) {
