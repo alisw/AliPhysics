@@ -31,7 +31,7 @@ AliCaloClusterContent::AliCaloClusterContent():
   fIsExotic(-1),
   fIsEMCAL(-1),
   fIsPHOS(-1),
-  fPosition(),
+  fPosition(),  //TODO move down and initialize all entries with -1
   fCoreEnergy(-1),
   fDispersion(-1),
   fDistanceToBadChannel(-1),
@@ -73,7 +73,7 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fIsExotic(-1),
   fIsEMCAL(-1),
   fIsPHOS(-1),
-  fPosition(),
+  fPosition(),  //TODO move down and initialize all entries with -1
   fCoreEnergy(-1),
   fDispersion(-1),
   fDistanceToBadChannel(-1),
@@ -228,31 +228,39 @@ void AliCaloClusterContent::SetClusterAndCells(const AliVCluster* clust, AliVCal
   fIsFilled = kTRUE;
 }
 
-
-
-
-
+//________________________________________________________________________
+//void AliCaloClusterContent::SetMatchedTrack(Double_t Distance, Double_t DistanceX, Double DistanceZ){
+//
+//
+//  fDistanceToTrack  = Distance;
+//  fDistanceXToTrack = DistanceX;
+//  fDistanceZToTrack = DistanceZ;
+//
+//
+//
+//  //fIsTrackMatched = kTRUE;
+//}
 
 //________________________________________________________________________
 void AliCaloClusterContent::Reset(){
 
-  fType                 = 0;
-  fLabel                = 0;
-  fNCells               = 0;
-  fNTracksMatched       = 0;
-  fIsExotic             = 0;
-  fIsEMCAL              = 0;
-  fIsPHOS               = 0;
-  fCoreEnergy           = 0;
-  fDispersion           = 0;
-  fDistanceToBadChannel = 0;
-  fEmcCpvDistance       = 0;
-  fEnergy               = 0;
-  fM02                  = 0;
-  fM20                  = 0;
-  fTOF                  = 0;
-  fTrackDx              = 0;
-  fTrackDz              = 0;
+  fType                 = -1;
+  fLabel                = -1;
+  fNCells               = -1;
+  fNTracksMatched       = -1;
+  fIsExotic             = -1;
+  fIsEMCAL              = -1;
+  fIsPHOS               = -1;
+  fCoreEnergy           = -1;
+  fDispersion           = -1;
+  fDistanceToBadChannel = -1;
+  fEmcCpvDistance       = -1;
+  fEnergy               = -1;
+  fM02                  = -1;
+  fM20                  = -1;
+  fTOF                  = -1;
+  fTrackDx              = -1;
+  fTrackDz              = -1;
 
   fCellAbsID.clear();
   fCellMod.clear();
