@@ -104,22 +104,33 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
   }
 
   // Event selection
+  AliDebugStream(1) << "Trigger selection string: " << fTriggerSelectionString << ", fired trigger classes: " << fInputEvent->GetFiredTriggerClasses() << std::endl;
   if(fTriggerSelectionString.Contains("INT7")){
     // INT7 trigger
     if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   } else if(fTriggerSelectionString.Contains("EJ")){
+     auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3);
      // EMCAL JET trigger
      if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)) return false;
-     if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+     if(!fInputEvent->GetFiredTriggerClasses().Contains(triggerclass)) return false;
   } else return false;
+
+  AliDebugStream(1) << "Event is selected" << std::endl;
 
   for(auto jc : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(jc);
-    if(!contname) continue;
+    if(!contname) {
+      AliErrorStream() << "Non-string object in the list of jet container names" << std::endl;
+      continue;
+    } 
     const auto jetcont = GetJetContainer(contname->String().Data());
-    if(!jetcont) continue;
+    if(!jetcont){
+      AliErrorStream() << "Jet container with name " << contname->String() << " not found in the list of jet containers" << std::endl;
+      continue;
+    } 
 
     for(auto jet : jetcont->accepted()){
+      AliDebugStream(3) << "Next accepted jet, found " << jet->GetNumberOfTracks() << " tracks and " << jet->GetNumberOfClusters() << " clusters." << std::endl;
       for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
         const auto trk = jet->TrackAt(itrk, tracks->GetArray());
         if(!trk) continue;
@@ -153,6 +164,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   std::stringstream taskname;
   taskname << "constituentQA_" << trigger;
   auto task = new AliAnalysisTaskEmcalJetConstituentQA(taskname.str().data());
+  task->SetTriggerSelection(trigger);
   mgr->AddTask(task);
 
   auto inputhandler = mgr->GetInputEventHandler();
@@ -174,7 +186,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   std::array<double, 2> jetradii = {{0.2, 0.4}};
   for(auto r : jetradii) {
     std::stringstream contname;
-    contname << "fulljets_R" << std::setw(2) << std::setfill('0') << r;
+    contname << "fulljets_R" << std::setw(2) << std::setfill('0') << int(r*10.);
     auto jcont = task->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, r, AliJetContainer::kEMCALfid, tracks, clusters, "Jet");
     jcont->SetName(contname.str().data());
     task->AddNameJetContainer(contname.str().data());
