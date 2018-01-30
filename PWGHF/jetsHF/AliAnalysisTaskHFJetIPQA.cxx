@@ -102,9 +102,13 @@ fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
 fIsSameEvent_n1(kFALSE),
 fIsSameEvent_n2(kFALSE),
-fIsSameEvent_n3(kFALSE)
-
-
+fIsSameEvent_n3(kFALSE),
+fUseTreeForCorrelations(kFALSE),
+fCorrelationCrossCheck(nullptr),
+fTREE_n1(-99.),
+fTREE_n2(-99.),
+fTREE_n3(-99.),
+fTREE_pt(-1.)
 
 {
     SetMakeGeneralHistograms(kTRUE);
@@ -116,9 +120,8 @@ fIsSameEvent_n3(kFALSE)
     SetVzRange(-10,10);
     SetUseSPDTrackletVsClusterBG(kTRUE);
     for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
-
-
         DefineOutput(1,  TList::Class()) ;
+        if(fUseTreeForCorrelations)  DefineOutput(0,  TTree::Class()) ;    
 }
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
 AliAnalysisTaskEmcalJet(name, kTRUE),fHistManager(name),
@@ -167,8 +170,13 @@ fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
 fIsSameEvent_n1(kFALSE),
 fIsSameEvent_n2(kFALSE),
-fIsSameEvent_n3(kFALSE)
-
+fIsSameEvent_n3(kFALSE),
+fUseTreeForCorrelations(kFALSE),
+fCorrelationCrossCheck(nullptr),
+fTREE_n1(-99.),
+fTREE_n2(-99.),
+fTREE_n3(-99.),
+fTREE_pt(-1.)
 {
     SetNeedEmcalGeom(kFALSE);
     SetOffTrigger(AliVEvent::kMB);
@@ -178,6 +186,8 @@ fIsSameEvent_n3(kFALSE)
     SetMakeGeneralHistograms(kTRUE);
     SetDefaultAnalysisCuts();
     DefineOutput(1,  TList::Class()) ;
+    if(fUseTreeForCorrelations)  DefineOutput(0,  TTree::Class()) ;    
+
     for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1;
         for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
 
@@ -920,12 +930,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 if(hasIPs[2])ipval[2] =sImpParXY.at(2).first;
 
 
-                if(fFillCorrelations){
+                if(fFillCorrelations || fUseTreeForCorrelations){
                     FillCorrelations(hasIPs,ipval,jetpt);
-
-                    if(!fIsMixSignalReady_n1 && hasIPs[0]) SetMixDCA(1,ipval[0] );
-                    if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
-                    if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
+                    if(fFillCorrelations && ! fUseTreeForCorrelations){
+                        if(!fIsMixSignalReady_n1 && hasIPs[0]) SetMixDCA(1,ipval[0] );
+                        if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
+                        if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
+                    }
                 }
 
                 for (Int_t ot = 0 ; ot <3 ;++ot){
@@ -1205,6 +1216,22 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                         void AliAnalysisTaskHFJetIPQA::FillCorrelations(bool bn[3],double v[3], double jetpt ){
     //Fill all possible same jet distributions
+                             fTREE_n1 = -999;
+                             fTREE_n2 = -999;
+                             fTREE_n3 = -999;
+                             fTREE_pt = -999;
+                                     
+                             if(fUseTreeForCorrelations){
+                                if(bn[0] && bn[1]){
+                                   fTREE_n1 = v[0];
+                                   fTREE_n2 = v[1];
+                                   fTREE_n3 = v[2];
+                                   fTREE_pt = jetpt;
+                                   fCorrelationCrossCheck->Fill();                                   
+                                }
+                             }   
+                            else if (fFillCorrelations && !fUseTreeForCorrelations )
+                            {
                             if (bn[0] && bn[1]) {
                                 FillHist("fh2dInclusiveCorrelationN1N2",v[0],v[1]);
                                 if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N2",v[0],v[1]);
@@ -1259,7 +1286,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                     if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3mix",v[1],n3);
                                 }
                             }
-
+                            }
                             return;
                         }
 
@@ -1345,6 +1372,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                                                fGeant3FlukaAntiLambda = new TGraph(gfAntiLambdaN,gfAntiLambdaX,gfAntiLambdaY);
                                                                fGeant3FlukaKMinus 	   = new TGraph(gfKMinusN,gfKMinusX,gfKMinusY);
     //ADD HISTOGRAMS
+                                                                if(fUseTreeForCorrelations){
+                                                                    Printf("Adding Tree to output file");
+                                                                    OpenFile(1);
+                                                                    fCorrelationCrossCheck = new TTree("fCorrelationCrossCheck","fCorrelationCrossCheck");
+                                                                    fCorrelationCrossCheck->Branch("n1",&fTREE_n1,"px/F");
+                                                                    fCorrelationCrossCheck->Branch("n2",&fTREE_n2,"py/F");
+                                                                    fCorrelationCrossCheck->Branch("n3",&fTREE_n3,"pz/F");
+                                                                    fCorrelationCrossCheck->Branch("pt",&fTREE_pt,"pz/F");
+                                                                    fOutput->Add(fCorrelationCrossCheck);
+                                                                }
+
+
+
                                                                TH1D * h = (TH1D*)AddHistogramm("fh1dEventRejectionRDHFCuts","fh1dEventRejectionRDHFCuts;reason;count",12,0,12);
                                                                h->GetXaxis()->SetBinLabel(1,"Event accepted");
                                                                h->GetXaxis()->SetBinLabel(2,"Event rejected");
@@ -1407,7 +1447,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                                             fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
                                                             fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
                                                             fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            if (fFillCorrelations){
+                                                            
+                                                           
+                                                             if (fFillCorrelations && !fUseTreeForCorrelations){
+                                                            
                                                              fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
                                                              fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
                                                              fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
@@ -1667,6 +1710,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         fOutput->Add(obj);
                     }
     PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+    if(fUseTreeForCorrelations)    PostData(0, fCorrelationCrossCheck); // Post data for ALL output slots > 0 here.
+
 }
 void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
     //
@@ -1841,8 +1886,8 @@ void AliAnalysisTaskHFJetIPQA::FillParticleCompositionSpectra(AliEmcalJet * jet,
       if(!tr) continue;
       double pT=0x0;
       Int_t pCorr_indx=-1;
-      double factor = GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
-      if(pCorr_indx<0 || factor ==1) continue;
+      GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
+      if(pCorr_indx<0 ) continue;
       FillHist(histname,pCorr_indx+0.5,pT, this->fXsectionWeightingFactor  );
   }
   return;
@@ -1857,8 +1902,7 @@ void AliAnalysisTaskHFJetIPQA::FillParticleCompositionEvent( ){
       if(!tr) continue;
       double pT=0x0;
       Int_t pCorr_indx=-1;
-      double factor = GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
-
+       GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
       if(pCorr_indx<0) continue;
       FillHist("fh2dParticleSpectra_Event",pCorr_indx+0.5,pT, this->fXsectionWeightingFactor  );
   }
