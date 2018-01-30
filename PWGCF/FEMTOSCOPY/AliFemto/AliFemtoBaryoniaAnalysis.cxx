@@ -31,7 +31,11 @@ fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsPassed(0),
 fPicoEvent(nullptr),
-fPerformSharedDaughterCut(kFALSE)
+fPerformSharedDaughterCut(kFALSE),
+fCollection1type(AliFemtoTrio::kUnknown),
+fCollection2type(AliFemtoTrio::kUnknown),
+fCollection3type(AliFemtoTrio::kUnknown),
+fDoEventMixing(false)
 {
   // Default constructor
   fTrioFctnCollection = new AliFemtoTrioFctnCollection();
@@ -63,6 +67,7 @@ AliFemtoBaryoniaAnalysis::~AliFemtoBaryoniaAnalysis()
 
 void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 {
+  cout<<"ProcessEvent"<<endl;
   fPicoEvent = nullptr;
   EventBegin(currentEvent);
   bool tmpPassEvent = fEventCut->Pass(currentEvent);
@@ -101,46 +106,47 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
   bool mixing = false;
   AddParticles(collection1,collection2,collection3,mixing);
   // add mixed events (if enough entries in the mixing buffer)
-  if(fNeventsPassed>2){
-    mixing = true;
-    collection1 = fMixingBuffer[0]->FirstParticleCollection();
-    collection2 = fMixingBuffer[1]->SecondParticleCollection();
-    collection3 = fMixingBuffer[2]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
+  if(fDoEventMixing){
+    if(fNeventsPassed>2){
+      mixing = true;
+      collection1 = fMixingBuffer[0]->FirstParticleCollection();
+      collection2 = fMixingBuffer[1]->SecondParticleCollection();
+      collection3 = fMixingBuffer[2]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+      collection1 = fMixingBuffer[0]->FirstParticleCollection();
+      collection2 = fMixingBuffer[2]->SecondParticleCollection();
+      collection3 = fMixingBuffer[1]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+      collection1 = fMixingBuffer[1]->FirstParticleCollection();
+      collection2 = fMixingBuffer[2]->SecondParticleCollection();
+      collection3 = fMixingBuffer[0]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+      collection1 = fMixingBuffer[1]->FirstParticleCollection();
+      collection2 = fMixingBuffer[0]->SecondParticleCollection();
+      collection3 = fMixingBuffer[2]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+      collection1 = fMixingBuffer[2]->FirstParticleCollection();
+      collection2 = fMixingBuffer[0]->SecondParticleCollection();
+      collection3 = fMixingBuffer[1]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+      collection1 = fMixingBuffer[2]->FirstParticleCollection();
+      collection2 = fMixingBuffer[1]->SecondParticleCollection();
+      collection3 = fMixingBuffer[0]->ThirdParticleCollection();
+      AddParticles(collection1,collection2,collection3,mixing);
+      
+    }
+    // delete the oldest event, shift others and save the current one in the buffer
+    if(fMixingBuffer[2]) delete fMixingBuffer[2];
     
-    collection1 = fMixingBuffer[0]->FirstParticleCollection();
-    collection2 = fMixingBuffer[2]->SecondParticleCollection();
-    collection3 = fMixingBuffer[1]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
-    
-    collection1 = fMixingBuffer[1]->FirstParticleCollection();
-    collection2 = fMixingBuffer[2]->SecondParticleCollection();
-    collection3 = fMixingBuffer[0]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
-    
-    collection1 = fMixingBuffer[1]->FirstParticleCollection();
-    collection2 = fMixingBuffer[0]->SecondParticleCollection();
-    collection3 = fMixingBuffer[2]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
-    
-    collection1 = fMixingBuffer[2]->FirstParticleCollection();
-    collection2 = fMixingBuffer[0]->SecondParticleCollection();
-    collection3 = fMixingBuffer[1]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
-    
-    collection1 = fMixingBuffer[2]->FirstParticleCollection();
-    collection2 = fMixingBuffer[1]->SecondParticleCollection();
-    collection3 = fMixingBuffer[0]->ThirdParticleCollection();
-    AddParticles(collection1,collection2,collection3,mixing);
-    
+    fMixingBuffer[2] = fMixingBuffer[1];
+    fMixingBuffer[1] = fMixingBuffer[0];
+    fMixingBuffer[0] = fPicoEvent;
   }
-  // delete the oldest event, shift others and save the current one in the buffer
-  if(fMixingBuffer[2]) delete fMixingBuffer[2];
-  
-  fMixingBuffer[2] = fMixingBuffer[1];
-  fMixingBuffer[1] = fMixingBuffer[0];
-  fMixingBuffer[0] = fPicoEvent;
-  
   EventEnd(currentEvent);
   fNeventsPassed++;
 }
@@ -148,18 +154,19 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 //_________________________
 void AliFemtoBaryoniaAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
                                             AliFemtoParticleCollection *collection2,
-                                            AliFemtoParticleCollection *collection3, bool mixing)
+                                            AliFemtoParticleCollection *collection3,
+                                            bool mixing)
 {
   AliFemtoTrio *trio = new AliFemtoTrio();
   
   for (AliFemtoParticleConstIterator iPart1 = collection1->begin();iPart1 != collection1->end();++iPart1){
-    trio->SetTrack1((AliFemtoParticle *)(*iPart1));
+    trio->SetTrack1((AliFemtoParticle *)(*iPart1),fCollection1type);
     
     for (AliFemtoParticleConstIterator  iPart2 = collection2->begin();iPart2 != collection2->end();++iPart2){
-      trio->SetTrack2((AliFemtoParticle *)(*iPart2));
+      trio->SetTrack2((AliFemtoParticle *)(*iPart2),fCollection2type);
       
       for (AliFemtoParticleConstIterator  iPart3 = collection3->begin();iPart3 != collection3->end();++iPart3){
-        trio->SetTrack3((AliFemtoParticle *)(*iPart3));
+        trio->SetTrack3((AliFemtoParticle *)(*iPart3),fCollection3type);
         
         for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun){
           AliFemtoTrioMinvFctn *distribution = *iFun;

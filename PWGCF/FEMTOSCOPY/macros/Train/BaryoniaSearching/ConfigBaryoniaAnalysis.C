@@ -7,11 +7,11 @@
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoTrioMinvFctn.h"
 #include "AliFemtoTrioCut.h"
+#include "AliFemtoTrio.h"
 #include "AliESDtrack.h"
 #endif
 
 
-enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus };
 enum ESys  { kAPL, kPAL, kKKpi, nSys };
 
 const char *sysNames[nSys]      = { "APL", "PAL", "KKpi"};
@@ -26,14 +26,14 @@ bool ppCollisions;
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis);
-AliFemtoBaryoniaAnalysis* GetAnalysis();
+AliFemtoBaryoniaAnalysis* GetAnalysis(bool doEventMixing);
 AliFemtoBasicEventCut* GetEventCut();
-AliFemtoESDTrackCut* GetTrackCut(EPart particle);
+AliFemtoESDTrackCut* GetTrackCut(AliFemtoTrio::EPart particle);
 AliFemtoTrioCut* GetTrioCut(ESys system);
-void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle);
+void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false)
 {
   separationCuts = sepCuts;
   ppCollisions = ppAnalysis;
@@ -71,13 +71,13 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     anIter = iSys;
     
     // create new analysis
-    baryoniaAnalysis[anIter] = GetAnalysis();
+    baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
     
     // get event cut
     eventCut[anIter] = GetEventCut();
     
     // get particle cuts
-    EPart firstParticle, secondParticle, thirdParticle;
+    AliFemtoTrio::EPart firstParticle, secondParticle, thirdParticle;
     GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle, thirdParticle);
     
     AliFemtoESDTrackCut *firstTrackCut  = GetTrackCut(firstParticle);
@@ -94,6 +94,10 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     baryoniaAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
     baryoniaAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
     baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
+    
+    baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
+    baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
+    baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
     
     // create m_inv distribution and add to the analysis
     distribution[anIter] = new AliFemtoTrioMinvFctn(sysNames[iSys],(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
@@ -146,9 +150,10 @@ AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
   return Reader;
 }
 
-AliFemtoBaryoniaAnalysis* GetAnalysis()
+AliFemtoBaryoniaAnalysis* GetAnalysis(bool doEventMixing)
 {
   AliFemtoBaryoniaAnalysis *analysis = new AliFemtoBaryoniaAnalysis();
+  analysis->SetDoEventMixing(doEventMixing);
   // here one can put some additional analysis settings in the future
   
   return analysis;
@@ -164,20 +169,20 @@ AliFemtoBasicEventCut* GetEventCut()
   return eventCut;
 }
 
-AliFemtoESDTrackCut* GetTrackCut(EPart particle)
+AliFemtoESDTrackCut* GetTrackCut(AliFemtoTrio::EPart particle)
 {
   AliFemtoESDTrackCut *particleCut = new AliFemtoESDTrackCut();
   
-  if(particle == kKaonPlus || particle==kKaonMinus){
+  if(particle == AliFemtoTrio::kKaonPlus || particle==AliFemtoTrio::kKaonMinus){
     particleCut->SetMostProbableKaon();
     particleCut->SetMass(0.493677);
   }
-  else if(particle == kPionPlus || particle==kPionMinus){
+  else if(particle == AliFemtoTrio::kPionPlus || particle==AliFemtoTrio::kPionMinus){
     particleCut->SetMostProbablePion();
     particleCut->SetMass(0.13956995);
   }
   
-  if(particle == kKaonPlus || particle == kPionPlus){ particleCut->SetCharge( 1.0); }
+  if(particle == AliFemtoTrio::kKaonPlus || particle == AliFemtoTrio::kPionPlus){ particleCut->SetCharge( 1.0); }
   else                                              { particleCut->SetCharge(-1.0); }
   
   particleCut->SetPt(0.14,1.5);
@@ -199,6 +204,50 @@ AliFemtoTrioCut* GetTrioCut(ESys system)
 {
   AliFemtoTrioCut *trioCut = new AliFemtoTrioCut();
   
+  
+  // ππ cuts
+  // ρ
+  trioCut->SetExcludePair(0.775,0.145,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // ω
+  trioCut->SetExcludePair(0.783,0.008,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // f0
+  trioCut->SetExcludePair(0.990,0.010,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // f2
+  trioCut->SetExcludePair(1.276,0.187,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // f0
+  trioCut->SetExcludePair(1.504,0.109,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // ρ3
+  trioCut->SetExcludePair(1.689,0.161,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // f0
+  trioCut->SetExcludePair(1.723,0.139,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // f4
+  trioCut->SetExcludePair(2.018,0.237,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  // K0_s
+  trioCut->SetExcludePair(0.497,0.005,AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
+  
+  // Kπ cuts:
+  // K*(892)
+  trioCut->SetExcludePair(0.294,0.050,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(0.294,0.050,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // K*(1410)
+  trioCut->SetExcludePair(1.421,0.236,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(1.421,0.236,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // K*2(1430)
+  trioCut->SetExcludePair(1.425,0.099,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(1.425,0.099,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // K*(1680)
+  trioCut->SetExcludePair(1.718,0.322,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(1.718,0.322,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // K*3(1780)
+  trioCut->SetExcludePair(1.776,0.159,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(1.776,0.159,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // K*4(2045)
+  trioCut->SetExcludePair(2.045,0.198,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(2.045,0.198,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  // D0
+  trioCut->SetExcludePair(1.865,0.010,AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
+  trioCut->SetExcludePair(1.865,0.010,AliFemtoTrio::kKaonMinus,AliFemtoTrio::kPionPlus);
+  
 //  pairCut->SetPhiStarDifferenceMinimum(0.012);
 //  pairCut->SetEtaDifferenceMinimum(0.017);
 //  pairCut->SetShareQualityMax(1.0);
@@ -216,22 +265,22 @@ AliFemtoTrioCut* GetTrioCut(ESys system)
   return trioCut;
 }
 
-void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle)
+void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle)
 {
   if(system == kAPL){
-    firstParticle  = kKaonMinus;
-    secondParticle = kPionPlus;
-    thirdParticle  = kPionMinus;
+    firstParticle  = AliFemtoTrio::kKaonMinus;
+    secondParticle = AliFemtoTrio::kPionPlus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
   }
   if(system == kPAL){
-    firstParticle  = kKaonPlus;
-    secondParticle = kPionPlus;
-    thirdParticle  = kPionMinus;
+    firstParticle  = AliFemtoTrio::kKaonPlus;
+    secondParticle = AliFemtoTrio::kPionPlus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
   }
   if(system == kKKpi){
-    firstParticle  = kKaonPlus;
-    secondParticle = kKaonMinus;
-    thirdParticle  = kPionMinus;
+    firstParticle  = AliFemtoTrio::kKaonPlus;
+    secondParticle = AliFemtoTrio::kKaonMinus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
   }
 }
 
