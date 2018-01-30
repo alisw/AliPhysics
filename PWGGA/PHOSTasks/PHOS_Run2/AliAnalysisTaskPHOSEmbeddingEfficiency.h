@@ -41,13 +41,12 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
   protected:
     TString fParticleName;
     TClonesArray *fMCArray;
-    TF1 *fWeightCen0005;
 
   private:
     AliAnalysisTaskPHOSEmbeddingEfficiency(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
     AliAnalysisTaskPHOSEmbeddingEfficiency& operator=(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 9); // example of analysis
+    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 10); // example of analysis
 };
 
 #endif

@@ -159,8 +159,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   }
   if(!isMC && Trgcorrection){
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
-    f1trg->SetNpx(1000);
     f1trg->SetParameters(0.985,2.56,0.30);
+
+    //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);//20180128
+    //f1trg->SetParameters(0.308,2.85,0.259,0.264,5.16,0.781);
+
+    f1trg->SetNpx(1000);
     task->SetTriggerEfficiency(f1trg);
     //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
