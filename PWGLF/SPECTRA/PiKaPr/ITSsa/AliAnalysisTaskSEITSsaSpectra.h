@@ -203,7 +203,7 @@ private:
   AliITSPIDResponse* fITSPIDResponse; //!<! class with BB parameterizations
 
   //Standard event cut
-  AliEventCuts fEventCuts;            //!<! basic cut variables for events
+  AliEventCuts fEventCuts;            //-> basic cut variables for events
 
   /////////////////////////////////////////////////////
   // List
