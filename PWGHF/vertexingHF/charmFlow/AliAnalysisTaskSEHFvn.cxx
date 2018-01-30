@@ -1425,7 +1425,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
 
     if(fEnableNtrklHistos) {
-      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.8,0.8);
+      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
 
       ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2fill,tracklets);
       if(nSelCand>0) {
