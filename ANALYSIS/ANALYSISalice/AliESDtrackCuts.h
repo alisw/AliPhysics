@@ -51,8 +51,7 @@ public:
   AliESDtrackCuts(const Char_t* name = "AliESDtrackCuts", const Char_t* title = "");
   virtual ~AliESDtrackCuts();
 
-  virtual Bool_t IsSelected(TObject* obj)
-       {return AcceptTrack((AliESDtrack*)obj);}
+  virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   Bool_t AcceptTrack(const AliESDtrack* esdTrack);
