@@ -143,11 +143,14 @@ AliAnalysisTaskSE(),
   fRemoverSoftPionFromq2(kFALSE),
   fPercentileq2(kFALSE),
   fq2SplinesList(0x0),
+  fEnableCentralityCorrCuts(kFALSE),
+  fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
     fHistCentrality[i]     = 0x0;
+    fHistCentralityV0MCL0CL1[i] = 0x0;
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
@@ -210,11 +213,14 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fRemoverSoftPionFromq2(kFALSE),
   fPercentileq2(kFALSE),
   fq2SplinesList(0x0),
+  fEnableCentralityCorrCuts(kFALSE),
+  fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
     fHistCentrality[i]     = 0x0;
+    fHistCentralityV0MCL0CL1[i] = 0x0;
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
@@ -286,6 +292,7 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
   if(fOutput && !fOutput->IsOwner()){
     for(Int_t i=0;i<3;i++){
       delete fHistCentrality[i];
+      delete fHistCentralityV0MCL0CL1[i];
       delete fHistEvPlaneQncorrTPC[i];
       delete fHistEvPlaneQncorrVZERO[i];
     }
@@ -368,7 +375,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   if(fDebug > 1) printf("AnalysisTaskSEHFvn::UserCreateOutputObjects() \n");
 
-  fhEventsInfo = new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",15,-0.5,14.5);
+  fhEventsInfo = new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",16,-0.5,15.5);
   fhEventsInfo->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fhEventsInfo->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fhEventsInfo->GetXaxis()->SetBinLabel(3,"nEvents Mismatched dAOD");
@@ -380,13 +387,14 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
   fhEventsInfo->GetXaxis()->SetBinLabel(9,"n. rejected for vertex out of accept");
   fhEventsInfo->GetXaxis()->SetBinLabel(10,"n. rejected for pileup events");
   fhEventsInfo->GetXaxis()->SetBinLabel(11,Form("no. of out %.0f-%.0f%s centrality events",fRDCuts->GetMinCentrality(),fRDCuts->GetMaxCentrality(),"%"));
-  fhEventsInfo->GetXaxis()->SetBinLabel(12,"non valid TPC EP");
-  fhEventsInfo->GetXaxis()->SetBinLabel(13,"bad event plane");
-  fhEventsInfo->GetXaxis()->SetBinLabel(14,"no. of sel. candidates");
-  fhEventsInfo->GetXaxis()->SetBinLabel(15,"no. cand. out of pt bounds");
+  fhEventsInfo->GetXaxis()->SetBinLabel(12,"n. rejected for bad V0M-CL0 cent corr");
+  fhEventsInfo->GetXaxis()->SetBinLabel(13,"non valid TPC EP");
+  fhEventsInfo->GetXaxis()->SetBinLabel(14,"bad event plane");
+  fhEventsInfo->GetXaxis()->SetBinLabel(15,"no. of sel. candidates");
+  fhEventsInfo->GetXaxis()->SetBinLabel(16,"no. cand. out of pt bounds");
 
   fhEventsInfo->GetXaxis()->SetNdivisions(1,kFALSE);
-
+  
   // Several histograms are more conveniently managed in a TList
   fOutput = new TList();
   fOutput->SetOwner();
@@ -400,6 +408,10 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
   }
 
+  if(fEnableCentralityCorrCuts) {
+    fEventCuts.AddQAplotsToList(fOutput,true);
+  }
+  
   fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandVsCent);
   fHistCandMassRangeVsCent=new TH2F("hCandMassRangeVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
@@ -745,8 +757,9 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   Int_t nCand = arrayProng->GetEntriesFast();
   if(fDebug>2) printf("Number of D2H: %d\n",nCand);
 
+  Double_t evCentr = fRDCuts->GetCentrality(aod);
   Bool_t isEvSel=fRDCuts->IsEventSelected(aod);
-  Float_t evCentr=fRDCuts->GetCentrality(aod);
+  
   fHistCentrality[0]->Fill(evCentr);
   if(!isEvSel){
     if(fRDCuts->IsEventRejectedDueToTrigger())fhEventsInfo->Fill(5);
@@ -764,6 +777,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   fhEventsInfo->Fill(4);
   fHistCentrality[1]->Fill(evCentr);
 
+  fEventCuts.AcceptEvent(aod);
+  if(!fEventCuts.PassedCut(AliEventCuts::kCorrelations)) {
+    fhEventsInfo->Fill(11);
+    return;
+  }
+  
   Double_t eventplaneqncorrTPC[3];
   Double_t eventplaneqncorrVZERO[3];
   TList *qnlist = 0x0;
@@ -1406,7 +1425,8 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
 
     if(fEnableNtrklHistos) {
-      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.8,0.8);
+
       ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2fill,tracklets);
       if(nSelCand>0) {
         ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCand"))->Fill(centr,q2fill,tracklets);
