@@ -722,6 +722,12 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
   return count+1;
 }
 
+Bool_t AliESDtrackCuts::IsSelected(TObject *o) {
+  if(o->IsA() == AliESDtrack::Class()) return AcceptTrack(static_cast<AliESDtrack *>(o));
+  else if(o->InheritsFrom(AliVTrack::Class())) return AcceptVTrack(static_cast<AliVTrack *>(o));
+  return false;    // Type unsupported - do not select the object;
+}
+
 void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax)
 {
   //
