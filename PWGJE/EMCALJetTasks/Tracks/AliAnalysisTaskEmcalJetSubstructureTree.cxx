@@ -233,11 +233,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   AliDebugStream(1) << "Inspecting jet radius " << (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius()) << std::endl;
 
-  double weight = 1.;
-  if(fUseDownscaleWeight){
-    weight = 1./AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fTriggerSelectionString.Data()));
-  }
-
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
     if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
@@ -259,6 +254,17 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
       }
     }
   }
+
+  double weight = 1.;
+  if(fUseDownscaleWeight){
+    AliDebugStream(2) << "Trigger selection string: " << fTriggerSelectionString << std::endl;
+    TString selectionString = (fTriggerSelectionBits & AliVEvent::kINT7) ? "INT7" : fTriggerSelectionString;
+    auto triggerstring = MatchTrigger(selectionString.Data());
+    AliDebugStream(2) << "Getting downscale correction factor for trigger string " << triggerstring << std::endl;
+    weight = 1./AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
+  }
+  AliDebugStream(1) << "Using downscale weight " << weight << std::endl;
+
 
   // Count events (for spectrum analysis)
   fQAHistos->FillTH1("hEventCounter", 1);
@@ -711,7 +717,7 @@ std::string AliAnalysisTaskEmcalJetSubstructureTree::MatchTrigger(const std::str
   std::vector<std::string> tokens;
   std::string result;
   std::stringstream decoder(fInputEvent->GetFiredTriggerClasses().Data());
-  while(std::getline(decoder, result, ',')) tokens.emplace_back(result); 
+  while(std::getline(decoder, result, ' '))  tokens.emplace_back(result); 
   result.clear();
   for(auto t : tokens) {
     if(t.find(triggertoken) != std::string::npos) {
