@@ -369,6 +369,10 @@ Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2],
   //Double_t * c2 = &(h.fHelix[6]);
   //  Double_t  c1[3] = {fHelix[5],fHelix[0],fHelix[8]};
 
+  const double maxR = 400.; // discard radii above this
+  const double maxR2 = maxR*maxR;
+  const double maxRPhi = maxR*TMath::Pi();
+  
   // PH initiaziation in case of return
   phase[0][0]=phase[0][1]=phase[1][0]=phase[1][1]=0;
   ri[0]=ri[1]=1000000;
@@ -388,9 +392,11 @@ Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2],
     y0[0] = (d+c1[2]-c2[2])*c2[1]/(2*d)+ fHelix[0];
     //    return 0;
     phase[1][0] = phase[0][0] = GetPhase(x0[0],y0[0]);
+    if (TMath::Abs(phase[0][0])>maxRPhi) return 0;
     phase[1][1] = phase[0][1] = h.GetPhase(x0[0],y0[0]);
+    if (TMath::Abs(phase[0][1])>maxRPhi) return 0;
     ri[1] = ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
-    return 1;
+    return ri[0]<maxR2 ? 1 : 0;
   }
   if ( (d+c2[2])<c1[2]){
     if ( (d+c2[2])+cut<c1[2]) return 0;
@@ -398,12 +404,14 @@ Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2],
     Double_t xx = c2[0]+ c2[0]*c2[2]/d+ fHelix[5];
     Double_t yy = c2[1]+ c2[1]*c2[2]/d+ fHelix[0]; 
     phase[1][1] = phase[0][1] = h.GetPhase(xx,yy);
+    if (TMath::Abs(phase[0][1])>maxRPhi) return 0;
     //
     Double_t xx2 = c2[0]*c1[2]/d+ fHelix[5];
     Double_t yy2 = c2[1]*c1[2]/d+ fHelix[0]; 
     phase[1][0] = phase[0][0] = GetPhase(xx2,yy2);
+    if (TMath::Abs(phase[0][0])>maxRPhi) return 0;
     ri[1] = ri[0] = xx*xx+yy*yy;
-    return 1;
+    return ri[0]<maxR2 ? 1 : 0;
   }
 
   if ( (d+c1[2])<c2[2]){
@@ -412,12 +420,14 @@ Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2],
     Double_t xx = -c2[0]*c1[2]/d+ fHelix[5];
     Double_t yy = -c2[1]*c1[2]/d+ fHelix[0]; 
     phase[1][1] = phase[0][1] = GetPhase(xx,yy);
+    if (TMath::Abs(phase[0][1])>maxRPhi) return 0;
     //
     Double_t xx2 = c2[0]- c2[0]*c2[2]/d+ fHelix[5];
     Double_t yy2 = c2[1]- c2[1]*c2[2]/d+ fHelix[0]; 
     phase[1][0] = phase[0][0] = h.GetPhase(xx2,yy2);
+    if (TMath::Abs(phase[0][0])>maxRPhi) return 0;
     ri[1] = ri[0] = xx*xx+yy*yy;
-    return 1;
+    return ri[0]<maxR2 ? 1 : 0;
   }
 
   Double_t d1 = (d*d+c1[2]*c1[2]-c2[2]*c2[2])/(2.*d);
@@ -431,12 +441,17 @@ Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2],
   x0[1] = (c2[0]*d1-c2[1]*v1)/d + fHelix[5];
   y0[1] = (c2[1]*d1+c2[0]*v1)/d + fHelix[0];      
   //
+  int np = 0;
   for (Int_t i=0;i<2;i++){
-    phase[i][0] = GetPhase(x0[i],y0[i]);
-    phase[i][1] = h.GetPhase(x0[i],y0[i]);
-    ri[i] = x0[i]*x0[i]+y0[i]*y0[i];    
+    phase[np][0] = GetPhase(x0[i],y0[i]);
+    if (TMath::Abs(phase[np][0])>maxRPhi) continue;
+    phase[np][1] = h.GetPhase(x0[i],y0[i]);
+    if (TMath::Abs(phase[np][1])>maxRPhi) continue;
+    ri[np] = x0[i]*x0[i]+y0[i]*y0[i];
+    if (ri[np]>maxR2) continue;
+    np++;
   }      
-  return 2;
+  return np;
 } 
 
 
@@ -529,6 +544,14 @@ Int_t  AliHelix::ParabolicDCA(const AliHelix&h,  //helixes
     }
     
     if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+    const double kMaxDt = 100.;
+    if (TMath::Abs(dt1)>kMaxDt) {
+      dt1 = dt1>0 ? kMaxDt : -kMaxDt;
+    }
+    if (TMath::Abs(dt2)>kMaxDt) {
+      dt2 = dt2>0 ? kMaxDt : -kMaxDt;
+    }
+    
     
     //if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
     //  if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
