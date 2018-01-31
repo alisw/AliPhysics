@@ -263,8 +263,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 
-    TFile* fNUAFile = TFile::Open(nuaCorrFileName,"READ");
-    TFile* fNUEFile = TFile::Open(nueCorrFileName,"READ");
+    TFile* fNUAFile = TFile::Open(nuaCorrFileName.Data(),"READ");
+    TFile* fNUEFile = TFile::Open(nueCorrFileName.Data(),"READ");
     
     if(!fNUAFile) {
       printf(" *** ERROR: NUA file not found! **EXIT** ");
