@@ -1,4 +1,7 @@
-AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE, Bool_t getFromAlien=kFALSE,
+AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
+                                                     Double_t CentMin = -2,
+                                                     Double_t CentMax = 102,
+                                                     Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_acapon_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE_output.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
