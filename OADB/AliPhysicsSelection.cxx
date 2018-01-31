@@ -500,7 +500,6 @@ void AliPhysicsSelection::FillStatistics(){
   fHistStat->SetCanExtend(TH1::kAllAxes);
 #endif
   fHistList.Add(fHistStat);
-  TH1::AddDirectory(oldStatus);
 
   Int_t nColl = fCollTrigClasses.GetEntries();
   for (Int_t i=0; i<nColl; i++) {
@@ -608,6 +607,7 @@ void AliPhysicsSelection::FillStatistics(){
   }
   fHistStat->LabelsDeflate("X");
   fHistStat->LabelsDeflate("Y");
+  TH1::AddDirectory(oldStatus);
 }
 
 void AliPhysicsSelection::Print(const Option_t *option) const{
