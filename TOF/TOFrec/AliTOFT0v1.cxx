@@ -207,8 +207,10 @@ AliTOFT0v1::Init(AliESDEvent *event)
 
 }
 //____________________________________________________________________________ 
-Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut) 
+Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut,Int_t isCalibrationMode) 
 { 
+  // calibration mode (default=0): 0=no cal, 1=first half sample of tracks, 2=second half sample of tracks
+
   TBenchmark *bench=new TBenchmark();
   bench->Start("t0computation");
 
@@ -258,6 +260,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     AliESDtrack *t=fEvent->GetTrack(itrk);
     Double_t momOld=t->GetP();
     Double_t mom=momOld-0.0036*momOld;
+
+    Int_t sample = Int_t(mom*1000)%2 + 1;
+
     if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
     if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
     Double_t time=t->GetTOFsignal();
@@ -269,6 +274,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 
     if(t->GetIntegratedLength() < 350)continue; //skip decays
     if(t->GetP() > pMinCut && t->GetP() < pMaxCut) continue;
+
+    if(isCalibrationMode && sample!=isCalibrationMode) continue;
 
     meantime+=time;
     fTracks->AddLast(t);
