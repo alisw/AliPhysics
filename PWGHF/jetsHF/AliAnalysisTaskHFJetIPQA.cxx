@@ -2350,7 +2350,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliVParticle *  mcpart ,In
     switch(pdg2){
         case bPi0:
         idx = bIdxPi0;
-        if(IsSecondaryFromWeakDecay(mcpart))return kTRUE;
+        if(!IsSecondaryFromWeakDecay(mcpart))return kTRUE;
         break;
         case bEta:
         idx = bIdxEta;
