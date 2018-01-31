@@ -73,7 +73,7 @@ AliEmcalTrackSelection::~AliEmcalTrackSelection() {
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
-  AliInfoStream() << "Adding trackc cuts " << cuts->GetName() << " of type " << cuts->IsA()->GetName() << std::endl;
+  AliInfoStream() << "Adding track cuts " << cuts->GetName() << " of type " << cuts->IsA()->GetName() << std::endl;
   if(!fListOfCuts){
     fListOfCuts = new TObjArray;
     fListOfCuts->SetOwner(true);
