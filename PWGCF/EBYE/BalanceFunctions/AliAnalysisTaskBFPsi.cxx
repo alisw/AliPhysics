@@ -783,7 +783,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::SetInputListForNUACorr(TList *listNUA){
 
-  fListNUA = listNUA;
+  fListNUA = dynamic_cast<TList*>(listNUA->Clone("fListNUA"));
   
   for (Int_t iRun = 0; iRun<=fTotalNbRun-1; iRun++) {
 
@@ -818,16 +818,27 @@ Int_t AliAnalysisTaskBFPsi::GetIndexRun(Int_t runNb){
 //________________________________________________________________________
 Double_t AliAnalysisTaskBFPsi::GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi ){
 
-  if (vCharge > 0) 
-    return fHistNUACorrPlus[gRun]->GetBinContent(fHistNUACorrPlus[gRun]->FindBin(vPhi, vEta, vVz));
-  else
-    return fHistNUACorrMinus[gRun]->GetBinContent(fHistNUACorrMinus[gRun]->FindBin(vPhi, vEta, vVz));  
+  Double_t nua=0.;
+  if (vCharge > 0){
+    if (fHistNUACorrPlus[gRun]) 
+      nua =  fHistNUACorrPlus[gRun]->GetBinContent(fHistNUACorrPlus[gRun]->FindBin(vPhi, vEta, vVz));
+  }
+  else {	
+    if (fHistNUACorrMinus[gRun])
+      nua = fHistNUACorrMinus[gRun]->GetBinContent(fHistNUACorrMinus[gRun]->FindBin(vPhi, vEta, vVz));}
+
+  if (nua == 0.) {
+    Printf (Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz)); 
+    return 1.;}
+  
+  return nua;
+  
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TList *listNUE){
 
-  fListNUE = listNUE;
+  fListNUE = dynamic_cast<TList*>(listNUE->Clone("fListNUE"));
   
   for (Int_t iCent = 0; iCent <=fCentralityArrayBinsForCorrections-1; iCent++) {
 
@@ -867,8 +878,22 @@ Double_t AliAnalysisTaskBFPsi::GetNUECorrection(Int_t gCentralityIndex, Short_t 
     return -1;
   }
 
-  if (vCharge > 0) return fHistpTCorrPlus[gCentralityIndex]->GetBinContent(fHistpTCorrPlus[gCentralityIndex]->FindBin(vPt));
-  else return fHistpTCorrMinus[gCentralityIndex]->GetBinContent(fHistpTCorrMinus[gCentralityIndex]->FindBin(vPt));
+ Double_t nue =0.;
+
+  if (vCharge > 0){
+    if (fHistpTCorrPlus[gCentralityIndex]) 
+      nue = fHistpTCorrPlus[gCentralityIndex]->GetBinContent(fHistpTCorrPlus[gCentralityIndex]->FindBin(vPt));
+  }
+  else {	
+    if (fHistpTCorrMinus[gCentralityIndex])
+      nue =fHistpTCorrMinus[gCentralityIndex]->GetBinContent(fHistpTCorrMinus[gCentralityIndex]->FindBin(vPt));
+  }
+  
+  if (nue == 0.) {
+    Printf (Form("Should not happen : bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex)); 
+    return 1.;}
+
+  return nue;
   
 }
 
