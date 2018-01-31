@@ -96,11 +96,12 @@ const Double_t PteeBins[] = { 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
 const Int_t nBinsPtee = ( sizeof(PteeBins) / sizeof(PteeBins[0]) )-1;
 
 // in increasing order
-const TString sRuns("265309, 265332, 265334, 265335, 265336, 265338, 
-					265339, 265342, 265343, 265344, 265377, 265378, 
-					265381, 265383, 265384, 265385, 265387, 265388, 
-					265419, 265420, 265421, 265422, 265424, 265427, 
-					265435, 265499, 265500, 265501, 265521, 265525");
+const TString sRuns("265309, 265334, 265335, 265338, 265339, 
+										 265342, 265343, 265344, 265377, 265378, 
+										 265381, 265383, 265384, 265385, 265387, 
+										 265388, 265419, 265420, 265421, 265422, 
+										 265424, 265427, 265435, 265499, 265500, 
+										 265501, 265521, 265525");
 
 //
 // ^^^^^^^^^^ [/end binning histograms] ^^^^^^^^^^
@@ -116,8 +117,9 @@ const Int_t     supportedCutInstance = 0;
 // event cuts
 const Bool_t    reqVertex = kTRUE;
 const Double_t  vertexZcut = 10.;
-const Double_t  CentMin =  -2.;
-const Double_t  CentMax = 102.;
+//Set centrality in AddTask arguments
+/* const Double_t  CentMin =  -2.; */
+/* const Double_t  CentMax = 102.; */
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
