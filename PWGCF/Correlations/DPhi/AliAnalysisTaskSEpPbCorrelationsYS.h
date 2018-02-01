@@ -137,7 +137,9 @@ private:
   Bool_t fPID;
 
   TString fCentType;
-
+  
+  Int_t fNEntries;
+  
   Double_t lCentrality;
   Float_t bSign;
   Double_t fZVertex;
@@ -223,6 +225,10 @@ private:
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
 
+  TH2F* mixedDist;
+  TH2F* mixedDist2;
+  
+
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
@@ -237,6 +243,7 @@ private:
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_FMD_eta_phi;
   AliTHn* fhistfmd;
+  AliTHn* fhSecFMD;
 
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
