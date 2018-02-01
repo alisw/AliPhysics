@@ -1675,9 +1675,9 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
 
       // electron rejection
       if(dMinSigmasCombined == dNumSigmaCombined[0] && dNumSigmaCombined[0] <= fCutPIDnSigmaPionMax) return kUnknown;
-      if(dMinSigmasCombined == dNumSigmaCombined[2] && dNumSigmaCombined[2] <= fCutPIDnSigmaPionMax){cout<<"Pion found"<<endl; return kPion;}
-      if(dMinSigmasCombined == dNumSigmaCombined[3] && dNumSigmaCombined[3] <= fCutPIDnSigmaKaonMax){cout<<"Kaon found"<<endl; return kKaon;}
-      if(dMinSigmasCombined == dNumSigmaCombined[4] && dNumSigmaCombined[4] <= fCutPIDnSigmaProtonMax){cout<<"Proton found"<<endl; return kProton;}
+      if(dMinSigmasCombined == dNumSigmaCombined[2] && dNumSigmaCombined[2] <= fCutPIDnSigmaPionMax){Printf("Pion found\n"); return kPion;}
+      if(dMinSigmasCombined == dNumSigmaCombined[3] && dNumSigmaCombined[3] <= fCutPIDnSigmaKaonMax){Printf("Kaon found\n"); return kKaon;}
+      if(dMinSigmasCombined == dNumSigmaCombined[4] && dNumSigmaCombined[4] <= fCutPIDnSigmaProtonMax){Printf("Proton found\n"); return kProton;}
   }
 
     // TPC dEdx parametrisation (dEdx - <dEdx>)
