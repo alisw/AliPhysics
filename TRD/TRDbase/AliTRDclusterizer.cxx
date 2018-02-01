@@ -161,6 +161,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
 {
   //
   // AliTRDclusterizer constructor
+
   //
 
   SetBit(kLabels, kTRUE);
@@ -1135,15 +1136,20 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
     for(Int_t ipad(Max.col-3), iRawId(0); ipad<=Max.col+3; ipad++, iRawId++){
       if(ipad<0 || ipad>=fColMax) continue;
       if(!fCalOnlGainROC){
-        rawSignal[iRawId] = fDigitsRaw->GetData(Max.row, ipad, Max.time);
+	// Florian Herrmann 01.2017 - truncated mean bug (double baseline subtraction). Solution: subtract baseline here
+	// and not in truncated mean class
+        rawSignal[iRawId] = fDigitsRaw->GetData(Max.row, ipad, Max.time)- fBaseline; // GetData returns Short_t, thus no additional 0.5f
         continue;
       }
       // Deconvolute online gain calibration when available
       // Alex Bercuci 27.04.2012
-      tmp = (fDigitsRaw->GetData(Max.row, ipad, Max.time) - fBaseline)/fCalOnlGainROC->GetGainCorrectionFactor(Max.row, ipad) + 0.5f;
+      // Mark zero entries (zero supression) by setting the pad signal to -999
+      // Florian Herrmann 16.01.2017
+      if (fDigitsRaw->GetData(Max.row, ipad, Max.time) == 0) tmp=-999; 
+      else  tmp = (fDigitsRaw->GetData(Max.row, ipad, Max.time) - fBaseline)/fCalOnlGainROC->GetGainCorrectionFactor(Max.row, ipad) + 0.5f;
       rawSignal[iRawId] = (Short_t)TMath::Min(tmp, kMaxShortVal);
     }
-    cluster.SetSignals(rawSignal, kTRUE);
+    cluster.SetSignals(rawSignal, kTRUE); // stores rawSignal in AliTRDcluster. kTRUE marks data as uncalibrated.
   }
   // Temporarily store the Max.Row, column and time bin of the center pad
   // Used to later on assign the track indices

@@ -180,7 +180,7 @@ Double_t AliTRDdEdxReconUtils::GetPadGain(const Int_t det, const Int_t icol, con
 Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl, const Double_t baseline)
 {
   //
-  //get cluter q from GetRawQ, apply baseline and Kr pad-calibration
+  //get cluter q from GetRawQ, apply Kr pad-calibration
   //
 
   const Int_t det     = cl->GetDetector();
@@ -188,18 +188,20 @@ Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl, const Double_t 
   const Int_t padrow  = cl->GetPadRow();
 
   Double_t rndqsum = 0;
+  // cl->GetSignals returns  baseline subtracted signals
   for(Int_t ii=0; ii<7; ii++){
-    if(cl->GetSignals()[ii] < EPSILON){//bad pad marked by electronics
+    if(cl->GetSignals()[ii] < -100){//bad pad marked by electronics or zero supression (marked by -999)
       continue;
     }
 
     const Int_t icol = pad3col+(ii-3);
     const Double_t padgain = GetPadGain(det, icol, padrow);
-    if(padgain<0){//indices out of range, pad3col near boundary case
+    if(padgain<=0){//indices out of range, pad3col near boundary case
       continue;
     }
 
-    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline )/(AliTRDdEdxBaseUtils::IsPadGainOn()? padgain : 1);
+    // no chamber gain correction required, since the time bin calibration uses TRDSignal/TPCSignal
+    const Double_t rndsignal = (cl->GetSignals()[ii])/(AliTRDdEdxBaseUtils::IsPadGainOn() ? padgain : 1);
 
     //sum it anyway even if signal below baseline, as long as the total is positive
     rndqsum += rndsignal;
