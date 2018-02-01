@@ -49,11 +49,11 @@ AliEMCALTriggerDCSConfig::~AliEMCALTriggerDCSConfig()
 bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other) const {
   bool isequal = true;
   if(fSTUObj && other.fSTUObj) {
-    if(!(*fSTUObj == *other.fSTUObj)) isequal == false; // both EMCAL STU objects there, but not the same
+    if(!(*fSTUObj == *other.fSTUObj)) isequal = false; // both EMCAL STU objects there, but not the same
   } else if((fSTUObj && !other.fSTUObj) || (!fSTUObj && other.fSTUObj)) isequal = false; // one of the two missing
 
   if(fSTUDCAL && other.fSTUDCAL) {
-    if(!(*fSTUDCAL == *other.fSTUDCAL)) isequal == false; // both DCAL STU objects there, but not the same
+    if(!(*fSTUDCAL == *other.fSTUDCAL)) isequal = false; // both DCAL STU objects there, but not the same
   } else if((fSTUDCAL && !other.fSTUDCAL) || (!fSTUDCAL && other.fSTUDCAL)) isequal = false; // one of the two missing
 
   // check TRUs
