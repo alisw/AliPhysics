@@ -2588,7 +2588,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
 
@@ -2620,7 +2620,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2693,7 +2694,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
 
@@ -2715,7 +2716,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
-        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
