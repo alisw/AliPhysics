@@ -69,7 +69,8 @@ CellCombineCollections:                             # Utility task to combine tw
     createHistos: false                             # Whether the task should create output histograms
     externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
     combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
-    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+    verifyCombinedCells: false                      # True will have the task confirm that the input cells have been successfully combined together. NOTE: Don't enable this for normal usage - it will reduce performance for little benefit.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction. NOTE: _DO NOT_ include the embedded cells input object here! Include only the cells from the input event.
         - defaultCells                              # This object is defined above in the cells section of the input objects
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
