@@ -45,16 +45,16 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliNormalizationCounter.h"
-#include "AliAnalysisTaskSEDs_imppar.h"
+#include "AliAnalysisTaskSEDs.h"
 #include "AliVertexingHFUtils.h"
 #include "AliMultSelection.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEDs_imppar);
+ClassImp(AliAnalysisTaskSEDs);
 /// \endcond
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs_imppar::AliAnalysisTaskSEDs_imppar():
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   AliAnalysisTaskSE(),
   fOutput(0),
   fHistNEvents(0),
@@ -157,7 +157,7 @@ AliAnalysisTaskSEDs_imppar::AliAnalysisTaskSEDs_imppar():
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs_imppar::AliAnalysisTaskSEDs_imppar(const char *name,AliRDHFCutsDstoKKpi* analysiscuts,Int_t fillNtuple):
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* analysiscuts,Int_t fillNtuple):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
@@ -278,7 +278,7 @@ AliAnalysisTaskSEDs_imppar::AliAnalysisTaskSEDs_imppar(const char *name,AliRDHFC
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetPtBins(Int_t n, Float_t* lim){
+void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t* lim){
   /// define pt bins for analysis
   if(n>kMaxPtBins){
     printf("Max. number of Pt bins = %d\n",kMaxPtBins);
@@ -300,7 +300,7 @@ void AliAnalysisTaskSEDs_imppar::SetPtBins(Int_t n, Float_t* lim){
   }
 }
 //________________________________________________________________________
-AliAnalysisTaskSEDs_imppar::~AliAnalysisTaskSEDs_imppar()
+AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 {
   // Destructor
   if(fOutput && !fOutput->IsOwner()){
@@ -380,7 +380,7 @@ AliAnalysisTaskSEDs_imppar::~AliAnalysisTaskSEDs_imppar()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetFillCentralityAxis(Int_t flag) {
+void AliAnalysisTaskSEDs::SetFillCentralityAxis(Int_t flag) {
   //
   // set centrality estimator
   //
@@ -396,7 +396,7 @@ void AliAnalysisTaskSEDs_imppar::SetFillCentralityAxis(Int_t flag) {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::Init()
+void AliAnalysisTaskSEDs::Init()
 {
   /// Initialization
     
@@ -415,7 +415,7 @@ void AliAnalysisTaskSEDs_imppar::Init()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::UserCreateOutputObjects()
+void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 {
   /// Create the output container
   //
@@ -680,7 +680,7 @@ void AliAnalysisTaskSEDs_imppar::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::UserExec(Option_t */*option*/)
+void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 {
   /// Ds selection for current event, fill mass histos and selecetion variable histo
   /// separate signal and backgound if fReadMC is activated
@@ -719,7 +719,7 @@ void AliAnalysisTaskSEDs_imppar::UserExec(Option_t */*option*/)
   }
     
   if(!aod || !array3Prong) {
-    printf("AliAnalysisTaskSEDs_imppar::UserExec: Charm3Prong branch not found!\n");
+    printf("AliAnalysisTaskSEDs::UserExec: Charm3Prong branch not found!\n");
     return;
   }
     
@@ -771,14 +771,14 @@ void AliAnalysisTaskSEDs_imppar::UserExec(Option_t */*option*/)
         
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
-      printf("AliAnalysisTaskSEDs_imppar::UserExec: MC particles branch not found!\n");
+      printf("AliAnalysisTaskSEDs::UserExec: MC particles branch not found!\n");
       return;
     }
         
     // load MC header
     mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
-      printf("AliAnalysisTaskSEDs_imppar::UserExec: MC header branch not found!\n");
+      printf("AliAnalysisTaskSEDs::UserExec: MC header branch not found!\n");
       return;
     }
   }
@@ -1413,7 +1413,7 @@ void AliAnalysisTaskSEDs_imppar::UserExec(Option_t */*option*/)
 
 //_________________________________________________________________
 
-void AliAnalysisTaskSEDs_imppar::Terminate(Option_t */*option*/)
+void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
 {
   /// Terminate analysis
   //
@@ -1434,7 +1434,7 @@ void AliAnalysisTaskSEDs_imppar::Terminate(Option_t */*option*/)
 }
 
 //_________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets){
+void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets){
   /// Fill MC histos for cuts study
   ///    - at GenLimAccStep and AccStep (if fFillAcceptanceLevel=kFALSE)
   ///    - at AccStep (if fFillAcceptanceLevel=kTRUE)
@@ -1520,7 +1520,7 @@ void AliAnalysisTaskSEDs_imppar::FillMCGenAccHistos(TClonesArray *arrayMC, AliAO
 }
 
 //_________________________________________________________________
-Bool_t AliAnalysisTaskSEDs_imppar::CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
+Bool_t AliAnalysisTaskSEDs::CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
   /// check if the decay products are in the good eta and pt range
     
   for (Int_t iProng = 0; iProng<nProng; iProng++){
@@ -1538,7 +1538,7 @@ Bool_t AliAnalysisTaskSEDs_imppar::CheckDaugAcc(TClonesArray* arrayMC,Int_t nPro
 }
 
 //_________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin) {
+void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin) {
     
   const Int_t nprongs = 3;
   Double_t PxProng[nprongs], PyProng[nprongs], PzProng[nprongs], P2Prong[nprongs], mProng[nprongs];
@@ -1586,7 +1586,7 @@ void AliAnalysisTaskSEDs_imppar::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::CreateCutVarsAndEffSparses() {
+void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses() {
   
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
   Int_t nInvMassBins=(Int_t)(0.7/fMassBinSize+0.5);
@@ -1682,7 +1682,7 @@ void AliAnalysisTaskSEDs_imppar::CreateCutVarsAndEffSparses() {
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::CreateIPSparse() {
+void AliAnalysisTaskSEDs::CreateIPSparse() {
   
   Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
   Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
@@ -1698,7 +1698,7 @@ void AliAnalysisTaskSEDs_imppar::CreateIPSparse() {
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::CreateImpactParameterSparses() {
+void AliAnalysisTaskSEDs::CreateImpactParameterSparses() {
 
   /// Histos for impact parameter study
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
@@ -1733,7 +1733,7 @@ void AliAnalysisTaskSEDs_imppar::CreateImpactParameterSparses() {
 }
 
 //_________________________________________________________________________________________________
-Float_t AliAnalysisTaskSEDs_imppar::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const {
+Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const {
   /// true impact parameter calculation
   
   Double_t vtxTrue[3];
@@ -1800,7 +1800,7 @@ Float_t AliAnalysisTaskSEDs_imppar::GetTrueImpactParameterDstoPhiPi(const AliAOD
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5anddataoverLHC16i2a(){
+void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5anddataoverLHC16i2a(){
   // weight function from the ratio of the LHC16i2a MC
   // 1.5-14 GeV/c using data and 1-1.5, 14-50 GeV/c using FONLL calculations
     
@@ -1816,7 +1816,7 @@ void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5anddataoverLHC16i2a(){
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5overLHC16i2abc(){
+void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5overLHC16i2abc(){
   // weight function from the ratio of the LHC16i2a+b+c MC
   // and FONLL calculations for pp data
     
@@ -1832,7 +1832,7 @@ void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5overLHC16i2abc(){
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc(){
+void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc(){
   // weight function from the ratio of the LHC16i2a+b+c MC
   // and FONLL calculations for pp data
   // corrected by the BAMPS Raa calculation for 30-50% CC
@@ -1847,7 +1847,7 @@ void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc(){
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc(){
+void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc(){
   // weight function from the ratio of the LHC16i2a+b+c MC
   // and FONLL calculations for pp data
   // corrected by the TAMU Raa calculation for 0-10% CC (not available in 30-50% CC)
@@ -1862,7 +1862,7 @@ void AliAnalysisTaskSEDs_imppar::SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc(){
 }
 
 //_________________________________________________________________________
-Double_t AliAnalysisTaskSEDs_imppar::GetPtWeightFromHistogram(Double_t pt)
+Double_t AliAnalysisTaskSEDs::GetPtWeightFromHistogram(Double_t pt)
 {
   //
   // Using an histogram as weight function

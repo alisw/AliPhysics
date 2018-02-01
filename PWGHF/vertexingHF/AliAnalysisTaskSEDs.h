@@ -27,15 +27,15 @@
 class AliNormalizationCounter;
 
 
-class AliAnalysisTaskSEDs_imppar : public AliAnalysisTaskSE
+class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
     
   enum ECentrality {kCentOff,kCentV0M,kCentV0A,kCentCL1,kCentZNA,kCentInvalid};
 
-  AliAnalysisTaskSEDs_imppar();
-  AliAnalysisTaskSEDs_imppar(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
-  virtual ~AliAnalysisTaskSEDs_imppar();
+  AliAnalysisTaskSEDs();
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
+  virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){
     if(fReadMC) fWriteOnlySignal=opt;
@@ -94,8 +94,8 @@ class AliAnalysisTaskSEDs_imppar : public AliAnalysisTaskSE
 
   enum {kMaxPtBins=24,knVarForSparse=15,knVarForSparseAcc=3,knVarForSparseIP=6,kVarForImpPar=3};
     
-  AliAnalysisTaskSEDs_imppar(const AliAnalysisTaskSEDs_imppar &source);
-  AliAnalysisTaskSEDs_imppar& operator=(const AliAnalysisTaskSEDs_imppar& source);
+  AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
+  AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
     
   TList*  fOutput;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents;               //!<! hist. for No. of events
@@ -205,7 +205,7 @@ class AliAnalysisTaskSEDs_imppar : public AliAnalysisTaskSE
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs_imppar,27);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,27);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
