@@ -425,6 +425,16 @@ public:
   /// Return copy of object with given keys removed
   AliFemtoConfigObject WithoutKeys(const std::vector<Key_t>&) const;
 
+  #define IMPL_POP_ITEM(__dest_type, __name)           \
+    __dest_type __name(const Key_t &key, const __dest_type &_def) \
+      { __dest_type res(_def); pop_and_load(key, res); return res; }
+
+    IMPL_POP_ITEM(StringValue_t, pop_str);
+    IMPL_POP_ITEM(IntValue_t, pop_int);
+
+  #undef IMPL_POP_ITEM
+
+
   /// \defgroup Pop&Load Methods
   /// @{
   /// Removes item identified by *key*
