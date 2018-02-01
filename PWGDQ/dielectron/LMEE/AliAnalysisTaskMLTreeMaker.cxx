@@ -757,13 +757,15 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
 void AliAnalysisTaskMLTreeMaker::SetupTrackCuts()
 {
 cuts     = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);    
+
+
+//my cuts used so far (1.2.2018)
 trcuts   = new AliDielectronVarCuts("TrCuts","TrCuts");
 trfilter = new AliDielectronTrackCuts("TrFilter","TrFilter");
 pidcuts  = new AliDielectronPID("PIDCuts","PIDCuts");
 
 filter   = new AliAnalysisFilter("filter","filter");
- 
-// need this to use PID in dielectron framework
+
 varManager = new AliDielectronVarManager;
      
 trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
@@ -787,11 +789,60 @@ pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
 pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
 pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
-cuts->AddCut(trcuts);
-cuts->AddCut(trfilter);
-cuts->AddCut(pidcuts);
 
- cuts->Print();
+
+
+//Define Carsten Cut set 3 (as specified in e mail from Carsten from 10.01.2018)
+
+AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
+PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
+PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
+PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 161.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.95, 1.05);
+
+AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+double delta = 0.00001;
+AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+SharedClusterCut->AddCut(trackCutsSharedCluster0);
+SharedClusterCut->AddCut(trackCutsSharedCluster2);
+SharedClusterCut->AddCut(trackCutsSharedCluster4);
+SharedClusterCut->AddCut(trackCutsSharedCluster8);
+SharedClusterCut->AddCut(trackCutsSharedCluster16);
+SharedClusterCut->AddCut(trackCutsSharedCluster32);
+
+AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+trackCutsDiel->SetAODFilterBit(1<<4);
+trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+
+
+
+//Add desired cuts to cutgroup
+cuts->AddCut(PIDcut_3);
+cuts->AddCut(trackCutsAOD);
+cuts->AddCut(trackCutsDiel);
+
+cuts->Print();
 
 filter->AddCuts(cuts);
 }
