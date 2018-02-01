@@ -1467,7 +1467,7 @@ void AliZDCv4::CreateBeamLine()
   TVirtualMC::GetMC()->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
   // Ch.debug
-  printf("	MBXW magnetic volume: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
+  //printf("	MBXW magnetic volume: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
@@ -1476,7 +1476,7 @@ void AliZDCv4::CreateBeamLine()
   TVirtualMC::GetMC()->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip-1.5, 0, "ONLY");
   // Ch.debug
-  printf("	MBXW yoke: %1.2f < z < %1.2f\n\n",  -zCorrDip-1.5, -zCorrDip-1.5-2*tubpar[2]);
+  //printf("	MBXW yoke: %1.2f < z < %1.2f\n\n",  -zCorrDip-1.5, -zCorrDip-1.5-2*tubpar[2]);
   
   
   // -- INNER TRIPLET 
@@ -1566,7 +1566,7 @@ void AliZDCv4::CreateBeamLine()
   
   TVirtualMC::GetMC()->Gspos("YD2 ", 1, "ZDCC", 0., 0., -tubpar[2]-zD2, 0, "ONLY");
   // Ch debug
-  printf("	YD2 from z = %1.2f to z= %1.2f cm\n",-zD2, -zD2-2*tubpar[2]); 
+  //printf("	YD2 from z = %1.2f to z= %1.2f cm\n",-zD2, -zD2-2*tubpar[2]); 
   
   TVirtualMC::GetMC()->Gspos("MD2 ", 1, "YD2 ", -9.4, 0., 0., 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("MD2 ", 2, "YD2 ",  9.4, 0., 0., 0, "ONLY");
@@ -1875,14 +1875,14 @@ void AliZDCv4::CreateZDC()
   TVirtualMC::GetMC()->Gspos("ZPRO", 1, "ZDCC", fPosZPC[0], fPosZPC[1], fPosZPC[2]-fDimZP[2], irotzdc, "ONLY");
   //Ch debug
   printf("\n ZPC -> %f < z < %f cm\n",fPosZPC[2],fPosZPC[2]-2*fDimZP[2]);
-  if(TMath::Abs(fPosZPC[1])>0.) printf("\n ZNA placed at  y %f\n",fPosZPC[1]);
+  if(TMath::Abs(fPosZPC[1])>0.) printf("\n ZPC placed at  y %f\n",fPosZPC[1]);
   
   // --- Position the proton calorimeter in ZDCA
   // --- No rotation 
   TVirtualMC::GetMC()->Gspos("ZPRO", 2, "ZDCA", fPosZPA[0], fPosZPA[1], fPosZPA[2]+fDimZP[2], 0, "ONLY");
   //Ch debug
   printf("\n ZPA -> %f < z < %f cm\n",fPosZPA[2],fPosZPA[2]+2*fDimZP[2]);  
-  if(TMath::Abs(fPosZPA[1])>0.) printf("\n ZNA placed at  y %f\n",fPosZPA[1]);
+  if(TMath::Abs(fPosZPA[1])>0.) printf("\n ZPA placed at  y %f\n",fPosZPA[1]);
 //}    
   
   // -------------------------------------------------------------------------------
@@ -1898,7 +1898,7 @@ void AliZDCv4::CreateZDC()
   Float_t ybox = fPosZEM[1]-fDimZEM[1]-2.*2.*bthickness[1]+zemBoxPar[1];
   Float_t zSupport = fPosZEM[2]-3.5; //to take into account the titlted front face
   Float_t zbox = zSupport+zemBoxPar[2];
-  printf("  ZEM box position y %f z %f\n",ybox, zbox);
+  //printf("  ZEM box position y %f z %f\n",ybox, zbox);
   //
   // Bridge
   Float_t zemSupp1[3] = {15./2, 3./2., 95./2.};
@@ -1907,7 +1907,7 @@ void AliZDCv4::CreateZDC()
   Float_t ybridge = fPosZEM[1]-fDimZEM[1]-2.*2.*bthickness[1]-foot-zemSupp1[1];
   TVirtualMC::GetMC()->Gspos("ZESH", 1, "ALIC", fPosZEM[0], ybridge, zbox, 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZESH", 2, "ALIC", -fPosZEM[0], ybridge, zbox, 0, "ONLY");
-  printf(" Positioning ZEM ZESH %f %f %f\n",fPosZEM[0], ybridge, zbox);
+  //printf(" Positioning ZEM ZESH %f %f %f\n",fPosZEM[0], ybridge, zbox);
   //
   Float_t zemSupp2[3] = {2./2, 5./2., zemBoxPar[2]};
   TVirtualMC::GetMC()->Gsvolu("ZESV","BOX ", idtmed[13], zemSupp2, 3);
@@ -1915,7 +1915,7 @@ void AliZDCv4::CreateZDC()
   TVirtualMC::GetMC()->Gspos("ZESV", 2, "ALIC", fPosZEM[0]+zemBoxPar[0]-zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZESV", 3, "ALIC", -(fPosZEM[0]-zemBoxPar[0]+zemSupp2[0]), ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZESV", 4, "ALIC", -(fPosZEM[0]+zemBoxPar[0]-zemSupp2[0]), ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
-  printf(" Positioning ZEM ZESV %f %f %f\n",fPosZEM[0]-zemBoxPar[0]+zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox);
+  //printf(" Positioning ZEM ZESV %f %f %f\n",fPosZEM[0]-zemBoxPar[0]+zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox);
   //\// Table
   Float_t zemTable[3] = {55./2., 1.5/2., 110./2.};
   TVirtualMC::GetMC()->Gsvolu("ZETA","BOX ", idtmed[13], zemTable, 3);
@@ -1928,8 +1928,8 @@ void AliZDCv4::CreateZDC()
   TVirtualMC::GetMC()->Gsvolu("ZEFL","BOX ", idtmed[13], zemSupp3, 3);
   TVirtualMC::GetMC()->Gspos("ZEFL", 1, "ALIC", fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2], 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZEFL", 2, "ALIC", -fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2], 0, "ONLY");
-  printf("  ZEM ZEFL dim %f %f %f\n",2*fDimZEM[2], 2.*zemSupp3[1], 2.*zemSupp3[2]);
-  printf(" Positioning ZEM cover %f %f %f\n",fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2]);
+  //printf("  ZEM ZEFL dim %f %f %f\n",2*fDimZEM[2], 2.*zemSupp3[1], 2.*zemSupp3[2]);
+  //printf(" Positioning ZEM cover %f %f %f\n",fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2]);
   //
   Float_t zemSupp4[6] = {20./2., fDimZEM[1], 1.5/2., 45., 0., 0.};
   TVirtualMC::GetMC()->Gsvolu("ZELA", "PARA", idtmed[13], zemSupp4, 6);
@@ -1937,7 +1937,7 @@ void AliZDCv4::CreateZDC()
   TVirtualMC::GetMC()->Gspos("ZELA", 2, "ALIC", fPosZEM[0]+fDimZEM[2]+zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZELA", 3, "ALIC", -(fPosZEM[0]-fDimZEM[2]-zemSupp4[2]), fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
   TVirtualMC::GetMC()->Gspos("ZELA", 4, "ALIC", -(fPosZEM[0]+fDimZEM[2]+zemSupp4[2]), fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
-  printf(" Positioning ZEM ZELA in %f %f %f\n",fPosZEM[0]-fDimZEM[2]-zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0]);
+  //printf(" Positioning ZEM ZELA in %f %f %f\n",fPosZEM[0]-fDimZEM[2]-zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0]);
 
   // Containers for ZEM calorimeters
   Float_t wallh[3] = {10.5/2., bthickness[1], 95./2.};

@@ -297,7 +297,7 @@ void AliGenZDC::BeamDivergence(Double_t *pLab)
   pLab[1] = pmod*TMath::Sin(tetsum)*TMath::Sin(fisum);
   pLab[2] = pmod*TMath::Cos(tetsum);
   if(fDebugOpt == 1){
-    printf(" Beam crossing angle = %f mrad ", fBeamDiv*1000.);
+    printf(" Beam divergence = %f mrad ", fBeamDiv*1000.);
     printf("  p = (%f, %f, %f)\n",pLab[0],pLab[1],pLab[2]);
   }
 }
