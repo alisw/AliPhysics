@@ -446,6 +446,32 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
+    
+    // Open CPA L only
+    fCutValues[1][0] = 70; fCutValues[1][1] = 70; fCutValues[1][2] = 70; fCutValues[1][3] = 70;
+    fCutValues[2][4] = 0.11;
+    fCutValues[3][5] = 0.11;
+    fCutValues[4][6] = 0.035;
+    fCutValues[5][7] = 0.06;
+    fCutValues[6][8] = 2.5;
+    fCutValues[7][9] = 0.95;
+    fCutValues[8][10] = 0.275;
+    fCutValues[9][11] = 0.95;
+    fCutValues[10][12] = 0.9992;
+    
+    // Open CPA L and Xi
+    fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
+    fCutValues[12][4] = 0.11;
+    fCutValues[13][5] = 0.11;
+    fCutValues[14][6] = 0.035;
+    fCutValues[15][7] = 0.06;
+    fCutValues[16][8] = 2.5;
+    fCutValues[17][9] = 0.96;
+    fCutValues[18][10] = 0.275;
+    fCutValues[19][11] = 0.95;
+    fCutValues[20][12] = 0.95;
+    
+    /*
     //systematic variation// Loose
     fCutValues[1][0] = 63; fCutValues[1][1] = 63; fCutValues[1][2] = 63; fCutValues[1][3] = 63;// 80
     fCutValues[2][4] = 0.1;
@@ -469,7 +495,7 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[18][10] = 0.25;
     fCutValues[19][11] = 0.95;
     fCutValues[20][12] = 0.95; //Open CPA L and Xi
-
+  */
     
     
     
