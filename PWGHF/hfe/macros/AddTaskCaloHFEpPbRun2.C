@@ -19,10 +19,22 @@ class AliAnalysisDataContainer;
                                   Bool_t flagDG2,
                                   Double_t TrackEtaLow,
                                   Double_t TrackEtaHigh,
+                                  Int_t NTPCClust,
+                                  Int_t NITSClust,
+                                  Int_t NCrossedRow,
+                                  Double_t DCAxy,
+                                  Double_t DCAz,
+                                  Double_t TrackMatchPhi,
+                                  Double_t TrackMatchEta,
                                   Double_t NsigmaLow,
                                   Double_t NsigmaHigh,
+                                  Double_t M20Low,
+                                  Double_t M20High,
                                   Double_t EopLow,
-                                  Double_t EopHigh
+                                  Double_t EopHigh,
+                                  Double_t AssoMinpT,
+                                  Int_t AssoNTPCClust,
+                                  Double_t MassCut
                                   )
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -46,6 +58,8 @@ class AliAnalysisDataContainer;
     if(!task) return 0x0;
     task -> SetMC(flagMC);
     task -> SetEMCalCorrection(flagEMCalCorrection);
+    if(!flagEG2 && !flagEG1 && !flagDG2 && !flagDG1) task -> SelectCollisionCandidates(AliVEvent::kINT7);
+    else task -> SelectCollisionCandidates(AliVEvent::kEMCEGA);
     task -> SetClusterTypeEMC(flagEMCal);
     task -> SetClusterTypeDCAL(flagDCal);
     task -> SetEG1(flagEG1);
@@ -56,9 +70,13 @@ class AliAnalysisDataContainer;
     //Systematic uncertainties //
     //#########################//
     task -> SetTrackEta(TrackEtaLow,TrackEtaHigh);
+    task -> SetTrackClust(NTPCClust,NITSClust,NCrossedRow);
+    task -> SetDCA(DCAxy,DCAz);
+    task -> SetTrackMatch(TrackMatchPhi,TrackMatchEta);
     task -> SetNsigma(NsigmaLow,NsigmaHigh);
+    task -> SetM20(M20Low,M20High);
     task -> SetEop(EopLow,EopHigh);
-
+    task -> SetMassPara(AssoMinpT,AssoNTPCClust,MassCut);
     // add your task to the manager
     mgr->AddTask(task);
 
@@ -69,7 +87,7 @@ class AliAnalysisDataContainer;
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName, TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
     mgr->ConnectInput(task, 0, cinput);
-    mgr->ConnectOutput(task, 1, coutput1); 
+    mgr->ConnectOutput(task, 1, coutput1);
 
     /*
     // your task needs input: here we connect the manager to your task
