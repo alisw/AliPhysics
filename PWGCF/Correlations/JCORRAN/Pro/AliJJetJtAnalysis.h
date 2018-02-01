@@ -89,8 +89,8 @@ class AliJJetJtAnalysis{
 
     void ClearBeforeEvent();
     void CreateMCHistograms();
-    void FillJtHistogram( TObjArray *Jets, int iContainer , int mc);
-    void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer, int mc);
+    void FillJtHistogram( TObjArray *Jets,TObjArray *ChargedJets, int iContainer , int mc);
+    void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , TObjArray *ChargedJets, int iContainer, int mc);
 
     void FillCorrelation( TObjArray *Jets, TObjArray *mcJets, int iContainer, int iContainerParticle);
     void FillPythia(TObjArray *Jets, int iContainer); 
