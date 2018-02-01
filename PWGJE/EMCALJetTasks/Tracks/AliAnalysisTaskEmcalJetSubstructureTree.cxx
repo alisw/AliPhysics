@@ -850,12 +850,20 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
       treemaker->SetTriggerString("EJ2");
     }
   }
+  
+  std::string jettypestring;
+  switch(jettype) {
+    case AliJetContainer::kFullJet: jettypestring = "FullJets"; break;
+    case AliJetContainer::kChargedJet: jettypestring = "ChargedJets"; break;
+    case AliJetContainer::kNeutralJet: jettypestring = "NeutralJets"; break;
+    default: jettypestring = "Undef";
+  };
 
   // Connecting containers
   std::stringstream outputfile, histname, treename;
-  outputfile << mgr->GetCommonFileName() << ":JetSubstructure_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
-  histname << "JetSubstructureHistos_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
-  treename << "JetSubstructureTree_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  outputfile << mgr->GetCommonFileName() << ":JetSubstructure_" << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  histname << "JetSubstructureHistos_" << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  treename << "JetSubstructureTree_" << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer(histname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile.str().data()));
   mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer(treename.str().data(), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
