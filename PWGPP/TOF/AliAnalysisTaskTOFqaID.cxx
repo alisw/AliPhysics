@@ -5,37 +5,37 @@
 #ifndef ALIANALYSISTASKTOFQAID_CXX
 #define ALIANALYSISTASKTOFQAID_CXX
 
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile.h"
-#include "TCanvas.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
-#include "AliESDpid.h"
-#include "AliTOFPIDParams.h"
-#include "AliTOFChannelOnlineStatusArray.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliCDBPath.h"
-#include "AliTOFcalib.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFT0v1.h"
 #include "AliAnalysisTaskTOFqaID.h"
 #include "AliAnalysisFilter.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliESDpid.h"
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
-#include "AliTOFRawStream.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
+#include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFGeometry.h"
-
+#include "AliTOFPIDParams.h"
+#include "AliTOFRawStream.h"
+#include "AliTOFT0maker.h"
+#include "AliTOFT0v1.h"
+#include "AliTOFcalib.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "TCanvas.h"
+#include "TChain.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "THashList.h"
+#include "TProfile.h"
+#include "TTree.h"
 
 ClassImp(AliAnalysisTaskTOFqaID)
 
@@ -91,7 +91,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
      fSigmaSpecie[j]=0.0;
      fTrkExpTimes[j]=0.0;
      fThExpTimes[j]=0.0;
-   } 
+   }
    for (Int_t i = 0; i <= fnBinsPt; i++)
      fVariableBinsPt[i] = 0.0;
    //
@@ -160,11 +160,11 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
 
    // Output slot #0 writes into a TH1 container
    // Output slot #1 writes into a user defined  container
-   DefineOutput(1, TList::Class());
-   DefineOutput(2, TList::Class());
-   DefineOutput(3, TList::Class());
-   DefineOutput(4, TList::Class());
-   DefineOutput(5, TList::Class());
+   DefineOutput(1, THashList::Class());
+   DefineOutput(2, THashList::Class());
+   DefineOutput(3, THashList::Class());
+   DefineOutput(4, THashList::Class());
+   DefineOutput(5, THashList::Class());
 
  }
 
@@ -255,7 +255,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fMyTimeZeroTOFtracks=copy.fMyTimeZeroTOFtracks;
     for (Int_t j=0;j<5;j++ ) {
       if (j<3) {
-	fT0[j]=copy.fT0[j];
+        fT0[j]=copy.fT0[j];
         fNTOFtracks[j]=copy.fNTOFtracks[j];
       }
       fSigmaSpecie[j]=copy.fSigmaSpecie[j];
@@ -342,30 +342,30 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   if (!fESDpid) AliError("PIDResponse object was not created");
   //fESDpid->SetOADBPath("$ALICE_PHYSICS/OADB");
 
-  Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
+  Info("CreateOutputObjects","CreateOutputObjects (THashList) of task %s", GetName());
   OpenFile(1);
 
   //define variable binning for pt and p before creating histos
   SetPtVariableBinning();
 
   
-  if (!fHlist) fHlist = new TList();
+  if (!fHlist) fHlist = new THashList();
   fHlist->SetOwner(kTRUE);
   fHlist->SetName("base");
 
-  if (!fHlistTimeZero) fHlistTimeZero = new TList();
+  if (!fHlistTimeZero) fHlistTimeZero = new THashList();
   fHlistTimeZero->SetOwner(kTRUE);
   fHlistTimeZero->SetName("startTime");
 
-  if (!fHlistPID) fHlistPID = new TList();
+  if (!fHlistPID) fHlistPID = new THashList();
   fHlistPID->SetOwner(kTRUE);
   fHlistPID->SetName("pid");
 
-  if (!fHlistTRD) fHlistTRD = new TList();
+  if (!fHlistTRD) fHlistTRD = new THashList();
   fHlistTRD->SetOwner(kTRUE);
   fHlistTRD->SetName("TRD");
 
-  if (!fHlistTrigger) fHlistTrigger = new TList();
+  if (!fHlistTrigger) fHlistTrigger = new THashList();
   fHlistTrigger->SetOwner(kTRUE);
   fHlistTrigger->SetName("trigger");
 
@@ -586,7 +586,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
 void AliAnalysisTaskTOFqaID::Terminate(Option_t *)
 {
   //check on output validity
-  fHlist = dynamic_cast<TList*> (GetOutputData(1));
+  fHlist = dynamic_cast<THashList*> (GetOutputData(1));
   if (!fHlist) {
     AliError("Base histograms list not available");
     return;
@@ -847,7 +847,7 @@ Bool_t AliAnalysisTaskTOFqaID::SelectMCspecies(AliMCEvent * ev, AliESDtrack * tr
 }
 
 //----------------------------------------------------------------------------------
-Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(TList* list, TString variable)
+Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(THashList* list, TString variable)
 {
   //computes matching efficiency from previously filled histos
   // to be called in terminate function
@@ -901,7 +901,7 @@ void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t mar
 }
 
 //----------------------------------------------------------------------------------
-void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString suffix)
+void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList *list, Int_t charge, TString suffix)
 {
   //Creates histograms for monitoring TOF signal, time alignement and matching-related quantities
   if (!list){
@@ -955,7 +955,7 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
 }
 
 //----------------------------------------------------------------------------------
-void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, TString suffix)
+void AliAnalysisTaskTOFqaID::AddMatchingEffHisto(THashList *list, Int_t charge, TString suffix)
 {
   if (!list){
     AliError("Invalid list passed as argument.");
@@ -1011,7 +1011,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
 }
 
 //----------------------------------------------------------------------------------
-void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suffix)
+void AliAnalysisTaskTOFqaID::AddPidHisto(THashList *list, Int_t charge, TString suffix)
 {
   //Creates histograms for monitoring TOF PID
   if (!list){
@@ -1116,7 +1116,7 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   return;
 }
 //----------------------------------------------------------------------------------
-void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
+void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList *list, TString suffix)
 {
   //Creates histograms for monitoring T0 signal and start-time related quantities
   if (!list){
@@ -1312,7 +1312,7 @@ void AliAnalysisTaskTOFqaID::FillPrimaryTrkHisto(Int_t charge, TString suffix)
   else if (charge > 0)
     cLabel.Form("pos");
 
-  TList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
+  THashList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
   ((TH1F*)theL->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP);
   ((TH1F*)theL->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt);
   ((TH2F*)theL->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
@@ -1335,7 +1335,7 @@ void AliAnalysisTaskTOFqaID::FillMatchedTrkHisto(Int_t charge, TString suffix)
   else if (charge > 0)
     cLabel.Form("pos");
 
-  TList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
+  THashList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
   ((TH1F*)theL->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP);
   ((TH1F*)theL->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt);
   ((TH2F*)theL->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
@@ -1381,8 +1381,7 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
     mass = fP*TMath::Sqrt(fact);
   }
 
-  TList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlistPID);
-
+  THashList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlistPID);
   ((TH2F*) theL->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
   ((TH1F*) theL->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
   ((TH1F*) theL->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
