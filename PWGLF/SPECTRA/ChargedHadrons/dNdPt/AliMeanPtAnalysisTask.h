@@ -30,8 +30,8 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     virtual ~AliMeanPtAnalysisTask();
 
     virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
+    virtual void   UserExec(Option_t* option);
+    virtual void   Terminate(Option_t*);
 
     // Getters
 
@@ -110,15 +110,12 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     void SetGeometricalCut(Bool_t usegeometricalCut, Float_t deadzoneWidth, Float_t ncrnclgeomlength , Float_t ncrnclgeom1pt, Float_t fractionNcr, Float_t fractionNcl  ){fUseGeomCut = usegeometricalCut; fDeadZoneWidth = deadzoneWidth; fCutGeoNcrNclLenght = ncrnclgeomlength; fCutGeoNcrNclGeom1Pt = ncrnclgeom1pt; fCutGeoNcrNclFractionNcl = fractionNcr; fCutGeoNcrNclFractionNcl = fractionNcl;}
     void SetMaxCentrality(Float_t maxCentrality){fMaxCentrality = maxCentrality;}
 
-    /// TOF pileup -> only for Matching Efficiency calculations
-    void SetTOFbunchCrossing(Bool_t isTOFbunch){fUseTOFBunchCrossing=isTOFbunch;}
-
     /// Event cuts for 2013 and 2015 data
     void Set2013pA(Bool_t is2013) { fIs2013pA = is2013; }
     void Set2015data(Bool_t is2015) {fIs2015data = is2015;}
 
     Bool_t IsTrackAcceptedKinematics(AliVTrack* track);
-    Bool_t IsTrackAcceptedKinematics(TParticle* mcTrack);
+    Bool_t IsTrackAcceptedKinematics(TParticle* mcParticle);
     Bool_t IsTrackAcceptedQuality(AliVTrack* track);
     Bool_t IsEventAcceptedGeometrics(AliVEvent* event);
     Bool_t IsEventAcceptedQuality(AliVEvent* event);
@@ -149,8 +146,6 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     Bool_t      	      fIsMC;			    ///< Flag for MC usage
     Bool_t	 			      fIs2013pA;
     Bool_t 				      fIs2015data;
-    Bool_t 				      fUseTOFBunchCrossing;
-
 
     Bool_t      	fTPCRefit;		     ///< TPC refit
     Bool_t      	fITSRefit;		     ///< TPC refit
@@ -200,8 +195,10 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
 
     // Output Histograms
     TH1F*         fEventCount;		        ///< Histogram for triggered events and events with vertex
+    TH1F*         fHistMCTrackParticle;		///<
 
-    THnF*         fHistEvent;			///<  Histogram for events (Zv,mult/cent)
+    THnF*         fHistEvent;			        ///<  Histogram for events
+
     THnF*         fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
 
     THnF*         fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)

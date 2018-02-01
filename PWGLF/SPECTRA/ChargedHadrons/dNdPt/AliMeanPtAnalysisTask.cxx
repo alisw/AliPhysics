@@ -15,10 +15,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AlidNdPtEventCuts.h"
 
 #include "AliPhysicsSelection.h"
-#include "AliVMultiplicity.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
 #include "AliMultSelectionTask.h"
@@ -28,15 +26,13 @@
 
 #include "AliMeanPtAnalysisTask.h"
 
-
 /// \cond CLASSIMP
 ClassImp(AliMeanPtAnalysisTask);
 /// \endcond
 
 
-
 //________________________________________________________________________
-AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char *name) : AliAnalysisTaskSE(name),
+AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
   //General member variables
   fOutputList(0),
   fEvent(0),
@@ -49,7 +45,6 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char *name) : AliAnalysisTask
   fIsMC(kFALSE),
   fIs2013pA(kFALSE),
   fIs2015data(kFALSE),
-  fUseTOFBunchCrossing(kFALSE),
   fTPCRefit(kFALSE),
   fITSRefit(kFALSE),
   fAcceptKinks(kTRUE),
@@ -91,6 +86,7 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char *name) : AliAnalysisTask
   fBinsZv(0),
   //Event-Histograms
   fEventCount(0),
+  fHistMCTrackParticle(0),
   fHistEvent(0),
   fHistMCResponseMat(0),
   //Track-Histograms
@@ -139,14 +135,16 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
   // Control histograms to check the effects of event and track cuts
 
-  fEventCount = new TH1F("fEventCount","Number of events after cuts",6,0.5,6.5);
+  fEventCount = new TH1F("fEventCount","Number of events after cuts",8,0.5,8.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
   fEventCount->GetXaxis()->SetBinLabel(1, "all");
   fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
-  fEventCount->GetXaxis()->SetBinLabel(3, "after event cuts");
-  fEventCount->GetXaxis()->SetBinLabel(4, "#it{N}_{ch} > 0"); // to normalize multptmcgen without conditions
-  fEventCount->GetXaxis()->SetBinLabel(5, "#it{N}_{acc} > 0"); // to normalize fHistTrack in data and MC
-  fEventCount->GetXaxis()->SetBinLabel(6, "#it{N}_{rec} > 0"); // to normalize multptmcgen with condition rec>0
+  fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pilup");
+  fEventCount->GetXaxis()->SetBinLabel(4, "accepted Centraliy");
+  fEventCount->GetXaxis()->SetBinLabel(5, "without #it{N}_{ch} overflow");
+  fEventCount->GetXaxis()->SetBinLabel(6, "#it{N}_{ch} > 0"); // to normalize multptmcgen without conditions
+  fEventCount->GetXaxis()->SetBinLabel(7, "#it{N}_{acc} > 0"); // to normalize fHistTrack in data and MC
+  fEventCount->GetXaxis()->SetBinLabel(8, "#it{N}_{rec} > 0"); // to normalize multptmcgen with condition rec>0
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -177,6 +175,12 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fHistTrack -> Sumw2();
 
   if(fIsMC){
+
+    // Control histogram showing reconstructed Tracks vs. reconstructed Particles
+    fHistMCTrackParticle = new TH1F("fHistMCTrackParticle","Reconstructed MC Tracks and Particles",2,0.5,2.5);
+    fHistMCTrackParticle->GetYaxis()->SetTitle("#it{N}");
+    fHistMCTrackParticle->GetXaxis()->SetBinLabel(1, "#it{N}_{acc}");
+    fHistMCTrackParticle->GetXaxis()->SetBinLabel(2, "#it{N}_{rec}");
 
     // Response Matrix Histogram
     Int_t nBinsRespMat[2]={fBinsMult->GetSize()-1,fBinsMult->GetSize()-1};
@@ -213,10 +217,10 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCEtaRes->GetAxis(0)->SetTitle("#eta^{track}");
     fHistMCEtaRes->GetAxis(1)->SetTitle("#eta^{particle}");
 
-    // binning for the correction histograms
-    Int_t nBinsMCTrack[3]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1, fBinsCent->GetSize()-1};
-    Double_t minMCTrack[3]={fBinsPt->GetAt(0),fBinsEta->GetAt(0), fBinsCent->GetAt(0)};
-    Double_t maxMCTrack[3]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1), fBinsCent->GetAt(fBinsCent->GetSize()-1)};
+    // Binning for the correction histograms
+    Int_t nBinsMCTrack[3] = {fBinsPt->GetSize()-1,fBinsEta->GetSize()-1, fBinsCent->GetSize()-1};
+    Double_t minMCTrack[3] = {fBinsPt->GetAt(0),fBinsEta->GetAt(0), fBinsCent->GetAt(0)};
+    Double_t maxMCTrack[3] = {fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1), fBinsCent->GetAt(fBinsCent->GetSize()-1)};
 
     fHistMCRecTrack = new THnF("fHistMCRecTrack", "Histogram for reconstructed MC Tracks",3,nBinsMCTrack,minMCTrack,maxMCTrack);
     fHistMCRecTrack -> SetBinEdges(0,fBinsPt->GetArray());
@@ -295,8 +299,8 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         fHistMCTrackMult -> SetBinEdges(1,fBinsMult->GetArray());
         fHistMCTrackMult -> SetBinEdges(2,fBinsMult->GetArray());
         fHistMCTrackMult->GetAxis(0)->SetTitle("#it{p}_{T}^{MC}");
-        fHistMCTrackMult->GetAxis(1)->SetTitle("N_{acc}");
-        fHistMCTrackMult->GetAxis(2)->SetTitle("N_{ch}");
+        fHistMCTrackMult->GetAxis(1)->SetTitle("#it{N}_{acc}");
+        fHistMCTrackMult->GetAxis(2)->SetTitle("#it{N}_{ch}");
         fHistMCTrackMult -> Sumw2();
 
         // Histogram track response as a function of pT (probably not necessary) gen
@@ -324,8 +328,8 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fOutputList->Add(fHistEvent);
   fOutputList->Add(fHistTrack);
 
-
   if(fIsMC){
+    fOutputList->Add(fHistMCTrackParticle);
     fOutputList->Add(fHistMCPtRes);
     fOutputList->Add(fHistMCEtaRes);
 
@@ -337,7 +341,6 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCResponseMat);
     fOutputList->Add(fHistMCMultPtGenerated);
 
-
     if(fIncludeCrosscheckHistos){
       fOutputList->Add(fHistMCTrackMult);
       fOutputList->Add(fHistMCTrackMultGen);
@@ -347,7 +350,6 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
   PostData(1, fOutputList);
 
-  /// Create and initialize Analysis Objects here instead of in UserExec() to save resources
   if(fIsESD) InitESDTrackCuts();
   if((fIs2013pA || fIs2015data) && !fUtils){fUtils = new AliAnalysisUtils();}
 
@@ -355,13 +357,12 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
 /// Destructor
 AliMeanPtAnalysisTask::~AliMeanPtAnalysisTask(){
-  if(fUtils){delete fUtils; fUtils=0;}
-  if(fESDtrackCuts){delete fESDtrackCuts; fESDtrackCuts=0;}
+  if(fUtils){delete fUtils; fUtils = NULL;}
+  if(fESDtrackCuts){delete fESDtrackCuts; fESDtrackCuts = NULL;}
 }
 
 ///________________________________________________________________________
 void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each event)
-
 
   /// ====================== Initialize variables ===============================
 
@@ -384,78 +385,72 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   Bool_t isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
-  AliVVZERO * vZeroHandler = fEvent->GetVZEROData();
-  if (!vZeroHandler) {printf("ERROR: vZeroHandler not available\n"); return;}
-
-
-  Double_t multAccTracks = 0;   	/// N_acc (of tracks!!)
-
-  Double_t multGenPart = 0;  		 /// N_ch
-  Double_t multRecPart = 0;		   /// N_acc (of tracks that can be assigned to a real particle)
+  Double_t multAccTracks = 0;   	 /// N_acc
+  Double_t multGenPart = 0;  		   /// N_ch
+  Double_t multRecPart = 0;		     /// N_rec
 
 
   /// ==================== Fill Histogramms ======================================
 
-  /// -------------------- Generated Events --------------------------------------
-  fEventCount->Fill(1);
+  fEventCount->Fill(1); // Generated Events
 
   if(!isEventTriggered) return;
 
-  /// -------------------- Triggered Events ---------------------------------------
-  fEventCount->Fill(2);
+  fEventCount->Fill(2); // Triggered Events
 
   if(!IsEventAcceptedGeometrics(fEvent)) return;   //Requires primary vertex in the limits
   if(!IsEventAcceptedQuality(fEvent)) return;      //Requires vertex quality
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
 
+  fEventCount->Fill(3); // Events after Vertex Cut and Pileup rejection
+
   Double_t centrality = 50;
   if((fBinsCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
-  if(centrality > fMaxCentrality) return;
+  if(centrality >= fMaxCentrality) return;
 
-  /// ------------------ Reconstructed Events --------------------------------------
-  fEventCount->Fill(3);
+  fEventCount->Fill(4); // Events after Centrality cut
 
   /// ------------------ Count Multiplicities --------------------------------------
 
   // True Multiplicity Nch:
   if(fIsMC){
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+      TParticle* mcGenParticle = fMCStack->Particle(iParticle);
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
-
       if(!IsTrackAcceptedKinematics(mcGenParticle)) continue;
       if(IsChargedPrimary(iParticle)) multGenPart++;
     }
   }
 
   // Measured Multiplicity Nacc:
-  AliVTrack *track = NULL;
+  AliVTrack* track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if (!track){ printf("ERROR: Could not receive track %d\n", iTrack); continue; }
-
+    if (!track){printf("ERROR: Could not receive track %d\n", iTrack); continue;}
     if(!IsTrackAcceptedKinematics(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
-
-    if(fUseTOFBunchCrossing && fIs2015data){
-      if(TMath::Abs(track->GetTOFsignalDz())>10) continue;
-      if((track->GetTOFsignal()) < 12000) continue;
-      if((track->GetTOFsignal()) > 25000) continue;
-    }
     multAccTracks++;
   }
 
   if(fIsMC){
+    // Response Matrix
+    // also contains Nch overflow, Nch=0 and Nacc = 0 events
     Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
+
+    if(multGenPart >= fBinsMult->GetAt(fBinsMult->GetSize()-1)) return;
+    fEventCount->Fill(5); // Events after excluding events in Nch overflow
+
+    if(multGenPart > 0) fEventCount->Fill(6);   // Events with Nch > 0
+    else return; // exclude events with only secondaries (?)
   }
 
-  if(multGenPart > 0) fEventCount->Fill(4);
-  if(multAccTracks > 0) fEventCount->Fill(5);
-  else return; // important: only use events which contribute to measurement or else effcorr is wrong
+  if(multAccTracks > 0) fEventCount->Fill(7); // Events with Nacc > 0
+  else return;  // Very important cut to not bias efficiency correction
 
   /// ------------------ Event Histogram ---------------------------------------
+
   Double_t eventValues[2] = {multAccTracks, centrality};
   fHistEvent->Fill(eventValues);
 
@@ -464,26 +459,19 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
   track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if (!track){ printf("ERROR: Could not receive track %d\n", iTrack); continue; }
+    if(!track) {printf("ERROR: Could not receive track %d\n", iTrack); continue;}
 
     if(!IsTrackAcceptedKinematics(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
 
-    if(fUseTOFBunchCrossing && fIs2015data){
-      if(TMath::Abs(track->GetTOFsignalDz())>10) continue;
-      if((track->GetTOFsignal()) < 12000) continue;
-      if((track->GetTOFsignal()) > 25000) continue;
-    }
-
     Double_t trackValues[4] = {track->Pt(), track->Eta(), multAccTracks, centrality};
     fHistTrack->Fill(trackValues);
 
-    //TODO weg??
+    // Include these histograms only if Nc <= 200 otherwise output becomes too large
     if(fIsMC && fIncludeCrosscheckHistos){
       Double_t trackValuesMult[3] = {track->Pt(), multAccTracks, multGenPart};
       fHistMCTrackMult->Fill(trackValuesMult);
     }
-
 
     /// Find original particle in MC-Stack
     if(fIsMC){
@@ -497,26 +485,32 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
       fHistMCEtaRes->Fill(etaResValues);
 
       if(!IsTrackAcceptedKinematics(mcParticle)) continue;
+      multRecPart++;
 
+      if(fIncludeCrosscheckHistos){
+        // Analogon to fHistTrack but with MC truth information
+        Double_t particleValues[4] = {mcParticle->Pt(), mcParticle->Eta(), multAccTracks, centrality};
+        fHistMCParticle->Fill(particleValues);
+      }
+      
+      // Histograms for efficiency x acceptance correction
       Double_t mcRecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
       fHistMCRecTrack->Fill(mcRecTrackValue);
-
 
       if(IsChargedPrimary(mcLabel))
       {
         Double_t mcPrimTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
-
-        multRecPart++;
-
-      }else{//works because tracks are always charged
+      }else{
         Double_t mcSecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecSecTrack->Fill(mcSecTrackValue);
-
       }
     }
   }// end of Track-loop
-  if(multRecPart > 0) fEventCount->Fill(6);
+
+  if(multRecPart > 0) fEventCount->Fill(8); // Events with particles assignable to tracks
+  fHistMCTrackParticle->Fill(1, multAccTracks);
+  fHistMCTrackParticle->Fill(2, multRecPart);
 
   if(fIsMC && fIncludeCrosscheckHistos){
     Double_t multResoTuple[2] = {multAccTracks, multRecPart};
@@ -528,7 +522,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
   if (fIsMC){
 
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+      TParticle* mcGenParticle = fMCStack->Particle(iParticle);
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
 
       if(!IsTrackAcceptedKinematics(mcGenParticle)) continue;
@@ -538,7 +532,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         Double_t mcGenPrimTrackValue[3] = {mcGenParticle->Pt(), mcGenParticle->Eta(), centrality};
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
-      	// multPtGeneratedMC hist for MC closure test and generator comparison
+      	// Reference histogram for MC closure test and generator comparison
     	  Double_t mcMultPtGenerated[2] = {multGenPart, mcGenParticle->Pt()};
     	  fHistMCMultPtGenerated->Fill(mcMultPtGenerated);
 
@@ -549,31 +543,28 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
       }
     }
   }
-
   PostData(1, fOutputList);
 }
 
-//________________________________________________________________________
-void AliMeanPtAnalysisTask::Terminate(Option_t *)
+//____________________________________________________________________________________________
+void AliMeanPtAnalysisTask::Terminate(Option_t*)
 {
 
 }
 
-Bool_t AliMeanPtAnalysisTask::IsChargedPrimary(Int_t stackIndex){
-  if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)){
 
+/// Function to determine if MC particle is charged primary
+Bool_t AliMeanPtAnalysisTask::IsChargedPrimary(Int_t stackIndex){
+  if (fMCStack->IsPhysicalPrimary(stackIndex)
+      && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)){
     return kTRUE;
   }
   return kFALSE;
 }
 
 
-/// Track Acceptance cuts, for tracks.
-///
-/// \param AliVTrack Input track
-///
-/// \return Is track accepted: kTRUE, else kFALSE
-Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack *track)
+/// Function implementing Track Acceptance cuts for tracks.
+Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack* track)
 {
   if(!track) return kFALSE;
 
@@ -588,17 +579,13 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack *track)
   return kTRUE;
 }
 
-/// Track Acceptance cuts, for MC particles.
-///
-/// \param TParticle Input particle
-///
-/// \return Is particle accepted: kTRUE, else kFALSE
-Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(TParticle* mcTrack)
+/// Function implementing Track Acceptance cuts for MC particles.
+Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(TParticle* mcParticle)
 {
-  if(!mcTrack) return kFALSE;
+  if(!mcParticle) return kFALSE;
 
-  Double_t eta = mcTrack->Eta();
-  Double_t pt = mcTrack->Pt();
+  Double_t eta = mcParticle->Eta();
+  Double_t pt = mcParticle->Pt();
 
   if(eta <= fMinEta)  return kFALSE;
   if(eta >= fMaxEta)  return kFALSE;
@@ -607,11 +594,7 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(TParticle* mcTrack)
   return kTRUE;
 }
 
-/// Track Quality cuts.
-///
-/// \param AliVTrack Input track
-///
-/// \return Is track accepted: kTRUE, else kFALSE
+/// Function implementing Track Quality cuts.
 Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedQuality(AliVTrack* track){
   if(fIsESD){
     AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
@@ -620,7 +603,7 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedQuality(AliVTrack* track){
   return kTRUE;
 }
 
-/// selection and pileup rejection for 2013 p-A
+/// Function for event selection and pileup rejection for 2013 p-A
 Bool_t AliMeanPtAnalysisTask::IsEventAccepted2013pA(AliVEvent* event)
 {
   if (fUtils->IsFirstEventInChunk(event)) { return kFALSE;  }
@@ -629,8 +612,8 @@ Bool_t AliMeanPtAnalysisTask::IsEventAccepted2013pA(AliVEvent* event)
   return kTRUE;
 }
 
-/// Event cuts and pileup rejection for 2015 data: pp and Pb-Pb
-Bool_t AliMeanPtAnalysisTask::IsEventAccepted2015data(AliVEvent *event)
+/// Function for Event cuts and pileup rejection for 2015 data: pp and Pb-Pb
+Bool_t AliMeanPtAnalysisTask::IsEventAccepted2015data(AliVEvent* event)
 {
   AliESDEvent* ESDevent = dynamic_cast<AliESDEvent*>(event);
   // if (fUtils->IsFirstEventInChunk(event)) { return kFALSE;  }
@@ -641,23 +624,15 @@ Bool_t AliMeanPtAnalysisTask::IsEventAccepted2015data(AliVEvent *event)
   return kTRUE;
 }
 
-/// Event Acceptance cuts.
-///
-/// \param AliVEvent Input event
-///
-/// \return Is event accepted: kTRUE, else kFALSE
-Bool_t AliMeanPtAnalysisTask::IsEventAcceptedGeometrics(AliVEvent *event)
+/// Function for Event Acceptance cuts.
+Bool_t AliMeanPtAnalysisTask::IsEventAcceptedGeometrics(AliVEvent* event)
 {
   if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZvtx) return kFALSE;
   return kTRUE;
 }
 
-/// Event Quality cuts.
-///
-/// \param AliVEvent Input event
-///
-/// \return Is event accepted: kTRUE, else kFALSE
-Bool_t AliMeanPtAnalysisTask::IsEventAcceptedQuality(AliVEvent *event)
+/// Function implementing Event Quality cuts.
+Bool_t AliMeanPtAnalysisTask::IsEventAcceptedQuality(AliVEvent* event)
 {
   if(!event) return kFALSE;
   if(!IsVertexOK(event)) return kFALSE;
@@ -665,7 +640,7 @@ Bool_t AliMeanPtAnalysisTask::IsEventAcceptedQuality(AliVEvent *event)
 }
 
 /// Function to get event centrality based on V0 measurement
-Double_t AliMeanPtAnalysisTask::GetCentrality(AliVEvent *event)
+Double_t AliMeanPtAnalysisTask::GetCentrality(AliVEvent* event)
 {
   Double_t centrality = -1;
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
@@ -675,7 +650,7 @@ Double_t AliMeanPtAnalysisTask::GetCentrality(AliVEvent *event)
   return centrality;
 }
 
-/// Function to initialize the ESD track cuts
+/// Function to initialize the ESD track cuts object
 void AliMeanPtAnalysisTask::InitESDTrackCuts(){
 
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
@@ -704,11 +679,11 @@ void AliMeanPtAnalysisTask::InitESDTrackCuts(){
 }
 
 ///Function to check vertex quality
-Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent *event){
+Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent* event){
   if(fIsESD){
     Double_t requiredZResolution = 1000;
     AliESDEvent* ESDevent = dynamic_cast<AliESDEvent*>(event);
-    const AliESDVertex *esdVertex = ESDevent->GetPrimaryVertexTracks();
+    const AliESDVertex* esdVertex = ESDevent->GetPrimaryVertexTracks();
     if(!esdVertex){printf("ERROR: vertex not available\n"); return kFALSE;}
     if(esdVertex->GetNContributors() < 1) {
       // SPD vertex
@@ -719,15 +694,15 @@ Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent *event){
     Double_t zRes = esdVertex->GetZRes();
     if (zRes > requiredZResolution) return kFALSE;
 
-    const AliESDVertex *vertexSPD = ESDevent->GetPrimaryVertexSPD();
+    const AliESDVertex* vertexSPD = ESDevent->GetPrimaryVertexSPD();
     // always check for SPD vertex
-    const AliESDVertex * trkVertex = ESDevent->GetPrimaryVertexTracks();
+    const AliESDVertex* trkVertex = ESDevent->GetPrimaryVertexTracks();
     if(!vertexSPD) return kFALSE;
     if(!vertexSPD->GetStatus()) return kFALSE;
     if(!trkVertex->GetStatus()) return kFALSE;
     if (vertexSPD->IsFromVertexerZ() && !(vertexSPD->GetDispersion() < 0.04 && vertexSPD->GetZRes() < 0.25)) return kFALSE;
     //if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
-    if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
+    if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ()) > 0.5)) return kFALSE;
   }else{
     //AOD code goes here
   }

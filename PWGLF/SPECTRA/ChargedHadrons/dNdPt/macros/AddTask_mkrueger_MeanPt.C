@@ -3,6 +3,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105), (105,109), (109,113), (113,116), (116,120)
 
   // settings:
+  Bool_t includeCrosscheckHistos = kFALSE;
   UInt_t offlineTriggerMask = AliVEvent::kINT7;
   Bool_t is2015Data = kFALSE;
   Bool_t isPbPbAnalysis = kFALSE;
@@ -15,6 +16,8 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
 
+  Float_t maxCentrality = 100;
+
   const Int_t nMultSteps = 3;
   Int_t multSteps[] = {100, 0, 0};
   Int_t multBinWidth[] = {1,1,1};
@@ -26,12 +29,15 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
 
 
   if(controlstring.Contains("pp")){
+    includeCrosscheckHistos = kTRUE;
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
   if(controlstring.Contains("XeXe"))  {
     colsys = "XeXe";
-    multSteps[0] = 200;  multBinWidth[0] = 15;
+    maxCentrality = 80;
+//    multSteps[0] = 200;  multBinWidth[0] = 15;
+    multSteps[0] = 3000;  multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 7;
@@ -42,8 +48,10 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     multSteps[0] = 200;   multBinWidth[0] = 1;
     multSteps[1] = 0;     multBinWidth[1] = 1;
     multSteps[2] = 0;     multBinWidth[2] = 1;
+    //task->Set2013pA(); for pPb 2013 data
   }
   if(controlstring.Contains("PbPb")) {
+    maxCentrality = 80;
     isPbPbAnalysis = kTRUE;
     is2015Data = kTRUE;
     colsys = "PbPb";
@@ -56,9 +64,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
 
   // Binning in Multiplicity
-
   const Int_t nBinsMult = multSteps[0]+ multSteps[1] + multSteps[2] + 1;
-
   Double_t multBinEdges[nBinsMult+1];
   multBinEdges[0] = -0.5;
   multBinEdges[1] = 0.5;
@@ -73,7 +79,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   }
 
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
     Error("AddTask_mkrueger_MeanPt", "No analysis manager found.");
@@ -99,7 +105,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
 
     AliMeanPtAnalysisTask* task = new AliMeanPtAnalysisTask(taskName);
 
-    task->SetIncludeCrosscheckHistos(kTRUE);
+    task->SetIncludeCrosscheckHistos(includeCrosscheckHistos);
     // general cuts
     task->SelectCollisionCandidates(offlineTriggerMask);
     task->SetTriggerMask(offlineTriggerMask);
@@ -111,6 +117,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     task->SetBinsCent(nBinsCent, centBinEdges);
 
     // nominal cut-setting:
+    task->SetMaxCentrality(maxCentrality);
 
     task->SetMinEta(-etaCut);
     task->SetMaxEta(etaCut);
@@ -119,9 +126,6 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
 
     task->Set2013pA(kFALSE);
     task->Set2015data(is2015Data);
-
-    ///TOF pileup, kTRUE only for Matching efficiency studies
-    task->SetTOFbunchCrossing(kFALSE);
 
     task->SetMeanXYZv(0.0,0.0,0.0);
     task->SetSigmaMeanXYZv(1.0,1.0,10.0);
