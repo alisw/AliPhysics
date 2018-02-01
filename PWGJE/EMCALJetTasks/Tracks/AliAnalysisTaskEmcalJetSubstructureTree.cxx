@@ -90,6 +90,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+    fUseTriggerSelectionForData(false),
     fUseDownscaleWeight(false),
     fUseChargedConstituents(true),
     fUseNeutralConstituents(true),
@@ -115,6 +116,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+    fUseTriggerSelectionForData(false),
     fUseDownscaleWeight(false),
     fUseChargedConstituents(true),
     fUseNeutralConstituents(true),
@@ -240,11 +242,20 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
       // Pure data - do EMCAL trigger selection from selection string
       if(fTriggerSelectionString.Length()) {
         if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+        if(fTriggerSelectionString.Contains("EJ") && fUseTriggerSelectionForData) {
+          auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+          AliDebugStream(1) << "Found trigger decision object: " << (trgselresult ? "yes" : "no") << std::endl;
+          if(!trgselresult){
+            AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
+            return false;
+          }
+          if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
+        }
       }
     } else {
       if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
         // Simulation - do EMCAL trigger selection from trigger selection object
-        PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+        auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
         AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
         if(!mctrigger){
           AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;

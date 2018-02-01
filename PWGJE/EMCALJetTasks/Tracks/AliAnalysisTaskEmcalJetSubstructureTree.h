@@ -199,6 +199,7 @@ public:
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
 	void SetUseDownscaleWeight(Bool_t usedownscale) { fUseDownscaleWeight = usedownscale; }
   void SetGlobalTriggerDecisionContainerName(const char *name) { fNameTriggerDecisionContainer = name; }
+  void SetUseTriggerSelectionOnData(bool doUse) { fUseTriggerSelectionForData = doUse; }
 
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
@@ -270,6 +271,7 @@ private:
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container
+  Bool_t                       fUseTriggerSelectionForData; ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
   Bool_t                       fUseChargedConstituents;     ///< Use charged constituents 
   Bool_t                       fUseNeutralConstituents;     ///< Use neutral constituents
