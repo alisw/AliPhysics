@@ -707,7 +707,7 @@ Float_t AliTOFT0v1::GetMomError(Int_t index, Float_t mom, Float_t texp) const
 
   Double_t mass=kMasses[index+2];
 
-  Float_t sigma = fPIDesd->GetTOFResponse().GetExpectedSigma(mom,texp,mass);
+  Float_t sigma = fPIDesd->GetTOFResponse().GetExpectedSigma(mom,texp*1000,mass);
 
   return sigma;
 }
