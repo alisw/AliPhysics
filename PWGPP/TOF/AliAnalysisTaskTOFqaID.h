@@ -124,13 +124,13 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TList *             fHlistTRD;  //list of general histos for positive tracks
   TList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  const Int_t fnBinsPt = 300; // binning for pt and p 
-  const Int_t fnBinsEta = 200; // binning for eta
-  const Int_t fnBinsPhi = 72; // binning for phi and phi_TPCouter
-  const Double_t fBinsPt[2] = {0.0, 20.0}; // binning for pt and p - max and min
-  const Double_t fBinsEta[2] = {-1.0, 1.0}; // binning for eta - max and min
-  const Double_t fBinsPhi[2] = {0.0, 360.0}; // binning for phi and phi_TPCouter - max and min
-  Double_t *fVariableBinsPt; // array of bins for pt and p 
+  static const Int_t fnBinsPt = 300; // binning for pt and p 
+  static const Int_t fnBinsEta = 200; // binning for eta
+  static const Int_t fnBinsPhi = 72; // binning for phi and phi_TPCouter
+  static const Double_t fBinsPt[2]; // binning for pt and p - max and min
+  static const Double_t fBinsEta[2]; // binning for eta - max and min
+  static const Double_t fBinsPhi[2]; // binning for phi and phi_TPCouter - max and min
+  Double_t fVariableBinsPt[fnBinsPt + 1]; // array of bins for pt and p
 
   void SetPtVariableBinning(); // sets the array with variable binning in p and pT
   

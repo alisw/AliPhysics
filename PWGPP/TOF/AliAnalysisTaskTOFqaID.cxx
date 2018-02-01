@@ -79,8 +79,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
   fHlistTRD(0x0),
-  fHlistTrigger(0x0),
-  fVariableBinsPt(0x0)
+  fHlistTrigger(0x0)
 {
   // Default constructor
 
@@ -93,6 +92,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
      fTrkExpTimes[j]=0.0;
      fThExpTimes[j]=0.0;
    } 
+   for (Int_t i = 0; i <= fnBinsPt; i++)
+     fVariableBinsPt[i] = 0.0;
+   //
 }
 //________________________________________________________________________
 AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
@@ -135,8 +137,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
   fHlistTRD(0x0),
-  fHlistTrigger(0x0),
-  fVariableBinsPt(0x0)
+  fHlistTrigger(0x0)
  {
   // Constructor
   // Define input and output slots here
@@ -151,6 +152,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
      fTrkExpTimes[j]=0.0;
      fThExpTimes[j]=0.0;
    }
+   for (Int_t i = 0; i <= fnBinsPt; i++)
+     fVariableBinsPt[i] = 0.0;
+   //
    // Input slot #0 works with a TChain
    DefineInput(0, TChain::Class());
 
@@ -205,8 +209,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fHlistTimeZero(copy.fHlistTimeZero),
   fHlistPID(copy.fHlistPID),
   fHlistTRD(copy.fHlistTRD),
-  fHlistTrigger(copy.fHlistTrigger),
-  fVariableBinsPt(copy.fVariableBinsPt)
+  fHlistTrigger(copy.fHlistTrigger)
 {
   // Copy constructor
    for (Int_t j=0;j<5;j++ ) {
@@ -218,8 +221,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
      fTrkExpTimes[j]=copy.fTrkExpTimes[j];
      fThExpTimes[j]=copy.fThExpTimes[j];
    }
-
-
+   for (Int_t i = 0; i <= fnBinsPt; i++)
+     fVariableBinsPt[i] = copy.fVariableBinsPt[i];
+   //
 }
 
 //___________________________________________________________________________
@@ -278,7 +282,9 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fHlistPID=copy.fHlistPID;
     fHlistTRD=copy.fHlistTRD;
     fHlistTrigger=copy.fHlistTrigger;
-    fVariableBinsPt=copy.fVariableBinsPt;
+    for (Int_t i = 0; i <= fnBinsPt; i++)
+      fVariableBinsPt[i] = copy.fVariableBinsPt[i];
+    //
   }
   return *this;
 }
@@ -690,7 +696,7 @@ Bool_t  AliAnalysisTaskTOFqaID::IsTPCTOFMatched(AliESDtrack * track, Bool_t chec
       const Int_t TrkLabel = track->GetLabel(); /*The Get*Label() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track. */
       const Int_t AbsTrkLabel = TMath::Abs(TrkLabel);
       Int_t TOFTrkLabel[3] = {-1};//This can contain three particles wich occupy the same cluster
-      Int_t mfl, uniqueID;
+      // Int_t mfl, uniqueID;
       //Gets the labels of the tracks matched to the TOF,
       //this can be used to remove the mismatch and to compute the efficiency!
       //The label to check is the first one, the others can come from different tracks
@@ -903,13 +909,11 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
     return;
   }
 
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
-
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   TH1I* hTOFmulti = new TH1I(Form("hTOFmulti%s_%s",suffix.Data(), cLabel.Data()), Form("%s matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c})", cLabel.Data(), fMatchingEtaCut), 100, 0, 100);
   HistogramMakeUp(hTOFmulti, ((charge>0)? kRed : kBlue+2), 1, "E1", "","", "N","events");
@@ -957,12 +961,12 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
     AliError("Invalid list passed as argument.");
     return;
   }
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   TH1F* hMatchedP  = new TH1F(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), fnBinsPt, fVariableBinsPt);// 1000,0.,10.) ;
   HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/#it{c})","tracks");
@@ -1014,12 +1018,12 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
     AliError("Invalid list passed as argument.");
     return;
   }
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   TH2F* hMatchedBetaVsP  = new TH2F(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk #beta vs. p", cLabel.Data()), fnBinsPt, fVariableBinsPt, 150, 0., 1.5) ;
   HistogramMakeUp(hMatchedBetaVsP,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "#it{p} (GeV/#it{c})","#beta");
@@ -1278,12 +1282,12 @@ void AliAnalysisTaskTOFqaID::FillTofBaseHisto(AliESDtrack * track, Int_t charge,
   Int_t channel=track->GetTOFCalChannel();
   Int_t volId[5]; //(sector, plate,strip,padZ,padX)
   AliTOFGeometry::GetVolumeIndices(channel,volId);
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   ((TH1F*)fHlist->FindObject(Form("hTime%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTof); //ns
   ((TH1F*)fHlist->FindObject(Form("hRawTime%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofTimeRaw*1E-3); //ns
@@ -1301,12 +1305,12 @@ void AliAnalysisTaskTOFqaID::FillPrimaryTrkHisto(Int_t charge, TString suffix)
 {
   // fill histos with primary tracks info
   // => denominator for matching efficiency
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   TList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
   ((TH1F*)theL->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP);
@@ -1324,12 +1328,13 @@ void AliAnalysisTaskTOFqaID::FillMatchedTrkHisto(Int_t charge, TString suffix)
 {
   //get matched tracks variables (matching cut to be applied externally)
   //=> numerator for matching efficiency
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
+
   TList *theL = (suffix.Contains("Trd") ? fHlistTRD : fHlist);
   ((TH1F*)theL->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP);
   ((TH1F*)theL->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt);
@@ -1355,12 +1360,11 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
   }
   if (!track) return;
 
-  TString cLabel;
-  if (charge == 0) cLabel.Form("all");
-  else
-    if (charge<0) cLabel.Form("neg");
-    else
-      if (charge>0) cLabel.Form("pos");
+  TString cLabel = "all";
+  if (charge < 0)
+    cLabel.Form("neg");
+  else if (charge > 0)
+    cLabel.Form("pos");
 
   //calculate beta
   Double_t c=TMath::C()*1.E-9;// m/ns
@@ -1647,13 +1651,22 @@ void AliAnalysisTaskTOFqaID::SetPtVariableBinning()
   //
   // returns an array with variable binning in p and pT
   //
-  Double_t xBins[fnBinsPt+1];
-  for (Int_t j=0;j<fnBinsPt+1; j++) {
-    if (j<200) xBins[j] = j*0.025;
-    else xBins[j] = 5.0 + (j-200)*0.050;
+  for (Int_t j = 0; j < fnBinsPt + 1; j++) {
+    if (j < 200)
+      fVariableBinsPt[j] = 0.025 * j;
+    else
+      fVariableBinsPt[j] = 5.0 + (j - 200) * 0.050;
   }
-  fVariableBinsPt = xBins;
   return;
 }
+
+//-----------------------------------------------------------
+const Double_t AliAnalysisTaskTOFqaID::fBinsPt[2] = { 0.0, 20.0 };
+
+//-----------------------------------------------------------
+const Double_t AliAnalysisTaskTOFqaID::fBinsEta[2] = { -1.0, 1.0 };
+
+//-----------------------------------------------------------
+const Double_t AliAnalysisTaskTOFqaID::fBinsPhi[2] = { 0.0, 360.0 };
 
 #endif
