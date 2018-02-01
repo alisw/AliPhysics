@@ -200,7 +200,8 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   //                    17c for 17h-m // no maps will be loaded
   //                    17n for 17n 
   //                    17c for 17o // no maps
-  //                    17p for 17p,q // no maps for 17q will be loaded
+  //                    17p for 17p
+  //                    17q for 17q
   //                    17c for 17r // no maps
   //                    
   //                    Systems: 17c-m pp   13   TeV
@@ -220,8 +221,8 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 280247, 281969, "1"); // temporary for 17o onwards
 
-  //AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1/splines_17P_PASS1.root", 281970, 282350, "1");// 17p only
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1/splines_17P_PASS1.root", 281970, 282444, "1");// temporary for 17p and q
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1/splines_17P_PASS1.root", 281970, 282350, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17q.pass1/splines_17Q_PASS1.root", 282351, 282444, "1");
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 282445, 282955, "1"); // temporary for 17r onwards
 
