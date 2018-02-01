@@ -1,4 +1,4 @@
-AliXiStarPbPb *AddTaskXiStarPbPb(bool MCcase=kFALSE, bool AODcase=kFALSE) {
+AliXiStarPbPb *AddTaskXiStarPbPb(bool AODcase=kFALSE, bool MCcase=kFALSE) {
  
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -12,7 +12,7 @@ AliXiStarPbPb *AddTaskXiStarPbPb(bool MCcase=kFALSE, bool AODcase=kFALSE) {
     
   //____________________________________________//
   // Create tasks
-  AliXiStarPbPb *XiStarTask = new AliXiStarPbPb("XiStarTask", MCcase, AODcase);
+  AliXiStarPbPb *XiStarTask = new AliXiStarPbPb("XiStarTask", AODcase, MCcase);
   if(!XiStarTask) exit(-1);
   mgr->AddTask(XiStarTask);
     
