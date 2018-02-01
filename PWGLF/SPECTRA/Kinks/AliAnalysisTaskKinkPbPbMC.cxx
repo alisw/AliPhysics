@@ -62,7 +62,7 @@ AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC()
         fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
         fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
         fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
-        fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0)
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5)
 {}
 
 
@@ -87,7 +87,7 @@ AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC(const char *name, Float_t l
 	fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
 	fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
 	fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0)
+	fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5)
 	
 
 
@@ -1182,7 +1182,7 @@ Double_t mctrack= mcEvent->GetNumberOfTracks();
 	//  here the kaons selected by the decay features
         fTPCSignlMotherK->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal() )) ;
 //nsigma cut
-	if ( nsigma > 3.0) continue;
+	if ( nsigma > fnsigma) continue;
 	fPtKaon->Fill(track->Pt(), cent);   //
         if(code1>0. ) fPtKaonP->Fill(track->Pt(), cent) ;   //
         if ( code1 <0.)fPtKaonN->Fill(track->Pt(),cent) ;   //

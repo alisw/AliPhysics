@@ -54,7 +54,7 @@ AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb()
         fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
         fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
         fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0)
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
 {}
 
 
@@ -69,7 +69,7 @@ AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadi
 	fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
 	fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
 	fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0)
+	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
 
 {
   // Constructor
@@ -704,7 +704,7 @@ Int_t tpcNClMin  = -60.5 + (65./105.)  *( kink->GetR() ) ;
 	//  here the kaons selected by the decay features
         fTPCSignlMotherK->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal() )) ;
 //nsigma cut
-	if ( nsigma > 3.0) continue;
+	if ( nsigma > fnsigma) continue;
 	fqT1  ->Fill(qT) ;
 	fqTvsPt->Fill(trackPt, qT);
         fInvMassPt->Fill(invariantMassKmu, trackPt);
