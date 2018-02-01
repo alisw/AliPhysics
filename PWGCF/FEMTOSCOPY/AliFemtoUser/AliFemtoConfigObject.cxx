@@ -932,7 +932,20 @@ namespace std {
         [&] (ULong_t a, const Item_t &pair) {
           return operator()(pair) ^ (a << 1); });
     }
+
+    ULong_t operator()(AliFemtoConfigObject::MapValue_t const& map) const {
+      using Item_t = AliFemtoConfigObject::MapValue_t::value_type;
+
+      return std::accumulate(
+        map.cbegin(), map.cend(), 0,
+        [] (ULong_t hash, const Item_t &pair) {
+          return hash
+                 ^ (std::hash<AliFemtoConfigObject::Key_t>{}(pair.first) << 1)
+                 ^ (pair.second.Hash() << 2); });
+    }
+
   };
+
 }
 
 
@@ -951,16 +964,8 @@ AliFemtoConfigObject::Hash() const
     case kSTRING: return result ^ std::hash<StringValue_t>{}(fValueString);
     case kRANGE: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRange);
     case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
-
-    case kARRAY:
-
-    case kMAP:
-      return std::accumulate(
-        fValueMap.cbegin(), fValueMap.cend(), result,
-        [] (ULong_t hash, const MapValue_t::value_type &pair) {
-          return hash
-                 ^ (std::hash<Key_t>{}(pair.first) << 1)
-                 ^ (pair.second.Hash() << 2); });
+    case kARRAY: return result ^ std::hash<AliFemtoConfigObject>{}(fValueArray);
+    case kMAP: return result ^ std::hash<AliFemtoConfigObject>{}(fValueMap);
   }
 
   return 0;
