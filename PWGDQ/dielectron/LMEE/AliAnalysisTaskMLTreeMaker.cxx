@@ -8,6 +8,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "AliAnalysisTaskMLTreeMaker.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliStack.h"
@@ -43,7 +44,6 @@
 #include <TMCProcess.h>
 #include <vector>
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskMLTreeMaker.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -66,20 +66,52 @@ Int_t ev=0;
 
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   AliAnalysisTaskSE(),
-  fList(0x0),
+  eventCuts(0),
+  eventplaneCuts(0),
+  evfilter(0),
+  trcuts(0),
+  trfilter(),
+  pidcuts(0),      
+  cuts(0),
+  filter(0), 
+  varManager(0), 
+  fPIDResponse(0),        
+  eta(0),
+  phi(0),
+  pt(0),        
+  charge(0.),   
+  enh(0),
+  NCrossedRowsTPC(0), 
+  NClustersTPC(0),        
+  HasSPDfirstHit(0),        
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE),        
+  runn(0),      
+  n(0),
+  cent(0),
+  fList(0x0),        
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(100),         
   fPtMin(0),
   fPtMax(1000),
   fEtaMin(-10),
-  fEtaMax(10),
+  fEtaMax(10),  
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fFilterBit(96),
+  gMultiplicity(-999),
+  mcTrackIndex(0),
   fMcArray(0x0),
-  fTree(0),
-  fQAHist(0),  
-  eta(0),
-  phi(0),
-  pt(0),
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -89,92 +121,90 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-100.),
-  fESigITSMax(3.),
-  fESigTPCMin(-3.),
-  fESigTPCMax(3.),
-  fESigTOFMin(-3),
-  fESigTOFMax(3),
-  fPSigTPCMin(-100.),
-  fPSigTPCMax(4.),
-  fPionSigmas(kFALSE),
-  fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kFALSE),
-  hasMC(kFALSE),
+  hasMC(kFALSE),       
+  Rej(kFALSE),  
   MCpt(0),
   MCeta(0),
-  MCphi(0),
-  pdg(0),
-  pdgmother(0),
-  hasmother(0),      
+  MCphi(0),        
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),        
   dcar(),
-  dcaz(),
-  nITS(0),
+  dcaz(), 
+  vertx(0),
+  verty(0),
+  vertz(0),
+  nITS(0),        
+  nITSshared(0),        
   ITS1S(0),
   ITS2S(0),
   ITS3S(0),
   ITS4S(0),
   ITS5S(0),
-  ITS6S(0),        
-//  fESDTrackCuts(0),
-  gMultiplicity(-999),
-  chi2ITS(0),
-//  chi2TPC(0),
+  ITS6S(0),  
+  chi2ITS(0),        
   chi2GlobalPerNDF(0),
-  nITSshared(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),
+  label(0),      
   motherlabel(0),
-  label(0),        
-  charge(0.),      
-  runn(0),      
-  Rej(kFALSE),
-  fPIDResponse(0),
-  n(0),
-  cent(0),
-  vertx(0),
-  verty(0),
-  vertz(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),
-  mcTrackIndex(0),
-  NCrossedRowsTPC(0),
-  NClustersTPC(0),
-  HasSPDfirstHit(0), 
-  RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0),
-  loCuts(kTRUE),
-  enh(0),
-  eventCuts(0),
-  trcuts(0),
-  trfilter(),
-  cuts(0),
-  pidcuts(0),
-  filter(0),
-  varManager(0),
-  eventplaneCuts(0),
-  evfilter(0)
+  fTree(0),
+  fQAHist(0)
 {
 
 }
 
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   AliAnalysisTaskSE(name),
-  fList(0x0),
+  eventCuts(0),
+  eventplaneCuts(0),
+  evfilter(0),
+  trcuts(0),
+  trfilter(),
+  pidcuts(0),      
+  cuts(0),
+  filter(0), 
+  varManager(0), 
+  fPIDResponse(0),        
+  eta(0),
+  phi(0),
+  pt(0),        
+  charge(0.),   
+  enh(0),
+  NCrossedRowsTPC(0), 
+  NClustersTPC(0),        
+  HasSPDfirstHit(0),        
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE),        
+  runn(0),      
+  n(0),
+  cent(0),
+  fList(0x0),        
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(100),         
   fPtMin(0),
   fPtMax(1000),
   fEtaMin(-10),
-  fEtaMax(10),
+  fEtaMax(10),  
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fFilterBit(96),
+  gMultiplicity(-999),
+  mcTrackIndex(0),
   fMcArray(0x0),
-  fTree(0),
-  fQAHist(0),  
-  eta(0),
-  phi(0),
-  pt(0),
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -184,72 +214,38 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-100.),
-  fESigITSMax(3.),
-  fESigTPCMin(-3.),
-  fESigTPCMax(3.),
-  fESigTOFMin(-3),
-  fESigTOFMax(3),
-  fPSigTPCMin(-100.),
-  fPSigTPCMax(4.),
-  fPionSigmas(kFALSE),
-  fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kFALSE),
-  hasMC(kFALSE),
+  hasMC(kFALSE),       
+  Rej(kFALSE),  
   MCpt(0),
   MCeta(0),
-  MCphi(0),
-  pdg(0),
-  pdgmother(0),
-  hasmother(0),      
+  MCphi(0),        
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),        
   dcar(),
-  dcaz(),
-  nITS(0),
+  dcaz(), 
+  vertx(0),
+  verty(0),
+  vertz(0),
+  nITS(0),        
+  nITSshared(0),        
   ITS1S(0),
   ITS2S(0),
   ITS3S(0),
   ITS4S(0),
   ITS5S(0),
-  ITS6S(0),       
-//  fESDTrackCuts(0),
-  gMultiplicity(-999),
-  chi2ITS(0),
-//  chi2TPC(0),
-  chi2GlobalPerNDF(0),      
-  nITSshared(0),
+  ITS6S(0),  
+  chi2ITS(0),        
+  chi2GlobalPerNDF(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),
+  label(0),      
   motherlabel(0),
-  label(0),         
-  charge(0.),      
-  runn(0),      
-  Rej(kFALSE),
-  fPIDResponse(0),
-  n(0),
-  cent(0),
-  vertx(0),
-  verty(0),
-  vertz(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),
-  mcTrackIndex(0),
-  NCrossedRowsTPC(0),
-  NClustersTPC(0),
-  HasSPDfirstHit(0), 
-  RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0),
-  loCuts(kTRUE),
-  enh(0),
-  trcuts(0),
-  trfilter(),
-  cuts(0),
-  pidcuts(0),
-  filter(0),
-  varManager(0),
-  eventCuts(0),
-  eventplaneCuts(0),
-  evfilter(0)
+  fTree(0),
+  fQAHist(0)
 {
  SetupTrackCuts(); 
  SetupEventCuts(); 
@@ -510,13 +506,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   ITS4S.clear();
   ITS5S.clear();
   ITS6S.clear(); 
+   
   
   
   // Loop over tracks in event
-  AliGenCocktailEventHeader* coHeader;
-  AliMCEvent *mcEvent;
-  Int_t temppdg;
-  Int_t tempmpdg;
+  AliMCEvent *mcEvent=0;
+//  Int_t temppdg;
+//  Int_t tempmpdg;
   AliAODMCParticle* mcMTrack;
 
   
@@ -556,14 +552,14 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           Rej=kFALSE;
 
                 mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
-                temppdg = mcMTrack->PdgCode(); 
+//                temppdg = mcMTrack->PdgCode(); 
                 
                 if(!(mcMTrack->GetMother() < 0)){       //get direct mother
                     mcTrackIndex = mcMTrack->GetMother(); 
                     mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-                    tempmpdg= mcMTrack->PdgCode(); 
+//                    tempmpdg= mcMTrack->PdgCode(); 
                 }
-                else tempmpdg=-9999;
+//                else tempmpdg=-9999;
                     
                 while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
                     mcTrackIndex = mcMTrack->GetMother(); 
@@ -686,7 +682,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       charge.push_back(track->Charge());   
 
       NCrossedRowsTPC.push_back(track->GetTPCCrossedRows());
-      NClustersTPC.push_back(track->GetTPCNcls();//->GetNumberOfTPCClusters());
+      NClustersTPC.push_back(track->GetTPCNcls());//->GetNumberOfTPCClusters());
       HasSPDfirstHit.push_back(track->HasPointOnITSLayer(0)); 
       RatioCrossedRowsFindableClusters.push_back((Double_t) track->GetTPCCrossedRows()/ (Double_t) track->GetTPCNclsF());       
       NTPCSignal.push_back(track->GetTPCsignalN());
@@ -702,7 +698,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       else {ITS4S.push_back(0);}
       if( track->HasSharedPointOnITSLayer(4) ) {ITS5S.push_back(1);}
       else {ITS5S.push_back(0);}
-      if( track->HasSharedPointOnITSLayer(5) ) {ITs6S.push_back(1);}
+      if( track->HasSharedPointOnITSLayer(5) ) {ITS6S.push_back(1);}
       else {ITS6S.push_back(0);}
       
        //Get DCA position
@@ -824,7 +820,7 @@ AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
 PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
 PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
 PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
-PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
 AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
 trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -857,11 +853,8 @@ SharedClusterCut->AddCut(trackCutsSharedCluster16);
 SharedClusterCut->AddCut(trackCutsSharedCluster32);
 
 AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-trackCutsDiel->SetAODFilterBit(1<<4);
-trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-
-
-
+trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);//(1<<4) -> error
+trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::Detector(0),AliDielectronTrackCuts::ITSClusterRequirement(3));//(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst) -> error
 
 //Add desired cuts to cutgroup
 cuts->AddCut(PIDcut_3);
