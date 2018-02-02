@@ -124,6 +124,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fV0CQ3yVsCentRun(NULL),
   fTPCQ2xVsCentRun(NULL),
   fTPCQ2yVsCentRun(NULL),
+  fTPCQ3xVsCentRun(NULL),
+  fTPCQ3yVsCentRun(NULL),
   mListNUAPos(NULL),
   mListNUANeg(NULL),
   fileNUApos(NULL),
@@ -357,6 +359,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fV0CQ3yVsCentRun(NULL),
   fTPCQ2xVsCentRun(NULL),
   fTPCQ2yVsCentRun(NULL),
+  fTPCQ3xVsCentRun(NULL),
+  fTPCQ3yVsCentRun(NULL),
   mListNUAPos(NULL),
   mListNUANeg(NULL),
   fileNUApos(NULL),
@@ -965,8 +969,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t McorrNeg = 0.;
 
  //TPC Event plane Qvectors:
- Double_t QxTPC[2] = {0.,};
- Double_t QyTPC[2] = {0.,};
+ Double_t QxTPC[3] = {0.,};
+ Double_t QyTPC[3] = {0.,};
 
  Int_t ptBin;
  Int_t nRefMult = 0;
@@ -1232,11 +1236,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
     }*/
 
-
-   if(isBadRun) continue;
-
-
-
    iEtaQA = fEtaBinFinderForQA->FindBin(dEta1) - 1;
 
    if(dChrg1>0){
@@ -1274,8 +1273,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  //QxTPC[0] += ptw1*w1NUA*TMath::Cos(n*dPhi1);
  //QyTPC[0] += ptw1*w1NUA*TMath::Sin(n*dPhi1);
-   QxTPC[1] += ptw1*w1NUA*TMath::Cos(psiN*dPhi1);
-   QyTPC[1] += ptw1*w1NUA*TMath::Sin(psiN*dPhi1);
+   QxTPC[1] += ptw1*w1NUA*TMath::Cos(2*dPhi1);
+   QyTPC[1] += ptw1*w1NUA*TMath::Sin(2*dPhi1);
+   QxTPC[2] += ptw1*w1NUA*TMath::Cos(3*dPhi1);
+   QyTPC[2] += ptw1*w1NUA*TMath::Sin(3*dPhi1);
 
    nRefMult++;
    nRefMultWgt += ptw1*w1NUA;
@@ -1283,7 +1284,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
    //if(i%10==0)
    //cout<<" track "<<i<<" eta = "<<dEta1<<"\tdPhi1 = "<<dPhi1<<"\tptw1 = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tAvgCos1n = "<<AvgCos1n<<endl;
-
 
    if(bSkipNestedTrk) continue;
 
@@ -1452,11 +1452,24 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
- Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
- if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
+ Double_t Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe)+TMath::Pi());
+ //if(Psi2TPC < 0.) Psi2TPC += pi;
 
  fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
  fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+
+ Double_t QTPCRe3 = QxTPC[2];
+ Double_t QTPCIm3 = QyTPC[2];
+
+ Double_t Psi3TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3)+TMath::Pi());
+ //if(Psi3TPC < 0.) Psi3TPC += 2*pi/3;
+
+ fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi3TPC));
+ fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi3TPC));//centrCL1
+
+
+
+
 
  PostData(3,fListNUAHist);   // Store NUA for all Runs including bad one. 
 
@@ -3313,6 +3326,10 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fTPCQ2yVsCentRun = new TProfile2D("fTPCSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
   fListNUAHist->Add(fTPCQ2yVsCentRun);
 
+  fTPCQ3xVsCentRun = new TProfile2D("fTPCCos3nVsCentRun","<Cos3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fTPCQ3xVsCentRun);
+  fTPCQ3yVsCentRun = new TProfile2D("fTPCSin3nVsCentRun","<Sin3> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"");
+  fListNUAHist->Add(fTPCQ3yVsCentRun);
 
 
   for(int i=0;i<10;i++){
