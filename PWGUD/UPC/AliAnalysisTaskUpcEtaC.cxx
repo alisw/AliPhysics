@@ -1365,7 +1365,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Int_t nHighPtTracks = 0;
   Short_t qKaon[7], qPion[7], qK0sPion[7];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
-  Double_t SumPz=0, VectorSumPt=0, ScalarSumP=0;
+  Double_t SumPz=0, VectorSumPt=0, ScalarSumP=0, massEtaCResFixed=0;
   Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
   Double_t trackPt[7]={0,0,0,0,0,0,0};
@@ -1488,7 +1488,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
       nKaon=0; nPion=0;
       SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
-      nTracksWithoutTOFinfo = 0;
+      nTracksWithoutTOFinfo = 0; massEtaCResFixed = 0;
       goodPairA = kFALSE;
       goodPairB = kFALSE;
       for(int aa=0;aa<13;aa++) {
@@ -1744,11 +1744,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f2KstarMinvFirstKstar->Fill(vKstar[0].M());
 		    //f2KstarMinvSecondKstar->Fill(vKstar[1].M());
 		    //Fill EtaC histos
-		    f2KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		    f2KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.4) f2KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.1) f2KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    f2KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    massEtaCResFixed = vCandidate.M() - vKstar[0].M() - vKstar[1].M() + 2.*kStarMass;
+		    f2KstarPtVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Pt());
+		    f2KstarEtaVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f2KstarEtaVsMinvEtaC400MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f2KstarEtaVsMinvEtaC100MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    f2KstarSumPzVsMinvEtaC->Fill(massEtaCResFixed,SumPz);
 		    f2KstarScalarSumP->Fill(ScalarSumP);
 		    f2KstarVectorSumPt->Fill(VectorSumPt);
 		    //f2KstarMinvEtaC->Fill(vCandidate.M());
@@ -1786,11 +1787,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvKstar->Fill(vKstar[0].M());
 		    //f1KstarMinvOtherPiKcombo->Fill(vKstar[1].M());
 		    //Fill EtaC histos
-		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    f1KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    massEtaCResFixed = vCandidate.M() - vKstar[0].M() + kStarMass;
+		    f1KstarPtVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Pt());
+		    f1KstarEtaVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    f1KstarSumPzVsMinvEtaC->Fill(massEtaCResFixed,SumPz);
 		    f1KstarScalarSumP->Fill(ScalarSumP);
 		    f1KstarVectorSumPt->Fill(VectorSumPt);
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
@@ -1827,11 +1829,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvKstar->Fill(vKstar[1].M());
 		    //f1KstarMinvOtherPiKcombo->Fill(vKstar[0].M());
 		    //Fill EtaC histos
-		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		    f1KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    massEtaCResFixed = vCandidate.M() - vKstar[1].M() + kStarMass;
+		    f1KstarPtVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Pt());
+		    f1KstarEtaVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		    f1KstarSumPzVsMinvEtaC->Fill(massEtaCResFixed,SumPz);
 		    f1KstarScalarSumP->Fill(ScalarSumP);
 		    f1KstarVectorSumPt->Fill(VectorSumPt);
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
@@ -1889,7 +1892,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   //EtaC->RhoRho Channel
   nKaon=0; nPion=0;
   SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
-  nTracksWithoutTOFinfo = 0;
+  nTracksWithoutTOFinfo = 0; massEtaCResFixed = 0;
   Int_t nPiMinus=0;
   Int_t nPiPlus=0;
   Int_t nRhoPairs=0;
@@ -2158,6 +2161,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoPtVsMinvNonRhoPairs->Fill(vRho[0].M(),vRho[0].Pt());
 		  f2RhoPtVsMinvNonRhoPairs->Fill(vRho[1].M(),vRho[1].Pt());
 		} else if(nRhoPairs == 0) {
+		  //Consider identifying intermediate states with one rho0 here. Either vRho[0] or vRho[1] is a rho (not both) AND/OR vRho[2] or vRho[3] (not both).
+		  //Then these can be treated separately for massEtaCResFixed or for changing to fill different histos.
 		  f4PionPtVsMinvRho->Fill(vRho[0].M(),vRho[0].Pt());
 		  f4PionPtVsMinvRho->Fill(vRho[1].M(),vRho[1].Pt());
 		  f4PionPtVsMinvRho->Fill(vRho[2].M(),vRho[2].Pt());
@@ -2170,11 +2175,18 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 		if(nRhoPairs > 0) {
 		  fHistNeventsEtaCRhoChannel->Fill(13);
-		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
-		  f2RhoEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.4) f2RhoEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.1) f2RhoEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  f2RhoSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		  if(nRhoPairs == 2) {
+		    massEtaCResFixed = vCandidate.M() - vRho[0].M() - vRho[1].M() - vRho[2].M() - vRho[3].M() + 4.*rhoMass; //or average difference maybe?
+		  } else if(nRhoPairs == 1 && caseOne == 1) {
+		    massEtaCResFixed = vCandidate.M() - vRho[0].M() - vRho[1].M() + 2.*rhoMass;
+		  } else if(nRhoPairs == 1 && caseTwo == 1) {
+		    massEtaCResFixed = vCandidate.M() - vRho[2].M() - vRho[3].M() + 2.*rhoMass;
+		  }
+		  f2RhoPtVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
+		  f2RhoEtaVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Eta());
+		  if(vCandidate.Pt()<0.4) f2RhoEtaVsMinvEtaC400MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		  if(vCandidate.Pt()<0.1) f2RhoEtaVsMinvEtaC100MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+		  f2RhoSumPzVsMinvEtaC->Fill(massEtaCResFixed,SumPz);
 		  f2RhoScalarSumP->Fill(ScalarSumP);
 		  f2RhoVectorSumPt->Fill(VectorSumPt);
 		  if(nHighPtTracks > 1) fHistNeventsEtaCRhoChannel->Fill(14);
@@ -2890,7 +2902,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	qK0sPion[1] = 0;
 	qPion[0] = 0;
 	qKaon[0] = 0;
-	nTracksWithoutTOFinfoK0s = 0;
+	nTracksWithoutTOFinfoK0s = 0; massEtaCResFixed = 0;
 
     if(nGoodTracks == 4 && nSpdHits>1 && nProngFound == 2){
 
@@ -3119,11 +3131,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  if(vPion[0].Pt() > 0.4) nHighPtTracks++;
 	  if(vKaon[0].Pt() > 0.4) nHighPtTracks++;
 
-	  fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-	  fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-	  if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	  if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	  fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+	  massEtaCResFixed = vCandidate.M() - vK0s.M() + k0ShortMass;
+	  fK0sPtVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Pt());
+	  fK0sEtaVsMinvEtaC->Fill(massEtaCResFixed,vCandidate.Eta());
+	  if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+	  if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(massEtaCResFixed,vCandidate.Eta());
+	  fK0sSumPzVsMinvEtaC->Fill(massEtaCResFixed,SumPz);
 	  fK0sScalarSumP->Fill(ScalarSumP);
 	  fK0sVectorSumPt->Fill(VectorSumPt);
 	  if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
@@ -3132,7 +3145,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	}
       }
     }   
-    }
+    } //end PID loop counter
   }
 
 
