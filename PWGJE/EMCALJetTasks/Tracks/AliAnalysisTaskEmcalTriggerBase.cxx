@@ -117,6 +117,8 @@ AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
   if(fDownscaleOADB) delete fDownscaleOADB;
+  if(fMaskedFastorOADB) delete fMaskedFastorOADB;
+  if(fDownscaleFactors) delete fDownscaleFactors;
 }
 
 void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
@@ -143,6 +145,7 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   CreateUserHistos();
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
+  fHistos->GetListOfHistograms()->SetOwner(false);
 
   PostData(1, fOutput);
 }
