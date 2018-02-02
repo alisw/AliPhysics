@@ -697,7 +697,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
   Double_t CutPhotEMass = MassCut;
   //################################################################# //
 
-    Bool_t IsPamaCheck = kTRUE;
+    Bool_t IsPamaCheck = kFALSE;
     if(IsPamaCheck)
     {
       cout << " ############### Analysis Parameters ###############" << endl;
