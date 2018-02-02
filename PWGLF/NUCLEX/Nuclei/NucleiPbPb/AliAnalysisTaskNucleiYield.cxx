@@ -69,6 +69,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPropagateTracks{true}
    ,fPtCorrectionA{3}
    ,fPtCorrectionM{3}
+   ,fTOFfunction{nullptr}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -76,6 +77,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPDGMassOverZ{0}
    ,fCharge{1.f}
    ,fIsMC{false}
+   ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
    ,fMagField{0.f}
    ,fDCAzLimit{10.}
@@ -108,7 +110,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
-   ,fEnableFlattening{false} 
+   ,fEnableFlattening{false}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -140,6 +142,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 /// Standard destructor
 ///
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
   if (fTOFfunction) delete fTOFfunction;
 }
@@ -235,7 +238,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     "Vertex position"
   };
   fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
-  for (int iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
+  for (size_t iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
   fList->Add(fNormalisationHist);
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
@@ -418,7 +421,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   dca[0] = 0.;
   dca[1] = 0.;
   if (track->Pt() < fDisableITSatHighPt) {
-    unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
     if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return false;
     if (nITS < fRequireITSrecPoints) return false;
@@ -656,7 +659,7 @@ void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
 //  \param nSSD number of clusters in SSD
 /// \return int number of clusters in ITS
 ///
-int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD) {
+int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD) {
   if (!track) return -1;
   nSPD = 0u;
   nSDD = 0u;
