@@ -2487,13 +2487,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   // Double_t ptIso_etaBandclusSub = 0.;
 
   if(fWho == 2 && fAreasPerEvent){
-    if(fQA){
+    if(fQA)
       fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
-      fEtaBandVsConeArea->Fill(isoConeArea, etaBandArea);
-    }
 
     ComputeConeArea   (c.Eta(), c.Phi()    , isoConeArea);
     ComputeEtaBandArea(c.Phi(), isoConeArea, etaBandArea);
+
+    if(fQA)
+      fEtaBandVsConeArea->Fill(isoConeArea, etaBandArea);
 
     fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandclus/etaBandArea); // Now, total energy in cone and eta-band
     fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - etaBandclus * (isoConeArea / etaBandArea));
