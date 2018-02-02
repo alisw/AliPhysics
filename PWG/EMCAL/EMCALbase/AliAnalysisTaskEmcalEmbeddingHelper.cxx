@@ -1439,7 +1439,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Random file access: " << fRandomFileAccess << "\n";
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
   tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
-  tempSS << "YAML configuration path: " << fConfigurationPath << "\n";
+  tempSS << "YAML configuration path: \"" << fConfigurationPath << "\"\n";
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
@@ -1447,7 +1447,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Reject outliers: " << fMCRejectOutliers << "\n";
   tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
-  tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
+  tempSS << "Max difference between internal and embedded vertex: " << fMaxVertexDist << "\n";
 
   if (includeFileList) {
     tempSS << "\nFiles to embed:\n";

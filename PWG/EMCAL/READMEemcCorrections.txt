@@ -91,7 +91,9 @@ __R_ADDTASK__->SetUserConfigurationFilename("userConfiguration.yaml");
 __R_ADDTASK__->Initialize(true);
 ~~~
 
-Note that your configuration wagon should depend on the centralized correction task wagon, but your tasks (such as user tasks, user tasks, etc) should depend **only** on the centralized correction task wagon. They should not depend on your configuration wagon!
+Note that your configuration wagon should depend on the centralized correction task wagon, but your tasks (such as jet
+finders, user tasks, etc) should depend **only** on the centralized correction task wagon.
+They should not depend on your configuration wagon!
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
