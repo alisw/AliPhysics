@@ -597,7 +597,7 @@ void AliFemtoModelCorrFctnKK::Write()
 
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnKK::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnKK::Clone() const
 {
   // Create clone
   AliFemtoModelCorrFctnKK *tCopy = new AliFemtoModelCorrFctnKK(*this);

@@ -34,9 +34,8 @@ public:
   virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish();
 
-  virtual TList* GetOutputList();
   virtual void Write();
-
+  virtual TList* GetOutputList();
   virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctn(*this); }
 
   void SetFillkT(bool fillkT){fFillkT = fillkT;}

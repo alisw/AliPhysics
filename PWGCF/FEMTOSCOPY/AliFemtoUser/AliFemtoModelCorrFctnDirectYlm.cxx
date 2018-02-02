@@ -183,7 +183,7 @@ TList* AliFemtoModelCorrFctnDirectYlm::GetOutputList()
   return tOutputList;
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnDirectYlm::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnDirectYlm::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelCorrFctnDirectYlm *tCopy = new AliFemtoModelCorrFctnDirectYlm(*this);
