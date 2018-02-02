@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    Bool_t MCthere = kFALSE,                     // DATA
                                    //Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
-				   Bool_t kNPERef = kTRUE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
+				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
                                    Bool_t newCentralitySelection = kTRUE,       // kTRUE: new framework used; kFALSE: old framework used 
 				   Bool_t kNPERefTPConly = kFALSE,
@@ -10,9 +10,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE,
-                                   Int_t  RunSyst = 9                            // switch statement useful for systematics (mfaggin, 06/07/2017)
+                                   Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
                                    ,Int_t centrMin = 0          // min centrality
                                    ,Int_t centrMax = 10         // max centrality
+                                   ,Bool_t kPileUpIonutRejection = kFALSE
                                    )		   
   
 {
@@ -458,6 +459,27 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, 0.,0.,0, 
         printf("\n#####\n");
         printf("##### kNPETOFITS case");
         printf("\n#####\n");
+   // TPC low cut = 0 (tpcl1)
+/*
+   RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+*/
+   // Additional tasks
+/*
+   // (sma, 6.6.2017) Vary the ITS cut to +-1
+   RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs, 1., 1, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+*/
+   // (sma, 6.6.2017) Vary the ITS cut to +-3
+/*
+   RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs, 3., 3., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+*/
+   // TPC low cut = -0.1 (tpcl2)
    if(MCthere)
    {
         // WITH WEIGHTS   
@@ -478,6 +500,12 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
    }
+
+
+                // WITH WEIGHTS - ITS cut [-3,3], TPC cut [-0.1,3] (about 50%)
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  -3, 3, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
 
    switch(RunSyst){
         
@@ -723,6 +751,28 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1,2,kFALSE,kFALSE,kFALSE,kTRUE);
   }
 
+
+
+  if(kPileUpIonutRejection){
+        // ****************************************************************************************
+        // 
+        // Pile-up rejection based on number of kTPCout tracks with VZERO multiplicity correlation
+        //
+        // ****************************************************************************************
+        printf("\n#####\n");
+        printf("##### kPileUpIonutRejection case");
+        printf("\n#####\n");
+
+        // pile-up rejection applied
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kTRUE);
+
+  }
+
+
+
   
   return NULL;
 
@@ -750,9 +800,10 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 				     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
 				     Int_t weightlevelback = -1,Int_t wei = 2,
                                      Double_t assMinpTvalue = 0.1,      // associated particle minimum pT (mfaggin, 14th July 2017)
-				     Bool_t releasemcvx = kFALSE,
-				     Bool_t ipCharge = kFALSE,
-				     Bool_t ipOpp = kFALSE
+                                     Bool_t applyPileUpRejection = kFALSE    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+				     //Bool_t releasemcvx = kFALSE,
+				     //Bool_t ipCharge = kFALSE,
+				     //Bool_t ipOpp = kFALSE
                                      //,
 				     //Bool_t usekfparticle = kFALSE
                                      )
@@ -760,6 +811,9 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
         // *** hardcoded value due to cint-limitation on number of parameters (mfaggin, 14th July 2017)
         Bool_t usekfparticle = kFALSE;
         Bool_t beauty = kFALSE;         // mfaggin 15-Dec-2017
+	Bool_t releasemcvx = kFALSE;    // mfaggin 02-Feb-2018
+	Bool_t ipCharge = kFALSE;       // mfaggin 02-Feb-2018
+        Bool_t ipOpp = kFALSE;          // mfaggin 02-Feb-2018
 
   //
   // Cuts on the inclusive leg
@@ -844,6 +898,8 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   else                          appendix+=TString::Format("ITSsMin%d",iitssMin);
   appendix+=TString::Format("ITSsMax%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",iitssMax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
 
+  if(applyPileUpRejection)      appendix+="_PileUpRejIonutCut";
+
 /*
   // ------- to manage containers name with negative TPC low cut --------
   TString appendix = "";                                                                   // letter 'm' added in this point (after TPCs)
@@ -902,6 +958,9 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   if(!newCentralitySelection)   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); // old framework
   if(newCentralitySelection)    task->SelectCollisionCandidates(AliVEvent::kINT7);                                               // new framework
   // --------------------------------
+  // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+  task->SetApplyPileUpMultiplicitySelection(applyPileUpRejection);
+  // -------------------------------------------------------------
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
