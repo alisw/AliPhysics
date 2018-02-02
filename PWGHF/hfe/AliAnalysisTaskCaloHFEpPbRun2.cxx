@@ -51,40 +51,42 @@ using namespace std;            // std namespace: so you can do things like 'cou
 
 ClassImp(AliAnalysisTaskCaloHFEpPbRun2) // classimp: necessary for root
 
-Bool_t Isdebug = kFALSE;
-//##################### Standard Cut Parameters ##################### //
+//##################### Standard Cut Parameters (No Systematic Parameters) ##################### //
 //---Event Cut
 Int_t CutNcontV = 1;
 Double_t CutZver = 10;
 //---Track Cut
-Int_t CutTPCNCls = 80;
-Int_t CutITSNCls = 3;
-Int_t CutNCrossedRow = 100;
-Double_t CutDCAxy = 2.4;
-Double_t CutDCAz = 3.2;
-// Double_t CutTrackEta[2] = {-0.6,0.6};
-Double_t CutTrackEta[2];
-Double_t CutEtadiff = 0.05;
-Double_t CutPhidiff = 0.05;
 Int_t CutITSchi2 = 25;
 Int_t CutTPCchi2perNDF = 4;
 //---PID Cut
-// Double_t CutEopE[2] = {0.8,1.2};
-// Double_t CutNsigmaE[2];
 Double_t CutNsigmaH[1] = {-3.5};
-Double_t CutM20[2] = {0.02,0.3};
 //---Associate track cut
-Int_t CutAssoTPCNCls = 80;
 Double_t CutAssoTPCchi2perNDF = 4;
-Double_t CutPairEPt = 0.1;
 Double_t CutPairEEta[2] = {-0.9,0.9};
 Double_t CutPairENsigma[2] = {-3.,3.};
-Double_t CutPhotEMass = 0.14;
-//################################################################### //
-
+//############################################################################################## //
 
 
 AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTaskSE(),
+    //----- Analysis Parameters -----
+    TrackEtaLow(0),
+    TrackEtaHigh(0),
+    NTPCClust(0),
+    NITSClust(0),
+    NCrossedRow(0),
+    DCAxy(0),
+    DCAz(0),
+    TrackMatchPhi(0),
+    TrackMatchEta(0),
+    NsigmaLow(0),
+    NsigmaHigh(0),
+    M20Low(0),
+    M20High(0),
+    EopLow(0),
+    EopHigh(0),
+    AssoMinpT(0),
+    AssoNTPCClust(0),
+    MassCut(0),
     fAOD(0),
     fOutputList(0),
     fVevent(0),
@@ -107,13 +109,6 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fFlagEG2(kFALSE),
     fFlagDG1(kFALSE),
     fFlagDG2(kFALSE),
-    //----- Analysis Parameters -----
-    TrackEtaLow(TrackEtaLow),
-    TrackEtaHigh(TrackEtaHigh),
-    NsigmaLow(NsigmaLow),
-    NsigmaHigh(NsigmaHigh),
-    EopLow(0),
-    EopHigh(0),
     //##################### Real Data ##################### //
     //-----Vertex------
     fvtxZ(0),
@@ -127,29 +122,30 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fCaloClustEtaphi(0),
     fCaloClustEtaPhiAfterMatch(0),
     fCaloClustTiming(0),
+    fCaloTrackDiff(0),
     //-----Track------
     fTrackPt(0),
     fTrackPtAfterMatch(0),
-    fTracketa(0),
-    fTracketaAfterMatch(0),
-    fTrackphi(0),
-    fTrackphiAfterMatch(0),
+    fTrackphieta(0),
+    fTrackphietaAfterMatch(0),
     fTrackCluster(0),
     fTrackChi2(0),
-    fTrackITSChi2pTdep(0),
     fDCAxy(0),
     fDCAz(0),
     //-----PID plots-----
     fdEdx(0),
     fNSigmaTPC(0),
+    fNsigmaEta(0),
     fNSigmaTPCelectron(0),
     fNSigmaTPChadron(0),
+    fNsigmaEtaElectron(0),
     fM02(0),
     fM20(0),
     fEop(0),
     fNSigmaEop(0),
     fEopElectron(0),
     fEopHadron(0),
+    fElectronphieta(0),
     //-----select photonic electron------
     fInvmassLS(0),
     fInvmassULS(0),
@@ -174,7 +170,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fMCHFEResponceMatrix(0),
     // --- PID check ---
     fMCTPCNSigmaelectron(0),
-    fMCEopelectron(0),
+    fMCNsigmaEtaElectron(0),
+    fMCHFEEop(0),
     //----- DCA for c/b separation -----
     fMCDCAinclusive(0),
     fMCDCAconv(0),
@@ -187,14 +184,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     //----- Non-HFE tagging efficiency -----
     PionWeight(0),
     EtaWeight(0),
-    fMCPionInputAll(0),
-    fMCPionInputHijing(0),
-    fMCPionInputEnhanced(0),
-    fMCPionInputOthers(0),
-    fMCEtaInputAll(0),
-    fMCEtaInputHijing(0),
-    fMCEtaInputEnhanced(0),
-    fMCEtaInputOthers(0),
+    fMCPionInput(0),
+    fMCEtaInput(0),
     fMCTrackPtPHEHijing(0),
     fMCTrackPtPHEnoweighting(0),
     fMCTrackPtPHEaftweighting(0),
@@ -205,10 +196,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fMCTrackPtPHEwMasscutnoweighting(0),
     fMCTrackPtPHEwMasscutaftweighting(0),
     //----- D meson & B meson -----
-    fMCDmesonHijing(0),
-    fMCDmesonEnhanced(0),
-    fMCBmesonHijing(0),
-    fMCBmesonEnhanced(0),
+    fMCHFhadronpT(0),
     //----- c->e & b->e -----
     fMCDdecayE(0),
     fMCBdecayE(0)
@@ -219,6 +207,25 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
 
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) : AliAnalysisTaskSE(name),
+    //----- Analysis Parameters -----
+    TrackEtaLow(0),
+    TrackEtaHigh(0),
+    NTPCClust(0),
+    NITSClust(0),
+    NCrossedRow(0),
+    DCAxy(0),
+    DCAz(0),
+    TrackMatchPhi(0),
+    TrackMatchEta(0),
+    NsigmaLow(0),
+    NsigmaHigh(0),
+    M20Low(0),
+    M20High(0),
+    EopLow(0),
+    EopHigh(0),
+    AssoMinpT(0),
+    AssoNTPCClust(0),
+    MassCut(0),
     fAOD(0),
     fOutputList(0),
     fVevent(0),
@@ -241,13 +248,6 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fFlagEG2(kFALSE),
     fFlagDG1(kFALSE),
     fFlagDG2(kFALSE),
-    //----- Analysis Parameters -----
-    TrackEtaLow(0),
-    TrackEtaHigh(0),
-    NsigmaLow(0),
-    NsigmaHigh(0),
-    EopLow(0),
-    EopHigh(0),
     //##################### Real Data ##################### //
     //-----Vertex------
     fvtxZ(0),
@@ -261,29 +261,30 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fCaloClustEtaphi(0),
     fCaloClustEtaPhiAfterMatch(0),
     fCaloClustTiming(0),
+    fCaloTrackDiff(0),
     //-----Track------
     fTrackPt(0),
     fTrackPtAfterMatch(0),
-    fTracketa(0),
-    fTracketaAfterMatch(0),
-    fTrackphi(0),
-    fTrackphiAfterMatch(0),
+    fTrackphieta(0),
+    fTrackphietaAfterMatch(0),
     fTrackCluster(0),
     fTrackChi2(0),
-    fTrackITSChi2pTdep(0),
     fDCAxy(0),
     fDCAz(0),
     //-----PID plots-----
     fdEdx(0),
     fNSigmaTPC(0),
+    fNsigmaEta(0),
     fNSigmaTPCelectron(0),
     fNSigmaTPChadron(0),
+    fNsigmaEtaElectron(0),
     fM02(0),
     fM20(0),
     fEop(0),
     fNSigmaEop(0),
     fEopElectron(0),
     fEopHadron(0),
+    fElectronphieta(0),
     //-----select photonic electron------
     fInvmassLS(0),
     fInvmassULS(0),
@@ -307,7 +308,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fMCHFEResponceMatrix(0),
     // --- PID check ---
     fMCTPCNSigmaelectron(0),
-    fMCEopelectron(0),
+    fMCNsigmaEtaElectron(0),
+    fMCHFEEop(0),
     //----- DCA for c/b separation -----
     fMCDCAinclusive(0),
     fMCDCAconv(0),
@@ -320,14 +322,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     //----- Non-HFE tagging efficiency -----
     PionWeight(0),
     EtaWeight(0),
-    fMCPionInputAll(0),
-    fMCPionInputHijing(0),
-    fMCPionInputEnhanced(0),
-    fMCPionInputOthers(0),
-    fMCEtaInputAll(0),
-    fMCEtaInputHijing(0),
-    fMCEtaInputEnhanced(0),
-    fMCEtaInputOthers(0),
+    fMCPionInput(0),
+    fMCEtaInput(0),
     fMCTrackPtPHEHijing(0),
     fMCTrackPtPHEnoweighting(0),
     fMCTrackPtPHEaftweighting(0),
@@ -338,10 +334,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fMCTrackPtPHEwMasscutnoweighting(0),
     fMCTrackPtPHEwMasscutaftweighting(0),
     //----- D meson & B meson -----//
-    fMCDmesonHijing(0),
-    fMCDmesonEnhanced(0),
-    fMCBmesonHijing(0),
-    fMCBmesonEnhanced(0),
+    fMCHFhadronpT(0),
     //----- c->e & b->e -----
     fMCDdecayE(0),
     fMCBdecayE(0)
@@ -414,9 +407,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fCaloClustEtaPhiAfterMatch = new TH2F("fCaloClustEtaPhiAfterMatch","cluster #phi-#eta distribution w/trackmatch;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList -> Add(fCaloClustEtaPhiAfterMatch);
 
-    // fCaloClustTiming = new TH2F("fCaloClustTiming",Form("Cluster timing, %3.1f < n_{#sigma}^{TPC} < %3.1f;energy (GeV);t (ns)",CutNsigmaE[0],CutNsigmaE[1]),100,0,50,100,-5,5);
-    fCaloClustTiming = new TH2F("fCaloClustTiming",Form("Cluster timing, %3.2f < n_{#sigma}^{TPC} < %3.2f;energy (GeV);t (ns)",NsigmaLow,NsigmaHigh),100,0,50,100,-5,5);
+    fCaloClustTiming = new TH2F("fCaloClustTiming",Form("Cluster timing, %3.2f < n_{#sigma}^{TPC} < %3.2f;energy (GeV);t (ns)",NsigmaLow,NsigmaHigh),100,0,50,500,-100,100);
     fOutputList -> Add(fCaloClustTiming);
+
+    fCaloTrackDiff = new TH2F("fCaloTrackDiff","cluster-track diff;#Delta #phi;#Delta #eta",300,-0.06,0.06,300,-0.06,0.06);
+    fOutputList -> Add(fCaloTrackDiff);
 
     //-----Track------
     fTrackPt = new TH1F("fTrackPt","p_{T} ditribution;p_{T} (GeV/c.);counts",500,0,50);       // create your histogra
@@ -425,23 +420,17 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fTrackPtAfterMatch = new TH1F("fTrackPtAfterMatch", "p_{T} ditribution w/Colomatch;p_{T} (GeV/c.);counts", 500,0,50);
     fOutputList->Add(fTrackPtAfterMatch);
 
-    fTracketa = new TH1F("fTracketa",Form("Track #eta (%3.1f < #eta < %3.1f) ;#eta;counts",TrackEtaLow,TrackEtaHigh),100,-1.5,1.5);
-    fOutputList -> Add(fTracketa);
+    fTrackphieta = new TH2F("fTrackphieta","Charged track #phi-#eta;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList -> Add(fTrackphieta);
 
-    fTracketaAfterMatch = new TH1F("fTracketaAfterMatch","Track #eta distribution w/Colomatch;#eta;counts",100,-1.5,1.5);
-    fOutputList -> Add(fTracketaAfterMatch);
+    fTrackphietaAfterMatch = new TH2F("fTrackphietaAfterMatch","Calo matched track #phi-#eta;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList ->  Add(fTrackphietaAfterMatch);
 
-    fTrackphi = new TH1F("fTrackphi","Track #phi distribution;#phi;counts",100,0,6.3);
-    fOutputList -> Add(fTrackphi);
+    fDCAxy = new TH2F("fDCAxy","DCAxy distribution;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+    fOutputList -> Add(fDCAxy);
 
-    fTrackphiAfterMatch = new TH1F("fTrackphiAfterMatch","Track #phi distribution w/Colomatch;#phi;counts",100,0,6.3);
-    fOutputList -> Add(fTrackphiAfterMatch);
-
-    // fDCAxy = new TH2F("fDCAxy","DCAxy distribution;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
-    // fOutputList -> Add(fDCAxy);
-    //
-    // fDCAz = new TH2F("fDCAz","DCAz distribution;p_{T} (GeV/c.);DCAz (cm.)",500,0,50,400,-0.2,0.2);
-    // fOutputList -> Add(fDCAz);
+    fDCAz = new TH2F("fDCAz","DCAz distribution;p_{T} (GeV/c.);DCAz (cm.)",500,0,50,400,-0.2,0.2);
+    fOutputList -> Add(fDCAz);
 
     fTrackCluster = new TH2F("fTrackCluster","Track Clusters;;# of clusters",3,0,3,165,0,165);
     fTrackCluster -> GetXaxis() -> SetBinLabel(1,"ITS cluster");
@@ -454,9 +443,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fTrackChi2 -> GetXaxis() -> SetBinLabel(2,"TPC #chi^{2}/ndf");
     fOutputList -> Add(fTrackChi2);
 
-    fTrackITSChi2pTdep = new TH2F("fTrackITSChi2pTdep","ITS #chi^{2} vs p_{T} (w/trackcut);p_{T} (GeV/c.);ITS #chi^{2}",500,0,50,80,0,40);
-    fOutputList -> Add(fTrackITSChi2pTdep);
-
     //-----PID plots------
     // fdEdx = new TH2F("fdEdx","dE/dx vs. p;p (GeV/c.);dE/dx",500,0,50,500,0,160);
     // fOutputList -> Add(fdEdx);
@@ -464,11 +450,17 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fNSigmaTPC = new TH2F("fNSigmaTPC","n_{#sigma}^{TPC} vs. p;p (GeV/c.);n_{#sigma}^{TPC}",500,0,50,500,-10,10);
     fOutputList -> Add(fNSigmaTPC);
 
+    fNsigmaEta = new TH2F("fNsigmaEta","n_{#sigma}^{TPC};#eta;n_{#sigma}^{TPC}",100,-0.9,0.9,500,-10,10);
+    fOutputList -> Add(fNsigmaEta);
+
     fNSigmaTPCelectron = new TH2F("fNSigmaTPCelectron","n_{#sigma}^{TPC};p_{T} (GeV/c);n_{#sigma}^{TPC}",500,0,50,500,-10,10);
     fOutputList -> Add(fNSigmaTPCelectron);
 
     fNSigmaTPChadron = new TH2F("fNSigmaTPChadron","n_{#sigma}^{TPC};p_{T} (GeV/c);n_{#sigma}^{TPC}",500,0,50,500,-10,10);
     fOutputList -> Add(fNSigmaTPChadron);
+
+    fNsigmaEtaElectron = new TH2F("fNsigmaEtaElectron","n_{#sigma}^{TPC};#eta;n_{#sigma}^{TPC}",100,-0.9,0.9,500,-10,10);
+    fOutputList -> Add(fNsigmaEtaElectron);
 
     fM02 = new TH2F("fM02","M02 vs p_{T} distribution;p_{T} (GeV/c.);long axis of ellipse (cm.)",500,0,50,400,0,2);
     fOutputList -> Add(fM02);
@@ -489,6 +481,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fEopHadron = new TH2F("fEopHadron",Form("E/p vs. p_{T}, n_{#sigma}^{TPC} < %3.1f;p_{T} (GeV/c.);E/p",CutNsigmaH[0]),500,0,50,300,0.,3.);
     fOutputList -> Add(fEopHadron);
 
+    fElectronphieta = new TH2F("fElectronphieta","Charged track #phi-#eta;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList -> Add(fElectronphieta);
+
     //-----select photonic electron------
     fInvmassLS = new TH2F("fInvmassLS","Invariant-mass (like-sign);p_{T} (GeV/c.);M_{ee} (GeV/c^{2}.)",500,0,50,500,0,0.5);
     fOutputList -> Add(fInvmassLS);
@@ -496,10 +491,10 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fInvmassULS = new TH2F("fInvmassULS","Invariant-mass (unlike-sign);p_{T} (GeV/c.);M_{ee} (GeV/c^{2}.)",500,0,50,500,0,0.5);
     fOutputList -> Add(fInvmassULS);
 
-    fPHEpTLS = new TH1F("fPHEpTLS",Form("electros p_{T},M_{ee} < %3.2f (GeV/c^{2}), like-sign;p_{T} (GeV/c.);counts",CutPhotEMass),500,0,50);
+    fPHEpTLS = new TH1F("fPHEpTLS",Form("electros p_{T},M_{ee} < %3.2f (GeV/c^{2}), like-sign;p_{T} (GeV/c.);counts",MassCut),500,0,50);
     fOutputList -> Add(fPHEpTLS);
 
-    fPHEpTULS = new TH1F("fPHEpTULS",Form("electros p_{T},M_{ee} < %3.2f (GeV/c^{2}), Unlike-sign;p_{T} (GeV/c.);counts",CutPhotEMass),500,0,50);
+    fPHEpTULS = new TH1F("fPHEpTULS",Form("electros p_{T},M_{ee} < %3.2f (GeV/c^{2}), Unlike-sign;p_{T} (GeV/c.);counts",MassCut),500,0,50);
     fOutputList -> Add(fPHEpTULS);
 
     //----- MC info ------
@@ -552,8 +547,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
       fMCTPCNSigmaelectron = new TH2F("fMCTPCNSigmaelectron","n_{#sigma}^{TPC} (|PDG| = 11);p_{T} (GeV/c);n_{#sigma}^{TPC}",500,0,50,500,-10,10);
       fOutputList -> Add(fMCTPCNSigmaelectron);
 
-      fMCEopelectron = new TH2F("fMCEopelectron","E/p vs p_{T} (|PDG| = 11);p_{T} (GeV/c);E/p",500,0,50,300,0,3);
-      fOutputList -> Add(fMCEopelectron);
+      fMCNsigmaEtaElectron = new TH2F("fMCNsigmaEtaElectron","n_{#sigma}^{TPC} (|PDG| = 11);#eta;n_{#sigma}^{TPC}",100,-0.9,0.9,500,-10,10);
+      fOutputList -> Add(fMCNsigmaEtaElectron);
+
+      fMCHFEEop = new TH2F("fMCHFEEop","PYTHIA e^{HF} E/p vs p_{T};p_{T} (GeV/c);E/p",500,0,50,300,0,3);
+      fOutputList -> Add(fMCHFEEop);
 
       //----- DCA for c/b separation ------
       // fMCDCAinclusive = new TH2F("fMCDCAinclusive","inclusive electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
@@ -604,29 +602,19 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
       else EtaWeight = new TF1("EtaWeight","1",0,50);
       fOutputList -> Add(EtaWeight);
 
-      fMCPionInputAll = new TH1F("fMCPionInputAll","MC track p_{T} Pion;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCPionInputAll);
+      fMCPionInput = new TH2F("fMCPionInput","MC #pi^{0};;p_{T} (GeV/c)",4,0,4,500,0,50);
+      fMCPionInput -> GetXaxis() -> SetBinLabel(1,"all");
+      fMCPionInput -> GetXaxis() -> SetBinLabel(2,"Hijing");
+      fMCPionInput -> GetXaxis() -> SetBinLabel(3,"embedding");
+      fMCPionInput -> GetXaxis() -> SetBinLabel(4,"others");
+      fOutputList -> Add(fMCPionInput);
 
-      fMCPionInputHijing = new TH1F("fMCPionInputHijing","MC track p_{T} Pion;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCPionInputHijing);
-
-      fMCPionInputEnhanced = new TH1F("fMCPionInputEnhanced","MC track p_{T} Pion;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCPionInputEnhanced);
-
-      fMCPionInputOthers = new TH1F("fMCPionInputOthers","MC track p_{T} Pion;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCPionInputOthers);
-
-      fMCEtaInputAll = new TH1F("fMCEtaInputAll","MC track p_{T} Eta;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCEtaInputAll);
-
-      fMCEtaInputHijing = new TH1F("fMCEtaInputHijing","MC track p_{T} Eta;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCEtaInputHijing);
-
-      fMCEtaInputEnhanced = new TH1F("fMCEtaInputEnhanced","MC track p_{T} Eta;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCEtaInputEnhanced);
-
-      fMCEtaInputOthers = new TH1F("fMCEtaInputOthers","MC track p_{T} Eta;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCEtaInputOthers);
+      fMCEtaInput = new TH2F("fMCEtaInput","MC #eta;;p_{T} (GeV/c)",4,0,4,500,0,50);
+      fMCEtaInput -> GetXaxis() -> SetBinLabel(1,"all");
+      fMCEtaInput -> GetXaxis() -> SetBinLabel(2,"Hijing");
+      fMCEtaInput -> GetXaxis() -> SetBinLabel(3,"embedding");
+      fMCEtaInput -> GetXaxis() -> SetBinLabel(4,"others");
+      fOutputList -> Add(fMCEtaInput);
 
       fMCTrackPtPHEHijing = new TH1F("fMCTrackPtPHEHijing","MC track p_{T} PHE from Hijing;p_{T} (GeV/c.);counts",500,0,50);
       fOutputList -> Add(fMCTrackPtPHEHijing);
@@ -664,17 +652,12 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
       fOutputList -> Add(fMCTrackPtPHEwMasscutaftweighting);
 
       //----- D meson & B meson -----
-      fMCDmesonHijing = new TH1F("fMCDmesonHijing","D meson from Hijing;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCDmesonHijing);
-
-      fMCDmesonEnhanced = new TH1F("fMCDmesonEnhanced","D meson from enhanced input;p_{T} (GeV/c.);counts.",500,0,50);
-      fOutputList -> Add(fMCDmesonEnhanced);
-
-      fMCBmesonHijing = new TH1F("fMCBmesonHijing","B meson from Hijing;p_{T} (GeV/c.);counts",500,0,50);
-      fOutputList -> Add(fMCBmesonHijing);
-
-      fMCBmesonEnhanced = new TH1F("fMCBmesonEnhanced","B meson from enhanced input;p_{T} (GeV/c.);counts.",500,0,50);
-      fOutputList -> Add(fMCBmesonEnhanced);
+      fMCHFhadronpT = new TH2F("fMCHFhadronpT","heavy-flavor hadrons;;p_{T} (GeV/c)",4,0,4,500,0,50);
+      fMCHFhadronpT -> GetXaxis() -> SetBinLabel(1,"Hjjing D");
+      fMCHFhadronpT -> GetXaxis() -> SetBinLabel(2,"Hijing B");
+      fMCHFhadronpT -> GetXaxis() -> SetBinLabel(3,"embedding D");
+      fMCHFhadronpT -> GetXaxis() -> SetBinLabel(4,"embedding B");
+      fOutputList -> Add(fMCHFhadronpT);
 
       //----- c->e & b->e -----
       fMCDdecayE = new TH1F("fMCDdecayE","MC electrons form charm hadron decays;p_{T} (GeV/c.);counts.",500,0,50);
@@ -692,21 +675,49 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
 {
-    Double_t CutTrackEta[2] = {TrackEtaLow,TrackEtaHigh};
-    Double_t CutNsigmaE[2] = {NsigmaLow,NsigmaHigh};
-    Double_t CutEopE[2] = {EopLow,EopHigh};
 
-    Bool_t IsPamaCheck = kFALSE;
+  Bool_t Isdebug = kFALSE;
+  //##################### Systematic Parameters ##################### //
+  //---Track Cut
+  Double_t CutTrackEta[2] = {TrackEtaLow,TrackEtaHigh};
+  Int_t CutTPCNCls = NTPCClust;
+  Int_t CutITSNCls = NITSClust;
+  Int_t CutNCrossedRow = NCrossedRow;
+  Double_t CutDCAxy = DCAxy;
+  Double_t CutDCAz = DCAz;
+  Double_t CutPhidiff = TrackMatchPhi;
+  Double_t CutEtadiff = TrackMatchEta;
+  //---PID Cut
+  Double_t CutNsigmaE[2] = {NsigmaLow,NsigmaHigh};
+  Double_t CutM20[2] = {M20Low,M20High};
+  Double_t CutEopE[2] = {EopLow,EopHigh};
+  //---Associate track cut
+  Double_t CutPairEPt = AssoMinpT;
+  Int_t CutAssoTPCNCls = AssoNTPCClust;
+  Double_t CutPhotEMass = MassCut;
+  //################################################################# //
+
+    Bool_t IsPamaCheck = kTRUE;
     if(IsPamaCheck)
     {
       cout << " ############### Analysis Parameters ###############" << endl;
-      cout << "MC analysis >> " << fFlagMC << endl;
-      cout << "EMCal Correction >> " << fFlagEMCalCorrection << endl;
+      cout << " MC analysis >> " << fFlagMC << endl;
+      cout << " EMCal Correction >> " << fFlagEMCalCorrection << endl;
       cout << " --- Track cut ---" << endl;
       cout << " Rapidity : " << CutTrackEta[0] << " <  y < " << CutTrackEta[1] << endl;
+      cout << " # of TPC cluster = " << CutTPCNCls << endl;
+      cout << " # of ITS cluster = " << CutITSNCls << endl;
+      cout << " # of CrossedRow = " << CutITSNCls << endl;
+      cout << " DCAxy = " << CutDCAxy << ", DCAz = " << CutDCAz << endl;
+      cout << " Delta phi = " << CutPhidiff << ", Delta Eta = " << CutEtadiff << endl;
       cout << " --- electron PID ---" << endl;
       cout << " Nsigma : " << CutNsigmaE[0] << " < n sigma < " << CutNsigmaE[1] << endl;
+      cout << " M20 :" << CutM20[0] << " < M20 < " << CutM20[1] << endl;
       cout << " E/p : " << CutEopE[0] << " < E/p < " << CutEopE[1] << endl;
+      cout << " --- Photonic method ---" << endl;
+      cout << " min pT = " << CutPairEPt << endl;
+      cout << " # of TPC cluster = " << CutAssoTPCNCls << endl;
+      cout << " mass = " << CutPhotEMass << endl;
       cout << " ###################################################" << endl;
     }
 
@@ -919,33 +930,33 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         //########################## choose pion ##########################//
         else if(TMath::Abs(MCTrackpdg) == 111)
         {
-          fMCPionInputAll -> Fill(MCTrackPt);
-          if(jMCTrack < NpureMC) fMCPionInputHijing -> Fill(MCTrackPt);
-          else if(MCTracklabelM < 0) fMCPionInputEnhanced -> Fill(MCTrackPt);
-          else fMCPionInputOthers -> Fill(MCTrackPt);
+          fMCPionInput -> Fill(0.,MCTrackPt);
+          if(jMCTrack < NpureMC) fMCPionInput -> Fill(1.,MCTrackPt);
+          else if(MCTracklabelM < 0) fMCPionInput -> Fill(2.,MCTrackPt);
+          else fMCPionInput -> Fill(3.,MCTrackPt);
         }
         //#################################################################//
         //########################## choose eta ##########################//
         else if(TMath::Abs(MCTrackpdg) == 221)
         {
-          fMCEtaInputAll -> Fill(MCTrackPt);
-          if(jMCTrack < NpureMC) fMCEtaInputHijing -> Fill(MCTrackPt);
-          else if(MCTracklabelM < 0) fMCEtaInputEnhanced -> Fill(MCTrackPt);
-          else fMCEtaInputOthers -> Fill(MCTrackPt);
+          fMCEtaInput -> Fill(0.,MCTrackPt);
+          if(jMCTrack < NpureMC) fMCEtaInput -> Fill(1.,MCTrackPt);
+          else if(MCTracklabelM < 0) fMCEtaInput -> Fill(2.,MCTrackPt);
+          else fMCEtaInput -> Fill(3.,MCTrackPt);
         }
         //################################################################//
         //########################## choose D meson  ##########################//
         else if(TMath::Abs(MCTrackpdg) == 411 || TMath::Abs(MCTrackpdg) == 421 || TMath::Abs(MCTrackpdg) == 431 || TMath::Abs(MCTrackpdg) == 413 || TMath::Abs(MCTrackpdg) == 423 || TMath::Abs(MCTrackpdg) == 433)
         {
-          if(flagHFenhance) fMCDmesonEnhanced -> Fill(MCTrackPt);
-          else fMCDmesonHijing -> Fill(MCTrackPt);
+          if(flagHFenhance) fMCHFhadronpT -> Fill(2.,MCTrackPt);
+          else fMCHFhadronpT -> Fill(0.,MCTrackPt);
         }
         //#####################################################################//
         //########################## choose B meson  ##########################//
         else if(TMath::Abs(MCTrackpdg) == 511 || TMath::Abs(MCTrackpdg) == 521 || TMath::Abs(MCTrackpdg) == 531 || TMath::Abs(MCTrackpdg) == 513 || TMath::Abs(MCTrackpdg) == 523 || TMath::Abs(MCTrackpdg) == 533)
         {
-          if(flagHFenhance) fMCBmesonEnhanced -> Fill(MCTrackPt);
-          else fMCBmesonHijing -> Fill(MCTrackPt);
+          if(flagHFenhance) fMCHFhadronpT -> Fill(3.,MCTrackPt);
+          else fMCHFhadronpT -> Fill(1.,MCTrackPt);
         }
         //#####################################################################//
       }
@@ -1069,12 +1080,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         for(Int_t l = 0 ; l < 6 ; l++) if(TESTBIT(track ->GetITSClusterMap(),l)) ITSNCls++;
         TPCCrossedRows = track -> GetTPCCrossedRows();
 
-        fTrackChi2 -> Fill(0.,ITSchi2);
-        fTrackChi2 -> Fill(1.,TPCchi2NDF);
-        fTrackCluster -> Fill(0.,ITSNCls);
-        fTrackCluster -> Fill(1.,TPCNCls);
-        fTrackCluster -> Fill(2.,TPCCrossedRows);
-
         //########################## Standard Track Cut ##########################//
         // successful track fitting in TPC and ITS //
         if(!(track->GetStatus()&AliAODTrack::kITSrefit) || !(track->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1108,13 +1113,17 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         //########################################################################//
 
         fTrackPt -> Fill(TrackPt);
-        fTracketa -> Fill(TrackEta);
-        fTrackphi -> Fill(TrackPhi);
+        fTrackphieta -> Fill(TrackEta,TrackPhi);
         // fdEdx -> Fill(TrackP,TrackdEdx);
         fNSigmaTPC -> Fill(TrackP,TrackNSigma);
-        // fDCAxy -> Fill(TrackPt,DCA[0]*TrackCharge);
-        // fDCAz -> Fill(TrackPt,DCA[1]*TrackCharge);
-        fTrackITSChi2pTdep -> Fill(TrackPt,ITSchi2);
+        fNsigmaEta -> Fill(TrackEta,TrackNSigma);
+        fDCAxy -> Fill(TrackPt,DCA[0]*TrackCharge);
+        fDCAz -> Fill(TrackPt,DCA[1]*TrackCharge);
+        fTrackChi2 -> Fill(0.,ITSchi2);
+        fTrackChi2 -> Fill(1.,TPCchi2NDF);
+        fTrackCluster -> Fill(0.,ITSNCls);
+        fTrackCluster -> Fill(1.,TPCNCls);
+        fTrackCluster -> Fill(2.,TPCCrossedRows);
 
         // --- Nsigma flag --- //
         if((TrackNSigma > CutNsigmaE[0]) && (TrackNSigma < CutNsigmaE[1])) flagNsigmaECut = kTRUE;
@@ -1176,6 +1185,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
               if((flagCharm || flagBeauty) && flagNsigmaECut) fMCTrackPtHFE_wTPCPID -> Fill(TrackPt);
               // --- PID check --- //
               fMCTPCNSigmaelectron -> Fill(TrackPt,TrackNSigma);
+              fMCNsigmaEtaElectron -> Fill(TrackEta,TrackNSigma);
             }
           }
         }
@@ -1199,7 +1209,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             if(EMCalphi < 0) EMCalphi = EMCalphi + (2*TMath::Pi());
             EMCaleta = clustpos.Eta();
             EMCalClusterE = clustMatch -> E();
-            EMCalTOF = clustMatch -> GetTOF();
+            EMCalTOF = clustMatch -> GetTOF()*1e+9;
             Double_t M02 = -999., M20 = -999.;
             M02 = clustMatch -> GetM02(); // long axis
             M20 = clustMatch -> GetM20(); // short axis
@@ -1227,6 +1237,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             EMCalTrackDiffphi = TVector2::Phi_mpi_pi(TrackphionEMCal - EMCalphi);
             EMCalTrackDiffeta = TracketaonEMCal - EMCaleta;
             if(TMath::Abs(EMCalTrackDiffphi) > CutPhidiff || TMath::Abs(EMCalTrackDiffeta) > CutEtadiff) continue;
+            fCaloTrackDiff -> Fill(EMCalTrackDiffphi,EMCalTrackDiffeta);
 
             // only MC //
             if(fFlagMC && flagpidele)
@@ -1235,13 +1246,12 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
               if(flagNsigmaECut) fMCTrackPtelectron_wmatch -> Fill(TrackPt);
               if((flagCharm || flagBeauty) && flagNsigmaECut) fMCTrackPtHFE_wmatch -> Fill(TrackPt);
               // --- E/p check --- //
-              if(TrackP > 0) fMCEopelectron -> Fill(TrackPt,Eop);
+              if((flagCharm || flagBeauty) && TrackP > 0) fMCHFEEop -> Fill(TrackPt,Eop);
             }
 
             // --- matched tracks parameters --- //
             fTrackPtAfterMatch -> Fill(TrackPt);
-            fTracketaAfterMatch -> Fill(TrackEta);
-            fTrackphiAfterMatch -> Fill(TrackPhi);
+            fTrackphietaAfterMatch -> Fill(TrackEta,TrackPhi);
 
             //--- matched clusters parameters --- //
             fCaloClustEtaPhiAfterMatch -> Fill(EMCaleta,EMCalphi);
@@ -1263,12 +1273,17 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             // --- estimating hadron contamination
             if(flagNsigmaHCut && flagShowerShapeCut) fEopHadron -> Fill(TrackPt,Eop);
             // --- TPC energy loss for electron, hadrons --- //
-            if(flagEopCut && flagShowerShapeCut) fNSigmaTPCelectron -> Fill(TrackPt,TrackNSigma);
+            if(flagEopCut && flagShowerShapeCut)
+            {
+              fNsigmaEtaElectron -> Fill(TrackEta,TrackNSigma);
+              fNSigmaTPCelectron -> Fill(TrackPt,TrackNSigma);
+            }
             if(Eop < 0.6 && flagShowerShapeCut) fNSigmaTPChadron -> Fill(TrackPt,TrackNSigma);
 
             //########################## PID cut in TPC & EMCal/DCal ##########################//
             if(!flagNsigmaECut || !flagShowerShapeCut || !flagEopCut) continue;
             //#################################################################################//
+            fElectronphieta -> Fill(TrackEta,TrackPhi);
 
             // only MC //
             if(fFlagMC && flagpidele)
