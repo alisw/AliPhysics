@@ -28,6 +28,7 @@
 #include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFcalibHisto.h"
 #include "TMath.h"
+#include "THashList.h"
 #endif
 
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
@@ -47,6 +48,21 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of t
 			  Bool_t isAutoTrend = kFALSE);         //set to kTRUE for automatic trending
 
 Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE);
+
+Int_t GetList(TDirectoryFile* d, TList*& l, TString name, TString suffix)
+{
+  if(!d){
+    Printf("No directory given");
+    return -1;
+  }
+  d->GetObject(Form("%s%s", name.Data(), suffix.Data()), l);
+  if(!l){
+    d->ls();
+    Printf("Cannot find TList %s in %s", name.Data(), d->GetName());
+    return -1;
+  }
+  return 0;
+}
 
 ///
 ///Function to setup the histogram style
@@ -198,19 +214,22 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     Printf("ERROR: TOF QA directory not present in input file.\n");
     return -1;
   }
-  TList * generalList=(TList*)tofQAdir->Get(Form("%s%s", genListName, dirsuffix.Data()));
-  TList  *timeZeroList=(TList*)tofQAdir->Get(Form("%s%s", t0ListName, dirsuffix.Data()));
-  TList  *pidList=(TList*)tofQAdir->Get(Form("%s%s", pidListName, dirsuffix.Data()));
-  TList  *pidListT0=0x0;
-  TList  *tofPidListT0=0x0;
-  if (!pidQAdir) {
+  TList* generalList = 0x0;
+  GetList(tofQAdir, generalList, genListName, dirsuffix);
+  TList* timeZeroList = 0x0;
+  GetList(tofQAdir, timeZeroList, t0ListName, dirsuffix);
+  TList* pidList = 0x0;
+  GetList(tofQAdir, pidList, pidListName, dirsuffix);
+  TList* pidListT0 = 0x0;
+  GetList(pidQAdir, pidListT0, PIDqaListName, "");
+  TList* tofPidListT0 = pidListT0 ? (TList*)pidListT0->FindObject("TOF") : 0x0;
+  if (!pidQAdir || !tofPidListT0) {
     printf("WARNING: PIDqa histograms not available\n");
-  } else {
-    pidListT0=(TList*)pidQAdir->Get(PIDqaListName);
-    tofPidListT0=(TList*)pidListT0->FindObject("TOF");
   }
-  TList  *trdList=(TList*)tofQAdir->Get(Form("%s%s", trdListName, dirsuffix.Data()));
-  TList  *trgList=(TList*)tofQAdir->Get(Form("%s%s", trgListName, dirsuffix.Data()));
+  TList  *trdList= 0x0;
+  GetList(tofQAdir, trdList, trdListName, dirsuffix);
+  TList  *trgList= 0x0;
+  GetList(tofQAdir, trgList, trgListName, dirsuffix);
 
   if (!generalList) Printf("WARNING: general QA histograms absent or not accessible\n");
   if (!timeZeroList) Printf("WARNING: timeZero QA histograms absent or not accessible\n");
@@ -275,8 +294,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   ttree->Branch("orphansRatio",&orphansRatio,"orphansRatio/D"); //orphans ratio
   ttree->Branch("avL",&avL,"avL/D"); //mean track length
   ttree->Branch("negLratio",&negLratio,"negLratio/D");//ratio of tracks with track length <350 cm
-  ttree->Branch("matchEffIntegrated",&effPt2matchEffIntegrated,"matchEffIntegrated/D"); //matching eff integrated in pt (1-10GeV/c)
-  ttree->Branch("matchEffIntegratedErr",&effPt2matchEffIntegratedErr,"matchEffIntegratedErr/D"); //matching eff integrated in pt (1-10GeV/c)
+  ttree->Branch("matchEffIntegrated",&matchEffIntegrated,"matchEffIntegrated/D"); //matching eff integrated in pt (1-10GeV/c)
+  ttree->Branch("matchEffIntegratedErr",&matchEffIntegratedErr,"matchEffIntegratedErr/D"); //matching eff integrated in pt (1-10GeV/c)
   ttree->Branch("matchEffLinFit1Gev",&matchEffLinFit1Gev,"matchEffLinFit1Gev/D");//matching eff fit param
   ttree->Branch("matchEffLinFit1GevErr",&matchEffLinFit1GevErr,"matchEffLinFit1GevErr/D");////matching eff fit param error
   ttree->Branch("avPiDiffTime",&avPiDiffTime,"avPiDiffTime/D"); //mean t-texp
@@ -444,8 +463,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     Int_t imin = hMatchingVsPt->GetXaxis()->FindBin(minPtEff2Fit);
     Int_t imax = hMatchingVsPt->GetXaxis()->FindBin(maxPtEff2Fit);
     Double_t numN, denN, numErr, denErr;
-    numN = hMatchingVsPt->Integral(imin, imax, numErr);
-    denN = hDenom->Integral(imin, imax, denErr);
+    numN = hMatchingVsPt->IntegralAndError(imin, imax, numErr);
+    denN = hDenom->IntegralAndError(imin, imax, denErr);
     matchEffIntegrated = numN / denN;
     matchEffIntegratedErr = matchEffIntegrated * TMath::Sqrt(TMath::Power(numErr/numN, 2.0) +  TMath::Power(denErr/denN, 2.0));
     //get efficiency
