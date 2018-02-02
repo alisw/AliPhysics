@@ -1,4 +1,4 @@
-AliAnalysisTaskKinkPbPbMC* AddTaskKinkPbPbMC(TString lCustomName="",Float_t lRadiusKUp=200.0, Float_t lRadiusKLow= 130.0, Int_t lNCluster=30, Float_t lLowQtValue=0.12, Float_t yRange=0.5)
+AliAnalysisTaskKinkPbPbMC* AddTaskKinkPbPbMC(TString lCustomName="",Float_t lRadiusKUp=200.0, Float_t lRadiusKLow= 130.0, Int_t lNCluster=30, Float_t lLowQtValue=0.12, Float_t yRange=0.5, Float_t lnsigma=3.5)
    {
      //pp settings         
       	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,16 +22,17 @@ AliAnalysisTaskKinkPbPbMC* AddTaskKinkPbPbMC(TString lCustomName="",Float_t lRad
       	   return NULL;
        	}
    
-    	AliAnalysisTaskKinkPbPbMC  *task = new AliAnalysisTaskKinkPbPbMC("AliAnalysisTaskKinkPbPbMC", lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+    	AliAnalysisTaskKinkPbPbMC  *task = new AliAnalysisTaskKinkPbPbMC("AliAnalysisTaskKinkPbPbMC", lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange, lnsigma);
    
    	task->SetKinkRadius(lRadiusKLow, lRadiusKUp);
 	task->SetNCluster(lNCluster);
 	task->SetLowQtValue(lLowQtValue);
 	task->SetYRange(yRange);
+	task->SetnSigma(lnsigma);
 	mgr->AddTask(task);
 
         TString outputFileName = Form("%s:PWGLFSpectra.kinkPbPbMC", AliAnalysisManager::GetCommonFileName());
-        TString outputname0 = Form("fListDefault_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+        TString outputname0 = Form("fListDefault_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f_nsigma%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange, lnsigma);
 
         outputname0.Append(Form("%s",lCustomName.Data()));
 
