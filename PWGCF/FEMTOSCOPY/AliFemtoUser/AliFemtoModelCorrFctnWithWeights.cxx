@@ -357,7 +357,7 @@ void AliFemtoModelCorrFctnWithWeights::Write()
 
 }
 //_______________________
-AliFemtoModelCorrFctnWithWeights* AliFemtoModelCorrFctnWithWeights::Clone()
+AliFemtoModelCorrFctnWithWeights* AliFemtoModelCorrFctnWithWeights::Clone() const
 {
   // Create clone
   AliFemtoModelCorrFctnWithWeights *tCopy = new AliFemtoModelCorrFctnWithWeights(*this);

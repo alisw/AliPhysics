@@ -46,11 +46,3 @@ void AliFemtoCorrFctn::CalculateAnglesForEvent()
 {
   cout << "Not implemented" << endl;
 }
-
-
-
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassImp(AliFemtoCorrFctn);
-  /// \endcond
-#endif

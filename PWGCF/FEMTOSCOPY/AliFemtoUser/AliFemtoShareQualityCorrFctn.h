@@ -29,6 +29,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoShareQualityCorrFctn(*this); }
+
 private:
 
   TH2D *fShareNumerator;        // Share fraction for real pairs

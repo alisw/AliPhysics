@@ -29,6 +29,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnMinvMonitor(*this); }
+
 private:
 
   TH1D *fMinveeFail;   // ee mass assumption - failed pairs

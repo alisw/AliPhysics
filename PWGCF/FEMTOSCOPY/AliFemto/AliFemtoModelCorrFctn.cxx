@@ -423,14 +423,6 @@ void AliFemtoModelCorrFctn::Write()
 
 
 }
-//_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctn::Clone()
-{
-  // Create clone
-  AliFemtoModelCorrFctn *tCopy = new AliFemtoModelCorrFctn(*this);
-
-  return tCopy;
-}
 //_________________________
 TList* AliFemtoModelCorrFctn::GetOutputList()
 {

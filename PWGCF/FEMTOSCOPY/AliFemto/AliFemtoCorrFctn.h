@@ -4,13 +4,14 @@
 
 #pragma once
 
-#ifndef AliFemtoCorrFctn_hh
-#define AliFemtoCorrFctn_hh
+#ifndef ALIFEMTOCORRFCTN_H
+#define ALIFEMTOCORRFCTN_H
 
 #include "AliFemtoAnalysis.h"
 #include "AliFemtoEvent.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoPairCut.h"
+
 
 /// \class AliFemtoCorrFctn
 /// \brief The pure-virtual base class for correlation functions
@@ -52,7 +53,7 @@ public:
 
   virtual TList* GetOutputList() = 0;
 
-  virtual AliFemtoCorrFctn* Clone() { return 0;}
+  virtual AliFemtoCorrFctn* Clone() const = 0;
 
   AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);
@@ -92,4 +93,4 @@ inline void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* event */)
 
 
 
-#endif
+#endif  // ALIFEMTOCORRFCTN_H

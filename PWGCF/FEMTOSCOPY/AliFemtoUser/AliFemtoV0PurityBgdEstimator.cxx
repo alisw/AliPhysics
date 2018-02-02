@@ -152,9 +152,9 @@ AliFemtoV0PurityBgdEstimator& AliFemtoV0PurityBgdEstimator::operator=(const AliF
 }
 
 //____________________________
-AliFemtoV0PurityBgdEstimator* AliFemtoV0PurityBgdEstimator::Clone()
+AliFemtoV0PurityBgdEstimator* AliFemtoV0PurityBgdEstimator::Clone() const
 {
-  return(new AliFemtoV0PurityBgdEstimator(*this));
+  return new AliFemtoV0PurityBgdEstimator(*this);
 }
 
 //____________________________

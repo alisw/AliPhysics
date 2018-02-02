@@ -51,7 +51,7 @@ public:
 
   void SetUseLCMS(int);
   int  GetUseLCMS();
-  virtual AliFemtoCorrFctn* Clone();
+  virtual AliFemtoCorrFctn* Clone() const;
 
 private:
 
@@ -69,11 +69,9 @@ private:
 #endif
 };
 
-inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSSym::Clone()
+inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSSym::Clone() const
 {
-  // const keeps us out of trouble
-  const AliFemtoCorrFctn3DLCMSSym& self = *this;
-  return new AliFemtoCorrFctn3DLCMSSym(self);
+  return new AliFemtoCorrFctn3DLCMSSym(*this);
 }
 
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::Numerator()

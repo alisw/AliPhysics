@@ -34,6 +34,7 @@ public:
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnPairFractions(*this); }
 
   void SetDoDEtaDPhiMaps(bool dodedp=true);
 
