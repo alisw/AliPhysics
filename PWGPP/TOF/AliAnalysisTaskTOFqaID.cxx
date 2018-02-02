@@ -5,7 +5,6 @@
 #ifndef ALIANALYSISTASKTOFQAID_CXX
 #define ALIANALYSISTASKTOFQAID_CXX
 
-#include "AliAnalysisTaskTOFqaID.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
@@ -36,6 +35,8 @@
 #include "THashList.h"
 #include "TProfile.h"
 #include "TTree.h"
+//
+#include "AliAnalysisTaskTOFqaID.h"
 
 ClassImp(AliAnalysisTaskTOFqaID)
 
