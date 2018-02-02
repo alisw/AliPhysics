@@ -840,7 +840,7 @@ void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TList *listNUE){
 
   fListNUE = dynamic_cast<TList*>(listNUE->Clone("fListNUE"));
   
-  for (Int_t iCent = 0; iCent <=fCentralityArrayBinsForCorrections-1; iCent++) {
+  for (Int_t iCent = 0; iCent <fCentralityArrayBinsForCorrections-1; iCent++) {
 
     TString histoName1 = "fHistNUECorrPlus";
     TString histoName2 = "fHistNUECorrMinus";
