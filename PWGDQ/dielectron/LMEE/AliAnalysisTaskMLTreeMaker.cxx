@@ -110,6 +110,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   dcar(),
   dcaz(),
   nITS(0),
+  ITS1S(0),
+  ITS2S(0),
+  ITS3S(0),
+  ITS4S(0),
+  ITS5S(0),
+  ITS6S(0),        
 //  fESDTrackCuts(0),
   gMultiplicity(-999),
   chi2ITS(0),
@@ -199,6 +205,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   dcar(),
   dcaz(),
   nITS(0),
+  ITS1S(0),
+  ITS2S(0),
+  ITS3S(0),
+  ITS4S(0),
+  ITS5S(0),
+  ITS6S(0),       
 //  fESDTrackCuts(0),
   gMultiplicity(-999),
   chi2ITS(0),
@@ -307,25 +319,12 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   fTree->Branch("PsigTPC", &PsigTPC);
   
-//  fTree->Branch("NClustersITS", &NClustersITS);
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
   fTree->Branch("RatioCrossedRowsFindableClusters", &RatioCrossedRowsFindableClusters);
   fTree->Branch("HasSPDfirstHit", &HasSPDfirstHit);   
   fTree->Branch("NTPCSignal", &NTPCSignal); 
-  
-  
-//  if(fPionSigmas){
-//    fTree->Branch("PsigTPC", &PsigTPC);
-//    fTree->Branch("PsigITS", &PsigITS);
-//    fTree->Branch("PsigTOF", &PsigTOF);
-//  }
-//  if(fKaonSigmas){
-//    fTree->Branch("KsigTPC", &KsigTPC);
-//    fTree->Branch("KsigITS", &KsigITS);
-//    fTree->Branch("KsigTOF", &KsigTOF);
-//  }
-  
+
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
   
@@ -334,6 +333,12 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("vertz", &vertz);
   
   fTree->Branch("nITS", &nITS);
+  fTree->Branch("ITS1Shared", &ITS1S);
+  fTree->Branch("ITS2Shared", &ITS2S); 
+  fTree->Branch("ITS3Shared", &ITS3S); 
+  fTree->Branch("ITS4Shared", &ITS4S); 
+  fTree->Branch("ITS5Shared", &ITS5S); 
+  fTree->Branch("ITS6Shared", &ITS6S);   
   fTree->Branch("nITSshared_frac", &nITSshared);
   fTree->Branch("chi2ITS", &chi2ITS);
 //  fTree->Branch("chi2TPC", &chi2TPC);
@@ -499,6 +504,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   MCvertx.clear();
   MCverty.clear();
   MCvertz.clear();
+  ITS1S.clear();
+  ITS2S.clear();
+  ITS3S.clear();
+  ITS4S.clear();
+  ITS5S.clear();
+  ITS6S.clear(); 
+  
   
   // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
@@ -674,10 +686,24 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       charge.push_back(track->Charge());   
 
       NCrossedRowsTPC.push_back(track->GetTPCCrossedRows());
-      NClustersTPC.push_back(track->GetNumberOfTPCClusters());
+      NClustersTPC.push_back(track->GetTPCNcls();//->GetNumberOfTPCClusters());
       HasSPDfirstHit.push_back(track->HasPointOnITSLayer(0)); 
       RatioCrossedRowsFindableClusters.push_back((Double_t) track->GetTPCCrossedRows()/ (Double_t) track->GetTPCNclsF());       
       NTPCSignal.push_back(track->GetTPCsignalN());
+      
+
+      if( track->HasSharedPointOnITSLayer(0) ) {ITS1S.push_back(1);}
+      else {ITS1S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(1) ) {ITS2S.push_back(1);}
+      else {ITS2S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(2) ) {ITS3S.push_back(1);}
+      else {ITS3S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(3) ) {ITS4S.push_back(1);}
+      else {ITS4S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(4) ) {ITS5S.push_back(1);}
+      else {ITS5S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(5) ) {ITs6S.push_back(1);}
+      else {ITS6S.push_back(0);}
       
        //Get DCA position
       if(isAOD){
