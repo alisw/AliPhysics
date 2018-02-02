@@ -38,8 +38,13 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //Systematic uncertainties //
         //#########################//
         void SetTrackEta(Double_t low, Double_t high) {TrackEtaLow = low, TrackEtaHigh = high;};
+        void SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed;};
+        void SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
+        void SetTrackMatch(Double_t phi, Double_t eta) {TrackMatchPhi = phi, TrackMatchEta = eta;};
         void SetNsigma(Double_t low, Double_t high) {NsigmaLow = low, NsigmaHigh = high;};
+        void SetM20(Double_t low, Double_t high) {M20Low = low, M20High = high;};
         void SetEop(Double_t low, Double_t high) {EopLow = low, EopHigh = high;};
+        void SetMassPara(Double_t mimpt, Int_t TPC, Double_t mass) {AssoMinpT = mimpt, AssoNTPCClust = TPC, MassCut = mass;};
 
         void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
         Bool_t ConversionCheck(Int_t &pidM);
@@ -79,8 +84,15 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //Systematic uncertainties //
         //#########################//
         Double_t TrackEtaLow, TrackEtaHigh;
+        Double_t NTPCClust, NITSClust, NCrossedRow;
+        Double_t DCAxy, DCAz;
+        Double_t TrackMatchPhi, TrackMatchEta;
         Double_t NsigmaLow, NsigmaHigh;
+        Double_t M20Low, M20High;
         Double_t EopLow,EopHigh;
+        Double_t AssoMinpT;
+        Int_t AssoNTPCClust;
+        Double_t MassCut;
 
         //################//
         // Primary Vertex //
@@ -103,31 +115,32 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //##############//
         TH2F *fDCAxy;
         TH2F *fDCAz;
-	      TH1F *fTrackPt;
-        TH1F *fTracketa;
-        TH1F *fTrackphi;
+        TH2F *fTrackphieta;
+        TH1F *fTrackPt;
         TH2F *fTrackCluster;
         TH2F *fTrackChi2;
-        TH2F *fTrackITSChi2pTdep;
 
         //########################//
         // Mathed track & Cluster //
         //########################//
+        TH2F *fCaloTrackDiff;
         TH1F *fCaloClusterEAfterMatch;
         TH2F *fCaloClustEtaPhiAfterMatch;
         TH1F *fTrackPtAfterMatch;
-        TH1F *fTracketaAfterMatch;
-        TH1F *fTrackphiAfterMatch;
+        TH2F *fTrackphietaAfterMatch;
         TH2F *fM02;
         TH2F *fM20;
         TH2F *fdEdx;
         TH2F *fNSigmaTPC;
+        TH2F *fNsigmaEta;
         TH2F *fNSigmaTPCelectron;
         TH2F *fNSigmaTPChadron;
+        TH2F *fNsigmaEtaElectron;
         TH2F *fEop;
         TH2F *fEopElectron;
         TH2F *fEopHadron;
         TH2F *fNSigmaEop;
+        TH2F *fElectronphieta;
         //---PHE search by Invariant-mass ---//
         TH2F *fInvmassLS;
         TH2F *fInvmassULS;
@@ -154,7 +167,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH2F *fMCHFEResponceMatrix;
         // --- PID check --- //
         TH2F *fMCTPCNSigmaelectron;
-        TH2F *fMCEopelectron;
+        TH2F *fMCNsigmaEtaElectron;
+        TH2F *fMCHFEEop;
         //--- DCA for c/b separation ---//
         TH2F *fMCDCAinclusive;
         TH2F *fMCDCAconv;
@@ -167,14 +181,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //--- Non-HFE tagging efficiency ---//
         TF1 *PionWeight;
         TF1 *EtaWeight;
-        TH1F *fMCPionInputAll;
-        TH1F *fMCPionInputHijing;
-        TH1F *fMCPionInputEnhanced;
-        TH1F *fMCPionInputOthers;
-        TH1F *fMCEtaInputAll;
-        TH1F *fMCEtaInputHijing;
-        TH1F *fMCEtaInputEnhanced;
-        TH1F *fMCEtaInputOthers;
+        TH2F *fMCPionInput;
+        TH2F *fMCEtaInput;
         TH1F *fMCTrackPtPHEHijing;
         TH1F *fMCTrackPtPHEnoweighting;
         TH1F *fMCTrackPtPHEaftweighting;
@@ -185,10 +193,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH1F *fMCTrackPtPHEwMasscutnoweighting;
         TH1F *fMCTrackPtPHEwMasscutaftweighting;
         // --- D meson & B meson --- //
-        TH1F *fMCDmesonHijing;
-        TH1F *fMCDmesonEnhanced;
-        TH1F *fMCBmesonHijing;
-        TH1F *fMCBmesonEnhanced;
+        TH2F *fMCHFhadronpT;
         // --- c->e & b->e --- //
         TH1F *fMCDdecayE;
         TH1F *fMCBdecayE;
