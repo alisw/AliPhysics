@@ -769,7 +769,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   //printf("test2\n");
 
   // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
-  if(fIsPileUpMultRejApplied && RejectPileUpMultiplicitySelection())       return;
+  if(fIsPileUpMultRejApplied){ if(RejectPileUpMultiplicitySelection())       return;}
   // -------------------------------------------------------------
 
   // need the centrality for everything (MC also)
