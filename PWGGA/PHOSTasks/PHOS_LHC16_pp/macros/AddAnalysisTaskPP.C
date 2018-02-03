@@ -5,14 +5,50 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 	TString badmap = "BadMap_LHC16-updated.root"
 )
 {
-	AliAnalysisManager * mgr = AliAnalysisManager::GetAnalysisManager();
-
 	// Copy necessary map from the private directory
 	//
-
 	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/o/okovalen/maps/%s .",badmap.Data()));
 
-	// Setup Selections
+	// Restore the analysis manager
+	// 
+	AliAnalysisManager * manager = AliAnalysisManager::GetAnalysisManager();
+
+
+	// Setup Physics Selection
+	//
+	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+	Bool_t enablePileupCuts = kTRUE; // Run 2 optimization
+	AddTaskPhysicsSelection (isMC, enablePileupCuts);
+
+
+	// Setup Phos Tender
+	//
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
+
+    TString tenderOption = isMC ? "Run2Default" : "";
+    if (tenderOption)
+    {
+        description += " with tender option ";
+        description += tenderOption;
+    } 
+
+    AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
+    AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
+    // IMPORTANT: Set the map of bad channels
+    PHOSSupply->ForceUsingBadMap(badmap.Data());
+    if (isMC)
+    {
+        // Important: Keep track of this variable
+        // ZS threshold in unit of GeV
+        Double_t zs_threshold = 0.020;
+        PHOSSupply->ApplyZeroSuppression(zs_threshold);
+        description += Form(" ZS threshold = %f GeV", zs_threshold);
+    }
+
+
+	// Setup Analysis Selections
+	//
+
 	TList * selections = new TList();
 
 	AliPP13ClusterCuts cuts_pi0 = AliPP13ClusterCuts::GetClusterCuts();
@@ -77,16 +113,11 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		delete & mc_weights_only;
 	}
 
-	// Setup task
+	// Setup the main task
+	//
 	AliAnalysisTaskPP13 * task = new AliAnalysisTaskPP13("PhosProtons", selections);
-
-	if (!badmap.IsNull())
-		task->SetBadMap(badmap);
-
-	mgr->AddTask(task);
-
-
-	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+	manager->AddTask(task);
+	manager->ConnectInput(task, 0, manager->GetCommonInputContainer());
 	AliAnalysisDataContainer * coutput = 0;
 	for (Int_t i = 0; i < task->GetSelections()->GetEntries(); ++ i)
 	{
@@ -94,12 +125,14 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		fSel->SetTitle(description);
 		cout << fSel->GetTitle() << endl;
 
-		coutput = mgr->CreateContainer(fSel->GetName() + suff,
-		                               TList::Class(),
-		                               AliAnalysisManager::kOutputContainer,
-		                               AliAnalysisManager::GetCommonFileName());
-		mgr->ConnectOutput(task, i + 1, coutput);
-	}
+		coutput = manager->CreateContainer(
+			fSel->GetName() + suff,
+		    TList::Class(),
+			AliAnalysisManager::kOutputContainer,
+			AliAnalysisManager::GetCommonFileName()
+		);
 
+		manager->ConnectOutput(task, i + 1, coutput);
+	}
 	return task;
 }
