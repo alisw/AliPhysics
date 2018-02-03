@@ -46,7 +46,7 @@ AliClusterContainer::AliClusterContainer():
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
-  fEmcalMinM02(DBL_MIN),
+  fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX)
 {
@@ -72,7 +72,7 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
-  fEmcalMinM02(DBL_MIN),
+  fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX)
 {
