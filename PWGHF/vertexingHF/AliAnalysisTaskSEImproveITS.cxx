@@ -1042,10 +1042,9 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
     
   } else {
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
-    Float_t paresd[2] = {(Float_t)param[0],(Float_t)param[1]};
-    Float_t covesd[3] = {(Float_t)covar[0],(Float_t)covar[1],(Float_t)covar[2]};
-    Double_t chi2 = esdtrack->GetConstrainedChi2();
-    esdtrack->SetImpactParameters(paresd,covesd,chi2,&et);
+    Short_t sign = esdtrack->Charge();
+    esdtrack->Set(x,p,cv,sign);
+    esdtrack->RelateToVVertex(InputEvent()->GetPrimaryVertex(), bz,100.);
     // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))
     UChar_t itsClusterMap = esdtrack->GetITSClusterMap();
     SETBIT(itsClusterMap,7);
