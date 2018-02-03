@@ -73,7 +73,7 @@ private:
   int fEtaBins;
   int fPhiBins;
 
-  char *ftitle;
+  TString ftitle;
 
   ParticleType part1;
   ParticleType part2;
