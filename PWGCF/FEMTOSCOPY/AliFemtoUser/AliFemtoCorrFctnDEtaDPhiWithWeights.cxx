@@ -42,13 +42,13 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(const c
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fYPtWeightsParticle1(filter1),
+  fYPtWeightsParticle2(filter2),
   fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
   fEtaCorrectionsDen(0),
-  fYPtWeightsParticle1(filter1),
-  fYPtWeightsParticle2(filter2),
   fphiL(0),
   fphiT(0)
 {
@@ -133,13 +133,13 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(const A
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fYPtWeightsParticle1(0),
+  fYPtWeightsParticle2(0),
   fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
   fEtaCorrectionsDen(0),
-  fYPtWeightsParticle1(0),
-  fYPtWeightsParticle2(0),
   fphiL(0),
   fphiT(0)
 {
@@ -401,12 +401,12 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiWithWeights::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
-
+void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
-
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -477,10 +477,12 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
 
 }
 //____________________________
-void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();

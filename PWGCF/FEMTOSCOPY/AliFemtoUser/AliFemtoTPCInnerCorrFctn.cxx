@@ -134,8 +134,9 @@ AliFemtoString AliFemtoTPCInnerCorrFctn::Report(){
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double pih = TMath::Pi();
   double pit = TMath::Pi()*2;
@@ -171,8 +172,9 @@ void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double pih = TMath::Pi();
   double pit = TMath::Pi()*2;

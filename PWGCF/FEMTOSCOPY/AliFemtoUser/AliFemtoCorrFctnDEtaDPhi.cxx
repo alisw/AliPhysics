@@ -375,8 +375,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhi::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -446,8 +447,9 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();

@@ -87,6 +87,8 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const AliFemtoV0Purit
   AliFemtoCorrFctn(aCorrFctn),
   fTitle(aCorrFctn.fTitle),
   fNbinsMinv(aCorrFctn.fNbinsMinv),
+  fMinvLow(aCorrFctn.fMinvLow),
+  fMinvHigh(aCorrFctn.fMinvHigh),
 
   fNumeratorWithoutSharedDaughterCut(aCorrFctn.fNumeratorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fNumeratorWithoutSharedDaughterCut) : nullptr),
   fDenominatorWithoutSharedDaughterCut(aCorrFctn.fDenominatorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fDenominatorWithoutSharedDaughterCut) : nullptr),
@@ -97,10 +99,8 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const AliFemtoV0Purit
   fFemtoV0TrackCut(aCorrFctn.fFemtoV0TrackCut ? new AliFemtoV0TrackCutNSigmaFilter(*aCorrFctn.fFemtoV0TrackCut) : nullptr),
 
   fRealV0Collection(aCorrFctn.fRealV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fRealV0Collection) : nullptr),
-  fMixedV0Collection(aCorrFctn.fMixedV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection) : nullptr),
+  fMixedV0Collection(aCorrFctn.fMixedV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection) : nullptr)
 
-  fMinvLow(aCorrFctn.fMinvLow),
-  fMinvHigh(aCorrFctn.fMinvHigh)
 {
   // copy constructor
   fRatioWithoutSharedDaughterCut = (aCorrFctn.fRatioWithoutSharedDaughterCut) ? new TH1D(*aCorrFctn.fRatioWithoutSharedDaughterCut) : nullptr;

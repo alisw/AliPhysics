@@ -394,8 +394,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();
@@ -508,8 +509,9 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();
