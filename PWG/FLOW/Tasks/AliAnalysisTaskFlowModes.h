@@ -5,7 +5,22 @@
 #ifndef AliAnalysisTaskFlowModes_H
 #define AliAnalysisTaskFlowModes_H
 
+#include <vector>
+
 #include "AliAnalysisTaskSE.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+
+#include "TComplex.h"
+#include "TFile.h"
+#include "TList.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
 
 
 class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE

@@ -21,6 +21,7 @@
 // Modified by: Naghmeh Mohammadi to include non-linear terms, Nikhef, 2017
 // Generic framework by: You Zhou
 
+#include <vector>
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
