@@ -814,7 +814,7 @@ pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
 
 
-//Define Carsten Cut set 3 (as specified in e mail from Carsten from 10.01.2018)
+//Define Carsten's Cut set 3 (as specified in e mail from Carsten from 10.01.2018)
 
 AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
 PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
