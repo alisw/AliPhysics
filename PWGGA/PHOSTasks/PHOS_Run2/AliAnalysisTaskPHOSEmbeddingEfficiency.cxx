@@ -514,7 +514,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
     if(!CheckMinimumEnergy(ph)) continue;
 
      if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
 
