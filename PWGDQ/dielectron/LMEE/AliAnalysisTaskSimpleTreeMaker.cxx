@@ -718,6 +718,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(posTrack,(AliPID::EParticleType)AliPID::kKaon);
 			Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kKaon);
 
+			if(TMath::Abs(EnSigmaTPC) > fESigTPCMax){ continue;}
+
 			//DCA values
 			Float_t ImpParamXY = 0.;
 			Float_t ImpParamZ  = 0.;
@@ -917,6 +919,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(negTrack,(AliPID::EParticleType)AliPID::kPion);
 				KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(negTrack,(AliPID::EParticleType)AliPID::kKaon);
 				KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(negTrack,(AliPID::EParticleType)AliPID::kKaon);
+
+				if(TMath::Abs(EnSigmaTPC) > fESigTPCMax){ continue;}
+
 				//DCA values
 				ImpParamXY = 0.;
 				ImpParamZ = 0.;
