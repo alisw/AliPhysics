@@ -200,7 +200,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
   //AliAnalysisCuts* trackCuts=0x0;
     
     AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
-    
+
     //Cuts implemented in TreeMaker
 		//FilterBit 4 used to filter AODs
 		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
@@ -239,22 +239,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 		if(hasITS){
 			fesdTrackCuts->SetMinNClustersITS(4);
 		}else{
-			fesdTrackCuts->SetMinNClustersITS(4);
+			fesdTrackCuts->SetMinNClustersITS(2);
 		}
-			
-    
-
-    //Cuts implemented during analysis step 
-	//pT and eta
-	fesdTrackCuts->SetPtRange(0.2, 1e30);
-	fesdTrackCuts->SetEtaRange(-0.8, 0.8);
-
-	//Track cuts
-	fesdTrackCuts->SetMinNClustersTPC(80);
-	fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-	fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-	fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-	fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
 
   	return fesdTrackCuts;
 }

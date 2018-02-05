@@ -332,12 +332,37 @@ inherits from that class. Otherwise, histogram names will conflict.
 # Embedding on LEGO trains                                                  {#emcEmbeddingLegoTrain}
 
 Embedding can be used as expected on the LEGO train. If available, it is best to use centralized wagons, while
-changing the configuration for your particular dataset. The main difficulty with the LEGO train is that a new train
-must be configured for each pt hard bin. Previously, that meant that a variable must be changed every time, which can
+changing the configuration for your particular dataset. For more, see the following sections.
+
+## Configuring the LEGO Train Wagon                                         {#emcEmbeddingLEGOTrainWagon}
+
+There are some special procedures for the LEGO train. There will be a centralized EMCal Embedding Helper wagon which
+contains standard settings such as physics selection, etc. Then the user will create a wagon which calls
+`PWG/EMCAL/macros/ConfigureEmcalEmbeddingHelperOnLEGOTrain()`. This will return an EMCal Embedding Helper
+for you to configure with your particular settings (and potentially YAML configuration file) and then initialize.
+It should looks something like the following:
+
+~~~{.cxx}
+// Set your user configuration
+__R_ADDTASK__->SetRandomFileAccess(kTRUE);
+// ...
+// It is extremely important to pass "true" to Initialize().
+__R_ADDTASK__->Initialize(true);
+~~~
+
+Note that your configuration wagon should depend on the centralized embedding helper wagon, but your tasks
+(such as corrections, user tasks, etc) should depend **only** on the centralized embedding helper wagon.
+They should not depend on your configuration wagon!
+
+## Auto configuration of pt hard bins
+
+The main difficulty with the LEGO train is that a new train must be configured for each pt hard bin.
+Previously, that meant that a variable must be changed every time, which can
 be a rather error prone process. Now, the embedding helper can handle this configuration automatically.
 
 The relevant functions are in the function group "pT hard bin auto configuration". Once enabled, the user must set
-the proper paths to determine where to locate a scratch file, as well as how the particular set of trains will be identified. See the example below for an illustrative example:
+the proper paths to determine where to locate a scratch file, as well as how the particular set of trains will be
+identified. See the example below for an illustrative example:
 
 ~~~{.cxx}
 // Configure the embedding helper as usual
@@ -345,6 +370,7 @@ the proper paths to determine where to locate a scratch file, as well as how the
 // Enable pt hard bin auto configuration
 embeddingHelper->SetAutoConfigurePtHardBins();
 // Tells it the base path of where to write the auto configuration file.
+// It may be simpler and better to put this file on the test train machine instead.
 embeddingHelper->SetAutoConfigureBasePath("/alice/cern.ch/user/a/alitrain/");
 // Identifies the type of train this train is running on.
 embeddingHelper->SetAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/");
@@ -356,7 +382,8 @@ embeddingHelper->SetAutoConfigureIdentifier("myEmbedding");
 embeddingHelper->SetNPtHardBins(11);
 ~~~
 
-Now just request the trains. Each one can be started with the desired settings, and they will automatically coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables for each pt hard bin!
+Now just request the trains. Each one can be started with the desired settings, and they will automatically coordinate
+to determine which pt hard bins should be selected for each train. No need to manually change variables for each pt hard bin!
 
 With the above settings
 

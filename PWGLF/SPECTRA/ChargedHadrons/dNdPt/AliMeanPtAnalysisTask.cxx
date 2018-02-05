@@ -133,18 +133,17 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fOutputList -> SetOwner();
 
 
-  // Control histograms to check the effects of event and track cuts
-
+  // Control histogram to check the effect of event cuts
   fEventCount = new TH1F("fEventCount","Number of events after cuts",8,0.5,8.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
   fEventCount->GetXaxis()->SetBinLabel(1, "all");
   fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
-  fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pilup");
+  fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pileup");
   fEventCount->GetXaxis()->SetBinLabel(4, "accepted Centraliy");
   fEventCount->GetXaxis()->SetBinLabel(5, "without #it{N}_{ch} overflow");
-  fEventCount->GetXaxis()->SetBinLabel(6, "#it{N}_{ch} > 0"); // to normalize multptmcgen without conditions
+  fEventCount->GetXaxis()->SetBinLabel(6, "#it{N}_{ch} > 0");
   fEventCount->GetXaxis()->SetBinLabel(7, "#it{N}_{acc} > 0"); // to normalize fHistTrack in data and MC
-  fEventCount->GetXaxis()->SetBinLabel(8, "#it{N}_{rec} > 0"); // to normalize multptmcgen with condition rec>0
+  fEventCount->GetXaxis()->SetBinLabel(8, "#it{N}_{rec} > 0"); // to normalize fHistMCParticle
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -345,6 +344,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
       fOutputList->Add(fHistMCTrackMult);
       fOutputList->Add(fHistMCTrackMultGen);
       fOutputList->Add(fHistMCMultRes);
+      fOutputList->Add(fHistMCParticle);
     }
   }
 
@@ -492,7 +492,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         Double_t particleValues[4] = {mcParticle->Pt(), mcParticle->Eta(), multAccTracks, centrality};
         fHistMCParticle->Fill(particleValues);
       }
-      
+
       // Histograms for efficiency x acceptance correction
       Double_t mcRecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
       fHistMCRecTrack->Fill(mcRecTrackValue);
@@ -508,13 +508,17 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     }
   }// end of Track-loop
 
-  if(multRecPart > 0) fEventCount->Fill(8); // Events with particles assignable to tracks
-  fHistMCTrackParticle->Fill(1, multAccTracks);
-  fHistMCTrackParticle->Fill(2, multRecPart);
+  if(multRecPart > 0) fEventCount->Fill(8); // Events with particles within kinematic acceptance
 
-  if(fIsMC && fIncludeCrosscheckHistos){
-    Double_t multResoTuple[2] = {multAccTracks, multRecPart};
-    fHistMCMultRes->Fill(multResoTuple);
+  if(fIsMC){
+    // Control Histogram to check how many tracks come from a particle outside of kinematic range
+    fHistMCTrackParticle->Fill(1, multAccTracks);
+    fHistMCTrackParticle->Fill(2, multRecPart);
+
+    if(fIncludeCrosscheckHistos){
+      Double_t multResoTuple[2] = {multAccTracks, multRecPart};
+      fHistMCMultRes->Fill(multResoTuple);
+    }
   }
 
 
@@ -655,7 +659,6 @@ void AliMeanPtAnalysisTask::InitESDTrackCuts(){
 
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   if(!fESDtrackCuts) {printf("ERROR: fESDtrackCuts not available\n"); return;}
-
 
   fESDtrackCuts->SetRequireTPCRefit(fTPCRefit);
   fESDtrackCuts->SetRequireITSRefit(fITSRefit);

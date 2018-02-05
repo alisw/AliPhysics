@@ -196,11 +196,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
   }
 }
 
-/**
- * Initialize the Embedding Helper task. *Must* be called after configuring the task,
- * either during the run macro or wagon configuration.
- */
-bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
+bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize(bool removeDummyTask)
 {
   // Initialize YAML configuration, if one is given
   bool initializedYAML = InitializeYamlConfig();
@@ -211,6 +207,14 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
   if (result && initializedYAML) {
     fInitializedConfiguration = true;
   }
+
+  if (removeDummyTask == true) {
+    RemoveDummyTask();
+  }
+
+  // Print the results of the initialization
+  // Print outside of the ALICE Log system to ensure that it is always available!
+  std::cout << *this;
 
   return result;
 }
@@ -1359,12 +1363,36 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Terminate(Option_t*)
 }
 
 /**
- * Add task function. This contains the normal AddTask functionality, except in compiled code, making errors
- * easier to spot than in CINT. The AddTask macro still exists for use on the LEGO train, but simply wraps this
- * function.
- *
- * @return An properly instance of AliAnalysisTaskEmcalEmbeddingHelper, added to the current analysis manager.
+ * Remove the dummy task which had to be added by ConfigureEmcalEmbeddingHelperOnLEGOTrain()
+ * from the Analysis Mangaer. This is the same function as in AliEmcalCorrectionTask.
  */
+void AliAnalysisTaskEmcalEmbeddingHelper::RemoveDummyTask() const
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    AliErrorStream() << "No analysis manager to connect to.\n";
+    return;
+  }
+
+  // Remove the dummy task
+  std::string dummyTaskName = GetName();
+  dummyTaskName += "_dummyTask";
+  TObjArray * tasks = mgr->GetTasks();
+  if (tasks) {
+    AliAnalysisTaskSE * dummyTask = dynamic_cast<AliAnalysisTaskSE *>(tasks->FindObject(dummyTaskName.c_str()));
+    if (!dummyTask) {
+      AliErrorStream() << "Could not remove dummy task \"" << dummyTaskName << "\" from analysis manager! Was it added?\n";
+    }
+    // Actually remove the task
+    tasks->Remove(dummyTask);
+    AliDebugStream(1) << "Removed dummy task named \"" << dummyTaskName << "\".\n";
+  }
+  else {
+    AliErrorStream() << "Could not retrieve tasks from the analysis manager.\n";
+  }
+}
+
 AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTaskEmcalEmbeddingHelper()
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -1416,8 +1444,38 @@ AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTa
   return embeddingHelper;
 }
 
+AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::ConfigureEmcalEmbeddingHelperOnLEGOTrain()
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("ConfigureEmcalEmbeddingHelperOnLEGOTrain", "No analysis manager to connect to.");
+    return nullptr;
+  }
+
+  // Retrieve the embedding helper
+  auto embeddingHelperConst = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  // Cast away const-ness on the pointer since the underlying object is not const and we need to be able to modify it.
+  auto embeddingHelper = const_cast<AliAnalysisTaskEmcalEmbeddingHelper *>(embeddingHelperConst);
+
+  // Fatal if we can't find the task
+  if (!embeddingHelper) {
+    AliFatalClass("Could not find embedding helper, Did you remember to create it?");
+  }
+
+  AliInfoClassStream() << "Found embedding helper to configure.\n";
+
+  // AliAnalysisTaskCfg will require a task to be returned, so we add a dummy task to the analysis manager,
+  // which will be removed when the user calls Initialize(true) on the embedding helper.
+  mgr->AddTask(new AliAnalysisTaskSE("AliAnalysisTaskEmcalEmbeddingHelper_dummyTask"));
+
+  return embeddingHelper;
+}
+
 /**
- * Prints information about the correction task.
+ * Prints information about the embedding helper.
  *
  * @return std::string containing information about the task.
  */
@@ -1425,7 +1483,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
 {
   std::stringstream tempSS;
 
-  // Show the correction components
+  // General embedding helper information
   tempSS << std::boolalpha;
   tempSS << GetName() << ": Embedding helper configuration:\n";
   tempSS << "Create histos: " << fCreateHisto << "\n";
@@ -1439,7 +1497,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Random file access: " << fRandomFileAccess << "\n";
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
   tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
-  tempSS << "YAML configuration path: " << fConfigurationPath << "\n";
+  tempSS << "YAML configuration path: \"" << fConfigurationPath << "\"\n";
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
@@ -1447,7 +1505,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Reject outliers: " << fMCRejectOutliers << "\n";
   tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
-  tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
+  tempSS << "Max difference between internal and embedded vertex: " << fMaxVertexDist << "\n";
 
   if (includeFileList) {
     tempSS << "\nFiles to embed:\n";
@@ -1460,7 +1518,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
 }
 
 /**
- * Print correction task information on an output stream using the string representation provided by
+ * Print embedding helper information on an output stream using the string representation provided by
  * AliAnalysisTaskEmcalEmbeddingHelper::toString(). Used by operator<<
  *
  * @param in output stream stream
@@ -1473,7 +1531,7 @@ std::ostream & AliAnalysisTaskEmcalEmbeddingHelper::Print(std::ostream & in) con
 
 /**
  * Implementation of the output stream operator for AliAnalysisTaskEmcalEmbeddingHelper. Printing
- * basic correction task information provided by function toString()
+ * basic embedding helper information provided by function toString()
  *
  * @param in output stream
  * @param myTask Task which will be printed
@@ -1486,7 +1544,7 @@ std::ostream & operator<<(std::ostream & in, const AliAnalysisTaskEmcalEmbedding
 }
 
 /**
- * Print basic correction task information using the string representation provided by
+ * Print basic embedding helper information using the string representation provided by
  * AliAnalysisTaskEmcalEmbeddingHelper::toString()
  *
  * @param opt If "FILELIST" is passed, then the list of files to embed is also printed

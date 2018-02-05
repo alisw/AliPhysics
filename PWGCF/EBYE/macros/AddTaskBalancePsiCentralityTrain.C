@@ -269,24 +269,21 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     if(!fNUAFile) {
       printf(" *** ERROR: NUA file not found! **EXIT** ");
     } 
-    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObject("fListNUA"));
-    if(fListNUA){
+    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fListNUA"));
+    if(fListNUA)
       taskBF->SetInputListForNUACorr(fListNUA);
-      else{
-	printf(" *** ERROR: NUA List not found! **EXIT**");
-      }
-    }
+    else
+      printf(" *** ERROR: NUA List not found! **EXIT**");
+    
     
     if(!fNUEFile) {
       printf(" *** ERROR: NUE file not found! **EXIT** ");
     } 
-    TList* fListNUE = dynamic_cast<TList*>(fNUEFile->FindObject("fListNUE"));
-    if(fListNUE){
+    TList* fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
+    if(fListNUE)
       taskBF->SetInputListForNUECorr(fListNUE);
-      else{
-	printf(" *** ERROR: NUE List not found! **EXIT**");
-      }
-    }
+    else
+      printf(" *** ERROR: NUE List not found! **EXIT**");    
   }
 
   

@@ -74,7 +74,9 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    *
    * This function is the main function for initialization and should be called from a run macro!
    * Once called, most of the configuration of the correction task and the correction components is locked in,
-   * so be certain to change any additional configuration before that!
+   * so be certain to change any additional configuration options before calling this function!
+   *
+   * @param[in] removeDummyTask If true, the dummy task created with the configure function is removed.
    */
   void Initialize(bool removeDummyTask = false);
 

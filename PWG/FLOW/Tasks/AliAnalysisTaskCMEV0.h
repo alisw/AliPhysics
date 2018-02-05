@@ -208,6 +208,8 @@ private:
 
   TProfile2D  *fTPCQ2xVsCentRun; //!
   TProfile2D  *fTPCQ2yVsCentRun; //!
+  TProfile2D  *fTPCQ3xVsCentRun; //!
+  TProfile2D  *fTPCQ3yVsCentRun; //!
 
   TList           *mListNUAPos; //!
   TList           *mListNUANeg; //!

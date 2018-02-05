@@ -64,6 +64,18 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance()                                          ;
   AliAnalysisTaskEmcalDijetImbalance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalDijetImbalance()                                 ;
+  
+  static AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(const char *ntracks = "usedefault",
+                                                                        const char *nclusters = "usedefault",
+                                                                        const Double_t deltaPhiMin = 2*TMath::Pi()/3,
+                                                                        const Bool_t doGeomMatching = kFALSE,
+                                                                        const Double_t minTrPtHardCore = 3.0,
+                                                                        const Double_t minClPtHardCore = 3.0,
+                                                                        const Double_t jetR = 0.2,
+                                                                        const Bool_t includePHOS = kTRUE,
+                                                                        const Double_t minTrPt = 0.15,
+                                                                        const Double_t minClPt = 0.30,
+                                                                        const char *suffix = "");
 
   void UserCreateOutputObjects()                                                ;
   void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name1 = "hEtaPhiSFCorrection", const char* name2 = "hEtaPhiJetPtCorrection");

@@ -7,6 +7,26 @@
   The macro produces one png file for each trending variables
   and a .root file with the histograms
 */
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TLegend.h"
+#include "TLegendEntry.h"
+#include "TColor.h"
+#include "TSystem.h"
+#include "TGrid.h"
+#include "TGaxis.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TPaveText.h"
+#include "TProfile.h"
+#include "TMath.h"
+#endif
+
 Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending tree file 
 			Bool_t displayAll = kFALSE) //set to kTRUE to display trending for expert plots
 {
@@ -29,7 +49,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     avTot=0., peakTot=0.,spreadTot=0.,  peakTotErr=0.,spreadTotErr=0.,
     meanResTOF=0., spreadResTOF=0., meanResTOFerr=0., spreadResTOFerr=0.,
     orphansRatio=0., avL=0., negLratio=0.,
-    effPt1=0., effPt2=0., matchEffLinFit1Gev=0.,matchEffLinFit1GevErr=0.;
+    matchEffIntegratedErr=-9999., matchEffIntegrated=-9999., matchEffLinFit1Gev=0.,matchEffLinFit1GevErr=0.;
   Double_t avDiffTime=0.,peakDiffTime=0., spreadDiffTime=0.,peakDiffTimeErr=0., spreadDiffTimeErr=0.,avT0fillRes=0.;
    
   Double_t avT0A=0.,peakT0A=0., spreadT0A=0.,peakT0AErr=0., spreadT0AErr=0.;
@@ -49,6 +69,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   TFile * fin = TFile::Open(mergedTrendFile.Data());
   TTree * ttree = (TTree*) fin->Get("trending");
   if (!ttree){
+    fin->ls();
     Printf("Invalid trending tree.");
     return 2;
   }
@@ -75,8 +96,10 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("orphansRatio",&orphansRatio); //orphans ratio
   ttree->SetBranchAddress("avL",&avL); //mean track length
   ttree->SetBranchAddress("negLratio",&negLratio);//ratio of tracks with track length <350 cm
-  ttree->SetBranchAddress("effPt1",&effPt1);//matching eff at 1 GeV/c
-  ttree->SetBranchAddress("effPt2",&effPt2); //matching eff at 2 GeV/c
+  if(0 != ttree->SetBranchAddress("matchEffIntegrated",&matchEffIntegrated)) //matching eff integrated in pt (1-10GeV/c)
+    matchEffIntegrated = 0;
+  if(0 != ttree->SetBranchAddress("matchEffIntegratedErr",&matchEffIntegratedErr)) //matching eff integrated in pt (1-10GeV/c)
+    matchEffIntegratedErr = 0;
   ttree->SetBranchAddress("matchEffLinFit1Gev",&matchEffLinFit1Gev);//matching eff fit param 
   ttree->SetBranchAddress("matchEffLinFit1GevErr",&matchEffLinFit1GevErr);////matching eff fit param error
   ttree->SetBranchAddress("avPiDiffTime",&avDiffTime); //mean t-texp
@@ -237,8 +260,9 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   TH1F * hMatchEffVsRunNormToGoodChInAcc=new TH1F("hMatchEffVsRunNormToGoodChInAcc","#epsilon_{match} normalized to TOF good channels in |#eta|<0.8;;#epsilon_{match}(p_{T}>1.0 GeV/c,|#eta|<0.8/f_{good}(|#eta|<0.8)",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hMatchEffVsRunNormToGoodChInAcc->SetDrawOption("E");
 
-  TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","#epsilon_{match}(p_{T}=1.0 GeV/c);;#epsilon_{match} (p_{T}=1.0 GeV/c)",nRuns, 0., nRuns);
-  hMatchEffVsRun1->SetDrawOption("E");
+  TH1F * hMatchEffIntegratedVsRun=new TH1F("hMatchEffVsRun1hMatchEffIntegratedVsRun","#it{p}_{T} integrated #epsilon_{match}; ; #epsilon_{match} (1 < p_{T} < 10 GeV/c)",nRuns, 0., nRuns);
+  hMatchEffIntegratedVsRun->SetDrawOption("E");
+
   TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);;t0A (ps)",nRuns,0., nRuns);
   TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
   TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
@@ -456,6 +480,13 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     hMatchEffVsRun->SetLineColor(kRed);
     hMatchEffVsRun->SetLineWidth(2);
 
+    hMatchEffIntegratedVsRun->SetBinContent(irun+1, matchEffIntegrated);
+    hMatchEffIntegratedVsRun->SetBinError(irun+1, matchEffIntegratedErr);
+    hMatchEffIntegratedVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+    hMatchEffIntegratedVsRun->SetLineColor(kOrange);
+    hMatchEffIntegratedVsRun->SetLineStyle(7);
+    hMatchEffIntegratedVsRun->SetLineWidth(2);
+  
     if (goodChannelRatio>0)
       hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1,matchEffLinFit1Gev/goodChannelRatio);
     else 
@@ -556,43 +587,49 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     
   gStyle->SetOptStat(10);
 
+  TString plotext = "png";
+  const TString desiredext = gSystem->Getenv("TOFQAPLOTEXTENSION");
+  if(desiredext.EqualTo("pdf") || desiredext.EqualTo("root")) plotext = desiredext; 
+  else if(!desiredext.IsNull()) cout<<"Unrecognized extension: '"<<desiredext<<"'"<<endl;
+  
   //Plot t-texp trend
   TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,1050, 550);
   hPeakDiffTimeVsRun->GetYaxis()->SetRangeUser(-50.,50.);
   hPeakDiffTimeVsRun->Draw();
-  cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
+  cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.%s", plotDir.Data(), plotext.Data()));
 	
   TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,1050, 550);
   hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(0.,400.);
   hSpreadDiffTimeVsRun->Draw();
-  cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
+  cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.%s", plotDir.Data(), plotext.Data()));
 
   //Plot average of t-texp-t0tof and resolution trend
   TCanvas* cMeanTOFResVsRun = new TCanvas("cMeanTOFResVsRun","cMeanTOFResVsRun", 50,50,1050, 550);
   hMeanTOFResVsRun->GetYaxis()->SetRangeUser(-50.,50.);
   hMeanTOFResVsRun->Draw();
-  cMeanTOFResVsRun->Print(Form("%s/cMeanTOFResVsRun.png",plotDir.Data()));
+  cMeanTOFResVsRun->Print(Form("%s/cMeanTOFResVsRun.%s", plotDir.Data(), plotext.Data()));
        
   TCanvas* cSigmaTOFResVsRun = new TCanvas("cSigmaTOFResVsRun","cSigmaTOFResVsRun", 50,50,1050, 550);
   hSigmaTOFResVsRun->GetYaxis()->SetRangeUser(0.,200.);
   hSigmaTOFResVsRun->Draw();
-  cSigmaTOFResVsRun->Print(Form("%s/cSigmaTOFResVsRun.png",plotDir.Data()));
+  cSigmaTOFResVsRun->Print(Form("%s/cSigmaTOFResVsRun.%s", plotDir.Data(), plotext.Data()));
 
   //Plot matching efficiency trend
   TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun",50, 50, 1050, 550);
   hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRun->Draw();
-  cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.png",plotDir.Data()));
-  		
+  hMatchEffIntegratedVsRun->Draw("same");
+  cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.%s", plotDir.Data(), plotext.Data()));
+  
   TCanvas* cMatchEffNormToGoodChInAcc = new TCanvas("cMatchEffNormToGoodChInAcc","cMatchEffNormToGoodChInAcc",50, 50,1050, 550);
   hMatchEffVsRunNormToGoodChInAcc->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRunNormToGoodChInAcc->Draw();
-  cMatchEffNormToGoodChInAcc->Print(Form("%s/cMatchEffNormToGoodChInAcc.png",plotDir.Data()));
+  cMatchEffNormToGoodChInAcc->Print(Form("%s/cMatchEffNormToGoodChInAcc.%s", plotDir.Data(), plotext.Data()));
 
   TCanvas* cMatchEffNormToGoodCh = new TCanvas("cMatchEffNormToGoodCh","cMatchEffNormToGoodCh",50, 50,1050, 550);
   hMatchEffVsRunNormToGoodCh->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRunNormToGoodCh->Draw();
-  cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.png",plotDir.Data()));
+  cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.%s", plotDir.Data(), plotext.Data()));
 
    TLegend *leg = new TLegend(0.5095602,0.1206897,0.8891013,0.3314176,NULL,"brNDC");
    leg->SetBorderSize(1);
@@ -601,10 +638,11 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
    leg->SetLineWidth(1);
    leg->SetFillColor(0);
    leg->SetFillStyle(1001);
+   
    TLegendEntry *entry=leg->AddEntry("hMatchEffVsRun","#epsilon_{match} (linear fit for p_{T}>1.0 GeV/c)","lpf");
    entry->SetFillStyle(1001);
 
-   ci = TColor::GetColor("#ff0000");
+   Int_t ci = TColor::GetColor("#ff0000");
    entry->SetLineColor(ci);
    entry->SetLineStyle(1);
    entry->SetLineWidth(2);
@@ -641,7 +679,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hMatchEffVsRunNormToGoodCh->Draw("same");
   hMatchEffVsRunNormToGoodChInAcc->Draw("same");
   leg->Draw("same");
-  cMatchEffSummary->Print(Form("%s/cMatchEffSummary.png",plotDir.Data()));
+  cMatchEffSummary->Print(Form("%s/cMatchEffSummary.%s", plotDir.Data(), plotext.Data()));
   
   //Plot start time trend
   TCanvas* cStartTimeSummary = new TCanvas("cStartTimeSummary","cStartTimeSummary",50, 50,1050, 550);
@@ -665,7 +703,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   cLegSTS->AddEntry(hT0T0CVsRun,"T0C_T0","lp");
   cLegSTS->AddEntry(hT0BestVsRun, "Best_T0","lp");
   cLegSTS->Draw();
-  cStartTimeSummary->Print(Form("%s/cStartTimeSummary.png",plotDir.Data()));
+  cStartTimeSummary->Print(Form("%s/cStartTimeSummary.%s", plotDir.Data(), plotext.Data()));
 
   TCanvas* cStartTimeResolutionSummary = new TCanvas("cStartTimeResolutionSummary","cStartTimeResolutionSummary",50, 50,1050, 550);
   hT0TOFVsRunRes->GetYaxis()->SetRangeUser(0.,200.);
@@ -687,17 +725,17 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   cLegSTRS->AddEntry(hT0BestVsRunRes, "Best_T0 res.","lp");
     
   cLegSTRS->Draw();
-  cStartTimeResolutionSummary->Print(Form("%s/cStartTimeResolutionSummary.png",plotDir.Data()));
+  cStartTimeResolutionSummary->Print(Form("%s/cStartTimeResolutionSummary.%s", plotDir.Data(), plotext.Data()));
 
   TCanvas* cGoodCh = new TCanvas("cGoodCh","cGoodCh",50, 50,1050, 550);
   hGoodChannelsRatio->GetYaxis()->SetRangeUser(0.75,1.);
   hGoodChannelsRatio->Draw();
-  cGoodCh->Print(Form("%s/cGoodCh.png",plotDir.Data()));
+  cGoodCh->Print(Form("%s/cGoodCh.%s", plotDir.Data(), plotext.Data()));
 
   TCanvas* cGoodChInAcc = new TCanvas("cGoodChInAcc","cGoodChInAcc",50, 50,1050, 550);
   hGoodChannelsRatioInAcc->GetYaxis()->SetRangeUser(0.75,1.);
   hGoodChannelsRatioInAcc->Draw();
-  cGoodChInAcc->Print(Form("%s/cGoodChInAcc.png",plotDir.Data()));
+  cGoodChInAcc->Print(Form("%s/cGoodChInAcc.%s", plotDir.Data(), plotext.Data()));
 
   TCanvas* cPidPerformance= new TCanvas("cPidPerformance","summary of PID performance", 1200, 500);
   cPidPerformance->Divide(3,1);
@@ -710,7 +748,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   cPidPerformance->cd(3);
   gPad->SetLogz();
   hDiffTimePro->Draw("colz");
-  cPidPerformance->Print(Form("%s/cPIDExpTimes.png",plotDir.Data()));
+  cPidPerformance->Print(Form("%s/cPIDExpTimes.%s", plotDir.Data(), plotext.Data()));
   
   if (displayAll) {	
     TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,1050, 550);
