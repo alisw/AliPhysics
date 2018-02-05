@@ -70,16 +70,15 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
- 
   void  SetRejectPileUp(Bool_t  pileup) {this->fRejectPileUp = pileup;}
   void  SetRejectPileUpTight(Bool_t pileupT) {this->fRejectPileUpTight = pileupT;}
-
+  void  SetFillQAHistograms(Bool_t const fillQA) {this->fFillQAHistograms = fillQA;};
 
  private:
   AliAnalysisTaskMixedHarmonics(const AliAnalysisTaskMixedHarmonics& aatmh);
   AliAnalysisTaskMixedHarmonics& operator=(const AliAnalysisTaskMixedHarmonics& aatmh);
   
-  Bool_t CheckEventIsPileUp(AliAODEvent* faod,Bool_t bPileUpTight=kFALSE);
+  Bool_t CheckEventIsPileUp(AliAODEvent* faod);
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
 
@@ -107,11 +106,19 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights  
 
-  Bool_t   fRejectPileUp; //
-  Bool_t   fRejectPileUpTight; //
+  Bool_t fRejectPileUp; //
+  Bool_t fRejectPileUpTight; //
+  Bool_t fFillQAHistograms; //
 
-  TList *fWeightsList; // list with weights
-  
+  TH2F   *fTPCvsGlobalTrkBefore; //!  Global vs TPC tracks for QA
+  TH2F   *fTPCvsGlobalTrkAfter; //!  Global vs TPC tracks for QA
+  TH2F   *fTPCvsESDTrk; //!  Global vs TPC tracks for QA
+
+  TList    *fWeightsList; // list with weights
+
+
+
+
 
 
 
