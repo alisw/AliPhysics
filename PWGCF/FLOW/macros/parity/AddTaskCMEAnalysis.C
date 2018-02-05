@@ -783,8 +783,14 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_PP[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-	taskMHLS_PP[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	if(isPbPb){
+	  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
 
 	coutputMHLS_PP[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameMHLS[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS_PP);
 	mgr->AddTask(taskMHLS_PP[iCentralityBin]);
@@ -804,8 +810,14 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_PP2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-	taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	if(isPbPb){
+	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
 
 	coutputMHLS_PP2[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameMHLS2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS_PP2);
 	mgr->AddTask(taskMHLS_PP2[iCentralityBin]);
@@ -827,8 +839,14 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_NN[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-	taskMHLS_NN[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	if(isPbPb){
+	  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
 
 	coutputMHLS_NN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameMHLS[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS_NN);
 	mgr->AddTask(taskMHLS_NN[iCentralityBin]);
@@ -848,8 +866,16 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_NN2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-	taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	if(isPbPb){
+	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
+
+
 
 	coutputMHLS_NN2[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameMHLS2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS_NN2);
 	mgr->AddTask(taskMHLS_NN2[iCentralityBin]);
@@ -870,8 +896,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHUS[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHUS[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
-	taskMHUS[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+ 	taskMHUS[iCentralityBin]->SetFillQAHistograms(doQA);
+	if(isPbPb){
+	  taskMHUS[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHUS[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHUS[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
 
       
 	coutputMHUS[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameMHUS[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHUS);
@@ -892,9 +925,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHUS2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHUS2[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
-	taskMHUS2[iCentralityBin]->SetRejectPileUp(kTRUE);
-	taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
-
+ 	taskMHUS2[iCentralityBin]->SetFillQAHistograms(doQA);
+	if(isPbPb){
+	  taskMHUS2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+	}
+	else{
+	  taskMHUS2[iCentralityBin]->SetRejectPileUp(kFALSE);
+	  taskMHUS2[iCentralityBin]->SetRejectPileUpTight(kFALSE);
+	}
 
 
 	coutputMHUS2[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameMHUS2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHUS2);
