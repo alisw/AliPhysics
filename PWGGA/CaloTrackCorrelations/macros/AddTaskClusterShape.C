@@ -32,6 +32,7 @@
 #include "CreateTrackCutsPWGJE.C"
 #include "CheckActiveEMCalTriggerPerPeriod.C"
 //#include "ConfigureEMCALRecoUtils.C"
+#include "GetAlienGlobalProductionVariables.C"
 
 #endif // CINT
 
@@ -112,45 +113,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
   //
   TString trigger  = trigSuffix;
   
-  TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
-
-  if(collision=="") // Check the alien environment 
-  {
-    if      (colType.Contains( "PbPb")) collision = "PbPb"; 
-    else if (colType.Contains( "XeXe")) collision = "PbPb"; 
-    else if (colType.Contains( "AA"  )) collision = "PbPb"; 
-    else if (colType.Contains( "pA"  )) collision = "pPb"; 
-    else if (colType.Contains( "Ap"  )) collision = "pPb";     
-    else if (colType.Contains( "pPb" )) collision = "pPb"; 
-    else if (colType.Contains( "Pbp" )) collision = "pPb"; 
-    else if (colType.Contains( "pp"  )) collision = "pp" ; 
-    
-    // Check if production is MC or data, of data recover period name
-    if   ( prodType.Contains("MC") ) simulation = kTRUE;
-    else                             simulation = kFALSE;
-    
-    if   ( !simulation && period!="" ) period = prodTag;
-    
-    // print check on global settings once
-    if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
-             "period <%s>,  tag <%s>, type <%s>, MC bool <%d> \n",
-             colType.Data(),collision.Data(),
-             period.Data(),prodType.Data(),prodTag.Data(),simulation);
-  }
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
   
-  Int_t year = 2017;
-  if ( period!="" )
-  {
-    if     (period.Contains("16")) year = 2016;
-    else if(period.Contains("15")) year = 2015;
-    else if(period.Contains("13")) year = 2013;
-    else if(period.Contains("12")) year = 2012;
-    else if(period.Contains("11")) year = 2011;
-    else if(period.Contains("10")) year = 2010;
-  }
+  Int_t   year        = 2017;
+  Bool_t  printGlobal = kTRUE;
+ 
+  GetAlienGlobalProductionVariables(simulation,collision,period,year,printGlobal);
 
   // Get the pointer to the existing analysis manager via the static access method.
   //  
@@ -285,6 +253,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
     
     // For recent productions where the cross sections and trials are not stored in separate file
+    TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
     printf("AddTaskClusterShape() - MC production name: %s\n",prodType.Data());
     if ( prodType.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
     {   

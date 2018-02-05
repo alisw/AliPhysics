@@ -88,6 +88,8 @@ private:
 
   void InitializeRunArray(TString sPeriod);
   Int_t GetCurrentRunIndex(Int_t  run);
+  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+
 
 
   AliFlowEventSimple*         fEvent;         //! input event
@@ -248,6 +250,7 @@ private:
   TH2F             *fTPCvsITSfb32; //!
   TH2F           *fTPCFEvsITSfb96; //!
   TH3F           *fCentCL1vsVzRun; //!
+  TH1I             *fdPhiFemtoCut; //!
   TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
 
