@@ -58,8 +58,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   //======== New methods for data driven NUA(eta, phi, vz) run-by-run, NUE (pT, cont) from MC per centrality bins 
 
-  void SetInputListForNUACorr(TList *listNUA);
-  void SetInputListForNUECorr(TList *listNUE);
+  void SetInputListForNUACorr(TString fileNUA);
+  void SetInputListForNUECorr(TString fileNUE);
  
   Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
   Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);

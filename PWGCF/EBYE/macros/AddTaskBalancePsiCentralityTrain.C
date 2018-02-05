@@ -52,8 +52,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t *gCentralityArrayForCorrections = 0x0,
 						       Bool_t gRunEbyE = kFALSE,
 						       Bool_t bMomentumOrdering = kTRUE,
-						       AliAnalysisTaskBFPsi::eCorrProcedure corrProc = AliAnalysisTaskBFPsi::kNoCorr,
-						       TString nuaCorrFileName = "", TString nueCorrFileName = "") {
+						       AliAnalysisTaskBFPsi::eCorrProcedure corrProc = AliAnalysisTaskBFPsi::kNoCorr) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -261,7 +260,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
     taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
   
-  else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
+  /*else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 
     TFile* fNUAFile = TFile::Open(nuaCorrFileName.Data(),"READ");
     TFile* fNUEFile = TFile::Open(nueCorrFileName.Data(),"READ");
@@ -285,7 +284,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     else
       printf(" *** ERROR: NUE List not found! **EXIT**");    
   }
-
+  */
   
   //bf->PrintAnalysisSettings();
   mgr->AddTask(taskBF);
