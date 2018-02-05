@@ -781,9 +781,21 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskBFPsi::SetInputListForNUACorr(TList *listNUA){
+void AliAnalysisTaskBFPsi::SetInputListForNUACorr(TString fileNUA){
 
-  fListNUA = dynamic_cast<TList*>(listNUA->Clone("fListNUA"));
+  TFile *fNUAFile= TFile::Open(fileNUA.Data(), "READ");
+
+  if(!fNUAFile) {
+    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    return;
+  }
+
+  fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fListNUA"));
+
+  if(!fListNUA){
+    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    return;
+  }
   
   for (Int_t iRun = 0; iRun<=fTotalNbRun-1; iRun++) {
 
@@ -836,9 +848,21 @@ Double_t AliAnalysisTaskBFPsi::GetNUACorrection(Int_t gRun, Short_t vCharge, Dou
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TList *listNUE){
+void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TString fileNUE){
 
-  fListNUE = dynamic_cast<TList*>(listNUE->Clone("fListNUE"));
+  TFile *fNUEFile= TFile::Open(fileNUE.Data(), "READ");
+
+  if(!fNUEFile) {
+    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    return;
+  }
+
+  fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
+
+  if(!fListNUE){
+    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    return;
+  }
   
   for (Int_t iCent = 0; iCent <fCentralityArrayBinsForCorrections-1; iCent++) {
 
