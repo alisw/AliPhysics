@@ -727,14 +727,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			Int_t nITS = 0;
 			Double_t fITS_shared = 0;
 
-			if(fHasSDD){
-				//ITS clusters and shared clusters
-				nITS = posTrack->GetNumberOfITSClusters();
-				for(Int_t d = 0; d < 6; d++){
-					fITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
-				}
-				fITS_shared /= nITS;
+			//ITS clusters and shared clusters
+			nITS = posTrack->GetNumberOfITSClusters();
+			for(Int_t d = 0; d < 6; d++){
+				fITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
 			}
+			fITS_shared /= nITS;
+
 			Int_t daughtCharge = posTrack->Charge();
 
 			//Declare MC variables
@@ -923,15 +922,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				ImpParamZ = 0.;
 				negTrack->GetImpactParameters( &ImpParamXY, &ImpParamZ);
 
-				if(fHasSDD){
-					//ITS clusters and shared clusters
-					nITS = negTrack->GetNumberOfITSClusters();
-					fITS_shared = 0.;
-					for(Int_t d = 0; d < 6; d++){
-						fITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
-					}
-					fITS_shared /= nITS;
+				//ITS clusters and shared clusters
+				nITS = negTrack->GetNumberOfITSClusters();
+				fITS_shared = 0.;
+				for(Int_t d = 0; d < 6; d++){
+					fITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
 				}
+				fITS_shared /= nITS;
+
 				daughtCharge = negTrack->Charge(); 
 				//Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
 				if(fIsMC){
