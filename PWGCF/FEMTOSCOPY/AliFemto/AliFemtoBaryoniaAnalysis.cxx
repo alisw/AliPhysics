@@ -67,7 +67,6 @@ AliFemtoBaryoniaAnalysis::~AliFemtoBaryoniaAnalysis()
 
 void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 {
-  cout<<"ProcessEvent"<<endl;
   fPicoEvent = nullptr;
   EventBegin(currentEvent);
   bool tmpPassEvent = fEventCut->Pass(currentEvent);
