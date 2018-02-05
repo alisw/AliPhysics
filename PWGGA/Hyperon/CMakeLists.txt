@@ -48,6 +48,7 @@ set(SRCS
         AliSigma0V0Cuts.cxx
         AliSigma0PhotonCuts.cxx
         AliSigma0PhotonMotherCuts.cxx
+        AliSigma0EventContainer.cxx
         AliAnalysisTaskSigma0Run2.cxx
    )
 

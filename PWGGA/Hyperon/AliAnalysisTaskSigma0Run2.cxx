@@ -38,12 +38,16 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2()
       fQA(nullptr),
       fEventCuts(nullptr),
       fSingleParticleCuts(nullptr),
+      fSingleParticleCutsProton(nullptr),
       fV0Cuts(nullptr),
       fV0LambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fPhotonMotherCuts(nullptr),
+      fEventContainer(nullptr),
       fElectron(),
       fPositron(),
+      fProton(),
+      fAntiProton(),
       fLambda(),
       fAntiLambda(),
       fLambdaFemto(),
@@ -68,12 +72,16 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fQA(nullptr),
       fEventCuts(nullptr),
       fSingleParticleCuts(nullptr),
+      fSingleParticleCutsProton(nullptr),
       fV0Cuts(nullptr),
       fV0LambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fPhotonMotherCuts(nullptr),
+      fEventContainer(nullptr),
       fElectron(),
       fPositron(),
+      fProton(),
+      fAntiProton(),
       fLambda(),
       fAntiLambda(),
       fLambdaFemto(),
@@ -118,6 +126,12 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     fSingleParticleCuts->SelectSingleParticles(fInputEvent, fMCEvent, fPositron,
                                                fElectron);
 
+
+  // Proton Selection
+  if (fSingleParticleCutsProton)
+    fSingleParticleCutsProton->SelectSingleParticles(fInputEvent, fMCEvent, fProton,
+                                               fAntiProton);
+
   // V0 selection for Sigma0
   if (fV0Cuts)
     fV0Cuts->SelectV0s(fInputEvent, fMCEvent, fLambda, fAntiLambda,
@@ -138,6 +152,12 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     fPhotonMotherCuts->SelectPhotonMother(fInputEvent, fMCEvent, fPhoton,
                                           fLambda, fAntiLambda, fSigma,
                                           fAntiSigma);
+
+  // Event container
+  if (fEventContainer) {
+    fEventContainer->TrackCleaner(fProton, fAntiProton, fLambda, fAntiLambda);
+    fEventContainer->ProcessEvent(fInputEvent, fMCEvent, fProton, fAntiProton, fLambda, fAntiLambda, fSigma, fAntiSigma, fPhoton);
+  }
 
   // flush the data
   PostData(1, fOutputContainer);
@@ -164,6 +184,11 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fSingleParticleCuts->GetCutHistograms());
   }
 
+  // Single particle selection
+  if (fSingleParticleCutsProton && fSingleParticleCutsProton->GetCutHistograms()) {
+    fOutputContainer->Add(fSingleParticleCutsProton->GetCutHistograms());
+  }
+
   // V0 selection for Sigma0
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
@@ -182,6 +207,11 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   // Photon mother selection
   if (fPhotonMotherCuts && fPhotonMotherCuts->GetCutHistograms()) {
     fOutputContainer->Add(fPhotonMotherCuts->GetCutHistograms());
+  }
+
+  // Event container
+  if (fEventContainer && fEventContainer->GetCutHistograms()) {
+    fOutputContainer->Add(fEventContainer->GetCutHistograms());
   }
 
   PostData(1, fOutputContainer);

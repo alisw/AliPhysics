@@ -2300,7 +2300,7 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsITSShared[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsITSShared[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsITSSharedTiming[0]);
-    fHistogramsAntiV0Neg->Add(fHistV0SingleParticleNclsITSSharedTiming[1]);
+    fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsITSSharedTiming[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleDCAtoPVBefore[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleDCAtoPVBefore[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleEtaAfter[0]);
