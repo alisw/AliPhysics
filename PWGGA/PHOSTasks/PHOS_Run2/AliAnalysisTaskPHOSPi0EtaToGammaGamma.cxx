@@ -1619,7 +1619,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      //if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
       if(ph->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
     }
@@ -1712,10 +1712,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    //if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
-
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-    //if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;//only for kINT7
+    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;//use cluster pairs only on active TRU both in data and M.C.
 
     eta1 = ph1->Eta();
     phi1 = ph1->Phi();
@@ -1726,22 +1724,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      //if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-
       if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
-      //if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//only for kINT7
+      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
       if(fForceActiveTRU 
-          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
         ) continue;//only for kINT7
 
-      if(fIsMC 
-          && fIsPHOSTriggerAnalysis 
-          //&& fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE 
-          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
-        ) continue;
+      //if(fIsPHOSTriggerAnalysis 
+      //    && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+      //  ) continue;
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -1876,9 +1870,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    //if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-    //if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -1888,21 +1881,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
-        //if(fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE  && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
         if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
-        //if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
         if(fForceActiveTRU 
-            && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+            && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
           ) continue;//only for kINT7
 
-        if(fIsMC 
-            && fIsPHOSTriggerAnalysis 
-            //&& fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE 
-            && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
-          ) continue;
+        //if(fIsPHOSTriggerAnalysis 
+        //    && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        //  ) continue;
 
 
         e1 = ph1->Energy();
