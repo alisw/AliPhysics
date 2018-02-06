@@ -60,7 +60,7 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
 }
 
@@ -93,7 +93,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
 }
 
@@ -175,7 +175,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
 }
 
@@ -211,6 +211,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
    }
 }
@@ -237,6 +238,7 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
    }
 
@@ -254,6 +256,31 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    return (*this);
 }
 
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughter(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughter[0] = value;
+    if(fDaughterTrue[0] == AliRsnDaughter::kUnknown) fDaughterTrue[0] = value;
+  }else{
+    fDaughter[1] = value;
+    if(fDaughterTrue[1] == AliRsnDaughter::kUnknown) fDaughterTrue[1] = value;
+  }
+  return;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughterTrue(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughterTrue[0] = value;
+    if(fDaughter[0] == AliRsnDaughter::kUnknown) fDaughter[0] = value;
+  }else{
+    fDaughterTrue[1] = value;
+    if(fDaughter[1] == AliRsnDaughter::kUnknown) fDaughter[1] = value;
+  }
+  return;
+}
 
 //__________________________________________________________________________________________________
 void AliRsnMiniOutput::AddAxis(Int_t i, Int_t nbins, Double_t min, Double_t max)
@@ -555,11 +582,11 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
                continue;
             }
             Bool_t decayMatch = kFALSE;
-            if (AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[0]))
-		&& AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[1])))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
-            if (AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[0]))
-		&& AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , AliRsnDaughter::SpeciesPDG(fDaughter[1])))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
 	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
