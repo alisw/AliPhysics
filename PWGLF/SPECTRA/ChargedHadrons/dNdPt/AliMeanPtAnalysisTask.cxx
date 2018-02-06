@@ -22,7 +22,6 @@
 #include "AliMultSelectionTask.h"
 
 #include "AliMCEvent.h"
-#include "AliStack.h"
 
 #include "AliMeanPtAnalysisTask.h"
 
@@ -38,7 +37,6 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fOutputList(0),
   fEvent(0),
   fMCEvent(0),
-  fMCStack(0),
   fESDtrackCuts(0),
   fUtils(0),
   //Toggles
@@ -365,21 +363,17 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
   /// ====================== Initialize variables ===============================
 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler){ Printf("ERROR: Could not receive inputHandler"); return; }
+  if (!inputHandler){Printf("ERROR: Could not receive inputHandler"); return;}
 
   AliPhysicsSelection* physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
   if(!physicsSelection) {Printf("ERROR: Could not receive physicsSelection"); return;}
 
   fEvent = dynamic_cast<AliVEvent*>(InputEvent());
-  if (!fEvent) {printf("ERROR: fEvent not available\n"); return;}
+  if (!fEvent) {Printf("ERROR: fEvent not available\n"); return;}
 
   if(fIsMC){
     fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-    if (!fMCEvent) {printf("ERROR: fMCEvent not available\n"); return;}
-
-    // TODO: do not use MC stack anymore!!
-    fMCStack = fMCEvent->Stack();
-    if (!fMCStack) {printf("ERROR: fMCStack not available\n"); return;}
+    if (!fMCEvent) {Printf("ERROR: fMCEvent not available\n"); return;}
   }
 
   Bool_t isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
@@ -397,8 +391,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   fEventCount->Fill(2); // Triggered Events
 
-  if(!IsEventAcceptedGeometrics(fEvent)) return;   //Requires primary vertex in the limits
-  if(!IsEventAcceptedQuality(fEvent)) return;      //Requires vertex quality
+  if(!IsEventVertexOK(fEvent)) return;
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
 
@@ -414,24 +407,20 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   // True Multiplicity Nch:
   if(fIsMC){
-    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle* mcGenParticle = fMCStack->Particle(iParticle);
-      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
-      if(!IsTrackAcceptedKinematics(mcGenParticle)) continue;
-      if(IsChargedPrimary(iParticle)) multGenPart++;
+    for(Int_t iGenPart = 1; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
+      AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
+      if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
+      if(!IsParticleInKinematicRange(mcGenParticle)) continue;
+      if(IsChargedPrimary(iGenPart)) multGenPart++;
     }
   }
-  // TODO: no more mcstack!
-//  for(int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
-//    AliMCParticle* mcPart  = (AliMCParticle*)fMCEvent->GetTrack(iPart);
-//  }
 
   // Measured Multiplicity Nacc:
   AliVTrack* track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if (!track){printf("ERROR: Could not receive track %d\n", iTrack); continue;}
-    if(!IsTrackAcceptedKinematics(track)) continue;
+    if (!track){Printf("ERROR: Could not receive track %d\n", iTrack); continue;}
+    if(!IsTrackInKinematicRange(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
     multAccTracks++;
   }
@@ -462,9 +451,9 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
   track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if(!track) {printf("ERROR: Could not receive track %d\n", iTrack); continue;}
+    if(!track) {Printf("ERROR: Could not receive track %d\n", iTrack); continue;}
 
-    if(!IsTrackAcceptedKinematics(track)) continue;
+    if(!IsTrackInKinematicRange(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
 
     Double_t trackValues[4] = {track->Pt(), track->Eta(), multAccTracks, centrality};
@@ -472,16 +461,16 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
     /// Find original particle in MC-Stack
     if(fIsMC){
-      Int_t mcLabel = TMath::Abs(track->GetLabel());
-      TParticle* mcParticle = fMCStack->Particle(mcLabel);
-      if(!mcParticle) {printf("ERROR: mcParticle not available\n"); continue;}
+      Int_t mcLabel = TMath::Abs(track->GetLabel()); // negative label means bad quality track
+      AliMCParticle* mcParticle  = (AliMCParticle*)fMCEvent->GetTrack(mcLabel);
+      if(!mcParticle) {Printf("ERROR: mcParticle not available\n"); continue;}
 
       Double_t ptResValues[2] = {track->Pt(), mcParticle->Pt()};
       fHistMCPtRes->Fill(ptResValues);
       Double_t etaResValues[2] = {track->Eta(), mcParticle->Eta()};
       fHistMCEtaRes->Fill(etaResValues);
 
-      if(!IsTrackAcceptedKinematics(mcParticle)) continue;
+      if(!IsParticleInKinematicRange(mcParticle)) continue;
       multRecPart++;
 
       if(fIncludeCrosscheckHistos){
@@ -526,13 +515,13 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if (fIsMC){
 
-    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle* mcGenParticle = fMCStack->Particle(iParticle);
-      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
+    for(Int_t iGenPart = 1; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
+      AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
+      if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
 
-      if(!IsTrackAcceptedKinematics(mcGenParticle)) continue;
+      if(!IsParticleInKinematicRange(mcGenParticle)) continue;
 
-      if(IsChargedPrimary(iParticle)){
+      if(IsChargedPrimary(iGenPart)){
 
         Double_t mcGenPrimTrackValue[3] = {mcGenParticle->Pt(), mcGenParticle->Eta(), centrality};
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
@@ -557,18 +546,18 @@ void AliMeanPtAnalysisTask::Terminate(Option_t*)
 
 }
 
-/// Function to determine if MC particle is charged primary
-Bool_t AliMeanPtAnalysisTask::IsChargedPrimary(Int_t stackIndex){
-  if (fMCStack->IsPhysicalPrimary(stackIndex)
-      && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)){
-    return kTRUE;
-  }
-  return kFALSE;
+Bool_t AliMeanPtAnalysisTask::IsChargedPrimary(Int_t mcLabel)
+{
+  if(!fMCEvent->IsPhysicalPrimary(mcLabel)) return kFALSE;
+  AliMCParticle* mcParticle  = (AliMCParticle*)fMCEvent->GetTrack(mcLabel);
+  if(!mcParticle) {Printf("ERROR: mcGenParticle  not available\n"); return kFALSE;}
+  if(!(TMath::Abs(mcParticle->Charge()) > 0.01)) return kFALSE;
+  return kTRUE;
 }
 
 
 /// Function implementing Track Acceptance cuts for tracks.
-Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack* track)
+Bool_t AliMeanPtAnalysisTask::IsTrackInKinematicRange(AliVTrack* track)
 {
   if(!track) return kFALSE;
 
@@ -582,8 +571,9 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack* track)
   return kTRUE;
 }
 
+
 /// Function implementing Track Acceptance cuts for MC particles.
-Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(TParticle* mcParticle)
+Bool_t AliMeanPtAnalysisTask::IsParticleInKinematicRange(AliMCParticle* mcParticle)
 {
   if(!mcParticle) return kFALSE;
 
@@ -628,19 +618,14 @@ Bool_t AliMeanPtAnalysisTask::IsEventAccepted2015data(AliVEvent* event)
 }
 
 /// Function for Event Acceptance cuts.
-Bool_t AliMeanPtAnalysisTask::IsEventAcceptedGeometrics(AliVEvent* event)
-{
-  if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZvtx) return kFALSE;
-  return kTRUE;
-}
-
-/// Function implementing Event Quality cuts.
-Bool_t AliMeanPtAnalysisTask::IsEventAcceptedQuality(AliVEvent* event)
+Bool_t AliMeanPtAnalysisTask::IsEventVertexOK(AliVEvent* event)
 {
   if(!event) return kFALSE;
+  if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZvtx) return kFALSE;
   if(!IsVertexOK(event)) return kFALSE;
   return kTRUE;
 }
+
 
 /// Function to get event centrality based on V0 measurement
 Double_t AliMeanPtAnalysisTask::GetCentrality(AliVEvent* event)
@@ -686,7 +671,7 @@ Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent* event){
     Double_t requiredZResolution = 1000;
     AliESDEvent* ESDevent = dynamic_cast<AliESDEvent*>(event);
     const AliESDVertex* esdVertex = ESDevent->GetPrimaryVertexTracks();
-    if(!esdVertex){printf("ERROR: vertex not available\n"); return kFALSE;}
+    if(!esdVertex){Printf("ERROR: vertex not available\n"); return kFALSE;}
     if(esdVertex->GetNContributors() < 1) {
       // SPD vertex
       esdVertex = ESDevent->GetPrimaryVertexSPD();
@@ -706,7 +691,7 @@ Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent* event){
     //if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
     if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ()) > 0.5)) return kFALSE;
   }else{
-    //AOD code goes here
+    // TODO: AOD code goes here
   }
   return kTRUE;
 }

@@ -38,7 +38,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     colsys = "XeXe";
     maxCentrality = 80;
 //    multSteps[0] = 200;  multBinWidth[0] = 15;
-    multSteps[0] = 30000;  multBinWidth[0] = 1;
+    multSteps[0] = 3000;  multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 7;
