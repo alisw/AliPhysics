@@ -13,15 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//     AOD class for  jet backgrounds
-//     Author: Christian Klein-Boesing IKP Muenster
-//-------------------------------------------------------------------------
-
 
 #include "AliAODJetEventBackground.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAODJetEventBackground)
+/// \endcond
 
 TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 
@@ -31,7 +28,8 @@ TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 AliAODJetEventBackground::AliAODJetEventBackground() :
     TNamed()
 {
-    // Constructor
+    /// Constructor
+
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
     fSigma[i] = 0;
@@ -43,18 +41,16 @@ AliAODJetEventBackground::AliAODJetEventBackground() :
 //______________________________________________________________________________
 AliAODJetEventBackground::~AliAODJetEventBackground() 
 {
-  //
-  // destructor
-  //
+  /// destructor
+
 }
 
 //______________________________________________________________________________
 AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackground& back) :
     TNamed(back)
 {
-  //
-  // Copy constructor
-  //
+  /// Copy constructor
+
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = back.fBackground[i];
     fSigma[i] = back.fSigma[i];
@@ -66,9 +62,7 @@ AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackgroun
 //______________________________________________________________________________
 AliAODJetEventBackground& AliAODJetEventBackground::operator=(const AliAODJetEventBackground& back)
 {
-  //
-   // Assignment operator
-  //
+  /// Assignment operator
 
   if(this!=&back) {
     TNamed::operator=(back);
@@ -84,9 +78,7 @@ AliAODJetEventBackground& AliAODJetEventBackground::operator=(const AliAODJetEve
 
 void AliAODJetEventBackground::Print(Option_t* /*option*/) const 
 {
-  //
-  // Print information of all data members
-  //
+  /// Print information of all data members
 
   printf("Jet EventBackground :\n");
   for(int i = 0;i < kMaxBackground;++i){
@@ -96,9 +88,8 @@ void AliAODJetEventBackground::Print(Option_t* /*option*/) const
 
 void AliAODJetEventBackground::Reset()  
 {
-  //
-  // reset information of all data members
-  //
+  /// reset information of all data members
+
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
     fSigma[i] = 0;

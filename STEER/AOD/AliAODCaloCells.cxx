@@ -121,7 +121,7 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
 //_________________________________
 AliAODCaloCells::~AliAODCaloCells()
 {
-  // destructor
+  /// destructor
 
   DeleteContainer();
 }

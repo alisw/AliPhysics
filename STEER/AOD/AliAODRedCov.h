@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     Reduced Cov Matrix
-//     Author: fca
-//-------------------------------------------------------------------------
+/// \class AliAODRedCov
+/// \brief Reduced Cov Matrix
+///
+/// \author fca
 
 #include <Rtypes.h>
 #include <TMath.h>
@@ -44,10 +44,12 @@ template <Int_t N> class AliAODRedCov {
   template <class T> void SetCovMatrix(T *cmat);
   
  private:
-  Double32_t   fDiag[N];         // Diagonal elements
-  Double32_t   fODia[N*(N-1)/2]; // [-1, 1,8] 8 bit precision for off diagonal elements
+  Double32_t   fDiag[N];         ///< Diagonal elements
+  Double32_t   fODia[N*(N-1)/2]; ///< [-1, 1,8] 8 bit precision for off diagonal elements
   
+  /// \cond CLASSIMP
   ClassDef(AliAODRedCov,1)
+  /// \endcond
 
  };
 

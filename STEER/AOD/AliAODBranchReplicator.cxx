@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-// $Id$
-
 //
 // Base class of an object used for the replication 
 // (and possibly filtering) of one (or several) AOD branches.
@@ -45,7 +43,9 @@
 
 #include "AliAODBranchReplicator.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAODBranchReplicator)
+/// \endcond
 
 //______________________________________________________________________________
 AliAODBranchReplicator::AliAODBranchReplicator(const char* name, const char* title)
@@ -57,5 +57,6 @@ AliAODBranchReplicator::AliAODBranchReplicator(const char* name, const char* tit
 //______________________________________________________________________________
 AliAODBranchReplicator::~AliAODBranchReplicator()
 {
-  // dtor (nop)
+  /// dtor (nop)
+
 }

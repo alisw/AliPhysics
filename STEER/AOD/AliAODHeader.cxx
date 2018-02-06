@@ -15,11 +15,6 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     AOD event base class
-//     Author: Markus Oldenburg, CERN
-//-------------------------------------------------------------------------
-
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
@@ -28,7 +23,9 @@
 #include <TGeoMatrix.h>
 #include <TObjString.h>
 
+/// \cond CLASSIMP
 ClassImp(AliAODHeader)
+/// \endcond
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader() : 
@@ -157,7 +154,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fIRInt2InteractionsMap(0),
   fIRInt1InteractionsMap(0)
 {
-  // constructor
+  /// constructor
 
   SetName("header");
   SetTitle(title);
@@ -255,7 +252,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fIRInt2InteractionsMap(0),
   fIRInt1InteractionsMap(0)
 {
-  // constructor
+  /// constructor
 
   SetName("header");
   SetTitle(title);
@@ -273,7 +270,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 //______________________________________________________________________________
 AliAODHeader::~AliAODHeader() 
 {
-  // destructor
+  /// destructor
+
   delete fCentralityP;
   delete fEventplaneP;
   RemoveQTheta();
@@ -332,8 +330,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fIRInt2InteractionsMap(hdr.fIRInt2InteractionsMap),
   fIRInt1InteractionsMap(hdr.fIRInt1InteractionsMap)
 {
-  // Copy constructor.
-  
+  /// Copy constructor.
+
   SetName(hdr.fName);
   SetTitle(hdr.fTitle);
   SetQTheta(hdr.fQTheta, hdr.fNQTheta);
@@ -364,7 +362,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
 //______________________________________________________________________________
 AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
 {
-  // Assignment operator
+  /// Assignment operator
+
   if(this!=&hdr) {
     
      AliVHeader::operator=(hdr);
@@ -505,7 +504,8 @@ void AliAODHeader::RemoveQTheta()
 
 void AliAODHeader::Clear(Option_t* /*opt*/)
 {
-// Clear memory
+/// Clear memory
+
   RemoveQTheta();
   if (fCentralityP){
     delete fCentralityP;
@@ -526,7 +526,7 @@ void AliAODHeader::Clear(Option_t* /*opt*/)
 //______________________________________________________________________________
 void AliAODHeader::Print(Option_t* /*option*/) const 
 {
-  // prints event information
+  /// prints event information
 
   printf("Run #                   : %d\n", fRunNumber);
   printf("Bunch Crossing  #       : %d\n", fBunchCrossNumber);
@@ -576,9 +576,8 @@ void AliAODHeader::Print(Option_t* /*option*/) const
 //__________________________________________________________________________
 Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference) const
 {
-  //
-  // The mapping is of 181 bits, from -90 to +90
-  //
+  /// The mapping is of 181 bits, from -90 to +90
+
   Int_t bin=-1;
 
   if(difference<-90 || difference>90) return bin;
@@ -590,9 +589,8 @@ Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference) const
 //__________________________________________________________________________
 Int_t AliAODHeader::GetIRInt2ClosestInteractionMap() const
 {
-  //
-  // Calculation of the closest interaction
-  //
+  /// Calculation of the closest interaction
+
   Int_t firstNegative=100;
   for(Int_t item=-1; item>=-90; item--) {
     Int_t bin = FindIRIntInteractionsBXMap(item);
@@ -620,10 +618,9 @@ Int_t AliAODHeader::GetIRInt2ClosestInteractionMap() const
 //__________________________________________________________________________
 Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap) const
 {
-  //
-  // Calculation of the closest interaction
-  // In case of VZERO (Int1) one has to introduce a gap
-  // in order to avoid false positivies from after-pulses
+  /// Calculation of the closest interaction
+  /// In case of VZERO (Int1) one has to introduce a gap
+  /// in order to avoid false positivies from after-pulses
 
   Int_t firstNegative=100;
   for(Int_t item=-1; item>=-90; item--) {
@@ -652,9 +649,8 @@ Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap) const
 //__________________________________________________________________________
 Int_t AliAODHeader::GetIRInt2LastInteractionMap() const
 {
-  //
-  // Calculation of the last interaction
-  //
+  /// Calculation of the last interaction
+
   Int_t lastNegative=0;
   for(Int_t item=-90; item<=-1; item++) {
     Int_t bin = FindIRIntInteractionsBXMap(item);
@@ -681,8 +677,8 @@ Int_t AliAODHeader::GetIRInt2LastInteractionMap() const
 //__________________________________________________________________________
 Bool_t AliAODHeader::InitMagneticField() const
 {
-  // Create mag field from stored information
-  //
+  /// Create mag field from stored information
+
   const double def5kg = 5.00667905807495117e+00;
   const double def2kg = 2.04487347602844238e+00;
   //
