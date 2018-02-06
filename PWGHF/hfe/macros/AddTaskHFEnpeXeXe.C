@@ -4,7 +4,7 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
                                    Bool_t MCthere = kFALSE,       // DATA false
                                    Bool_t kNPERef = kTRUE,
                                    Bool_t kNPETOFITS = kTRUE,
-                                   Int_t RunSystematic = 0 // select systematic type
+                                   Int_t RunSystematic = 0, // select systematic type
                                    Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used
                                    Bool_t kNPERefTPConly = kFALSE,
                                    Bool_t isAOD = kTRUE,
