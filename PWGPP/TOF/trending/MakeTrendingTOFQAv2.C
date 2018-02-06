@@ -28,8 +28,15 @@
 #include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFcalibHisto.h"
 #include "TMath.h"
+#include "TNamed.h"
 #include "THashList.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 #endif
+
+void Write(TObject* obj, const TString label);
+void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x = kTRUE);
 
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
 			  Int_t runNumber,                      //run number
@@ -503,14 +510,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hMatchingVsEtaPhiOut->GetZaxis()->SetRangeUser(0., 1.);
     hMatchingVsEtaPhiOut->SetTitle("TOF matching efficiency as function of #eta and #phi_{TPC,out}");
     MakeUpHisto(hMatchingVsEtaPhiOut, "#phi_{TPC,out} (deg)", "#eta", "matching efficiency", 1, kBlue+2, 2);
-
-    hMatchingVsEta = (TH1F*) hMatchingVsEtaPhiOut->ProjectionY("hMatchingVsEta");
-    hMatchingVsEta->Scale(1./hMatchingVsEtaPhiOut->GetNbinsX());
-
-    hMatchingVsPhiOut = (TH1F*) hMatchingVsEtaPhiOut->ProjectionY("hMatchingVsPhiOut");
+    //
+    Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsEta, "hMatchingVsEta", kFALSE);
+    Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsPhiOut, "hMatchingVsPhiOut", kTRUE);
+    //
     hMatchingVsPhiOut->SetTitle("TOF matching efficiency as function of #phi_{TPC,out}");
-    hMatchingVsPhiOut->Scale(1./hMatchingVsEtaPhiOut->GetNbinsY());
     hMatchingVsPhiOut->GetYaxis()->SetRangeUser(0,1.2);
+    MakeUpHisto(hMatchingVsPhiOut, "#phi_{TPC,out}", "matching efficiency", 1, kBlue+2, 2);
   }
   
   if (hMatchingVsEta) {
@@ -530,21 +536,21 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hMatchingVsPhi->GetYaxis()->SetRangeUser(0,1.2);
   }
   MakeUpHisto(hMatchingVsPhi, "#phi (deg)", "matching efficiency", 1, kBlue+2, 2);
-    
+
   if (saveHisto) {
     trendFile->cd();
-    hMulti->Write();
-    hTime->Write();
-    hRawTime->Write();
-    hTot->Write();
-    hL->Write();
-    hDxPos4profile->Write();
-    hTOFmatchedDzVsStrip->Write();
-    if (hMatchingVsPt) hMatchingVsPt->Write();
-    if (hMatchingVsEta) hMatchingVsEta->Write();
-    if (hMatchingVsPhi) hMatchingVsPhi->Write();
-    if (hMatchingVsPhiOut) hMatchingVsPhiOut->Write();
-    if (hMatchingVsEtaPhiOut) hMatchingVsEtaPhiOut->Write();
+    Write(hMulti, "hMulti");
+    Write(hTime, "hTime");
+    Write(hRawTime, "hRawTime");
+    Write(hTot, "hTot");
+    Write(hL, "hL");
+    Write(hDxPos4profile, "hDxPos4profile");
+    Write(hTOFmatchedDzVsStrip, "hTOFmatchedDzVsStrip");
+    Write(hMatchingVsPt, "hMatchingVsPt");
+    Write(hMatchingVsEta, "hMatchingVsEta");
+    Write(hMatchingVsPhi, "hMatchingVsPhi");
+    Write(hMatchingVsPhiOut, "hMatchingVsPhiOut");
+    Write(hMatchingVsEtaPhiOut, "hMatchingVsEtaPhiOut");
   }
 
   //--------------------------------- t-texp ----------------------------------//
@@ -597,16 +603,15 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (saveHisto) {
     trendFile->cd();
-    hBetaP->Write();
-    hMass->Write();
-    hPionDiff->Write();
-    hDiffTimeT0fillPion->Write();
-    hDiffTimeT0TOFPion1GeV->Write();
-    hDiffTimePi->Write();
-    hDiffTimeKa->Write();
-    hDiffTimePro->Write();
+    Write(hBetaP, "hBetaP");
+    Write(hMass, "hMass");
+    Write(hPionDiff, "hPionDiff");
+    Write(hDiffTimeT0fillPion, "hDiffTimeT0fillPion");
+    Write(hDiffTimeT0TOFPion1GeV, "hDiffTimeT0TOFPion1GeV");
+    Write(hDiffTimePi, "hDiffTimePi");
+    Write(hDiffTimeKa, "hDiffTimeKa");
+    Write(hDiffTimePro, "hDiffTimePro");
   }
-
 
   //---------------------------------TOF resolution plot ----------------------------------//
   Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMin);
@@ -642,7 +647,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   if (savePng) cTOFresolution->Print(Form("%s/%i%s_TOFresolution.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   if (saveHisto) {
     trendFile->cd();
-    hResTOF->Write();
+    Write(hResTOF, "hResTOF");
   }
 
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
@@ -1103,15 +1108,15 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (savePng) cPidPerformance3->Print(Form("%s/%i%s_PID_sigmas.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   if (saveHisto){
-    hSigmaPi->Write();
-    hSigmaKa->Write();
-    hSigmaPro->Write();
-    hSigmaPi_mean->Write();
-    hSigmaPi_pull->Write();
-    hSigmaKa_mean->Write();
-    hSigmaKa_pull->Write();
-    hSigmaPro_mean->Write();
-    hSigmaPro_pull->Write();
+    Write(hSigmaPi, "hSigmaPi");
+    Write(hSigmaKa, "hSigmaKa");
+    Write(hSigmaPro, "hSigmaPro");
+    Write(hSigmaPi_mean, "hSigmaPi_mean");
+    Write(hSigmaPi_pull, "hSigmaPi_pull");
+    Write(hSigmaKa_mean, "hSigmaKa_mean");
+    Write(hSigmaKa_pull, "hSigmaKa_pull");
+    Write(hSigmaPro_mean, "hSigmaPro_mean");
+    Write(hSigmaPro_pull, "hSigmaPro_pull");
   }
 
   //--------------------------------- NSigma PID from PIDqa ----------------------------------//
@@ -1249,17 +1254,16 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     if (savePng) cPidPerformance3T0->Print(Form("%s/%i%s_PID_sigmasStartTime.png", plotDir.Data(), runNumber, dirsuffix.Data()));
     if (saveHisto) {
       trendFile->cd();
-      hSigmaPiT0->Write();
-      hSigmaPiT0_mean->Write();
-      hSigmaPiT0_pull->Write();
-      hSigmaKaT0->Write();
-      hSigmaKaT0_mean->Write();
-      hSigmaKaT0_pull->Write();
-      hSigmaProT0->Write();
-      hSigmaProT0_mean->Write();
-      hSigmaProT0_pull->Write();
+      Write(hSigmaPiT0, "hSigmaPiT0");
+      Write(hSigmaPiT0_mean, "hSigmaPiT0_mean");
+      Write(hSigmaPiT0_pull, "hSigmaPiT0_pull");
+      Write(hSigmaKaT0, "hSigmaKaT0");
+      Write(hSigmaKaT0_mean, "hSigmaKaT0_mean");
+      Write(hSigmaKaT0_pull, "hSigmaKaT0_pull");
+      Write(hSigmaProT0, "hSigmaProT0");
+      Write(hSigmaProT0_mean, "hSigmaProT0_mean");
+      Write(hSigmaProT0_pull, "hSigmaProT0_pull");
     }
-
 
     /***************************************************
     //Save parameters obtained with the signal model fit
@@ -1412,10 +1416,10 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (saveHisto) {
     trendFile->cd();
-    hT0AC->Write();
-    hT0A->Write();
-    hT0C->Write();
-    hT0res->Write();
+    Write(hT0AC, "hT0AC");
+    Write(hT0A, "hT0A");
+    Write(hT0C, "hT0C");
+    Write(hT0res, "hT0res");
   }
   //Fill tree and save to file
   ttree->Fill();
@@ -1628,3 +1632,24 @@ void AddMissingLabel(const TString histoname){
   missing.AddText(Form("Plot%s%s Missing", histoname.IsNull() ? "" : " ", histoname.Data()));
   missing.Draw();
 }
+
+//----------------------------------------------------------
+void Write(TObject* obj, const TString label)
+{
+  if (obj)
+    obj->Write();
+  else {
+    TNamed miss(label.Data(), "MISSING");
+    miss.Write();
+  }
+}
+
+//----------------------------------------------------------
+void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x)
+{
+  h = (TH1F*)(x ? num->ProjectionX(name) : num->ProjectionY(name));
+  TH1F* hden = (TH1F*)(x ? den->ProjectionX("hDenominator") : den->ProjectionY("hDenominator"));
+  h->Divide(h, hden, 1, 1, "B");
+  delete hden;
+}
+
