@@ -853,7 +853,7 @@ SharedClusterCut->AddCut(trackCutsSharedCluster16);
 SharedClusterCut->AddCut(trackCutsSharedCluster32);
 
 AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTest);//(1<<4) -> error
+trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//(1<<4) -> error
 trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::Detector(0),AliDielectronTrackCuts::ITSClusterRequirement(3));//(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst) -> error
 
 //Add desired cuts to cutgroup
