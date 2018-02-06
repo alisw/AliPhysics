@@ -33,6 +33,7 @@ class AliMTRChEffAnalysis : public TObject {
 
   TArrayI GetHomogeneousRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, Bool_t perRPC = kTRUE, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
   TArrayI GetHomogeneousRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
+  Bool_t CheckRanges ( TArrayI runRanges ) const;
 
   void DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmasOutliers = -1., Double_t minEff = 0.8, Double_t maxEff = 1.01 ) const;
   void DrawStatContribution ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers = -1., Double_t minY = 0., Double_t maxY = 0.15 ) const;

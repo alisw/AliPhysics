@@ -15,6 +15,7 @@
 
 #include "AliMTRChEffAnalysis.h"
 #include <array>
+#include <vector>
 
 // ROOT includes
 #include <Riostream.h>
@@ -1854,6 +1855,51 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
     delete trigOut;
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::CheckRanges ( TArrayI runRanges ) const
+{
+  /// Check that all runs are in the specified ranges
+
+  Bool_t isOk = kTRUE;
+
+  std::vector<bool> rangeOk;
+  for ( Int_t irun=0; irun<runRanges.GetSize(); ++irun ) {
+    rangeOk.push_back(false);
+  }
+
+  Int_t nRanges = runRanges.GetSize()/2;
+
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fRunMap ) {
+    Int_t run = obj->GetMinRun();
+    bool isInside = false;
+    for ( Int_t irange=0; irange<nRanges; ++irange ) {
+      Int_t istart = 2*irange;
+      Int_t iend = istart+1;
+      Int_t firstRun = runRanges[istart];
+      Int_t lastRun = runRanges[iend];
+      if ( run == firstRun ) rangeOk[istart] = true;
+      else if ( run == lastRun ) rangeOk[iend] = true;
+      if ( run >= firstRun && run <= lastRun ) {
+        isInside = true;
+        break;
+      }
+    }
+    if ( ! isInside ) {
+      AliWarning(Form("Warning: run %i is not inside range!",run));
+      isOk = kFALSE;
+    }
+  }
+
+  for ( int irun=0; irun<rangeOk.size(); ++irun ) {
+    if ( ! rangeOk[irun] ) {
+      AliWarning(Form("Warning: range limit %i not taken from the list of runs",runRanges[irun]));
+      isOk = kFALSE;
+    }
+  }
+
+  return isOk;
 }
 
 //________________________________________________________________________
