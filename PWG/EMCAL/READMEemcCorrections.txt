@@ -507,7 +507,7 @@ For your component to be accessible to the correction task, it must be registere
 To do so, add the following to your component header:
 
 ```{.cxx}
-// Allows the registration of the class so that it is availble to be used by the correction task.
+// // Allows the registration of the class so that it is availble to be used by the correction task.
 static RegisterCorrectionComponent<AliEmcalCorrectionYourNewComponent> reg;
 ```
 
