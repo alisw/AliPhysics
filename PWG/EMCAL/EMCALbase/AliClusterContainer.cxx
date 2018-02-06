@@ -326,8 +326,9 @@ Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus, UInt_t &rejec
 
 /**
  * Return true if cluster is accepted.
- * @param clus
- * @return
+ * @param clus The cluster to which the cuts will be applied
+ * @param rejectionReason Contains the bit specifying the rejection reason
+ * @return True if the cluster is accepted.
  */
 Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &rejectionReason) const
 {
