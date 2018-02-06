@@ -48,7 +48,7 @@ AliFemtoTrioCut* GetTrioCutPionKaonDecay(ESys system, EDecaysPionKaon decay);
 void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8, bool pionPionDecays=false, bool pionKaonDecays=false)
 {
   separationCuts = sepCuts;
   ppCollisions = ppAnalysis;
@@ -130,47 +130,49 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     //-----------------------------------------------------------------------------------
     // distributions with only selected pion-pion cuts applied
     //-----------------------------------------------------------------------------------
-    
-    for(int iDec=0;iDec<nDecaysPionPion;iDec++){
-      baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
-      eventCut[anIter] = GetEventCut();
-      AliFemtoTrioCut *trioCut = GetTrioCutPionPionDecay((ESys)iSys, (EDecaysPionPion)iDec);
-      baryoniaAnalysis[anIter]->SetEventCut(eventCut[anIter]);
-      baryoniaAnalysis[anIter]->SetV0SharedDaughterCut(true);
-      baryoniaAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
-      baryoniaAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
-      baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
-      baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
-      baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
-      baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
-      distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionPionName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
-      distribution[anIter]->SetTrioCut(trioCut);
-      baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
-      Manager->AddAnalysis(baryoniaAnalysis[anIter]);
-      anIter++;
+    if(pionPionDecays){
+      for(int iDec=0;iDec<nDecaysPionPion;iDec++){
+        baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
+        eventCut[anIter] = GetEventCut();
+        AliFemtoTrioCut *trioCut = GetTrioCutPionPionDecay((ESys)iSys, (EDecaysPionPion)iDec);
+        baryoniaAnalysis[anIter]->SetEventCut(eventCut[anIter]);
+        baryoniaAnalysis[anIter]->SetV0SharedDaughterCut(true);
+        baryoniaAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+        baryoniaAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
+        baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
+        baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
+        baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
+        baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
+        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionPionName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
+        distribution[anIter]->SetTrioCut(trioCut);
+        baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
+        Manager->AddAnalysis(baryoniaAnalysis[anIter]);
+        anIter++;
+      }
     }
-    
+      
     //-----------------------------------------------------------------------------------
     // distributions with only selected pion-kaon cuts applied
     //-----------------------------------------------------------------------------------
-    
-    for(int iDec=0;iDec<nDecaysPionKaon;iDec++){
-      baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
-      eventCut[anIter] = GetEventCut();
-      AliFemtoTrioCut *trioCut = GetTrioCutPionKaonDecay((ESys)iSys, (EDecaysPionKaon)iDec);
-      baryoniaAnalysis[anIter]->SetEventCut(eventCut[anIter]);
-      baryoniaAnalysis[anIter]->SetV0SharedDaughterCut(true);
-      baryoniaAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
-      baryoniaAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
-      baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
-      baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
-      baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
-      baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
-      distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionKaonName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
-      distribution[anIter]->SetTrioCut(trioCut);
-      baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
-      Manager->AddAnalysis(baryoniaAnalysis[anIter]);
-      anIter++;
+    if(pionKaonDecays){
+      for(int iDec=0;iDec<nDecaysPionKaon;iDec++){
+        baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
+        eventCut[anIter] = GetEventCut();
+        AliFemtoTrioCut *trioCut = GetTrioCutPionKaonDecay((ESys)iSys, (EDecaysPionKaon)iDec);
+        baryoniaAnalysis[anIter]->SetEventCut(eventCut[anIter]);
+        baryoniaAnalysis[anIter]->SetV0SharedDaughterCut(true);
+        baryoniaAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+        baryoniaAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
+        baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
+        baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
+        baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
+        baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
+        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionKaonName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
+        distribution[anIter]->SetTrioCut(trioCut);
+        baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
+        Manager->AddAnalysis(baryoniaAnalysis[anIter]);
+        anIter++;
+      }
     }
   }
   return Manager;

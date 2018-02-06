@@ -146,6 +146,9 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
     fMixingBuffer[1] = fMixingBuffer[0];
     fMixingBuffer[0] = fPicoEvent;
   }
+  else{
+    if(fPicoEvent) delete fPicoEvent;
+  }
   EventEnd(currentEvent);
   fNeventsPassed++;
 }
