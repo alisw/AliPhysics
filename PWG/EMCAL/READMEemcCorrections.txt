@@ -483,7 +483,8 @@ There are many other details in the base and steering classes, but they are almo
 
 If you are interested in developing a task that is shared by analyses using the EMCal, then the correction
 framework is a great place to deploy it! The general approach is very similar to the steering in
-``AliAnalysisTaskEmcal``. To create your task, your task name should start with ``AliEmcalCorrection``. It should derive from ``AliEmcalCorrectionComponent`` and implement:
+``AliAnalysisTaskEmcal``. To create your task, your task name should start with ``AliEmcalCorrection``.
+It should derive from ``AliEmcalCorrectionComponent`` and implement:
 
 ~~~{.cxx}
 // Run once to initialize the component. These are run independent initializations.
@@ -498,9 +499,30 @@ virtual Bool_t Run();
 virtual Bool_t UserNotify();
 ~~~
 
-To configure your task in the ``Initialize()`` function with the YAML configuration, you must define the object and then get it via the ``GetProperty("propertyName", property)`` function defined in ``AliEmcalCorrectionComponent``. For an example, see any ``Initialize()`` in any of the correction components.
+To configure your task in the ``Initialize()`` function with the YAML configuration, you must define the
+object and then get it via the ``GetProperty("propertyName", property)`` function defined in
+``AliEmcalCorrectionComponent``. For an example, see ``Initialize()`` in any of the correction components.
 
-Lastly, the task needs to be added to the default YAML configuration file. To do so, add the name of the component (removing "AliEmcalCorrection") to the file, and then set default values for each parameter. Be certain to document what each parameter means! In addition to the component configuration, be certain to add it into the executionOrder node! Otherwise, your task will never be executed!
+For your component to be accessible to the correction task, it must be registered within the framework.
+To do so, add the following to your component header:
+
+```{.cxx}
+// Allows the registration of the class so that it is availble to be used by the correction task.
+static RegisterCorrectionComponent<AliEmcalCorrectionYourNewComponent> reg;
+```
+
+and then the following to your component implementation file (cxx):
+
+```{.cxx}
+// Actually registers the class with the base class
+RegisterCorrectionComponent<AliEmcalCorrectionYourNewComponent> AliEmcalCorrectionYourNewComponent::reg("AliEmcalCorrectionYourNewComponent");
+```
+
+Lastly, the task needs to be added to the default YAML configuration file. To do so, add the name of the
+component (removing "AliEmcalCorrection") to the file, and then set default values for each parameter.
+Be certain to document what each parameter means! In addition to the component configuration, be certain
+to add it into the executionOrder node! Otherwise, your task will never be executed! Note that the order
+of your task name in this list will determine when it is executed relative to the other components.
 
 # Additional Info
 
