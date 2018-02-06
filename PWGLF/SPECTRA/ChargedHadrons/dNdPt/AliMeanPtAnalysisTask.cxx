@@ -34,6 +34,7 @@ ClassImp(AliMeanPtAnalysisTask);
 //________________________________________________________________________
 AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
   //General member variables
+  fPRECISION(1e-10),
   fOutputList(0),
   fEvent(0),
   fMCEvent(0),
@@ -89,6 +90,7 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fHistMCTrackParticle(0),
   fHistEvent(0),
   fHistMCResponseMat(0),
+  fHistMCResponseMatTracks(0),
   //Track-Histograms
   fHistTrack(0),
   fHistMCRecTrack(0),
@@ -96,7 +98,6 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fHistMCRecPrimTrack(0),
   fHistMCRecSecTrack(0),
   fHistMCMultPtGenerated(0),
-  fHistMCTrackMult(0),
   fHistMCTrackMultGen(0),
   fHistMCPtRes(0),
   fHistMCEtaRes(0),
@@ -186,12 +187,19 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     Double_t minMultRespMat[2]={fBinsMult->GetAt(0),fBinsMult->GetAt(0)};
     Double_t maxMultRespMat[2]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1)};
 
-    fHistMCResponseMat = new THnF("fHistMCResponseMat","Response Matrix",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
+    fHistMCResponseMat = new THnSparseF("fHistMCResponseMat","Response Matrix",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
     fHistMCResponseMat->SetBinEdges(0,fBinsMult->GetArray());
     fHistMCResponseMat->SetBinEdges(1,fBinsMult->GetArray());
     fHistMCResponseMat->GetAxis(0)->SetTitle("#it{N}_{acc}");
     fHistMCResponseMat->GetAxis(1)->SetTitle("#it{N}_{ch}");
     fHistMCResponseMat->Sumw2();
+
+    fHistMCResponseMatTracks = new THnSparseF("fHistMCResponseMatTracks","Response Matrix for primary particles",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
+    fHistMCResponseMatTracks->SetBinEdges(0,fBinsMult->GetArray());
+    fHistMCResponseMatTracks->SetBinEdges(1,fBinsMult->GetArray());
+    fHistMCResponseMatTracks->GetAxis(0)->SetTitle("#it{N}_{acc}");
+    fHistMCResponseMatTracks->GetAxis(1)->SetTitle("#it{N}_{ch}");
+    fHistMCResponseMatTracks->Sumw2();
 
 
     /// pT Resolution Histogram
@@ -292,19 +300,9 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         Double_t minMultTrack[3]={fBinsPt->GetAt(0), fBinsMult->GetAt(0),fBinsMult->GetAt(0)};
         Double_t maxMultTrack[3]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1)};
 
-        // Histogram track response as a function of pT (probably not necessary) rec
-        fHistMCTrackMult = new THnF("fHistMCTrackMult", "Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
-        fHistMCTrackMult -> SetBinEdges(0,fBinsPt->GetArray());
-        fHistMCTrackMult -> SetBinEdges(1,fBinsMult->GetArray());
-        fHistMCTrackMult -> SetBinEdges(2,fBinsMult->GetArray());
-        fHistMCTrackMult->GetAxis(0)->SetTitle("#it{p}_{T}^{MC}");
-        fHistMCTrackMult->GetAxis(1)->SetTitle("#it{N}_{acc}");
-        fHistMCTrackMult->GetAxis(2)->SetTitle("#it{N}_{ch}");
-        fHistMCTrackMult -> Sumw2();
 
-        // Histogram track response as a function of pT (probably not necessary) gen
-        // can also be used to illustrate <pt>(Nacc)|Nch and  <pt>(Nch)|Nacc
-        fHistMCTrackMultGen = new THnF("fHistMCTrackMultGen", "True Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
+        // Histogram to illustrate <pt>(Nacc) for fixed Nch and  <pt>(Nch) for fixed Nacc
+        fHistMCTrackMultGen = new THnSparseF("fHistMCTrackMultGen", "True Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
         fHistMCTrackMultGen -> SetBinEdges(0,fBinsPt->GetArray());
         fHistMCTrackMultGen -> SetBinEdges(1,fBinsMult->GetArray());
         fHistMCTrackMultGen -> SetBinEdges(2,fBinsMult->GetArray());
@@ -314,7 +312,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         fHistMCTrackMultGen -> Sumw2();
 
         // Correlation between reconstructed tracks and reconstructed particles
-        fHistMCMultRes = new THnF("fHistMCMultRes","Effect of momentum resolution on reconstructed particle multiplicities",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
+        fHistMCMultRes = new THnSparseF("fHistMCMultRes","Effect of momentum resolution on reconstructed particle multiplicities",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
         fHistMCMultRes->SetBinEdges(0,fBinsMult->GetArray());
         fHistMCMultRes->SetBinEdges(1,fBinsMult->GetArray());
         fHistMCMultRes->GetAxis(0)->SetTitle("#it{N}_{acc}");
@@ -338,10 +336,10 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCRecSecTrack);
 
     fOutputList->Add(fHistMCResponseMat);
+    fOutputList->Add(fHistMCResponseMatTracks);
     fOutputList->Add(fHistMCMultPtGenerated);
 
     if(fIncludeCrosscheckHistos){
-      fOutputList->Add(fHistMCTrackMult);
       fOutputList->Add(fHistMCTrackMultGen);
       fOutputList->Add(fHistMCMultRes);
       fOutputList->Add(fHistMCParticle);
@@ -379,6 +377,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
     if (!fMCEvent) {printf("ERROR: fMCEvent not available\n"); return;}
 
+    // TODO: do not use MC stack anymore!!
     fMCStack = fMCEvent->Stack();
     if (!fMCStack) {printf("ERROR: fMCStack not available\n"); return;}
   }
@@ -422,6 +421,10 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
       if(IsChargedPrimary(iParticle)) multGenPart++;
     }
   }
+  // TODO: no more mcstack!
+//  for(int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
+//    AliMCParticle* mcPart  = (AliMCParticle*)fMCEvent->GetTrack(iPart);
+//  }
 
   // Measured Multiplicity Nacc:
   AliVTrack* track = NULL;
@@ -467,12 +470,6 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     Double_t trackValues[4] = {track->Pt(), track->Eta(), multAccTracks, centrality};
     fHistTrack->Fill(trackValues);
 
-    // Include these histograms only if Nc <= 200 otherwise output becomes too large
-    if(fIsMC && fIncludeCrosscheckHistos){
-      Double_t trackValuesMult[3] = {track->Pt(), multAccTracks, multGenPart};
-      fHistMCTrackMult->Fill(trackValuesMult);
-    }
-
     /// Find original particle in MC-Stack
     if(fIsMC){
       Int_t mcLabel = TMath::Abs(track->GetLabel());
@@ -501,12 +498,16 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
       {
         Double_t mcPrimTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
+
+        Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
+        fHistMCResponseMatTracks->Fill(responseMatrixTuple);
+
       }else{
         Double_t mcSecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecSecTrack->Fill(mcSecTrackValue);
       }
     }
-  }// end of Track-loop
+  }
 
   if(multRecPart > 0) fEventCount->Fill(8); // Events with particles within kinematic acceptance
 
@@ -556,7 +557,6 @@ void AliMeanPtAnalysisTask::Terminate(Option_t*)
 
 }
 
-
 /// Function to determine if MC particle is charged primary
 Bool_t AliMeanPtAnalysisTask::IsChargedPrimary(Int_t stackIndex){
   if (fMCStack->IsPhysicalPrimary(stackIndex)
@@ -573,13 +573,12 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(AliVTrack* track)
   if(!track) return kFALSE;
 
   Double_t eta = track->Eta();
-  Double_t pt = track->Pt();
+  Double_t pt  = track->Pt();
 
-  if(eta <= fMinEta)  return kFALSE;
-  if(eta >= fMaxEta)  return kFALSE;
-  if(pt <= fMinPt)    return kFALSE;
-  if(pt >= fMaxPt)    return kFALSE;
-
+  if(eta <= fMinEta + fPRECISION)  return kFALSE;
+  if(eta >= fMaxEta - fPRECISION)  return kFALSE;
+  if(pt  <= fMinPt  + fPRECISION)  return kFALSE;
+  if(pt  >= fMaxPt  - fPRECISION)  return kFALSE;
   return kTRUE;
 }
 
@@ -589,12 +588,12 @@ Bool_t AliMeanPtAnalysisTask::IsTrackAcceptedKinematics(TParticle* mcParticle)
   if(!mcParticle) return kFALSE;
 
   Double_t eta = mcParticle->Eta();
-  Double_t pt = mcParticle->Pt();
+  Double_t pt  = mcParticle->Pt();
 
-  if(eta <= fMinEta)  return kFALSE;
-  if(eta >= fMaxEta)  return kFALSE;
-  if(pt <= fMinPt)    return kFALSE;
-  if(pt >= fMaxPt)    return kFALSE;
+  if(eta <= fMinEta + fPRECISION)  return kFALSE;
+  if(eta >= fMaxEta - fPRECISION)  return kFALSE;
+  if(pt  <= fMinPt  + fPRECISION)  return kFALSE;
+  if(pt  >= fMaxPt  - fPRECISION)  return kFALSE;
   return kTRUE;
 }
 

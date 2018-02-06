@@ -4,6 +4,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
 
   // settings:
   Bool_t includeCrosscheckHistos = kFALSE;
+  Bool_t is2013pA = kFALSE;
   UInt_t offlineTriggerMask = AliVEvent::kINT7;
   Bool_t is2015Data = kFALSE;
   Bool_t isPbPbAnalysis = kFALSE;
@@ -37,7 +38,7 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     colsys = "XeXe";
     maxCentrality = 80;
 //    multSteps[0] = 200;  multBinWidth[0] = 15;
-    multSteps[0] = 3000;  multBinWidth[0] = 1;
+    multSteps[0] = 30000;  multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 7;
@@ -48,14 +49,14 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     multSteps[0] = 200;   multBinWidth[0] = 1;
     multSteps[1] = 0;     multBinWidth[1] = 1;
     multSteps[2] = 0;     multBinWidth[2] = 1;
-    //task->Set2013pA(); for pPb 2013 data
+    is2013pA = kTRUE;
   }
   if(controlstring.Contains("PbPb")) {
     maxCentrality = 80;
     isPbPbAnalysis = kTRUE;
     is2015Data = kTRUE;
     colsys = "PbPb";
-    multSteps[0] = 200;   multBinWidth[0] = 15;
+    multSteps[0] = 4500;   multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 7;
@@ -106,6 +107,8 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     AliMeanPtAnalysisTask* task = new AliMeanPtAnalysisTask(taskName);
 
     task->SetIncludeCrosscheckHistos(includeCrosscheckHistos);
+    task->Set2013pA(is2013pA);
+
     // general cuts
     task->SelectCollisionCandidates(offlineTriggerMask);
     task->SetTriggerMask(offlineTriggerMask);

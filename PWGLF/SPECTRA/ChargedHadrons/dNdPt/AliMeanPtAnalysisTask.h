@@ -21,6 +21,7 @@ class AlidNdPtEventCuts;
 class AliAnalysisUtils;
 
 #include "THn.h"
+#include "THnSparse.h"
 #include "TF1.h"
 #include "AliAnalysisTaskSE.h"
 
@@ -134,6 +135,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
 
 
   private:
+    Double_t            fPRECISION;
     TList*              fOutputList;		//!<! Output list
     AliVEvent*          fEvent;			    //!<! Event object
     AliMCEvent*         fMCEvent;       //!<! MC event
@@ -199,7 +201,8 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
 
     THnF*         fHistEvent;			        ///<  Histogram for events
 
-    THnF*         fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
+    THnSparseF*   fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
+    THnSparseF*   fHistMCResponseMatTracks;    	///<  Histogram for Detector Response N_ch vs. N_acc
 
     THnF*         fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
 
@@ -209,12 +212,11 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     THnF*         fHistMCRecSecTrack;		///<  Histogram for secondary MC tracks (pt,eta,mult/cent)
 
     THnF* 		    fHistMCMultPtGenerated;
-    THnF*         fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
-    THnF*         fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
+    THnSparseF*   fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
 
     THnF*         fHistMCPtRes;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks
     THnF*         fHistMCEtaRes;                    ///<  Histogram for eta_gen vs eta_rec for resolution chrosschecks
-    THnF*         fHistMCMultRes;                    ///<  Histogram for Nacc vs Nrec for resolution chrosschecks
+    THnSparseF*   fHistMCMultRes;                    ///<  Histogram for Nacc vs Nrec for resolution chrosschecks
 
     THnF*         fHistMCParticle;			///<  Histogram for particles (pt,eta, mult, cent)
 
