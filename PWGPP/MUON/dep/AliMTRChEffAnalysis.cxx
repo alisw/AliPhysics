@@ -2388,12 +2388,13 @@ Bool_t AliMTRChEffAnalysis::WriteToOCDB ( TList* effHistos, const char* outputCD
   }
 
   TString rmCommand = "rm";
-  if ( outCDB.BeginsWith("alien://") && ! gGrid ) {
-    TGrid::Connect("alien://");
+  if ( outCDB.BeginsWith("alien://") ) {
     rmCommand = "alien_rm";
     if ( ! gGrid ) {
-      AliError("Cannot open grid connection");
-      return kFALSE;
+      if ( ! TGrid::Connect("alien://") ) {
+        AliError("Cannot open grid connection");
+        return kFALSE;
+      }
     }
   }
 
