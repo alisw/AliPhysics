@@ -31,6 +31,8 @@ Getoutput::Getoutput() {
 }
 
 void Getoutput::StoreOutputData(const char *filename){
+
+  printf("storing...\n");
  TString outFileName(filename);
  outFileName.ReplaceAll(".root","");
  outFileName+=Form("3H%i",f3Hsign);
@@ -52,13 +54,14 @@ bool Getoutput::LoadParams(const char *paramfile){
   return kFALSE;
  }
 
- FILE *infile = fopen("params.txt","r");
+ FILE *infile = fopen(paramfile,"r");
  //kParMinP, kParMinPv0, kParMaxP3H, kParPiLim, kPar3hLim, 
  //kParNclusITS, kParNsigmaPID, kParNsigmaTOFmass, kParDcaTriZ, kParCosP, 
  //kParV0Dca kK0MassLow, kK0MassHigh, kLambdaMassLow, kLambdaMassHigh,kGammaMassHigh
- fscanf(infile, "%f   %f   %f   %f  %f\n",&param[kParMinP],&param[kParMinPv0],&param[kParMaxP3H],&param[kParPiLim],&param[kPar3hLim]);
- fscanf(infile, "%f   %f   %f   %f  %f\n",&param[kParNclusITS],&param[kParNsigmaPID],&param[kParNsigmaTOFmass],&param[kParDcaTriZ],&param[kParCosP]);
- fscanf(infile, "%f   %f   %f   %f  %f   %f\n",&param[kParV0Dca],&param[kK0MassLow],&param[kK0MassHigh],&param[kLambdaMassLow],&param[kLambdaMassHigh],&param[kGammaMassHigh]);
+ Int_t scanId=-1;
+ scanId = fscanf(infile, "%f   %f   %f   %f  %f\n",&param[kParMinP],&param[kParMinPv0],&param[kParMaxP3H],&param[kParPiLim],&param[kPar3hLim]);
+ scanId = fscanf(infile, "%f   %f   %f   %f  %f\n",&param[kParNclusITS],&param[kParNsigmaPID],&param[kParNsigmaTOFmass],&param[kParDcaTriZ],&param[kParCosP]);
+ scanId = fscanf(infile, "%f   %f   %f   %f  %f   %f\n",&param[kParV0Dca],&param[kK0MassLow],&param[kK0MassHigh],&param[kLambdaMassLow],&param[kLambdaMassHigh],&param[kGammaMassHigh]);
  for(Int_t i=0; i<16; i++) printf("param%i=%f   ",i,param[i]);
  printf("\n");
  return kTRUE;
@@ -72,6 +75,7 @@ bool Getoutput::LoadFile(const char *inputfile, const char *listName){
  }
 
  if(fInputList) ClearInputData();
+ 
  TFile *file = TFile::Open(inputfile);
  if(!file){
   printf("no %s file",inputfile);
@@ -83,12 +87,22 @@ bool Getoutput::LoadFile(const char *inputfile, const char *listName){
   return kFALSE;
  }
 
+
  fInputList = (TList*)l->Clone("locLNNlist");
  if(!fInputList){
   printf("no input list after cloning, exiting \n");
   return kFALSE;
  }
- else return kTRUE;
+ else {
+    TH1F *hIn = (TH1F *)(fInputList->FindObject("fHistEventMultiplicity"));
+    TH1F *hOut = (TH1F*)(fOutputList->FindObject("hEventMultiplicity"));
+    if(!hOut){
+      printf("Please book histograms before loading the file\n");
+      return kFALSE;
+    }
+    hOut->Add (hIn);
+    return kTRUE;
+ }
  file->Delete();
 }
 
@@ -131,7 +145,7 @@ Double_t Getoutput::GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Dou
 void Getoutput::BookOutputData(){
 
  Double_t mRange[2] = { 2.94, 3.1 };
- Int_t massBins = (Int_t) ((mRange[1] - mRange[0]) / 0.0027);
+ Int_t massBins = (Int_t) ((mRange[1] - mRange[0]) / 0.0025);
 
  //int arrSize = 5;
  TString selTitle[fgArrSize] = { "All Candidates (PID only)",  Form ("after K0 rejection (M within [%f,%f] GeV/#it{c}^{2})", param[kK0MassLow], param[kK0MassHigh]), Form ("after #Lambda rejection (M within [%1.3f,%1.3f] GeV/#it{c}^{2})", param[kLambdaMassLow], param[kLambdaMassHigh]),
@@ -281,7 +295,7 @@ void Getoutput::BookOutputData(){
   fOutputList->AddLast(hMumCheck[im]);
  }
 
- hEv = new TH1F ("hEventMultiplicity", "Nb of Events", 12, -0.5, 11.5);
+ TH1F *hEv = new TH1F ("hEventMultiplicity", "Nb of Events", 12, -0.5, 11.5);
  hEv->GetXaxis ()->SetBinLabel (1, "All Events");
  hEv->GetXaxis ()->SetBinLabel (2, "Events w/PV");
  hEv->GetXaxis ()->SetBinLabel (3, "Events w/|Vz|<10cm");
@@ -308,8 +322,6 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
  Double_t mass[2] = { 0., 0. };
  Int_t nv0 = 0;
  Bool_t isPrint = kFALSE;
- TH1F *h = (TH1F *)(fInputList->FindObject("fHistEventMultiplicity"));
- hEv->Add (h);
 
  const Int_t nPossible = 34; // for MC study only
  Int_t partId[nPossible] = { 11,13, 22, 111, 113, 130, 211, 213, 223, 310, 313, 321, 323, 411, 421, 521,511, 221, 3122, 3222, 3112,3312,443,331,-2212,-2112,1114,2214,2224,2114,431,531,-1,-999};
@@ -372,7 +384,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   else if (arr[kSign] == -9) {signTri = -1; signPi =  1;}
   else if (arr[kSign] == 11) {signTri =  1; signPi =  1;}
   else if (arr[kSign] == -11){signTri = -1; signPi = -1;}
-  else {printf ("sign value not known %i\n", arr[kSign]);}
+  else {printf ("sign value not known %i\n", (Int_t)arr[kSign]);}
   if (isPrint)
   {
    printf(" (triCharge %i) : 3H sign %i | pion sign %i (stored %i) \n", f3Hsign, signTri, signPi, (Int_t) arr[kSign]);
@@ -460,14 +472,14 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
     // triton case
     Int_t selBary3H = ((Int_t)absMumTri/1000);
     if(selBary3H>6) {
-     printf("weird mother %i from %i, continuing\n",selBary3H,absMumTri);
+      printf("weird mother %i from %i, continuing\n",(Int_t)selBary3H,(Int_t)absMumTri);
      selBary3H=6;
     }
     if(selBary3H==0){
 
      Int_t selMes3H = ((Int_t)absMumTri/100);
      if(selMes3H>6) {
-      printf("weird mother %i from %i, continuing\n",selMes3H,absMumTri);
+       printf("weird mother %i from %i, continuing\n",(Int_t)selMes3H,(Int_t)absMumTri);
       selMes3H=6;
      }
      if(selMes3H==0) {
@@ -494,13 +506,13 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
     Int_t selBaryPi = ((Int_t)absMumPi/1000);
     //printf("PION : mother %i, quark content %i \n",(Int_t)absMumPi,selBaryPi);
     if(selBaryPi>6) {
-     printf("weird mother %i from %i, continuing\n",selBaryPi,absMumPi);
+      printf("weird mother %i from %i, continuing\n",(Int_t)selBaryPi,(Int_t)absMumPi);
      selBaryPi=6;
     }
     if(selBaryPi==0){
      Int_t selMesPi = ((Int_t)absMumPi/100);
      if(selMesPi>6) {
-      printf("weird mother %i from %i, continuing\n",selMesPi,absMumPi);
+       printf("weird mother %i from %i, continuing\n",(Int_t)selMesPi,(Int_t)absMumPi);
       selMesPi=6;
      }
      if(selMesPi==0) {
@@ -674,7 +686,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   hTPCsignalPi = (TH2F*)f->Get("hTPCsignalPi");
   hTPCsignalTri = (TH2F*)f->Get("hTPCsignalTri");
   hTPCsignalTri91Lim = (TH2F*)f->Get("hTPCsignalTri91Lim");
-  hEv = (TH1F*)f->Get("hEventMultiplicity"); 
+  TH1F *hEv = (TH1F*)f->Get("hEventMultiplicity"); 
   if(fIsMC){
    hMumCheck[0]=(TH2F*)f->Get("hMumCheck_pion");
    hMumCheck[1]=(TH2F*)f->Get("hMumCheck_triton");
