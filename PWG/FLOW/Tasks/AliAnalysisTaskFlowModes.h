@@ -12,6 +12,8 @@
 #include "AliAODTrack.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliESDpid.h"
+#include "AliFlowBayesianPID.h"
 
 #include "TComplex.h"
 #include "TFile.h"
@@ -21,6 +23,7 @@
 #include "TH3D.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
+
 
 
 class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
@@ -56,7 +59,10 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
       //void                    SetNumberOfSamples(Short_t numSamples = 10) { fNumSamples = numSamples; } // not implemented yet
       void                    SetProcessCharged(Bool_t filter = kTRUE) { fProcessCharged = filter; }
-      void                    SetProcessPID(Bool_t filter = kTRUE) { fProcessPID = filter; }
+      void                    SetProcessPID(Bool_t filter = kTRUE, Bool_t PIDbayesian = kFALSE) {
+                                    fProcessPID = filter;
+                                    if(PIDbayesian){fPIDbayesian = PIDbayesian; fPID3sigma = kFALSE;}else{fPIDbayesian = kFALSE; fPID3sigma = kTRUE;}
+                              }
       // flow related setters
       void                    SetFlowRFPsPtMin(Float_t pt) { fCutFlowRFPsPtMin = pt; }
       void                    SetFlowRFPsPtMax(Float_t pt) { fCutFlowRFPsPtMax = pt; }
@@ -78,6 +84,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
       void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
       // PID (pi,K,p) setters
+    
       void                    SetPIDUseAntiProtonOnly(Bool_t use = kTRUE) { fCutPIDUseAntiProtonOnly = use; }
       void                    SetPIDNumSigmasPionMax(Double_t numSigmas) { fCutPIDnSigmaPionMax = numSigmas; }
       void                    SetPIDNumSigmasKaonMax(Double_t numSigmas) { fCutPIDnSigmaKaonMax = numSigmas; }
@@ -85,7 +92,11 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedNoTOFrejection = reject; }
       void                    SetPositivelyChargedRef(Bool_t Pos=kFALSE){fPositivelyChargedRef = Pos;}
       void                    SetNegativelyChargedRef(Bool_t Neg=kFALSE){fNegativelyChargedRef = Neg;}
-   
+      void                    SetBayesianProbability(Double_t prob=0.9){fParticleProbability = prob;}
+      void                    SetPriors(Float_t centr = 0); // set Noferini's favourite priors for Bayesian PID (requested if Bayesian PID is used)
+      AliESDpid&              GetESDpid() {return fESDpid;}
+      Bool_t                  TPCTOFagree(const AliVTrack *track);
+    
    private:
       // array lenghts & constants
       const Double_t          fPDGMassPion; // [DPGMass] DPG mass of charged pion
@@ -165,6 +176,8 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       AliAODEvent*            fEventAOD; //! AOD event countainer
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
+      AliESDpid               fESDpid; //! pid obj
+      AliFlowBayesianPID      *fBayesianResponse; //! Baysian response with all the TOF tuning (using fESDpid)
       TFile*                  fFlowWeightsFile; //! source file containing weights
       Bool_t                  fInit; // initialization check
       Short_t                 fIndexSampling; // sampling index (randomly generated)
@@ -205,7 +218,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       Short_t                 fTrigger; // physics selection trigger
       TString                 fMultEstimator; // [''] multiplicity estimator (suported: ''/Charged,VOA,V0C,V0M,CL0,CL1,ZNA,ZNC)
       Float_t                 fPVtxCutZ; // (cm) PV z cut
-      Bool_t		      fFullCentralityRange; // flag for running over the full centrality range (0-100%). Otherwise runs from 50-100% 
+      Bool_t		          fFullCentralityRange; // flag for running over the full centrality range (0-100%). Otherwise runs from 50-100%
       //cuts & selection: tracks
       UInt_t                  fCutChargedTrackFilterBit; // (-) tracks filter bit
       UShort_t                fCutChargedNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
@@ -216,13 +229,21 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       Float_t                 fCutChargedDCAxyMax; // (cm) Maximal DCA-xy cuts for tracks (pile-up rejection suggested for LHC16)
       // cuts & selection: PID selection
       Bool_t                  fCutPIDUseAntiProtonOnly; // [kFALSE] check proton PID charge to select AntiProtons only
+      Bool_t                  fPID3sigma; // [kTRUE] default pid method
+      Bool_t                  fPIDbayesian; // [kFALSE] bayesian pid method
       Double_t                fCutPIDnSigmaPionMax; // [3] maximum of nSigmas (TPC or TPC & TOF combined) for pion candidates
       Double_t                fCutPIDnSigmaKaonMax; // [3] maximum of nSigmas (TPC or TPC & TOF combined) for kaon candidates
       Double_t                fCutPIDnSigmaProtonMax; // [3] maximum of nSigmas (TPC or TPC & TOF combined) for proton candidates
       Double_t                fCutPIDnSigmaTPCRejectElectron; // [3] number of TPC nSigma for electron rejection
+      Double_t                fParticleProbability; // Minimum Bayesian probability
+    
+      static const Int_t      fgkPIDptBin = 20; // pT bins for priors
+      Float_t                 fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
+      Float_t                 fCurrCentr; // current centrality used for set the priors
       Bool_t                  fCutPIDnSigmaCombinedNoTOFrejection; // [kFALSE] flag for rejection candidates in TPC+TOF pt region if TOF is not available (if true and no TOF, only TPC is used)
       Bool_t                  fNegativelyChargedRef; //for same charged reference particle studies
       Bool_t                  fPositivelyChargedRef; //for same charged reference particle studies
+    
     
     
 

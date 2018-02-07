@@ -11,7 +11,9 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   Int_t NumTPCclsMin = 70,
 					   Int_t TrackFilterBit = 96,
 					   TString MultEstimator = "V0M",
-					   Bool_t AntiProtonOnly = kFALSE)
+					   Bool_t AntiProtonOnly = kFALSE,
+					   Bool_t PIDbayesian = kFALSE,
+                                           Double_t PIDprob = 0.9)
 {
   cout<<"=========================================================="<<endl;
   cout<<"====================AddTaskFlowModes======================"<<endl;
@@ -34,7 +36,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetSampling(kFALSE);
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
-    task1->SetProcessPID(kTRUE);
+    task1->SetProcessPID(kTRUE,PIDbayesian);
     // Flow
     task1->SetFlowRFPsPtMin(0.2);
     task1->SetFlowRFPsPtMax(5.);
@@ -64,10 +66,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetPIDNumSigmasPionMax(3);
     task1->SetPIDNumSigmasKaonMax(3);
     task1->SetPIDNumSigmasProtonMax(3);
-    //task1->SetUseBayesPID(kFALSE);
-    //task1->SetPIDBayesProbPionMin(0.95);  //if UseBayesPID= kTRUE -> probabilities will be used 
-    //task1->SetPIDBayesProbKaonMin(0.85);  //if UseBayesPID= kTRUE -> probabilities will be used 
-    //task1->SetPIDBayesProbProtonMin(0.85); //if UseBayesPID= kTRUE -> probabilities will be used 
+    if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
 
   mgr->AddTask(task1); // add your task to the manager
   // Creating containers
