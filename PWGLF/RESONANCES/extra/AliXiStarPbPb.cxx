@@ -371,7 +371,7 @@ void AliXiStarPbPb::XiStarInit()
     //Inits cuts and analysis settings
     //
     
-    cout<<"AliXiStarPbPb XiStarInit() call"<<endl;
+    //* cout<<"AliXiStarPbPb XiStarInit() call"<<endl;
     
     
     ///////////////////////////////////////////////
@@ -1027,7 +1027,10 @@ void AliXiStarPbPb::Exec(Option_t *)
     if(isSelectedMB)((TH1F*)fOutputList->FindObject("hCentralitySelectedMB"))->Fill(centralityV0M);
     
     if(!fMCcase){
-        if(!(isSelectedMB|isSelectedkCentral|isSelectedkSemiCentral)) {cout<<"Event Rejected"<<endl; return;}
+        if(!(isSelectedMB|isSelectedkCentral|isSelectedkSemiCentral)) {
+            return;
+        //*    cout<<"Event Rejected"<<endl;
+        }
     }
     ((TH1F*)fOutputList->FindObject("hCentralitySelected"))->Fill(centralityV0M);
     
@@ -1260,7 +1263,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         ((TH1F*)fOutputList->FindObject("fMultDist6"))->Fill(fESD->GetNumberOfTracks());
     }
     
-    //cout<<"There are "<<myTracks<<"  myTracks"<<endl;
+    //* cout<<"There are "<<myTracks<<"  myTracks"<<endl;
     
     // set Z Vertex bin
     for(Int_t i=0; i<fZvertexBins; i++){
@@ -1872,7 +1875,7 @@ void AliXiStarPbPb::Exec(Option_t *)
 //________________________________________________________________________
 void AliXiStarPbPb::Terminate(Option_t *)
 {
-    cout<<"Done"<<endl;
+   //* cout<<"Done"<<endl;
 }
 
 //________________________________________________________________________
