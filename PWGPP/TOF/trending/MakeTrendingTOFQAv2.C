@@ -37,7 +37,7 @@ using std::endl;
 
 void Write(TObject* obj, const TString label);
 void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x = kTRUE);
-
+std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t numE, Double_t denE);
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
 			  Int_t runNumber,                      //run number
 			  TString dirsuffix = "",              //suffix for subdirectories
@@ -469,11 +469,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     //set underflow bin to the matching efficiency integrated in 1-10 GeV/c
     Int_t imin = hMatchingVsPt->GetXaxis()->FindBin(minPtEff2Fit);
     Int_t imax = hMatchingVsPt->GetXaxis()->FindBin(maxPtEff2Fit);
-    Double_t numN, denN, numErr, denErr;
-    numN = hMatchingVsPt->IntegralAndError(imin, imax, numErr);
-    denN = hDenom->IntegralAndError(imin, imax, denErr);
-    matchEffIntegrated = numN / denN;
-    matchEffIntegratedErr = matchEffIntegrated * TMath::Sqrt(TMath::Power(numErr/numN, 2.0) +  TMath::Power(denErr/denN, 2.0));
+    Double_t numErr, denErr;
+    Double_t numN = hMatchingVsPt->IntegralAndError(imin, imax, numErr);
+    Double_t denN = hDenom->IntegralAndError(imin, imax, denErr);
+    std::pair<Double_t, Double_t> IntEff = ComputeEff(numN, denN, numErr, denErr);
+
+    matchEffIntegrated = IntEff.first;
+    matchEffIntegratedErr = IntEff.second;
     //get efficiency
     hMatchingVsPt->Sumw2();
     hMatchingVsPt->Divide(hMatchingVsPt, hDenom, 1., 1., "B");
@@ -510,6 +512,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hMatchingVsEtaPhiOut->GetZaxis()->SetRangeUser(0., 1.);
     hMatchingVsEtaPhiOut->SetTitle("TOF matching efficiency as function of #eta and #phi_{TPC,out}");
     MakeUpHisto(hMatchingVsEtaPhiOut, "#phi_{TPC,out} (deg)", "#eta", "matching efficiency", 1, kBlue+2, 2);
+
     //
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsEta, "hMatchingVsEta", kFALSE);
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsPhiOut, "hMatchingVsPhiOut", kTRUE);
@@ -1653,3 +1656,22 @@ void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x)
   delete hden;
 }
 
+//----------------------------------------------------------
+std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t numE, Double_t denE)
+{
+  std::pair<Double_t, Double_t> eff(-111, 0);
+  if (den > 0) {
+    //
+    const Double_t ratio = num / den;
+    Double_t ratioErr = 0;
+    if (num > 0)
+      TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
+    //
+    ratioErr *= ratio;
+    eff.first = ratio;
+    eff.second = ratioErr;
+  }
+  Printf("Computed efficiency from %f (%f) / %f (%f) = %f (%f)", num, numE, den, denE, eff.first, eff.second);
+  //
+  return eff;
+}
