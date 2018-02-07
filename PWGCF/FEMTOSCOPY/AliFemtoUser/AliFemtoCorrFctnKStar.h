@@ -91,6 +91,8 @@ public:
   TH1D* Denominator();
   TH1D* Ratio();
 
+  virtual AliFemtoCorrFctn* Clone() const  { return new AliFemtoCorrFctnKStar(*this); }
+
 protected:
   TString fTitle;
   int fNbinsKStar;

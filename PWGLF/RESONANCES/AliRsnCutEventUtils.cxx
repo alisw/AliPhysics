@@ -25,8 +25,8 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fCheckPileUppA2013(checkPileUppA2013),
   fUseMVPlpSelection(kFALSE),
   fMinPlpContribMV(5),
-  fMinPlpContribSPD(5),
   fCheckPileUpMultBins(kFALSE),
+  fMinPlpContribSPD(5),
   fUseVertexSelection2013pA(kFALSE),
   fUseVertexSelection2013pAspectra(kFALSE),
   fMaxVtxZ(10.0),
@@ -59,8 +59,8 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fCheckPileUppA2013(copy.fCheckPileUppA2013),
   fUseMVPlpSelection(copy.fUseMVPlpSelection),
   fMinPlpContribMV(copy.fMinPlpContribMV),
-  fMinPlpContribSPD(copy.fMinPlpContribSPD),
   fCheckPileUpMultBins(copy.fCheckPileUpMultBins),
+  fMinPlpContribSPD(copy.fMinPlpContribSPD),
   fUseVertexSelection2013pA(copy.fUseVertexSelection2013pA),
   fUseVertexSelection2013pAspectra(copy.fUseVertexSelection2013pAspectra),
   fMaxVtxZ(copy.fMaxVtxZ),
@@ -96,8 +96,8 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fCheckPileUppA2013=copy.fCheckPileUppA2013;
   fUseMVPlpSelection=copy.fUseMVPlpSelection;
   fMinPlpContribMV=copy.fMinPlpContribMV;
-  fMinPlpContribSPD=copy.fMinPlpContribSPD;
   fCheckPileUpMultBins=copy.fCheckPileUpMultBins;
+  fMinPlpContribSPD=copy.fMinPlpContribSPD;
   fUseVertexSelection2013pA=copy.fUseVertexSelection2013pA;
   fUseVertexSelection2013pAspectra=copy.fUseVertexSelection2013pAspectra;
   fMaxVtxZ=copy.fMaxVtxZ;
@@ -259,7 +259,7 @@ Bool_t AliRsnCutEventUtils::IsVertexSelected2013pAIDspectra(AliVEvent *event)
 
 Bool_t AliRsnCutEventUtils::IsPileUpMultBins(){
   if(!fEvent) return kFALSE;
-  AliAODEvent* aodEvt=0;
+  //AliAODEvent* aodEvt=0;
   Bool_t isAOD=fEvent->IsAOD();
   if(isAOD) return kFALSE;//not yet available for AODs
 

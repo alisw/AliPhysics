@@ -26,10 +26,16 @@ class AliQnCorrectionsManager;
 class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
   public:
 
+    enum TRFMethod{
+      kMB  = -1,//none trigger analysis
+      kTAP = 0, //Tag and Probe method
+      kRFE = 1  //rejection factor x trigger efficiency from a ratio of dN/dpT in kPHI7 to that in kINT7
+    };
+
     enum FlowMethod{
-      kOFF  = -1,
-      kEP   = 0,
-      kSP   = 1
+      kOFF = -1,
+      kEP  = 0,
+      kSP  = 1
     };
 
     enum QnDetector{
@@ -57,13 +63,28 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetHarmonics(Int_t harmonics) {fHarmonics = harmonics;}
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
-    void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
+
+    void SetTOFCutEfficiencyFunction(TF1 *f1){
+      if(fTOFEfficiency){
+        delete fTOFEfficiency;
+        fTOFEfficiency = 0x0;
+      }
+      fTOFEfficiency = f1;
+    }
+
+
     void SetNonLinearityStudy(Bool_t flag, Double_t sf = 1.0) {
       fIsNonLinStudy = flag;
       fGlobalEScale = sf;
     }
 
-    void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
+    void SetTriggerEfficiency(TF1 *f1){
+      if(fTriggerEfficiency){
+        delete fTriggerEfficiency;
+        fTriggerEfficiency = 0x0;
+      }
+      fTriggerEfficiency = f1;
+    }
 
     void SetEventCuts(Bool_t isMC, AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
@@ -86,7 +107,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayPi0 = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalPi0PtWeight[i];
         fAdditionalPi0PtWeight[i] = 0x0;
       }
@@ -100,7 +121,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayK0S = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalK0SPtWeight[i];
         fAdditionalK0SPtWeight[i] = 0x0;
       }
@@ -114,7 +135,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayL0 = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalL0PtWeight[i];
         fAdditionalL0PtWeight[i] = 0x0;
       }
@@ -128,7 +149,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayEta = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalEtaPtWeight[i];
         fAdditionalEtaPtWeight[i] = 0x0;
       }
@@ -142,7 +163,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayGamma = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalGammaPtWeight[i];
         fAdditionalGammaPtWeight[i] = 0x0;
       }
@@ -195,6 +216,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
       fIsPHOSTriggerAnalysis = kTRUE;
@@ -246,6 +268,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
     void FillEpRatio();
+    void DDAPhotonPurity();//this can not be measured in neither single nor embedding M.C.
+
     const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector, const char *expcorr, const char *altcorr);
 
     virtual void SetMCWeight();//set weight related to M.C. (pT slope of mother pi0/eta/K0S/gamma)
@@ -355,11 +379,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fTriggerEfficiency;//TOF cut efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
-    TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalEtaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalGammaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
-    TF1 *fAdditionalL0PtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
+    TF1 *fAdditionalPi0PtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalEtaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalGammaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalK0SPtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
+    TF1 *fAdditionalL0PtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
     TArrayD *fCentArrayPi0;
     TArrayD *fCentArrayEta;
     TArrayD *fCentArrayGamma;
@@ -407,17 +431,19 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1M;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1L;//only for rejection factor in MB
     Bool_t fForceActiveTRU;
+    Int_t fTRFM;//TAP or RFE
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
     Double_t fEmin;
 
+
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 46);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 50);
 };
 
 #endif

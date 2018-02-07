@@ -4,12 +4,26 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
                                    Bool_t MCthere = kFALSE,       // DATA false
                                    Bool_t kNPERef = kTRUE,
                                    Bool_t kNPETOFITS = kTRUE,
+                                   Int_t RunSystematic = 0, // select systematic type
                                    Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used
                                    Bool_t kNPERefTPConly = kFALSE,
                                    Bool_t isAOD = kTRUE,
                                    Bool_t kNPETOFlast = kFALSE
                                    )
 {
+    
+    
+    enum SystematicType
+    {
+        kSystMultiple = 1, // ITS, hadron contamination, SPD kAny, PrimaryVertexTyp
+        kSystTPCcluster= 2,
+        kSystPID = 3,
+        kSystAsociatedDCA = 4,
+        kSystAsociatedTPCcluster = 5,
+        kSystAsociatedMinpTWeights = 6,
+        kSystTrackPIDMixedCuts = 7
+    };
+
     
     const Bool_t isBeauty = kFALSE; // should be false to prevent inclusive analysis
     
@@ -31,8 +45,32 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
     
     // --- TPC nsigma max and min cut ---
     Double_t dEdxhm[12] = {3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
-    Double_t tpcl1[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};                              //0,3
-    Double_t tpcl15[12]  = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};                 // -1,3
+    Double_t tpcl13[12]  = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};                 // -1,3
+    
+    
+    Double_t dEdxhm20[12] = {2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
+    Double_t dEdxhm25[12] = {2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5};
+    Double_t dEdxhm35[12] = {3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5};
+    
+    Double_t dEdxhm21[12] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5};
+    Double_t dEdxhm22[12] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
+    Double_t tpcl0[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  // 50%
+    Double_t tpcl1[12]  = {0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04};  // 48.34%
+    Double_t tpcl2[12]  = {0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08};  // 46.74%
+    Double_t tpcl3[12]  = {0.122,0.122,0.122,0.122,0.122,0.122,0.122,0.122,0.122,0.122,0.122,0.122};  // 45%
+    Double_t tpcl4[12]  = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};  // 42%
+    Double_t tpcl5[12]  = {0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25};  // 40%
+    Double_t tpcl6[12]  = {-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04,-0.04};  // 51.5%
+    Double_t tpcl7[12]  = {-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08,-0.08};  // 53.1%
+    Double_t tpcl8[12]  = {-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122,-0.122};  // 54.8%
+    Double_t tpcl9[12]  = {-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2};  // 57.9%
+    Double_t tpcl10[12]  = {-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25};  // 59.8%
+    Double_t tpcl11[12]  = {-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5};  // 69%
+    Double_t tpcl12[12]  = {-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75,-0.75};  // 77.3%
+    Double_t tpcl14[12]  = {-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3};  // 90%
+    Double_t tpcl16[12]  = {-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5};  // 90%
+    
+    
     
     // Default setting for the associated electron for the NonPhotonic Analysis
     const double    kassETAm = -0.9;                // -0.9 (Andrea)
@@ -79,22 +117,348 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
         // **************************************************************
         // Reference task TPC+TOF
         // **************************************************************
-        if(MCthere)
-        {
-            // TPC low cut = -0.1 (tpcl2) NO WEIGHTS
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm, kDefTOFs,0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
-                                kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+     
             // TPC low cut = -0.1 (tpcl2) WITH WEIGHTS
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm, kDefTOFs,0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
                                 kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+        
+        
+        
+        
+        switch (RunSystematic) {
+            case kSystMultiple:
+                // ITS hits
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, 3, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, 5, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                // SPD selection
+                // kFirst
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kFirst, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                // SPD kAny
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                // DCA Var
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, 2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, 0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                break;
+                
+            case kSystTPCcluster:
+                
+                // TPC clusters
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, 90, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, 95, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 105, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 110, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 120, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 125, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                // TPC PID custer
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, 80, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, 85, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 95, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 100, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                break;
+                
+            case kSystPID:
+                // variation of the lower TPC cut
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                // vary the top TPC PID cut with -1 sigma cut
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                // different TOF PID cuts
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, 2,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, 2.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, 3.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, 4,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                break;
+                
+                
+          
+            case kSystTrackPIDMixedCuts:
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 2, -4.,2.,AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 105, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                                  dEdxhm, 2,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 110, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 2,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 130, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 2.5, -4.,2.,AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 80, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 2.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 85, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 2.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 95, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 3.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, 100, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 3.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 90, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 3.5,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 95, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 4,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 125, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 4,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 4,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                break;
+                
+            case kSystAsociatedDCA:
+                // DCA associated cuts and ITS PID
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  2.4,3.2, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl,kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  0.5,1, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-3.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-3.5.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-4.,2.5, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-4.,3., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-3.,3., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                break;
+            case kSystAsociatedTPCcluster:
+                
+                // Assosciated TPC clusters
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, 50, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, 70, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, 80, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, 90, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, 50,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, 70,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, 80,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, 90,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                
+                break;
+                
+                
+            case kSystAsociatedMinpTWeights:
+                
+                // AssociatedMinPt
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,0.1, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,0.2, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                  kassETAm, kassETAp,0.3, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                
+                break;
+                
+                
         }
-        else
-        {
-            // TPC low cut = -0.1 (tpcl2) NO WEIGHTS for data
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm, kDefTOFs,0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
-                                kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
-        }
+        
+  
     }
+    
+  
+    
+    
+    
+    
+    
     if(kNPERef && kNPETOFITS)
     {
         // **************************************************************
@@ -103,21 +467,18 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
         if(MCthere)
         {
             // WITH WEIGHTS
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  kDefITSsmin,kDefITSsmax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
-            // NO WEIGHTS
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  kDefITSsmin,kDefITSsmax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13, dEdxhm,  kDefTOFs, -4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
             
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  -4,2, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
-            // NO WEIGHTS
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  -4,2, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13, dEdxhm,  kDefTOFs,  -4,2, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+
         }
         else
         {
             // NO WEIGHTS FOR DATA
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  kDefITSsmin,kDefITSsmax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13, dEdxhm,  kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
                                 kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
             
-            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  -4,2, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13, dEdxhm,  kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
         }
         
     }
@@ -127,7 +488,7 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
         // **************************************************************
         // Reference task
         // **************************************************************
-        RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, 0.,0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+        RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl10, dEdxhm, -4.,2.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
                             kassETAm, kassETAp,kassMinpT kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
     }
     if(kNPETOFlast){
@@ -136,7 +497,7 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
         // Apply TOF after TPC for mismatch background studies
         //
         // **************************************************************
-        RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kTRUE, kDefEtaIncMin, kDefEtaIncMax,
+        RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl10, dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kTRUE, kDefEtaIncMin, kDefEtaIncMax,
                             kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
     }
     

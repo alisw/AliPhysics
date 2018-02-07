@@ -87,7 +87,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @{
    * @name Properties of the embedding helper
    */
-  bool Initialize();
+  /**
+   * Initialize the Embedding Helper task. *Must* be called setting configuration for the task,
+   * either during the run macro or wagon configuration. Once called, most of the configuration is locked in,
+   * so be certain to change any configuration options before calling it.
+   *
+   * @param[in] removeDummyTask If true, the dummy task created with the configure wagon is removed.
+   */
+  bool Initialize(bool removeDummyTask = false);
 
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
@@ -182,8 +189,25 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @{
    * @name Utility functions
    */
-  // AddTask
+  /**
+   * Add task function. This contains the normal AddTask functionality, except in compiled code, making errors
+   * easier to spot than in CINT. The AddTask macro still exists for use on the LEGO train, but simply wraps this
+   * function.
+   *
+   * @return An properly instance of AliAnalysisTaskEmcalEmbeddingHelper, added to the current analysis manager.
+   */
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
+  /**
+   * Retrieve an existing embedding helper to perform further configuration. This should
+   * _ONLY_ be used on the LEGO train.
+   *
+   * To achieve this, a dummy task is created when the configure task is called because AliAnalysisTaskCfg
+   * requires that all wagons add a task. Then, when Initialize(true) is called on the embedding helper task, the
+   * dummy task is removed. This is a hack, but is required to work around constraints in AliAnalysisTaskCfg.
+   *
+   * @return An existing (usually unconfigured) EMCal Embedding Helper.
+   */
+  static AliAnalysisTaskEmcalEmbeddingHelper* ConfigureEmcalEmbeddingHelperOnLEGOTrain();
 
   // Printing
   friend std::ostream & operator<<(std::ostream &in, const AliAnalysisTaskEmcalEmbeddingHelper &myTask);
@@ -207,6 +231,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
  protected:
   bool            GetFilenames()        ;
+  Bool_t          IsGoodEmbeddedRun(TString path);
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -223,7 +248,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
-  Bool_t          IsGoodEmbeddedRun(TString path);
+  // LEGO Train utility
+  void            RemoveDummyTask() const;
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
   bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected

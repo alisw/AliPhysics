@@ -199,7 +199,7 @@ Int_t AliRsnLoopDaughter::LoopTrueMC(AliRsnEvent *rsn)
    Int_t ipart, count = 0;
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
-   Int_t pdg = AliRsnDaughter::SpeciesPDG(fDef->GetPID());
+   Long_t pdg = AliRsnDaughter::SpeciesPDG(fDef->GetPID());
 
 
    // loop over particles

@@ -39,7 +39,6 @@
 #pragma link C++ class AliAnalysisTaskGammaHadron+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0GammaCorr+;
 
-///I (Astrid) decide to put all my classes at the end because the list above is already not in alphabetical order :)
 #pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
 #pragma link C++ class AliEMCalpi0Task+;
 #pragma link C++ class ClusterStatStruct+;
@@ -47,4 +46,10 @@
 #pragma link C++ class diClusterStatStruct+;
 #pragma link C++ class EventStatStruct+;
 #pragma link C++ class mixedDiClusterStatStruct+;
+
+#pragma link C++ class AliEMCalpi0AddedSignalsTask+;
+#pragma link C++ class ClusterHijingMCStatStruct+;
+#pragma link C++ class ClusterMCStatStruct+;
+#pragma link C++ class ClusterpiMCStatStruct+;
+
 #endif

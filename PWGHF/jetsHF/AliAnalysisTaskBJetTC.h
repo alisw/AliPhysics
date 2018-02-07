@@ -2,8 +2,6 @@
 #define ALIANALYSISTASKBJETTC_H
 #include "AliHFJetsTagging.h"
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliV0ReaderV1.h"
-#include "AliConvEventCuts.h"
 class AliEmcalJet;
 class AliRDHFJetsCuts;
 class AliAODVertex;
@@ -19,6 +17,8 @@ class TClonesArray;
 class AliAODMCParticle;
 class AliMCEvent;
 class AliAnalysisUtils;
+class AliV0ReaderV1;
+class AliConvEventCuts;
 class TRandom3;
 class AliPIDResponse;
 class TLorentzVector;
@@ -99,13 +99,20 @@ public:
 
 	void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 
+	// B jet tracks selection
+
+	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
+	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
+	void SetITSHitsMin(Int_t val){ fTCMinHitsITS = val;}
+	void SetMaxChi2perNDF(Double_t val){ fTCMaxChi2pNDF = val;}
+	void SetMaxIPxy(Double_t val){ fTCMaxIPxy = val;}
+	void SetMaxIPz(Double_t val){ fTCMaxIPz = val;}
+	void SetMaxbDecayLength(Double_t val){ fTCMaxDecayLength = val;}
+	void SetMaxDCATrackJet(Double_t val){ fTCMaxDCATrackJet = val;}
+
 private:
 
-	AliV0ReaderV1*           fV0Reader; //
-    	TString                  fV0ReaderName;
-    	TClonesArray*            fReaderGammas;   //
-
-	Bool_t SelectV0CandidateVIT();
+	void SelectV0CandidateVIT();
   	Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax) const; // decides whether a particle is inside a jet cone
 	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
 	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
@@ -133,8 +140,12 @@ private:
 	AliRDHFJetsCuts* fJetCutsHF;//
 	AliHFJetsTagging* fHFJetUtils;//!
 
+	TClonesArray * fMCArray;//!
+    	TClonesArray  *fCaloClusters;//Tender cluster
+	AliAnalysisUtils *fUtils;//!
+	Bool_t fUsePicoTracks;
+
 	Bool_t fUseCorrPt;
-	Bool_t fEnableV0GammaRejection;
 	Float_t fPythiaEventWeight;//
 
   	AliPIDResponse   *fRespoPID;  //!
@@ -147,6 +158,17 @@ private:
 	TH2D * fh1dVertexR;//!
 	TH2D * fh1dVertexRAccepted;//!
 
+
+	// Bjet cuts
+	Double_t fTCMinTrackPt;
+	Int_t    fTCMinClusTPC;
+	Int_t 	 fTCMinHitsITS;
+	Double_t fTCMaxChi2pNDF;
+	Double_t fTCMaxIPxy;
+	Double_t fTCMaxIPz;
+	Double_t fTCMaxDecayLength;
+	Double_t fTCMaxDCATrackJet;
+	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
 	TH1D * fhistcJetCuts;//!
@@ -223,6 +245,8 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancec; //!
 
 	//################################ Jet Probabilty
+  	Bool_t fDoJetProbabilityAnalysis;
+
         TH2D * fh2dJetSignedImpParXY_Class1;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class1;//!
         TH2D * fh2dJetSignedImpParXYZ_Class1;//!
@@ -256,6 +280,7 @@ private:
         TH2D * fhistJetProbability_cLog;//!
         TH2D * fhistJetProbability_bLog;//!
 
+	TF1* fResolutionFunction[7];//
 
 	// inclusive signed impact parameter distributions
 	//First
@@ -332,6 +357,10 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird; //!
 
 
+	// V0 Rejection
+	AliV0ReaderV1*           fV0Reader; //
+    	TString                  fV0ReaderName;
+    	TClonesArray*            fReaderGammas;   //
 
 	TH2D* fh2dKshortMassVsPt;//!
 	TH2D* fh2dLamdaMassVsPt;//!
@@ -360,16 +389,12 @@ private:
 	TH1D* fh1V0CounterCentLambda; //! number of Lambda candidates after various cuts
 	TH1D* fh1V0CounterCentALambda; //! number of ALambda candidates after various cuts
 
-
-	TClonesArray * fMCArray;//!
-    	TClonesArray  *fCaloClusters;//Tender cluster
-	AliAnalysisUtils *fUtils;//!
-  	Bool_t fDoJetProbabilityAnalysis;
-	Bool_t fDoPtRelAnalysis;//
-	Bool_t fUsePicoTracks;
-
-
   // V0 selection
+  Bool_t fApplyV0Rec;//
+  Bool_t fApplyV0RejectionAll;//
+  Bool_t fEnableV0GammaRejection;
+
+  TClonesArray* fV0CandidateArray;
   // Daughter tracks
   Bool_t fbTPCRefit; // (yes) TPC refit for daughter tracks
   Bool_t fbRejectKinks; // (no) reject kink-like production vertices of daughter tracks
@@ -401,6 +426,8 @@ private:
   THnSparse* fhnV0InJetALambda; //!
 
   //########################## PtRel
+  Bool_t fDoPtRelAnalysis;//
+
   TH1D* fhistPtRelEvents;//!
   TH2D* fhistPtRelVsJetPt;//!
   TH2D* fhistLepIPVsJetPt;//!
@@ -461,15 +488,6 @@ private:
 
   TH2D* fhistPtRelVsJetPtTaggedbThird;//!
   TH2D* fhistLepIPVsJetPtTaggedbThird;//!
-
-  
-
-  Bool_t fApplyV0Rec;//
-  Bool_t fApplyV0RejectionAll;//
-
-  TClonesArray* fV0CandidateArray;
-
-  TF1* fResolutionFunction[7];//
 
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //

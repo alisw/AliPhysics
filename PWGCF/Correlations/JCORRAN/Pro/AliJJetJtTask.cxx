@@ -28,6 +28,7 @@
 #include "AliAODHandler.h"
 #include "AliParticleContainer.h"
 #include "AliAnalysisManager.h"
+#include "AliJHistManager.h"
 #include "AliLog.h"
 #include "AliJMCTrack.h"
 #include "AliJJetJtTask.h" 
@@ -56,7 +57,7 @@ AliJJetJtTask::AliJJetJtTask() :
   fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
-  fEventHist(NULL)
+  fEventHist()
 
 {
   DefineOutput (1, TDirectory::Class());
@@ -83,7 +84,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
-  fEventHist(NULL)
+  fEventHist()
 {
   // Constructor
   AliInfo("---- AliJJetJtTask Constructor ----");
@@ -177,7 +178,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->UserCreateOutputObjects();
 
   fCard->WriteCard(gDirectory);
-  fEventHist = new TH1D("EventHist","event numbers",10,0,10);
+  fEventHist << TH1D("EventHist","event numbers",10,0,10) << "END";
 
 
 

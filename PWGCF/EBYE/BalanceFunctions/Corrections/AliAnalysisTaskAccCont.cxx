@@ -56,20 +56,27 @@ fHistDCAToVertex2D(0),
 fHistEtaPhiCent(0),
 fHistPtEtaCent(0),
 fHistPtPhiCent(0),
+fHistGlobalvsESDBeforePileUpCuts(0),
+fHistGlobalvsESDAfterPileUpCuts(0),
 fUseOfflineTrigger(kFALSE),
-fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+fPbPb(kFALSE),
+fpPb(kFALSE),
 fDCAext(kFALSE),
 fUsePID(kFALSE),
+fUseRapidity(kFALSE),
 fVxMax(0.3), fVyMax(0.3), fVzMax(10.),
 fAODtrackCutBit(128),
 fPtMin(0), fPtMax(10),
 fEtaMin(-0.8), fEtaMax(0.8),
 fPIDResponse(0),
 fPIDNSigma(3),
+fMassParticleOfInterest(0.13957),
 fParticleOfInterest(kPion),
 fUtils(0),
 fHistEtaPhiVertexPlus(0),
 fHistEtaPhiVertexMinus(0),
+fHistYPhiVertexPlus(0),
+fHistYPhiVertexMinus(0),
 fHistDCAXYptchargedminus(0),
 fHistDCAXYptchargedplus(0),
 fHistDCAXYptchargedminus_ext(0),
@@ -95,14 +102,14 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     // Called once
     Int_t phiBin = 100;
     Int_t etaBin = 16;
-    Int_t vertex_bin = 4;
+    Int_t vertex_bin = 9;
     
     Double_t nArrayPhi[phiBin+1];
     for(Int_t iBin = 0; iBin <= phiBin; iBin++)
         nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
     
     Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-    Double_t nArrayVertex[5]={-10,-5,0,5,10};
+    Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10}; 
     
     fUtils = new AliAnalysisUtils();
     
@@ -136,14 +143,19 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     // QA histograms: multiplicities
     fHistMultiplicity = new TH2F("fHistMultiplicity",";Centrality (%);N_{acc.};Counts",10,0,100,5000,-0.5,4999.5);
     fListQA->Add(fHistMultiplicity);
+  
+    fHistGlobalvsESDBeforePileUpCuts = new TH2F("fHistGlobalvsESDBeforePileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
+    fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
     
+    fListQA->Add(fHistGlobalvsESDBeforePileUpCuts);
+    fListQA->Add(fHistGlobalvsESDAfterPileUpCuts); 
     //====================================================//
     //Results TList
     fListResults = new TList();
     fListResults->SetName("listResults");
     fListResults->SetOwner();
     
-    //Result: pT spectra
+    //Results
     fHistPt = new TH1F("fHistPt","Pt distribution;p_{T} (GeV/c);Counts",100,0,10);
     fListResults->Add(fHistPt);
     fHistCent = new TH1F("fHistCent","Centrality distribution;Centrality;Counts",10,0,100);
@@ -186,19 +198,33 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     fHistEtaPhiVertexMinus = new TH3D("fHistEtaPhiVertexMinus",
                                       "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                       phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+
+    fHistYPhiVertexPlus = new TH3D("fHistYPhiVertexPlus",
+                                     "Survived positive primaries;#phi;y;V_{z} (cm)",
+                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+
+    fHistYPhiVertexMinus = new TH3D("fHistYPhiVertexMinus",
+                                      "Survived negative primaries;#phi;y;V_{z} (cm)",
+                                      phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
     
     fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptchargedminus_ext = new TH3F("fHistDCAxychargedminusext","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
     fHistDCAXYptchargedplus_ext = new TH3F("fHistDCAxychargedplusext","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
-     
+    
     fListResults->Add(fHistEtaPhiVertexPlus);
     fListResults->Add(fHistEtaPhiVertexMinus);
+    if(fUseRapidity){
+    fListResults->Add(fHistYPhiVertexPlus);
+    fListResults->Add(fHistYPhiVertexMinus);
+    }
     fListResults->Add(fHistDCAXYptchargedminus);
     fListResults->Add(fHistDCAXYptchargedplus);
+    if(fDCAext){
     fListResults->Add(fHistDCAXYptchargedminus_ext);
     fListResults->Add(fHistDCAXYptchargedplus_ext);
-    
+    }
+   
     // Post output data
     PostData(1, fListQA);
     PostData(2, fListResults);
@@ -237,27 +263,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
         gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator.Data());
     }
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    
-    if (fUseOutOfBunchPileUpCutsLHC15o) {
-        if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-            fHistEventStats->Fill(6, -1);
-            return;
-        }
-        const Int_t nTracks = gAOD->GetNumberOfTracks();
-        Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
-        Int_t multTPC = 0;
-        for (Int_t it = 0; it < nTracks; it++) {
-            AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
-            if (!AODTrk){ delete AODTrk; continue; }
-            if (AODTrk->TestFilterBit(128)) {multTPC++;}
-        } // end of for (Int_t it = 0; it < nTracks; it++)
-        
-        if ((multEsd - 3.38*multTPC) > 15000)
-            return;
-        
-    }
-    
-    
+ 
     if(fUsePID) {
         fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
         if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
@@ -291,12 +297,44 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                     fHistEventStats->Fill(4,gCentrality);
                                     
                                     // check for pile-up event
-                                    //if(fCheckPileUp) {
-                                    //fUtils->SetUseMVPlpSelection(kTRUE);
-                                    //fUtils->SetUseOutOfBunchPileUp(kTRUE);
-                                    //if(!fUtils->IsPileUpEvent(gAOD)) {
-                                    fHistEventStats->Fill(5,gCentrality);
-                                    
+				    const Int_t nTracks = gAOD->GetNumberOfTracks(); 
+				    Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
+				    fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+                                   
+                                    if(fpPb) {
+				    fUtils->SetUseMVPlpSelection(kTRUE);
+    				    fUtils->SetUseOutOfBunchPileUp(kTRUE);
+				    }
+				    else if (fPbPb) {
+				    fUtils->SetUseMVPlpSelection(kFALSE);
+                                    fUtils->SetUseOutOfBunchPileUp(kFALSE);
+				    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+				            fHistEventStats->Fill(6,gCentrality);
+            				    return;
+        				}
+        			    //const Int_t nTracks = gAOD->GetNumberOfTracks();
+        			    //Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
+        			    Int_t multTPC = 0;
+        			    for (Int_t it = 0; it < nTracks; it++) {
+            			    AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
+           			    if (!AODTrk){ delete AODTrk; continue; }
+            			    if (AODTrk->TestFilterBit(128)) {multTPC++;}
+        			    } // end of for (Int_t it = 0; it < nTracks; it++)
+
+        			    if ((multEsd - 3.38*multTPC) > 15000){
+            			    fHistEventStats->Fill(6,gCentrality);
+				    return;
+				    }
+   				    }
+				    
+				    if(fUtils->IsPileUpEvent(gAOD)){ 
+				    fHistEventStats->Fill(6,gCentrality);
+				    return;
+				    }
+    				    fHistEventStats->Fill(5,gCentrality); 	    
+				    
+ 				    fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);				 
+	
                                     // Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
                                     for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
                                         AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
@@ -318,7 +356,8 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         Double_t xdca = aodTrack->DCA();
                                         Double_t zdca = aodTrack->ZAtDCA();
                                         Double_t charge = aodTrack->Charge();
-                                       
+ 					Double_t y = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt) );
+                                      
 					if( eta < fEtaMin || eta > fEtaMax) continue;
                                         if( pt < fPtMin || pt > fPtMax) continue;
 				 		
@@ -431,7 +470,9 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					                                       
                                         if (charge>0){
                                         	fHistEtaPhiVertexPlus->Fill(phi,eta,vertex->GetZ());
-                                            	if (fAODtrackCutBit==768){
+                                                if (fUseRapidity)
+						fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ());  
+					  	if (fAODtrackCutBit==768){
                                                 	if (fDCAext){
                                                         	if (aodTrack->TestFilterBit(512))
 									fHistDCAXYptchargedplus_ext->Fill(pt,eta,aodTrack->DCA());
@@ -446,15 +487,16 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                                         }
 						}
 						else {
-                                                	if (fDCAext)
+                                                	fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
+							if (fDCAext)
 								fHistDCAXYptchargedplus_ext->Fill(pt,eta,dca[0]);
-							else if (!fDCAext)
-								fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
 						}
 					}
                                         else if (charge<0){
                                         	fHistEtaPhiVertexMinus->Fill(phi,eta,vertex->GetZ());
-                                        	if (fAODtrackCutBit==768){ 
+ 						if (fUseRapidity)
+                                                fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ()); 
+	                                       	if (fAODtrackCutBit==768){ 
 					   		if (fDCAext){
 								if (aodTrack->TestFilterBit(512))	
 									fHistDCAXYptchargedminus_ext->Fill(pt,eta,aodTrack->DCA());
@@ -469,10 +511,9 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 							}
 						}
 						else {
-                                                        if (fDCAext)
+                                         		fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
+					                if (fDCAext)
 								fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
-							else if (!fDCAext)
-								fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
 						}	
 					}
 		

@@ -32,6 +32,7 @@ class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiTHn(*this); }
 
  private:
   THnSparseF *fDPhiDEtaNum;  // Numerator of dEta dPhi function

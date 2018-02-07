@@ -1,5 +1,6 @@
 #ifdef __CINT__
 
+#pragma link C++ class AliMeanPtAnalysisTask+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMeanPtRaw+;
 #pragma link C++ class AliAnalysisTaskPPvsMultINEL0+;
@@ -70,13 +71,13 @@
 
 #pragma link C++ class AliXtAnalysis+;
 #pragma link C++ class AliJXtHistos+;
-#pragma link C++ class AliAnalysisTaskHighPtDeDx+; 
-#pragma link C++ class AliAnaTaskV0EffDecomposition+; 
+#pragma link C++ class AliAnalysisTaskHighPtDeDx+;
+#pragma link C++ class AliAnaTaskV0EffDecomposition+;
 
-#pragma link C++ class DeDxTrack+; 
-#pragma link C++ class VZEROCell+; 
-#pragma link C++ class DeDxV0+; 
-#pragma link C++ class DeDxTrackMC+; 
+#pragma link C++ class DeDxTrack+;
+#pragma link C++ class VZEROCell+;
+#pragma link C++ class DeDxV0+;
+#pragma link C++ class DeDxTrackMC+;
 #pragma link C++ class DeDxEvent+;
 
 // Multiplicity and Event Shape Analysis classes

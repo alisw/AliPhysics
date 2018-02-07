@@ -38,6 +38,9 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDYDPhi(*this); }
+
 private:
 
   TH2D *fDPhiDYNumerator;            // Numerator of dY dPhi function

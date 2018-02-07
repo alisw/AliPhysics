@@ -27,7 +27,7 @@ public:
 
   virtual void Finish();
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
   virtual TList* GetOutputList();
   void Write();

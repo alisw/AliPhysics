@@ -976,6 +976,7 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
       Ekin[i]+=1.8  ;  //due to annihilation
     }
   }
+
   Int_t iMax=0;
   Double_t eMax=0.,eSubMax=0. ;
   for(Int_t i=0;  i<n;  i++){

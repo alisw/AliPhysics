@@ -73,6 +73,10 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fRejectPileUp(kFALSE),
 fRejectPileUpTight(kFALSE),
+fFillQAHistograms(kFALSE),
+fTPCvsGlobalTrkBefore(NULL),
+fTPCvsGlobalTrkAfter(NULL),
+fTPCvsESDTrk(NULL),
 fWeightsList(NULL)
 {
  // constructor
@@ -114,6 +118,10 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fRejectPileUp(kFALSE),
 fRejectPileUpTight(kFALSE),
+fFillQAHistograms(kFALSE),
+fTPCvsGlobalTrkBefore(NULL),
+fTPCvsGlobalTrkAfter(NULL),
+fTPCvsESDTrk(NULL),
 fWeightsList(NULL)
 {
  // Dummy constructor
@@ -173,6 +181,18 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
     Printf("ERROR: Could not retrieve histogram list (MH, Task::UserCreateOutputObjects()) !!!!"); 
    }
  
+
+ //Add QA histograms:
+  fTPCvsGlobalTrkBefore = new TH2F("fTPCvsGlobalTrkBefore","Global(Fb32) vs TPC(FB128)",250,0,5000,250,0,5000);
+  fListHistos->Add(fTPCvsGlobalTrkBefore);
+  fTPCvsGlobalTrkAfter = new TH2F("fTPCvsGlobalTrkAfter","Global(Fb32) vs TPC(FB128)",250,0,5000,250,0,5000);
+  fListHistos->Add(fTPCvsGlobalTrkAfter);
+
+
+  fTPCvsESDTrk = new TH2F("fTPCvsESDTrk","ESDTrk vs TPC(FB128)",1000,0,20000,250,0,5000);
+  fListHistos->Add(fTPCvsESDTrk);
+
+
  PostData(1,fListHistos);
   
 } // end of void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects() 
@@ -190,8 +210,8 @@ void AliAnalysisTaskMixedHarmonics::UserExec(Option_t *)
 
  //cout<<" Run = "<<aodEvent->GetRunNumber();
 
- if(fRejectPileUp){
-   kPileupEvent = CheckEventIsPileUp(aodEvent,fRejectPileUpTight);
+ if(fRejectPileUp || fFillQAHistograms){
+   kPileupEvent = CheckEventIsPileUp(aodEvent);
  }
 
  if(kPileupEvent)    return;
@@ -242,9 +262,9 @@ void AliAnalysisTaskMixedHarmonics::Terminate(Option_t *)
 
 
 
+//----- PileUp removal function -------
 
-
-Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod, Bool_t bPileUpTight) {
+Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod) {
 
  Bool_t BisPileup=kFALSE;
 
@@ -254,15 +274,15 @@ Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod, Bool
  Double_t centrTRK=300;
 
  fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-
+ 
+  if(!fMultSelection) {
+    printf("\n\n **WARNING** ::UserExec() AliMultSelection object not found.\n\n");
+    exit(1);
+  }
  centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
  centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
  centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
  centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
-
- if(fRejectPileUp && InputEvent()) {
-  //------------ pileup for 2015 data ----------
-      BisPileup=kFALSE;
 
      //-- pile-up a la Dobrin for LHC15o -----
       if(PileUpMultiVertex(faod)) {
@@ -282,7 +302,7 @@ Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod, Bool
          //fPileUpCount->Fill(3.5);
          BisPileup=kTRUE;
       }
-      if(fabs(centrV0M-centrCL1)>7.5)  {
+      if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5
          //fPileUpCount->Fill(4.5);
          BisPileup=kTRUE;
       }
@@ -313,14 +333,54 @@ Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod, Bool
       }
 
       //cuts on tracks
-      const Int_t nTracks = faod->GetNumberOfTracks();
-      Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
-
       //Int_t multTrk = 0;
       //Int_t multTrkBefC = 0;
       //Int_t multTrkTOFBefC = 0;
-      Int_t multTPC = 0;
 
+      Int_t multTPC = 0;
+      Int_t multITSfb96 = 0;
+      Int_t multITSfb32 = 0;
+
+      Int_t multTPCFE = 0;
+      Int_t multGlobal = 0;
+      Int_t multTPCuncut = 0;
+
+      Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+
+      const Int_t nTracks = faod->GetNumberOfTracks();
+
+      for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
+	//AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));
+         AliAODTrack* track = (AliAODTrack*)faod->GetTrack(iTracks);
+         if(!track)  continue;
+	 //---------- old method -----------
+        if(track->TestFilterBit(128))
+	   multTPC++;
+        if(track->TestFilterBit(96))
+           multITSfb96++;
+	//----------------------------------
+         if(track->TestFilterBit(1))  multTPCuncut++;
+         if(track->TestFilterBit(32)) multITSfb32++;
+
+
+         if(track->Pt()<0.2 || track->Pt()>5.0 || TMath::Abs(track->Eta())>0.8 || track->GetTPCNcls()<70 || track->GetTPCsignal()<10.0)
+            continue;
+         if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPCFE++;
+         if(!track->TestFilterBit(16) || track->Chi2perNDF()<0.1)   continue;
+                
+         Double_t b[2]    = {-99., -99.};
+         Double_t bCov[3] = {-99., -99., -99.};
+                
+         AliAODTrack copy(*track);
+         Double_t magField = faod->GetMagneticField();
+                
+         if(magField!=0){     
+           if(track->PropagateToDCA(faod->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;    
+         }
+      }
+
+
+      /*
       for(Int_t it = 0; it < nTracks; it++) {
         AliAODTrack* aodTrk = (AliAODTrack*)faod->GetTrack(it);
         if(!aodTrk) {
@@ -336,36 +396,66 @@ Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod, Bool
        //}
         if(aodTrk->TestFilterBit(128))
            multTPC++;
+        if(aodTrk->TestFilterBit(96))
+           multITSfb96++;
       } // end of for AOD track loop
+    
+      */
 
       Double_t multTPCn      = multTPC;
       Double_t multEsdn      = multEsd;
-      Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
 
-      if(multESDTPCDif > 15000.){
+      //fixed for test:
+      Double_t fPileUpSlopeParm = 3.51;
+      Double_t fPileUpConstParm = 50;
+
+      Double_t multESDTPCDif  = multEsdn  - fPileUpSlopeParm*multTPCn;
+      //Double_t multTPCGlobDif = multTPCFE - fPileUpSlopeParm*multGlobal;
+
+      if(fFillQAHistograms){
+	//fGlobalTracks->Fill(multGlobal);
+	fTPCvsGlobalTrkBefore->Fill(multITSfb32,multTPC);
+	fTPCvsESDTrk->Fill(multEsd,multTPC);
+      }
+
+      /*if(multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
         //fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
-      }
-      else if(bPileUpTight) {
-        if(multESDTPCDif > 700.) {
-          //fPileUpCount->Fill(8.5);
-          BisPileup=kTRUE;
-        }
-        if(BisPileup==kFALSE) {
-          if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
-          if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-          //if(BisPileup) fPileUpCount->Fill(9.5);
-        }  
-      }
-  }
+        }*/
+      /*if(multESDTPCDif > 15000.) { //default: 15000
+        //fPileUpCount->Fill(7.5);
+        BisPileup=kTRUE;
+       }*/
 
- return BisPileup; 
-}//-------pile up function ------
+
+     
+       if(fRejectPileUp) {
+         if(multESDTPCDif > fPileUpConstParm) { 
+          //fPileUpCount->Fill(7.5);
+          BisPileup=kTRUE;
+         }
+         if(BisPileup==kFALSE) {
+           if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+           if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+           //if(BisPileup)     fPileUpCount->Fill(9.5);
+ 	   if(fFillQAHistograms)
+	     fTPCvsGlobalTrkAfter->Fill(multITSfb32,multTPC);
+         }  
+       }
+   
+
+  return BisPileup; 
+} //-------pile up function ------
+
+
+
+
+
 
 
 

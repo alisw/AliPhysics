@@ -539,10 +539,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
       fEventQuality = 2;
       return kFALSE;
     }
-    if (!mcHandler->TreeTR() ) {
-      fEventQuality = 2;
-      return kFALSE;
-    }
+    // TrackRefs.root is currently not used by anyone
+    // and was excluded from future MC productions
+    // if (!mcHandler->TreeTR() ) {
+    //   fEventQuality = 2;
+    //   return kFALSE;
+    // }
     isMC = kTRUE;
   }
 
@@ -994,14 +996,14 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
-    } else if ( fModCentralityClass == 2){
-      printf("\t %d - %d \n", fCentralityMin*5+45, fCentralityMax*5+45);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
-    } else if ( fModCentralityClass == 5){
-      printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5+45, fCentralityMax*5+45);
+    } else if (fModCentralityClass == 5){
+      printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
+    } else if ( fModCentralityClass == 6){
+      printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
     }
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
@@ -1049,52 +1051,63 @@ void AliConvEventCuts::PrintCutsWithValues() {
 Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
 {   // Set Cut
   switch(isHeavyIon){
-  case 0:
+  case 0: // pp
     fIsHeavyIon=0;
     break;
-  case 1:
+  case 1: // V0M PbPb & XeXe
+    // steps of 10%
     fIsHeavyIon=1;
     fDetectorCentrality=0;
     break;
-  case 2:
+  case 2: // CL1 PbPb & XeXe
+    // steps of 10%
     fIsHeavyIon=1;
     fDetectorCentrality=1;
     break;
-  case 3: //allows to select centrality 0-45% in steps of 5% for V0 Multiplicity
+  case 3: // V0M PbPb & XeXe
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
     fIsHeavyIon=1;
     fDetectorCentrality=0;
     fModCentralityClass=1;
     break;
-  case 4: //allows to select centrality 45-90% in steps of 5% for V0 Multiplicity
-    fIsHeavyIon=1;
-    fDetectorCentrality=0;
-    fModCentralityClass=2;
-    break;
-  case 5: //strict cut on v0 tracks for MC
-    fIsHeavyIon=1;
-    fDetectorCentrality=0;
-    fModCentralityClass=3;
-    break;
-  case 6: //allows to select centrality 0-45% in steps of 5% for track mult
-    //strict cut on v0 tracks for MC
-    fIsHeavyIon=1;
-    fDetectorCentrality=0;
-    fModCentralityClass=4;
-    break;
-  case 7: //allows to select centrality 45-90% in steps of 5% for V0 Multiplicity
-    //strict cut on v0 tracks for MC
+  case 4: // V0M PbPb & XeXe & primary track mult for MC different track array
+    // steps of 10%
     fIsHeavyIon=1;
     fDetectorCentrality=0;
     fModCentralityClass=5;
     break;
-  case 8:
+  case 5: // V0M PbPb & XeXe & primary track mult for MC
+    // steps of 10%
+    fIsHeavyIon=1;
+    fDetectorCentrality=0;
+    fModCentralityClass=3;
+    break;
+  case 6: // V0M PbPb & XeXe & primary track mult for MC
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=1;
+    fDetectorCentrality=0;
+    fModCentralityClass=4;
+    break;
+  case 7: // V0M PbPb & XeXe & primary track mult for MC different track array
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=1;
+    fDetectorCentrality=0;
+    fModCentralityClass=6;
+    break;
+  case 8: // pPb V0A
+    // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
     break;
-  case 9:
+  case 9: // pPb CL1
+    // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     break;
+
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
@@ -1106,7 +1119,7 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
 Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 {
   // Set Cut
-  if(minCentrality<0||minCentrality>9){
+  if(minCentrality<0||minCentrality>20){
     AliError(Form("minCentrality not defined %d",minCentrality));
     return kFALSE;
   }
@@ -1119,7 +1132,7 @@ Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 Bool_t AliConvEventCuts::SetCentralityMax(Int_t maxCentrality)
 {
   // Set Cut
-  if(maxCentrality<0||maxCentrality>9){
+  if(maxCentrality<0||maxCentrality>20){
     AliError(Form("maxCentrality not defined %d",maxCentrality));
     return kFALSE;
   }
@@ -2006,12 +2019,6 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     } else return kFALSE;
   }
-  else if (fModCentralityClass ==2){
-    centralityC= Int_t(centrality);
-    if(centralityC >= ((fCentralityMin*5)+45) && centralityC < ((fCentralityMax*5)+45))
-      return kTRUE;
-    else return kFALSE;
-  }
 
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
@@ -2056,89 +2063,77 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       {   0,    0}, // 80-90% cent class min # of tracks
       {   0,    0}  // not used
     };
-  Int_t PrimaryTracks5a[11][2] =
+  Int_t PrimaryTracksLHC10h5[21][2] =
     {
-      {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec
-      {1485,1168}, // 5
-      {1210, 928}, // 10
-      { 995, 795}, // 15
-      { 817, 658}, // 20
-      { 666, 538}, // 25
-      { 536, 435}, // 30
-      { 428, 350}, // 35
-      { 337, 276}, // 40
+      {9999,9999},  // 0 ///1550 changed to 9999 on 9 Dec
+      {1485,1168},  // 5
+      {1210, 928},  // 10
+      { 995, 795},  // 15
+      { 817, 658},  // 20
+      { 666, 538},  // 25
+      { 536, 435},  // 30
+      { 428, 350},  // 35
+      { 337, 276},  // 40
       { 260, 214},  // 45
-      { 0, 162}// 50 only max accessible
+      { 197, 162},  // 50
+      { 147, 125},  // 55
+      { 106, 100},  // 60
+      {  75,  63},  // 65
+      {  51,  44},  // 70
+      {  34,  29},  // 75
+      {  21,  18},  // 80
+      {  13,  11},  // 85
+      {   6,   6},  // 90
+      {   3,   3},  // 95
+      {   0,   0}   // 100 only max accessible
     };
-  Int_t PrimaryTracksLHC11h5a[11][2] =
+    Int_t PrimaryTracksLHC11h5[21][2] =
     {
-      {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec
-      {1166,1168}, // 5
-      { 953, 928}, // 10
-      { 805, 795}, // 15
-      { 655, 658}, // 20
-      { 535, 538}, // 25
-      { 435, 435}, // 30
-      { 349, 350}, // 35
-      { 275, 276}, // 40
+      {9999,9999},  // 0 ///1550 changed to 9999 on 9 Dec
+      {1166,1168},  // 5
+      { 953, 928},  // 10
+      { 805, 795},  // 15
+      { 655, 658},  // 20
+      { 535, 538},  // 25
+      { 435, 435},  // 30
+      { 349, 350},  // 35
+      { 275, 276},  // 40
       { 214, 214},  // 45
-      { 165, 162}// 50 only max accessible
+      { 165, 162},  // 50
+      { 127, 125},  // 55
+      {  93, 100},  // 60
+      {  64,  63},  // 65
+      {  44,  44},  // 70
+      {  30,  29},  // 75
+      {  18,  18},  // 80
+      {  11,  11},  // 85
+      {   6,   6},  // 90
+      {   3,   3},  // 95
+      {   0,   0}   // 100 only max accessible
     };
-  Int_t PrimaryTracksLHC15o5a[11][2] =
+    Int_t PrimaryTracksLHC15o5[21][2] =
     {
-      { 2700, 2700}, // 0-5% cent class max # of tracks: max value of the data distribution
-      { 1827, 1827}, // 0-5% cent class min # of tracks
-      { 1498, 1498}, // 5-10
-      { 1234, 1234}, // 10-15
-      { 1012, 1012}, // 15-20
-      {  827,  827}, // 20-25
-      {  669,  669}, // 25-30
-      {  536,  536}, // 30-35
-      {  423,  423}, // 35-40
-      {  329,  329}, // 40-45 cent class min # of tracks (cut digit 9)
-      {    0,    0}  // not used
-    };
-  Int_t PrimaryTracks5b[11][2] =
-    {
-      { 260, 214}, // 45
-      { 197, 162}, // 50
-      { 147, 125}, // 55
-      { 106, 100}, // 60
-      {  75,  63}, // 65
-      {  51,  44}, // 70
-      {  34,  29}, // 75
-      {  21,  18}, // 80
-      {  13,  11}, // 85
-      {   0,   0},  // 90
-      {   0,   0}// 100 only max accessible
-    };
-  Int_t PrimaryTracksLHC11h5b[11][2] =
-    {
-      { 214, 214}, // 45
-      { 165, 162}, // 50
-      { 127, 125}, // 55
-      {  93, 100}, // 60
-      {  64,  63}, // 65
-      {  44,  44}, // 70
-      {  30,  29}, // 75
-      {  18,  18}, // 80
-      {  11,  11}, // 85
-      {   0,   0},  // 90
-      {   0,   0}// 100 only max accessible
-    };
-  Int_t PrimaryTracksLHC15o5b[11][2] =
-    {
-      { 329, 329}, // 45-50% cent class max # of tracks
-      { 251, 251}, // 45-50% cent class min # of tracks
-      { 188, 188}, // 50-55
-      { 136, 136}, // 55-60
-      {  97,  97}, // 60-65
-      {  67,  67}, // 65-70
-      {  44,  44}, // 70-75
-      {  28,  28}, // 75-80
-      {  17,  17}, // 80-85
-      {   0,   0}, // 85-90 cent class minimum # of tracks
-      {   0,   0}  // not used
+      { 2700, 2700},  // 0-5% cent class max # of tracks: max value of the data distribution
+      { 1827, 1827},  // 0-5% cent class min # of tracks
+      { 1498, 1498},  // 5-10
+      { 1234, 1234},  // 10-15
+      { 1012, 1012},  // 15-20
+      {  827,  827},  // 20-25
+      {  669,  669},  // 25-30
+      {  536,  536},  // 30-35
+      {  423,  423},  // 35-40
+      {  329,  329},  // 40-45 cent class min # of tracks (cut digit 9)
+      { 251, 251},    // 45-50% cent class min # of tracks
+      { 188, 188},    // 50-55
+      { 136, 136},    // 55-60
+      {  97,  97},    // 60-65
+      {  67,  67},    // 65-70
+      {  44,  44},    // 70-75
+      {  28,  28},    // 75-80
+      {  17,  17},    // 80-85
+      {  10,  10},    // 85-90
+      {   5,   5},    // 90-95 cent class minimum # of tracks
+      {   0,   0}     // 95-100
     };
     Int_t PrimaryTracksLHC17n10[11][2] =
     {
@@ -2194,17 +2189,17 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
     if(mcEvent){
       // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
-        if(nprimaryTracks > PrimaryTracksLHC11h5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5a[fCentralityMin][column])
+        if(nprimaryTracks > PrimaryTracksLHC11h5[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC15o for MC track mult
       } else if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
-        if(nprimaryTracks > PrimaryTracksLHC15o5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5a[fCentralityMin][column])
+        if(nprimaryTracks > PrimaryTracksLHC15o5[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC10h for MC track mult
       } else {
-        if(nprimaryTracks > PrimaryTracks5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5a[fCentralityMin][column])
+        if(nprimaryTracks > PrimaryTracksLHC10h5[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC10h5[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
       }
@@ -2216,30 +2211,118 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       } else return kFALSE;
     }
   }
-  else if (fModCentralityClass ==5){
+
+  Int_t PrimaryTracksLHC11h10AltMin[11][2] =
+  {
+    {1550,1550}, //  0  - 0
+    { 800, 800}, // 10  - 1
+    { 600, 600}, // 20  - 2
+    { 400, 400}, // 30  - 3
+    { 240, 240}, // 40  - 4
+    { 130, 130}, // 50  - 5
+    {  90,  90}, // 60  - 6
+    {  35,  35}, // 70  - 7
+    {  15,  15}, // 80  - 8
+    {   5,   5}, // 90  - 9
+    {   0,   0}  // 100 // only max accessible
+  };
+  Int_t PrimaryTracksLHC11h10AltMax[11][2] =
+  {
+    {1550,1550}, //  0 //1550 changed to 9999 on 9 Dec
+    {1000,1000}, // 10
+    { 700, 700}, // 20
+    { 480, 480}, // 30
+    { 300, 300}, // 40
+    { 200, 200}, // 50
+    { 120, 120}, // 60
+    {  50,  50}, // 70
+    {  22,  22}, // 80
+    {  10,  10}, // 90
+    {   0,   0}  // 100 // only max accessible
+  };
+  Int_t PrimaryTracksLHC11h5AltMin[21][2] =
+  {
+    {1550,1550},  // 0
+    {1000,1000},  // 5
+    { 800, 800},  // 10
+    { 700, 700},  // 15
+    { 600, 600},  // 20
+    { 500, 500},  // 25
+    { 400, 400},  // 30
+    { 300, 300},  // 35
+    { 240, 240},  // 40
+    { 180, 180},  // 45
+    { 130, 130},  // 50
+    { 127, 125},  // 55
+    {  90,  90},  // 60
+    {  55,  55},  // 65
+    {  35,  35},  // 70
+    {  25,  25},  // 75
+    {  15,  15},  // 80
+    {  11,  11},  // 85
+    {   5,   5},  // 90
+    {   0,   0},  // 95
+    {   0,   0}   // 100 only max accessible
+  };
+  Int_t PrimaryTracksLHC11h5AltMax[21][2] =
+  {
+    {1550,1550},  // 0
+    {1250,1250},  // 5
+    {1000,1000},  // 10
+    { 805, 795},  // 15
+    { 700, 700},  // 20
+    { 585, 585},  // 25
+    { 480, 480},  // 30
+    { 380, 380},  // 35
+    { 300, 300},  // 40
+    { 235, 235},  // 45
+    { 200, 200},  // 50
+    { 140, 140},  // 55
+    { 120, 120},  // 60
+    {  70,  70},  // 65
+    {  50,  50},  // 70
+    {  35,  25},  // 75
+    {  22,  22},  // 80
+    {  15,  15},  // 85
+    {  10,  10},  // 90
+    {   5,   5},  // 95
+    {   0,   0}   // 100 only max accessible
+  };
+
+  if (fModCentralityClass == 5){
     if(mcEvent){
       // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
-        if(nprimaryTracks > PrimaryTracksLHC11h5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5b[fCentralityMin][column])
+        if(nprimaryTracks > PrimaryTracksLHC11h10AltMin[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h10AltMax[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
-      // setting specific arry for LHC15o for MC track mult
-      } else if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
-        if(nprimaryTracks > PrimaryTracksLHC15o5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5b[fCentralityMin][column])
-          return kTRUE;
-        else return kFALSE;
-      // setting specific arry for LHC10h for MC track mult
+      // default return
       } else {
-        if(nprimaryTracks > PrimaryTracks5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5b[fCentralityMin][column])
-          return kTRUE;
-        else return kFALSE;
+        return kFALSE;
       }
-    }
-    else{
-      centralityC= Int_t(centrality);
-      if(centralityC >= ((fCentralityMin*5)+45) && centralityC < ((fCentralityMax*5)+45))
+    } else {
+      centralityC= Int_t(centrality/10);
+      if(centralityC >= fCentralityMin && centralityC < fCentralityMax)
         return kTRUE;
       else return kFALSE;
+    }
+  }
+  else if (fModCentralityClass ==6){
+    if(mcEvent){
+      // setting specific arry for LHC11h for MC track mult
+      if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
+        if(nprimaryTracks > PrimaryTracksLHC11h5AltMin[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5AltMax[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
+        // setting specific arry for LHC15o for MC track mult
+      } else {
+        return kFALSE;
+      }
+    } else{
+      centralityC= Int_t(centrality);
+      if(centralityC >= fCentralityMin*5 && centralityC < fCentralityMax*5){
+        return kTRUE;
+      } else return kFALSE;
     }
   }
 
@@ -2571,15 +2654,21 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 10) weight = weightsBins[bin];
 
+        } else if ( fPeriodEnum == kLHC17g8a ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+          Double_t weightsBins[20]      = {1.565930E+01, 4.598350E+00, 2.081240E+00, 7.744650E-01, 2.644240E-01, 1.002330E-01, 2.979190E-02, 9.696490E-03, 3.950930E-03, 1.333040E-03, 5.210630E-04, 1.927180E-04, 9.235930E-05, 4.346820E-05, 2.120660E-05, 1.073260E-05, 5.701210E-06, 3.047490E-06, 1.664780E-06, 2.123400E-06};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
         } else if ( fPeriodEnum == kLHC17g8b ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
-          Double_t weightsBins[20]      = {2.648510E+01, 7.963350E+00, 3.926460E+00, 1.535630E+00, 5.125940E-01, 1.982910E-01, 6.705810E-02, 2.214220E-02, 9.872830E-03, 3.460430E-03, 1.426840E-03, 5.212990E-04, 2.534030E-04, 1.157210E-04, 6.609650E-05, 3.424850E-05, 1.833500E-05, 1.022650E-05, 5.878600E-06, 8.550350E-06};
+          Double_t weightsBins[20]      = {2.723740E+01, 8.127540E+00, 3.934400E+00, 1.492720E+00, 5.268010E-01, 2.033790E-01, 6.361520E-02, 2.256080E-02, 9.638840E-03, 3.372890E-03, 1.381980E-03, 5.121390E-04, 2.613120E-04, 1.260940E-04, 6.393150E-05, 3.386080E-05, 1.926040E-05, 1.046950E-05, 5.895950E-06, 8.658420E-06};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
         } else if ( fPeriodEnum == kLHC17g8c ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
-          Double_t weightsBins[20]      = {2.638850E+01, 8.160880E+00, 3.937510E+00, 1.485000E+00, 5.382460E-01, 2.034610E-01, 6.293600E-02, 2.206170E-02, 9.319700E-03, 3.354230E-03, 1.392300E-03, 5.023470E-04, 2.645860E-04, 1.299660E-04, 6.415310E-05, 3.469890E-05, 1.816550E-05, 1.047480E-05, 5.728760E-06, 8.547820E-06};
+          Double_t weightsBins[20]      = {2.716550E+01, 8.121430E+00, 3.932100E+00, 1.492830E+00, 5.272190E-01, 2.023090E-01, 6.371860E-02, 2.245360E-02, 9.590340E-03, 3.369300E-03, 1.384470E-03, 5.119390E-04, 2.606910E-04, 1.259110E-04, 6.408650E-05, 3.396290E-05, 1.917340E-05, 1.044610E-05, 5.882680E-06, 8.672390E-06};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
@@ -3477,25 +3566,38 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         gh                    = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName = gh->GetName();
         lastindexA            = lastindexA + gh->NProduced();
-//         if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
+        if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
-//           if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
-          if(GeneratorName.CompareTo(GeneratorInList) == 0){
-//             if (fDebugLevel > 0 ) cout << "accepted" << endl;
-            if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+          if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
+          if(GeneratorInList.Contains(GeneratorName) ){
+            if (fDebugLevel > 0 ) cout << "accepted" << endl;
+            if (GeneratorInList.BeginsWith("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCEvent){
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
+                  if (fDebugLevel > 2 )cout << "number of produced particle: " <<  gh->NProduced() << endl;
+                  if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  fMCEvent->Particle(firstindexA)->GetPdgCode() << endl;
                   if (fMCEvent->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
-                    if (gh->NProduced() > 10 && fMCEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
-//                       if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                    if (gh->NProduced() > 10 && fMCEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
                       fnHeaders++;
                       continue;
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
                     continue;
                   }
                 } else {
-//                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 }
@@ -3504,27 +3606,40 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                 AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA));
                 if (aodMCParticle && (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c) ){
                   if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
-                    if (gh->NProduced() > 10){
+                    if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0){
                       AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA+10));
                       if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
-//                         if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
+                        if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
                       }
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
                     continue;
                   }
                 } else {
-//                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 }
               }
               continue;
             }
-//             if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
-            fnHeaders++;
-            continue;
+            if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
+              if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
+              fnHeaders++;
+              continue;
+            }
           }
         }
         firstindexA       = firstindexA + gh->NProduced();
@@ -3555,22 +3670,37 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-        if(GeneratorName.CompareTo(GeneratorInList) == 0){
-          if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+        if(GeneratorInList.Contains(GeneratorName) ){
+          if (GeneratorInList.Contains("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
             if(fMCEvent){
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                 if (fMCEvent->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
-//                   if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
-                  if (gh->NProduced() > 10 && fMCEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
-//                     if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
+                  if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
+                  if (gh->NProduced() > 10 && fMCEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                    if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
                     fNotRejectedStart[number] = firstindex;
                     fNotRejectedEnd[number] = lastindex;
                     fGeneratorNames[number] = GeneratorName;
                     number++;
-//                     if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
                     continue;
                   }
                 }
+                continue;
               } else {
                 fNotRejectedStart[number] = firstindex;
                 fNotRejectedEnd[number] = lastindex;
@@ -3583,7 +3713,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
               AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex));
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                 if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
-                  if (gh->NProduced() > 10) {
+                  if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0) {
                     AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex+10));
                     if ( aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
                       fNotRejectedEnd[number] = lastindex;
@@ -3592,7 +3722,22 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                       number++;
                     }
                     continue;
+                  } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
+                  } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                    fNotRejectedStart[number] = firstindex;
+                    fNotRejectedEnd[number] = lastindex;
+                    fGeneratorNames[number] = GeneratorName;
+                    number++;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    continue;
                   }
+                  continue;
                 }
               } else {
                 fNotRejectedStart[number] = firstindex;
@@ -3603,11 +3748,11 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
               }
             }
             continue;
-          } else {
+          } else if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
-//             if (fDebugLevel > 0 )  cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+            if (fDebugLevel > 0 )  cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
             number++;
             continue;
           }

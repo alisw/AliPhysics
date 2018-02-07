@@ -36,6 +36,7 @@ public:
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctn3DSpherical(*this); }
 
   //  void SetSpecificPairCut(AliFemtoPairCut* aCut);
 

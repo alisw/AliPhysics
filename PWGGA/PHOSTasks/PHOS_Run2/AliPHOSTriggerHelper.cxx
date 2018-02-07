@@ -127,7 +127,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0trigger
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE),
+  fUseDeltaRMatching(kFALSE),
   fApplyTOFCut(kFALSE),
   fDRN(-1)
 {

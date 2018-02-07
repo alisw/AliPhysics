@@ -1,7 +1,7 @@
 /***************************************************************************
-              Anders Knospe - last modified on 31 August 2016
+              Anders Knospe
 
-*** Configuration script for phi analysis of 2015 pp 13-TeV data ***
+*** Configuration script for phi analysis of 2015-2016 pp 13-TeV data ***
 ****************************************************************************/
 
 Bool_t ConfigPhiPP13TeV_PID
@@ -223,6 +223,97 @@ Bool_t ConfigPhiPP13TeV_PID
       if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections
   }//end MC
+
+  //-------------------------------------------------------
+  // misidentified daughters in simulation
+
+  TString mName;
+  Double_t mMass;
+  Int_t mPDG0,mPDG1,mPDG2;
+
+  if(isMC){
+    for(Int_t i=0;i<9;i++){
+      if(!i){
+        mName.Form("pi0_ee");
+        mMass=0.134977;
+        mPDG0=111;
+        mPDG1=mPDG2=11;
+      }else if(i==1){
+        mName.Form("Kx_pipi");
+        mMass=0.493677;
+        mPDG0=321;
+        mPDG1=mPDG2=211;
+      }else if(i==2){
+        mName.Form("K0S_pipi");
+        mMass=0.497614;
+        mPDG0=310;
+        mPDG1=mPDG2=211;
+      }else if(i==3){
+        mName.Form("K0L_pipi");
+        mMass=0.497614;
+        mPDG0=130;
+        mPDG1=mPDG2=211;
+      }else if(i==4){
+        mName.Form("eta_pipi");
+        mMass=0.547862;
+        mPDG0=221;
+        mPDG1=mPDG2=211;
+      }else if(i==5){
+        mName.Form("etaprime_pipi");
+        mMass=0.95778;
+        mPDG0=331;
+        mPDG1=mPDG2=211;
+      }else if(i==6){
+        mName.Form("Lambdap_ppi");
+        mMass=1.115683;
+        mPDG0=3122;
+        mPDG1=2212;
+        mPDG2=211;
+      }else if(i==7){
+        mName.Form("Lambdaa_ppi");
+        mMass=1.115683;
+        mPDG0=-3122;
+        mPDG1=211;
+        mPDG2=2212;
+      }else if(i==8){
+        mName.Form("Lambda1520p_pK");
+        mMass=1.5915;
+        mPDG0=3124;
+        mPDG1=2212;
+        mPDG2=321;
+      }else if(i==9){
+        mName.Form("Lambda1520a_pK");
+        mMass=1.5915;
+        mPDG0=-3124;
+        mPDG1=321;
+        mPDG2=2212;
+      }
+
+      AliRsnMiniOutput* out=task->CreateOutput(Form("%s_true",mName.Data()),"HIST","TRUE");
+      out->SetCutID(0,iCutQ);
+      out->SetCutID(1,iCutQ);
+      out->SetDaughter(0,AliRsnDaughter::kKaon);
+      out->SetDaughter(1,AliRsnDaughter::kKaon);
+      out->SetCharge(0,'+');
+      out->SetCharge(1,'-');
+      out->SetMotherPDG(mPDG0);
+      out->SetMotherMass(mMass);
+      out->SetPairCuts(cutsPair);
+
+      if(mPDG1==11) out->SetDaughterTrue(0,AliRsnDaughter::kElectron);
+      else if(mPDG1==211) out->SetDaughterTrue(0,AliRsnDaughter::kPion);
+      else if(mPDG1==321) out->SetDaughterTrue(0,AliRsnDaughter::kKaon);
+      else if(mPDG1==2212) out->SetDaughterTrue(0,AliRsnDaughter::kProton);
+
+      if(mPDG2==11) out->SetDaughterTrue(1,AliRsnDaughter::kElectron);
+      else if(mPDG2==211) out->SetDaughterTrue(1,AliRsnDaughter::kPion);
+      else if(mPDG2==321) out->SetDaughterTrue(1,AliRsnDaughter::kKaon);
+      else if(mPDG2==2212) out->SetDaughterTrue(1,AliRsnDaughter::kProton);
+
+      out->AddAxis(imID,215,0.985,1.2);
+      out->AddAxis(ptID,100,0.,20.);
+    }
+  }
 
   return kTRUE;
 }

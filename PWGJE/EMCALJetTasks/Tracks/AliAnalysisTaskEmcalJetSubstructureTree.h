@@ -75,6 +75,7 @@ struct AliSoftDropParameters {
   Double_t fMg;             ///< Groomed jet mass
   Double_t fRg;             ///< Groomed jet radius
   Double_t fPtg;            ///< Groomed jet pt
+  Double_t fDeltaR;         ///< Delta_r of the branches at the last splitting
   Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
 };
@@ -175,20 +176,22 @@ public:
     kTPtgTrue = 27,
     kTMugMeasured = 28,
     kTMugTrue = 29,
-    kTOneNSubjettinessMeasured = 30,
-    kTOneNSubjettinessTrue = 31,
-    kTTwoNSubjettinessMeasured = 32,
-    kTTwoNSubjettinessTrue = 33,
-    kTAngularityMeasured = 34,
-    kTAngularityTrue = 35,
-    kTPtDMeasured = 36,
-    kTPtDTrue = 37,
-    kTNCharged = 38,
-    kTNNeutral = 39,
-    kTNConstTrue = 40,
-    kTNDroppedMeasured = 41,
-    kTNDroppedTrue = 42,
-    kTNVar = 43
+    kTDeltaRgMeasured = 30,
+    kTDeltaRgTrue = 31,
+    kTOneNSubjettinessMeasured = 32,
+    kTOneNSubjettinessTrue = 33,
+    kTTwoNSubjettinessMeasured = 34,
+    kTTwoNSubjettinessTrue = 35,
+    kTAngularityMeasured = 36,
+    kTAngularityTrue = 37,
+    kTPtDMeasured = 38,
+    kTPtDTrue = 39,
+    kTNCharged = 40,
+    kTNNeutral = 41,
+    kTNConstTrue = 42,
+    kTNDroppedMeasured = 43,
+    kTNDroppedTrue = 44,
+    kTNVar = 45
   };
 
 	AliAnalysisTaskEmcalJetSubstructureTree();
@@ -199,6 +202,7 @@ public:
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
 	void SetUseDownscaleWeight(Bool_t usedownscale) { fUseDownscaleWeight = usedownscale; }
   void SetGlobalTriggerDecisionContainerName(const char *name) { fNameTriggerDecisionContainer = name; }
+  void SetUseTriggerSelectionOnData(bool doUse) { fUseTriggerSelectionForData = doUse; }
 
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
@@ -213,6 +217,9 @@ public:
   void SetFillSoftdropBranches(Bool_t doFill) { fFillSoftDrop = doFill; }
   void SetFillNSubjettinessBranches(Bool_t doFill) { fFillNSub = doFill; }
   void SetFillSubstructureBranches(Bool_t doFill) { fFillStructGlob = doFill; }
+
+  void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
+  void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
 	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
@@ -252,6 +259,8 @@ protected:
   bool IsNSubjettinessBranch(const std::string &branchname) const;
   bool IsStructbranch(const std::string &branchname) const;
 
+  bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
+
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
@@ -265,7 +274,10 @@ private:
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container
+  Bool_t                       fUseTriggerSelectionForData; ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
+  Bool_t                       fUseChargedConstituents;     ///< Use charged constituents 
+  Bool_t                       fUseNeutralConstituents;     ///< Use neutral constituents
 
   // Fill levels for tree (save disk space when information is not needed)
   Bool_t                       fFillPart;                   ///< Fill particle level information

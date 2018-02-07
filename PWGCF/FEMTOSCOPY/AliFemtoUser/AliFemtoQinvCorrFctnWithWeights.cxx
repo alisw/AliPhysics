@@ -21,13 +21,13 @@ AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(const char* tit
   fDenominator(0),
   fRatio(0),
   fkTMonitor(0),
+  fYPtWeightsParticle1(filter1),
+  fYPtWeightsParticle2(filter2),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
   fDenDEtaDPhiS(0),
-  fYPtWeightsParticle1(filter1),
-  fYPtWeightsParticle2(filter2),
   PairReader(0)// ,
   // fTrack1(NULL),
   // fTrack2(NULL)
@@ -90,13 +90,13 @@ AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(const AliFemtoQ
   fDenominator(0),
   fRatio(0),
   fkTMonitor(0),
+  fYPtWeightsParticle1(0),
+  fYPtWeightsParticle2(0),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
   fDenDEtaDPhiS(0),
-  fYPtWeightsParticle1(0),
-  fYPtWeightsParticle2(0),
   PairReader(0)// ,
   // fTrack1(NULL),
   // fTrack2(NULL)
@@ -213,8 +213,9 @@ AliFemtoString AliFemtoQinvCorrFctnWithWeights::Report(){
 //____________________________
 void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
   // add true pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
 
@@ -285,8 +286,9 @@ void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
 void AliFemtoQinvCorrFctnWithWeights::AddMixedPair(AliFemtoPair* pair)
 {
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...

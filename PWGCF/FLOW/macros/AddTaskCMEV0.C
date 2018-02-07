@@ -172,15 +172,18 @@ class AliAnalysisTaskCMEV0;
 
 
 
-  TString taskFEQA = file;      // file is the common outfile filename
-  taskFEQA   += ":QAcharge";
-  //taskFEQA   += suffix;    should I do this or not?
 
-  TString ContainerFEQA;
-  ContainerFEQA.Form("FEContQA_%s", suffix);
+  if(bEventCutsQA || bTrackCutsQA){
+    TString taskFEQA = file;      // file is the common outfile filename
+    taskFEQA   += ":QAcharge";
+    //taskFEQA   += suffix;    
 
-  AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer(ContainerFEQA,TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
-  mgr->ConnectOutput(taskFE, 2, coutputFEQA);          // kOutputContainer: written to the output file
+    TString ContainerFEQA;
+    ContainerFEQA.Form("FEContQA_%s", suffix);
+
+    AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer(ContainerFEQA,TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
+    mgr->ConnectOutput(taskFE, 2, coutputFEQA);          // kOutputContainer: written to the output file
+  }
 
 
   //==========================================================================================

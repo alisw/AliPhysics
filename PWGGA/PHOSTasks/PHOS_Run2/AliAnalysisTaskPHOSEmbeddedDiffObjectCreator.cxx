@@ -113,6 +113,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
   TLorentzVector p1,p1core;
 
   //Double_t energy=0, tof=-999, M20=0, M02=0, R2=999, coreE=0, coreR2=999;
+  Double_t energy=0, coreE=0;
   Double_t tof=-999, M20=0, M02=0, R2=999, coreR2=999;
   Double_t r=999;
 
@@ -200,9 +201,18 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-    //energy = cluster->E();
+    energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
+    Int_t primary = cluster->GetLabel();
+
+    ////if simulated photon energy is less than a half of a cluster energy, reject such cluster.
+    //AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+    //Double_t Etrue = p->E();//energy of photon
+    //if(Etrue < 0.5 * energy){
+    //  AliInfo(Form("energy of photon = %e GeV , reconstructed cluster energy = %e GeV. Eture < 0.5 * Erec. reject this cluster.",Etrue,energy));
+    //  continue;
+    //}
 
     cluster->GetMomentum(p1,fVertex);
     cluster->GetMomentum(p1core,fVertex);
@@ -218,7 +228,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     ph->SetEMCx((Double_t)position[0]);
     ph->SetEMCy((Double_t)position[1]);
     ph->SetEMCz((Double_t)position[2]);
-    Int_t primary = cluster->GetLabel();
 
     //Bool_t sure = kFALSE;
     //Int_t primary = FindPrimary(ph,sure);
@@ -230,16 +239,19 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     M20 = cluster->GetM20();//M20 is short axis of elliptic shower shape.
     M02 = cluster->GetM02();//M02 is long  axis of elliptic shower shape.
     R2 = cluster->GetDispersion();//full dispersion
-    //coreE = cluster->GetCoreEnergy();
+    coreE = cluster->GetCoreEnergy();
     coreR2 = cluster->Chi2();//core dispersion
     r = cluster->GetEmcCpvDistance();
-    //cout << "energy = " << energy << " , coreE = " << coreE << endl;
 
     ph->SetLambdas(M20,M02);
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
+
+    p1core *= coreE/energy; //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
+
+    //printf("energy = %e GeV, coreE = %e GeV\n",ph->Energy(),ph->GetMomV2()->Energy());
 
     inPHOS++;
   }//end of cluster loop

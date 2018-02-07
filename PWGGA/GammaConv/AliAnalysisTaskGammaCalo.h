@@ -108,7 +108,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
-    
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
@@ -322,6 +322,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoNGoodESDTracks;                                 //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                fHistoVertexZ;                                        //! array of histos with vertex z distribution for selected events
     TH1F**                fHistoNGammaCandidates;                               //! array of histos with number of gamma candidates per event
+    TH1F**                fHistoNGammaCandidatesBasic;                          //! array of histos with number of gamma candidates per event for basic cluster cut
     TH2F**                fHistoNGoodESDTracksVsNGammaCandidates;               //! array of histos with number of good tracks vs gamma candidates
     TH2F**                fHistoSPDClusterTrackletBackground;                   //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                fHistoNV0Tracks;                                      //! array of histos with V0 counts
@@ -400,12 +401,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
-
+    Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 43);
+    ClassDef(AliAnalysisTaskGammaCalo, 44);
 };
 
 #endif

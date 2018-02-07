@@ -135,6 +135,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1M(0x0),
   fPHOSTriggerHelperL1L(0x0),
   fForceActiveTRU(kFALSE),
+  fTRFM(-1),
   fPIDResponse(0x0),
   fIsNonLinStudy(kFALSE),
   fGlobalEScale(1.0),
@@ -171,7 +172,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   //fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
   //fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
 
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
     fAdditionalEtaPtWeight[i]   = new TF1(Form("fAdditionalEtaPtWeight_%d",i)  ,"1.",0,100);
     fAdditionalGammaPtWeight[i] = new TF1(Form("fAdditionalGammaPtWeight_%d",i),"1.",0,100);
@@ -226,7 +227,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
     fPHOSTriggerHelperL1L = 0x0;
   }
 
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     if(fAdditionalPi0PtWeight[i]){
       delete fAdditionalPi0PtWeight[i];
       fAdditionalPi0PtWeight[i] = 0x0;
@@ -558,6 +559,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   h2mix_pp_TOF->Sumw2();
   fOutputContainer->Add(h2mix_pp_TOF);
 
+  //for photon purity by DDA
+
+  const TString PIDName[] = {"Electron","Pion","Kaon","Proton","AntiProton","Undefined"};//AntiProton is needed for antineutron study.
+  const Int_t Npid = sizeof(PIDName)/sizeof(PIDName[0]);
+
+  for(Int_t ip=0;ip<Npid;ip++){
+    TH1F *h1noPID = new TH1F(Form("hDDAPurity%s_noPID",PIDName[ip].Data()),Form("p_{T} of %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+    h1noPID->Sumw2();
+    fOutputContainer->Add(h1noPID);
+    
+    TH1F *h1PID = new TH1F(Form("hDDAPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+    h1PID->Sumw2();
+    fOutputContainer->Add(h1PID);
+  };
+
+
+
 
   if(fIsPHOSTriggerAnalysis){
 
@@ -676,9 +694,40 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
     }//end of particle loop
 
-    TH1F *h1TrueGamma = new TH1F("hPurityGamma","pT of true photon in clusters for purity;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueGamma->Sumw2();
-    fOutputContainer->Add(h1TrueGamma);
+    //for purity based on MC truth
+    TH1F *h1TrueGamma_noPID = new TH1F("hPurityGamma_noPID","p_{T} of true photon in clusters for purity no PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueGamma_noPID->Sumw2();
+    fOutputContainer->Add(h1TrueGamma_noPID);
+
+    TH1F *h1TrueGamma_PID = new TH1F("hPurityGamma_PID","p_{T} of true photon in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueGamma_PID->Sumw2();
+    fOutputContainer->Add(h1TrueGamma_PID);
+
+    for(Int_t ip=0;ip<Npid-1;ip++){//-1 is to avoid creating Undefined.
+      TH1F *h1noPID = new TH1F(Form("hPurity%s_noPID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+      h1noPID->Sumw2();
+      fOutputContainer->Add(h1noPID);
+
+      TH1F *h1PID = new TH1F(Form("hPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+      h1PID->Sumw2();
+      fOutputContainer->Add(h1PID);
+    };
+
+    TH1F *h1TrueNeutron_noPID = new TH1F("hPurityNeutron_noPID","p_{T} of true Neutron in clusters for purity no PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueNeutron_noPID->Sumw2();
+    fOutputContainer->Add(h1TrueNeutron_noPID);
+
+    TH1F *h1TrueNeutron_PID = new TH1F("hPurityNeutron_PID","p_{T} of true Neutron in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueNeutron_PID->Sumw2();
+    fOutputContainer->Add(h1TrueNeutron_PID);
+
+    TH1F *h1TrueAntiNeutron_noPID = new TH1F("hPurityAntiNeutron_noPID","p_{T} of true AntiNeutron in clusters for purity noPID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueAntiNeutron_noPID->Sumw2();
+    fOutputContainer->Add(h1TrueAntiNeutron_noPID);
+
+    TH1F *h1TrueAntiNeutron_PID = new TH1F("hPurityAntiNeutron_PID","p_{T} of true AntiNeutron in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueAntiNeutron_PID->Sumw2();
+    fOutputContainer->Add(h1TrueAntiNeutron_PID);
 
     const TString Asym[] = {"","_asym08"};
     const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
@@ -774,6 +823,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   fESDEvent = dynamic_cast<AliESDEvent*>(fEvent);
   fAODEvent = dynamic_cast<AliAODEvent*>(fEvent);
+
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  if(!fPIDResponse){
+    AliFatal("fPIDResponse does not exist!");
+    return;
+  }
 
   if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
     fRunNumber = fEvent->GetRunNumber();
@@ -985,10 +1040,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
  
   if(!fIsMC) FillRejectionFactorMB();
 
-  fPIDResponse = fInputHandler->GetPIDResponse();
-  if(!fPIDResponse){
-    AliWarning("fPIDResponse does not exist! This is not crucial in photon analysis in calorimeters.");
-  }
 
   //track QA
   TrackQA();
@@ -1052,6 +1103,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   if(!fIsMC && fIsPHOSTriggerAnalysis){
+    AliInfo(Form("PHOS trigger analysis is ON! RF method = %d",fTRFM));
     TriggerQA();
     SelectTriggeredCluster();
     EstimateTriggerEfficiency();
@@ -1071,6 +1123,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   EstimatePIDCutEfficiency();
   EstimateTOFCutEfficiency();
+  DDAPhotonPurity();
 
   if(fIsNonLinStudy) DoNonLinearityStudy();
 
@@ -1426,7 +1479,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
@@ -1559,7 +1612,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t sp1 = -999;
 
   Double_t weight = 1.;
-  Int_t primary = -1;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
@@ -1567,7 +1619,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
       if(ph->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
     }
@@ -1575,6 +1627,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
 
     weight = 1.;
+    if(fIsMC){
+      weight = ph->GetWeight();
+    }
 
     pT = ph->Pt();
     energy = ph->Energy();
@@ -1589,11 +1644,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     eff = f1tof->Eval(energy);
     if(!fIsMC && fIsPHOSTriggerAnalysis) trgeff = f1trg->Eval(energy);
 
-    if(fIsMC){
-      primary = ph->GetPrimary();
-      weight = ph->GetWeight();
-      if(IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hPurityGamma",pT,weight);
-    }
 
     //0 < photon phi < 2pi
     if(phi < 0) phi += TMath::TwoPi();
@@ -1662,9 +1712,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;//use cluster pairs only on active TRU both in data and M.C.
 
     eta1 = ph1->Eta();
     phi1 = ph1->Phi();
@@ -1675,11 +1724,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
       if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
-      if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+
+      if(fForceActiveTRU 
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        ) continue;//only for kINT7
+
+      //if(fIsPHOSTriggerAnalysis 
+      //    && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+      //  ) continue;
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -1688,7 +1744,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       m12  = p12.M();
       pt12 = p12.Pt();
       phi  = p12.Phi();
-      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));//always full energy
+      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
 
       eta2 = ph2->Eta();
       phi2 = ph2->Phi();
@@ -1814,9 +1870,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -1826,11 +1881,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
-        if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
         if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
-        if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+
+        if(fForceActiveTRU 
+            && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+          ) continue;//only for kINT7
+
+        //if(fIsPHOSTriggerAnalysis 
+        //    && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        //  ) continue;
+
 
         e1 = ph1->Energy();
         e2 = ph2->Energy();
@@ -2037,6 +2100,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
   TLorentzVector p12, p12core;
   Double_t m12=0;
   Double_t energy=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2061,9 +2128,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         energy = (ph2->GetMomV2())->Energy();
       }
 
-      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy);
+      weight = 1.;
+      if(fIsMC){
+        w1= ph1->GetWeight();
+        primary1 = ph1->GetPrimary();
+
+        w2 = ph2->GetWeight();
+        primary2 = ph2->GetPrimary();
+
+        commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) weight = w1;
+        else weight = w1*w2;
+
+      }//end of if fIsMC
+
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy,weight);
       if(fPHOSClusterCuts->AcceptPhoton(ph2))
-        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy);
+        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy,weight);
 
     }//end of ph2
 
@@ -2094,9 +2175,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
           energy = (ph2->GetMomV2())->Energy();
         }
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy);
+        weight = 1.;
+        if(fIsMC){
+          w1= ph1->GetWeight();
+          w2 = ph2->GetWeight();
+          weight = w1*w2;
+        }//end of if fIsMC
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy,weight);
         if(fPHOSClusterCuts->AcceptPhoton(ph2))
-          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy);
+          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy,weight);
 
       }//end of mix
 
@@ -2184,6 +2272,142 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
       }//end of mix
 
     }//end of ph2
+
+  }//end of ph1
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
+{
+  //Data Driven Approach to measure photon purity.
+  //identified charged particle pi/K/p are used.
+  //shower shape is same in pi/K/p, but different from EM (e/gamma) shower shape.-> hadronic contamination after shower shape cut is measured.
+  //photon should be neutral hit, so, clusters matching with track is not photon.-> charged particle contamination after CPV cut is measured.
+  //an electrons is EM particle, but charged.-> electrons are rejected by CPV.
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  Double_t pT=0;
+  Double_t weight = 1.;
+  Int_t primary = -1;
+
+  AliVCluster *cluster = 0x0;
+  AliVTrack *track = 0x0;
+  Int_t charge = 0;
+  Double_t nsigmaElectron = 999;
+  Double_t nsigmaPion = 999;
+  Double_t nsigmaKaon = 999;
+  Double_t nsigmaProton = 999;
+  Bool_t pidPion = kFALSE;
+  Bool_t pidKaon = kFALSE;
+  Bool_t pidProton = kFALSE;
+  Bool_t pidElectron = kFALSE;
+  //Bool_t pidUndefined = kFALSE;
+  const Double_t NsigmaCut = 3;
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to look at non-triggered cluster in PHOS trigger analysis.
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    pT = ph->Pt();
+
+    if(fUseCoreEnergy){
+      pT = (ph->GetMomV2())->Pt();
+    }
+
+    weight = 1.;
+    if(fIsMC){
+      primary = ph->GetPrimary();
+      weight = ph->GetWeight();
+    }
+
+    cluster = 0x0;
+    track = 0x0;
+
+    cluster = (AliVCluster*)ph->GetCluster();
+
+    if(fESDEvent){
+      Int_t trackindex = cluster->GetTrackMatchedIndex();
+      if(trackindex > 0){
+        track = (AliVTrack*)(fEvent->GetTrack(trackindex));
+      }
+    }//end of ESD
+    else if(fAODEvent){
+      if(cluster->GetNTracksMatched() > 0){
+        track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(0));
+      }//end of track matching
+    }//end of AOD
+
+    pidPion = kFALSE;
+    pidKaon = kFALSE;
+    pidProton = kFALSE;
+    pidElectron = kFALSE;
+    //pidUndefined = kFALSE;
+
+    if(track){
+      charge = track->Charge();
+      nsigmaElectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));//only for simplicity. (-2,3) is for real electron analysis.
+      nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+      nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+      nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+
+      if((nsigmaElectron < nsigmaPion)   && (nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < NsigmaCut)) pidElectron = kTRUE;
+      if((nsigmaPion   < nsigmaElectron) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+      if((nsigmaKaon   < nsigmaElectron) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+      if((nsigmaProton < nsigmaElectron) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+    }
+    //if(!pidElectron && !pidPion && !pidKaon && !pidProton) pidUndefined = kTRUE;//neutral hits also contribute as undefined.
+
+    if(pidElectron)  FillHistogramTH1(fOutputContainer,"hDDAPurityElectron_noPID",pT,weight);
+    else if(pidPion) FillHistogramTH1(fOutputContainer,"hDDAPurityPion_noPID",pT,weight);
+    else if(pidKaon) FillHistogramTH1(fOutputContainer,"hDDAPurityKaon_noPID",pT,weight);
+    else if(pidProton){
+      if(charge > 0) FillHistogramTH1(fOutputContainer,"hDDAPurityProton_noPID",pT,weight);
+      else           FillHistogramTH1(fOutputContainer,"hDDAPurityAntiProton_noPID",pT,weight);
+    }
+    else             FillHistogramTH1(fOutputContainer,"hDDAPurityUndefined_noPID",pT,weight);//neutral hadrons or photon
+
+    if(fIsMC){
+      if(IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+
+      AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+      Int_t pdg = p->PdgCode(); 
+      
+      if(TMath::Abs(pdg) == 11)       FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
+      else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+      else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+      else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+      else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+    }
+
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+
+    if(pidElectron)  FillHistogramTH1(fOutputContainer,"hDDAPurityElectron_PID",pT,weight);
+    else if(pidPion) FillHistogramTH1(fOutputContainer,"hDDAPurityPion_PID",pT,weight);
+    else if(pidKaon) FillHistogramTH1(fOutputContainer,"hDDAPurityKaon_PID",pT,weight);
+    else if(pidProton){
+      if(charge > 0) FillHistogramTH1(fOutputContainer,"hDDAPurityProton_PID",pT,weight);
+      else           FillHistogramTH1(fOutputContainer,"hDDAPurityAntiProton_PID",pT,weight);
+    }
+    else             FillHistogramTH1(fOutputContainer,"hDDAPurityUndefined_PID",pT,weight);//neutral hadrons or photon
+
+    if(fIsMC){
+      if(IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+
+      AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+      Int_t pdg = p->PdgCode(); 
+      
+      if(TMath::Abs(pdg) == 11)       FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+      else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
+      else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
+      else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+      else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+      else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+      else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+    }
 
   }//end of ph1
 
@@ -2336,16 +2560,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   Int_t truch_tag = -1, chX_tag=-1, chZ_tag=-1;
   Int_t truch = -1, chX=-1, chZ=-1;
 
-  Double_t eta_tag = -999;
-  Double_t phi_tag = -999;
-  Double_t DeltaR_tag = -999;
-
-  Double_t eta_probe = -999;
-  Double_t phi_probe = -999;
-  Double_t DeltaR_probe = -999;
-
-  Double_t DeltaRgg = -999;
-  Double_t Rlimit = 0;
+  //Double_t eta_tag = -999;
+  //Double_t phi_tag = -999;
+  //Double_t DeltaR_tag = -999;
+  //Double_t eta_probe = -999;
+  //Double_t phi_probe = -999;
+  //Double_t DeltaR_probe = -999;
+  //Double_t DeltaRgg = -999;
+  //Double_t Rlimit = 0;
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
@@ -2356,7 +2578,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
 
@@ -2368,9 +2590,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     TVector3 global_tag(position);
     fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph1->GetCluster(), cells);
     //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2381,13 +2603,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     tru_tag = fPHOSTriggerHelper->WhichTRU(cellx_tag,cellz_tag);
     truch_tag = fPHOSTriggerHelper->WhichTRUChannel(cellx_tag,cellz_tag,chX_tag,chZ_tag);
 
-    DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
+    //DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
+      //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
       if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
@@ -2409,9 +2632,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       position[2] = ph2->EMCz();
       TVector3 global_probe(position);
       fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-      eta_probe = global_probe.Eta();
-      phi_probe = global_probe.Phi();
-      if(phi_probe < 0) phi_probe += TMath::TwoPi();
+      //eta_probe = global_probe.Eta();
+      //phi_probe = global_probe.Phi();
+      //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
       //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph2->GetCluster(), cells);
       //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2433,11 +2656,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
        && (TMath::Abs(dz) < 2)
        ) continue;//reject cluster pair where they belong to same 4x4 region.
 
-      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
-      DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
+      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
+      //DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
 
-      Rlimit = DeltaR_tag + DeltaR_probe;
-      DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+      //Rlimit = DeltaR_tag + DeltaR_probe;
+      //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
       //AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
       //if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
 
@@ -2461,20 +2684,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
-    if(!ph1->IsTOFOK()) continue;
 
-    position[0] = ph1->EMCx();
-    position[1] = ph1->EMCy();
-    position[2] = ph1->EMCz();
-    TVector3 global_tag(position);
-    fPHOSGeo->GlobalPos2RelId(global_tag,relId);
+    //position[0] = ph1->EMCx();
+    //position[1] = ph1->EMCy();
+    //position[2] = ph1->EMCz();
+    //TVector3 global_tag(position);
+    //fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2484,8 +2706,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
+        //if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
         if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-        if(!ph2->IsTOFOK()) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
@@ -2504,17 +2726,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
         TVector3 global_probe(position);
         fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-        eta_probe = global_probe.Eta();
-        phi_probe = global_probe.Phi();
-        if(phi_probe < 0) phi_probe += TMath::TwoPi();
+        //eta_probe = global_probe.Eta();
+        //phi_probe = global_probe.Phi();
+        //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
         module = relId[0];
         cellx  = relId[2];
         cellz  = relId[3];
         tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
 
-        DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
-        if(DeltaRgg < Rlimit) continue;
+        //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+        //if(DeltaRgg < Rlimit) continue;
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_Trg",m12,energy);
         FillHistogramTH2(fOutputContainer,Form("hMixMgg_Probe_Trg_M%d_TRU%d",module,tru),m12,energy);

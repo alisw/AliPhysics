@@ -54,7 +54,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     else if(period.Contains("LHC17p") || period.Contains("LHC17q")){
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
       f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2,1.004);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,1.013);//for core E at ZS 20 MeV with only MIP cut
     }
     else{
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut

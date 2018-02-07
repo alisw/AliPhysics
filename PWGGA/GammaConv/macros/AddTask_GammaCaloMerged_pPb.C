@@ -271,7 +271,11 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     cuts.AddCut("80052113","1111100017032200000","1111100017022000001","0163300000000000"); // EMC7
     cuts.AddCut("80085113","1111100017032200000","1111100017022000001","0163300000000000"); // EG2
     cuts.AddCut("80083113","1111100017032200000","1111100017022000001","0163300000000000"); // EG1
-
+  } else if (trainConfig == 105){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
+    cuts.AddCut("80010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
+    cuts.AddCut("80085113","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
+    cuts.AddCut("80083113","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
 
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

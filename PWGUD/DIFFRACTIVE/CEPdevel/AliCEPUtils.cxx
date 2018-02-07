@@ -254,7 +254,24 @@ TList* AliCEPUtils::GetnClunTraQAHists()
   TH2F* fhh05 = new TH2F("nClu vs nTra","nClu vs nTra",
     400,0,400,200,0,200);
   lhh->Add(fhh05);
-
+  
+  // additional histograms for events with small number SPD hits
+  TH1F* fhh06 = new TH1F("SPD L1","SPD L1",20,0,20);
+  lhh->Add(fhh06);
+  TH1F* fhh07 = new TH1F("SPD L2","SPD L2",20,0,20);
+  lhh->Add(fhh07);
+  TH1F* fhh08 = new TH1F("nTrl","nTrl",20,0,20);
+  lhh->Add(fhh08);
+  TH2F* fhh09 = new TH2F("SPD L1 vs SPD L2","SPD L1 vs SPD L2",
+    20,0,20,20,0,20);
+  lhh->Add(fhh09);
+  TH2F* fhh10 = new TH2F("SPD L1 vs nTrl","SPD L1 vs nTrl",
+    20,0,20,20,0,20);
+  lhh->Add(fhh10);
+  TH2F* fhh11 = new TH2F("SPD L2 vs nTrl","SPD L2 vs nTrl",
+    20,0,20,20,0,20);
+  lhh->Add(fhh11);
+  
   return lhh;
 }
 
@@ -444,12 +461,9 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     Bool_t hasTrk = trkVertex->GetStatus();
 
     // SPD/track vertex?
+    if (!hasSPD && !hasTrk) return AliCEPBase::kVtxUnknown;
     if (hasSPD) fVtxType |= AliCEPBase::kVtxSPD;
     if (hasTrk) fVtxType |= AliCEPBase::kVtxTracks;
-
-    // Note that AliVertex::GetStatus checks that N_contributors is > 0
-    // reject events if both are explicitly requested and none is available
-    if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
 
     // check the spd vertex resolution and reject if not satisfied
     if (hasSPD) {
@@ -467,6 +481,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
   }
 
   // Cut on the vertex z position
+  // Note that AliVertex::GetStatus checks that N_contributors is > 0
   const AliVVertex *vertex = Event->GetPrimaryVertex();
   if (vertex->GetStatus()) {
     if (TMath::Abs(vertex->GetZ())>10) fVtxType |= AliCEPBase::kVtxErrZ;
@@ -640,6 +655,13 @@ void AliCEPUtils::SPDClusterVsTrackletBGAnalysis (
   ((TH1F*)lhh->At(2))->Fill(nClustersLayer0+nClustersLayer1);
   ((TH1F*)lhh->At(3))->Fill(nTracklets);
   ((TH2F*)lhh->At(4))->Fill(nClustersLayer0+nClustersLayer1,nTracklets);
+
+  ((TH1F*)lhh->At(5))->Fill(nClustersLayer0);
+  ((TH1F*)lhh->At(6))->Fill(nClustersLayer1);
+  ((TH1F*)lhh->At(7))->Fill(nTracklets);
+  ((TH2F*)lhh->At(8))->Fill(nClustersLayer0,nClustersLayer1);
+  ((TH2F*)lhh->At(9))->Fill(nClustersLayer0,nTracklets);
+  ((TH2F*)lhh->At(10))->Fill(nClustersLayer1,nTracklets);
 
   return;
 
@@ -1329,14 +1351,86 @@ Int_t AliCEPUtils::GetResiduals(AliESDEvent* fESDEvent)
   Int_t nResiduals = 0;
   Int_t id1 = -1, id2 = -1;
 
-	const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
-	if (mult) {
+	Int_t nr = 0;
+  UInt_t refs[5];
+  const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+	if (!mult)  return nResiduals;
 
-		for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
-			if (!mult->GetTrackletTrackIDs(ii,0,id1,id2))
-        nResiduals++;
-		}
+  for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
+	  if (!mult->GetTrackletTrackIDs(ii,0,id1,id2))
+      nResiduals++;
+  }
+  
+  /*
+  // prinouts to study SPD behaviour
+  if (mult->GetNumberOfTracklets() > 3) return nResiduals;
+  
+  printf("\n------------------------------------------------------------------\n");
+  mult->Print("ts");
+
+  printf("\nITS");
+  for (Int_t ii=0; ii<6; ii++) {
+    printf(" [%i] %i",ii,mult->GetNumberOfITSClusters(ii));
+  }
+  
+  printf(" singles %i",mult->GetNumberOfSingleClusters());
+  printf(" fired chips");
+  printf(" [0] %i",mult->GetNumberOfFiredChips(0));
+  printf(" [1] %i",mult->GetNumberOfFiredChips(1));
+
+  TBits foMap = mult->GetFastOrFiredChips();
+  Int_t nfc = 0;
+  for (Int_t ii=0;    ii<400; ii++) nfc += foMap[ii]>0 ? 1 : 0;
+  printf(" [2] %i",nfc);
+
+  nfc = 0;
+  for (Int_t ii=400; ii<1200; ii++) nfc += foMap[ii]>0 ? 1 : 0;
+  printf(" [3] %i",nfc);
+
+  printf("\nresiduals %i tracklets %i",
+    nResiduals,mult->GetNumberOfTracklets());
+  for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
+
+    // check for tracks using the clusters of which the trackelt is composed of
+    nr = mult->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+    printf(" [%i] %i",ii,nr);
+    for (Int_t jj=0; jj<nr; jj++) printf(".%i",refs[jj]);
+      
+    nr = mult->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+    printf(" / %i",nr);
+    for (Int_t jj=0; jj<nr; jj++) printf(".%i",refs[jj]);
+
 	}
+  
+  printf("\ntracks %i",fESDEvent->GetNumberOfTracks());
+  Int_t SPDHit[4] = {0};
+  for (Int_t ii=0; ii<fESDEvent->GetNumberOfTracks(); ii++) {
+    printf(" [%i]",ii);
+    SPDHit[0]=0;SPDHit[1]=0;SPDHit[2]=0;SPDHit[3]=0;
+    AliESDtrack *track = fESDEvent->GetTrack(ii);
+    if (track) {
+      if (track->HasPointOnITSLayer(0)) SPDHit[0]=1;
+      if (track->HasPointOnITSLayer(1)) SPDHit[1]=1;
+      if (track->HasSharedPointOnITSLayer(0)) SPDHit[2]=1;
+      if (track->HasSharedPointOnITSLayer(1)) SPDHit[3]=1;
+      printf(" %i/%i/%i/%i/%i",SPDHit[0],SPDHit[1],SPDHit[2],SPDHit[3],
+        track->GetNumberOfTPCClusters());
+    }
+  }
+
+  const AliESDVertex *vertex = fESDEvent->GetPrimaryVertex();
+  if (vertex) {
+    printf("\n");
+    vertex->Print();
+    printf("nIndices %i uses tracks",vertex->GetNIndices());
+    for (Int_t ii=0; ii<fESDEvent->GetNumberOfTracks(); ii++) {
+      printf(" [%i] %i",ii,vertex->UsesTrack(ii));
+    }
+    
+  }
+
+  printf("\n");
+  */
 
   return nResiduals;
 
@@ -1848,7 +1942,7 @@ void AliCEPUtils::SetMCTruth (
   // all charged physical primary tracks with abs(eta)<1.
   TParticle *part;
   Int_t PDGCode;
-  //stack->DumpPStack();
+  stack->DumpPStack();
   for (Int_t ii=5; ii<nTracks; ii++) {
     //printf("part[%i] %i %i %i\n\n",ii,
     //  stack->IsPhysicalPrimary(ii),

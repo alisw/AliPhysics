@@ -70,6 +70,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fMultSelection(0),
   ftrack(0),
   fCaloClusters(0),
+  fMCheader(0),
   fpidResponse(0),
   fcentMim(0), 
   fcentMax(10.0), 
@@ -169,6 +170,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fMultSelection(0),
   ftrack(0),
   fCaloClusters(0),
+  fMCheader(0),
   fpidResponse(0),
   fcentMim(0), 
   fcentMax(10.0), 
@@ -703,6 +705,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
+  fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+
   // centrality
   /*
   Double_t centrality = -1;
@@ -966,20 +970,22 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
              iMCHF  = isHeavyFlavour(pdgMom);
             }
 
-        fQAHistTrPhi->Fill(phi); // QA
+        //fQAHistTrPhi->Fill(phi); // QA
         fQAHistNits->Fill(atrack->GetITSNcls());
 
         
         if(iHybrid)
           {
            if(idbHFEj)cout << "Hybrid" << endl;
-           if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; // AOD track level
+           if(!(atrack->TestFilterBit(9) || atrack->TestFilterBit(4)))continue;
           }
         else
           {
            if(idbHFEj)cout << "non Hybrid" << endl;
            if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; // AOD track level
           }
+
+        fQAHistTrPhi->Fill(phi); // QA
 
         //cout << "track cuts ....." << endl;
 
@@ -1368,6 +1374,22 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
          if(idbHFEj)cout << "Making Particle Level Jet ..." << endl;
          if(idbHFEj)cout << fJetsContPart << endl;
         //fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+
+       
+        TList *lh=fMCheader->GetCocktailHeaders();
+
+ if(lh)
+    {     
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            if(idbHFEj)cout << "<------- imc = " << igene << " ; " << gh->GetName() << endl;
+           }
+        }
+    }
+
 
 	for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
 	{

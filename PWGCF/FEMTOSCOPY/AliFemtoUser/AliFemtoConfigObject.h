@@ -242,6 +242,7 @@ public:
 #endif // move-semantics
 
   typedef std::pair<float,float> pair_of_floats;
+  typedef std::pair<int,int> pair_of_ints;
 
   /// \class BuildStruct
   /// \brief helper class for building a mapping object
@@ -266,6 +267,7 @@ public:
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
 
     IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
     IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
 
@@ -356,7 +358,10 @@ public:
 
   bool load_range(std::pair<float, float> &r) const { return is_range() ? r = fValueRange, true : false; }
 
-
+  /// Return the commonname of this object's contained type; usefull for debugging
+  TString name_of_type() const {
+    return NameFromtype(fTypeTag);
+  }
 
   /// \defgroup Find&Load Methods
   /// @{
@@ -373,8 +378,11 @@ public:
     FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
 
     IMPL_FINDANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(pair_of_ints, kRANGE, fValueRange);
     IMPL_FINDANDLOAD(int, kINT, fValueInt);
     IMPL_FINDANDLOAD(unsigned int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(Float_t, kFLOAT, fValueFloat);
+    IMPL_FINDANDLOAD(TString, kSTRING, fValueString);
 
   #undef IMPL_FINDANDLOAD
   /// @}
@@ -433,8 +441,11 @@ public:
     FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
 
     IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_POPANDLOAD(pair_of_ints, kRANGE, fValueRange);
     IMPL_POPANDLOAD(int, kINT, fValueInt);
     IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
+    IMPL_POPANDLOAD(Float_t, kFLOAT, fValueFloat);
+    IMPL_POPANDLOAD(TString, kSTRING, fValueString);
 
   #undef IMPL_POPANDLOAD
 

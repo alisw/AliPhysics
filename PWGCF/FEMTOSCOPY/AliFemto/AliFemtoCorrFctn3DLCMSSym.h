@@ -19,13 +19,18 @@ class AliFemtoPairCut;
 ///
 class AliFemtoCorrFctn3DLCMSSym : public AliFemtoCorrFctn {
 public:
-  /**
-   * Build the correlation function with parameters.
-   * @param title The title with which to give the output
-   * @param nbins The number of bins in each direction of , and q
-   */
+
+  /// Build the correlation function with parameters.
+  ///
+  /// \param title The title with which to give the output
+  /// \param nbins The number of bins in each direction of , and q
+  ///
   AliFemtoCorrFctn3DLCMSSym(const char* title, const int nbins, const float QHi);
+
+  /// Copy Constructor
   AliFemtoCorrFctn3DLCMSSym(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn);
+
+  /// Deletes histograms
   virtual ~AliFemtoCorrFctn3DLCMSSym();
 
   AliFemtoCorrFctn3DLCMSSym& operator=(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn);
@@ -46,14 +51,14 @@ public:
 
   void SetUseLCMS(int);
   int  GetUseLCMS();
-  virtual AliFemtoCorrFctn* Clone();
+  virtual AliFemtoCorrFctn* Clone() const;
 
 private:
 
   TH3F* fNumerator;     ///< Numerator
   TH3F* fDenominator;   ///< Denominator
-  TH3F* fNumeratorW;    ///< Weighted numerator
-  TH3F* fDenominatorW;  ///< Weighted denominator
+  TH3F* fNumeratorW;    ///< Qinv-Weighted numerator
+  TH3F* fDenominatorW;  ///< Qinv-Weighted denominator
 
   int    fUseLCMS;      ///< 0 - Use PRF, 1 - Use LCMS
 
@@ -64,11 +69,9 @@ private:
 #endif
 };
 
-inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSSym::Clone()
+inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSSym::Clone() const
 {
-  // const keeps us out of trouble
-  const AliFemtoCorrFctn3DLCMSSym& self = *this;
-  return new AliFemtoCorrFctn3DLCMSSym(self);
+  return new AliFemtoCorrFctn3DLCMSSym(*this);
 }
 
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::Numerator()

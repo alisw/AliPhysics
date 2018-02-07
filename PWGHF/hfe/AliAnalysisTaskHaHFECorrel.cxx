@@ -840,22 +840,19 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fLParticle=kFALSE;
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx,nMotherKink,listofmotherkink, mult);
 
-
-
-  Int_t LPinAccAfterEventCuts, LPAfterEventCuts;
+  Int_t LPinAccAfterEventCuts=-999, LPAfterEventCuts=-999;
   AliAODTrack * LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
   Int_t LPtrackLabel=0;
   if (LPtrackAOD) LPtrackLabel=abs(LPtrackAOD->GetLabel());
   if (fIsMC && fMCTrueCorrelation) {  
     MCTruthCorrelation(kTRUE, LPtrackLabel, pVtx->GetZ(), mult,  LPinAccAfterEventCuts, LPAfterEventCuts) ;
-  }
-
-
-  if (fIsAOD && fLParticle && RedTracksHFE->GetEntriesFast()>0 && LPinAccAfterEventCuts>=0) {
-    AliAODMCParticle* LPinAcc = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPinAccAfterEventCuts));  
-    AliAODMCParticle* LP = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPAfterEventCuts));  
-    if (LPinAcc && LP) {
-      fCompareLP->Fill(LPtrack->Pt(), LPinAcc->Pt(), LP->Pt());
+  
+    if (fIsAOD && fLParticle && RedTracksHFE->GetEntriesFast()>0 && LPinAccAfterEventCuts>=0) {
+      AliAODMCParticle* LPinAcc = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPinAccAfterEventCuts));  
+      AliAODMCParticle* LP = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPAfterEventCuts));  
+      if (LPinAcc && LP) {
+	fCompareLP->Fill(LPtrack->Pt(), LPinAcc->Pt(), LP->Pt());
+      }
     }
   }
 

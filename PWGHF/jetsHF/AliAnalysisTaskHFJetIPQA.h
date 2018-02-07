@@ -158,9 +158,13 @@ public:
     {
         fDoJetProb = value;
     }
+    void useTreeForCorrelations(Bool_t value){
+        fUseTreeForCorrelations = value;
+    }
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
+    virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
@@ -170,8 +174,6 @@ private:
     void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
     void FillParticleCompositionEvent();
-
-
     void DoJetLoop(); //jet matching function 2/4
     void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
     void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
@@ -210,6 +212,7 @@ private:
     TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
 private:
+
     Bool_t   fUsePIDJetProb;//
     Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
@@ -264,7 +267,14 @@ private:
     Bool_t   fIsSameEvent_n1;
     Bool_t   fIsSameEvent_n2;
     Bool_t   fIsSameEvent_n3;
-
+    Bool_t   fUseTreeForCorrelations;
+    TTree *  fCorrelationCrossCheck;//!
+    Float_t  fTREE_n1;
+    Float_t  fTREE_n2;
+    Float_t  fTREE_n3;
+    Float_t  fTREE_pt;
+    
+    
     void SetMixDCA(int n , Double_t v){
     if(n==1){
             if(fIsMixSignalReady_n1) return;

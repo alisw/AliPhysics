@@ -1224,6 +1224,7 @@ void BadChannelAna::SummarizeResults()
 	Int_t cellID, nDeadDCalCells = 0, nDeadEMCalCells = 0, nDCalCells = 0, nEMCalCells = 0;
 	Double_t perDeadEMCal,perDeadDCal,perBadEMCal,perBadDCal,perWarmEMCal,perWarmDCal;
 	TString aliceTwikiTable, cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells,goodCellsRatio,cellProp;
+	TString OADBFile_bad, OADBFile_dead, OADBFile_warm;
 	TH2F* cellAmp_masked = (TH2F*)fCellAmplitude->Clone("hcellAmp_masked");
 	TH2F* cellTime_masked= (TH2F*)fCellTime->Clone("fCellTime");
 
@@ -1233,6 +1234,9 @@ void BadChannelAna::SummarizeResults()
 	goodCells       = Form("%s/%s/%s_Good_Ampl_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 	goodCellsRatio  = Form("%s/%s/%s_Good_Ampl_Ratio_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 	cellSummaryFile = Form("%s/%s/%s_%s_Bad_Ampl_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_bad    = Form("%s/%s/%s_%s_OADBFile_Bad_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_dead   = Form("%s/%s/%s_%s_OADBFile_Dead_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_warm   = Form("%s/%s/%s_%s_OADBFile_Warm_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
 	aliceTwikiTable = Form("%s/%s/%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial); ;
 	cellProp        = Form("%s/%s/%s_CellProp_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 
@@ -1449,6 +1453,9 @@ void BadChannelAna::SummarizeResults()
 	//..Write the final results of dead and bad cells in a file and on screen
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	ofstream file(cellSummaryFile, ios::out | ios::trunc);
+	ofstream fileBad(OADBFile_bad, ios::out | ios::trunc);
+	ofstream fileDead(OADBFile_dead, ios::out | ios::trunc);
+	ofstream fileWarm(OADBFile_warm, ios::out | ios::trunc);
 	if(file)
 	{
 		file<<"Dead cells : "<<endl;
@@ -1470,6 +1477,8 @@ void BadChannelAna::SummarizeResults()
 				if(cellID<fCellStartDCal)nDeadEMCalCells++;
 				else                     nDeadDCalCells++;
 			}
+			if(fFlag[cellID]==1)fileDead<<cellID<<endl;
+			if(fFlag[cellID]>1)fileBad<<cellID<<endl;
 		}
 		file<<"\n"<<endl;
 		perDeadEMCal=100*nDeadEMCalCells/(1.0*fCellStartDCal);
@@ -1523,6 +1532,7 @@ void BadChannelAna::SummarizeResults()
 	{
 		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
 		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
+		if(fWarmCell[cell]==1)fileWarm<<cell<<endl;
 	}
 	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
 	c2->ToggleEventStatus();
@@ -2000,8 +2010,8 @@ void BadChannelAna::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
 	//..build two dimensional histogram with values row vs. column
 	TString histoName;
-	histoName = Form("2DChannelMap_Flag%d",flagBegin);
-	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100");
+	histoName = Form("2DChannelMap_Flag%d_V%i",flagBegin,fTrial);
+	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100_V%i",fTrial);
 
 	TH2F *plot2D = new TH2F(histoName,histoName,fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
 	plot2D->GetXaxis()->SetTitle("cell column (#eta direction)");

@@ -85,9 +85,6 @@ set(SRCS
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
-    AliV0ReaderStrange.cxx
-    AliV0CutsStrange.cxx
-    AliV0ParticleStrange.cxx
     AliConversionCutHandler.cxx
    )
 

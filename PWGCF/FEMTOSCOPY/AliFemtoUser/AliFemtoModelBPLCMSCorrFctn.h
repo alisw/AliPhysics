@@ -42,7 +42,7 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
   void SetUseRPSelection(unsigned short aRPSel);
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 protected:
   TH3D* fNumerator3DTrue;            // 3D Numerator with pairs from same event only

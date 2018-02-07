@@ -3,24 +3,24 @@
 
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
+#include "AliAnalysisCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
+#include "AliEMCALGeometry.h"
+#include "AliPHOSGeometry.h"
+#include "AliAODCaloCluster.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliCalorimeterUtils.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
 #include "AliAODTrack.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisCuts.h"
 #include "TProfile2D.h"
 #include "TH1F.h"
 #include "TF1.h"
-#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
-#include "AliEMCALGeometry.h"
-#include "AliPHOSGeometry.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAODCaloCluster.h"
-#include "AliCalorimeterUtils.h"
 #include "AliCaloTrackMatcher.h"
 #include <vector>
 
@@ -154,6 +154,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f3b,
       k17f4a,
       k17f4b,
+      k17g8a,
       k17g8b,
       k17g8c,
       k17h8a,
@@ -314,6 +315,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
 
+    Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
+
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
 
@@ -359,10 +362,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
-    
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
-    
+
     AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
     AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
 
@@ -554,11 +557,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Int_t      fNMaxDCalModules;                        // max number of DCal Modules
     Int_t      fgkDCALCols;                             // Number of columns in DCal
-
+    Bool_t     fIsAcceptedForBasic;                     // basic counting
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,53)
+    ClassDef(AliCaloPhotonCuts,55)
 };
 
 #endif

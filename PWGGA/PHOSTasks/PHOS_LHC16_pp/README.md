@@ -39,19 +39,20 @@ alienHandler->SetOutputFiles(files);
 ## Class hierarchy
 
 ```c++
-AliAnalysisTaskPP13            //  Main analysis 
-└───   MixingSample
-└───   PhotonSelection         
-        └───   PhysPhotonSelection   // Fills all histograms needed to reconstruct $\pi^{0}$s
-        │           DetectorHistogram
-        │
-        └───   PhotonTimecutSelection  // Study of timing cut efficiency and purity
-        └───   QualityPhotonSelection  // QA plots for PHOS clusters
-        └───   TagAndProbeSelection
-        └───   PhysPhotonSelectionMC   // Applies nonlinearity to PHOS clusters in MC
-        └───   MesonSelectionMC        // Neutral meson efficiency study
-        │           ParticlesHistogram
-        │
-        └───   PythiaInfoSelection     // Collects cross section and ntrials data. Needed for jet-jet MC only.
-
+├── AliAnalysisTaskPP13
+├── AliPP13::ClusterCuts
+├── AliPP13::DetectorHistogram
+├── AliPP13::MixingSample
+├── AliPP13::ParticlesHistogram
+└── AliPP13::PhotonSelection
+    ├── AliPP13::PhotonSpectrumSelection
+    ├── AliPP13::PhotonTimecutStudySelection
+    ├── AliPP13::PythiaInfoSelection
+    ├── AliPP13::QualityPhotonSelection
+    ├── AliPP13::TagAndProbeSelection       // TODO: Check final parametrization
+    ├── AliPP13::EfficiencySelectionMC
+    └── AliPP13::PhysPhotonSelection
+        ├── AliPP13::NonlinearityScanSelection
+        └── AliPP13::PhysPhotonSelectionMC
+            └── AliPP13::MesonSelectionMC
 ```

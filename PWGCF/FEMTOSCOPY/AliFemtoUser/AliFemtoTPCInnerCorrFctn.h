@@ -31,6 +31,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoTPCInnerCorrFctn(*this); }
+
 private:
 
   TH2D *fDTPCNumerator;        // Distance at the entrance to the TPC for real pairs

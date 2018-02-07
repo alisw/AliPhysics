@@ -88,6 +88,8 @@ private:
 
   void InitializeRunArray(TString sPeriod);
   Int_t GetCurrentRunIndex(Int_t  run);
+  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+
 
 
   AliFlowEventSimple*         fEvent;         //! input event
@@ -196,12 +198,20 @@ private:
 
   TH2D          *fHCorrectZDNP; //!
 
-  TProfile2D  *fV0AQnxVsCentRun; //!
-  TProfile2D  *fV0AQnyVsCentRun; //!
-  TProfile2D  *fV0CQnxVsCentRun; //!
-  TProfile2D  *fV0CQnyVsCentRun; //!
-  TProfile2D  *fTPCQnxVsCentRun; //!
-  TProfile2D  *fTPCQnyVsCentRun; //!
+  TProfile2D  *fV0AQ2xVsCentRun; //!
+  TProfile2D  *fV0AQ2yVsCentRun; //!
+  TProfile2D  *fV0CQ2xVsCentRun; //!
+  TProfile2D  *fV0CQ2yVsCentRun; //!
+
+  TProfile2D  *fV0AQ3xVsCentRun; //!
+  TProfile2D  *fV0AQ3yVsCentRun; //!
+  TProfile2D  *fV0CQ3xVsCentRun; //!
+  TProfile2D  *fV0CQ3yVsCentRun; //!
+
+  TProfile2D  *fTPCQ2xVsCentRun; //!
+  TProfile2D  *fTPCQ2yVsCentRun; //!
+  TProfile2D  *fTPCQ3xVsCentRun; //!
+  TProfile2D  *fTPCQ3yVsCentRun; //!
 
   TList           *mListNUAPos; //!
   TList           *mListNUANeg; //!
@@ -234,13 +244,15 @@ private:
   TProfile2D     *fCentV0MvsVzRun; //!
   TProfile2D      *fCent3pvsVzRun; //!
   TH2F           *fTPCvsGlobalTrk; //!
-  TH2F              *fTPCvsITSTrk; //!
-  TH2F             *fITSvsESDMult; //!
-  TH1F            *fGlobalITSMult; //!
+  TH2F         *fTPCuncutvsGlobal; //!
+  TH1F             *fGlobalTracks; //!
+  TH2F             *fTPCvsITSfb96; //!
+  TH2F             *fTPCvsITSfb32; //!
+  TH2F           *fTPCFEvsITSfb96; //!
   TH3F           *fCentCL1vsVzRun; //!
+  TH1I             *fdPhiFemtoCut; //!
   TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
-
 
 
 
