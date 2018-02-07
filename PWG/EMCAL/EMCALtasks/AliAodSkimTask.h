@@ -3,6 +3,7 @@
 
 #include <AliAnalysisTaskSE.h>
 class AliAODMCHeader;
+class TH1F;
 
 class AliAodSkimTask: public AliAnalysisTaskSE  
 {
@@ -18,10 +19,12 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  Terminate(Option_t* option);
     Double_t              fClusMinE;      //  minimum cluster energy to accept event
     Bool_t                fCutMC;         //  if true cut MC particles with |Y|>1.2
-    Int_t                 fTrials;        //! events seen since last acceptance 
+    UInt_t                fTrials;        //! events seen since last acceptance 
     AliAODEvent          *fAOD;           //! input event
     AliAODMCHeader       *fAODMcHeader;   //! MC header
     TList                *fOutputList;    //! output list
+    TH1F                 *fHevs;          //! events processed/accepted
+    TH1F                 *fHclus;         //! cluster distribution
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
   ClassDef(AliAodSkimTask, 1);

@@ -1,6 +1,7 @@
 #include <Riostream.h>
 #include <TChain.h>
 #include <TGraph.h>
+#include <TH1F.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TProfile.h>
@@ -35,6 +36,13 @@ AliAodSkimTask::~AliAodSkimTask()
 
 void AliAodSkimTask::UserCreateOutputObjects()
 {
+  fOutputList = new TList;
+  fOutputList->SetOwner();
+  fHevs = new TH1F("hEvs","",2,-0.5,1.5);
+  fOutputList->Add(fHevs);
+  fHclus = new TH1F("hClus",";E (GeV)",200,0,100);
+  fOutputList->Add(fHclus);
+  PostData(1, fOutputList); 
 }
 
 void AliAodSkimTask::UserExec(Option_t *)
@@ -51,9 +59,10 @@ void AliAodSkimTask::UserExec(Option_t *)
       AliAODCaloCluster *clus = static_cast<AliAODCaloCluster*>(cls->At(i));
       if (!clus->IsEMCAL())
 	continue;
-      if (clus->E()>fClusMinE) {
+      Double_t e = clus->E();
+      fHclus->Fill(e);
+      if (e>fClusMinE) {
 	store = kTRUE;
-	break;
       }
     }
   } else { 
@@ -62,8 +71,10 @@ void AliAodSkimTask::UserExec(Option_t *)
 
   if (!store) {
     ++fTrials;
+    fHevs->Fill(0);
     return;
   }
+  fHevs->Fill(1);
 
   //AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
@@ -172,4 +183,5 @@ void AliAodSkimTask::UserExec(Option_t *)
 
 void AliAodSkimTask::Terminate(Option_t *)
 {
+  cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/fHevs->GetEntries() << endl;
 }
