@@ -69,6 +69,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetPtWeightsFromFONLL5overLHC16i2abc();
   void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
   void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();
+  void SetPtWeightsFromFONLL13overLHC17c3a12();
 
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
