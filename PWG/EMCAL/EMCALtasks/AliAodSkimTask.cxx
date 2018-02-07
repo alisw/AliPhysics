@@ -5,6 +5,9 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TProfile.h>
+#include <TFile.h>
+#include <TSystem.h>
+#include <TKey.h>
 #include <AliAODMCHeader.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -12,16 +15,18 @@
 #include <AliAODMCParticle.h>
 #include <AliAnalysisManager.h>
 #include "AliAodSkimTask.h"
-
+#include <AliLog.h>
 
 using namespace std;
 ClassImp(AliAodSkimTask)
 
-AliAodSkimTask::AliAodSkimTask() : AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fTrials(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+AliAodSkimTask::AliAodSkimTask() : AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fTrials(0), fPyxsec(0), fPytrials(0), 
+                                   fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
 {
 }
 
-AliAodSkimTask::AliAodSkimTask(const char* name) : AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fTrials(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+AliAodSkimTask::AliAodSkimTask(const char* name) : AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fTrials(0), fPyxsec(0), fPytrials(0),
+                                                   fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -151,7 +156,8 @@ void AliAodSkimTask::UserExec(Option_t *)
 	fgAODMCParticles->SetName(AliAODMCParticle::StdBranchName());
 	oh->AddBranch("TClonesArray", &fgAODMCParticles);
 	out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
-      } else if (in && out) {
+      } 
+      if (in && out) {
 	new (out) TClonesArray(*in); 
 	if (fCutMC) {
 	  for (Int_t i=0;i<out->GetEntriesFast();++i) {
@@ -171,8 +177,14 @@ void AliAodSkimTask::UserExec(Option_t *)
 	fAODMcHeader->SetName(AliAODMCHeader::StdBranchName());
 	oh->AddBranch("AliAODMCHeader",&fAODMcHeader); 
 	out = static_cast<AliAODMCHeader*>(eout->FindListObject(AliAODMCHeader::StdBranchName()));
-      } else if (in && out) {
+      } 
+      if (in && out) {
 	*out = *in;
+	if ((in->GetCrossSection()==0) && (fPyxsec>0)) {
+	  out->SetCrossSection(fPyxsec);
+	  out->SetTrials(fPytrials);
+	  out->SetPtHard(fPypthardbin);
+	}
       }
     }
 
@@ -181,7 +193,119 @@ void AliAodSkimTask::UserExec(Option_t *)
   }
 }
 
+Bool_t AliAodSkimTask::UserNotify()
+{
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  if (!tree) {
+    AliError(Form("%s - UserNotify: No current tree!",GetName()));
+    return kFALSE;
+  }
+
+  Float_t xsection    = 0;
+  Float_t trials      = 0;
+  Int_t   pthardbin   = 0;
+
+  TFile *curfile = tree->GetCurrentFile();
+  if (!curfile) {
+    AliError(Form("%s - UserNotify: No current file!",GetName()));
+    return kFALSE;
+  }
+
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain) tree = chain->GetTree();
+  Int_t nevents = tree->GetEntriesFast();
+
+  Int_t slevel = gErrorIgnoreLevel;
+  gErrorIgnoreLevel = kFatal;
+  Bool_t res = PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+  gErrorIgnoreLevel=slevel;
+
+  if (res) {
+    cout << "AliAodSkimTask " << GetName() << " found " << xsection << " " << trials << " " << pthardbin << " " << nevents << endl;
+    fPyxsec      = xsection;      
+    fPytrials    = trials;      
+    fPypthardbin = pthardbin;
+  }
+
+  return res;
+}
+
 void AliAodSkimTask::Terminate(Option_t *)
 {
   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/fHevs->GetEntries() << endl;
+}
+
+Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
+{
+  TString file(currFile);
+  xsec = 0;
+  trials = 1;
+
+  if (file.Contains(".zip#")) {
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  } else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  AliDebug(1,Form("File name: %s",file.Data()));
+
+  // Get the pt hard bin
+  TString strPthard(file);
+
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(strPthard.Last('/'));
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(0,strPthard.Last('/')+1);
+  if (strPthard.IsDec()) {
+    pthard = strPthard.Atoi();
+  }
+  else {
+    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+    pthard = -1;
+  }
+
+  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root"));
+
+  if (!fxsec) {
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if (!fxsec) {
+      // not a severe condition but inciate that we have no information
+      return kFALSE;
+    } else {
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
+      if (!key) {
+        fxsec->Close();
+        return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if (!list) {
+        fxsec->Close();
+        return kFALSE;
+      }
+      xsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
+      trials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } else { // no tree pyxsec.root
+    TTree *xtree = static_cast<TTree*>(fxsec->Get("Xsection"));
+    if (!xtree) {
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    trials = ntrials;
+    xsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
 }
