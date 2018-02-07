@@ -26,6 +26,7 @@
 #pragma link C++ class AliAnalysisTaskFlowStrange+;
 #pragma link C++ class AliAnalysisTaskFlowStrangee+;
 #pragma link C++ class AliAnalysisTaskMixedHarmonics+;
+#pragma link C++ class AliAnalysisTaskFlowModes+;
 #pragma link C++ class AliAnalysisTaskNestedLoops+;
 #pragma link C++ class AliAnalysisTaskQAflow+;
 #pragma link C++ class AliAnalysisTaskPIDflowQA+;
