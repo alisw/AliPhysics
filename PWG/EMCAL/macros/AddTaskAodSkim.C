@@ -36,6 +36,7 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine=5,
   const char *name = "skimtask";
   AliAodSkimTask *task = new AliAodSkimTask(tname);
   task->SetClusMinE(mine);
+  task->SelectCollisionCandidates(trigsel);
   
   mgr->AddTask(task);
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
