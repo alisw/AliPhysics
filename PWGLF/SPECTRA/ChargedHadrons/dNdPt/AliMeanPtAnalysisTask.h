@@ -15,14 +15,13 @@ class TParticle;
 
 class AliESDEvent;
 class AliVEvent;
-class AliStack;
 class AliESDtrackCuts;
-class AlidNdPtEventCuts;
 class AliAnalysisUtils;
 
 #include "THn.h"
 #include "THnSparse.h"
 #include "TF1.h"
+#include "AliMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
@@ -115,11 +114,11 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     void Set2013pA(Bool_t is2013) { fIs2013pA = is2013; }
     void Set2015data(Bool_t is2015) {fIs2015data = is2015;}
 
-    Bool_t IsTrackAcceptedKinematics(AliVTrack* track);
-    Bool_t IsTrackAcceptedKinematics(TParticle* mcParticle);
+    Bool_t IsTrackInKinematicRange(AliVTrack* track);
+    Bool_t IsParticleInKinematicRange(AliMCParticle* mcParticle);
+
     Bool_t IsTrackAcceptedQuality(AliVTrack* track);
-    Bool_t IsEventAcceptedGeometrics(AliVEvent* event);
-    Bool_t IsEventAcceptedQuality(AliVEvent* event);
+    Bool_t IsEventVertexOK(AliVEvent* event);
 
     Bool_t IsEventAccepted2013pA(AliVEvent* event);
     Bool_t IsEventAccepted2015data(AliVEvent* event);
@@ -127,8 +126,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     Double_t GetCentrality(AliVEvent* event);
 
     Bool_t IsVertexOK(AliVEvent* event);
-    Bool_t IsChargedPrimary(Int_t stackIndex);
-    Bool_t IsChargedPrimaryOrLambda(Int_t stackIndex);
+    Bool_t IsChargedPrimary(Int_t mcLabel);
 
     void InitESDTrackCuts();
     void InitdNdPtEventCuts();
@@ -139,7 +137,6 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     TList*              fOutputList;		//!<! Output list
     AliVEvent*          fEvent;			    //!<! Event object
     AliMCEvent*         fMCEvent;       //!<! MC event
-    AliStack*           fMCStack;		    //!<! MC stack
 
     AliESDtrackCuts*    fESDtrackCuts;
 
