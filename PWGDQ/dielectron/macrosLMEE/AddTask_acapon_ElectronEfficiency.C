@@ -1,6 +1,7 @@
 AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
                                                      Double_t CentMin = -2,
                                                      Double_t CentMax = 102,
+																										 TString directoryBaseName = "acapon",
                                                      Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_acapon_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE_output.root",
@@ -158,13 +159,13 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("acapon_ElectronEfficiency", TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(TString::Form("%s_ElectronEfficiency", directoryBaseName.Data()), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("acapon_supportHistos", TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(TString::Form("%s_supportHistos", directoryBaseName.Data()), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("acapon_EffTree", TTree::Class(),
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(TString::Form("%s_EffTree", directoryBaseName.Data()), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("acapon_stats", TH1D::Class(),
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(TString::Form("%s_stats", directoryBaseName.Data()), TH1D::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);                                                          
 
   //connect input/output
