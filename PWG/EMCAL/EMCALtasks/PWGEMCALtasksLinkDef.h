@@ -4,7 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
+#pragma link C++ class  AliAodSkimTask+;
+#pragma link C++ class  AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class  AliAnalysisTaskEmcalSample+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerPatchClusterMatch+;
 #pragma link C++ class  AliEMCALClusterParams+;
