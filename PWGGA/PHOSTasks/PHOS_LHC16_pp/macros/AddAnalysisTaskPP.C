@@ -1,54 +1,15 @@
 AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 	Bool_t isMC = kFALSE,
 	TString description = "",
-	TString suff = "",
-	TString badmap = "BadMap_LHC16-updated.root"
+	TString suff = ""
 )
 {
-	// Copy necessary map from the private directory
-	//
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/o/okovalen/maps/%s .",badmap.Data()));
-
 	// Restore the analysis manager
 	// 
 	AliAnalysisManager * manager = AliAnalysisManager::GetAnalysisManager();
 
-
-	// Setup Physics Selection
-	//
-	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-	Bool_t enablePileupCuts = kTRUE; // Run 2 optimization
-	AddTaskPhysicsSelection (isMC, enablePileupCuts);
-
-
-	// Setup Phos Tender
-	//
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
-
-    TString tenderOption = isMC ? "Run2Default" : "";
-    if (tenderOption)
-    {
-        description += " with tender option ";
-        description += tenderOption;
-    } 
-
-    AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
-    AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
-    // IMPORTANT: Set the map of bad channels
-    PHOSSupply->ForceUsingBadMap(badmap.Data());
-    if (isMC)
-    {
-        // Important: Keep track of this variable
-        // ZS threshold in unit of GeV
-        Double_t zs_threshold = 0.020;
-        PHOSSupply->ApplyZeroSuppression(zs_threshold);
-        description += Form(" ZS threshold = %f GeV", zs_threshold);
-    }
-
-
 	// Setup Analysis Selections
 	//
-
 	TList * selections = new TList();
 
 	AliPP13ClusterCuts cuts_pi0 = AliPP13ClusterCuts::GetClusterCuts();
@@ -127,7 +88,7 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 
 		coutput = manager->CreateContainer(
 			fSel->GetName() + suff,
-		    TList::Class(),
+			TList::Class(),
 			AliAnalysisManager::kOutputContainer,
 			AliAnalysisManager::GetCommonFileName()
 		);
