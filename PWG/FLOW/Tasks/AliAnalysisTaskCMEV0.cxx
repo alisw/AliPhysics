@@ -1946,8 +1946,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
    //------------ eta depedence -----------------
    Double_t fEtaCent = -100.;
+   Int_t nBinsX = fEtaBinFinderForQA->GetNbinsX();
 
-   for(int ie=0; ie<16; ie++){
+   for(int ie=0; ie<nBinsX; ie++){
      
      uPM = MPOIposQAEta[ie];
      uNM = MPOInegQAEta[ie];
@@ -3133,8 +3134,8 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     }
   }
  
-  Double_t EtaRange[9] = {0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6};
-  //8,EtaRange changed to 160,0,1.6
+  //Double_t EtaRange[9] = {0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6}; //Use this after tests done
+  //Now Eta binning: 160,0,1.6 for test
 
   for(int i=0;i<2;i++){ 
     for(int j=0;j<6;j++){
