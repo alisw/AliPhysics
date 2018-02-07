@@ -31,6 +31,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnGammaMonitor(*this); }
+
 private:
 
   TH2D *fNumPMinvDTheta;        // Numerator Minv vs. DTheta Positive kSide

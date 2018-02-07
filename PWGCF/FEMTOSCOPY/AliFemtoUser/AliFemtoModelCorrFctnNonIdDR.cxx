@@ -373,7 +373,7 @@ TList* AliFemtoModelCorrFctnNonIdDR::GetOutputList()
 }
 
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnNonIdDR::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnNonIdDR::Clone() const
 {
   // Create clone
   AliFemtoModelCorrFctnNonIdDR *tCopy = new AliFemtoModelCorrFctnNonIdDR(*this);

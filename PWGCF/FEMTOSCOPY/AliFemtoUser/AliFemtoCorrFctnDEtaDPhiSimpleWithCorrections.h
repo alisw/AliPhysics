@@ -39,6 +39,9 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(*this); }
+
 private:
 
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
@@ -70,7 +73,7 @@ private:
   int fEtaBins;
   int fPhiBins;
 
-  char *ftitle;
+  TString ftitle;
 
   ParticleType part1;
   ParticleType part2;

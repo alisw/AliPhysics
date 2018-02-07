@@ -77,8 +77,10 @@ public:
   TH1D* Denominator();
   TH1D* Ratio();
 
-  virtual TList* GetOutputList();
   void Write();
+  virtual TList* GetOutputList();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoQinvCorrFctnWithWeights(*this); }
 
 private:
   TH1D* fNumerator;          // numerator - real pairs

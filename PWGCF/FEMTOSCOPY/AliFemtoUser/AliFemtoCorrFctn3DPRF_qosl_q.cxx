@@ -169,8 +169,8 @@ AliFemtoString AliFemtoCorrFctn3DPRF_qosl_q::Report(){
 //____________________________
 void AliFemtoCorrFctn3DPRF_qosl_q::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
      Double_t x[4];
     for (Int_t d = 0; d < 4; ++d) {
@@ -199,8 +199,8 @@ void AliFemtoCorrFctn3DPRF_qosl_q::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctn3DPRF_qosl_q::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
      Double_t x[4];
     for (Int_t d = 0; d < 4; ++d) {

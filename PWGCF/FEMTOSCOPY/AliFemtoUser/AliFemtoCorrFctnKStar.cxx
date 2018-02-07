@@ -98,12 +98,12 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
   AliFemtoCorrFctn(aCorrFctn),
   fTitle(aCorrFctn.fTitle),
   fNbinsKStar(aCorrFctn.fNbinsKStar),
+  fKStarLow(aCorrFctn.fKStarLow),
+  fKStarHigh(aCorrFctn.fKStarHigh),
 
   fNumerator(aCorrFctn.fNumerator ? new TH1D(*aCorrFctn.fNumerator) : nullptr),
   fDenominator(aCorrFctn.fDenominator ? new TH1D(*aCorrFctn.fDenominator) : nullptr),
 
-  fKStarLow(aCorrFctn.fKStarLow),
-  fKStarHigh(aCorrFctn.fKStarHigh),
   fDetaDphiscal(aCorrFctn.fDetaDphiscal),
   fPairKinematics(aCorrFctn.fPairKinematics),
   fRaddedps(aCorrFctn.fRaddedps),

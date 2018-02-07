@@ -34,6 +34,7 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarDEta(*this); }
 
   void SetMinimumRadius(double minrad);
   void SetMagneticFieldSign(int magsign);

@@ -548,8 +548,8 @@ struct Configuration<AliFemtoPairCutAntiGamma> : Configuration<AliFemtoShareQual
 //------------------------
 
 
-#if defined(AliFemtoCorrFctn_hh) && !defined(ALIFEMTOCONSTRUCTOR_AliFemtoCorrFctn_hh)
-#define ALIFEMTOCONSTRUCTOR_AliFemtoCorrFctn_hh
+#if defined(ALIFEMTOCORRFCTN_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOCORRFCTN_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOCORRFCTN_H
 template<>
 struct AbstractConfiguration<AliFemtoCorrFctn> {
 

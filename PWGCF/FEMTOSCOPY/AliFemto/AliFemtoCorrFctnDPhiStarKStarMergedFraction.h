@@ -35,6 +35,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarKStarMergedFraction(*this); }
+
 
   void SetRadiusMin(double minrad);
   void SetRadiusMax(double maxrad);
