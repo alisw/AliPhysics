@@ -174,7 +174,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
     "RhoPtRec", "RhoPtSim", "RhoMassRec", "RhoMassSim", "AreaRec",
     "AreaSim", "NEFRec", "NEFSim", "MassRec", "MassSim",
     "ZgMeasured", "ZgTrue", "RgMeasured", "RgTrue", "MgMeasured",
-    "MgTrue", "PtgMeasured", "PtgTrue", "MugMeasured", "MugTrue",
+    "MgTrue", "PtgMeasured", "PtgTrue", "MugMeasured", "MugTrue", "DeltaRgMeasured", "DeltaRgTrue",
     "OneSubjettinessMeasured", "OneSubjettinessTrue", "TwoSubjettinessMeasured", "TwoSubjettinessTrue", "AngularityMeasured",
     "AngularityTrue", "PtDMeasured", "PtDTrue", "NCharged", "NNeutral",
     "NConstTrue", "NDroppedMeasured", "NDroppedTrue" };
@@ -442,6 +442,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
       fJetTreeData[kTMgMeasured] = dataSoftdrop->fMg;
       fJetTreeData[kTPtgMeasured] = dataSoftdrop->fPtg;
       fJetTreeData[kTMugMeasured] = dataSoftdrop->fMug;
+      fJetTreeData[kTDeltaRgMeasured] = mcSoftdrop->fDeltaR;
       fJetTreeData[kTNDroppedMeasured] = dataSoftdrop->fNDropped;
     }
 
@@ -451,6 +452,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
       fJetTreeData[kTMgTrue] = mcSoftdrop->fMg;
       fJetTreeData[kTPtgTrue] = mcSoftdrop->fPtg;
       fJetTreeData[kTMugTrue] = mcSoftdrop->fMug;
+      fJetTreeData[kTDeltaRgTrue] = mcSoftdrop->fDeltaR;
       fJetTreeData[kTNDroppedTrue] = mcSoftdrop->fNDropped;
     }
   }
@@ -562,6 +564,7 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
                                   groomed.m(),
                                   softdropstruct.delta_R(),
                                   groomed.perp(),
+                                  softdropstruct.delta_R(),
                                   softdropstruct.mu(),
                                   softdropstruct.dropped_count()});
     return result;

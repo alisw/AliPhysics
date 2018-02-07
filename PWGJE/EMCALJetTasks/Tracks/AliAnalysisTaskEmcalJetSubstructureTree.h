@@ -75,6 +75,7 @@ struct AliSoftDropParameters {
   Double_t fMg;             ///< Groomed jet mass
   Double_t fRg;             ///< Groomed jet radius
   Double_t fPtg;            ///< Groomed jet pt
+  Double_t fDeltaR;         ///< Delta_r of the branches at the last splitting
   Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
 };
@@ -175,20 +176,22 @@ public:
     kTPtgTrue = 27,
     kTMugMeasured = 28,
     kTMugTrue = 29,
-    kTOneNSubjettinessMeasured = 30,
-    kTOneNSubjettinessTrue = 31,
-    kTTwoNSubjettinessMeasured = 32,
-    kTTwoNSubjettinessTrue = 33,
-    kTAngularityMeasured = 34,
-    kTAngularityTrue = 35,
-    kTPtDMeasured = 36,
-    kTPtDTrue = 37,
-    kTNCharged = 38,
-    kTNNeutral = 39,
-    kTNConstTrue = 40,
-    kTNDroppedMeasured = 41,
-    kTNDroppedTrue = 42,
-    kTNVar = 43
+    kTDeltaRgMeasured = 30,
+    kTDeltaRgTrue = 31,
+    kTOneNSubjettinessMeasured = 32,
+    kTOneNSubjettinessTrue = 33,
+    kTTwoNSubjettinessMeasured = 34,
+    kTTwoNSubjettinessTrue = 35,
+    kTAngularityMeasured = 36,
+    kTAngularityTrue = 37,
+    kTPtDMeasured = 38,
+    kTPtDTrue = 39,
+    kTNCharged = 40,
+    kTNNeutral = 41,
+    kTNConstTrue = 42,
+    kTNDroppedMeasured = 43,
+    kTNDroppedTrue = 44,
+    kTNVar = 45
   };
 
 	AliAnalysisTaskEmcalJetSubstructureTree();
