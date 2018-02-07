@@ -22,7 +22,7 @@ const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
 const Int_t    nBinsPhi = 60; //flexible to rebin
 
-const Double_t PtBins[] = {0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
+const Double_t PtBins[] = {0.0, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
 						   0.75, 0.80, 0.85, 0.90, 1.00, 1.10, 1.15, 1.25, 1.35, 1.55, 1.80,
 						   2.05, 2.30, 2.60, 2.90, 3.30, 3.60, 4.00, 5.00, 6.50, 8.00, 10.0};
 //Ivan binning
@@ -168,7 +168,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t hasITS = 
 	// produce analysis filter by using functions in this config:
 	// -----
 	anaFilter->AddCuts( SetupTrackCuts(cutInstance, hasITS) );
-	//anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
+	anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
 	std::cout << "...cuts added!" <<std::endl; 
 	  
 	//std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance << std::endl;
@@ -205,7 +205,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 		//FilterBit 4 used to filter AODs
 		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
     fesdTrackCuts->SetMinNCrossedRowsTPC(70);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    //fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
     fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
@@ -230,7 +230,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 
     //TPC
     fesdTrackCuts->SetMinNClustersTPC(70);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(60);
+    //fesdTrackCuts->SetMinNCrossedRowsTPC(60); FilterBit4 stronger cut
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.3);
     //fesdTrackCuts->SetMaxChi2PerClusterTPC(4.5);
     fesdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
