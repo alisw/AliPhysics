@@ -1714,9 +1714,9 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
           if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
               // electron rejection
               if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax){Printf("Pion found\n"); return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax){Printf("Kaon found\n"); return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax){Printf("Proton found\n"); return kProton;}
+              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax){return kPion;}
+              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
+              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
           }
       }
   }
@@ -1741,9 +1741,9 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
 
           // electron rejection
           if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
-          if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){Printf("Pion found\n"); return kPion;}
-          if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){Printf("Kaon found\n"); return kKaon;}
-          if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){Printf("Proton found\n"); return kProton;}
+          if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){return kPion;}
+          if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
+          if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
       }
       if(fPIDbayesian){
 
@@ -1761,19 +1761,13 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
           if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
               // electron rejection
               if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){Printf("Pion found\n"); return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){Printf("Kaon found\n"); return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){Printf("Proton found\n"); return kProton;}
+              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){return kPion;}
+              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
+              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
           }
       }
   }
 
-    // TPC dEdx parametrisation (dEdx - <dEdx>)
-    // TODO: TPC dEdx parametrisation cuts
-    // if(dPt > 3.)
-    // {
-    //
-    // }
 
   return kUnknown;
 }
