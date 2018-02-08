@@ -41,6 +41,14 @@ AliAodSkimTask::~AliAodSkimTask()
 
 void AliAodSkimTask::UserCreateOutputObjects()
 {
+
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  if (oh) {
+    TFile *fout = oh->GetTree()->GetCurrentFile();
+    fout->SetCompressionLevel(2);
+  }
+
   fOutputList = new TList;
   fOutputList->SetOwner();
   fHevs = new TH1F("hEvs","",2,-0.5,1.5);
@@ -81,8 +89,8 @@ void AliAodSkimTask::UserExec(Option_t *)
   }
   fHevs->Fill(1);
 
-  //AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
   if (oh)
     oh->SetFillAOD(kFALSE);
 
@@ -120,7 +128,10 @@ void AliAodSkimTask::UserExec(Option_t *)
     if (1) {   
       TClonesArray *out = eout->GetVertices(); 
       TClonesArray *in  = evin->GetVertices();      
-      new (out) TClonesArray(*in); 
+      for (Int_t i=0;i<in->GetEntriesFast();++i) {
+	AliAODVertex *v = static_cast<AliAODVertex*>(in->At(i));
+	new ((*out)[i]) AliAODVertex(*v);
+      }
     }
     if (1) {   
       AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); 
@@ -130,7 +141,10 @@ void AliAodSkimTask::UserExec(Option_t *)
     if (1) {
       TClonesArray *out = eout->GetTracks();	                 
       TClonesArray *in  = evin->GetTracks();	
-      new (out) TClonesArray(*in);     
+      for (Int_t i=0;i<in->GetEntriesFast();++i) {
+	AliAODTrack *t = static_cast<AliAODTrack*>(in->At(i));
+	new ((*out)[i]) AliAODTrack(*t);
+      }
     }
     if (1) { 
       AliAODCaloTrigger *out = eout->GetCaloTrigger("EMCAL");
@@ -140,12 +154,15 @@ void AliAodSkimTask::UserExec(Option_t *)
     if (1) { 
       AliAODCaloCells *out = eout->GetEMCALCells();                  
       AliAODCaloCells *in  = evin->GetEMCALCells();    
-      new (out) AliAODCaloCells(*in);  
+      *out = *in;
     }
     if (1) { 
       TClonesArray *out = eout->GetCaloClusters();	         
       TClonesArray *in  = evin->GetCaloClusters();  
-      new (out) TClonesArray(*in); 
+      for (Int_t i=0;i<in->GetEntriesFast();++i) {
+	AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(in->At(i));
+	new ((*out)[i]) AliAODCaloCluster(*c);
+      }
     }
 
     if (1) {
@@ -158,12 +175,13 @@ void AliAodSkimTask::UserExec(Option_t *)
 	out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
       } 
       if (in && out) {
-	new (out) TClonesArray(*in); 
 	if (fCutMC) {
-	  for (Int_t i=0;i<out->GetEntriesFast();++i) {
-	    AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(out->At(i));
+	  for (Int_t i=0;i<in->GetEntriesFast();++i) {
+	    AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(in->At(i));
 	    if (TMath::Abs(mc->Y())>1.2)
 	      new ((*out)[i]) AliAODMCParticle;
+	    else
+	      new ((*out)[i]) AliAODMCParticle(*mc);
 	  }
 	}
       }      
@@ -187,7 +205,6 @@ void AliAodSkimTask::UserExec(Option_t *)
 	}
       }
     }
-
     fTrials = 0;
     PostData(1, fOutputList);
   }
