@@ -39,6 +39,50 @@ public:
     virtual ~AliXiStarPbPb();
     AliXiStarPbPb(const AliXiStarPbPb &obj);
     AliXiStarPbPb &operator=(const AliXiStarPbPb &obj);
+    
+    enum {
+        kNbinsM              = 200, // mult bins for certain histograms //300
+        kXiStarCode          = 3324,// Xi(1530)^0 MC code
+        kXiCode              = 3312,// Xi- MC code
+        kLambdaCode          = 3122,// Lambda MC code
+        kProtonCode          = 2212,// Proton+ MC code
+        kPionCode            = 211,// Pion+ MC code
+        kNCutVariations      = 21,// number of cut variations // 13
+        kNCuts               = 13// number of cut types //15
+    };
+
+    
+    struct St_CutType {
+        TH3F *fXi; //!
+        TH3F *fXibar; //!
+        //
+        TH3F *fXiMinusPiPlus; //!
+        TH3F *fXiMinusPiMinus; //!
+        TH3F *fXiPlusPiPlus; //!
+        TH3F *fXiPlusPiMinus; //!
+        
+        TH3F *fXiMinusPiPlusbkg; //!
+        TH3F *fXiMinusPiMinusbkg; //!
+        TH3F *fXiPlusPiPlusbkg; //!
+        TH3F *fXiPlusPiMinusbkg; //!
+        //
+        TH3F *fMCrecXi; //!
+        TH3F *fMCrecXibar; //!
+        
+        TH3F *fMCrecXiMinusPiPlus; //!
+        TH3F *fMCrecXiPlusPiMinus; //!
+        
+    };
+    struct St_CutType CutVar[kNCutVariations]; //!
+    
+    
+    AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
+    AliESDtrack* fXiTrack; //! esdtrack for XiStar's daughter Xi
+    
+    Int_t fCutList;// Cut List option (mean values or systematic variations)
+    
+    Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
+    Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
   
     
 private:
@@ -61,16 +105,6 @@ private:
     void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
     
     
-    enum {
-        kNbinsM              = 200, // mult bins for certain histograms //300
-        kXiStarCode          = 3324,// Xi(1530)^0 MC code
-        kXiCode              = 3312,// Xi- MC code
-        kLambdaCode          = 3122,// Lambda MC code
-        kProtonCode          = 2212,// Proton+ MC code
-        kPionCode            = 211,// Pion+ MC code
-        kNCutVariations      = 21,// number of cut variations // 13
-        kNCuts               = 13// number of cut types //15
-    };
     
     const char* fname;// name of class
    // AliInputEventHandler *fEventHandler;                              //  for ESDs or AODs
@@ -104,44 +138,6 @@ private:
     Double_t fTrueMassPr, fTrueMassPi, fTrueMassK, fTrueMassLam, fTrueMassXi;// The PDG mass values
     Bool_t IsTPC  (AliESDtrack *track);
 
-  
-    
-    //=================================================================================//
-    //generated Histograms//
-    //=================================================================================//
-//protected:
-
-    struct St_CutType {
-        TH3F *fXi; //!
-        TH3F *fXibar; //!
-        //
-        TH3F *fXiMinusPiPlus; //!
-        TH3F *fXiMinusPiMinus; //!
-        TH3F *fXiPlusPiPlus; //!
-        TH3F *fXiPlusPiMinus; //!
-        
-        TH3F *fXiMinusPiPlusbkg; //!
-        TH3F *fXiMinusPiMinusbkg; //!
-        TH3F *fXiPlusPiPlusbkg; //!
-        TH3F *fXiPlusPiMinusbkg; //!
-        //
-        TH3F *fMCrecXi; //!
-        TH3F *fMCrecXibar; //!
-        
-        TH3F *fMCrecXiMinusPiPlus; //!
-        TH3F *fMCrecXiPlusPiMinus; //!
-       
-    };
-    struct St_CutType CutVar[kNCutVariations]; //!
-   
-    
-    AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
-    AliESDtrack* fXiTrack; //! esdtrack for XiStar's daughter Xi
-    
-    Int_t fCutList;// Cut List option (mean values or systematic variations)
-    
-    Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
-    Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
     
     ClassDef(AliXiStarPbPb, 1); 
 };
