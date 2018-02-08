@@ -8,15 +8,13 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
-#include <iosfwd>
+
 
 //#define AliAnalysisTaskCorPIDTOFQA AliAnalysisTaskCorPIDTOFQA2
 
 class AliAODTrack;
 
-//namespace BSchaefer_devel{
-
-//namespace std{
+namespace BSchaefer_devel{
     
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
@@ -87,8 +85,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 trig_08_phi_pt_pos;          // 17
 	TH2F*                 trig_08_phi_pt_neg;          // 18
 
-	std::ofstream*             associates;
-	std::ofstream*             triggers;
+	ofstream*             associates;
+	ofstream*             triggers;
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
@@ -96,5 +94,5 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
-//}  //// namespace
+}  //// namespace
 #endif
