@@ -1719,7 +1719,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Option==9 Subjet1 Leading track Pt
 
   
-  
+  Algorithm=fReclusteringAlgorithm;
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
@@ -1774,7 +1774,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_onepassca();
     } 
     else{
-      Algorithm=fReclusteringAlgorithm;
+      //Algorithm=fReclusteringAlgorithm;
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder JetFinder("Nsubjettiness");
       JetFinder.SetJetMaxEta(0.9-fJetRadius);
