@@ -1,4 +1,4 @@
-AliXiStarPbPb *AddTaskXiStarPbPb(bool AODcase=kFALSE, bool MCcase=kFALSE) {
+AliXiStarPbPb *AddTaskXiStarPbPb(bool AODcase=kFALSE, bool MCcase=kFALSE, int CutList=0) {
  
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,11 +9,12 @@ AliXiStarPbPb *AddTaskXiStarPbPb(bool AODcase=kFALSE, bool MCcase=kFALSE) {
   
     if (AODcase == kTRUE) {
         Printf("INFO! You are using AODs!");}
-    
+
   //____________________________________________//
   // Create tasks
   AliXiStarPbPb *XiStarTask = new AliXiStarPbPb("XiStarTask", AODcase, MCcase);
   if(!XiStarTask) exit(-1);
+    
   mgr->AddTask(XiStarTask);
     
    
