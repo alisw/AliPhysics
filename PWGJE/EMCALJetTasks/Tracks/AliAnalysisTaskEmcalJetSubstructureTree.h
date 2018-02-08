@@ -53,6 +53,8 @@ namespace EmcalTriggerJets {
 struct AliNSubjettinessParameters {
   Double_t fOneSubjettiness;      ///< 1-subjettiness
   Double_t fTwoSubjettiness;      ///< 2-subjettiness
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
 
 /**
@@ -78,6 +80,8 @@ struct AliSoftDropParameters {
   Double_t fDeltaR;         ///< Delta_r of the branches at the last splitting
   Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
 
 /**
@@ -99,6 +103,45 @@ struct AliJetSubstructureSettings {
 struct AliJetSubstructureData {
   AliSoftDropParameters fSoftDrop;
   AliNSubjettinessParameters fNsubjettiness;
+};
+
+/**
+ * @struct AliJetKineParameters
+ * @brief Jet kinematic parameters
+ * @ingroup PWGJETASKS
+ */
+struct AliJetKineParameters {
+  Double_t fPt;                              ///< Jet Pt
+  Double_t fE;                               ///< Jet Energy
+  Double_t fMass;                            ///< Jet Mass
+  Double_t fEta;                             ///< Jet Eta 
+  Double_t fPhi;                             ///< Jet Phi
+  Double_t fArea;                            ///< Jet Area
+  Double_t fNEF;                             ///< Jet Neutral Energy Fraction
+  Int_t    fNCharged;                        ///< Number of charged constituents
+  Int_t    fNNeutral;                        ///< Number of neutral constituents
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
+};
+
+/**
+ * @struct AliJetStructureParameters
+ * @brief Global jet substructure paramters
+ * @ingroup PWGJETASKS
+ */
+struct AliJetStructureParameters {
+  Double_t fAngularity;                       ///< Angularity
+  Double_t fPtD;                              ///< Pt dispersion
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
+};
+
+struct AliJetTreeGlobalParameters {
+  Double_t fJetRadius;
+  Double_t fEventWeight;
+  Double_t fRhoParamters[4];
+
+  void LinkJetTreeBranches(TTree *jettree, bool fillRho);
 };
 
 struct Triggerinfo {
@@ -145,54 +188,6 @@ public:
     kKTAlgo = 1,
     kAKTAlgo = 2
   };
-  enum JetTreeEntry {
-    kTRadius = 0,
-    kTWeight = 1,
-    kTPtJetRec = 2,
-    kTPtJetSim = 3,
-    kTEJetRec = 4,
-    kTEJetSim = 5,
-    kTEtaRec = 6,
-    kTEtaSim = 7,
-    kTPhiRec = 8,
-    kTPhiSim = 9,
-    kTRhoPtRec = 10,
-    kTRhoPtSim = 11,
-    kTRhoMassRec = 12,
-    kTRhoMassSim = 13,
-    kTAreaRec = 14,
-    kTAreaSim = 15,
-    kTNEFRec = 16,
-    kTNEFSim = 17,
-    kTMassRec = 18,
-    kTMassSim = 19,
-    kTZgMeasured = 20,
-    kTZgTrue = 21,
-    kTRgMeasured = 22,
-    kTRgTrue = 23,
-    kTMgMeasured = 24,
-    kTMgTrue = 25,
-    kTPtgMeasured = 26,
-    kTPtgTrue = 27,
-    kTMugMeasured = 28,
-    kTMugTrue = 29,
-    kTDeltaRgMeasured = 30,
-    kTDeltaRgTrue = 31,
-    kTOneNSubjettinessMeasured = 32,
-    kTOneNSubjettinessTrue = 33,
-    kTTwoNSubjettinessMeasured = 34,
-    kTTwoNSubjettinessTrue = 35,
-    kTAngularityMeasured = 36,
-    kTAngularityTrue = 37,
-    kTPtDMeasured = 38,
-    kTPtDTrue = 39,
-    kTNCharged = 40,
-    kTNNeutral = 41,
-    kTNConstTrue = 42,
-    kTNDroppedMeasured = 43,
-    kTNDroppedTrue = 44,
-    kTNVar = 45
-  };
 
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
@@ -211,9 +206,7 @@ public:
 	}
 
   void SetFillPartLevelBranches(Bool_t doFill) { fFillPart = doFill; }
-  void SetFillAcceptance(Bool_t doFill) { fFillAcceptance = doFill; }
   void SetFillRhoBranches(Bool_t doFill) { fFillRho = doFill; }
-  void SetFillMassBranches(Bool_t doFill) { fFillMass = doFill; }
   void SetFillSoftdropBranches(Bool_t doFill) { fFillSoftDrop = doFill; }
   void SetFillNSubjettinessBranches(Bool_t doFill) { fFillNSub = doFill; }
   void SetFillSubstructureBranches(Bool_t doFill) { fFillStructGlob = doFill; }
@@ -234,36 +227,34 @@ protected:
 	AliSoftDropParameters MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cut) const;
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
+  
+  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet) const;
 
 	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
 	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
-	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
-
   void FillLuminosity();
 
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
-
-  void LinkOutputBranch(const std::string &branchname, Double_t *datalocation);
 
   std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
   std::string MatchTrigger(const std::string &triggerclass) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
-  bool IsPartBranch(const std::string &branchname) const;
-  bool IsAcceptanceBranch(const std::string &branchname) const;
-  bool IsRhoBranch(const std::string &branchname) const;
-  bool IsMassBranch(const std::string &branchname) const;
-  bool IsSoftdropBranch(const std::string &branchname) const;
-  bool IsNSubjettinessBranch(const std::string &branchname) const;
-  bool IsStructbranch(const std::string &branchname) const;
-
   bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
-	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
+  AliJetTreeGlobalParameters  *fGlobalTreeParams;           //!<! Global jet tree parameters (same for all jets in event)
+  AliSoftDropParameters       *fSoftDropMeasured;           //!<! Data field for measured soft drop parameters in jet tree
+  AliSoftDropParameters       *fSoftDropTrue;               //!<! Data field for true soft drop parameters in jet tree
+  AliNSubjettinessParameters  *fNSubMeasured;               //!<! Data field for measured n-subjettiness parameters in jet tree
+  AliNSubjettinessParameters  *fNSubTrue;                   //!<! Data field for true n-subjettiness parameters in jet tree
+  AliJetKineParameters        *fKineRec;                    //!<! Detector level jet kinematics
+  AliJetKineParameters        *fKineSim;                    //!<! Particle level jet kinematics
+  AliJetStructureParameters   *fJetStructureMeasured;       //!<! Measured jet substructure parameters
+  AliJetStructureParameters   *fJetStructureTrue;           //!<! True jet substructure paramteres
 	THistManager                *fQAHistos;                   //!<! QA histos
   TH1                         *fLumiMonitor;                //!<! Luminosity monitor
 
@@ -281,9 +272,7 @@ private:
 
   // Fill levels for tree (save disk space when information is not needed)
   Bool_t                       fFillPart;                   ///< Fill particle level information
-  Bool_t                       fFillAcceptance;             ///< Fill acceptance (eta-phi)
   Bool_t                       fFillRho;                    ///< Fill rho parameters
-  Bool_t                       fFillMass;                   ///< Fill jet mass
   Bool_t                       fFillSoftDrop;               ///< Fill soft drop parameters
   Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
   Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
@@ -292,6 +281,16 @@ private:
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
 	/// \endcond
 };
+
+/**
+ * @brief Helper function linking struct members to branches in the jet substructure tree
+ * 
+ * @param jettree Jet tree to be linked
+ * @param data Data field to be linked
+ * @param branchname Name of the branch in the jet tree
+ * @param type Variable data type
+ */
+void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type);
 
 } /* namespace EmcalTriggerJets */
 
