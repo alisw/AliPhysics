@@ -5,6 +5,18 @@
 #include "AliVCaloCells.h"
 #include "AliPHOSGeometry.h"
 
+
+/*
+2017-10-14: added cluster position
+*/
+
+
+
+
+
+
+
+
 class TObject;
 
 ClassImp(AliCaloClusterContent)
@@ -19,6 +31,7 @@ AliCaloClusterContent::AliCaloClusterContent():
   fIsExotic(-1),
   fIsEMCAL(-1),
   fIsPHOS(-1),
+  fPosition(),  //TODO move down and initialize all entries with -1
   fCoreEnergy(-1),
   fDispersion(-1),
   fDistanceToBadChannel(-1),
@@ -35,7 +48,8 @@ AliCaloClusterContent::AliCaloClusterContent():
   fCellRelIDX(0),
   fCellRelIDZ(0),
   fCellEnergy(0),
-  fCellTime(0)
+  fCellTime(0),
+  fCellAmpFrac(0)
 {
 // allocate memory
   fCellAbsID.reserve(30);
@@ -45,6 +59,8 @@ AliCaloClusterContent::AliCaloClusterContent():
   fCellRelIDZ.reserve(30);
   fCellEnergy.reserve(30);
   fCellTime.reserve(30);
+  fCellAmpFrac.reserve(30);
+
 }
 
 //________________________________________________________________________
@@ -57,6 +73,7 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fIsExotic(-1),
   fIsEMCAL(-1),
   fIsPHOS(-1),
+  fPosition(),  //TODO move down and initialize all entries with -1
   fCoreEnergy(-1),
   fDispersion(-1),
   fDistanceToBadChannel(-1),
@@ -73,7 +90,8 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fCellRelIDX(0),
   fCellRelIDZ(0),
   fCellEnergy(0),
-  fCellTime(0)
+  fCellTime(0),
+  fCellAmpFrac(0)
 {
 
   Int_t NCells = clust ->GetNCells();
@@ -85,6 +103,7 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fCellRelIDZ.reserve(2*NCells);
   fCellEnergy.reserve(2*NCells);
   fCellTime.reserve(2*NCells);
+  fCellAmpFrac.reserve(2*NCells);
 
   this->SetClusterAndCells(clust, cells, fgeom);
 
@@ -159,6 +178,7 @@ AliCaloClusterContent::~AliCaloClusterContent()
 //________________________________________________________________________
 void AliCaloClusterContent::SetClusterAndCells(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom){
 // read out cluster information
+  clust ->GetPosition(fPosition);
   fType                 = clust ->GetType();
   fLabel                = clust ->GetLabel();
   fNCells               = clust ->GetNCells();
@@ -190,8 +210,9 @@ void AliCaloClusterContent::SetClusterAndCells(const AliVCluster* clust, AliVCal
     icellZ    = irelIDCell[3];
 
 
-    Double_t dCellEnergy = cells ->GetCellAmplitude(iCellAbsId);
-    Double_t dCellTime   = cells ->GetCellTime(iCellAbsId);
+    Double_t dCellEnergy  = cells ->GetCellAmplitude(iCellAbsId);
+    Double_t dCellTime    = cells ->GetCellTime(iCellAbsId);
+    Double_t dCellAmpFrac = clust ->GetCellAmplitudeFraction(iCellAbsId);
 
     fCellAbsID.push_back(iCellAbsId);
     fCellMod.push_back(iMod);
@@ -200,36 +221,46 @@ void AliCaloClusterContent::SetClusterAndCells(const AliVCluster* clust, AliVCal
     fCellRelIDZ.push_back(icellZ);
     fCellEnergy.push_back(dCellEnergy);
     fCellTime.push_back(dCellTime);
+    fCellAmpFrac.push_back(dCellAmpFrac);
+
     }
 
   fIsFilled = kTRUE;
 }
 
-
-
-
-
+//________________________________________________________________________
+//void AliCaloClusterContent::SetMatchedTrack(Double_t Distance, Double_t DistanceX, Double DistanceZ){
+//
+//
+//  fDistanceToTrack  = Distance;
+//  fDistanceXToTrack = DistanceX;
+//  fDistanceZToTrack = DistanceZ;
+//
+//
+//
+//  //fIsTrackMatched = kTRUE;
+//}
 
 //________________________________________________________________________
 void AliCaloClusterContent::Reset(){
 
-  fType                 = 0;
-  fLabel                = 0;
-  fNCells               = 0;
-  fNTracksMatched       = 0;
-  fIsExotic             = 0;
-  fIsEMCAL              = 0;
-  fIsPHOS               = 0;
-  fCoreEnergy           = 0;
-  fDispersion           = 0;
-  fDistanceToBadChannel = 0;
-  fEmcCpvDistance       = 0;
-  fEnergy               = 0;
-  fM02                  = 0;
-  fM20                  = 0;
-  fTOF                  = 0;
-  fTrackDx              = 0;
-  fTrackDz              = 0;
+  fType                 = -1;
+  fLabel                = -1;
+  fNCells               = -1;
+  fNTracksMatched       = -1;
+  fIsExotic             = -1;
+  fIsEMCAL              = -1;
+  fIsPHOS               = -1;
+  fCoreEnergy           = -1;
+  fDispersion           = -1;
+  fDistanceToBadChannel = -1;
+  fEmcCpvDistance       = -1;
+  fEnergy               = -1;
+  fM02                  = -1;
+  fM20                  = -1;
+  fTOF                  = -1;
+  fTrackDx              = -1;
+  fTrackDz              = -1;
 
   fCellAbsID.clear();
   fCellMod.clear();
@@ -238,6 +269,7 @@ void AliCaloClusterContent::Reset(){
   fCellRelIDZ.clear();
   fCellEnergy.clear();
   fCellTime.clear();
+  fCellAmpFrac.clear();
 
 
   fIsFilled = kFALSE;
