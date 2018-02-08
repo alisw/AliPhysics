@@ -68,7 +68,7 @@
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
-using namespace BSchaefer_devel;
+//using namespace BSchaefer_devel;
 
 //ofstream file("output.txt");
 //const int multiplicity_cut       = 0;
