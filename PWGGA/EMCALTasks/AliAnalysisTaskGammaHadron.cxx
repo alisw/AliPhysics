@@ -175,7 +175,8 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 
 	//..!!
 	//.. fPoolSize is an input that is ignored in the PoolManager Anyway
-	fPoolSize       = 1;     //1000 - Raymond/Megan value, says it is ignored anyway
+	//fPoolSize       = 1;     //1000 - Raymond/Megan value, says it is ignored anyway
+  fPoolSize       = -1; // fPoolSize is no longer ignored ?  Must be -1 or the max number of events to mix in each pool
 
 	// Pi0 Mass and Sigma Fit parameters (for mass window)
 	Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
@@ -1682,8 +1683,8 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	Double_t deltaPhi   = DeltaPhi(ClusterVec,TrackVec);
 	//Double_t ZT_Value   = TMath::Cos(deltaPhi)*TrackVec->P()/ClusterVec.P(); //   TrackVec->Pt()/G_PT_Value;
 	Double_t ZT_Value   = TrackVec->Pt()/G_PT_Value; //   TrackVec->Pt()/G_PT_Value;
-	//..Careful here: usually this is done for an opening angle (hadron-jet axis) of less than 90ก. Due to
-	//..resolution momentum smearing (our guess - check that!) there are particles appearing at angles greater than 90ก
+	//..Careful here: usually this is done for an opening angle (hadron-jet axis) of less than 90ยก. Due to
+	//..resolution momentum smearing (our guess - check that!) there are particles appearing at angles greater than 90ยก
 	Double_t XI_Value=-50;
 	if(ZT_Value>0)
 	{
