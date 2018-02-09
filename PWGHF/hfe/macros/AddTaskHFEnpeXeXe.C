@@ -3,9 +3,9 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
                                    Double_t centrMax = 100,
                                    Bool_t MCthere = kFALSE,       // DATA false
                                    Bool_t kNPERef = kTRUE,
-                                   Bool_t kNPETOFITS = kTRUE,
                                    Int_t RunSystematic = 0, // select systematic type
                                    Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used
+                                   Bool_t kNPETOFITS = kFALSE,
                                    Bool_t kNPERefTPConly = kFALSE,
                                    Bool_t isAOD = kTRUE,
                                    Bool_t kNPETOFlast = kFALSE
@@ -401,7 +401,7 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
                                   kassETAm, kassETAp,kassMinpT, kassITS, 90, kassTPCPIDcl,
                                   kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
                 
-                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                RegisterTaskNPEXeXe(centrMin,centrMax,newCentralitySelection, MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                   dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
                                   kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, 50,
                                   kassDCAr, kassDCAz, dEdxaclm, dEdxachm,kTRUE, kFALSE,kWei,kWeightMC);
@@ -541,12 +541,13 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
     //
     Int_t idcaxy = (Int_t)(dcaxy*10.);
     Int_t idcaz = (Int_t)(dcaz*10.);
-    Int_t tpclow = 0;
+    Int_t tpclow = 0, tpchigh =0;
     // ------- to manage containers name with negative TPC low cut --------
     bool IsTPClowcutNegative = kFALSE;
     if(tpcdEdxcutlow)
     {
         tpclow = (Int_t) (tpcdEdxcutlow[0]*1000.);
+        tpchigh = (Int_t) (tpcdEdxcuthigh[0]*1000.);
         if(tpclow<0)
         {
             IsTPClowcutNegative = kTRUE;
@@ -601,8 +602,8 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
     
     // ------- to manage containers name with negative TPC low cut --------
     TString appendix = "";                                                                   // letter 'm' added in this point (after TPCs)
-    if(IsTPClowcutNegative)      appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCsm%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
-    else                         appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
+    if(IsTPClowcutNegative)      appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCsm%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
+    else                         appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
     
     printf("Add macro appendix %s\n", appendix.Data());
     
