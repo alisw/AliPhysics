@@ -147,3 +147,6 @@
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ3D+;
+
+#pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
+
