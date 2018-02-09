@@ -2440,24 +2440,13 @@ void AliMTRChEffAnalysis::ZoomPad()
   TVirtualPad* pad = gPad;
   Int_t px = pad->GetEventX();
   Int_t py = pad->GetEventY();
+  TObjLink *lnk = pad->GetListOfPrimitives()->FirstLink();
   TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
-  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
-    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
-    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
-    TString drawOpt = obj->GetOption();
-    if ( drawOpt.IsNull() ) {
-      if ( obj->InheritsFrom(TGraph::Class()) ) {
-        drawOpt = "p";
-        if ( iobj == 1 ) drawOpt.Append("a");
-        static_cast<TGraph*>(obj)->GetXaxis()->SetLabelSize();
-      }
-      else if ( obj->InheritsFrom(TH1::Class()) ) {
-        drawOpt = "e";
-        if ( iobj == 1 ) drawOpt.Append("same");
-        static_cast<TH1*>(obj)->GetXaxis()->SetLabelSize();
-      }
-    }
-    obj->Draw(drawOpt.Data());
+  can->cd();
+  while (lnk) {
+    TObject* obj = lnk->GetObject()->DrawClone(lnk->GetOption());
+    obj->SetBit(kCanDelete);
+    lnk = lnk->Next();
   }
   can->Modified();
   can->Update();
