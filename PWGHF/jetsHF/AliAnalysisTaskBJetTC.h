@@ -1,28 +1,21 @@
 #ifndef ALIANALYSISTASKBJETTC_H
 #define ALIANALYSISTASKBJETTC_H
-#include "AliHFJetsTagging.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliV0ReaderV1.h"
+#include "AliConvEventCuts.h"
 class AliEmcalJet;
-class AliRDHFJetsCuts;
 class AliAODVertex;
 class AliAODTrack;
 class TList;
 class TH1D;
 class TH2D;
 class THnSparse;
-class TGraph;
 class AliHFJetsTagging;
-class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
-class AliMCEvent;
 class AliAnalysisUtils;
-class AliV0ReaderV1;
-class AliConvEventCuts;
 class TRandom3;
 class AliPIDResponse;
-class TLorentzVector;
-#include "AliESDtrackCuts.h"
 
 
 
@@ -34,6 +27,9 @@ public:
 
 	AliAnalysisTaskBJetTC();
 	AliAnalysisTaskBJetTC(const char *name);
+	//AliAnalysisTaskBJetTC(const AliAnalysisTaskBJetTC&);	// copy constructor not implemented yet
+	//AliAnalysisTaskBJetTC& operator=(const AliAnalysisTaskBJetTC&);	// assignment operator not implemented yet
+
 	virtual ~AliAnalysisTaskBJetTC();
 	virtual void  UserCreateOutputObjects();
   	virtual void  Terminate(Option_t *);
@@ -45,15 +41,11 @@ public:
 
   	void SetPtHardBin(Int_t b){ fSelectPtHardBin   = b;}
 
-	/*
-	AliAnalysisTaskBJetTC(const AliAnalysisTaskBJetTC&);
-	AliAnalysisTaskBJetTC& operator=(const AliAnalysisTaskBJetTC&);*/
-	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
 	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
 	  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kVertexZContrib,kPhysicsSelection,
 		kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening,kSelPtHardBin};
-	Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
+	Bool_t IsSelected(Int_t &WhyRejected,ULong_t &RejectionBits);
         void DoJetProbabilityAnalysis(Bool_t val=true){fDoJetProbabilityAnalysis=val;}
         void DoPtRelAnalysis(Bool_t val=true){fDoPtRelAnalysis=val;}
 
@@ -112,7 +104,11 @@ public:
 
 private:
 
-	void SelectV0CandidateVIT();
+	AliV0ReaderV1*           fV0Reader;//!
+    	TString                  fV0ReaderName;//
+    	TClonesArray*            fReaderGammas;//!
+
+	Bool_t SelectV0CandidateVIT();
   	Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax) const; // decides whether a particle is inside a jet cone
 	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
 	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
@@ -126,8 +122,8 @@ private:
 	Bool_t IsTrackAcceptedBJetCuts(AliAODTrack* track, Int_t jetFlavour);
 	Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
 	void   DoJetLoop(); //jet matching function 2/4
-	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0);
-	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
+	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0); //jet matching function 3/4
+	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const; //jet matching function 4/4
   	Double_t CalculateTrackProb(Double_t significance, Int_t trclass);
   	Double_t CalculateJetProb(AliEmcalJet * jet);//!
   	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet);
@@ -137,20 +133,15 @@ private:
 	Double_t GetPtRel(AliAODTrack* Lep, AliEmcalJet* jet, Bool_t AddLepToJet);
 	void	 GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
 
-	AliRDHFJetsCuts* fJetCutsHF;//
 	AliHFJetsTagging* fHFJetUtils;//!
 
-	TClonesArray * fMCArray;//!
-    	TClonesArray  *fCaloClusters;//Tender cluster
-	AliAnalysisUtils *fUtils;//!
-	Bool_t fUsePicoTracks;
+	Bool_t fUseCorrPt;//
+	Bool_t fEnableV0GammaRejection;//
+	Float_t fPythiaEventWeight;//!
 
-	Bool_t fUseCorrPt;
-	Float_t fPythiaEventWeight;//
+  	AliPIDResponse   *fRespoPID;//!
 
-  	AliPIDResponse   *fRespoPID;  //!
-
-	TRandom3* fRandom;                       //! Random cone input
+	TRandom3* fRandom;//! Random cone input
 
 	TH1D * fh1dEventRejectionRDHFCuts;//! Store Rejection reasons and number of accepted events
 	TH1D * fh1dVertexZ;//!
@@ -160,14 +151,14 @@ private:
 
 
 	// Bjet cuts
-	Double_t fTCMinTrackPt;
-	Int_t    fTCMinClusTPC;
-	Int_t 	 fTCMinHitsITS;
-	Double_t fTCMaxChi2pNDF;
-	Double_t fTCMaxIPxy;
-	Double_t fTCMaxIPz;
-	Double_t fTCMaxDecayLength;
-	Double_t fTCMaxDCATrackJet;
+	Double_t fTCMinTrackPt;//
+	Int_t    fTCMinClusTPC;//
+	Int_t 	 fTCMinHitsITS;//
+	Double_t fTCMaxChi2pNDF;//
+	Double_t fTCMaxIPxy;//
+	Double_t fTCMaxIPz;//
+	Double_t fTCMaxDecayLength;//
+	Double_t fTCMaxDCATrackJet;//
 	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
@@ -178,9 +169,7 @@ private:
 
 	TH1D * fh1dJetRecPtAcceptedunCorr;//!
 
-	TH1D * fhist_Jet_Background_Fluctuation;//!
 	TH1D * fhist_BJet_Background_Fluctuation;//!
-	TH1D * fhist_Rho_Jet;//!
 	TH2D * f2histRhoVsDeltaPt;//!
 
 	TH1D * fh1dTracksImpParXY;//! R Impact Parameter
@@ -245,8 +234,6 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancec; //!
 
 	//################################ Jet Probabilty
-  	Bool_t fDoJetProbabilityAnalysis;
-
         TH2D * fh2dJetSignedImpParXY_Class1;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class1;//!
         TH2D * fh2dJetSignedImpParXYZ_Class1;//!
@@ -280,7 +267,6 @@ private:
         TH2D * fhistJetProbability_cLog;//!
         TH2D * fhistJetProbability_bLog;//!
 
-	TF1* fResolutionFunction[7];//
 
 	// inclusive signed impact parameter distributions
 	//First
@@ -357,10 +343,6 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird; //!
 
 
-	// V0 Rejection
-	AliV0ReaderV1*           fV0Reader; //
-    	TString                  fV0ReaderName;
-    	TClonesArray*            fReaderGammas;   //
 
 	TH2D* fh2dKshortMassVsPt;//!
 	TH2D* fh2dLamdaMassVsPt;//!
@@ -389,12 +371,16 @@ private:
 	TH1D* fh1V0CounterCentLambda; //! number of Lambda candidates after various cuts
 	TH1D* fh1V0CounterCentALambda; //! number of ALambda candidates after various cuts
 
-  // V0 selection
-  Bool_t fApplyV0Rec;//
-  Bool_t fApplyV0RejectionAll;//
-  Bool_t fEnableV0GammaRejection;
 
-  TClonesArray* fV0CandidateArray;
+	TClonesArray * fMCArray;//!
+    	TClonesArray  *fCaloClusters;//! Tender cluster
+	AliAnalysisUtils *fUtils;//!
+  	Bool_t fDoJetProbabilityAnalysis;//
+	Bool_t fDoPtRelAnalysis;//
+	Bool_t fUsePicoTracks;//!
+
+
+  // V0 selection
   // Daughter tracks
   Bool_t fbTPCRefit; // (yes) TPC refit for daughter tracks
   Bool_t fbRejectKinks; // (no) reject kink-like production vertices of daughter tracks
@@ -426,8 +412,6 @@ private:
   THnSparse* fhnV0InJetALambda; //!
 
   //########################## PtRel
-  Bool_t fDoPtRelAnalysis;//
-
   TH1D* fhistPtRelEvents;//!
   TH2D* fhistPtRelVsJetPt;//!
   TH2D* fhistLepIPVsJetPt;//!
@@ -489,13 +473,26 @@ private:
   TH2D* fhistPtRelVsJetPtTaggedbThird;//!
   TH2D* fhistLepIPVsJetPtTaggedbThird;//!
 
+  
+
+  Bool_t fApplyV0Rec;//
+  Bool_t fApplyV0RejectionAll;//
+
+  TClonesArray* fV0CandidateArray;//!
+  AliJetContainer       *fJetContainerMC;  //! Container with reconstructed jets
+  AliJetContainer       *fJetContainerData;//! Container with reconstructed jets
+  AliAODEvent*		fAODIn;//! AOD Input Event
+  AliAODVertex*		fPrimaryVertex; //! Event Primary Vertex
+
+  TF1* fResolutionFunction[7];//
+
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //
   static const Double_t fgkMassLambda;  //
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 4	)
+	ClassDef(AliAnalysisTaskBJetTC, 42)
 };
 #endif
 
