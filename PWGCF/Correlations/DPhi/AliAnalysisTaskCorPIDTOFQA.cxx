@@ -97,8 +97,8 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     trig_08_phi_pt_pos(0),         // T 17
     trig_08_phi_pt_neg(0)          // T 18
 
-//  associates(0),
-//  triggers(0)
+//    associates(0),
+//    triggers(0)
     
 {
     // default constructor, don't allocate memory here!
@@ -118,15 +118,15 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
     fHistPt(0),                   //  T  4 (track)
     
-    trig_03_phi_pt_pos(0),         // T 13
-    trig_03_phi_pt_neg(0),         // T 14  
-    trig_05_phi_pt_pos(0),         // T 15
-    trig_05_phi_pt_neg(0),         // T 16
-    trig_08_phi_pt_pos(0),         // T 17
-    trig_08_phi_pt_neg(0)          // T 18
+    trig_03_phi_pt_pos(0),        // T 13
+    trig_03_phi_pt_neg(0),        // T 14  
+    trig_05_phi_pt_pos(0),        // T 15
+    trig_05_phi_pt_neg(0),        // T 16
+    trig_08_phi_pt_pos(0),        // T 17
+    trig_08_phi_pt_neg(0)         // T 18
 
-//  associates(0),
-//  triggers(0)
+//    associates(0),
+//    triggers(0)
 
 {
     // constructor
@@ -203,8 +203,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",          170,   3.0,  20.0,   288, lower, upper);          // 17
     trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",          170,   3.0,  20.0,   288, lower, upper);          // 18
 
-    associates                 = new ofstream("associates.txt");
-    triggers                   = new ofstream("triggers.txt");
+    associates                 = new std::ofstream("associates.txt");
+    triggers                   = new std::ofstream("triggers.txt");
 
 
 
