@@ -113,10 +113,14 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   fpDaug->SetMomentum(v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
 
   if(fIsMC) {
-    this->SetMCTheta(fnDaug->GetMCTheta().at(0));
-    this->SetMCTheta(fpDaug->GetMCTheta().at(0));
-    this->SetMCPhi(fnDaug->GetMCPhi().at(0));
-    this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+    if (fnDaug->IsSet()) {
+      this->SetMCTheta(fnDaug->GetMCTheta().at(0));
+      this->SetMCPhi(fnDaug->GetMCPhi().at(0));
+    }
+    if (fpDaug->IsSet()) {
+      this->SetMCTheta(fpDaug->GetMCTheta().at(0));
+      this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+    }
   }
 }
 

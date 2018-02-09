@@ -139,7 +139,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   } else {
     AliFatal("Event Collection Config missing");
   }
-  fAnalysis->Init();
+  fAnalysis->Init(fIsMC);
 
   if (fAnalysis->GetQAList()) {
     fQA=fAnalysis->GetQAList();
@@ -162,28 +162,12 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     AliFatal("Event Cut Histograms not available");
   }
   if (fAnalysis->Getv0CutHist()) {
-//      &&
-//      fAnalysis->Getv0PosDaugHist()&&fAnalysis->Getv0NegDaugHist()) {
     fv0CutHistList=fAnalysis->Getv0CutHist();
-//    TList *PosDaug=fAnalysis->Getv0PosDaugHist();
-//    PosDaug->SetName("ProtonDaughter");
-//    fv0CutHistList->Add(PosDaug);
-//    TList *NegDaug=fAnalysis->Getv0NegDaugHist();
-//    NegDaug->SetName("PionDaughter");
-//    fv0CutHistList->Add(NegDaug);
   } else {
     AliFatal("v0 Cut Histograms not available");
   }
   if (fAnalysis->GetAntiv0CutHist()) {
-//  &&
-//      fAnalysis->GetAntiv0PosDaugHist()&&fAnalysis->GetAntiv0NegDaugHist()) {
     fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-//    TList *PosDaug=fAnalysis->GetAntiv0PosDaugHist();
-//    PosDaug->SetName("PionDaughter");
-//    fAntiv0CutHistList->Add(PosDaug);
-//    TList *NegDaug=fAnalysis->GetAntiv0NegDaugHist();
-//    NegDaug->SetName("AntiProtonDaughter");
-//    fAntiv0CutHistList->Add(NegDaug);
   } else {
     AliFatal("Antiv0 Cut Histograms not available");
   }
@@ -217,24 +201,23 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   PostData(8,fAntiCascCutList);
   PostData(9,fResults);
   PostData(10,fResultQA);
-
   if (fIsMC) {
-    if (fTrackCuts->GetMCQAHists()) {
+    if (fTrackCuts->GetIsMonteCarlo()) {
       fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
     } else {
       AliFatal("No Track Cut MC Histograms!");
     }
-    if (fAntiTrackCuts->GetMCQAHists()) {
+    if (fAntiTrackCuts->GetIsMonteCarlo()) {
       fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
     } else {
       AliFatal("No Antitrack Cut MC Histograms!");
     }
-    if (fv0Cuts->GetMCQAHists()) {
+    if (fv0Cuts->GetIsMonteCarlo()) {
       fv0CutHistMCList=fv0Cuts->GetMCQAHists();
     } else {
       AliFatal("No v0 cut MC Histograms");
     }
-    if (fAntiv0Cuts->GetMCQAHists()) {
+    if (fAntiv0Cuts->GetIsMonteCarlo()) {
       fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
     } else {
       AliFatal("No Antiv0 cut MC Histograms");
@@ -273,26 +256,12 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
       AliFatal("Event Cut Histograms not available");
     }
     if (fAnalysis->Getv0CutHist()) {//&&
-//        fAnalysis->Getv0PosDaugHist()&&fAnalysis->Getv0NegDaugHist()) {
       fv0CutHistList=fAnalysis->Getv0CutHist();
-//      TList *PosDaug=fAnalysis->Getv0PosDaugHist();
-//      PosDaug->SetName("ProtonDaughter");
-//      fv0CutHistList->Add(PosDaug);
-//      TList *NegDaug=fAnalysis->Getv0NegDaugHist();
-//      NegDaug->SetName("PionDaughter");
-//      fv0CutHistList->Add(NegDaug);
     } else {
       AliFatal("v0 Cut Histograms not available");
     }
     if (fAnalysis->GetAntiv0CutHist()) {//&&
-//        fAnalysis->GetAntiv0PosDaugHist()&&fAnalysis->GetAntiv0NegDaugHist()) {
       fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-//      TList *PosDaug=fAnalysis->GetAntiv0PosDaugHist();
-//      PosDaug->SetName("PionDaughter");
-//      fAntiv0CutHistList->Add(PosDaug);
-//      TList *NegDaug=fAnalysis->GetAntiv0NegDaugHist();
-//      NegDaug->SetName("AntiProtonDaughter");
-//      fAntiv0CutHistList->Add(NegDaug);
     } else {
       AliFatal("Antiv0 Cut Histograms not available");
     }
@@ -327,22 +296,22 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     PostData(9,fResults);
     PostData(10,fResultQA);
     if (fIsMC) {
-      if (fTrackCuts->GetMCQAHists()) {
+      if (fTrackCuts->GetIsMonteCarlo()) {
         fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
       } else {
         AliFatal("No Track Cut MC Histograms!");
       }
-      if (fAntiTrackCuts->GetMCQAHists()) {
+      if (fAntiTrackCuts->GetIsMonteCarlo()) {
         fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
       } else {
         AliFatal("No Antitrack Cut MC Histograms!");
       }
-      if (fv0Cuts->GetMCQAHists()) {
+      if (fv0Cuts->GetIsMonteCarlo()) {
         fv0CutHistMCList=fv0Cuts->GetMCQAHists();
       } else {
         AliFatal("No v0 cut MC Histograms");
       }
-      if (fAntiv0Cuts->GetMCQAHists()) {
+      if (fAntiv0Cuts->GetIsMonteCarlo()) {
         fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
       } else {
         AliFatal("No Antiv0 cut MC Histograms");

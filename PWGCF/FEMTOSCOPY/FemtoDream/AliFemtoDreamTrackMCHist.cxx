@@ -83,33 +83,34 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
   fMCGenPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCGenPt);
 
-  fMCContPt=new TH1F("ContPt","ContPt",ptBins,ptmin,ptmax);
-  fMCContPt->Sumw2();
-  fMCContPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCContPt);
-
-  fMCUnknownPt=new TH1F("UnknPt","UnknPt",ptBins,ptmin,ptmax);
-  fMCUnknownPt->Sumw2();
-  fMCUnknownPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCUnknownPt);
-
-  fMCPrimaryPt=new TH1F("PrimaryPt","PrimaryPt",ptBins,ptmin,ptmax);
-  fMCPrimaryPt->Sumw2();
-  fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCPrimaryPt);
-
-  fMCMaterialPt=new TH1F("MatPt","MatPT",ptBins,ptmin,ptmax);
-  fMCMaterialPt->Sumw2();
-  fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCMaterialPt);
-
-  fMCFeeddownWeakPt=new TH2F("FeeddownPt","Feeddown Pt",ptBins,ptmin,ptmax,
-                             213,3121,3334);
-  fMCFeeddownWeakPt->Sumw2();
-  fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCFeeddownWeakPt);
 
   if (contribSplitting) {
+    fMCContPt=new TH1F("ContPt","ContPt",ptBins,ptmin,ptmax);
+    fMCContPt->Sumw2();
+    fMCContPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCContPt);
+
+    fMCUnknownPt=new TH1F("UnknPt","UnknPt",ptBins,ptmin,ptmax);
+    fMCUnknownPt->Sumw2();
+    fMCUnknownPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCUnknownPt);
+
+    fMCPrimaryPt=new TH1F("PrimaryPt","PrimaryPt",ptBins,ptmin,ptmax);
+    fMCPrimaryPt->Sumw2();
+    fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCPrimaryPt);
+
+    fMCMaterialPt=new TH1F("MatPt","MatPT",ptBins,ptmin,ptmax);
+    fMCMaterialPt->Sumw2();
+    fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCMaterialPt);
+
+    fMCFeeddownWeakPt=new TH2F("FeeddownPt","Feeddown Pt",ptBins,ptmin,ptmax,
+                               213,3121,3334);
+    fMCFeeddownWeakPt->Sumw2();
+    fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCFeeddownWeakPt);
+
     TString MCModes[4]={"Primary","Secondary","Material","Contamination"};
     for (int i=0;i<4;++i) {
       fMCQAPlots[i]=new TList();
@@ -186,6 +187,11 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
       fMCQAPlots[i]->Add(fMCNSigTOF[i]);
     }
   } else {
+    fMCContPt=0;
+    fMCUnknownPt=0;
+    fMCPrimaryPt=0;
+    fMCMaterialPt=0;
+    fMCFeeddownWeakPt=0;
     for (int i=0;i<4;++i) {
       fMCQAPlots[i]=0;
       fMCpTPCDist[i]=0;

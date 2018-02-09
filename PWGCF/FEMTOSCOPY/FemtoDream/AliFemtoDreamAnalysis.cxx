@@ -45,13 +45,15 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init() {
+void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fFemtoTrack=new AliFemtoDreamTrack();
-  fFemtoTrack->SetUseMCInfo(fTrackCuts->GetIsMonteCarlo());
+  fFemtoTrack->SetUseMCInfo(isMonteCarlo);
   fFemtov0=new AliFemtoDreamv0();
-  fFemtov0->SetUseMCInfo(fv0Cuts->GetIsMonteCarlo());
+  fFemtov0->SetUseMCInfo(isMonteCarlo);
   fFemtov0->SetPDGDaughterPos(fv0Cuts->GetPDGPosDaug());//order doesnt play a role
+  fFemtov0->GetPosDaughter()->SetUseMCInfo(isMonteCarlo);
   fFemtov0->SetPDGDaughterNeg(fv0Cuts->GetPDGNegDaug());//only used for MC Matching
+  fFemtov0->GetNegDaughter()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc=new AliFemtoDreamCascade();
   fEvtCuts->InitQA();
   fTrackCuts->Init();
@@ -176,11 +178,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (!fEvtCuts->isSelected(fEvent)) {
     return;
   }
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=========new Event===========" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
   ResetGlobalTrackReference();
   for(int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack){
     AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
@@ -201,8 +198,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     }
     fFemtoTrack->SetTrack(track);
     if (fTrackCuts->isSelected(fFemtoTrack)) {
-      //      std::cout << "ID Tracks from AOD:" << fGTI[-track->GetID()-1]->GetID() << std::endl;
-      //      std::cout << "Proton ID: "<<fFemtoTrack->GetIDTracks().at(0)<<std::endl;
       Particles.push_back(*fFemtoTrack);
     }
     if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
@@ -221,25 +216,25 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   for (int iv0=0; iv0<entriesV0; iv0++) {
     AliAODv0 *v0 = evt->GetV0(iv0);
     fFemtov0->Setv0(evt, v0);
-    if (fv0Cuts->isSelected(fFemtov0)) {
-      Decays.push_back(*fFemtov0);
-    }
-    if (fAntiv0Cuts->isSelected(fFemtov0)) {
-      AntiDecays.push_back(*fFemtov0);
-    }
+//    if (fv0Cuts->isSelected(fFemtov0)) {
+//      Decays.push_back(*fFemtov0);
+//    }
+//    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+//      AntiDecays.push_back(*fFemtov0);
+//    }
   }
-  int numcascades = evt->GetNumberOfCascades();
-  for (int iXi=0;iXi<numcascades;++iXi) {
-    AliAODcascade *xi = evt->GetCascade(iXi);
-    if (!xi) continue;
-    fFemtoCasc->SetCascade(evt,xi);
-    if (fCascCuts->isSelected(fFemtoCasc)) {
-      //
-    }
-    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-      //
-    }
-  }
+//  int numcascades = evt->GetNumberOfCascades();
+//  for (int iXi=0;iXi<numcascades;++iXi) {
+//    AliAODcascade *xi = evt->GetCascade(iXi);
+//    if (!xi) continue;
+//    fFemtoCasc->SetCascade(evt,xi);
+//    if (fCascCuts->isSelected(fFemtoCasc)) {
+//      //
+//    }
+//    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+//      //
+//    }
+//  }
 
   //  std::cout << "=============================" <<std::endl;
   //  std::cout << "=============================" <<std::endl;

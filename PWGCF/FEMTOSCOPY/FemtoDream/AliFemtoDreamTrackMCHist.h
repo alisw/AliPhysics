@@ -76,7 +76,6 @@ class AliFemtoDreamTrackMCHist {
   TH1F *fMCGenPt;                 //!
   TH1F *fMCContPt;                //!
   TH1F *fMCUnknownPt;             //!
-
   TH1F *fMCPrimaryPt;             //!
   TH1F *fMCMaterialPt;            //!
   TH2F *fMCFeeddownWeakPt;        //!

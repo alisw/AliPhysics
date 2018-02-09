@@ -442,6 +442,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
   Int_t PDGcode[5] = {11,13,211,321,2212};
+  //this is not the correct way to do it, since there might be double counting
   if (fpTmin<Track->GetPt()&&Track->GetPt()<fpTmax) {
     if (fetamin<Track->GetEta().at(0)&&Track->GetEta().at(0)<fetamax) {
       if(!fcutCharge){
