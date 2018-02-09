@@ -117,6 +117,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
 
   // events selection
   fPVtxCutZ(0.),
+  fColSystem(kPbPb),
   fMultEstimator(),
   fTrigger(0),
   fFullCentralityRange(kTRUE),
@@ -128,6 +129,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fCutChargedDCAxyMax(0),
   fCutChargedTrackFilterBit(0),
   fCutChargedNumTPCclsMin(0),
+  fMaxChi2perTPCcls(0),
 
   // PID tracks selection
   fESDpid(),
@@ -284,6 +286,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
 
   // events selection
   fPVtxCutZ(0.),
+  fColSystem(kPbPb),
   fMultEstimator(),
   fTrigger(0),
   fFullCentralityRange(kTRUE),
@@ -295,7 +298,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fCutChargedDCAxyMax(0),
   fCutChargedTrackFilterBit(0),
   fCutChargedNumTPCclsMin(0),
-
+  fMaxChi2perTPCcls(0),
   // PID tracks selection
   fESDpid(),
   fCutPIDUseAntiProtonOnly(kFALSE),
@@ -790,7 +793,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
 
     if(fProcessCharged)
     {
-      TString sChargedCounterLabel[] = {"Input","FB","#TPC-Cls","DCA-z","DCA-xy","Eta","Selected"};
+      TString sChargedCounterLabel[] = {"Input","FB","#TPC-Cls","TPC-Chi2","DCA-z","DCA-xy","Eta","Selected"};
       const Short_t iNBinsChargedCounter = sizeof(sChargedCounterLabel)/sizeof(sChargedCounterLabel[0]);
       fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
       for(Short_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
@@ -1063,8 +1066,11 @@ Bool_t AliAnalysisTaskFlowModes::InitializeTask()
     return kFALSE;
   }
 
-  // TODO check if period corresponds to selected collisional system
-
+  if(fColSystem != kPP && fColSystem != kPbPb)
+  {
+     ::Error("InitializeTask","Collisional system not specified! Terminating!");
+     return kFALSE;
+  }
 
   // checking PID response
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1167,15 +1173,19 @@ Bool_t AliAnalysisTaskFlowModes::EventSelection()
     
   // Fill event QA BEFORE cuts
   if(fFillQA) FillEventsQA(0);
+    
+ // event selection for small systems pp in Run2
+ if(fColSystem == kPP) eventSelected = IsEventSelected_pp();
+    
+ // event selection for PbPb in Run2
+ if(fColSystem == kPbPb) eventSelected = IsEventSelected_PbPb();
 
-  // event selection for PbPb
-
-  eventSelected = IsEventSelected();
+ // eventSelected = IsEventSelected_PbPb();
 
   return eventSelected;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskFlowModes::IsEventSelected()
+Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
 {
   // Event selection for PbPb collisions recorded in Run 2 year 2015
   // PbPb (LHC15o)
@@ -1309,6 +1319,122 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected()
 
   return kTRUE;
 
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskFlowModes::IsEventSelected_pp()
+{
+    // Event selection for small system collision recorder in Run 2 year 2016
+    // pp (LHC16kl), pPb (LHC16rqts)
+    // return kTRUE if event passes all criteria, kFALSE otherwise
+    // *************************************************************
+    
+    fhEventCounter->Fill("Input",1);
+    
+    // Physics selection (trigger)
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+    UInt_t fSelectMask = inputHandler->IsEventSelected();
+    
+    Bool_t isTriggerSelected = kFALSE;
+    switch(fTrigger) // check for high multiplicity trigger
+    {
+        case 0:
+            isTriggerSelected = fSelectMask& AliVEvent::kINT7;
+            break;
+            
+        case 1:
+            isTriggerSelected = fSelectMask& AliVEvent::kHighMultV0;
+            break;
+            
+        case 2:
+            isTriggerSelected = fSelectMask& AliVEvent::kHighMultSPD;
+            break;
+            
+        default: isTriggerSelected = kFALSE;
+    }
+    
+    if(!isTriggerSelected)
+        return kFALSE;
+    
+    // events passing physics selection
+    fhEventCounter->Fill("Physics selection OK",1);
+    
+    // primary vertex selection
+    const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(fEventAOD->GetPrimaryVertex());
+    if(!vtx || vtx->GetNContributors() < 1)
+        return kFALSE;
+    fhEventCounter->Fill("PV OK",1);
+    
+    // SPD vertex selection
+    const AliAODVertex* vtxSPD = dynamic_cast<const AliAODVertex*>(fEventAOD->GetPrimaryVertexSPD());
+    
+    Double_t dMaxResol = 0.25; // suggested from DPG
+    Double_t cov[6] = {0};
+    vtxSPD->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+    if ( vtxSPD->IsFromVertexerZ() && (zRes > dMaxResol)) return kFALSE;
+    fhEventCounter->Fill("SPD Vtx OK",1);
+    
+    // PileUp rejection included in Physics selection
+    // but with values for high mult pp (> 5 contrib) => for low ones: do manually (> 3 contrib)
+    
+    /*
+     if(fTrigger == 0 && fAOD->IsPileupFromSPD(3,0.8) )
+     {
+     return kFALSE;
+     }
+     */
+    
+    //fhEventCounter->Fill("Pileup SPD OK",1);
+    
+    // pileup rejection from multivertexer
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5);
+    utils.SetMinWDistMV(15);
+    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+    Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
+    
+    if(isPileupFromMV) return kFALSE;
+    fhEventCounter->Fill("Pileup MV OK",1);
+    
+    // if(fRejectOutOfBunchPU) // out-of-bunch rejection (provided by Christian)
+    // {
+    //   //out-of-bunch 11 BC
+    //   if (utils.IsOutOfBunchPileUp(fEventAOD))
+    //   {
+    //     return kFALSE;
+    //   }
+    //   fhEventCounter->Fill("OOBPU OK",1);
+    //
+    //   if (utils.IsSPDClusterVsTrackletBG(fEventAOD))
+    //   {
+    //     return kFALSE;
+    //   }
+    //
+    //   fhEventCounter->Fill("SPDClTrBG OK",1);
+    //
+    //   // SPD pileup
+    //   if (utils.IsPileUpSPD(fEventAOD))
+    //   {
+    //     return kFALSE;
+    //   }
+    //
+    //   fhEventCounter->Fill("SPDPU OK",1);
+    // }
+    
+    //fhEventCounter->Fill("Utils OK",1);
+    
+    // cutting on PV z-distance
+    const Double_t aodVtxZ = vtx->GetZ();
+    if( TMath::Abs(aodVtxZ) > fPVtxCutZ )
+    {
+        return kFALSE;
+    }
+    fhEventCounter->Fill("PV #it{z} OK",1);
+    
+    fhEventCounter->Fill("Selected",1);
+    return kTRUE;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
@@ -1464,6 +1590,12 @@ Bool_t AliAnalysisTaskFlowModes::IsChargedSelected(const AliAODTrack* track)
   // number of TPC clusters (additional check for not ITS-standalone tracks)
   if( track->GetTPCNcls() < fCutChargedNumTPCclsMin && fCutChargedTrackFilterBit != 2) return kFALSE;
   fhChargedCounter->Fill("#TPC-Cls",1);
+
+  // track chi2 per space points
+  Double_t chi2TPC =0.;
+  chi2TPC = track->Chi2perNDF();
+  if (fMaxChi2perTPCcls > 0. && chi2TPC > fMaxChi2perTPCcls) return kFALSE;
+  fhChargedCounter->Fill("TPC-Chi2",1);
 
   // track DCA coordinates
   // note AliAODTrack::XYZAtDCA() works only for constrained tracks

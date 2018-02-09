@@ -7,9 +7,13 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name", 
+					   AliAnalysisTaskFlowModes::ColSystem collisionSystem = AliAnalysisTaskFlowModes::kPbPb,
 					   Int_t PVtxZMax = 10,
 					   Int_t NumTPCclsMin = 70,
 					   Int_t TrackFilterBit = 96,
+                                           Double_t MaxChi2perTPC = 4,
+					   Double_t DCAzMax = 0.,
+                                           Double_t DCAxyMax = 0.,
 					   TString MultEstimator = "V0M",
 					   Bool_t AntiProtonOnly = kFALSE,
 					   Bool_t PIDbayesian = kFALSE,
@@ -31,6 +35,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 
  // Analysis
     task1->SetRunMode(AliAnalysisTaskFlowModes::kFull);//kFull
+    task1->SetColisionSystem(collisionSystem);//kPP, kPbPb
     task1->SetNumEventsAnalyse(50);//In case of fRunMode == kTest it only analyses up to 50 events.  
     task1->SetAnalysisType(AliAnalysisTaskFlowModes::kAOD);
     task1->SetSampling(kFALSE);
@@ -57,8 +62,12 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetChargedEtaMax(0.8);
     // task1->SetChargedPtMin(0.2);
     // task1->SetChargedPtMax(5.);
-    // task1->SetChargedDCAzMax(0.1);
-    // task1->SetChargedDCAxyMax(0.2);
+    // In PID vn paper: DCAz < 3.2 cm and DCAxy < 2.4 cm
+    // if DCAxy and DCAz set to 0. then the DCA cuts only come from the filterbit
+    task1->SetChargedDCAzMax(DCAzMax); //DCAz max is set to 2 in filterbit 32 and 96 
+    task1->SetChargedDCAxyMax(DCAxyMax); // in filterbit 32 and 96 is a pt dependant tight cut and in 768 it is not set at all
+ 
+    task1->SetMaxChi2perTPCcls(MaxChi2perTPC);   
     task1->SetChargedNumTPCclsMin(NumTPCclsMin);
     task1->SetChargedTrackFilterBit(TrackFilterBit);
     // PID selection
