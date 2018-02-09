@@ -7,6 +7,7 @@
 
 #include "AliFemtoDreamv0Cuts.h"
 #include "TDatabasePDG.h"
+#include <iostream>
 ClassImp(AliFemtoDreamv0Cuts)
 AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
 :fHistList()
@@ -53,9 +54,9 @@ AliFemtoDreamv0Cuts::~AliFemtoDreamv0Cuts() {
   if (fHist) {
     delete fHist;
   }
-  if (fMCHist) {
-    delete fMCHist;
-  }
+//  if (fMCHist) {
+//    delete fMCHist;
+//  }
 }
 AliFemtoDreamv0Cuts* AliFemtoDreamv0Cuts::LambdaCuts(
     bool isMC,bool CPAPlots,bool SplitContrib) {
@@ -323,27 +324,29 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
 
 void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
   double pT=v0->GetPt();
-  double etaNegDaug=v0->GetEta().at(1);
-  double etaPosDaug=v0->GetEta().at(2);
-  if (v0->GetMCPDGCode()==fPDGv0) {
-    if (fpTmin<pT&&pT<fpTmax) {
-      if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {
-        if (fNegCuts->GetEtaMin()<etaNegDaug&&etaNegDaug<fNegCuts->GetEtaMax()) {
-          fMCHist->FillMCGen(pT);
+  if (v0->GetHasDaughters()) {
+    double etaNegDaug=v0->GetEta().at(1);
+    double etaPosDaug=v0->GetEta().at(2);
+    if (v0->GetMCPDGCode()==fPDGv0) {
+      if (fpTmin<pT&&pT<fpTmax) {
+        if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {
+          if (fNegCuts->GetEtaMin()<etaNegDaug&&etaNegDaug<fNegCuts->GetEtaMax()) {
+            fMCHist->FillMCGen(pT);
+          }
         }
       }
     }
   }
   if (v0->UseParticle()) {
     fMCHist->FillMCIdent(pT);
-    if (TMath::Abs(v0->GetMCPDGCode())==TMath::Abs(fPDGv0)) {
+    if (v0->GetMCPDGCode()==fPDGv0) {
       fMCHist->FillMCCorr(pT);
     } else {
       v0->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
     }
-    if (fContribSplitting) {
-      FillMCContributions(v0);
-    }
+//    if (fContribSplitting) {
+//      FillMCContributions(v0);
+//    }
   }
 }
 
@@ -371,18 +374,22 @@ void AliFemtoDreamv0Cuts::FillMCContributions(AliFemtoDreamv0 *v0) {
       AliFatal("Type Not implemented");
       break;
   }
-  fMCHist->FillMCpT(iFill,pT);
-  fMCHist->FillMCEta(iFill,v0->GetEta().at(0));
-  fMCHist->FillMCPhi(iFill,v0->GetPhi().at(0));
-  fMCHist->FillMCDCAVtxX(iFill,pT,v0->GetDCAv0Vtx(0));
-  fMCHist->FillMCDCAVtxY(iFill,pT,v0->GetDCAv0Vtx(1));
-  fMCHist->FillMCDCAVtxZ(iFill,pT,v0->GetDCAv0Vtx(2));
-  fMCHist->FillMCTransverseRadius(iFill,pT,v0->GetTransverseRadius());
-  fMCHist->FillMCDCAPosDaugPrimVtx(iFill,pT,v0->GetDCADaugPosVtx());
-  fMCHist->FillMCDCANegDaugPrimVtx(iFill,pT,v0->GetDCADaugNegVtx());
-  fMCHist->FillMCDCADaugVtx(iFill,pT,v0->GetDaugDCA());
-  fMCHist->FillMCCosPoint(iFill,pT,v0->GetCPA());
-  fMCHist->FillMCInvMass(iFill,v0->Getv0Mass());
+  if (iFill!=-1) {
+    fMCHist->FillMCpT(iFill,pT);
+    fMCHist->FillMCEta(iFill,v0->GetEta().at(0));
+    fMCHist->FillMCPhi(iFill,v0->GetPhi().at(0));
+    fMCHist->FillMCDCAVtxX(iFill,pT,v0->GetDCAv0Vtx(0));
+    fMCHist->FillMCDCAVtxY(iFill,pT,v0->GetDCAv0Vtx(1));
+    fMCHist->FillMCDCAVtxZ(iFill,pT,v0->GetDCAv0Vtx(2));
+    fMCHist->FillMCTransverseRadius(iFill,pT,v0->GetTransverseRadius());
+    fMCHist->FillMCDCAPosDaugPrimVtx(iFill,pT,v0->GetDCADaugPosVtx());
+    fMCHist->FillMCDCANegDaugPrimVtx(iFill,pT,v0->GetDCADaugNegVtx());
+    fMCHist->FillMCDCADaugVtx(iFill,pT,v0->GetDaugDCA());
+    fMCHist->FillMCCosPoint(iFill,pT,v0->GetCPA());
+    fMCHist->FillMCInvMass(iFill,v0->Getv0Mass());
+  } else {
+    std::cout << "this should not happen \n";
+  }
 }
 void AliFemtoDreamv0Cuts::BookTrackCuts() {
   if (!fHist) {
