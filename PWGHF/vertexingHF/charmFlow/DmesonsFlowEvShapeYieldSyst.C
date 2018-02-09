@@ -103,16 +103,16 @@ const Double_t maxchi=2;
 const Double_t effInOverEffOut=1.03;
 
 //not to be set
+enum CutMethod{kAbsCut,kPercCut,kPercCutVsCent,kPercentileCut}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2, kPercCutVsCent->cut according to the % of events with smaller/larger q2 in finer centrality bins, kPercentileCut->cut on percentile (if enabled in the task)
 enum SmallOrLarge{kSmall,kLarge,kIntegrated};
 enum AnalysisMethod{kEventPlane,kEventPlaneInOut,kScalarProd};
-enum CutMethod{kAbsCut,kPercCut,kPercCutVsCent}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2, kPercCutVsCent->cut according to the % of events with smaller/larger q2 in finer centrality bins
 
 Int_t colors[]={kRed+1,kBlack,kBlue+2,kGreen+2,kMagenta+3,kOrange+7,kCyan+2,kViolet+5,kYellow+2,kBlue-7,kGreen,kMagenta,kAzure,kRed+2};
 Int_t markers[]={kFullCircle,kFullSquare,kFullDiamond,kFullTriangleUp,kFullTriangleDown,kOpenCircle,kOpenSquare,kOpenDiamond,kOpenTriangleUp,kOpenTriangleDown};
 
 //_____________________________________________________________________________________________
 //FUNCTION PROTOTYPES
-Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth=kPercCutVsCent, Int_t analysismeth=kEventPlaneInOut);
+Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth=kPercentileCut, Int_t analysismeth=kEventPlaneInOut);
 TList* LoadTList();
 THnSparseF* LoadSparseFromList(TList* inputlist);
 TH2F* GetHistoq2VsCentr(TList* inputlist);
@@ -214,6 +214,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         Int_t nMassBins=histtofit->GetNbinsX();
         Double_t hmin=histtofit->GetBinLowEdge(2); // need wide range for <pt>
         Double_t hmax=histtofit->GetBinLowEdge(nMassBins-2); // need wide range for <pt>
+        if (partname.Contains("Dstar")) {
+          if (hmin < 0.140) hmin=0.140;
+          if (hmax > 0.165) hmax=0.165;
+        }
         AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofit,hmin,hmax,1,0,types);
         if(useTemplD0Refl){
           Printf("USE TEMPLATE FOR AVERAGE Pt");
@@ -225,6 +229,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
           Float_t sOverRef=(hrflTempl->Integral(hrflTempl->FindBin(hmin*1.0001),hrflTempl->FindBin(hmax*0.999)))/(hsigMC->Integral(hsigMC->FindBin(hmin*1.0001),hsigMC->FindBin(hmax*0.999)));
           Printf("R OVER S = %f",sOverRef);
           fitter->SetFixReflOverS(sOverRef,kTRUE);
+        }
+        if(partname.Contains("Dstar")) {
+          fitter->SetInitialGaussianMean(0.145);
+          fitter->SetInitialGaussianSigma(0.0004);
         }
         fitter->SetUseLikelihoodFit();
         fitter->MassFitter(kFALSE);
@@ -995,7 +1003,8 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     TString outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.2f_%s%0.2f.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smalllimit,q2regionname[1].Data(),q2largelimit);
     TString percsuffix="perc";
     if(cutmeth==kPercCutVsCent) percsuffix="percVsCent";
-    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.f%s_%s%0.f%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data(),q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());}
+    else if(cutmeth==kPercentileCut) percsuffix="percentile";
+    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent || cutmeth==kPercentileCut) {outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.f%s_%s%0.f%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data(),q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());}
     TFile *fout=new TFile(outname.Data(),"RECREATE"); //outputfile
     for(Int_t iPt=0; iPt<nPtBins; iPt++) {
       for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
@@ -1049,7 +1058,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     cv2fsRatioLargeSmallVsTrial->SaveAs(outname.Data());
     
     TString plotappendix[3] = {Form("%s%0.2f",q2regionname[0].Data(),q2smalllimit),Form("%s%0.2f",q2regionname[1].Data(),q2largelimit),Form("%s",q2regionname[2].Data())};
-    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {
+    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent || cutmeth==kPercentileCut) {
       plotappendix[0] = Form("%s%0.f%s",q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data());
       plotappendix[1] = Form("%s%0.f%s",q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());
     }
@@ -1480,7 +1489,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     if(partname.Contains("Dstar")) {
       massD=(TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass());
     }
-    if(partname.Contains("Ds")) {
+    if(partname.Contains("Ds") && !partname.Contains("Dstar")) {
       massD=(TDatabasePDG::Instance()->GetParticle(431)->Mass());
     }
   }
@@ -1524,6 +1533,9 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       }
       fitter->SetInitialGaussianMean(massD);
       fitter->SetInitialGaussianSigma(0.012);
+      if(partname.Contains("Dstar")) {
+        fitter->SetInitialGaussianSigma(0.0004);
+      }
       fitter->SetUseLikelihoodFit();
       Bool_t ok=fitter->MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
@@ -1577,6 +1589,10 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     }
     fitter->SetInitialGaussianMean(massD);
     fitter->SetUseLikelihoodFit();
+    fitter->SetInitialGaussianSigma(0.012);
+    if(partname.Contains("Dstar")) {
+      fitter->SetInitialGaussianSigma(0.0004);
+    }
     Bool_t ok=fitter->MassFitter(kFALSE);
     Double_t sigmatot=fitter->GetSigma();
     Double_t massFromFit=fitter->GetMean();
@@ -1782,15 +1798,21 @@ Bool_t Defineq2Cuts(TH2F* hq2VsCentr, vector<Double_t> &smallcutvalues, vector<D
       }
       else {return kFALSE;}
     }
+    else if(cutmeth==kPercentileCut) {
+      smallcutvalues.push_back(q2smallpercevents*100);
+      largecutvalues.push_back(100-q2largepercevents*100);
+    }
   }
   
+  TString q2name = "q2";
+  if(cutmeth==kPercentileCut) {q2name = "q2 percentile";}
   cout << "Cut values for the small-q2 region:"<<endl;
   for(Int_t iCent=0; iCent<ncentbins; iCent++) {
-    cout << "Centrality bin "<< iCent << " q2 < " << smallcutvalues[iCent] <<endl;
+    cout << "Centrality bin "<< iCent << Form(" %s < ",q2name.Data()) << smallcutvalues[iCent] <<endl;
   }
   cout << "\nCut values for the large-q2 region:"<<endl;
   for(Int_t iCent=0; iCent<ncentbins; iCent++) {
-    cout << "Centrality bin "<< iCent << " q2 > " << largecutvalues[iCent] <<endl;
+    cout << "Centrality bin "<< iCent << Form(" %s > ",q2name.Data()) << largecutvalues[iCent] <<endl;
   }
   cout << endl;
   
