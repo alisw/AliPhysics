@@ -22,8 +22,6 @@
 #include <fstream>
 #include <cmath>
 //#include <iomanip>
-//#include "iosfwd.h"
-//#include <iosfwd>
 #include "TChain.h"
 #include "TF1.h"
 #include "TH1F.h"
@@ -31,18 +29,11 @@
 #include "TH3F.h"
 #include "TProfile.h"
 #include "TMath.h"
-//#include "TGraphErrors.h"
 #include "TList.h"
-//#include "TCanvas.h"
-//#include "TStyle.h"
 #include "TFile.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-//#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskCorPIDTOFQA.h"
-
 #include "AliPIDResponse.h"
 #include "AliAODHandler.h"
 
@@ -51,9 +42,7 @@
 
 
 //#include "TFile.h"
-
 //#include "AliMultSelection.h"
-
 
 // particle identifications in ALICE
 //
@@ -75,20 +64,10 @@
 //    kEleCon   = 13;
 //    kUnknown  = 14;
 
-//  event trigger selection
-//  if(datajets)
-//  {
-//      if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
-//      if(fTriggerSelectionString.Length())
-//      {
-//	  if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
-//      }
-//  }
-
-
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 //using namespace BSchaefer_devel;
+#include "AliAnalysisTaskCorPIDTOFQA.h"
 
 //ofstream file("output.txt");
 //const int multiplicity_cut       = 0;
@@ -115,10 +94,10 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     trig_05_phi_pt_pos(0),         // T 15
     trig_05_phi_pt_neg(0),         // T 16
     trig_08_phi_pt_pos(0),         // T 17
-    trig_08_phi_pt_neg(0),         // T 18
+    trig_08_phi_pt_neg(0)          // T 18
 
-    associates(0),
-    triggers(0)
+//    associates(0),
+//    triggers(0)
     
 {
     // default constructor, don't allocate memory here!
@@ -138,15 +117,15 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
     fHistPt(0),                   //  T  4 (track)
     
-    trig_03_phi_pt_pos(0),         // T 13
-    trig_03_phi_pt_neg(0),         // T 14  
-    trig_05_phi_pt_pos(0),         // T 15
-    trig_05_phi_pt_neg(0),         // T 16
-    trig_08_phi_pt_pos(0),         // T 17
-    trig_08_phi_pt_neg(0),         // T 18
+    trig_03_phi_pt_pos(0),        // T 13
+    trig_03_phi_pt_neg(0),        // T 14  
+    trig_05_phi_pt_pos(0),        // T 15
+    trig_05_phi_pt_neg(0),        // T 16
+    trig_08_phi_pt_pos(0),        // T 17
+    trig_08_phi_pt_neg(0)         // T 18
 
-    associates(0),
-    triggers(0)
+//    associates(0),
+//    triggers(0)
 
 {
     // constructor
@@ -223,8 +202,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",          170,   3.0,  20.0,   288, lower, upper);          // 17
     trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",          170,   3.0,  20.0,   288, lower, upper);          // 18
 
-    associates                 = new ofstream("associates.txt");
-    triggers                   = new ofstream("triggers.txt");
+    associates                 = new std::ofstream("associates.txt");
+    triggers                   = new std::ofstream("triggers.txt");
 
 
 
@@ -499,6 +478,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::Terminate(Option_t *)
 {
+    associates->close();
+    triggers->close();
 //    file.close();
     // terminate
     // called at the END of the analysis (when all events are processed)
