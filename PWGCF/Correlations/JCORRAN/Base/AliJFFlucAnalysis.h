@@ -86,14 +86,17 @@ public:
 		flags |= nflags;
 	}
 
-	static Double_t CentBin[8];
+	static Double_t CentBin[10]; //8
 	static Double_t pttJacek[74];
+	static UInt_t NCentBin;
+	static UInt_t NpttJacek;
 
 	static int GetCentralityClass(Double_t);
 
 private:
-	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics
+	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
+//#define kcNH kH9 //max N+1 to be 4-particle correlated
 
 	Long64_t AnaEntry;
 	TClonesArray * fInputList;
@@ -102,11 +105,7 @@ private:
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int	fDebugLevel;
-	int fNCent;
 	int fCBin;
-	double *fCentBin;//!
-	int fNJacek;
-	double *fPttJacek;//!
 	int fEffMode;
 	int fEffFilterBit;
 	float fTPCtrks;
@@ -127,7 +126,7 @@ private:
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[kNH][2]; // ksub
 
-	TH1D *h_phi_module[7][2]; // cent, isub
+	TH1D *h_phi_module[9][2]; //7 // cent, isub
 	TFile *inclusFile; // pointer for root file
 
 	AliJHistManager * fHMG;//!
