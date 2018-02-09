@@ -436,7 +436,6 @@ case kSystAsociatedMinpTWeights:
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
 
-        
 		break;
 
 
@@ -555,7 +554,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
     task->SelectCollisionCandidates(AliVEvent::kMB);
     
     if(useMC && weightlevelback>=0) {
-        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp7.root");
+        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp7_New.root");
     }
     
     //create data containers
