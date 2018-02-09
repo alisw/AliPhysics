@@ -216,9 +216,9 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   for (int iv0=0; iv0<entriesV0; iv0++) {
     AliAODv0 *v0 = evt->GetV0(iv0);
     fFemtov0->Setv0(evt, v0);
-//    if (fv0Cuts->isSelected(fFemtov0)) {
-//      Decays.push_back(*fFemtov0);
-//    }
+    if (fv0Cuts->isSelected(fFemtov0)) {
+      Decays.push_back(*fFemtov0);
+    }
 //    if (fAntiv0Cuts->isSelected(fFemtov0)) {
 //      AntiDecays.push_back(*fFemtov0);
 //    }
