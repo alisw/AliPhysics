@@ -33,9 +33,7 @@
 #include "TFile.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-//#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskCorPIDTOFQA.h"
 #include "AliPIDResponse.h"
 #include "AliAODHandler.h"
 
@@ -69,6 +67,7 @@
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 //using namespace BSchaefer_devel;
+#include "AliAnalysisTaskCorPIDTOFQA.h"
 
 //ofstream file("output.txt");
 //const int multiplicity_cut       = 0;
