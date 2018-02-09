@@ -32,7 +32,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       enum    RunMode {kTest, kFillWeights, kFull}; // task running mode (NOT GRID MODE)
       enum    AnalType {kAOD, kESD}; // tag for analysis type
       enum    PartSpecies {kUnknown, kCharged, kPion, kKaon, kProton}; // list of all particle species of interest
-
+      enum    ColSystem {kPP, kPbPb}; 
       struct FlowPart // representation of selected particle (species independent) storing only basic properties for flow calculations
       {
                 FlowPart(Double_t dPt = 0, Double_t dPhi = 0, Double_t dEta = 0, Short_t iCharge = 0, PartSpecies sSpecies = kUnknown, Double_t dMass = 0, Double_t dPx = 0, Double_t dPy = 0, Double_t dPz = 0) :
@@ -52,6 +52,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       virtual void            UserExec(Option_t* option); // main methond - called for each event
       virtual void            Terminate(Option_t* option); // called after all events are processed
       // analysis setters
+      void                    SetColisionSystem(ColSystem colSystem = kPbPb) {fColSystem = colSystem; }
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    SetNumEventsAnalyse(Short_t num) { fNumEventsAnalyse = num; }
       void		      SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
@@ -82,6 +83,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       void                    SetChargedDCAzMax(Double_t dcaz) {  fCutChargedDCAzMax = dcaz; }
       void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
       void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
+      void		      SetMaxChi2perTPCcls(Double_t MaxChi2 = 4){ fMaxChi2perTPCcls = MaxChi2;}
       void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
       // PID (pi,K,p) setters
     
@@ -124,7 +126,8 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       void                    ListParameters(); // list all task parameters
 
       Bool_t                  EventSelection(); // main method for event selection (specific event selection is applied within)
-      Bool_t                  IsEventSelected(); // event selection for LHC2015 PbPb data
+      Bool_t                  IsEventSelected_PbPb(); // event selection for LHC2015 PbPb data
+      Bool_t                  IsEventSelected_pp(); // event selection for LHC2016 MB pp data
       void                    FillEventsQA(const Short_t iQAindex); // filling QA plots related to event selection
       Short_t                 GetSamplingIndex(); // returns sampling index based on sampling selection (number of samples)
       Short_t                 GetCentralityIndex(); // returns centrality index based centrality estimator or number of selected tracks
@@ -217,11 +220,13 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       //cuts & selection: events
       Short_t                 fTrigger; // physics selection trigger
       TString                 fMultEstimator; // [''] multiplicity estimator (suported: ''/Charged,VOA,V0C,V0M,CL0,CL1,ZNA,ZNC)
-      Float_t                 fPVtxCutZ; // (cm) PV z cut
+      Float_t                    fPVtxCutZ; // (cm) PV z cut
+      ColSystem                  fColSystem; // collision system: pp or PbPb both with Run2 data (2016 data for pp and 2015 for PbPb)
       Bool_t		          fFullCentralityRange; // flag for running over the full centrality range (0-100%). Otherwise runs from 50-100%
       //cuts & selection: tracks
       UInt_t                  fCutChargedTrackFilterBit; // (-) tracks filter bit
       UShort_t                fCutChargedNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
+      Double_t		      fMaxChi2perTPCcls; // max chi2 per TPC clusters
       Float_t                 fCutChargedEtaMax; // (-) Maximum pseudorapidity range
       Float_t                 fCutChargedPtMax; // (GeV/c) Maximal track pT
       Float_t                 fCutChargedPtMin; // (GeV/c) Minimal track pT
