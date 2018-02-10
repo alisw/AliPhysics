@@ -191,6 +191,8 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fProdInfo(-999)
     , fPdgcode(-999)
     , fPdgIndex(-999)
+    , fPdgcodeMother(-999)
+    , fFirstMotherIndex(-999)
     , fNMCTracks(-999)
     , fMCPrimaries(-999)
     , fMCTOFMatch(-999)
@@ -516,6 +518,14 @@ void AliAnalysisTaskTOFSpectra::Init()
       hTrkDCAzCorr[i][j] = 0x0;
     }
 #endif
+  }
+
+  for (Int_t i = 0; i < 3; i++) //Loop over production methods
+    hBetaMC[i] = 0x0;
+  for (Int_t i = 0; i < 7; i++) //Loop over species + Unidentified
+  {
+    hBetaMCMother[i] = 0x0;
+    hBetaMCMotherMode[i] = 0x0;
   }
 
   for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
@@ -968,6 +978,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
     fListHist->AddLast(hTOFDist);
 
     DefinePerformanceHistograms();
+
+    if (fMCmode)
+      DefineMCPerformanceHistograms();
 
     DefineT0Histograms();
 
@@ -2218,6 +2231,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 
       //Performance plots
       FillPerformanceHistograms(track);
+      if (fMCmode)
+        FillMCPerformanceHistograms(track);
+      //
 
       //====================//
       // TOF geometry plots //
@@ -2378,6 +2394,8 @@ void AliAnalysisTaskTOFSpectra::InitializeMCTrackVar()
   fRapidityMC = -999;
   fPdgcode = -999;
   fPdgIndex = -999;
+  fPdgcodeMother = -999;
+  fFirstMotherIndex = -999;
   fSignMC = kFALSE;
   fMCTOFMatch = -999;
 
@@ -2743,6 +2761,10 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
   fPhiMC = part->Phi(); //angolo tra 0 e 2pi
   fEtaMC = part->Eta();
   fPdgcode = part->GetPdgCode();
+  fFirstMotherIndex = part->GetFirstMother();
+  if (fFirstMotherIndex >= 0)
+    fPdgcodeMother = fMCStack->Particle(fFirstMotherIndex)->GetPdgCode();
+  //
   if (fSignMC != kFALSE)
     AliError("fSignMC already defined!!");
   if (fPdgcode < 0)
@@ -3598,6 +3620,73 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
       hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
     }
   }
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::DefineMCPerformanceHistograms()
+{
+  if (!fMCPerformance)
+    return;
+  //
+  const Int_t Bnbins = 400;
+  const Double_t Blim[2] = { 0., 1.5 };
+  const Double_t Bplim[2] = { 0., 1. };
+  //
+  for (Int_t i = 0; i < 3; i++) { //Loop on the source
+    hBetaMC[i] = new TH3F(Form("hBetaMC_%i", i), Form("Distribution of the beta %i;%s;TOF #beta;Particle species", i, pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1], kExpSpecies + 1, -1, kExpSpecies);
+    for (Int_t j = 0; j < hBetaMC[i]->GetNbinsZ(); j++)
+      hBetaMC[i]->GetZaxis()->SetBinLabel(j + 1, j == 0 ? "Residual" : AliPID::ParticleLatexName(j - 1));
+    //
+    fListHist->AddLast(hBetaMC[i]);
+  }
+  for (Int_t i = 0; i < 7; i++) { //Loop on the species + unidentified
+    hBetaMCMother[i] = new TH3F();
+    hBetaMCMother[i]->SetName(Form("hBetaMCMother_%i", i));
+    hBetaMCMother[i]->SetTitle(Form("Distribution of the beta %s;%s;TOF #beta;PDG code", i == 0 ? "Residual" : AliPID::ParticleLatexName(i - 1), pstring.Data()));
+    hBetaMCMother[i]->GetXaxis()->Set(Bnbins, Bplim[0], Bplim[1]);
+    hBetaMCMother[i]->GetYaxis()->Set(Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaMCMother[i]);
+
+    hBetaMCMotherMode[i] = new TH2F();
+    hBetaMCMotherMode[i]->SetName(Form("hBetaMCMotherMode_%i", i));
+    hBetaMCMotherMode[i]->SetTitle(Form("Production channel %s;PDG code;Channel", i == 0 ? "Residual" : AliPID::ParticleLatexName(i - 1)));
+    hBetaMCMotherMode[i]->GetXaxis()->Set(3, 0, 3);
+    fListHist->AddLast(hBetaMCMotherMode[i]);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillMCPerformanceHistograms(const AliVTrack* track)
+{
+  if (!fMCPerformance)
+    return;
+  //
+  const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+  Int_t bin = 0;
+  if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kElectron))
+    bin = 0;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kMuon))
+    bin = 1;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kPion))
+    bin = 2;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kKaon))
+    bin = 3;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kProton))
+    bin = 4;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kDeuteron))
+    bin = 5;
+  else //Unidentified
+    bin = -1;
+  //
+  if (fProdInfo < 0 || fProdInfo >= 3)
+    AliFatal(Form("Filling histogram without know production mechanism: %i", fProdInfo));
+  //
+  hBetaMC[fProdInfo]->Fill(fP, beta, .5 + bin);
+  //
+  // Printf("Mother PDG code %i", fPdgcodeMother);
+  hBetaMCMother[bin + 1]->Fill(fP, beta, Form("%i", TMath::Abs(fPdgcodeMother)), 1);
+  //
+  hBetaMCMotherMode[bin + 1]->Fill(0.5 + fProdInfo, Form("%i", TMath::Abs(fPdgcodeMother)), 1);
+  //
 }
 
 //________________________________________________________________________
