@@ -382,10 +382,57 @@ embeddingHelper->SetAutoConfigureIdentifier("myEmbedding");
 embeddingHelper->SetNPtHardBins(11);
 ~~~
 
-Now just request the trains. Each one can be started with the desired settings, and they will automatically coordinate
-to determine which pt hard bins should be selected for each train. No need to manually change variables for each pt hard bin!
+Now just request the trains. Each one can be started with the desired settings, and they will automatically
+coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables
+for each pt hard bin! Note that there can be a race condition based on how quickly the test trains are started, so
+it is best to check the yaml pt hard map to ensure that one pt hard bin has successfully assigned to each train.
 
-With the above settings
+# Optimization of Event Selection and Computing
+
+It is important to take care when applying event selection during embedding. For example, if the embedding helper
+is run with `AliVEvent::kAny`, but your task is run with `AliVEvent::kAnyINT`, some good embedded events will be
+missed because the physics selection of your task is more restrictive. There are two parts to solution to this issue.
+First, it is best to have the same collision candidates for the embedding helper and all other tasks.
+
+While this is a good start, it is not sufficient in all cases, such as selecting on centrality. To address this
+issue, the embedding helper allows for more complicated internal event selection via AliEventCuts (disabled by default).
+When enabled, The cuts can be configured through the YAML configuration for standard options such as centrality and
+z vertex, while more complicated manual configurations can be achieved by retrieving and configuring the members
+of the event cuts object. When an internal event is selected, `EmbeddedEventUsed()` will be true, allowing other tasks
+to only process events when this is the case. In doing so, the event selection that is applied in the embedding helper
+is effectively applied to all other tasks. Thus, be certain that any other event selection that you apply to other tasks
+is less restrictive than that in the embedding helper to ensure that no good embedded events are lost.
+
+To configure this mode, internal event selection must be enabled in the embedding helper via
+`SetUseInternalEventSelection(true)`, and then selection on the outcome from the embedding helper must be enabled
+in other tasks. In the case of the EMCal Correction Task, this option can be enabled in the YAML configuration.
+In the case of tasks derived from AliAnalysisTaskEmcal, set the option `task->SetRecycleUnusedEmbeddedEventsMode(true)`.
+If your task does not inherit from AliAnalysisTaskEmcal, it should check `EmbeddedEventUsed()` each event and then
+react as appropriate.
+
+## Configuring internal event selection (centrality, etc)
+
+Internal event selection is performed via AliEventCuts. By default, AliEventCuts will use an automatic setup based on
+run number. Piratically speaking, if you would like to modify any of these settings, you will need to setup (often by
+calling `%Setup{Period}()` for the event cuts object) and then configure it via manual cuts mode. Centrality is the one
+notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
+centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
+a centrality range is set in AliEventCuts (for example, through the automatic setup), that range must be wider than or
+equal to the range in the embedding helper for the embedding helper setting to be meaningful.
+
+Alternatively, the user may use manual cuts in AliEventCuts, configure it for a particular period, and then set the
+centrality range in AliEventCuts and disregard the centrality selection capabilities in the embedding helper. In code,
+it would look something like (for embedding `LHC11h`):
+
+~~~{.cxx}
+embeddingHelper->SetUseManualInternalEventCuts(true);
+auto eventCuts = embeddingHelper->GetInternalEventCuts();
+eventCuts->SetupLHC11h();
+// Use 0-10%
+eventCuts->SetCentralityRange(0, 10);
+~~~
+
+Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
 
 # Note on jets and jet finding
 

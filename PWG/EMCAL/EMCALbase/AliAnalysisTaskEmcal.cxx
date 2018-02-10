@@ -56,6 +56,7 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliNanoAODHeader.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -96,6 +97,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -209,6 +211,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -495,6 +498,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
   fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
   fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+  fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -575,6 +579,18 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
+  // Recycle embedded events which do not pass the internal event selection in the embedding helper
+  if (fRecycleUnusedEmbeddedEventsMode) {
+    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingHelper && embeddingHelper->EmbeddedEventUsed() == false) {
+      if (fGeneralHistograms) {
+        fHistEventRejection->Fill("RecycleEmbeddedEvent",1);
+        fHistEventCount->Fill("Rejected",1);
+      }
+      return;
+    }
+  }
+
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();

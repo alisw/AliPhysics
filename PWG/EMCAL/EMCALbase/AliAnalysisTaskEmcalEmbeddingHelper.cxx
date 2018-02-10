@@ -34,6 +34,7 @@
 #include <TProfile.h>
 #include <TH1F.h>
 #include <TRandom3.h>
+#include <TList.h>
 
 #include <AliLog.h>
 #include <AliAnalysisManager.h>
@@ -77,6 +78,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
+  fUseInternalEventSelection(false),
+  fUseManualInternalEventCuts(false),
+  fInternalEventCuts(),
+  fEmbeddedEventUsed(true),
+  fCentMin(-999),
+  fCentMax(-999),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath(""),
   fAutoConfigureTrainTypePath(""),
@@ -138,6 +145,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
+  fUseInternalEventSelection(false),
+  fUseManualInternalEventCuts(false),
+  fInternalEventCuts(),
+  fEmbeddedEventUsed(true),
+  fCentMin(-999),
+  fCentMax(-999),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath("alien:///alice/cern.ch/user/a/alitrain/"),
   fAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/"),
@@ -309,6 +322,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       auto result = gGrid->Query(filePattern.Data(), fInputFilename.Data());
 
       if (result) {
+        // Retrieve the good run list (if specified)
+        fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
+
         // Loop over the result to store it in the fileList file
         std::ofstream outFile(fFileListFilename);
         for (int i = 0; i < result->GetEntries(); i++)
@@ -404,6 +420,11 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(TString path)
 
 }
 
+/**
+ * Initialize the YAML configuration with a potentially specified YAML configuration file.
+ *
+ * @return true if no yaml file or it exists and was successfully accessed.
+ */
 bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
 {
   if (fConfigurationPath == "") {
@@ -412,16 +433,11 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
   else {
     AliInfoStream() << "Embedding YAML configuration was provided: \"" << fConfigurationPath << "\".\n";
 
-    PWG::Tools::AliYAMLConfiguration config;
-    
-    int addedConfig = config.AddConfiguration(fConfigurationPath, "yamlConfig");
+    int addedConfig = fYAMLConfig.AddConfiguration(fConfigurationPath, "yamlConfig");
     if (addedConfig < 0) {
       AliError("YAML Configuration not found!");
       return false;
     }
-    
-    config.GetProperty("runlist", fEmbeddedRunlist, false);
-    
   }
   return true;
 }
@@ -908,6 +924,49 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
   SetupEmbedding();
 
+  // Setup AliEventCuts
+  // NOTE: Need to define the base name here so that the property path is not ambiguous (due to otherwise only being `const char *`)
+  std::string baseName = "internalEventSelection";
+  bool res = fYAMLConfig.GetProperty({baseName, "enabled"}, fUseInternalEventSelection, false);
+  if (fUseInternalEventSelection)
+  {
+    AliDebugStream(1) << "Configuring AliEventCuts for internal event selection.\n";
+    // Handle manual cuts
+    res = fYAMLConfig.GetProperty({baseName, "useManualCuts"}, fUseManualInternalEventCuts, false);
+    if (res && fUseManualInternalEventCuts) {
+      fInternalEventCuts.SetManualMode();
+      // Implement these cuts by retrieving the event cuts object and setting them manually.
+    }
+
+    // Centrality
+    // TODO: Move to YAML configuration function in post event selection update
+    std::vector <double> centralityRange;
+    bool res = fYAMLConfig.GetProperty({baseName, "centralityRange"}, centralityRange, false);
+    if (res) {
+      if (centralityRange.size() != 2) {
+        AliErrorStream() << "Passed centrality range with " << centralityRange.size() << " entries, but 2 values are required. Ignoring values.\n";
+      }
+      else {
+        AliDebugStream(1) << "Setting internal event centrality range to [" << centralityRange.at(0) << ", " << centralityRange.at(1) << "]\n";
+        fCentMin = centralityRange.at(0);
+        fCentMax = centralityRange.at(1);
+      }
+    }
+
+    // Trigger selection
+    bool useEventCutsAutomaticTriggerSelection = false;
+    res = fYAMLConfig.GetProperty({baseName, "useEventCutsAutomaticTriggerSelection"}, useEventCutsAutomaticTriggerSelection, false);
+    if (res && useEventCutsAutomaticTriggerSelection) {
+      // Use the autmoatic selection. Nothing to be done.
+      AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";
+    }
+    else {
+      // Use the cuts selected by SelectCollisionCandidates()
+      AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates()\n.";
+      fInternalEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
+    }
+  }
+
   if (!fCreateHisto) {
     return;
   }
@@ -916,6 +975,18 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   OpenFile(1);
   fOutput = new AliEmcalList();
   fOutput->SetOwner();
+
+  // Get the histograms from AliEventCuts
+  if (fUseInternalEventSelection) {
+    // This list will be owned by fOutput, so it won't be leaked.
+    TList * eventCutsOutput = new TList();
+    eventCutsOutput->SetOwner(kTRUE);
+    eventCutsOutput->SetName("EventCuts");
+
+    // Add the event cuts to the output
+    fInternalEventCuts.AddQAplotsToList(eventCutsOutput);
+    fOutput->Add(eventCutsOutput);
+  }
 
   // Create histograms
   TString histName;
@@ -938,7 +1009,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 
   // Count of accepted and rejected events
   histName = "fHistEventCount";
-  histTitle = "fHistEventCount;Result;Count";
+  histTitle = "Event count;Result;Count";
   auto histEventCount = fHistManager.CreateTH1(histName, histTitle, 2, 0, 2);
   histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   histEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
@@ -947,12 +1018,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histName = "fHistEmbeddedEventRejection";
   histTitle = "Reasons to reject embedded event";
   std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist", "PtHardIs0"};
-  auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
+  auto histEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
   // Set label names
   for (unsigned int i = 1; i <= binLabels.size(); i++) {
-    fHistEmbeddedEventRejection->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    histEmbeddedEventRejection->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
   }
-  fHistEmbeddedEventRejection->GetYaxis()->SetTitle("Counts");
+  histEmbeddedEventRejection->GetYaxis()->SetTitle("Counts");
 
   // Rejected events in embedded event selection
   histName = "fHistEmbeddedEventsAttempted";
@@ -968,6 +1039,19 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histName = "fHistAbsoluteFileNumber";
   histTitle = "Number of times each absolute file number was embedded";
   fHistManager.CreateTH1(histName, histTitle, fMaxNumberOfFiles, 0, fMaxNumberOfFiles);
+
+  if (fUseInternalEventSelection) {
+    // Internal event cut statistics
+    histName = "fHistInternalEventCutsStats";
+    histTitle = "Number of events to pass each cut";
+    binLabels = {"passedEventCuts", "centrality", "passedAllCuts"};
+    auto histInternalEventCutsStats = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+      histInternalEventCutsStats->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histInternalEventCutsStats->GetYaxis()->SetTitle("Number of selected events");
+  }
 
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
@@ -1339,6 +1423,43 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
     SetupEmbedding();
   }
 
+  // Apply internal event selection
+  if (fUseInternalEventSelection) {
+    fEmbeddedEventUsed = false;
+    if (fInternalEventCuts.AcceptEvent(AliAnalysisTaskSE::InputEvent()) == true)
+    {
+      fEmbeddedEventUsed = true;
+      fHistManager.FillTH1("fHistInternalEventCutsStats", "passedEventCuts", 1);
+
+      // The event was accepted by AliEventCuts. Now check for additional cuts.
+      // Centrality
+      // NOTE: If the centrality range is the same as AliEventCuts, then simply all will pass
+      //       If a wider centrality range than in AliEventCuts is needed then it must be _entirely_
+      //       configured through manual mode.
+      if (fCentMin != -999 && fCentMax != -999) {
+        if (fInternalEventCuts.GetCentrality() < fCentMin || fInternalEventCuts.GetCentrality() > fCentMax) {
+          fEmbeddedEventUsed = false;
+        }
+        else {
+          fHistManager.FillTH1("fHistInternalEventCutsStats", "centrality", 1);
+        }
+      }
+
+      if (fEmbeddedEventUsed) {
+        // Record all cuts passed
+        fHistManager.FillTH1("fHistInternalEventCutsStats", "passedAllCuts", 1);
+      }
+    }
+
+    // If the internal event was rejected, then record and move on.
+    if (fEmbeddedEventUsed == false) {
+      if (fCreateHisto) {
+        PostData(1, fOutput);
+      }
+      return;
+    }
+  }
+
   if (!fInitializedNewFile) {
     InitTree();
   }
@@ -1391,6 +1512,17 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RemoveDummyTask() const
   else {
     AliErrorStream() << "Could not retrieve tasks from the analysis manager.\n";
   }
+}
+
+AliEventCuts * AliAnalysisTaskEmcalEmbeddingHelper::GetInternalEventCuts()
+{
+  if (fUseManualInternalEventCuts) {
+    return &fInternalEventCuts;
+  }
+  else {
+    AliErrorStream() << "Enable manual mode in AliEventCuts (though the embedding helper) to access this object.\n";
+  }
+  return nullptr;
 }
 
 AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTaskEmcalEmbeddingHelper()
@@ -1498,6 +1630,14 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
   tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
   tempSS << "YAML configuration path: \"" << fConfigurationPath << "\"\n";
+  tempSS << "Enable internal event selection: " << fUseInternalEventSelection << "\n";
+  tempSS << "Use manual event cuts mode for internal event selection: " << fUseManualInternalEventCuts << "\n";
+  if (fCentMin != -999 && fCentMax != -999) {
+    tempSS << "Internal event selection centrality range: [" << fCentMin << ", " << fCentMax << "]\n";
+  }
+  else {
+    tempSS << "Internal event selection centrality range disabled.\n";
+  }
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
