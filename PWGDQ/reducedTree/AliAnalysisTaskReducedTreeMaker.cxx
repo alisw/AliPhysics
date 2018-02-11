@@ -126,6 +126,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
+  fTRDtrglayerMaskEl(0x1),
   fEventFilter(0x0),
   fTrackFilter(),
   fFlowTrackFilter(0x0),
@@ -196,6 +197,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
+  fTRDtrglayerMaskEl(0x1),
   fEventFilter(0x0),
   fTrackFilter(),
   fFlowTrackFilter(0x0),
@@ -895,6 +897,13 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fL0TriggerInputs = esdEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = esdEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = esdEvent->GetHeader()->GetL2TriggerInputs();
+
+    TString trgClasses = esdEvent->GetFiredTriggerClasses();
+    if((trgClasses.Contains("HQU")) && (trgClasses.Contains("HSE"))) eventInfo->fTRDfired = 3;
+    else {
+	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
+	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
+    }
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
     eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
@@ -938,6 +947,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fL0TriggerInputs = aodEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = aodEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = aodEvent->GetHeader()->GetL2TriggerInputs();
+
+    TString trgClasses = aodEvent->GetFiredTriggerClasses();
+    eventInfo->fTRDfired = 0;
+    if((trgClasses.Contains("HQU")) && (trgClasses.Contains("HSE"))) eventInfo->fTRDfired = 3;
+    else {
+	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
+	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
+    }
     eventInfo->fTimeStamp     = aodEvent->GetTimeStamp();
     eventInfo->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
     eventInfo->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();
@@ -1446,6 +1463,11 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         
   // check for tracks matched in TRD 
   Int_t trackIdsTRD[20000]={0};
+  Int_t trackTRDGTUtracklets[20000]={0};
+  Int_t trackTRDGTUlayermask[20000]={0};
+  Double_t trackTRDGTUpt[20000]={0};
+  Float_t trackTRDGTUsagitta[20000]={2};
+  Int_t trackTRDGTUPID[20000]={0};
   Int_t nTracksTRD = 0;
   if(fFillTRDMatchedTracks) {
     for(Int_t itrackTRD=0; itrackTRD<event->GetNumberOfTrdTracks(); ++itrackTRD) {
@@ -1467,8 +1489,16 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            }
          }
          if(!found) {
-           trackIdsTRD[nTracksTRD] = trackID;
-           nTracksTRD++;
+	     trackIdsTRD[nTracksTRD] = trackID;
+	     trackTRDGTUtracklets[nTracksTRD] = trdTrack->GetNTracklets();
+	     if ((trdTrack->GetLayerMask() & fTRDtrglayerMaskEl) != fTRDtrglayerMaskEl) trackTRDGTUlayermask[nTracksTRD] = 0;
+	     else trackTRDGTUlayermask[nTracksTRD] = 1;
+	     trackTRDGTUpt[nTracksTRD] =  trdTrack->Pt();
+	     Int_t b = trdTrack->GetB();
+	     Int_t c = trdTrack->GetC();
+	     trackTRDGTUsagitta[nTracksTRD] = GetInvPtDevFromBC(b,c);
+	     trackTRDGTUPID[nTracksTRD] = trdTrack->GetPID();
+	     nTracksTRD++;
          }
        }
        if(isAOD) {
@@ -1489,8 +1519,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
              }
           }
           if(!found) {
-             trackIdsTRD[nTracksTRD] = trackID;
-             nTracksTRD++;
+	      trackIdsTRD[nTracksTRD] = trackID;
+	      trackTRDGTUtracklets[nTracksTRD] = trdTrack->GetNTracklets();
+	      if ((trdTrack->GetLayerMask() & fTRDtrglayerMaskEl) != fTRDtrglayerMaskEl) trackTRDGTUlayermask[nTracksTRD] = 0;
+	      else trackTRDGTUlayermask[nTracksTRD] = 1;
+	      trackTRDGTUpt[nTracksTRD] =  trdTrack->Pt();
+	      trackTRDGTUPID[nTracksTRD] = trdTrack->GetPID();
+	      nTracksTRD++;
           }
        }
     }  // end loop over TRD tracks
@@ -1538,11 +1573,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     
     // check whether this track is matched in TRD
     Bool_t matchedInTRD = kFALSE;
+    Int_t indexmatchedtrackinTRD=-1;
     if(fFillTRDMatchedTracks) {
       for(Int_t kk=0; kk<nTracksTRD; ++kk) {
         if(trackId==trackIdsTRD[kk]) {
-           matchedInTRD = kTRUE;
-           break;
+	    matchedInTRD = kTRUE;
+	    indexmatchedtrackinTRD = kk;
+	    break;
         }   
       }
     }
@@ -1759,7 +1796,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       pidResponse->ComputeTRDProbability(esdTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ2D);
       trackInfo->fTRDpidLQ2D[0]    = trdProbab[AliPID::kElectron];
       trackInfo->fTRDpidLQ2D[1]    = trdProbab[AliPID::kPion];
-                
+
+      if(fFillTRDMatchedTracks && (indexmatchedtrackinTRD!=-1)) {
+	  const Int_t indexTRD         = indexmatchedtrackinTRD;
+	  trackInfo->fTRDGTUtracklets  = trackTRDGTUtracklets[indexTRD];
+	  trackInfo->fTRDGTUlayermask  = trackTRDGTUlayermask[indexTRD];
+	  trackInfo->fTRDGTUpt         = trackTRDGTUpt[indexTRD];
+	  trackInfo->fTRDGTUsagitta    = trackTRDGTUsagitta[indexTRD];
+	  trackInfo->fTRDGTUPID        = trackTRDGTUPID[indexTRD];
+      }
+
+
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       
@@ -2192,6 +2239,20 @@ Int_t AliAnalysisTaskReducedTreeMaker::GetSPDTrackletMultiplicity(AliVEvent* eve
   } else return -1;
   
   return nAcc;
+}
+
+//______________________________________________________
+Float_t AliAnalysisTaskReducedTreeMaker::GetInvPtDevFromBC(Int_t b, Int_t c)
+{
+  //
+  //returns d(1/Pt) in c/GeV
+  //in case of no gtu simulation -> return maximum 0.5
+  //
+  if(b==0 && c==0) return 0.5;
+  Int_t tmp = (((b & 0xfff) << 12) ^ 0x800000) - 0x800000;
+  tmp += (c & 0xfff);
+  Float_t invPtDev = tmp * 0.000001;
+  return invPtDev;
 }
 
 

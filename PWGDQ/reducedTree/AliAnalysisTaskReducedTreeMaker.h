@@ -110,6 +110,7 @@ public:
      fMCsignalsWritingOptions[fMCsignals.GetEntries()-1] = wOpt;}
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
+  Float_t GetInvPtDevFromBC(Int_t b, Int_t c); // calculates the sagitta value from the online tracks
   void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0, Int_t minSelectedTracks=1)   {
      fWriteEventsWithNoSelectedTracks = flag; 
      fScaleDownEventsWithNoSelectedTracks = scaleDown;
@@ -165,8 +166,10 @@ public:
   Bool_t fFillHFInfo;               // Write HF Process information
   TList   fMCsignals;               // list of AliSignalMC objects to select which particles from the Kinematics stack will be written in the tree
   Int_t   fMCsignalsWritingOptions[kMaxMCsignals];   // writing options for each of the MC signals (either base or full track)     
-  Bool_t fFillTRDMatchedTracks;     // Write global tracks with matched TRD tracks
-  Bool_t fFillAllTRDMatchedTracks;  // if true, fill all global tracks matched in TRD; if false, fill just those global tracks which were selected with the track of V0 filters
+  Bool_t  fFillTRDMatchedTracks;     // Write global tracks with matched TRD tracks
+  Bool_t  fFillAllTRDMatchedTracks;  // if true, fill all global tracks matched in TRD; if false, fill just those global tracks which were selected with the track of V0 filters
+  UChar_t fTRDtrglayerMaskEl;       // layer mask for tracklet requirements
+
 
   AliAnalysisCuts *fEventFilter;      // event filter
   TList            fTrackFilter;      // filter for the hadrons to be correlated with the dielectrons
@@ -220,6 +223,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 9); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 10); //Analysis Task for creating a reduced event information tree
 };
 #endif

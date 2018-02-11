@@ -130,6 +130,16 @@ void AliReducedAnalysisTest::Process() {
   //  
   if(!fEvent) return;
   
+  if(fProcessMCInfo) {
+     if(fEventCounter%10000==0) 
+        cout << "Event no. " << fEventCounter << endl;
+  }
+  else {
+     if(fEventCounter%10000==0) 
+        cout << "Event no. " << fEventCounter << endl;
+  }
+  fEventCounter++;
+  
   AliReducedVarManager::SetEvent(fEvent);
   
   AliReducedVarManager::FillEventInfo(fEvent, fValues);
