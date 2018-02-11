@@ -70,6 +70,7 @@ set(SRCS
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionCellEmulateCrosstalk.cxx
   AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
