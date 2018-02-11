@@ -464,6 +464,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
   values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
+  values[kTRDTriggeredType]     = event->TRDfired();
   values[kHighMultV0Triggered]  = event->TriggerMask() & kHighMultV0 ?1:0;
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
@@ -1348,6 +1349,14 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDpidProbabilitiesLQ2D+1] = pinfo->TRDpidLQ2D(1);
   values[kTRDntracklets]    = pinfo->TRDntracklets(0);
   values[kTRDntrackletsPID] = pinfo->TRDntracklets(1);
+
+  // TRD GTU online tracks
+  values[kTRDGTUtracklets]   = pinfo->TRDGTUtracklets();
+  values[kTRDGTUlayermask]   = pinfo->TRDGTUlayermask();
+  values[kTRDGTUpt]          = pinfo->TRDGTUpt();
+  values[kTRDGTUsagitta]     = pinfo->TRDGTUsagitta();
+  values[kTRDGTUPID]         = pinfo->TRDGTUPID();
+
 
   if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP]) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
@@ -2339,6 +2348,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
 
 
   fgVariableNames[kINT7Triggered]       = "event was triggered with INT7";       fgVariableUnits[kINT7Triggered]       = "";
+  fgVariableNames[kTRDTriggeredType]    = "event was triggered by TRD ele trigger"; fgVariableUnits[kTRDTriggeredType]       = "";
   fgVariableNames[kHighMultV0Triggered] = "event was triggered with HighMultV0"; fgVariableUnits[kHighMultV0Triggered] = "";
 
   TString vzeroSideNames[3] = {"A","C","AC"};
@@ -2587,6 +2597,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTRDpidProbabilitiesLQ1D+1] = "TRD LQ1D pion probability";     fgVariableUnits[kTRDpidProbabilitiesLQ1D+1] = "";
   fgVariableNames[kTRDpidProbabilitiesLQ2D]   = "TRD LQ2D electron probability"; fgVariableUnits[kTRDpidProbabilitiesLQ2D] = "";  
   fgVariableNames[kTRDpidProbabilitiesLQ2D+1] = "TRD LQ2D pion probability";     fgVariableUnits[kTRDpidProbabilitiesLQ2D+1] = "";
+  fgVariableNames[kTRDGTUtracklets]             = "No. TRD GTU tracklets";           fgVariableUnits[kTRDGTUtracklets]        = "";
+  fgVariableNames[kTRDGTUlayermask]             = "No. TRD GTU layer0 cond";         fgVariableUnits[kTRDGTUlayermask]        = "";
+  fgVariableNames[kTRDGTUpt]                    = "No. TRD GTU pt";                  fgVariableUnits[kTRDGTUpt]               = "";
+  fgVariableNames[kTRDGTUsagitta]               = "No. TRD GTU sagitta";             fgVariableUnits[kTRDGTUsagitta]          = "";
+  fgVariableNames[kTRDGTUPID]                   = "No. TRD GTU PID";                 fgVariableUnits[kTRDGTUPID]              = "";
+
   fgVariableNames[kEMCALmatchedEnergy]    = "Calo energy";             fgVariableUnits[kEMCALmatchedEnergy] = "GeV";
   fgVariableNames[kEMCALmatchedClusterId] = "matched Calo cluster id"; fgVariableUnits[kEMCALmatchedClusterId] = "";
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  

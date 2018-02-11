@@ -196,7 +196,11 @@ class AliResonanceFits : public TObject {
   TH1* GetSignalMC() const {return (fMatchingIsDone ? fSignalMCshape : 0x0);}
   
   Int_t GetBkgMethod() const {return fOptionBkgMethod;}
+  Int_t GetScalingOption() const {return fOptionScale;}
+  Int_t GetMEMatchingMethod() const {return fgOptionMEMatching;}
+  Int_t GetMinuitFitOption() const {return fOptionMinuit;}
   Double_t* GetMassFitRange() const {return fgMassFitRange;}
+  Double_t* GetMassExclusionRange() const {return fgMassExclusionRange;}
   const Double_t* GetFitValues() const {return fFitValues;}
   
   

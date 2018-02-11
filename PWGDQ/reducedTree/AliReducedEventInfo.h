@@ -33,6 +33,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    L1TriggerInput(UShort_t bit)      const {return (bit<8*sizeof(UInt_t) ? (fL1TriggerInputs&(UInt_t(1)<<bit)) : kFALSE);}
   UShort_t  L2TriggerInputs()                 const {return fL2TriggerInputs;}
   Bool_t    L2TriggerInput(UShort_t bit)      const {return (bit<8*sizeof(UShort_t) ? (fL2TriggerInputs&(UShort_t(1)<<bit)) : kFALSE);}
+  UChar_t   TRDfired()                        const {return fTRDfired;}
   UShort_t  BC()                              const {return fBC;}
   UInt_t    TimeStamp()                       const {return fTimeStamp;}
   UInt_t    EventType()                       const {return fEventType;}
@@ -155,6 +156,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fL0TriggerInputs;       // L0 trigger inputs
   UInt_t    fL1TriggerInputs;       // L1 trigger inputs
   UShort_t  fL2TriggerInputs;       // L2 trigger inputs
+  UChar_t   fTRDfired;              // which TRD trigger fired HQU or HSE
   UShort_t  fBC;                    // bunch crossing
   UInt_t    fTimeStamp;             // time stamp of the event                
   UInt_t    fEventType;             // event type                             
@@ -208,7 +210,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 6);
+  ClassDef(AliReducedEventInfo, 7);
 };
 
 #endif

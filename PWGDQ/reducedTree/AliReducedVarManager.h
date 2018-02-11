@@ -552,7 +552,14 @@ class AliReducedVarManager : public TObject {
     kDeltaEta,
     kTriggerPt,     // pt of J/psi candidate
     kAssociatedPt,  // pt of associated track
+    // TRD GTU online tracks
+    kTRDGTUtracklets,   // TRD online track #tracklets
+    kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
+    kTRDGTUpt,          // TRD online track pT
+    kTRDGTUsagitta,     // TRD online track sagitta
+    kTRDGTUPID,         // TRD online track pid
     kTrackingFlags,
+    kTRDTriggeredType,
     kTrackingStatus=kTrackingFlags+kNTrackingFlags,
     kNVars=kTrackingStatus+kNTrackingStatus,     
   };
