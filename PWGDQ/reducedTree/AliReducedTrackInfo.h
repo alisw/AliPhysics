@@ -78,7 +78,15 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  TRDpid(Int_t specie)       const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ1D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ2D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpidLQ2D[specie] : -999.);}
-  
+
+  // TRD online tracks
+  UChar_t   TRDGTUtracklets()      const {return fTRDGTUtracklets;}
+  UChar_t   TRDGTUlayermask()      const {return fTRDGTUlayermask;}
+  Float_t   TRDGTUpt()             const {return fTRDGTUpt;}
+  Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
+  UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
+
+
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
@@ -148,7 +156,14 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTRDntracklets[2];       // 0 - AliESDtrack::GetTRDntracklets(); 1 - AliESDtrack::GetTRDntrackletsPID()   TODO: use only 1 char
   Float_t fTRDpid[2];              // TRD pid 1D likelihoods, [0]-electron , [1]- pion
   Float_t fTRDpidLQ2D[2];          // TRD pid 2D likelihoods, [0]-electron , [1]- pion
-  
+
+  // TRD online tracks
+  UChar_t  fTRDGTUtracklets;    // TRD online track #tracklets
+  UChar_t  fTRDGTUlayermask;    // TRD online track hit in layer0 yes/no
+  Float_t  fTRDGTUpt;           // TRD online track pT
+  Float_t  fTRDGTUsagitta;      // TRD online track sagitta
+  UChar_t  fTRDGTUPID;          // TRD online track pid
+
   // EMCAL/PHOS
   Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
   
@@ -167,7 +182,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 5);
+  ClassDef(AliReducedTrackInfo, 6);
 };
 
 //_______________________________________________________________________________
