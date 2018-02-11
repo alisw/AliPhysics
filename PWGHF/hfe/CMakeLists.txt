@@ -118,6 +118,7 @@ set(SRCS
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
+  AliAnalysisTaskHFEmultTPCTOF.cxx 	
   AliAnalysisTaskHFEtemplate.cxx
   AliHFEhadronicbackground.cxx
   AliHFEUnfolding.cxx	
