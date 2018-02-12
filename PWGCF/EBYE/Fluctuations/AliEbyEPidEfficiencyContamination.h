@@ -30,16 +30,18 @@ class TH2F;
 class TH1D;
 class THnSparse;
 
+class AliVEventHandler;
+class AliMCEventHandler;
+class AliVEvent;
+class AliESDtrackCuts;
 class AliMCEvent;
 class AliStack;
-class AliESDtrackCuts;
+class AliAnalysisUtils;
 class AliVParticle;
 class AliVTrack;
 class TClonesArray;
 class AliPID;
 class AliPIDResponse;
-class AliPIDCombined;
-class AliAnalysisUtils;
 
 
 class AliEbyEPidEfficiencyContamination: public AliAnalysisTaskSE {
@@ -52,6 +54,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+  void SetRunPeriod( TString runperiod) { fRun = runperiod; }
   void SetIsAOD(Bool_t IsAOD) {fIsAOD = IsAOD;}
   void SetAODtrackCutBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetIsMC(Bool_t Ismc) {fIsMC = Ismc;}
@@ -89,14 +92,17 @@ AliEbyEPidEfficiencyContamination( const char *name );
   void SetMaxPtForTPClow(Float_t f)                  {fMaxPtForTPClow      = f;}
   
  private:
-  TList           *fThnList;       //!
-  Double_t        *fPtArray;       //pt array
-  TClonesArray    *fArrayMC;       // AOD MC stack
-  AliESDtrackCuts *fESDtrackCuts;  // ESD Track Cuts
-  AliMCEvent      *fMCEvent;       // Current MC Event
-  AliStack        *fMCStack;       // Stak tree
-  AliAnalysisUtils *fanaUtils;     //using for pileup check
-  TString          fCentralityEstimator;   // "V0M","TRK","CL1"
+  TList               *fThnList;       //
+  AliVEventHandler    *fInputHandler;  // for Event handler
+  AliMCEventHandler   *fMCEventHandler;         // for MC event handler---
+  AliVEvent 	      *fVevent;        // V event
+  TClonesArray        *fArrayMC;       // AOD MC stack
+  AliESDtrackCuts     *fESDtrackCuts;  // ESD Track Cuts
+  AliMCEvent          *fMCEvent;       // Current MC Event
+  AliStack            *fMCStack;       // Stak tree
+  AliAnalysisUtils    *fanaUtils;      //using for pileup check
+  TString             fRun;            //Run  production name 
+  TString             fCentralityEstimator;   // "V0M","TRK","CL1"
  
   Int_t        fAODtrackCutBit; //
     
@@ -200,7 +206,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 1);
+  ClassDef(AliEbyEPidEfficiencyContamination, 2);
 };
 
 #endif
