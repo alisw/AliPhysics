@@ -71,6 +71,7 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
+  PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFevent.cxx
@@ -197,6 +198,7 @@ install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(FILES PiKaPr/TOF/pp13/AddTaskTOFMC.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
