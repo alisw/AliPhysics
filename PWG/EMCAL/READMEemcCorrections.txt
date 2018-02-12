@@ -6,7 +6,7 @@ The new EMCal correction framework centralizes all of the analysis-level EMCal c
 AliEmcalCorrectionTask. This task coordinates the running of a configurable list of individual "correction components", where a
 correction component means a single correction to be performed: cell-level energy calibration, or cluster-level non-linearity
 correction, or cluster-track matching, etc. The set of corrections to run, as well as their order and their configurable
-parameters, is set in a YAML configuration file. A default config file containing the centralized standard set of parameters is
+parameters, is set in a %YAML configuration file. A default config file containing the centralized standard set of parameters is
 shared by all users, and each user additionally writes their own user config file, overwriting desired variables.
 
 The motivation of this new approach is the following:
@@ -74,14 +74,14 @@ correctionTask->Initialize();
 There are some special procedures for the LEGO train. There will be a centralized EMCal Correction Task wagon which
 contains standard settings such as physics selection, etc. Then the user will create a wagon which calls
 `PWG/EMCAL/macros/ConfigureEmcalCorrectionTaskOnLEGOTrain(std::string suffix)`. This will return an EMCal Correction Task
-for you to configure with your particular YAML configuration file and then initialize.
+for you to configure with your particular %YAML configuration file and then initialize.
 
 To setup this wagon, use the macro listed above. One argument is required: the suffix. This suffix should be some unique
 identifier for your analysis - it could be your name, your analysis, whatever you like. The precise value only matters
 if you are using [specialization](\ref emcCorrectionsSpecialization) - in such a case, your suffix for the configuration
 wagon must match the specialization suffix.
 
-Then in the macro customization of your configuration wagon, you specify your YAML configuration file and initialize
+Then in the macro customization of your configuration wagon, you specify your %YAML configuration file and initialize
 the configuration. It should looks something like the following:
 
 ~~~{.cxx}
@@ -97,10 +97,10 @@ They should not depend on your configuration wagon!
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
-The corrections configuration file is specified via a file written in the YAML markup language. YAML is quite
+The corrections configuration file is specified via a file written in the %YAML markup language. %YAML is quite
 readable and is commonly used for configuration files. Although it should be straightforward to read and write,
 more information on its use can be found through the examples available [here](https://en.wikipedia.org/wiki/YAML).
-**All** configuration and options are set through the YAML file, from setting the clusterizer type to the name of
+**All** configuration and options are set through the %YAML file, from setting the clusterizer type to the name of
 the tracks!
 
 The configuration is determined by two files: the base default file (located in ``$ALICE_PHYSICS/PWG/EMCAL/config/``),
@@ -206,7 +206,7 @@ objectName:                         # Used to refer to this object in the YMAL c
 Although it is not required for your task to use EMCal containers, they are used internally in the Correction Task, so it is important to understand a bit about how they work. In particular, any filtering of the collections (such as AOD Track Filtering) is applied for the corrections, but the filtering does not remove anything from the collections!
 In addition, we always write cell/cluster/track corrections in place - it is generally not possible to write out new collections. Thus, it is then the users' responsibility to filter the collection using the information available! One particularly easy way to do so is to use EMCal containers, but it is not required! In the case that the user wants to manually filter, for example, tracks before running the Correction Framework, one can run AOD Track Filtering and then select no additional track filtering using ``kNoTrackFilter``.
 
-The available configuration options are listed below. Direct configuration through the YAML file is limited to a subset of all available configuration options. If you require additional options, please contact the developers - such additions are usually trivial. Alternatively, after calling ``Initialize()``, all containers are available for configuration as usual, so any additional options can be set by hand until implemented by the developers.
+The available configuration options are listed below. Direct configuration through the %YAML file is limited to a subset of all available configuration options. If you require additional options, please contact the developers - such additions are usually trivial. Alternatively, after calling ``Initialize()``, all containers are available for configuration as usual, so any additional options can be set by hand until implemented by the developers.
 
 __Cells__:
 | Property              | Value                             |
@@ -217,7 +217,7 @@ __Cells__:
 __EMCal Containers__:
 | Property              | Value                             |
 | --------------------- | --------------------------------- |
-| Container name        | This is set by the object name in the YAML config |
+| Container name        | This is set by the object name in the %YAML config |
 | branchName            | String selecting the branch name  |
 | embedding             | True if the branch should be taken from an embedded (external) event |
 | minPt                 | Double setting the minimum pT of the container |
@@ -265,7 +265,7 @@ For a survey of the available configuration options and information about the me
 configuration file located in ``$ALICE_PHYSICS/PWG/EMCAL/config/``. This also serves as an example configuration,
 Note that once the Correction Task is initialized using the ``Initialize()`` function, all corrections are
 configured and created. Consequently, any additional configuration can be done manually if desired. However,
-this approach is strongly discouraged. Instead, it is better to change the YAML configuration file so that
+this approach is strongly discouraged. Instead, it is better to change the %YAML configuration file so that
 there is a record of settings.
 
 ### Advanced usage options
@@ -274,7 +274,7 @@ There are a number of useful advanced options to make the Corrections Framework 
 
 #### Shared parameters
 
-Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything. This can be accomplished by defining a parameters in the "shared parameters" section of the YAML file. The name of the parameter defined in the shared parameters section can be referenced in other areas of the file by prepending ``sharedParameters:`` to the parameter name. Consider the example below:
+Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything. This can be accomplished by defining a parameters in the "shared parameters" section of the %YAML file. The name of the parameter defined in the shared parameters section can be referenced in other areas of the file by prepending ``sharedParameters:`` to the parameter name. Consider the example below:
 
 ~~~
 sharedParameters:
@@ -292,7 +292,7 @@ In the example, any change to ``aMinimumValue`` will be propagated to ``exampleV
 
 Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same
 configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that
-each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration
+each of the two clusterizers will inherit the same settings except for the cells. Consider the following example %YAML configuration
 file:
 
 ~~~
@@ -332,7 +332,7 @@ while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells a
 cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
 
 To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask
-to correspond with the specialization suffix that was set in the YAML file. Continuing with the previous example, we would need to add:
+to correspond with the specialization suffix that was set in the %YAML file. Continuing with the previous example, we would need to add:
 
 ~~~{.cxx}
 // The default argument is an empty string, so we don't have to set it here.
@@ -410,7 +410,7 @@ CorrectionTask_example2:
 A practical way to use specialization on the LEGO trains is to implement a correction task wagon with sub wagons for
 each specialization. By naming the sub wagon suffix the same as the specialization name, a specialized correction
 task will be created for each suffix. Each specialized correction task will extract the appropriate components for
-each correction chain from a single YAML file. For an example, see train 2860 on the Jets_EMC_PbPb train. However,
+each correction chain from a single %YAML file. For an example, see train 2860 on the Jets_EMC_PbPb train. However,
 the naming and dependencies of specializations with LEGO train subwagons requires special attention. In a normal run
 macro, the user can always select the order of running correction task specializations. However, in the case of LEGO
 train subwagons, the subwagons will always be run in **alphabetical order**. This can cause the correction tasks to
@@ -499,7 +499,7 @@ virtual Bool_t Run();
 virtual Bool_t UserNotify();
 ~~~
 
-To configure your task in the ``Initialize()`` function with the YAML configuration, you must define the
+To configure your task in the ``Initialize()`` function with the %YAML configuration, you must define the
 object and then get it via the ``GetProperty("propertyName", property)`` function defined in
 ``AliEmcalCorrectionComponent``. For an example, see ``Initialize()`` in any of the correction components.
 
@@ -518,7 +518,7 @@ and then the following to your component implementation file (cxx):
 RegisterCorrectionComponent<AliEmcalCorrectionYourNewComponent> AliEmcalCorrectionYourNewComponent::reg("AliEmcalCorrectionYourNewComponent");
 ```
 
-Lastly, the task needs to be added to the default YAML configuration file. To do so, add the name of the
+Lastly, the task needs to be added to the default %YAML configuration file. To do so, add the name of the
 component (removing "AliEmcalCorrection") to the file, and then set default values for each parameter.
 Be certain to document what each parameter means! In addition to the component configuration, be certain
 to add it into the executionOrder node! Otherwise, your task will never be executed! Note that the order

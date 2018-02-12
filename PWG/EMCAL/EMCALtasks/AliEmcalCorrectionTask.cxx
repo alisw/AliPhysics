@@ -91,7 +91,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
  *
  * If "_" is included in the name, then all characters after the underscore will
  * be taken as the task suffix (sometimes described as a "specialization") and used
- * to select settings in the YAML configuration file.
+ * to select settings in the %YAML configuration file.
  *
  * @param[in] name Name of the correction task.
  */
@@ -276,7 +276,7 @@ void AliEmcalCorrectionTask::Initialize(bool removeDummyTask)
     AliInfoStream() << "Initializing correction task with suffix \"" << fSuffix << "\"" << std::endl;
   }
 
-  // Initialize YAML configuration
+  // Initialize %YAML configuration
   InitializeConfiguration();
   // Check that the configuration is initialized
   if (fConfigurationInitialized != true)
@@ -348,7 +348,7 @@ void AliEmcalCorrectionTask::RemoveDummyTask() const
 /**
  * Initializes and sets up the user and default configuration files.
  * This includes opening the files and storing the contents of the user and default
- * YAML files into strings so that they can be streamed to the grid.
+ * %YAML files into strings so that they can be streamed to the grid.
  * (yaml-cpp objects do not work properly with ROOT streamers).
  *
  * NOTE: fConfigurationInitialized is set to true if the function is successful.
@@ -395,7 +395,7 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
  * order of which they should be executed.
  *
  * It is recommended to store the result, as it requires a large number of string comparisons and lookups
- * in the YAML configuration, whose associated methods also utilize a number of string comparisons.
+ * in the %YAML configuration, whose associated methods also utilize a number of string comparisons.
  *
  * @param[out] correctionComponents Names of the selected correction components in the order in which they should be executed.
  */
@@ -548,7 +548,7 @@ void AliEmcalCorrectionTask::CheckForUnmatchedUserSettings()
 }
 
 /**
- * Creates, configures, and initializes components based on the configuration described in the YAML files.
+ * Creates, configures, and initializes components based on the configuration described in the %YAML files.
  * Configuration includes making the user and default configuration available to each component, as
  * well as setting up the input clusters and tracks (cells have to be handled during ExecOnce()).
  * Each component's individual initialization is also called.
@@ -570,7 +570,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     component->SetName(componentName.c_str());
     component->SetTitle(componentName.c_str());
 
-    // Initialize the YAML configurations in each component
+    // Initialize the %YAML configurations in each component
     component->SetYAMLConfiguration(fYAMLConfig);
 
     // configure needed fields for components to properly initialize
@@ -598,7 +598,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
  * input object type. In the case of cells, an EMCal Correction Cell Container is created to handle the
  * relevant information.
  *
- * Normally, when properties are retrieved from the YAML configuration, the entire configuration is considered.
+ * Normally, when properties are retrieved from the %YAML configuration, the entire configuration is considered.
  * However, here we only consider a subset in both the user and default configurations. In particular, the
  * "inputObjects" section is selected and then all properties are drawn from this subset (the shared parameters
  * are also retained so they can be used). Thus, it takes a bit more care to use this task, but it should be
@@ -640,7 +640,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(AliEmcalContainerUtils::InputObj
 
 /**
  * Adds the previously created input objects that are managed by the Correction Task into a correction
- * component based on which input objects are requested in the YAML configuration by the component.
+ * component based on which input objects are requested in the %YAML configuration by the component.
  *
  * @param[in] component The correction component to which the input objects will be added
  * @param[in] inputObjectType The type of input object to add to the component
@@ -763,12 +763,12 @@ void AliEmcalCorrectionTask::SetupContainersFromInputNodes(AliEmcalContainerUtil
 }
 
 /**
- * Setup cell container with information from the YAML configuration nodes corresponding to the selected
+ * Setup cell container with information from the %YAML configuration nodes corresponding to the selected
  * input object.
  *
  * The created cell containers is stored by in the correction task.
  *
- * @param[in] containerName Name of the container to create (as defined in the YAML configuration)
+ * @param[in] containerName Name of the container to create (as defined in the %YAML configuration)
  */
 void AliEmcalCorrectionTask::SetupCellsInfo(std::string containerName)
 {
@@ -809,7 +809,7 @@ void AliEmcalCorrectionTask::SetupCellsInfo(std::string containerName)
  * configured through YAML.
  *
  * @param[in] inputObjectType Type of the input object to configure
- * @param[in] containerName Name of the container to create (as defined in the YAML configuration)
+ * @param[in] containerName Name of the container to create (as defined in the %YAML configuration)
  */
 void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputObject_t inputObjectType, const std::string containerName)
 {
@@ -963,7 +963,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
 
 /**
  * Creates a new AliEmcalContainer derived container based on the requested type and the branch name set in
- * the user and default YAML configuration and requested by a particular correction component. Supports the
+ * the user and default %YAML configuration and requested by a particular correction component. Supports the
  * "usedefault" pattern to simplify setting the proper branch name. Any track input objects are created as 
  * track containers unless the branch is named "mcparticles". If this is problematic for your analysis, the
  * track selection behavior of the track container can be disabled by setting the track selection to
@@ -972,7 +972,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
  * Note that the created container is adopted and managed by the Correction Task. 
  *
  * @param[in] contType Type of the input object to add
- * @param[in] containerName Name of the container to create (as defined in the YAML configuration)
+ * @param[in] containerName Name of the container to create (as defined in the %YAML configuration)
  *
  * @return The created container
  */
@@ -1023,9 +1023,9 @@ AliEmcalContainer * AliEmcalCorrectionTask::AddContainer(const AliEmcalContainer
 }
 
 /**
- * Reinitializes the YAML configurations if necessary and sets up for output from the correction components.
+ * Reinitializes the %YAML configurations if necessary and sets up for output from the correction components.
  * The reinitialization is necessary if the object is streamed because yaml-cpp objects cannot be streamed.
- * Instead, the YAML configuration is stored in strings and the nodes are recreated here from the string.
+ * Instead, the %YAML configuration is stored in strings and the nodes are recreated here from the string.
  *
  * Note that the number of centrality bins is also set here in the case of a forced beam-type since this is
  * how it was done in AliAnalysisTaskEmcal.
@@ -1038,7 +1038,7 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
     AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
   }
 
-  // YAML Objects cannot be streamed, so we need to reinitialize them here.
+  // %YAML Objects cannot be streamed, so we need to reinitialize them here.
   fYAMLConfig.Reinitialize();
 
   if (fForceBeamType == kpp)
@@ -1364,7 +1364,7 @@ std::ostream & AliEmcalCorrectionTask::PrintConfiguration(std::ostream & in, boo
 }
 
 /**
- * Write the desired YAML configuration to a file.
+ * Write the desired %YAML configuration to a file.
  *
  * @param filename The name of the file to write
  * @param userConfig True to write the user configuration
@@ -1376,17 +1376,17 @@ bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool u
 }
 
 /**
- * Compare the passed YAML configuration to the stored YAML configuration. Note that this function
+ * Compare the passed %YAML configuration to the stored %YAML configuration. Note that this function
  * is not const as the passed filename is briefly added and removed to the configuration.
  *
- * @param filename The filename of the YAML configuration to compare
+ * @param filename The filename of the %YAML configuration to compare
  * @param userConfig True to compare against the user configuration
- * @return True when the passed YAML configuration is the same as the stored YAML configuration
+ * @return True when the passed %YAML configuration is the same as the stored %YAML configuration
  */
 bool AliEmcalCorrectionTask::CompareToStoredConfiguration(std::string filename, bool userConfig)
 {
   // Setup
-  // It's important to reinitialize the configuration so the YAML nodes are defined!
+  // It's important to reinitialize the configuration so the %YAML nodes are defined!
   fYAMLConfig.Reinitialize();
   std::string tempConfigName = "tempConfig";
   fYAMLConfig.AddConfiguration(filename, tempConfigName);
@@ -1438,11 +1438,11 @@ void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, Al
 }
 
 /**
- * Given the input object type, it return the name of the field in the YAML configuration where information
+ * Given the input object type, it return the name of the field in the %YAML configuration where information
  * about it should be located. 
  *
  * @param inputObjectType The type of the input object
- * @return The name of the field of the requested input object in the YAML configuration file
+ * @return The name of the field of the requested input object in the %YAML configuration file
  */
 std::string AliEmcalCorrectionTask::GetInputFieldNameFromInputObjectType(AliEmcalContainerUtils::InputObject_t inputObjectType)
 {
@@ -1471,7 +1471,7 @@ std::string AliEmcalCorrectionTask::GetInputFieldNameFromInputObjectType(AliEmca
  * large number of possible components
  *
  * @param name Name to search for in the possible names
- * @param possibleComponents Possible names of components that have been retrieved from the YAML file
+ * @param possibleComponents Possible names of components that have been retrieved from the %YAML file
  *
  * @return True name in possible components name
  */
@@ -1555,7 +1555,7 @@ void AliEmcalCorrectionTask::PrintRequestedContainersInformation(AliEmcalContain
 
 /**
  * Utility function for CheckForUnmatchedUserSettings() which returns the names of all of the
- * properties defined in a YAML node. This can then be used to check for consistency in how properties
+ * properties defined in a %YAML node. This can then be used to check for consistency in how properties
  * are defined in the user and default configurations.
  *
  * This function handles the nodes by hand due to the rare requirement to handle the user and default
@@ -1803,7 +1803,7 @@ std::ostream & operator<<(std::ostream & in, const AliEmcalCorrectionTask & myTa
  * Print basic correction task information using the string representation provided by
  * AliEmcalCorrectionTask::toString
  *
- * @param opt If "YAML" is passed, then the YAML configuration is also printed
+ * @param opt If "YAML" is passed, then the %YAML configuration is also printed
  */
 void AliEmcalCorrectionTask::Print(Option_t* opt) const
 {
