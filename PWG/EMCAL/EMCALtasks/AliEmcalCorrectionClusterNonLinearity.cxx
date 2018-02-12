@@ -59,8 +59,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
-
   std::string nonLinFunctStr = "";
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);

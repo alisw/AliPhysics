@@ -26,7 +26,7 @@
 
 class AliEmcalCorrectionClusterNonLinearity : public AliEmcalCorrectionComponent {
  public:
-  /// Relates string to the non-linearity function enumeration for YAML configuration
+  /// Relates string to the non-linearity function enumeration for %YAML configuration
   static const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> fgkNonlinearityFunctionMap; //!<!
 
   AliEmcalCorrectionClusterNonLinearity();

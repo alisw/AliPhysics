@@ -44,11 +44,11 @@ AliEmcalCorrectionCellCombineCollections::~AliEmcalCorrectionCellCombineCollecti
 }
 
 /**
- * Initialize all needed variables from the YAML configuration.
+ * Initialize all needed variables from the %YAML configuration.
  *
  * Note that "usedefault" is only applied to the externalCellsBranchName because
  * the "usedefault" name for the combinedCellsBranchName is not well defined.
- * However, just using the default in the default YAML configuration should
+ * However, just using the default in the default %YAML configuration should
  * serve more or less the same purpose.
  *
  */

@@ -47,8 +47,6 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   
   AliWarning("Init EMCAL time calibration");
   
-  GetProperty("createHistos", fCreateHisto);
-  
   fCalibrateTime = kTRUE;
 
   // init reco utils

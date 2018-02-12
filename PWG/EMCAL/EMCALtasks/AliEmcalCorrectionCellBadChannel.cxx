@@ -43,8 +43,6 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   
   AliWarning("Init EMCAL cell bad channel removal");
   
-  GetProperty("createHistos", fCreateHisto);
-
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;

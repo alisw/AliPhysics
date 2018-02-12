@@ -91,7 +91,6 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
   GetProperty("phiMatch", fPhiMatch);
   GetProperty("etaMatch", fEtaMatch);
   GetProperty("hadCorr", fHadCorr);
