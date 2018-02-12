@@ -116,6 +116,9 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
     }
   }
 
+  // Handle create histos, as this is universal for every component
+  GetProperty("createHistos", fCreateHisto);
+
   return kTRUE;
 }
 

@@ -45,8 +45,6 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
-  
   Float_t fExoticMinCellAmplitude = 4.;
   GetProperty("fExoticMinCellAmplitude", fExoticMinCellAmplitude);
   Float_t fMaxFcross = 0.97;

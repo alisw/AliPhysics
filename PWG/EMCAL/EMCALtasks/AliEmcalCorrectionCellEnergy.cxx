@@ -46,8 +46,6 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   
   AliWarning("Init EMCAL cell recalibration");
   
-  GetProperty("createHistos", fCreateHisto);
-
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
   
   if (!fRecoUtils)
