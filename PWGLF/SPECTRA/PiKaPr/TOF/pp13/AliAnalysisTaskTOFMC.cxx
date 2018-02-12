@@ -52,6 +52,7 @@
 #include "TParticle.h"
 #include "TClonesArray.h"
 #include "AliTrackReference.h"
+#include "iostream"
 // Authors: Pranjal Sarma(Date modified=29/08/16)
 
 Double_t v0mpc,dtPion,dtKaon,dtProton;
@@ -59,7 +60,8 @@ Double_t v0mpc,dtPion,dtKaon,dtProton;
 ClassImp(AliAnalysisTaskTOFMC)
 
 //________________________________________________________________________
-AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name)
+//AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name)
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz)
      : AliAnalysisTaskSE(name),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
 fdEdxPt(0),fdEdxP(0),fdEdxPtq(0),fdEdxPq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
@@ -110,7 +112,9 @@ fEventV0MPS(0),fEventV0MVtx(0),fEventV0M(0),
 fTOFLabel(),
 
 fV0MPC_vertexcut(0),
-fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
+fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
+
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0)
 
 
 
@@ -278,62 +282,47 @@ fCorrRefMultVsV0M = new TH2F("fCorrRefMultVsV0M","Ref Mult vs V0M PC;V0M PC;Ref 
 
 
 	Double_t DCAbin[1201];
+	DCAbin[0]=-3.00;
+        for (Int_t i=1;i<1201;i++) DCAbin[i]=DCAbin[i-1]+0.005;
+
 	fPtV0MDCAxyTOFPriPion = new TH3F("fPtV0MDCAxyTOFPriPion","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFPriPion->fZaxis.Set(1200,-3.,3.);
-        fOutputList->Add(fPtV0MDCAxyTOFPriPion);
+       fOutputList->Add(fPtV0MDCAxyTOFPriPion);
 	fPtV0MDCAxyTOFWeakPion = new TH3F("fPtV0MDCAxyTOFWeakPion","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakPion->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPion);
 	fPtV0MDCAxyTOFMatPion = new TH3F("fPtV0MDCAxyTOFMatPion","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakPion->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatPion);
 	fPtV0MDCAxyTOFPriPionP = new TH3F("fPtV0MDCAxyTOFPriPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFPriPionP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFPriPionP);
 	fPtV0MDCAxyTOFWeakPionP = new TH3F("fPtV0MDCAxyTOFWeakPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakPionP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionP);
 	fPtV0MDCAxyTOFMatPionP = new TH3F("fPtV0MDCAxyTOFMatPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFMatPionP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionP);
 	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
-	fPtV0MDCAxyTOFPriPionM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFPriPionM);
 	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
-	fPtV0MDCAxyTOFWeakPionM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionM);
 	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
-	fPtV0MDCAxyTOFMatPionM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionM);
 
 
 	fPtV0MDCAxyTOFPriProton = new TH3F("fPtV0MDCAxyTOFPriProton","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFPriProton->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFPriProton);
 
 	fPtV0MDCAxyTOFWeakProton = new TH3F("fPtV0MDCAxyTOFWeakProton","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakProton->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakProton);
 	fPtV0MDCAxyTOFMatProton = new TH3F("fPtV0MDCAxyTOFMatProton","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFMatProton->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatProton);
 	fPtV0MDCAxyTOFPriProtonP = new TH3F("fPtV0MDCAxyTOFPriProtonP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFPriProtonP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFPriProtonP);
 	fPtV0MDCAxyTOFWeakProtonP = new TH3F("fPtV0MDCAxyTOFWeakProtonP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakProtonP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakProtonP);
 	fPtV0MDCAxyTOFMatProtonP = new TH3F("fPtV0MDCAxyTOFMatProtonP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFMatProtonP->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatProtonP);
 	fPtV0MDCAxyTOFPriProtonM = new TH3F("fPtV0MDCAxyTOFPriProtonM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFPriProtonM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFPriProtonM);
 	fPtV0MDCAxyTOFWeakProtonM = new TH3F("fPtV0MDCAxyTOFWeakProtonM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFWeakProtonM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFWeakProtonM);
 	fPtV0MDCAxyTOFMatProtonM = new TH3F("fPtV0MDCAxyTOFMatProtonM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-	fPtV0MDCAxyTOFMatProtonM->fZaxis.Set(1200,-3.,3.);
         fOutputList->Add(fPtV0MDCAxyTOFMatProtonM);
 
 
@@ -422,28 +411,26 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
 	fPtV0MTOFRecProtonM_nSigma_excl = new TH2F("fPtV0MTOFRecProtonM_nSigma_excl","p_{T} vs V0M of reco;p_{T} (GeV/c);V0M PC",nPtbins,Ptbins,nV0Mbins,V0Mbins);
         fOutputList->Add(fPtV0MTOFRecProtonM_nSigma_excl);
 
-	
+
+	 Timebins[0]=-10000.0;
+        for (Int_t i=1;i<501;i++){
+        Timebins[i]=Timebins[i-1]+40.0;
+}	
 
 	fTOFTimeV0MPtPi=new TH3F("fTOFTimeV0MPtPi","TOF Time vs pT #pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtPi->fYaxis.Set(nTimebins,-10000,10000);
 	fOutputList->Add(fTOFTimeV0MPtPi);
 	fTOFTimeV0MPtK=new TH3F("fTOFTimeV0MPtK","TOF Time vs pT K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtK->fYaxis.Set(nTimebins,-10000,10000);
         fOutputList->Add(fTOFTimeV0MPtK);
 	fTOFTimeV0MPtP=new TH3F("fTOFTimeV0MPtP","TOF Time vs pT P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtP->fYaxis.Set(nTimebins,-10000,10000);
         fOutputList->Add(fTOFTimeV0MPtP);
 
 
 	//mismatch
 	fTOFTimeV0MPtMismatchDecayPi=new TH3F("fTOFTimeV0MPtMismatchDecayPi"," Mis decay TOF Time vs pT #pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtMismatchDecayPi->fYaxis.Set(nTimebins,-10000,10000);
 	fOutputList->Add(fTOFTimeV0MPtMismatchDecayPi);
 	fTOFTimeV0MPtMismatchDecayK=new TH3F("fTOFTimeV0MPtMismatchDecayK","Mis decay TOF Time vs pT K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtMismatchDecayK->fYaxis.Set(nTimebins,-10000,10000);
         fOutputList->Add(fTOFTimeV0MPtMismatchDecayK);
 	fTOFTimeV0MPtMismatchDecayP=new TH3F("fTOFTimeV0MPtMismatchDecayP","Mis decay TOF Time vs pT P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fTOFTimeV0MPtMismatchDecayP->fYaxis.Set(nTimebins,-10000,10000);
         fOutputList->Add(fTOFTimeV0MPtMismatchDecayP);
 
 	Double_t eventbins[]={0,1,2,3};
@@ -467,12 +454,21 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
         fPtTOF_AllN=new TH1F("fPtTOF_AllN","TOF pt distribution;p_{T} (GeV/c)",nPtbins,Ptbins);
         fOutputList->Add(fPtTOF_AllN);
 
+	fTPC_CR=new TH1F("fTPC_CR","TPC cr distribution;# of CR",200,0,200);
+        fOutputList->Add(fTPC_CR);
+        fChi2TPCcluster=new TH1F("fChi2TPCcluster","Chi2 /TPC cluster distribution;# of CR",100,0,10);
+        fOutputList->Add(fChi2TPCcluster);
+        fDCAZ=new TH1F("fDCAZ","DCA z distribution;# of CR",100,0,10);
+        fOutputList->Add(fDCAZ);
+        fDCAxy=new TH1F("fDCAxy","DCA xy distribution;# of CR",1200,-3,3);
+        fOutputList->Add(fDCAxy);
 
 	 //ESD track cut
 //        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
 	fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 
-//        fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+//	fesdTrackCuts_no_dca->GetTrackCuts();
+        //fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
 
 
 
@@ -662,7 +658,8 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 
         fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection"); // Esto es para 13 TeV
         if (!fMultSelection)
-           cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+           //cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+           AliWarning("No AliMultSelection Object Found --------");
         else
           v0mpc = fMultSelection->GetMultiplicityPercentile("V0M",kFALSE);
 
@@ -804,6 +801,11 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 
         if(fesdTrackCuts->AcceptTrack(track)){	
 	
+	fTPC_CR->Fill(track->GetTPCCrossedRows());
+	fChi2TPCcluster->Fill(track->GetTPCchi2()/track->GetTPCNcls());
+	fDCAZ->Fill(dcaxy[1]);
+	fDCAxy->Fill(dcaxy[0]);	
+
 	if(TMath::Abs(track->Eta())<0.8){
         if(TPCPIDStatus){
         if(track->Charge()>0.) fPtTPC_AllP->Fill(track->Pt());
@@ -1275,6 +1277,11 @@ void AliAnalysisTaskTOFMC::Terminate(Option_t *)
         fPtTPC_AllN= dynamic_cast<TH1F*> (fOutputList->At(105));
         fPtTOF_AllP= dynamic_cast<TH1F*> (fOutputList->At(106));
         fPtTOF_AllN= dynamic_cast<TH1F*> (fOutputList->At(107));
+        
+	fTPC_CR= dynamic_cast<TH1F*> (fOutputList->At(108));
+	fChi2TPCcluster= dynamic_cast<TH1F*> (fOutputList->At(109));
+	fDCAZ= dynamic_cast<TH1F*> (fOutputList->At(110));
+	fDCAxy= dynamic_cast<TH1F*> (fOutputList->At(111));
 
 
 
@@ -1334,6 +1341,12 @@ fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
 
 TFile *f=new TFile("result/12dec/MC_final_TOF_output.root","recreate");//v0m bin different
 f->cd();
+
+fTPC_CR->Write();
+fChi2TPCcluster->Write();
+fDCAZ->Write();
+fDCAxy->Write();
+
 fEventCounter->Write();
 fEventPS->Write();
 fEventVtx->Write();

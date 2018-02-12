@@ -38,7 +38,9 @@ class AliPPVsMultUtils;
 
 class AliAnalysisTaskTOFMC : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskTOFMC() : AliAnalysisTaskSE(),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
+
+
+/*  AliAnalysisTaskTOFMC() : AliAnalysisTaskSE(),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
 fdEdxP(0),fdEdxPt(0),fdEdxPq(0),fdEdxPtq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
 fPtVsTPion(0),fPtVsTKaon(0),fPtVsTProton(0),
@@ -93,7 +95,10 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
 
 
 {}
- AliAnalysisTaskTOFMC(const char *name);
+
+*/
+ AliAnalysisTaskTOFMC(const char *name, Int_t nTPC_CR,Int_t Chi2_TPCcluser, Int_t DCAz);
+ //AliAnalysisTaskTOFMC(const char *name);
   virtual ~AliAnalysisTaskTOFMC() {}
 
 	virtual void   UserCreateOutputObjects();
@@ -108,18 +113,26 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
         Bool_t  IsGoodSPDvertexRes(const AliESDVertex *spdVertex);
 
 
-	AliESDtrackCuts *GetTrackCuts() const {return *fesdTrackCuts;}; // getter
-	AliESDtrackCuts *GetTrackCuts() const {return *fesdTrackCuts_no_dca;}; // getter
+	AliESDtrackCuts *GetTrackCuts();// const {return *fesdTrackCuts;}; // getter
+//	AliESDtrackCuts *GetTrackCuts() const {return *fesdTrackCuts_no_dca;}; // getter
+
+	void SetTrackCuts(AliESDtrackCuts *value) {fesdTrackCuts = value;}; // setter
+	
+	void SetTrackCuts2(AliESDtrackCuts *value) {fesdTrackCuts_no_dca = value;}; // setter
+
+        
 
  private:
 
 
 	AliPIDResponse *fPIDResponse;     //! PID response object
         AliMultSelection *fMultSelection;
-        AliESDtrackCuts *fesdTrackCuts;
+	AliESDtrackCuts *fesdTrackCuts;
         AliESDtrackCuts *fesdTrackCuts_no_dca;
 
 	AliPPVsMultUtils *fPPVsMultUtils;
+
+	TAxis         fZaxis;
 
 
 	AliESDEvent *fESD;    //! ESD object
@@ -249,6 +262,11 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
         TH1F *fPtTOF_AllP;
         TH1F *fPtTOF_AllN;
 
+
+	TH1F *fTPC_CR;
+        TH1F *fChi2TPCcluster;
+        TH1F *fDCAZ;
+        TH1F *fDCAxy;
 
 	Int_t fTOFLabel[3]; // TOF label
 

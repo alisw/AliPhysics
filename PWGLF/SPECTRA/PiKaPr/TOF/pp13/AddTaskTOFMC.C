@@ -20,12 +20,12 @@ AliAnalysisTaskTOFMC *AddTaskTOFMC(Int_t nTPC_CR=70, Int_t Chi2_TPCcluser=4, Int
   // Create and configure the task
   AliAnalysisTaskTOFMC *taskTOFMC = new AliAnalysisTaskTOFMC("AliAnalysisTaskTOFMC", nTPC_CR,Chi2_TPCcluser, DCAz);
 
-	AliESDtrackCuts *fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	fesdTrackCuts->SetMinNCrossedRowsTPC(nTPC_CR);
-	fesdTrackCuts->SetMaxChi2PerClusterTPC(Chi2_TPCcluser);
-	fesdTrackCuts->SetMaxDCAToVertexZ(DCAz);
-
-  taskTOFMC->SetTrackCuts(fesdTrackCuts);
+	AliESDtrackCuts *fTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	fTrackCuts->SetMinNCrossedRowsTPC(nTPC_CR);
+	fTrackCuts->SetMaxChi2PerClusterTPC(Chi2_TPCcluser);
+	fTrackCuts->SetMaxDCAToVertexZ(DCAz);
+  taskTOFMC->SetTrackCuts(fTrackCuts);
+  taskTOFMC->SetTrackCuts2(fTrackCuts);
 
   mgr->AddTask(taskTOFMC);
   TString outputFileName = AliAnalysisManager::GetCommonFileName();

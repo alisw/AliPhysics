@@ -29,12 +29,13 @@
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
-#pragma link C++ class AliAnalysisTaskTOFMC+;
 #pragma link C++ class AliAnTOFtrack+;
 #pragma link C++ class AliAnTOFevent+;
 #pragma link C++ class AliAnalysisTaskTOFSpectra+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 #pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
+
+#pragma link C++ class AliAnalysisTaskTOFMC+;
 
 #pragma link C++ class AliAnalysisTaskSpectraAOD+;
 #pragma link C++ class AliAnalysisTaskSpectraAllChAOD+;
