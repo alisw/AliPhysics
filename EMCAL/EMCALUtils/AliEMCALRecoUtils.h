@@ -97,8 +97,8 @@ public:
   void     RecalculateClusterPosition               (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerIndex (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
-  Float_t  GetCellWeight(Float_t eCell, Float_t eCluster) const { if (eCell > 0 && eCluster > 0) return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster )) ;
-                                                                  else                           return 0.                                                    ; }
+  
+  Float_t  GetCellWeight(Float_t eCell, Float_t eCluster) const ;
   Float_t  GetDepth(Float_t eCluster, Int_t iParticle, Int_t iSM) const; 
   void     GetMaxEnergyCell(const AliEMCALGeometry *geom, AliVCaloCells* cells, const AliVCluster* clu, 
                             Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared);
@@ -124,6 +124,8 @@ public:
   Float_t  GetW0()                                 const { return fW0               ; }
   void     SetW0(Float_t w0)                             { fW0  = w0                ; }
 
+  void     SetShowerShapeCellLocationType(Int_t type)    { fShowerShapeCellLocationType = type ; }
+  
   //-----------------------------------------------------
   // Non Linearity
   //-----------------------------------------------------
@@ -445,7 +447,12 @@ private:
   Int_t      fPosAlgo;                   ///< Position recalculation algorithm, see enum PositionAlgorithms
   
   Float_t    fW0;                        ///< Energy weight used in cluster position and shower shape calculations
-    
+  
+  ///< Type of cell position used for shower shape calculation:
+  ///< 0-index; 1-global eta/phi; 2-local x/z; 3- local r/z; 4- global x/z; 5- global r/z
+
+  Int_t      fShowerShapeCellLocationType;  
+  
   // Non linearity
   Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
   Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
@@ -536,7 +543,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 25) ;
+  ClassDef(AliEMCALRecoUtils, 26) ;
   /// \endcond
 
 };

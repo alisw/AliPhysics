@@ -53,7 +53,8 @@ ClassImp(AliEMCALRecoUtils) ;
 ///
 //_____________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils():
-  fParticleType(0),                       fPosAlgo(0),                            fW0(0), 
+  fParticleType(0),                       fPosAlgo(0),                            
+  fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
@@ -98,7 +99,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
 //______________________________________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco) 
 : TNamed(reco), 
-  fParticleType(reco.fParticleType),                         fPosAlgo(reco.fPosAlgo),     fW0(reco.fW0),
+  fParticleType(reco.fParticleType),                         fPosAlgo(reco.fPosAlgo),     
+  fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -159,6 +161,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fParticleType              = reco.fParticleType;
   fPosAlgo                   = reco.fPosAlgo; 
   fW0                        = reco.fW0;
+  fShowerShapeCellLocationType = reco.fShowerShapeCellLocationType;
   
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
@@ -1316,6 +1319,26 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
 }
 
 ///
+/// \return weight of cell for shower shape calculation
+/// If fW0 parameter is negative, apply linear weight to all cells.
+///
+/// \param eCell: cluster cell energy
+/// \param eCluster: cluster Energy
+/// \param iSM: supermodule number
+///
+//_________________________________________________________
+Float_t  AliEMCALRecoUtils::GetCellWeight(Float_t eCell, Float_t eCluster) const 
+{ 
+  if (eCell > 0 && eCluster > 0) 
+  {
+   if ( fW0 > 0 ) return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster ) ) ;
+   else           return eCell / eCluster;
+  }
+  else                           
+    return 0. ; 
+}
+
+///
 /// Initialize data members with default values
 ///
 //______________________________________
@@ -2181,13 +2204,19 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
   
+  Double_t pLocal[3], pGlobal[3];
+  
   // Loop on cells, calculate the cluster energy, in case a cut on cell energy is added,
   // or the non linearity correction was applied
   // and to check if the cluster is between 2 SM in eta
   Int_t   iSM0   = -1;
   Bool_t  shared = kFALSE;
   Float_t energy = 0;
+  
   enAfterCuts = 0;
+  l0 = 0;  l1 = 0;   
+  disp = 0; dEta = 0; dPhi = 0;
+  sEta = 0; sPhi = 0; sEtaPhi = 0;
   
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
   {
@@ -2225,6 +2254,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
       enAfterCuts += eCell;
   } // cell loop
   
+  Double_t depth = GetDepth(enAfterCuts,fParticleType,iSM0) ;
+  
   // Loop on cells to calculate weights and shower shape terms parameters
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
   {
@@ -2257,9 +2288,48 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     {
       w  = GetCellWeight(eCell, energy);
       
-      etai=(Double_t)ieta;
-      phii=(Double_t)iphi;  
-      
+      if     ( fShowerShapeCellLocationType == 0 )
+      {
+        etai=(Double_t)ieta;
+        phii=(Double_t)iphi;  
+      }
+      else if( fShowerShapeCellLocationType == 1 )
+      {
+        geom->EtaPhiFromIndex(absId, etai, phii);
+        //printf("\t \t eta %f phi %f\n",etai,phii);
+      }
+      else
+      {
+        geom->RelPosCellInSModule(absId,depth,pLocal[0],pLocal[1],pLocal[2]);
+        //printf("pLocal (%f,%f,%f), absId %d\n",pLocal[0],pLocal[1],pLocal[2],absId);
+        
+        if( fShowerShapeCellLocationType == 2 )
+        {
+          etai = pLocal[2];
+          phii = pLocal[0];
+        }        
+        else if( fShowerShapeCellLocationType == 3 )
+        {
+          etai = pLocal[2];
+          phii = TMath::Sqrt(pLocal[0]*pLocal[0]+pLocal[1]*pLocal[1]);
+        }
+        else
+        {
+          geom->GetGlobal(pLocal,pGlobal,iSupMod);
+          //printf("pGloba (%f,%f,%f) sm %d \n",pGlobal[0],pGlobal[1],pGlobal[2],iSupMod);
+          if( fShowerShapeCellLocationType == 4 )
+          {
+            etai = pGlobal[2];
+            phii = pGlobal[0];
+          }
+          else
+          {
+            etai = pGlobal[2];
+            phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
+          }
+        }
+      }
+         
       if (w > 0.0) 
       {
         wtot += w ;
@@ -2276,6 +2346,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     else if(eCell > 0.05)
       AliDebug(2,Form("Wrong energy in cell %f and/or cluster %f\n", eCell, cluster->E()));
   } // cell loop
+  
+  //printf("sEta %f sPhi %f etaMean %f phiMean %f sEtaPhi %f wtot %f\n",sEta,sPhi,etaMean,phiMean,sEtaPhi, wtot);
   
   // Normalize to the weight  
   if (wtot > 0) 
@@ -2317,8 +2389,47 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     {
       w  = GetCellWeight(eCell,cluster->E());
       
-      etai=(Double_t)ieta;
-      phii=(Double_t)iphi;    
+      if     ( fShowerShapeCellLocationType == 0 )
+      {
+        etai=(Double_t)ieta;
+        phii=(Double_t)iphi;  
+      }
+      else if( fShowerShapeCellLocationType == 1 )
+      {
+        geom->EtaPhiFromIndex(absId, etai, phii);
+      }
+      else
+      {
+        geom->RelPosCellInSModule(absId,depth,pLocal[0],pLocal[1],pLocal[2]);
+        //printf("pLocal (%f,%f,%f), absId %d\n",pLocal[0],pLocal[1],pLocal[2],absId);
+
+        if( fShowerShapeCellLocationType == 2 )
+        {
+          etai = pLocal[2];
+          phii = pLocal[0];
+        }        
+        else if( fShowerShapeCellLocationType == 3 )
+        {
+          etai = pLocal[2];
+          phii = TMath::Sqrt(pLocal[0]*pLocal[0]+pLocal[1]*pLocal[1]);
+        }
+        else
+        {
+          geom->GetGlobal(pLocal,pGlobal,iSupMod);
+          //printf("pGloba (%f,%f,%f) sm %d \n",pGlobal[0],pGlobal[1],pGlobal[2],iSupMod);
+          if( fShowerShapeCellLocationType == 4 )
+          {
+            etai = pGlobal[2];
+            phii = pGlobal[0];
+          }
+          else
+          {
+            etai = pGlobal[2];
+            phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
+          }
+        }
+      }
+      
       if (w > 0.0) 
       { 
         disp +=  w *((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean)); 
@@ -2346,6 +2457,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     
     l0 = (0.5 * (sEta + sPhi) + TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
     l1 = (0.5 * (sEta + sPhi) - TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
+    
+    //printf("sEta %f sPhi %f etaMean %f phiMean %f sEtaPhi %f wtot %f l0 %f l1 %f\n",sEta,sPhi,etaMean,phiMean,sEtaPhi, wtot,l0,l1);
+
   } 
   else 
   {
