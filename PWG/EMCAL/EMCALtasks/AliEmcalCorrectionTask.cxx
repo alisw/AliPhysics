@@ -15,16 +15,15 @@
 
 #include <TChain.h>
 
-#include "AliVEventHandler.h"
-#include "AliEMCALGeometry.h"
-#include "AliVCaloCells.h"
-#include "AliVCluster.h"
-#include "AliLog.h"
+#include <AliAnalysisManager.h>
+#include <AliVEventHandler.h>
+#include <AliESDEvent.h>
+#include <AliAODEvent.h>
+#include <AliEMCALGeometry.h>
+#include <AliVCaloCells.h>
+#include <AliLog.h>
+#include <AliCentrality.h>
 #include "AliMultSelection.h"
-#include "AliCentrality.h"
-#include "AliESDEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionTask);
