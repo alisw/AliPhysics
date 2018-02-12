@@ -15,6 +15,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   Double_t DCAzMax = 0.,
                                            Double_t DCAxyMax = 0.,
 					   TString MultEstimator = "V0M",
+					   Bool_t DoOnlyMixedFlow = kTRUE,
 					   Bool_t AntiProtonOnly = kFALSE,
 					   Bool_t PIDbayesian = kFALSE,
                                            Double_t PIDprob = 0.9)
@@ -46,7 +47,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetFlowRFPsPtMin(0.2);
     task1->SetFlowRFPsPtMax(5.);
     // task1->SetFlowDoFourCorrelations(kFALSE);
-    task1->SetFlowDoOnlyMixedCorrelations(kTRUE);
+    task1->SetFlowDoOnlyMixedCorrelations(DoOnlyMixedFlow);
     task1->SetFlowFillWeights(kFALSE);
     task1->SetPositivelyChargedRef(kFALSE);//reference particles both positively charged
     task1->SetNegativelyChargedRef(kFALSE);//reference particles both negatively charged
