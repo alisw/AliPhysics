@@ -9,7 +9,9 @@
 //=========================================================================//
 TString fileNameBase="AnalysisResults.root";
 
-AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
+AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
+						      TString runName = "LHC10h",
+						      Bool_t isModeAOD = 0,
 						      Int_t aodFilterBit = 768, 
 						      Bool_t IsMC  = 0.,
 						      Bool_t IsQA = 0,
@@ -61,6 +63,9 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
   const Char_t *ctsk = Form("%sNET%s",pidname[pidtype], taskname);
   
   AliEbyEPidEfficiencyContamination *task = new AliEbyEPidEfficiencyContamination(ctsk);
+
+
+  task->SetRunPeriod(runName);
   
   if(isModeAOD) {
     task->SetIsAOD(isModeAOD);                       
@@ -91,8 +96,10 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
    task->SetNSigmaMaxTPClow(nSigmaTPClow);
    task->SetMinPtForTOFRequired(minPtTOF);
    task->SetMaxPtForTPClow(minPtTPClow);
+
+   if( runName == "LHC10h") task->SelectCollisionCandidates(AliVEvent::kMB);
+   else if ( runName == "LHC15o") task->SelectCollisionCandidates(AliVEvent::kINT7);
    
-   task->SelectCollisionCandidates(AliVEvent::kMB);
    mgr->AddTask(task);
  
    

@@ -120,5 +120,4 @@
 
 #pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 
-#pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 #endif
