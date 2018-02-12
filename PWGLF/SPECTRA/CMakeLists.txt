@@ -69,9 +69,9 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
+  PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
-  PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFevent.cxx
