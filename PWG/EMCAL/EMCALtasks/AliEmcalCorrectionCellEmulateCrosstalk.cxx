@@ -67,7 +67,6 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Initialize()
   
   AliWarning("Init EMCAL crosstalk emulation");
   
-  GetProperty("createHistos", fCreateHisto);
   GetProperty("conservEnergy", fTCardCorrClusEnerConserv);
   
   if (!fRecoUtils) {
