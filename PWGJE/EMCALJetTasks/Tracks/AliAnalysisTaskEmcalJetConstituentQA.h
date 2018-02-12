@@ -49,6 +49,7 @@ public:
   void SetNameTrackContainer(const char *name) { fNameTrackContainer = name; }
   void SetNameClusterContainer(const char *name) { fNameClusterContainer = name; }
   void AddNameJetContainer(const char *name) { fNamesJetContainers.Add(new TObjString(name)); }
+  void SetUseTriggerSelection(Bool_t doUse) { fUseTriggerSelection = doUse; }
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -61,6 +62,8 @@ private:
   TString                       fNameClusterContainer;      ///< Name of the cluster container
   TObjArray                     fNamesJetContainers;        ///< Names of the connected jet container
   TString                       fTriggerSelectionString;    ///< Trigger selection string
+  Bool_t                        fUseTriggerSelection;       ///< Use trigger selection in addition to trigger string
+  TString                       fNameTriggerDecisionContainer;  ///< Name of the trigger decision container
 
   AliAnalysisTaskEmcalJetConstituentQA(const AliAnalysisTaskEmcalJetConstituentQA &);
   AliAnalysisTaskEmcalJetConstituentQA &operator=(const AliAnalysisTaskEmcalJetConstituentQA &);
