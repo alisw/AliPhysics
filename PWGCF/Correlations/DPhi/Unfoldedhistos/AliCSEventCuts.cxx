@@ -1333,11 +1333,11 @@ Bool_t AliCSEventCuts::SetRemovePileUp(Int_t pupcode)
 ///    |  1 | \f$ |z_{vtx}|\f$ < 12.0 cm |                                                                                     |
 ///    |  2 | \f$ |z_{vtx}|\f$ < 10.0 cm |                                                                                     |
 ///    |  3 | \f$ |z_{vtx}|\f$ < 7.0 cm  |                                                                                     |
-///    |  4 | \f$ |z_{vtx}|\f$ < 5.0 cm  |                                                                                     |
+///    |  4 | \f$ |z_{vtx}|\f$ < 3.0 cm  |                                                                                     |
 ///    |  5 | \f$ |z_{vtx}|\f$ < 12.0 cm | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 ///    |  6 | \f$ |z_{vtx}|\f$ < 10.0 cm | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 ///    |  7 | \f$ |z_{vtx}|\f$ < 7.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
-///    |  8 | \f$ |z_{vtx}|\f$ < 5.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
+///    |  8 | \f$ |z_{vtx}|\f$ < 3.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 /// \return kTRUE for proper and supported vertex cuts
 
 Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
@@ -1361,7 +1361,7 @@ Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
     break;
   case 4:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
-    fMaxVertexZ     = 5.;
+    fMaxVertexZ     = 3.;
     break;
   case 5:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
@@ -1380,7 +1380,7 @@ Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
     break;
   case 8:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
-    fMaxVertexZ     = 5.;
+    fMaxVertexZ     = 3.;
     fUseSPDTracksVtxDist = kTRUE;
     break;
   default:
