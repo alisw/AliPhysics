@@ -8,7 +8,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          TString dirName="",
                                                          Bool_t isAOD=kFALSE,
                                                          Int_t tracktype=0,
-                                                         Int_t SPDreq=6,
+                                                         Int_t SPDreq=7,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
                                                          Bool_t usetriggersel=kFALSE,
@@ -66,6 +66,9 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
             break;
         case(5):
             esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+            break;
+        case(6):
+            esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
             break;
         default:
             esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
