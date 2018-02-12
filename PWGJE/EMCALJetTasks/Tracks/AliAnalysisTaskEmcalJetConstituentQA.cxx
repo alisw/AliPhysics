@@ -39,6 +39,7 @@
 #include "AliAODInputHandler.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalJet.h"
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
@@ -59,7 +60,9 @@ AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA():
   fHistos(nullptr),
   fNameTrackContainer(""),
   fNameClusterContainer(""),
-  fTriggerSelectionString("")
+  fTriggerSelectionString(""),
+  fUseTriggerSelection(kFALSE),
+  fNameTriggerDecisionContainer("EmcalTriggerDecision")
 {
   this->SetUseAliAnaUtils(true);
 }
@@ -69,7 +72,9 @@ AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA(const
   fHistos(nullptr),
   fNameTrackContainer(""),
   fNameClusterContainer(""),
-  fTriggerSelectionString("")
+  fTriggerSelectionString(""),
+  fUseTriggerSelection(kFALSE),
+  fNameTriggerDecisionContainer("EmcalTriggerDecision")
 {
   this->SetUseAliAnaUtils(true);
 }
@@ -113,10 +118,16 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     // INT7 trigger
     if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   } else if(fTriggerSelectionString.Contains("EJ")){
-     auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3);
+     auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3); // cleanup trigger string from possible tags
      // EMCAL JET trigger
      if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)) return false;
      if(!fInputEvent->GetFiredTriggerClasses().Contains(triggerclass)) return false;
+
+     if(fUseTriggerSelection) {
+       auto triggerdecisions = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindObject(""));
+       if(!triggerdecisions) return false;
+       else if(!triggerdecisions->IsEventSelected(triggerclass.Data())) return false;
+     }
   } else return false;
 
   AliDebugStream(1) << "Event is selected" << std::endl;
