@@ -118,4 +118,5 @@
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 #pragma link C++ class  AliAnalysisHFETPCTOFBeauty+;
 
+#pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 #endif
