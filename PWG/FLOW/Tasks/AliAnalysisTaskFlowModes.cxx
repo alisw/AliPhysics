@@ -60,7 +60,7 @@ class AliAnalysisTaskFlowModes;
 
 ClassImp(AliAnalysisTaskFlowModes); // classimp: necessary for root
 
-Int_t AliAnalysisTaskFlowModes::fHarmonics[] = {2,3};
+Int_t AliAnalysisTaskFlowModes::fHarmonics[] = {2,3,4,5,6};
 Int_t AliAnalysisTaskFlowModes::fMixedHarmonics[] = {422,633,523};// 422: v4{psi2}, 523: v5{psi2, psi3} and 633: v6{psi3}
 
 Double_t AliAnalysisTaskFlowModes::fEtaGap[] = {0.,0.4,0.8};
