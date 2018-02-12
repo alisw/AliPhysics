@@ -6,7 +6,8 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     const Double_t BunchSpace  = 25.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
-    const TString period       = "LHC15n"
+    const TString period       = "LHC15n",
+    const Bool_t isSingleSim   = kFALSE
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -27,7 +28,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   TString taskname = Form("%s_BS%dns",name,(Int_t)BunchSpace);
 
   AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
-  task->SelectCollisionCandidates(trigger);
+  if(!isSingleSim) task->SelectCollisionCandidates(trigger);
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
