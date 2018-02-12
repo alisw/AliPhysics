@@ -1200,14 +1200,18 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
   }
 
   // register hits (MC info)
-  fHits[fNHits].fChannel = adc;
-  fHits[fNHits].fQtot = qtot;
-  fHits[fNHits].fYpos = ypos;
-  fHits[fNHits].fTimebin = timebin;
-  fHits[fNHits].fLabel[0] = label[0];
-  fHits[fNHits].fLabel[1] = label[1];
-  fHits[fNHits].fLabel[2] = label[2];
-  fNHits++;
+  if (fNHits < fgkNHitsMC) {
+    fHits[fNHits].fChannel = adc;
+    fHits[fNHits].fQtot = qtot;
+    fHits[fNHits].fYpos = ypos;
+    fHits[fNHits].fTimebin = timebin;
+    fHits[fNHits].fLabel[0] = label[0];
+    fHits[fNHits].fLabel[1] = label[1];
+    fHits[fNHits].fLabel[2] = label[2];
+    fNHits++;
+  } else {
+    AliWarning("no space left to store MC information for hit");
+  }
 }
 
 void AliTRDmcmSim::CalcFitreg()
