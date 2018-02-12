@@ -117,7 +117,7 @@ protected:
   UChar_t fNPads;          //  Number of pads in cluster
   UChar_t fClusterMasking; //  Bit field containing cluster status information;
   Short_t fDetector;       //  TRD detector number
-  Short_t fSignals[7];     //  Raw signals if HasRawSignals() returns true. Otherwise calibrated.
+  Short_t fSignals[7];     //  Baseline subtracted Raw signals if HasRawSignals() returns true. Otherwise calibrated.
   Float_t fQ;              //  Calibrated cluster charge
   Float_t fCenter;         //  Center of the cluster relative to the pad 
 

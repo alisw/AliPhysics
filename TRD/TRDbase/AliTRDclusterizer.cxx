@@ -161,6 +161,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
 {
   //
   // AliTRDclusterizer constructor
+
   //
 
   SetBit(kLabels, kTRUE);
@@ -1127,23 +1128,41 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   // space point positions defined in the local tracking system.
   // Here the calibration for T0, Vdrift and ExB is applied as well.
   if(!TestBit(kSkipTrafo)) if(!fTransform->Transform(&cluster)) return;
-  // Store raw signals in cluster. This MUST be called after position reconstruction !
+  // Store raw signals in cluster. This MUST be called after position
+  // reconstruction!
   // Xianguo Lu and Alex Bercuci 19.03.2012
+  
+  // Comment by Tom Dietel (07.02.2018): I do not find this very
+  // elegant, because a fully calibrated charge is replaced with an
+  // uncalibrated value, leaving it up to subsequent analysis classes
+  // to redo the calibration.  Xianguo's thesis is silent on this issue.
   if(TestBit(kRawSignal) && fDigitsRaw){
     Float_t tmp(0.), kMaxShortVal(32767.); // protect against data overflow due to wrong gain calibration
     Short_t rawSignal[7] = {0};
     for(Int_t ipad(Max.col-3), iRawId(0); ipad<=Max.col+3; ipad++, iRawId++){
       if(ipad<0 || ipad>=fColMax) continue;
       if(!fCalOnlGainROC){
-        rawSignal[iRawId] = fDigitsRaw->GetData(Max.row, ipad, Max.time);
+	// Florian Herrmann 01.2017 - truncated mean bug (double
+	// baseline subtraction). Solution: subtract baseline here and
+	// not in truncated mean class
+        rawSignal[iRawId] = fDigitsRaw->GetData(Max.row, ipad, Max.time)- fBaseline; // GetData returns Short_t, thus no additional 0.5f
         continue;
       }
-      // Deconvolute online gain calibration when available
-      // Alex Bercuci 27.04.2012
-      tmp = (fDigitsRaw->GetData(Max.row, ipad, Max.time) - fBaseline)/fCalOnlGainROC->GetGainCorrectionFactor(Max.row, ipad) + 0.5f;
+      // Mark zero entries (zero supression) by setting the pad signal
+      // explicitly. The used value 0 is ambiguous, because it could
+      // also be a baseline subtracted reading, but reduces the risk
+      // of using non-sense values (e.g. -999) in further calculations.
+      // Florian Herrmann 16.01.2017, Tom Dietel 07.02.2018
+      if (fDigitsRaw->GetData(Max.row, ipad, Max.time) == 0) {
+	tmp=0; 
+      } else {
+	// Deconvolute online gain calibration when available
+	// Alex Bercuci 27.04.2012
+	tmp = (fDigitsRaw->GetData(Max.row, ipad, Max.time) - fBaseline)/fCalOnlGainROC->GetGainCorrectionFactor(Max.row, ipad) + 0.5f;
+      }
       rawSignal[iRawId] = (Short_t)TMath::Min(tmp, kMaxShortVal);
     }
-    cluster.SetSignals(rawSignal, kTRUE);
+    cluster.SetSignals(rawSignal, kTRUE); // stores rawSignal in AliTRDcluster. kTRUE marks data as uncalibrated.
   }
   // Temporarily store the Max.Row, column and time bin of the center pad
   // Used to later on assign the track indices
