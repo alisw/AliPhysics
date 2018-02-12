@@ -64,9 +64,11 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fCentMin(0),
   fCentMax(10),
   fJetRadius(0.4),
+  fSharedFractionPtMin(0.5),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
+  fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
   fTreeRecursive_True(0)
 
@@ -91,9 +93,11 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fCentMin(0),
   fCentMax(10),
   fJetRadius(0.4),
+  fSharedFractionPtMin(0.5),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
+  fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
   fTreeRecursive_True(0)
 {
@@ -157,6 +161,8 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   fOutput->Add(fhJetPhi);
   fhJetEta= new TH1F("fhJetEta", "Jet Eta",100,-2,2);
   fOutput->Add(fhJetEta);
+  fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );   
+  fOutput->Add(fhDetJetPt_Matched);
   
   PostData(1,fOutput);
   PostData(2,fTreeRecursive_Det);
@@ -179,30 +185,99 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
-  AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                                
-  AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
-  Double_t JetPhi=0;
-  Double_t JetPt_ForThreshold=0;
-  if(JetCont) {
-    JetCont->ResetCurrentID();
-    while((Jet1=JetCont->GetNextAcceptJet())) {
-      if(!Jet1) continue;
-      if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-      else JetPt_ForThreshold = Jet1->Pt();
-      if(JetPt_ForThreshold<fPtThreshold) {
-	continue;
-      }
-      else {
-	fhJetPt->Fill(Jet1->Pt());    
-	JetPhi=Jet1->Phi();
-	if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
-	else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
-	fhJetPhi->Fill(JetPhi);
-	fhJetEta->Fill(Jet1->Eta());
-	RecursiveParents(Jet1,JetCont,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+
+  if(fJetType == kData){ 
+    AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                                
+    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
+    Double_t JetPhi=0;
+    Double_t JetPt_ForThreshold=0;
+    if(JetCont) {
+      JetCont->ResetCurrentID();
+      while((Jet1=JetCont->GetNextAcceptJet())) {
+	if(!Jet1) continue;
+	if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	else JetPt_ForThreshold = Jet1->Pt();
+	if(JetPt_ForThreshold<fPtThreshold) {
+	  continue;
+	}
+	else {
+	  fhJetPt->Fill(Jet1->Pt());    
+	  JetPhi=Jet1->Phi();
+	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+	  fhJetPhi->Fill(JetPhi);
+	  fhJetEta->Fill(Jet1->Eta());
+	  RecursiveParents(Jet1,JetCont,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+	}
       }
     }
   }
+
+  if(fJetType == kEmb){ 
+    AliEmcalJet *JetHybridS = NULL; //Subtracted hybrid Jet  
+    AliEmcalJet *JetHybridUS = NULL; //Unsubtracted Hybrid Jet     //For matching SubtractedHybrid->DetPythia this jet container is also Subtracted Hybrid                                                                                                                
+    AliEmcalJet *JetPythDet = NULL; //Detector Level Pythia Jet
+    AliEmcalJet *JetPythTrue = NULL; //Particle Level Pyhtia Jet
+    AliJetContainer *JetContHybridS= GetJetContainer(0); //Jet Container for Subtracted Hybrid Jets 
+    AliJetContainer *JetContHybridUS= GetJetContainer(1); //Jet Container for Unsubtracted Hybrid Jets                                                                                  
+    AliJetContainer *JetContPythDet= GetJetContainer(2); //Jet Container for Detector Level Pyhtia Jets 
+    AliJetContainer *JetContPythTrue= GetJetContainer(3); //Jet Container for Particle Level Pythia Jets
+
+  
+
+    Bool_t JetsMatched = kFALSE;
+    Double_t JetPtThreshold;
+    JetContHybridS->ResetCurrentID();
+    JetContHybridUS->ResetCurrentID();
+    JetContPythDet->ResetCurrentID();
+    JetContPythTrue->ResetCurrentID();
+
+    while((JetHybridS = JetContHybridS->GetNextAcceptJet())){ //Get next Subtracted hybrid jet
+      if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
+      else JetPtThreshold=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
+      if ( (!JetHybridS) || (JetPtThreshold<fPtThreshold)) continue; //check pT is above threshold
+      Int_t JetNumber=-1;
+      for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
+	JetHybridUS = JetContHybridUS->GetJet(i);            //Get unsubtracted jets in order
+	if (!JetHybridUS) continue; 
+	    
+	if(JetHybridUS->GetLabel()==JetHybridS->GetLabel()) { //check if it mataches with current subtracted hybrid jet
+	  JetNumber=i;
+	}
+      }
+      if(JetNumber==-1) continue;
+      JetHybridUS=JetContHybridUS->GetJet(JetNumber);        //Get the matched Unsubtracted jet 
+      if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin) {  //Check that the US closest jet shares a minimum
+	continue;                                                                                     // pT with Detector level pythia jet
+      }
+      JetPythDet=JetHybridUS->ClosestJet();                                                          //get the closest jet that has passed the shared pT cut
+      if (!JetHybridUS) {
+	Printf("Unsubtracted embedded jet does not exist, returning");
+	continue;
+      }
+      if (!JetPythDet) continue;
+      UInt_t rejectionReason = 0;
+      if (!(JetContPythDet->AcceptJet(JetPythDet,rejectionReason))) continue;     //Check the detector level just is accepted
+      fhDetJetPt_Matched->Fill(JetPythDet->Pt()); //Fill only matched detector level jets for tagging efficiency comparison
+      JetPythTrue=JetPythDet->ClosestJet();       //Get the corresponding pythia true jet
+      if(!JetPythTrue) continue;
+      JetsMatched=kTRUE; //jets have been matched
+    
+     
+      fhJetPt->Fill(JetHybridS->Pt());    
+      Double_t JetPhi=JetHybridS->Phi();
+      if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+      else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+      fhJetPhi->Fill(JetPhi);
+      fhJetEta->Fill(JetHybridS->Eta());
+      RecursiveParents(JetHybridS,JetContHybridS,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+      RecursiveParents(JetPythTrue,JetContPythTrue,1,kTRUE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+     
+      
+    
+     }
+  }
+
 
   return kTRUE;
 }
