@@ -69,7 +69,7 @@
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
-#include "AliCFManager.h"
+//#include "AliCFManager.h"
 #include "AliSelectNonHFE.h"
 #include "AliHFEpidTPC.h"
 #include "TMath.h"
