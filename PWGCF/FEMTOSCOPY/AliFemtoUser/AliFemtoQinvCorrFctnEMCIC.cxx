@@ -145,11 +145,13 @@ AliFemtoQinvCorrFctnEMCIC& AliFemtoQinvCorrFctnEMCIC::operator=(const AliFemtoQi
 }
 
 //____________________________
-void AliFemtoQinvCorrFctnEMCIC::AddRealPair(AliFemtoPair* pair){
+void AliFemtoQinvCorrFctnEMCIC::AddRealPair(AliFemtoPair* pair)
+{
   // add true pair
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
   AliFemtoQinvCorrFctn::AddRealPair(pair);
 
 
@@ -178,8 +180,9 @@ void AliFemtoQinvCorrFctnEMCIC::AddRealPair(AliFemtoPair* pair){
 //____________________________
 void AliFemtoQinvCorrFctnEMCIC::AddMixedPair(AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
   AliFemtoQinvCorrFctn::AddMixedPair(pair);
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
 

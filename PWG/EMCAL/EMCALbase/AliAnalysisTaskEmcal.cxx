@@ -294,6 +294,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
 
 AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 {
+  if(fOutput) delete fOutput;
+  if(fAliAnalysisUtils) delete fAliAnalysisUtils;
+  if(fPythiaInfo) delete fPythiaInfo;
 }
 
 void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)

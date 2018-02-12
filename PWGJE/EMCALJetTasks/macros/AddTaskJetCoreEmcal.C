@@ -13,8 +13,8 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskEmcalQGTagging","No analysis manager found.");
-      return 0;
+      ::Error("AddTaskJetCoreEmcal","No analysis manager found.");
+      return NULL;
     }
   Bool_t ismc=kFALSE;
   ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
@@ -23,7 +23,7 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
     {
-      ::Error("AddTaskEmcalQGTagging", "This task requires an input event handler");
+      ::Error("AddTaskJetCoreEmcal", "This task requires an input event handler");
       return NULL;
     }
 
@@ -49,6 +49,14 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
     task->AddParticleContainer(trackName);
   }
   task->AddClusterContainer(clusName);
+
+  // connect jet container 
+  TString sRhoChName = "Rho";
+  TString typeStr = TString(type);
+  AliJetContainer* jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
+  // for Pb-Pb
+  jetContBase->SetRhoName(sRhoChName);
+  jetContBase->SetPercAreaCut(0.0);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

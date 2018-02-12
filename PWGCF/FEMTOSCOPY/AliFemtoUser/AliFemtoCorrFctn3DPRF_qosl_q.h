@@ -37,6 +37,7 @@ public:
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctn3DPRF_qosl_q(*this); }
 
 private:
 

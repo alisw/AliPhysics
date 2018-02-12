@@ -84,7 +84,7 @@ public:
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
 
-  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD);
+  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();

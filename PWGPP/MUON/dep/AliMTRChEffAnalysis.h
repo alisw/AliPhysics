@@ -33,6 +33,7 @@ class AliMTRChEffAnalysis : public TObject {
 
   TArrayI GetHomogeneousRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, Bool_t perRPC = kTRUE, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
   TArrayI GetHomogeneousRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
+  Bool_t CheckRanges ( TArrayI runRanges ) const;
 
   void DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmasOutliers = -1., Double_t minEff = 0.8, Double_t maxEff = 1.01 ) const;
   void DrawStatContribution ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers = -1., Double_t minY = 0., Double_t maxY = 0.15 ) const;
@@ -49,6 +50,9 @@ class AliMTRChEffAnalysis : public TObject {
   void CompareMergedEfficiencies ( const char* opt ) const;
   Int_t ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "") const;
 
+  Bool_t PatchEfficiency ( const char* effToModify, const char* fromEff, const char* boardsToPatch, const char* outFilename ) const;
+  Bool_t AdditionalSystematics ( const char* additionalSystematics, const char* affectedBoards ) const;
+
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
   Bool_t SetDefaultEffConditions ();
   Bool_t SetEffConditions ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
@@ -61,6 +65,7 @@ class AliMTRChEffAnalysis : public TObject {
 
 
   Bool_t WriteMergedToOCDB ( const char* outputCDB = "CDB", Bool_t writeSystematics = kFALSE ) const;
+  Bool_t WriteToOCDB ( const char* inFilename, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB = "local://$ALIROOT_OCDB_ROOT/OCDB" ) const;
   Bool_t DrawSystematicEnvelope ( Bool_t perRPC = kFALSE ) const;
   Bool_t BuildSystematicMap ();
   Bool_t RecoverEfficiency ( const char* runList, const char* ocdb, const char* systOcdb, Int_t referenceRun = -1 );
@@ -100,9 +105,13 @@ class AliMTRChEffAnalysis : public TObject {
 
   TArrayI MergeRangesForStat ( TArrayI runRanges, Double_t averageStatError, Bool_t excludePeriphericBoards = kTRUE ) const;
 
+  Bool_t PatchEffLists ( TList* listToModify, TList* fromList, const char* boardsToPatch ) const;
+
   TList* ReadEffHistoList ( const char* src ) const;
 
   Bool_t SetCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod, Bool_t isBasic );
+
+  Bool_t WriteToOCDB ( TList* effHistos, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB = "local://$ALIROOT_OCDB_ROOT/OCDB" ) const;
 
   /// Dummy
   AliMTRChEffAnalysis(const AliMTRChEffAnalysis&);

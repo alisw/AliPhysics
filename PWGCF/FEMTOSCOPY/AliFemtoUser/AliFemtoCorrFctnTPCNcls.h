@@ -30,6 +30,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnTPCNcls(*this); }
+
 private:
 
   TH2D *fNclsTPCMinNumerator;        // Numerator as a function of lower TPC Ncls of the pair

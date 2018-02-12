@@ -68,9 +68,9 @@ void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistBefore);
-    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistAfter);
   }
 }

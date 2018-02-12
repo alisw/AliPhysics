@@ -227,7 +227,7 @@ void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
   fQinvHisto->Fill(qOut, qSide, qLong, pair->QInv() );
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelBPLCMSCorrFctn *tCopy = new AliFemtoModelBPLCMSCorrFctn(*this);

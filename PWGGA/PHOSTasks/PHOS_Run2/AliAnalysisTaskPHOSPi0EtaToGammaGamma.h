@@ -107,7 +107,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayPi0 = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalPi0PtWeight[i];
         fAdditionalPi0PtWeight[i] = 0x0;
       }
@@ -121,7 +121,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayK0S = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalK0SPtWeight[i];
         fAdditionalK0SPtWeight[i] = 0x0;
       }
@@ -135,7 +135,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayL0 = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalL0PtWeight[i];
         fAdditionalL0PtWeight[i] = 0x0;
       }
@@ -149,7 +149,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayEta = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalEtaPtWeight[i];
         fAdditionalEtaPtWeight[i] = 0x0;
       }
@@ -163,7 +163,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayGamma = centarray;
 
-      for(Int_t i=0;i<10;i++){
+      for(Int_t i=0;i<11;i++){
         delete fAdditionalGammaPtWeight[i];
         fAdditionalGammaPtWeight[i] = 0x0;
       }
@@ -268,6 +268,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
     void FillEpRatio();
+    void DDAPhotonPurity();//this can not be measured in neither single nor embedding M.C.
+
     const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector, const char *expcorr, const char *altcorr);
 
     virtual void SetMCWeight();//set weight related to M.C. (pT slope of mother pi0/eta/K0S/gamma)
@@ -377,11 +379,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fTriggerEfficiency;//TOF cut efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
-    TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalEtaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalGammaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
-    TF1 *fAdditionalL0PtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
+    TF1 *fAdditionalPi0PtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalEtaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalGammaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalK0SPtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
+    TF1 *fAdditionalL0PtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
     TArrayD *fCentArrayPi0;
     TArrayD *fCentArrayEta;
     TArrayD *fCentArrayGamma;
@@ -441,7 +443,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 47);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 50);
 };
 
 #endif

@@ -6,6 +6,7 @@
 #define ALIFEMTO_BARYONIA_ANALYSIS_H
 
 #include "AliFemtoTrioMinvFctn.h"
+#include "AliFemtoTrio.h"
 
 #include "AliFemtoSimpleAnalysis.h"        // base analysis class
 #include "AliFemtoEventCut.h"
@@ -48,9 +49,16 @@ public:
   void SetSecondParticleCut(AliFemtoParticleCut* cut){fSecondParticleCut = cut;cut->SetAnalysis(this);}
   void SetThirdParticleCut(AliFemtoParticleCut* cut){fThirdParticleCut = cut;cut->SetAnalysis(this);}
   
+  inline void SetCollection1type(AliFemtoTrio::EPart type){fCollection1type=type;}
+  inline void SetCollection2type(AliFemtoTrio::EPart type){fCollection2type=type;}
+  inline void SetCollection3type(AliFemtoTrio::EPart type){fCollection3type=type;}
+  
+  inline void SetDoEventMixing(bool mix){fDoEventMixing = mix;}
+  
   void AddParticles(AliFemtoParticleCollection *collection1,
                     AliFemtoParticleCollection *collection2,
-                    AliFemtoParticleCollection *collection3, bool mixing);
+                    AliFemtoParticleCollection *collection3,
+                    bool mixing);
   
   inline void SetV0SharedDaughterCut(bool perform){fPerformSharedDaughterCut = perform;}
   inline bool V0SharedDaughterCut(){return fPerformSharedDaughterCut;}
@@ -84,6 +92,11 @@ protected:
   Bool_t fPerformSharedDaughterCut;
   
 private:
+  bool fDoEventMixing;
+  
+  AliFemtoTrio::EPart fCollection1type;
+  AliFemtoTrio::EPart fCollection2type;
+  AliFemtoTrio::EPart fCollection3type;
   
 #ifdef __ROOT__
   /// \cond CLASSIMP

@@ -22,10 +22,8 @@ public:
   virtual void AddLikeSignPositivePair(const AliFemtoPair* aPair) = 0;
   virtual void AddLikeSignNegativePair(const AliFemtoPair* aPair) = 0;
 
-  virtual AliFemtoLikeSignCorrFctn* Clone() { return 0;}
   virtual TList* GetOutputList() = 0;
 
-  // the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
 };
 //________________________________________
 inline AliFemtoLikeSignCorrFctn::AliFemtoLikeSignCorrFctn(const AliFemtoLikeSignCorrFctn& /* c */):AliFemtoCorrFctn() { fyAnalysis =0; }

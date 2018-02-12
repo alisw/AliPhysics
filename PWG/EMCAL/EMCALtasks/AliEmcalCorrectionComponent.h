@@ -14,13 +14,13 @@ class AliVTrack;
 class AliVCluster;
 class AliVEvent;
 #include <AliLog.h>
+#include <AliEMCALGeometry.h>
 #include "AliYAMLConfiguration.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
-#include "AliEMCALGeometry.h"
 #include "AliEmcalCorrectionEventManager.h"
 
 /**

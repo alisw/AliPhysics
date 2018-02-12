@@ -93,6 +93,7 @@ class AliFemtoCorrFctnDPhiStarDEtaStar : public AliFemtoCorrFctn {
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarDEtaStar(*this); }
 
   void SetRadius(double minrad);
   void SetPairType(AliFemtoPairType pairtype);

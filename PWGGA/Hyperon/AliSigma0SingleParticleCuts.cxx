@@ -9,8 +9,8 @@
 
 ClassImp(AliSigma0SingleParticleCuts)
 
-//____________________________________________________________________________________________________
-AliSigma0SingleParticleCuts::AliSigma0SingleParticleCuts()
+    //____________________________________________________________________________________________________
+    AliSigma0SingleParticleCuts::AliSigma0SingleParticleCuts()
     : TObject(),
       fHistograms(nullptr),
       fHistogramsSingleParticle(nullptr),
@@ -590,7 +590,9 @@ void AliSigma0SingleParticleCuts::StoreGlobalTrackReference() {
 bool AliSigma0SingleParticleCuts::SingleParticlePID(
     const AliVTrack *track) const {
   const AliVTrack *globaltrack =
-      (fFilterbit == 128) ? fGlobalTrackReference[-track->GetID() - 1] : track;
+      (fFilterbit == 128 && fInputEvent->IsA() == AliAODEvent::Class())
+          ? fGlobalTrackReference[-track->GetID() - 1]
+          : track;
 
   AliPIDResponse::EDetPidStatus statusPosTOF =
       fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, globaltrack);
@@ -976,7 +978,9 @@ bool AliSigma0SingleParticleCuts::SingleParticleDCASelection(
 
     Double_t *DCAVals = new Double_t[2];
     Double_t covar[3] = {
-        0., 0., 0.,
+        0.,
+        0.,
+        0.,
     };
     if (!globalTrackParams.PropagateToDCA(fInputEvent->GetPrimaryVertex(),
                                           fInputEvent->GetMagneticField(), 10.,

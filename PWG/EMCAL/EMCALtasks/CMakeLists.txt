@@ -37,6 +37,7 @@ set(SRCS
   AliAnalysisTaskEMCALClusterizeFast.cxx
   AliAnalysisTaskEmcalSample.cxx
   AliAnalysisTaskEmcalTriggerPatchClusterMatch.cxx
+  AliAodSkimTask.cxx
   AliEMCALClusterParams.cxx
   AliEmcalAodTrackFilterTask.cxx
   AliEmcalClusTrackMatcherTask.cxx

@@ -22,7 +22,7 @@ const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
 const Int_t    nBinsPhi = 60; //flexible to rebin
 
-const Double_t PtBins[] = {0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
+const Double_t PtBins[] = {0.0, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
 						   0.75, 0.80, 0.85, 0.90, 1.00, 1.10, 1.15, 1.25, 1.35, 1.55, 1.80,
 						   2.05, 2.30, 2.60, 2.90, 3.30, 3.60, 4.00, 5.00, 6.50, 8.00, 10.0};
 //Ivan binning
@@ -96,11 +96,12 @@ const Double_t PteeBins[] = { 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
 const Int_t nBinsPtee = ( sizeof(PteeBins) / sizeof(PteeBins[0]) )-1;
 
 // in increasing order
-const TString sRuns("265309, 265332, 265334, 265335, 265336, 265338, 
-					265339, 265342, 265343, 265344, 265377, 265378, 
-					265381, 265383, 265384, 265385, 265387, 265388, 
-					265419, 265420, 265421, 265422, 265424, 265427, 
-					265435, 265499, 265500, 265501, 265521, 265525");
+const TString sRuns("265309, 265334, 265335, 265338, 265339, 
+                     265342, 265343, 265344, 265377, 265378, 
+                     265381, 265383, 265384, 265385, 265387, 
+                     265388, 265419, 265420, 265421, 265422, 
+                     265424, 265427, 265435, 265499, 265500, 
+                     265501, 265521, 265525");
 
 //
 // ^^^^^^^^^^ [/end binning histograms] ^^^^^^^^^^
@@ -116,8 +117,9 @@ const Int_t     supportedCutInstance = 0;
 // event cuts
 const Bool_t    reqVertex = kTRUE;
 const Double_t  vertexZcut = 10.;
-const Double_t  CentMin =  -2.;
-const Double_t  CentMax = 102.;
+//Set centrality in AddTask arguments
+/* const Double_t  CentMin =  -2.; */
+/* const Double_t  CentMax = 102.; */
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
@@ -166,7 +168,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t hasITS = 
 	// produce analysis filter by using functions in this config:
 	// -----
 	anaFilter->AddCuts( SetupTrackCuts(cutInstance, hasITS) );
-	//anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
+	anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
 	std::cout << "...cuts added!" <<std::endl; 
 	  
 	//std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance << std::endl;
@@ -198,12 +200,12 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
   //AliAnalysisCuts* trackCuts=0x0;
     
     AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
-    
+
     //Cuts implemented in TreeMaker
 		//FilterBit 4 used to filter AODs
 		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
     fesdTrackCuts->SetMinNCrossedRowsTPC(70);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    //fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
     fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
@@ -228,7 +230,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 
     //TPC
     fesdTrackCuts->SetMinNClustersTPC(70);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(60);
+    //fesdTrackCuts->SetMinNCrossedRowsTPC(60); FilterBit4 stronger cut
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.3);
     //fesdTrackCuts->SetMaxChi2PerClusterTPC(4.5);
     fesdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
@@ -237,22 +239,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 		if(hasITS){
 			fesdTrackCuts->SetMinNClustersITS(4);
 		}else{
-			fesdTrackCuts->SetMinNClustersITS(4);
+			fesdTrackCuts->SetMinNClustersITS(2);
 		}
-			
-    
-
-    //Cuts implemented during analysis step 
-	//pT and eta
-	fesdTrackCuts->SetPtRange(0.2, 1e30);
-	fesdTrackCuts->SetEtaRange(-0.8, 0.8);
-
-	//Track cuts
-	fesdTrackCuts->SetMinNClustersTPC(80);
-	fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-	fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-	fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-	fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
 
   	return fesdTrackCuts;
 }

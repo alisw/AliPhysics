@@ -121,7 +121,9 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
 	jetTask->DoPtRelAnalysis(DoPtRelAna);
 			
-	AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
+	AliTrackContainer *trackCont  = jetTask->AddTrackContainer(ntracks);
+	trackCont->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
+	trackCont->SetAODFilterBits((1<<4)|(1<<9));
 
 	AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
@@ -136,7 +138,13 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
 		jetCont->ConnectClusterContainer(clusterCont);
 
-		//jetCont->SetPercAreaCut(0.6);
+		jetCont->SetJetEtaLimits(-0.5,0.5);
+
+		jetCont->SetJetPtCut(0.0);
+
+		jetCont->SetMaxTrackPt(1000);
+
+		jetCont->SetPercAreaCut(0.6);
 	}
 
 	if(isMC)
@@ -149,7 +157,13 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
 			jetContMC->SetIsParticleLevel(kTRUE);
 
+			jetContMC->SetJetEtaLimits(-0.5,0.5);
+
+			jetContMC->SetJetPtCut(0.0);
+
 			jetContMC->SetMaxTrackPt(1000);
+
+			jetContMC->SetPercAreaCut(0.6);
 		}
 	}
 	//-------------------------------------------------------
@@ -159,16 +173,6 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	jetTask->SetIsPythia(isMC);
 
         if(V0PhotonRejection) jetTask->SetV0ReaderName(V0ReaderName);
-
-
-	// define cuts for task
-	AliRDHFJetsCuts *cuts=jetTask->GetJetCutsHF();
-	cuts->SetJetRadius(jetradius);
-	cuts->SetMaxEtaJet(0.5);
-	cuts->SetMinPtJet(0.0);
-	cuts->SetUsePhysicsSelection(kFALSE);
-	cuts->SetTriggerClass("");
-	cuts->SetTriggerMask(AliVEvent::kINT7);
 
 	//-------------------------------------------------------
 	// Final settings, pass to manager and set the containers

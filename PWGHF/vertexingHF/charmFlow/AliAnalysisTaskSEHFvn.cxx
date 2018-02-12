@@ -143,6 +143,8 @@ AliAnalysisTaskSE(),
   fRemoverSoftPionFromq2(kFALSE),
   fPercentileq2(kFALSE),
   fq2SplinesList(0x0),
+  fEnableCentralityCorrCuts(kFALSE),
+  fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -210,6 +212,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fRemoverSoftPionFromq2(kFALSE),
   fPercentileq2(kFALSE),
   fq2SplinesList(0x0),
+  fEnableCentralityCorrCuts(kFALSE),
+  fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -368,7 +372,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   if(fDebug > 1) printf("AnalysisTaskSEHFvn::UserCreateOutputObjects() \n");
 
-  fhEventsInfo = new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",15,-0.5,14.5);
+  fhEventsInfo = new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",16,-0.5,15.5);
   fhEventsInfo->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fhEventsInfo->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fhEventsInfo->GetXaxis()->SetBinLabel(3,"nEvents Mismatched dAOD");
@@ -380,13 +384,14 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
   fhEventsInfo->GetXaxis()->SetBinLabel(9,"n. rejected for vertex out of accept");
   fhEventsInfo->GetXaxis()->SetBinLabel(10,"n. rejected for pileup events");
   fhEventsInfo->GetXaxis()->SetBinLabel(11,Form("no. of out %.0f-%.0f%s centrality events",fRDCuts->GetMinCentrality(),fRDCuts->GetMaxCentrality(),"%"));
-  fhEventsInfo->GetXaxis()->SetBinLabel(12,"non valid TPC EP");
-  fhEventsInfo->GetXaxis()->SetBinLabel(13,"bad event plane");
-  fhEventsInfo->GetXaxis()->SetBinLabel(14,"no. of sel. candidates");
-  fhEventsInfo->GetXaxis()->SetBinLabel(15,"no. cand. out of pt bounds");
+  fhEventsInfo->GetXaxis()->SetBinLabel(12,"n. rejected for bad cent corr");
+  fhEventsInfo->GetXaxis()->SetBinLabel(13,"non valid TPC EP");
+  fhEventsInfo->GetXaxis()->SetBinLabel(14,"bad event plane");
+  fhEventsInfo->GetXaxis()->SetBinLabel(15,"no. of sel. candidates");
+  fhEventsInfo->GetXaxis()->SetBinLabel(16,"no. cand. out of pt bounds");
 
   fhEventsInfo->GetXaxis()->SetNdivisions(1,kFALSE);
-
+  
   // Several histograms are more conveniently managed in a TList
   fOutput = new TList();
   fOutput->SetOwner();
@@ -400,9 +405,15 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
   }
 
-  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  if(fEnableCentralityCorrCuts) {
+    fEventCuts.AddQAplotsToList(fOutput,true);
+  }
+  
+  const Int_t ncentbins = (fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
+  
+  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",ncentbins,fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandVsCent);
-  fHistCandMassRangeVsCent=new TH2F("hCandMassRangeVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  fHistCandMassRangeVsCent=new TH2F("hCandMassRangeVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",ncentbins,fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandMassRangeVsCent);
 
   for(int iDet = 0; iDet < 3; iDet++) {
@@ -446,8 +457,8 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     TH3F* hEvPlaneQncorrVZEROVsq2VsCent[3];
     if(fEPVsq2VsCent) {
       for(Int_t iDet=0; iDet<3; iDet++) {
-        hEvPlaneQncorrTPCVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetTPCConfName[iDet].Data(),fNormMethod.Data(),q2axisnamefill.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,nq2bins,q2min,q2max,100,0.,TMath::Pi());
-        hEvPlaneQncorrVZEROVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetV0ConfName[iDet].Data(),fNormMethod.Data(),q2axisnamefill.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,nq2bins,q2min,q2max,100,0.,TMath::Pi());
+        hEvPlaneQncorrTPCVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetTPCConfName[iDet].Data(),fNormMethod.Data(),q2axisnamefill.Data()),ncentbins,fMinCentr,fMaxCentr,nq2bins,q2min,q2max,100,0.,TMath::Pi());
+        hEvPlaneQncorrVZEROVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetV0ConfName[iDet].Data(),fNormMethod.Data(),q2axisnamefill.Data()),ncentbins,fMinCentr,fMaxCentr,nq2bins,q2min,q2max,100,0.,TMath::Pi());
         fOutput->Add(hEvPlaneQncorrTPCVsq2VsCent[iDet]);
         fOutput->Add(hEvPlaneQncorrVZEROVsq2VsCent[iDet]);
       }
@@ -455,19 +466,19 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
     // histos for q2 vs. centrality with fine binning (for q2 percentiles calibration)
     for(Int_t iDet=0; iDet<3; iDet++) {
-      TH2F* hq2vsCentrTPC=new TH2F(Form("hq2vsCentr%s",fDetTPCConfName[iDet].Data()),Form("q_{2}^{%s} vs. centrality;centrality(%%);q_{2}^{%s}",fDetTPCConfName[iDet].Data(),fDetTPCConfName[iDet].Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,10000,0.,15.);
+      TH2F* hq2vsCentrTPC=new TH2F(Form("hq2vsCentr%s",fDetTPCConfName[iDet].Data()),Form("q_{2}^{%s} vs. centrality;centrality(%%);q_{2}^{%s}",fDetTPCConfName[iDet].Data(),fDetTPCConfName[iDet].Data()),ncentbins,fMinCentr,fMaxCentr,10000,0.,15.);
       fOutput->Add(hq2vsCentrTPC);
-      TH2F* hq2vsCentrV0=new TH2F(Form("hq2vsCentr%s",fDetV0ConfName[iDet].Data()),Form("q_{2}^{%s} vs. centrality;centrality(%%);q_{2}^{%s}",fDetV0ConfName[iDet].Data(),fDetV0ConfName[iDet].Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,10000,0.,15.);
+      TH2F* hq2vsCentrV0=new TH2F(Form("hq2vsCentr%s",fDetV0ConfName[iDet].Data()),Form("q_{2}^{%s} vs. centrality;centrality(%%);q_{2}^{%s}",fDetV0ConfName[iDet].Data(),fDetV0ConfName[iDet].Data()),ncentbins,fMinCentr,fMaxCentr,10000,0.,15.);
       fOutput->Add(hq2vsCentrV0);
     }
     
-    TH3F* hPercq2vsq2vsCentr = new TH3F("hPercq2vsq2vsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",q2percaxisname.Data(),q2axisname.Data(),q2axisname.Data(),q2percaxisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,600,0.,12.,100,0.,100.);
+    TH3F* hPercq2vsq2vsCentr = new TH3F("hPercq2vsq2vsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",q2percaxisname.Data(),q2axisname.Data(),q2axisname.Data(),q2percaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,600,0.,12.,100,0.,100.);
     fOutput->Add(hPercq2vsq2vsCentr);
     
     //multiplicity used for q2 vs. centrality (TPC)
-    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
-    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
-    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
+    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",ncentbins,fMinCentr,fMaxCentr,100,-0.5,4999.5);
+    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",ncentbins,fMinCentr,fMaxCentr,100,-0.5,4999.5);
+    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",ncentbins,fMinCentr,fMaxCentr,100,-0.5,4999.5);
     fOutput->Add(hMultVsCentFullTPC);
     fOutput->Add(hMultVsCentPosTPC);
     fOutput->Add(hMultVsCentNegTPC);
@@ -482,9 +493,9 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
     //Ntracklets vs. q2 vs. centrality histos
     if(fEnableNtrklHistos) {
-      TH3F* hNtrklVsq2VsCent = new TH3F("hNtrklVsq2VsCent",Form("N_{tracklets} vs. %s vs. centrality;centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
-      TH3F* hNtrklVsq2VsCentCand = new TH3F("hNtrklVsq2VsCentCand",Form("N_{tracklets} vs. %s vs. centrality (cand);centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
-      TH3F* hNtrklVsq2VsCentCandInMass = new TH3F("hNtrklVsq2VsCentCandInMass",Form("N_{tracklets} vs. %s vs. centrality (cand in mass);centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
+      TH3F* hNtrklVsq2VsCent = new TH3F("hNtrklVsq2VsCent",Form("N_{tracklets} vs. %s vs. centrality;centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),ncentbins,fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
+      TH3F* hNtrklVsq2VsCentCand = new TH3F("hNtrklVsq2VsCentCand",Form("N_{tracklets} vs. %s vs. centrality (cand);centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),ncentbins,fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
+      TH3F* hNtrklVsq2VsCentCandInMass = new TH3F("hNtrklVsq2VsCentCandInMass",Form("N_{tracklets} vs. %s vs. centrality (cand in mass);centrality(%%);%s;N_{tracklets}",q2axisnamefill.Data(),q2axisnamefill.Data()),ncentbins,fMinCentr,fMaxCentr,nq2bins,q2min,q2max,500,-0.5,4999.5);
       fOutput->Add(hNtrklVsq2VsCent);
       fOutput->Add(hNtrklVsq2VsCentCand);
       fOutput->Add(hNtrklVsq2VsCentCandInMass);
@@ -615,7 +626,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   if(fFlowMethod==kEvShape) {
     //q2 candidate vs. q2 global event
-    TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),500,0.,10.,500,0,10.);
+    TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     fOutput->Add(hq2CandVsq2Event);
 
     CreateSparseForEvShapeAnalysis();
@@ -745,8 +756,9 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   Int_t nCand = arrayProng->GetEntriesFast();
   if(fDebug>2) printf("Number of D2H: %d\n",nCand);
 
+  Double_t evCentr = fRDCuts->GetCentrality(aod);
   Bool_t isEvSel=fRDCuts->IsEventSelected(aod);
-  Float_t evCentr=fRDCuts->GetCentrality(aod);
+  
   fHistCentrality[0]->Fill(evCentr);
   if(!isEvSel){
     if(fRDCuts->IsEventRejectedDueToTrigger())fhEventsInfo->Fill(5);
@@ -758,6 +770,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       fhEventsInfo->Fill(10);
       fHistCentrality[2]->Fill(evCentr);
     }
+    return;
+  }
+
+  fEventCuts.AcceptEvent(aod);
+  if(!fEventCuts.PassedCut(AliEventCuts::kCorrelations)) {
+    fhEventsInfo->Fill(11);
     return;
   }
 
@@ -895,7 +913,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
     Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
-    fhEventsInfo->Fill(11);
+    fhEventsInfo->Fill(12);
     return;
   }
 
@@ -909,7 +927,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       eventplane=GetEventPlane(aod,pl,eventplaneqncorrTPC,eventplaneqncorrVZERO,planereso,deltaSubAC,deltaSubBC,nSubEvents);
       if(eventplane<-999){
         Printf("Bad event plane calculation\n");
-        fhEventsInfo->Fill(12);
+        fhEventsInfo->Fill(13);
         return;
       }
     }
@@ -1066,7 +1084,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
-      fhEventsInfo->Fill(14);
+      fhEventsInfo->Fill(15);
       continue;
     }
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
@@ -1080,7 +1098,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
     isSelectedCand.push_back(isSelected);
 
-    fhEventsInfo->Fill(13); // candidate selected
+    fhEventsInfo->Fill(14); // candidate selected
     if(fDebug>3) printf("+++++++Is Selected\n");
 
     Float_t* invMass=0x0;
@@ -1357,7 +1375,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     Double_t q2fill = q2;
     Double_t q2percentile = -1.;
-    const Int_t ncentbins = (fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10);
+    const Int_t ncentbins = (fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
     TSpline3* q2spline=0x0;
     
     if(fPercentileq2) {
@@ -1369,10 +1387,29 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       if(!q2spline) {AliFatal("Centrality binning and centrality intervals of q2 splines do not match!");}
       q2percentile=q2spline->Eval(q2);
-      for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
-        q2CandFill.push_back(q2spline->Eval(q2Cand[iCand]));
-      }
       q2fill=q2percentile;
+      if(fRemoveDauFromq2==1 || fDeltaEtaDmesonq2>0) {
+        for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
+          q2CandFill.push_back(q2spline->Eval(q2Cand[iCand]));
+        }
+      }
+      else {
+        for(UInt_t iCand=0; iCand<nSelCand; iCand++) {
+          q2CandFill.push_back(q2fill);
+        }
+      }
+    }
+    else {
+      if(fRemoveDauFromq2==1 || fDeltaEtaDmesonq2>0) {
+        for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
+          q2CandFill.push_back(q2Cand[iCand]);
+        }
+      }
+      else {
+        for(UInt_t iCand=0; iCand<nSelCand; iCand++) {
+          q2CandFill.push_back(q2fill);
+        }
+      }
     }
     
     //fill percentile q2 vs. q2 vs. centrality histogram
@@ -1390,8 +1427,8 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     //If enabled, fill EP angle vs. q2 vs. centrality histograms
     if(fEPVsq2VsCent) {
       for(Int_t iDet=0; iDet<3; iDet++) {
-        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2,eventplaneqncorrTPC[iDet]);
-        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2,eventplaneqncorrVZERO[iDet]);
+        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2fill,eventplaneqncorrTPC[iDet]);
+        ((TH3F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data())))->Fill(centr,q2fill,eventplaneqncorrVZERO[iDet]);
       }
     }
 
@@ -1407,6 +1444,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     if(fEnableNtrklHistos) {
       Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+
       ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2fill,tracklets);
       if(nSelCand>0) {
         ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCand"))->Fill(centr,q2fill,tracklets);
@@ -1437,7 +1475,6 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     //fill q2Cand vs. q2Event histo and THnSparseF for event-shape engineering
     for(UInt_t iSelCand=0; iSelCand<nSelCand; iSelCand++) {
-      if(fRemoveDauFromq2==2) {q2CandFill.push_back(q2fill);}
       ((TH2F*)fOutput->FindObject("hq2CandVsq2Event"))->Fill(q2fill,q2CandFill[iSelCand]);
 
       if((fDecChannel==0 || fDecChannel==2) && isSelectedCand[iSelCand]) {
@@ -1520,7 +1557,7 @@ void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
     maxq2=100.;
   }
   
-  Int_t ncentbins=(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10);
+  Int_t ncentbins=(fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
 
   Int_t nphibins=18;
   Double_t phimin=0.;
@@ -2106,7 +2143,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlane(AliAODEvent* aod, AliEventplane *pl
     TVector2* qsub1 = pl->GetQsub1();
     TVector2* qsub2 = pl->GetQsub2();
     if(!qsub1 || !qsub2){
-      fhEventsInfo->Fill(11);
+      fhEventsInfo->Fill(12);
       return-9999.;
     }
     rpangleTPCpos = qsub1->Phi()/2.;
@@ -2118,7 +2155,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlane(AliAODEvent* aod, AliEventplane *pl
     ((TH2F*)fOutput->FindObject(Form("hEvPlaneRecomp%s",fCentrBinName.Data())))->Fill(rpangleTPCold,rpangleTPC);
   }
   if(rpangleTPC<0){
-    fhEventsInfo->Fill(11);
+    fhEventsInfo->Fill(12);
     return -9999.;
   }
 

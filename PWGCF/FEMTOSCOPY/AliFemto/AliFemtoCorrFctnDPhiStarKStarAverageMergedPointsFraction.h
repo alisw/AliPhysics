@@ -45,6 +45,8 @@ public:
   void SetDEtaMax(double deta);
   void SetMagneticFieldSign(int magsign);
 
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(*this); }
+
 private:
 
   TH2D *fDPhiStarKStarMergedNumerator;              // Numerator of dPhi* k* function for "merged" fraction of points

@@ -42,7 +42,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fphiT(0),
   fEtaBins(0),
   fPhiBins(0),
-  ftitle(0),
+  ftitle(title),
   fReadHiddenInfo(false)
 {
 
@@ -51,9 +51,6 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
 
   fEtaBins = aEtaBins;
   fPhiBins = aPhiBins;
-
-  ftitle = new char[100];
-  strcpy(ftitle,title);
 
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
@@ -98,15 +95,11 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fphiT(0),
   fEtaBins(0),
   fPhiBins(0),
-  ftitle(0),
+  ftitle(aCorrFctn.ftitle),
   fReadHiddenInfo(false)
 {
   fEtaBins = aCorrFctn.fEtaBins;
   fPhiBins = aCorrFctn.fPhiBins;
-
-  ftitle = new char[100];
-  strncat(ftitle,aCorrFctn.ftitle,100);
-
 
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -201,7 +194,6 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::~AliFemtoCorrFctnDEtaDPhiSimpleWi
 
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  delete ftitle;
   if(fReadHiddenInfo)
     {
       delete fDPhiDEtaHiddenNumerator;
@@ -232,8 +224,7 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWit
   fEtaBins = aCorrFctn.fEtaBins;
   fPhiBins = aCorrFctn.fPhiBins;
 
-  ftitle = new char[100];
-  strncat(ftitle,aCorrFctn.ftitle,100);
+  ftitle = aCorrFctn.ftitle;
 
   if (aCorrFctn.fDPhiDEtaNumerator)
     fDPhiDEtaNumerator = new TH2D(*aCorrFctn.fDPhiDEtaNumerator);
@@ -394,8 +385,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();
@@ -508,8 +500,9 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();

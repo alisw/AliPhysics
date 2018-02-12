@@ -89,7 +89,6 @@ private:
   TH2F                 *fMCDalitzPlot;              //!<!
 
   TTree                *fTree;                      //!<!
-  TTree                *fMCTree;                    //!<!
 
   Short_t               fZvtx;                      //<
 

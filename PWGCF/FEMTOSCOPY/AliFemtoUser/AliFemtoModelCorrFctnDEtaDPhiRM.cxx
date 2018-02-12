@@ -396,10 +396,11 @@ AliFemtoString AliFemtoModelCorrFctnDEtaDPhiRM::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair){
-
-   if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair)
+{
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // add real (effect) pair
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -470,9 +471,12 @@ void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair){
   // cout<<"Corr: "<<minv<<" masses "<<fM1<<" "<<fM2<<endl;
 }
 //____________________________
-void AliFemtoModelCorrFctnDEtaDPhiRM::AddMixedPair( AliFemtoPair* pair){
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+void AliFemtoModelCorrFctnDEtaDPhiRM::AddMixedPair( AliFemtoPair* pair)
+{
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
+
   // add mixed (background) pair
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();

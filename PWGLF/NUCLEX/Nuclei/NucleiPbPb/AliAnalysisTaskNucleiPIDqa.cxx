@@ -58,6 +58,7 @@ AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliA
 /// Standard destructor
 ///
 AliAnalysisTaskNucleiPIDqa::~AliAnalysisTaskNucleiPIDqa(){
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
 }
 
@@ -139,7 +140,7 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
     const int hasTOF = beta > 1.e-24 ? 1 : 0;
     const int iC = (track->Charge() > 0) ? 1 : 0;
 
-    unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
     const int hasITS = int(nITS - nSPD >= fITSsignalN);
 

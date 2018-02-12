@@ -70,6 +70,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
+  fEnableCentralityTriggers(false),
   fEnableT0Triggers(false),
   fRequireL0forL1(false),
   fExclusiveMinBias(false)
@@ -102,6 +103,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
+  fEnableCentralityTriggers(false),
   fEnableT0Triggers(false),
   fRequireL0forL1(false),
   fExclusiveMinBias(false)
@@ -115,6 +117,8 @@ AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
   if(fDownscaleOADB) delete fDownscaleOADB;
+  if(fMaskedFastorOADB) delete fMaskedFastorOADB;
+  if(fDownscaleFactors) delete fDownscaleFactors;
 }
 
 void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
@@ -141,6 +145,7 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   CreateUserHistos();
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
+  fHistos->GetListOfHistograms()->SetOwner(false);
 
   PostData(1, fOutput);
 }
@@ -207,6 +212,8 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
          isMinBiasT0 = selectionstatus & AliVEvent::kINT8,
+         isCENT = selectionstatus & AliVEvent::kCentral,
+         isSemiCENT = selectionstatus & AliVEvent::kSemiCentral,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
       emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn];
 
@@ -215,6 +222,10 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // min. bias trigger is requested:w
     if(isMinBias) fSelectedTriggers.push_back("MB");
     if(isMinBiasT0 && fEnableT0Triggers) fSelectedTriggers.push_back("MBT0");
+    if(fEnableCentralityTriggers){
+      if(isCENT) fSelectedTriggers.push_back("CENT");
+      if(isSemiCENT) fSelectedTriggers.push_back("SEMICENT");
+    }
     return;
   }
 
@@ -300,6 +311,10 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       emcalTriggers[itrg] &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg), fInputEvent);
   }
   if(isMinBias) fSelectedTriggers.push_back("MB");
+  if(fEnableCentralityTriggers){
+    if(isCENT) fSelectedTriggers.push_back("CENT");
+    if(isSemiCENT) fSelectedTriggers.push_back("SEMICENT");
+  }
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
     fSelectedTriggers.push_back("EMC7");
     if(!isMinBias) fSelectedTriggers.push_back("EMC7excl");
@@ -491,9 +506,10 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   // Exclusive means classes without lower trigger classes (which are downscaled) -
   // in order to make samples statistically independent: MBExcl means MinBias && !EMCAL trigger
   std::vector<TString> triggers = {"MB"}; // Min. Bias always enabled
-  const std::array<TString, 10> emcaltriggers = {"EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"},
-                                dcaltriggers = {"DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"};
-  const std::array<TString, 7> t0triggers = {"MBT0", "EMC8", "EMC8EGA", "EMC8EJE", "EMC8excl", "EMC8EGAexcl", "EMC8EJEexcl"};
+  const std::array<TString, 10> emcaltriggers = {{"EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"}},
+                                dcaltriggers = {{"DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"}};
+  const std::array<TString, 7> t0triggers = {{"MBT0", "EMC8", "EMC8EGA", "EMC8EJE", "EMC8excl", "EMC8EGAexcl", "EMC8EJEexcl"}};
+  const std::array<TString, 2> centralitytriggers = {{"CENT", "SEMICENT"}};
   if(!fExclusiveMinBias){
     for(const auto &t : emcaltriggers) triggers.push_back(t);
   }
@@ -502,6 +518,9 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   }
   if(fEnableT0Triggers){
     for(const auto &t: t0triggers) triggers.push_back(t);
+  }
+  if(fEnableCentralityTriggers){
+    for(const auto &t : centralitytriggers) triggers.push_back(t);
   }
   return triggers;
 }

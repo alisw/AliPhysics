@@ -30,6 +30,8 @@ inputObjects:                                       # Define all of the input ob
             # This track input takes all default cuts!
         defaultTrackContainer_1:                    # Name of another track input which inherits from defaultTrackContainer
             # The branch name is inherited from defaultTrackContainer!
+            # (Note that we only use this daughter container in the default settings below -- the parent and daughter are in fact
+            #  configured exactly the same here, by default; it is only done for illustration).
             minPt: 0.15                             # Track min pt.
             trackFilterType: kHybridTracks          # Set the track filter type. Check the documentation for possible values
             #aodFilterBits: [16, 1]                 # Can also set AOD filter bits. Check the docuemntation for more information
@@ -67,7 +69,8 @@ CellCombineCollections:                             # Utility task to combine tw
     createHistos: false                             # Whether the task should create output histograms
     externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
     combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
-    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+    verifyCombinedCells: false                      # True will have the task confirm that the input cells have been successfully combined together. NOTE: Don't enable this for normal usage - it will reduce performance for little benefit.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction. NOTE: _DO NOT_ include the embedded cells input object here! Include only the cells from the input event.
         - defaultCells                              # This object is defined above in the cells section of the input objects
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
@@ -149,7 +152,7 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
-        - defaultTrackContainer                     # This object is defined above in the track section of the input objects
+        - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
 PHOSCorrections:                                    # PHOS recalibration component (wraps PHOS Tender Supply)
     enabled: false                                  # Whether to enable the task
     isMC: false                                     # Whether is MC

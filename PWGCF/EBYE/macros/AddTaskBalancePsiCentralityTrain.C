@@ -52,8 +52,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t *gCentralityArrayForCorrections = 0x0,
 						       Bool_t gRunEbyE = kFALSE,
 						       Bool_t bMomentumOrdering = kTRUE,
-						       AliAnalysisTaskBFPsi::eCorrProcedure corrProc = AliAnalysisTaskBFPsi::kNoCorr,
-						       TString nuaCorrFileName = "", TString nueCorrFileName = "") {
+						       AliAnalysisTaskBFPsi::eCorrProcedure corrProc = AliAnalysisTaskBFPsi::kNoCorr) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -261,34 +260,31 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
     taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
   
-  else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
+  /*else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 
-    TFile* fNUAFile = TFile::Open(nuaCorrFileName,"READ");
-    TFile* fNUEFile = TFile::Open(nueCorrFileName,"READ");
+    TFile* fNUAFile = TFile::Open(nuaCorrFileName.Data(),"READ");
+    TFile* fNUEFile = TFile::Open(nueCorrFileName.Data(),"READ");
     
     if(!fNUAFile) {
       printf(" *** ERROR: NUA file not found! **EXIT** ");
     } 
-    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObject("fListNUA"));
-    if(fListNUA){
+    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fListNUA"));
+    if(fListNUA)
       taskBF->SetInputListForNUACorr(fListNUA);
-      else{
-	printf(" *** ERROR: NUA List not found! **EXIT**");
-      }
-    }
+    else
+      printf(" *** ERROR: NUA List not found! **EXIT**");
+    
     
     if(!fNUEFile) {
       printf(" *** ERROR: NUE file not found! **EXIT** ");
     } 
-    TList* fListNUE = dynamic_cast<TList*>(fNUEFile->FindObject("fListNUE"));
-    if(fListNUE){
+    TList* fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
+    if(fListNUE)
       taskBF->SetInputListForNUECorr(fListNUE);
-      else{
-	printf(" *** ERROR: NUE List not found! **EXIT**");
-      }
-    }
+    else
+      printf(" *** ERROR: NUE List not found! **EXIT**");    
   }
-
+  */
   
   //bf->PrintAnalysisSettings();
   mgr->AddTask(taskBF);

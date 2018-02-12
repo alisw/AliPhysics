@@ -134,11 +134,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
    * @brief Define the number of elements in various arrays
    */
   enum binArrayLimits_t {
-    kMaxJetPtBins = 5,              //!<! Number of elements in jet pt binned arrays
     kMaxTrackPtBins = 7,            //!<! Number of elements in track pt binned arrays
     kMaxCentralityBins = 5,         //!<! Number of elements in centrality binned arrays
     kMixedEventMulitplictyBins = 8, //!<! Number of elements in mixed event multiplicity binned arrays
-    kMaxEtaBins = 3                 //!<! Number of elements in eta binned arrays
   };
 
   // EMCal framework functions
@@ -153,13 +151,12 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   virtual THnSparse*     NewTHnSparseF(const char* name, UInt_t entries);
   virtual void           GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
   // Binning helper functions
-  Int_t                  GetEtaBin(Double_t eta) const;
   Int_t                  GetTrackPtBin(Double_t pt) const;
-  Int_t                  GetJetPtBin(Double_t pt) const;
   UInt_t                 RetrieveTriggerMask() const;
   // Helper functions
   void                   InitializeArraysToZero();
   void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
+  Double_t               GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const;
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
@@ -202,11 +199,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   TH1                   *fHistJetPt[6];            //!<! Jet pt spectrum (the array corresponds to centrality bins)
   TH1                   *fHistJetPtBias[6];        //!<! Jet pt spectrum of jets which meet the constituent bias criteria (the array corresponds to centrality bins)
-  TH2                   *fHistJetH[6][5][3];       //!<! Jet-hadron correlations (the arrays correspond to centrality, jet pt bins, and eta bins)
-  TH2                   *fHistJetHBias[6][5][3];   //!<! Jet-hadron correlations of jets which meet the constituent bias criteria (the arrays correspond to centrality, jet pt bins, and eta bins)
-  TH3                   *fHistJHPsi;               //!<! Psi angle distribution
   THnSparse             *fhnMixedEvents;           //!<! Mixed events THnSparse
   THnSparse             *fhnJH;                    //!<! JetH THnSparse
+  THnSparse             *fhnTrigger;               //!<! JetH trigger sparse
 
   // Pb-Pb Efficiency correction coefficients
   static Double_t p0_10SG[17];                    ///< 0-10% centrality semi-good runs
@@ -225,7 +220,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 13);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 14);
   /// \endcond
 };
 #endif

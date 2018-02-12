@@ -764,10 +764,16 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& ty
 
     if(typeHM == 5)
     {
-      if(TMath::Abs( ((AliAODMCParticle*)fTruthParticleArray->At(parton[1]->GetMother()))->PdgCode()) == 5)
-        FillHistogram("hBJetFromInitialCollision", 1.5);
+      Int_t motherCode = parton[1]->GetMother();
+      if(motherCode >= 0)
+      {
+        if(TMath::Abs( ((AliAODMCParticle*)fTruthParticleArray->At(motherCode))->PdgCode()) == 5)
+          FillHistogram("hBJetFromInitialCollision", 1.5);
+        else
+          FillHistogram("hBJetFromInitialCollision", 0.5);
+      }
       else
-        FillHistogram("hBJetFromInitialCollision", 0.5);
+        FillHistogram("hBJetFromInitialCollision", 1.5);
     }
   }
 

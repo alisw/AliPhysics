@@ -14,12 +14,12 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddAODPHOSTender", "No analysis manager to connect to");
+    ::Error("AddPHOSTender_PCMConfig", "No analysis manager to connect to");
     return NULL;
   }
-  
+
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddAODPHOSTender", "This task requires an input event handler");
+    ::Error("AddPHOSTender_PCMConfig", "This task requires an input event handler");
     return NULL;
   }
 
@@ -37,11 +37,19 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
-  if (forceBadChannelMap==1)
-      PHOSSupply->SetPrivateOADBBadMap(specificBCMap.Data());
-  if (forceBadChannelMap==2)
-      PHOSSupply->ForceUsingBadMap(specificBCMap.Data());
+  if (forceBadChannelMap==1){
+    std::cout << "=============================================================" << std::endl;
+    std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel map using a full OADB file: " <<  specificBCMap.Data() << std::endl;
+    std::cout << "=============================================================" << std::endl;
+    PHOSSupply->SetPrivateOADBBadMap(specificBCMap.Data());
+  }
+  if (forceBadChannelMap==2){
+    std::cout << "=============================================================" << std::endl;
+    std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel independent of the run: " <<  specificBCMap.Data() << std::endl;
+    std::cout << "=============================================================" << std::endl;
+    PHOSSupply->ForceUsingBadMap(specificBCMap.Data());
 
+  }
   //Need MagFeild
   ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
 

@@ -8,29 +8,36 @@
  *  A feature that displays the plots in canvases must be enable when needed.
  */
 
-/*
-// #if !defined(__CINT__) || defined(__MAKECINT__)
-// #include "TCanvas.h"
-// #include "TStyle.h"
-// #include "TLegend.h"
-// #include "TGrid.h"
-// #include "TGaxis.h"
-// #include "TFile.h"
-// #include "TTree.h"
-// #include "TH1.h"
-// #include "TH2.h"
-// #include "TF1.h"
-// #include "TPaveText.h"
-// #include "AliTOFcalib.h"
-// #include "AliCDBEntry.h"
-// #include "AliCDBManager.h"
-// #include "TProfile.h"
-// #include "AliTOFChannelOnlineStatusArray.h"
-// #include "AliTOFcalibHisto.h"
-// #include "TMath.h"
-// #endif
-*/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TLegend.h"
+#include "TGrid.h"
+#include "TGaxis.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TPaveText.h"
+#include "AliTOFcalib.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "TProfile.h"
+#include "AliTOFChannelOnlineStatusArray.h"
+#include "AliTOFcalibHisto.h"
+#include "TMath.h"
+#include "TNamed.h"
+#include "THashList.h"
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif
+
+void Write(TObject* obj, const TString label);
+void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x = kTRUE);
+std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t numE, Double_t denE);
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
 			  Int_t runNumber,                      //run number
 			  TString dirsuffix = "",              //suffix for subdirectories
@@ -49,9 +56,25 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of t
 
 Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE);
 
+Int_t GetList(TDirectoryFile* d, TList*& l, TString name, TString suffix)
+{
+  if(!d){
+    Printf("No directory given");
+    return -1;
+  }
+  d->GetObject(Form("%s%s", name.Data(), suffix.Data()), l);
+  if(!l){
+    d->ls();
+    Printf("Cannot find TList %s in %s", name.Data(), d->GetName());
+    return -1;
+  }
+  return 0;
+}
+
 ///
 ///Function to setup the histogram style
-void MakeUpHisto(TH1* histo, TString titleY = "", Int_t marker = 20, Color_t color = kBlue+2, Int_t lineWidth = 1);
+void MakeUpHisto(TH1* histo, TString titleX = "", TString titleY = "", Int_t marker = 20, Color_t color = kBlue+2, Int_t lineWidth = 1);
+void MakeUpHisto(TH2* histo, TString titleX = "", TString titleY = "", TString titleZ = "", Int_t marker = 20, Color_t color = kBlue+2, Int_t lineWidth = 1);
 
 ///
 ///Function add a label in a canvas, indicating a missing Plot
@@ -198,19 +221,22 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     Printf("ERROR: TOF QA directory not present in input file.\n");
     return -1;
   }
-  TList * generalList=(TList*)tofQAdir->Get(Form("%s%s", genListName, dirsuffix.Data()));
-  TList  *timeZeroList=(TList*)tofQAdir->Get(Form("%s%s", t0ListName, dirsuffix.Data()));
-  TList  *pidList=(TList*)tofQAdir->Get(Form("%s%s", pidListName, dirsuffix.Data()));
-  TList  *pidListT0=0x0;
-  TList  *tofPidListT0=0x0;
-  if (!pidQAdir) {
+  TList* generalList = 0x0;
+  GetList(tofQAdir, generalList, genListName, dirsuffix);
+  TList* timeZeroList = 0x0;
+  GetList(tofQAdir, timeZeroList, t0ListName, dirsuffix);
+  TList* pidList = 0x0;
+  GetList(tofQAdir, pidList, pidListName, dirsuffix);
+  TList* pidListT0 = 0x0;
+  GetList(pidQAdir, pidListT0, PIDqaListName, "");
+  TList* tofPidListT0 = pidListT0 ? (TList*)pidListT0->FindObject("TOF") : 0x0;
+  if (!pidQAdir || !tofPidListT0) {
     printf("WARNING: PIDqa histograms not available\n");
-  } else {
-    pidListT0=(TList*)pidQAdir->Get(PIDqaListName);
-    tofPidListT0=(TList*)pidListT0->FindObject("TOF");
   }
-  TList  *trdList=(TList*)tofQAdir->Get(Form("%s%s", trdListName, dirsuffix.Data()));
-  TList  *trgList=(TList*)tofQAdir->Get(Form("%s%s", trgListName, dirsuffix.Data()));
+  TList  *trdList= 0x0;
+  GetList(tofQAdir, trdList, trdListName, dirsuffix);
+  TList  *trgList= 0x0;
+  GetList(tofQAdir, trgList, trgListName, dirsuffix);
 
   if (!generalList) Printf("WARNING: general QA histograms absent or not accessible\n");
   if (!timeZeroList) Printf("WARNING: timeZero QA histograms absent or not accessible\n");
@@ -231,7 +257,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
     meanResTOF=-999., spreadResTOF=-999., meanResTOFerr=-999., spreadResTOFerr=-999.,
     orphansRatio=-9999., avL=-9999., negLratio=-9999.,
-    effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
+    matchEffIntegratedErr=-9999., matchEffIntegrated=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
   Double_t avPiDiffTime=-9999.,peakPiDiffTime=-9999., spreadPiDiffTime=-9999.,peakPiDiffTimeErr=-9999., spreadPiDiffTimeErr=-9999.;
   Double_t avT0A=-9999.,peakT0A=-9999., spreadT0A=-9999.,peakT0AErr=-9999., spreadT0AErr=-9999.;
   Double_t avT0C=-9999.,peakT0C=-9999., spreadT0C=-9999.,peakT0CErr=-9999., spreadT0CErr=-9999.;
@@ -275,8 +301,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   ttree->Branch("orphansRatio",&orphansRatio,"orphansRatio/D"); //orphans ratio
   ttree->Branch("avL",&avL,"avL/D"); //mean track length
   ttree->Branch("negLratio",&negLratio,"negLratio/D");//ratio of tracks with track length <350 cm
-  ttree->Branch("effPt1",&effPt1,"effPt1/D");//matching eff at 1 GeV/c
-  ttree->Branch("effPt2",&effPt2,"effPt2/D"); //matching eff at 2 GeV/c
+  ttree->Branch("matchEffIntegrated",&matchEffIntegrated,"matchEffIntegrated/D"); //matching eff integrated in pt (1-10GeV/c)
+  ttree->Branch("matchEffIntegratedErr",&matchEffIntegratedErr,"matchEffIntegratedErr/D"); //matching eff integrated in pt (1-10GeV/c)
   ttree->Branch("matchEffLinFit1Gev",&matchEffLinFit1Gev,"matchEffLinFit1Gev/D");//matching eff fit param
   ttree->Branch("matchEffLinFit1GevErr",&matchEffLinFit1GevErr,"matchEffLinFit1GevErr/D");////matching eff fit param error
   ttree->Branch("avPiDiffTime",&avPiDiffTime,"avPiDiffTime/D"); //mean t-texp
@@ -355,7 +381,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       printf("Reminder: Raw time not available in MC simulated data.");
     }
   }
-  MakeUpHisto(hRawTime, "matched tracks", 21, kGreen+2, 1);
+  MakeUpHisto(hRawTime, "", "matched tracks", 21, kGreen+2, 1);
 
   TH1F * hTime = (TH1F*)generalList->FindObject("hTime_all");
   if ((hTime)&&(hTime->GetEntries()>0)) {
@@ -368,7 +394,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
       negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
     }
-    MakeUpHisto(hTime, "matched tracks", 20, kBlue+2, 1);
+    MakeUpHisto(hTime, "", "matched tracks", 20, kBlue+2, 1);
 
     TLegend *lTime = new TLegend(0.7125881,0.6052519,0.979435,0.7408306,NULL,"brNDC");
     lTime->SetTextSize(0.04281433);
@@ -389,7 +415,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
     }
   }
-  MakeUpHisto(hTot, "matched tracks", 8, kViolet-3, 1);
+  MakeUpHisto(hTot, "", "matched tracks", 8, kViolet-3, 1);
 
   char orphansTxt[200];
   if (hTot->GetEntries()>1){
@@ -410,7 +436,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     avL=hL->GetMean();
     negLratio=(hL->Integral(1,750))/((Float_t) hL->GetEntries()) ;
   }
-  MakeUpHisto(hL, "matched tracks", 1, kBlue+2, 1);
+  MakeUpHisto(hL, "", "matched tracks", 1, kBlue+2, 1);
   sprintf(negLengthTxt,"trk with L<350cm /matched = %4.2f%%", negLratio*100.);
   TPaveText *tLength = new TPaveText(0.15,0.83,0.65,0.87, "NDC");
   tLength->SetBorderSize(0);
@@ -426,80 +452,108 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   //--------------------------------- matching eff ----------------------------------//
   //matching as function of pT
-  TH1F * hMatchingVsPt = new TH1F("hMatchingVsPt","Matching probability vs. Pt; Pt(GeV/c); matching probability", 50, 0., 5. );
+   //matching as function of eta and phi out
+  Double_t maxPtEff2Fit = 10.0;
+  Double_t minPtEff2Fit = 1.0;
+
+  TH1F * hMatchingVsPt = NULL;
+  TH2F * hMatchingVsEtaPhiOut = NULL;
+  TH1F * hMatchingVsEta = NULL;
+  TH1F * hMatchingVsPhiOut = NULL;
+  TH1F * hMatchingVsPhi = NULL;
+
   TH1F * hDenom = (TH1F*)generalList->FindObject("hPrimaryPt_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPt=(TH1F*) generalList->FindObject("hMatchedPt_all")->Clone();
+    hMatchingVsPt = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedPt_all"))->Clone("hMatchingVsPt");
+    //set underflow bin to the matching efficiency integrated in 1-10 GeV/c
+    Int_t imin = hMatchingVsPt->GetXaxis()->FindBin(minPtEff2Fit);
+    Int_t imax = hMatchingVsPt->GetXaxis()->FindBin(maxPtEff2Fit);
+    Double_t numErr, denErr;
+    Double_t numN = hMatchingVsPt->IntegralAndError(imin, imax, numErr);
+    Double_t denN = hDenom->IntegralAndError(imin, imax, denErr);
+    std::pair<Double_t, Double_t> IntEff = ComputeEff(numN, denN, numErr, denErr);
+
+    matchEffIntegrated = IntEff.first;
+    matchEffIntegratedErr = IntEff.second;
+    //get efficiency
     hMatchingVsPt->Sumw2();
-    // hMatchingVsPt->Rebin(5);
-    // hDenom->Rebin(5);
-    hMatchingVsPt->Divide(hDenom);
-    hMatchingVsPt->GetYaxis()->SetTitle("matching efficiency");
+    hMatchingVsPt->Divide(hMatchingVsPt, hDenom, 1., 1., "B");
     hMatchingVsPt->SetTitle("TOF matching efficiency as function of transverse momentum");
     hMatchingVsPt->GetYaxis()->SetRangeUser(0,1.2);
   }
 
   if (hMatchingVsPt->GetEntries()>0){
-    hMatchingVsPt->Fit("pol0","","",1.0,10.);
+    hMatchingVsPt->Fit("pol0","","", minPtEff2Fit, maxPtEff2Fit);
     hMatchingVsPt->Draw();
     if (hMatchingVsPt->GetFunction("pol0")){
       matchEffLinFit1Gev=(hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
       matchEffLinFit1GevErr=(hMatchingVsPt->GetFunction("pol0"))->GetParError(0);
-      //printf("Matching efficiency fit param is %f +- %f\n",matchEffLinFit1Gev,matchEffLinFit1GevErr );
     }
   } else {
     printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
   }
-  MakeUpHisto(hMatchingVsPt, "efficiency", 1, kBlue+2, 2);
+  MakeUpHisto(hMatchingVsPt, "#it{p}_{T} (GeV/#it{c})", "matching efficiency", 1, kBlue+2, 2);
+  
+  TH2F * hDenom2D = (TH2F*) generalList->FindObject("hPrimaryEtaVsOutPhi_all");  
+  if (!hDenom2D) {
+    //matching as function of eta
+    hDenom = (TH1F*)generalList->FindObject("hPrimaryEta_all");
+    if (hDenom) {
+      hDenom->Sumw2();
+      hMatchingVsEta = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedEta_all"))->Clone("hMatchingVsEta");
+      hMatchingVsEta->Sumw2();
+      hMatchingVsEta->Divide(hMatchingVsEta, hDenom, 1., 1., "B");
+    }
+  } else {
+    hMatchingVsEtaPhiOut = (TH2F*)((TH2F*)generalList->FindObject("hMatchedEtaVsOutPhi_all"))->Clone("hMatchingVsEtaPhiOut");
+    hMatchingVsEtaPhiOut->Sumw2();
+    hMatchingVsEtaPhiOut->Divide(hMatchingVsEtaPhiOut, hDenom2D, 1., 1., "B");
+    hMatchingVsEtaPhiOut->GetZaxis()->SetRangeUser(0., 1.);
+    hMatchingVsEtaPhiOut->SetTitle("TOF matching efficiency as function of #eta and #phi_{TPC,out}");
+    MakeUpHisto(hMatchingVsEtaPhiOut, "#phi_{TPC,out} (deg)", "#eta", "matching efficiency", 1, kBlue+2, 2);
 
-  //matching as function of eta
-  TH1F * hMatchingVsEta = new TH1F("hMatchingVsEta","Matching probability vs. #\Eta; #\Eta; matching probability", 20, -1., 1.);
-  hDenom->Clear();
-  hDenom=(TH1F*)generalList->FindObject("hPrimaryEta_all");
-  if (hDenom) {
-    hDenom->Sumw2();
-    hMatchingVsEta=(TH1F*) generalList->FindObject("hMatchedEta_all")->Clone();
-    hMatchingVsEta->Sumw2();
-    // hMatchingVsEta->Rebin(5);
-    // hDenom->Rebin(5);
-    hMatchingVsEta->Divide(hDenom);
-    hMatchingVsEta->GetXaxis()->SetRangeUser(-1,1);
-    hMatchingVsEta->GetYaxis()->SetTitle("matching efficiency");
-    hMatchingVsEta->GetYaxis()->SetRangeUser(0,1.2);
-    hMatchingVsEta->SetTitle("TOF matching efficiency as function of pseudorapidity");
+    //
+    Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsEta, "hMatchingVsEta", kFALSE);
+    Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsPhiOut, "hMatchingVsPhiOut", kTRUE);
+    //
+    hMatchingVsPhiOut->SetTitle("TOF matching efficiency as function of #phi_{TPC,out}");
+    hMatchingVsPhiOut->GetYaxis()->SetRangeUser(0,1.2);
+    MakeUpHisto(hMatchingVsPhiOut, "#phi_{TPC,out}", "matching efficiency", 1, kBlue+2, 2);
   }
-  MakeUpHisto(hMatchingVsEta, "efficiency", 1, kBlue+2, 2);
-
+  
+  if (hMatchingVsEta) {
+    hMatchingVsEta->SetTitle("TOF matching efficiency as function of #eta");
+    hMatchingVsEta->GetYaxis()->SetRangeUser(0, 1.2);
+    MakeUpHisto(hMatchingVsEta, "#eta", "matching efficiency", 1, kBlue+2, 2);
+  }
+  
   //matching as function of phi
-  TH1F * hMatchingVsPhi = new TH1F("hMatchingVsPhi","Matching probability vs. Phi; Phi(rad); matching probability", 628, 0., 6.28);
-  hDenom->Clear();
-  hDenom=(TH1F*)generalList->FindObject("hPrimaryPhi_all");
+  hDenom = (TH1F*)generalList->FindObject("hPrimaryPhi_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPhi=(TH1F*) generalList->FindObject("hMatchedPhi_all")->Clone();
-    // hMatchingVsPhi->Rebin(2);
-    // hDenom->Rebin(2);
+    hMatchingVsPhi = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedPhi_all"))->Clone("hMatchingVsPhi");
     hMatchingVsPhi->Sumw2();
-    hMatchingVsPhi->Divide(hDenom);
-    hMatchingVsPhi->GetYaxis()->SetTitle("matching efficiency");
+    hMatchingVsPhi->Divide(hMatchingVsPhi, hDenom, 1., 1., "B");
     hMatchingVsPhi->SetTitle("TOF matching efficiency as function of phi");
     hMatchingVsPhi->GetYaxis()->SetRangeUser(0,1.2);
   }
-  MakeUpHisto(hMatchingVsPhi, "efficiency", 1, kBlue+2, 2);
+  MakeUpHisto(hMatchingVsPhi, "#phi (deg)", "matching efficiency", 1, kBlue+2, 2);
 
   if (saveHisto) {
     trendFile->cd();
-    hMulti->Write();
-    hTime->Write();
-    hRawTime->Write();
-    hTot->Write();
-    hL->Write();
-    hDxPos4profile->Write();
-    hTOFmatchedDzVsStrip->Write();
-    hMatchingVsPt->Write();
-    hMatchingVsEta->Write();
-    hMatchingVsPhi->Write();
+    Write(hMulti, "hMulti");
+    Write(hTime, "hTime");
+    Write(hRawTime, "hRawTime");
+    Write(hTot, "hTot");
+    Write(hL, "hL");
+    Write(hDxPos4profile, "hDxPos4profile");
+    Write(hTOFmatchedDzVsStrip, "hTOFmatchedDzVsStrip");
+    Write(hMatchingVsPt, "hMatchingVsPt");
+    Write(hMatchingVsEta, "hMatchingVsEta");
+    Write(hMatchingVsPhi, "hMatchingVsPhi");
+    Write(hMatchingVsPhiOut, "hMatchingVsPhiOut");
+    Write(hMatchingVsEtaPhiOut, "hMatchingVsEtaPhiOut");
   }
 
   //--------------------------------- t-texp ----------------------------------//
@@ -507,7 +561,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   if (hBetaP) hBetaP->GetYaxis()->SetRangeUser(0.,1.2);
 
   TH1F * hMass=(TH1F*)pidList->FindObject("hMatchedMass_all");
-  MakeUpHisto(hMass, "tracks", 1, kBlue+2, 1);
+  MakeUpHisto(hMass, "", "tracks", 1, kBlue+2, 1);
   // hMass->SetFillColor(kAzure+10);
   // hMass->SetFillStyle(1001);
   hMass->Rebin(2);
@@ -529,7 +583,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   gStyle->SetOptFit();
   cTimeCalib->cd();
   gPad->SetLogy();
-  MakeUpHisto(hPionDiff, "", 1, kBlue+1, 1);
+  MakeUpHisto(hPionDiff, "", "", 1, kBlue+1, 1);
   hPionDiff->Draw();
   TString plotDir(".");
   if (savePng) cTimeCalib->Print(Form("%s/%i%s_TOFtime.png", plotDir.Data(), runNumber, dirsuffix.Data()));
@@ -552,16 +606,15 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (saveHisto) {
     trendFile->cd();
-    hBetaP->Write();
-    hMass->Write();
-    hPionDiff->Write();
-    hDiffTimeT0fillPion->Write();
-    hDiffTimeT0TOFPion1GeV->Write();
-    hDiffTimePi->Write();
-    hDiffTimeKa->Write();
-    hDiffTimePro->Write();
+    Write(hBetaP, "hBetaP");
+    Write(hMass, "hMass");
+    Write(hPionDiff, "hPionDiff");
+    Write(hDiffTimeT0fillPion, "hDiffTimeT0fillPion");
+    Write(hDiffTimeT0TOFPion1GeV, "hDiffTimeT0TOFPion1GeV");
+    Write(hDiffTimePi, "hDiffTimePi");
+    Write(hDiffTimeKa, "hDiffTimeKa");
+    Write(hDiffTimePro, "hDiffTimePro");
   }
-
 
   //---------------------------------TOF resolution plot ----------------------------------//
   Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMin);
@@ -591,13 +644,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hDiffTimeT0TOFPion1GeV->Draw("colz");
   cTOFresolution->cd(2);
   hResTOF->GetXaxis()->SetRangeUser(-1000,1000);
-  MakeUpHisto(hResTOF, "", 1, kBlue+1, 1);
+  MakeUpHisto(hResTOF, "", "", 1, kBlue+1, 1);
   hResTOF->Draw();
 
   if (savePng) cTOFresolution->Print(Form("%s/%i%s_TOFresolution.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   if (saveHisto) {
     trendFile->cd();
-    hResTOF->Write();
+    Write(hResTOF, "hResTOF");
   }
 
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
@@ -857,8 +910,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hSigmaPi->FitSlicesY(f);
   TH1D * hSigmaPi_mean = (TH1D*)gDirectory->Get("hTOFpidSigmaPi_all_1")->Clone("hTOFpidSigmaPi_all_mean");
   TH1D * hSigmaPi_pull = (TH1D*)gDirectory->Get("hTOFpidSigmaPi_all_2")->Clone("hTOFpidSigmaPi_all_pull");
-  MakeUpHisto(hSigmaPi_mean, "", 1, kBlack, 2);
-  MakeUpHisto(hSigmaPi_pull, "", 1, kRed, 2);
+  MakeUpHisto(hSigmaPi_mean, "", "", 1, kBlack, 2);
+  MakeUpHisto(hSigmaPi_pull, "", "", 1, kRed, 2);
 
   //fit with signal model = gaussian + exponential tail
   if (fitSignalModel) {
@@ -868,8 +921,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     for(Int_t cc = 0; cc < npars ; cc++) {
       par[0][cc] = (TH1D*)gDirectory->Get(Form("hTOFpidSigmaPi_all_%i", cc));
     }
-    MakeUpHisto(par[0][1], "", 1, kBlue, 2);
-    MakeUpHisto(par[0][2], "", 1, kMagenta+2, 2);
+    MakeUpHisto(par[0][1], "", "", 1, kBlue, 2);
+    MakeUpHisto(par[0][2], "", "", 1, kMagenta+2, 2);
   }
 
   //----- KAON ------//
@@ -880,8 +933,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hSigmaKa->FitSlicesY(f);
   TH1D * hSigmaKa_mean = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_1")->Clone("hTOFpidSigmaKa_all_mean");
   TH1D * hSigmaKa_pull = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_2")->Clone("hTOFpidSigmaKa_all_pull");
-  MakeUpHisto(hSigmaKa_mean, "", 1, kBlack, 2);
-  MakeUpHisto(hSigmaKa_pull, "", 1, kRed, 2);
+  MakeUpHisto(hSigmaKa_mean, "", "", 1, kBlack, 2);
+  MakeUpHisto(hSigmaKa_pull, "", "", 1, kRed, 2);
 
   //fit with signal model = gaussian + exponential tail
   if (fitSignalModel) {
@@ -891,8 +944,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     for(Int_t cc = 0; cc < npars; cc++) {
       par[1][cc] = (TH1D*)gDirectory->Get(Form("hTOFpidSigmaKa_all_%i", cc));
     }
-    MakeUpHisto(par[1][1], "", 1, kBlue, 2);
-    MakeUpHisto(par[1][2], "", 1, kMagenta+2, 2);
+    MakeUpHisto(par[1][1], "", "", 1, kBlue, 2);
+    MakeUpHisto(par[1][2], "", "", 1, kMagenta+2, 2);
   }
 
   //----- PROTON ------//
@@ -903,8 +956,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hSigmaPro->FitSlicesY(f);
   TH1D * hSigmaPro_mean = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_1")->Clone("hTOFpidSigmaPro_all_mean");
   TH1D * hSigmaPro_pull = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_2")->Clone("hTOFpidSigmaPro_all_pull");
-  MakeUpHisto(hSigmaPro_mean, "", 1, kBlack, 2);
-  MakeUpHisto(hSigmaPro_pull, "", 1, kRed, 2);
+  MakeUpHisto(hSigmaPro_mean, "", "", 1, kBlack, 2);
+  MakeUpHisto(hSigmaPro_pull, "", "", 1, kRed, 2);
 
   //fit with signal model = gaussian + exponential tail
   if (fitSignalModel) {
@@ -914,13 +967,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     for(Int_t cc = 0; cc < npars; cc++) {
       par[2][cc] = (TH1D*)gDirectory->Get(Form("hTOFpidSigmaPro_all_%i", cc));
     }
-    MakeUpHisto(par[2][1], "", 1, kBlue, 2);
-    MakeUpHisto(par[2][2], "", 1, kMagenta+2, 2);
+    MakeUpHisto(par[2][1], "", "", 1, kBlue, 2);
+    MakeUpHisto(par[2][2], "", "", 1, kMagenta+2, 2);
   }
 
   /***************************************************
    //Save parameters obtained with the signal model fit
-   //***************************************************
+   ***************************************************
   TF1 *fSignalModel_bkg = new TF1("fSignalModel_bkg", "pol1", ModelRangeFitNsigmaPIDmin, ModelRangeFitNsigmaPIDmax);
   fSignalModel_bkg->SetTitle("bkg");
   fSignalModel_bkg->SetLineColor(kMagenta);
@@ -1058,15 +1111,15 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (savePng) cPidPerformance3->Print(Form("%s/%i%s_PID_sigmas.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   if (saveHisto){
-    hSigmaPi->Write();
-    hSigmaKa->Write();
-    hSigmaPro->Write();
-    hSigmaPi_mean->Write();
-    hSigmaPi_pull->Write();
-    hSigmaKa_mean->Write();
-    hSigmaKa_pull->Write();
-    hSigmaPro_mean->Write();
-    hSigmaPro_pull->Write();
+    Write(hSigmaPi, "hSigmaPi");
+    Write(hSigmaKa, "hSigmaKa");
+    Write(hSigmaPro, "hSigmaPro");
+    Write(hSigmaPi_mean, "hSigmaPi_mean");
+    Write(hSigmaPi_pull, "hSigmaPi_pull");
+    Write(hSigmaKa_mean, "hSigmaKa_mean");
+    Write(hSigmaKa_pull, "hSigmaKa_pull");
+    Write(hSigmaPro_mean, "hSigmaPro_mean");
+    Write(hSigmaPro_pull, "hSigmaPro_pull");
   }
 
   //--------------------------------- NSigma PID from PIDqa ----------------------------------//
@@ -1090,8 +1143,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaPiT0->FitSlicesY(f);
     TH1D * hSigmaPiT0_mean = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_1")->Clone("hNsigmaP_TOF_pion_mean");
     TH1D * hSigmaPiT0_pull = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_2")->Clone("hNsigmaP_TOF_pion_pull");
-    MakeUpHisto(hSigmaPiT0_mean, "", 1, kBlack, 2);
-    MakeUpHisto(hSigmaPiT0_pull, "", 1, kRed, 2);
+    MakeUpHisto(hSigmaPiT0_mean, "", "", 1, kBlack, 2);
+    MakeUpHisto(hSigmaPiT0_pull, "", "", 1, kRed, 2);
 
     //fit with signal model
     if (fitSignalModel) {
@@ -1101,8 +1154,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       for(Int_t cc = 0; cc < npars; cc++) {
 	parT0[0][cc] = (TH1D*)gDirectory->Get(Form("hNsigmaP_TOF_pion_%i", cc));
       }
-      MakeUpHisto(parT0[0][1], "", 1, kBlue, 2);
-      MakeUpHisto(parT0[0][2], "", 1, kMagenta+2, 2);
+      MakeUpHisto(parT0[0][1], "", "", 1, kBlue, 2);
+      MakeUpHisto(parT0[0][2], "", "", 1, kMagenta+2, 2);
     }
 
     //------- KAONS ------//
@@ -1113,8 +1166,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaKaT0->FitSlicesY(f);
     TH1D * hSigmaKaT0_mean = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_1")->Clone("hNsigmaP_TOF_kaon_mean");
     TH1D * hSigmaKaT0_pull = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_2")->Clone("hNsigmaP_TOF_kaon_pull");
-    MakeUpHisto(hSigmaKaT0_mean, "", 1, kBlack, 2);
-    MakeUpHisto(hSigmaKaT0_pull, "", 1, kRed, 2);
+    MakeUpHisto(hSigmaKaT0_mean, "", "", 1, kBlack, 2);
+    MakeUpHisto(hSigmaKaT0_pull, "", "", 1, kRed, 2);
 
     //fit with signal model
     if (fitSignalModel) {
@@ -1124,8 +1177,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       for(Int_t cc = 0; cc < npars; cc++) {
 	parT0[1][cc] = (TH1D*)gDirectory->Get(Form("hNsigmaP_TOF_kaon_%i", cc));
       }
-      MakeUpHisto(parT0[1][1], "", 1, kBlue, 2);
-      MakeUpHisto(parT0[1][2], "", 1, kMagenta+2, 2);
+      MakeUpHisto(parT0[1][1], "", "", 1, kBlue, 2);
+      MakeUpHisto(parT0[1][2], "", "", 1, kMagenta+2, 2);
     }
 
     //------- PROTONS ------//
@@ -1136,8 +1189,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaProT0->FitSlicesY(f);
     TH1D * hSigmaProT0_mean = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_1")->Clone("hNsigmaP_TOF_proton_mean");
     TH1D * hSigmaProT0_pull = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_2")->Clone("hNsigmaP_TOF_proton_pull");
-    MakeUpHisto(hSigmaProT0_mean, "", 1, kBlack, 2);
-    MakeUpHisto(hSigmaProT0_pull, "", 1, kRed, 2);
+    MakeUpHisto(hSigmaProT0_mean, "", "", 1, kBlack, 2);
+    MakeUpHisto(hSigmaProT0_pull, "", "", 1, kRed, 2);
 
     //fit with signal model
     if (fitSignalModel) {
@@ -1147,8 +1200,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       for(Int_t cc = 0; cc < npars; cc++) {
 	parT0[2][cc] = (TH1D*)gDirectory->Get(Form("hNsigmaP_TOF_proton_%i", cc));
       }
-      MakeUpHisto(parT0[2][1], "", 1, kBlue, 2);
-      MakeUpHisto(parT0[2][2], "", 1, kMagenta+2, 2);
+      MakeUpHisto(parT0[2][1], "", "", 1, kBlue, 2);
+      MakeUpHisto(parT0[2][2], "", "", 1, kMagenta+2, 2);
     }
 
      //Show in canvas
@@ -1204,21 +1257,20 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     if (savePng) cPidPerformance3T0->Print(Form("%s/%i%s_PID_sigmasStartTime.png", plotDir.Data(), runNumber, dirsuffix.Data()));
     if (saveHisto) {
       trendFile->cd();
-      hSigmaPiT0->Write();
-      hSigmaPiT0_mean->Write();
-      hSigmaPiT0_pull->Write();
-      hSigmaKaT0->Write();
-      hSigmaKaT0_mean->Write();
-      hSigmaKaT0_pull->Write();
-      hSigmaProT0->Write();
-      hSigmaProT0_mean->Write();
-      hSigmaProT0_pull->Write();
+      Write(hSigmaPiT0, "hSigmaPiT0");
+      Write(hSigmaPiT0_mean, "hSigmaPiT0_mean");
+      Write(hSigmaPiT0_pull, "hSigmaPiT0_pull");
+      Write(hSigmaKaT0, "hSigmaKaT0");
+      Write(hSigmaKaT0_mean, "hSigmaKaT0_mean");
+      Write(hSigmaKaT0_pull, "hSigmaKaT0_pull");
+      Write(hSigmaProT0, "hSigmaProT0");
+      Write(hSigmaProT0_mean, "hSigmaProT0_mean");
+      Write(hSigmaProT0_pull, "hSigmaProT0_pull");
     }
-
 
     /***************************************************
     //Save parameters obtained with the signal model fit
-    //***************************************************
+    ***************************************************
     for(Int_t jj = 0; jj < 3; jj++){
       TCanvas *FitParametersT0 = new TCanvas(Form("FitParametersT0%i", jj), Form("FitParametersT0%i", jj));
       FitParametersT0->Divide(2,4);
@@ -1306,7 +1358,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);
     }
   }
-  MakeUpHisto(hT0A, "events", 8, kBlue, 2);
+  MakeUpHisto(hT0A, "", "events", 8, kBlue, 2);
   hT0A->Rebin(2);
 
   TH1F*hT0C=(TH1F*)timeZeroList->FindObject("hT0C");
@@ -1320,7 +1372,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);
     }
   }
-  MakeUpHisto(hT0C, "events", 8, kGreen+1, 2);
+  MakeUpHisto(hT0C, "", "events", 8, kGreen+1, 2);
   hT0C->Rebin(2);
 
   TH1F*hT0AC=(TH1F*)timeZeroList->FindObject("hT0AC");
@@ -1334,7 +1386,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);
     }
   }
-  MakeUpHisto(hT0AC, "events", 8, kRed+1, 2);
+  MakeUpHisto(hT0AC, "", "events", 8, kRed+1, 2);
   hT0AC->Rebin(2);
 
   TLegend *lT0 = new TLegend(0.7125881,0.6052519,0.979435,0.7408306,NULL,"brNDC");
@@ -1367,10 +1419,10 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   if (saveHisto) {
     trendFile->cd();
-    hT0AC->Write();
-    hT0A->Write();
-    hT0C->Write();
-    hT0res->Write();
+    Write(hT0AC, "hT0AC");
+    Write(hT0A, "hT0A");
+    Write(hT0C, "hT0C");
+    Write(hT0res, "hT0res");
   }
   //Fill tree and save to file
   ttree->Fill();
@@ -1536,7 +1588,7 @@ Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap , TString OCDBstorage
 }
 
 //----------------------------------------------------------
-void MakeUpHisto(TH1* histo, TString titleY, Int_t marker, Color_t color, Int_t lineWidth)
+void MakeUpHisto(TH1* histo, TString titleX, TString titleY, Int_t marker, Color_t color, Int_t lineWidth)
 {
   if (!histo) return;
   histo->SetMarkerStyle(marker);
@@ -1546,7 +1598,27 @@ void MakeUpHisto(TH1* histo, TString titleY, Int_t marker, Color_t color, Int_t 
   histo->SetLineWidth(lineWidth);
   histo->SetFillColor(kWhite);
   histo->SetFillStyle(0);
+  if (!titleX.IsNull()) histo->GetXaxis()->SetTitle(titleX.Data());
   if (!titleY.IsNull()) histo->GetYaxis()->SetTitle(titleY.Data());
+  histo->GetYaxis()->SetTitleOffset(1.35);
+  histo->GetXaxis()->SetLabelSize(0.03);
+  return;
+}
+
+//----------------------------------------------------------
+void MakeUpHisto(TH2* histo, TString titleX, TString titleY,  TString titleZ, Int_t marker, Color_t color, Int_t lineWidth)
+{
+  if (!histo) return;
+  histo->SetMarkerStyle(marker);
+  histo->SetMarkerSize(0.7);
+  histo->SetMarkerColor(color);
+  histo->SetLineColor(color);
+  histo->SetLineWidth(lineWidth);
+  histo->SetFillColor(kWhite);
+  histo->SetFillStyle(0);
+  if (!titleX.IsNull()) histo->GetXaxis()->SetTitle(titleX.Data());
+  if (!titleY.IsNull()) histo->GetYaxis()->SetTitle(titleY.Data());
+  if (!titleZ.IsNull()) histo->GetZaxis()->SetTitle(titleZ.Data());
   histo->GetYaxis()->SetTitleOffset(1.35);
   histo->GetXaxis()->SetLabelSize(0.03);
   return;
@@ -1562,4 +1634,44 @@ void AddMissingLabel(const TString histoname){
   missing.SetBorderSize(0);
   missing.AddText(Form("Plot%s%s Missing", histoname.IsNull() ? "" : " ", histoname.Data()));
   missing.Draw();
+}
+
+//----------------------------------------------------------
+void Write(TObject* obj, const TString label)
+{
+  if (obj)
+    obj->Write();
+  else {
+    TNamed miss(label.Data(), "MISSING");
+    miss.Write();
+  }
+}
+
+//----------------------------------------------------------
+void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x)
+{
+  h = (TH1F*)(x ? num->ProjectionX(name) : num->ProjectionY(name));
+  TH1F* hden = (TH1F*)(x ? den->ProjectionX("hDenominator") : den->ProjectionY("hDenominator"));
+  h->Divide(h, hden, 1, 1, "B");
+  delete hden;
+}
+
+//----------------------------------------------------------
+std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t numE, Double_t denE)
+{
+  std::pair<Double_t, Double_t> eff(-111, 0);
+  if (den > 0) {
+    //
+    const Double_t ratio = num / den;
+    Double_t ratioErr = 0;
+    if (num > 0)
+      TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
+    //
+    ratioErr *= ratio;
+    eff.first = ratio;
+    eff.second = ratioErr;
+  }
+  Printf("Computed efficiency from %f (%f) / %f (%f) = %f (%f)", num, numE, den, denE, eff.first, eff.second);
+  //
+  return eff;
 }

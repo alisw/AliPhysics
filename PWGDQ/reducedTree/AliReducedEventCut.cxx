@@ -82,7 +82,8 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
    
    AliReducedBaseEvent* event = (AliReducedBaseEvent*)obj;
-   if (fEventTagFilterEnabled && ((fEventTagFilterExclude & (event->EventTag() & fEventFilter)) || !(event->EventTag() & fEventFilter))) return kFALSE;
+   if (fEventTagFilterEnabled && (fEventTagFilterExclude & fEventFilter) && (fEventTagFilterExclude & (event->EventTag() & fEventFilter))) return kFALSE;  // exclusion selection
+   if (fEventTagFilterEnabled && !(fEventTagFilterExclude & fEventFilter) && !(event->EventTag() & fEventFilter)) return kFALSE;                           // inclusion selection
 
    if(fEventTriggerMaskEnabled) {
      if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;

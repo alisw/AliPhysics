@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
   ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx

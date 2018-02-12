@@ -1,6 +1,5 @@
 /***************************************************************************
               Anders Knospe: anders.knospe@cern.ch
-                  last modified on 31/8/2017
   Macro to configure the resonance package for searches for rare resonances.
 
 ****************************************************************************/
@@ -1363,6 +1362,8 @@ Bool_t Config_Lambdapi(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
+  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t MisidentifiedAsKaon=(TrackCutsPi/100000)%1000000;//0=pion assigned pion mass, 1=pion assigned kaon mass (for Xi(1820)- analysis)
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -1566,6 +1567,10 @@ Bool_t Config_Lambdapi(
     out->SetCutID(1,cutID2);
     out->SetDaughter(0,AliRsnDaughter::kLambda);
     out->SetDaughter(1,AliRsnDaughter::kPion);
+    if(MisidentifiedAsKaon){
+      out->SetDaughter(1,AliRsnDaughter::kKaon);
+      out->SetDaughterTrue(1,AliRsnDaughter::kPion);
+    }
     out->SetCharge(0,charge1);
     out->SetCharge(1,charge2[i]);
     out->SetMotherPDG(ipdg[i]);

@@ -26,6 +26,7 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
     void UserExec(Option_t *option);
     void Terminate(Option_t *option);
     void GetMCInfo();
+    virtual void EstimatePIDCutEfficiency();
 
     virtual void ProcessMC();
     void SetWeightToClusters();
@@ -43,7 +44,7 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
     AliAnalysisTaskPHOSSingleSim(const AliAnalysisTaskPHOSSingleSim&); // not implemented
     AliAnalysisTaskPHOSSingleSim& operator=(const AliAnalysisTaskPHOSSingleSim&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSSingleSim, 1);
+    ClassDef(AliAnalysisTaskPHOSSingleSim, 2);
 };
 
 #endif

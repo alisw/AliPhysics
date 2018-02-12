@@ -94,7 +94,7 @@ public:
   virtual TList* GetOutputList();
   virtual TList* AppendOutputList(TList &);
 
-  virtual AliFemtoCorrFctn* Clone();
+  virtual AliFemtoCorrFctn* Clone() const;
 
   Double_t GetQinvTrue(AliFemtoPair*);
 
@@ -137,7 +137,7 @@ AliFemtoModelCorrFctnTrueQ3D::Finish()
 
 inline
 AliFemtoCorrFctn*
-AliFemtoModelCorrFctnTrueQ3D::Clone()
+AliFemtoModelCorrFctnTrueQ3D::Clone() const
 {
   return new AliFemtoModelCorrFctnTrueQ3D(*this);
 }

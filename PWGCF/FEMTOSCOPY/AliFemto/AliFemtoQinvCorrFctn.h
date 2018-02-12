@@ -80,6 +80,8 @@ public:
   virtual TList* GetOutputList();
   void Write();
 
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoQinvCorrFctn(*this); }
+
 private:
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs

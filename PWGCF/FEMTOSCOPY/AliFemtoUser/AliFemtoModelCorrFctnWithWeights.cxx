@@ -21,6 +21,8 @@
 //_______________________
 AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(TH2D *filter1, TH2D *filter2):
 AliFemtoCorrFctn(),
+  filterHist1(filter1),
+  filterHist2(filter2),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -28,9 +30,7 @@ AliFemtoCorrFctn(),
   fNumeratorTrueIdeal(0),
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
-  fQgenQrec(0),
-  filterHist1(filter1),
-  filterHist2(filter2)
+  fQgenQrec(0)
 {
   // Default constructor
   fNumeratorTrue = new TH1D("ModelNumTrue","ModelNumTrue",50,0.0,0.5);
@@ -57,6 +57,8 @@ AliFemtoCorrFctn(),
 //_______________________
 AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(const char *title, TH2D *filter1, TH2D *filter2, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
   AliFemtoCorrFctn(),
+  filterHist1(filter1),
+  filterHist2(filter2),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -64,9 +66,7 @@ AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(const char *t
   fNumeratorTrueIdeal(0),
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
-  fQgenQrec(0),
-  filterHist1(filter1),
-  filterHist2(filter2)
+  fQgenQrec(0)
 {
   // Normal constructor
   char buf[100];
@@ -100,6 +100,8 @@ AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(const char *t
 //_______________________
 AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(const AliFemtoModelCorrFctnWithWeights& aCorrFctn) :
   AliFemtoCorrFctn(),
+  filterHist1(0),
+  filterHist2(0),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -107,9 +109,7 @@ AliFemtoModelCorrFctnWithWeights::AliFemtoModelCorrFctnWithWeights(const AliFemt
   fNumeratorTrueIdeal(0),
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
-  fQgenQrec(0),
-  filterHist1(0),
-  filterHist2(0)
+  fQgenQrec(0)
 {
   // Copy constructor
   if (aCorrFctn.fNumeratorTrue)
@@ -232,7 +232,7 @@ AliFemtoString AliFemtoModelCorrFctnWithWeights::Report()
 //_______________________
 void AliFemtoModelCorrFctnWithWeights::AddRealPair(AliFemtoPair* aPair)
 {
- 
+
  // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
   Double_t weight = fManager->GetWeight(aPair);
 
@@ -256,11 +256,11 @@ void AliFemtoModelCorrFctnWithWeights::AddRealPair(AliFemtoPair* aPair)
   fNumeratorTrue->Fill(aPair->QInv(), totalWeight);
 
   Double_t tQinvTrue = GetQinvTrue(aPair);
-   
+
   fNumeratorTrueIdeal->Fill(tQinvTrue, totalWeight);
-  
+
   //cout<<"Qinv true"<<tQinvTrue<<endl;
-  
+
 }
 //_______________________
 void AliFemtoModelCorrFctnWithWeights::AddMixedPair(AliFemtoPair* aPair)
@@ -357,7 +357,7 @@ void AliFemtoModelCorrFctnWithWeights::Write()
 
 }
 //_______________________
-AliFemtoModelCorrFctnWithWeights* AliFemtoModelCorrFctnWithWeights::Clone()
+AliFemtoModelCorrFctnWithWeights* AliFemtoModelCorrFctnWithWeights::Clone() const
 {
   // Create clone
   AliFemtoModelCorrFctnWithWeights *tCopy = new AliFemtoModelCorrFctnWithWeights(*this);

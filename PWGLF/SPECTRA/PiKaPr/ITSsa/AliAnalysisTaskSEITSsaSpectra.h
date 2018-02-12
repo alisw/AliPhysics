@@ -184,7 +184,7 @@ protected:
 
   Double_t CookdEdx(Double_t* s) const;
   Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
-	
+
   void     AnalyseMCParticles(AliMCEvent* lMCevent, EEvtCut_Type step, bool lHasGoodVtxGen);
   void     CreateDCAcutFunctions();
   void     PostAllData();
@@ -199,11 +199,11 @@ private:
   AliAnalysisTaskSEITSsaSpectra& operator=(const AliAnalysisTaskSEITSsaSpectra& source);
 
   AliESDEvent*       fESD;            ///<  ESD object
-  AliITSPidParams*   fITSPidParams;   //!<! parameterization used for PID
+  AliITSPidParams*   fITSPidParams;   //-> parameterization used for PID
   AliITSPIDResponse* fITSPIDResponse; //!<! class with BB parameterizations
 
   //Standard event cut
-  AliEventCuts fEventCuts;            //!<! basic cut variables for events
+  AliEventCuts fEventCuts;            // basic cut variables for events
 
   /////////////////////////////////////////////////////
   // List
@@ -319,7 +319,7 @@ private:
   Bool_t   fReqBothVtx;             // ask for both trk and SPD vertex
   Bool_t   fExtEventCuts;           // enable use of AliEventCuts for event selection
   //mult sel.
-  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD 	
+  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
   TString      fMultEstimator; // centrality/multiplicity framework estimator name
 	Bool_t       fMultEvSel;
   Float_t      fLowMult;       // low Centrality cut

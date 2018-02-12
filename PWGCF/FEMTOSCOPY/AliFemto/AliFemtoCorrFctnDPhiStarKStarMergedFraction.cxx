@@ -30,10 +30,10 @@ AliFemtoCorrFctn(),
   fDPhiStarKStarTotalNumerator(0),
   fDPhiStarKStarMergedDenominator(0),
   fDPhiStarKStarTotalDenominator(0),
-  fKStarRangeLow(0),
-  fKStarRangeUp(0),
   fDPhiStarRangeLow(0),
   fDPhiStarRangeUp(0),
+  fKStarRangeLow(0),
+  fKStarRangeUp(0),
   fDistanceMax(0.0),
   fMergedFractionLimit(0.0),
   fDEtaMax(0.0),
@@ -86,10 +86,10 @@ AliFemtoCorrFctnDPhiStarKStarMergedFraction::AliFemtoCorrFctnDPhiStarKStarMerged
   fDPhiStarKStarTotalNumerator(0),
   fDPhiStarKStarMergedDenominator(0),
   fDPhiStarKStarTotalDenominator(0),
-  fKStarRangeLow(0),
-  fKStarRangeUp(0),
   fDPhiStarRangeLow(0),
   fDPhiStarRangeUp(0),
+  fKStarRangeLow(0),
+  fKStarRangeUp(0),
   fDistanceMax(0.0),
   fMergedFractionLimit(0.0),
   fDEtaMax(0.0),
@@ -208,8 +208,9 @@ AliFemtoString AliFemtoCorrFctnDPhiStarKStarMergedFraction::Report(){
 //____________________________
 void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pair){
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -293,8 +294,9 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
 //____________________________
 void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pair){
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
