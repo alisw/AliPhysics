@@ -87,9 +87,9 @@ AliFITv7::AliFITv7():  AliFIT(),
   fV0PlusR4(41.3),//From V0A
   fV0PlusR5(72.94),//Computed for z = 325 cm from IP
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
-  fV0PlusSciWd(2.5),//From V0A
+  fV0PlusSciWd(2.),//From V0A
   fV0PlusFraWd(0.2),//From V0A
-  fV0PlusZposition(+316),//Must be changed to specifications from Corrado (meeting 10/11/176)
+  fV0PlusZposition(+318),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
   fV0PlusLightYield(93.75),//From V0A
   fV0PlusLightAttenuation(0.05),//From V0A 
@@ -124,9 +124,9 @@ AliFITv7::AliFITv7(const char *name, const char *title):
   fV0PlusR4(41.3),//From V0A
   fV0PlusR5(72.94),//Computed for z = 325 cm from IP
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
-  fV0PlusSciWd(2.5),//From V0A
+  fV0PlusSciWd(2.),//From V0A
   fV0PlusFraWd(0.2),//From V0A
-  fV0PlusZposition(+316),//Must be changed to specifications from Corrado (meeting 10/11/176)
+  fV0PlusZposition(+318),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
   fV0PlusLightYield(93.75),//From V0A
   fV0PlusLightAttenuation(0.05),//From V0A 
@@ -157,7 +157,7 @@ void AliFITv7::CreateGeometry()
 
   Int_t *idtmed = fIdtmed->GetArray();
   Float_t zdetC = 85; //center of mother volume
-  Float_t zdetA = 334;
+  Float_t zdetA = 334.5;
   
   Int_t idrotm[999];
   Double_t x,y,z;
@@ -302,6 +302,7 @@ void AliFITv7::CreateGeometry()
     stlinC->AddNode(ins,itr,ph);
   }
   
+  
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(stlinA,1,new TGeoTranslation(0,0, zdetA ) );
   // alice->AddNode(stlinC,1,new TGeoTranslation(0,0, -zdetC ) );
@@ -354,7 +355,7 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   //Al housing definition  
   Double_t mgon[16];
 
-  mgon[0]  = -45;
+  mgon[0]  = -45; 
   mgon[1]  = 360.0;
   mgon[2]  = 4;
   mgon[3]  = 4;

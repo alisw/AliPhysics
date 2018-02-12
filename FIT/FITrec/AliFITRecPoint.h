@@ -27,8 +27,8 @@ class AliFITRecPoint: public TObject  {
  
   private: 
  
-    Float_t fTime[160];    // array's TDC
-    Float_t fADCQTC[160];    // array's amplitude
+    Float_t fTime[300];    // array's TDC
+    Float_t fADCQTC[300];    // array's amplitude
 
  
     ClassDef(AliFITRecPoint,1)  // RecPoints (Header) object for set:T0
