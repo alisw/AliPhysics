@@ -32,7 +32,7 @@
 #include "AliHFEtools.h"
 #include  "AliTOFPIDResponse.h"
 #include  "AliTPCPIDResponse.h"
-#include  "AliHelperPID.h"
+//#include  "AliHelperPID.h"
 
 #include "TChain.h"
 #include "TTree.h"
@@ -69,7 +69,7 @@
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
-#include "AliCFManager.h"
+//#include "AliCFManager.h"
 #include "AliSelectNonHFE.h"
 #include "AliHFEpidTPC.h"
 #include "TMath.h"
