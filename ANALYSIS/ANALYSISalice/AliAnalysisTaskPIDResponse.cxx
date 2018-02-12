@@ -276,6 +276,7 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     }
   } else {
     // we have MC
+
     if (fIsTunedOnData) {
       if (prodInfo.HasLPMPass() && prodInfo.GetRecoPass()!=fRecoPassTuned) {
         AliWarning ("******* Tuned on data reco pass mismatch *******");
@@ -285,6 +286,15 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
         AliWarning ("        falling back to the reco pass from the 'LPMRawPass=' tag");
         fRecoPassTuned = prodInfo.GetRecoPass();
       }
+
+      if (!prodInfo.GetAnchorPassName().IsNull()) {
+        AliInfoF("The anchored reco pass name will be used from AliProdInfo (%s)",prodInfo.GetAnchorPassName().Data());
+        fRecoPassTuned = prodInfo.GetRecoPass();
+        fRecoPassNameTuned = prodInfo.GetAnchorPassName();
+      }
+    }
+    else {
+      AliWarning("You are running on MC but didn't request tune on data");
     }
   }
 

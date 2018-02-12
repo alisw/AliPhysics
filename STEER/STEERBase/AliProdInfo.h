@@ -16,11 +16,23 @@
 #include <TObject.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <AliOADBContainer.h>
 
 class AliProdInfo : public TNamed {
 public:
   enum {kParsedBit=BIT(14)};
-  enum ETagType {kAliroot,kRoot,kOutDir,kPass,kProdType,kProdTag,kPeriod, kNTags};
+  enum ETagType {
+    kAliroot,
+    kRoot,
+    kOutDir,
+    kPass,
+    kProdType,
+    kProdTag,
+    kRunNumber,
+    kAnchorRun,
+    kAnchorProduction,
+    kAnchorPassName,
+    kNTags};
 
   AliProdInfo();
   AliProdInfo(const TString& name, const TString& title);
@@ -32,13 +44,18 @@ public:
   //
   const TString& GetTag(ETagType tag) { return fTags[tag]; }
   //
-  TString GetLHCPeriod() const {return fPeriod;}
-  TString GetAlirootVersion() const {return fAlirootVersion;}
+  const TString& GetLHCPeriod() const {return fAnchorProduction;}
+  const TString& GetAlirootVersion() const {return fAlirootVersion;}
   Int_t GetAlirootSvnVersion() const {return fAlirootSvnVersion;}
-  TString GetRootVersion() const {return fRootVersion;}
+  const TString& GetRootVersion() const {return fRootVersion;}
   Int_t GetRootSvnVersion() const {return fRootSvnVersion;}
   Int_t GetRecoPass() const {return fRecoPass;}
   const TString& GetRecoPassName() const { return fRecoPassName; }
+  const TString& GetAnchorProduction() const { return fAnchorProduction; }
+  const TString& GetAnchorPassName() const { return fAnchorPassName; }
+
+  void SetPassNameMapFileName(const TString& name) { fPassNameMapFileName = name; }
+  const TString& GetPassNameMapFileName() const { return fPassNameMapFileName; }
 
   Bool_t IsMC() const {return fMcFlag;}
   //
@@ -58,16 +75,25 @@ private:
   Int_t   fAlirootSvnVersion;     // aliroot svn numbering
   Int_t   fRootSvnVersion;        // root svn numbering
   Int_t   fRecoPass;              // Reconstruction pass
+  Int_t   fRunNumber;             // Run number
+  Int_t   fAnchorRun;             // MC production anchor run number
   //
   TString fTags[kNTags];          // Array with tag values
-  TString fPeriod;                // LHC period
   TString fProductionTag;         // production tag
   TString fAlirootVersion;        // aliroot version used producing data
   TString fRootVersion;           // root version used producing data
   TString fRecoPassName;          // Full name of the reconstruction pass, deduced from the output file structure
+  TString fAnchorProduction;      // Anchor production LHC period
+  TString fAnchorPassName;        // Full name of the anchored pass name
 
+  TString fPassNameMapFileName;   // name of the OADB file containing the maps with production pass matching
+  AliOADBContainer fPassNameMap;  //! container to map production to a pass name
+
+  void UpdateMCInfoFromOADB();
+  void CheckForSpecialPassName();
+  void SetNumericRecoPass(const TString& name);
   //
-  ClassDef(AliProdInfo, 4);     // Combined PID using priors
+  ClassDef(AliProdInfo, 5);     // Combined PID using priors
 };
 
 #endif
