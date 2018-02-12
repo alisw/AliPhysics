@@ -127,6 +127,7 @@ set(SRCS
   AliAnalysisHFETPCTOFBeauty.cxx	
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
+  AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx
   )
 
