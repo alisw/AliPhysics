@@ -2491,7 +2491,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   TString percsuffix="perc";
   if(cutmeth==kPercCutVsCent) percsuffix="percVsCent";
   else if(cutmeth==kPercentileCut) percsuffix="percentile";
-  if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {
+  if(cutmeth==kPercCut || cutmeth==kPercCutVsCent || cutmeth==kPercentileCut) {
     outnames[0] = Form("%s/InvMassDeltaPhi%s_%s_%0.f%s.pdf",outputdir.Data(),suffix.Data(),q2regionname.Data(),q2perccut,percsuffix.Data());
     outnames[1] = Form("%s/InvMassDeltaPhi_fs%s_%s_%0.f%s.pdf",outputdir.Data(),suffix.Data(),q2regionname.Data(),q2perccut,percsuffix.Data());
     outnames[2] = Form("%s/InvMassDeltaPhi_fs%s_%s_%0.f%s.root",outputdir.Data(),suffix.Data(),q2regionname.Data(),q2perccut,percsuffix.Data());
