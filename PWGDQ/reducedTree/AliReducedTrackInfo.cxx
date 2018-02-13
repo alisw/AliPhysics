@@ -59,7 +59,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDGTUtracklets(0),
   fTRDGTUlayermask(0),
   fTRDGTUpt(0.),
-  fTRDGTUsagitta(0.0),
+  fTRDGTUsagitta(2.0),
   fTRDGTUPID(0.),
   fCaloClusterId(-999),
   fTrackParam(),
