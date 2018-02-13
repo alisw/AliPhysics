@@ -49,6 +49,7 @@
 #include "AliAODCaloCells.h"
 #include "AliEMCALGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 #include "AliAnalysisTaskEMCALTimeCalib.h"
 
@@ -1480,7 +1481,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
 {
   if(fBadChannelMapSet) return;
   AliOADBContainer *contBC=new AliOADBContainer("");
-  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
+  contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels"); 
   printf("contBC %p, ent  %d\n",contBC,contBC->GetNumberOfEntries());
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
   if(arrayBC) {
