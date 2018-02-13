@@ -41,6 +41,7 @@ set(SRCS
     AliTOFReconstructor.cxx
     AliTOFT0maker.cxx
     AliTOFT0v1.cxx
+    AliTOFT0v2.cxx
     AliTOFtrack.cxx
     AliTOFtracker.cxx
     AliTOFtrackerMI.cxx

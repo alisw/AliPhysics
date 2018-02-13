@@ -13,231 +13,47 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTOFT0v1.cxx,v 1.8 2010/01/19 16:32:20 noferini Exp $ */
+/* $Id: AliTOFT0v2.cxx,v 1.8 2017/02/13 16:32:20 noferini Exp $ */
 
-//_________________________________________________________________________
-// This is a TTask that made the calculation of the Time zero using TOF.
-// Description: The algorithm used to calculate the time zero of interaction
-// using TOF detector is the following.
-// We select in the ESD some "primary" particles - or tracks in the following - 
-// that strike the TOF detector (the larger part are pions, kaons or protons). 
-// We choose a set of 10 selected tracks, for each track You have the length
-// of the track when the TOF is reached, 
-// the momentum and the time of flight
-// given by the TOF detector.
-// Let consider now only one set of 10 tracks (the algorithm is the same for all sets).
-// Assuming the (mass) hypothesis that each track can be AUT a pion, AUT a kaon, AUT a proton,
-// we consider all the 3 at 10 possible cases. 
-// For each track in each (mass) configuration
-// (a configuration can be e.g. pion/pion/kaon/proton/pion/proton/kaon/kaon/pion/pion)
-// we calculate the time zero (we know in fact the velocity of the track after 
-// the assumption about its mass, the time of flight given by the TOF, and the 
-// corresponding path travelled till the TOF detector). Then for each mass configuration we have
-// 10 time zero and we can calculate the ChiSquare for the current configuration using the 
-// weighted mean over all 10 time zero.
-// We call the best assignment the mass configuration that gives the minimum value of the ChiSquare. 
-// We plot the weighted mean over all 10 time zero for the best assignment, 
-// the ChiSquare for the best assignment and the corresponding confidence level.
-// The strong assumption is the MC selection of primary particles. It will be introduced
-// in the future also some more realistic simulation about this point. 
-// Use case:
-// root [0] AliTOFT0v1 * tzero = new AliTOFT0v1("galice.root")
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root [1] tzero->ExecuteTask()
-// root [2] tzero->ExecuteTask("tim")
-//             // available parameters:
-//             tim - print benchmarking information
-//             all - print usefull informations about the number of misidentified tracks 
-//                   and a comparison about the true configuration (known from MC) and the best
-//                   assignment
-// Different Selections for pp and Pb-Pb: Momentum Range, Max Time, # pions 
-//-- Author: F. Pierella
-//-- Mod By Silvia Arcelli, Francesco Noferini, Barbara Guerzoni
-//-- AliTOFT0v1 contains code speed up provided by Jens Wiechula (look-up table
-//   for Power3)
-//////////////////////////////////////////////////////////////////////////////
-
+#include "AliTOFT0v2.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
-#include "AliTOFT0v1.h"
 #include "TBenchmark.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
 
-ClassImp(AliTOFT0v1)
-//____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1(const AliTOFT0v1 &source):
-  TObject(source),
-  fLowerMomBound(source.fLowerMomBound),
-  fUpperMomBound(source.fUpperMomBound),  
-  fTimeCorr(source.fTimeCorr), 
-  fEvent(source.fEvent),
-  fPIDesd(source.fPIDesd),
-  fTracks(new TObjArray(10)),
-  fGTracks(new TObjArray(10)),
-  fTracksT0(new TObjArray(10)),
-  fOptFlag(source.fOptFlag)
-
-{
-  Init(NULL);
-
-  //initialise lookup table for power 3
-  // a set should only have 10 tracks a t maximum
-  // so up to 15 should be more than enough
-  for (Int_t i=0; i<15; ++i) {
-    fLookupPowerThree[i]=ToCalculatePower(3,i);
-  }
-}
-        
-//____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1(AliESDpid *extPID):
-  TObject(),
-  fLowerMomBound(0.5),
-  fUpperMomBound(3),  
-  fTimeCorr(0.), 
-  fEvent(0x0),
-  fPIDesd(extPID),
-  fTracks(new TObjArray(10)),
-  fGTracks(new TObjArray(10)),
-  fTracksT0(new TObjArray(10)),
-  fOptFlag(kFALSE)
-{
-  //
-  // default constructor
-  //
-  if(AliPID::ParticleMass(0) == 0) new AliPID();
-
-  if(!fPIDesd){
-    fPIDesd = new AliESDpid();
-  }
-
-  Init(NULL);
-
-  //initialise lookup table for power 3
-  // a set should only have 10 tracks a t maximum
-  // so up to 15 should be more than enough
-  for (Int_t i=0; i<15; ++i) {
-    fLookupPowerThree[i]=ToCalculatePower(3,i);
-  }
-}
+ClassImp(AliTOFT0v2)
 
 //____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1(AliESDEvent* event,AliESDpid *extPID): 
-  TObject(),
-  fLowerMomBound(0.5),
-  fUpperMomBound(3.0),  
-  fTimeCorr(0.), 
-  fEvent(event),
-  fPIDesd(extPID),
-  fTracks(new TObjArray(10)),
-  fGTracks(new TObjArray(10)),
-  fTracksT0(new TObjArray(10)),
-  fOptFlag(kFALSE)
-{
-  //
-  // real constructor
-  //
-  if(AliPID::ParticleMass(0) == 0) new AliPID();
+AliTOFT0v2::AliTOFT0v2(AliESDpid *extPID):
+  AliTOFT0v1(extPID),
+  fCurrentStartTime(0)
+{}
 
-  if(!fPIDesd){
-    fPIDesd = new AliESDpid();
+//____________________________________________________________________________ 
+AliTOFT0v2::AliTOFT0v2(AliESDEvent* event,AliESDpid *extPID): 
+  AliTOFT0v1(event,extPID),
+  fCurrentStartTime(0)
+{}
+//____________________________________________________________________________ 
+AliTOFT0v2::~AliTOFT0v2()
+{}
+//____________________________________________________________________________ 
+void AliTOFT0v2::Reset(){
+  for(Int_t i=0;i < fgkMaxTracks;i++){
+    fStartTimeIndex[i] = -1;
+    fTrackLabel[i] = -1;
   }
-
-  Init(event);
-  //initialise lookup table for power 3
-  for (Int_t i=0; i<15; ++i) {
-    fLookupPowerThree[i]=Int_t(TMath::Power(3,i));
-  }
+  fCurrentStartTime = 0;
 }
 //____________________________________________________________________________ 
-AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
-{
- //
-  // assign. operator
-  //
-
-  if (this == &tzero)
-    return *this;
-  
-  fLowerMomBound=tzero.fLowerMomBound;
-  fUpperMomBound=tzero.fUpperMomBound;  
-  fTimeCorr=tzero.fTimeCorr; 
-  fEvent=tzero.fEvent;
-  fT0SigmaT0def[0]=tzero.fT0SigmaT0def[0];
-  fT0SigmaT0def[1]=tzero.fT0SigmaT0def[1];
-  fT0SigmaT0def[2]=tzero.fT0SigmaT0def[2];
-  fT0SigmaT0def[3]=tzero.fT0SigmaT0def[3];
-
-  fTracks=tzero.fTracks;
-  fGTracks=tzero.fGTracks;
-  fTracksT0=tzero.fTracksT0;
-
-  for (Int_t ii=0; ii<tzero.fTracks->GetEntries(); ii++)
-    fTracks->AddLast(tzero.fTracks->At(ii));
-
-  for (Int_t ii=0; ii<tzero.fGTracks->GetEntries(); ii++)
-    fGTracks->AddLast(tzero.fGTracks->At(ii));
-
-  for (Int_t ii=0; ii<tzero.fTracksT0->GetEntries(); ii++)
-    fTracksT0->AddLast(tzero.fTracksT0->At(ii));
-  
-  fOptFlag=tzero.fOptFlag;
-
-  return *this;
-}
-
 //____________________________________________________________________________ 
-AliTOFT0v1::~AliTOFT0v1()
-{
-  // dtor
-  fEvent=NULL;
-  
-  if (fTracks) {
-    fTracks->Clear();
-    delete fTracks;
-    fTracks=0x0;
-  }
-
-  if (fGTracks) {
-    fGTracks->Clear();
-    delete fGTracks;
-    fGTracks=0x0;
-  }
-
-  if (fTracksT0) {
-    fTracksT0->Clear();
-    delete fTracksT0;
-    fTracksT0=0x0;
-  }
-
-
-}
-//____________________________________________________________________________ 
-
-void
-AliTOFT0v1::Init(AliESDEvent *event) 
-{
-
-  /* 
-   * init
-   */
-
-  fEvent = event;
-  fT0SigmaT0def[0]=0.;
-  fT0SigmaT0def[1]=0.6;
-  fT0SigmaT0def[2]=0.;
-  fT0SigmaT0def[3]=0.;
-
-  Reset();
-}
-//____________________________________________________________________________ 
-Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut,Int_t isCalibrationMode) 
+Double_t * AliTOFT0v2::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut,Int_t isCalibrationMode) 
 { 
   // calibration mode (default=0): 0=no cal, 1=first half sample of tracks, 2=second half sample of tracks
 
   TBenchmark *bench=new TBenchmark();
   bench->Start("t0computation");
-
   // Caluclate the Event Time using the ESD TOF time
 
   fT0SigmaT0def[0]=0.;
@@ -252,14 +68,16 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //     cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
 //   }
   
-  
+  Float_t confLevelThr = 0.001;
+
   Int_t nsets=0;
   Int_t nUsedTracks=0;
   Int_t ngoodsetsSel= 0;
-  Float_t t0bestSel[300];
-  Float_t eT0bestSel[300];
-  Float_t chiSquarebestSel[300];
-  Float_t confLevelbestSel[300];
+  Float_t t0bestSel[350];
+  Float_t eT0bestSel[350];
+  Int_t ntracksUsedInSample[350];
+  Float_t chiSquarebestSel[350];
+  Float_t confLevelbestSel[350];
   Float_t t0bestallSel=0.;
   Float_t eT0bestallSel=0.;
   Float_t sumWt0bestallSel=0.;
@@ -276,11 +94,18 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   Int_t ngoodtrk=0;
   Int_t ngoodtrkt0 =0;
   Float_t meantime =0;
-  
+  Int_t ntracksinset=0;
+
   // First Track loop, Selection of good tracks
+
+  Int_t ntrackmapped = 0;
+  Int_t internalMapping[fgkMaxTracks]; // internal mapping
+  std::fill_n(internalMapping, fgkMaxTracks, -1);
+  Int_t internalMappingSample[350];
 
   fTracks->Clear();
   for (Int_t itrk=0; itrk<ntrk; itrk++) {
+   if (ntrackmapped >= fgkMaxTracks) continue;
     AliESDtrack *t=fEvent->GetTrack(itrk);
     Double_t momOld=t->GetP();
     Double_t mom=momOld-0.0036*momOld;
@@ -289,6 +114,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 
     if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
     if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
+
     Double_t time=t->GetTOFsignal();
     
     time*=1.E-3; // tof given in nanoseconds	   
@@ -301,8 +127,17 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 
     if(isCalibrationMode && sample!=isCalibrationMode) continue;
 
+    // mapping of TOF tracks
+    fTrackLabel[ntrackmapped] = itrk;
+    ntrackmapped++;
+
+    //    printf("%i) status=%i\n",ntrackmapped-1,fStartTimeIndex[ntrackmapped-1]);
+
+    if(fStartTimeIndex[ntrackmapped-1] != -1) continue;
+
     meantime+=time;
     fTracks->AddLast(t);
+    internalMapping[ngoodtrk] = ntrackmapped-1;
     ngoodtrk++;
   }
 
@@ -311,13 +146,11 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   if(ngoodtrk>22) nmaxtracksinset = 6;
 
   fGTracks->Clear();
+
   for (Int_t jtrk=0; jtrk< fTracks->GetEntries(); jtrk++) {
     AliESDtrack *t=(AliESDtrack*)fTracks->At(jtrk);
-    //    Double_t time=t->GetTOFsignal();
-    //    if((time-meantime*1.E3)<50.E3){ // For pp and per 
     fGTracks->AddLast(t);
     ngoodtrkt0++;
-      //    }
   }
 
   fTracks->Clear();
@@ -325,7 +158,6 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   Int_t nseteq = (ngoodtrkt0-1)/nmaxtracksinset + 1;
   Int_t nmaxtracksinsetCurrent=ngoodtrkt0/nseteq;
   if(nmaxtracksinsetCurrent*nseteq < ngoodtrkt0) nmaxtracksinsetCurrent++;
-
 
   if(ngoodtrkt0<2){
     t0def=-999;
@@ -338,7 +170,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   }
   if(ngoodtrkt0>=2){
   // Decide how many tracks in set 
-    Int_t ntracksinset = std::min(ngoodtrkt0,nmaxtracksinsetCurrent);
+    ntracksinset = std::min(ngoodtrkt0,nmaxtracksinsetCurrent);
     Int_t nset=1;
 
     if(ngoodtrkt0>nmaxtracksinsetCurrent) {nset= (Int_t)(ngoodtrkt0/ntracksinset)+1;} 
@@ -360,6 +192,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  if(index < fGTracks->GetEntries()){
 	    AliESDtrack *t=(AliESDtrack*)fGTracks->At(index);
 	    fTracksT0->AddLast(t);
+	    fStartTimeIndex[internalMapping[index]] = fCurrentStartTime;
 	    ntracksinsetmy++;
 	  }
 	}
@@ -454,7 +287,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	// Then, Combinatorial Algorithm
 	
-	if(ntracksinsetmy<2 )break;
+	//	if(ntracksinsetmy<2 )break;
 	
 	for (Int_t j=0; j<ntracksinsetmy; j++) {
 	  imass[j] = 3;
@@ -529,7 +362,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  chi2cut[j] = chi2cut[1] * TMath::Sqrt(j*1.);
 	}
 	
-	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1]/ntracksinsetmy + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
+	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1] + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
 	
 	//	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
 	
@@ -538,10 +371,14 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	Bool_t usetrack[nmaxtracksinsetMax];
 	for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	  usetrack[icsq] = kTRUE;
-	  if((bestchisquare[icsq] > chisquarebest*0.5 && ntracksinsetmy > 2) || (bestchisquare[icsq] > chi2singlecut)){
+	  if(TMath::Prob(bestchisquare[icsq],1) < confLevelThr){
+	    //  printf("check %f %f %i %f %f- P= %f\n",bestchisquare[icsq],chisquarebest,ntracksinsetmy,chi2singlecut,chi2cut[ntracksinsetmy-1],TMath::Prob(bestchisquare[icsq],ntracksinsetmy-1));
+	    //	    getchar();
 	      kRedoT0 = kTRUE;
 	      ntracksinsetmyCut--;
 	      usetrack[icsq] = kFALSE;
+	      Int_t index = icsq+i*ntracksinset;
+	      if(internalMapping[index] > -1) fStartTimeIndex[internalMapping[index]] = -1;
 	      //	      printf("tracks chi2 = %f\n",bestchisquare[icsq]);
 	  }
 	} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
@@ -616,37 +453,43 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	// Sets with decent chisquares
 	//	printf("Chi2best of the set = %f \n",chisquarebest);
+
+	Double_t dblechisquare=(Double_t)chisquarebest;
+	confLevel=(Float_t)TMath::Prob(dblechisquare,ntracksinsetmyCut-1); 
 	
-	if(chisquarebest<999.){
-	  Double_t dblechisquare=(Double_t)chisquarebest;
-	  confLevel=(Float_t)TMath::Prob(dblechisquare,ntracksinsetmyCut-1); 
-
-	  Int_t ntrackincurrentsel=0;
-	  for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
-
-	    if(! usetrack[icsq]) continue;
-	    
-	    ntrackincurrentsel++;
-	  }
+	Int_t ntrackincurrentsel=0;
+	for(Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
 	  
-	  //	  printf("%i) CL(Chi2) = %f < 0.01\n",ngoodsetsSel,confLevel);
+	  if(! usetrack[icsq]) continue;
+	  
+	  ntrackincurrentsel++;
+	}
+	
+	//	  printf("%i) CL(Chi2) = %f < 0.01\n",ngoodsetsSel,confLevel);
+	
+	// Pick up only those with C.L. >confLevelThr
+	if(confLevel>confLevelThr && ngoodsetsSel<350){
+	  chiSquarebestSel[ngoodsetsSel]=chisquarebest;
+	  confLevelbestSel[ngoodsetsSel]=confLevel;
+	  ntracksUsedInSample[ngoodsetsSel]=ntracksinsetmyCut;
+	  t0bestSel[ngoodsetsSel]=t0best/eT0best/eT0best;
+	  eT0bestSel[ngoodsetsSel]=1./eT0best/eT0best;
+	  t0bestallSel += t0best/eT0best/eT0best;
+	  sumWt0bestallSel += 1./eT0best/eT0best;
+	  internalMappingSample[ngoodsetsSel] = i;
+	  ngoodsetsSel++;
+	  ngoodtrktrulyused+=ntracksinsetmyCut;
+	  //	    printf("T0best = %f +/- %f (%i-%i) -- conflevel = %f\n",t0best,eT0best,ntrackincurrentsel,npionbest,confLevel);
+	}
+	else{
+	  // free all tracks in the current sample from start time computation
+	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++){
+	    Int_t index = icsq+i*ntracksinset;
+	    if(internalMapping[index] > -1) fStartTimeIndex[internalMapping[index]] = -1;
+	  }  
+	  //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
+	}
 
-	  // Pick up only those with C.L. >1%
-	  if(confLevel>0.01 && ngoodsetsSel<200){
-	    chiSquarebestSel[ngoodsetsSel]=chisquarebest;
-	    confLevelbestSel[ngoodsetsSel]=confLevel;
-	    t0bestSel[ngoodsetsSel]=t0best/eT0best/eT0best;
-	    eT0bestSel[ngoodsetsSel]=1./eT0best/eT0best;
-	    t0bestallSel += t0best/eT0best/eT0best;
-	    sumWt0bestallSel += 1./eT0best/eT0best;
-	    ngoodsetsSel++;
-	    ngoodtrktrulyused+=ntracksinsetmyCut;
-	    //	    printf("T0best = %f +/- %f (%i-%i) -- conflevel = %f\n",t0best,eT0best,ntrackincurrentsel,npionbest,confLevel);
-	  }
-	  else{
-	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
-	  }
-	}	
 	fTracksT0->Clear();
 	nsets++;
 	
@@ -667,6 +510,12 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 		    //	      printf("not rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
 		}
 		else{
+		  ngoodtrktrulyused -= ntracksUsedInSample[itz];
+		  // free all tracks in the current sample from start time computation
+		  for (Int_t icsq=0; icsq<ntracksinset;icsq++){
+		    Int_t index = icsq+internalMappingSample[itz]*ntracksinset;
+		    if(internalMapping[index] > -1) fStartTimeIndex[internalMapping[index]] = -1;
+		  }
 		  //	      printf("rejected %f +/- %f\n",t0bestSel[itz]/eT0bestSel[itz],1./TMath::Sqrt(eT0bestSel[itz]));
 		}
 	    }
@@ -712,148 +561,18 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   fT0SigmaT0def[4]=bench->GetRealTime("t0computation");
   fT0SigmaT0def[5]=bench->GetCpuTime("t0computation");
 
+  Int_t nused=0;
+  for(Int_t i=0;i < 2000;i++){
+    if(fStartTimeIndex[i]==fCurrentStartTime) nused++;
+  }
+  //  printf("Track flagged = %i\n",nused);
 //   bench->Print("t0computation");
 //   printf("(%4.1f < p < %4.1f GeV/c) T0-TOF =%9.1f +/- %5.1f ps (n_track = %i)\n\n",pMinCut,pMaxCut,-fT0SigmaT0def[0]*1000,fT0SigmaT0def[1]*1000,Int_t(fT0SigmaT0def[3]));
 
   delete bench;
   bench=NULL;
 
+  fCurrentStartTime++;
+
   return fT0SigmaT0def;
   }
-//__________________________________________________________________
-Float_t AliTOFT0v1::GetMomError(Int_t index, Float_t mom, Float_t texp) const
-{
-  // Take the error extimate for the TOF time in the track reconstruction
-
-  static const Double_t kMasses[]={
-    0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
-  };
-
-  Double_t mass=kMasses[index+2];
-
-  Float_t sigma = fPIDesd->GetTOFResponse().GetExpectedSigma(mom,texp*1000,mass);
-
-  return sigma;
-}
-
-//__________________________________________________________________
-Bool_t AliTOFT0v1::AcceptTrack(AliESDtrack *track)
-{
-
-  /* TPC refit */
-  if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
-  /* do not accept kink daughters */
-  if (track->GetKinkIndex(0)>0) return kFALSE;
-  /* N clusters TPC */
-  if (track->GetTPCclusters(0) < 50) return kFALSE;
-  /* chi2 TPC */
-  if (track->GetTPCchi2()/Float_t(track->GetTPCclusters(0)) > 3.5) return kFALSE;
-  /* sigma to vertex */
-  if (GetSigmaToVertex(track) > 4.) return kFALSE;
-  
-  /* accept track */
-  return kTRUE;
-
-}
-
-//____________________________________________________________________
-Float_t AliTOFT0v1::GetSigmaToVertex(AliESDtrack* esdTrack) const
-{
-  // Calculates the number of sigma to the vertex.
-
-  Float_t b[2];
-  Float_t bRes[2];
-  Float_t bCov[3];
-  esdTrack->GetImpactParameters(b,bCov);
-  
-  if (bCov[0]<=0 || bCov[2]<=0) {
-    bCov[0]=0; bCov[2]=0;
-  }
-  bRes[0] = TMath::Sqrt(bCov[0]);
-  bRes[1] = TMath::Sqrt(bCov[2]);
-
-  // -----------------------------------
-  // How to get to a n-sigma cut?
-  //
-  // The accumulated statistics from 0 to d is
-  //
-  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
-  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
-  //
-  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-d**2)/2)
-  // Can this be expressed in a different way?
-
-  if (bRes[0] == 0 || bRes[1] ==0)
-    return -1;
-
-  //Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
-  Float_t d = TMath::Sqrt(ToCalculatePower(b[0]/bRes[0],2) + ToCalculatePower(b[1]/bRes[1],2));
-
-  // work around precision problem
-  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
-  // 1e-15 corresponds to nsigma ~ 7.7
-  if (TMath::Exp(-d * d / 2) < 1e-15)
-    return 1000;
-
-  Float_t nSigma = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
-  return nSigma;
-}
-//____________________________________________________________________
-
-Bool_t AliTOFT0v1::CheckTPCMatching(AliESDtrack *track,Int_t imass) const{
-    Bool_t status = kFALSE;
-    
-    Double_t exptimes[AliPID::kSPECIESC];
-    track->GetIntegratedTimes(exptimes,AliPID::kSPECIESC);
-    
-    Float_t dedx = track->GetTPCsignal();
-    
-    Double_t ptpc[3];
-    track->GetInnerPxPyPz(ptpc);
-    Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
-
-    if(imass > 2 || imass < 0) return status;
-    Int_t i = imass+2;
-    
-    AliPID::EParticleType type=AliPID::EParticleType(i);
-    
-    Float_t dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,type);
-    Float_t resolutionTPC = fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),type);
-	
-    if(TMath::Abs(dedx - dedxExp) < 5 * resolutionTPC){
-	status = kTRUE;
-    }
-    
-    return status;
-}
-
-//____________________________________________________________________
-Float_t AliTOFT0v1::ToCalculatePower(Float_t base, Int_t exponent) const
-{
-  //
-  // Returns base^exponent
-  //
-
-  Float_t power=1.;
-
-  for (Int_t ii=exponent; ii>0; ii--)
-      power=power*base;
-
-  return power;
-
-}
-//____________________________________________________________________
-Int_t AliTOFT0v1::ToCalculatePower(Int_t base, Int_t exponent) const
-{
-  //
-  // Returns base^exponent
-  //
-
-  Int_t power=1;
-
-  for (Int_t ii=exponent; ii>0; ii--)
-      power=power*base;
-
-  return power;
-
-}

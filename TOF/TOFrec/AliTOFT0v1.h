@@ -27,7 +27,8 @@ public:
   AliTOFT0v1(AliESDEvent *event,AliESDpid *extPID=NULL); // overloaded constructor
   virtual ~AliTOFT0v1() ; // dtor
  
-  Double_t* DefineT0(Option_t *option,Float_t pMinCut=3,Float_t pMaxCut=5,Int_t isCalibrationMode=0); 
+  virtual void Reset() {}
+  virtual Double_t* DefineT0(Option_t *option,Float_t pMinCut=3,Float_t pMaxCut=5,Int_t isCalibrationMode=0); 
     
   void          SetMomBounds(Float_t pLow, Float_t pUp) { fLowerMomBound=pLow; fUpperMomBound=pUp;} // momenta are expressed in [GeV/c]
   void          SetTimeCorr(Float_t timecorr) {fTimeCorr=timecorr;} //in ns!!!
@@ -39,7 +40,7 @@ public:
   void SetOptimization(Bool_t flag=kFALSE){fOptFlag=flag;};
   void Init(AliESDEvent *event); // init
 
- private:
+ protected:
 
   Float_t ToCalculatePower(Float_t base, Int_t exponent) const ;
   Int_t   ToCalculatePower(Int_t base, Int_t exponent) const ;
