@@ -893,11 +893,19 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   //////////////
   //if Tender //
   //////////////
+  /*
   if(fUseTender){
     //new branches with calibrated tracks and clusters
     if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
     if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("ESDFilterTracks"));
     fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+  }
+  */
+  if(fUseTender){
+    //new branches with calibrated tracks and clusters
+    if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
+    if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("ESDFilterTracks"));
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
   }
 
   ////////////////////
