@@ -72,11 +72,12 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
 
   switch (type) {
   case kHybridTracks:
-    AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(this, period);
+    AliDebugStream(1) << "Generate std hybrid track cuts" << std::endl;
+    PWG::EMCAL::AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(this, period);
     break;
 
   case kTPCOnlyTracks:
-    AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
+    PWG::EMCAL::AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
     break;
 
   case kITSPureTracks:
@@ -85,6 +86,7 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
 
   case kHybridTracks2010wNoRefit:
   {
+    AliDebugStream(1) << "Generate 2010 hybrid track cuts wNoRefit" << std::endl;
     auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2010);
     hybridcuts->SetUseNoITSrefitTracks(kTRUE);
     AddTrackCuts(hybridcuts);
@@ -93,7 +95,8 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
 
   case kHybridTracks2010woNoRefit:
   {
-    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2010);
+    AliDebugStream(1) << "Generate 2010 hybrid track cuts woNoRefit" << std::endl;
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_woNoRefit", AliEmcalESDHybridTrackCuts::kDef2010);
     hybridcuts->SetUseNoITSrefitTracks(kFALSE);
     AddTrackCuts(hybridcuts);
     break;
@@ -101,7 +104,8 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
 
   case kHybridTracks2011wNoRefit:
   {
-    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
+    AliDebugStream(1) << "Generate 2011 hybrid track cuts wNoRefit" << std::endl;
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2011_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
     hybridcuts->SetUseNoITSrefitTracks(kTRUE);
     AddTrackCuts(hybridcuts);
     break;
@@ -109,7 +113,8 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
 
   case kHybridTracks2011woNoRefit:
   {
-    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2010_wNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
+    AliDebugStream(1) << "Generate 2011 hybrid track cuts woNoRefit" << std::endl;
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2011_woNoRefit", AliEmcalESDHybridTrackCuts::kDef2011);
     hybridcuts->SetUseNoITSrefitTracks(kFALSE);
     AddTrackCuts(hybridcuts);
     break;
@@ -141,14 +146,14 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionESD::IsTrackAccepted
   trackbitmap.ResetAllBits();
   UInt_t cutcounter = 0;
   AliDebugStream(2) << "Found cut array with " << fListOfCuts->GetEntries() << " cuts\n" << std::endl;
-  TObjArray selectionStatus;
-  selectionStatus.SetOwner(false);
+  TClonesArray selectionStatus("PWG::EMCAL::AliEmcalTrackSelResultPtr", fListOfCuts->GetEntries());
+  selectionStatus.SetOwner(kTRUE);
   for(auto cutIter : *fListOfCuts){
     AliDebugStream(3) << "executing nect cut: " << static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject())->GetName() << std::endl;
     PWG::EMCAL::AliEmcalCutBase *mycuts = static_cast<PWG::EMCAL::AliEmcalCutBase *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
     PWG::EMCAL::AliEmcalTrackSelResultPtr selresult = mycuts->IsSelected(esdt);
-    selectionStatus.Add(&selresult);
     if(selresult) trackbitmap.SetBitNumber(cutcounter);
+    new(selectionStatus[selectionStatus.GetEntries()]) PWG::EMCAL::AliEmcalTrackSelResultPtr(selresult);
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set

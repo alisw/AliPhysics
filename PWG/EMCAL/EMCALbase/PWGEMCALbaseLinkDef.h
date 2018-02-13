@@ -12,7 +12,6 @@
 #pragma link C++ class AliEmcalContainer+;
 #pragma link C++ class AliEmcalContainerUtils+;
 #pragma link C++ class AliEmcalDownscaleFactorsOCDB+;
-#pragma link C++ class AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPythiaInfo+;
@@ -44,6 +43,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalAODTPCOnlyTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODHybridTrackCuts+;
