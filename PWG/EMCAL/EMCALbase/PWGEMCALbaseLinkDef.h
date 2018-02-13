@@ -11,14 +11,9 @@
 #pragma link C++ class AliClusterContainer+;
 #pragma link C++ class AliEmcalContainer+;
 #pragma link C++ class AliEmcalContainerUtils+;
-#pragma link C++ class AliEmcalDownscaleFactorsOCDB+;
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPythiaInfo+;
-#pragma link C++ class AliEmcalManagedObject+;
-#pragma link C++ class AliEmcalTrackSelection+;
-#pragma link C++ class AliEmcalTrackSelectionESD+;
-#pragma link C++ class AliEmcalTrackSelectionAOD+;
 #pragma link C++ class AliParticleContainer+;
 #pragma link C++ class AliPicoTrack+;
 #pragma link C++ class AliMCParticleContainer+;
@@ -32,6 +27,11 @@
 
 #pragma link C++ namespace PWG;
 #pragma link C++ namespace PWG::EMCAL;
+#pragma link C++ class PWG::EMCAL::AliEmcalDownscaleFactorsOCDB+;
+#pragma link C++ class PWG::EMCAL::AliEmcalManagedObject+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelection+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelectionESD+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelectionAOD+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultUserPtr+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultUserStorage+;

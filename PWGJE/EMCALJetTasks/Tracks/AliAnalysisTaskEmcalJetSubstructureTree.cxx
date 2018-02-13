@@ -229,7 +229,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
 
 void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
   if(fUseDownscaleWeight){
-    AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
+    PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
   }
 }
 
@@ -309,7 +309,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
     TString selectionString = (fTriggerSelectionBits & AliVEvent::kINT7) ? "INT7" : fTriggerSelectionString;
     auto triggerstring = MatchTrigger(selectionString.Data());
     AliDebugStream(2) << "Getting downscale correction factor for trigger string " << triggerstring << std::endl;
-    weight = 1./AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
+    weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
   }
   AliDebugStream(1) << "Using downscale weight " << weight << std::endl;
   this->fGlobalTreeParams->fEventWeight = weight;
@@ -435,7 +435,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
 
 void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
   if(fLumiMonitor && fUseDownscaleWeight){
-    AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+    auto downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) {
       for(auto trigger : DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
         auto int7trigger = trigger.IsTriggerClass("INT7");

@@ -165,19 +165,19 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
 
 void AliAnalysisTaskEmcalClusterMatched::InitializeTrackSelections(bool isAOD){
   if(isAOD){
-    AliEmcalTrackSelectionAOD *globalAOD = new AliEmcalTrackSelectionAOD;
+    PWG::EMCAL::AliEmcalTrackSelectionAOD *globalAOD = new PWG::EMCAL::AliEmcalTrackSelectionAOD;
     globalAOD->AddFilterBit(AliAODTrack::kTrkGlobal);
     fTrackSelectionGlobal = globalAOD;
 
-    AliEmcalTrackSelectionAOD *tpcOnlyAOD = new AliEmcalTrackSelectionAOD;
+    PWG::EMCAL::AliEmcalTrackSelectionAOD *tpcOnlyAOD = new PWG::EMCAL::AliEmcalTrackSelectionAOD;
     tpcOnlyAOD->AddFilterBit(AliAODTrack::kTrkTPCOnly);
     fTrackSelectionTPConly = tpcOnlyAOD;
   } else {
-    AliEmcalTrackSelectionESD *globalESD = new AliEmcalTrackSelectionESD;
+    PWG::EMCAL::AliEmcalTrackSelectionESD *globalESD = new PWG::EMCAL::AliEmcalTrackSelectionESD;
     globalESD->AddTrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1));
     fTrackSelectionGlobal = globalESD;
 
-    AliEmcalTrackSelectionESD *tpcOnlyESD = new AliEmcalTrackSelectionESD;
+    PWG::EMCAL::AliEmcalTrackSelectionESD *tpcOnlyESD = new PWG::EMCAL::AliEmcalTrackSelectionESD;
     tpcOnlyESD->AddTrackCuts(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts());
     fTrackSelectionTPConly = tpcOnlyESD;
   }

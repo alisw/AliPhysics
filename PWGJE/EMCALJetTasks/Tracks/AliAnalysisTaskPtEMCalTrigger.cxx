@@ -295,8 +295,8 @@ namespace EMCalTriggerPtAnalysis {
     fOutput->Add(fHistos->GetListOfHistograms());
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       TIter cutIter(fListTrackCuts);
-      AliEmcalTrackSelection *cutObject(NULL);
-      while((cutObject = dynamic_cast<AliEmcalTrackSelection *>(cutIter()))){
+      PWG::EMCAL::AliEmcalTrackSelection *cutObject(NULL);
+      while((cutObject = dynamic_cast<PWG::EMCAL::AliEmcalTrackSelection *>(cutIter()))){
         PWG::EMCAL::AliEmcalVCutsWrapper *trackcuts = dynamic_cast<PWG::EMCAL::AliEmcalVCutsWrapper *>(cutObject->GetTrackCuts(0));
         if(trackcuts){
           PWG::EMCAL::AliEmcalESDtrackCutsWrapper *esdcuts = dynamic_cast<PWG::EMCAL::AliEmcalESDtrackCutsWrapper *>(trackcuts->GetCutObject());
@@ -522,7 +522,7 @@ namespace EMCalTriggerPtAnalysis {
     // found in a jet, and check for different cone radii around a jet
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
-        AliEmcalTrackSelection *trackSelection = static_cast<AliEmcalTrackSelection *>(fListTrackCuts->At(icut));
+        PWG::EMCAL::AliEmcalTrackSelection *trackSelection = static_cast<PWG::EMCAL::AliEmcalTrackSelection *>(fListTrackCuts->At(icut));
         TIter trackIter(trackSelection->GetAcceptedTracks(fTracks));
         while((track = dynamic_cast<AliVTrack *>(trackIter()))){
           if(fMCEvent && !IsTrueTrack(track)) continue;   // Reject fake tracks in case of MC
@@ -846,7 +846,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddESDTrackCuts(AliESDtrackCuts* trackCuts) {
-    fListTrackCuts->AddLast(new AliEmcalTrackSelectionESD(trackCuts));
+    fListTrackCuts->AddLast(new PWG::EMCAL::AliEmcalTrackSelectionESD(trackCuts));
   }
 
   /**
@@ -855,7 +855,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddCutsForAOD(AliESDtrackCuts* trackCuts, UInt_t filterbits) {
-    fListTrackCuts->AddLast(new AliEmcalTrackSelectionAOD(trackCuts, filterbits));
+    fListTrackCuts->AddLast(new PWG::EMCAL::AliEmcalTrackSelectionAOD(trackCuts, filterbits));
   }
 
 

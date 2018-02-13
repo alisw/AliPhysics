@@ -15,9 +15,18 @@
 #include <TString.h>
 
 class AliEmcalJet;
-class AliEmcalTrackSelection;
 class AliParticleContainer;
 class AliVEvent;
+
+namespace PWG {
+
+namespace EMCAL {
+
+class AliEmcalTrackSelection;
+
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -34,7 +43,7 @@ public:
 
   void SetMCJetContainer(TString contname) { fMCJetContainerName = contname; }
   void SetMCParticleContainer(TString contname) { fMCParticleContainerName = contname; }
-  void SetTrackSelection(AliEmcalTrackSelection *trackSelection) { fTrackSelection = trackSelection; }
+  void SetTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *trackSelection) { fTrackSelection = trackSelection; }
 
 protected:
 
@@ -47,7 +56,7 @@ protected:
 
 private:
   THistManager                *fHistos;                     //!<! Histogram manager
-  AliEmcalTrackSelection      *fTrackSelection;             /// EMCAL track selection
+  PWG::EMCAL::AliEmcalTrackSelection      *fTrackSelection;             /// EMCAL track selection
 
   TString                     fMCJetContainerName;          /// Name of the MC jet container
   TString                     fMCParticleContainerName;     /// Name of the MC particle container

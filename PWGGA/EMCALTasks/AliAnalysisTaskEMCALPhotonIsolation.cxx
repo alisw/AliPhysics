@@ -1306,7 +1306,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     return kFALSE;
   }
 
-  if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks){
+  if(tracks->GetTrackFilterType() != PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks){
     AliWarning(Form("CT matching NOT performed with TPCOnly tracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }
@@ -1319,7 +1319,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
   // AliWarning(Form("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks));
 
-  if(tracksANA->GetTrackFilterType() != AliEmcalTrackSelection::kHybridTracks){
+  if(tracksANA->GetTrackFilterType() != PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks){
     AliWarning(Form("Isolation NOT calculated with HybridTracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }
@@ -1583,7 +1583,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     // Check if the cluster matches a track
 
   AliTrackContainer* tracks = GetTrackContainer("tpconlyMatch");
-  if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks)
+  if(tracks->GetTrackFilterType() != PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks)
     AliError(Form("No TPC only tracks"));
 
   TLorentzVector vecClust;
@@ -2371,7 +2371,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     return;
   }
 
-  if(tracksAna->GetTrackFilterType() != AliEmcalTrackSelection::kHybridTracks)
+  if(tracksAna->GetTrackFilterType() != PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks)
     AliError(Form("NOT Hybrid Tracks"));
 
   tracksAna->ResetCurrentID();

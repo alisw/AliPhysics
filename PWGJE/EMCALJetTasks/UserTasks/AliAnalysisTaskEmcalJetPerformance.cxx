@@ -960,7 +960,7 @@ void AliAnalysisTaskEmcalJetPerformance::RunChanged(Int_t run){
   if (fPlotJetHistograms && fComputeMBDownscaling) {
     
     // Get instance of the downscale factor helper class
-    AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+    PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscaleOCDB = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     downscaleOCDB->SetRun(InputEvent()->GetRunNumber());
     
     // There are two possible min bias triggers for LHC15o

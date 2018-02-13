@@ -309,7 +309,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
  * \param sel The track selection
  * \param cutindex The index of the track selection
  */
-void AliReducedHighPtEventCreator::AddVirtualTrackSelection(AliEmcalTrackSelection* sel, int cutindex) {
+void AliReducedHighPtEventCreator::AddVirtualTrackSelection(PWG::EMCAL::AliEmcalTrackSelection* sel, int cutindex) {
   fTrackSelections->Add(new AliReducedTrackSelectionContainer(cutindex, sel));
 }
 
@@ -490,7 +490,7 @@ AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer():
  * \param index Cut index
  * \param sel Track selection object
  */
-AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer(Int_t index, AliEmcalTrackSelection* sel):
+AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer(Int_t index, PWG::EMCAL::AliEmcalTrackSelection* sel):
   fIndex(index),
   fTrackSelection(sel)
 {

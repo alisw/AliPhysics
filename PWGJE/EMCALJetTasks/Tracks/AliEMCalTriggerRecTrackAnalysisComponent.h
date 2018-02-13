@@ -14,10 +14,19 @@
 
 class TList;
 class TString;
-class AliEmcalTrackSelection;
 class AliVParticle;
 class AliVTrack;
 class AliMCEvent;
+
+namespace PWG {
+
+namespace EMCAL {
+
+class AliEmcalTrackSelection;
+
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -71,7 +80,7 @@ public:
    *
    * \param trackSel The (virtual) track selection applied in the analysis
    */
-  void SetTrackSelection(AliEmcalTrackSelection *trackSel) { fTrackSelection = trackSel; }
+  void SetTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *trackSel) { fTrackSelection = trackSel; }
 
 protected:
   const AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
@@ -80,7 +89,7 @@ protected:
   void MatchTriggerPatches(const AliVTrack *rectrack, const TClonesArray *inputpatches, TList &outputpatches) const;
   Bool_t HasMatchedPatchOfType(TString triggertype, const TList & patches) const;
 
-  AliEmcalTrackSelection            *fTrackSelection;         ///< Track selection cuts used in the analysis
+  PWG::EMCAL::AliEmcalTrackSelection *fTrackSelection;         ///< Track selection cuts used in the analysis
   Bool_t                            fSwapEta;                 ///< Swap eta sign
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fDoMatchPatches;          ///< Request matching with trigger patches

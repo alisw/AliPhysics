@@ -13,10 +13,19 @@ class TClonesArray;
 class THistManager;
 
 class AliAnalysisUtils;
-class AliEmcalTrackSelection;
 class AliGenPythiaEventHeader;
 class AliMCEvent;
 class AliVParticle;
+
+namespace PWG{
+
+namespace EMCAL {
+
+class AliEmcalTrackSelection;
+
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -77,7 +86,7 @@ public:
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
   void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
-  void                        SetEmcalTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
+  void                        SetEmcalTrackSelection(PWG::EMCAL::AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
   void                        SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
@@ -115,7 +124,7 @@ private:
   AliAnalysisTaskChargedParticlesMCTriggerMimic &operator=(const AliAnalysisTaskChargedParticlesMCTriggerMimic &);
 
 
-  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  PWG::EMCAL::AliEmcalTrackSelection    *fTrackCuts;                ///< Standard track selection
   THistManager                          *fHistos;                   ///< Histogram manager
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 

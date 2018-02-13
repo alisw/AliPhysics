@@ -57,7 +57,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   static const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
 
   /// Relates string to the track filter enumeration for %YAML configuration
-  static const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
+  static const std::map <std::string, PWG::EMCAL::AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
 
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
