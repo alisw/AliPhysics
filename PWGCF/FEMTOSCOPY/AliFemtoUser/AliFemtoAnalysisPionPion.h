@@ -206,16 +206,16 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
   // EVENT
-  Float_t event_MultMin,
-          event_MultMax;
+  Int_t event_MultMin,
+        event_MultMax;
 
-  Float_t event_CentralityMin,
+  double event_CentralityMin,
           event_CentralityMax;
 
-  Float_t event_VertexZMin,
+  double event_VertexZMin,
           event_VertexZMax;
 
-  Float_t event_EP_VZeroMin,
+  double event_EP_VZeroMin,
           event_EP_VZeroMax;
 
   Int_t   event_TriggerSelection;
@@ -277,10 +277,10 @@ struct AliFemtoAnalysisPionPion::CutParams {
   // Float_t pair_MinAvgSeparationPos;
   // Float_t pair_MinAvgSeparationNeg;
 
-  Float_t pair_delta_eta_min
-        , pair_delta_phi_min
-        , pair_phi_star_radius
-        ;
+  Float_t pair_delta_eta_min,
+          pair_delta_phi_min,
+          pair_phi_star_radius;
+
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
@@ -289,4 +289,3 @@ struct AliFemtoAnalysisPionPion::CutParams {
 };
 
 #endif
-

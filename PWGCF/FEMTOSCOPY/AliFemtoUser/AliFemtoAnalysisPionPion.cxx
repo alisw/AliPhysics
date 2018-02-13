@@ -157,6 +157,18 @@ struct CutConfig_Pion {
     CutConfig_Pion(){};
 };
 
+/// Configuration for the pair
+struct CutConfig_Pair {
+  Float_t min_delta_eta = { 0.0 },
+          min_delta_phi = { 0.0 },
+          phi_star_radius = { 1.2 };
+
+  Float_t max_share_fraction = { 0.05 },
+          max_share_quality = { 1.0 };
+
+  Bool_t remove_same_label { kFALSE },
+         TPCOnly { kTRUE };
+};
 
 template<>
 AliFemtoPairCutDetaDphi*
@@ -201,9 +213,10 @@ AliFemtoConfigObject::Construct() const
 
 static const Configuration<AliFemtoBasicEventCut> default_event;
 static const CutConfig_Pion default_pion;
+static const CutConfig_Pair default_pair;
 
 static const float default_pion_PtMin = 0.2
-          , default_pion_PtMax = 2.0
+           , default_pion_PtMax = 2.0
 
           , default_pion_EtaMin = -0.8
           , default_pion_EtaMax = 0.8
@@ -225,26 +238,6 @@ const UInt_t default_pion_min_tpc_ncls = 80;
 const Bool_t default_pion_remove_kinks = kTRUE,
              default_pion_set_label = kFALSE;
 
-
-const  int  default_event_TriggerSelection = 0;
-const  bool default_event_AcceptBadVertex = kFALSE;
-
-
-const Bool_t  default_pair_TPCOnly = kTRUE
-            , default_pair_remove_same_label = kFALSE
-            ;
-
-const Float_t default_pair_TPCExitSepMin = -1.0
-            , default_pair_MinAvgSeparationPos = 0.0
-            , default_pair_MinAvgSeparationNeg = 0.0
-
-            , default_pair_delta_eta_min = 0.0
-            , default_pair_delta_phi_min = 0.0
-            , default_pair_phi_star_radius = 1.2
-
-            , default_pair_max_share_quality = 1.0
-            , default_pair_max_share_fraction = 0.05
-            ;
 
 
 const AliFemtoAnalysisPionPion::PionType
@@ -331,7 +324,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     type: 'AliFemtoAnalysisPionPion',
     is_mc: %d,
     event: {
-      multiplicity: %f:%f,
+      multiplicity: %d:%d,
       centrality: %f:%f,
       zVertex: %f:%f,
       trigger: %d,
@@ -417,8 +410,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 AliFemtoAnalysisPionPion::CutParams
 AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
-  AliFemtoAnalysisPionPion::CutParams params
-  = {
+  AliFemtoAnalysisPionPion::CutParams params = {
     // Event
     std::get<0>(default_event.multiplicity)
   , std::get<1>(default_event.multiplicity)
@@ -473,19 +465,15 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_pion_set_label
 
     // Pair
-  , default_pair_TPCOnly
+  , default_pair.TPCOnly
 
-  // , default_pair_TPCExitSepMin
-  // , default_pair_MinAvgSeparationPos
-  // , default_pair_MinAvgSeparationNeg
+  , default_pair.min_delta_eta
+  , default_pair.min_delta_phi
+  , default_pair.phi_star_radius
 
-  , default_pair_delta_eta_min
-  , default_pair_delta_phi_min
-  , default_pair_phi_star_radius
-
-  , default_pair_max_share_quality
-  , default_pair_max_share_fraction
-  , default_pair_remove_same_label
+  , default_pair.max_share_quality
+  , default_pair.max_share_fraction
+  , default_pair.remove_same_label
   };
 
   // sanity checks
