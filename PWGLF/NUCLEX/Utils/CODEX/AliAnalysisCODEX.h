@@ -213,14 +213,20 @@ namespace AliAnalysisCODEX {
       float GetExpectedSigma(const Track &t, float mass)  const;
       float GetNumberOfSigmas(const Track &t, int species) const { return (species >=0 && species < 8) ? GetNumberOfSigmas(t, kMasses[species]) : -999.f; }
       float GetNumberOfSigmas(const Track &t, float mass)  const;
+      void  SetParams(const float params[4]);
       int   GetTOFchannel(const Track& t) const;
+      void  SetTOFresolution(const float TOFresolution) { mTOFres = TOFresolution; }
       float GetTOFresolution() const { return mTOFres; }
+      void  SetTOFtail(const float TOFtail) { mTOFtail = TOFtail; };
       float GetTOFtail() const { return mTOFtail; }
       float GetT0event(const Track &t) const { return mHeader->mT0event[GetMomBin(t.GetTPCmomentum())]; }
       char  GetT0source(const Track &t) const { return mHeader->mT0mask[GetMomBin(t.GetTPCmomentum())]; }
 
+  // fTOFpid
     private:
+  // fTOFpid
       int   GetMomBin(float mom) const;
+  // fTOFpid
 
       float   mMomBins[11];
       float   mParams[4];
