@@ -417,8 +417,8 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 AliFemtoAnalysisPionPion::CutParams
 AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
-  AliFemtoAnalysisPionPion::CutParams params;
-  /* = {
+  AliFemtoAnalysisPionPion::CutParams params
+  = {
     // Event
     std::get<0>(default_event.multiplicity)
   , std::get<1>(default_event.multiplicity)
@@ -497,7 +497,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   assert(params.pair_delta_eta_min == default_pair_delta_eta_min);
   assert(params.pair_max_share_fraction == default_pair_max_share_fraction);
   assert(params.pair_remove_same_label == default_pair_remove_same_label);
-*/
+
   return params;
 }
 
