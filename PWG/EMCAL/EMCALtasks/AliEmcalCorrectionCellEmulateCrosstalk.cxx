@@ -1,12 +1,16 @@
 // AliEmcalCorrectionCellEmulateCrosstalk
 //
 
+#include <map>
+#include <vector>
+#include <string>
+
 #include <TObjArray.h>
 #include <TFile.h>
 
-#include "AliEMCALGeometry.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAODEvent.h"
+#include <AliEMCALGeometry.h>
+#include <AliEMCALRecoUtils.h>
+#include <AliAODEvent.h>
 
 #include "AliEmcalCorrectionCellEmulateCrosstalk.h"
 
@@ -24,14 +28,14 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellEmulateCrosstalk"),
   fCellEnergyDistBefore(0),
   fCellEnergyDistAfter(0),
-  fTCardCorrClusEnerConserv(0),
+  fTCardCorrClusEnerConserv(kFALSE),
   fRandom(0),
-  fRandomizeTCard(1),
+  fRandomizeTCard(kTRUE),
   fTCardCorrMinAmp(0.01),
   fTCardCorrMaxInduced(100),
-  fPrintOnce(0)
+  fPrintOnce(kFALSE)
 {
-  for(Int_t i = 0; i < 22;    i++)
+  for(Int_t i = 0; i < fgkNsm;    i++)
   {
     fTCardCorrInduceEnerProb   [i] = 0;
     fTCardCorrInduceEnerFracMax[i] = 100;
@@ -68,12 +72,69 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Initialize()
   AliWarning("Init EMCAL crosstalk emulation");
   
   GetProperty("conservEnergy", fTCardCorrClusEnerConserv);
+  GetProperty("randomizeTCardInducedEnergy", fRandomizeTCard);
+  GetProperty("inducedTCardMinimumCellEnergy", fTCardCorrMinAmp);
+  GetProperty("inducedTCardMaximum", fTCardCorrMaxInduced);
+
+  // Handle array initialization
+  // For the format of these values, see the "default" yaml configuration file
+  const std::map <std::string, Float_t (*)[fgkNsm]> properties2D = {
+    {"inducedEnergyLossConstant", fTCardCorrInduceEner},
+    {"inducedEnergyLossFraction", fTCardCorrInduceEnerFrac},
+    {"inducedEnergyLossFractionP1", fTCardCorrInduceEnerFracP1},
+    {"inducedEnergyLossFractionWidth", fTCardCorrInduceEnerFracWidth}
+  };
+  const std::map <std::string, Float_t *> properties1D = {
+    {"inducedEnergyLossMinimumFraction", fTCardCorrInduceEnerFracMin},
+    {"inducedEnergyLossMaximumFraction", fTCardCorrInduceEnerFracMax},
+    {"inducedEnergyLossProbability", fTCardCorrInduceEnerProb}
+  };
+  RetrieveAndSetProperties(properties2D);
+  RetrieveAndSetProperties(properties1D);
   
   if (!fRecoUtils) {
     fRecoUtils  = new AliEMCALRecoUtils;
   }
 
+  GetProperty("printConfiguration", fPrintOnce);
+  if (fPrintOnce) {
+    PrintTCardParam();
+  }
+
   return kTRUE;
+}
+
+/**
+ * Handles assigning properties to 2D array class members.
+ *
+ * @param[in] val Array class member from map
+ * @param[in] property Values extracted from the YAML config to be assigned to val
+ * @param[in] iSM Super-module number (0 indexed)
+ * @param[in] name Name of the property which is being assigned
+ */
+void AliEmcalCorrectionCellEmulateCrosstalk::SetProperty(Float_t val[][fgkNsm], std::vector<double> & property, unsigned int iSM, const std::string & name)
+{
+  for (unsigned int iProperty = 0; iProperty < property.size(); iProperty++) {
+    val[iProperty][iSM] = property.at(iProperty);
+  }
+}
+
+/**
+ * Handles assigning properties to 1D array class members.
+ *
+ * @param[in] val Array class member from map
+ * @param[in] property Values extracted from the YAML config to be assigned to val. It is expected to be contain one value.
+ * @param[in] iSM Super-module number (0 indexed)
+ * @param[in] name Name of the property which is being assigned
+ */
+void AliEmcalCorrectionCellEmulateCrosstalk::SetProperty(Float_t val[fgkNsm], std::vector<double> & property, unsigned int iSM, const std::string & name)
+{
+  if (property.size() != 1) {
+    AliErrorStream() << "Trying to set single value for property " << name << ", but given " << property.size() << " values. Please check your configuration!\n";
+  }
+  else {
+    val[iSM] = property.at(0);
+  }
 }
 
 /**
@@ -462,4 +523,28 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::AcceptCell(Int_t absID)
     return kFALSE;
 
   return kTRUE;
+}
+
+/**
+ * Print parameters for T-Card correlation emulation.
+ */
+void AliEmcalCorrectionCellEmulateCrosstalk::PrintTCardParam()
+{
+  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
+        fTCardCorrClusEnerConserv,fRandomizeTCard));
+  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f",
+        fTCardCorrMinAmp,fTCardCorrMaxInduced));
+
+  for(Int_t ism = 0; ism < fgkNsm; ism++)
+  {
+    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e max %2.3e \n",
+        ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
+
+    for(Int_t icell = 0; icell < 4; icell++)
+    {
+      printf("\t \t cell type %d, c %2.4e, p0 %2.4e, p1 %2.4e, sigma %2.4e \n",
+          icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],
+          fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);
+    }
+  }
 }
