@@ -247,7 +247,7 @@ Bool_t Config_pipi(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
-  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypePi=(TrackCutsPi/10000)%100;//0=TPC+TOFveto (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -375,12 +375,12 @@ Bool_t Config_pikx(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
-  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypePi=(TrackCutsPi/10000)%100;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsK%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsK/100)%100);
-  Int_t CutTypeK=(TrackCutsK/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK=(TrackCutsK/10000)%100;//0=TPC+TOFveto (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -1029,12 +1029,12 @@ Bool_t Config_pkx(
   if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
   Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
   Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
-  Int_t CutTypeP=(TrackCutsP/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeP=(TrackCutsP/10000)%100;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsK%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsK/100)%100);
-  Int_t CutTypeK=(TrackCutsK/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK=(TrackCutsK/10000)%100;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -1362,14 +1362,24 @@ Bool_t Config_Lambdapi(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
-  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
-  Int_t MisidentifiedAsKaon=(TrackCutsPi/100000)%1000000;//0=pion assigned pion mass, 1=pion assigned kaon mass (for Xi(1820)- analysis)
+  Int_t CutTypePi=(TrackCutsPi/10000)%100;//0=TPC+TOFveto (default), 1=TPC only, 2=TOF only, 3 TPC+TOFcut
+  Int_t MisidentifiedAsKaon=(TrackCutsPi/1000000)%10;//0=pion assigned pion mass, 1=pion assigned kaon mass (for Xi(1820)- analysis)
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
 
   AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
-  AliRsnCutSetDaughterParticle* cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+
+  AliRsnCutSetDaughterParticle* cutSetPi=0;
+  if(!CutTypePi) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),
+                                                           trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+  else if(CutTypePi==1) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPiTPC),
+                                                                  trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kPion,nsigmaPiTPC,-1.);
+  else if(CutTypePi==2) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPiTOF),
+                                                                  trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
+  else if(CutTypePi==3) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFtightPidKStarPPB2011,nsigmaPiTPC),
+                                                                  trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFtightPidKStarPPB2011,AliPID::kPion,nsigmaPiTPC,-1.);
+  if(!cutSetPi){cerr<<"Error in AddTaskRare_pp13::Config_Lambdapi(): missing cutSetPi"<<endl; return kFALSE;}
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);

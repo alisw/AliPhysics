@@ -34,6 +34,12 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Int_t MultBins=aodFilterBit/100;
   aodFilterBit=aodFilterBit%100;
+    
+  Bool_t misIDpion=false;
+  if(customQualityCutsID==1000){
+    customQualityCutsID=1;
+    misIDpion=true;
+  }
 
   Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
   Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
@@ -41,9 +47,13 @@ Bool_t ConfigPhiPP13TeV_PID
 
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
-    //Set custom quality cuts for systematic checks
-    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
+     //Set custom quality cuts for systematic checks
+    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),
+                                             trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
+    if(!misIDpion) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),
+                                                            trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
+    else cutSetK=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate, nsigmaKa),
+                                                  trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaKaTPC,nsigmaKaTOF);
   }else{
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
@@ -232,7 +242,7 @@ Bool_t ConfigPhiPP13TeV_PID
   Int_t mPDG0,mPDG1,mPDG2;
 
   if(isMC){
-    for(Int_t i=0;i<9;i++){
+    for(Int_t i=0;i<10;i++){
       if(!i){
         mName.Form("pi0_ee");
         mMass=0.134977;
