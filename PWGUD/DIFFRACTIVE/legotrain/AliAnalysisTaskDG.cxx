@@ -462,16 +462,16 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistTrig]->SetStats(0);
   fList->Add(fHist[kHistTrig]);
 
-  const Int_t    bins[4] = { 1200,    4,   10,   20 };
-  const Double_t xMin[4] = {   -0.5, -0.5, -0.5, -2.0 };
-  const Double_t xMax[4] = { 1199.5,  3.5,  9.5,  2.0 };
-  fHistN[kHistSPDFiredTrk] = new THnD("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta", 4, bins, xMin, xMax);
+  const Int_t    bins[5] = { 1200,    4,   10,   20,    2 };
+  const Double_t xMin[5] = {   -0.5, -0.5, -0.5, -2.0, -2.0 };
+  const Double_t xMax[5] = { 1199.5,  3.5,  9.5,  2.0,  2.0 };
+  fHistN[kHistSPDFiredTrk] = new THnD("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta;sign", 5, bins, xMin, xMax);
   fList->Add(fHistN[kHistSPDFiredTrk]);
 
-  fHistN[kHistSPDFOTrk] = new THnD("HSPDFOTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta", 4, bins, xMin, xMax);
+  fHistN[kHistSPDFOTrk] = new THnD("HSPDFOTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta;sign", 5, bins, xMin, xMax);
   fList->Add(fHistN[kHistSPDFOTrk]);
 
-  fHistN[kHistSPDFOFiredTrk] = new THnD("HSPDFOFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta", 4, bins, xMin, xMax);
+  fHistN[kHistSPDFOFiredTrk] = new THnD("HSPDFOFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta,sign", 5, bins, xMin, xMax);
   fList->Add(fHistN[kHistSPDFOFiredTrk]);
 
   PostData(1, fList);
@@ -502,13 +502,13 @@ private:
   TClonesArray& fA;
 } ;
 
-void AliAnalysisTaskDG::FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t w) {
+void AliAnalysisTaskDG::FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t v, Double_t w) {
   if (idx < 0 || idx >= kNHistN)
     AliFatalF("idx=%d", idx);
   THn *h = dynamic_cast<THn*>(fHistN[idx]);
   if (!h)
     AliFatal("h==nullptr");
-  const Double_t a[4] = { x,y,z,u };
+  const Double_t a[5] = { x,y,z,u,v };
   h->Fill(a, w);
 }
 void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
@@ -544,6 +544,7 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
     if (!nBB) {
       TArrayI matched(1200);
       TArrayD etaSum(1200);
+      TArrayD signSum(1200);
       std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
       std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
       for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
@@ -555,20 +556,24 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 	  if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1) {
 	    matched[chipKeys[layer]] += 1;
             etaSum[chipKeys[layer]]  += tr->Eta();
+            signSum[chipKeys[layer]] += tr->GetSign();
           }
 	}
       }
-      const Int_t    bcMod4         = (esdHeader->GetBunchCrossNumber() % 4);
+      const Int_t bcMod4 = (esdHeader->GetBunchCrossNumber() % 4);
       for (Int_t chipKey=0; chipKey<1200; ++chipKey) {
         const Double_t eta = (matched[chipKey]
                               ? etaSum[chipKey]/matched[chipKey]
                               : -999.0);
+        const Double_t sign = (matched[chipKey]
+                               ? signSum[chipKey]/matched[chipKey]
+                               : -999.0);
 	if (mult->TestFiredChipMap(chipKey))
-	  FillTHn(kHistSPDFiredTrk, chipKey, bcMod4, matched[chipKey], eta);
+	  FillTHn(kHistSPDFiredTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
 	if (mult->TestFastOrFiredChips(chipKey))
-	  FillTHn(kHistSPDFOTrk, chipKey, bcMod4, matched[chipKey], eta);
+	  FillTHn(kHistSPDFOTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
 	if (mult->TestFastOrFiredChips(chipKey) && mult->TestFiredChipMap(chipKey))
-	  FillTHn(kHistSPDFOFiredTrk, chipKey, bcMod4, matched[chipKey], eta);
+	  FillTHn(kHistSPDFOFiredTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
       }
     }
   }

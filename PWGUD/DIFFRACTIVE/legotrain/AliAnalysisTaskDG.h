@@ -245,7 +245,7 @@ protected:
   static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
   void FillSPDFOEffiencyHistograms(const AliESDEvent* );
-  void FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t w=1);
+  void FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t v, Double_t w=1);
 
   void FillTriggerIR(const AliESDHeader* );
 
