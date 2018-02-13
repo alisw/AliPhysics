@@ -61,15 +61,14 @@ AliEmcalTrackSelResultPtr AliEmcalAODHybridTrackCuts::IsSelected(TObject *o){
   // Create user object defining the hybrid track type (only in case the object is selected as hybrid track)
   if(selectionresult){
     AliEmcalTrackSelResultHybrid::HybridType_t tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
-    if(fHybridFilterBits[0] > -1 && fHybridFilterBits[1 ] > -1) {
+    if(fHybridFilterBits[0] > -1 && fHybridFilterBits[1] > -1) {
       if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[0]))) tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
       else if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[1]))){
         if(aodtrack->GetStatus() & AliVTrack::kITSrefit) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrained;
         else tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit;
+      }
     }
-  }
-  result.SetUserInfo(new AliEmcalTrackSelResultHybrid(tracktype));
-
+    result.SetUserInfo(new AliEmcalTrackSelResultHybrid(tracktype));
   }
   return result;
 }
