@@ -335,7 +335,7 @@ Bool_t AliPHOSTriggerHelper::IsMatched(Int_t *trgrelid, Int_t *clurelid)
   if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
   if(diffx < fXmin || fXmax < diffx) return kFALSE; // X-distance too large!
   if(diffz < fZmin || fZmax < diffz) return kFALSE; // Z-distance too large!
-  if(fTriggerInputL1 < 0 &&  (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.
+  //if(fTriggerInputL1 < 0 && (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.//not needed because L0 can detect very high energy photon at the border.
 
   if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
 
