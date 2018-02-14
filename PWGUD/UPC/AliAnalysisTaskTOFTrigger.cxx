@@ -406,6 +406,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
 		    eff_MaxiPadLTM_El->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
 		    }
+		if(trigger.Contains("CCUP8-B")){
+			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
+			}
 		}
      	}
 	hNMaxiPadIn->Fill(nFiredPads);
