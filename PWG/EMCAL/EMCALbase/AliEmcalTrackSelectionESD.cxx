@@ -44,8 +44,10 @@
 #include "AliVCuts.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalTrackSelectionESD)
+ClassImp(PWG::EMCAL::AliEmcalTrackSelectionESD)
 /// \endcond
+
+using namespace PWG::EMCAL;
 
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD():
 		AliEmcalTrackSelection()
@@ -73,11 +75,11 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
   switch (type) {
   case kHybridTracks:
     AliDebugStream(1) << "Generate std hybrid track cuts" << std::endl;
-    PWG::EMCAL::AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(this, period);
+    AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(this, period);
     break;
 
   case kTPCOnlyTracks:
-    PWG::EMCAL::AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
+    AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
     break;
 
   case kITSPureTracks:

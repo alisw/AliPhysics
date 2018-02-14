@@ -5,7 +5,15 @@
 
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 
+namespace PWG{
+
+namespace EMCAL{
+
 class AliEmcalTrackSelection;
+
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -60,7 +68,7 @@ public:
    * track multiplicity
    * @param[in] sel Track selection object
    */
-  void SetEmcalTrackSelection(AliEmcalTrackSelection *sel) { fTrackSel = sel; }
+  void SetEmcalTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *sel) { fTrackSel = sel; }
 
 
   /**
@@ -97,7 +105,7 @@ protected:
   virtual bool Run();
 
 private:
-  AliEmcalTrackSelection                  *fTrackSel;         ///< EMCAL virtual track selection
+  PWG::EMCAL::AliEmcalTrackSelection     *fTrackSel;         ///< EMCAL virtual track selection
   Bool_t                                  fEnableSumw2;       ///< Setter for enabling Sumw2
 
   AliAnalysisTaskEmcalTriggerMultiplicity(const AliAnalysisTaskEmcalTriggerMultiplicity &);

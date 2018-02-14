@@ -18,10 +18,19 @@ class AliAnalysisUtils;
 class AliAODTrack;
 class AliEMCALGeometry;
 class AliESDtrack;
-class AliEmcalTrackSelection;
 class AliGenPythiaEventHeader;
 class AliVParticle;
 class AliMCEvent;
+
+namespace PWG {
+
+namespace EMCAL {
+
+class AliEmcalTrackSelection;
+
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -108,7 +117,7 @@ public:
    * Assumes that the track selection object is already fully configured
    * @param[in] sel Virtual track selection
    */
-  void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
+  void SetEMCALTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
 
   /**
    * Define kinematic cut to particles and tracks on \f$ \eta \f$ in the lab frame. By default
@@ -352,7 +361,7 @@ private:
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
 
-  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  PWG::EMCAL::AliEmcalTrackSelection    *fTrackCuts;                ///< Standard track selection
   AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
   THistManager                          *fHistos;                   ///< Histogram manager
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)

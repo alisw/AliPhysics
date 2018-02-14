@@ -561,7 +561,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // downscale-corrected number of events are calculated based on the min. bias reference
     // Formula: N_corr = N_MB * d_Trg/d_{Min_Bias}
     if(InputEvent()->GetFiredTriggerClasses().Contains(fMinBiasRefTrigger)){
-      AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+      PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
       Double_t downscaleref = downscalefactors->GetDownscaleFactorForTriggerClass(fMinBiasRefTrigger);
       for(auto t : downscalefactors->GetTriggerClasses()){
         Double_t downscaletrg = downscalefactors->GetDownscaleFactorForTriggerClass(t);
@@ -594,7 +594,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
     RunChanged(fRunNumber);
-    if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
+    if(fCountDownscaleCorrectedEvents) PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
   // Apply fallback for pythia cross section if needed

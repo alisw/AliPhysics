@@ -569,7 +569,7 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
     fDownscaleFactors->SetOwner(true);
   }
   fDownscaleFactors->Clear();
-  AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+  auto downscaleOCDB = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
   if(downscaleOCDB->GetCurrentRun() != fInputEvent->GetRunNumber()) downscaleOCDB->SetRun(fInputEvent->GetRunNumber());
   const std::array<TString, 11> khwtriggers = {"INT7", "EMC7", "DMC7", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"};
   std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();

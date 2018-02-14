@@ -40,11 +40,11 @@ const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliEmcalCorrectio
   {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
 };
 
-const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliEmcalCorrectionTask::fgkTrackFilterTypeMap = {
-  {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
-  {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
-  {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
-  {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks }
+const std::map <std::string, PWG::EMCAL::AliEmcalTrackSelection::ETrackFilterType_t> AliEmcalCorrectionTask::fgkTrackFilterTypeMap = {
+  {"kNoTrackFilter", PWG::EMCAL::AliEmcalTrackSelection::kNoTrackFilter },
+  {"kCustomTrackFilter", PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter },
+  {"kHybridTracks",  PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks },
+  {"kTPCOnlyTracks", PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks }
 };
 
 /**
@@ -946,7 +946,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "trackFilterType", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = fgkTrackFilterTypeMap.at(tempString);
+      PWG::EMCAL::AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = fgkTrackFilterTypeMap.at(tempString);
       AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << std::endl;
       trackContainer->SetTrackFilterType(trackFilterType);
     }

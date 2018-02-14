@@ -8,7 +8,16 @@
 #include <TCustomBinning.h>
 #include <TString.h>
 
+namespace PWG{
+
+namespace EMCAL {
+
 class AliEmcalTrackSelection;
+
+}
+
+}
+
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -116,8 +125,8 @@ private:
   AliAnalysisTaskEmcalClusterMatched(const AliAnalysisTaskEmcalClusterMatched &);
   AliAnalysisTaskEmcalClusterMatched &operator=(const AliAnalysisTaskEmcalClusterMatched &);
 
-  AliEmcalTrackSelection                    *fTrackSelectionGlobal;                 ///< Global track cuts (strong condition)
-  AliEmcalTrackSelection                    *fTrackSelectionTPConly;                ///< TPC-only track cuts (weak condition)
+  PWG::EMCAL::AliEmcalTrackSelection       *fTrackSelectionGlobal;                  ///< Global track cuts (strong condition)
+  PWG::EMCAL::AliEmcalTrackSelection       *fTrackSelectionTPConly;                 ///< TPC-only track cuts (weak condition)
   AliCutValueRange<double>                  fTimeCut;                               ///< Cut on cluster time
   Bool_t                                    fEnableSumw2;                           ///< Enable Sumw2
 

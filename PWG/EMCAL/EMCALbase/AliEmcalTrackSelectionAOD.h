@@ -33,6 +33,12 @@
 class AliVCuts;
 class AliVTrack;
 
+namespace PWG {
+
+namespace EMCAL{
+
+class AliEmcalTrackSelResultHybrid;
+
 /**
  * @class AliEmcalTrackSelectionAOD
  * @brief Implement virtual track selection for AOD analysis
@@ -127,12 +133,6 @@ private:
 	ClassDef(AliEmcalTrackSelectionAOD, 2);
 	/// \endcond
 };
-
-namespace PWG {
-
-namespace EMCAL {
-
-class AliEmcalTrackSelResultHybrid;
 
 /**
  * @class TestAliEmcalTrackSelectionAOD
