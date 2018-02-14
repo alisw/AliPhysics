@@ -119,6 +119,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   } else if(fTriggerSelectionString.Contains("EJ")){
     auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3); // cleanup trigger string from possible tags
+    AliDebugStream(1) << "Inspecting trigger class " << triggerclass << std::endl;
     // EMCAL JET trigger
     if(!fMCEvent){ // Running on Data
       if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)) return false;
@@ -126,8 +127,11 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     }
 
     if(fUseTriggerSelection) {
-      auto triggerdecisions = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindObject(fNameTriggerDecisionContainer.Data()));
-      if(!triggerdecisions) return false;
+      auto triggerdecisions = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer.Data()));
+      if(!triggerdecisions) {
+        AliErrorStream() << "No offline trigger selection available" << std::endl;
+        return false;
+      }
       else if(!triggerdecisions->IsEventSelected(triggerclass.Data())) return false;
     }
   } else return false;
