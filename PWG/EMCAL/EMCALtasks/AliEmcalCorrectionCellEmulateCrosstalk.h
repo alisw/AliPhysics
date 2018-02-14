@@ -14,7 +14,7 @@
  *
  * Based on code in AliAnalysisTaskEMCALClusterize.
  *
- * @author Gustavo Conesa Balbastre, LPSC-Grenoble, AliAnalysisTaskEMCALClusterize
+ * @author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble, AliAnalysisTaskEMCALClusterize
  * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University, centralize EMCal corrections using components
  * @author James Mulligan <james.mulligan@yale.edu>, Yale University, centralize EMCal corrections using components
  * @date Feb 11 2018

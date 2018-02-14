@@ -66,7 +66,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     printConfiguration: false                       # Print the configuration after initialization
-    conservEnergy: false                            # Activate cluster energy conservation, not by default
+    conservEnergy: true                             # Activate cluster energy conservation
     randomizeTCardInducedEnergy: false              # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
