@@ -60,7 +60,7 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
-fPythiaVersion("Pythia6"),
+fPythiaVersion(""),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -259,7 +259,7 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
-fPythiaVersion("Pythia6"),
+fPythiaVersion(""),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -1417,10 +1417,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       // if(fmcHeader->GetGeneratorName() == "???")      // fGenerator for Pythia6
       // else if(fmcHeader->GetGeneratorName() == "???") // fGenerator for Pythia8
 
-      if(fPythiaVersion.Contains("6"))
-	AnalyzeMC();
-      else if(fPythiaVersion.Contains("8"))
+      if(fPythiaVersion.Contains("8"))
       	AnalyzeMC_Pythia8();
+      else
+	AnalyzeMC();
     }
   }
 
