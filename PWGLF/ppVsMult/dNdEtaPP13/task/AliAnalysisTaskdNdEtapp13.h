@@ -113,7 +113,10 @@ kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
 kHCorrMatrixSel = kHCorrMatrix+50, // correlation matrix with events sel
 
-kHCorrMatrixSel2 = kHCorrMatrixSel+50 // correlation matrix 2 with tracklets (triggered + Selected)
+kHCorrMatrixSel2 = kHCorrMatrixSel+50, // correlation matrix 2 with tracklets (triggered + Selected)
+kHCorrMatrixV0 = kHCorrMatrixSel2+50, // correlation matrix of V0M true Vs Central 0.5
+kHCorrMatrixV02 = kHCorrMatrixV0+50,  // Response matrix of V0M detector
+kHCorrMatrixV03 = kHCorrMatrixV02+50  // correlation matrix of V0M true Vs Central 2
 
 
 }; // custom histos
