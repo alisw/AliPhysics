@@ -174,6 +174,15 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
         if(V0PhotonRejection) jetTask->SetV0ReaderName(V0ReaderName);
 
+
+
+	if(DoJetProb && !pathToResolFunc.IsNull()){
+		TFile* file = TFile::Open(pathToResolFunc.Data());
+		for(int i=0; i<7; i++){
+			jetTask->SetResFunction((TF1*)file->Get(Form("QualityClass%i",i)), i);
+		}
+	}
+
 	//-------------------------------------------------------
 	// Final settings, pass to manager and set the containers
 	//-------------------------------------------------------
