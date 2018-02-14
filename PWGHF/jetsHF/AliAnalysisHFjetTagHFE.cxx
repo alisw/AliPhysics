@@ -77,6 +77,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   fmimSig(-1.0),
+  fmimEop(0.9),
+  fInvmassCut(0.1),
+  fptAssocut(0.15),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -177,6 +180,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   fmimSig(-1.0),
+  fmimEop(0.9),
+  fInvmassCut(0.1),
+  fptAssocut(0.15),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -703,6 +709,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   if(idbHFEj)cout << " fJetsCont :" <<  fJetsCont->GetName()<< " ; N = "<< fJetsCont->GetNAcceptedJets() << endl;
   if(idbHFEj)cout << " fJetsContPart :" <<  fJetsContPart->GetName() << " N = " << fJetsContPart->GetNAcceptedJets() << endl;
 
+        if(idbHFEj)
+           {
+            cout << "fmimSig = " << fmimSig << endl;
+            cout << "fmimEop = " << fmimEop << endl;
+            cout << "fInvmassCut = " << fInvmassCut << endl;
+            cout << "fptAssocut = " << fptAssocut << endl;
+           }
+
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
   fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -913,6 +927,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     //Bool_t ISelectronEv = kFALSE;
     Int_t ISelectronEv = 0;
 
+
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
 
         //cout << "tracks = " << itrack << " ; " << ntracks << endl;
@@ -1020,7 +1035,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
-        if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
         //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
 
@@ -1081,7 +1095,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             fHistEop->Fill(pt,eop);
 
-            if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
+            //if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
+            if(eop>fmimEop && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
                  
             if(isElectron)
               {
@@ -1311,7 +1326,8 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         
         //-------loose cut on partner electron
         //if(ptAsso <0.3) continue;
-        if(ptAsso <0.15) continue;
+        //if(ptAsso <0.15) continue;
+        if(ptAsso <fptAssocut) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         
@@ -1334,9 +1350,10 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         if(fFlagULS)
             if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
         
-        //if(mass<100 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
-        if(mass<0.1 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
-        if(mass<0.1 && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        //if(mass<0.1 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        //if(mass<0.1 && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        if(mass<fInvmassCut && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
     }
     fFlagPhotonicElec = flagPhotonicElec;
     fFlagConvinatElec = flagConvinatElec;

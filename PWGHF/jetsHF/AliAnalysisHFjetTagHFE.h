@@ -39,7 +39,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
+  void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
   void SetMCdata(Bool_t mcData) {fmcData = mcData;};
+  void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
+  void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
 
  protected:
   void                        ExecOnce();
@@ -60,6 +63,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t idbHFEj;
     Bool_t iHybrid;
     Double_t fmimSig; // max. centrality
+    Double_t fmimEop; // max. centrality
+    Double_t fInvmassCut;  
+    Double_t fptAssocut;  
     Bool_t fmcData;
 
   // General histograms
