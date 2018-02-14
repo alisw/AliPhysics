@@ -164,7 +164,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
     
     if (fRecalib) delete fRecalib;
     
-      contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
   }
   
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
