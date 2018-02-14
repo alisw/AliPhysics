@@ -171,7 +171,7 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Run()
     AliDebug(2, Form("Number of EMCAL cells = %d, returning", fCaloCells->GetNumberOfCells()));
     return kFALSE;
   }
-  
+
   if(fCreateHisto)
     FillCellQA(fCellEnergyDistBefore); // "before" QA
   
@@ -190,7 +190,9 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Run()
   
   if(fCreateHisto)
     FillCellQA(fCellEnergyDistAfter); // "after" QA
-
+  
+  ResetArrays();
+  
   return kTRUE;
 }
 
@@ -458,6 +460,8 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
     
     amp+=fTCardCorrCellsEner[absId];
     
+    //if(fTCardCorrCellsEner[absId] > 0.05) printf("\t absId %d amp %2.2f\n",absId,fTCardCorrCellsEner[absId]);
+
     // Set new amplitude
     fCaloCells->SetCell(icell, absId, amp, time, mclabel, efrac);
   }
@@ -483,11 +487,11 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
     Int_t     cellNumber = nCells;
     Short_t   absId      = j;
     Float_t   amp        = fTCardCorrCellsEner[j];
-    Double_t  time       = 615.*1e-9;;
+    Double_t  time       = 615.*1e-9;
     Int_t     mclabel    = -1;
     Double_t  efrac      = 0.;
     fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac);
-    
+        
     nCells++;
   }
   
@@ -530,10 +534,10 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::AcceptCell(Int_t absID)
  */
 void AliEmcalCorrectionCellEmulateCrosstalk::PrintTCardParam()
 {
-  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
-        fTCardCorrClusEnerConserv,fRandomizeTCard));
-  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f",
-        fTCardCorrMinAmp,fTCardCorrMaxInduced));
+  printf("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:\n",
+        fTCardCorrClusEnerConserv,fRandomizeTCard);
+  printf("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f\n",
+        fTCardCorrMinAmp,fTCardCorrMaxInduced);
 
   for(Int_t ism = 0; ism < fgkNsm; ism++)
   {
