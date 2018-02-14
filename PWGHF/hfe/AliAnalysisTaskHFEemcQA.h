@@ -194,6 +194,8 @@ private:
     TH2F        *fHistRawNtpcPhi; 
     TH2F        *fMCcheckMother;
     TH2F        *fMCneutral;
+    TH2F        *fEMCTrkMatch_Phi;
+    TH2F        *fEMCTrkMatch_Eta;
     
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
