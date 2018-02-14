@@ -10,7 +10,15 @@
 #include <TString.h>
 
 class THistManager;
+
+namespace PWG {
+
+namespace EMCAL {
+
 class AliEmcalTrackSelection;
+}
+
+}
 
 namespace EMCalTriggerPtAnalysis {
 
