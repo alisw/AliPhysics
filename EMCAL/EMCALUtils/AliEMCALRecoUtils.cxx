@@ -1320,7 +1320,7 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
 
 ///
 /// \return weight of cell for shower shape calculation
-/// If fW0 parameter is negative, apply linear weight to all cells.
+/// If fW0 parameter is negative, apply log weight without trimming.
 ///
 /// \param eCell: cluster cell energy
 /// \param eCluster: cluster Energy
@@ -1332,7 +1332,7 @@ Float_t  AliEMCALRecoUtils::GetCellWeight(Float_t eCell, Float_t eCluster) const
   if (eCell > 0 && eCluster > 0) 
   {
    if ( fW0 > 0 ) return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster ) ) ;
-   else           return eCell / eCluster;
+   else           return TMath::Log( eCluster / eCell ) ; 
   }
   else                           
     return 0. ; 
@@ -2204,7 +2204,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
   
-  Double_t pLocal[3], pGlobal[3];
+  Double_t pGlobal[3];
   
   // Loop on cells, calculate the cluster energy, in case a cut on cell energy is added,
   // or the non linearity correction was applied
@@ -2238,7 +2238,6 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     if (IsRecalibrationOn()) 
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     
-    
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
     isLowGain = !(cells->GetCellHighGain(absId));//HG = false -> LG = true
@@ -2253,8 +2252,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     if(eCell > cellEcut && TMath::Abs(tCell) < cellTimeCut)
       enAfterCuts += eCell;
   } // cell loop
-  
-  Double_t depth = GetDepth(enAfterCuts,fParticleType,iSM0) ;
+    
   
   // Loop on cells to calculate weights and shower shape terms parameters
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
@@ -2288,48 +2286,37 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     {
       w  = GetCellWeight(eCell, energy);
       
+      // Cell index
       if     ( fShowerShapeCellLocationType == 0 )
       {
         etai=(Double_t)ieta;
         phii=(Double_t)iphi;  
       }
+      // Cell angle location
       else if( fShowerShapeCellLocationType == 1 )
       {
         geom->EtaPhiFromIndex(absId, etai, phii);
-        //printf("\t \t eta %f phi %f\n",etai,phii);
+        etai *= TMath::RadToDeg(); // change units to degrees instead of radians
+        phii *= TMath::RadToDeg(); // change units to degrees instead of radians       
       }
       else
       {
-        geom->RelPosCellInSModule(absId,depth,pLocal[0],pLocal[1],pLocal[2]);
-        //printf("pLocal (%f,%f,%f), absId %d\n",pLocal[0],pLocal[1],pLocal[2],absId);
+        geom->GetGlobal(absId,pGlobal);
         
+        // Cell x-z location
         if( fShowerShapeCellLocationType == 2 )
         {
-          etai = pLocal[2];
-          phii = pLocal[0];
-        }        
-        else if( fShowerShapeCellLocationType == 3 )
-        {
-          etai = pLocal[2];
-          phii = TMath::Sqrt(pLocal[0]*pLocal[0]+pLocal[1]*pLocal[1]);
+          etai = pGlobal[2];
+          phii = pGlobal[0];
         }
+        // Cell r-z location
         else
         {
-          geom->GetGlobal(pLocal,pGlobal,iSupMod);
-          //printf("pGloba (%f,%f,%f) sm %d \n",pGlobal[0],pGlobal[1],pGlobal[2],iSupMod);
-          if( fShowerShapeCellLocationType == 4 )
-          {
-            etai = pGlobal[2];
-            phii = pGlobal[0];
-          }
-          else
-          {
-            etai = pGlobal[2];
-            phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
-          }
+          etai = pGlobal[2];
+          phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
         }
       }
-         
+               
       if (w > 0.0) 
       {
         wtot += w ;
@@ -2389,44 +2376,34 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     {
       w  = GetCellWeight(eCell,cluster->E());
       
+      // Cell index
       if     ( fShowerShapeCellLocationType == 0 )
       {
         etai=(Double_t)ieta;
         phii=(Double_t)iphi;  
       }
+      // Cell angle location
       else if( fShowerShapeCellLocationType == 1 )
       {
         geom->EtaPhiFromIndex(absId, etai, phii);
+        etai *= TMath::RadToDeg(); // change units to degrees instead of radians
+        phii *= TMath::RadToDeg(); // change units to degrees instead of radians       
       }
       else
       {
-        geom->RelPosCellInSModule(absId,depth,pLocal[0],pLocal[1],pLocal[2]);
-        //printf("pLocal (%f,%f,%f), absId %d\n",pLocal[0],pLocal[1],pLocal[2],absId);
-
+        geom->GetGlobal(absId,pGlobal);
+        
+        // Cell x-z location
         if( fShowerShapeCellLocationType == 2 )
         {
-          etai = pLocal[2];
-          phii = pLocal[0];
-        }        
-        else if( fShowerShapeCellLocationType == 3 )
-        {
-          etai = pLocal[2];
-          phii = TMath::Sqrt(pLocal[0]*pLocal[0]+pLocal[1]*pLocal[1]);
+          etai = pGlobal[2];
+          phii = pGlobal[0];
         }
+        // Cell r-z location
         else
         {
-          geom->GetGlobal(pLocal,pGlobal,iSupMod);
-          //printf("pGloba (%f,%f,%f) sm %d \n",pGlobal[0],pGlobal[1],pGlobal[2],iSupMod);
-          if( fShowerShapeCellLocationType == 4 )
-          {
-            etai = pGlobal[2];
-            phii = pGlobal[0];
-          }
-          else
-          {
-            etai = pGlobal[2];
-            phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
-          }
+          etai = pGlobal[2];
+          phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]); 
         }
       }
       
