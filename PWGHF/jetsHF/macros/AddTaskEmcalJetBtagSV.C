@@ -1,3 +1,11 @@
+
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg);
+
+Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
+                      Float_t minPt, Float_t maxPt,
+                      Float_t minC, Float_t maxC,
+                      Bool_t corrMode, UInt_t fTrigger);
+
 AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   = "tracks",
                                                      const char* jetcontname   = "Jets",
                                                      const char* mctrkcontname = "mcparticles",
@@ -61,7 +69,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   hfTask->SetJetContName(jetcontname);
   hfTask->SetTrkContName(trkcontname);
 
-  hfTask->SetCheckMCCrossSection(checkXsec);  
+  hfTask->SetCheckMCCrossSection(checkXsec);
   if (useWeight) hfTask->SetUseWeightOn();
 
   hfTask->SetGlLogLevel(gbLogLevel);
@@ -82,10 +90,10 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   TString strCutFlName(cutflname);
   if (!strCutFlName.IsNull() && !gSystem->AccessPathName(strCutFlName.Data(), kFileExists)) {
     // read cuts from file
-    ::Info(Form("Reading cuts from file: %s", strCutFlName.Data()));
+    ::Info("AddTaskEmcalJetBtagSV","Reading cuts from file: %s", strCutFlName.Data());
 
     TFile* f = TFile::Open(strCutFlName.Data());
-    AliRDHFJetsCuts* cuts = (AliRDHFCutsD0toKpi*)f->Get("HFJetsCutsVertex");
+    AliRDHFJetsCuts* cuts = (AliRDHFJetsCuts *)f->Get("HFJetsCutsVertex");
 
     cuts->SetMinPtJet(minPt);
     cuts->SetMaxPtJet(maxPt);
@@ -121,7 +129,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
 //------------------------------------------------------
 Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
                       Float_t minPt, Float_t maxPt,
-                      Float_t minC, Float_t maxC, 
+                      Float_t minC, Float_t maxC,
                       Bool_t corrMode, UInt_t fTrigger)
 {
 
@@ -141,10 +149,10 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
     cuts->ConfigurePileupCuts(5, 0.8);
     cuts->SetTriggerClass("CINT7");
    } // pPb minbias only
- 
+
   task->SetCuts(cuts);
   delete cuts;
-  
+
   return kTRUE;
 }
 
