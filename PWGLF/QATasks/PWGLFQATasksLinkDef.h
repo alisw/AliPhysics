@@ -8,5 +8,6 @@
 #pragma link C++ class AliAnalysisTaskQAV0+;
 #pragma link C++ class AliAnalysisTaskQAV0AOD+;
 #pragma link C++ class AliAnalysisTaskQAMultistrange+;
+#pragma link C++ class AliAnalysisTaskLFefficiencies+;
 
 #endif
