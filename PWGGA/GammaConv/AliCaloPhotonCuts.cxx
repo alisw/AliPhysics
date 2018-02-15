@@ -1886,6 +1886,16 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
     else
       fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
+
+    // plot electrons that survived the track matching
+    if (!CheckClusterForTrackMatch(cluster) && classification == 6){ // electrons that survived the matching
+      if (cluster->E() <= 20.)
+        fHistClusterElecEtaPhiAfterTM_00_20->Fill(phiCluster, etaCluster, weight);
+      if (cluster->E() > 20 && cluster->E() <= 50.)
+        fHistClusterElecEtaPhiAfterTM_20_50->Fill(phiCluster, etaCluster, weight);
+      if (cluster->E() > 50.)
+        fHistClusterElecEtaPhiAfterTM_50_00->Fill(phiCluster, etaCluster, weight);
+    }
   }
 
 
@@ -1985,15 +1995,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  if (!CheckClusterForTrackMatch(cluster) && classification == 6){ // electrons that survived the matching
-    if (cluster->E() <= 20.)
-      fHistClusterElecEtaPhiAfterTM_00_20->Fill(phiCluster, etaCluster, weight);
-    if (cluster->E() > 20 && cluster->E() <= 50.)
-      fHistClusterElecEtaPhiAfterTM_20_50->Fill(phiCluster, etaCluster, weight);
-    if (cluster->E() > 50.)
-      fHistClusterElecEtaPhiAfterTM_50_00->Fill(phiCluster, etaCluster, weight);
-  }
-
 
   cutIndex++;//9, next cut
 
