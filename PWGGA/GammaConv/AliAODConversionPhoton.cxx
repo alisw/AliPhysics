@@ -157,6 +157,8 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   Bool_t isPhotonWithElecMother     = kFALSE; // this cluster is from a photon with an electron as mother
   Bool_t isShower                   = kFALSE; // this cluster contains as a largest contribution a particle from a shower or radiative process
   Bool_t isSubLeadingEM             = kFALSE; // cluster contains at least one electron or photon from a pi0, eta or eta_prime in subleading contribution
+  Bool_t isElectronFromFragPhoton   = kFALSE; // largest contribution to cluster is from converted electron, but photon stems from fragmentation photon ( q -> q gamma)
+
   
   
   TParticle* Photon = 0x0;
@@ -203,35 +205,67 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
 
   Int_t particleMotherLabel           = Photon->GetMother(0);
   Int_t particleGrandMotherLabel      = -1; 
-  Int_t particleMotherPDG             = -1; 
+  Int_t particleGrandMotherX2Label    = -1;
+  Int_t particleGrandMotherX3Label    = -1;
+  Int_t particleGrandMotherX4Label    = -1;
+  Int_t particleGrandMotherX5Label    = -1;
+  Int_t particleGrandMotherX6Label    = -1;
+  Int_t particleGrandMotherX7Label    = -1;
+
+  Int_t particleMotherPDG             = -1;
   Int_t particleGrandMotherPDG        = -1; 
+  Int_t particleGrandMotherX2PDG      = -1;
+  Int_t particleGrandMotherX3PDG      = -1;
+  Int_t particleGrandMotherX4PDG      = -1;
+  Int_t particleGrandMotherX5PDG      = -1;
+  Int_t particleGrandMotherX6PDG      = -1;
+
   Int_t particleMotherNDaugthers      = 0;
   Int_t particleGrandMotherNDaugthers = 0;
+
   if (particleMotherLabel > -1){
     particleMotherNDaugthers          = mcEvent->Particle(Photon->GetMother(0))->GetNDaughters();
     particleGrandMotherLabel          = mcEvent->Particle(Photon->GetMother(0))->GetMother(0);
-    particleMotherPDG = mcEvent->Particle(Photon->GetMother(0))->GetPdgCode();
+    particleMotherPDG                 = mcEvent->Particle(Photon->GetMother(0))->GetPdgCode();
     if (particleGrandMotherLabel > -1){
       particleGrandMotherPDG          = mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode();
       particleGrandMotherNDaugthers   = mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetNDaughters();
-    }	
+      particleGrandMotherX2Label      = mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0);
+      if (particleGrandMotherX2Label > -1){
+        particleGrandMotherX2PDG        = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetPdgCode();
+        particleGrandMotherX3Label      = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0);
+        if (particleGrandMotherX3Label > -1){
+          particleGrandMotherX3PDG        = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetPdgCode();
+          particleGrandMotherX4Label      = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0);
+          if (particleGrandMotherX4Label > -1){
+            particleGrandMotherX4PDG        = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetPdgCode();
+            particleGrandMotherX5Label      = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0);
+            if (particleGrandMotherX5Label > -1){
+              particleGrandMotherX5PDG        = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetPdgCode();
+              particleGrandMotherX6Label      = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0);
+              if (particleGrandMotherX6Label > -1){
+                particleGrandMotherX6PDG        = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetPdgCode();
+                particleGrandMotherX7Label      = mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(mcEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0))->GetMother(0);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   if (particleMotherLabel > -1){
     if( TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    } else if (TMath::Abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
-      if ( TMath::Abs(particleMotherPDG) == 22 && (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
-        fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
-        fNCaloPhotonMotherMCLabels++;
-      } 
+    } else if (particleGrandMotherLabel > -1 &&  TMath::Abs(particleMotherPDG) == 22 && (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
+      fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
+      fNCaloPhotonMotherMCLabels++;
     } else {
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    }  
+    }
   }
 
   // Check whether the first contribution was photon
@@ -247,8 +281,9 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
         if (TMath::Abs(particleGrandMotherPDG) == 22 )
           isShower                    = kTRUE;            // check whether grandmother is a photon (meaning this is most likely a shower)
       }	
-    }			
+    }
   }
+
   // Check whether the first contribution was electron
   if( TMath::Abs(mcEvent->Particle(GetCaloPhotonMCLabel(0))->GetPdgCode()) == 11 ){
     isElectron                        = kTRUE;
@@ -265,6 +300,68 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
         isShower                      = kTRUE; 
       }
     }
+    // consider the rare case, where the conversion electron stems from photon, which stems from electron, which stems from photon, ...
+    if (isConversion && TMath::Abs(particleGrandMotherPDG) == 11   && particleGrandMotherX2PDG == 22){
+//      printf("gamma -> electron -> gamma -> electron!\n");
+      SetCaloPhotonMCLabel(0,particleGrandMotherLabel);
+      fCaloPhotonMotherMCLabels[0] = particleGrandMotherX3Label;
+      if (TMath::Abs(particleGrandMotherX3PDG) == 11 && particleGrandMotherX4PDG == 22  ){
+//        printf("gamma -> electron -> gamma -> electron -> gamma -> electron!\n");
+        SetCaloPhotonMCLabel(0,particleGrandMotherX3Label);
+        fCaloPhotonMotherMCLabels[0] = particleGrandMotherX5Label;
+        if (TMath::Abs(particleGrandMotherX5PDG) == 11 && particleGrandMotherX6PDG == 22  ){
+//          printf("gamma -> electron -> gamma -> electron -> gamma -> electron -> gamma -> electron!\n");
+          SetCaloPhotonMCLabel(0,particleGrandMotherX5Label);
+          fCaloPhotonMotherMCLabels[0] = particleGrandMotherX7Label;
+        }
+      }
+    }
+
+    // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
+    TParticle *dummyMother = mcEvent->Particle(particleMotherLabel);
+    while (dummyMother->GetPdgCode() == 22){ // follow conversion photon's history, as long as the mother is a photon
+      dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
+      if (TMath::Abs(dummyMother->GetPdgCode()) == 11) // in case of additional conversion skip to photon's grandma, which should be a photon
+        dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
+      isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+    }
+
+/*    // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
+    if ( particleMotherPDG == 22 ){
+      SetCaloPhotonMCLabel(0,particleMotherLabel);
+      fCaloPhotonMotherMCLabels[0] = particleGrandMotherLabel;
+      isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherPDG) < 6);// photon stems from quark = fragmentation photon
+        if ( particleGrandMotherPDG == 22 ){
+        SetCaloPhotonMCLabel(0,particleGrandMotherLabel);
+        fCaloPhotonMotherMCLabels[0] = particleGrandMotherX2Label;
+        isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX2PDG) < 6);
+        if ( particleGrandMotherX2PDG == 22 ){
+          SetCaloPhotonMCLabel(0,particleGrandMotherX2Label);
+          fCaloPhotonMotherMCLabels[0] = particleGrandMotherX3Label;
+          isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX3PDG) < 6);
+          if ( particleGrandMotherX3PDG == 22 ){
+            SetCaloPhotonMCLabel(0,particleGrandMotherX3Label);
+            fCaloPhotonMotherMCLabels[0] = particleGrandMotherX4Label;
+            isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX4PDG) < 6);
+            if ( particleGrandMotherX4PDG == 22 ){
+              SetCaloPhotonMCLabel(0,particleGrandMotherX4Label);
+              fCaloPhotonMotherMCLabels[0] = particleGrandMotherX5Label;
+              isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX5PDG) < 6);
+              if ( particleGrandMotherX5PDG == 22 ){
+                SetCaloPhotonMCLabel(0,particleGrandMotherX5Label);
+                fCaloPhotonMotherMCLabels[0] = particleGrandMotherX6Label;
+                isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX6PDG) < 6);
+                if ( particleGrandMotherX6PDG == 22 ){
+                  SetCaloPhotonMCLabel(0,particleGrandMotherX6Label);
+                  fCaloPhotonMotherMCLabels[0] = particleGrandMotherX7Label;
+                  isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX7PDG) < 6);
+                }
+              }
+            }
+          }
+        }
+      }
+    }*/
   }
 
   Bool_t enablePrintOuts            = kFALSE;
@@ -430,7 +527,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       }
     }
   }
-  fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024;
+  fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024 + isElectronFromFragPhoton * 2048;
 }
 
 void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort){

@@ -543,6 +543,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     // histograms for track matching efficiency
     TH2F*     fHistClusterTMEffiInput;                  //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_00_20;     //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_20_50;     //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_50_00;     //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_00_20;      //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_20_50;      //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_50_00;      //
     TH2F*     fHistClusterEvsTrackECharged;             //
     TH2F*     fHistClusterEvsTrackEChargedLead;         //
     TH2F*     fHistClusterEvsTrackENeutral;             //
@@ -561,7 +567,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,55)
+    ClassDef(AliCaloPhotonCuts,56)
 };
 
 #endif
