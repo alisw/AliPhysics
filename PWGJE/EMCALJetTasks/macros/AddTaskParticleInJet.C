@@ -1,4 +1,4 @@
-AliEmcalTrackSelection *TrackSelectionFactory(Bool_t isAOD);
+PWG::EMCAL::AliEmcalTrackSelection *TrackSelectionFactory(Bool_t isAOD);
 
 AliAnalysisTaskParticleInJet *AddTaskParticleInJet(
     Bool_t isMC,
@@ -40,16 +40,16 @@ AliAnalysisTaskParticleInJet *AddTaskParticleInJet(
   return jettask;
 }
 
-AliEmcalTrackSelection *TrackSelectionFactory(Bool_t isAOD){
-  AliEmcalTrackSelection *result = 0;
+PWG::EMCAL::AliEmcalTrackSelection *TrackSelectionFactory(Bool_t isAOD){
+  PWG::EMCAL::AliEmcalTrackSelection *result = 0;
   if(isAOD){
-    AliEmcalTrackSelectionAOD *aodcuts = new AliEmcalTrackSelectionAOD();
+    PWG::EMCAL::AliEmcalTrackSelectionAOD *aodcuts = new PWG::EMCAL::AliEmcalTrackSelectionAOD();
     aodcuts->AddFilterBit(AliAODTrack::kTrkGlobal);
     EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extracuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts;
     extracuts->SetMinTPCCrossedRows(120);
     result = aodcuts;
   } else {
-    result = new AliEmcalTrackSelectionESD();
+    result = new PWG::EMCAL::AliEmcalTrackSelectionESD();
     AliESDtrackCuts *cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
 	  cuts->SetName("Standard Track cuts");
 	  cuts->SetMinNCrossedRowsTPC(120);
