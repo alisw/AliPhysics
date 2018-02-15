@@ -178,9 +178,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
-//    TH2F**                  fHistoMCAllElectronPtvsSource;                      //! array of histos with weighted all primary electrons
-//    TH2F**                  fHistoMCAllSecElectronPtvsSource;                   //! array of histos with weighted all secondary electrons
-
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
