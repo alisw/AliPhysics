@@ -137,7 +137,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   if(!trackCont)
     Printf("Error with TPCOnly!!");
   trackCont->SetName("tpconlyMatch");
-  trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
+  trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks);
     // clusters to be used in the analysis already filtered
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
   
