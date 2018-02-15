@@ -86,7 +86,8 @@ public:
 		flags |= nflags;
 	}
 
-	static Double_t CentBin[10]; //8
+#define CENTN 9
+	static Double_t CentBin[CENTN+1]; //8
 	static Double_t pttJacek[74];
 	static UInt_t NCentBin;
 	static UInt_t NpttJacek;
@@ -126,7 +127,7 @@ private:
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[kNH][2]; // ksub
 
-	TH1D *h_phi_module[9][2]; //7 // cent, isub
+	TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 	TFile *inclusFile; // pointer for root file
 
 	AliJHistManager * fHMG;//!

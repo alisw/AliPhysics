@@ -69,8 +69,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(int icent=0; icent<7; icent++){
-		for(int isub=0; isub<2; isub++){
+	for(UInt_t icent = 0; icent < CENTN; icent++){
+		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}
@@ -104,8 +104,8 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(int icent=0; icent<7; icent++){
-		for(int isub=0; isub<2; isub++){
+	for(UInt_t icent = 0; icent < CENTN; icent++){
+		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}
@@ -155,8 +155,8 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	if(flags & FLUC_PHI_MODULATION){
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_MODULATION);
 		//setting histos for phi modulation
-		for(int icent=0; icent<7; icent++){
-			for(int isub=0; isub<2; isub++){
+		for(UInt_t icent = 0; icent < CENTN; icent++){
+			for(UInt_t isub = 0; isub < 2; isub++){
 				fFFlucAna->SetPhiModuleHistos( icent, isub, h_ModuledPhi[icent][isub] );
 			}
 		}
@@ -689,8 +689,8 @@ void AliJFFlucTask::EnablePhiModule(const TString fname){
 	cout << "Setting InFIle as " << fname.Data() << endl;
 	TGrid::Connect("alien:");
 	TFile *inclusFile = TFile::Open( fname.Data() , "read" );
-	for(int icent=0; icent< 7; icent++){
-		for(int isub=0; isub<2; isub++){
+	for(UInt_t icent = 0; icent < CENTN; icent++){
+		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub] = dynamic_cast<TH1D *>(inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
 		}
 	}
