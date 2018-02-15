@@ -326,42 +326,6 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
     }
 
-/*    // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
-    if ( particleMotherPDG == 22 ){
-      SetCaloPhotonMCLabel(0,particleMotherLabel);
-      fCaloPhotonMotherMCLabels[0] = particleGrandMotherLabel;
-      isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherPDG) < 6);// photon stems from quark = fragmentation photon
-        if ( particleGrandMotherPDG == 22 ){
-        SetCaloPhotonMCLabel(0,particleGrandMotherLabel);
-        fCaloPhotonMotherMCLabels[0] = particleGrandMotherX2Label;
-        isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX2PDG) < 6);
-        if ( particleGrandMotherX2PDG == 22 ){
-          SetCaloPhotonMCLabel(0,particleGrandMotherX2Label);
-          fCaloPhotonMotherMCLabels[0] = particleGrandMotherX3Label;
-          isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX3PDG) < 6);
-          if ( particleGrandMotherX3PDG == 22 ){
-            SetCaloPhotonMCLabel(0,particleGrandMotherX3Label);
-            fCaloPhotonMotherMCLabels[0] = particleGrandMotherX4Label;
-            isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX4PDG) < 6);
-            if ( particleGrandMotherX4PDG == 22 ){
-              SetCaloPhotonMCLabel(0,particleGrandMotherX4Label);
-              fCaloPhotonMotherMCLabels[0] = particleGrandMotherX5Label;
-              isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX5PDG) < 6);
-              if ( particleGrandMotherX5PDG == 22 ){
-                SetCaloPhotonMCLabel(0,particleGrandMotherX5Label);
-                fCaloPhotonMotherMCLabels[0] = particleGrandMotherX6Label;
-                isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX6PDG) < 6);
-                if ( particleGrandMotherX6PDG == 22 ){
-                  SetCaloPhotonMCLabel(0,particleGrandMotherX6Label);
-                  fCaloPhotonMotherMCLabels[0] = particleGrandMotherX7Label;
-                  isElectronFromFragPhoton =  (TMath::Abs(particleGrandMotherX7PDG) < 6);
-                }
-              }
-            }
-          }
-        }
-      }
-    }*/
   }
 
   Bool_t enablePrintOuts            = kFALSE;
