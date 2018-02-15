@@ -88,6 +88,9 @@ public:
     Bool_t IsHijing()  const;
     Bool_t IsDPMJet()  const;
     Bool_t IsEPOSLHC() const;
+    
+    //helper
+    TString GetHeaderTitle() const;
  
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     
@@ -171,6 +174,11 @@ private:
     TString fStoredObjectName;
     
     AliESDtrackCuts *fESDtrackCuts;
+
+    //A.T. 
+    AliESDtrackCuts* fTrackCuts;        // optional track cuts
+    AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
+    AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
     AliAnalysisUtils *fUtils;         // analysis utils
     
     //To perform event selection
@@ -222,11 +230,16 @@ private:
     AliMultVariable *fZncTower;
     AliMultVariable *fZpaTower;
     AliMultVariable *fZpcTower;
+    AliMultVariable *fZnaFired;
+    AliMultVariable *fZncFired;
+    AliMultVariable *fZpaFired;
+    AliMultVariable *fZpcFired;
+
+    Int_t fCurrentRun;
+    Int_t fRunNumber;
     
     //Event selection snippet for VtxZ as AliMultVariable
     AliMultVariable *fEvSel_VtxZ;
-
-    Int_t fRunNumber;                    
 
     //Event Characterization Variables - optional
     Bool_t fEvSel_VtxZCut;                  //!
@@ -244,30 +257,20 @@ private:
     //Full Physics Selection Trigger info
     UInt_t fEvSel_TriggerMask; //! save full info for checking later
     
+    //Final event selection code
+    Int_t fEvSelCode; //Final code in event selection
+    
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
-
-    // A.T.
-    AliESDtrackCuts* fTrackCuts;        // optional track cuts
-    AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
-    AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
-    
-    AliMultVariable *fZnaFired;
-    AliMultVariable *fZncFired;
-    AliMultVariable *fZpaFired;
-    AliMultVariable *fZpcFired;
     
     AliMultVariable *fNTracks;             //!  no. tracks
     AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
     AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
     AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
     
-    Int_t fCurrentRun;
-    
     Float_t fQuantiles[100]; //! percentiles
-    Int_t fEvSelCode; //Final code in event selection 
     Int_t fNDebug; // number of percentiles
     
     Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 
