@@ -57,11 +57,10 @@ public:
   Bool_t GetRunCorrelationMixing() const {return fOptionRunCorrelationMixing;}
   
 protected:
-   // TODO: add mixing handler for correlations
    AliMixingHandler* fCorrelationsMixingHandler;
    
-  Bool_t fOptionRunCorrelation;   // true: run correlation of candidates and associated tracks, false: apply only associated track cuts
-  Bool_t fOptionRunCorrelationMixing;    // true: run the event mixing for the correlation function
+  Bool_t fOptionRunCorrelation;       // true: run correlation of candidates and associated tracks, false: apply only associated track cuts
+  Bool_t fOptionRunCorrelationMixing; // true: run the event mixing for the correlation function
   
   TList fAssociatedTrackCuts;   // array of associated track cuts
   TList fAssociatedTracks;      // list of selected associated tracks
