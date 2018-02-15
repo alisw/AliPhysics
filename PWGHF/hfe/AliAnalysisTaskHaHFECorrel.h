@@ -78,8 +78,8 @@ public:
     void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
 
     //********************MC
-    void MCEfficiencyCorrections(const AliVVertex * RecVertex);
-
+    void  MCEfficiencyCorrections(const AliVVertex * RecVertex);
+    Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
     Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[]);
@@ -394,7 +394,9 @@ public:
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-    THnSparse             *fMCElecHaHadron;        //!
+    THnSparse             *fSignalElecHa;           //!
+    THnSparse             *fBackgroundElecHa;       //!
+    THnSparse             *fMCElecHaHadron;         //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
