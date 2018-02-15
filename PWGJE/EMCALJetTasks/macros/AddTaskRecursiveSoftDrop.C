@@ -39,12 +39,12 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
       return NULL;
     }
 
-  if(fJetType==AliAnalysisTaskRecursiveSoftDrop::kData){
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kData){
     TString wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
     TString wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsData,trigClass.Data(),tag.Data());
     TString wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsData,trigClass.Data(),tag.Data());
   }
-  if(fJetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
     TString wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
     TString wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsHybridS,trigClass.Data(),tag.Data());
     TString wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsHybridS,trigClass.Data(),tag.Data());
@@ -61,7 +61,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   AliParticleContainer *trackContTrue=0x0;
 
   trackContData = task->AddParticleContainer(ntracksData);
-  if(fJetType==kEmb){
+  if(fjetType==kEmb){
     trackContDet = task->AddParticleContainer(ntracksDet);
     trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   }
@@ -72,7 +72,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   AliJetContainer *JetContHybridS=0x0;
   TString strType(type);
 
-  if(fJetType==kData){
+  if(fjetType==kData){
     JetContData = task->AddJetContainer(njetsData,strType,R); //Data
     if(JetContData) {
       JetContData->SetRhoName(nrhoBase);
@@ -83,7 +83,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
       if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContData->SetAreaEmcCut(-2);
     }  
   }
-  if(fJetType==kEmb){
+  if(fjetType==kEmb){
     JetContHybridS = task->AddJetContainer(njetsHybridS,strType,R); //HybridS
     if(JetContHybridS) {
       JetContHybridS->SetRhoName(nrhoBase);
@@ -137,7 +137,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   TString contName2(wagonName2);
   TString contName3(wagonName3);
 
-  if (jetShapeType == AliAnalysisTaskRecoilJetYield::kEmb){
+  if (fjetType == AliAnalysisTaskRecoilJetYield::kEmb){
     contName1 += "_Embedded";
     contName2 += "_Embedded";
     contName2 += "_Embedded";
