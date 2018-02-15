@@ -33,7 +33,7 @@ ClassImp(AliMeanPtAnalysisTask);
 //________________________________________________________________________
 AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
   //General member variables
-  fPRECISION(1e-10),
+  fPRECISION(1e-6),
   fOutputList(0),
   fEvent(0),
   fMCEvent(0),
@@ -133,16 +133,13 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
 
   // Control histogram to check the effect of event cuts
-  fEventCount = new TH1F("fEventCount","Number of events after cuts",8,0.5,8.5);
+  fEventCount = new TH1F("fEventCount","Number of events after cuts",5,0.5,5.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
   fEventCount->GetXaxis()->SetBinLabel(1, "all");
   fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
   fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pileup");
   fEventCount->GetXaxis()->SetBinLabel(4, "accepted Centraliy");
   fEventCount->GetXaxis()->SetBinLabel(5, "without #it{N}_{ch} overflow");
-  fEventCount->GetXaxis()->SetBinLabel(6, "#it{N}_{ch} > 0");
-  fEventCount->GetXaxis()->SetBinLabel(7, "#it{N}_{acc} > 0"); // to normalize fHistTrack in data and MC
-  fEventCount->GetXaxis()->SetBinLabel(8, "#it{N}_{rec} > 0"); // to normalize fHistMCParticle
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -427,19 +424,12 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   if(fIsMC){
     // Response Matrix
-    // also contains Nch overflow, Nch=0 and Nacc = 0 events
     Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
 
     if(multGenPart >= fBinsMult->GetAt(fBinsMult->GetSize()-1)) return;
-    fEventCount->Fill(5); // Events after excluding events in Nch overflow
-
-    if(multGenPart > 0) fEventCount->Fill(6);   // Events with Nch > 0
-    else return; // exclude events with only secondaries (?)
+    fEventCount->Fill(5); // Events after excluding Nch overflow
   }
-
-  if(multAccTracks > 0) fEventCount->Fill(7); // Events with Nacc > 0
-  else return;  // Very important cut to not bias efficiency correction
 
   /// ------------------ Event Histogram ---------------------------------------
 
@@ -497,8 +487,6 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
       }
     }
   }
-
-  if(multRecPart > 0) fEventCount->Fill(8); // Events with particles within kinematic acceptance
 
   if(fIsMC){
     // Control Histogram to check how many tracks come from a particle outside of kinematic range
