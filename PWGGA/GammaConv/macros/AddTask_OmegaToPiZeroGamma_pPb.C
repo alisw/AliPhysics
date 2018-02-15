@@ -69,13 +69,13 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
                                 Double_t  upperFactor                 = 2.5,                  // scale factor for upper limit in pi0-gamma angle cut
                                 TString   fileNameInputForWeighting   = "MCSpectraInput.root",// path to file for weigting input
                                 Int_t     doWeightingPart             = 0,                    // enable Weighting
-                                TString   generatorName               = "DPMJET",             // generator Name  
+                                TString   generatorName               = "DPMJET",             // generator Name
                                 TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
                                 Int_t     enableExtMatchAndQA         = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
                                 Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
                                 Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
-                                Bool_t    enableTriggerOverlapRej     = kFALSE,               // enable trigger overlap rejection                  
+                                Bool_t    enableTriggerOverlapRej     = kFALSE,               // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",                   // period Name for V0Reader
                                 Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
@@ -105,7 +105,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
 
   // fReconMethod = first digit of trainconfig
   Int_t ReconMethod = trainConfig/100;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -119,15 +119,15 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
   Bool_t isMCForOtherTasks = kFALSE;
   if (isMC > 0) isMCForOtherTasks = kTRUE;
 
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherTasks);
   }
-  
+
   Printf("here \n");
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton   = "00000008400100001500000000";
   TString cutnumberEvent    = "80000003";
@@ -178,7 +178,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -209,7 +209,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
-  
+
   //************************************************ EMCAL clusters **********************************************************
   if (trainConfig == 1){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
@@ -327,7 +327,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
-    analysisEventCuts[i] = new AliConvEventCuts();   
+    analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
@@ -337,7 +337,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
@@ -345,7 +345,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-  
+
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -355,7 +355,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-    
+
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
     analysisNeutralPionCuts[i]->SetRunningMode(2);

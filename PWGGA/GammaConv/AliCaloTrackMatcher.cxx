@@ -131,7 +131,7 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
   SetLogBinningYTH2(fHistControlMatches);
   fHistControlMatches->GetYaxis()->SetTitle("track pT (GeV/c)");
   fHistControlMatches->GetXaxis()->SetBinLabel(1,"nTr in");
-  fHistControlMatches->GetXaxis()->SetBinLabel(2,"no inner Tr params");
+  fHistControlMatches->GetXaxis()->SetBinLabel(2,"no inner Tr params || track not in right direction");
   fHistControlMatches->GetXaxis()->SetBinLabel(3,"failed 1st pro-step");
   fHistControlMatches->GetXaxis()->SetBinLabel(4,"Tr not in EMCal acc");
   fHistControlMatches->GetXaxis()->SetBinLabel(5,"failed 2nd pro-step");
@@ -221,6 +221,50 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       return;
     }
   }
+  static AliESDtrackCuts *EsdTrackCuts = 0x0;
+  static int prevRun = -1;
+  // Using standard function for setting Cuts
+  Int_t runNumber = fInputEvent->GetRunNumber();
+  if (esdev){
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+        // else if run2 data use 2015 PbPb cuts
+      } else if (runNumber>=209122){
+        //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+        // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+        EsdTrackCuts = new AliESDtrackCuts();
+        // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+        EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+        EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+        //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+        EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+        // ITS; selPrimaries = 1
+        EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                                                AliESDtrackCuts::kAny);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+        // else use 2011 version of track cuts
+      }else{
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+    }
+  }
 
   for (Int_t itr=0;itr<event->GetNumberOfTracks();itr++){
     AliExternalTrackParam *trackParam = 0;
@@ -228,8 +272,12 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     if(esdev){
       inTrack = esdev->GetTrack(itr);
       if(!inTrack) continue;
-      fHistControlMatches->Fill(0.,inTrack->Pt());
+      if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType==1 || fClusterType==3 )) continue;
+      if(TMath::Abs(inTrack->Eta())>0.3 && fClusterType==2 ) continue;
+      if(inTrack->Pt()<0.5) continue;
       AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+      if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+      fHistControlMatches->Fill(0.,inTrack->Pt());
 
       const AliExternalTrackParam *in = esdt->GetInnerParam();
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue"); fHistControlMatches->Fill(1.,inTrack->Pt()); continue;}
@@ -237,13 +285,21 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     } else if(aodev) {
       inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       if(!inTrack) continue;
-      fHistControlMatches->Fill(0.,inTrack->Pt());
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+      if(inTrack->GetID()<0) continue; // Avoid double counting of tracks
 
+      if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType==1 || fClusterType==3 )) continue;
+      if(TMath::Abs(inTrack->Eta())>0.3 && fClusterType==2 ) continue;
+      if(inTrack->Pt()<0.5) continue;
+
+
+      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+      if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
       aodt->GetPxPyPz(pxpypz);
       aodt->GetXYZ(xyz);
       aodt->GetCovarianceXYZPxPyPz(cv);
+      fHistControlMatches->Fill(0.,inTrack->Pt());
+
       trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
     }
 
@@ -258,7 +314,6 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         fHistControlMatches->Fill(2.,inTrack->Pt());
         continue;
       }
-
       if( TMath::Abs(eta) > 0.75 ) {
         delete trackParam;
         fHistControlMatches->Fill(3.,inTrack->Pt());
@@ -274,9 +329,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       if( nModules > 12 ){
         if (fClusterType == 3 && ( phi < 250*TMath::DegToRad() || phi > 340*TMath::DegToRad())){
           delete trackParam;
-	  fHistControlMatches->Fill(3.,inTrack->Pt());
+          fHistControlMatches->Fill(3.,inTrack->Pt());
           continue;
-        } 
+        }
         if( fClusterType == 1 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
           delete trackParam;
           fHistControlMatches->Fill(3.,inTrack->Pt());
@@ -284,12 +339,21 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         }
       }
 
+
+
     }else if(fClusterType == 2){
       if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
+        delete trackParam;
+        fHistControlMatches->Fill(2.,inTrack->Pt());
+        continue;
+      }
+
+      if (TMath::Abs(eta) > 0.25 && (fClusterType == 2)){
         delete trackParam;
         fHistControlMatches->Fill(3.,inTrack->Pt());
         continue;
       }
+
 //to do: implement of distance checks
     }
 
@@ -588,7 +652,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )matched++;
       }
     }
@@ -678,7 +742,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )matched++;
 
       }
@@ -756,7 +820,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
 
       }
@@ -847,7 +911,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )tempMatchedClusters.push_back(it->second);
       }
     }
@@ -945,7 +1009,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )matched++;
       }
     }
@@ -1037,7 +1101,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )matched++;
 
       }
@@ -1118,7 +1182,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
       }
     }
@@ -1210,7 +1274,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *ev
 
         if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
-        
+
         if (match_dPhi && match_dEta )tempMatchedClusters.push_back(it->second);
       }
     }

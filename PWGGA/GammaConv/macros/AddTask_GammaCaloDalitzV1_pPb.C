@@ -12,7 +12,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
               ) {
 
   Int_t isHeavyIon = 2;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -22,32 +22,32 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMC);
   }
-  
+
   Printf("here \n");
-  
+
   //=========  Set Cutnumber for V0Reader ================================
             //06000078400100001500000000
   TString cutnumberPhoton 	= "06000078400100007500000000";
   TString cutnumberEvent 		= "80000003";
   TString cutnumberElectron   = "90005400000002000000";            //Electron Cuts
-  
-  
-  
+
+
+
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
     TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
     if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    
+
         AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    
+
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -76,7 +76,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
       fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
-            fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -84,7 +84,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -95,7 +95,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
     mgr->ConnectInput(fV0ReaderV1,0,cinput);
 
   }
-  
+
     //================================================
     //========= Add Electron Selector ================
     if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
@@ -115,7 +115,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 
     fElectronSelector->Init();
     mgr->AddTask(fElectronSelector);
-    
+
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
 
     //connect input V0Reader
@@ -123,7 +123,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
     mgr->ConnectInput (fElectronSelector,0,cinput1);
 
     }
-  
+
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
@@ -135,17 +135,17 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
-  
+
   if ( trainConfig == 1 || trainConfig == 2 )
   numberOfCuts = 4;
 
-    
+
   TString *eventCutArray   	= new TString[numberOfCuts];
   TString *photonCutArray  	= new TString[numberOfCuts];
   TString *clusterCutArray 	= new TString[numberOfCuts];
   TString *electronCutArray	= new TString[numberOfCuts];
   TString *mesonCutArray   	= new TString[numberOfCuts];
-  
+
 
   //************************************************ EMCAL clusters **********************************************************
   if ( trainConfig == 1){ // min energy = 0.3 GeV/c
@@ -158,7 +158,7 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
       eventCutArray[1] = "80062013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "2000000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
       eventCutArray[2] = "80000013"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "2000000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "0263103100000000"; //standart cut, kINT7
       eventCutArray[3] = "80062013"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "2000000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "0263103100000000"; //standard cut, kPHI7
-  } else if ( trainConfig == 3){ // min energy = 0.3 GeV/c																	
+  } else if ( trainConfig == 3){ // min energy = 0.3 GeV/c
       eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1111100053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
       eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1331100053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
   } else if ( trainConfig == 4){
@@ -170,14 +170,14 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
   } else if ( trainConfig == 6 ) {
       eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "2000000048033300000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
       eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "2444400048033300000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7
-  } else if ( trainConfig == 7 ){ // min energy = 0.3 GeV/c																	
+  } else if ( trainConfig == 7 ){ // min energy = 0.3 GeV/c
       eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1221100053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
       eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1331100053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
   } else {
     Error(Form("GammaConvDalitzCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+
 
   TList *EventCutList     = new TList();
   TList *ConvCutList      = new TList();
@@ -203,16 +203,16 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
-  
+
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
-  
+
   ClusterCutList->SetOwner(kTRUE);
   AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
-  
+
   ElectronCutList->SetOwner(kTRUE);
   AliDalitzElectronCuts   **analysisElectronCuts = new AliDalitzElectronCuts*[numberOfCuts];
-    
+
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
@@ -228,19 +228,19 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
-    analysisEventCuts[i] = new AliConvEventCuts();   
+    analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-  
+
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -248,22 +248,22 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-    
+
     analysisElectronCuts[i] = new AliDalitzElectronCuts();
     if( !analysisElectronCuts[i]->InitializeCutsFromCutString(electronCutArray[i].Data())) {
       cout<< "ERROR:  analysisElectronCuts [ " <<i<<" ] "<<endl;
       return 0;
     }
     ElectronCutList->Add(analysisElectronCuts[i]);
-    analysisElectronCuts[i]->SetFillCutHistograms("",kFALSE,electronCutArray[i].Data()); 
-    
+    analysisElectronCuts[i]->SetFillCutHistograms("",kFALSE,electronCutArray[i].Data());
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
-    
+
+
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
