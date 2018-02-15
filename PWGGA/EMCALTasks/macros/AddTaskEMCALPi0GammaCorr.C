@@ -43,12 +43,12 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
   AliTrackContainer* trackContMatching = AnalysisTask->AddTrackContainer("usedefault");
   if(!trackContMatching) ::Error("AddTask", "Track container not found" ) ;
   trackContMatching->SetName("ForMatching");
-  trackContMatching->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);  
+  trackContMatching->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks);  
 
 
   AliTrackContainer* trackITSOnly  = AnalysisTask->AddTrackContainer("usedefault");
   trackITSOnly->SetName("ITSOnly");
-  trackITSOnly->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
+  trackITSOnly->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter);
   AliESDtrackCuts* myCuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010();
   trackITSOnly->AddTrackCuts(myCuts);
   
