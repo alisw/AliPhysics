@@ -145,34 +145,34 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  Bool_t isAOD          = kFALSE;
+  if(inputHandler->IsA()==AliAODInputHandler::Class()) isAOD  = kTRUE;
 
-  Bool_t isMCForOtherSettings = 0;
-  if (isMC > 0) isMCForOtherSettings = 1;
-  //========= Add PID Reponse to ANALYSIS manager ====
+
+  //========= Check whether PID Reponse is there ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherSettings);
+    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No PID response has been initialized aborting.");
+    return;
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "06000008000100001500000000";
-  TString cutnumberEvent = "80000003";
+  TString cutnumberPhoton     = "06000008000100001500000000";
+  TString cutnumberEvent      = "80000003";
 
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+    fV0ReaderV1               = new AliV0ReaderV1(V0ReaderName.Data());
+    // AOD mode
+    if (isAOD) fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
 
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
@@ -204,11 +204,6 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
       }
-    }
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-    // AOD mode
-      cout << "AOD handler: adding " << cutnumberAODBranch.Data() << " as conversion branch" << endl;
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 

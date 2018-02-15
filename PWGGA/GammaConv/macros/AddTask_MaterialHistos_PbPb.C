@@ -135,7 +135,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
 
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 

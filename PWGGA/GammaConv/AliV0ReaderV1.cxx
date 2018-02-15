@@ -1368,7 +1368,7 @@ void AliV0ReaderV1::CountTracks(){
       if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
         EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
         // else if run2 data use 2015 PbPb cuts
-            }else if (runNumber>=209122){
+      } else if (runNumber>=209122){
         //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
         // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
         EsdTrackCuts = new AliESDtrackCuts();

@@ -71,7 +71,7 @@ void AddTask_Material(  TString   V0ReaderEventCutNumber      = "00000003",
 
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -103,7 +103,8 @@ void AddTask_Material(  TString   V0ReaderEventCutNumber      = "00000003",
   mgr->AddTask(fMaterial);
 
   AliAnalysisDataContainer *coutput1 =
-  mgr->CreateContainer(Form("GammaConvMaterial_%s_%s",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,Form("GammaConv_Material_%s_%s.root",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));
+  mgr->CreateContainer(Form("GammaConvMaterial_%s_%s",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
+                       Form("GammaConv_Material_%s_%s.root",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));
 
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   mgr->ConnectInput(fMaterial,  0, cinput1 );
