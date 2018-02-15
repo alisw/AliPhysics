@@ -162,7 +162,7 @@ AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
     
     //Track cuts
     sampleTask->GetParticleContainer(0)->SetParticlePtCut(1.2);
-    sampleTask->GetTrackContainer(0)->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
+    sampleTask->GetTrackContainer(0)->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter);
     sampleTask->GetTrackContainer(0)->SetAODFilterBits(AliAODTrack::kTrkGlobalNoDCA);
     sampleTask->GetTrackContainer(0)->SetEtaLimits(-0.7, 0.7);
     
