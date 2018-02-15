@@ -116,7 +116,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
 
       const static Short_t    fNumSamples = 10; // overall number of samples (from random sampling) used
       const static Int_t      fNumHarmonics = 5; // number of harmonics
-      const static Int_t      fNumMixedHarmonics = 3; // number of mixed harmonics: 4{psi2}, 6{psi3} and 5{psi2,3}
+      const static Int_t      fNumMixedHarmonics = 4; // number of mixed harmonics: 4{psi2}, 6{psi3} and 5{psi2,3}
       static Int_t            fHarmonics[fNumHarmonics]; // values of used harmonics
       static Int_t            fMixedHarmonics[fNumMixedHarmonics]; // values of used harmonics
       const static Int_t      fNumEtaGap = 3; // number of harmonics
@@ -174,7 +174,11 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       TComplex                FourDiff(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t pt); // Four particle reference correlation calculations (no eta gap)
       TComplex                FourGapPos(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4); // Four particle reference correlation calculations (with eta gap); n1+n2 = n3+n4;  n1, n2 from P & n3, n4 from M
       TComplex                FourGapNeg(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4); // Four particle reference correlation calculations (with eta gap); n1+n2 = n3+n4;  n1, n2 from M & n3, n4 from P
-    
+      TComplex                Four13DiffGapPos(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t pt); // Four particle diff. correlation calculations (with eta gap); n1 = n2+n3+n4;  n1 from P & n2, n3, n4 from M
+      TComplex                Four13DiffGapNeg(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t pt); // Four particle diff. correlation calculations (with eta gap); n1 = n2+n3+n4;  n1 from M & n2, n3, n4 from P
+      TComplex                SixGapPos(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t n5, const Short_t n6); // Six particle reference correlation calculations (with eta gap); n1 + n2 + n3 = n4 + n5 + n6 ;n1, n2, n3 from P and n4, n5 and n6 from M  
+      TComplex                SixGapNeg(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t n5, const Short_t n6); // Six particle reference correlation calculations (with eta gap); n1 + n2 + n3 = n4 + n5 + n6; n1, n2, n3 from M and n4, n5 and n6 from P   
+
       // properties
       AliAODEvent*            fEventAOD; //! AOD event countainer
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
@@ -305,6 +309,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     
       //Mixed harmonics:
       TProfile*       fpMixedRefsCor4[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <4> correlations for RFPs
+      TProfile*       fpMixedRefsCor6[fNumSamples][fNumEtaGap]; //! <6> correlations for RFPs
       TProfile2D*     fpMixedChargedCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta>0
       TProfile2D*     fpMixedChargedCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta<0
       TProfile2D*     fpMixedPionCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for pion POIs: POIs in Eta>0
@@ -313,6 +318,14 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
       TProfile2D*     fpMixedKaonCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for kaon POIs: POIs in Eta<0
       TProfile2D*     fpMixedProtonCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta>0
       TProfile2D*     fpMixedProtonCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta<0
+      TProfile2D*     fpMixedChargedCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta>0
+      TProfile2D*     fpMixedChargedCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta<0
+      TProfile2D*     fpMixedPionCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta>0
+      TProfile2D*     fpMixedPionCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta<0
+      TProfile2D*     fpMixedKaonCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta>0
+      TProfile2D*     fpMixedKaonCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta<0
+      TProfile2D*     fpMixedProtonCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta>0
+      TProfile2D*     fpMixedProtonCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta<0
     
       // Events
       TH2D*           fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
