@@ -12,7 +12,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     enum caloPhotonMCFlags_t {
               kIsPhoton               = 0x001, kIsElectron        = 0x002, kIsConversion  = 0x004, kIsConversionFullyContained  = 0x008,
               kIsMerged               = 0x010, kIsMergedPartConv  = 0x020, kIsDalitz      = 0x040, kIsDalitzMerged              = 0x080,
-              kIsPhotonWithElecMother = 0x100, kIsShower          = 0x200, kIsSubLeadingEM= 0x400
+              kIsPhotonWithElecMother = 0x100, kIsShower          = 0x200, kIsSubLeadingEM= 0x400, kIsElectronFromFragPhoton    = 0x800,
     };
     
     //Constructors
@@ -86,7 +86,9 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Bool_t IsShower(){return fCaloPhotonMCFlags&kIsShower;}                                       // largest contribution to cluster seems to stem from a shower
     Bool_t IsEMNonLeading(){return !(fCaloPhotonMCFlags&kIsPhoton) && !(fCaloPhotonMCFlags&kIsElectron);} // largest contribution is from hadron
     Bool_t IsSubLeadingEM(){return fCaloPhotonMCFlags&kIsSubLeadingEM;}                           // cluster contains at least one electron or photon from a pi0 or eta in subleading contribution
-    
+
+    Bool_t IsElectronFromFragPhoton(){return fCaloPhotonMCFlags&kIsElectronFromFragPhoton;}      // largest contribution to cluster is from electron, but the converted photon is or stems from fragmentation photon ( q -> q gamma)
+
     Bool_t IsTrueConvertedPhoton() {
       if (!fCaloPhoton && fCaloPhotonMCFlags == 1) return kTRUE;
         else return kFALSE;
@@ -103,7 +105,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Long_t fCaloPhotonMCLabels[50];
     Long_t fCaloPhotonMotherMCLabels[20];
 
-    ClassDef(AliAODConversionPhoton,5)
+    ClassDef(AliAODConversionPhoton,6)
 };
 
 

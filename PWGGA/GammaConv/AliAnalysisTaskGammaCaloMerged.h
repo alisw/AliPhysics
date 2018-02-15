@@ -178,6 +178,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
+//    TH2F**                  fHistoMCAllElectronPtvsSource;                      //! array of histos with weighted all primary electrons
+//    TH2F**                  fHistoMCAllSecElectronPtvsSource;                   //! array of histos with weighted all secondary electrons
+
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
@@ -214,6 +217,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusBGPtvsSource;                         //!
     TH2F**                  fHistoTrueClusGammaPtvsSource;                      //!
     TH2F**                  fHistoTrueClusElectronPtvsSource;                   //!
+//    TH2F**                  fHistoTrueClusElectronPtvsMotherID;                 //!
+//    TH2F**                  fHistoTrueClusElectronPtvsTopMotherID;              //!
+//    TH2F**                  fHistoTrueClusElectronPtvsConvPhotonTopMotherID;    //!
     TH1F**                  fHistoTrueMergedMissedPDG;                          //!
 
     // MC validated reconstructed quantities mesons
@@ -277,7 +283,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 26);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 27);
 };
 
 #endif
