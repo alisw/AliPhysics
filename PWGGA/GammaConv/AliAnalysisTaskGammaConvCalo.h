@@ -178,10 +178,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoConvGammaR;                   //! histogram conversion photon R
     TH1F**                  fHistoConvGammaEta;                 //! histogram conversion photon Eta
     TTree**                 fTreeConvGammaPtDcazCat;            //! tree with dca for conversions
-    Float_t                 fPtGamma;                           //! pt of conversion for tree
-    Float_t                 fDCAzPhoton;                        //! dcaz of conversion for tree
-    Float_t                 fRConvPhoton;                       //! R of conversion for tree
-    Float_t                 fEtaPhoton;                         //! eta of conversion for tree
+    UShort_t                fPtGamma;                           //! pt of conversion for tree
+    Short_t                 fDCAzPhoton;                        //! dcaz of conversion for tree
     UChar_t                 fCharCatPhoton;                     //! category of conversion for tree
     UChar_t                 fCharPhotonMCInfo;                  //! MC info of conversion for tree
                       // 0: garbage,
@@ -484,7 +482,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 42);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 43);
 };
 
 #endif
