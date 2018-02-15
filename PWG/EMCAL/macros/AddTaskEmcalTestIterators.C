@@ -39,7 +39,7 @@ AliAnalysisTaskEmcalIteratorTest *AddTaskEmcalTestIterators(
   testtask->SetTrackContainerName(nameTrackContainer);
   trackcont->SetEtaLimits(-0.5, 0.5);
   trackcont->SetMinPt(0.8);
-  trackcont->SetTrackFilterType(AliEmcalTrackSelection::kHybridTracks);
+  trackcont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks);
   trackcont->SetTrackCutsPeriod(period.Data());
 
   TString filename = mgr->GetCommonFileName();
