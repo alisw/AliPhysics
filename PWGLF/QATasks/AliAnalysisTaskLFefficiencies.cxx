@@ -69,11 +69,11 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
 
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
-      fGeneratedYPhiPt[iSpecies][iCharge] = new TH3D(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iSpecies].data()),
+      fGeneratedYPhiPt[iSpecies][iCharge] = new TH3D(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
         ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
       fOutputList->Add(fGeneratedYPhiPt[iSpecies][iCharge]);
       for (int iCut = 0; iCut < fNcuts; ++iCut) {
-        fReconstructedYPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iSpecies].data(),iCut),
+        fReconstructedYPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
           Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
         fOutputList->Add(fReconstructedYPhiPt[iSpecies][iCharge][iCut]);
       }
@@ -153,7 +153,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut])
-        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Y(),v.Phi(),v.Pt());
+        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Y(),track->Phi(),track->Pt());
     }
   } // End AOD track loop
 
