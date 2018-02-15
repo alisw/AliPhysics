@@ -148,7 +148,7 @@ private:
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
 	 TH1D *h_ratio;
-	 TH1D *h_ModuledPhi[7][2]; // cent7, sub2
+	 TH1D *h_ModuledPhi[CENTN][2]; // cent7, sub2
 
 	 TString fTaskName;
 	 int fDebugLevel;
