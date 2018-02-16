@@ -130,6 +130,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     /// Get the track and do the minimal cuts
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (track->GetID() <= 0) continue;
+    if (!track->TestFilterBit(BIT(4))) continue;
 
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
     if (!part) continue;
