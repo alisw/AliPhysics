@@ -250,7 +250,7 @@ private:
   TH2F             *fTPCvsITSfb32; //!
   TH2F           *fTPCFEvsITSfb96; //!
   TH3F           *fCentCL1vsVzRun; //!
-  TH1I             *fdPhiFemtoCut; //!
+  TH1F             *fdPhiFemtoCut; //!
   TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
 

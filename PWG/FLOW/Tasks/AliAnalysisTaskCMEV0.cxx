@@ -585,10 +585,12 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
  fTaskConfigParm->SetBinContent(16,fHarmonicM);
  fTaskConfigParm->SetBinContent(17,fHarmonicPsi);
 
-
  PostData(1,fListHistos); 
  PostData(2,fListCalibs); 
- PostData(3,fListNUAHist); 
+ PostData(3,fListNUAHist);
+
+ //printf("\n ... ::UserCreateOutPutObject Called.......  \n");
+ 
 }
 
 AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
@@ -623,7 +625,7 @@ AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 
 void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 {
- 
+
  Float_t stepCount = 0.5;
  fHist_Event_count->Fill(stepCount); //1
  stepCount++;
@@ -659,6 +661,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t centrCL1 = -1;
  Double_t centrCL0 = -1;
  Double_t centrTRK = -1;
+
  EvtCent = -1;
 
  if(sDataSet=="2010"||sDataSet=="2011"){
@@ -763,7 +766,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Int_t QAindex = -1;
  //Femto:
  Int_t bSign = (fMagField > 0) ? 1 : -1;
- Double_t fHBTCutValue = 0.002;
+ Double_t fHBTCutValue = 0.02;
 
 
  if(fMagField<0)
@@ -844,11 +847,24 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fV0AQ3xVsCentRun->Fill(centrCL1,runindex,Qxan3); 
    fV0AQ3yVsCentRun->Fill(centrCL1,runindex,Qyan3); 
 
- /*QxanCor = Qxan;  //QxanCor are used for event plane.
-   QxcnCor = Qxcn;
-   QyanCor = Qyan;
-   QycnCor = Qycn;*/
-   
+
+   if(sDataSet=="2015pPb" || sDataSet=="pPb"){
+     if(psiN==3.0){
+       QxanCor = Qxan3;  //3rd
+       QxcnCor = Qxcn3;
+       QyanCor = Qyan3;
+       QycnCor = Qycn3;
+     }
+     else{
+       QxanCor = Qxan2;  //2nd or higher
+       QxcnCor = Qxcn2;
+       QyanCor = Qyan2;
+       QycnCor = Qycn2;
+     }
+   }
+
+
+
  //} else (other than 2015o_pass1 HI data)
 
 
@@ -1402,10 +1418,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
 
      if(dChrg1==dChrg2) {
-       fdPhiFemtoCut->Fill(2.5);
+       fdPhiFemtoCut->Fill(2.5,1e-8);
      }
      else{
-       fdPhiFemtoCut->Fill(0.5);
+       fdPhiFemtoCut->Fill(0.5,1e-8);
      }
 
 
@@ -1414,9 +1430,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      deltaPhi = dPhi1 - dPhi2;
 
      if(TMath::Abs(deltaEta) < fHBTCutValue * 2.5 * 3) //fHBTCutValue = 0.02 [default for dphicorrelations]
-       {
-	 // phi in rad
-	 Float_t phi1rad = dPhi1;
+       {	
+	 Float_t phi1rad = dPhi1;   // phi in rad
 	 Float_t phi2rad = dPhi2;
 
 	 // check first boundaries to see if is worth to loop and find the minimum
@@ -1440,16 +1455,17 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 	     }
 	   }
 	   //Float_t dPtDiff = fabs(dPt1-dPt2);
-	   //if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue && dPtDiff<0.1) {
-	   if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue) {
-	     //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<"  Eta1 "<<dEta1<<"  Eta2 "<<dEta2<<"\t"<<dChrg1<<" Ch2 "<<dChrg2<<"  phi1 = "<<phi1rad<<"  phi2 = "<<phi2rad<<" |dPt| = "<<dPtDiff<<endl;
-	     if(dChrg1==dChrg2) {
-	       fdPhiFemtoCut->Fill(3.5);
+	   if(dChrg1==dChrg2){ 
+	     if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue) {
+	       //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<"  Eta1 "<<dEta1<<"  Eta2 "<<dEta2<<"\t"<<dChrg1<<" Ch2 "<<dChrg2<<"  phi1 = "<<phi1rad<<"  phi2 = "<<phi2rad<<" |dPt| = "<<dPtDiff<<endl;
+	       if(dChrg1==dChrg2) {
+		 fdPhiFemtoCut->Fill(3.5,1e-8);
+	       }
+	       else{
+		 fdPhiFemtoCut->Fill(1.5,1e-8);
+	       }
+	       continue;
 	     }
-	     else{
-	       fdPhiFemtoCut->Fill(1.5);
-	     }
-	     continue;
 	   }
 	 }
        }
@@ -2941,11 +2957,11 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fListHistos->Add(fTaskConfigParm);
 
   if(sDataSet=="2015pPb" || sDataSet=="pPb") {
-    fHistVtxZvsRun = new TH2F("fHistVtxZvsRun", " Vz (cm) ",fRunFlag,0,fRunFlag,400, -10, 10.);
+    fHistVtxZvsRun = new TH2F("fHistVtxZvsRun", " Vz (cm) ",fRunFlag,0,fRunFlag,200, -10, 10.);
     fListHistos->Add(fHistVtxZvsRun);
-    fHistVtxXvsRun = new TH2F("fHistVtxXvsRun", " Vx (cm) ",fRunFlag,0,fRunFlag,200, -1, 1.);
+    fHistVtxXvsRun = new TH2F("fHistVtxXvsRun", " Vx (cm) ",fRunFlag,0,fRunFlag,100, -1, 1.);
     fListHistos->Add(fHistVtxXvsRun);
-    fHistVtxYvsRun = new TH2F("fHistVtxYvsRun", " Vy (cm) ",fRunFlag,0,fRunFlag,200, -1, 1.);
+    fHistVtxYvsRun = new TH2F("fHistVtxYvsRun", " Vy (cm) ",fRunFlag,0,fRunFlag,100, -1, 1.);
     fListHistos->Add(fHistVtxYvsRun);
   }
 
@@ -3216,7 +3232,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
   fListCalibs->Add(fHist_Event_count);
 
-  fdPhiFemtoCut = new TH1I("fdPhiFemtoCut"," total comb ",10,0,10);
+  fdPhiFemtoCut = new TH1F("fdPhiFemtoCut"," total comb ",5,0,5);
   fdPhiFemtoCut->GetXaxis()->SetBinLabel(1,"US Total");
   fdPhiFemtoCut->GetXaxis()->SetBinLabel(2,"US Reject");
   fdPhiFemtoCut->GetXaxis()->SetBinLabel(3,"LS Total");
