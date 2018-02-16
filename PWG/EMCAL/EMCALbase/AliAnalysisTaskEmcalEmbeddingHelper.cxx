@@ -56,6 +56,54 @@
 ClassImp(AliAnalysisTaskEmcalEmbeddingHelper);
 /// \endcond
 
+/**
+ * Helper function to connect to AliEn (so the code doesn't need to be duplicated).
+ */
+void ConnectToAliEn()
+{
+  if (!gGrid) {
+    AliInfoGeneralStream("AliAnalysisTaskEmcalEmbeddingHelper") << "Trying to connect to AliEn ...\n";
+    TGrid::Connect("alien://");
+  }
+  if (!gGrid) {
+    AliFatalGeneral("AliAnalysisTaskEmcalEmbeddingHelper", "Cannot access AliEn!");
+  }
+}
+
+/**
+ * Helper function to check if a given filename is accessible.
+ *
+ * @param[in] filename Filename to be checked
+ * @return true if the file exists.
+ */
+bool IsFileAccessible(std::string filename)
+{
+  // Connect to AliEn if necessary
+  // Usually, `gGrid` will exist, so we won't need to waste time on find()
+  if (!gGrid && filename.find("alien://") != std::string::npos) {
+    ::ConnectToAliEn();
+  }
+
+  // AccessPathName() cannot handle the "#", so we need to strip it to check that the file exists.
+  if (filename.find(".zip#") != std::string::npos) {
+    std::size_t pos = filename.find_last_of("#");
+    filename.erase(pos);
+  }
+
+  // AccessPathName() has an odd return value - false means that the file exists.
+  // NOTE: This is extremely inefficienct for TAlienSystem. It calls
+  //       -> gapi_access() -> gapi_stat(). gapi_stat() calls "ls -l" on the basename directory,
+  //       which can cause a load on AliEn.
+  bool res = gSystem->AccessPathName(filename.c_str());
+  // Normalize the result to true if file exists (needed because of the odd return value)
+  res = (res == false);
+  if (res == false) {
+    AliDebugGeneralStream("AliAnalysisTaskEmcalEmbeddingHelper", 4) << "File \"" << filename << "\" doees not exist!\n";
+  }
+
+  return res;
+}
+
 AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInstance = nullptr;
 
 /**
@@ -293,13 +341,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 
     // Setup AliEn access if needed
     if (fFilePattern.Contains("alien://") || fFileListFilename.Contains("alien://")) {
-      if (!gGrid) {
-        AliInfo("Trying to connect to AliEn ...");
-        TGrid::Connect("alien://");
-      }
-      if (!gGrid) {
-        AliFatal(TString::Format("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
-      }
+      ::ConnectToAliEn();
     }
 
     // Retrieve AliEn filenames directly from AliEn
@@ -333,7 +375,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
           // "turl" corresponds to the full AliEn url
           
           // If a runlist is specified for good embedded runs, only include the file if it is in this runlist
-          if (IsGoodEmbeddedRun(path)) {
+          if (IsGoodEmbeddedRun(path.Data())) {
             outFile << path << "\n";
           }
         }
@@ -395,9 +437,67 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     }
   }
 
-  AliInfoStream() << "Found " << fFilenames.size() << " files to embed\n";
+  // Determine whether AliEn is needed
+  // It is possible that this has not been determined up to this point
+  for (auto filename : fFilenames)
+  {
+    if (filename.find("alien://") != std::string::npos) {
+      ::ConnectToAliEn();
+      // No point in continuing to search once we know that it is needed
+      break;
+    }
+  }
+
+  // Check if each filenames exists. If they do not exist, then remove them for fFilenames
+  unsigned int initialSize = fFilenames.size();
+  // NOTE: We invert the result of IsFileAccessible because we should return true for files that should be _removed_ (ie are inaccessible)
+  fFilenames.erase(std::remove_if(fFilenames.begin(), fFilenames.end(), [](const std::string & filename) {return (::IsFileAccessible(filename) == false);} ), fFilenames.end());
+
+  AliInfoStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
+
+  // Determine pythia filename
+  DeterminePythiaXSecFilename();
+
   return true;
 }
+
+/**
+ * Determine the Pythia cross section filename by checking for the existance of files with various possible filenames.
+ * Note that it uses the first input filename as a proxy for all other input files following the same pattern.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename()
+{
+  // Get the initial filename. Use the first entry as a proxy for other input files
+  std::string externalEventFilename = "";
+  if (fFilenames.size() > 0) {
+    externalEventFilename = fFilenames.at(0);
+  }
+  else {
+    return;
+  }
+
+  std::vector <std::string> pythiaBaseFilenames = {"pyxsec.root", "pyxsec_hists.root"};
+  AliInfoStream() << "Attempting to determine pythia cross section filename. It can be normal to see some TFile::Init() errors!\n";
+  std::string pythiaXSecFilename = "";
+  for (auto & name : pythiaBaseFilenames) {
+    pythiaXSecFilename = ConstructFullPythiaXSecFilename(externalEventFilename, name, true);
+    if (pythiaXSecFilename != "") {
+      AliDebugStream(4) << "Found pythia cross section filename \"" << name << "\"\n";
+      fPythiaXSecFilename = name;
+      break;
+    }
+  }
+
+  if (fPythiaXSecFilename == "") {
+    // Failed entirely - just give up on this
+    // We will use an empty filename as a proxy for whether the file has been found (empty is equivalent to not found)
+    AliErrorStream() << "Failed to find pythia x sec file! Continuing with only the pythia header!\n";
+  }
+  else {
+    AliInfoStream() << "Found pythia cross section file \"" << fPythiaXSecFilename << "\".\n";
+  }
+}
+
 
 /**
  * Check if a given filename is from a run in the good embedded runlist.
@@ -405,19 +505,18 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
  * @param path path of a single filename
  * @return true if the path contains a run in the good embedded runlist.
  */
-bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(TString path)
+bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(const std::string & path) const
 {
   if (fEmbeddedRunlist.size() == 0) {
     return true;
   }
   
   for (auto run : fEmbeddedRunlist) {
-    if (path.Contains(run)) {
+    if (path.find(run) != std::string::npos) {
       return true;
     }
   }
   return false;
-
 }
 
 /**
@@ -467,8 +566,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
 
   // Handle AliEn explicitly here since the default base path contains "alien://"
   if (fAutoConfigureBasePath.find("alien://") != std::string::npos && !gGrid) {
-    AliInfo("Trying to connect to AliEn ...");
-    TGrid::Connect("alien://");
+    ::ConnectToAliEn();
   }
 
   // Get train ID
@@ -1078,28 +1176,19 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   fChain = new TChain(fTreeName);
 
   // Determine whether AliEn is needed
-  bool requiresAlien = false;
   for (auto filename : fFilenames)
   {
     if (filename.find("alien://") != std::string::npos) {
-      requiresAlien = true;
+      ::ConnectToAliEn();
+      // No point in continuing to search once we know that it is needed
+      break;
     }
-  }
-
-  if (requiresAlien && !gGrid) {
-    AliInfo("Trying to connect to AliEn ...");
-    TGrid::Connect("alien://");
   }
 
   // Add files for TChain
   // See: https://stackoverflow.com/a/8533198
   bool wrapped = false;
-  TString baseFileName = "";
-  // Hanlde the pythia cross section file list
-  bool failedEntirelyToFindFile = false;
-  TString pythiaXSecFilename = "";
-  TString pythiaBaseFilename = "";
-  std::vector <std::string> pythiaBaseFilenames = {"pyxsec.root", "pyxsec_hists.root"};
+  std::string fullPythiaXSecFilename = "";
   for (auto filename = fFilenames.begin() + fFilenameIndex; (filename != fFilenames.begin() + fFilenameIndex || !wrapped); filename++)
   {
     // Wraps the loop back around to the beginning
@@ -1113,57 +1202,22 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
       wrapped = true;
     }
 
-    // AccessPathName() cannot handle the "#", so we need to strip it to check that the file exists.
-    baseFileName = filename->c_str();
-    if (baseFileName.Contains(".zip#")) {
-      Ssiz_t pos = baseFileName.Last('#');
-      baseFileName.Remove(pos);
-    }
-
-    // Ensure that the file is accessible 
-    if (gSystem->AccessPathName(baseFileName)) {
-      AliError(Form("File %s does not exist! Skipping!", baseFileName.Data()));
-      // Do not process the file if it is unaccessible, but continue processing
-      continue;
-    }
-
     // Add to the Chain
-    AliDebugStream(4) << "Adding file to the embedded input chain \"" << filename->c_str() << "\".\n";
+    AliDebugStream(4) << "Adding file to the embedded input chain \"" << *filename << "\".\n";
     fChain->Add(filename->c_str());
 
-    // Handle the pythia cross section (if it exists)
-    // Determiner which file it exists in (if it does exist)
-    if (pythiaBaseFilename == "" && failedEntirelyToFindFile == false) {
-      AliInfoStream() << "Attempting to determine pythia cross section filename. It can be normal to see some TFile::Init() errors!\n";
-      for (auto name : pythiaBaseFilenames) {
-        pythiaXSecFilename = DeterminePythiaXSecFilename(baseFileName, name, true);
-        if (pythiaXSecFilename != "") {
-          AliDebugStream(4) << "Found pythia cross section base filename \"" << name.c_str() << "\"\n";
-          pythiaBaseFilename = name;
-          break;
-        }
-      }
+    // Determine the full pythia cross section filename based on the previously determined filename
+    // If we have determined that it doesn't exist in the initialization then we don't repeated attempt to open
+    // the file (which will fail)
+    if (fPythiaXSecFilename != "") {
+      // Could check here again whether it exists here, but almost certainly unnecessary.
+      // Further, we won't check to ensure that rapid, repeated file access on AliEn doesn't cause any problmes!
+      fullPythiaXSecFilename = ConstructFullPythiaXSecFilename(*filename, fPythiaXSecFilename, false);
 
-      if (pythiaBaseFilename == "") {
-        // Failed entirely - just give up on this
-        AliErrorStream() << "Failed to find pythia x sec file! Continuing with only the pythia header!\n";
-        failedEntirelyToFindFile = true;
-      }
-      else {
-        AliInfoStream() << "Found pythia cross section file \"" << pythiaBaseFilename.Data() << "\".\n";
-      }
-    }
-    // Retrieve the value based on the previously determined filename
-    // If we have determined that it doesn't exist in the first loop then we don't repeated attempt to fail to open the file 
-    if (failedEntirelyToFindFile == false) {
-      // Can still check whether it exists here, but we don't necessarily have to!
-      // However, we won't check to ensure that rapid file access on AliEn doesn't cause it to crash!
-      pythiaXSecFilename = DeterminePythiaXSecFilename(baseFileName, pythiaBaseFilename, false);
-
-      AliDebugStream(4) << "Adding pythia cross section file \"" << pythiaXSecFilename.Data() << "\".\n";
+      AliDebugStream(4) << "Adding pythia cross section file \"" << fullPythiaXSecFilename << "\".\n";
 
       // They will automatically be ordered the same as the files to embed!
-      fPythiaCrossSectionFilenames.push_back(pythiaXSecFilename.Data());
+      fPythiaCrossSectionFilenames.push_back(fullPythiaXSecFilename);
     }
   }
 
@@ -1171,7 +1225,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   fMaxNumberOfFiles = fChain->GetListOfFiles()->GetEntries();
 
   if (fFilenames.size() > fMaxNumberOfFiles) {
-    AliWarning(TString::Format("Number of input files (%lu) is larger than the number of available files (%i). Some filenames were likely invalid!", fFilenames.size(), fMaxNumberOfFiles));
+    AliErrorStream() << "Number of input files (" << fFilenames.size() << ") is larger than the number of available files (" << fMaxNumberOfFiles << "). Something went wrong when adding some of those files to the TChain!\n";
   }
 
   // Setup input event
@@ -1185,23 +1239,29 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
  * Check if the file pythia base filename can be found in the folder or archive corresponding where
  * the external event input file is found.
  *
- * @param baseFileName Path to external event input file with "#*.root" already remove (it if existed).
- * @param pythiaBaseFilename Name of the pythia cross section file to try.
+ * @param externalEventFilename Path to external event input file.
+ * @param pythiaFilename Name of the pythia cross section file to try.
  * @param testIfExists If true, will check if the filename that it has determined actually exists.
  *
  * @return True if the file was found
  */
-std::string AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const
+std::string AliAnalysisTaskEmcalEmbeddingHelper::ConstructFullPythiaXSecFilename(std::string externalEventFilename, const std::string & pythiaFilename, bool testIfExists) const
 {
   std::string pythiaXSecFilename = "";
 
+  // Remove "#*.root" if necessary
+  if (externalEventFilename.find(".zip#") != std::string::npos) {
+    std::size_t pos = externalEventFilename.find_last_of("#");
+    externalEventFilename.erase(pos);
+  }
+
   // Handle different file types
-  if (baseFileName.Contains(".zip"))
+  if (externalEventFilename.find(".zip") != std::string::npos)
   {
-    // Hanlde zip files
-    pythiaXSecFilename = baseFileName;
+    // Handle zip files
+    pythiaXSecFilename = externalEventFilename;
     pythiaXSecFilename += "#";
-    pythiaXSecFilename += pythiaBaseFilename;
+    pythiaXSecFilename += pythiaFilename;
 
     // Check if the file is accessible
     if (testIfExists) {
@@ -1220,19 +1280,19 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename(TSt
   }
   else
   {
-    // Hanlde normal root files
-    pythiaXSecFilename = gSystem->DirName(baseFileName);
+    // Handle normal root files
+    pythiaXSecFilename = gSystem->DirName(externalEventFilename.c_str());
     pythiaXSecFilename += "/";
-    pythiaXSecFilename += pythiaBaseFilename;
+    pythiaXSecFilename += pythiaFilename;
 
     // Check if the file is accessible
     if (testIfExists) {
-      if (gSystem->AccessPathName(pythiaXSecFilename.c_str())) {
-        AliDebugStream(4) << "File " << pythiaXSecFilename.c_str() << " does not exist!\n";
-        pythiaXSecFilename = "";
+      if(::IsFileAccessible(pythiaXSecFilename)) {
+        AliDebugStream(4) << "Found pythia cross section file \"" << pythiaXSecFilename.c_str() << "\".\n";
       }
       else {
-        AliDebugStream(4) << "Found pythia cross section file \"" << pythiaXSecFilename.c_str() << "\".\n";
+        AliDebugStream(4) << "File " << pythiaXSecFilename.c_str() << " does not exist!\n";
+        pythiaXSecFilename = "";
       }
     }
   }
@@ -1623,6 +1683,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "N Pt Hard Bins: " << fNPtHardBins << "\n";
   tempSS << "File pattern: \"" << fFilePattern << "\"\n";
   tempSS << "Input filename: \"" << fInputFilename << "\"\n";
+  tempSS << "Pythia cross section filename: \"" << fPythiaXSecFilename << "\"\n";
   tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
   tempSS << "Tree name: " << fTreeName << "\n";
   tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";

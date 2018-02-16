@@ -276,7 +276,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
  protected:
   bool            GetFilenames()        ;
-  Bool_t          IsGoodEmbeddedRun(TString path);
+  void            DeterminePythiaXSecFilename();
+  bool            IsGoodEmbeddedRun(const std::string & path) const;
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -284,7 +285,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
-  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const;
+  std::string     ConstructFullPythiaXSecFilename(std::string inputFilename, const std::string & pythiaFilename, bool testIfExists) const;
   Bool_t          GetNextEntry()        ;
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
@@ -293,6 +294,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  // Helper functions
+  bool            IsFileAccessible() const;
+  void            ConnectToAliEn() const;
   // LEGO Train utility
   void            RemoveDummyTask() const;
 
@@ -334,6 +338,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
   std::string                                   fConfigurationPath; ///<  Path to YAML configuration
   std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
+  std::string                                  fPythiaXSecFilename; ///<  Name of the pythia x sec filename (either "pyxsec.root" or "pyxsec_hists.root")
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
@@ -362,7 +367,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 9);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 10);
   /// \endcond
 };
 #endif
