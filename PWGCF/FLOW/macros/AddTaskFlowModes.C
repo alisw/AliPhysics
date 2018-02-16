@@ -39,7 +39,6 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetColisionSystem(collisionSystem);//kPP, kPbPb
     task1->SetNumEventsAnalyse(50);//In case of fRunMode == kTest it only analyses up to 50 events.  
     task1->SetAnalysisType(AliAnalysisTaskFlowModes::kAOD);
-    task1->SetSampling(kFALSE);
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
     task1->SetProcessPID(kTRUE,PIDbayesian);
