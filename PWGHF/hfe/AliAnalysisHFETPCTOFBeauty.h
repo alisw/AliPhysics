@@ -16,7 +16,6 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-
 class AliAnalysisUtils;
 class TH1F;
 class TH2F;
@@ -220,22 +219,6 @@ private:
 	TH1F                *hCharmMotherPt_corr3;
 	TH1F                *hCharmMotherPt_corr4;
 	
-	TH1F				*hCharmMotherPt1_corr;
-	TH1F				*hCharmMotherPt2_corr;
-	TH1F				*hCharmMotherPt3_corr;
-	TH1F				*hCharmMotherPt4_corr;
-	TH1F				*hCharmMotherPt5_corr;
-	TH1F				*hCharmMotherPt6_corr;
-	TH1F				*hCharmMotherPt7_corr;
-	TH1F				*hCharmMotherPt8_corr;
-	TH1F				*hCharmMotherPt9_corr;
-	TH1F				*hCharmMotherPt10_corr;
-	TH1F				*hCharmMotherPt11_corr;
-	TH1F				*hCharmMotherPt12_corr;
-	TH1F				*hCharmMotherPt13_corr;
-	TH1F				*hCharmMotherPt14_corr;
-	TH1F				*hCharmMotherPt15_corr;
-	
 	TH1F                *hBeautyMotherPt;//!
 	TH1F				*fPtBeautyGenerated;
 	TH1F				*fPtBeautyReconstructedTracks;
@@ -244,6 +227,8 @@ private:
     TH2F				*hCharmMotherPt_vsElecPt;
     TH2F				*hElecPt_vsCharmMotherPt;
     
+    TH2F				*hCharmMotherPt_vsElecPt_corr;
+    TH2F				*hElecPt_vsCharmMotherPt_corr;
     
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE

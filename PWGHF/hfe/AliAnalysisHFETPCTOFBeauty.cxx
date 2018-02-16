@@ -25,7 +25,6 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-
 #include "AliAnalysisUtils.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -191,25 +190,12 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,hCharmMotherPt(0)
 ,hCharmMotherPt_vsElecPt(0)
 ,hElecPt_vsCharmMotherPt(0)
+,hCharmMotherPt_vsElecPt_corr(0)
+,hElecPt_vsCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hCharmMotherPt_corr3(0)
 ,hCharmMotherPt_corr4(0)
-,hCharmMotherPt1_corr(0)
-,hCharmMotherPt2_corr(0)
-,hCharmMotherPt3_corr(0)
-,hCharmMotherPt4_corr(0)
-,hCharmMotherPt5_corr(0)
-,hCharmMotherPt6_corr(0)
-,hCharmMotherPt7_corr(0)
-,hCharmMotherPt8_corr(0)
-,hCharmMotherPt9_corr(0)
-,hCharmMotherPt10_corr(0)
-,hCharmMotherPt11_corr(0)
-,hCharmMotherPt12_corr(0)
-,hCharmMotherPt13_corr(0)
-,hCharmMotherPt14_corr(0)
-,hCharmMotherPt15_corr(0)
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
 ,fPtBeautyReconstructedTracks(0)
@@ -351,25 +337,12 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,hCharmMotherPt(0)
 ,hCharmMotherPt_vsElecPt(0)
 ,hElecPt_vsCharmMotherPt(0)
+,hCharmMotherPt_vsElecPt_corr(0)
+,hElecPt_vsCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hCharmMotherPt_corr3(0)
 ,hCharmMotherPt_corr4(0)
-,hCharmMotherPt1_corr(0)
-,hCharmMotherPt2_corr(0)
-,hCharmMotherPt3_corr(0)
-,hCharmMotherPt4_corr(0)
-,hCharmMotherPt5_corr(0)
-,hCharmMotherPt6_corr(0)
-,hCharmMotherPt7_corr(0)
-,hCharmMotherPt8_corr(0)
-,hCharmMotherPt9_corr(0)
-,hCharmMotherPt10_corr(0)
-,hCharmMotherPt11_corr(0)
-,hCharmMotherPt12_corr(0)
-,hCharmMotherPt13_corr(0)
-,hCharmMotherPt14_corr(0)
-,hCharmMotherPt15_corr(0)
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
 ,fPtBeautyReconstructedTracks(0)
@@ -604,11 +577,17 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     hCharmMotherPt = new TH1F("hCharmMotherPt","; p_{T} [GeV/c]; Count",13,ptbinningHF);
     fOutputList->Add(hCharmMotherPt);
     
-    hCharmMotherPt_vsElecPt = new TH2F("hCharmMotherPt_vsElecPt","; p_{T} [GeV/c]; Count",100,0,20,100,0,20);
+    hCharmMotherPt_vsElecPt = new TH2F("hCharmMotherPt_vsElecPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hCharmMotherPt_vsElecPt);
     
-    hElecPt_vsCharmMotherPt = new TH2F("hElecPt_vsCharmMotherPt","; p_{T} [GeV/c]; Count",100,0,20,100,0,20);
+    hElecPt_vsCharmMotherPt = new TH2F("hElecPt_vsCharmMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hElecPt_vsCharmMotherPt);
+    
+    hCharmMotherPt_vsElecPt_corr = new TH2F("hCharmMotherPt_vsElecPt_corr","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+    fOutputList->Add(hCharmMotherPt_vsElecPt_corr);
+    
+    hElecPt_vsCharmMotherPt_corr = new TH2F("hElecPt_vsCharmMotherPt_corr","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+    fOutputList->Add(hElecPt_vsCharmMotherPt_corr);
     
     hCharmMotherPt_corr = new TH1F("hCharmMotherPt_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
     fOutputList->Add(hCharmMotherPt_corr);
@@ -622,51 +601,6 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     hCharmMotherPt_corr4 = new TH1F("hCharmMotherPt_corr4","; p_{T} [GeV/c]; Count",13,ptbinningHF);
     fOutputList->Add(hCharmMotherPt_corr4);
     
-    hCharmMotherPt1_corr = new TH1F("hCharmMotherPt1_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt1_corr);
-    
-	hCharmMotherPt2_corr = new TH1F("hCharmMotherPt2_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt2_corr);
-    
-	hCharmMotherPt3_corr = new TH1F("hCharmMotherPt3_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt3_corr);
-    
-	hCharmMotherPt4_corr = new TH1F("hCharmMotherPt4_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt4_corr);
-    
-	hCharmMotherPt5_corr = new TH1F("hCharmMotherPt5_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt5_corr);
-    
-	hCharmMotherPt6_corr = new TH1F("hCharmMotherPt6_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt6_corr);
-    
-	hCharmMotherPt7_corr = new TH1F("hCharmMotherPt7_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt7_corr);
-    
-	hCharmMotherPt8_corr = new TH1F("hCharmMotherPt8_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt8_corr); 
-    
-	hCharmMotherPt9_corr = new TH1F("hCharmMotherPt9_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt9_corr); 
-    
-	hCharmMotherPt10_corr = new TH1F("hCharmMotherPt10_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt10_corr);
-    
-	hCharmMotherPt11_corr = new TH1F("hCharmMotherPt11_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt11_corr);
-    
-	hCharmMotherPt12_corr = new TH1F("hCharmMotherPt12_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt12_corr);
-    
-	hCharmMotherPt13_corr = new TH1F("hCharmMotherPt13_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt13_corr);
-    
-	hCharmMotherPt14_corr = new TH1F("hCharmMotherPt14_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt14_corr);
-    
-	hCharmMotherPt15_corr = new TH1F("hCharmMotherPt15_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
-    fOutputList->Add(hCharmMotherPt15_corr);
-
 	hBeautyMotherPt = new TH1F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",13,ptbinningHF);
     fOutputList->Add(hBeautyMotherPt);
 
@@ -738,9 +672,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
       
     ///THnSparse to store DCA of different particle species-------------
     
-    Int_t nBinspdg2 = 12;
+    Int_t nBinspdg2 = 20;
     Double_t minpdg2 = 0.;
-    Double_t maxpdg2 = 12.;
+    Double_t maxpdg2 = 20.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
@@ -790,7 +724,7 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
-    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons
+    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
     fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
@@ -1030,6 +964,12 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
     TF1 *fconstant = new TF1("fconstant","x",0,1);
     
     ///Functions used to correct D meson spectrum from MC
+    TF1 *fDmesonShape17 = new TF1("fDmesonShape17","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.5,30);
+    fDmesonShape17->SetParameter(0,13.7781);
+    
+    TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.75,30);
+    fDmesonShape16->SetParameter(0,9.99889);
+    
     TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",2,30);
     fDmesonShape1->SetParameter(0,8.50802);
     
@@ -1251,7 +1191,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         ///For the beauty reconstruction efficiency-----------
         if(fIsMC && fIsAOD){
 			Bool_t IsHFEMC = IsHFelectronsMC(track);
-			if(!IsHFEMC){
+			if(IsHFEMC){
 				if(fIsFromB){
 					fPtBeautyReconstructedTracks->Fill(fPt);
 				}
@@ -1378,7 +1318,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         ///For the beauty reconstruction efficiency-----------
          if(fIsMC && fIsAOD){
 			Bool_t IsHFEMC = IsHFelectronsMC(track);
-			if(!IsHFEMC){
+			if(IsHFEMC){
 				if(fIsFromB){
 					fPtBeautyReconstructedTracksPID->Fill(fPt);
 				}
@@ -1431,14 +1371,13 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 			///Pt
             qadca[0] = fPt;
             
+            ///------------
+            if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212) qadca[1]=10.5; ///to check DCA of protons
+            if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) qadca[1]=11.5; ///to check DCA of kaons
+            ///------------
+            
             ///Selecting electron source
-            qadca[1]=-1.;
-            
-            ///------------
-            if(fMCparticle->GetPdgCode() == 2212) qadca[1]=10.5; ///to check DCA of protons
-            if(fMCparticle->GetPdgCode() == 321) qadca[1]=11.5; ///to check DCA of kaons
-            ///------------
-            
+            qadca[1]=-1.;          
             
             Bool_t IsHFEMC = IsHFelectronsMC(track);
             
@@ -1449,14 +1388,22 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
                     pdg_mother = fMCparticleMother->GetPdgCode();
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
 						 qadca[1]=0.5;
+						 
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
+						if(TMath::Abs(pdg_mother) == 433) qadca[1]=18.5; ///to check DCA Ds 
+						if(TMath::Abs(pdg_mother) == 4122) qadca[1]=19.5; ///to check DCA Lc
+						 
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
 						 
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
 						 
-						 ///(Weight for each pT bin starting at one)
+						 ///(Weight for each pT bin starting at one - charm correction)
 						 float probAcceptD = -999;
 						 if(fMCparticleMother->Pt() > 30) continue;
+						 if(fPt >=1.5 && fPt < 1.75) probAcceptD = fDmesonShape17->Eval(fMCparticleMother->Pt());
+						 if(fPt >=1.75 && fPt < 2) probAcceptD = fDmesonShape16->Eval(fMCparticleMother->Pt());
 						 if(fPt >=2 && fPt < 2.25) probAcceptD = fDmesonShape1->Eval(fMCparticleMother->Pt());
 						 if(fPt >=2.25 && fPt < 2.5) probAcceptD = fDmesonShape2->Eval(fMCparticleMother->Pt());
 						 if(fPt >=2.5 && fPt < 2.75) probAcceptD = fDmesonShape3->Eval(fMCparticleMother->Pt());
@@ -1480,31 +1427,22 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 						 
 						 float a = gRandom->Uniform(0,1);
 						 //float a = fconstant->GetRandom();
+						 //cout<<"fPt = "<<fPt<<endl;
 						 //cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
 						 if(a < probAcceptD){
-							 qadca[1]=7.5;
-							 hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
-							 hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
+							qadca[1]=7.5;
+							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
+							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
 							 
-							if(fPt >=2 && fPt < 2.25) hCharmMotherPt1_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=2.25 && fPt < 2.5) hCharmMotherPt2_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=2.5 && fPt < 2.75) hCharmMotherPt3_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=2.75 && fPt < 3) hCharmMotherPt4_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=3 && fPt < 3.5) hCharmMotherPt5_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=3.5 && fPt < 4) hCharmMotherPt6_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=4 && fPt < 4.5) hCharmMotherPt7_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=4.5 && fPt < 5) hCharmMotherPt8_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=5 && fPt < 5.5) hCharmMotherPt9_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=5.5 && fPt < 6) hCharmMotherPt10_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=6 && fPt < 6.5) hCharmMotherPt11_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=6.5 && fPt < 7) hCharmMotherPt12_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=7 && fPt < 8) hCharmMotherPt13_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=8 && fPt < 9) hCharmMotherPt14_corr->Fill(fMCparticleMother->Pt());
-							if(fPt >=9 && fPt < 10) hCharmMotherPt15_corr->Fill(fMCparticleMother->Pt());
-							 
-							 
+							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
+							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
+														 
+							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0
+							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+-
+							if(TMath::Abs(pdg_mother) == 433) qadca[1]=14.5; ///to check DCA Ds 
+							if(TMath::Abs(pdg_mother) == 4122) qadca[1]=15.5; ///to check DCA Lc
 							 
 						 }
 						 
