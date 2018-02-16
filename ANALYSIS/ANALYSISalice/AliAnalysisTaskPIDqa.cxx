@@ -800,7 +800,9 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
   if (eventMC) {
     trackLabel=TMath::Abs(track->GetLabel());
     AliVTrack *mcTrack=(AliVTrack*)eventMC->GetTrack(trackLabel);
-    pdgCode=mcTrack->PdgCode();
+    if(mcTrack)
+      pdgCode=mcTrack->PdgCode();
+    //
     pdgCodeAbs=TMath::Abs(pdgCode);
   }
 
@@ -1316,7 +1318,9 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsBasic(TList *sublistTRD, Int_t scena
   if (eventMC) {
     trackLabel=TMath::Abs(track->GetLabel());
     AliVTrack *mcTrack=(AliVTrack*)eventMC->GetTrack(trackLabel);
-    pdgCode=mcTrack->PdgCode();
+    if(mcTrack)
+      pdgCode=mcTrack->PdgCode();
+    //
     pdgCodeAbs=TMath::Abs(pdgCode);
   }
 
