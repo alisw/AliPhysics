@@ -21,16 +21,7 @@ class TObjArray;
 class AliVCluster;
 class AliVEvent;
 class AliVParticle;
-
-namespace PWG{
-
-namespace EMCAL{
-
 class AliEmcalTrackSelection;
-
-}
-
-}
 
 namespace HighPtTracks {
 
@@ -44,7 +35,7 @@ class AliReducedPatchContainer;
 class AliReducedTrackSelectionContainer : public TObject{
 public:
   AliReducedTrackSelectionContainer();
-  AliReducedTrackSelectionContainer(Int_t index, PWG::EMCAL::AliEmcalTrackSelection * sel);
+  AliReducedTrackSelectionContainer(Int_t index, AliEmcalTrackSelection * sel);
   virtual ~AliReducedTrackSelectionContainer();
 
   /**
@@ -56,7 +47,7 @@ public:
    * Set the underlying track selection
    * \param trackSelection Underlying track selection
    */
-  void SetTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *trackSelection) { fTrackSelection = trackSelection;}
+  void SetTrackSelection(AliEmcalTrackSelection *trackSelection) { fTrackSelection = trackSelection;}
 
   /**
    * Get the index of the track selection
@@ -67,11 +58,11 @@ public:
    * Get the underlying track selection
    * \return underlying track selection
    */
-  PWG::EMCAL::AliEmcalTrackSelection *GetTrackSelection() const { return fTrackSelection; }
+  AliEmcalTrackSelection *GetTrackSelection() const { return fTrackSelection; }
 
 protected:
   Int_t                                                           fIndex;               ///< Index of the cut
-  PWG::EMCAL::AliEmcalTrackSelection                             *fTrackSelection;     ///< Virtual track selection
+  AliEmcalTrackSelection                             *fTrackSelection;     ///< Virtual track selection
 
 private:
   AliReducedTrackSelectionContainer(AliReducedTrackSelectionContainer &);
@@ -95,7 +86,7 @@ public:
   virtual void UserCreateOutputObjects();
   virtual Bool_t Run();
 
-  void AddVirtualTrackSelection(PWG::EMCAL::AliEmcalTrackSelection * sel, Int_t index);
+  void AddVirtualTrackSelection(AliEmcalTrackSelection * sel, Int_t index);
   /**
    * Define if trigger thresholds are swapped
    * \param doswap if true then thresholds are swapped

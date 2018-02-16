@@ -882,7 +882,7 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
         AliTrackContainer* tracks = dynamic_cast<AliTrackContainer*>(particles);
         if (tracks) {
           // Track type (hybrid)
-          if (tracks->GetTrackFilterType() == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks) {
+          if (tracks->GetTrackFilterType() == AliEmcalTrackSelection::kHybridTracks) {
             type = tracks->GetTrackType(it.current_index());
           }
         }

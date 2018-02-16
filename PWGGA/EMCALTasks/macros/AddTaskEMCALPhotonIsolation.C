@@ -262,7 +262,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   AliTrackContainer *trackCont = task->AddTrackContainer(trackName);
   if(!trackCont) Printf("Error with TPC-Only Tracks!!");
   trackCont->SetName("tpconlyMatch");
-  trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks);
+  trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
   
   // Tracks to be used in the analysis (Hybrid Tracks)
   AliTrackContainer * tracksForAnalysis = task->AddTrackContainer(trackName);

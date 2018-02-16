@@ -706,7 +706,7 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust,
     AliError(Form("Could not retrieve tracks !"));
   }
 
-  if(tracks->GetTrackFilterType()!=PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
+  if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   AliVTrack* mt = 0;
   TLorentzVector vecClust;
   clust->GetMomentum(vecClust,fVertex);

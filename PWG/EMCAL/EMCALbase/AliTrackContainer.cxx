@@ -54,7 +54,7 @@ TString AliTrackContainer::fgDefTrackCutsPeriod = "";
  */
 AliTrackContainer::AliTrackContainer():
   AliParticleContainer(),
-  fTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks),
+  fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
   fITSHybridTrackDistinction(kFALSE),
@@ -76,7 +76,7 @@ AliTrackContainer::AliTrackContainer():
  */
 AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   AliParticleContainer(name),
-  fTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks),
+  fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
   fITSHybridTrackDistinction(kFALSE),
@@ -106,23 +106,23 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
 {
   AliParticleContainer::SetArray(event);
 
-  if (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kNoTrackFilter) {
+  if (fTrackFilterType == AliEmcalTrackSelection::kNoTrackFilter) {
     if (fEmcalTrackSelection) delete fEmcalTrackSelection;
     fEmcalTrackSelection = 0;
   }
   else {
-    if (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter) {
+    if (fTrackFilterType == AliEmcalTrackSelection::kCustomTrackFilter) {
 
       AliInfo("Using custom track cuts");
 
       if (fLoadedClass) {
         if (fLoadedClass->InheritsFrom("AliAODTrack")) {
           AliInfo(Form("Objects are of type %s: AOD track selection will be done.", fLoadedClass->GetName()));
-          fEmcalTrackSelection = new PWG::EMCAL::AliEmcalTrackSelectionAOD(0, fAODFilterBits);
+          fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(0, fAODFilterBits);
         }
         else if (fLoadedClass->InheritsFrom("AliESDtrack")) {
           AliInfo(Form("Objects are of type %s: ESD track selection will be done.", fLoadedClass->GetName()));
-          fEmcalTrackSelection = new PWG::EMCAL::AliEmcalTrackSelectionESD(0);
+          fEmcalTrackSelection = new AliEmcalTrackSelectionESD(0);
         }
         else {
           AliWarning(Form("Objects are of type %s: no track filtering will be done!!", fLoadedClass->GetName()));
@@ -150,11 +150,11 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
 
       if (fLoadedClass->InheritsFrom("AliAODTrack")) {
         AliInfo(Form("Objects are of type %s: AOD track selection will be done.", fLoadedClass->GetName()));
-        fEmcalTrackSelection = new PWG::EMCAL::AliEmcalTrackSelectionAOD(fTrackFilterType, fTrackCutsPeriod);
+        fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(fTrackFilterType, fTrackCutsPeriod);
       }
       else if (fLoadedClass->InheritsFrom("AliESDtrack")) {
         AliInfo(Form("Objects are of type %s: ESD track selection will be done.", fLoadedClass->GetName()));
-        fEmcalTrackSelection = new PWG::EMCAL::AliEmcalTrackSelectionESD(fTrackFilterType, fTrackCutsPeriod);
+        fEmcalTrackSelection = new AliEmcalTrackSelectionESD(fTrackFilterType, fTrackCutsPeriod);
       }
       else {
         AliWarning(Form("Objects are of type %s: no track filtering will be done!!", fLoadedClass->GetName()));
@@ -603,11 +603,11 @@ AliVCuts* AliTrackContainer::GetTrackCuts(Int_t icut)
 }
 
 bool AliTrackContainer::IsHybridTrackSelection() const {
-  return (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks) ||
-         (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2010wNoRefit) ||
-         (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2010woNoRefit) ||
-         (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2011wNoRefit) ||
-         (fTrackFilterType == PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
+  return (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010wNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010woNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011wNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
 }
 
 PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHybridDefinition(const PWG::EMCAL::AliEmcalTrackSelResultPtr &selectionResult) const {

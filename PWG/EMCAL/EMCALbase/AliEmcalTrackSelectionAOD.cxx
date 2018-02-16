@@ -45,7 +45,7 @@
 #include "AliPicoTrack.h"
 
 /// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalTrackSelectionAOD)
+ClassImp(AliEmcalTrackSelectionAOD)
 ClassImp(PWG::EMCAL::TestAliEmcalTrackSelectionAOD)
 /// \endcond
 

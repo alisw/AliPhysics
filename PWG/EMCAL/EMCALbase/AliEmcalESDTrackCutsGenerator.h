@@ -39,12 +39,12 @@
 
 class AliESDtrackCuts;
 class TString;
+class AliEmcalTrackSelection;
 
 namespace PWG {
 
 namespace EMCAL{
 
-class AliEmcalTrackSelection;
 
 class AliEmcalESDTrackCutsGenerator {
 public:

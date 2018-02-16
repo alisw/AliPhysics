@@ -123,9 +123,9 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // turns quality cuts off
   if(turnQualityCutsOFF) { 
     trackCont->SetFilterHybridTracks(kFALSE);
-    trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kNoTrackFilter);       // turn OFF filter
-    //trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks);     // use TPC only tracks
-    //trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter); // used for custom filter
+    trackCont->SetTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter);       // turn OFF filter
+    //trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);     // use TPC only tracks
+    //trackCont->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter); // used for custom filter
   }
 
   // custom filter bit for tracks done here - Need to customize still

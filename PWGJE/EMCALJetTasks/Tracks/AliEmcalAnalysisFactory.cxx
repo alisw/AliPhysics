@@ -49,8 +49,8 @@
 
 namespace EMCalTriggerPtAnalysis {
 
-PWG::EMCAL::AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstring, Bool_t aod){
-  PWG::EMCAL::AliEmcalTrackSelection *result = NULL;
+AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstring, Bool_t aod){
+  AliEmcalTrackSelection *result = NULL;
   std::unique_ptr<TObjArray> cuts(cutstring.Tokenize(","));
   std::cout << "Creating track cuts for " << (aod ? "AODs" : "ESDs") << std::endl;
   TObjArray trackcuts;
@@ -248,10 +248,10 @@ PWG::EMCAL::AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TS
         trackcuts.Add(geocuts);
       }
     }
-    result = new PWG::EMCAL::AliEmcalTrackSelectionESD;
+    result = new AliEmcalTrackSelectionESD;
     result->AddTrackCuts(&trackcuts);
   } else {
-    PWG::EMCAL::AliEmcalTrackSelectionAOD *aodsel = new PWG::EMCAL::AliEmcalTrackSelectionAOD;
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
     result = aodsel;
     // C++11 Lambda: Do not create multiple extra cut objects in case of AODs. If extra cut object does already exist -
     // specify new cut in the same object.
@@ -277,19 +277,19 @@ PWG::EMCAL::AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TS
         extracuts->SetMinTPCCrossedRows(120);
       }
       if(cut == "hybrid"){
-        aodsel->GenerateTrackCuts(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks, AliTrackContainer::GetDefTrackCutsPeriod());
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "hybrid2010_wNoRefit"){
-        aodsel->GenerateTrackCuts(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2010wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2010wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "hybrid2010_woNoRefit"){
-        aodsel->GenerateTrackCuts(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2010woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2010woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "hybrid2011_wNoRefit"){
-        aodsel->GenerateTrackCuts(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2011wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2011wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "hybrid2011_woNoRefit"){
-        aodsel->GenerateTrackCuts(PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks2011woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2011woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "geo"){
         AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);

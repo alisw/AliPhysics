@@ -33,10 +33,6 @@
 class AliVCuts;
 class AliVTrack;
 
-namespace PWG {
-
-namespace EMCAL{
-
 class AliEmcalTrackSelResultHybrid;
 
 /**
@@ -133,6 +129,10 @@ private:
 	ClassDef(AliEmcalTrackSelectionAOD, 2);
 	/// \endcond
 };
+
+namespace PWG {
+
+namespace EMCAL{
 
 /**
  * @class TestAliEmcalTrackSelectionAOD

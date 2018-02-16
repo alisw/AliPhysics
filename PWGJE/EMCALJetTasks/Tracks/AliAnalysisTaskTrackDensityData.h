@@ -15,15 +15,7 @@ class AliEmcalJet;
 class AliParticleContainer;
 class THistManager;
 
-namespace PWG {
-
-namespace EMCAL {
-
 class AliEmcalTrackSelection;
-
-}
-
-}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -35,7 +27,7 @@ public:
   AliAnalysisTaskTrackDensityData(const char *name);
   virtual ~AliAnalysisTaskTrackDensityData();
 
-  void SetEmcalTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *sel) { fTrackSelection = sel; }
+  void SetEmcalTrackSelection(AliEmcalTrackSelection *sel) { fTrackSelection = sel; }
   void SetNameJetContainer(TString name) { fNameJetContainer = name; }
   void SetNameTrackContainer(TString name) { fNameTrackContainer = name; }
 
@@ -50,7 +42,7 @@ protected:
 
 private:
   THistManager                          *fHistos;                 //!<!
-  PWG::EMCAL::AliEmcalTrackSelection    *fTrackSelection;         /// EMCAL track selection
+  AliEmcalTrackSelection    *fTrackSelection;         /// EMCAL track selection
   AliEMCalTriggerBinningComponent       *fBinHandler;             /// Binning handler
 
   TString                               fNameJetContainer;        /// name of the jet container

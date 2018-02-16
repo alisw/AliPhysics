@@ -43,6 +43,9 @@ namespace EMCAL {
 
 class AliEmcalCutBase;
 
+}
+}
+
 /**
  * @class AliEmcalManagedObject
  * @brief Smart pointer implementation for objects inheriting from TObject
@@ -350,8 +353,5 @@ protected:
 
 	/// \endcond
 };
-
-}
-}
 
 #endif /* ALIEMCALTRACKSELECTION_H_ */

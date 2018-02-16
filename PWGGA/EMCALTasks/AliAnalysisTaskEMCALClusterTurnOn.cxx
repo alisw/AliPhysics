@@ -508,7 +508,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     return kFALSE;
   }
   
-  if(tracks->GetTrackFilterType()!= PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks){
+  if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kTPCOnlyTracks){
     AliWarning(Form("CT matching NOT performed with TPCOnly Tracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }
@@ -522,7 +522,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     //  Printf("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks);
   
     //    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
-  if(tracksANA->GetTrackFilterType()!= PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks){
+  if(tracksANA->GetTrackFilterType()!= AliEmcalTrackSelection::kHybridTracks){
     AliWarning(Form("Isolation NOT calculated with HybridTracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }
@@ -974,7 +974,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::ClustTrackMatching(AliVCluster *clust)
   clust->GetMomentum(vecClust,fVertex);
   
   Int_t nbMObj = clust -> GetNTracksMatched();
-  if(tracks->GetTrackFilterType()!=PWG::EMCAL::AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
+  if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   
   
   if (nbMObj == 0) return kFALSE;
