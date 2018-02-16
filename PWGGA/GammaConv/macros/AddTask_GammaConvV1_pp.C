@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "$ALICE_PHYSICS/PWGGA/GammaConv/AliV0ReaderV1.h"
+//#include "$ALICE_PHYSICS/PWGGA/GammaConv/AliV0ReaderV1.h"
 
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
