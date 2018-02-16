@@ -126,6 +126,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
+  fYAMLConfig(),
   fUseInternalEventSelection(false),
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
@@ -193,6 +194,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
+  fYAMLConfig(),
   fUseInternalEventSelection(false),
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
@@ -538,6 +540,10 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
       return false;
     }
   }
+
+  // Initialize the configuration
+  fYAMLConfig.Initialize();
+
   return true;
 }
 
@@ -1021,6 +1027,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
   SetupEmbedding();
+
+  // Reinitialize the YAML config after it was streamed so that it can be used properly.
+  fYAMLConfig.Reinitialize();
 
   // Setup AliEventCuts
   // NOTE: Need to define the base name here so that the property path is not ambiguous (due to otherwise only being `const char *`)
