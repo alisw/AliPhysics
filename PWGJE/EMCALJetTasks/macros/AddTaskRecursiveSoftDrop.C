@@ -61,7 +61,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   AliParticleContainer *trackContTrue=0x0;
 
   trackContData = task->AddParticleContainer(ntracksData);
-  if(fjetType==kEmb){
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
     trackContDet = task->AddParticleContainer(ntracksDet);
     trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   }
@@ -72,7 +72,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   AliJetContainer *JetContHybridS=0x0;
   TString strType(type);
 
-  if(fjetType==kData){
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kData){
     JetContData = task->AddJetContainer(njetsData,strType,R); //Data
     if(JetContData) {
       JetContData->SetRhoName(nrhoBase);
@@ -83,7 +83,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
       if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContData->SetAreaEmcCut(-2);
     }  
   }
-  if(fjetType==kEmb){
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
     JetContHybridS = task->AddJetContainer(njetsHybridS,strType,R); //HybridS
     if(JetContHybridS) {
       JetContHybridS->SetRhoName(nrhoBase);
