@@ -68,6 +68,16 @@ ClassImp(AliAnalysisTaskTOFSpectra);
 //________________________________________________________________________
 AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
     : AliAnalysisTaskSE(taskname)
+    // Soft configuration flags
+    , fBuilTPCTOF(kFALSE)
+    , fBuilDCAchi2(kFALSE)
+    , fUseTPCShift(kFALSE)
+    , fPerformance(kFALSE)   //kTRUE for performance plots!
+    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
+    , fRecalibrateTOF(kFALSE)
+    , fCutOnMCImpact(kFALSE)
+    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
+    , fFineEfficiency(kFALSE)
     //Standard track and event cuts
     , fEventCut(0)
     , fESDtrackCuts(0x0)
@@ -98,17 +108,8 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fChannelmode(chan)
     , fCutmode(cuts)
     , fSimpleCutmode(simplecuts)
-    //Task setup parameters
+    //Task setup for working configuration
     , fUseAliEveCut(kTRUE)
-    , fBuilTPCTOF(kFALSE)
-    , fBuilDCAchi2(kFALSE)
-    , fUseTPCShift(kFALSE)
-    , fPerformance(kFALSE) //kTRUE for performance plots!
-    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
-    , fRecalibrateTOF(kFALSE)
-    , fCutOnMCImpact(kFALSE)
-    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
-    , fFineEfficiency(kFALSE)
     , fDCAXYshift(0)
     //Mask for physics selection
     , fSelectBit(AliVEvent::kINT7)
@@ -287,6 +288,25 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
 
   PrintStatus();
   AliDebug(2, "**** END OF CONSTRUCTOR ****");
+}
+
+//________________________________________________________________________
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra& copy)
+    : AliAnalysisTaskTOFSpectra(copy.GetName(), copy.fHImode, copy.fMCmode, copy.fTreemode, copy.fChannelmode, copy.fCutmode, copy.fSimpleCutmode)
+{
+  fBuilTPCTOF = copy.fBuilTPCTOF;
+  fBuilDCAchi2 = copy.fBuilDCAchi2;
+  fUseTPCShift = copy.fUseTPCShift;
+  fPerformance = copy.fPerformance;
+  fMCPerformance = copy.fMCPerformance;
+  fRecalibrateTOF = copy.fRecalibrateTOF;
+  fCutOnMCImpact = copy.fCutOnMCImpact;
+  fFineTOFReso = copy.fFineTOFReso;
+  fFineEfficiency = copy.fFineEfficiency;
+  fSelectBit = copy.fSelectBit;
+  fMultiplicityBin = copy.fMultiplicityBin;
+  fESDtrackCuts = copy.fESDtrackCuts;
+  fESDtrackCutsPrm = copy.fESDtrackCutsPrm;
 }
 
 //________________________________________________________________________
@@ -664,6 +684,10 @@ void AliAnalysisTaskTOFSpectra::Init()
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+    if (species < kExpSpecies - 1) {
+      hTOFSepVsP[species] = 0x0;
+      hTOFSepVsPt[species] = 0x0;
+    }
   }
 
   //TPC expected
@@ -3538,6 +3562,14 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 
     hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
     fListHist->AddLast(hdEdxExpectedTPCp[i]);
+
+    if (i < kExpSpecies - 1) {
+      hTOFSepVsP[i] = new TProfile(Form("hTOFSepVsP%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), pstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsP[i]);
+
+      hTOFSepVsPt[i] = new TProfile(Form("hTOFSepVsPt%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), ptstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsPt[i]);
+    }
   }
 
   hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
@@ -3615,6 +3647,11 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
       if (TMath::Abs(fEta) > 0.2)
         hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
     }
+  }
+
+  for (Int_t i = 0; i < kExpSpecies - 1; i++) {
+    hTOFSepVsP[i]->Fill(fP, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
+    hTOFSepVsPt[i]->Fill(fPt, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
   }
 
   //*****
@@ -3793,6 +3830,14 @@ void AliAnalysisTaskTOFSpectra::SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t valu
   else
     SetMaskBit(fMCTrkMask, (Int_t)bit, value);
 };
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetMultiplicityBinning(TArrayD bin)
+{
+  fMultiplicityBin.Set(bin.GetSize(), bin.GetArray());
+  if (fMultiplicityBin.GetSize() != bin.GetSize())
+    AliFatal(Form("Number of bins do not match: %i and %i", fMultiplicityBin.GetSize(), bin.GetSize()));
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetTPCRowsCut(Double_t cut)

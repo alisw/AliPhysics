@@ -67,6 +67,19 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", Bool_t hi = kTRUE, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
   virtual ~AliAnalysisTaskTOFSpectra();
 
+  //////////////////////////////
+  // Soft configuration flags //
+  //////////////////////////////
+  Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
+  Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
+  Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
+  Bool_t fPerformance;    ///<  Flag to fill the performance plots
+  Bool_t fMCPerformance;  ///<  Flag to fill the MC performance plots
+  Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
+  Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
+  Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
+  Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
+
   //Standard AnalysisTask functions
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
@@ -117,10 +130,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to obtain the output list for histograms, this is intended so as to check the data size of output
-  TList* GetOutput()
-  {
-    return fListHist;
-  }
+  TList* GetOutput() { return fListHist; }
 
   //Utility methods
   ///
@@ -229,10 +239,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Computes the Y for the given particle mass!
-  Double_t ComputeY(Double_t mass)
-  {
-    return TMath::ASinH(fPt / TMath::Sqrt(mass * mass + fPt * fPt) * TMath::SinH(fEta));
-  }
+  Double_t ComputeY(Double_t mass) { return TMath::ASinH(fPt / TMath::Sqrt(mass * mass + fPt * fPt) * TMath::SinH(fEta)); }
 
   ///
   /// Computes the Rapidity of the track in the 3 mass hypothesis: pions kaons and protons
@@ -339,6 +346,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   void SetChannelFlag(Bool_t mode = kTRUE) { fChannelmode = mode; };
   void SetCutFlag(Bool_t mode = kTRUE) { fCutmode = mode; };
   void SetTrigger(UInt_t trg = AliVEvent::kMB) { fSelectBit = trg; };
+  void SetMultiplicityBinning(TArrayD bin);
 
   //
   //Single cuts
@@ -417,24 +425,15 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   /////////////////////////
   // Configuration Flags //
   /////////////////////////
-  Bool_t fHImode;               ///<  Flag for the Heavy Ion Mode
-  Bool_t fMCmode;               ///<  Flag for the Monte Carlo Mode
-  Bool_t fTreemode;             ///<  Flag for the Tree analysis Mode
-  Bool_t fChannelmode;          ///<  Flag to set the analysis only on channel TOF
-  Bool_t fCutmode;              ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
-  const Int_t fSimpleCutmode;   ///<  Index to set simple configuration of the track cuts
-  const Bool_t fUseAliEveCut;   ///<  Index to set the usage of the AliEventCuts class from OADB to select events
-  const Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
-  const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
-  const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
-  const Bool_t fPerformance;    ///<  Flag to fill the performance plots
-  const Bool_t fMCPerformance;  ///<  Flag to fill the MC performance plots
-  const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
-  const Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
-  const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
-  const Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
-  const Float_t fDCAXYshift;    ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
-  UInt_t fSelectBit;            ///<  Mask for Trigger selection
+  Bool_t fHImode;             ///<  Flag for the Heavy Ion Mode
+  Bool_t fMCmode;             ///<  Flag for the Monte Carlo Mode
+  Bool_t fTreemode;           ///<  Flag for the Tree analysis Mode
+  Bool_t fChannelmode;        ///<  Flag to set the analysis only on channel TOF
+  Bool_t fCutmode;            ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
+  const Int_t fSimpleCutmode; ///<  Index to set simple configuration of the track cuts
+  const Bool_t fUseAliEveCut; ///<  Index to set the usage of the AliEventCuts class from OADB to select events
+  const Float_t fDCAXYshift;  ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
+  UInt_t fSelectBit;          ///<  Mask for Trigger selection
 
   /////////////////////
   // Event Variables //
@@ -659,6 +658,8 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2I* hBeta;                                ///<  Histogram with the track beta vs the track momentum
   TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the expected time
   TProfile* hBetaExpectedTOFPID[kExpSpecies]; ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
+  TProfile* hTOFSepVsP[kExpSpecies - 1];      ///<  TProfile with the difference of the track nsigma vs the track momentum
+  TProfile* hTOFSepVsPt[kExpSpecies - 1];     ///<  TProfile with the difference of the track nsigma vs the track transverse momentum
   TH2I* hBetaNoMismatch;                      ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchEtaCutOut;             ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
@@ -765,10 +766,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hDCAxySecMatMC[2][3][kPtBins]; ///< DCAxy Distribution in Pt bins for Secondary from Material reconstructed tracks identified with MC Truth
 
   //
-  AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
+  AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Copy constructor
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 11); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 12); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
