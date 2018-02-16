@@ -1764,7 +1764,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!fIsMC && fIsPHOSTriggerAnalysis){
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
-        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+        if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
+        if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
+        if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
       }
 
       FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
@@ -1913,7 +1916,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!fIsMC && fIsPHOSTriggerAnalysis){
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
-          trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+          //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+          if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
+          if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
+          if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
         }
 
         if(fIsMC){
