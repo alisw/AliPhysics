@@ -317,6 +317,14 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   void FillPerformanceHistograms(const AliVTrack* track);
 
   ///
+  /// Method to define the histograms used for the MC Performance
+  void DefineMCPerformanceHistograms();
+
+  ///
+  /// Method to fill the histograms used for the MC Performance
+  void FillMCPerformanceHistograms(const AliVTrack* track);
+
+  ///
   /// Method to define the histograms used for the T0 information
   void DefineT0Histograms();
 
@@ -420,6 +428,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
   const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
   const Bool_t fPerformance;    ///<  Flag to fill the performance plots
+  const Bool_t fMCPerformance;  ///<  Flag to fill the MC performance plots
   const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
   const Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
   const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
@@ -534,18 +543,20 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Float_t fCombinedSigma[3]; ///<  Measured Sigma of the combined TOF and TPC signal in the three hypothesis
 
   //MC info
-  Double_t fRapidityMC; ///<  Rapidity of the track with MC truth
-  Double_t fPtMC;       ///<  Transverse momentum of the track with MC truth
-  Double_t fPMC;        ///<  Momentum of the track with MC truth
-  Bool_t fSignMC;       ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
-  Double_t fPhiMC;      ///<  Phi information of the track with MC truth
-  Double_t fEtaMC;      ///<  eta information of the track with MC truth
-  Short_t fProdInfo;    ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
-  Int_t fPdgcode;       ///<  PID identity of the track with MC truth -> Real PDG code
-  Short_t fPdgIndex;    ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
-  Int_t fNMCTracks;     ///<  Number of MC tracks in the event
-  Int_t fMCPrimaries;   ///<  Number of MC primary tracks in the event
-  Int_t fMCTOFMatch;    ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
+  Double_t fRapidityMC;    ///<  Rapidity of the track with MC truth
+  Double_t fPtMC;          ///<  Transverse momentum of the track with MC truth
+  Double_t fPMC;           ///<  Momentum of the track with MC truth
+  Bool_t fSignMC;          ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
+  Double_t fPhiMC;         ///<  Phi information of the track with MC truth
+  Double_t fEtaMC;         ///<  eta information of the track with MC truth
+  Short_t fProdInfo;       ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
+  Int_t fPdgcode;          ///<  PID identity of the track with MC truth -> Real PDG code
+  Short_t fPdgIndex;       ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
+  Int_t fPdgcodeMother;    ///<  PID identity of the track Mother with MC truth -> Real PDG code
+  Int_t fFirstMotherIndex; ///<  Index of the mother in the stack the track with MC truth
+  Int_t fNMCTracks;        ///<  Number of MC tracks in the event
+  Int_t fMCPrimaries;      ///<  Number of MC primary tracks in the event
+  Int_t fMCTOFMatch;       ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
 
   //Masks to store the event and track information in the Tree
   UChar_t fEvtMask;     ///< Event information mask
@@ -655,6 +666,9 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2I* hBetaNoMismatchCentral;               ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchCentralEtaCut;         ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchCentralEtaCutOut;      ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH3F* hBetaMC[3];                           ///<  Histogram with the track beta vs the track momentum with MC information on the PID and on the production mode
+  TH3F* hBetaMCMother[kExpSpecies + 1];       ///<  Histogram with the track beta vs the track momentum with MC information on the PID and on the decay mother
+  TH2F* hBetaMCMotherMode[kExpSpecies + 1];   ///<  Histogram with the track MC information on the PID and on the decay mother/production mode
   TH1F* hChannelEvents;                       ///<  Histogram with the numbe of events used in the TOF channel-time mode
   TH2I* hChannelTime;                         ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
   TH1F* hChannelHits;                         ///<  Histogram with the numer of TOF Hits (matched and not matched) per channel
@@ -754,7 +768,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 10); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 11); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif

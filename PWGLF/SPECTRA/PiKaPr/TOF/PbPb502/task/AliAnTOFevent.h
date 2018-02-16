@@ -56,7 +56,7 @@ class AliAnTOFevent {
 
   ///
   /// Status Printer
-  void Print()
+  void Print() const
   {
     Printf(" fEvtMultBin = %i", fEvtMultBin);
     Printf(" fVtxX = %f", fVtxX);
