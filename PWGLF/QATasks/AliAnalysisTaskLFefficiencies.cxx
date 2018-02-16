@@ -153,7 +153,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut])
-        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),track->Phi(),track->Pt());
+        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
     }
   } // End AOD track loop
 
