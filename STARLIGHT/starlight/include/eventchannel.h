@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 255                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-04-06 15:01:46 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -49,7 +49,7 @@ class eventChannel : public readLuminosity
 
 public:
 
-	eventChannel(const inputParameters& input, beamBeamSystem&        bbsystem);
+	eventChannel(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
 	virtual ~eventChannel();
 
 	unsigned long nmbAttempts() const {return _nmbAttempts;}  ///< returns number of attempted events
@@ -69,7 +69,7 @@ public:
 	                      int&         iFbadevent); ///< Lorentz-transforms given 4-vector
 
 	beamBeamSystem  _bbs;
-	randomGenerator _randy;
+	randomGenerator* _randy;
 	static double pseudoRapidity(const double px,
 	                             const double py,
 	                             const double pz);  ///< calculates pseudorapidity for given 3-momentum

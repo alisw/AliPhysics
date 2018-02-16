@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 213                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2015-08-15 23:08:02 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -61,6 +61,7 @@ class readLuminosity
   double _bwnormsave;
 
  protected:
+  const inputParameters* _ip;
   const int _ReadInputNPT;
   const int _ReadInputnumy;
   const int _ReadInputnumw;

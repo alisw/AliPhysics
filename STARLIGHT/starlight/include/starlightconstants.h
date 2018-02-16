@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 283                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-03-07 18:17:50 +0100 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -49,90 +49,6 @@ namespace starlightConstants
 	static const double twoPi    = 2 * pi;
 	static const double alpha    = 1/137.035999074;
 
-	// deuteron slope parameter
-	static const double deuteronSlopePar = 9.5; // [(GeV/c)^{-2}]
-	// particle masses
-	static const double protonMass      = 0.938272046;   // [GeV/c^2]
-	static const double pionChargedMass = 0.13957018;    // [GeV/c^2]
-        static const double pionNeutralMass = 0.1349766;     // [GeV/c^2]
-	static const double kaonChargedMass = 0.493677;      // [GeV/c^2]
-	static const double mel      = 0.000510998928;       // [GeV/c^2]
-	static const double muonMass = 0.1056583715;         // [GeV/c^2]
-	static const double tauMass  = 1.77682;              // [GeV/c^2]
-	
-	static const double f0Mass = 0.990;                  // [GeV/c^2]
-	static const double f0Width = 0.100;                 // [GeV/c^2]
-	static const double f0BrPiPi = 1.0;                  // Branching ratio for pipi (set to 100%)
-        static const double etaMass = 0.547862;              // [GeV/c^2]
-        static const double etaWidth = 0.00000131;           // [GeV/c^2]
-        static const double etaPrimeMass = 0.95778;          // [GeV/c^2]
-        static const double etaPrimeWidth = 0.000198;        // [GeV/c^2]
-        static const double etaCMass = 2.9836;               // [GeV/c^2]
-        static const double etaCWidth = 0.0322;              // [GeV/c^2]
-        static const double f2Mass = 1.2751;                 // [GeV/c^2]
-        static const double f2Width = 0.1851;                // [GeV/c^2]
-        static const double f2BrPiPi = 0.561;                // Branching ratio for pi+pi-
-        static const double a2Mass = 1.3183;                 // [GeV/c^2]
-        static const double a2Width = 0.105;                 // [GeV/c^2]
-        static const double f2PrimeMass = 1.525;             // [GeV/c^2]
-        static const double f2PrimeWidth = 0.073;            // [GeV/c^2]
-        static const double f2PrimeBrKK = 0.887;             // Branching ratio for KKbar
-        static const double zoverz03Mass = 1.540;            // [GeV/c^2]
-
-
-        static const double f0PartialggWidth = 0.29E-6;      // [GeV/c^2]
-        static const double etaPartialggWidth = 0.516E-6;    // [GeV/c^2]
-        static const double etaPrimePartialggWidth = 4.35E-6;// [GeV/c^2]
-        static const double etaCPartialggWidth = 5.0E-6;     // [GeV/c^2]
-        static const double f2PartialggWidth = 3.03E-6;      // [GeV/c^2]
-        static const double a2PartialggWidth = 1.0E-6;       // [GeV/c^2]
-        static const double f2PrimePartialggWidth = 0.081E-6;// [GeV/c^2]
-        static const double zoverz03PartialggWidth = 0.1E-6; // [GeV/c^2]
-
-        static const double f0Spin = 0.0;
-        static const double etaSpin = 0.0;
-        static const double etaPrimeSpin = 0.0;
-        static const double etaCSpin = 0.0;
-        static const double f2Spin = 2.0;
-        static const double a2Spin = 2.0;
-        static const double f2PrimeSpin = 2.0;
-        static const double zoverz03Spin = 2.0;
-        static const double axionSpin = 0.0;  // AXION HACK
-
-        static const double rho0Mass  = 0.769;               // [GeV/c^2]
-	static const double rho0Width = 0.1517;              // [GeV/c^2]
-	static const double rho0BrPiPi = 1.0;                // Branching ratio pi+pi-
-        static const double rho0PrimeMass  = 1.540;          // [GeV/c^2]
-	static const double rho0PrimeWidth = 0.570;          // [GeV/c^2]
-	static const double rho0PrimeBrPiPi = 1.0;           // Branching ratio pi+pi- (set to 100%)
-        static const double OmegaMass  = 0.78265;            // [GeV/c^2]
-	static const double OmegaWidth = 0.00849;            // [GeV/c^2]
-	static const double OmegaBrPiPi = 0.0153;            // Branching ratio pi+pi-
-        static const double PhiMass  = 1.019461;             // [GeV/c^2]
-	static const double PhiWidth = 0.004266;             // [GeV/c^2]
-	static const double PhiBrKK = 0.489;                 // Branching ratio K+K-
-        static const double JpsiMass = 3.096916;             // [GeV/c^2]
-        static const double JpsiWidth = 0.0000929;           // [GeV/c^2]
-	static const double JpsiBree = 0.05971;              // Branching ratio e+e-
-	static const double JpsiBrmumu = 0.05961;            // Branching ratio mu+mu-
-	static const double JpsiBrppbar = 0.002120;          // Branching ratio ppbar
-        static const double Psi2SMass = 3.686109;            // [GeV/c^2]
-        static const double Psi2SWidth = 0.000299;           // [GeV/c^2]
-	static const double Psi2SBree = 0.00789;             // Branching ratio e+e-
-	static const double Psi2SBrmumu = 0.0079;            // Branching ratio mu+mu-
-        static const double Upsilon1SMass = 9.46030;         // [GeV/c^2]
-        static const double Upsilon1SWidth = 0.00005402;     // [GeV/c^2]
-	static const double Upsilon1SBree = 0.0238;          // Branching ratio e+e-
-	static const double Upsilon1SBrmumu = 0.0248;        // Branching ratio mu+mu-
-        static const double Upsilon2SMass = 10.02326;        // [GeV/c^2]
-        static const double Upsilon2SWidth = 0.00003198;     // [GeV/c^2]
-	static const double Upsilon2SBree = 0.0191;          // Branching ratio e+e-
-	static const double Upsilon2SBrmumu = 0.0193;        // Branching ratio mu+mu-
-        static const double Upsilon3SMass = 10.3552;         // [GeV/c^2]
-        static const double Upsilon3SWidth = 0.00002032;     // [GeV/c^2]	
-	static const double Upsilon3SBree = 0.0218;          // Branching ratio e+e- (set to same as mu+mu-)
-	static const double Upsilon3SBrmumu = 0.0218;        // Branching ratio mu+mu-
-	
 	enum particleTypeEnum {
 		UNKNOWN        = 0,
 		ELECTRON       = 11,

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 255                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-04-06 15:01:46 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //    Class needed for root output
@@ -42,9 +42,10 @@ using namespace std;
 
 
 //______________________________________________________________________________
-eventChannel::eventChannel(const inputParameters& inputParametersInstance, beamBeamSystem& bbsystem)
+eventChannel::eventChannel(const inputParameters& inputParametersInstance, randomGenerator* randy, beamBeamSystem& bbsystem)
 	: readLuminosity(inputParametersInstance),
 	  _bbs(bbsystem),
+	  _randy(randy),
 	  _nmbAttempts(0),
 	  _nmbAccepted(0),
 	  _totalChannelCrossSection(0)
@@ -55,7 +56,6 @@ eventChannel::eventChannel(const inputParameters& inputParametersInstance, beamB
   _etaCutEnabled = inputParametersInstance.etaCutEnabled();
   _etaCutMin     = inputParametersInstance.etaCutMin();
   _etaCutMax     = inputParametersInstance.etaCutMax();
-  _randy.SetSeed(inputParametersInstance.randomSeed());
 }
 
 

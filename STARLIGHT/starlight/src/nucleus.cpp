@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 282                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-03-07 18:16:20 +0100 #$: date of last commit
+// $Rev:: 295                         $: revision of last commit
+// $Author:: srklein                  $: author of last commit
+// $Date:: 2018-02-15 21:15:59 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -73,6 +73,12 @@ void nucleus::init()
 		{
                   _Radius = 4.214;
 		  _rho0 = 0.173845;
+		}
+		break;
+         case 54:   // Added by SRK 2/2018
+                {
+		  _Radius=5.36;   // value used by ALICE
+		  _rho0=0.18406;  // calculate by me, to give normalization \intd^3r rho(r)=129
 		}
 		break;
 	case 1: 

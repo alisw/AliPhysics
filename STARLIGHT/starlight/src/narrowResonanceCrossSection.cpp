@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 286                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-05-03 22:32:03 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -100,8 +100,8 @@ narrowResonanceCrossSection::crossSectionCalculation(const double)  // _bwnormsa
 	cout<<" Using Narrow Resonance ..."<<endl;
   
 	W = getChannelMass();
-	Eth=0.5*(((W+protonMass)*(W+protonMass)-
-	          protonMass*protonMass)/(_Ep+sqrt(_Ep*_Ep-protonMass*protonMass)));
+	Eth=0.5*(((W+_ip->protonMass())*(W+_ip->protonMass())-
+	          _ip->protonMass()*_ip->protonMass())/(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass())));
   
 	// cout<<" gamma+nucleon  Threshold: "<<Eth<<endl;
         printf(" gamma+nucleon threshold: %e GeV \n", Eth);
@@ -143,8 +143,8 @@ narrowResonanceCrossSection::crossSectionCalculation(const double)  // _bwnormsa
 
 		// Print Point
 		csgAprint=getcsgA(egaprint,W,beam);
-                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
 
 		// Sum the contribution for this W,Y.
 		dR  = ega1*photonFlux(ega1,beam)*csgA1;
@@ -197,8 +197,8 @@ narrowResonanceCrossSection::crossSectionCalculation(const double)  // _bwnormsa
 
                 // Print Point 
 		csgAprint=getcsgA(egaprint,W,beam);
-                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
 		
 		// Sum the contribution for this W,Y.
 		dR  = ega1*photonFlux(ega1,beam)*csgA1;

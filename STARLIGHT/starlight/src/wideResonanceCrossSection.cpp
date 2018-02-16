@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 286                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-05-03 22:32:03 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -101,8 +101,8 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
         double mvm = getChannelMass();
 
 	//gamma+nucleon threshold.
-	Eth=0.5*(((_wideWmin+protonMass)*(_wideWmin+protonMass)
-	          -protonMass*protonMass)/(_Ep+sqrt(_Ep*_Ep-protonMass*protonMass)));
+	Eth=0.5*(((_wideWmin+_ip->protonMass())*(_wideWmin+_ip->protonMass())
+	          -_ip->protonMass()*_ip->protonMass())/(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass())));
                    
 	NW   = 100;
 	dW   = (_wideWmax-_wideWmin)/double(NW);
@@ -174,8 +174,8 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 
 	    //Take the printed Wgp and photon flux at the mass of the VM
 	    egaprint = 0.5*mvm*exp(yprintcm);
-            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-		               +starlightConstants::protonMass*starlightConstants::protonMass);
+            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+		               +_ip->protonMass()*_ip->protonMass());
             dsigdyVal[J]  = 10.*localdsig/dY; //This is dsig/dy in millibarn 
             w1Val[J] = Wgpprint; 
             Egamma1Val[J] = egaprint;
@@ -236,8 +236,8 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 
 	    //Take the printed Wgp and photon flux at the mass of the rho0
 	    egaprint = 0.5*mvm*exp(-yprintcm);
-            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-		               +starlightConstants::protonMass*starlightConstants::protonMass);
+            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+		               +_ip->protonMass()*_ip->protonMass());
             dsigdyVal[J]  += 10.*localdsig/dY; //This is dsig/dy in millibarn 
             w2Val[J] = Wgpprint; 
             Egamma2Val[J] = egaprint;

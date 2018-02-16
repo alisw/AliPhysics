@@ -114,7 +114,7 @@ void incoherentPhotonNucleusLuminosity::incoherentPhotonNucleusDifferentialLumin
   wylumfile << _beamBreakupMode <<endl;
   wylumfile << _interferenceEnabled <<endl;
   wylumfile << _interferenceStrength <<endl;
-  wylumfile << starlightConstants::deuteronSlopePar <<endl;
+  wylumfile << _ip->deuteronSlopePar() <<endl;
   wylumfile << _maxPtInterference <<endl;
   wylumfile << _nmbPtBinsInterference <<endl;
   
@@ -147,8 +147,8 @@ void incoherentPhotonNucleusLuminosity::incoherentPhotonNucleusDifferentialLumin
 
     double Ep = _protonEnergy;
 
-    Eth=0.5*(((W+starlightConstants::protonMass)*(W+starlightConstants::protonMass)-starlightConstants::protonMass*starlightConstants::protonMass)/
-	   (Ep + sqrt(Ep*Ep-starlightConstants::protonMass*starlightConstants::protonMass)));
+    Eth=0.5*(((W+_ip->protonMass())*(W+_ip->protonMass())-_ip->protonMass()*_ip->protonMass())/
+	   (Ep + sqrt(Ep*Ep-_ip->protonMass()*_ip->protonMass())));
     
     for(unsigned int j = 0; j <= _nYbins - 1; ++j) {
 
@@ -171,8 +171,8 @@ void incoherentPhotonNucleusLuminosity::incoherentPhotonNucleusDifferentialLumin
 
       if(Egamma > Eth){
 	if(Egamma > maxPhotonEnergy())Egamma = maxPhotonEnergy();
-        double Wgp = sqrt(2.*Egamma*(Ep+sqrt(Ep*Ep-starlightConstants::protonMass*
-                                 starlightConstants::protonMass))+starlightConstants::protonMass*starlightConstants::protonMass);
+        double Wgp = sqrt(2.*Egamma*(Ep+sqrt(Ep*Ep-_ip->protonMass()*
+                                 _ip->protonMass()))+_ip->protonMass()*_ip->protonMass());
 
         double localsig = sigmagp(Wgp); 
         if( A_1 == 1 && A_2 != 1 ){
@@ -201,8 +201,8 @@ void incoherentPhotonNucleusLuminosity::incoherentPhotonNucleusDifferentialLumin
 
       double Ep = _protonEnergy;
 
-      Eth=0.5*(((W+starlightConstants::protonMass)*(W+starlightConstants::protonMass)-starlightConstants::protonMass*starlightConstants::protonMass)/
-	   (Ep + sqrt(Ep*Ep-starlightConstants::protonMass*starlightConstants::protonMass)));
+      Eth=0.5*(((W+_ip->protonMass())*(W+_ip->protonMass())-_ip->protonMass()*_ip->protonMass())/
+	   (Ep + sqrt(Ep*Ep-_ip->protonMass()*_ip->protonMass())));
     
       for(unsigned int j = 0; j <= _nYbins - 1; ++j) {
 
@@ -215,8 +215,8 @@ void incoherentPhotonNucleusLuminosity::incoherentPhotonNucleusDifferentialLumin
 
         if(Egamma > Eth){
 	  if(Egamma > maxPhotonEnergy())Egamma = maxPhotonEnergy();
-          double Wgp = sqrt(2.*Egamma*(Ep+sqrt(Ep*Ep-starlightConstants::protonMass*
-                                 starlightConstants::protonMass))+starlightConstants::protonMass*starlightConstants::protonMass);
+          double Wgp = sqrt(2.*Egamma*(Ep+sqrt(Ep*Ep-_ip->protonMass()*
+                                 _ip->protonMass()))+_ip->protonMass()*_ip->protonMass());
 
           double csVN = sigma_N(Wgp);         
           double csVA = sigma_A(csVN,beam); 

@@ -30,7 +30,7 @@ class starlightDpmJet : public eventChannel
 
 public:
    
-    starlightDpmJet(const inputParameters& input,beamBeamSystem& beamsystem);
+    starlightDpmJet(const inputParameters& input, randomGenerator* randy, beamBeamSystem& beamsystem);
 
     int init();
     

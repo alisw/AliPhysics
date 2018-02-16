@@ -80,6 +80,8 @@ class TStarLight : public TGenerator {
       return false;
     }
     fStarLight->setInputParameters(&fInputParameters);
+    fRandomGenerator.SetSeed(fInputParameters.randomSeed());
+    fStarLight->setRandomGenerator(&fRandomGenerator);
     return fStarLight->init();
   }
 
@@ -133,9 +135,10 @@ class TStarLight : public TGenerator {
   TString          fConfigFileName;   //   Input Configuration file name
   starlight       *fStarLight;        //!  Simulation Class
   inputParameters  fInputParameters;  //   simulation input information.
+  randomGenerator  fRandomGenerator;  //   STARLIGHT's own random generator
   upcEvent         fEvent;            //!  object holding STARlight simulated event.
 
-  ClassDef(TStarLight,3); // STARlight interface to ROOT's Virtual Monte Carlo
+  ClassDef(TStarLight,4); // STARlight interface to ROOT's Virtual Monte Carlo
 } ;
 
 #endif

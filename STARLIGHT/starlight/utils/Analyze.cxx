@@ -16,7 +16,7 @@
 // To use this macro, modify the file ana.C to call your input file 
 // (as downloaded, it calls slight.out) and the number of events you wish to 
 // process (as downloaded, it processes 20 events).  Then open root and type 
-// ".x Ana.C" .
+// ".x Ana.C" .   
 
 using namespace std;
 Analyze::Analyze() :

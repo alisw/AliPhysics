@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 263                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2016-06-05 00:03:58 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -71,6 +71,7 @@ private:
 
 	starlight*       _starlight;         ///< pointer to starlight instance
         inputParameters* _inputParameters;   ///< pointer to parameter instance
+	randomGenerator* _randomGenerator;   ///< pointer to random instance
 	unsigned int     _nmbEventsTot;      ///< total number of events to generate (taken from configuration file)
 	unsigned int     _nmbEventsPerFile;  ///< maximum number of events written to a single file (not yet implemented)
 

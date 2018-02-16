@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 270                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-07-08 17:31:51 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -59,6 +59,7 @@ bool
 starlightStandalone::init()
 {
 	_inputParameters = new inputParameters();
+	_randomGenerator = new randomGenerator();
 	// read input parameters from config file
 	_inputParameters->configureFromFile(_configFileName);
 	if (!_inputParameters->init()) {
@@ -100,8 +101,10 @@ starlightStandalone::init()
 	_starlight = new starlight();
 
         // give starlight the input parameters
+	_randomGenerator->SetSeed(_inputParameters->randomSeed());
         _starlight->setInputParameters(_inputParameters);
-	
+	_starlight->setRandomGenerator(_randomGenerator);
+
 	// initialize starlight
 	return _starlight->init();
 }

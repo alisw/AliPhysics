@@ -20,13 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 281                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-01-04 19:46:45 +0100 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //    Added incoherent factor to luminosity table output--Joey
-//
+//    Added BRANGE method to integrate from bmin to bmax, irrespective of R_A, etc.  Spencer July, 2017  
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -66,9 +66,13 @@ beamBeamSystem(inputParametersInstance, beam_1,beam_2)
 ,_nmbPtBinsInterference(inputParametersInstance.nmbPtBinsInterference())
 ,_xsecCalcMethod(inputParametersInstance.xsecCalcMethod())
 ,_baseFileName(inputParametersInstance.baseFileName())
+,_bmin(inputParametersInstance.bmin())
+,_bmax(inputParametersInstance.bmax())
 {
   //Lets check to see if we need to recalculate the luminosity tables
-  twoPhotonDifferentialLuminosity();
+  double bmina = _bmin;
+  double bmaxa = _bmax;
+  twoPhotonDifferentialLuminosity(bmina,bmaxa);
 }
 
 
@@ -78,7 +82,8 @@ twoPhotonLuminosity::~twoPhotonLuminosity()
 
 
 //______________________________________________________________________________
-void twoPhotonLuminosity::twoPhotonDifferentialLuminosity()
+
+void twoPhotonLuminosity::twoPhotonDifferentialLuminosity(const double _bmin, const double _bmax)
 {
   std::string wyFileName;
   wyFileName = _baseFileName +".txt";
@@ -110,7 +115,7 @@ void twoPhotonLuminosity::twoPhotonDifferentialLuminosity()
   wylumfile << _beamBreakupMode <<endl;
   wylumfile << _interferenceEnabled <<endl;
   wylumfile << _interferenceStrength <<endl;
-  wylumfile << starlightConstants::deuteronSlopePar <<endl;
+  wylumfile << _ip->deuteronSlopePar() <<endl;
   wylumfile << _maxPtInterference <<endl;
   wylumfile << _nmbPtBinsInterference <<endl;
   for (unsigned int i = 0; i < _nWbins; i++) {
@@ -122,7 +127,22 @@ void twoPhotonLuminosity::twoPhotonDifferentialLuminosity()
     wylumfile << y[i] <<endl;
   }
 
-  if(_xsecCalcMethod == 0) {
+  if (_beamBreakupMode ==8) { // new method - integrate over fixed impact parameter range, regardless of nuclear breakup SRK 7/2017
+    
+    cout <<"Calculating two photon luminosity from "<<_bmin<<" fm to "<<_bmax<<" fm."<<endl;
+       for (unsigned int i = 0; i < _nWbins; i++) {   //For each (w,y) pair, calculate the diff. _lum
+      printf("Calculating cross section: %2.0f %% \r", float(i)/float(_nWbins)*100);
+      fflush(stdout);
+      for (unsigned int j = 0; j < _nYbins; j++) {
+        xlum = w[i] * D2LDMDYBRANGE(w[i],y[j],_bmin,_bmax);   //Convert photon flux dN/dW to Lorentz invariant photon number WdN/dW
+        wylumfile << xlum <<endl;
+        // cout<<" i: "<<i<<" j: "<<j<<" W*dN/dW: "<<xlum<<endl; 
+      }
+    }
+    return;}  // Just return here to simplify program structure
+    
+
+  if(_xsecCalcMethod == 0) {  // faster (analytic) method, only works for symmetric collisions
     
     for (unsigned int i = 0; i < _nWbins; ++i) {   //For each (w,y) pair, calculate the diff. _lum
       for (unsigned int j = 0; j < _nYbins; ++j) {
@@ -135,7 +155,7 @@ void twoPhotonLuminosity::twoPhotonDifferentialLuminosity()
     }
 
   }
-  else if(_xsecCalcMethod == 1) {
+  else if(_xsecCalcMethod == 1) {  // slower method, always works for any colliding system
 
     for (unsigned int i = 0; i < _nWbins; i++) {   //For each (w,y) pair, calculate the diff. _lum
       printf("Calculating cross section: %2.0f %% \r", float(i)/float(_nWbins)*100);
@@ -153,7 +173,7 @@ void twoPhotonLuminosity::twoPhotonDifferentialLuminosity()
 //______________________________________________________________________________
 double twoPhotonLuminosity::D2LDMDY(double M,double Y,double &Normalize)
 {
-  // double differential luminosity 
+  // double differential luminosity using faster, analytic method (symmetric systems only)
 
   double D2LDMDYx = 0.;
 
@@ -172,7 +192,7 @@ double twoPhotonLuminosity::D2LDMDY(double M,double Y,double &Normalize)
 //______________________________________________________________________________
 double twoPhotonLuminosity::D2LDMDY(double M, double Y) const 
 {
-  // double differential luminosity 
+  // double differential luminosity using slower numerical method for standard case
 
   double D2LDMDYx = 0.;
   double w1    =  M/2.0*exp(Y);
@@ -211,6 +231,7 @@ double twoPhotonLuminosity::D2LDMDY(double M, double Y) const
 	// Gaussian integration n = 10
 	// Since cos is symmetric around 0 we only need 5 of the 
 	// points in the gaussian integration.
+	// these are points 1, 3, 5, 7, 9 in the standard n=10 Gaussian weights table
 	const int ngi = 5;
 	double weights[ngi] = 
 	{
@@ -243,6 +264,94 @@ double twoPhotonLuminosity::D2LDMDY(double M, double Y) const
       
   }
   D2LDMDYx = 2.*pi*M/2.*sum;
+  return D2LDMDYx; 
+}
+
+/// new routine goes here
+
+//______________________________________________________________________________
+// Version of twoPhoton  Luminosity with a fixed impact parameter range from bmin to bmax  SRK August, 2017
+double twoPhotonLuminosity::D2LDMDYBRANGE(double M, double Y, double bmin, double bmax) const 
+{
+  // double differential luminosity using slower numerical method
+
+  double D2LDMDYx = 0.;
+  double w1    =  M/2.0*exp(Y);
+  double w2    =  M/2.0*exp(-Y);
+  
+  double r_nuc1 = beam1().nuclearRadius();
+  double r_nuc2 = beam2().nuclearRadius();
+  
+  double b1min = r_nuc1;
+  double b2min = r_nuc2;
+  
+  double b1max = max(5.*_gamma*hbarc/w1,5*r_nuc1);
+  double b2max = max(5.*_gamma*hbarc/w2,5*r_nuc2);
+  
+  const int nbins_b1 = 120;
+  const int nbins_b2 = 120;
+  
+  double log_delta_b1 = (log(b1max)-log(b1min))/nbins_b1;
+  double log_delta_b2 = (log(b2max)-log(b2min))/nbins_b2;
+  double sum = 0;
+  for(int i = 0; i < nbins_b1; ++i)
+  {
+      // Sum from nested integral
+      double sum_b2 = 0;
+      double b1_low = b1min*exp(i*log_delta_b1);
+      double b1_high = b1min*exp((i+1)*log_delta_b1);
+      double b1_cent = (b1_high+b1_low)/2.;
+      for(int j = 0; j < nbins_b2; ++j)
+      {
+	// Sum from nested  
+	double sum_phi = 0;
+	double b2_low = b2min*exp(j*log_delta_b2);
+	double b2_high = b2min*exp((j+1)*log_delta_b2);
+	double b2_cent = (b2_high+b2_low)/2.;
+
+// integrate over ion-ion separation B from bmin to bmax; this corresponds to an angular range.
+// This follows Eq. 2.4 of G. Baur et al., Nucl. Phys. A518, 786 (1990)
+// cos(theta) = (B^2 -b_1^2-b_2^2)/2b_1b_2
+// We don't care about nuclear breakup, so do the delta phi integral analytically; it's just delta phi
+// integration from bmin to bmax is equivalent to integrating from thetamin to thetamax
+	
+// be careful - some choices of b_1,b_2, bmin and/or bmax, do not form a valid triangle
+// We take care of this by adjustin the limits, restricting |cos(thetamax|<1, ditto for thetamin.  
+	
+	    double costhetamin=(b1_cent*b1_cent+b2_cent*b2_cent-bmin*bmin)/(2.*b1_cent*b2_cent);
+	    double costhetamax=(b1_cent*b1_cent+b2_cent*b2_cent-bmax*bmax)/(2.*b1_cent*b2_cent);
+	    if (costhetamin>1.) {costhetamin=1.;}
+	    if (costhetamax>1.) {costhetamax=1.;}
+	    if (costhetamin<-1.){costhetamin=-1.;}
+            if (costhetamax<-1.){costhetamax=-1.;}
+
+	    double thetamin=acos(costhetamin);
+	    double thetamax =acos(costhetamax);
+	      
+	    double deltatheta=thetamax-thetamin;
+	    if (deltatheta < 0. || bmin > bmax || abs(deltatheta)>pi) {
+	          cout<< "Error: angle < 0. deltatheta= "<<deltatheta<<"  bmin, bmax="<<bmin<<bmax<<endl;
+		  cout <<"thetamin, thetamax="<<thetamin<<" " << thetamax<<endl;
+		  cout <<"b1_cent, b2_cent="<<b1_cent<<" "<<b2_cent<<endl;
+		  exit(0);
+	    }
+
+// Since we do not care about the probability of nuclear breakup here, the result of the integral over phi is just delta phi.
+// In the standard version of the code, one uses the Gaussian integration weights, but they just sum to 1.
+// the 2 is because the integral only covers half of the phase space
+
+	      sum_phi=2.*deltatheta;
+	      sum_b2 += beam2().photonDensity(b2_cent,w2)*sum_phi*b2_cent*(b2_high-b2_low);
+	    }
+      
+	    sum += beam1().photonDensity(b1_cent, w1)*sum_b2*b1_cent*(b1_high-b1_low);
+      
+      }
+  D2LDMDYx = 2.*sum*pi*M/2;
+
+  if (D2LDMDYx == 0.){
+    cout<<"error - returning luminosity zero.  bmin,bmax="<<bmin<<bmax<<endl;
+  }
   return D2LDMDYx; 
 }
 

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 263                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2016-06-05 00:03:58 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -45,7 +45,7 @@
 class Gammagammaleptonpair : public eventChannel
 {
  public:
-  Gammagammaleptonpair(const inputParameters& input, beamBeamSystem& bbsystem);
+  Gammagammaleptonpair(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   ~Gammagammaleptonpair();
   
   void twoLeptonCrossSection();

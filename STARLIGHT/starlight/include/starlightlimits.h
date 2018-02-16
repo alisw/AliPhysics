@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 42                          $: revision of last commit
-// $Author:: kskjerdal                $: author of last commit
-// $Date:: 2011-02-21 12:17:38 +0100 #$: date of last commit
+// $Rev:: 292                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-10-17 02:43:54 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -39,6 +39,7 @@ namespace starlightLimits
 {
     static const int MAXWBINS = 3000;
     static const int MAXYBINS = 3000;
+    static const int MAXPTBINS = 3000;
 }
 
 

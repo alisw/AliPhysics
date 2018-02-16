@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 260                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2016-05-03 05:07:34 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -50,7 +50,8 @@ using namespace starlightConstants;
 beamBeamSystem::beamBeamSystem(const inputParameters& inputParametersInstance,
 			       const beam&            beam1,
                                const beam&            beam2)
-  : _beamLorentzGamma(inputParametersInstance.beamLorentzGamma()),
+  : _ip(&inputParametersInstance),
+    _beamLorentzGamma(inputParametersInstance.beamLorentzGamma()),
     _beamLorentzGamma1(inputParametersInstance.beam1LorentzGamma()),
     _beamLorentzGamma2(inputParametersInstance.beam2LorentzGamma()),
     _beamBreakupMode (inputParametersInstance.beamBreakupMode()),

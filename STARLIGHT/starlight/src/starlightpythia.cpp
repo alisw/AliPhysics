@@ -25,7 +25,7 @@
 #include <cmath>
 #include <sstream>
 
-starlightPythia::starlightPythia(const inputParameters& inputParametersInstance, beamBeamSystem& bbsystem) : eventChannel(inputParametersInstance, bbsystem)
+starlightPythia::starlightPythia(const inputParameters& inputParametersInstance,randomGenerator* randy,beamBeamSystem& bbsystem) : eventChannel(inputParametersInstance,randy, bbsystem)
         ,_spectrum(0)
         ,_doDoubleEvent(false)
         ,_minGammaEnergy(inputParametersInstance.minGammaEnergy())

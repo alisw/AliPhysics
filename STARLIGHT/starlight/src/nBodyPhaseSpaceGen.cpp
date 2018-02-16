@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 211                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2015-08-10 04:05:09 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //     see nBodyPhaseSpaceGen.h
@@ -40,7 +40,7 @@ using namespace std;
 using namespace starlightConstants;
 
 
-nBodyPhaseSpaceGen::nBodyPhaseSpaceGen(const randomGenerator& randy)
+nBodyPhaseSpaceGen::nBodyPhaseSpaceGen(randomGenerator* randy)
 	: _n                (0),
 	  _norm             (0),
 	  _weight           (0),
