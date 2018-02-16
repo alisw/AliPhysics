@@ -70,10 +70,19 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistXtpcVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistYtpcVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistZtpcVsContrib;           //!<!  histo of vtx coord.
+  TH2F* fHistXspdVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistYspdVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistZspdVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistXtrkVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistYtrkVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistZtrkVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistXtpcVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistYtpcVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistZtpcVsMult;              //!<!  histo of vtx coord.
   TH1F* fHistoNOfPileupVertSPD;       //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertSPD;    //!<! histo of SPD pileup
-  TH1F* fHistoNOfPileupVertMV;       //!<! histo of SPD pileup
-  TH1F* fHistoNOfSelPileupVertMV;    //!<! histo of SPD pileup
+  TH1F* fHistoNOfPileupVertMV;        //!<! histo of SPD pileup
+  TH1F* fHistoNOfSelPileupVertMV;     //!<! histo of SPD pileup
   Bool_t  fUsePhysSel;                // flag use/not use phys sel
   Int_t   fTriggerMask;               // mask used in physics selection
   Double_t fMaxMult;                  // upper limit of multiplicity plots
@@ -86,7 +95,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,1);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,2);
 };
 
 
