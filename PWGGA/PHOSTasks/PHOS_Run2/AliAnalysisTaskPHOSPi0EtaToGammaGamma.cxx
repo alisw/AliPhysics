@@ -1641,7 +1641,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     eff = f1tof->Eval(energy);
-    if(!fIsMC && fIsPHOSTriggerAnalysis) trgeff = f1trg->Eval(energy);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP) trgeff = f1trg->Eval(energy);
 
 
     //0 < photon phi < 2pi
@@ -1761,7 +1761,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff2 = f1tof->Eval(e2);
       eff12 = eff1 * eff2;
 
-      if(!fIsMC && fIsPHOSTriggerAnalysis){
+      if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
         //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
@@ -1913,7 +1913,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         eff12 = eff1 * eff2;
         weight = 1.;
 
-        if(!fIsMC && fIsPHOSTriggerAnalysis){
+        if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
           //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
@@ -2645,8 +2645,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
 
       if( (dm == 0)
        && (dt == 0)
-       && (TMath::Abs(dx) < 2)
-       && (TMath::Abs(dz) < 2)
+       && (TMath::Abs(dx) < 3)
+       && (TMath::Abs(dz) < 3)
        ) continue;//reject cluster pair where they belong to same 4x4 region.
 
       AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
