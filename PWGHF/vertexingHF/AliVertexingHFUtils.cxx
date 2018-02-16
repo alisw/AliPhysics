@@ -2391,8 +2391,8 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
   }
 
   Double_t rebin=width/widthMC;
-  if(TMath::Abs(rebin-(Int_t)(rebin+0.000001))>0.001){
-    printf("Cannot adapt histo: rebin %f issue, width MC = %f, width hData=%f (check=%f)\n",rebin,widthMC,width,TMath::Abs(rebin-(Int_t)rebin));
+  if(TMath::Abs(rebin-TMath::Nint(rebin))>0.001){
+    printf("Cannot adapt histo: rebin %f issue, width MC = %f, width hData=%f (check=%f)\n",rebin,widthMC,width,TMath::Abs(rebin-TMath::Nint(rebin)));
     return 0x0;
   }
 
