@@ -104,9 +104,10 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fBuilDCAchi2(kFALSE)
     , fUseTPCShift(kFALSE)
     , fPerformance(kFALSE) //kTRUE for performance plots!
+    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
     , fRecalibrateTOF(kFALSE)
     , fCutOnMCImpact(kFALSE)
-    , fFineTOFReso(kFALSE)
+    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
     , fFineEfficiency(kFALSE)
     , fDCAXYshift(0)
     //Mask for physics selection
@@ -2193,8 +2194,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         hNumMatchMC[fSign][fPdgIndex]->Fill(fPt);
         if (fProdInfo == 0) { //Primaries
           hNumMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
-          if (TMath::Abs(fRapidityMC) < fRapidityCut)
+          if (TMath::Abs(fRapidityMC) < fRapidityCut) //Rapidity cut
             hNumMatchPrimMCYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
+          //
           if (fMCTOFMatch == 0) { //True match in TOF
             hNumPrimMCTrueMatch[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
             if (TMath::Abs(fRapidityMC) < fRapidityCut) {
@@ -2740,16 +2742,13 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
 
   trk->GetTOFLabel(TOFTrkLabel); //Gets the labels of the tracks matched to the TOF, this can be used to remove the mismatch and to compute the efficiency! The label to check is the first one, the others can come from different tracks
 
-  if (TOFTrkLabel[0] == -1) {
+  if (TOFTrkLabel[0] == -1) // Track was not matched to any TOF hit.
     fMCTOFMatch = -1;
-  } // Track was not matched to any TOF hit.
-  else if (AbsTrkLabel == TOFTrkLabel[0]) {
+  else if (AbsTrkLabel == TOFTrkLabel[0]) // Track was correctly matched to a TOF hit.
     fMCTOFMatch = 0;
-  } // Track was correctly matched to a TOF hit.
-  else {
+  else // Track was matched to a TOF hit but comes from mismatch!
     fMCTOFMatch = 1;
-  } // Track was matched to a TOF hit but comes from mismatch!
-
+  //
   TParticle* part = (TParticle*)fMCStack->Particle(AbsTrkLabel); //Particle in the stack
   if (!part) {
     AliError("Cannot find the TParticle!");
@@ -3514,112 +3513,120 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent()
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 {
-  if (fPerformance) {
-    const Int_t Bnbins = 4000;
-    const Double_t Blim[2] = { 0., 1.5 };
-    const Double_t Bplim[2] = { 0., 10. };
-    const Int_t Enbins = 4000;
-    const Double_t Elim[2] = { 0., 1000 };
-    const Double_t Eplim[2] = { 0.1, 30. };
+  if (!fPerformance)
+    return;
+  //
+  const Int_t Bnbins = 4000;
+  const Double_t Blim[2] = { 0., 1.5 };
+  const Double_t Bplim[2] = { 0., 10. };
+  const Int_t Enbins = 4000;
+  const Double_t Elim[2] = { 0., 1000 };
+  const Double_t Eplim[2] = { 0.1, 30. };
 
-    hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBeta);
+  hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBeta);
 
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      hBetaExpected[i] = new TProfile(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaExpected[i]);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    hBetaExpected[i] = new TProfile(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaExpected[i]);
 
-      hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaExpectedTOFPID[i]);
+    hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaExpectedTOFPID[i]);
 
-      hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-      fListHist->AddLast(hdEdxExpected[i]);
+    hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpected[i]);
 
-      hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-      fListHist->AddLast(hdEdxExpectedTPCp[i]);
-    }
-
-    hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-    fListHist->AddLast(hdEdxExpected[kExpSpecies]);
-
-    hdEdxExpected[kExpSpecies + 1] = new TProfile("hdEdxExpectedHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-    fListHist->AddLast(hdEdxExpected[kExpSpecies + 1]);
-
-    hdEdxExpectedTPCp[kExpSpecies] = new TProfile("hdEdxExpectedTPCpTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-    fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies]);
-
-    hdEdxExpectedTPCp[kExpSpecies + 1] = new TProfile("hdEdxExpectedTPCpHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
-    fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies + 1]);
-
-    hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatch);
-
-    hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchEtaCut);
-
-    hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchEtaCutOut);
-
-    hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaCentral);
-
-    hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentral);
-
-    hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
-
-    hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
-
-    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
-    fListHist->AddLast(hTPCdEdx);
-
-    hTPCdEdxTPCp = new TH2I("hTPCdEdxTPCp", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
-    fListHist->AddLast(hTPCdEdxTPCp);
+    hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpectedTPCp[i]);
   }
+
+  hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpected[kExpSpecies]);
+
+  hdEdxExpected[kExpSpecies + 1] = new TProfile("hdEdxExpectedHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpected[kExpSpecies + 1]);
+
+  hdEdxExpectedTPCp[kExpSpecies] = new TProfile("hdEdxExpectedTPCpTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies]);
+
+  hdEdxExpectedTPCp[kExpSpecies + 1] = new TProfile("hdEdxExpectedTPCpHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies + 1]);
+
+  hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatch);
+
+  hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchEtaCut);
+
+  hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchEtaCutOut);
+
+  hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaCentral);
+
+  hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentral);
+
+  hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
+
+  hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
+
+  hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
+  fListHist->AddLast(hTPCdEdx);
+
+  hTPCdEdxTPCp = new TH2I("hTPCdEdxTPCp", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
+  fListHist->AddLast(hTPCdEdxTPCp);
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track)
 {
-  if (fPerformance) {
-    //TOF
-    const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
-    hBeta->Fill(fP, beta);
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
-      hBetaExpected[i]->Fill(fP, betaHypo);
-      if (TMath::Abs(fTOFSigma[i]) < 3.0)
-        hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
-    }
+  if (!fPerformance)
+    return;
+  //
+
+  //*****
+  //*TOF*
+  //*****
+  const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+  hBeta->Fill(fP, beta);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
+    hBetaExpected[i]->Fill(fP, betaHypo);
+    if (TMath::Abs(fTOFSigma[i]) < 3.0)
+      hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
+  }
+  if (fNTOFClusters < 2) {
+    hBetaNoMismatch->Fill(fP, beta);
+    if (TMath::Abs(fEta) < 0.5)
+      hBetaNoMismatchEtaCut->Fill(fP, beta);
+    if (TMath::Abs(fEta) > 0.2)
+      hBetaNoMismatchEtaCutOut->Fill(fP, beta);
+  }
+
+  if (fEvtMult <= 30.0 && fEvtMult >= 0.0) { //Central collisions
+    hBetaCentral->Fill(fP, beta);
     if (fNTOFClusters < 2) {
-      hBetaNoMismatch->Fill(fP, beta);
+      hBetaNoMismatchCentral->Fill(fP, beta);
       if (TMath::Abs(fEta) < 0.5)
-        hBetaNoMismatchEtaCut->Fill(fP, beta);
+        hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
       if (TMath::Abs(fEta) > 0.2)
-        hBetaNoMismatchEtaCutOut->Fill(fP, beta);
-    }
-
-    if (fEvtMult <= 30.0 && fEvtMult >= 0.0) { //Central collisions
-      hBetaCentral->Fill(fP, beta);
-      if (fNTOFClusters < 2) {
-        hBetaNoMismatchCentral->Fill(fP, beta);
-        if (TMath::Abs(fEta) < 0.5)
-          hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
-        if (TMath::Abs(fEta) > 0.2)
-          hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
-      }
-    }
-
-    //TPC
-    hTPCdEdx->Fill(fP, fTPCSignal);
-    hTPCdEdxTPCp->Fill(fPTPC, fTPCSignal);
-    for (Int_t i = 0; i < kExpSpecies + 2; i++) {
-      hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
-      hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+        hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
     }
   }
+
+  //*****
+  //*TPC*
+  //*****
+  hTPCdEdx->Fill(fP, fTPCSignal);
+  hTPCdEdxTPCp->Fill(fPTPC, fTPCSignal);
+  for (Int_t i = 0; i < kExpSpecies + 2; i++) {
+    hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+    hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+  }
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::DefineMCPerformanceHistograms()
