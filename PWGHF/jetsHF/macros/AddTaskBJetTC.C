@@ -122,7 +122,7 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	jetTask->DoPtRelAnalysis(DoPtRelAna);
 			
 	AliTrackContainer *trackCont  = jetTask->AddTrackContainer(ntracks);
-	trackCont->SetTrackFilterType(PWG::EMCAL::AliEmcalTrackSelection::kCustomTrackFilter);
+	trackCont->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
 	trackCont->SetAODFilterBits((1<<4)|(1<<9));
 
 	AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);

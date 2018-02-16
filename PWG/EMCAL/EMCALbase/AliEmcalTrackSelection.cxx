@@ -37,8 +37,8 @@
 #include "iostream"
 
 /// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalManagedObject)
-ClassImp(PWG::EMCAL::AliEmcalTrackSelection)
+ClassImp(AliEmcalManagedObject)
+ClassImp(AliEmcalTrackSelection)
 /// \endcond
 
 using namespace PWG::EMCAL;

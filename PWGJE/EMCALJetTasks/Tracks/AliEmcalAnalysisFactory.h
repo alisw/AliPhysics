@@ -31,16 +31,8 @@
 #include "AliEmcalTriggerOfflineSelection.h"
 
 class AliESDtrackCuts;
-
-namespace PWG{
-
-namespace EMCAL {
-
 class AliEmcalTrackSelection;
 
-}
-
-}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -101,7 +93,7 @@ public:
    * @param isAOD Switch whether to create cuts for ESDs or AODs
    * @return Fully configured EMCAL track selection
    */
-  static PWG::EMCAL::AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
+  static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
 
   /**
    * @brief Configures EMCAL trigger offline selection used to restrict EMCAL triggered sample

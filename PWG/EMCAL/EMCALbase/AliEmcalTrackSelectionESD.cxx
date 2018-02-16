@@ -44,7 +44,7 @@
 #include "AliVCuts.h"
 
 /// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalTrackSelectionESD)
+ClassImp(AliEmcalTrackSelectionESD)
 /// \endcond
 
 using namespace PWG::EMCAL;

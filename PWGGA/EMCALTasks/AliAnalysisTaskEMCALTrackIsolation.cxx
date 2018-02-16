@@ -531,7 +531,7 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
     //  //Printf("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks);
   
     //    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
-  if(tracksANA->GetTrackFilterType()!= PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks){
+  if(tracksANA->GetTrackFilterType()!= AliEmcalTrackSelection::kHybridTracks){
     AliWarning(Form("Isolation NOT calculated with HybridTracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }

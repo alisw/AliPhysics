@@ -34,10 +34,6 @@ class TList;
 class AliVCuts;
 class AliVTrack;
 
-namespace PWG {
-
-namespace EMCAL {
-
 /**
  * @class AliEmcalTrackSelectionESD
  * @brief Implementation of virtual track selection for ESDs
@@ -101,9 +97,5 @@ public:
 	ClassDef(AliEmcalTrackSelectionESD,1);
 	/// \endcond
 };
-
-}
-
-}
 
 #endif /* ALIEMCALPTTASKTRACKSELECTIONESD_H_ */

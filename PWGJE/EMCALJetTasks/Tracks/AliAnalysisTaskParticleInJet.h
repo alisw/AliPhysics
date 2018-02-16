@@ -17,16 +17,7 @@ class THistManager;
 
 class AliVParticle;
 class AliVTrack;
-
-namespace PWG {
-
-namespace EMCAL {
-
 class AliEmcalTrackSelection;
-
-}
-
-}
 
 class AliAnalysisTaskParticleInJet: public AliAnalysisTaskEmcalJet {
 public:
@@ -34,7 +25,7 @@ public:
   AliAnalysisTaskParticleInJet(const char *name);
   virtual ~AliAnalysisTaskParticleInJet();
 
-  void SetTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *sel)     { fTrackSelection = sel; }
+  void SetTrackSelection(AliEmcalTrackSelection *sel)     { fTrackSelection = sel; }
   void SetParticleContainerNameRec(TString name)          { fParticleContainerNameRec = name; }
   void SetParticleContainerNameMC(TString name)           { fParticleContainerNameMC = name;}
   void SetJetContainerNameRec(TString name)               { fJetContainerNameRec = name; }
@@ -54,7 +45,7 @@ private:
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
 
   THistManager                    *fHistMgr;
-  PWG::EMCAL::AliEmcalTrackSelection          *fTrackSelection;
+  AliEmcalTrackSelection          *fTrackSelection;
 
   // Container names
   TString                         fParticleContainerNameRec;

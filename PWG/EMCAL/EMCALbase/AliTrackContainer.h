@@ -90,7 +90,7 @@ class AliTrackContainer : public AliParticleContainer {
     /// @endcond
   };
 
-  typedef PWG::EMCAL::AliEmcalTrackSelection::ETrackFilterType_t ETrackFilterType_t;
+  typedef AliEmcalTrackSelection::ETrackFilterType_t ETrackFilterType_t;
 
   /**
    * @enum ETrackType_t
@@ -139,7 +139,7 @@ class AliTrackContainer : public AliParticleContainer {
   void                        SetArray(const AliVEvent *event);
 
   void                        SetTrackFilterType(ETrackFilterType_t f)          { fTrackFilterType = f; }
-  void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = PWG::EMCAL::AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = PWG::EMCAL::AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method
+  void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method
   void                        SetITSHybridTrackDistinction(Bool_t doUse)        { fITSHybridTrackDistinction = doUse; }
 
   void                        SetTrackCutsPeriod(const char* period)            { fTrackCutsPeriod = period; }
@@ -197,7 +197,7 @@ class AliTrackContainer : public AliParticleContainer {
   Bool_t                      fITSHybridTrackDistinction;     ///< Distinct hybrid tracks via SPD information
   UInt_t                      fAODFilterBits;                 ///< track filter bits
   TString                     fTrackCutsPeriod;               ///< period string used to generate track cuts
-  PWG::EMCAL::AliEmcalTrackSelection     *fEmcalTrackSelection;  //!<! track selection object
+  AliEmcalTrackSelection     *fEmcalTrackSelection;  //!<! track selection object
   TrackOwnerHandler           fFilteredTracks;                //!<! tracks filtered using fEmcalTrackSelection
   TArrayC                     fTrackTypes;                    //!<! track types
 

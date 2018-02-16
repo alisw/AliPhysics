@@ -10,15 +10,7 @@
 #include <TString.h>
 
 class THistManager;
-
-namespace PWG {
-
-namespace EMCAL {
-
 class AliEmcalTrackSelection;
-}
-
-}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -117,7 +109,7 @@ public:
    * Assumes that the track selection object is already fully configured
    * @param[in] sel Virtual track selection
    */
-  void SetEMCALTrackSelection(PWG::EMCAL::AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
+  void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
 
   /**
    * @brief Define cut on \f$ \eta_{lab} \f$ used to select tracks
@@ -256,7 +248,7 @@ protected:
    */
   bool IsExoticsTrigger(const TString &trg);
 
-  PWG::EMCAL::AliEmcalTrackSelection *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection *fTrackCuts;                ///< Standard track selection
 
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1

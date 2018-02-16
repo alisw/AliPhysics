@@ -20,15 +20,7 @@ class AliEmcalJet;
 class AliMCEvnet;
 class AliVParticle;
 
-namespace PWG{
-
-namespace EMCAL{
-
 class AliEmcalTrackSelection;
-
-}
-
-}
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -61,7 +53,7 @@ public:
    * Set quality cuts used to select reconstructed tracks.
    * \param trackcuts Track selection cuts used in this analysis component.
    */
-  void SetSingleTrackCuts(PWG::EMCAL::AliEmcalTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
+  void SetSingleTrackCuts(AliEmcalTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
 
   /**
    * Defines whether we swap the sign of \f$ eta\f$.
@@ -74,7 +66,7 @@ protected:
   void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
   void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent, double weight);
-  PWG::EMCAL::AliEmcalTrackSelection  *fTrackSelection;         ///< Track selection cuts used in the analysis
+  AliEmcalTrackSelection  *fTrackSelection;         ///< Track selection cuts used in the analysis
   Double_t                          fMinimumJetPt;            ///< Minimum jet \f$ p_{t} \f$
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fSwapEta;                 ///< Swap eta sign on request
