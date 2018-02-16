@@ -43,8 +43,8 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
 						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE, Bool_t bTPCTrackingOnly = kFALSE,
 						Bool_t bDoEffTpcSec = kFALSE)
 {
-  const Char_t *taskName[] = {"TPC", "HLT"};
-  const Char_t *taskName2[] = {"", "_Tracking"};
+  const TString taskName[] = {"TPC", "HLT"};
+  const TString taskName2[] = {"", "_Tracking"};
   Int_t idx = 0, idx2 = 0;
   if (bUseHLT) idx = 1;
   if (bTPCTrackingOnly) idx2 = 1;
@@ -81,9 +81,9 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   // Create task
   //
-  AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA",Form("%s%s Performance",taskName[idx], taskName2[idx2]));
+  AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA",Form("%s%s Performance",taskName[idx].Data(), taskName2[idx2].Data()));
   if (!task) {
-    Error("AddTaskPerformanceTPCdEdxQA", Form("%s%s performance task cannot be created!",taskName[idx], taskName2[idx2]));
+    Error("AddTaskPerformanceTPCdEdxQA", Form("%s%s performance task cannot be created!",taskName[idx].Data(), taskName2[idx2].Data()));
     return NULL;
   }
   task->SetUseMCInfo(bUseMCInfo);
@@ -289,14 +289,14 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   // Create containers for output
   //
    
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s%sQA", taskName[idx], taskName2[idx2]), TList::Class(), 
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s%sQA", taskName[idx].Data(), taskName2[idx2].Data()), TList::Class(), 
                  AliAnalysisManager::kOutputContainer, 
-                 Form("%s:%s_%s", mgr->GetCommonFileName(), taskName[idx],task->GetName()));
+                 Form("%s:%s_%s", mgr->GetCommonFileName(), taskName[idx].Data(),task->GetName()));
 
 
-  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer(Form("%s%sQASummary", taskName[idx], taskName2[idx2]), TTree::Class(), 
+  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer(Form("%s%sQASummary", taskName[idx].Data(), taskName2[idx2].Data()), TTree::Class(), 
                    AliAnalysisManager::kParamContainer, 
-                   Form("trending.root:Summary%sQA", taskName[idx])); 
+                   Form("trending.root:Summary%sQA", taskName[idx].Data())); 
   
   mgr->ConnectOutput(task, 1, coutput);
   mgr->ConnectOutput(task, 0, coutput2);
