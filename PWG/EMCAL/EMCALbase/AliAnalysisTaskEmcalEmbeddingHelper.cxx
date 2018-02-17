@@ -261,8 +261,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 
 bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize(bool removeDummyTask)
 {
-  // Initialize YAML configuration, if one is given
+  // Initialize %YAML configuration, if one is given
   bool initializedYAML = InitializeYamlConfig();
+
+  RetrieveTaskPropertiesFromYAMLConfig();
   
   // Get file list
   bool result = GetFilenames();
@@ -275,11 +277,74 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize(bool removeDummyTask)
     RemoveDummyTask();
   }
 
+  // Initialize the YAML config object for streaming
+  fYAMLConfig.Initialize();
+
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
   std::cout << *this;
 
   return result;
+}
+
+/**
+ * Retrieve embedding helper properties from a %YAML configuration file.
+ *
+ * Unlike the yaml configuration used in the correction task, there is no "default" yaml configuration
+ * file - nothing is required to exist in the yaml file
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
+{
+  // Following the variable blocks defined in the header
+  // Embedded event properties
+  bool res = fYAMLConfig.GetProperty("embeddedEventTriggerMask", fTriggerMask, false);
+  res = fYAMLConfig.GetProperty("enableMCOutlierRejection", fMCRejectOutliers, false);
+  res = fYAMLConfig.GetProperty("ptHardJetPtRejectionFactor", fPtHardJetPtRejectionFactor, false);
+  res = fYAMLConfig.GetProperty("embeddedEventZVertexCut", fZVertexCut, false);
+  res = fYAMLConfig.GetProperty("maxVertexDifferenceDistance", fMaxVertexDist, false);
+
+  // Embedding helper properties
+  res = fYAMLConfig.GetProperty("treeName", fTreeName, false);
+  res = fYAMLConfig.GetProperty("nPtHardBins", fNPtHardBins, false);
+  res = fYAMLConfig.GetProperty("ptHardBin", fPtHardBin, false);
+  res = fYAMLConfig.GetProperty("randomEventNumberAccess", fRandomEventNumberAccess, false);
+  res = fYAMLConfig.GetProperty("randomFileAccess", fRandomFileAccess, false);
+  res = fYAMLConfig.GetProperty("createHisto", fCreateHisto, false);
+  // More general embedding helper properties
+  res = fYAMLConfig.GetProperty("filePattern", fFilePattern, false);
+  res = fYAMLConfig.GetProperty("inputFilename", fInputFilename, false);
+  res = fYAMLConfig.GetProperty("fileListFilename", fFileListFilename, false);
+  res = fYAMLConfig.GetProperty("filenameIndex", fFilenameIndex, false);
+  // Configuration path makes no sense, as we are already using the %YAML configuration
+  res = fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
+  // Generally should not be set
+  res = fYAMLConfig.GetProperty("filenames", fFilenames, false);
+  res = fYAMLConfig.GetProperty("fPythiaCrossSectionFilenames", fPythiaCrossSectionFilenames, false);
+
+  // Internal event selection properties
+  // NOTE: Need to define the base name here so that the property path is not ambiguous (due to otherwise only being `const char *`)
+  std::string baseName = "internalEventSelection";
+  res = fYAMLConfig.GetProperty({baseName, "enabled"}, fUseInternalEventSelection, false);
+  res = fYAMLConfig.GetProperty({baseName, "useManualCuts"}, fUseManualInternalEventCuts, false);
+  // Centrality
+  std::vector <double> centralityRange;
+  res = fYAMLConfig.GetProperty({baseName, "centralityRange"}, centralityRange, false);
+  if (res) {
+    if (centralityRange.size() != 2) {
+      AliErrorStream() << "Passed centrality range with " << centralityRange.size() << " entries, but 2 values are required. Ignoring values.\n";
+    }
+    else {
+      AliDebugStream(1) << "Setting internal event centrality range to [" << centralityRange.at(0) << ", " << centralityRange.at(1) << "]\n";
+      fCentMin = centralityRange.at(0);
+      fCentMax = centralityRange.at(1);
+    }
+  }
+
+  // Auto configure pt hard properties
+  res = fYAMLConfig.GetProperty("autoConfigurePtHardBins", fAutoConfigurePtHardBins, false);
+  res = fYAMLConfig.GetProperty("autoConfigureBasePath", fAutoConfigureBasePath, false);
+  res = fYAMLConfig.GetProperty("autoConfigureTrainTypePath", fAutoConfigureTrainTypePath, false);
+  res = fYAMLConfig.GetProperty("autoConfigureIdentifier", fAutoConfigureIdentifier, false);
 }
 
 /**
@@ -366,8 +431,6 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       auto result = gGrid->Query(filePattern.Data(), fInputFilename.Data());
 
       if (result) {
-        // Retrieve the good run list (if specified)
-        fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
 
         // Loop over the result to store it in the fileList file
         std::ofstream outFile(fFileListFilename);
@@ -377,7 +440,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
           // "turl" corresponds to the full AliEn url
           
           // If a runlist is specified for good embedded runs, only include the file if it is in this runlist
-          if (IsGoodEmbeddedRun(path.Data())) {
+          if (IsRunInRunlist(path.Data())) {
             outFile << path << "\n";
           }
         }
@@ -502,12 +565,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename()
 
 
 /**
- * Check if a given filename is from a run in the good embedded runlist.
+ * Check if a given filename is from a run in the good embedded runlist. If no runlist was defined,
+ * it will always return true.
  *
  * @param path path of a single filename
  * @return true if the path contains a run in the good embedded runlist.
  */
-bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(const std::string & path) const
+bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & path) const
 {
   if (fEmbeddedRunlist.size() == 0) {
     return true;
@@ -522,17 +586,17 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(const std::string & 
 }
 
 /**
- * Initialize the YAML configuration with a potentially specified YAML configuration file.
+ * Initialize the %YAML configuration with a potentially specified %YAML configuration file.
  *
  * @return true if no yaml file or it exists and was successfully accessed.
  */
 bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
 {
   if (fConfigurationPath == "") {
-    AliInfo("No Embedding YAML configuration was provided");
+    AliInfo("No Embedding %YAML configuration was provided");
   }
   else {
-    AliInfoStream() << "Embedding YAML configuration was provided: \"" << fConfigurationPath << "\".\n";
+    AliInfoStream() << "Embedding %YAML configuration was provided: \"" << fConfigurationPath << "\".\n";
 
     int addedConfig = fYAMLConfig.AddConfiguration(fConfigurationPath, "yamlConfig");
     if (addedConfig < 0) {
@@ -541,16 +605,13 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
     }
   }
 
-  // Initialize the configuration
-  fYAMLConfig.Initialize();
-
   return true;
 }
 
 /**
  * Handle auto-configuration of pt hard bins on LEGO trains. It gets the train number from the LEGO train
  * environment, thereby assigning a pt hard bin to a particular train. This assignment is written out to a
- * YAML file so all of the trains can determine which pt hard bins are available. The YAML file that is written
+ * %YAML file so all of the trains can determine which pt hard bins are available. The %YAML file that is written
  * contains a map of ptHardBin to train number.
  *
  * Note that when the number of pt hard bins is exhausted and all trains are assigned, the file is removed.
@@ -567,7 +628,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
   bool returnValue = false;
 
   AliInfoStream() << "Attempting to auto configure pt hard bins.\n";
-  // YAML configuration containing pt hard bin to train number mapping
+  // %YAML configuration containing pt hard bin to train number mapping
   PWG::Tools::AliYAMLConfiguration config;
 
   // Handle AliEn explicitly here since the default base path contains "alien://"
@@ -629,7 +690,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
       // We have determine our pt hard bin!
       fPtHardBin = ptHardBin;
 
-      // Write the train number back out to the YAML configuration and save it
+      // Write the train number back out to the %YAML configuration and save it
       config.WriteProperty(propertyName.str(), trainNumber, fAutoConfigureIdentifier);
       config.WriteConfiguration(filename, fAutoConfigureIdentifier);
 
@@ -1032,37 +1093,18 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   fYAMLConfig.Reinitialize();
 
   // Setup AliEventCuts
-  // NOTE: Need to define the base name here so that the property path is not ambiguous (due to otherwise only being `const char *`)
-  std::string baseName = "internalEventSelection";
-  bool res = fYAMLConfig.GetProperty({baseName, "enabled"}, fUseInternalEventSelection, false);
   if (fUseInternalEventSelection)
   {
     AliDebugStream(1) << "Configuring AliEventCuts for internal event selection.\n";
     // Handle manual cuts
-    res = fYAMLConfig.GetProperty({baseName, "useManualCuts"}, fUseManualInternalEventCuts, false);
-    if (res && fUseManualInternalEventCuts) {
+    if (fUseManualInternalEventCuts) {
       fInternalEventCuts.SetManualMode();
       // Implement these cuts by retrieving the event cuts object and setting them manually.
     }
 
-    // Centrality
-    // TODO: Move to YAML configuration function in post event selection update
-    std::vector <double> centralityRange;
-    bool res = fYAMLConfig.GetProperty({baseName, "centralityRange"}, centralityRange, false);
-    if (res) {
-      if (centralityRange.size() != 2) {
-        AliErrorStream() << "Passed centrality range with " << centralityRange.size() << " entries, but 2 values are required. Ignoring values.\n";
-      }
-      else {
-        AliDebugStream(1) << "Setting internal event centrality range to [" << centralityRange.at(0) << ", " << centralityRange.at(1) << "]\n";
-        fCentMin = centralityRange.at(0);
-        fCentMax = centralityRange.at(1);
-      }
-    }
-
     // Trigger selection
     bool useEventCutsAutomaticTriggerSelection = false;
-    res = fYAMLConfig.GetProperty({baseName, "useEventCutsAutomaticTriggerSelection"}, useEventCutsAutomaticTriggerSelection, false);
+    bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"internalEventSelection", "useEventCutsAutomaticTriggerSelection"}), useEventCutsAutomaticTriggerSelection, false);
     if (res && useEventCutsAutomaticTriggerSelection) {
       // Use the autmoatic selection. Nothing to be done.
       AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";

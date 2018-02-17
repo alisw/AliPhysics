@@ -144,7 +144,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
   /// Create QA histograms. These are necessary for proper scaling, so be careful disabling them!
   void SetCreateHistos(bool b)                                    { fCreateHisto = b; }
-  /// Set path to YAML configuration file
+  /// Set path to %YAML configuration file
   void SetConfigurationPath(const char * path)                    { fConfigurationPath = path; }
   /* @} */
 
@@ -154,7 +154,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    */
   /// Whether internal event selection is enabled.
   bool GetUseInternalEventSelection()                       const { return fUseInternalEventSelection; }
-  /// Enable internal event selection. Can also be enabled through the YAML configuration.
+  /// Enable internal event selection. Can also be enabled through the %YAML configuration.
   void SetUseInternalEventSelection(bool b = true)                { fUseInternalEventSelection = b; }
   /**
    * If true, it indicates that the embedded event was used by the embedding helper and that it is
@@ -168,9 +168,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool EmbeddedEventUsed()                                  const { return fEmbeddedEventUsed; }
   /// Whether to use manual cuts for AliEventCuts.
   bool GetUseManualInternalEventSelection()                 const { return fUseManualInternalEventCuts; }
-  /// Enable manual internal event cuts. Can also be enabled through the YAML configuration.
+  /// Enable manual internal event cuts. Can also be enabled through the %YAML configuration.
   /// Must be configured through the retrieving the AliEventCuts object and configuring the cuts.
-  /// It is not included via YAML because it is rather difficult to fully map, especially for an infrequently used mode.
+  /// It is not included via %YAML because it is rather difficult to fully map, especially for an infrequently used mode.
   void SetUseManualInternalEventCuts(bool b = true)               { fUseManualInternalEventCuts = b; }
   /// Event cuts object for accessing centrality, etc from another task if so inclined.
   const AliEventCuts * GetInternalEventCuts()               const { return (fUseInternalEventSelection ? &fInternalEventCuts : nullptr); }
@@ -275,9 +275,10 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /* @} */
 
  protected:
+  void            RetrieveTaskPropertiesFromYAMLConfig();
   bool            GetFilenames()        ;
   void            DeterminePythiaXSecFilename();
-  bool            IsGoodEmbeddedRun(const std::string & path) const;
+  bool            IsRunInRunlist(const std::string & path) const;
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -329,14 +330,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
   std::string                          fAutoConfigureTrainTypePath; ///<  The path associated with the train type (for example, "PWGJE/Jets_EMC_PbPb/")
-  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration YAML file should be identified. (for example, "rehlersTrain")
+  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration %YAML file should be identified. (for example, "rehlersTrain")
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
   TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
-  std::string                                   fConfigurationPath; ///<  Path to YAML configuration
+  std::string                                   fConfigurationPath; ///<  Path to %YAML configuration
   std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
   std::string                                  fPythiaXSecFilename; ///<  Name of the pythia x sec filename (either "pyxsec.root" or "pyxsec_hists.root")
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
