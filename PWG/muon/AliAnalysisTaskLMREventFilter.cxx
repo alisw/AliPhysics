@@ -62,12 +62,12 @@ ClassImp(AliAnalysisTaskLMREventFilter)
 
 //====================================================================================================================================================
 
-AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() : 
-  AliAnalysisTaskSE(), 
+AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
+  AliAnalysisTaskSE(),
   fMuonTrackCuts(0x0),
   fEventTree(0x0),
   fOutputList(0x0),
-  fAliLMREvent(0),  
+  fAliLMREvent(0), 
   fhTriggers(0),
   fhBeamType(0),
   fhL0TriggerInputMLL(0),
@@ -82,17 +82,17 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   //
 
   SetTriggerClasses();
-  
+ 
 }
 
 //====================================================================================================================================================
 
-AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name, AliMuonTrackCuts *cuts) : 
-  AliAnalysisTaskSE(name), 
+AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name, AliMuonTrackCuts *cuts) :
+  AliAnalysisTaskSE(name),
   fMuonTrackCuts(cuts),
   fEventTree(0x0),
   fOutputList(0x0),
-  fAliLMREvent(0),  
+  fAliLMREvent(0), 
   fhTriggers(0),
   fhBeamType(0),
   fhL0TriggerInputMLL(0),
@@ -115,9 +115,9 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
 
 //====================================================================================================================================================
 
-AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter() 
+AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
 {
-  delete fMuonTrackCuts; 
+  delete fMuonTrackCuts;
   fMuonTrackCuts=NULL;
   delete fEventTree;
   fEventTree=NULL;
@@ -140,7 +140,7 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
 
 void AliAnalysisTaskLMREventFilter::SetTriggerClasses()
 {
-  
+ 
   fNTrigClass=7;
   fTriggerClasses[0]="-B-";
   fTriggerClasses[1]="CMSL7-B-";
@@ -149,12 +149,12 @@ void AliAnalysisTaskLMREventFilter::SetTriggerClasses()
   fTriggerClasses[4]="CMLL7-B-";
   fTriggerClasses[5]="C0TVX-B-NOPF-CENT";
   fTriggerClasses[6]="CINT7-B-NOPF-CENT";
-  
+ 
   fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
   fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
   fL0TriggerInputMSL = 18; // reference to MSL L0 trigger
   fL0TriggerInputTVX =  3; // reference to TVX L0 trigger
-  
+ 
 }
 
 //====================================================================================================================================================
@@ -162,18 +162,18 @@ void AliAnalysisTaskLMREventFilter::SetTriggerClasses()
 void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
  {
   // Called once
-  fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca); 
+  fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   fEventTree = new TTree("Data","Data");
   fAliLMREvent = new AliLMREvent();
   fEventTree->Branch("fAliLMREvent", &fAliLMREvent);
-  
+ 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
-  
+ 
   fhTriggers = new TH1D("hTriggers","L2 Triggers",1,0,1);
-  fOutputList->Add(fhTriggers);	  
+  fOutputList->Add(fhTriggers);	 
   fhTriggers->Sumw2();
 
 
@@ -209,7 +209,7 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
       fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
       fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),fTriggerClasses[i]);
       fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
-      fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),Form("%s (PS)",fTriggerClasses[i].Data()));    
+      fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),Form("%s (PS)",fTriggerClasses[i].Data()));   
     }
 
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
@@ -217,7 +217,7 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
   fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"CMSL7 &0MLL (PS)");
 
-  
+ 
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
   fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"(CINT7-CENT || C0TVX-CENT) &0TVX (PS)");
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
@@ -249,8 +249,8 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
   fMuonTrackCuts->SetRun(fInputHandler);
   AliCDBManager *man = AliCDBManager::Instance();
   man->Init();
-  man->SetDefaultStorage("raw://"); 
-  man->SetRun(fInputHandler->GetEvent()->GetRunNumber()); 
+  man->SetDefaultStorage("raw://");
+  man->SetRun(fInputHandler->GetEvent()->GetRunNumber());
 
   AliGRPObject* fGRPData = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
   if(fGRPData->GetBeamType().Contains("p-p"))
@@ -258,7 +258,7 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
       fhBeamType->Fill("p-p",1);
       fminContributorsPileUp = 3;
     }
-  else if(fGRPData->GetBeamType().Contains("p-A")) 
+  else if(fGRPData->GetBeamType().Contains("p-A"))
     {
       fhBeamType->Fill("p-A",1);
       fminContributorsPileUp = 5;
@@ -273,8 +273,8 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
       fhBeamType->Fill("A-A",1);
       fminContributorsPileUp = 5;
     }
-  AliTriggerConfiguration *cfg=(AliTriggerConfiguration*)man->Get("GRP/CTP/Config")->GetObject(); 
-  TObjArray  inputs = cfg->GetInputs(); 
+  AliTriggerConfiguration *cfg=(AliTriggerConfiguration*)man->Get("GRP/CTP/Config")->GetObject();
+  TObjArray  inputs = cfg->GetInputs();
   for(Int_t i=0;i<inputs.GetEntriesFast();i++)
     {
       AliTriggerInput* inp =  (AliTriggerInput*) inputs[i];
@@ -299,19 +299,19 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
  {
   //   Main loop
   //   Called for each event
-  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
-  if (!fAOD) 
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(InputEvent()); 
+  if (!fAOD)
     return;
 
   UShort_t physicsSelectionMask=1<<0;
   UShort_t L0TriggerInput=1<<0;
-  
-  if (!IsSelectedTrigger(fAOD,physicsSelectionMask,L0TriggerInput)) 
-    return; 
+ 
+  if (!IsSelectedTrigger(fAOD,physicsSelectionMask,L0TriggerInput))
+    return;
   TString triggerWord(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   // ---
 
-  
+ 
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD-> FindListObject("MultSelection");
 
   // All multiplicity are initialized at 166 and is used for error code of multselection non actived
@@ -329,7 +329,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   Float_t Multiplicity_ZNA          = 166.;
   Float_t Multiplicity_ZNC          = 166.;
 
-  if (MultSelection) 
+  if (MultSelection)
     {
       Multiplicity_V0M          = MultSelection->GetMultiplicityPercentile("V0M");
       Multiplicity_ADM          = MultSelection->GetMultiplicityPercentile("ADM");
@@ -346,7 +346,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
       Multiplicity_ZNA          = MultSelection->GetMultiplicityPercentile("ZNA");
       Multiplicity_ZNC          = MultSelection->GetMultiplicityPercentile("ZNC");
     }
-  
+ 
 
   AliAODVertex *vert = fAOD->GetPrimaryVertex();
   if (!vert) {
@@ -358,7 +358,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   Double_t zvert  = vert->GetZ();
   Int_t vtxcontrib= vert->GetNContributors();
   Double_t evtPlane = fAOD->GetEventplane()->GetEventplane("V0",fAOD,2);
-    
+   
   Int_t runNumber = ((AliAODHeader*) fAOD->GetHeader())->GetRunNumber();
   fAliLMREvent->SetRunNumber(runNumber);
   fAliLMREvent->SetEventPlane(evtPlane);
@@ -388,26 +388,26 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
      nmu= fAOD->GetNumberOfMuonTracks();
   if (nmu>0)
     {
-      Int_t ntotTr = fAOD->GetNumberOfTracks(); 
+      Int_t ntotTr = fAOD->GetNumberOfTracks();
       AliLMRMuon *trk = NULL;
-      for (Int_t itr=0; itr<ntotTr; itr++) 
-	{ 
+      for (Int_t itr=0; itr<ntotTr; itr++)
+	{
 	  AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itr));
 	  if(!track->IsMuonTrack()) continue;
-    
+   
 	  Double_t p[3];
-    
-	  Short_t charge = track->Charge(); 
+   
+	  Short_t charge = track->Charge();
 	  track->GetPxPyPz(p);
 	  Double_t chi2Match = track->GetChi2MatchTrigger();
 	  Int_t match = track->GetMatchTrigger();	
 	  Double_t chi2 = track->Chi2perNDF();
 	  Double_t rAbs = track->GetRAtAbsorberEnd();
-    
+   
 	  TVector3 dcaAtVz  = fMuonTrackCuts->GetCorrectedDCA(track);
 	  Double_t pTotMean = fMuonTrackCuts->GetAverageMomentum(track);
 	  Double_t pDca = pTotMean * dcaAtVz.Mag();
-	  // Create new Muon	 
+	  // Create new Muon	
 	  trk=fAliLMREvent->AddMuon();
 	  trk->SetMomentum(p[0],p[1],p[2]);
 	  trk->SetCharge(charge);
@@ -420,12 +420,12 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
 	  }
     }
-  
  
+
  fEventTree->Fill();
  fAliLMREvent->Clear("");
 
- PostData(1, fOutputList); 
+ PostData(1, fOutputList);
  PostData(2, fEventTree);
  // fAOD=NULL;
 
@@ -433,31 +433,31 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 
 //====================================================================================================================================================
 
-void AliAnalysisTaskLMREventFilter::Terminate(Option_t *) 
+void AliAnalysisTaskLMREventFilter::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-  
+ 
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputList) {
     printf("ERROR: Output list not available\n");
     return;
-  }  
+  } 
 }
 
 //====================================================================================================================================================
 
 Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, UShort_t &physicsSelectionMask,UShort_t &L0TriggerInput)
 {
-  
+ 
   Int_t nmu=0;
   if (fAOD->GetNumberOfTracks())
     nmu= fAOD->GetNumberOfMuonTracks();
-  
-  // -- Check Trigger 
-  
+ 
+  // -- Check Trigger
+ 
   TString trigStr(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
-  
+ 
   if(!trigStr.Contains(fTriggerClasses[0]))    // if trigger word does not contain -B- the event is rejected
     return kFALSE;
 
@@ -507,16 +507,16 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, UShor
 	{
 	  fhNMu->Fill(nmu,fTriggerClasses[i],1);
 	  fhTriggers->Fill(fTriggerClasses[i].Data(),1);
-	}    
+	}   
     }
 
   // -------------------- Filling the trigger information: REQUESTING PS
 
   // The following trigger conditions are mainly used in the evaluation of the luminosity and the downscaling factors
-  
+ 
   if(physicsSelectionMask & kPSV0Muon)      // kPSMuon is the PS to be used for the CMSL7-B-, CMSH7-B-, CMUL7-B- and CMLL7-B- trigger classes
     {
-      for(Int_t i=1;i<5;i++) 
+      for(Int_t i=1;i<5;i++)
 	{
 	  if(trigStr.Contains(fTriggerClasses[i].Data()))
 	    {
@@ -545,20 +545,20 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, UShor
 	{
 	  fhTriggers->Fill(Form("%s (PS)",fTriggerClasses[6].Data()),1);
 	  fhNMu ->Fill(nmu,Form("%s (PS)",fTriggerClasses[6].Data()),1);
-	  if(is0MSLfired)  
-	    {	 
+	  if(is0MSLfired) 
+	    {	
 	      fhTriggers->Fill("CINT7-CENT &0MSL (PS)",1);
 	      fhNMu ->Fill(nmu,"CINT7-CENT &0MSL (PS)",1);
 	    }
 	  if(is0MULfired)
-	    {	 
+	    {	
 	      fhTriggers->Fill("CINT7-CENT &0MUL (PS)",1);
 	      fhNMu ->Fill(nmu,"CINT7-CENT &0MUL (PS)",1);
 	    }
 	}
     }
 
-  
+ 
   if( (trigStr.Contains(fTriggerClasses[5].Data()) & (physicsSelectionMask & kPST0)) | ( trigStr.Contains(fTriggerClasses[6].Data()) & (physicsSelectionMask & kPSV0)) )     // PS adapted to include the T0 information for the MB trigger condition
     {
       if(is0TVXfired)
