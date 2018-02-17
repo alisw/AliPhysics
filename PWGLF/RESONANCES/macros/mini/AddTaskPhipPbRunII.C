@@ -102,7 +102,7 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhipPbRunII.C");
-   if (!ConfigPhipPbRunII(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,nsigmaK,nsigmatof,enableMonitor)) return 0x0;
+   if (!ConfigPhipPbRunII(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaK,nsigmatof,enableMonitor)) return 0x0;
  
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
