@@ -300,6 +300,23 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       aodt->GetCovarianceXYZPxPyPz(cv);
       fHistControlMatches->Fill(0.,inTrack->Pt());
 
+      // check for EMC tracks already propagated tracks are out of bounds
+      if (fClusterType == 1 || fClusterType == 3){
+        if( TMath::Abs(aodt->GetTrackEtaOnEMCal()) > 0.75 )
+          continue;
+
+        // conditions for run1
+        if( fClusterType == 1 && nModules < 13 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()))
+          continue;
+
+        // conditions for run2
+        if( nModules > 12 ){
+          if (fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()))
+            continue;
+          if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()))
+            continue;
+        }
+      }
       trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
     }
 
@@ -338,9 +355,6 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
           continue;
         }
       }
-
-
-
     }else if(fClusterType == 2){
       if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
         delete trackParam;
@@ -360,7 +374,11 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     Float_t dEta=-999, dPhi=-999;
     Float_t clsPos[3] = {0.,0.,0.};
     Double_t exPos[3] = {0.,0.,0.};
-    if (!emcParam.GetXYZ(exPos)){ fHistControlMatches->Fill(2.,inTrack->Pt()); continue;}
+    if (!emcParam.GetXYZ(exPos)){
+      fHistControlMatches->Fill(2.,inTrack->Pt());
+      delete trackParam;
+      continue;
+    }
 
 // cout << inTrack->GetID() << " - " << trackParam << endl;
 // cout << "eta/phi: " << eta << ", " << phi << endl;
@@ -379,20 +397,34 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       }
       else
         cluster = event->GetCaloCluster(iclus);
-      if (!cluster){ continue;}
+      if (!cluster){
+        continue;
+      }
 // cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
       cluster->GetPosition(clsPos);
       Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
 //cout << "dR: " << dR << endl;
-      if (dR > fMatchingWindow) continue;
+      if (dR > fMatchingWindow){
+        continue;
+      }
       Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
       if(fClusterType == 1 || fClusterType == 3){
-        if (!cluster->IsEMCAL()) continue;
-        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){fHistControlMatches->Fill(4.,inTrack->Pt()); continue;}
+        if (!cluster->IsEMCAL()){
+          continue;
+        }
+        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){
+          fHistControlMatches->Fill(4.,inTrack->Pt());
+          continue;
+        }
       }else if(fClusterType == 2){
-        if (!cluster->IsPHOS()) continue;
-        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)){fHistControlMatches->Fill(4.,inTrack->Pt()); continue;}
+        if (!cluster->IsPHOS()){
+          continue;
+        }
+        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)){
+          fHistControlMatches->Fill(4.,inTrack->Pt());
+          continue;
+        }
         Double_t trkPos[3] = {0,0,0};
         trackParamTmp.GetXYZ(trkPos);
         TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
@@ -404,7 +436,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 
 //cout << dEta << " - " << dPhi << " - " << dR2 << endl;
-      if(dR2 > fMatchingResidual) continue;
+      if(dR2 > fMatchingResidual){
+        continue;
+      }
       nClusterMatchesToTrack++;
       if(aodev){
         fMapTrackToCluster.insert(make_pair(itr,cluster->GetID()));
@@ -486,6 +520,26 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
     }
     trackParam = new AliExternalTrackParam(*in);
   } else {
+    // check if tracks should be propagated at all
+    if (fClusterType == 1 || fClusterType == 3){
+      if (TMath::Abs(aodt->GetTrackEtaOnEMCal()) > 0.8)
+        return kFALSE;
+      if( nModules < 13 ){
+        if (( aodt->GetTrackPhiOnEMCal() < 60*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 200*TMath::DegToRad()))
+          return kFALSE;
+      } else if( nModules > 12 ){
+        if (fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()))
+          return kFALSE;
+        if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 60*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 200*TMath::DegToRad()))
+          return kFALSE;
+      }
+    } else {
+      if ( aodt->Phi() < 60*TMath::DegToRad() || aodt->Phi() > 200*TMath::DegToRad())
+        return kFALSE;
+      if (TMath::Abs(aodt->Eta()) > 0.3 )
+        return kFALSE;
+    }
+
     Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
     aodt->GetPxPyPz(pxpypz);
     aodt->GetXYZ(xyz);
@@ -505,6 +559,9 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
   Float_t dEtaTemp = 0;
 
   if(cluster->IsEMCAL()){
+    if (inSecTrack->Pt() < 0.3 ) {
+      fSecHistControlMatches->Fill(3.,inSecTrack->Pt());
+    }
     Float_t eta = 0;Float_t phi = 0;Float_t pt = 0;
     propagated = AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 430, 0.000510999, 20, eta, phi, pt);
     if(propagated){

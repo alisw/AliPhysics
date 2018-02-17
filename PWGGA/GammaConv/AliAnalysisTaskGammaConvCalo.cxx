@@ -1090,15 +1090,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fPhotonDCAList[iCut]->SetOwner(kTRUE);
       fCutFolder[iCut]->Add(fPhotonDCAList[iCut]);
 
-      fTreeConvGammaPtDcazCat[iCut] = new TTree("ESD_ConvGamma_Pt_Dcaz_R_Eta","ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      fTreeConvGammaPtDcazCat[iCut] = new TTree("ESD_ConvGamma_Pt_Dcaz","ESD_ConvGamma_Pt_Dcaz_Cat");
       fTreeConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/s");
       fTreeConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/S");
       fTreeConvGammaPtDcazCat[iCut]->Branch("cat",&fCharCatPhoton,"fCharCatPhoton/b");
-      if(fIsMC > 0){
-        fTreeConvGammaPtDcazCat[iCut]->Branch("photonMCInfo",&fCharPhotonMCInfo,"fCharPhotonMCInfo/b");
-      }
       if (fIsMC > 1){
-        fTreeConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/b");
+        fTreeConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/f");
       }
       fPhotonDCAList[iCut]->Add(fTreeConvGammaPtDcazCat[iCut]);
     }
@@ -3044,12 +3041,20 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
         if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 30.){
           fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
           fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-          fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          if (fIsMC > 0){
+            fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+          } else {
+            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          }
           fTreeConvGammaPtDcazCat[fiCut]->Fill();
         }else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 30.){
           fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
           fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-          fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          if (fIsMC > 0){
+            fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+          } else {
+            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          }
           fTreeConvGammaPtDcazCat[fiCut]->Fill();
         }
       }
@@ -3092,12 +3097,20 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
           if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 30.){
             fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
             fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+            if (fIsMC > 0){
+              fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+            } else {
+              fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+            }
             fTreeConvGammaPtDcazCat[fiCut]->Fill();
           }else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 30.){
             fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
             fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+            if (fIsMC > 0){
+              fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+            } else {
+              fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+            }
             fTreeConvGammaPtDcazCat[fiCut]->Fill();
           }
         }
@@ -3133,12 +3146,20 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
         if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 65.){
           fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
           fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-          fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          if (fIsMC > 0){
+            fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+          } else {
+            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          }
           fTreeConvGammaPtDcazCat[fiCut]->Fill();
         }else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 65.){
           fPtGamma        = (UShort_t)(PhotonCandidate->Pt()*1000);
           fDCAzPhoton     = (Short_t)(PhotonCandidate->GetDCAzToPrimVtx()*1000);
-          fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          if (fIsMC > 0){
+            fCharCatPhoton  = fCharPhotonMCInfo*10+PhotonCandidate->GetPhotonQuality();
+          } else {
+            fCharCatPhoton  = PhotonCandidate->GetPhotonQuality();
+          }
           fTreeConvGammaPtDcazCat[fiCut]->Fill();
         }
       }

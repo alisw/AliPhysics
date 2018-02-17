@@ -1916,7 +1916,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||                                // MC PbPb 5TeV jet-jet
       fPeriodEnum == kLHC15fm || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16LowB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC17LowB || // pp 13TeV
       fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 ||                                                            // MC pp 13TeV
-      fPeriodEnum == kLHC16q || fPeriodEnum == kLHC16t ||                                                                  // pPb 5TeV LHC16qt
+      fPeriodEnum == kLHC16qt ||                                                                                           // pPb 5TeV LHC16qt
       fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s ||                                                                  // pPb 8TeV LHC16rs
       fPeriodEnum == kLHC17f2a || fPeriodEnum == kLHC17f2b || fPeriodEnum == kLHC17g8a ||                                  // MC pPb 5TeV LHC16qt
       fPeriodEnum == kLHC17g8b || fPeriodEnum == kLHC17g8c ||
@@ -1924,9 +1924,9 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17f4a || fPeriodEnum == kLHC17f4b ||                                                               // MC pPb 8TeV LHC16sr
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
       fPeriodEnum == kLHC17j7 ||                                                                                            // MC Xe-Xe LHC17n
-      fPeriodEnum == kLHC17p || fPeriodEnum == kLHC17q ||                                                                   // pp 5TeV LHC17pq
-      fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC17l3b_fast || fPeriodEnum == kLHC17l3b_cent || fPeriodEnum == kLHC17l3b_cent_woSDD || // MC pp 5TeV LHC17pq
-      fPeriodEnum == kLHC17l4b || fPeriodEnum == kLHC17l4b_fast || fPeriodEnum == kLHC17l4b_cent || fPeriodEnum == kLHC17l4b_cent_woSDD // MC pp 5TeV LHC17pq
+      fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
+      fPeriodEnum == kLHC17l3b ||                                                                                           // MC pp 5TeV LHC17pq
+      fPeriodEnum == kLHC17l4b                                                                                              // MC pp 5TeV LHC17pq
       ){
       return kTRUE;
   } else {
@@ -4750,16 +4750,16 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC15o") == 0 ){
     fPeriodEnum = kLHC15o;
     fEnergyEnum = kPbPb5TeV;
-  } else if ( periodName.CompareTo("LHC16d") == 0 || periodName.CompareTo("LHC16e") == 0 || periodName.CompareTo("LHC16g") == 0 || periodName.CompareTo("LHC16h") == 0 ||
-              periodName.CompareTo("LHC16i") == 0 || periodName.CompareTo("LHC16j") == 0 || periodName.CompareTo("LHC16k") == 0 || periodName.CompareTo("LHC16l") == 0  ||
-              periodName.CompareTo("LHC16m") == 0 || periodName.CompareTo("LHC16n") == 0 || periodName.CompareTo("LHC16o") == 0 || periodName.CompareTo("LHC16p") == 0){
+  } else if ( periodName.CompareTo("LHC16dp") == 0 || periodName.CompareTo("LHC16d") == 0 || periodName.CompareTo("LHC16e") == 0 || periodName.CompareTo("LHC16g") == 0 ||
+              periodName.CompareTo("LHC16h") == 0 || periodName.CompareTo("LHC16i") == 0 || periodName.CompareTo("LHC16j") == 0 || periodName.CompareTo("LHC16k") == 0 || periodName.CompareTo("LHC16l") == 0 || periodName.CompareTo("LHC16m") == 0 || periodName.CompareTo("LHC16n") == 0 || periodName.CompareTo("LHC16o") == 0 ||
+              periodName.CompareTo("LHC16p") == 0){
     fPeriodEnum = kLHC16NomB;
     fEnergyEnum = k13TeV;
   } else if (periodName.CompareTo("LHC16f") == 0 ){
     fPeriodEnum = kLHC16LowB;
     fEnergyEnum = k13TeVLowB;
-  } else if (periodName.CompareTo("LHC16q") == 0 ){
-    fPeriodEnum = kLHC16q;
+  } else if (periodName.CompareTo("LHC16qt") == 0  || periodName.CompareTo("LHC16q") == 0 ||  periodName.CompareTo("LHC16t") == 0 ){
+    fPeriodEnum = kLHC16qt;
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC16r") == 0 ){
     fPeriodEnum = kLHC16r;
@@ -4767,12 +4767,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16s") == 0 ){
     fPeriodEnum = kLHC16s;
     fEnergyEnum = kpPb8TeV;
-  } else if (periodName.CompareTo("LHC16t") == 0 ){
-    fPeriodEnum = kLHC16t;
-    fEnergyEnum = kpPb5TeV;
-  } else if ( periodName.CompareTo("LHC17c") == 0 || periodName.CompareTo("LHC17d") == 0 || periodName.CompareTo("LHC17e") == 0 || periodName.CompareTo("LHC17f") == 0 ||
-            periodName.CompareTo("LHC17h") == 0 || periodName.CompareTo("LHC17i") == 0 || periodName.CompareTo("LHC17j") == 0 || periodName.CompareTo("LHC17k") == 0 ||
-            periodName.CompareTo("LHC17l") == 0 || periodName.CompareTo("LHC17m") == 0 || periodName.CompareTo("LHC17o") == 0 ){
+  } else if (periodName.CompareTo("LHC17cr") == 0 ||  periodName.CompareTo("LHC17c") == 0 || periodName.CompareTo("LHC17d") == 0 || periodName.CompareTo("LHC17e") == 0 ||
+             periodName.CompareTo("LHC17f") == 0 || periodName.CompareTo("LHC17h") == 0 || periodName.CompareTo("LHC17i") == 0 || periodName.CompareTo("LHC17j") == 0 ||
+             periodName.CompareTo("LHC17k") == 0 || periodName.CompareTo("LHC17l") == 0 || periodName.CompareTo("LHC17m") == 0 || periodName.CompareTo("LHC17o") == 0 ||
+             periodName.CompareTo("LHC17r") == 0 ){
     fPeriodEnum = kLHC17NomB;
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC17g") == 0 ){
@@ -4781,11 +4779,8 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17n") == 0 ){
     fPeriodEnum = kLHC17n;
     fEnergyEnum = kXeXe5440GeV;
-  } else if ( periodName.CompareTo("LHC17p") == 0 ){
-    fPeriodEnum = kLHC17p;
-    fEnergyEnum = k5TeV;
-  } else if ( periodName.CompareTo("LHC17q") == 0 ){
-    fPeriodEnum = kLHC17q;
+  } else if ( periodName.CompareTo("LHC17pq") == 0  || periodName.CompareTo("LHC17p") == 0 || periodName.CompareTo("LHC17q") == 0 ){
+    fPeriodEnum = kLHC17pq;
     fEnergyEnum = k5TeV;
 
   // LHC10x anchored MCs
@@ -5127,7 +5122,8 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
       fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors full field JJ Pythia 8 MB
   } else if ( periodName.CompareTo("LHC16P1JJ") == 0 || periodName.CompareTo("LHC17f8a") == 0 || periodName.CompareTo("LHC17f8c") == 0 || periodName.CompareTo("LHC17f8d") == 0 ||
-              periodName.CompareTo("LHC17f8e") == 0 ){
+              periodName.CompareTo("LHC17f8e") == 0 || periodName.CompareTo("LHC17f8f") == 0 || periodName.CompareTo("LHC17f8g") == 0 || periodName.CompareTo("LHC17f8h") == 0 ||
+              periodName.CompareTo("LHC17f8i") == 0 || periodName.CompareTo("LHC17f8j") == 0 || periodName.CompareTo("LHC17f8k") == 0){
     fPeriodEnum = kLHC16P1JJ;
     fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field JJ Pythia 8 MB
@@ -5181,25 +5177,19 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 	     periodName.CompareTo("LHC17g8a_cent_woSDD") == 0){
     fPeriodEnum = kLHC17g8a;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC17d2a_fast") == 0){
-    fPeriodEnum = kLHC17d2a_fast;
+  } else if (periodName.CompareTo("LHC17d2a") == 0 || periodName.CompareTo("LHC17d2a_fast") == 0 || periodName.CompareTo("LHC17d2a_cent") == 0 ){
+    fPeriodEnum = kLHC17d2a;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC17d2b_fast") == 0){
-    fPeriodEnum = kLHC17d2b_fast;
-    fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC17d2a_cent") == 0){
-    fPeriodEnum = kLHC17d2a_fast;
-    fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC17d2b_cent") == 0){
-    fPeriodEnum = kLHC17d2b_fast;
+  } else if (periodName.CompareTo("LHC17d2b") == 0 || periodName.CompareTo("LHC17d2b_fast") == 0 || periodName.CompareTo("LHC17d2b_cent") == 0 ){
+    fPeriodEnum = kLHC17d2b;
     fEnergyEnum = kpPb5TeV;
     // LHC16r anchored MCs
   } else if (periodName.CompareTo("LHC17a3a") == 0      || periodName.CompareTo("LHC17a3a_fast") == 0 ||
-	     periodName.CompareTo("LHC17a3a_cent") == 0 || periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){
+             periodName.CompareTo("LHC17a3a_cent") == 0 || periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a3a;
     fEnergyEnum = kpPb8TeV;
-  } else if (periodName.CompareTo("LHC17a3b") == 0      || periodName.CompareTo("LHC17a3b_fast") == 0 ||
-	     periodName.CompareTo("LHC17a3b_cent") == 0 || periodName.CompareTo("LHC17a3b_cent_woSDD") == 0){
+  } else if ( periodName.CompareTo("LHC17a3b") == 0      || periodName.CompareTo("LHC17a3b_fast") == 0 ||
+              periodName.CompareTo("LHC17a3b_cent") == 0 || periodName.CompareTo("LHC17a3b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a3b;
     fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC17f3a") == 0){
@@ -5210,7 +5200,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
   // LHC16s anchored MCs
   } else if (periodName.CompareTo("LHC17a4a") == 0      || periodName.CompareTo("LHC17a4a_fast") == 0 ||
-	     periodName.CompareTo("LHC17a4a_cent") == 0 || periodName.CompareTo("LHC17a4a_cent_woSDD") == 0){
+              periodName.CompareTo("LHC17a4a_cent") == 0 || periodName.CompareTo("LHC17a4a_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a4a;
     fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC17a4b") == 0){
@@ -5265,32 +5255,14 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC17j7;
     fEnergyEnum = kXeXe5440GeV;
 
-
-
   // LHC17pq anchored MCs
-  } else if (periodName.CompareTo("LHC17l3b") == 0){
+  } else if ( periodName.CompareTo("LHC17l3b") == 0 || periodName.CompareTo("LHC17l3b_fast") == 0 || periodName.CompareTo("LHC17l3b_cent") == 0 ||
+              periodName.CompareTo("LHC17l3b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17l3b;
     fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l3b_fast") == 0){
-    fPeriodEnum = kLHC17l3b_fast;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l3b_cent") == 0){
-    fPeriodEnum = kLHC17l3b_cent;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l3b_cent_woSDD") == 0){
-    fPeriodEnum = kLHC17l3b_cent_woSDD;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l4b") == 0){
+  } else if (periodName.CompareTo("LHC17l4b") == 0 || periodName.CompareTo("LHC17l4b_fast") == 0 || periodName.CompareTo("LHC17l4b_cent") == 0 ||
+            periodName.CompareTo("LHC17l4b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17l4b;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l4b_fast") == 0){
-    fPeriodEnum = kLHC17l4b_fast;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l4b_cent") == 0){
-    fPeriodEnum = kLHC17l4b_cent;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC17l4b_cent_woSDD") == 0){
-    fPeriodEnum = kLHC17l4b_cent_woSDD;
     fEnergyEnum = k5TeV;
   // MC upgrade
   } else if (periodName.Contains("LHC13d19")){
