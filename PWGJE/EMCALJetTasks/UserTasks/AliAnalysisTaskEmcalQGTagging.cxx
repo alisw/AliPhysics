@@ -1258,7 +1258,7 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
       AliVParticle *fTrk = fJetM->TrackAt(i, fTrackContM->GetArray());
       if (!fTrk) continue; 
       PseudoTracksM.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
-      PseudoTracksM.set_user_index(fJet->TrackAt(i)+100);
+      PseudoTracksM.set_user_index(fJetM->TrackAt(i)+100);
       fInputVectorsM.push_back(PseudoTracksM);
      
     }
@@ -1285,7 +1285,7 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
     jj=fOutputJets[0];
     jjM=fOutputJetsM[0];
 
-    double z=0;
+   double z=0;
    double zcut=0.1;
    while((jj.has_parents(j1,j2)) && (z<zcut)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
@@ -1312,7 +1312,7 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
    double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
    double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
     
-   if(delta_R1<fSubjetCutoff && delta_R2<fSubjetCutoff){
+   if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
    Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
    fHCheckResolutionSubjets->Fill(ResolEntries);}
 
