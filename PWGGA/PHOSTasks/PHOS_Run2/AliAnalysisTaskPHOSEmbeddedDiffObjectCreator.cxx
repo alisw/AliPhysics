@@ -140,7 +140,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     AliAODCaloCluster *cluster = (AliAODCaloCluster*)clustersEmb->At(iclu);
 
     if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < 0.2 // Emin cut
+        || cluster->E() < 0.1 // Emin cut
       ) continue;
 
     if(cluster->GetLabel() < 0) continue;
@@ -151,7 +151,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
       AliAODCaloCluster *clusterUE = (AliAODCaloCluster*)clustersUE->At(icluUE);
 
       if(clusterUE->GetType() != AliVCluster::kPHOSNeutral
-          || clusterUE->E() < 0.2 // noise cut
+          || clusterUE->E() < 0.1 // noise cut
         ) continue;
 
 //      cout << "UE E = " << clusterUE->E() << " , Ncell = " << clusterUE->GetNCells() << " , label = " << clusterUE->GetLabel() << endl;

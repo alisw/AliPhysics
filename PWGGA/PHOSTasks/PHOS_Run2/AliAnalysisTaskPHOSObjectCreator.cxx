@@ -290,7 +290,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     p1 *= fUserNonLinCorr->Eval(p1.E());
     p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
 
-    if(p1.E() < 0.2) continue;//minimum energy cut after NL correciton. Note Ecore <= Efull
+    if(p1.E() < 0.1) continue;//minimum energy cut after NL correciton. Note Ecore <= Efull
 
     new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 

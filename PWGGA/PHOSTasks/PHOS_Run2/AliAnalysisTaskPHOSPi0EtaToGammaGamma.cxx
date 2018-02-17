@@ -745,7 +745,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     }//end of asym loop
 
     for(Int_t iasym=0;iasym<Nasym;iasym++){
-      TH2F *h2 = new TH2F(Form("hMggFromLambda0%s",Asym[iasym].Data()),"M_{#gamma#gamma} from K_{S}^{0};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);",60,0,0.24,NpTgg-1,pTgg);
+      TH2F *h2 = new TH2F(Form("hMggFromLambda0%s",Asym[iasym].Data()),"M_{#gamma#gamma} from #Lambda;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);",60,0,0.24,NpTgg-1,pTgg);
       h2->Sumw2();
       fOutputContainer->Add(h2);
 
@@ -2829,30 +2829,29 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       if(pdg==111){//pi0
         parname = "Pi0";
-        if(IsFrom(i,TrueEtaPt,221))      weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
-        else if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-        else                             weight = f1Pi0Weight->Eval(pT);
+        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==221){//eta
         parname = "Eta";
-        weight = f1EtaWeight->Eval(pT);
+        weight = f1EtaWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==22){//gamma
         parname = "Gamma";
-        if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310))      weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-          else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-          else                             weight = f1Pi0Weight->Eval(TruePi0Pt);
-        }
-        if(IsFrom(i,TrueEtaPt,221))        weight = f1EtaWeight->Eval(TrueEtaPt);
+        if(IsFrom(i,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         //c x tau = 7.8m
         parname = "ChargedPion";
-        if(IsFrom(i,TrueK0SPt,310))      weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-        else                             weight = f1Pi0Weight->Eval(pT);
+        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         //c x tau = 3.7m
@@ -2922,31 +2921,28 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       if(pdg==111){//pi0
         parname = "Pi0";
-        if(IsFrom(i,TrueEtaPt,221))      weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
-        else if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-        else                             weight = f1Pi0Weight->Eval(pT);
+        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==221){//eta
         parname = "Eta";
-        weight = f1EtaWeight->Eval(pT);
+        weight = f1EtaWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==22){//gamma
         parname = "Gamma";
-        if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310))      weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-          else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-          else                             weight = f1Pi0Weight->Eval(TruePi0Pt);
-        }
-        if(IsFrom(i,TrueEtaPt,221))   weight = f1EtaWeight->Eval(TrueEtaPt);
-
+        if(IsFrom(i,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         parname = "ChargedPion";
-        if(IsFrom(i,TrueK0SPt,310))      weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-        else                             weight = f1Pi0Weight->Eval(pT);
-
+        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         parname = "ChargedKaon";
@@ -3350,18 +3346,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
     primary = ph->GetPrimary();
     weight = 1.;
-    //weight is always defined as relative X/pi0 ratio
-    if(IsFrom(primary,TruePi0Pt,111)){//pi0
-      //for feed down correction from K0S->pi0 + pi0, L0->pi0 + neutron. Note eta->3pi0 does NOT contribute as feed down.
-      if(IsFrom(primary,TrueEtaPt,221))      weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
-      else if(IsFrom(primary,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-      else if(IsFrom(primary,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
-      else                                   weight = f1Pi0Weight->Eval(TruePi0Pt);
-    }
-    else if(IsFrom(primary,TrueEtaPt,221))   weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);//not decaying into pi0, but something else (eta->2gamma).
-    else if(IsFrom(primary,TrueK0SPt,310))   weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//not decaying into pi0, but something else.
-    else if(IsFrom(primary,TrueL0Pt,3122))   weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt); //not decaying into pi0, but something else.
-    else                                     weight = 1.;
+
+    //weight is always defined as relative X/pi0 ratio, and pi0 weight is absolute number.
+    if(IsFrom(primary,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);//pi0
+    if(IsFrom(primary,TruePi0Pt,211)) weight = f1Pi0Weight->Eval(TruePi0Pt);//pi+/-
+
+    if(IsFrom(primary,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K0S
+    if(IsFrom(primary,TrueK0SPt,130)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K0L
+    if(IsFrom(primary,TrueK0SPt,321)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K+/-
+
+    if(IsFrom(primary,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);//eta
+
+    if(IsFrom(primary,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);//Lambda
 
     ph->SetWeight(weight);
 
@@ -3382,7 +3378,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
 
   if(fRunNumber <= 246994)  L0input = 9;
 
-  if(!fPHOSTriggerHelperL0 ) fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1     ,L0input,kFALSE);
+  if(!fPHOSTriggerHelperL0 ) fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
   if(!fPHOSTriggerHelperL1H) fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
   if(!fPHOSTriggerHelperL1M) fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
   if(!fPHOSTriggerHelperL1L) fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
