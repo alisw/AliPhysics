@@ -127,6 +127,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCASecondaryWeak{{nullptr}}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
+   ,fTPCsignalTpl{nullptr}
+   ,fTPCbackgroundTpl{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    {
@@ -216,9 +218,15 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+      fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+      fTPCbackgroundTpl[iC] = new TH3F(Form("f%fTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
 
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTPCcounts[iC]);
+      fList->Add(fTPCsignalTpl[iC]);
+      fList->Add(fTPCbackgroundTpl[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it[c}); DCA_{xy} (cm)",
@@ -381,6 +389,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+      if (std::abs(tof_n_sigma) < 4.)
+        fTPCsignalTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
+      else
+        fTPCbackgroundTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
     }
 
   } // End AOD track loop

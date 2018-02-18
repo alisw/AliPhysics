@@ -179,6 +179,8 @@ private:
   // Data histograms
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
 
