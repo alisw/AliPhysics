@@ -211,9 +211,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   //// 
    const Int_t dimResol   = 4;
-   const Int_t nBinsResol[4]     = {10,10,10,10};
+   const Int_t nBinsResol[4]     = {10,10,20,20};
    const Double_t lowBinResol[4] = {0,0,-1,-1};
-   const Double_t hiBinResol[4]  = {200,0.4,10,10};
+   const Double_t hiBinResol[4]  = {200,0.3,1,1};
    fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
                    "Mom.Resolution of Subjets vs opening angle",
 					     dimResol,nBinsResol,lowBinResol,hiBinResol);
@@ -527,7 +527,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
-        CheckSubjetResolution(jet1,jetCont,jet3,jetContPart);
+        CheckSubjetResolution(jet1,jetCont,jet3,jetContTrue);
         
       }
       
