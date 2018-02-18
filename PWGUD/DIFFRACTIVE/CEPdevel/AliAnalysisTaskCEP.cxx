@@ -1153,11 +1153,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       trk->SetTrackStatus(fTrackStatus->At(trkIndex));
       trk->SetTOFBunchCrossing(tmptrk->GetTOFBunchCrossing());
       trk->SetChargeSign((Int_t)tmptrk->Charge());
+      trk->SetGoldenChi2(tmptrk->GetChi2TPCConstrainedVsGlobal(vertex));
+      
       trk->SetITSncls(tmptrk->GetITSClusterMap());
       trk->SetTPCncls(tmptrk->GetNumberOfTPCClusters());
       trk->SetTRDncls(tmptrk->GetNumberOfTRDClusters());
       trk->SetTPCnclsS(tmptrk->GetTPCnclsS());
-      trk->SetZv(tmptrk->Zv());
+      
+      Double_t dca[3] = {0.,0.,0.}; tmptrk->GetXYZ(dca);
+      trk->SetXYv(sqrt(pow(dca[0],2)+pow(dca[1],2)));
+      trk->SetZv(dca[2]);
+      
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));
       
