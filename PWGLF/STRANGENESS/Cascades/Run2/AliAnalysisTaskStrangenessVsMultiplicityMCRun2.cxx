@@ -231,6 +231,8 @@ fTreeVariablePosDCAz(-1),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
+fTreeVariableNegTOFSignal(99999),
+fTreeVariablePosTOFSignal(99999),
 fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableNHitsFMDA(-1.),
@@ -397,6 +399,9 @@ fTreeCascVarEventNumber(0),
 fTreeCascVarNegTOFExpTDiff(99999),
 fTreeCascVarPosTOFExpTDiff(99999),
 fTreeCascVarBachTOFExpTDiff(99999),
+fTreeCascVarNegTOFSignal(99999),
+fTreeCascVarPosTOFSignal(99999),
+fTreeCascVarBachTOFSignal(99999),
 fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarNHitsFMDA(-1.),
@@ -657,6 +662,8 @@ fTreeVariablePosDCAz(-1),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
+fTreeVariableNegTOFSignal(99999),
+fTreeVariablePosTOFSignal(99999),
 fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableNHitsFMDA(-1.),
@@ -823,6 +830,9 @@ fTreeCascVarEventNumber(0),
 fTreeCascVarNegTOFExpTDiff(99999),
 fTreeCascVarPosTOFExpTDiff(99999),
 fTreeCascVarBachTOFExpTDiff(99999),
+fTreeCascVarNegTOFSignal(99999),
+fTreeCascVarPosTOFSignal(99999),
+fTreeCascVarBachTOFSignal(99999),
 fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarNHitsFMDA(-1.),
@@ -1159,6 +1169,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         if ( fkDebugOOBPileup ) {
             fTreeV0->Branch("fTreeVariableNegTOFExpTDiff",&fTreeVariableNegTOFExpTDiff,"fTreeVariableNegTOFExpTDiff/F");
             fTreeV0->Branch("fTreeVariablePosTOFExpTDiff",&fTreeVariablePosTOFExpTDiff,"fTreeVariablePosTOFExpTDiff/F");
+            fTreeV0->Branch("fTreeVariableNegTOFSignal",&fTreeVariableNegTOFSignal,"fTreeVariableNegTOFSignal/F");
+            fTreeV0->Branch("fTreeVariablePosTOFSignal",&fTreeVariablePosTOFSignal,"fTreeVariablePosTOFSignal/F");
             // Event info
             fTreeV0->Branch("fTreeVariableOOBPileupFlag",&fTreeVariableOOBPileupFlag,"fTreeVariableOOBPileupFlag/O");
             fTreeV0->Branch("fTreeVariableAmplitudeV0A",&fTreeVariableAmplitudeV0A,"fTreeVariableAmplitudeV0A/F");
@@ -1446,6 +1458,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
             fTreeCascade->Branch("fTreeCascVarPosTOFExpTDiff",&fTreeCascVarPosTOFExpTDiff,"fTreeCascVarPosTOFExpTDiff/F");
             fTreeCascade->Branch("fTreeCascVarBachTOFExpTDiff",&fTreeCascVarBachTOFExpTDiff,"fTreeCascVarBachTOFExpTDiff/F");
+            fTreeCascade->Branch("fTreeCascVarNegTOFSignal",&fTreeCascVarNegTOFSignal,"fTreeCascVarNegTOFSignal/F");
+            fTreeCascade->Branch("fTreeCascVarPosTOFSignal",&fTreeCascVarPosTOFSignal,"fTreeCascVarPosTOFSignal/F");
+            fTreeCascade->Branch("fTreeCascVarBachTOFSignal",&fTreeCascVarBachTOFSignal,"fTreeCascVarBachTOFSignal/F");
             // Event info
             fTreeCascade->Branch("fTreeCascVarOOBPileupFlag",&fTreeCascVarOOBPileupFlag,"fTreeCascVarOOBPileupFlag/O");
             fTreeCascade->Branch("fTreeCascVarAmplitudeV0A",&fTreeCascVarAmplitudeV0A,"fTreeCascVarAmplitudeV0A/F");
@@ -2113,6 +2128,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( fkDebugOOBPileup ) {
             fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
             fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
+            fTreeVariableNegTOFSignal = nTrack->GetTOFsignal() * 1.e-3; // in ns
+            fTreeVariablePosTOFSignal = pTrack->GetTOFsignal() * 1.e-3; // in ns
             //Copy OOB pileup flag for this event
             fTreeVariableOOBPileupFlag = fOOBPileupFlag;
             //Copy VZERO information for this event
@@ -4319,6 +4336,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarBachTOFExpTDiff = bachTrackXi->GetTOFExpTDiff( bMag );
             fTreeCascVarNegTOFExpTDiff = nTrackXi->GetTOFExpTDiff( bMag );
             fTreeCascVarPosTOFExpTDiff = pTrackXi->GetTOFExpTDiff( bMag );
+            fTreeCascVarBachTOFSignal = bachTrackXi->GetTOFsignal() * 1.e-3; // in ns
+            fTreeCascVarNegTOFSignal = nTrackXi->GetTOFsignal() * 1.e-3; // in ns
+            fTreeCascVarPosTOFSignal = pTrackXi->GetTOFsignal() * 1.e-3; // in ns
             //Copy OOB pileup flag for this event
             fTreeCascVarOOBPileupFlag = fOOBPileupFlag;
             //Copy VZERO information for this event
