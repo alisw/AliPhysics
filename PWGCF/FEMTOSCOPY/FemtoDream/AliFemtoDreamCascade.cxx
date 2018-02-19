@@ -10,6 +10,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODMCParticle.h"
 ClassImp(AliFemtoDreamCascade)
 AliFemtoDreamCascade::AliFemtoDreamCascade()
 :AliFemtoDreamBasePart()
@@ -145,7 +146,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
       TMath::Power((decayPosV0[0]-decayPosXi[0]),2)+
       TMath::Power((decayPosV0[1]-decayPosXi[1]),2)+
       TMath::Power((decayPosV0[2]-decayPosXi[2]),2));
-//  Float_t lctauV0 = -1.;
+  //  Float_t lctauV0 = -1.;
   if (fv0Momentum.Mag()>0) {
     fv0Length=fv0Length*LamPDGMass/fv0Momentum.Mag();
   } else {
@@ -154,6 +155,9 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fDCAv0Xi=TMath::Sqrt(
       TMath::Power((decayPosV0[0]-decayPosXi[0]),2)+
       TMath::Power((decayPosV0[1]-decayPosXi[1]),2));
+  if (fIsMC) {
+    SetMCMotherInfo(evt,casc);
+  }
 }
 
 void AliFemtoDreamCascade::Reset() {
@@ -201,5 +205,49 @@ void AliFemtoDreamCascade::Reset() {
     fUse=false;
     fIsSet=false;
     fIsReset=true;
+  }
+}
+
+void AliFemtoDreamCascade::SetMCMotherInfo(
+    AliAODEvent *evt, AliAODcascade *casc) {
+  TClonesArray *mcarray = dynamic_cast<TClonesArray*>(
+      evt->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcarray) {
+    AliFatal("No MC Array found");
+  }
+  int PDGDaug[3];
+  PDGDaug[0]=TMath::Abs(fPosDaug->GetPDGCode());
+  PDGDaug[1]=TMath::Abs(fNegDaug->GetPDGCode());
+  PDGDaug[2]=TMath::Abs(fBach->GetPDGCode());
+  int label=casc->MatchToMC(TMath::Abs(fPDGCode),mcarray,2,PDGDaug);
+  if (label<0) {
+    //label will be -1 if there was not 'real' candidate for matching,
+    //therefore we have the case of a contamination/background v0
+    this->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+  } else {
+    AliAODMCParticle* mcPart=(AliAODMCParticle*)mcarray->At(label);
+    if (!mcPart) {
+      this->SetUse(false);
+    } else {
+      this->SetMCPDGCode(mcPart->GetPdgCode());
+      double mcMom[3]={0.,0.,0.};
+      mcPart->PxPyPz(mcMom);
+      this->SetMCMomentum(mcMom[0],mcMom[1],mcMom[2]);
+      this->SetMCPt(mcPart->Pt());
+      this->SetMCPhi(mcPart->Phi());
+      this->SetMCTheta(mcPart->Theta());
+      if (mcPart->IsPhysicalPrimary()&&!(mcPart->IsSecondaryFromWeakDecay())) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+      } else if (mcPart->IsSecondaryFromWeakDecay()&&
+          !(mcPart->IsSecondaryFromMaterial())) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+        this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(
+            mcPart->GetMother()))->PdgCode());
+      } else if (mcPart->IsSecondaryFromMaterial()) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+      } else {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+    }
   }
 }

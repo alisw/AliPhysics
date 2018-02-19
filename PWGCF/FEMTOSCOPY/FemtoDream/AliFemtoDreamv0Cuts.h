@@ -63,7 +63,7 @@ class AliFemtoDreamv0Cuts {
   TList *GetQAHists() {return fHistList;};
 //  TList *GetQAHistsPosDaug() {return fPosCuts->GetQAHists();};
 //  TList *GetQAHistsNegDaug() {return fNegCuts->GetQAHists();};
-  TList *GetMCQAHists() {return fMCHist->GetHistList();};
+  TList *GetMCQAHists() {return fMCHistList;};
 //  TList *GetMCQAHistsPosDaug() {return fPosCuts->GetMCQAHists();};
 //  TList *GetMCQAHistsNegDaug() {return fNegCuts->GetMCQAHists();};
   bool isSelected(AliFemtoDreamv0 *v0);
@@ -79,6 +79,7 @@ class AliFemtoDreamv0Cuts {
   void FillMCContributions(AliFemtoDreamv0 *v0);
   double CalculateInvMass(AliFemtoDreamv0 *v0,int PDGPosDaug,int PDGNegDaug);
   TList *fHistList;                   //!
+  TList *fMCHistList;                 //!
   AliFemtoDreamv0MCHist *fMCHist;     //!
   AliFemtoDreamv0Hist *fHist;         //!
   //Here the cut values for the Daughters are stored

@@ -23,7 +23,6 @@ class AliFemtoDreamv0MCHist {
   void FillMCIdent(double pT){fMCIdentPt->Fill(pT);};
   void FillMCGen(double pT){fMCGenPt->Fill(pT);};
   void FillMCCont(double pT){fMCContPt->Fill(pT);};
-  void FillMCUnkn(double pT){fMCUnknownPt->Fill(pT);};
   void FillMCPrimary(double pT){fMCPrimaryPt->Fill(pT);};
   void FillMCMaterial(double pT){fMCMaterialPt->Fill(pT);};
   void FillMCFeeddown(double pT, double pdg){
@@ -64,7 +63,6 @@ class AliFemtoDreamv0MCHist {
   TH1F *fMCIdentPt;
   TH1F *fMCGenPt;
   TH1F *fMCContPt;
-  TH1F *fMCUnknownPt;
   TH1F *fMCPrimaryPt;
   TH1F *fMCMaterialPt;
   TH2F *fMCFeeddownWeakPt;

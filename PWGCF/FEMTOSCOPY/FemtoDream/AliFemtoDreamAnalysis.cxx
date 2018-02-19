@@ -48,13 +48,25 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
 void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
+
   fFemtov0=new AliFemtoDreamv0();
+  fFemtov0->SetPDGCode(fv0Cuts->GetPDGv0());
   fFemtov0->SetUseMCInfo(isMonteCarlo);
-  fFemtov0->SetPDGDaughterPos(fv0Cuts->GetPDGPosDaug());//order doesnt play a role
+  fFemtov0->SetPDGDaughterPos(fv0Cuts->GetPDGPosDaug());//order +sign doesnt play a role
   fFemtov0->GetPosDaughter()->SetUseMCInfo(isMonteCarlo);
   fFemtov0->SetPDGDaughterNeg(fv0Cuts->GetPDGNegDaug());//only used for MC Matching
   fFemtov0->GetNegDaughter()->SetUseMCInfo(isMonteCarlo);
+
   fFemtoCasc=new AliFemtoDreamCascade();
+  fFemtoCasc->SetUseMCInfo(isMonteCarlo);
+  fFemtoCasc->SetPDGCode(fCascCuts->GetPDGCodeCasc());
+  fFemtoCasc->SetPDGDaugPos(fCascCuts->GetPDGCodePosDaug());
+  fFemtoCasc->GetPosDaug()->SetUseMCInfo(isMonteCarlo);
+  fFemtoCasc->SetPDGDaugNeg(fCascCuts->GetPDGCodeNegDaug());
+  fFemtoCasc->GetNegDaug()->SetUseMCInfo(isMonteCarlo);
+  fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
+  fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
+
   fEvtCuts->InitQA();
   fTrackCuts->Init();
   fAntiTrackCuts->Init();
@@ -219,22 +231,22 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     if (fv0Cuts->isSelected(fFemtov0)) {
       Decays.push_back(*fFemtov0);
     }
-//    if (fAntiv0Cuts->isSelected(fFemtov0)) {
-//      AntiDecays.push_back(*fFemtov0);
-//    }
+    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+      AntiDecays.push_back(*fFemtov0);
+    }
   }
-//  int numcascades = evt->GetNumberOfCascades();
-//  for (int iXi=0;iXi<numcascades;++iXi) {
-//    AliAODcascade *xi = evt->GetCascade(iXi);
-//    if (!xi) continue;
-//    fFemtoCasc->SetCascade(evt,xi);
-//    if (fCascCuts->isSelected(fFemtoCasc)) {
-//      //
-//    }
-//    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-//      //
-//    }
-//  }
+  int numcascades = evt->GetNumberOfCascades();
+  for (int iXi=0;iXi<numcascades;++iXi) {
+    AliAODcascade *xi = evt->GetCascade(iXi);
+    if (!xi) continue;
+    fFemtoCasc->SetCascade(evt,xi);
+    if (fCascCuts->isSelected(fFemtoCasc)) {
+      //
+    }
+    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+      //
+    }
+  }
 
   //  std::cout << "=============================" <<std::endl;
   //  std::cout << "=============================" <<std::endl;

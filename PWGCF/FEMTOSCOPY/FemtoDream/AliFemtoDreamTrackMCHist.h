@@ -59,6 +59,7 @@ class AliFemtoDreamTrackMCHist {
   void FillMCNSigTOF(int i, double mom, double nSigTOF){
     fMCNSigTOF[i]->Fill(mom, nSigTOF);
   };
+  void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList() const {return fMCList;};
   TString ClassName() {return "AliFemtoDreamTrackMCHist";};
  private:

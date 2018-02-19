@@ -39,12 +39,16 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double Getv0XiPointingAngle() {return fv0ToXiPointAngle;};
   double Getv0DecayLength() {return fv0Length;};
   double GetDCAv0Xi() {return fDCAv0Xi;};
+  void SetPDGDaugPos(int PDGCode){fPosDaug->SetPDGCode(PDGCode);};
+  void SetPDGDaugNeg(int PDGCode){fNegDaug->SetPDGCode(PDGCode);};
+  void SetPDGDaugBach(int PDGCode){fBach->SetPDGCode(PDGCode);};
   TVector3 Getv0P() {return fv0Momentum;};
   AliFemtoDreamTrack *GetPosDaug()const{return fPosDaug;};
   AliFemtoDreamTrack *GetNegDaug()const{return fNegDaug;};
   AliFemtoDreamTrack *GetBach()const{return fBach;};
  private:
   void Reset();
+  void SetMCMotherInfo(AliAODEvent *evt, AliAODcascade *casc);
   AliFemtoDreamTrack *fPosDaug;
   AliFemtoDreamTrack *fNegDaug;
   AliFemtoDreamTrack *fBach;
