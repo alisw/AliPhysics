@@ -36,6 +36,7 @@ class AliFemtoDreamCascadeHist {
   void FillMinDistPrimVtxv0(int iBin,double dist){fMinDistVtxv0[iBin]->Fill(dist);};
   void FillMinDistPrimVtxv0DaugPos(int iBin,double dist){fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
   void FillMinDistPrimVtxv0DaugNeg(int iBin,double dist){fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
+  void FillPodolandski(int iBin,double alpha,double qt){fPodolandski[iBin]->Fill(alpha,qt);};
   TList *GetHistList() {return fHistList;};
   private:
   TList *fHistList;
@@ -58,6 +59,7 @@ class AliFemtoDreamCascadeHist {
   TH1F *fMinDistVtxv0[2];
   TH1F *fMinDistVtxv0DaugPos[2];
   TH1F *fMinDistVtxv0DaugNeg[2];
+  TH2F *fPodolandski[2];
   ClassDef(AliFemtoDreamCascadeHist,1)
 };
 

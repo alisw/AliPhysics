@@ -257,8 +257,10 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   if (massPass&&fCPAPlots) {
     fHist->FillCPAPtBins(v0->GetPt(),v0->GetCPA());
     if (fMCData) {
+      AliFemtoDreamBasePart::PartOrigin tmpOrg=v0->GetParticleOrigin();
       fMCHist->FillMCCPAPtBins(
           v0->GetParticleOrigin(),v0->GetPt(),v0->GetCPA());
+      v0->SetParticleOrigin(tmpOrg);
     }
   }
   if (massPass) {
@@ -345,6 +347,7 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
   }
   if (v0->UseParticle()) {
     fMCHist->FillMCIdent(pT);
+    AliFemtoDreamBasePart::PartOrigin tmpOrg=v0->GetParticleOrigin();
     if (v0->GetMCPDGCode()==fPDGv0) {
       fMCHist->FillMCCorr(pT);
     } else {
@@ -357,6 +360,7 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
     v0->GetNegDaughter()->SetParticleOrigin(v0->GetParticleOrigin());
     fPosCuts->BookMC(v0->GetPosDaughter());
     fNegCuts->BookMC(v0->GetNegDaughter());
+    v0->SetParticleOrigin(tmpOrg);
   }
 }
 

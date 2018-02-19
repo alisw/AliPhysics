@@ -30,8 +30,9 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
     fCPAv0[i]=0;;
     fTransRadiusv0[i]=0;;
     fMinDistVtxv0[i]=0;;
-    fMinDistVtxv0DaugPos[i]=0;;
-    fMinDistVtxv0DaugNeg[i]=0;;
+    fMinDistVtxv0DaugPos[i]=0;
+    fMinDistVtxv0DaugNeg[i]=0;
+    fPodolandski[i]=0;
   }
 }
 AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
@@ -39,41 +40,26 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
   fHistList->SetName("Cascade");
   fHistList->SetOwner();
 
-  fCutCounter = new TH1F("CutCounter", "Cut Counter", 40, 0, 40);
+  fCutCounter = new TH1F("CutCounter", "Cut Counter", 25, 0, 25);
   fCutCounter->GetXaxis()->SetBinLabel(1, "Input");
   fCutCounter->GetXaxis()->SetBinLabel(2, "Charge");
   fCutCounter->GetXaxis()->SetBinLabel(3, "Id Neg Pos");
   fCutCounter->GetXaxis()->SetBinLabel(4, "Id Neg Bach");
   fCutCounter->GetXaxis()->SetBinLabel(5, "Id Pos Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(6, "ReqITSTOFHit Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(7, "ReqITSTOFHit Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(8, "ReqITSTOFHit Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(9, "ReqTPCRefit Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(10, "ReqTPCRefit Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(11, "ReqTPCRefit Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(12, "Crossed Rows Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(13, "Crossed Rows Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(14, "Crossed Rows Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "NClst TPC Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "NClst TPC Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "NClst TPC Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "nSigmaTPC Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "nSigmaTPC Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(20, "nSigmaTPC Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(21, "P_{T,min} Pos");
-  fCutCounter->GetXaxis()->SetBinLabel(22, "P_{T,min} Neg");
-  fCutCounter->GetXaxis()->SetBinLabel(23, "P_{T,min} Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(24, "DCAXiDaug");
-  fCutCounter->GetXaxis()->SetBinLabel(25, "Min Dist Prim Vtx Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(26, "CPA Xi");
-  fCutCounter->GetXaxis()->SetBinLabel(27, "Xi TransRadius");
-  fCutCounter->GetXaxis()->SetBinLabel(28, "DCA v0 Vtx Daug");
-  fCutCounter->GetXaxis()->SetBinLabel(29, "CPA v0");
-  fCutCounter->GetXaxis()->SetBinLabel(30, "v0 TransRadius");
-  fCutCounter->GetXaxis()->SetBinLabel(31, "Min Dist Prim Vtx v0");
-  fCutCounter->GetXaxis()->SetBinLabel(32, "Min Dist Prim Vtx v0 Daughter");
-  fCutCounter->GetXaxis()->SetBinLabel(33, "Inv Mass Lambda");
-  fCutCounter->GetXaxis()->SetBinLabel(34, "Inv Mass Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(6, "Neg Cuts Daug");
+  fCutCounter->GetXaxis()->SetBinLabel(7, "Pos Cuts Daug");
+  fCutCounter->GetXaxis()->SetBinLabel(8, "Bach Cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(9, "DCAXiDaug");
+  fCutCounter->GetXaxis()->SetBinLabel(10, "Min Dist Prim Vtx Bach");
+  fCutCounter->GetXaxis()->SetBinLabel(11, "CPA Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(12, "Xi TransRadius");
+  fCutCounter->GetXaxis()->SetBinLabel(13, "DCA v0 Vtx Daug");
+  fCutCounter->GetXaxis()->SetBinLabel(14, "CPA v0");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "v0 TransRadius");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "Min Dist Prim Vtx v0");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx v0 Daughter");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "Inv Mass Lambda");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "Inv Mass Xi");
 
   fHistList->Add(fCutCounter);
 
@@ -201,6 +187,11 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
                                   MinDistVtxv0DaugNameNeg.Data(),50,0,10);
     fMinDistVtxv0DaugNeg[i]->Sumw2();
     fCascadeQA[i]->Add(fMinDistVtxv0DaugNeg[i]);
+
+    TString PodoName=Form("Hodorlanski_%s",sName[i].Data());
+    fPodolandski[i]=new TH2F(PodoName.Data(),PodoName.Data(),50,-1,1,50,0,1);
+    fPodolandski[i]->Sumw2();
+    fCascadeQA[i]->Add(fPodolandski[i]);
   }
 }
 

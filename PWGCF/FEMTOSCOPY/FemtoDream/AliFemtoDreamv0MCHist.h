@@ -53,6 +53,16 @@ class AliFemtoDreamv0MCHist {
     fMCInvMass[i]->Fill(massVal);};
   void FillMCCPAPtBins(
       AliFemtoDreamBasePart::PartOrigin org, double pT,double cpa);
+  void FillMCBachDCAToPV(int i, double pT, double val){fMCBachDCAToPV[i]->Fill(pT,val);};
+  void FillMCv0DecayLength(int i, double pT, double val){fMCv0DecayLength[i]->Fill(pT,val);};
+  void FillMCv0CPA(int i, double pT, double val){fMCv0CPA[i]->Fill(pT,val);};
+  void FillMCXiDecayLength(int i, double pT, double val){fMCXiDecayLength[i]->Fill(pT,val);};
+  void FillMCOmegaDecayLength(int i, double pT, double val){fMCOmegaDecayLength[i]->Fill(pT,val);};
+  void FillMCXiRapidity(int i, double p, double val){fMCXiRapidity[i]->Fill(val,p);};
+  void FillMCOmegaRapidity(int i, double p, double val){fMCOmegaRapidity[i]->Fill(val,p);};
+  void FillMCPodolanski(int i, double pT, double alpha){fMCPodolanski[i]->Fill(alpha,pT);};
+  void FillMCXiInvMass(int i, double pT, double mass){fMCXiInvMass[i]->Fill(pT,mass);};
+  void FillMCOmegaInvMass(int i, double pT, double mass){fMCOmegaInvMass[i]->Fill(pT,mass);};
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
  private:
@@ -78,6 +88,16 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCDCADaugToVtx[4];
   TH2F *fMCCosPointing[4];
   TH1F *fMCInvMass[4];
+  TH2F *fMCBachDCAToPV[4];
+  TH2F *fMCv0DecayLength[4];
+  TH2F *fMCv0CPA[4];
+  TH2F *fMCXiDecayLength[4];
+  TH2F *fMCOmegaDecayLength[4];
+  TH2F *fMCXiRapidity[4];
+  TH2F *fMCOmegaRapidity[4];
+  TH2F *fMCPodolanski[4];
+  TH2F *fMCXiInvMass[4];
+  TH2F *fMCOmegaInvMass[4];
   TH2F *fMCPrimCPAPtBins;
   TH2F *fMCMaterialCPAPtBins;
   TH2F *fMCSecondaryCPAPtBins;
