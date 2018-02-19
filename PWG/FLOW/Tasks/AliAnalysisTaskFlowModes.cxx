@@ -601,7 +601,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); centrality/multiplicity",fMultEstimator.Data()), fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fhEventCentrality);
     fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 150,0,150, fFlowCentNumBins,0,fFlowCentNumBins);
-    fQAEvents->Add(fh2EventCentralityNumSelCharged);
+    fQAEvents->Add(fh2EventCentralityNumSelCharged); 
 
     const Short_t iEventCounterBins = 10;
     TString sEventCounterLabel[iEventCounterBins] = {"Input","Physics selection OK","Centr. Est. Consis. OK","PV OK","SPD Vtx OK","Pileup MV OK","Vtx Consis. OK","PV #it{z} OK","ESD TPC Mult. Diff. OK","Selected"};
@@ -819,7 +819,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     }//endif(!fDoOnlyMixedCorrelations)
 
     // charged (tracks) histograms
-    fhRefsMult = new TH1D("fhRefsMult","RFPs: Multiplicity; multiplicity", 1000,0,1000);
+    fhRefsMult = new TH2D("fhRefsMult","RFPs: Centrality: Multiplicity; centrality; multiplicity",fFlowCentNumBins,0,fFlowCentNumBins,1000,0,1000);
     fQACharged->Add(fhRefsMult);
     fhRefsPt = new TH1D("fhRefsPt","RFPs: #it{p}_{T};  #it{p}_{T} (GeV/#it{c})", 300,0,30);
     fQACharged->Add(fhRefsPt);
@@ -1168,8 +1168,6 @@ void AliAnalysisTaskFlowModes::UserExec(Option_t *)
   // event selection
   fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!EventSelection()) return;
-
-  // fIndexCentrality = GetCentralityIndex();
 
   // processing of selected event
   if(!ProcessEvent()) return;
@@ -1524,11 +1522,14 @@ void AliAnalysisTaskFlowModes::Filtering()
   FilterCharged();
 
   // estimate centrality & assign indexes (centrality/percentile, ...)
-  fIndexCentrality = GetCentralityIndex();
-
-  if(fIndexCentrality < 0) return; // not succesfull estimation
+  if(fColSystem == kPbPb){
+      fIndexCentrality = GetCentralityIndex();
+      if(fIndexCentrality < 0) return; // not succesfull estimation
+  }
+  if(fColSystem == kPP){fIndexCentrality = 1;}
+    
   fhEventCentrality->Fill(fIndexCentrality);
-  fh2EventCentralityNumSelCharged->Fill(fVectorCharged->size(),fIndexCentrality);
+  fh2EventCentralityNumSelCharged->Fill(fVectorCharged->size(),fIndexCentrality); 
 
   if(fProcessPID)
   {
@@ -1591,7 +1592,7 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   }
 
   // fill QA charged multiplicity
-  fhRefsMult->Fill(iNumRefs);
+  fhRefsMult->Fill(fIndexCentrality,iNumRefs);
   if(fFillQA)
   {
     fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
@@ -2118,9 +2119,8 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
   // filtering particles
   Filtering();
   // at this point, centrality index (percentile) should be properly estimated, if not, skip event
-  if(fIndexCentrality < 0) return kFALSE;
-
-
+  if(fIndexCentrality < 0) {return kFALSE;}
+    
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
 
