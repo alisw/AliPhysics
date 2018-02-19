@@ -34,7 +34,7 @@ void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
     return;
   }
   if(fDoMinv)   fRealDistribution->Fill(trio->MInv());
-  if(fDoDalitz) fDalitzPlot->Fill(trio->MInv12(),trio->MInv23());
+  if(fDoDalitz) fDalitzPlot->Fill(pow(trio->MInv12(),2),pow(trio->MInv23(),2));
 }
 void AliFemtoTrioMinvFctn::AddMixedTrio(AliFemtoTrio *trio)
 {
