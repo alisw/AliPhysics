@@ -427,7 +427,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     endPtLog                                  = 70;
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
   ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ||
-  ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ){
+  ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ){
     ptBins                                    = 610;
     startPt                                   = 10;
     endPt                                     = 200;

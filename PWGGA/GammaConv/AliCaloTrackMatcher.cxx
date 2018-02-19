@@ -367,8 +367,6 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         fHistControlMatches->Fill(3.,inTrack->Pt());
         continue;
       }
-
-//to do: implement of distance checks
     }
 
     Float_t dEta=-999, dPhi=-999;
@@ -380,9 +378,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       continue;
     }
 
-// cout << inTrack->GetID() << " - " << trackParam << endl;
-// cout << "eta/phi: " << eta << ", " << phi << endl;
-// cout << "nClus: " << nClus << endl;
+    // cout << inTrack->GetID() << " - " << trackParam << endl;
+    // cout << "eta/phi: " << eta << ", " << phi << endl;
+    // cout << "nClus: " << nClus << endl;
     Int_t nClusterMatchesToTrack = 0;
     for(Int_t iclus=0;iclus < nClus;iclus++){
       AliVCluster* cluster = NULL;
@@ -400,10 +398,10 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       if (!cluster){
         continue;
       }
-// cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
+      // cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
       cluster->GetPosition(clsPos);
       Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
-//cout << "dR: " << dR << endl;
+      //cout << "dR: " << dR << endl;
       if (dR > fMatchingWindow){
         continue;
       }
@@ -435,7 +433,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 
-//cout << dEta << " - " << dPhi << " - " << dR2 << endl;
+      //cout << dEta << " - " << dPhi << " - " << dR2 << endl;
       if(dR2 > fMatchingResidual){
         continue;
       }
@@ -464,16 +462,16 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
 
   //if V0-track to cluster match is already available return stored residuals
   if(GetSecTrackClusterMatchingResidual(inSecTrack->GetID(),cluster->GetID(), dEta, dPhi)){
-//cout << "RESIDUAL ALREADY AVAILABLE! - " << dEta << "/" << dPhi << endl;
+  //cout << "RESIDUAL ALREADY AVAILABLE! - " << dEta << "/" << dPhi << endl;
     return kTRUE;
   }
 
   if(IsSecTrackClusterAlreadyTried(inSecTrack->GetID(),cluster->GetID())){
-//cout << "PROPAGATION ALREADY FAILED! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
+  //cout << "PROPAGATION ALREADY FAILED! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
     return kFALSE;
   }
 
-//cout << "running matching! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
+  //cout << "running matching! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
   //if match has not yet been computed, go on:
   Int_t nModules = 0;
   if(fClusterType == 1 || fClusterType == 3) nModules = fGeomEMCAL->GetNumberOfSuperModules();
@@ -611,15 +609,15 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
 
   if (propagated){
     Float_t dR2 = dPhiTemp*dPhiTemp + dEtaTemp*dEtaTemp;
-//cout << dEtaTemp << " - " << dPhiTemp << " - " << dR2 << endl;
+    //cout << dEtaTemp << " - " << dPhiTemp << " - " << dR2 << endl;
     if(dR2 > fMatchingResidual){
       fSecHistControlMatches->Fill(5.,inSecTrack->Pt());
       fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
-//cout << "NO MATCH! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
+      //cout << "NO MATCH! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
       delete trackParam;
       return kFALSE;
     }
-//cout << "MATCHED!!!!!!!" << endl;
+    //cout << "MATCHED!!!!!!!" << endl;
 
     if(aodev){
       //need to search for position in case of AOD
