@@ -547,7 +547,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
   }
 
 
-    fHistZVertex->Fill(fVertex[2]);
+  fHistZVertex->Fill(fVertex[2]);
 
   if (fForceBeamType != kpp) {
     fHistCentrality->Fill(fCent);
@@ -616,18 +616,20 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
+    /*
     // Get the pthard bin
     Float_t pthard = fPythiaHeader->GetPtHard();
     int pthardbin = 0;
     if(fPtHardBinning.GetSize()){
       for(int ib = 0; ib < fNPtHardBins; ib++){
-        if(pthard >= fPtHardBinning[ib] && pthard < fPtHardBinning[ib+1]) {
+        if(pthard >= static_cast<Float_t>(fPtHardBinning[ib]) && pthard < static_cast<Float_t>(fPtHardBinning[ib+1])) {
           pthardbin = ib;
           break;
         }
       }
     }
-    fHistXsection->Fill(pthardbin, fPythiaHeader->GetXsection());
+    */
+    fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
   }
 
   if (IsEventSelected()) {
