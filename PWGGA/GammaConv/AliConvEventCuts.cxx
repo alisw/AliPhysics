@@ -1022,7 +1022,10 @@ void AliConvEventCuts::PrintCutsWithValues() {
     }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
+    }  else if ( fModCentralityClass == 1){
+      printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
     }
+
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
     } else if (fSpecialTrigger > 1){
@@ -1106,6 +1109,20 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
+    break;
+  case 10: // pPb V0A
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=2;
+    fDetectorCentrality=0;
+    fModCentralityClass=1;
+    break;
+  case 11: // pPb CL1
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=2;
+    fDetectorCentrality=1;
+    fModCentralityClass=1;
     break;
 
   default:
@@ -2013,7 +2030,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     else return kFALSE;
   }
-  else if (fModCentralityClass ==1){
+  else if (fModCentralityClass == 1){
     centralityC= Int_t(centrality);
     if(centralityC >= fCentralityMin*5 && centralityC < fCentralityMax*5){
       return kTRUE;
@@ -4760,7 +4777,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k13TeVLowB;
   } else if (periodName.CompareTo("LHC16qt") == 0  || periodName.CompareTo("LHC16q") == 0 ||  periodName.CompareTo("LHC16t") == 0 ){
     fPeriodEnum = kLHC16qt;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
   } else if (periodName.CompareTo("LHC16r") == 0 ){
     fPeriodEnum = kLHC16r;
     fEnergyEnum = kpPb8TeV;
@@ -5167,22 +5184,22 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 	     periodName.CompareTo("LHC17f2a_fast_fix") == 0 || periodName.CompareTo("LHC17f2a_cent_fix") == 0 ||
 	     periodName.CompareTo("LHC17f2a_cent_woSDD_fix") == 0){
     fPeriodEnum = kLHC17f2a;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
   } else if (periodName.CompareTo("LHC17f2b") == 0          || periodName.CompareTo("LHC17f2b_fast") == 0 ||
 	     periodName.CompareTo("LHC17f2b_cent") == 0     || periodName.CompareTo("LHC17f2b_cent_woSDD") == 0 ||
 	     periodName.CompareTo("LHC17f2b_cent_woSDD_fix") == 0){
     fPeriodEnum = kLHC17f2b;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
   } else if (periodName.CompareTo("LHC17g8a") == 0 || periodName.CompareTo("LHC17g8a_fast") == 0 ||
 	     periodName.CompareTo("LHC17g8a_cent_woSDD") == 0){
     fPeriodEnum = kLHC17g8a;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
   } else if (periodName.CompareTo("LHC17d2a") == 0 || periodName.CompareTo("LHC17d2a_fast") == 0 || periodName.CompareTo("LHC17d2a_cent") == 0 ){
     fPeriodEnum = kLHC17d2a;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
   } else if (periodName.CompareTo("LHC17d2b") == 0 || periodName.CompareTo("LHC17d2b_fast") == 0 || periodName.CompareTo("LHC17d2b_cent") == 0 ){
     fPeriodEnum = kLHC17d2b;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb5TeVR2;
     // LHC16r anchored MCs
   } else if (periodName.CompareTo("LHC17a3a") == 0      || periodName.CompareTo("LHC17a3a_fast") == 0 ||
              periodName.CompareTo("LHC17a3a_cent") == 0 || periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){

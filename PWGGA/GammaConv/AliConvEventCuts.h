@@ -287,19 +287,21 @@ class AliConvEventCuts : public AliAnalysisCuts {
        * @brief Supported collision systems
        */
       enum EnergyVar {
-        kUnset        = 0,  //!< not defined
-        k900GeV       = 1,  //!< pp 900 GeV
-        k2760GeV      = 2,  //!< pp 2.76TeV
-        k5TeV         = 3,  //!< pp 5 TeV
-        k7TeV         = 4,  //!< pp 7 TeV
-        k8TeV         = 5,  //!< pp 8 TeV
-        k13TeV        = 6,  //!< pp 13 TeV
-        k13TeVLowB    = 7,  //!< pp 13 TeV low B
-        kpPb5TeV      = 8,  //!< pPb 5 TeV
-        kpPb8TeV      = 9,  //!< pPb 8 TeV
+        kUnset        = 0,   //!< not defined
+        k900GeV       = 1,   //!< pp 900 GeV
+        k2760GeV      = 2,   //!< pp 2.76TeV
+        k5TeV         = 3,   //!< pp 5 TeV
+        k7TeV         = 4,   //!< pp 7 TeV
+        k8TeV         = 5,   //!< pp 8 TeV
+        k13TeV        = 6,   //!< pp 13 TeV
+        k13TeVLowB    = 7,   //!< pp 13 TeV low B
+        kpPb5TeV      = 8,   //!< pPb 5 TeV
+        kpPb8TeV      = 9,   //!< pPb 8 TeV
         kPbPb2760GeV  = 10,  //!< PbPb 2.76TeV
-        kPbPb5TeV     = 11, //!< PbPb 5 TeV
-        kXeXe5440GeV  = 12  //!< XeXe 5.44 TeV
+        kPbPb5TeV     = 11,  //!< PbPb 5 TeV
+        kXeXe5440GeV  = 12,  //!< XeXe 5.44 TeV
+        kpPb5TeVR2    = 13   //!< pPb 5 TeV run 2
+
       };
 
 
@@ -643,7 +645,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,43)
+      ClassDef(AliConvEventCuts,44)
       /// \endcond
 };
 
