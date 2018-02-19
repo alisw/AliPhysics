@@ -357,12 +357,21 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
     fMCHist->FillMCpT(iFill,pT);
     fMCHist->FillMCEta(iFill,casc->GetEta().at(0));
     fMCHist->FillMCPhi(iFill,casc->GetPhi().at(0));
+    casc->GetXiAlpha();
+    fMCHist->FillMCCosPoint(iFill,pT,casc->GetCPA());
+    casc->BachDCAPrimVtx();
+    casc->Getv0DecayLength();
+    casc->GetXiDecayLength();
+    casc->GetOmegaDecayLength();
+    casc->GetXiRapidity();
+    casc->GetOmegaRapidity();
     fMCHist->FillMCTransverseRadius(iFill,pT,casc->GetXiTransverseRadius());
     fMCHist->FillMCDCAPosDaugPrimVtx(iFill,pT,casc->Getv0PosToPrimVtx());
     fMCHist->FillMCDCANegDaugPrimVtx(iFill,pT,casc->Getv0NegToPrimVtx());
     fMCHist->FillMCDCADaugVtx(iFill,pT,casc->GetXiDCADaug());
-    fMCHist->FillMCCosPoint(iFill,pT,casc->GetCPA());
+    casc->GetPtArmXi();
     fMCHist->FillMCInvMass(iFill,casc->GetXiMass());
+    casc->GetOmegaMass();
   } else {
     std::cout << "this should not happen \n";
   }

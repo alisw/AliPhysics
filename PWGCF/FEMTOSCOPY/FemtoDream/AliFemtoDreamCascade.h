@@ -28,6 +28,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double GetXiRapidity() {return fRapXi;};
   double GetOmegaRapidity() {return fRapOmega;};
   double GetXiAlpha() {return fAlphaXi;};
+  double GetPtArmXi() {return fPtArmXi;};
   double GetXiDecayLength() {return fXiLength;};
   double GetOmegaDecayLength() {return fOmegaLength;};
   double BachDCAPrimVtx() {return fDCABachPrimVtx;};
