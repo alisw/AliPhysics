@@ -35,7 +35,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts()
       fAntiV0cut(0),
       fPID(0),
       fIsMC(false),
-      fIsRun1(false),
+	  fPileUpRejection(false),
       fIsExtendedQA(false),
       fV0OnFly(false),
       fArmenterosCut(false),
@@ -48,6 +48,10 @@ AliSigma0V0Cuts::AliSigma0V0Cuts()
       fPIDnSigma(999.f),
       fEtaMax(999.f),
       fTPCclusterMin(0.f),
+	  fTPCnCrossedRowsMin(0),
+	  fTPCratioFindable(0.f),
+	  fTPCfindableMin(0),
+	  fTPCnSharedMax(180),
       fDaughterDCAMax(999.f),
       fDaughterDCAPV(999.f),
       fK0RejectionLow(0.f),
@@ -132,6 +136,12 @@ AliSigma0V0Cuts::AliSigma0V0Cuts()
       fHistV0SingleParticleEtaAfter(),
       fHistV0SingleParticleNclsTPCBefore(),
       fHistV0SingleParticleNclsTPCAfter(),
+      fHistV0SingleParticleNclsTPCFindableBefore(),
+      fHistV0SingleParticleNclsTPCFindableAfter(),
+      fHistV0SingleParticleNclsTPCRatioFindableBefore(),
+      fHistV0SingleParticleNclsTPCRatioFindableAfter(),
+      fHistV0SingleParticleNcrossedTPCBefore(),
+      fHistV0SingleParticleNcrossedTPCAfter(),
       fHistV0SingleParticleNclsTPCShared(),
       fHistV0SingleParticleNclsTPCSharedTiming(),
       fHistV0SingleParticleNclsITSShared(),
@@ -145,6 +155,12 @@ AliSigma0V0Cuts::AliSigma0V0Cuts()
       fHistAntiV0SingleParticleEtaAfter(),
       fHistAntiV0SingleParticleNclsTPCBefore(),
       fHistAntiV0SingleParticleNclsTPCAfter(),
+      fHistAntiV0SingleParticleNclsTPCFindableBefore(),
+      fHistAntiV0SingleParticleNclsTPCFindableAfter(),
+      fHistAntiV0SingleParticleNclsTPCRatioFindableBefore(),
+      fHistAntiV0SingleParticleNclsTPCRatioFindableAfter(),
+      fHistAntiV0SingleParticleNcrossedTPCBefore(),
+      fHistAntiV0SingleParticleNcrossedTPCAfter(),
       fHistAntiV0SingleParticleNclsTPCShared(),
       fHistAntiV0SingleParticleNclsTPCSharedTiming(),
       fHistAntiV0SingleParticleNclsITSShared(),
@@ -179,7 +195,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fAntiV0cut(0),
       fPID(0),
       fIsMC(false),
-      fIsRun1(false),
+	  fPileUpRejection(false),
       fIsExtendedQA(false),
       fV0OnFly(false),
       fArmenterosCut(false),
@@ -192,6 +208,10 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fPIDnSigma(999.f),
       fEtaMax(999.f),
       fTPCclusterMin(0.f),
+	  fTPCnCrossedRowsMin(0),
+	  fTPCratioFindable(0.f),
+	  fTPCfindableMin(0),
+	  fTPCnSharedMax(180),
       fDaughterDCAMax(999.f),
       fDaughterDCAPV(999.f),
       fK0RejectionLow(0.f),
@@ -276,6 +296,12 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistV0SingleParticleEtaAfter(),
       fHistV0SingleParticleNclsTPCBefore(),
       fHistV0SingleParticleNclsTPCAfter(),
+      fHistV0SingleParticleNclsTPCFindableBefore(),
+      fHistV0SingleParticleNclsTPCFindableAfter(),
+      fHistV0SingleParticleNclsTPCRatioFindableBefore(),
+      fHistV0SingleParticleNclsTPCRatioFindableAfter(),
+      fHistV0SingleParticleNcrossedTPCBefore(),
+      fHistV0SingleParticleNcrossedTPCAfter(),
       fHistV0SingleParticleNclsTPCShared(),
       fHistV0SingleParticleNclsTPCSharedTiming(),
       fHistV0SingleParticleNclsITSShared(),
@@ -289,6 +315,12 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistAntiV0SingleParticleEtaAfter(),
       fHistAntiV0SingleParticleNclsTPCBefore(),
       fHistAntiV0SingleParticleNclsTPCAfter(),
+      fHistAntiV0SingleParticleNclsTPCFindableBefore(),
+      fHistAntiV0SingleParticleNclsTPCFindableAfter(),
+      fHistAntiV0SingleParticleNclsTPCRatioFindableBefore(),
+      fHistAntiV0SingleParticleNclsTPCRatioFindableAfter(),
+      fHistAntiV0SingleParticleNcrossedTPCBefore(),
+      fHistAntiV0SingleParticleNcrossedTPCAfter(),
       fHistAntiV0SingleParticleNclsTPCShared(),
       fHistAntiV0SingleParticleNclsTPCSharedTiming(),
       fHistAntiV0SingleParticleNclsITSShared(),
@@ -398,6 +430,10 @@ void AliSigma0V0Cuts::ProcessESDs(AliPID::EParticleType particle,
     }
 
     // PID
+    const float armAlpha = v0->AlphaV0();
+    const float armQt = v0->PtArmV0();
+    fHistV0ArmenterosBefore->Fill(armAlpha, armQt);
+    fHistAntiV0ArmenterosBefore->Fill(armAlpha, armQt);
     if (fUsePID && !V0PID(pos, neg, particle, antiParticle)) continue;
     if (!fUsePID) {
       if (v0->AlphaV0() > 0)
@@ -450,9 +486,9 @@ void AliSigma0V0Cuts::ProcessESDs(AliPID::EParticleType particle,
         fInputEvent->GetMagneticField(), fMCEvent);
 
     if (fIsMC) {
-      TClonesArray *mcarray = dynamic_cast<TClonesArray *>(
-          fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!mcarray) continue;
+      // TClonesArray *mcarray = dynamic_cast<TClonesArray *>(
+      //      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      // if (!mcarray) continue;
       /// @todo Fix matching to MC!
       //      Int_t daugh[2] = {2212, 211};  // daughter IDs of Lambda
       //      Int_t label = v0->MatchToMC(3122,mcarray,2,daugh);
@@ -505,9 +541,13 @@ void AliSigma0V0Cuts::ProcessAODs(AliPID::EParticleType particle,
     }
 
     // PID
+    const float armAlpha = v0->AlphaV0();
+    const float armQt = v0->PtArmV0();
+    fHistV0ArmenterosBefore->Fill(armAlpha, armQt);
+    fHistAntiV0ArmenterosBefore->Fill(armAlpha, armQt);
     if (fUsePID && !V0PID(pos, neg, particle, antiParticle)) continue;
     if (!fUsePID) {
-      if (v0->AlphaV0() > 0)
+      if (armAlpha > 0)
         fPID = 1;
       else
         fPID = -1;
@@ -969,6 +1009,9 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
   const int charge = track->Charge();
   const float eta = track->Eta();
   const short nClsTPC = track->GetTPCNcls();
+  const float nCrossedRows = track->GetTPCClusterInfo(2, 1);
+  const short nFindable = track->GetTPCNclsF();
+  const float ratioFindable = nCrossedRows / static_cast<float>(nFindable);
 
   int qaHistoCounter = 0;
   if (fPID == 1 && charge > 0)
@@ -981,26 +1024,26 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
     fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
 
   if (fIsExtendedQA) {
+    const int histoPrefix = (charge > 0) ? 0 : 1;
     if (fPID == 1) {
-      if (charge > 0) {
-        fHistV0SingleParticleEtaBefore[0]->Fill(eta);
-        fHistV0SingleParticleNclsTPCBefore[0]->Fill(nClsTPC);
-        fHistV0SingleParticleDCAtoPVBefore[0]->Fill(dcaDaughterToPV);
-      } else {
-        fHistV0SingleParticleEtaBefore[1]->Fill(eta);
-        fHistV0SingleParticleNclsTPCBefore[1]->Fill(nClsTPC);
-        fHistV0SingleParticleDCAtoPVBefore[1]->Fill(dcaDaughterToPV);
-      }
+      fHistV0SingleParticleEtaBefore[histoPrefix]->Fill(eta);
+      fHistV0SingleParticleNclsTPCBefore[histoPrefix]->Fill(nClsTPC);
+      fHistV0SingleParticleNclsTPCFindableBefore[histoPrefix]->Fill(nFindable);
+      fHistV0SingleParticleNclsTPCRatioFindableBefore[histoPrefix]->Fill(
+          ratioFindable);
+      fHistV0SingleParticleNcrossedTPCBefore[histoPrefix]->Fill(nCrossedRows);
+      fHistV0SingleParticleDCAtoPVBefore[histoPrefix]->Fill(dcaDaughterToPV);
     } else if (fPID == -1) {
-      if (charge > 0) {
-        fHistAntiV0SingleParticleEtaBefore[0]->Fill(eta);
-        fHistAntiV0SingleParticleNclsTPCBefore[0]->Fill(nClsTPC);
-        fHistAntiV0SingleParticleDCAtoPVBefore[0]->Fill(dcaDaughterToPV);
-      } else {
-        fHistAntiV0SingleParticleEtaBefore[1]->Fill(eta);
-        fHistAntiV0SingleParticleNclsTPCBefore[1]->Fill(nClsTPC);
-        fHistAntiV0SingleParticleDCAtoPVBefore[1]->Fill(dcaDaughterToPV);
-      }
+      fHistAntiV0SingleParticleEtaBefore[histoPrefix]->Fill(eta);
+      fHistAntiV0SingleParticleNclsTPCBefore[histoPrefix]->Fill(nClsTPC);
+      fHistAntiV0SingleParticleNclsTPCFindableBefore[histoPrefix]->Fill(
+          nFindable);
+      fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[histoPrefix]->Fill(
+          ratioFindable);
+      fHistAntiV0SingleParticleNcrossedTPCBefore[histoPrefix]->Fill(
+          nCrossedRows);
+      fHistAntiV0SingleParticleDCAtoPVBefore[histoPrefix]->Fill(
+          dcaDaughterToPV);
     }
   }
 
@@ -1026,6 +1069,54 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
   else if (fPID == -1 && charge < 0)
     fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
 
+  // TPC Crossed rows
+  if (nCrossedRows < fTPCnCrossedRowsMin) return false;
+  if (fPID == 1 && charge > 0)
+    fHistV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == 1 && charge < 0)
+    fHistV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge > 0)
+    fHistAntiV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge < 0)
+    fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+
+  // TPC Ratio Findable
+  if (ratioFindable < fTPCratioFindable) return false;
+  if (fPID == 1 && charge > 0)
+    fHistV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == 1 && charge < 0)
+    fHistV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge > 0)
+    fHistAntiV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge < 0)
+    fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+
+  // TPC nCls Findable
+  if (nFindable < fTPCfindableMin) return false;
+  if (fPID == 1 && charge > 0)
+    fHistV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == 1 && charge < 0)
+    fHistV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge > 0)
+    fHistAntiV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge < 0)
+    fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+
+  // TPC nCls Shared
+  const int nClsSharedTPC =
+      (fInputEvent->IsA() == AliESDEvent::Class())
+          ? (static_cast<AliESDtrack *>(track))->GetTPCnclsS()
+          : (static_cast<AliAODTrack *>(track))->GetTPCnclsS();
+  if (nClsSharedTPC > fTPCnSharedMax) return false;
+  if (fPID == 1 && charge > 0)
+    fHistV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == 1 && charge < 0)
+    fHistV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge > 0)
+    fHistAntiV0SingleParticleCuts[0]->Fill(qaHistoCounter++);
+  else if (fPID == -1 && charge < 0)
+    fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
+
   // Minimal distance of daughters to primary vertex
   if (dcaDaughterToPV < fDaughterDCAPV) return false;
   if (fPID == 1 && charge > 0)
@@ -1037,12 +1128,7 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
   else if (fPID == -1 && charge < 0)
     fHistAntiV0SingleParticleCuts[1]->Fill(qaHistoCounter++);
 
-
   // Keep track of shared clusters
-  const int nClsSharedTPC =
-      (fInputEvent->IsA() == AliESDEvent::Class())
-          ? (static_cast<AliESDtrack *>(track))->GetTPCnclsS()
-          : (static_cast<AliAODTrack *>(track))->GetTPCnclsS();
   int nClsSharedITS = 0;
   for (int i = 0; i < 6; ++i) {
     if (track->HasSharedPointOnITSLayer(i)) ++nClsSharedITS;
@@ -1152,7 +1238,7 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
   }
 
   // Pile-up cut
-  if (!fIsRun1 && !track->HasPointOnITSLayer(0) &&
+  if (fPileUpRejection && !track->HasPointOnITSLayer(0) &&
       !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(4) &&
       !track->HasPointOnITSLayer(5) && !(track->GetTOFBunchCrossing() == 0))
     return false;
@@ -1194,11 +1280,21 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliVTrack *track,
       fHistV0SingleParticlePt[histoPrefix]->Fill(pt);
       fHistV0SingleParticleEtaAfter[histoPrefix]->Fill(eta);
       fHistV0SingleParticleNclsTPCAfter[histoPrefix]->Fill(nClsTPC);
+      fHistV0SingleParticleNclsTPCFindableAfter[histoPrefix]->Fill(nFindable);
+      fHistV0SingleParticleNclsTPCRatioFindableAfter[histoPrefix]->Fill(
+          ratioFindable);
+      fHistV0SingleParticleNcrossedTPCAfter[histoPrefix]->Fill(nCrossedRows);
       fHistV0SingleParticleDCAtoPVAfter[histoPrefix]->Fill(dcaDaughterToPV);
     } else if (fPID == -1) {
       fHistAntiV0SingleParticlePt[histoPrefix]->Fill(pt);
       fHistAntiV0SingleParticleEtaAfter[histoPrefix]->Fill(eta);
       fHistAntiV0SingleParticleNclsTPCAfter[histoPrefix]->Fill(nClsTPC);
+      fHistAntiV0SingleParticleNclsTPCFindableAfter[histoPrefix]->Fill(
+          nFindable);
+      fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[histoPrefix]->Fill(
+          ratioFindable);
+      fHistAntiV0SingleParticleNcrossedTPCAfter[histoPrefix]->Fill(
+          nCrossedRows);
       fHistAntiV0SingleParticleDCAtoPVAfter[histoPrefix]->Fill(dcaDaughterToPV);
     }
   }
@@ -1213,11 +1309,9 @@ bool AliSigma0V0Cuts::LambdaSelection(const T *v0, float massK0,
   const float armQt = v0->PtArmV0();
 
   if (fPID == 1) {
-    fHistV0ArmenterosBefore->Fill(armAlpha, armQt);
     fHistV0LambdaMassK0Rej->Fill(massLambda);
     fHistV0K0Mass->Fill(massK0);
   } else {
-    fHistAntiV0ArmenterosBefore->Fill(armAlpha, armQt);
     fHistAntiV0LambdaMassK0Rej->Fill(massLambda);
     fHistAntiV0K0Mass->Fill(massK0);
   }
@@ -1425,7 +1519,7 @@ int AliSigma0V0Cuts::GetRapidityBin(float rapidity) const {
 void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
   std::cout << "============================\n"
             << " V0 CUT CONFIGURATION \n"
-            << " Run1         " << fIsRun1 << "\n"
+            << " Pile-up rej  " << fPileUpRejection << "\n"
             << " On-fly       " << fV0OnFly << "\n"
             << " p_T min      " << fV0PtMin << "\n"
             << " CPA min      " << fV0CosPAMin << "\n"
@@ -1434,6 +1528,10 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
             << " decay vtx    " << fV0DecayVertexMax << "\n"
             << " PID nsigma   " << fPIDnSigma << "\n"
             << " nCls min     " << fTPCclusterMin << "\n"
+			<< " Crossed rows " << fTPCnCrossedRowsMin << "\n"
+		    << " Ratio find.  " << fTPCratioFindable << "\n"
+			<< " nFinable     " << fTPCfindableMin << "\n"
+			<< " nSharedMax   " << fTPCnSharedMax << "\n"
             << " eta max      " << fEtaMax << "\n"
             << " daughter dca " << fDaughterDCAMax << "\n"
             << " daugher pv   " << fDaughterDCAPV << "\n"
@@ -1515,7 +1613,7 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsAntiV0Neg->SetName("AntiV0_SingleParticle_Neg_QA");
   }
 
-  fHistCuts = new TProfile("fHistCuts", ";;Cut value", 20, 0, 20);
+  fHistCuts = new TProfile("fHistCuts", ";;Cut value", 24, 0, 24);
   fHistCuts->GetXaxis()->SetBinLabel(1, "V0 on fly");
   fHistCuts->GetXaxis()->SetBinLabel(2, "#it{p}_{T} min");
   fHistCuts->GetXaxis()->SetBinLabel(3, "cos#alpha min");
@@ -1524,18 +1622,22 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
   fHistCuts->GetXaxis()->SetBinLabel(6, "Decay vtx max");
   fHistCuts->GetXaxis()->SetBinLabel(7, "n#sigma PID");
   fHistCuts->GetXaxis()->SetBinLabel(8, "TPC nCls min");
-  fHistCuts->GetXaxis()->SetBinLabel(9, "#eta max");
-  fHistCuts->GetXaxis()->SetBinLabel(10, "Daughter DCA max");
-  fHistCuts->GetXaxis()->SetBinLabel(11, "Daughter DCA pvtx min");
-  fHistCuts->GetXaxis()->SetBinLabel(12, "K^{0} rejection low");
-  fHistCuts->GetXaxis()->SetBinLabel(13, "K^{0} rejection up");
-  fHistCuts->GetXaxis()->SetBinLabel(14, "#Lambda selection low");
-  fHistCuts->GetXaxis()->SetBinLabel(15, "#Lambda selection up");
-  fHistCuts->GetXaxis()->SetBinLabel(16, "Run 1");
-  fHistCuts->GetXaxis()->SetBinLabel(17, "Armenteros q_{T} low");
-  fHistCuts->GetXaxis()->SetBinLabel(18, "Armenteros q_{T} up");
-  fHistCuts->GetXaxis()->SetBinLabel(19, "Armenteros #alpha low");
-  fHistCuts->GetXaxis()->SetBinLabel(20, "Armenteros #alpha up");
+  fHistCuts->GetXaxis()->SetBinLabel(9, "TPC nCrossed min");
+  fHistCuts->GetXaxis()->SetBinLabel(10, "TPC Ratio Findable");
+  fHistCuts->GetXaxis()->SetBinLabel(11, "TPC nCls Findable min");
+  fHistCuts->GetXaxis()->SetBinLabel(12, "TPC nShared max");
+  fHistCuts->GetXaxis()->SetBinLabel(13, "#eta max");
+  fHistCuts->GetXaxis()->SetBinLabel(14, "Daughter DCA max");
+  fHistCuts->GetXaxis()->SetBinLabel(15, "Daughter DCA pvtx min");
+  fHistCuts->GetXaxis()->SetBinLabel(16, "K^{0} rejection low");
+  fHistCuts->GetXaxis()->SetBinLabel(17, "K^{0} rejection up");
+  fHistCuts->GetXaxis()->SetBinLabel(18, "#Lambda selection low");
+  fHistCuts->GetXaxis()->SetBinLabel(19, "#Lambda selection up");
+  fHistCuts->GetXaxis()->SetBinLabel(20, "Pile-up rejection");
+  fHistCuts->GetXaxis()->SetBinLabel(21, "Armenteros q_{T} low");
+  fHistCuts->GetXaxis()->SetBinLabel(22, "Armenteros q_{T} up");
+  fHistCuts->GetXaxis()->SetBinLabel(23, "Armenteros #alpha low");
+  fHistCuts->GetXaxis()->SetBinLabel(24, "Armenteros #alpha up");
   fHistograms->Add(fHistCuts);
 
   fHistCuts->Fill(0.f, static_cast<double>(fV0OnFly));
@@ -1546,18 +1648,22 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
   fHistCuts->Fill(5.f, fV0DecayVertexMax);
   fHistCuts->Fill(6.f, fPIDnSigma);
   fHistCuts->Fill(7.f, fTPCclusterMin);
-  fHistCuts->Fill(8.f, fEtaMax);
-  fHistCuts->Fill(9.f, fDaughterDCAMax);
-  fHistCuts->Fill(10.f, fDaughterDCAPV);
-  fHistCuts->Fill(11.f, fK0RejectionLow);
-  fHistCuts->Fill(12.f, fK0RejectionUp);
-  fHistCuts->Fill(13.f, fLambdaSelectionLow);
-  fHistCuts->Fill(14.f, fLambdaSelectionUp);
-  fHistCuts->Fill(15.f, static_cast<double>(fIsRun1));
-  fHistCuts->Fill(16.f, fArmenterosQtLow);
-  fHistCuts->Fill(17.f, fArmenterosQtUp);
-  fHistCuts->Fill(18.f, fArmenterosAlphaLow);
-  fHistCuts->Fill(19.f, fArmenterosAlphaUp);
+  fHistCuts->Fill(8.f, fTPCnCrossedRowsMin);
+  fHistCuts->Fill(9.f, fTPCratioFindable);
+  fHistCuts->Fill(10.f, fTPCfindableMin);
+  fHistCuts->Fill(11.f, fTPCnSharedMax);
+  fHistCuts->Fill(12.f, fEtaMax);
+  fHistCuts->Fill(13.f, fDaughterDCAMax);
+  fHistCuts->Fill(14.f, fDaughterDCAPV);
+  fHistCuts->Fill(15.f, fK0RejectionLow);
+  fHistCuts->Fill(16.f, fK0RejectionUp);
+  fHistCuts->Fill(17.f, fLambdaSelectionLow);
+  fHistCuts->Fill(18.f, fLambdaSelectionUp);
+  fHistCuts->Fill(19.f, static_cast<double>(fPileUpRejection));
+  fHistCuts->Fill(20.f, fArmenterosQtLow);
+  fHistCuts->Fill(21.f, fArmenterosQtUp);
+  fHistCuts->Fill(22.f, fArmenterosAlphaLow);
+  fHistCuts->Fill(23.f, fArmenterosAlphaUp);
 
   fHistV0Cuts = new TH1F("fHistV0Cuts", ";;Entries", 18, 0, 18);
   fHistV0Cuts->GetXaxis()->SetBinLabel(1, "V0");
@@ -1633,27 +1739,37 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
   }
 
   fHistV0SingleParticleCuts[0] =
-      new TH1F("fHistV0SingleParticleCuts_pos", ";;Entries", 9, 0, 9);
+      new TH1F("fHistV0SingleParticleCuts_pos", ";;Entries", 11, 0, 11);
   fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
   fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(2, "#eta");
   fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(3, "nCls TPC");
-  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(4,
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(4, "nCrossed Rows TPC");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(5,
+                                                        "Ratio Findable TPC");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(6, "nCls Findable");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "nCls Shared max");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(8,
                                                         "Daughter DCA to PV");
-  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(5, "Pile-up cut");
-  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(6, "ESD: TPC refit");
-  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "ESD: Kink");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(9, "Pile-up cut");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(10, "ESD: TPC refit");
+  fHistV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(11, "ESD: Kink");
   fHistogramsV0Pos->Add(fHistV0SingleParticleCuts[0]);
 
   fHistV0SingleParticleCuts[1] =
-      new TH1F("fHistV0SingleParticleCuts_neg", ";;Entries", 9, 0, 9);
+      new TH1F("fHistV0SingleParticleCuts_neg", ";;Entries", 11, 0, 11);
   fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
   fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(2, "#eta");
   fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(3, "nCls TPC");
-  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(4,
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(4, "nCrossed Rows TPC");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(5,
+                                                        "Ratio Findable TPC");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(6, "nCls Findable");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "nCls Shared max");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(8,
                                                         "Daughter DCA to PV");
-  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(5, "Pile-up cut");
-  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(6, "ESD: TPC refit");
-  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "ESD: Kink");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(9, "Pile-up cut");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(10, "ESD: TPC refit");
+  fHistV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(11, "ESD: Kink");
   fHistogramsV0Neg->Add(fHistV0SingleParticleCuts[1]);
 
   fHistAntiV0Cuts = new TH1F("fHistAntiV0Cuts", ";;Entries", 18, 0, 18);
@@ -1728,31 +1844,45 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
   }
 
   fHistAntiV0SingleParticleCuts[0] =
-      new TH1F("fHistAntiV0SingleParticleCuts_pos", ";;Entries", 9, 0, 9);
+      new TH1F("fHistAntiV0SingleParticleCuts_pos", ";;Entries", 11, 0, 11);
   fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(1,
                                                             "Daughter tracks");
   fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(2, "#eta");
   fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(3, "nCls TPC");
   fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(
-      4, "Daughter DCA to PV");
-  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(5, "Pile-up cut");
-  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(6,
+      4, "nCrossed Rows TPC");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(
+      5, "Ratio Findable TPC");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(6, "nCls Findable");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(7,
+                                                            "nCls Shared max");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(
+      8, "Daughter DCA to PV");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(9, "Pile-up cut");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(10,
                                                             "ESD: TPC refit");
-  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "ESD: Kink");
+  fHistAntiV0SingleParticleCuts[0]->GetXaxis()->SetBinLabel(11, "ESD: Kink");
   fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleCuts[0]);
 
   fHistAntiV0SingleParticleCuts[1] =
-      new TH1F("fHistAntiV0SingleParticleCuts_pos", ";;Entries", 9, 0, 9);
+      new TH1F("fHistAntiV0SingleParticleCuts_pos", ";;Entries", 11, 0, 11);
   fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(1,
                                                             "Daughter tracks");
   fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(2, "#eta");
   fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(3, "nCls TPC");
   fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(
-      4, "Daughter DCA to PV");
-  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(5, "Pile-up cut");
-  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(6,
+      4, "nCrossed Rows TPC");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(
+      5, "Ratio Findable TPC");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(6, "nCls Findable");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(7,
+                                                            "nCls Shared max");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(
+      8, "Daughter DCA to PV");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(9, "Pile-up cut");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(10,
                                                             "ESD: TPC refit");
-  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "ESD: Kink");
+  fHistAntiV0SingleParticleCuts[1]->GetXaxis()->SetBinLabel(11, "ESD: Kink");
   fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleCuts[1]);
 
   if (fIsMC) {
@@ -1940,6 +2070,42 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistV0SingleParticleNclsTPCAfter[1] =
         new TH1F("fHistV0SingleParticleNclsTPCAfter_neg",
                  "; # cls TPC (after); Entries", 170, 0, 170);
+    fHistV0SingleParticleNclsTPCFindableBefore[0] =
+        new TH1F("fHistV0SingleParticleNclsTPCFindableBefore_pos",
+                 "; # cls TPC findable (before); Entries", 170, 0, 170);
+    fHistV0SingleParticleNclsTPCFindableBefore[1] =
+        new TH1F("fHistV0SingleParticleNclsTPCFindableBefore_neg",
+                 "; # cls TPC findable (before); Entries", 170, 0, 170);
+    fHistV0SingleParticleNclsTPCFindableAfter[0] =
+        new TH1F("fHistV0SingleParticleNclsTPCFindableAfter_pos",
+                 "; # cls TPC findable (after); Entries", 170, 0, 170);
+    fHistV0SingleParticleNclsTPCFindableAfter[1] =
+        new TH1F("fHistV0SingleParticleNclsTPCFindableAfter_neg",
+                 "; # cls TPC findable (after); Entries", 170, 0, 170);
+    fHistV0SingleParticleNclsTPCRatioFindableBefore[0] =
+        new TH1F("fHistV0SingleParticleNclsTPCRatioFindableBefore_pos",
+                 "; TPC ratio findable (before); Entries", 1000, 0, 2);
+    fHistV0SingleParticleNclsTPCRatioFindableBefore[1] =
+        new TH1F("fHistV0SingleParticleNclsTPCRatioFindableBefore_neg",
+                 ";  TPC ratio findable (before); Entries", 1000, 0, 2);
+    fHistV0SingleParticleNclsTPCRatioFindableAfter[0] =
+        new TH1F("fHistV0SingleParticleNclsTPCRatioFindableAfter_pos",
+                 "; TPC ratio findable (after); Entries", 1000, 0, 2);
+    fHistV0SingleParticleNclsTPCRatioFindableAfter[1] =
+        new TH1F("fHistV0SingleParticleNclsTPCRatioFindableAfter_neg",
+                 ";  TPC ratio findable (after); Entries", 1000, 0, 2);
+    fHistV0SingleParticleNcrossedTPCBefore[0] =
+        new TH1F("fHistV0SingleParticleNcrossedTPCBefore_pos",
+                 "; # cls TPC crossed (before); Entries", 170, 0, 170);
+    fHistV0SingleParticleNcrossedTPCBefore[1] =
+        new TH1F("fHistV0SingleParticleNcrossedTPCBefore_neg",
+                 "; # cls TPC crossed (before); Entries", 170, 0, 170);
+    fHistV0SingleParticleNcrossedTPCAfter[0] =
+        new TH1F("fHistV0SingleParticleNcrossedTPCAfter_pos",
+                 "; # cls TPC crossed (after); Entries", 170, 0, 170);
+    fHistV0SingleParticleNcrossedTPCAfter[1] =
+        new TH1F("fHistV0SingleParticleNcrossedTPCAfter_neg",
+                 "; # cls TPC crossed (after); Entries", 170, 0, 170);
     fHistV0SingleParticleNclsTPCShared[0] =
         new TH1F("fHistV0SingleParticleNclsTPCShared_pos",
                  "; # cls TPC shared; Entries", 170, 0, 170);
@@ -2047,6 +2213,12 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsV0Neg->Add(fHistV0SingleParticleEtaBefore[1]);
     fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCBefore[0]);
     fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCBefore[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCFindableBefore[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCFindableBefore[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCRatioFindableBefore[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCRatioFindableBefore[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNcrossedTPCBefore[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNcrossedTPCBefore[1]);
     fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCShared[0]);
     fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCShared[1]);
     fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCSharedTiming[0]);
@@ -2061,6 +2233,12 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsV0Neg->Add(fHistV0SingleParticleEtaAfter[1]);
     fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCAfter[0]);
     fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCAfter[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCFindableAfter[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCFindableAfter[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNclsTPCRatioFindableAfter[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNclsTPCRatioFindableAfter[1]);
+    fHistogramsV0Pos->Add(fHistV0SingleParticleNcrossedTPCAfter[0]);
+    fHistogramsV0Neg->Add(fHistV0SingleParticleNcrossedTPCAfter[1]);
     fHistogramsV0Pos->Add(fHistV0SingleParticleDCAtoPVAfter[0]);
     fHistogramsV0Neg->Add(fHistV0SingleParticleDCAtoPVAfter[1]);
 
@@ -2186,6 +2364,42 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistAntiV0SingleParticleNclsTPCAfter[1] =
         new TH1F("fHistAntiV0SingleParticleNclsTPCAfter_neg",
                  "; # cls TPC (after); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNclsTPCFindableBefore[0] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCFindableBefore_pos",
+                 "; # cls TPC findable (before); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNclsTPCFindableBefore[1] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCFindableBefore_neg",
+                 "; # cls TPC findable (before); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNclsTPCFindableAfter[0] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCFindableAfter_pos",
+                 "; # cls TPC findable (after); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNclsTPCFindableAfter[1] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCFindableAfter_neg",
+                 "; # cls TPC findable (after); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[0] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCRatioFindableBefore_pos",
+                 "; TPC ratio findable (before); Entries", 1000, 0, 2);
+    fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[1] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCRatioFindableBefore_neg",
+                 ";  TPC ratio findable (before); Entries", 1000, 0, 2);
+    fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[0] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCRatioFindableAfter_pos",
+                 "; TPC ratio findable (after); Entries", 1000, 0, 2);
+    fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[1] =
+        new TH1F("fHistAntiV0SingleParticleNclsTPCRatioFindableAfter_neg",
+                 ";  TPC ratio findable (after); Entries", 1000, 0, 2);
+    fHistAntiV0SingleParticleNcrossedTPCBefore[0] =
+        new TH1F("fHistAntiV0SingleParticleNcrossedTPCBefore_pos",
+                 "; # cls TPC crossed (before); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNcrossedTPCBefore[1] =
+        new TH1F("fHistAntiV0SingleParticleNcrossedTPCBefore_neg",
+                 "; # cls TPC crossed (before); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNcrossedTPCAfter[0] =
+        new TH1F("fHistAntiV0SingleParticleNcrossedTPCAfter_pos",
+                 "; # cls TPC crossed (after); Entries", 170, 0, 170);
+    fHistAntiV0SingleParticleNcrossedTPCAfter[1] =
+        new TH1F("fHistAntiV0SingleParticleNcrossedTPCAfter_neg",
+                 "; # cls TPC crossed (after); Entries", 170, 0, 170);
     fHistAntiV0SingleParticleNclsTPCShared[0] =
         new TH1F("fHistAntiV0SingleParticleNclsTPCShared_pos",
                  "; # cls TPC shared; Entries", 170, 0, 170);
@@ -2293,6 +2507,16 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleEtaBefore[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsTPCBefore[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsTPCBefore[1]);
+    fHistogramsAntiV0Pos->Add(
+        fHistAntiV0SingleParticleNclsTPCFindableBefore[0]);
+    fHistogramsAntiV0Neg->Add(
+        fHistAntiV0SingleParticleNclsTPCFindableBefore[1]);
+    fHistogramsAntiV0Pos->Add(
+        fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[0]);
+    fHistogramsAntiV0Neg->Add(
+        fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[1]);
+    fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNcrossedTPCBefore[0]);
+    fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNcrossedTPCBefore[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsTPCShared[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsTPCShared[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsTPCSharedTiming[0]);
@@ -2307,6 +2531,14 @@ void AliSigma0V0Cuts::InitCutHistograms(const char *appendix) {
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleEtaAfter[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsTPCAfter[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsTPCAfter[1]);
+    fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNclsTPCFindableAfter[0]);
+    fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNclsTPCFindableAfter[1]);
+    fHistogramsAntiV0Pos->Add(
+        fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[0]);
+    fHistogramsAntiV0Neg->Add(
+        fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[1]);
+    fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleNcrossedTPCAfter[0]);
+    fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleNcrossedTPCAfter[1]);
     fHistogramsAntiV0Pos->Add(fHistAntiV0SingleParticleDCAtoPVAfter[0]);
     fHistogramsAntiV0Neg->Add(fHistAntiV0SingleParticleDCAtoPVAfter[1]);
 
