@@ -1,24 +1,25 @@
-AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char * njetsData, //data jets
-								    const char * njetsTrue, //Pyhthia Particle Level
-								    const char * njetsDet,
-								    const char * njetsHybridUs,
-								    const char * njetsHybridS,
-								    const Double_t R,
-								    const char * nrhoBase, 
-								    const char * ntracksData,
-                                                                    const char * ntracksTrue,
-                                                                    const char * ntracksDet, 
-								    const char * ntracksHybridUs,
-								    const char * ntracksHybridS,
-								    const char *type,				      
-								    const char *CentEst,
-								    Int_t       pSel,
-								    TString     trigClass      = "",
-								    TString     kEmcalTriggers = "",
-								    TString     tag            = "",
-								    AliAnalysisTaskRecursiveSoftDrop::JetShapeSub jetShapeSub,
-								    AliAnalysisTaskRecursiveSoftDrop::JetShapeSub fjetType
-								    ) {
+AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecursiveSoftDrop(
+											     const char * njetsData, //data jets
+											     const char * njetsTrue, //Pyhthia Particle Level
+											     const char * njetsDet,
+											     const char * njetsHybridUs,
+											     const char * njetsHybridS,
+											     const Double_t R,
+											     const char * nrhoBase, 
+											     const char * ntracksData,
+											     const char * ntracksTrue,
+											     const char * ntracksDet, 
+											     const char * ntracksHybridUs,
+											     const char * ntracksHybridS,
+											     const char *type,				      
+											     const char *CentEst,
+											     Int_t       pSel,
+											     TString     trigClass,
+											     TString     kEmcalTriggers,
+											     TString     tag,
+											     AliAnalysisTaskRecursiveSoftDrop::JetShapeSub jetShapeSub,
+											     AliAnalysisTaskRecursiveSoftDrop::JetType fjetType
+											     ) {
   
   
   
@@ -38,16 +39,19 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
       ::Error("AliAnalysisTaskRecursiveSoftDrop", "This task requires an input event handler");
       return NULL;
     }
-
+  TString wagonName1;
+  TString wagonName2;
+  TString wagonName3;
+  
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kData){
-    TString wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsData,trigClass.Data(),tag.Data());
-    TString wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsData,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsData,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsData,trigClass.Data(),tag.Data());
   }
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
-    TString wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsHybridS,trigClass.Data(),tag.Data());
-    TString wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsHybridS,trigClass.Data(),tag.Data());
   }
   //Configure jet tagger task
   AliAnalysisTaskRecursiveSoftDrop *task = new AliAnalysisTaskRecursiveSoftDrop(wagonName1.Data());
@@ -59,6 +63,8 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   AliParticleContainer *trackContData=0x0;
   AliParticleContainer *trackContDet=0x0;
   AliParticleContainer *trackContTrue=0x0;
+  AliParticleContainer *trackContHybridS=0x0;
+  AliParticleContainer *trackContHybridUs=0x0;
 
   trackContData = task->AddParticleContainer(ntracksData);
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
@@ -137,7 +143,7 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   TString contName2(wagonName2);
   TString contName3(wagonName3);
 
-  if (fjetType == AliAnalysisTaskRecoilJetYield::kEmb){
+  if (fjetType == AliAnalysisTaskRecursiveSoftDrop::kEmb){
     contName1 += "_Embedded";
     contName2 += "_Embedded";
     contName2 += "_Embedded";
@@ -156,4 +162,3 @@ AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(         const char *
   return task;  
 
 }
-
