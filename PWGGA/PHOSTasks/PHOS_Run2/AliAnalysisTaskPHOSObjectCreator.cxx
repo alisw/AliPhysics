@@ -954,46 +954,55 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
   const Double_t emFraction=0.9; //part of energy of cluster to be assigned to EM particle
   Int_t n = clu->GetNLabels();
 
-  for(Int_t i=0;  i<n;  i++){
-    Int_t label = clu->GetLabelAt(i);
-    AliAODMCParticle *p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
-    Int_t pdg = p->PdgCode() ;
-    if(pdg==22  ||  pdg==11 || pdg == -11){
-      if(p->E()>emFraction*clu->E()){
-        sure=kTRUE ;
-        return label;
+  if(fESDEvent){
+    return clu->GetLabel();
+  }
+  else if(fAODEvent){
+    for(Int_t i=0;  i<n;  i++){
+      Int_t label = clu->GetLabelAt(i);
+      AliAODMCParticle *p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
+      Int_t pdg = p->PdgCode() ;
+      if(pdg==22  ||  pdg==11 || pdg == -11){
+        if(p->E()>emFraction*clu->E()){
+          sure=kTRUE ;
+          return label;
+        }
       }
     }
-  }
 
-  Double_t *Ekin = new Double_t[n];
+    Double_t *Ekin = new Double_t[n];
 
-  for(Int_t i=0;  i<n;  i++){
-    Int_t label = clu->GetLabelAt(i);
-    AliAODMCParticle* p = (AliAODMCParticle*)fMCArrayAOD->At(label);
-    Ekin[i]=p->P() ;  // estimate of kinetic energy
-    if(p->PdgCode()==-2212  ||  p->PdgCode()==-2112){
-      Ekin[i]+=1.8  ;  //due to annihilation
+    for(Int_t i=0;  i<n;  i++){
+      Int_t label = clu->GetLabelAt(i);
+      AliAODMCParticle* p = (AliAODMCParticle*)fMCArrayAOD->At(label);
+      Ekin[i]=p->P() ;  // estimate of kinetic energy
+      if(p->PdgCode()==-2212  ||  p->PdgCode()==-2112){
+        Ekin[i]+=1.8  ;  //due to annihilation
+      }
     }
-  }
 
-  Int_t iMax=0;
-  Double_t eMax=0.,eSubMax=0. ;
-  for(Int_t i=0;  i<n;  i++){
-    if(Ekin[i]>eMax){
-      eSubMax=eMax;
-      eMax=Ekin[i];
-      iMax=i;
+    Int_t iMax=0;
+    Double_t eMax=0.,eSubMax=0. ;
+    for(Int_t i=0;  i<n;  i++){
+      if(Ekin[i]>eMax){
+        eSubMax=eMax;
+        eMax=Ekin[i];
+        iMax=i;
+      }
     }
+    if(eSubMax>0.8*eMax)//not obvious primary
+      sure=kFALSE;
+    else
+      sure=kTRUE;
+
+    delete[]  Ekin;
+
+    return clu->GetLabelAt(iMax);
+
   }
-  if(eSubMax>0.8*eMax)//not obvious primary
-    sure=kFALSE;
-  else
-    sure=kTRUE;
-
-  delete[]  Ekin;
-
-  return clu->GetLabelAt(iMax);
+  else{
+    return clu->GetLabel();
+  }
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)

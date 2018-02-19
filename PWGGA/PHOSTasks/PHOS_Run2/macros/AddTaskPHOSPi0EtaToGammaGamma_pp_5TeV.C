@@ -149,7 +149,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.996,2.32,2.76e-4,0.376,7.41,0.562);//20180124
+    f1tof->SetParameters(0.997,2.32,7.33e-4,0.424,7.57,0.607);//20180219
+    //f1tof->SetParameters(0.996,2.32,2.76e-4,0.376,7.41,0.562);//20180124
     //f1tof->SetParameters(0.997,2.31,-6.15e-4,0.406,7.53,0.620);//20171231
     //f1tof->SetParameters(0.991,2.38,8.12e-3,0.425,7.63,0.677);
     //f1tof->SetParameters(0.996,2.33,1.97e-3,0.332,7.56,0.774);

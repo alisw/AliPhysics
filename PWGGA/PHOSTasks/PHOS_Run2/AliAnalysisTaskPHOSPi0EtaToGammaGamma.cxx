@@ -62,6 +62,7 @@
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
 
@@ -676,6 +677,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   }//fIsPHOSTriggerAnalysis ends
 
   if(fIsMC){
+
+    //fOutputContainer->Add(new TH1F("hPDGPhysicalPrimary","PDG code of Phyical Primary",8001,-4000-0.5,4000+0.5));
+    //fOutputContainer->Add(new TH1F("hPDGPhysicalPrimaryStable","PDG code of Phyical Primary",8001,-4000-0.5,4000+0.5));
+
     const TString parname[] = {"Pi0","Eta","Gamma","ChargedPion","ChargedKaon","K0S","K0L","Lambda0","Sigma0"};
     const Int_t Npar = sizeof(parname)/sizeof(parname[0]);
 
@@ -684,11 +689,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       h1Pt->Sumw2();
       fOutputContainer->Add(h1Pt);
 
-      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi;#phi;#eta (rad)",parname[ipar].Data()),60,0,TwoPi,200,-1,1);
+      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),60,0,TwoPi,200,-1,1);
       h2EtaPhi->Sumw2();
       fOutputContainer->Add(h2EtaPhi);
 
-      TH2F *h2EtaPt = new TH2F(Form("hGen%sEtaPt",parname[ipar].Data()),Form("generated %s eta vs pT;#eta;p_{T} (GeV/c)",parname[ipar].Data()),200,-1,1,NpTgg-1,pTgg);
+      TH2F *h2EtaPt = new TH2F(Form("hGen%sEtaPt",parname[ipar].Data()),Form("generated %s y vs pT;rapidity;p_{T} (GeV/c)",parname[ipar].Data()),200,-1,1,NpTgg-1,pTgg);
       h2EtaPt->Sumw2();
       fOutputContainer->Add(h2EtaPt);
 
@@ -1039,7 +1044,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   AliInfo(Form("Collision system = %d | fCentralityMain estimated by %s = %f %% | Zvtx = %f cm , fZvtx = %d | Harmonics = %d , fEventPlane = %f (rad.) , fEPBin = %d |",fCollisionSystem,fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx,fHarmonics,fEventPlane,fEPBin));
  
   if(!fIsMC) FillRejectionFactorMB();
-
 
   //track QA
   TrackQA();
@@ -1643,7 +1647,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     eff = f1tof->Eval(energy);
     if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP) trgeff = f1trg->Eval(energy);
 
-
     //0 < photon phi < 2pi
     if(phi < 0) phi += TMath::TwoPi();
     TVector2 vg(TMath::Cos(fHarmonics * phi),TMath::Sin(fHarmonics * phi));
@@ -1721,9 +1724,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!CheckMinimumEnergy(ph2)) continue;
 
       if(fIsPHOSTriggerAnalysis){
-        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+        if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
         if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
       }
 
@@ -1762,12 +1763,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
-        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
-        if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-        if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-        if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+
+        //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
+        //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
+        //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
       }
 
       FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
@@ -1877,9 +1882,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!CheckMinimumEnergy(ph2)) continue;
 
         if(fIsPHOSTriggerAnalysis){
-          if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+          if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
           if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
         }
 
@@ -1914,12 +1917,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         weight = 1.;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+          if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
-          //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
-          if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-          if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-          if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
+          trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+
+          //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
+          //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
+          //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
         }
 
         if(fIsMC){
@@ -2807,9 +2814,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
     const Int_t Ntrack = fMCArrayESD->GetNprimary();//this is the number of generated particles by event generator.
     for(Int_t i=0;i<Ntrack;i++){
       TParticle *p = (TParticle*)fMCArrayESD->Particle(i);
-      Int_t primary = FindPrimaryMotherESD(i);
 
       if(fIsJJMC){
+        Int_t primary = FindPrimaryMotherESD(i);
         if(fMCType.Contains("JJMC") && (primary < firstJetindex || lastJetindex < primary)) continue;
         if(fMCType.Contains("MBMC") && (primary < firstUEindex  || lastUEindex  < primary)) continue;
       }
@@ -2818,6 +2825,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       rapidity = p->Y();
       phi = p->Phi();
       pdg = p->GetPdgCode();
+
+//      if(fMCArrayESD->IsPhysicalPrimary(i))
+//      FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
 
       //rapidity is Y(), but, pseudo-rapidity is Eta();
 
@@ -2911,6 +2921,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       phi = p->Phi();
       pdg = p->PdgCode();
 
+      //if(p->IsPhysicalPrimary())
+      //  FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
+
       //rapidity is Y(), but, pseudo-rapidity is Eta();
 
       if(pT < 1e-3) continue;//reject below 1 MeV
@@ -2972,8 +2985,29 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPt" ,parname.Data()),rapidity,pT ,weight);
 
     }//end of generated particle loop
+   
+    //AliGenHijingEventHeader* hijingGenHeader = 0x0;
+    //if(fAODEvent) {
+    //  AliAODMCHeader* mcHeader = (AliAODMCHeader*) fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    //  TList* headerList = mcHeader->GetCocktailHeaders();
+    //  for (Int_t i=0; i<headerList->GetEntries(); i++) {
+    //    hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
+    //    if(hijingGenHeader) break;
+    //  }
+    //}
+    //if(hijingGenHeader){
+    //  const Int_t Nprimary = hijingGenHeader->NProduced();
+    //  for(Int_t i=0;i<Nprimary;i++){
+    //  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
+    //  genID = p->GetGeneratorIndex();
 
+    //  pdg = p->PdgCode();
+    //  FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
+    //  if(p->MCStatusCode() == 1) FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimaryStable",pdg);
 
+    //  }
+
+    //}
   }
 
 
