@@ -22,8 +22,10 @@ AliFemtoDreamCascade::AliFemtoDreamCascade()
 ,fDCAXiDaug(0)
 ,fTransRadius(0)
 ,fRapXi(0)
+,fRapOmega(0)
 ,fAlphaXi(0)
 ,fPtArmXi(0)
+,fDCAXiPrimVtx(0)
 ,fXiLength(0)
 ,fOmegaLength(0)
 ,fMassv0(0)
@@ -72,11 +74,13 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   this->SetMomentum(casc->MomXiX(),casc->MomXiY(),casc->MomXiZ());
   this->SetPt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY());
   fRapXi=casc->RapXi();
+  fRapOmega=casc->RapOmega();
   this->SetEta(casc->Eta());
   this->SetTheta(casc->Theta());
   this->SetPhi(casc->Phi());
   fAlphaXi=casc->AlphaXi();
   fPtArmXi=casc->PtArmXi();
+  fDCAXiPrimVtx=casc->DcaXiToPrimVertex(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
   fXiLength=TMath::Sqrt(TMath::Power((decayPosXi[0]-PrimVtx[0]),2)+
                         TMath::Power((decayPosXi[1]-PrimVtx[1]),2)+
                         TMath::Power((decayPosXi[2]-PrimVtx[2]),2));
@@ -164,9 +168,11 @@ void AliFemtoDreamCascade::Reset() {
   if (!fIsReset) {
     fXiMass=0;
     fOmegaMass=0;
+    fDCAXiPrimVtx=0;
     fDCAXiDaug=0;
     fTransRadius=0;
     fRapXi=-99;
+    fRapOmega=-99;
     fAlphaXi=99;
     fPtArmXi=99;
     fXiLength=0;

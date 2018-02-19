@@ -22,9 +22,11 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   TString ClassName(){return "Cascade";};
   double GetXiMass() {return fXiMass;};
   double GetOmegaMass() {return fOmegaMass;};
+  double GetDCAXiPrimVtx() {return fDCAXiPrimVtx;};
   double GetXiDCADaug() {return fDCAXiDaug;};
   double GetXiTransverseRadius() {return fTransRadius;};
   double GetXiRapidity() {return fRapXi;};
+  double GetOmegaRapidity() {return fRapOmega;};
   double GetXiAlpha() {return fAlphaXi;};
   double GetXiDecayLength() {return fXiLength;};
   double GetOmegaDecayLength() {return fOmegaLength;};
@@ -57,8 +59,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double fDCAXiDaug;
   double fTransRadius;
   double fRapXi;
+  double fRapOmega;
   double fAlphaXi;
   double fPtArmXi;
+  double fDCAXiPrimVtx;
   double fXiLength;
   double fOmegaLength;
   double fMassv0;
