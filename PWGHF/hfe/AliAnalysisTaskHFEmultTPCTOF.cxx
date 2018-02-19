@@ -179,9 +179,9 @@ fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_inc
 
 fPteV0M_Lan(0),fPteV0M_Err(0), fPteSPD_Lan(0),fPteSPD_Err(0),
 fPteV0M(0),fPteSPD(0),
-fHadV0MLan(0),fHadSPDLan(0),fHadV0MErr(0),fHadSPDErr(0),
-fnSigmaVsP_TPC_cut_multV0M(0),fnSigmaVsP_TPC_cut_multSPD(0),
-fnSigmaVsPt_TPC_cut_multV0M(0),fnSigmaVsPt_TPC_cut_multSPD(0),
+fHadV0MLan(0),fHadSPDLan(0),fHadV0MErr(0),fHadSPDErr(0),fnSigmaVsP_TPC_cut_mult(0),
+//fnSigmaVsP_TPC_cut_multV0M(0),fnSigmaVsP_TPC_cut_multSPD(0),
+//fnSigmaVsPt_TPC_cut_multV0M(0),fnSigmaVsPt_TPC_cut_multSPD(0),
 
 //------------Ntracklets Correction and Multiplicity------------------
 
@@ -195,7 +195,7 @@ fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
-fNchVsZvtx(0),SPDNtrCorrVsNch(0),	V0MCorrVsNch(0),
+fNchVsZvtx(0),SPDNtrCorrVsNch(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
  
 //------------------------Non-Hfe
 fNonHFE(new AliSelectNonHFE()),
@@ -249,8 +249,8 @@ fPte_LS_MC_multV0M(0),fPte_ULS_MC_multV0M(0),
 fPte_LS_MC_multSPD(0),fPte_ULS_MC_multSPD(0),
 
 fInvMULS(0),
-fInvMULS_multV0M(0),
-fInvMULS_multSPD(0),
+//fInvMULS_multV0M(0),
+//fInvMULS_multSPD(0),
 
 pdg(0),
 
@@ -345,9 +345,9 @@ fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_inc
 
 fPteV0M_Lan(0),fPteV0M_Err(0), fPteSPD_Lan(0),fPteSPD_Err(0),
 fPteV0M(0),fPteSPD(0),
-fHadV0MLan(0),fHadSPDLan(0),fHadV0MErr(0),fHadSPDErr(0),
-fnSigmaVsP_TPC_cut_multV0M(0),fnSigmaVsP_TPC_cut_multSPD(0),
-fnSigmaVsPt_TPC_cut_multV0M(0),fnSigmaVsPt_TPC_cut_multSPD(0),
+fHadV0MLan(0),fHadSPDLan(0),fHadV0MErr(0),fHadSPDErr(0),fnSigmaVsP_TPC_cut_mult(0),
+//fnSigmaVsP_TPC_cut_multV0M(0),fnSigmaVsP_TPC_cut_multSPD(0),
+//fnSigmaVsPt_TPC_cut_multV0M(0),fnSigmaVsPt_TPC_cut_multSPD(0),
 
 //------------Ntracklets Correction and Multiplicity------------------
 
@@ -361,7 +361,7 @@ fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
-fNchVsZvtx(0),SPDNtrCorrVsNch(0),	V0MCorrVsNch(0),
+fNchVsZvtx(0),SPDNtrCorrVsNch(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
  
 //------------------------Non-Hfe
 fNonHFE(new AliSelectNonHFE()),
@@ -414,8 +414,8 @@ fPte_LS_MC_multV0M(0),fPte_ULS_MC_multV0M(0),
 fPte_LS_MC_multSPD(0),fPte_ULS_MC_multSPD(0),
 
 fInvMULS(0),
-fInvMULS_multV0M(0),
-fInvMULS_multSPD(0),
+//fInvMULS_multV0M(0),
+//fInvMULS_multSPD(0),
 
 pdg(0),
 
@@ -692,6 +692,19 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 	fHadSPDErr->Sumw2();
   fOutputList->Add(fHadSPDErr);
   
+
+//-------------------------------------------------------------------------------------------------------------
+  
+  Int_t nbinsTPCnsigmaVsPcut[4] = {100, 250, 200,1000};
+  Double_t binlowTPCnsigmaVsPcut[4] = {0., -15, 0., 0.};
+  Double_t binupTPCnsigmaVsPcut[4] = {10., 10, 200, 1000};
+
+  fnSigmaVsP_TPC_cut_mult = new THnSparseF("fnSigmaVsP_TPC_cut_mult", "fnSigmaVsP_TPC_cut_mult;p;nsig;SPD;V0M", 4, nbinsTPCnsigmaVsPcut, binlowTPCnsigmaVsPcut, binupTPCnsigmaVsPcut);
+  fnSigmaVsP_TPC_cut_mult->Sumw2();
+  fOutputList->Add(fnSigmaVsP_TPC_cut_mult);
+	
+
+/*
   fnSigmaVsP_TPC_cut_multV0M= new TH3F("fnSigmaVsP_TPC_cut_multV0M","",100,0,5.,250,-15,10,800,0,800.);
 	fnSigmaVsP_TPC_cut_multV0M->Sumw2();
   fOutputList->Add(fnSigmaVsP_TPC_cut_multV0M);
@@ -699,6 +712,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fnSigmaVsP_TPC_cut_multSPD= new TH3F("fnSigmaVsP_TPC_cut_multSPD","",300,0,15.,250,-15,10,200,0,200.);
 	fnSigmaVsP_TPC_cut_multSPD->Sumw2();
   fOutputList->Add(fnSigmaVsP_TPC_cut_multSPD);
+*/
 /*  
   fnSigmaVsPt_TPC_cut_multV0M= new TH3F("fnSigmaVsPt_TPC_cut_multV0M","",100,0,5.,250,-15,10,1000,0,1000.);
 	fnSigmaVsPt_TPC_cut_multV0M->Sumw2();
@@ -895,6 +909,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fInvMULS->Sumw2();
   fOutputList->Add(fInvMULS);
   
+/*
   fInvMULS_multV0M = new TH3F("fInvMULS_multV0M","Pt and InvMass from MC",300,0.,15.,100,0,1.0,1000,0.,1000.);
   fInvMULS_multV0M->Sumw2();
   fOutputList->Add(fInvMULS_multV0M);
@@ -902,7 +917,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fInvMULS_multSPD = new TH3F("fInvMULS_multSPD","Pt and InvMass from MC",300,0.,15.,100,0,1.0,200,0.,200.);
   fInvMULS_multSPD->Sumw2();
   fOutputList->Add(fInvMULS_multSPD);
-  
+ */ 
   
   fPt_elec_phot_multV0M= new TH2F("fPt_elec_phot_multV0M", "; p_{T}(GeV/c); counts;",300,0,15.,1000,0,1000.);
   fPt_elec_phot_multV0M->Sumw2();
@@ -962,11 +977,11 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   
   //-------------------------------------------------------------------------------------------------------------
   
-  Int_t nbinsInvMULS[4] = {100, 6, 100, 200};
-  Double_t binlowInvMULS[4] = {0., 0, 0., 0.};
-  Double_t binupInvMULS[4] = {10, 6, 1., 200};
+  Int_t nbinsInvMULS[5] = {100, 6, 100, 200,1000};
+  Double_t binlowInvMULS[5] = {0., 0, 0., 0.,0.};
+  Double_t binupInvMULS[5] = {10, 6, 1., 200,1000};
 
-	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdep", 4, nbinsInvMULS,  binlowInvMULS,binupInvMULS);
+	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdepSPD;multdepV0M", 5, nbinsInvMULS, binlowInvMULS, binupInvMULS);
 	fInvMULSnSp->Sumw2();
 	fOutputList->Add(fInvMULSnSp);
 	
@@ -1039,9 +1054,18 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   SPDNtrCorrVsNch = new TH2F("SPDNtrCorrVsNch","",200,0,200.,400,0,400.); //
   fOutputList->Add(SPDNtrCorrVsNch);	
   
-	V0MCorrVsNch= new TH2F("V0MCorrVsNch","",1000,0,1000.,400,0,400.); //
+  V0MCorrVsNch= new TH2F("V0MCorrVsNch","",1000,0,1000.,400,0,400.); //
   fOutputList->Add(V0MCorrVsNch);
   
+
+  Int_t nbinsSPDV0MNch[3] = {200, 1000,400};
+  Double_t binlowSPDV0MNch[3] = {0., 0, 0.};
+  Double_t binupSPDV0MNch[3] = {200., 1000.,400.};
+
+  fSPDNtrCorrVsV0MCorrVsNch = new THnSparseF("fSPDNtrCorrVsV0MCorrVsNch", "fSPDNtrCorrVsV0MCorrVsNch;SPD;V0M;Nch", 3, nbinsSPDV0MNch,binlowSPDV0MNch,binupSPDV0MNch);
+  fSPDNtrCorrVsV0MCorrVsNch->Sumw2();
+  fOutputList->Add(fSPDNtrCorrVsV0MCorrVsNch);
+
   
   	
 	// ----- weights for tagging efficiency -----
@@ -1442,10 +1466,17 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 
 
 	if(fIsMC) 
-	{ 
+	{ 	
 		Int_t nch = GetNcharged();
+
+		Double_t SPDV0MNch[3];
+		SPDV0MNch[0]=SPDntr;
+		SPDV0MNch[1]=V0Mmult;
+		SPDV0MNch[2]=nch;
+
 		SPDNtrCorrVsNch->Fill(SPDntr,nch);
 		V0MCorrVsNch->Fill(V0Mmult,nch);
+		fSPDNtrCorrVsV0MCorrVsNch->Fill(SPDV0MNch);
 		fNchVsZvtx->Fill(Zvertex,nch);
 	}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1533,9 +1564,16 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 			fdEdxVsP_TPC_cut->Fill(p,dEdx_TPC);
 			fnSigmaVsP_TPC_cut->Fill(p,fTPCnSigma);
 			fnSigmaVsEta_TPC_cut->Fill(eta,fTPCnSigma);
-       		
-			fnSigmaVsP_TPC_cut_multV0M->Fill(p,fTPCnSigma,V0Mmult);
-			fnSigmaVsP_TPC_cut_multSPD->Fill(p,fTPCnSigma,SPDntr);
+       			
+			Double_t TPCnsigmult[4];
+    	  		TPCnsigmult[0]=p;
+		    	TPCnsigmult[1]=fTPCnSigma;
+        		TPCnsigmult[2]=SPDntr;
+        		TPCnsigmult[3]=V0Mmult;
+			fnSigmaVsP_TPC_cut_mult->Fill(TPCnsigmult);
+
+			//fnSigmaVsP_TPC_cut_multV0M->Fill(p,fTPCnSigma,V0Mmult);
+			//fnSigmaVsP_TPC_cut_multSPD->Fill(p,fTPCnSigma,SPDntr);
        	
       if(fIsMC && track->GetLabel()>=0)
    		{
@@ -1800,16 +1838,17 @@ void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODT
         recg.GetMass(mass,width);
         // Mother associated track
         
-        Double_t invms[4];
-    	  invms[0]=track->Pt();
-		    invms[1]=source;
+        Double_t invms[5];
+    	invms[0]=track->Pt();
+	invms[1]=source;
         invms[2]=mass;
         invms[3]=SPDntr1;
+	invms[4]=V0Mmult1;
         
         if(fFlagULS){
         	fInvMULS->Fill(track->Pt(),mass);
-        	fInvMULS_multV0M->Fill(track->Pt(),mass,V0Mmult1);
-        	fInvMULS_multSPD->Fill(track->Pt(),mass,SPDntr1);
+        	//fInvMULS_multV0M->Fill(track->Pt(),mass,V0Mmult1);
+        	//fInvMULS_multSPD->Fill(track->Pt(),mass,SPDntr1);
         	
         	fInvMULSnSp->Fill(invms);
 			if(source==kPi0NoFeedDown)fInvMULSpi0->Fill(track->Pt(),mass);

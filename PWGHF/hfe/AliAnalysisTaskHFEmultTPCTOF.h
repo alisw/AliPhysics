@@ -193,8 +193,8 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	  
 	TH1F        *fNentries;         	//!histogram with number of events on output slot 2 
 	TH1F        *fNentries2;         	//!histogram with number of events on output slot 3 
-	TF1					*fLandau;//!
-	TF1					*fErr;//!
+	TF1	   *fLandau;//!
+	TF1	   *fErr;//!
 	  
 	TH1D *fHadCot_Landau;//!
 	TH1D *fHadCot_Err;	//!
@@ -218,11 +218,8 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	TH2F *fHadV0MErr;//!
   	TH2F *fHadSPDErr;//!
   	
-  	TH3F *fnSigmaVsP_TPC_cut_multV0M;//!
-  	TH3F *fnSigmaVsP_TPC_cut_multSPD;//!
-  	TH3F *fnSigmaVsPt_TPC_cut_multV0M;//!
-  	TH3F *fnSigmaVsPt_TPC_cut_multSPD;//!
-		
+	THnSparseF *fnSigmaVsP_TPC_cut_mult;//!
+  		
 	//===============NonHFE========================================
 	TH1F        *fPtHFEMCtot;//!
 	TH2F        *fPtHFEMCtot_SPD;//!
@@ -239,19 +236,19 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH2F        *fPtHFEMC_aftertracktofcuts_V0M;//!
 
 	
-	TH1F        *fPte_ULS; //ULS elec Pt
-   TH1F        *fPte_LS;// LS elec pt  
-   TH1F        *fInvmassLS1; //LS Invmass 
-   TH1F        *fInvmassULS1;//ULS Invmass
+	TH1F        *fPte_ULS; //! ULS elec Pt
+   TH1F        *fPte_LS;//! LS elec pt  
+   TH1F        *fInvmassLS1; //! LS Invmass 
+   TH1F        *fInvmassULS1;//! ULS Invmass
    
-   TH2F        *fPte_ULS_multV0M; //ULS elec Pt
-   TH2F        *fPte_LS_multV0M;// LS elec pt 
+   TH2F        *fPte_ULS_multV0M; //! ULS elec Pt
+   TH2F        *fPte_LS_multV0M;//! LS elec pt 
    
-   TH2F        *fPte_ULS_multSPD; //ULS elec Pt
-   TH2F        *fPte_LS_multSPD;// LS elec pt 
+   TH2F        *fPte_ULS_multSPD; //! ULS elec Pt
+   TH2F        *fPte_LS_multSPD;//! LS elec pt 
    
-   TH1F        *fPt_elec_phot;//
-   TH1F        *fPt_elec_phot1;//
+   TH1F        *fPt_elec_phot;//!
+   TH1F        *fPt_elec_phot1;//!
    TH1F        *fpt_e_nonphot_MC;//!
    TH1F        *fElecNos;//!
    TH1F        *fPT_elec_MCtrue;//!
@@ -273,8 +270,6 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
    AliAODMCParticle 	*fMCparticle;//
    AliAODMCParticle 	*fMCmother;//
    
-   TH3F				*fInvMULS_multV0M;//!
-   TH3F				*fInvMULS_multSPD;//!
    TH2F        *fPt_elec_phot_multV0M;//!
    TH2F        *fPt_elec_phot_multSPD;//!
    TH2F        *fPt_elec_phot1_multV0M;//!
@@ -346,7 +341,8 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	TH2F *fMultV0M_vs_alimult;//!
   	TH2F *fNchVsZvtx;//!
   	TH2F *SPDNtrCorrVsNch;//!
-		TH2F *V0MCorrVsNch;//!
+	TH2F *V0MCorrVsNch;//!
+	THnSparseF  *fSPDNtrCorrVsV0MCorrVsNch;//!
   
   	
 	//-------------------------------------------------------------------------------------
