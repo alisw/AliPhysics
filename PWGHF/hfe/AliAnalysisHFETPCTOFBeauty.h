@@ -112,7 +112,8 @@ private:
     //Correlation cuts between TPC and SPD vertexes
     Bool_t PassCorrCuts(AliAODEvent *fAOD);
     
-    
+    //Function that gives DCA resolution in MC
+    Float_t GetDCAResolMC(Float_t x);
     
     // ------------------------------------------
     
@@ -163,6 +164,7 @@ private:
     TH1F				*fNevent_corrcut;//!
     TH1F				*fNevent_no_vertex; //!
     TH1F				*fNevent_no_vertex_2; //!
+    TH1F				*fNeventAnalized;//!
     TH1F				*fCent;	//!
     TH1F				*fCent2;	//!
     TH2F				*fTPC_p1;//!
@@ -210,6 +212,8 @@ private:
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F                *fDCAxy_pt_had_ResCorr;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
@@ -223,6 +227,9 @@ private:
 	TH1F				*fPtBeautyGenerated;
 	TH1F				*fPtBeautyReconstructedTracks;
 	TH1F				*fPtBeautyReconstructedTracksPID;
+	TH1F				*fPtBeautyReconstructedTracksPIDTPC;
+	TH1F				*fPtBeautyReconstructedTracksPIDTOF;
+	TH1F				*fResGausCorr; //! DCA resolution correction (the gaussian that is convoluted)
     
     TH2F				*hCharmMotherPt_vsElecPt;
     TH2F				*hElecPt_vsCharmMotherPt;
