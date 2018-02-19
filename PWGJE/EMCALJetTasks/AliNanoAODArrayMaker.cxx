@@ -12,6 +12,7 @@
 #include "AliAODTrack.h"
 
 #include <TClonesArray.h>
+#include <TRandom3.h>
 
 #include "AliNanoAODArrayMaker.h"
 
@@ -19,7 +20,7 @@ ClassImp(AliNanoAODArrayMaker)
 
 //________________________________________________________________________
 AliNanoAODArrayMaker::AliNanoAODArrayMaker(const char *name) 
-  : AliAnalysisTaskSE(name), fOutputArrayName(), fOutputArray(0), fOutputArrayPythiaName(), fPythiaArray(0), fOutputList(0x0)
+  : AliAnalysisTaskSE(name), fOutputArrayName(), fOutputArray(0), fOutputArrayPythiaName(), fPythiaArray(0), fTrackEffPythia(1.0), fTrackEffData(1.0), fRandom(), fOutputList(0x0)
 {
   // Constructor
 
@@ -33,6 +34,8 @@ void AliNanoAODArrayMaker::UserCreateOutputObjects()
 {
   // Create arrays and set names
   // Called once
+
+  fRandom = new TRandom3(0);
 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE); 
@@ -88,16 +91,22 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
    AliNanoAODTrack *nanoTrack = (AliNanoAODTrack*) particleArray->At(iPart);
     
     if (nanoTrack->GetVar(indexIsPyth)==1){
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEffPythia < 1.0 && fTrackEffPythia < fRandom->Rndm())
+        continue;
       GetAODTrack(newTrack, nanoTrack);
       new ((*fPythiaArray)[accTracksPythia]) AliAODTrack(*newTrack);
-      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
       accTracksPythia++;
     }else{
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEffData < 1.0 && fTrackEffData < fRandom->Rndm())
+        continue;
       GetAODTrack(newTrack, nanoTrack,indexHybGlob);
       new ((*fDataArray)[accTracksData]) AliAODTrack(*newTrack);
-      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
       accTracksData++;
     }
+
+    new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
     accTracks++;
   }
   
