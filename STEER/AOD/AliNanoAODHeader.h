@@ -1,3 +1,4 @@
+/// \class AliNanoAODHeader
 
 #ifndef _ALINANOAODHEADER_H_
 #define _ALINANOAODHEADER_H_

@@ -2,20 +2,17 @@
  * See cxx source for full Copyright notice                               */
 
 
-//-------------------------------------------------------------------------
 /// \class AliAODCaloCells
 /// \brief Class for calorimeter cell AOD data handling
 ///
 /// AOD class to store calorimeter cell data
 ///
 /// Data is stored in different arrays, each entry of the array corresponding to a cell.
-/// The data stored is the cell energy, time, high gain bool, absolute id number, 
+/// The data stored is the cell energy, time, high gain bool, absolute id number,
 /// MC label that deposited most energy, and a container for the MC embedded energy.
 ///
 /// \author Markus Oldenburg, CERN.
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
-///
-//-------------------------------------------------------------------------
 
 #ifndef ALIAODCELLS_H
 #define ALIAODCELLS_H
@@ -77,30 +74,30 @@ class AliAODCaloCells : public AliVCaloCells
   Int_t       fNCells;       ///< Number of cells.
   
   /// If Cell is High Gain or Low Gain
-  Bool_t     *fHGLG;         //[fNCells] 
+  Bool_t     *fHGLG;         //[fNCells]
   
   /// Array of cell absolute Id. numbers.
-  Short_t    *fCellNumber;   //[fNCells] 
+  Short_t    *fCellNumber;   //[fNCells]
   
   /// Array with cell amplitudes (= energy!).
-  Double32_t *fAmplitude;    //[fNCells][0.,0.,16] 
+  Double32_t *fAmplitude;    //[fNCells]
   
   /// Array with cell times.
-  Double32_t *fTime;         //[fNCells][0.,0.,16] 
+  Double32_t *fTime;         //[fNCells]
   
   /// Array with fraction of MC energy and data - for embedding.
-  Double32_t *fEFraction;    //[fNCells][0.,0.,16] 
+  Double32_t *fEFraction;    //[fNCells]
   
-  ///  Array of MC labels, each label is the highest contributor to the cell signal.
+  /// Array of MC labels, each label is the highest contributor to the cell signal.
   Int_t      *fMCLabel;      //[fNCells]
   
   Bool_t      fIsSorted;     //!<! True if cell arrays are sorted by index.
   
   Char_t      fType;         ///< Cell type
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODCaloCells, 5) ;
-  /// \endcond
+
 
 };
 

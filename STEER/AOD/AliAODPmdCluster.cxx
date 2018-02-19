@@ -15,14 +15,11 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     AOD PMD cluster class
-//     Author: Markus Oldenburg, CERN
-//-------------------------------------------------------------------------
-
 #include "AliAODPmdCluster.h"
 
+
 ClassImp(AliAODPmdCluster)
+
 
 //______________________________________________________________________________
 AliAODPmdCluster::AliAODPmdCluster() : 
@@ -45,7 +42,8 @@ AliAODPmdCluster::AliAODPmdCluster(Int_t id,
   AliAODCluster(id, nLabel, label, energy, x, pid, ttype),
   fAssocCluster(assoc)
 {
-  // constructor
+  /// constructor
+
 }
 
 //______________________________________________________________________________
@@ -61,14 +59,16 @@ AliAODPmdCluster::AliAODPmdCluster(Int_t id,
   AliAODCluster(id, nLabel, label, energy, x, pid, ttype),
   fAssocCluster(assoc)
 {
-  // constructor
+  /// constructor
+
 }
 
 
 //______________________________________________________________________________
 AliAODPmdCluster::~AliAODPmdCluster() 
 {
-  // destructor
+  /// destructor
+
 }
 
 
@@ -77,13 +77,15 @@ AliAODPmdCluster::AliAODPmdCluster(const AliAODPmdCluster& clus) :
   AliAODCluster(clus),
   fAssocCluster(clus.fAssocCluster)
 {
-  // Copy constructor
+  /// Copy constructor
+
 }
 
 //______________________________________________________________________________
 AliAODPmdCluster& AliAODPmdCluster::operator=(const AliAODPmdCluster& clus)
 {
-  // Assignment operator
+  /// Assignment operator
+
   if(this!=&clus) {
 
     AliAODCluster::operator=(clus);

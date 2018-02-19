@@ -1,3 +1,4 @@
+
 #include "AliNanoAODTrackMapping.h"
 #include "TString.h"
 #include "TObjArray.h"
@@ -6,7 +7,9 @@
 #include <iostream>
 
 
+
 ClassImp(AliNanoAODTrackMapping)
+
 
 AliNanoAODTrackMapping * AliNanoAODTrackMapping::fInstance = 0;
 TString  AliNanoAODTrackMapping::fMappingString = "";
@@ -50,7 +53,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTPCnclsS(-1),
   fFilterMap(-1)
 { 
-  // default ctor
+  /// default ctor
+
   for(Int_t i=0; i<21;i++){
   fcovmat[i]=-1;
   }
@@ -95,7 +99,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTPCnclsS(-1),
   fFilterMap(-1)
 {
-  // ctor
+  /// ctor
 
   for(Int_t i=0; i<21;i++){
   fcovmat[i]=-1;
@@ -248,7 +252,8 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
 }
 
 const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
-  // Get Variable name from index
+  /// Get Variable name from index
+
     if     (index == fPt               )  return "pt"               ;
     else if(index == fPhi              )  return "phi"              ;
     else if(index == fTheta            )  return "theta"            ;

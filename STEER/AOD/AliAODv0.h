@@ -3,11 +3,11 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//-------------------------------------------------------------------------
-//     Analysis Oriented Data (AOD) V0 vertex class
-//     Authors: B.Hippolyte, IPHC, hippolyt@in2p3.fr 
-//              G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
-//-------------------------------------------------------------------------
+/// \class AliAODv0
+/// \brief Analysis Oriented Data (AOD) V0 vertex class
+///
+/// \author G.Van Buren, BNL,  gene@bnl.gov
+/// \author B.Hippolyte, IPHC, hippolyt@in2p3.fr
 
 #include "AliAODRecoDecay.h"
 
@@ -90,10 +90,12 @@ public:
 
   
 protected:
-  Double32_t fDcaV0ToPrimVertex;    // dca of V0 to primary vertex 
-  Bool_t     fOnFlyStatus;          // if kTRUE, then this V0 is recontructed
+  Double32_t fDcaV0ToPrimVertex;    ///< dca of V0 to primary vertex
+  Bool_t     fOnFlyStatus;          ///< if kTRUE, then this V0 is recontructed
                                     // "on fly" during the tracking
+
   ClassDef(AliAODv0,2)
+
 };
 
 inline Double_t AliAODv0::DecayVertexV0X() const {return this->GetSecVtxX();}
