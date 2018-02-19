@@ -108,8 +108,6 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->Add(new TH2D("hybrid","hybrid",200,-4.0,6.0, 200, 0, 2*TMath::Pi()));
 
-
-
     fEventList->SetName("EventInfo");
 
     fOutputList->Add(new TH3F("NUAforward","NUAforward", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),20,-10,10));

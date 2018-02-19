@@ -20,7 +20,8 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   nuacentral(),
   nuaforward(),
   doNUA(false),
-  gap(0.0)
+  gap(0.0),
+  mc(false)
 {
 
 

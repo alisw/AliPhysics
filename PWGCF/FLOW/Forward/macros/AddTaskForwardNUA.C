@@ -21,7 +21,6 @@
  */
 AliAnalysisTaskSE* AddTaskForwardNUA()
 {
-  Bool_t etagap = true;
   Int_t mode = kRECON;
 
   std::cout << "AddTaskForwardNUA" << std::endl;
@@ -36,33 +35,11 @@ AliAnalysisTaskSE* AddTaskForwardNUA()
 
   TString resName = "awesome";
 
-  if (etagap){
-    // if etagap otherwise comment out, and it will be standard
-    task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
-    task->fSettings.fNRefEtaBins = 1;
-  }
+
+  
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
   }
-  task->fSettings.fUseFMD = true;
-  // task->fSettings.fUseV0 = true;
-  // V0 has only 8 segments in phi
-  if (task->fSettings.fUseFMD) {
-    task->fSettings.fNPhiBins = 20;
-  } else if (task->fSettings.fUseV0) {
-    task->fSettings.fNPhiBins = 8;
-  }
-  
-  task->fSettings.fUseSPDtracklets = true;
-
-  task->fSettings.fZVtxAcceptanceLowEdge = -10;
-  task->fSettings.fZVtxAcceptanceUpEdge = 10;
-  task->fSettings.fNZvtxBins = 20;
-
-  // Remember to disable multselection framework if necessary!
-  task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
-
 
   if (mode == kRECON) {
     AliAnalysisDataContainer *coutput_recon =

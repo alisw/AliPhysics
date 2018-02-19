@@ -1,10 +1,10 @@
 //
 // Calculate the flow in the forward regions using the Q cumulants method
 //
-#ifndef AliForwardFlowRun2Task_H
-#define AliForwardFlowRun2Task_H
+#ifndef AliForwardMCClosure_H
+#define AliForwardMCClosure_H
 /**
- * @file AliForwardFlowRun2Task.h
+ * @file AliForwardMCClosure.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
  * 
  * @brief
@@ -49,30 +49,30 @@ class AliESDEvent;
  * @ingroup pwglf_forward_flow
  *
  */
-class AliForwardFlowRun2Task : public AliAnalysisTaskSE
+class AliForwardMCClosure : public AliAnalysisTaskSE
 {
 public:
   /** 
    * Constructor 
    */
-  AliForwardFlowRun2Task();
+  AliForwardMCClosure();
   /** 
    * Constructor
    * 
    * @param name Name of task 
    */
-  AliForwardFlowRun2Task(const char* name);
+  AliForwardMCClosure(const char* name);
   /**
    * Destructor
    */
-  virtual ~AliForwardFlowRun2Task() {}
+  virtual ~AliForwardMCClosure() {}
 
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliForwardFlowRun2Task(const AliForwardFlowRun2Task& o);
+  AliForwardMCClosure(const AliForwardMCClosure& o);
 
   /** 
    * @{ 
@@ -132,7 +132,7 @@ TF1 *fMultCentLowCut; //!
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
 
-  ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
+  ClassDef(AliForwardMCClosure, 1); // Analysis task for flow analysis
 };
 
 #endif

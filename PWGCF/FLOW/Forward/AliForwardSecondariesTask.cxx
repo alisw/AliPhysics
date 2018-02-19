@@ -14,7 +14,8 @@
 #include <TInterpreter.h>
 #include <TList.h>
 #include <THn.h>
-
+#include "AliGenEventHeaderTunedPbPb.h"
+#include "TGraph.h"
 
 #include <vector>
 #include <numeric>
@@ -29,6 +30,8 @@
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 
+#include "AliGenEventHeaderTunedPbPb.h"
+#include "AliAODMCHeader.h"
 
 #include "AliLog.h"
 #include "AliForwardSecondariesTask.h"
@@ -69,14 +72,14 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fStdQCList(0), 
   fGFList(0),
   fEventList(0),
+  fGammaList(0),
+  fAutoCorrection(0),
   fRandom(0),
   fSettings(),
-  fEventCuts(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
       fdNdeta(0),
-    fEventCounter(0),
     fPiCheck(0),
     fdNdetaOrigin(0),
     fxray(0),
@@ -100,14 +103,14 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fStdQCList(0), 
   fGFList(0),
   fEventList(0),
+  fGammaList(0),
+  fAutoCorrection(0),
   fRandom(0),
   fSettings(),
-  fEventCuts(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
       fdNdeta(0),
-    fEventCounter(0),
     fPiCheck(0),
     fdNdetaOrigin(0),
     fxray(0),
@@ -139,89 +142,16 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
   this->fOutputList = new TList();
   this->fOutputList->SetOwner(kTRUE);
-  this->SetupCuts();
-  {
-    // Dimensions: chaintype, eta_prim, eta_sec, phi_prim, phi_sec, p_prim
-    const Int_t ndims = 6;
-    Int_t dims[ndims] = {17, 17, 20, 20, 1, cPrimaryType::kNSPECIES};
-    Double_t mins[ndims] = {-3.5, -3.5, 0, 0, 0, 0};
-    Double_t maxs[ndims] = {5.0, 5.0, 2*TMath::Pi(), 2*TMath::Pi(), 10, cPrimaryType::kNSPECIES};
-    this->fNsecondaries = new THnF("Nsecondaries",
-           ("N_{sec};"
-            "#eta_{prim};#eta_{sec};"
-            "#varphi_{prim};#varphi_{sec};"
-            "p_{prim};"
-            "type;"),
-           ndims,
-           dims,
-           mins,
-           maxs
-           );
-    TAxis *ax = this->fNsecondaries->GetAxis(ndims-1);
-    ax->SetBinLabel(cPrimaryType::kPI0 + 1, "#pi_{0}");
-    ax->SetBinLabel(cPrimaryType::kPICHARGED + 1, "#pi_{ch}");
-    ax->SetBinLabel(cPrimaryType::kOTHERS + 1, "others");
-    this->fOutputList->Add(this->fNsecondaries);
-  }
-  {
-    Int_t ndims = 3;
-    Int_t dims[] = {cPrimaryType::kNSPECIES, 50, 20};
-    Double_t mins[] = {0, -4., 0};
-    Double_t maxs[] = {cPrimaryType::kNSPECIES, 6., 5};
-    this->fNprimaries = new THnF("Nprimaries", "N_{prim};species;#eta;p;",
-         ndims,
-         dims,
-         mins,
-         maxs);
-    TAxis *ax = this->fNprimaries->GetAxis(0);
-    ax->SetBinLabel(cPrimaryType::kPI0 + 1, "#pi_{0}");
-    ax->SetBinLabel(cPrimaryType::kPICHARGED + 1, "#pi_{ch}");
-    ax->SetBinLabel(cPrimaryType::kOTHERS + 1, "others");
-    this->fOutputList->Add(this->fNprimaries);
-  }
-  // dN/deta with origin
-  {
-    this->fdNdetaOrigin = new TH2F("dNdetaOrigin", "dN/d#eta Origins",
-           180, -4, 5,
-           cOriginType::kNORIGINTYPES, 0, cOriginType::kNORIGINTYPES);
-    TAxis *ax = this->fdNdetaOrigin->GetYaxis();
-    ax->SetBinLabel(cOriginType::kPRIMARY + 1, "Primary");
-    ax->SetBinLabel(cOriginType::kEARLYDECAY + 1, "Early decay");
-    ax->SetBinLabel(cOriginType::kPIPE + 1, "Beam pipe");
-    ax->SetBinLabel(cOriginType::kITS + 1, "ITS & support structure");
-    ax->SetBinLabel(cOriginType::kFMD + 1, "FMD & support structure");
-    ax->SetBinLabel(cOriginType::kOTHER + 1, "Others");
-    this->fOutputList->Add(this->fdNdetaOrigin);
-  }
-  this->fxray = new TH2F("xray", "xray;z;r",
-       900, -100, 350, // z
-       400, 0, 100);    // r
-  this->fOutputList->Add(this->fxray);
 
-  this->fPiCheck = new TH1F("pi0check", "pi0check", cPrimaryType::kNSPECIES, 0, cPrimaryType::kNSPECIES);
-  this->fPiCheck->GetXaxis()->SetBinLabel(cPrimaryType::kPI0 + 1, "#pi_{0}");
-  this->fPiCheck->GetXaxis()->SetBinLabel(cPrimaryType::kPICHARGED + 1, "#pi_{ch}");
-  this->fPiCheck->GetXaxis()->SetBinLabel(cPrimaryType::kOTHERS + 1, "others");
-  this->fOutputList->Add(this->fPiCheck);
+  //fEventCuts.AddQAplotsToList(fOutputList);
 
-  this->fdNdeta = new TH1F("dNdeta", "dNdeta;#eta;counts",
-         80, -3.1, 4.9);
-  this->fOutputList->Add(this->fdNdeta);
-  this->fEventCounter = new TH1F("EventCounter", "events vs z;z;counts",
-         20, -20, 20);
-  this->fOutputList->Add(this->fEventCounter);
-
-
-
-  fEventCuts.AddQAplotsToList(fOutputList);
-
-    TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars). 
+    TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars). 
                                         // Needs to be created here, otherwise it will draw the same random number.
 
-    fStdQCList = new TList(); 
-    fGFList = new TList();
-    fStdQCList->SetName("StdQC"); 
-    fGFList->SetName("GF");
+    fGammaList = new TList(); 
+    fAutoCorrection = new TList();
+    fGammaList->SetName("Gammas");
+    fAutoCorrection->SetName("AutoCorrection");
 
     fEventList = new TList();
 
@@ -231,75 +161,24 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
 
-
-
     fEventList->SetName("EventInfo");
 
-    fStdQCList->Add(new TList());
-    fStdQCList->Add(new TList());
-    static_cast<TList*>(fStdQCList->At(0))->SetName("Reference");
-    static_cast<TList*>(fStdQCList->At(1))->SetName("Differential");  
+    fAutoCorrection->Add(new TList());
 
-    fGFList->Add(new TList());
-    fGFList->Add(new TList());   
-    fGFList->Add(new TList());   
-    static_cast<TList*>(fGFList->At(0))->SetName("Reference");
-    static_cast<TList*>(fGFList->At(1))->SetName("Differential"); 
-    static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection"); 
+    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fQcorrfactor", "fQcorrfactor", 20, -10, 10, 1, -6.0, 6.0)); //(eta, n)
+    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fpcorrfactor", "fpcorrfactor", 20, -10, 10, fSettings.fNDiffEtaBins, -6.0, 6.0)); //(eta, n)
 
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, -6.0, 6.0)); //(eta, n)
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, -6.0, 6.0)); //(eta, n)
+    Int_t bins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 20, fSettings.fCentBins, 24} ;
+    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi() + TMath::Pi()/10.0, 100, 6};
+    Int_t dimensions = 5;
+    static_cast<TList*>(fGammaList)->Add(new THnD("fgammas", "fgammas", dimensions, bins, xmin, xmax)); //(samples,vertex, phi, cent, eta)
+    static_cast<TList*>(fGammaList)->Add(new THnD("fnoPrim", "fnoPrim", dimensions, bins, xmin, xmax)); //(samples,vertex, phi, cent, eta)
 
- // fQcorrfactor = new THnD("fQcorrfactor", "fQcorrfactor", corrdimensions, rcorrbins, cxmin, cxmax);
-//  fpcorrfactor = new THnD("fpcorrfactor", "fpcorrfactor", corrdimensions, dcorrbins, cxmin, cxmax);
-//  fqcorrfactor = new THnD("fqcorrfactor", "fqcorrfactor", corrdimensions, dcorrbins, cxmin, cxmax);
-
-    fOutputList->Add(fStdQCList);
-    fOutputList->Add(fGFList);
-
+    fOutputList->Add(fGammaList);
+    //fOutputList->Add(fGFList);
     fOutputList->Add(fEventList);
 
-    // do analysis to a maximum of v_5
-    Int_t fMaxMoment = 5;
-    // create a THn for each harmonic
-    for (Int_t n = 2; n <= fMaxMoment; n++) {
-
-      Int_t dimensions = 5;
-
-      Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-      Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-      Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -6.0, 0, 0};
-      Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, (double)(fSettings.kSinphi1phi2phi3p+1)};
-
-      // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
-      static_cast<TList*>(fGFList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
-      static_cast<TList*>(fGFList->At(1))->Add(new THnD(Form("cumuDiff_v%d", n),Form("cumuDiff_%d", n), dimensions, dbins, xmin, xmax));
-      static_cast<TList*>(fStdQCList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
-      static_cast<TList*>(fStdQCList->At(1))->Add(new THnD(Form("cumuDiff_v%d", n),Form("cumuDiff_%d", n), dimensions, dbins, xmin, xmax));
-
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(4)->SetName("identifier");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(4)->SetName("identifier");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fGFList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(1))->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(1))->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(1))->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(1))->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(1))->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
-
-
-    }
     PostData(1, fOutputList);
   }
 
@@ -315,72 +194,254 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
   //
   AliMCEvent* fAOD = this->MCEvent();
   AliStack* stack = fAOD->Stack();
+  if(!fAOD) {
+        std::cout << "no aod" << std::endl;
+
+    return;
+    }              
+
+    //std::cout << "fMC->GetNumberOfTracks()" << fAOD->GetNumberOfTracks() << std::endl;
+
   if (!stack) {
+    std::cout << "no stack" << std::endl;
     return;
   }
+
   // Disregard events without reconstructed vertex
   Float_t event_vtx_z = fAOD->GetPrimaryVertex()->GetZ();
   if (!(TMath::Abs(event_vtx_z) > 0)) {
     return;
   }
-  this->fEventCounter->Fill(event_vtx_z);
 
-  
+
+
+
+    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+  AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+
+  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20, 
+          11.38, 12.47, 13.50, 14.51, 16.679};
+  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40., 
+          50.,   60.,   70.,   80.,  100.};
+
+  Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
+  TGraph* fImpactParToCent = new TGraph(nPoints, impactParam, centrality);
+  std::cout << fAOD->GetCentrality()->GetCentralityPercentile("V0M") std::endl;
+
+    double fCent = 0;
+    if (fAODMCHeader){
+  AliGenEventHeaderTunedPbPb* header = 
+    dynamic_cast<AliGenEventHeaderTunedPbPb*>(fAODMCHeader->GetCocktailHeader(0));
+  if (header) fCent = header->GetCentrality();}
+
+    double cent = 0;
+
+
+if (fAODMCHeader){
+  Double_t b = fAODMCHeader->GetImpactParameter();
+  cent = fImpactParToCent->Eval(b);
+}
+
+std::cout << fCent << std::endl;
+std::cout << cent << std::endl;
+
+
+
   //..AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fAOD)) {
-  	std::cout << "Not accepted by EventCuts" << std::endl;
-    PostData(1, fOutputList);
-    return;
-  }  
-
-
-  //..get variables for additional event selection cuts (from Alex)
-  float v0Centr = 0;
-
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+  //if(!fEventCuts.AcceptEvent(fAOD)) {
+  	//std::cout << "Not accepted by EventCuts" << std::endl;
+    //PostData(1, fOutputList);
+    //return;
+  //}  GetCentralityPercentile
+    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    //float v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+//std::cout << "CENT = " << v0Centr << std::endl;
+  //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  float v0cent = 5.;//fAOD->GetCentrality()->GetCentralityPercentile("V0M");
+  //std::cout << MultSelection->GetMultiplicityPercentile("V0M") << std::endl;
 
   // Get detector objects
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
 
-TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
+  TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
+  TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
 
-  Int_t  iTracks(fAOD->GetNumberOfTracks());
-  for(Int_t i(0); i < iTracks; i++) {
+  // Small helper function to get the eta value of a hit
+  auto get_ref_eta = [event_vtx_z](AliTrackReference *ref) {
+           Double_t new_ref_z = ref->Z() - event_vtx_z;
+           Double_t ref_r = TMath::Sqrt(ref->X()*ref->X() + ref->Y()*ref->Y());
+           Double_t theta = TMath::ATan2(ref_r, new_ref_z);
+           if (theta < 0){
+       theta += TMath::TwoPi();
+           }
+           Double_t ref_eta = -TMath::Log(TMath::Tan(theta/2.));
+           return ref_eta;
+         };
 
-    // loop  over  all  the  tracks
-    AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-    if (track->TestFilterBit(kHybrid)){
-      if (track->Pt() >= 0.2 && track->Pt() <= 5){
-        spddNdedp.Fill(track->Eta(),track->Phi(), 1);
-      }
+  Int_t nTracks   = stack->GetNtrack();
+  Int_t nPrim     = stack->GetNprimary();
+std::cout << "nPrim = " << nPrim << std::endl;
+
+    
+  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+
+  static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
+  static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+
+  THnD* fgammas = static_cast<THnD*>(fGammaList->FindObject("fgammas"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
+  THnD* fnoPrim = static_cast<THnD*>(fGammaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
+  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+
+  const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
+  Double_t vertex  = aodVtx->GetZ();
+  //std::cout << "nTracks " << nTracks << std::endl;
+  //std::cout << "nPrim " << nPrim << std::endl;
+
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+        AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+        //std::cout << p->Eta() << std::endl;
+    if (AliTrackReference *ref = this->IsHitFMD(p)) {
+      //std::cout << "Hit in FMD!!!!" << std::endl;
+      forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
+    }
+    if (AliTrackReference *ref = this->IsHitTPC(p)) {
+      //std::cout << "Hit in TPC!!!!" << std::endl;
+
+      spddNdedp.Fill(p->Eta(),p->Phi(),1);
     }
   }
 
 
-  TH2D& forwarddNdedp = aodfmult->GetHistogram(); // also known as dNdetadphi
+  bool useEvent = kTRUE;
 
-  if(!fAOD) return;              
-  Float_t lPerc = v0Centr; 
-    
-    UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  if (nTracks < 10) useEvent = kFALSE;
 
-      static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(lPerc);
-      static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+  Int_t nBadBins = 0;
+  Int_t phibins = forwarddNdedp.GetNbinsY();
+  TString detType = "forward";
+  Double_t totalFMDpar = 0;
 
-      AliForwardGenericFramework calculator = AliForwardGenericFramework();
-      calculator.fSettings = fSettings;
+  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
+  
+    Double_t acceptance = 1.;
+    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
+    Double_t runAvg = 0;
+    Double_t avgSqr = 0;
+    Double_t max = 0;
+    Int_t nInAvg = 0;
 
-      calculator.CumulantsAccumulate(spddNdedp,fOutputList, lPerc, event_vtx_z,"central");
 
-      if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, lPerc, event_vtx_z,"forward");
-      if (calculator.useEvent) calculator.saveEvent(fOutputList, lPerc, event_vtx_z,  randomInt);
-      calculator.reset();
+    for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
+  
+      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
+      if (!weight){
+        weight = 0;
+      }
+      totalFMDpar += weight;
+      
+      // We calculate the average Nch per. bin
+      avgSqr += weight*weight;
+      runAvg += weight;
+      nInAvg++;
+      if (weight == 0) continue;
+      if (weight > max) {
+        max = weight;
+      }
+    } // End of phi loop
+
+    // Outlier cut calculations
+    double fSigmaCut = 4.0;
+    if (nInAvg > 0) {
+      runAvg /= nInAvg;
+      avgSqr /= nInAvg;
+      Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
+      Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
+      if (fSigmaCut > 0. && nSigma >= fSigmaCut && v0cent < 60) nBadBins++;
+      else nBadBins = 0;
+      // We still finish the loop, for fOutliers to make sense, 
+      // but we do no keep the event for analysis 
+      if (nBadBins > 3) useEvent = kFALSE;
+     //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
+    }
+  } // End of eta bin
+  if (totalFMDpar < 10) useEvent = kFALSE;
+  //if (totalFMDpar < 10) std::cout << "TOTAl FMD PARTICLES < 10" << std::endl;
+  //std::cout << "TOTAl FMD PARTICLES = " << totalFMDpar << std::endl;
+
+
+  if (useEvent){ 
+  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  std::vector< Int_t > listOfMothers;
+
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+
+    // Ignore things that do not make a signal in the FMD or ITS
+    if (this->IsHitFMD(p) || this->IsHitTPC(p)){// { && p->Charge()!=0
+      //std::cout << "hit in the FMD" << std::endl;
+      //if (!hasParticleMaterialInteractionInAncestors(p)) continue;
+      //std::cout << "particle is from material" << std::endl;
+      AliMCParticle* mother = GetMother(p); //ok
+
+
+      if (!mother) continue;
+
+
+      //if (mother->Charge() == 0) continue;
+      //if (p->Charge() == 0) continue;
+      //std::cout << "mother charge = " << mother->Charge() << std::endl;
+
+      Double_t phibin = forwarddNdedp.GetYaxis()->FindBin(p->Phi());
+      Double_t phicontent = forwarddNdedp.GetYaxis()->GetBinCenter(phibin);
+
+      Double_t phibin1 = forwarddNdedp.GetYaxis()->FindBin(mother->Phi());
+      Double_t phicontent1 = forwarddNdedp.GetYaxis()->GetBinCenter(phibin1);
+
+
+      Double_t deltaphi = phicontent1 - phicontent;
+      if (deltaphi > TMath::Pi()) deltaphi = deltaphi - TMath::TwoPi();
+      if (deltaphi <= -TMath::Pi()) deltaphi = deltaphi + TMath::TwoPi();
+      Double_t deltaphi_new = deltaphi;//Wrap02pi(deltaphi);
+      Double_t x[5] = {randomInt,event_vtx_z, deltaphi_new, v0cent, mother->Eta()};
+      fgammas->Fill(x,1);//(samples,vertex, phi, cent, eta)
+
+      Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
+      if (!isNewPrimary){
+        listOfMothers.push_back(mother->GetLabel());
+        fnoPrim->Fill(x,1);
+      }
+
+      //if (deltaphi == 0) continue;
+
+    }
+    //}
+  } // End of useEvent
+
+
 
   PostData(1, fOutputList); 
-
+}
   return;
 }
+
+Bool_t AliForwardSecondariesTask::AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v){
+
+  //Checking if v contains elements (is empty):
+  if(v.empty()){
+     return false;
+  } 
+  Int_t x = p->GetLabel();
+  if(std::find(v.begin(), v.end(), x) != v.end()) {
+      /* v contains x */
+    return true;
+  } else {
+      /* v does not contain x */
+    return false;
+  }
+
+}
+
+
 
 /// Modulo for float numbers
 ///
@@ -396,8 +457,8 @@ Double_t AliForwardSecondariesTask::Mod(Double_t x, Double_t y) {
 
 /// Wrap angle around 0 and 2pi
 Double_t AliForwardSecondariesTask::Wrap02pi(Double_t angle) {
-  const Double_t two_pi = 6.283185307179586;
-  Double_t lower_edge = 0;
+  const Double_t two_pi = TMath::Pi();
+  Double_t lower_edge = -TMath::Pi();
   Double_t interval = two_pi;
   if (lower_edge <= angle && angle < two_pi) {
     return angle;
@@ -426,6 +487,25 @@ AliMCParticle* AliForwardSecondariesTask::GetMother(AliMCParticle* p) {
     return GetMother(ancestor);
   }
 }
+
+Bool_t AliForwardSecondariesTask::hasParticleMaterialInteractionInAncestors(AliMCParticle* p){
+  AliMCEvent* event = this->MCEvent();
+
+  Bool_t pIsFromMat = event->Stack()->IsSecondaryFromMaterial(p->GetLabel());
+  // If `p` is from material, we don't need to look further
+  if (pIsFromMat) {
+    return true;
+  }
+  // `p` has no mother and is not from material interaction
+  if ((p->GetMother() < 0)) {
+    return false;
+  }
+  AliMCParticle* ancestor = dynamic_cast< AliMCParticle* >(event->GetTrack(p->GetMother()));
+  // Return the ancestor if `p` is from material but `ancestor` is not
+  // Recurse if non of the above patterns matched
+  return hasParticleMaterialInteractionInAncestors(ancestor);
+}
+
 
 AliMCParticle* AliForwardSecondariesTask::GetChargedMother(AliMCParticle* p) {
   AliMCParticle *mother = this->GetMother(p);
@@ -456,7 +536,7 @@ Bool_t AliForwardSecondariesTask::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   // Check if this is a primary originating from a pi0
   if (isPPStandardDef && pi0Candidate) {
     if (TMath::Abs(pi0Candidate->PdgCode()) == 111/*pi0*/) {
-      return false; // Don't allow stable particles stemming from pi0!
+      return false;//false; // Don't allow stable particles stemming from pi0!
     }
   }
   return isPPStandardDef;
@@ -546,10 +626,27 @@ AliMCParticle* AliForwardSecondariesTask::GetFirstNonPrimaryMother(AliMCParticle
 
 
 AliTrackReference* AliForwardSecondariesTask::IsHitFMD(AliMCParticle* p) {
+  //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
+    //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
+    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl; 
     if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
+      continue;
+    }
+    else {
+      return ref;
+    }
+  }
+  return 0x0;
+}
+
+AliTrackReference* AliForwardSecondariesTask::IsHitTPC(AliMCParticle* p) {
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+    AliTrackReference* ref = p->GetTrackReference(iTrRef);
+    // Check hit on FMD
+    if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {
       continue;
     }
     else {
@@ -641,115 +738,6 @@ Int_t AliForwardSecondariesTask::GetOriginType(AliMCParticle *p) {
 }
 
 
-void AliForwardSecondariesTask::SetupCuts() {
-  {
-    const Int_t npoints = 19;
-    const Double_t xs[npoints] = {
-      -73.46064836419426, 74.04822648521639, 75.21315343368164, 99.09415587721901,
-      98.80292414010268, 76.37808038214686, 76.52369625070503, 46.52682732772516,
-      35.60563718586357, 27.742380283723207, -30.358351270980478, -36.91106535609744,
-      -46.08486507526118, -75.06242291833397, -79.13966723796229, -102.43820620726703,
-      -101.5645109959181, -74.62557531265949, -73.46064836419426
-    };
-    const Double_t ys[npoints] = {
-      53.309457291078104, 53.236891746925636, 50.697097701589115, 49.898876715911925,
-      44.81928862523888, 41.84410131498753, 36.11142332694225, 6.43211576858122,
-      6.3595502244287445, 3.3843629141774016, 3.4569284583298696, 6.577246856886163,
-      6.649812401038631, 35.09550570880764, 41.989232403292476, 44.96441971354383,
-      50.987359878199, 51.78558086387619, 53.309457291078104
-    };
-    fITS = new TCutG("ITS", npoints, xs, ys);
-    this->fOutputList->Add(fITS);
-  }
-  {
-    const Int_t npoints = 7;
-    const Double_t xs[npoints] = {
-      318.96463952403485, 324.6855425320387, 324.7579590258109, 321.8612992749229,
-      318.7473900427183, 318.81980653649043, 318.96463952403485};
-    const Double_t ys[npoints] = {
-      3.964887267397174, 4.037452811549642, 22.68679765873494, 22.68679765873494,
-      20.87265905492314, 8.46395100485043, 3.964887267397174
-    };
-    fFMD1 = new TCutG("FMD1", npoints, xs, ys);
-    this->fOutputList->Add(fFMD1);
-  }
-  {
-    const Int_t npoints = 10;
-    const Double_t xs[npoints] = {
-      73.46576301098378, 73.61137887954195, 77.39739146205395, 77.54300733061211,
-      91.08528310652048, 91.37651484363681, 89.62912442093895, 89.33789268382264,
-      81.91148338735675, 73.46576301098378
-    };
-    const Double_t ys[npoints] = {
-      4.037452811549642, 32.84597384008101, 36.7645132243145, 41.69897022668259,
-      43.51310883049439, 33.281367104995844, 31.176966324574153, 4.25514944400706,
-      3.964887267397174, 4.037452811549642
-    };
-    fFMD2 = new TCutG("FMD2", npoints, xs, ys);
-    this->fOutputList->Add(fFMD2);
-  }
-  {
-    const Int_t npoints = 27;
-    const Double_t xs[npoints] = {
-      -65.74300733061206, -62.539458222332655, -61.81137887954188, -61.665763010983724,
-      -49.434030052098734, -46.812944418051956, -44.91993812679594, -48.85156657786612,
-      -66.32547080484468, -65.88862319917021, -73.16941662707794, -77.39227681526444,
-      -77.53789268382258, -75.64488639256658, -62.97630582800713, -74.47995944410134,
-      -74.47995944410134, -78.1203561580552, -78.99405136940413, -78.99405136940413,
-      -75.35365465545027, -74.18872770698502, -74.33434357554319, -65.5973914620539,
-      -66.76231841051914, -66.61670254196099, -65.74300733061206
-    };
-    const Double_t ys[npoints] = {
-      4.182583899854585, 3.8923217232446987, 4.182583899854585, 17.389512935604486,
-      5.416198150446611, 4.690542708921889, 6.0692880478188584, 7.448033386715828,
-      24.791198439156624, 25.44428833652887, 32.84597384008101, 36.90964431261944,
-      31.249531868726628, 31.176966324574153, 18.840823818653924, 18.840823818653924,
-      28.63717227923764, 29.653089897372247, 24.71863289500415, 18.33286500958662,
-      13.9789323604383, 15.212546611030326, 18.477996097891562, 18.477996097891562,
-      14.849718890267965, 4.908239341379307, 4.182583899854585
-    };
-    fFMD3 = new TCutG("FMD3", npoints, xs, ys);
-    this->fOutputList->Add(fFMD3);
-  }
-  {
-    const Int_t npoints = 28;
-    const Double_t xs[npoints] = {
-      -304.0187936742833, -77.6357005305573, -77.6357005305573, -46.320459980416445,
-      -44.36325744603266, 403.8361229278572, 394.70251110073286, 393.39770941114364,
-      385.5688992736084, 386.22130011840306, 361.4300680162082, 352.9488570338784,
-      93.94572165042246, 91.98851911603867, 86.76931235768188, 80.89770475453042,
-      -33.92484392931908, -45.01565829082733, -45.01565829082733, -51.539666738773235,
-      -50.88726589397868, -79.59290306494108, -80.24530390973564, -95.25052334001145,
-      -95.25052334001145, -292.9279793127751, -320.3288147941483, -304.0187936742833
-    };
-    const Double_t ys[npoints] = {
-      2.8823548793052556, 2.8823548793052556, 2.769878285868924, 2.7721278177376507,
-      2.891353006780162, 2.891353006780162, 3.116306193652825, 3.5639630355294245,
-      3.5324695893672513, 3.0645669606721126, 3.116306193652825, 3.0353230463786662,
-      3.030823982641213, 4.072357237861643, 3.9688787719002177, 3.042071641984846,
-      3.0353230463786662, 3.22653325522043, 4.052111451043103, 4.000372218062391,
-      3.6854377564406624, 3.6854377564406624, 4.387291699483371, 4.346800125846292,
-      3.5639630355294245, 3.5639630355294245, 3.0038296002164935, 2.8823548793052556
-    };
-    fPipe = new TCutG("Pipe", npoints, xs, ys);
-    this->fOutputList->Add(fPipe);
-  }
-  {
-    const Int_t npoints = 11;
-    const Double_t xs[npoints] = {
-      -302.71399198469413, -80.89770475453031, -78.94050222014641, -43.710856601238106,
-      -41.101253222059654, 404.4885237726518, 409.7077305310087, -330.1148274660673,
-      -448.1993803738898, -358.82046463702966, -302.71399198469413
-    };
-    const Double_t ys[npoints] = {
-      2.8735599450546316, 2.8697865367587028, 2.756584287880847, 2.7641311044727037,
-      2.888653578238346, 2.87733335335056, -0.047058075994059756, -0.03951125940220246,
-      1.6698426986534267, 2.8320524537994176, 2.8735599450546316
-    };
-    fEarlyDecay = new TCutG("EarlyDecay", npoints, xs, ys);
-    this->fOutputList->Add(fEarlyDecay);
-  }
-}
 
 //_____________________________________________________________________
 void AliForwardSecondariesTask::Terminate(Option_t */*option*/)

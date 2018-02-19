@@ -29,8 +29,8 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
 
-  //fAutoRef = TH1F("fAutoRef","fAutoRef", 1, -4.0, 6.0);
-  //fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, -4.0, 6.0);
+  fAutoRef = TH1F("fAutoRef","fAutoRef", 1, -6.0, 6.0);
+  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, -6.0, 6.0);
   useEvent = true;
 }
 
@@ -82,9 +82,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       } 
 
       if (weight == 0) continue;
-      if (detType == "forward"){
-        fFMDHits->Fill(weight);
-      }
+      //if (detType == "forward"){
+      //  fFMDHits->Fill(weight);
+      //}
 
 
       if (fSettings.doNUA){
@@ -101,7 +101,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
       }
-
+ //std::cout << "weight = " << weight << std::endl;
       if (weight == 0) continue;
 
     sumOfWeights += weight;
@@ -143,6 +143,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
     } // End of n loop
   } // End of phi loop
     // Outlier cut calculations
+  if (!fSettings.mc){
   double fSigmaCut = 4.0;
   if (nInAvg > 0) {
     runAvg /= nInAvg;
@@ -154,12 +155,20 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
     fOutliers->Fill(cent, nSigma);
     // We still finish the loop, for fOutliers to make sense, 
     // but we do no keep the event for analysis 
-    if (nBadBins > 3) useEvent = false;
+    if (nBadBins > 3) {
+      useEvent = false;
+        std::cout << "BAD EVENT: nBadBins > 3" << std::endl;
+
     }
+    }
+  }
   } // end of eta
 
-  if (sumOfWeights < 10) useEvent = false;
-  if (!useEvent) std::cout << "BAD EVENT" << std::endl;
+  if (sumOfWeights < 10){ 
+    useEvent = false;
+    std::cout << "BAD EVENT: sumOfWeights = " << sumOfWeights << std::endl;
+}
+  //if (!useEvent) std::cout << "BAD EVENT" << std::endl;
 
   return;
 }
@@ -207,7 +216,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         if (fQvector->GetBinContent(index1) > 0){
           // REFERENCE FLOW --------------------------------------------------------------------------------
           if (prevRefEtaBin){
-
+//std::cout << fAutoRef.GetBinContent(refEtaBinA) << std::endl;
             if (!(fSettings.fFlowFlags & fSettings.kEtaGap)) fQcorrfactor->Fill(eta, fAutoRef.GetBinContent(etaBin));
 
             double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();

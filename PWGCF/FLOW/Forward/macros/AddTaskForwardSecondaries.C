@@ -23,7 +23,7 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 {
   Bool_t etagap = false;
   Int_t mode = kRECON;
-  bool doNUA = true;
+  bool doNUA = false;
 
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 
@@ -31,10 +31,10 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
     Fatal("","No analysis manager to connect to.");
-
+  
   const char* name = Form("ForwardFlowQC");
-  AliForwardSecondaries* task = new AliForwardSecondaries(name);
-
+  AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
+  
   TString resName = "awesome";
 
   task->fSettings.doNUA = doNUA;
@@ -42,21 +42,24 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 
   if (task->fSettings.doNUA){
 
-    TString nua_filepath = std::getenv("NUA_FILE");
-    if (!nua_filepath) {
-      nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root"
+    //TString nua_filepath = std::getenv("NUA_FILE");
+    //if (!nua_filepath) {
+      TString nua_filepath = "/home/thoresen/Documents/PhD/analysis/nua.root";
       std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
       std::cerr << "   Using default value: '" << nua_filepath << "'\n";
-    }
+    //}
+
     TFile *file = new TFile(nua_filepath);
 
-    file->GetObject("nuacentral", task->fSettings.nuacentral);   
+    file->GetObject("nuacentral", task->fSettings.nuacentral);  
+
     task->fSettings.nuacentral->SetDirectory(0);
     file->GetObject("nuaforward", task->fSettings.nuaforward);   
     task->fSettings.nuaforward->SetDirectory(0);
     file->Close(); 
   }
 
+    task->fSettings.fNDiffEtaBins = 20;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard
@@ -67,25 +70,6 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
   }
-  task->fSettings.fUseFMD = true;
-  // task->fSettings.fUseV0 = true;
-  // V0 has only 8 segments in phi
-  if (task->fSettings.fUseFMD) {
-    task->fSettings.fNPhiBins = 20;
-  } else if (task->fSettings.fUseV0) {
-    task->fSettings.fNPhiBins = 8;
-  }
-  
-  task->fSettings.fUseSPDtracklets = true;
-
-  task->fSettings.fZVtxAcceptanceLowEdge = -10;
-  task->fSettings.fZVtxAcceptanceUpEdge = 10;
-  task->fSettings.fNZvtxBins = 20;
-
-  // Remember to disable multselection framework if necessary!
-  task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
-
 
   if (mode == kRECON) {
     AliAnalysisDataContainer *coutput_recon =

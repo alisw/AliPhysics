@@ -20,6 +20,7 @@ add_subdirectory(CME/TwoPwrtRP)
 add_subdirectory(Forward)
 
 # Install the macros
+install(DIRECTORY Forward/macros DESTINATION PWGCF/FLOW)
 install(DIRECTORY macros DESTINATION PWGCF/FLOW)
 
 # Install calibration data

@@ -127,9 +127,16 @@ public:
     };
   };
 
+  Bool_t AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v);
+
 // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
   AliTrackReference* IsHitFMD(AliMCParticle* p);
+
+// Check if a given particle itself hit the FMD. If so, return the
+  // (first) track reference of such a hit
+  AliTrackReference* IsHitTPC(AliMCParticle* p);
+
 
   // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
@@ -143,6 +150,9 @@ public:
   // is not "orthogonal" to AliStack::IsFromWeakDecay and AliStack::IsSecondaryFromMaterial
   Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);
 
+  // check if a particle has a history of material interaction
+  Bool_t hasParticleMaterialInteractionInAncestors(AliMCParticle* p);
+
   // Returns the region where the given particle's vertex is
   // located. Region is encoded in cOriginType enum
   Int_t GetOriginType(AliMCParticle *p);
@@ -151,15 +161,15 @@ public:
   TList*                  fOutputList;    //! output list
   TList*    fStdQCList; //! 
   TList*    fGFList; //!
-  //TList* fRefList; //!
   //TList* fDiffList; //! 
   TList* fEventList; //! 
+  TList* fGammaList; //!
+TList* fAutoCorrection;//!
   TRandom fRandom;
   
   // A class combining all the settings for this analysis
   AliForwardFlowRun2Settings fSettings;
 
-AliEventCuts fEventCuts;
 TF1 *fMultTOFLowCut; //!
 TF1 *fMultTOFHighCut; //!
 TF1 *fMultCentLowCut; //!
@@ -167,9 +177,6 @@ TF1 *fMultCentLowCut; //!
 
   // Simple dN/deta of particles hitting the ITS or FMD
   TH1F *fdNdeta;
-
-  // Event counter with z-pos
-  TH1F *fEventCounter;
   
   // Check to see the abundance of pi0 and pich in a sample
   TH1F *fPiCheck;
@@ -240,8 +247,6 @@ protected:
   // is already a primary
   AliMCParticle* GetFirstNonPrimaryMother(AliMCParticle* p);
 
-  // Setup detector region cuts
-  void SetupCuts();
 
   ClassDef(AliForwardSecondariesTask, 1); // Analysis task for flow analysis
 };

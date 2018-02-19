@@ -19,40 +19,37 @@
  * 
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2()
+AliAnalysisTaskSE* AddTaskForwardMCClosure()
 {
-  Bool_t etagap = true;
+  Bool_t etagap = false;
   Int_t mode = kRECON;
-  bool doNUA = true;
-  bool mc = false;
+  bool doNUA = false;
 
-
-  std::cout << "AddTaskForwardFlowRun2" << std::endl;
+  std::cout << "AddTaskForwardMCClosure" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
     Fatal("","No analysis manager to connect to.");
-
+  
   const char* name = Form("ForwardFlowQC");
-  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
+  AliForwardMCClosure* task = new AliForwardMCClosure(name);
   
   TString resName = "awesome";
 
   task->fSettings.doNUA = doNUA;
-  task->fSettings.mc = mc;
 
 
   if (task->fSettings.doNUA){
 
     //TString nua_filepath = std::getenv("NUA_FILE");
     //if (!nua_filepath) {
-      TString nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root";
+      TString nua_filepath = "/home/thoresen/Documents/PhD/analysis/nua.root";
       std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
       std::cerr << "   Using default value: '" << nua_filepath << "'\n";
     //}
 
-    TFile *file = new TFile("/home/thoresen/Documents/PhD/analysis/nua.root");
+    TFile *file = new TFile(nua_filepath);
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);  
 
@@ -62,21 +59,17 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
     file->Close(); 
   }
 
+    task->fSettings.fNDiffEtaBins = 20;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.4;
+    task->fSettings.gap = 0.5;
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
   }
-
-  
-  //task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
-
 
   if (mode == kRECON) {
     AliAnalysisDataContainer *coutput_recon =
@@ -102,7 +95,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
     mgr->ConnectOutput(task, 1, coutput_truth);
   }
   else {
-    ::Error("AddTaskForwardFlowRun2", "Invalid mode specified");
+    ::Error("AddTaskForwardMCClosure", "Invalid mode specified");
   }
 
 

@@ -16,7 +16,7 @@
 #include <THn.h>
 
 #include "AliLog.h"
-#include "AliForwardFlowRun2Task.h"
+#include "AliForwardMCClosure.h"
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 
@@ -47,13 +47,13 @@
 #include "AliMCParticle.h"
 #include "AliForwardSecondariesTask.h"
 using namespace std;
-ClassImp(AliForwardFlowRun2Task)
+ClassImp(AliForwardMCClosure)
 #if 0
 ; // For emacs 
 #endif
 
 //_____________________________________________________________________
-AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
+AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
   fOutputList(0),    // output list
   fStdQCList(0), 
@@ -72,7 +72,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   }
 
 //_____________________________________________________________________
-  AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTaskSE(name),
+  AliForwardMCClosure::AliForwardMCClosure(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),           // input event
   fOutputList(0),    // output list
   fStdQCList(0), 
@@ -95,7 +95,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   }
 
 //_____________________________________________________________________
-  void AliForwardFlowRun2Task::UserCreateOutputObjects()
+  void AliForwardMCClosure::UserCreateOutputObjects()
   {
   //
   //  Create output objects
@@ -189,7 +189,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
 
 
 //_____________________________________________________________________
-void AliForwardFlowRun2Task::UserExec(Option_t */*option*/)
+void AliForwardMCClosure::UserExec(Option_t */*option*/)
   {
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
@@ -197,70 +197,28 @@ void AliForwardFlowRun2Task::UserExec(Option_t */*option*/)
   //  Parameters:
   //   option: Not used
   //
-double zvertex = 0;
-double v0Centr = 0;
-AliAODForwardMult* aodfmult = 0;
-//TH2D forwarddNdedp;
-  //forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
-
-if (fSettings.mc){
   AliMCEvent* fAOD = this->MCEvent();
   AliStack* stack = fAOD->Stack();
-    if (!stack) {
+  if(!fAOD) {
+        std::cout << "no aod" << std::endl;
+    return;
+  }
+
+  if (!stack) {
     std::cout << "no stack" << std::endl;
     return;
   }
-if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-      return;
-    }
-  zvertex = fAOD->GetPrimaryVertex()->GetZ();
-  v0Centr = 5;
-  //forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
 
-}
-else{
-
-  //..check if I have AOD
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-
-if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-      return;
-    }
-  //..AliEventCuts selection
-    if(!fEventCuts.AcceptEvent(fInputEvent)) {
-      PostData(1, fOutputList);
-      return;
-    }  
-    
-    AliAODVertex* aodVtx = fAOD->GetPrimaryVertex();
-    
-    v0Centr = 0;
-
-  // Get detector objects
-    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
-    aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-    zvertex = aodVtx->GetZ();
-}
+  // Disregard events without reconstructed vertex
+  Float_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
+  if (!(TMath::Abs(zvertex) > 0)) {
+    return;
+  }
     
   //AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters")); // only exists if created by user from ESDs
   TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
 
-  /*
-    AliAODTracklets* aodTracklets = fAOD->GetTracklets();
-
-    for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-      spddNdedp.Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-    }
-  */
-
-  if (fSettings.mc){
-
-  AliMCEvent* fAOD = this->MCEvent();
-  AliStack* stack = fAOD->Stack();
   Int_t nTracks   = stack->GetNtrack();
 
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
@@ -272,28 +230,14 @@ if(!fAOD){
         spddNdedp.Fill(p->Eta(),p->Phi(),1);
       }
     }
-  }
   
-  else{
-    Int_t  iTracks(fAOD->GetNumberOfTracks());
-    for(Int_t i(0); i < iTracks; i++) {
-
-    // loop  over  all  the  tracks
-      AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-      if (track->TestFilterBit(kHybrid)){
-        if (track->Pt() >= 0.2 && track->Pt() <= 5){
-          spddNdedp.Fill(track->Eta(),track->Phi(), 1);
-        }
-      }
-    }
-     forwarddNdedp = aodfmult->GetHistogram(); // also known as dNdetadphi
-  }
-
-  //const AliAODTracklets* spdmult = fAOD->GetMultiplicity();
+  
 
 
+
+float cent = 5;
   //AliMultSelection* MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-  Float_t lPerc = v0Centr; 
+
 
  /* if ( MultSelection ) {
     lPerc = MultSelection->GetMultiplicityPercentile("V0M");
@@ -310,17 +254,17 @@ if(!fAOD){
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
-  static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(lPerc);
+  static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
   //AliForwardQCumulantRun2 calculator = AliForwardQCumulantRun2();
   AliForwardGenericFramework calculator = AliForwardGenericFramework();
   calculator.fSettings = fSettings;
 
-  calculator.CumulantsAccumulate(spddNdedp,fOutputList, lPerc, zvertex,"central");
+  calculator.CumulantsAccumulate(spddNdedp,fOutputList, cent, zvertex,"central");
 
-  if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, lPerc, zvertex,"forward");
-  if (calculator.useEvent) calculator.saveEvent(fOutputList, lPerc, zvertex,  randomInt);
+  if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, cent, zvertex,"forward");
+  if (calculator.useEvent) calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
   calculator.reset();
 
   PostData(1, fOutputList); 
@@ -330,7 +274,7 @@ if(!fAOD){
 
 
 
-AliTrackReference* AliForwardFlowRun2Task::IsHitFMD(AliMCParticle* p) {
+AliTrackReference* AliForwardMCClosure::IsHitFMD(AliMCParticle* p) {
   //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
@@ -347,7 +291,7 @@ AliTrackReference* AliForwardFlowRun2Task::IsHitFMD(AliMCParticle* p) {
   return 0x0;
 }
 
-AliTrackReference* AliForwardFlowRun2Task::IsHitTPC(AliMCParticle* p) {
+AliTrackReference* AliForwardMCClosure::IsHitTPC(AliMCParticle* p) {
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
@@ -362,7 +306,7 @@ AliTrackReference* AliForwardFlowRun2Task::IsHitTPC(AliMCParticle* p) {
 }
 
 //_____________________________________________________________________
-void AliForwardFlowRun2Task::Terminate(Option_t */*option*/)
+void AliForwardMCClosure::Terminate(Option_t */*option*/)
 {
   return;
 }

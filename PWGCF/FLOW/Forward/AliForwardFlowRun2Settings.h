@@ -57,6 +57,8 @@ class AliForwardFlowRun2Settings : public TObject {
   bool doNUA;
 
   Double_t gap;
+
+  bool mc;
   // flags used for method of cumulant
   enum EFlowFlags {
     kStdQC   = 0x0001, // Standard QC{2} and QC{4} calculations
@@ -104,6 +106,6 @@ class AliForwardFlowRun2Settings : public TObject {
   };
 
 private:
-  ClassDef(AliForwardFlowRun2Settings, 1);
+  ClassDef(AliForwardFlowRun2Settings, 2);
 };
 #endif
