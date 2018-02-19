@@ -6,6 +6,8 @@
 #define ALIREDUCEDANALYSISTEST_H
 
 #include <TList.h>
+#include <TClonesArray.h>
+#include <TString.h>
 
 #include "AliReducedAnalysisTaskSE.h"
 #include "AliReducedInfoCut.h"
@@ -32,9 +34,15 @@ public:
   void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
   void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
+  void SetMCBitNames(const Char_t* names) {fMCBitsNames = names;}
+  void AddMCBitNames(const Char_t* names) {fMCBitsNames += names;}
+  void SetTrackFilterBitNames(const Char_t* names) {fTrackFilterBitNames = names;}
+  void AddTrackFilterBitNames(const Char_t* names) {fTrackFilterBitNames += names;}
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
+  TString GetMCBitNames() const {return fMCBitsNames;}
+  TString GetTrackFilterBitNames() const {return fTrackFilterBitNames;}
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -43,11 +51,16 @@ protected:
    TList fTrackCuts;     // array of track cuts
    TList fPairCuts;      // array of pair cuts
    
+   TString fTrackFilterBitNames;      // names for track filter bits, separated by ";"
+   TString fMCBitsNames;     // names of MC bits, separated by ";"
+   
   Bool_t IsEventSelected(AliReducedBaseEvent* event);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track);
   Bool_t IsPairSelected(AliReducedBaseTrack* pair);
   
-  ClassDef(AliReducedAnalysisTest,2);
+  void FillTrackHistograms(TClonesArray* trackList);
+  
+  ClassDef(AliReducedAnalysisTest,3);
 };
 
 #endif

@@ -2070,9 +2070,9 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   Float_t rowcellmax = fNMaxRowsFullMax+0.5;
   
   // E bins in TH3
-  Int_t nEbins = 16  ;
-  Float_t minE =  2.5;
-  Float_t maxE = 18.5;
+  Int_t nEbins = 48;//16  ;
+  Float_t minE = 2.5;
+  Float_t maxE = 50.5;//18.5;
   
   // shower shape bins in TH3
   Int_t nShShBins = 200;

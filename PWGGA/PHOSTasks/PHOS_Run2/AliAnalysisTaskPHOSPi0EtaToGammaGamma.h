@@ -26,10 +26,16 @@ class AliQnCorrectionsManager;
 class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
   public:
 
+    enum TRFMethod{
+      kMB  = -1,//none trigger analysis
+      kTAP = 0, //Tag and Probe method
+      kRFE = 1  //rejection factor x trigger efficiency from a ratio of dN/dpT in kPHI7 to that in kINT7
+    };
+
     enum FlowMethod{
-      kOFF  = -1,
-      kEP   = 0,
-      kSP   = 1
+      kOFF = -1,
+      kEP  = 0,
+      kSP  = 1
     };
 
     enum QnDetector{
@@ -57,17 +63,36 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetHarmonics(Int_t harmonics) {fHarmonics = harmonics;}
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
-    void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
-    void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
 
-    void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
+    void SetTOFCutEfficiencyFunction(TF1 *f1){
+      if(fTOFEfficiency){
+        delete fTOFEfficiency;
+        fTOFEfficiency = 0x0;
+      }
+      fTOFEfficiency = f1;
+    }
 
-    void SetEventCuts(Bool_t isMC){
+
+    void SetNonLinearityStudy(Bool_t flag, Double_t sf = 1.0) {
+      fIsNonLinStudy = flag;
+      fGlobalEScale = sf;
+    }
+
+    void SetTriggerEfficiency(TF1 *f1){
+      if(fTriggerEfficiency){
+        delete fTriggerEfficiency;
+        fTriggerEfficiency = 0x0;
+      }
+      fTriggerEfficiency = f1;
+    }
+
+    void SetEventCuts(Bool_t isMC, AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
       fPHOSEventCuts->SetMCFlag(isMC);
       fPHOSEventCuts->SetMaxAbsZvtx(10.);
       fPHOSEventCuts->SetRejectPileup(kTRUE);
       fPHOSEventCuts->SetRejectDAQIncompleteEvent(kTRUE);
+      fPHOSEventCuts->SetPileupFinder(pf);
     }
 
     void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
@@ -81,6 +106,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayPi0 = centarray;
+
+      for(Int_t i=0;i<11;i++){
+        delete fAdditionalPi0PtWeight[i];
+        fAdditionalPi0PtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalPi0PtWeight[icen] = (TF1*)funcarray->At(icen);
       }
@@ -89,14 +120,40 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalK0SPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayK0S = centarray;
+
+      for(Int_t i=0;i<11;i++){
+        delete fAdditionalK0SPtWeight[i];
+        fAdditionalK0SPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalK0SPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
     }//adjust charged K/pi ratio
 
+    void SetAdditionalL0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
+      Int_t Ncen = centarray->GetSize();
+      fCentArrayL0 = centarray;
+
+      for(Int_t i=0;i<11;i++){
+        delete fAdditionalL0PtWeight[i];
+        fAdditionalL0PtWeight[i] = 0x0;
+      }
+
+      for(Int_t icen=0;icen<Ncen-1;icen++){
+        fAdditionalL0PtWeight[icen] = (TF1*)funcarray->At(icen);
+      }
+    }//adjust charged L0/K0S, L0/pi ratio
+
     void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayEta = centarray;
+
+      for(Int_t i=0;i<11;i++){
+        delete fAdditionalEtaPtWeight[i];
+        fAdditionalEtaPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalEtaPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
@@ -105,10 +162,18 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
       fCentArrayGamma = centarray;
+
+      for(Int_t i=0;i<11;i++){
+        delete fAdditionalGammaPtWeight[i];
+        fAdditionalGammaPtWeight[i] = 0x0;
+      }
+
       for(Int_t icen=0;icen<Ncen-1;icen++){
         fAdditionalGammaPtWeight[icen] = (TF1*)funcarray->At(icen);
       }
     }
+
+    void SetEmin(Double_t Emin) {fEmin = Emin;}
 
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
@@ -151,16 +216,19 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
       fIsPHOSTriggerAnalysis = kTRUE;
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
 
-    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC){
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
       fIsPHOSTriggerAnalysis = kTRUE;
       fEnergyThreshold = Ethre;
-      fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
     }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
@@ -200,6 +268,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
     void FillEpRatio();
+    void DDAPhotonPurity();//this can not be measured in neither single nor embedding M.C.
+
     const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector, const char *expcorr, const char *altcorr);
 
     virtual void SetMCWeight();//set weight related to M.C. (pT slope of mother pi0/eta/K0S/gamma)
@@ -242,6 +312,17 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         return fAdditionalK0SPtWeight[0];
     }
 
+    TF1 *GetAdditionalL0PtWeightFunction(Float_t centrality){
+      if(fCentArrayL0){
+        Int_t lastBinUpperIndex = fCentArrayL0->GetSize()-1;
+        Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayL0->GetArray(), centrality);
+        return fAdditionalL0PtWeight[index];
+      }
+      else 
+        return fAdditionalL0PtWeight[0];
+    }
+
+
     TF1 *GetAdditionalEtaPtWeightFunction(Float_t centrality){
       if(fCentArrayEta){
         Int_t lastBinUpperIndex = fCentArrayEta->GetSize()-1;
@@ -275,6 +356,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     virtual void DoNonLinearityStudy();
 
+    Bool_t CheckMinimumEnergy(AliCaloPhoton *ph){
+      Double_t e = ph->Energy();
+      if(fUseCoreEnergy) e = (ph->GetMomV2())->Energy();
+
+      if(e < fEmin) return kFALSE;
+      else return kTRUE;
+    }
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -290,14 +379,16 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fTriggerEfficiency;//TOF cut efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
-    TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalEtaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalGammaPtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
+    TF1 *fAdditionalPi0PtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalEtaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalGammaPtWeight[11];//weight function for pT distribution
+    TF1 *fAdditionalK0SPtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
+    TF1 *fAdditionalL0PtWeight[11];//weight function for pT distribution. note that this weight is aiming to reproduce L/K0S ratio.
     TArrayD *fCentArrayPi0;
     TArrayD *fCentArrayEta;
     TArrayD *fCentArrayGamma;
     TArrayD *fCentArrayK0S;
+    TArrayD *fCentArrayL0;
 
     THashList *fOutputContainer;
     AliVEvent *fEvent;
@@ -340,15 +431,19 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1M;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1L;//only for rejection factor in MB
     Bool_t fForceActiveTRU;
+    Int_t fTRFM;//TAP or RFE
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
+    Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
+    Double_t fEmin;
+
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 40);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 50);
 };
 
 #endif

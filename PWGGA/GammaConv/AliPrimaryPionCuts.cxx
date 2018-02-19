@@ -972,6 +972,11 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
             fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
             break;
+        case 4:
+            fEsdTrackCuts->SetMaxDCAToVertexZ(3.);
+            fEsdTrackCuts->SetMaxDCAToVertexXY(0.5);
+            fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+            break;
 		default:
 			cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
 			return kFALSE;

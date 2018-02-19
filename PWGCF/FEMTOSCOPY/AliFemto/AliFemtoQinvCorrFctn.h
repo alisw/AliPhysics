@@ -58,7 +58,7 @@
 
 class AliFemtoQinvCorrFctn : public AliFemtoCorrFctn {
 public:
-  AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn);
   virtual ~AliFemtoQinvCorrFctn();
 
@@ -79,6 +79,8 @@ public:
 
   virtual TList* GetOutputList();
   void Write();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoQinvCorrFctn(*this); }
 
 private:
   TH1D* fNumerator;          // numerator - real pairs

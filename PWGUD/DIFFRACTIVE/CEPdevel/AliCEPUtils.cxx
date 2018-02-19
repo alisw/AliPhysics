@@ -254,7 +254,24 @@ TList* AliCEPUtils::GetnClunTraQAHists()
   TH2F* fhh05 = new TH2F("nClu vs nTra","nClu vs nTra",
     400,0,400,200,0,200);
   lhh->Add(fhh05);
-
+  
+  // additional histograms for events with small number SPD hits
+  TH1F* fhh06 = new TH1F("SPD L1","SPD L1",20,0,20);
+  lhh->Add(fhh06);
+  TH1F* fhh07 = new TH1F("SPD L2","SPD L2",20,0,20);
+  lhh->Add(fhh07);
+  TH1F* fhh08 = new TH1F("nTrl","nTrl",20,0,20);
+  lhh->Add(fhh08);
+  TH2F* fhh09 = new TH2F("SPD L1 vs SPD L2","SPD L1 vs SPD L2",
+    20,0,20,20,0,20);
+  lhh->Add(fhh09);
+  TH2F* fhh10 = new TH2F("SPD L1 vs nTrl","SPD L1 vs nTrl",
+    20,0,20,20,0,20);
+  lhh->Add(fhh10);
+  TH2F* fhh11 = new TH2F("SPD L2 vs nTrl","SPD L2 vs nTrl",
+    20,0,20,20,0,20);
+  lhh->Add(fhh11);
+  
   return lhh;
 }
 
@@ -444,12 +461,9 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     Bool_t hasTrk = trkVertex->GetStatus();
 
     // SPD/track vertex?
+    if (!hasSPD && !hasTrk) return AliCEPBase::kVtxUnknown;
     if (hasSPD) fVtxType |= AliCEPBase::kVtxSPD;
     if (hasTrk) fVtxType |= AliCEPBase::kVtxTracks;
-
-    // Note that AliVertex::GetStatus checks that N_contributors is > 0
-    // reject events if both are explicitly requested and none is available
-    if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
 
     // check the spd vertex resolution and reject if not satisfied
     if (hasSPD) {
@@ -467,6 +481,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
   }
 
   // Cut on the vertex z position
+  // Note that AliVertex::GetStatus checks that N_contributors is > 0
   const AliVVertex *vertex = Event->GetPrimaryVertex();
   if (vertex->GetStatus()) {
     if (TMath::Abs(vertex->GetZ())>10) fVtxType |= AliCEPBase::kVtxErrZ;
@@ -640,6 +655,13 @@ void AliCEPUtils::SPDClusterVsTrackletBGAnalysis (
   ((TH1F*)lhh->At(2))->Fill(nClustersLayer0+nClustersLayer1);
   ((TH1F*)lhh->At(3))->Fill(nTracklets);
   ((TH2F*)lhh->At(4))->Fill(nClustersLayer0+nClustersLayer1,nTracklets);
+
+  ((TH1F*)lhh->At(5))->Fill(nClustersLayer0);
+  ((TH1F*)lhh->At(6))->Fill(nClustersLayer1);
+  ((TH1F*)lhh->At(7))->Fill(nTracklets);
+  ((TH2F*)lhh->At(8))->Fill(nClustersLayer0,nClustersLayer1);
+  ((TH2F*)lhh->At(9))->Fill(nClustersLayer0,nTracklets);
+  ((TH2F*)lhh->At(10))->Fill(nClustersLayer1,nTracklets);
 
   return;
 
@@ -938,6 +960,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // add track to buffer
     fTracks->Add(track);
 
+    /*
     // get number of hits in various detectors
     //if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
     if (track->GetEMCALcluster()>=0) {
@@ -948,7 +971,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
         track->GetTOFclusterN(),
         track->GetEMCALcluster());
     }
-    
+    */
     
     // go through the list of selection tests
     // and update the TrackStatus word trackstat accordingly
@@ -1328,14 +1351,86 @@ Int_t AliCEPUtils::GetResiduals(AliESDEvent* fESDEvent)
   Int_t nResiduals = 0;
   Int_t id1 = -1, id2 = -1;
 
-	const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
-	if (mult) {
+	Int_t nr = 0;
+  UInt_t refs[5];
+  const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+	if (!mult)  return nResiduals;
 
-		for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
-			if (!mult->GetTrackletTrackIDs(ii,0,id1,id2))
-        nResiduals++;
-		}
+  for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
+	  if (!mult->GetTrackletTrackIDs(ii,0,id1,id2))
+      nResiduals++;
+  }
+  
+  /*
+  // prinouts to study SPD behaviour
+  if (mult->GetNumberOfTracklets() > 3) return nResiduals;
+  
+  printf("\n------------------------------------------------------------------\n");
+  mult->Print("ts");
+
+  printf("\nITS");
+  for (Int_t ii=0; ii<6; ii++) {
+    printf(" [%i] %i",ii,mult->GetNumberOfITSClusters(ii));
+  }
+  
+  printf(" singles %i",mult->GetNumberOfSingleClusters());
+  printf(" fired chips");
+  printf(" [0] %i",mult->GetNumberOfFiredChips(0));
+  printf(" [1] %i",mult->GetNumberOfFiredChips(1));
+
+  TBits foMap = mult->GetFastOrFiredChips();
+  Int_t nfc = 0;
+  for (Int_t ii=0;    ii<400; ii++) nfc += foMap[ii]>0 ? 1 : 0;
+  printf(" [2] %i",nfc);
+
+  nfc = 0;
+  for (Int_t ii=400; ii<1200; ii++) nfc += foMap[ii]>0 ? 1 : 0;
+  printf(" [3] %i",nfc);
+
+  printf("\nresiduals %i tracklets %i",
+    nResiduals,mult->GetNumberOfTracklets());
+  for (Int_t ii = 0; ii < mult->GetNumberOfTracklets(); ii++) {
+
+    // check for tracks using the clusters of which the trackelt is composed of
+    nr = mult->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+    printf(" [%i] %i",ii,nr);
+    for (Int_t jj=0; jj<nr; jj++) printf(".%i",refs[jj]);
+      
+    nr = mult->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+    printf(" / %i",nr);
+    for (Int_t jj=0; jj<nr; jj++) printf(".%i",refs[jj]);
+
 	}
+  
+  printf("\ntracks %i",fESDEvent->GetNumberOfTracks());
+  Int_t SPDHit[4] = {0};
+  for (Int_t ii=0; ii<fESDEvent->GetNumberOfTracks(); ii++) {
+    printf(" [%i]",ii);
+    SPDHit[0]=0;SPDHit[1]=0;SPDHit[2]=0;SPDHit[3]=0;
+    AliESDtrack *track = fESDEvent->GetTrack(ii);
+    if (track) {
+      if (track->HasPointOnITSLayer(0)) SPDHit[0]=1;
+      if (track->HasPointOnITSLayer(1)) SPDHit[1]=1;
+      if (track->HasSharedPointOnITSLayer(0)) SPDHit[2]=1;
+      if (track->HasSharedPointOnITSLayer(1)) SPDHit[3]=1;
+      printf(" %i/%i/%i/%i/%i",SPDHit[0],SPDHit[1],SPDHit[2],SPDHit[3],
+        track->GetNumberOfTPCClusters());
+    }
+  }
+
+  const AliESDVertex *vertex = fESDEvent->GetPrimaryVertex();
+  if (vertex) {
+    printf("\n");
+    vertex->Print();
+    printf("nIndices %i uses tracks",vertex->GetNIndices());
+    for (Int_t ii=0; ii<fESDEvent->GetNumberOfTracks(); ii++) {
+      printf(" [%i] %i",ii,vertex->UsesTrack(ii));
+    }
+    
+  }
+
+  printf("\n");
+  */
 
   return nResiduals;
 
@@ -1475,7 +1570,7 @@ void AliCEPUtils::DetermineMCprocessType (
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
       // printf("MC generator name: %s\n",fMCGenerator.Data());
-      // Int_t nprod = header->NProduced();
+      Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
@@ -1512,6 +1607,11 @@ void AliCEPUtils::DetermineMCprocessType (
 				case 7:  fMCProcessType = AliCEPBase::kProctypeDD; break;
 				default: fMCProcessType = AliCEPBase::kProctypeND; break;
 				}
+			}
+
+      // Starlight
+			else if (fMCGenerator.EqualTo("SL")) {
+				fMCProcessType = AliCEPBase::kProctypeCD;
 			}
 
 		}
@@ -1805,3 +1905,116 @@ void AliCEPUtils::EMCAnalysis (
 }
 
 // ------------------------------------------------------------------------------
+void AliCEPUtils::SetMCTruth (
+  CEPEventBuffer *fCEPEvent,
+  AliMCEvent *fMCEvent )
+{
+
+  //initialisations
+  TVector3 vtx = TVector3(0,0,0);
+  TLorentzVector lvtmp;
+  TLorentzVector lvin   = TLorentzVector(0,0,0,0);
+  TLorentzVector lvprod = TLorentzVector(0,0,0,0);
+  Int_t nMCparts[6] = {0};
+  
+  // MC generator and process type
+  TString fMCGenerator;
+  Int_t fMCProcess; 
+  DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
+  
+  // get stack
+  AliStack *stack = fMCEvent->Stack();
+  
+  // number of MC tracks
+  Int_t nTracks   = stack->GetNtrack();
+  Int_t nPrimaries   = stack->GetNprimary();
+  Int_t nTransported = stack->GetNtransported();
+  //printf("number of tracks - %i, primaries - %i, transported - %i\n",
+  //  nTracks,nPrimaries,nTransported);
+
+  nMCparts[0] = nTracks;
+  nMCparts[1] = nPrimaries;
+  nMCparts[2] = nTransported;
+
+  // count all (exclude first 5 entries)
+  // physical primary tracks and
+  // charged physical primary tracks
+  // all charged physical primary tracks with abs(eta)<1.
+  TParticle *part;
+  Int_t PDGCode;
+  stack->DumpPStack();
+  for (Int_t ii=5; ii<nTracks; ii++) {
+    //printf("part[%i] %i %i %i\n\n",ii,
+    //  stack->IsPhysicalPrimary(ii),
+    //  stack->IsSecondaryFromWeakDecay(ii),
+    //  stack->IsSecondaryFromMaterial(ii) );
+  
+    // is it a charged particle?
+    // e    11
+    // mu   13
+    // pi  211
+    // K   321
+    // p  2212
+    if ( stack->IsPhysicalPrimary(ii) ) {
+      nMCparts[3]++;
+      part = stack->Particle(ii);
+      PDGCode = abs(part->GetPdgCode());
+      if (PDGCode==11 || PDGCode==13 || PDGCode==211 || PDGCode==321 || PDGCode==2212) {
+        nMCparts[4]++;
+        part->Momentum(lvtmp);
+        if (abs(lvtmp.Eta())<1) nMCparts[5]++;
+      }
+    }
+    
+  }
+  // if ( (nMCparts[3]%2)>0 && nPrimaries<30 ) stack->DumpPStack();
+  
+  // get first particle -> primary vertex position
+  part = stack->Particle(0);
+  vtx = TVector3(part->Vx(),part->Vy(),part->Vz());
+  
+  // incident beam-beam system
+  if (!fMCGenerator.EqualTo("SL")) {
+    part->Momentum(lvtmp);
+    lvin  = lvtmp;
+    stack->Particle(1)->Momentum(lvtmp);
+    lvin += lvtmp;
+  }
+  // lvin.Print();
+  
+  // for DIME, PYTHIA8-CD, and Starlight save the CEP particle
+  // add primaries except for the incoming and outgoing protons
+  lvprod = TLorentzVector(0,0,0,0);
+  if ( fMCGenerator.EqualTo("Dime") ||
+       ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
+     )
+  {
+    stack->Particle(4)->Momentum(lvtmp);
+    lvprod  = lvtmp;
+    for (Int_t ii=5; ii<nPrimaries; ii++) {
+      if (stack->Particle(ii)->GetMother(0)==0) {
+        stack->Particle(ii)->Momentum(lvtmp);
+        lvprod += lvtmp;
+      }
+    }
+  }
+  
+  // in Starlight the initial protons are missing in the stack
+  else if (fMCGenerator.EqualTo("SL")) {
+    stack->Particle(0)->Momentum(lvtmp);
+    lvprod  = lvtmp;
+    stack->Particle(1)->Momentum(lvtmp);
+    lvprod += lvtmp;
+  }
+  // lvprod.Print();
+    
+  // update the event buffer
+  fCEPEvent->SetMCGenerator(fMCGenerator);
+  fCEPEvent->SetMCProcessType(fMCProcess);
+  fCEPEvent->SetMCVtxPos(vtx.X(),vtx.Y(),vtx.Z());
+  fCEPEvent->SetMCIniSystem(lvin);
+  fCEPEvent->SetMCParticle(lvprod);
+  fCEPEvent->SetMCnParticles(nMCparts);
+                      
+}
+                  

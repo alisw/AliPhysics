@@ -6,18 +6,15 @@
 #ifndef ALIFEMTOANALYSIS_PIONPION_H_
 #define ALIFEMTOANALYSIS_PIONPION_H_
 
-class AliFemtoBasicTrackCut;
-class AliFemtoPairCutAntiGamma;
-class AliFemtoBasicEventCut;
-class AliFemtoPairCutDetaDphi;
-
+class AliFemtoEventReader;
 class TList;
+
 
 
 #include "AliFemtoConfigObject.h"
 
-
 #include "AliFemtoVertexMultAnalysis.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
 
 
 /// \class AliFemtoAnalysisPionPion
@@ -110,6 +107,27 @@ public:
   /// analysis.
   virtual TList* ListSettings();
 
+  /// Construct analysis based on the input from config object
+  ///
+  /// This static method is only using the class as a namespace (this
+  /// should be changed eventually)
+  ///
+  static AliFemtoAnalysis* BuildAnalysisFromConfiguration(AliFemtoConfigObject);
+
+
+  /// Construct an Event Reader from config object
+  ///
+  /// This static method is only using the class as a namespace (this
+  /// should be changed eventually)
+  ///
+  static AliFemtoEventReader* ConstructEventReader(AliFemtoConfigObject cfg);
+
+  static AliFemtoParticleCut* ConstructParticleCut(AliFemtoConfigObject);
+  static AliFemtoPairCut* ConstructPairCut(AliFemtoConfigObject);
+
+  static AliFemtoCorrFctn* ConstructCorrelationFunction(AliFemtoConfigObject);
+
+
 protected:
 
   /// The name of the analysis to identify in the output list
@@ -157,6 +175,7 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t group_output_objects;
   Bool_t output_settings;
   Bool_t is_mc_analysis;
+
 /*
   AnalysisParams():
     vertex_bins(8)
@@ -187,16 +206,16 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
   // EVENT
-  Float_t event_MultMin,
-          event_MultMax;
+  Int_t event_MultMin,
+        event_MultMax;
 
-  Float_t event_CentralityMin,
+  double event_CentralityMin,
           event_CentralityMax;
 
-  Float_t event_VertexZMin,
+  double event_VertexZMin,
           event_VertexZMax;
 
-  Float_t event_EP_VZeroMin,
+  double event_EP_VZeroMin,
           event_EP_VZeroMax;
 
   Int_t   event_TriggerSelection;
@@ -258,26 +277,15 @@ struct AliFemtoAnalysisPionPion::CutParams {
   // Float_t pair_MinAvgSeparationPos;
   // Float_t pair_MinAvgSeparationNeg;
 
-  Float_t pair_delta_eta_min
-        , pair_delta_phi_min
-        , pair_phi_star_radius
-        ;
+  Float_t pair_delta_eta_min,
+          pair_delta_phi_min,
+          pair_phi_star_radius;
+
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;
 
 };
-
-/*
-template<>
-AliFemtoAnalysisPionPion*
-AliFemtoConfigObject::Construct<AliFemtoAnalysisPionPion>() const
-{
-  // AliFemtoAnalysisPionPion* AliFemtoConfigObject::Construct() const {
-
-  return nullptr;
-}
-*/
 
 #endif

@@ -50,4 +50,5 @@
 #pragma link C++ class AliStrangenessModule+;
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
 #pragma link C++ class AliAnalysisTaskStrEffStudy+; 
+#pragma link C++ class AliAnalysisTaskMCPredictions+; 
 #endif

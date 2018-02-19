@@ -22,6 +22,7 @@ class AliESDv0;
 #include "TString.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
  public:
@@ -36,29 +37,28 @@ class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
   Bool_t PassTrackCuts(AliESDtrack *tr);
   Bool_t Passv0Cuts(AliESDv0 *v0, Double_t decayLength);
   Double_t GetTOFmass(AliESDtrack *tr);
- 
+
+  Int_t SelectCentrality(Float_t perc, Bool_t isPrimVtx=kFALSE);
   Bool_t IsPionCandidate(AliESDtrack *tr);
   Bool_t IsTritonCandidate(AliESDtrack *tr);
 
   void SetPtLimits(Double_t pionMax, Double_t tritonMin) {fMaxPtPion=pionMax; fMinPtTriton=tritonMin;}
+  void SetYear(UInt_t year){fYear=year;}
   Double_t fMaxPtPion;
   Double_t fMinPtTriton; 
 
-  private:
+ private:
  
   Double_t Chi2perNDF(AliESDtrack *tr); 
 
-  Bool_t fMC;  
-  TList	*fListHist;	             //! List of  histograms
 
+  UInt_t fYear;
+  Bool_t fMC;
+  AliEventCuts fEventCuts;
+
+  TList	*fListHist;	             //! List of  histograms
   TH1F *fHistEventMultiplicity;
   TH2F *fHistTrackMultiplicity;
-  TH2F *fHistTrackMultiplicityCent;
-  TH2F *fHistTrackMultiplicitySemiCent;
-  TH2F *fHistTrackMultiplicityMB;
-  TH2F *fHistTrackMultiplicityPVCent;
-  TH2F *fHistTrackMultiplicityPVSemiCent;
-  TH2F *fHistTrackMultiplicityPVMB;
   TH2F *fhBB;
   TH2F *fhTOF;
   TH2F *fhMassTOF;
@@ -67,6 +67,7 @@ class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
   TH2F *fhBBH3TofSel;
   TH2F *fhTestNsigma;
   TH2F *fhTestQ;
+ 
   
   TNtupleD *fNt; //! 
    

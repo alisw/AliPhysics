@@ -20,6 +20,7 @@ ClassImp(AliReducedEventCut)
 AliReducedEventCut::AliReducedEventCut() :
   AliReducedVarCut(),
   fEventTagFilterEnabled(kFALSE),
+  fEventTagFilterExclude(0),
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
@@ -37,6 +38,7 @@ AliReducedEventCut::AliReducedEventCut() :
 AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) :
   AliReducedVarCut(name, title),
   fEventTagFilterEnabled(kFALSE),
+  fEventTagFilterExclude(0),
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
@@ -80,7 +82,8 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
    
    AliReducedBaseEvent* event = (AliReducedBaseEvent*)obj;
-   if(fEventTagFilterEnabled && !(event->EventTag() & fEventFilter)) return kFALSE;
+   if (fEventTagFilterEnabled && (fEventTagFilterExclude & fEventFilter) && (fEventTagFilterExclude & (event->EventTag() & fEventFilter))) return kFALSE;  // exclusion selection
+   if (fEventTagFilterEnabled && !(fEventTagFilterExclude & fEventFilter) && !(event->EventTag() & fEventFilter)) return kFALSE;                           // inclusion selection
 
    if(fEventTriggerMaskEnabled) {
      if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;

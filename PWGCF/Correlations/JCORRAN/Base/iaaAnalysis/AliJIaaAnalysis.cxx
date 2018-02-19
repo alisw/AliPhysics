@@ -241,7 +241,7 @@ void AliJIaaAnalysis::UserCreateOutputObjects(){
 	fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
 
 	fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
-	fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
+	fchargedHadronList  = new TClonesArray(kParticleProtoType[fMCTruthRun ? kJHadronMC : kJHadron],1500);
 	fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
 	ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
 	fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
@@ -370,7 +370,7 @@ void AliJIaaAnalysis::UserExec(){
 
 	if(fjtrigg==kJHadron || fjassoc==kJHadron || fjtrigg==kJHadronMC || fjassoc==kJHadronMC){
 		fchargedHadronList->Clear();
-		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, kJHadron);
+		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, fMCTruthRun ? kJHadronMC : kJHadron);
 		// apply efficiencies
 
 		for( int i = 0; i < fchargedHadronList->GetEntries(); i++ ){
@@ -417,6 +417,7 @@ void AliJIaaAnalysis::UserExec(){
 
 		if( ptt>fMinimumPt ){
 			fhistos->fhChargedPt[cBin]->Fill(ptt, effCorr );
+            fhistos->fhChargedPtPublished[cBin]->Fill(ptt, effCorr );
 			fhistos->fhChargedPtNoCorr[cBin]->Fill( ptt );
 			fhistos->fhChargedEta->Fill(triggerTrack->Eta(), effCorr);
 		}

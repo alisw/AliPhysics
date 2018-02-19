@@ -54,6 +54,7 @@ TObject(),
 	fNoOfCells(),
 	fCellStartDCal(12288),
 	fStartCell(0),
+	fEndLowerBound(1),
 	fAnalysisOutput(),
 	fAnalysisInput(),
 	fRunList(),
@@ -105,6 +106,7 @@ BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int
 	fNoOfCells(),
 	fCellStartDCal(12288),
 	fStartCell(0),
+	fEndLowerBound(1),
 	fAnalysisOutput(),
 	fAnalysisInput(),
 	fRunList(),
@@ -344,8 +346,11 @@ void BadChannelAna::Run(Bool_t mergeOnly)
 	Double_t binCentreHeightOne   = hRefDistr->GetBinCenter(binHeightOne);
 	cout<<". . .Recomendation:"<<endl;
 	cout<<". . .With the current statistic on average a cell has 1 hit at "<<binCentreHeightOne<<" GeV"<<endl;
-	cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<" as cells will be"<<endl;
+	cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<"GeV as cells will be"<<endl;
 	cout<<". . .marked bad just due to the lack of statistic"<<endl;
+	cout<<". . .your selected lower bond is "<<fEndLowerBound<<" GeV"<<endl;
+    if(binCentreHeightOne>=fEndLowerBound)	cout<<". . .This means you are OK!"<<endl;
+    if(binCentreHeightOne< fEndLowerBound)  	cout<<". . .#!#!#!#! CAREFUL THIS COULD CAUSE TROUBLE AND THROW OUT MORE CELLS THAN NECESSARY #!#!#!#! "<<endl;
 	cout<<". . .End of process . . . . . . . . . . . . . . . . . . . . ."<<endl;
 	cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
 }
@@ -581,7 +586,25 @@ void BadChannelAna::BCAnalysis()
 	}
 	cout<<"o o o End of bad channel analysis o o o"<<endl;
 }
-
+//
+// Mask an entire SM before doing the BC analysis
+// This is useful when you get info from QA that there are problems with one SM
+// and you want to clean up your bad channels beforehand
+//
+//________________________________________________________________________
+void BadChannelAna::AddMaskSM(Int_t iSM)
+{
+	cout<<"o o o Manually mask SM "<<iSM<<" o o o"<<endl;
+	//..Loop over cell ID
+	for (Int_t cell = fStartCell; cell < fNoOfCells; cell++)
+	{
+		//..check to which SM the cell belongs
+		if(cell>=fStartCellSM[iSM] && cell<fStartCellSM[iSM+1])
+		{
+			fFlag[cell] =1;
+		}
+	}
+}
 ///
 /// This function adds period analyses to the Bad Channel analysis.
 /// Each period analysis needs to be specified with four parameters.
@@ -642,13 +665,13 @@ void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t em
 	if(criterion==1)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		if(emin>=fEndLowerBound)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
 		else         FlagAsBad(criterion, histogram, nsigma, 200);//400
 	}
 	if(criterion==2)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		if(emin>=fEndLowerBound)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 		else         FlagAsBad(criterion, histogram, nsigma, 601);
 	}
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 602);
@@ -827,10 +850,13 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	//. . .determine settings for the histograms (range and binning)
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
+	//
 	if(crit==2 && inputBins==-1)	dnbins=dmaxVal-dminVal;
-	if(crit==1 && inputBins==-1)	dnbins=200;
+	if(crit==1 && inputBins==-1)	dnbins=200; //100 or lower, if you have problems with low statistic
 
-	if(crit==2 && inputBins!=-1)
+    //..For histograms with lower statistic (typically higher energy ranges)
+	//..find a proper binning automatically (mostly done to avoid steplike structures, 0 entries in bins etc)
+	if(inputBins!=-1)
 	{
 		//..calculate and print the "median"
 		Int_t numBins = inhisto->GetXaxis()->GetNbins();
@@ -848,21 +874,29 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 
 		//..if dmaxVal is too far away from medianOfHisto the histogram
 		//..range will be too large -> reduce the range
-		//cout<<"max value: "<<dmaxVal<<" median of histogram: "<<medianOfHisto<<endl;
+		//cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
 		if(medianOfHisto*10<dmaxVal)
 		{
 			//cout<<"- - - median too far away from max range"<<endl;
 			dmaxVal=medianOfHisto+0.2*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
 		}
-		dnbins=dmaxVal-dminVal;
 
-		if(dmaxVal-dminVal>100)
+		if(crit==2)
 		{
-			if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
-			if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
-			if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
+			dnbins=dmaxVal-dminVal;
+			if(dnbins>100)
+			{
+				if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
+				if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
+				if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
+			}
+		}
+		if(crit==1)
+		{
+			dnbins=(dmaxVal-dminVal)*500;  //300 if you have problems with low statistic
 		}
 	}
+	//cout<<"number of bins: "<<dnbins<<endl;
 
 	if(crit==3)
 	{
@@ -1015,8 +1049,9 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	goodmax = mean + nsigma*sig ;
 	//..for case 1 and 2 lower than 0 is an unphysical value
 	if(crit<3 && goodmin <0.) goodmin=0.;
-	if(inputBins==-1)         goodmin=-1; //..this is a special case for the very last histogram 3-40 GeV
-
+	//..this (below) is a special case for energy ranges where cell do not have many
+	//..entries typically. One should not apply a lower bound in this case.
+	if(inputBins==-1)         goodmin=-1;
 	if(fPrint==1)cout<<"    o Result of fit: "<<endl;
 	if(fPrint==1)cout<<"    o  "<<endl;
 	if(fPrint==1)cout<<"    o Mean: "<<mean <<" sigma: "<<sig<<endl;
@@ -1189,6 +1224,7 @@ void BadChannelAna::SummarizeResults()
 	Int_t cellID, nDeadDCalCells = 0, nDeadEMCalCells = 0, nDCalCells = 0, nEMCalCells = 0;
 	Double_t perDeadEMCal,perDeadDCal,perBadEMCal,perBadDCal,perWarmEMCal,perWarmDCal;
 	TString aliceTwikiTable, cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells,goodCellsRatio,cellProp;
+	TString OADBFile_bad, OADBFile_dead, OADBFile_warm;
 	TH2F* cellAmp_masked = (TH2F*)fCellAmplitude->Clone("hcellAmp_masked");
 	TH2F* cellTime_masked= (TH2F*)fCellTime->Clone("fCellTime");
 
@@ -1198,6 +1234,9 @@ void BadChannelAna::SummarizeResults()
 	goodCells       = Form("%s/%s/%s_Good_Ampl_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 	goodCellsRatio  = Form("%s/%s/%s_Good_Ampl_Ratio_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 	cellSummaryFile = Form("%s/%s/%s_%s_Bad_Ampl_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_bad    = Form("%s/%s/%s_%s_OADBFile_Bad_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_dead   = Form("%s/%s/%s_%s_OADBFile_Dead_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	OADBFile_warm   = Form("%s/%s/%s_%s_OADBFile_Warm_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
 	aliceTwikiTable = Form("%s/%s/%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial); ;
 	cellProp        = Form("%s/%s/%s_CellProp_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 
@@ -1289,6 +1328,11 @@ void BadChannelAna::SummarizeResults()
 	ratio2DAmp->GetZaxis()->UnZoom();
 	ratio2DAmp->Draw("colz");
 
+	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
+	textSM->SetTextSize(0.06);
+	textSM->SetTextColor(1);
+	textSM->SetNDC();
+
 	TCanvas *c1_proj = new TCanvas("CellPropPProj","III summary of cell properties",1000,500);
 	c1_proj->ToggleEventStatus();
 	c1_proj->Divide(2);
@@ -1298,24 +1342,30 @@ void BadChannelAna::SummarizeResults()
 	projEnergyMask->GetYaxis()->SetTitleOffset(1.6);
 	projEnergyMask->SetLineColor(kGreen+1);
 	projEnergyMask->DrawCopy(" hist");
-
 	TH1* projEnergy = fCellAmplitude->ProjectionX(Form("%s_Proj",fCellAmplitude->GetName()),fStartCell,fNoOfCells);
 	projEnergy->DrawCopy("same hist");
+	TLegend *leg = new TLegend(0.50,0.75,0.7,0.87);
+	leg->AddEntry(projEnergy,"all cells","l");
+	leg->AddEntry(projEnergyMask,"good cells","l");
+	leg->SetTextSize(0.05);
+	leg->SetBorderSize(0);
+	leg->SetFillColorAlpha(10, 0);
+	leg->Draw("same");
+	TLegend *legBig = (TLegend*)leg->Clone("legBig");
+	legBig->SetTextSize(0.08);
+	legBig->SetX1NDC(0.2);
 
 	c1_proj->cd(2)->SetLogy();
 	TH1* projTimeMask = cellTime_masked->ProjectionX(Form("%s_Proj",cellTime_masked->GetName()),fStartCell,fNoOfCells);
 	projTimeMask->SetXTitle("Cell Time [ns]");
 	projTimeMask->GetYaxis()->SetTitleOffset(1.6);
-	projTimeMask->SetLineColor(kGreen+3);
+	projTimeMask->GetYaxis()->SetRangeUser(1,projTimeMask->GetMaximum()*20);
+	projTimeMask->SetLineColor(kGreen+1);
 	projTimeMask->DrawCopy("hist");
 	TH1* projTime = fCellTime->ProjectionX(Form("%s_Proj",fCellTime->GetName()),fStartCell,fNoOfCells);
 	projTime->DrawCopy("same hist");
+	leg->Draw("same");
 	c1_proj->Update();
-
-	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
-	textSM->SetTextSize(0.06);
-	textSM->SetTextColor(1);
-	textSM->SetNDC();
 
 	TCanvas *c1_projSM = new TCanvas("CellPropPProjSM","III summary of cell Energy per SM",1200,900);
 	c1_projSM->Divide(5,4,0.001,0.001);
@@ -1326,7 +1376,7 @@ void BadChannelAna::SummarizeResults()
 		c1_projSM->cd(iSM+1)->SetLogy();
 		gPad->SetTopMargin(0.03);
 		gPad->SetBottomMargin(0.11);
-		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM]+1,fStartCellSM[iSM+1]); //histogram bin 1 has cell ID0
 		projEnergyMaskSM[iSM]->SetTitle("");
 		projEnergyMaskSM[iSM]->SetXTitle(Form("Cell Energy [GeV], SM%i",iSM));
 		projEnergyMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
@@ -1339,10 +1389,10 @@ void BadChannelAna::SummarizeResults()
 
 		projEnergySM[iSM] = fCellAmplitude->ProjectionX(Form("%s_ProjSM%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
 		projEnergySM[iSM]->DrawCopy("same hist");
-
+		if(iSM==0)legBig->Draw("same");
 		//textSM->Draw();
 		textSM->SetTitle(Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
-		textSM->DrawLatex(0.2,0.8,Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
+		textSM->DrawLatex(0.2,0.9,Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
 	}
 
 	TCanvas *c1_projRSM = new TCanvas("CellPropPProjRSM","III summary of cell Energy Ratio per SM",1200,900);
@@ -1367,7 +1417,7 @@ void BadChannelAna::SummarizeResults()
 		c1_projTimeSM->cd(iSM+1)->SetLogy();
 		gPad->SetTopMargin(0.03);
 		gPad->SetBottomMargin(0.11);
-		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM]+1,fStartCellSM[iSM+1]);
 		projTimeMaskSM[iSM]->SetTitle("");
 		projTimeMaskSM[iSM]->SetXTitle(Form("Cell Time [ns], SM%i",iSM));
 		projTimeMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
@@ -1378,6 +1428,7 @@ void BadChannelAna::SummarizeResults()
 		projTimeMaskSM[iSM]->SetLineColor(kGreen+1);
 		projTimeMaskSM[iSM]->DrawCopy(" hist");
 
+		if(iSM==0)legBig->Draw("same");
 		projTimeSM[iSM] = fCellTime->ProjectionX(Form("%s_ProjSMTime%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
 		projTimeSM[iSM]->DrawCopy("same hist");
 	}
@@ -1402,6 +1453,9 @@ void BadChannelAna::SummarizeResults()
 	//..Write the final results of dead and bad cells in a file and on screen
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	ofstream file(cellSummaryFile, ios::out | ios::trunc);
+	ofstream fileBad(OADBFile_bad, ios::out | ios::trunc);
+	ofstream fileDead(OADBFile_dead, ios::out | ios::trunc);
+	ofstream fileWarm(OADBFile_warm, ios::out | ios::trunc);
 	if(file)
 	{
 		file<<"Dead cells : "<<endl;
@@ -1423,6 +1477,8 @@ void BadChannelAna::SummarizeResults()
 				if(cellID<fCellStartDCal)nDeadEMCalCells++;
 				else                     nDeadDCalCells++;
 			}
+			if(fFlag[cellID]==1)fileDead<<cellID<<endl;
+			if(fFlag[cellID]>1)fileBad<<cellID<<endl;
 		}
 		file<<"\n"<<endl;
 		perDeadEMCal=100*nDeadEMCalCells/(1.0*fCellStartDCal);
@@ -1476,6 +1532,7 @@ void BadChannelAna::SummarizeResults()
 	{
 		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
 		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
+		if(fWarmCell[cell]==1)fileWarm<<cell<<endl;
 	}
 	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
 	c2->ToggleEventStatus();
@@ -1953,8 +2010,8 @@ void BadChannelAna::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
 	//..build two dimensional histogram with values row vs. column
 	TString histoName;
-	histoName = Form("2DChannelMap_Flag%d",flagBegin);
-	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100");
+	histoName = Form("2DChannelMap_Flag%d_V%i",flagBegin,fTrial);
+	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100_V%i",fTrial);
 
 	TH2F *plot2D = new TH2F(histoName,histoName,fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
 	plot2D->GetXaxis()->SetTitle("cell column (#eta direction)");

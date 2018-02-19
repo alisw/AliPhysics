@@ -69,6 +69,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPropagateTracks{true}
    ,fPtCorrectionA{3}
    ,fPtCorrectionM{3}
+   ,fTOFfunction{nullptr}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -76,6 +77,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPDGMassOverZ{0}
    ,fCharge{1.f}
    ,fIsMC{false}
+   ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
    ,fMagField{0.f}
    ,fDCAzLimit{10.}
@@ -108,7 +110,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
-   ,fEnableFlattening{false} 
+   ,fEnableFlattening{false}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -125,6 +127,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCASecondaryWeak{{nullptr}}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
+   ,fTPCsignalTpl{nullptr}
+   ,fTPCbackgroundTpl{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    {
@@ -140,6 +144,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 /// Standard destructor
 ///
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
   if (fTOFfunction) delete fTOFfunction;
 }
@@ -213,9 +218,15 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+      fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+      fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
 
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTPCcounts[iC]);
+      fList->Add(fTPCsignalTpl[iC]);
+      fList->Add(fTPCbackgroundTpl[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it[c}); DCA_{xy} (cm)",
@@ -226,20 +237,17 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
         fList->Add(fDCAz[iT][iC]);
       }
     }
-
-    std::array<std::string,4> norm_labels = {
-      "No cuts",
-      "Event selection",
-      "Vertex reconstruction and quality",
-      "Vertex position"
-    };
-
-    fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
-    for (int iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
-
-    fList->Add(fNormalisationHist);
-
   }
+
+  std::array<std::string,4> norm_labels = {
+    "No cuts",
+    "Event selection",
+    "Vertex reconstruction and quality",
+    "Vertex position"
+  };
+  fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
+  for (size_t iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
+  fList->Add(fNormalisationHist);
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
   if (fTOFfunctionPars.GetSize() == 4)
@@ -377,10 +385,18 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
       if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
       fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
-      if (!pid_check || iTof == 0) continue;
+
+      if (iTof == 0) continue;
+      if (std::abs(tof_n_sigma) < 4.)
+        fTPCsignalTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
+      else
+        fTPCbackgroundTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
+
+      if (!pid_check) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+
     }
 
   } // End AOD track loop
@@ -421,7 +437,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   dca[0] = 0.;
   dca[1] = 0.;
   if (track->Pt() < fDisableITSatHighPt) {
-    unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
     if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return false;
     if (nITS < fRequireITSrecPoints) return false;
@@ -659,7 +675,7 @@ void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
 //  \param nSSD number of clusters in SSD
 /// \return int number of clusters in ITS
 ///
-int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD) {
+int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD) {
   if (!track) return -1;
   nSPD = 0u;
   nSDD = 0u;

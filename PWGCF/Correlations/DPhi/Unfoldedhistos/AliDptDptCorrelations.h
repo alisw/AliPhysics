@@ -85,7 +85,9 @@ public:
 
 private:
   void                        ProcessLikeSignPairs(Int_t bank);
+  void                        ProcessNotHalfSymmLikeSignPairs(Int_t bank);
   void                        ProcessUnlikeSignPairs();
+  void                        ProcessNotHalfSymmUnlikeSignPairs();
 
   void                        fillHistoWithArray(TH1 * h, double * array, int size);
   void                        fillHistoWithArray(TH2 * h, double * array, int size1, int size2);
@@ -101,6 +103,7 @@ private:
   Int_t                       fIxVertexZ;                   ///< bin index for the current event vertex \f$z\f$ coordinate
   Float_t                     fCentrality;                  ///< current event centrality in percentage
 
+  Bool_t                      fHalfSymmetrize;              ///< kTRUE if half symmetrizing for memory layout reduction
   Bool_t                      fSinglesOnly;                 ///< kTRUE if not pair calculations, just single particle calculations
   Bool_t                      fUseWeights;                  ///< kTRUE if correction weights must be utilized
   Bool_t                      fUseSimulation;               ///< kTRUE if particle production from stored profiles must be used

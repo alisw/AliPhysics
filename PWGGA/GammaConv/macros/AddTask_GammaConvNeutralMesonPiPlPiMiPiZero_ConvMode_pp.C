@@ -60,7 +60,7 @@ class CutHandlerNeutralConv{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(    
+void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     Int_t trainConfig                 = 1,
     Bool_t isMC                       = kFALSE,                          //run MC
     Int_t enableQAMesonTask           = 1,                               //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
@@ -71,7 +71,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     Double_t tolerance                = -1,
     TString    periodNameV0Reader     = "",                               // period Name for V0Reader
     Int_t   runLightOutput            = 0,                                 // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    Double_t neutralPionPtMin         = 0.4,                                // min pT for cut on neutral meson candidate
     TString additionalTrainConfig     = "0"                               // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -95,7 +94,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
   Int_t isHeavyIon = 0;
   Int_t neutralPionMode = 0;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -105,20 +104,20 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMC);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton   = "06000008400100001500000000";
   TString cutnumberEvent    = "00000003";
   TString PionCuts          = "000000200";            //Electron Cuts
-  
+
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
+
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -128,7 +127,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    
+
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
@@ -163,7 +162,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -190,13 +189,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
     fPionSelector->Init();
     mgr->AddTask(fPionSelector);
-    
+
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
     //connect input V0Reader
     mgr->ConnectInput (fPionSelector,0,cinput1);
 
   }
-  
+
   AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero *task=NULL;
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero(Form("GammaConvNeutralMesonPiPlPiMiPiZero_%i_%i",neutralPionMode, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
@@ -205,7 +204,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
   CutHandlerNeutralConv cuts;
-  
+
   if( trainConfig == 1 ) {
     // everything open, min pt charged pi = 100 MeV
     cuts.AddCut("00000113","00200009327000008250400000","000010400","0103503000000000","0103503000000000");
@@ -295,13 +294,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.125 < M_gamma,gamma < 0.145
-    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    // maxChi2 per cluster TPC <4, require TPC refit
     cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal mixing
+    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
 //    cuts.AddCut("00000113","00200009327000008250400000","302040708","0103503800000000","0153503000000000"); // normal mixing + charged pion pt > 400 MeV
 //    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
   //8 TeV
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
@@ -387,7 +386,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   }
 
   Int_t numberOfCuts = cuts.GetNCuts();
-  
+
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *NeutralPionCutList = new TList();
@@ -399,7 +398,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   HeaderList->Add(Header1);
   TObjString *Header3 = new TObjString("eta_2");
   HeaderList->Add(Header3);
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -412,7 +411,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();   
+    analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -426,10 +425,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetConversionCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
       return 0;
-    } else {				
+    } else {
       ConvCutList->Add(analysisCuts[i]);
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-      
+
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
@@ -441,7 +440,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
       analysisNeutralPionCuts[i]->SetFillCutHistograms("");
     }
-  
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
@@ -452,16 +451,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
       analysisMesonCuts[i]->SetFillCutHistograms("");
     }
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
+
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetConversionCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNeutralPionCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
       return 0;
-    } else { 
+    } else {
       PionCutList->Add(analysisPionCuts[i]);
-      analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
+      analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
     }
   }
 
@@ -475,9 +474,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
   task->SetDoMesonQA(enableQAMesonTask);
-
-  // Set pT min for cut on neutral pions
-  task->SetNeutralPionPtMin(neutralPionPtMin);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

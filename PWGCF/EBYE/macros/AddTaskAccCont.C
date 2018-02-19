@@ -1,12 +1,17 @@
 //_________________________________________________________//
 AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
-						UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
-						Int_t gFilterBit = 768, Int_t nsigma = 3,
-						Double_t ptMin=0, Double_t ptMax=10,
-						Double_t etaMin=-0.8, Double_t etaMax=0.8,
-						Bool_t PID = kFALSE,
-						AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
-						TString fileNameBase="AnalysisResults") {
+				       UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+				       Int_t gFilterBit = 768, Int_t nsigma = 3,
+				       Double_t ptMin=0, Double_t ptMax=10,
+				       Double_t etaMin=-0.8, Double_t etaMax=0.8,
+				       Bool_t DCAext = kFALSE,
+				       Bool_t PID = kFALSE,
+				       Bool_t UseRapidity = kFALSE,
+				       TString centEstim = "V0M",
+				       AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
+				       AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
+				       AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
+				       TString fileNameBase="AnalysisResults") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -14,18 +19,34 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 
   TString centralityName("");
 
-  static const Int_t nCentralities = 9;
-  Double_t gCentrality[nCentralities];
+  static const Int_t nCentralitiesMax = 9;
+  Double_t gCentrality[nCentralitiesMax];
 
-  for(Int_t i = 1; i < 10; i++)
-  gCentrality[i-1] = 0 + (i-1)*10;
-     
+  if(nCenBins == AliAnalysisTaskAccCont::kFull){
+
+  gCentrality[0]=0;
+  gCentrality[1]=80;
+
+  }
+
+  else if (nCenBins == AliAnalysisTaskAccCont::kBins){
+  
+  for(Int_t i = 0; i < 9; i++){
+  gCentrality[i] = 0 + i*10;
+  }
+  
+  }
   //===========================================================================
 
-  AliAnalysisTaskAccCont *task[nCentralities];
-  AliAnalysisDataContainer *coutQA[nCentralities];
-  AliAnalysisDataContainer *coutResults[nCentralities];
-  TString suffixName[nCentralities];
+
+  Int_t nCentralities = 2;
+  if(nCenBins == AliAnalysisTaskAccCont::kFull) nCentralities = 2;
+  else if(nCenBins == AliAnalysisTaskAccCont::kBins) nCentralities = nCentralitiesMax;
+
+  AliAnalysisTaskAccCont *task[nCentralitiesMax];
+  AliAnalysisDataContainer *coutQA[nCentralitiesMax];
+  AliAnalysisDataContainer *coutResults[nCentralitiesMax];
+  TString suffixName[nCentralitiesMax];
 
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
 
@@ -33,6 +54,23 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
     suffixName[iCentralityBin] += gCentrality[iCentralityBin];
     suffixName[iCentralityBin] += "To";
     suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixName[iCentralityBin] += "_fb";
+    suffixName[iCentralityBin] += gFilterBit;
+    suffixName[iCentralityBin] += "_CentEst_";
+    suffixName[iCentralityBin] += centEstim.Data();
+
+    if(PID){
+    suffixName[iCentralityBin] += "_PID_";
+    suffixName[iCentralityBin] += particleType;
+    }
+    
+    if(UseRapidity)
+    suffixName[iCentralityBin] += "_RapidityUsed"; 
+
+    if(nCenBins == AliAnalysisTaskAccCont::kFull)
+    suffixName[iCentralityBin] += "_full";
+    else if(nCenBins == AliAnalysisTaskAccCont::kBins)
+    suffixName[iCentralityBin] += "_bins";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -57,7 +95,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
   
   //Centrality estimator
-  task[iCentralityBin]->SetCentralityEstimator("V0M");
+  task[iCentralityBin]->SetCentralityEstimator(centEstim.Data());
   
   //vertex cut (x,y,z)
   task[iCentralityBin]->SetVertexDiamond(3.,3.,vertexZ);
@@ -66,17 +104,31 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SetAODtrackCutBit(gFilterBit);
   task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
-  task[iCentralityBin]->UsePileUpCuts();
+  
+  if(systemType == AliAnalysisTaskAccCont::kPbPb)
+  task[iCentralityBin]->UsePileUpCutsPbPb();
+  else if(systemType == AliAnalysisTaskAccCont::kpPb)
+  task[iCentralityBin]->UsePileUpCutspPb();
+ 
+  if(UseRapidity)
+  task[iCentralityBin]->SetUseRapidity(); 
+ 
+  if(DCAext)
+  task[iCentralityBin]->USEextendedDCA();
+  
   
   //PID
   if(PID){
   task[iCentralityBin]->UsePID();
   task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);
+  mgr->AddTask(task[iCentralityBin]);  
   }
   
+  else if(!PID)
   mgr->AddTask(task[iCentralityBin]);
-    
+  
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //===========================================================================
@@ -86,6 +138,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   mgr->ConnectOutput(task[iCentralityBin], 1, coutQA[iCentralityBin]);
 
   coutResults[iCentralityBin] = mgr->CreateContainer(Form("listResults_%s",suffixName[iCentralityBin].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+
   mgr->ConnectOutput(task[iCentralityBin], 2, coutResults[iCentralityBin]);
 }
 

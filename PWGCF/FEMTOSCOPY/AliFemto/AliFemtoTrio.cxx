@@ -9,7 +9,10 @@
 AliFemtoTrio::AliFemtoTrio():
 fTrack1(nullptr),
 fTrack2(nullptr),
-fTrack3(nullptr)
+fTrack3(nullptr),
+fTrack1type(kUnknown),
+fTrack2type(kUnknown),
+fTrack3type(kUnknown)
 {
   
 }

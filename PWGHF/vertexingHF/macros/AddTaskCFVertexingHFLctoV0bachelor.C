@@ -132,7 +132,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phiV0max = 2.*TMath::Pi();
 
   const Int_t nbinZvtx       =  30; //bins in centrality (total number)
-  const Int_t nbincent       =18+1; //bins in centrality (total number)
+  const Int_t nbincent       =19+1; //bins in centrality (total number)
   const Int_t nbinfake       =   3; //bins in fake
   //const Int_t nbinmult       =  48; //bins in multiplicity (total number)
   const Int_t nbinmult         = 49; //bins in multiplicity (total number)

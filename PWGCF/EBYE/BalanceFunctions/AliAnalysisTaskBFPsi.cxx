@@ -80,6 +80,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fListBFS(0),
   fListBFM(0),
   fHistListPIDQA(0),
+  fListNUA(0),
+  fListNUE(0),
+  fCorrProcedure(AliAnalysisTaskBFPsi::kNoCorr),
   fHistEventStats(0),
   fHistCentStats(0),
   fHistCentStatsUsed(0),
@@ -98,13 +101,21 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistDCA(0),
   fHistChi2(0),
   fHistPt(0),
+  fHistPtCorr(0),
   fHistEta(0),
+  fHistEtaCorr(0),
   fHistRapidity(0),
+  fHistRapidityCorr(0),
   fHistPhi(0),
+  fHistPhiCorr(0),
   fHistEtaVzPos(0),
+  fHistEtaVzPosCorr(0),
   fHistEtaVzNeg(0),
-  fHistEtaPhiPos(0), 	       	 
-  fHistEtaPhiNeg(0), 
+  fHistEtaVzNegCorr(0),
+  fHistEtaPhiPos(0),
+  fHistEtaPhiPosCorr(0),
+  fHistEtaPhiNeg(0),
+  fHistEtaPhiNegCorr(0),
   fHistPhiBefore(0),
   fHistPhiAfter(0),
   fHistPhiPos(0),
@@ -234,6 +245,14 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
     fHistCorrectionPlus[i] = NULL; 
     fHistCorrectionMinus[i] = NULL; 
     fCentralityArrayForCorrections[i] = -1.;
+    fHistpTCorrPlus[i] = NULL;
+    fHistpTCorrMinus[i] = NULL; 
+  }
+
+  for (Int_t i=0; i<kNBRUN; i++){
+    fRunNb[i] = -1;
+    fHistNUACorrPlus[i] = NULL;
+    fHistNUACorrMinus[i] = NULL;
   }
   //=====================================================correction
 
@@ -423,24 +442,41 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistDCA);
   fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPt);
+  fHistPtCorr   = new TH2F("fHistPtCorr","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
+  fList->Add(fHistPtCorr);
   fHistEta  = new TH2F("fHistEta","#eta distribution;#eta;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistEta);
+  fHistEtaCorr  = new TH2F("fHistEtaCorr","#eta distribution;#eta;Centrality percentile",200,-2,2,220,-5,105);
+  fList->Add(fHistEtaCorr);
   fHistRapidity  = new TH2F("fHistRapidity","y distribution;y;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistRapidity);
+  fHistRapidityCorr  = new TH2F("fHistRapidityCorr","y distribution;y;Centrality percentile",200,-2,2,220,-5,105);
+  fList->Add(fHistRapidityCorr);
   fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
+  fHistPhiCorr  = new TH2F("fHistPhiCorr","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
+  fList->Add(fHistPhiCorr);
   fHistPtTriggerThreshold = new TH2F("fHistPtTriggerThreshold","p_{T} distribution with threshold for pT trig;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPtTriggerThreshold);
 				     
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
-  fList->Add(fHistEtaVzPos); 			 
+  fList->Add(fHistEtaVzPos); 
+  fHistEtaVzPosCorr  = new TH3F("fHistEtaVzPosCorr","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
+  fList->Add(fHistEtaVzPosCorr); 			 
   fHistEtaVzNeg  = new TH3F("fHistEtaVzNeg","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
-  fList->Add(fHistEtaVzNeg); 			 
+  fList->Add(fHistEtaVzNeg); 
+   fHistEtaVzNegCorr  = new TH3F("fHistEtaVzNegCorr","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
+  fList->Add(fHistEtaVzNegCorr); 			 
 
   fHistEtaPhiPos  = new TH3F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
-  fList->Add(fHistEtaPhiPos); 			 
-fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
+  fList->Add(fHistEtaPhiPos);
+   fHistEtaPhiPosCorr  = new TH3F("fHistEtaPhiPosCorr","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
+   fList->Add(fHistEtaPhiPosCorr);
+   fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNeg);
+  fHistEtaPhiNegCorr  = new TH3F("fHistEtaPhiNegCorr","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
+  fList->Add(fHistEtaPhiNegCorr);
+  
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
@@ -744,15 +780,158 @@ fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#ph
   fUtils = new AliAnalysisUtils();
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskBFPsi::SetInputListForNUACorr(TString fileNUA){
+
+  TFile *fNUAFile= TFile::Open(fileNUA.Data(), "READ");
+
+  if(!fNUAFile) {
+    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    return;
+  }
+
+  fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fListNUA"));
+
+  if(!fListNUA){
+    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    return;
+  }
+  
+  for (Int_t iRun = 0; iRun<=fTotalNbRun-1; iRun++) {
+
+    TString histoName1 = "fHistNUACorrPlus";
+    TString histoName2 = "fHistNUACorrMinus";
+    
+    histoName1 += Form("%d", (Int_t)(fRunNb[iRun]));
+    fHistNUACorrPlus[iRun] = dynamic_cast<TH3F*>(fListNUA->FindObject(histoName1.Data()));
+    
+    histoName2 += Form("%d", (Int_t)(fRunNb[iRun]));
+    fHistNUACorrMinus[iRun] = dynamic_cast<TH3F*>(fListNUA->FindObject(histoName2.Data()));
+    
+  }
+
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskBFPsi::GetIndexRun(Int_t runNb){
+  
+  Int_t gRun = -1;
+  for (Int_t i=0; i<=fTotalNbRun-1; i++){
+    if(fRunNb[i] == runNb){
+      gRun = i;
+      break;
+    }
+  }
+
+  return gRun;
+  
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi ){
+
+  Double_t nua=0.;
+  if (vCharge > 0){
+    if (fHistNUACorrPlus[gRun]) 
+      nua =  fHistNUACorrPlus[gRun]->GetBinContent(fHistNUACorrPlus[gRun]->FindBin(vPhi, vEta, vVz));
+  }
+  else {	
+    if (fHistNUACorrMinus[gRun])
+      nua = fHistNUACorrMinus[gRun]->GetBinContent(fHistNUACorrMinus[gRun]->FindBin(vPhi, vEta, vVz));}
+
+  if (nua == 0.) {
+    Printf (Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz)); 
+    return 1.;}
+  
+  return nua;
+  
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TString fileNUE){
+
+  TFile *fNUEFile= TFile::Open(fileNUE.Data(), "READ");
+
+  if(!fNUEFile) {
+    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    return;
+  }
+
+  fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
+
+  if(!fListNUE){
+    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    return;
+  }
+  
+  for (Int_t iCent = 0; iCent <fCentralityArrayBinsForCorrections-1; iCent++) {
+
+    TString histoName1 = "fHistNUECorrPlus";
+    TString histoName2 = "fHistNUECorrMinus";
+    
+    histoName1 += Form("%d-%d", (Int_t)(fCentralityArrayForCorrections[iCent]), (Int_t)(fCentralityArrayForCorrections[iCent+1]));
+    fHistpTCorrPlus[iCent] = dynamic_cast<TH1F*>(fListNUE->FindObject(histoName1.Data()));
+  
+    histoName2 += Form("%d-%d", (Int_t)(fCentralityArrayForCorrections[iCent]), (Int_t)(fCentralityArrayForCorrections[iCent+1]));
+    fHistpTCorrMinus[iCent] = dynamic_cast<TH1F*>(fListNUE->FindObject(histoName2.Data()));
+
+  }
+}
+
+//____________________________________________________________
+Int_t AliAnalysisTaskBFPsi::GetIndexCentrality(Double_t gCentrality){
+
+  Int_t gCentralityInt = -1;
+  for (Int_t i=0; i<=fCentralityArrayBinsForCorrections-1; i++){
+    if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
+      gCentralityInt = i;
+      break;
+    }
+  }
+
+  return gCentralityInt;
+}
+
+
+//____________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetNUECorrection(Int_t gCentralityIndex, Short_t vCharge, Double_t vPt){
+ //Open files that will be used for correction
+  
+  if(gCentralityIndex < 0){
+    AliError("No centralityt bin found");
+    return -1;
+  }
+
+ Double_t nue =0.;
+
+  if (vCharge > 0){
+    if (fHistpTCorrPlus[gCentralityIndex]) 
+      nue = fHistpTCorrPlus[gCentralityIndex]->GetBinContent(fHistpTCorrPlus[gCentralityIndex]->FindBin(vPt));
+  }
+  else {	
+    if (fHistpTCorrMinus[gCentralityIndex])
+      nue =fHistpTCorrMinus[gCentralityIndex]->GetBinContent(fHistpTCorrMinus[gCentralityIndex]->FindBin(vPt));
+  }
+  
+  if (nue == 0.) {
+    Printf (Form("Should not happen : bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex)); 
+    return 1.;}
+
+  return nue;
+  
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename, 
 					      Int_t nCentralityBins, 
 					      Double_t *centralityArrayForCorrections) {
+
   //Open files that will be used for correction
   fCentralityArrayBinsForCorrections = nCentralityBins;
   for (Int_t i=0; i<nCentralityBins; i++)
     fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
+ 
 
   // No file specified -> Abort
   if(!filename.Contains(".root")) {
@@ -788,6 +967,8 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
   }//loop over centralities: ONLY the PbPb case is covered
 }
 
+
+
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   // Main loop
@@ -802,10 +983,10 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   // get the event (for generator level: MCEvent())
   AliVEvent* eventMain = NULL;
   if(gAnalysisLevel == "MC") {
-    eventMain = dynamic_cast<AliVEvent*>(MCEvent()); 
+    eventMain = dynamic_cast<AliVEvent*>(MCEvent());
   }
   else{
-    eventMain = dynamic_cast<AliVEvent*>(InputEvent());     
+    eventMain = dynamic_cast<AliVEvent*>(InputEvent());
     // for HBT like cuts need magnetic field sign
     bSign = (eventMain->GetMagneticField() > 0) ? 1 : -1;
   }
@@ -867,7 +1048,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   // store charges of all accepted tracks,shuffle and reassign(two extra loops)
   TObjArray* tracksShuffled = NULL;
   if(fRunShuffling){
-    tracksShuffled = GetShuffledTracks(tracksMain,lMultiplicityVar);
+    tracksShuffled = GetShuffledTracks(tracksMain,lMultiplicityVar, eventMain);
   }
   
   // Event mixing 
@@ -1690,6 +1871,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
   Double_t vPhi;
   Double_t vPt = 0., vPx = 0., vPy = 0.;
 
+
+  Int_t gRun = GetIndexRun(event->GetRunNumber());
+  Int_t gCentrIndex = GetIndexCentrality(gCentrality);
+  
+  
   //Variables for the calculation of sphericity
   Double_t sT = -999.;
   Double_t s00 = 0., s11 = 0., s10 = 0.;
@@ -2080,17 +2266,43 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+
+      Double_t correction=1.;
+      Double_t nua, nue;
+      //Printf("fCorrProcedure %d, gRun =%d", fCorrProcedure, gRun);
+      if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	else {
+	  nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  correction = nua*nue;
+	  //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction, gCentrality);
+	}
+	
+	fHistPtCorr->Fill(vPt,gCentrality, correction);
+	fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	if(vCharge > 0){
+	  fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	else if(vCharge < 0){
+	  fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+      }
       
       // add the track to the TObjArray
       if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
 	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
       } 
       else{
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
       }
 
+      
+      
       nAcceptedTracks += 1;
     }//track loop
 
@@ -2177,8 +2389,34 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      Double_t correction=1.;
+      Double_t nua, nue;
+      
+      if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	else {
+	  nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  correction = nua*nue;
+	}
+
+	fHistPtCorr->Fill(vPt,gCentrality, correction);
+	fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	if(vCharge > 0){
+	  fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	else if(vCharge < 0){
+	  fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+	
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      }
+     
       
       // add the track to the TObjArray
       if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
@@ -2286,8 +2524,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 	
 	//=======================================correction
-	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+	Double_t correction=1.;
+	Double_t nua, nue;
+	
+	if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	  if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr)
+	    correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	  else {
+	    nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	    nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	    correction = nua*nue;
+	  }
+	  
+	  fHistPtCorr->Fill(vPt,gCentrality, correction);
+	  fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	  fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	  if(vCharge > 0){
+	    fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	    fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	  }
+	  else if(vCharge < 0){
+	    fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	    fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	  }
+	  fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+	  //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	}
 	
 	// add the track to the TObjArray
 	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
@@ -2571,8 +2833,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+
+      Double_t correction=1.;
+      Double_t nua, nue;
+      
+      if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	else {
+	  nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  correction = nua*nue;
+	}
+	fHistPtCorr->Fill(vPt,gCentrality, correction);
+	fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	if(vCharge > 0){
+	  fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	else if(vCharge < 0){
+	  fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      }
       
       // add the track to the TObjArray
       if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
@@ -2791,9 +3076,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
-
+      Double_t correction=1.;
+      Double_t nua, nue;
+      
+      if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	else {
+	  nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  correction = nua*nue;
+	}
+	fHistPtCorr->Fill(vPt,gCentrality, correction);
+	fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	if(vCharge > 0){
+	  fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	else if(vCharge < 0){
+	  fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	  fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	}
+	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      }
+      
       // add the track to the TObjArray
       if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
 	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
@@ -3068,8 +3375,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 
 	//=======================================correction
-	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	Double_t correction=1.;
+	Double_t nua, nue;
+	
+	if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	  if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	  else {
+	    nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
+	    nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	    correction = nua*nue;
+	  }
+	  
+	  fHistPtCorr->Fill(vPt,gCentrality, correction);
+	  fHistEtaCorr->Fill(vEta,gCentrality, correction);
+	  fHistRapidityCorr->Fill(vY,gCentrality, correction);
+	  if(vCharge > 0){
+	    fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
+	    fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	  }
+	  else if(vCharge < 0){
+	    fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
+	    fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+	  }
+	  fHistPhiCorr->Fill(vPhi,gCentrality, correction);
+	  //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	}
 	
 	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
 	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
@@ -3117,32 +3447,47 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 }
 
 //________________________________________________________________________
-TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t gCentrality){
+TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t gCentrality, AliVEvent *event){
   // Clones TObjArray and returns it with tracks after shuffling the charges
 
   TObjArray* tracksShuffled = new TObjArray;
   tracksShuffled->SetOwner(kTRUE);
 
-  vector<Short_t> *chargeVector = new vector<Short_t>;   //original charge of accepted tracks 
+  vector<Short_t> *chargeVector = new vector<Short_t>; //original charge of accepted tracks 
 
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* track = (AliVParticle*) tracks->At(i);
     chargeVector->push_back(track->Charge());
-  }  
+  }
+
+  Int_t gRun = GetIndexRun(event->GetRunNumber());
+  Int_t gCentrIndex = GetIndexCentrality(gCentrality);
  
   random_shuffle(chargeVector->begin(), chargeVector->end());
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);
     //==============================correction
-    Double_t correction = GetTrackbyTrackCorrectionMatrix(track->Eta(), track->Phi(),track->Pt(), chargeVector->at(i), gCentrality);
-    //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
-    tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i), correction));
-  }
 
+    Double_t correction=1.;
+      Double_t nua, nue;
+      
+      if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
+	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(track->Eta(), track->Phi(),track->Pt(), chargeVector->at(i), gCentrality);
+	else {
+	  nua = GetNUACorrection(gRun, chargeVector->at(i), event->GetPrimaryVertex()->GetZ(), track->Eta(),  track->Phi());
+	  nue = GetNUECorrection(gCentrIndex, chargeVector->at(i), track->Pt());
+	  correction = nua*nue;
+	}  
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      }
+      
+      tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i), correction));
+  }
+  
   delete chargeVector;
-   
+  
   return tracksShuffled;
 }
 

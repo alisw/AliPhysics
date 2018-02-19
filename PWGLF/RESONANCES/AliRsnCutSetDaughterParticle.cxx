@@ -960,8 +960,27 @@ void AliRsnCutSetDaughterParticle::Init()
 	SetCutScheme( Form("%s&((%s&%s)|((!%s)&((%s&(!%s))|(%s&%s))))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
       }
 
-       break;
+      break;
 
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016:
+      
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(3.,0.3,0.5);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.5,1.e20);
+      AddCut(fCutQuality);
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+      
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      
+      break;
+
+      
     case AliRsnCutSetDaughterParticle::kTPCpidphipp2015:
 
       iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
@@ -1107,6 +1126,33 @@ void AliRsnCutSetDaughterParticle::Init()
 			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
 			 iCutTPCNSigma->GetName()) ) ;
       break;
+
+      // PID cuts for Kstar analysis:
+      case    AliRsnCutSetDaughterParticle::kTOFTPCpidKstar :      
+	if (fPID==AliPID::kKaon) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	}
+	if (fPID==AliPID::kPion) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.0,1.E20);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 1.E20);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
 
       // PID cuts for Delta analysis:
       case    AliRsnCutSetDaughterParticle::kTOFTPCpidDelta :      

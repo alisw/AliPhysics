@@ -39,32 +39,43 @@ AliAnTOFevent::AliAnTOFevent()
     , fVtxY(-999)
     , fVtxZ(-999)
     , fAliAnTOFtracks()
-{
+{ // standard constructor which should be used
 
-  //
-  // standard constructur which should be used
-  //
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFevent::AliAnTOFevent", "**** CONSTRUCTOR CALLED ****");
+#endif
+
   Reset();
+
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFevent::AliAnTOFevent", "**** END OF CONSTRUCTOR ****");
+#endif
 }
 
 //________________________________________________________________________
 AliAnTOFevent::~AliAnTOFevent()
 { //Destructor
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFevent::~AliAnTOFevent", "**** DESTRUCTOR CALLED ****");
+#endif
 
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFevent::~AliAnTOFevent", "**** END OF DESTRUCTOR ****");
+#endif
 }
 
 //________________________________________________________________________
 AliAnTOFtrack* AliAnTOFevent::GetTrack(const Int_t i)
 {
   if (i >= 0 && i < GetNtracks()) {
+#ifndef LOG_NO_INFO
     ::Info("AliAnTOFevent::GetTrack", "Returning track at potition i = %i", i);
+#endif
     return &fAliAnTOFtracks.at(i);
   } else if (i >= 0) {
+#ifndef LOG_NO_INFO
     ::Info("AliAnTOFevent::GetTrack", "Creating new track track at potition i = %i", GetNtracks());
+#endif
     fAliAnTOFtracks.push_back(AliAnTOFtrack());
   }
   return &fAliAnTOFtracks.back();

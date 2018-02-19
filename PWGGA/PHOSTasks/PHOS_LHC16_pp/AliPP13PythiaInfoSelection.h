@@ -3,6 +3,7 @@
 
 // --- Custom header files ---
 #include "AliPP13PhotonSelection.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -27,7 +28,9 @@ public:
 	}
 
 	AliPP13PythiaInfoSelection(const char * name, const char * title):
-		AliPP13PhotonSelection(name, title, AliPP13ClusterCuts()),
+		// NB: We don't need to set a pointer here 
+		//
+		AliPP13PhotonSelection(name, title, AliPP13ClusterCuts(), 0), 
 		fXsec(0),
 		fTrials(0)
 	{

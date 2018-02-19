@@ -2186,7 +2186,10 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
 	 fCachedRun = run;
  }
  if (!gGrid) TGrid::Connect("alien");
- TFile* foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+ TFile* foadb = 0x0;
+ if(fCachedRun == 280234 || fCachedRun == 280235) foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0XeXe.root");
+ else foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+
  
  if(!foadb){
      AliFatal("OADB V0 calibration file cannot be opened\n");

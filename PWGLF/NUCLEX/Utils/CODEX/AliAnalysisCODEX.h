@@ -8,11 +8,15 @@
 #include <vector>
 #include "TLorentzVector.h"
 #include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+
 #include <assert.h>
 
 using std::string;
 using std::vector;
 using ROOT::Math::XYZVectorF;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t;
 
 namespace AliAnalysisCODEX {
   /// Constants
@@ -209,14 +213,20 @@ namespace AliAnalysisCODEX {
       float GetExpectedSigma(const Track &t, float mass)  const;
       float GetNumberOfSigmas(const Track &t, int species) const { return (species >=0 && species < 8) ? GetNumberOfSigmas(t, kMasses[species]) : -999.f; }
       float GetNumberOfSigmas(const Track &t, float mass)  const;
+      void  SetParams(const float params[4]);
       int   GetTOFchannel(const Track& t) const;
+      void  SetTOFresolution(const float TOFresolution) { mTOFres = TOFresolution; }
       float GetTOFresolution() const { return mTOFres; }
+      void  SetTOFtail(const float TOFtail) { mTOFtail = TOFtail; };
       float GetTOFtail() const { return mTOFtail; }
       float GetT0event(const Track &t) const { return mHeader->mT0event[GetMomBin(t.GetTPCmomentum())]; }
       char  GetT0source(const Track &t) const { return mHeader->mT0mask[GetMomBin(t.GetTPCmomentum())]; }
 
+  // fTOFpid
     private:
+  // fTOFpid
       int   GetMomBin(float mom) const;
+  // fTOFpid
 
       float   mMomBins[11];
       float   mParams[4];
@@ -228,10 +238,10 @@ namespace AliAnalysisCODEX {
   // Template that stores tracks from different events used for background estimation
   // with Mixed-Event technique, essentially tracks are stored in a 4D matrix
   // depending on the value of centrality and vertex of the event
-  template <int centr, int vert, int part, int depth> class EventMixingPool {
+  template <int centr, int vert, int part> class EventMixingPool : public TObject {
 
     public:
-      EventMixingPool(int maxcent = 100, float maxvtz = 10.) :
+      EventMixingPool(int maxcent = 100, float maxvtz = 10., int depth=10) :
         mPool(),
         mCentralityBins(centr),
         mVertexBins(vert),
@@ -248,17 +258,19 @@ namespace AliAnalysisCODEX {
 
       // fills the vector of tracks in the correct matrix element
       // depending on the value of centrality and vertex the event
-      void FillEvent(vector<Track*> &track, char c, float v, int p) {
+      void FillEvent(vector<FourVector_t> &track, char c, float v, int p) {
         if (track.size() > 0 && fabs(v) < mVMax && c < mCMax) {
           int cbin = c / mCWBin;
           int vbin = ( v + mVMax ) / mVWBin;
           int index = mLevel[cbin][vbin][p] < mDepth ? mLevel[cbin][vbin][p] : 0;
-          vector<TLorentzVector> &vv3 = mPool[cbin][vbin][p][index];
+          vector<FourVector_t> vv3;
           vv3.resize(track.size());
           for (size_t iT = 0; iT < track.size(); iT++) {
-            Track *&ntr = track[iT];
-            vv3[iT].SetPtEtaPhiM(ntr->Pt(), ntr->Eta(), ntr->Phi(), mPartMass[p]);
+            FourVector_t ntr = track[iT];
+            FourVector_t vec = {ntr.Pt(), ntr.Eta(), ntr.Phi(), ntr.M()};
+            vv3[iT] = vec;
           }
+          mPool[cbin][vbin][p][index] = vv3;
           mLevel[cbin][vbin][p] = index + 1;
         }
       }
@@ -269,15 +281,14 @@ namespace AliAnalysisCODEX {
           for (int j = 0; j < mVertexBins; j++) {
             for (int k = 0; k < mNparticles; k++) {
               mLevel[i][j][k] = 0;
-              for (int l = 0; l < mDepth; ++l)
-                mPool[i][j][k][l].resize(0);
+              mPool[i][j][k].resize(mDepth);
             }
           }
         }
       }
 
-      // returns the vector of TLorentzVector stored in the
-      vector<TLorentzVector>& GetVectorTLV(int c, float v, int p, int d) {
+      // returns the vector of FourVector_t stored in the mPool
+      vector<FourVector_t> GetVectorFV(int c, float v, int p, int d) {
         if (fabs(v) < mVMax && c < mCMax) {
           int cbin = c / mCWBin;
           int vbin = ( v + mVMax ) / mVWBin;
@@ -312,7 +323,7 @@ namespace AliAnalysisCODEX {
 
     private:
 
-      vector<TLorentzVector> mPool[centr][vert][part][depth];
+      vector<vector<FourVector_t> > mPool[centr][vert][part];
       const int mCentralityBins;
       const int mVertexBins;
       const int mNparticles;

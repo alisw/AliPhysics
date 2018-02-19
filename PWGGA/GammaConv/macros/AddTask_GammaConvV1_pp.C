@@ -141,23 +141,22 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
-  Bool_t isMCForOtherSettings = 0;
-  if (isMC > 0) isMCForOtherSettings = 1;
-  //========= Add PID Reponse to ANALYSIS manager ====
+  //========= Check whether PID Reponse is there ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherSettings);
+    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No PID response has been initialized aborting.");
+    return;
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00200008400000002200000000";
-  TString cutnumberEvent = "00000003";
+  TString cutnumberPhoton     = "00200008400000002200000000";
+  TString cutnumberEvent      = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  AliV0ReaderV1 *fV0ReaderV1  = NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+    fV0ReaderV1               = new AliV0ReaderV1(V0ReaderName.Data());
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -170,9 +169,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     }
     if(trainConfig>=60 && trainConfig<80) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
+    if(inputHandler->IsA()==AliAODInputHandler::Class()){
+      // AOD mode
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
 
     AliConvEventCuts *fEventCuts=NULL;
@@ -203,12 +202,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87)   ){
         fCuts->SetDodEdxSigmaCut(kFALSE);
       }
-    }
-
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-    // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -751,57 +744,88 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("03400113", "00200009227302008250400000", "0152103500000000"); // 10-30
     cuts.AddCut("04500113", "00200009227302008250400000", "0152103500000000"); // 30-100
 
-  // -------------------------A. Marin,   2016 pp, open cuts --------------------------------------
 
- // Min Bias
+  // **************************************************************************************************
+  // ************************************ 13 TeV configuarations **************************************
+  // **************************************************************************************************
+    // Min Bias
   } else if (trainConfig == 300) {
-    cuts.AddCut("00010113", "00200009297302001280004000", "0152103500000000"); // Min Bias
-    cuts.AddCut("00010113", "00200009297302001280004000", "0152101500000000"); // alpha pT dependent
+    cuts.AddCut("00010113", "00200009297000001280000000", "0152103500000000"); // Min Bias more open cuts
+    cuts.AddCut("00010113", "00200009227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
 
-  } else if (trainConfig == 305) {
-    cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
-    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
-    cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
-  } else if (trainConfig == 306) { // to be used with MBW
-    cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
-    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
-    cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
-
+    // High mult triggers
   } else if (trainConfig == 310) {
-    cuts.AddCut("00010113", "00200009327302002280004000", "0152103500000000"); // Min Bias
-    cuts.AddCut("00010113", "00200009327302002280004000", "0152101500000000"); // alpha pT dependent
+    cuts.AddCut("00074113", "00200009227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00074013", "00200009227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+    cuts.AddCut("00076113", "00200009227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00076013", "00200009227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
 
- // High Mult V0
-  } else if (trainConfig == 301) {
-    cuts.AddCut("00074113", "00200009297302001280004000", "0152103500000000"); // for V0 High-Mult trigger
-    cuts.AddCut("00074013", "00200009297302001280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
-  } else if (trainConfig == 311) {
-    cuts.AddCut("00074113", "00200009327302002280004000", "0152103500000000"); // for V0 High-Mult trigger
-    cuts.AddCut("00074013", "00200009327302002280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+  // EMCal triggered sets
+  } else if (trainConfig == 320) { // EMC triggers +-1000 ns
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","1111100017032220000"); //INT7
+    cuts.AddCut("00052113", "00200009227300008250404000", "0163103100000000","1111100017032220000"); //EMC7
+    cuts.AddCut("00085113", "00200009227300008250404000", "0163103100000000","1111100017032220000"); //EG2
+    cuts.AddCut("00083113", "00200009227300008250404000", "0163103100000000","1111100017032220000"); //EG1
+  } else if (trainConfig == 321) { // EMC triggers -50, +30 ns
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //INT7
+    cuts.AddCut("00052113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //EMC7
+    cuts.AddCut("00085113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //EG2
+    cuts.AddCut("00083113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //EG1
 
- // Low B Field
-  } else if (trainConfig == 302) {
-    cuts.AddCut("00010113", "00200089297302001280004000", "0152103500000000"); // Min Bias
-    cuts.AddCut("00010113", "00200089397302001280004000", "0152103500000000"); // Open dEdx
-  } else if (trainConfig == 312) {
+  // DCal triggered sets
+  } else if (trainConfig == 330){ //DCAL triggers +- 1000ns
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("00055113", "00200009227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("00089113", "00200009227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("0008b113", "00200009227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+  } else if (trainConfig == 331){ //DCAL triggers +- 1000ns
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("00055113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("00089113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("0008b113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+
+  // PHOS trigered sets
+  } else if (trainConfig == 340) { // PHOS triggers
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","2444400000013300000"); //INT7
+    cuts.AddCut("00062113", "00200009227300008250404000", "0163103100000000","2444400000013300000"); //PHI7
+
+  // Low B Field
+  } else if (trainConfig == 350) {
+    cuts.AddCut("00010113", "00200089227302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Open dEdx
+  } else if (trainConfig == 351) {
     cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
 
-  } else if (trainConfig == 303) { // EMC triggers
-    cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //INT7
-    cuts.AddCut("00052113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EMC7
-    cuts.AddCut("00085113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EG2
-    cuts.AddCut("00083113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EG1
-  } else if (trainConfig == 304) { // PHOS triggers
-    cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000","2444400000013300000"); //INT7
-    cuts.AddCut("00062113", "00200009397300008250400000", "0163103100000000","2444400000013300000"); //EMC7
-  } else if (trainConfig == 307) { // EMC triggers
-    cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000"); //INT7
-    cuts.AddCut("00052113", "00200009397300008250400000", "0163103100000000"); //EMC7
-    cuts.AddCut("00085113", "00200009397300008250400000", "0163103100000000"); //EG2
-    cuts.AddCut("00083113", "00200009397300008250400000", "0163103100000000"); //EG1
-  } else if (trainConfig == 308){ //DCAL triggers
-    cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000","3885500081041220000"); //INT7
+  // Material studies Ana
+  } else if (trainConfig == 360) {
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
+    cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
+  } else if (trainConfig == 361) { // to be used with MBW
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
+    cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
+
+  // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
+  } else if (trainConfig == 400){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+  } else if (trainConfig == 401){
+    cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
+    cuts.AddCut("00010113", "00200009247300008250404000", "0152103500000000"); // pidEdx 3, 1
+    cuts.AddCut("00010113", "00200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
+    cuts.AddCut("00010113", "00200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "00200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+  } else if (trainConfig == 402){
+    cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+    cuts.AddCut("00010113", "00200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.2 2D
+    cuts.AddCut("00010113", "00200009227300008150404000", "0152103500000000"); // variation chi2 50 psi pair 0.1 2D
+    cuts.AddCut("00010113", "00200009227300008250004000", "0152103500000000"); // CosPA -1
+  } else if (trainConfig == 403){
+    cuts.AddCut("00057113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EMC7
+    cuts.AddCut("00083113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
+    cuts.AddCut("00085113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
+    cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
 
 
   } else {
@@ -924,7 +948,7 @@ if(!cuts.AreValid()){
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || trainConfig == 303 || trainConfig == 304  ){
+    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350 ) ){
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
         TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());

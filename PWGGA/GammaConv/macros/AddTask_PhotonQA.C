@@ -1,17 +1,17 @@
-void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003", 
-                        TString   V0ReaderPhotonCutNumber       = "060000084001001500000000", 
+void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
+                        TString   V0ReaderPhotonCutNumber       = "060000084001001500000000",
                         TString   TaskEventCutnumber            = "00000003",
                         TString   TaskPhotonCutnumber           = "090000092663743800000000",
                         Bool_t    isMC                          = kFALSE,
                         Int_t     IsHeavyIon                    = 0,
-                        Bool_t    kHistograms                   = kTRUE, 
-                        Bool_t    kTree                         = kTRUE,
-                        TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000", 
+                        Bool_t    kHistograms                   = kTRUE,
+                        Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
+                        TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
                         Bool_t    runBasicQAWithStandardOutput  = kTRUE,
                         Bool_t    doEtaShiftV0Reader            = kFALSE,
                         Bool_t    enableV0findingEffi           = kFALSE              // enables V0finding efficiency histograms
                     ){
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -21,7 +21,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -32,15 +32,11 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",V0ReaderEventCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    
+
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
 
     AliConvEventCuts *fEventCuts=NULL;
     if(V0ReaderEventCutNumber!=""){
@@ -69,11 +65,11 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
-      
+
+
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",V0ReaderCutNumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",V0ReaderCutNumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -85,7 +81,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
 
   } else {
     Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
-  }   
+  }
 
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
@@ -96,7 +92,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   analysisCuts->SetV0ReaderName(V0ReaderName);
   analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetFillCutHistograms("",kFALSE);
-  
+
   AliAnalysisTaskConversionQA *fQA = new AliAnalysisTaskConversionQA(Form("%s_%s_QA",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));
   fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
@@ -118,9 +114,9 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
     mgr->ConnectOutput(fQA,  1, coutput);
   }
   mgr->ConnectInput(fQA,0,cinput);
-    
+
 
   //connect containers
   return;
 }
-  
+

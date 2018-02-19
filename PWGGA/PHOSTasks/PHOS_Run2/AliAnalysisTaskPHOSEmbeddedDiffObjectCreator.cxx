@@ -96,22 +96,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     AliError("Could not retrieve MC array!");
     return;
   }
-  //const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
-  //for(Int_t i=0;i<Ntrack;i++){
-  //  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
-  //  Int_t genID = p->GetGeneratorIndex();
-
-  //  Double_t pT = p->Pt();
-  //  Double_t rapidity = p->Y();
-  //  Double_t phi = p->Phi();
-  //  Int_t pdg = p->PdgCode();
-
-  //  //rapidity is Y(), but, pseudo-rapidity is Eta();
-
-  //  if(pT < 1e-3) continue;//reject below 1 MeV
-  //  if(TMath::Abs(rapidity) > 0.5) continue;
-
-  //}//end of generated particle loop
 
   if(fRunNumber != fEvent->GetRunNumber()) { // Check run number
     fRunNumber = fEvent->GetRunNumber();
@@ -128,7 +112,9 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
   TLorentzVector p1,p1core;
 
-  Double_t energy=0, tof=-999, M20=0, M02=0, R2=999, coreE=0, coreR2=999;
+  //Double_t energy=0, tof=-999, M20=0, M02=0, R2=999, coreE=0, coreR2=999;
+  Double_t energy=0, coreE=0;
+  Double_t tof=-999, M20=0, M02=0, R2=999, coreR2=999;
   Double_t r=999;
 
   Int_t relId[4] = {};
@@ -154,11 +140,8 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     AliAODCaloCluster *cluster = (AliAODCaloCluster*)clustersEmb->At(iclu);
 
     if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < fEmin // MIP cut
-//        || cluster->GetNCells() < 3 //accidental noise
-//        || cluster->GetM20() < 0.2 //too small shower shape
+        || cluster->E() < 0.1 // Emin cut
       ) continue;
-//    cout << "EMB E = " << cluster->E() << " , Ncell = " << cluster->GetNCells() << " , label = " << cluster->GetLabel() << endl;
 
     if(cluster->GetLabel() < 0) continue;
 
@@ -168,7 +151,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
       AliAODCaloCluster *clusterUE = (AliAODCaloCluster*)clustersUE->At(icluUE);
 
       if(clusterUE->GetType() != AliVCluster::kPHOSNeutral
-          || clusterUE->E() < fEmin // noise cut
+          || clusterUE->E() < 0.1 // noise cut
         ) continue;
 
 //      cout << "UE E = " << clusterUE->E() << " , Ncell = " << clusterUE->GetNCells() << " , label = " << clusterUE->GetLabel() << endl;
@@ -221,10 +204,18 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
+    Int_t primary = cluster->GetLabel();
+
+    ////if simulated photon energy is less than a half of a cluster energy, reject such cluster.
+    //AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+    //Double_t Etrue = p->E();//energy of photon
+    //if(Etrue < 0.5 * energy){
+    //  AliInfo(Form("energy of photon = %e GeV , reconstructed cluster energy = %e GeV. Eture < 0.5 * Erec. reject this cluster.",Etrue,energy));
+    //  continue;
+    //}
 
     cluster->GetMomentum(p1,fVertex);
     cluster->GetMomentum(p1core,fVertex);
-    p1 *= fUserNonLinCorr->Eval(p1.E());
 
     new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
@@ -237,7 +228,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     ph->SetEMCx((Double_t)position[0]);
     ph->SetEMCy((Double_t)position[1]);
     ph->SetEMCz((Double_t)position[2]);
-    Int_t primary = cluster->GetLabel();
 
     //Bool_t sure = kFALSE;
     //Int_t primary = FindPrimary(ph,sure);
@@ -252,16 +242,16 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     coreE = cluster->GetCoreEnergy();
     coreR2 = cluster->Chi2();//core dispersion
     r = cluster->GetEmcCpvDistance();
-    //cout << "energy = " << energy << " , coreE = " << coreE << endl;
 
     ph->SetLambdas(M20,M02);
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
 
-    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
-
+    p1core *= coreE/energy; //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
+
+    //printf("energy = %e GeV, coreE = %e GeV\n",ph->Energy(),ph->GetMomV2()->Energy());
 
     inPHOS++;
   }//end of cluster loop

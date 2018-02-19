@@ -38,14 +38,14 @@ class CutHandlerConvDalitz{
 
 
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
-                                    Bool_t isMC   = kFALSE, //run MC 
+                                    Bool_t isMC   = kFALSE, //run MC
                                     TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                     Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
                                     TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
          ) {
-  
+
   Int_t isHeavyIon = 0;
-    
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -55,35 +55,30 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMC);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
-  //TString cutnumber = "00000000000840010015000000"; 
+  //TString cutnumber = "00000000000840010015000000";
   TString cutnumberPhoton = "06000008400100007500000000";
-  TString cutnumberEvent  = "00000103"; 
-      
-  
+  TString cutnumberEvent  = "00000103";
+
+
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
+
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-  
+
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    
+
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
 
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
@@ -110,7 +105,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -122,7 +117,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
   }
 
-  
+
   if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
     AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
     //ConfigV0ReaderV1(fV0ReaderV1,ConvCutnumber,IsHeavyIon);
@@ -153,10 +148,10 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task->SetIsHeavyIon(0);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  
-  
+
+
   CutHandlerConvDalitz cuts;
-  
+
   if(trainConfig == 1){
    	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202221710"); // standard cut number for pp7TeV
 	cuts.AddCut("00000113", "00200009360300007800004000", "0163103100900000", "20475400253202221710");
@@ -170,7 +165,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202121710");
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202321710");
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253302221710");
-    
+
   } else if (trainConfig == 3) {
 	cuts.AddCut("00000113", "00200009360300007900004000", "0263103100900000", "20475400253202221710");
 	cuts.AddCut("00000113", "00200009360300007200004000", "0263103100900000", "20475400253202221710");
@@ -180,7 +175,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	cuts.AddCut("00000113", "00200049360300007800004000", "0263103100900000", "20475400253202221710");
 	cuts.AddCut("00000113", "00200019360300007800004000", "0263103100900000", "20475400253202221710");
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202222710");
-    
+
   } else if (trainConfig == 4) {
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20575400253202221710");
 	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20775400253202221710");
@@ -225,8 +220,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cout << "****************************************************\n\n" << endl;
     return;
   }
-  
-  Int_t numberOfCuts = cuts.GetNCuts(); 
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   TList  *EventCutList = new TList();
   TList  *ConvCutList  = new TList();
@@ -236,7 +231,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   TList *HeaderList = new TList();
   TObjString *Header2 = new TObjString("BOX");
   HeaderList->Add(Header2);
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts   = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -246,16 +241,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   ElecCutList->SetOwner(kTRUE);
   AliDalitzElectronCuts **analysisElecCuts   = new AliDalitzElectronCuts*[numberOfCuts];
   Bool_t initializedMatBudWeigths_existing    = kFALSE;
-  
+
   for(Int_t i = 0; i<numberOfCuts; i++){
     TString cutName( Form("%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetElecCut(i)).Data(),(cuts.GetMesonCut(i)).Data() ) );
-    
+
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
@@ -269,21 +264,21 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-  
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
-    
+
     analysisElecCuts[i] = new AliDalitzElectronCuts();
     analysisElecCuts[i]->InitializeCutsFromCutString((cuts.GetElecCut(i)).Data());
     ElecCutList->Add(analysisElecCuts[i]);
-    analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
-    
+    analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
+
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
+
   }
-  
+
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(MesonCutList);

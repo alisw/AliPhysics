@@ -16,7 +16,7 @@
 class AliFemtoCorrFctn3DSpherical : public AliFemtoCorrFctn {
 public:
 
-  AliFemtoCorrFctn3DSpherical(char* title,
+  AliFemtoCorrFctn3DSpherical(const char* title,
                               const int& nqbins,
                               const float& QLo,
                               const float& QHi,
@@ -36,6 +36,7 @@ public:
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctn3DSpherical(*this); }
 
   //  void SetSpecificPairCut(AliFemtoPairCut* aCut);
 

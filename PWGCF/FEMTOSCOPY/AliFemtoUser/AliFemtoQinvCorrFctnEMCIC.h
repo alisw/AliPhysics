@@ -15,12 +15,12 @@
  *        2)   E1 * E2
  *        3)   Pt1*Pt2
  *        4)   Pz1*Pz2
- *  
+ *
  * The class is derived from AliFemtoQinvCorrFctn, therefore it produces
- * also the histograms in that class. 
- * 
- * NOTE: The EMCIC histograms are not averaged in this class, to obtain 
- * the average, the user needs to divide the real pair histograms by 
+ * also the histograms in that class.
+ *
+ * NOTE: The EMCIC histograms are not averaged in this class, to obtain
+ * the average, the user needs to divide the real pair histograms by
  * the numerator, and the mixed pairs by denominator
  *
  ***************************************************************************
@@ -35,31 +35,31 @@
 #include "AliFemtoQinvCorrFctn.h"
 
 
-class AliFemtoQinvCorrFctnEMCIC : public AliFemtoQinvCorrFctn 
+class AliFemtoQinvCorrFctnEMCIC : public AliFemtoQinvCorrFctn
 {
  public:
-  AliFemtoQinvCorrFctnEMCIC(char* title, const int& nbins, 
+  AliFemtoQinvCorrFctnEMCIC(const char* title, const int& nbins,
 			    const float& QinvLo, const float& QinvHi);
   AliFemtoQinvCorrFctnEMCIC(const AliFemtoQinvCorrFctnEMCIC& aCorrFctn);
   virtual ~AliFemtoQinvCorrFctnEMCIC();
-  
+
   AliFemtoQinvCorrFctnEMCIC& operator=(const AliFemtoQinvCorrFctnEMCIC& aCorrFctn);
 
   virtual void AddRealPair(AliFemtoPair* aPair);
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
-  
+
 
   virtual TList* GetOutputList();
   void Write();
-  
+
  private:
-  //Emcic histograms:  
-  /*TH1D* fESumReal;   //  <E1+E2>   from real Pairs 
-  TH1D* fEMultReal;  //  <E1*E2>   from real Pairs 
-  TH1D* fPtMultReal; //  <Pt1*Pt2> from real Pairs 
+  //Emcic histograms:
+  /*TH1D* fESumReal;   //  <E1+E2>   from real Pairs
+  TH1D* fEMultReal;  //  <E1*E2>   from real Pairs
+  TH1D* fPtMultReal; //  <Pt1*Pt2> from real Pairs
   TH1D* fPzMultReal; //  <Pz1*Pz2> from real Pairs */
-  TH1D* fESumMix;    //  <E1+E2>   from mixed Pairs 
+  TH1D* fESumMix;    //  <E1+E2>   from mixed Pairs
   TH1D* fEMultMix;   //  <E1*E2>   from mixed Pairs
   TH1D* fPtMultMix;  //  <PT1*Pt2> from mixed Pairs
   TH1D* fPzMultMix;  //  <Pz1*Pz2> from mixed Pairs

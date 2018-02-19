@@ -25,7 +25,7 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames. Int_t centbin){
+void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
 }
 void SetFDtemplateSystemString(TString str){
@@ -82,7 +82,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, I
  
             //For D0 input filenames! (bins and not pt)
             Double_t Dptbin[2] = {0,0};
-             if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
+            if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
             if(iDpt == 1) {Dptbin[0] = 7; Dptbin[1] = 9;}
             if(iDpt == 2) {Dptbin[0] = 10; Dptbin[1] = 11;}
            

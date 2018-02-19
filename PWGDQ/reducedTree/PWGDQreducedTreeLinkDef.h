@@ -12,6 +12,7 @@
 #pragma link C++ class AliMixingHandler+;
 #pragma link C++ class AliReducedAnalysisFilterTrees+;
 #pragma link C++ class AliReducedAnalysisJpsi2ee+;
+#pragma link C++ class AliReducedAnalysisJpsi2eeCorrelations+;
 #pragma link C++ class AliReducedAnalysisJpsi2eeMult+;
 #pragma link C++ class AliReducedAnalysisTaskSE+;
 #pragma link C++ class AliReducedAnalysisTest+;
@@ -19,6 +20,7 @@
 #pragma link C++ class AliReducedBaseTrackCut+;
 #pragma link C++ class AliReducedBaseTrack+;
 #pragma link C++ class AliReducedCaloClusterInfo+;
+#pragma link C++ class AliReducedCompositeCut+;
 #pragma link C++ class AliReducedEventCut+;
 #pragma link C++ class AliReducedEventInfo+;
 #pragma link C++ class AliReducedEventInputHandler+;
@@ -31,5 +33,6 @@
 #pragma link C++ class AliReducedVarCut+;
 #pragma link C++ class AliReducedVarManager+;
 #pragma link C++ class AliResonanceFits+;
+#pragma link C++ class AliSignalMC+;
 
 #endif

@@ -4,7 +4,7 @@
 /**
  *
  * \class AliAnalysisMuMuEP
- * \brief Elliptic dimuon analysis with the event plane method
+ * \brief Elliptic dimuon analysis with the event plane or scalar product method
  * \author A. Francisco (Subatech)
  */
 
@@ -21,17 +21,18 @@ class AliAnalysisMuMuFlow : public AliAnalysisMuMuBase
 {
 public:
 
-  AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, Int_t systLevel=0);
+  AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, TList *q2Map=0x0, Int_t systLevel=0);
   virtual ~AliAnalysisMuMuFlow();
 
-  Bool_t IsPtInRange(const AliVParticle& t1, const AliVParticle& t2,
-                           Double_t& ptmin, Double_t& ptmax) const;
+  Bool_t Isq2InSmallRange(const AliVEvent& event) const;
+  Bool_t Isq2InLargeRange(const AliVEvent& event) const;
+  void NameOfIsq2InSmallRange(TString& name) const;
+  void NameOfIsq2InLargeRange(TString& name) const;
 
-  void NameOfIsPtInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
-
-  Bool_t IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2,
-                             Double_t& yMin, Double_t& yMax) const;
-  void NameOfIsRapidityInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
+  Bool_t IsDPhiInPlane(const AliVParticle& t1, const AliVParticle& t2) const;
+  Bool_t IsDPhiOutOfPlane(const AliVParticle& t1, const AliVParticle& t2) const;
+  void NameOfIsDPhiInPlane(TString& name) const;
+  void NameOfIsDPhiOutOfPlane(TString& name) const;
 
   Bool_t ShouldCorrectDimuonForAccEff() { return (fAccEffHisto != 0x0); }
 
@@ -51,6 +52,11 @@ public:
 
   void DefineMinvRange(Double_t minvMin, Double_t minvMax, Double_t minvBinSize);
 
+  void ComputeMeanV2(Bool_t b){fcomputeMeanV2=b;}
+  void UseEventPlaneMethod(Bool_t b){fcomputeEP=b;}
+  void UseScalarProductMethod(Bool_t b){fcomputeSP=b;}
+  void UsSESEMethod(Bool_t b){fESE=b;}
+
 
 protected:
 
@@ -64,6 +70,7 @@ protected:
                                  const AliVParticle& part2,
                                  const Bool_t IsMixedHisto);
 
+  void FillHistosForEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
   void FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
 
 private:
@@ -83,14 +90,18 @@ private:
 
   Double_t TriggerLptApt(Double_t *x, Double_t *par);
 
-  Double_t GetEventPlane(const char* detector, Int_t step = 3);
+  // TVector2 GetQn(Int_t detector) const { return Q2[detector]; }
+  // void SetQn(Int_t detector, TVector2 Qn) { Q2[detector].Set(Qn); }
+  // Double_t GetEventPlane(Int_t detector) const { return phiEP[detector]; }
+  // void SetEventPlane(Int_t detector, Double_t psi) { phiEP[detector]=psi; }
 
-  TVector2 GetQn(const char* detector, Int_t step = 3);
+  Double_t GetCentrality() const;
 
 private:
   Bool_t fcomputeMeanV2; //mv2 with EP method
   Bool_t fcomputeEP; //dist in dphi bins
   Bool_t fcomputeSP; //scalar product
+  Bool_t fESE; //event shape engineering
   Bool_t fWeightMuon;
   TH2F     * fAccEffHisto;
   TString fMinvBinSeparator;
@@ -107,10 +118,13 @@ private:
   Double_t fmcptcutmax;
   Int_t fNDetectors;
   Int_t fHar;
+  Double_t EP[3];
+  Double_t Q2[3][2];
   TString fEqSteps  [5] = {"raw", "plain", "rec", "align","twist"};
   TString fDetectors[3] = {"SPD","VZEROA", "VZEROC"};
+  TH1F *fq2Map[2];
 
-  ClassDef(AliAnalysisMuMuFlow,1) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuFlow,3) // implementation of AliAnalysisMuMuFlow for muon pairs
 };
 
 #endif

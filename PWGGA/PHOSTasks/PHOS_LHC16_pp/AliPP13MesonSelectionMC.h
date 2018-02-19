@@ -7,6 +7,7 @@
 // --- Custom header files ---
 #include "AliPP13PhysPhotonSelectionMC.h"
 #include "AliPP13ParticlesHistogram.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -33,17 +34,20 @@ struct ParticleSpectrum
 		fPtAllRange(0),
 		fPtRadius(0),
 		fEtaPhi(0),
+		fPtLong(0),
 		fPt(0),
 		fPtPrimaries()
 	{
 		fPtAllRange = new TH1F(Form("hPt_allrange_%s", n), Form("Generated p_{T} spectrum of %ss in 4 #pi ; p_{T}, GeV/c", n), ptsize, ptbins);
 		fPtRadius   = new TH2F(Form("hPt_%s_radius", n), Form("Generated radius, p_{T} spectrum of all %ss; r, cm; p_{T}, GeV/c", n), 500, 0., 500., 400, 0, 20);
-		fEtaPhi     = new TH2F(Form("hEtaPhi_%s", n), Form("Generated %ss #eta vs #phi plot; #phi (rad); #eta", n), 100, 0, TMath::Pi() * 2, 100, -1, 1);
+		fEtaPhi     = new TH2F(Form("hEtaPhi_%s", n), Form("Generated %ss y vs #phi plot; #phi (rad); y", n), 100, 0, TMath::Pi() * 2, 100, -1, 1);
+		fPtLong     = new TH1F(Form("hPtLong_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T}, GeV/c", n), 1000, 0, 100);
 		fPt         = new TH1F(Form("hPt_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T}, GeV/c", n), ptsize, ptbins);
 
 		fListOfHistos->Add(fPtAllRange);
 		fListOfHistos->Add(fPtRadius);
 		fListOfHistos->Add(fEtaPhi);
+		fListOfHistos->Add(fPtLong);
 		fListOfHistos->Add(fPt);
 
 		if (!full)
@@ -62,6 +66,7 @@ struct ParticleSpectrum
 	TH1F * fPtAllRange; //!
 	TH2F * fPtRadius;   //!
 	TH2F * fEtaPhi;     //!
+	TH1F * fPtLong;     //!
 	TH1F * fPt;         //!
 	TH1F * fPtPrimaries[2]; //!
 
@@ -88,10 +93,7 @@ public:
 		fSecondaryPi0(),
 		fFeedDownPi0(),
 		fInvMass(),
-		fPi0Sources(),	
-		fWeighA(0.),
-		fWeighSigma(1.),
-		fWeighScale(1.)
+		fPi0Sources()
 	{
 		fPartNames[kGamma] = "#gamma";
 		fPartNames[kPi0] = "#pi^{0}";
@@ -115,19 +117,14 @@ public:
 		fPi0SourcesNames[kSigmaZero] = "#Sigma^{0}";
 	}
 
-	AliPP13MesonSelectionMC(const char * name, const char * title, AliPP13ClusterCuts cuts, 
-		Float_t nona = 0., Float_t nonsigma = 1., Float_t genergy = 1.,
-		Float_t wa = 0., Float_t wsigma = 1., Float_t wscale = 1.):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, nona, nonsigma, genergy),
+	AliPP13MesonSelectionMC(const char * name, const char * title, 
+			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
+		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
 		fInvMass(),
-		fPi0Sources(),	
-		fWeighA(wa),
-		fWeighSigma(wsigma),
-		fWeighScale(wscale)
-
+		fPi0Sources()
 	{
 		// Force no timing cut for MC,
 		// as there is no photons from different bunches
@@ -174,8 +171,6 @@ public:
 	}
 
 protected:
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
-	virtual Float_t Weigh(Float_t x) const;
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
 	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
@@ -208,10 +203,6 @@ protected:
 	TH1 * fPi0Sources[2];  //!
 
 	// Parameters of weighed MC parametrization
-	Float_t fWeighA;
-	Float_t fWeighSigma;
-	Float_t fWeighScale;
-
 	ClassDef(AliPP13MesonSelectionMC, 2)
 };
 #endif

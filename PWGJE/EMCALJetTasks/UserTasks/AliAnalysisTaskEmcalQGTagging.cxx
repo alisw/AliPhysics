@@ -70,6 +70,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentMin(0),
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
+  fSubjetCutoff(0.1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -82,7 +84,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fhTrackPhi(0x0),
   fHLundIterative(0x0),
+  fHCheckResolutionSubjets(0x0),  
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
@@ -115,6 +119,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentMin(0),
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
+  fSubjetCutoff(0.1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -127,7 +133,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fhTrackPhi(0x0),
   fHLundIterative(0x0),
+  fHCheckResolutionSubjets(0x0),  
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
   
@@ -185,7 +193,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
+  fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi", 100, 0, 2*TMath::Pi());
+  fOutput->Add(fhTrackPhi);
 
+
+  
    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 5;
    const Int_t nBinsSpec[5]     = {50,50,10,3,10};
@@ -194,7 +206,21 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-  fOutput->Add(fHLundIterative);  
+  fOutput->Add(fHLundIterative);
+
+
+  //// 
+   const Int_t dimResol   = 4;
+   const Int_t nBinsResol[4]     = {10,10,20,20};
+   const Double_t lowBinResol[4] = {0,0,-1,-1};
+   const Double_t hiBinResol[4]  = {200,0.3,1,1};
+   fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
+                   "Mom.Resolution of Subjets vs opening angle",
+					     dimResol,nBinsResol,lowBinResol,hiBinResol);
+  fOutput->Add(fHCheckResolutionSubjets);
+
+
+  
   
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
@@ -222,7 +248,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "mJet";
+  fShapesVarNames[3] = "phiJet";
   // fShapesVarNames[4] = "nbOfConst";
   fShapesVarNames[4] = "angularity";
   //fShapesVarNames[5] = "circularity";
@@ -231,7 +257,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   fShapesVarNames[6] = "ptJetMatch"; 
   fShapesVarNames[7] = "ptDJetMatch"; 
-  fShapesVarNames[8] = "mJetMatch";
+  fShapesVarNames[8] = "phiJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
   fShapesVarNames[9] = "angularityMatch";
   //fShapesVarNames[12] = "circularityMatch";
@@ -273,16 +299,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   if (fCentSelectOn)
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   
-  AliAODTrack *triggerHadron = 0x0;
+    AliAODTrack *triggerHadron = 0x0;
   
-  if (fJetSelection == kRecoil) {
-    //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
-    Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
-     
-    
-    if (triggerHadronLabel==-99999) {
-      //Printf ("Trigger Hadron not found, return");
-      return 0;}
 
     AliTrackContainer *PartCont =NULL;
     AliParticleContainer *PartContMC=NULL;
@@ -295,17 +313,32 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
       else PartCont = GetTrackContainer(0);
     }
+
     TClonesArray *TrackArray = NULL;
     TClonesArray *TrackArrayMC = NULL;
     if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
     else TrackArray = PartCont->GetArray();    
-    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
-    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
-
-
-
-
     
+    Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) NTracks = TrackArrayMC->GetEntriesFast();
+  else NTracks = TrackArray->GetEntriesFast(); 
+
+
+
+
+  if (fJetSelection == kRecoil) {
+    //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
+    Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
+
+   
+    if (triggerHadronLabel==-99999) {
+      //Printf ("Trigger Hadron not found, return");
+      return 0;}
+
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
+    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
+ 
+    /////////    
     if (!triggerHadron) {
       //Printf("No Trigger hadron with the found label!!");
       return 0;
@@ -316,15 +349,40 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-fangWindowRecoil){
         return 0;}
     }
-   
+
+  
     fhPt->Fill(triggerHadron->Pt());
 
+  }
+  
+
+  if(fTrackCheckPlots){
+      //here check tracks//
+      AliAODTrack *Track = 0x0;
+     for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	fhTrackPhi->Fill(Track->Phi());
+      }
+    }
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	fhTrackPhi->Fill(Track->Phi());
+      }
+    } 
+  }
   }
   
   
   AliParticleContainer *partContAn = GetParticleContainer(0);
   TClonesArray *trackArrayAn = partContAn->GetArray();
-  Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
+ 
   
   Float_t rhoVal=0, rhoMassVal = 0.;
   if(jetCont) {
@@ -469,7 +527,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
-        
+        CheckSubjetResolution(jet1,jetCont,jet3,jetContTrue);
         
       }
       
@@ -527,7 +585,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] = GetJetMass(jet1,0);
+      fShapesVar[3] =jet1->Phi();
+      if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
+	//GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
       //fShapesVar[5] = GetJetCircularity(jet1,0);
       fShapesVar[5] = GetJetLeSub(jet1,0);
@@ -545,7 +605,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
          ptMatch=jet3->Pt();
          ptDMatch=GetJetpTD(jet3, kMatched);
-         massMatch=GetJetMass(jet3,kMatched);
+         massMatch=jet3->Phi();
+	 // GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
 	 //circMatch=GetJetCircularity(jet3, kMatched);
@@ -559,7 +620,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=GetJetMass(jet3,kMatched);
+        massMatch=jet3->Phi();
+	//GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
 	// circMatch=GetJetCircularity(jet3, kMatched);
@@ -1042,7 +1104,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
  
   
-  TList *trackList = new TList();
+  TList trackList;
   Int_t triggers[100];
   for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
   Int_t iTT = 0;
@@ -1078,8 +1140,8 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
   if (iTT == 0) return -99999;
   Int_t nbRn = 0, index = 0 ; 
-  TRandom3* random = new TRandom3(0); 
-  nbRn = random->Integer(iTT);
+  TRandom3 random(0); 
+  nbRn = random.Integer(iTT);
   index = triggers[nbRn];
   //Printf("iTT Total= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
   return index; 
@@ -1165,6 +1227,114 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   return;
 
   
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont,AliEmcalJet *fJetM,AliJetContainer *fJetContM){
+ 
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+
+  std::vector<fastjet::PseudoJet>  fInputVectorsM;
+  fInputVectorsM.clear();
+  fastjet::PseudoJet  PseudoTracksM;
+  
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  AliParticleContainer *fTrackContM = fJetContM->GetParticleContainer();
+  
+    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+    fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+   if (fTrackContM) for (Int_t i=0; i<fJetM->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJetM->TrackAt(i, fTrackContM->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracksM.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracksM.set_user_index(fJetM->TrackAt(i)+100);
+      fInputVectorsM.push_back(PseudoTracksM);
+     
+    }
+    fastjet::JetAlgorithm jetalgoM(fastjet::cambridge_algorithm);
+    fastjet::JetDefinition fJetDefM(jetalgoM, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+
+    try {
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
+
+    fastjet::ClusterSequence fClustSeqSAM(fInputVectorsM, fJetDefM);
+    std::vector<fastjet::PseudoJet>   fOutputJetsM;
+    fOutputJetsM.clear();
+    fOutputJetsM=fClustSeqSAM.inclusive_jets(0);
+
+    
+  
+    fastjet::PseudoJet jj,jjM;
+    fastjet::PseudoJet j1,j1M;
+    fastjet::PseudoJet j2,j2M;
+    jj=fOutputJets[0];
+    jjM=fOutputJetsM[0];
+
+   double z=0;
+   double zcut=0.1;
+   while((jj.has_parents(j1,j2)) && (z<zcut)){
+    if(j1.perp() < j2.perp()) swap(j1,j2);
+   
+     z=j2.perp()/(j1.perp()+j2.perp());
+    jj=j1;} 
+   if(z<zcut) return;
+    z=0;
+
+     
+   while((jjM.has_parents(j1M,j2M)) && (z<zcut)){
+    if(j1M.perp() < j2M.perp()) swap(j1M,j2M);
+   
+     z=j2M.perp()/(j1M.perp()+j2M.perp());
+    jjM=j1M;}
+   if(z<zcut) return;
+        
+
+
+   double delta_R1=j1.delta_R(j1M);
+   double delta_R2=j2.delta_R(j2M);
+   double delta_R=j1.delta_R(j2);
+  
+   double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
+   double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
+    
+   if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
+   Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
+   fHCheckResolutionSubjets->Fill(ResolEntries);}
+
+   
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+
+
+
+  return;
+
+
+
+
+
+ 
+
 }
 
 

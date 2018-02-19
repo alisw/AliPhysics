@@ -32,6 +32,7 @@ def scalePtHardHistos(referenceFile):
       qaListNames.append(name)
     if "PWGJEQA" in name or "Jet" in name:
       eventList = name
+      print "Using " + name + " for event list."
   f.Close()
 
   # Create histogram of NEvents per pT-hard bin
@@ -44,7 +45,17 @@ def scalePtHardHistos(referenceFile):
     f = ROOT.TFile(inputFile, "UPDATE")
     qaList = f.Get(eventList)
     hNEventsPtHard = qaList.FindObject("fHistEventCount")
-    nEvents = hNEventsPtHard.GetBinContent(1)
+    if hNEventsPtHard:
+      nEvents = hNEventsPtHard.GetBinContent(1)
+      if bin is 1:
+        print "Getting nEvents from fHistEventCount."
+    else:
+      eventCutList = qaList.FindObject("EventCutOutput")
+      hNEventsPtHard = eventCutList.FindObject("fCutStats")
+      nEvents = hNEventsPtHard.GetBinContent(16)
+      if bin is 1:
+        print "Getting nEvents from EventCutOutput."
+
     nEventsTotal += nEvents
     hNEvents.Fill(bin, nEvents)
     hNEvents.Write()

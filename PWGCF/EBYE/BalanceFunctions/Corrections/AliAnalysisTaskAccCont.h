@@ -6,13 +6,13 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TObjArray;
-
 class AliAODEvent;
 class AliAODTrack;
 
 class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
+#include "TDatabasePDG.h"
 
 class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
  public:
@@ -39,15 +39,21 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   }
 
-  void UsePileUpCuts() {fUseOutOfBunchPileUpCutsLHC15o = kTRUE;}
- 
-  void UsePID(){fUsePID = kTRUE;}
+  void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
+  
+  void UsePileUpCutspPb() {fpPb = kTRUE;}
+  
+  void USEextendedDCA() {fDCAext = kTRUE;}
+  
+  void UsePID() {fUsePID = kTRUE;}
+  
+  void SetUseRapidity() {fUseRapidity = kTRUE;}
 
   void SetNSigmaPID(Int_t nsigma) {
  
     fPIDNSigma = nsigma;
   }
-
+ 
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
 
   void SetCentralityEstimator(const char* centralityEstimator) {
@@ -58,9 +64,32 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   }
 
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
-  
+  enum kCentralityBinning { kFull, kBins};
+  enum kSystem { kPbPb, kpPb};
+
   void setParticleType(kParticleOfInterest ptype){
   fParticleOfInterest = ptype;
+  
+  if(fParticleOfInterest == kParticleOfInterest::kElectron){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  }  
+ 
+  else if(fParticleOfInterest == kParticleOfInterest::kMuon){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kPion){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kKaon){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kProton){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  }
+  else{
+    AliWarning("Particle type not known, set fMassParticleOfInterest to pion mass.");
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  }  
   }
 
  private:
@@ -101,20 +130,31 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   TH3D *fHistEtaPhiVertexPlus;
   TH3D *fHistEtaPhiVertexMinus;   
+  TH3D *fHistYPhiVertexPlus;
+  TH3D *fHistYPhiVertexMinus;
   TH3F *fHistDCAXYptchargedminus;
   TH3F *fHistDCAXYptchargedplus;
+  TH3F *fHistDCAXYptchargedminus_ext;
+  TH3F *fHistDCAXYptchargedplus_ext;
 
+  TH2F *fHistGlobalvsESDBeforePileUpCuts;
+  TH2F *fHistGlobalvsESDAfterPileUpCuts;
+  
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
-  Bool_t fUseOutOfBunchPileUpCutsLHC15o;
+  Bool_t fPbPb;
+  Bool_t fpPb;
   Bool_t fUsePID;
-
+  Bool_t fDCAext;
+  Bool_t fUseRapidity;
+ 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
-
+  
   Int_t fAODtrackCutBit;//AOD track cut bit from track selection
   
   Int_t fPIDNSigma;
+  Double_t fMassParticleOfInterest;
   kParticleOfInterest fParticleOfInterest;
  
   Double_t fEtaMin; 

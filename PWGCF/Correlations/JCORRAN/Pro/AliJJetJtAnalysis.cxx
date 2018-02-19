@@ -1713,13 +1713,19 @@ void AliJJetJtAnalysis::UserExec(){
   //Loop over jet finders (Full/charged jets R=0.4,0.5,0.6, Pythia/Reco)
   for( int i=0;i<fJetListOfList.GetEntries();i++ ){
     TObjArray * Jets = (TObjArray*) fJetListOfList[i];
+    TObjArray *ChargedJets;
+    if(i < nR || GetTrackOrMCParticle(i) == kJMCParticle){
+      ChargedJets = (TObjArray*) fJetListOfList[i];
+    }else{
+      ChargedJets = (TObjArray*) fJetListOfList[i-nR];
+    }
     if(!Jets) {
       continue;
     }
     if(GetTrackOrMCParticle(i) == kJMCParticle){ //Check if jet finder is Detector or particle level
-      this->FillJtHistogram(Jets,i,1); //Particle
+      this->FillJtHistogram(Jets,ChargedJets,i,1); //Particle
     }else{
-      this->FillJtHistogram(Jets,i,0); //Detector
+      this->FillJtHistogram(Jets,ChargedJets,i,0); //Detector
     }
 
     if(fDoMC){
@@ -1847,7 +1853,7 @@ void AliJJetJtAnalysis::WriteHistograms(){
 /// \param Jets List of jets used
 /// \param iContainer Index of jet finder
 /// \param mc Whether or not this is particle level data
-void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc)
+void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJets, int iContainer,int mc)
 {	
   TClonesArray *trackArray;
   if(mc)
@@ -2101,9 +2107,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     int counter = 0;
     if (Jets->GetEntries()>1){
       fhNumber[iContainer]->Fill(3.5);
-      for (int j = 0; j<Jets->GetEntries(); j++){
-        if (i == j) continue;
-        AliJJet *jet2 = dynamic_cast<AliJJet*>( Jets->At(j) );
+      for (int j = 0; j<ChargedJets->GetEntries(); j++){
+        AliJJet *jet2 = dynamic_cast<AliJJet*>( ChargedJets->At(j) );
         if (!jet2) continue;
         deltaR   = getDiffR(vOrtho.Phi(),jet2->Phi(),vOrtho.Eta(),jet2->Eta());
         if ( deltaR < 2*thisConeSize) {
@@ -2259,7 +2264,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     }
     fhJetConeMultiplicityBin[iContainer][iBin]->Fill(nC);
     if(doRndmBg){
-      this->FillRandomBackground(jet->Pt(), jet->E(),  Jets, iContainer, mc);
+      this->FillRandomBackground(jet->Pt(), jet->E(),  Jets,ChargedJets, iContainer, mc);
     }
 
     for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--)   {     
@@ -2894,7 +2899,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
 /// \param iContainer Index of jet finder
 /// \param mc Whether or not this is particle level data
 
-void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer, int mc){
+void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , TObjArray *ChargedJets, int iContainer, int mc){
   TClonesArray *trackArray;
   if(mc){
     trackArray = fMCTracks;
@@ -2938,8 +2943,8 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
       if (!track->IsTrue(1)) continue;
     }
     if (Jets->GetEntries()>0){
-      for (int j = 0; j<Jets->GetEntries(); j++){
-        AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(j) );
+      for (int j = 0; j<ChargedJets->GetEntries(); j++){
+        AliJJet *jet = dynamic_cast<AliJJet*>( ChargedJets->At(j) );
         if(jet->Pt() < 5) continue;
         if (!jet) continue;
 

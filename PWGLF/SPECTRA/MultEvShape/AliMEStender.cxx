@@ -258,7 +258,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   if( AliPPVsMultUtils::IsMinimumBias(fESD) ) {
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
   }
-  if( !AliPPVsMultUtils::IsEventSelected(fESD) ) {
+  if( (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)) ) {
 	  return;
   }
   ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events

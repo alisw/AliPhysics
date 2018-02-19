@@ -27,6 +27,10 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
     kNoSub = 0, 
     kConstSub = 1
   };
+  enum JetType {
+    kData = 0, 
+    kEmb = 1
+  };
 
   AliAnalysisTaskRecursiveSoftDrop();
   AliAnalysisTaskRecursiveSoftDrop(const char *name);
@@ -42,7 +46,8 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   void SetMinCentrality(Float_t t)                          { fCentMin = t ;}
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
-  
+  void SetJetType(JetType t)                                { fJetType     = t   ;}
+
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -52,20 +57,24 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
 
   
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
-  Double_t                            fShapesVar_Det[4];                  // jet shapes used for the tagging
-  Double_t                            fShapesVar_True[4];                  // jet shapes used for the tagging
-  JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
-  Float_t                             fPtThreshold;
+  Double_t                            fShapesVar_Det[4];       // jet shapes used for the tagging
+  Double_t                            fShapesVar_True[4];      // jet shapes used for the tagging
+  JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
+  JetType                             fJetType;                // jet type data/embedded
+  Float_t                             fPtThreshold;            // jet pt threshold
+  Float_t                             fSharedFractionPtMin;    // minimum pt shared fraction to be used to match jets
+
   
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
-  Double_t                            fJetRadius;
+  Double_t                            fJetRadius;                   // radius used in jet finding
 
   
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPhi;
   TH1F                                *fhJetEta;
+  TH1F                                *fhDetJetPt_Matched;
  
   TTree                               *fTreeRecursive_Det;  
   TTree                               *fTreeRecursive_True; 

@@ -10,11 +10,11 @@ Bool_t kMix = kFALSE;
 Bool_t kNoPairing   = kTRUE;
 Bool_t randomizeDau = kTRUE;
      
-TString names("V0_noPID;V0_TPC;V0_TPC_TOF");
+TString names("V0_noPID;V0_TPC;V0_TPC_TOF;V0_TPC_TOFpid;V0_TPC_ITS;V0_TPC_ITSpid;V0_ITSpid_TPCpid_TOF;V0_ITS_TPCpid_TOFpid;V0_ITSpid_TPCpid_TOFpid");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 
-AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t isRandomRej=kFALSE)
+AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t bCutV0 = kTRUE, Bool_t bCutV0Tight = kFALSE, Bool_t isRandomRej=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -61,7 +61,7 @@ AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kF
 
 
   // set track cuts
-  SetupCuts(die,cutDefinition,bESDANA);
+  SetupCuts(die,cutDefinition,bESDANA,bCutV0,bCutV0Tight);
 
  //
  // histogram setup
@@ -79,7 +79,7 @@ AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kF
 }
 
 //______________________________________________________________________________________
-void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE, Bool_t bCutV0 = kTRUE, Bool_t bCutV0Tight = kFALSE)
 {
   // Setup the track cuts
 
@@ -87,7 +87,8 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
   die->SetUseKF(kFALSE);
       
   // V0 cuts
-  die->GetTrackFilter().AddCuts(SetupV0Cuts());
+  if(bCutV0)
+    die->GetTrackFilter().AddCuts(SetupV0Cuts(bCutV0Tight));
 
   // track cuts
   die->GetTrackFilter().AddCuts(SetupTrackCuts());
@@ -100,19 +101,32 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
 
 
 //______________________________________________________________________________________
-AliDielectronV0Cuts *SetupV0Cuts(){
+AliDielectronV0Cuts *SetupV0Cuts(Bool_t bCutV0Tight = kFALSE){
 
   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
-  
+
   gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll by default
   gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             2.0,  90.0,  kFALSE); // distance in cm from interaction vertex to V0 vertex
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.1, kFALSE);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.1, kFALSE); // mass
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.1, kFALSE);
+    
+  if(!bCutV0Tight){
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);// ( 0.02 -- 0.05 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE); 
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.2, kFALSE);// ( 0.05 -- 0.2 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.1, kFALSE);// ( 0.05 -- 0.1 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  }
+  else{
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.05),   1.0,  kFALSE); // ( 0.02 -- 0.05 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE); // ( 0.05 -- 0.2 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE); // ( 0.05 -- 0.1 )
+    gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  }
+
   gammaV0Cuts->SetExcludeTracks(kFALSE);
 
   return gammaV0Cuts;
@@ -125,7 +139,7 @@ AliESDtrackCuts *SetupTrackCuts(){
   trackCuts->SetTitle("track cuts");
   
   // pT and eta
-  trackCuts->SetPtRange(0.2, 1e30);
+  trackCuts->SetPtRange(0.05, 1e30);
   trackCuts->SetEtaRange(-0.8, 0.8);
   //TPC
   trackCuts->SetRequireTPCRefit(kTRUE);
@@ -146,23 +160,99 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
 
   if(cutDefinition == 1){
     
-    //TPC
+    // TPC PID
     pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
   }
 
-// additionally require TOF PID signal 
- else if(cutDefinition == 2){
+  // TPC PID + TOF
+  else if(cutDefinition == 2){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
-   //TPC
-   pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-   pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-   // TOF required
-   pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.4, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
- }
+    // TOF matching required
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+  
+  // TPC PID + TOF PID
+  else if(cutDefinition == 3){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
- return pid;
+    // TOF required
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+
+  // TPC PID + ITS
+  else if(cutDefinition == 4){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+
+    // ITS matching required
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+
+   // TPC PID + ITS PID
+  else if(cutDefinition == 5){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+
+    // ITS required
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+
+  // ITS PID + TPC PID + TOF
+  else if(cutDefinition == 6){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+
+    // ITS required
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+
+    // TOF matching required
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+
+    // ITS  + TPC PID + TOF PID
+  else if(cutDefinition == 7){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+
+    // ITS matching required
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+
+     // TOF required
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+
+  // ITS PID  + TPC PID + TOF PID
+  else if(cutDefinition == 8){
+    
+    //TPC
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3. ,  3.,   0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+
+    // ITS required
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+    
+    // TOF required
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  }
+  
+  return pid;
 }
 
 
@@ -254,7 +344,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","ITSnSigma_MomEle","ITS number of sigmas Electrons vs Momentum;Mom;ITSsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
   histos->UserHistogram("Track","TOFbeta_Mom","kTOFbeta vs Momentum;Mom;TOFbeta"                           ,     200,0.,10.,120,  0.,  1.2,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
+  histos->UserHistogram("Track","TOFnSigma_MomEle_large","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-1500., 1500. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
+ 
   //add histograms to pair classes
   histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",

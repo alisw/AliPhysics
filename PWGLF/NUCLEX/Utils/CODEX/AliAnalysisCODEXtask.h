@@ -36,6 +36,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     AliEventCuts    mEventCuts;
     double          mPtCut;                 /// Minimum pt stored in the output trees
     unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
+    unsigned char   mEventPOI;              /// Events without POI with this PDG code can be rejected
     double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
     double          mNsigmaTOFselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
     double          mStartingPtTOFselection;/// pt at which the TOF selection starts
@@ -62,6 +63,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     TH2I* mTimeChan;                                    //! 2D histogram with the Time/Channel correlation
     //
     TString mToDiscard; /// List of the branches to discard
+
 
     ClassDef(AliAnalysisCODEXtask,2)
 };

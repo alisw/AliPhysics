@@ -199,8 +199,9 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 
 		if (primary && particle->E() > 0.3)
 		{
+			fSpectrums[code]->fPtLong->Fill(pt);
 			fSpectrums[code]->fPtAllRange->Fill(pt);
-			fSpectrums[code]->fEtaPhi->Fill(particle->Phi(), particle->Eta());
+			fSpectrums[code]->fEtaPhi->Fill(particle->Phi(), particle->Y());
 		}
 
 		if (code != kPi0)
@@ -209,9 +210,7 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 			continue;
 		}
 
-		// Scale input distribution
-		pt *= Weigh(particle->E());
-
+		// TODO: Scale input distribution
 		ConsiderGeneratedPi0(i, pt, primary, flags);
 	}
 }
@@ -282,20 +281,5 @@ Bool_t AliPP13MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) con
 	Double_t rcut = 1.;
 	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
 	return r2 < rcut * rcut;
-}
-
-//________________________________________________________________
-TLorentzVector AliPP13MesonSelectionMC::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
-{
-    Float_t energy = c1->E();
-	TLorentzVector p = AliPP13PhysPhotonSelectionMC::ClusterMomentum(c1, eflags);
-    p *= Weigh(energy);
-	return p;
-}
-
-//________________________________________________________________
-Float_t AliPP13MesonSelectionMC::Weigh(Float_t x) const
-{
-	return fWeighScale * (1. + fWeighA * TMath::Exp(-x / 2. * x / fWeighSigma / fWeighSigma));
 }
 

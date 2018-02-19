@@ -4,7 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
+#pragma link C++ class  AliAodSkimTask+;
+#pragma link C++ class  AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class  AliAnalysisTaskEmcalSample+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerPatchClusterMatch+;
 #pragma link C++ class  AliEMCALClusterParams+;
@@ -38,12 +39,14 @@
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;
 #pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
+#pragma link C++ class  AliEmcalCorrectionCellEmulateCrosstalk+;
 #pragma link C++ class  AliEmcalCorrectionCellCombineCollections+;
 #pragma link C++ class  AliEmcalCorrectionClusterizer+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
+#pragma link C++ class  std::map<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
 #pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
 

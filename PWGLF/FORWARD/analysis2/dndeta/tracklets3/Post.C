@@ -130,7 +130,8 @@ void Post(const char* sim,
 	  const char* output=0,
 	  UInt_t      proc=0x2,
 	  UInt_t      viz=0x32f,
-	  UInt_t      n=10)
+	  UInt_t      n=10,
+	  UInt_t      sNN=5023)
 {
   if (TString(sim) .Contains("help",TString::kIgnoreCase) ||
       TString(real).Contains("help",TString::kIgnoreCase)) {
@@ -171,7 +172,7 @@ void Post(const char* sim,
   // Extract a GSE
   Printf("Extracting GraphSysErr object(s)");
   gROOT->LoadMacro(Form("%s/ExtractGSE2.C",fwd.Data()));
-  ExtractGSE2(outFile);
+  ExtractGSE2(outFile,sNN);
 
   Printf("All output stored in %s", outFile.Data());
 }

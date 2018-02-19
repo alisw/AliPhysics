@@ -70,6 +70,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTriggerCounterIR1(0),
 	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
+	hNTracklets(0),
 	hDetIn0(0),
 	hDetIn1(0),
 	hDetIn2(0),
@@ -113,6 +114,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTriggerCounterIR1(0),
 	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
+	hNTracklets(0),
 	hDetIn0(0),
 	hDetIn1(0),
 	hDetIn2(0),
@@ -196,6 +198,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTriggerCounterIR2);
   hNFiredMaxiPads = new TH1F("hNFiredMaxiPads","hNFiredMaxiPads",1657,-0.5,1656.5);
   fOutputList->Add(hNFiredMaxiPads);
+  hNTracklets = new TH1F("hNTracklets","hNTracklets",1657,-0.5,1656.5);
+  fOutputList->Add(hNTracklets);
   hDetIn0 = new TH1I("hDetIn0","hDetIn0",18,-0.5,17.5),
   fOutputList->Add(hDetIn0);
   hDetIn1 = new TH1I("hDetIn1","hDetIn1",5,-0.5,4.5),
@@ -282,7 +286,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   if(!trigger.Contains(fTriggerClass.Data())) return;
 
   hNFiredMaxiPads->Fill(fTOFmask->GetNumberMaxiPadOn());
-  if(fTOFmask->GetNumberMaxiPadOn()>fMaxMulti) return;
+  Int_t fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets(); 
+  hNTracklets->Fill(fNtracklets);
+  if(fNtracklets>fMaxMulti) return;
 
   //Track loop
   for(Int_t iTrack=0; iTrack<esd->GetNumberOfTracks(); iTrack++) {
@@ -400,6 +406,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
 		    eff_MaxiPadLTM_El->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
 		    }
+		if(trigger.Contains("CCUP8-B")){
+			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
+			}
 		}
      	}
 	hNMaxiPadIn->Fill(nFiredPads);

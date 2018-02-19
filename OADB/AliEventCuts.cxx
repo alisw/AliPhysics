@@ -393,6 +393,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
     ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts.");
     SetupLHC15o();
+    fUseEstimatorsCorrelationCut = false;
     return;
   }
 
@@ -416,6 +417,16 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
   if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
+    return;
+  }
+
+  /// Run 2 p-Pb
+  if (fCurrentRun >= 195681 && fCurrentRun <= 196311) {  /// LHC13de: p-Pb 5 TeV
+    SetupRun1pA(0);
+    return;
+  }
+  if (fCurrentRun >= 196433 && fCurrentRun <= 197388) {   /// LHC13f: Pb-p 5 TeV
+    SetupRun1pA(1);
     return;
   }
 
@@ -648,6 +659,45 @@ void AliEventCuts::SetupLHC11h() {
   fUseEstimatorsCorrelationCut = false;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+}
+
+void AliEventCuts::SetupRun1pA(int iPeriod) {
+  ::Info("AliEventCuts::SetupRun1pA","Event cuts for pA are being setup.");
+  SetName("StandardRun1pAEventCuts");
+
+  /// p--Pb requires nsigma cuts on primary vertex
+  fMaxDeltaSpdTrackNsigmaSPD = 20.f;
+  fMaxDeltaSpdTrackNsigmaTrack = 40.f;
+
+  /// p-Pb pile-up cut is based on MV only, the SPD vs mult cut is here disabled
+  fUtils.SetMaxPlpChi2MV(5);
+  fUtils.SetMinWDistMV(15);
+  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  fPileUpCutMV = true;
+
+  fMinVtz = -10.f;
+  fMaxVtz = 10.f;
+  fMaxDeltaSpdTrackAbsolute = 0.5f;
+  fMaxDeltaSpdTrackNsigmaSPD = 1.e14f;
+  fMaxDeltaSpdTrackNsigmaTrack = 1.e14;
+  fMaxResolutionSPDvertex = 0.25f;
+
+  fRejectDAQincomplete = true;
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
+
+  /// p-Pb MC do not have the ZDC, the following line avoid any crashes.
+  if (fMC) {
+    ::Warning("AliEventCuts::SetupRun1pA","Be careful, in p-Pb MC ZDC is not available, if you require the ZN centrality you may encounter a crash.");
+  }
+  fUseEstimatorsCorrelationCut = false;
+
+  if (fCentralityFramework == 1)
+    ::Fatal("AliEventCuts::SetupRun1pA","You cannot use the new centrality framework in Run 1 p-Pb. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 2 to use AliCentrality.");
+  else if (fCentralityFramework == 2) {
+    fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
+    fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
+  }
 }
 
 void AliEventCuts::SetupRun2pA(int iPeriod) {

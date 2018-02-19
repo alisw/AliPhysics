@@ -11,6 +11,7 @@
 #include <ostream>
 
 #include <TObject.h>
+#include <TString.h>
 
 #include <AliLog.h>
 
@@ -107,6 +108,29 @@
  * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
  * @date Sept 19, 2017
  */
+
+/**
+ * Tell yaml-cpp how to encode and decode `TString`. Note that this is basically identical
+ * (except for calling `.Data()`) to how std::string is handle in yaml-cpp/node/convert.h.
+ * For more information, see: https://github.com/jbeder/yaml-cpp/wiki/Tutorial#converting-tofrom-native-data-types
+ */
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+namespace YAML {
+template<>
+  struct convert<TString> {
+    static Node encode(const TString & str) {
+      return Node(str.Data());
+    }
+    static bool decode(const Node & node, TString & str) {
+      if (!node.IsScalar()) {
+        return false;
+      }
+      str = node.Scalar();
+      return true;
+    }
+  };
+}
+#endif
 
 // operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633

@@ -18,7 +18,7 @@ ClassImp(AliFemtoModelBPLCMSCorrFctn)
 #endif
 
 //____________________________
-AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi)
+AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(const char* title, const int& nbins, const float& QLo, const float& QHi)
   :
   AliFemtoModelCorrFctn(title, nbins, QLo, QHi),
   fNumerator3DTrue(0),
@@ -227,7 +227,7 @@ void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
   fQinvHisto->Fill(qOut, qSide, qLong, pair->QInv() );
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelBPLCMSCorrFctn *tCopy = new AliFemtoModelBPLCMSCorrFctn(*this);

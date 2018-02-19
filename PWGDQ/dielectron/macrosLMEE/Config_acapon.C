@@ -8,14 +8,14 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
-TString names=("all;electrons");
+TString names=("all");
 //TString names=("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt");
 //TString names = ("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt;highMult;midMult;lowMult");
 //TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kFALSE; //Needed for LMEEcutlib
-Bool_t isQAtask = kTRUE;
+Bool_t isQAtask =  kFALSE;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
@@ -234,6 +234,17 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
     histos->UserHistogram("Event","ChMultV0","Charged Multiplicity V0;Charged V0M amplitude",1000,-0.5,999.5,AliDielectronVarManager::kVZEROchMult);
     histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",300,-50,250,AliDielectronVarManager::kCentralityNew);
     histos->UserHistogram("Event","CentralityV0Mzoomed","Centrality V0 zoomed;V0M percentile",200,0,2,AliDielectronVarManager::kCentralityNew);
+
+		//-------For spectra scaling
+		histos->UserHistogram("Event","RefMultVsMult","#Charged Tracks Multiplicity (%);Ref. Mult", 100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult TPC only", 100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+		histos->UserHistogram("Event","RefMulOvRefMultTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult Over Ref Mult TPC only", 100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultOvRefMultTPConly);
+		histos->UserHistogram("Event","NumTrackletsVsMult05","#Charged Tracks Multiplicity (%), #eta < |0.5|;Num. SPD tracklets ", 100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNaccTrckltsEsd05);
+		histos->UserHistogram("Event","NumTrackletsVsMult10","#Charged Tracks Multiplicity (%), #eta < |1|;Num. SPD tracklets ", 100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNaccTrckltsEsd10);
+
+		//------Pile up check------
+		histos->UserHistogram("Event","SPDclustsVsSPDtracklets","SPD: clusters vs tracklets #eta < |1|; Tracklets; Cluster", 600, 0, 600, 1000, 0, 1000, 
+                          AliDielectronVarManager::kNaccTrcklts10, AliDielectronVarManager::kITSLayerFirstCls);
 
 
     //add histograms to Track classes
@@ -464,10 +475,14 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
         //centrality
         histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs",
                               GetVector(kMee), BinsToVector(102,-1,101), 
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality);
+                              AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
         histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
                               GetVector(kPtee), BinsToVector(102,-1,101), 
-                              AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+                              AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
+				histos->UserHistogram("Pair", "InvMass_Centrality_PairPt", ";Inv. Mass [GeV];Centrality;Pair Pt [GeV]",
+                              GetVector(kMee), BinsToVector(102, -1, 101), GetVector(kPtee),
+															AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew, 
+															AliDielectronVarManager::kPt);
     }//End doMixing histograms
 
     //add histograms to Track classes
@@ -589,7 +604,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kM,200,-0.01,3.99); //20Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
   
-  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,5.,10.,20.,30.,50.,80.,100.");
+  cf->AddVariable(AliDielectronVarManager::kCentralityNew,"0.,5.,10.,20.,30.,50.,80.,100.");
   
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,160,0.,8.,kTRUE);

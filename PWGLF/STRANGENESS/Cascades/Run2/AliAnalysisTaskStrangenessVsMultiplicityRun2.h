@@ -196,8 +196,8 @@ public:
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration();
-    void AddStandardCascadeConfiguration();
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE);
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
@@ -356,6 +356,8 @@ private:
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff; //!
     Float_t fTreeVariablePosTOFExpTDiff; //!
+    Float_t fTreeVariableNegTOFSignal; //!
+    Float_t fTreeVariablePosTOFSignal; //!
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
@@ -477,6 +479,9 @@ private:
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
     Float_t fTreeCascVarBachTOFExpTDiff; //!
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!

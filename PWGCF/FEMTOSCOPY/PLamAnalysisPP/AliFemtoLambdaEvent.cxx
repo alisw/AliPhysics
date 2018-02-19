@@ -15,8 +15,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  These classes provide storage for event and track information which 
-//  are used for same-event and mixed-event analyses in AliFemtoK0Analysis. 
+//  These classes provide storage for event and track information which
+//  are used for same-event and mixed-event analyses in AliFemtoK0Analysis.
 //
 //  authors: Dhevan Gangadharan (dhevan.raja.gangadharan@cern.ch)
 //           Matthew Steinpreis (matthew.steinpreis@cern.ch)
@@ -33,9 +33,9 @@ AliFemtoLambdaEvent::AliFemtoLambdaEvent():
   fNumAntiV0s(0),
   fNumProtons(0),
   fNumAntiProtons(0),
+  fNumXis(0),
   fNumV0SideBand_left(0),
   fNumV0SideBand_right(0),
-  fNumXis(0),
   fMultBin(-10),
   fBoostVal(-10),
   fSphericity(-9999.),
@@ -50,16 +50,16 @@ AliFemtoLambdaEvent::AliFemtoLambdaEvent():
   //Default constructor
 }
 //_____________________________________________________________________________
-AliFemtoLambdaEvent::AliFemtoLambdaEvent(const AliFemtoLambdaEvent &obj) : 
+AliFemtoLambdaEvent::AliFemtoLambdaEvent(const AliFemtoLambdaEvent &obj) :
   fEventNumber(obj.fEventNumber),
   fFillStatus(obj.fFillStatus),
   fNumV0s(obj.fNumV0s),
   fNumAntiV0s(obj.fNumAntiV0s),
   fNumProtons(obj.fNumProtons),
   fNumAntiProtons(obj.fNumAntiProtons),
+  fNumXis(obj.fNumXis),
   fNumV0SideBand_left(obj.fNumV0SideBand_left),
   fNumV0SideBand_right(obj.fNumV0SideBand_right),
-  fNumXis(obj.fNumXis),
   fMultBin(obj.fMultBin),
   fBoostVal(obj.fBoostVal),
   fSphericity(obj.fSphericity),

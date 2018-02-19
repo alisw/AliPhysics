@@ -56,6 +56,7 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliNanoAODHeader.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -96,6 +97,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -209,6 +211,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -294,6 +297,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
 
 AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 {
+  if(fOutput) delete fOutput;
+  if(fAliAnalysisUtils) delete fAliAnalysisUtils;
+  if(fPythiaInfo) delete fPythiaInfo;
 }
 
 void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
@@ -492,6 +498,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
   fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
   fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+  fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -558,7 +565,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // downscale-corrected number of events are calculated based on the min. bias reference
     // Formula: N_corr = N_MB * d_Trg/d_{Min_Bias}
     if(InputEvent()->GetFiredTriggerClasses().Contains(fMinBiasRefTrigger)){
-      AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+      PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
       Double_t downscaleref = downscalefactors->GetDownscaleFactorForTriggerClass(fMinBiasRefTrigger);
       for(auto t : downscalefactors->GetTriggerClasses()){
         Double_t downscaletrg = downscalefactors->GetDownscaleFactorForTriggerClass(t);
@@ -572,6 +579,18 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
+  // Recycle embedded events which do not pass the internal event selection in the embedding helper
+  if (fRecycleUnusedEmbeddedEventsMode) {
+    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingHelper && embeddingHelper->EmbeddedEventUsed() == false) {
+      if (fGeneralHistograms) {
+        fHistEventRejection->Fill("RecycleEmbeddedEvent",1);
+        fHistEventCount->Fill("Rejected",1);
+      }
+      return;
+    }
+  }
+
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
@@ -591,7 +610,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
     RunChanged(fRunNumber);
-    if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
+    if(fCountDownscaleCorrectedEvents) PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
   // Apply fallback for pythia cross section if needed

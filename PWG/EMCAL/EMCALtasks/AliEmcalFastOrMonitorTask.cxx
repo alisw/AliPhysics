@@ -46,6 +46,7 @@
 #include "AliVCaloTrigger.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalFastOrMonitorTask)
@@ -65,7 +66,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fMaskedFastors(),
   fMaskedCells(),
   fNameMaskedFastorOADB(),
-  fNameMaskedCellOADB("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root"),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr)
 {
@@ -83,7 +84,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   fMaskedFastors(),
   fMaskedCells(),
   fNameMaskedFastorOADB(),
-  fNameMaskedCellOADB("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root"),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr)
 {

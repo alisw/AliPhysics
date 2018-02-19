@@ -7,6 +7,7 @@
 #include "AliOADBContainer.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODEvent.h"
+#include "AliDataFile.h"
 
 #include "AliEmcalCorrectionCellTimeCalib.h"
 
@@ -47,8 +48,6 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   
   AliWarning("Init EMCAL time calibration");
   
-  GetProperty("createHistos", fCreateHisto);
-  
   fCalibrateTime = kTRUE;
 
   // init reco utils
@@ -68,9 +67,9 @@ void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistBefore);
-    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistAfter);
   }
 }
@@ -165,16 +164,16 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","read");
+    TFile *fbad=new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalib.root").data(),"read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root was not found");
+      AliFatal("OADB/EMCAL/EMCALTimeCalib.root was not found");
       return 0;
     }
     
     if (fbad) delete fbad;
     
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","AliEMCALTimeCalib");
+    contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalib.root").data(),"AliEMCALTimeCalib");
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
@@ -262,18 +261,18 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
-    AliInfo("Loading L1 phase in time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    AliInfo("Loading L1 phase in time calibration OADB from OADB/EMCAL");
     
-    TFile *timeFile=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","read");
+    TFile *timeFile=new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"read");
     if (!timeFile || timeFile->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root was not found");
+      AliFatal("OADB/EMCAL/EMCALTimeL1PhaseCalib.root was not found");
       return 0;
     }
     
     if (timeFile) delete timeFile;
     
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","AliEMCALTimeL1PhaseCalib");
+    contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"AliEMCALTimeL1PhaseCalib");
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);

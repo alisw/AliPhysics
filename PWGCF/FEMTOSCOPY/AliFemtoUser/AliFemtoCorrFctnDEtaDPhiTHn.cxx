@@ -14,15 +14,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDEtaDPhiTHn)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(char* title, const int& aPhiBins=20, const int& aEtaBins=20, const int &pT1Bins=1, const double& pT1min=0, const double& pT1max=4, const int &pT2Bins=1, const double& pT2min=0, const double& pT2max=4, const int &zvtxBins=10, const double& zvtxmin=-10, const double& zvtxmax=10, const int &multBins=5, const int& multmin=0, const int& multmax=100):
+AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const char* title, const int& aPhiBins=20, const int& aEtaBins=20, const int &pT1Bins=1, const double& pT1min=0, const double& pT1max=4, const int &pT2Bins=1, const double& pT2min=0, const double& pT2max=4, const int &zvtxBins=10, const double& zvtxmin=-10, const double& zvtxmax=10, const int &multBins=5, const int& multmin=0, const int& multmax=100):
 AliFemtoCorrFctn(),
   fDPhiDEtaNum(0),
   fDPhiDEtaDen(0),
@@ -35,26 +35,26 @@ AliFemtoCorrFctn(),
   fZvtxMin(zvtxmin),
   fZvtxMax(zvtxmax),
   fMultMin(multmin),
-  fMultMax(multmax)  
+  fMultMax(multmax)
 {
   fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
   fphiT = 2*TMath::Pi()+(-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
 
- 
+
   // THnSparse(const char* name, const char* title, Int_t dim,
   //           const Int_t* nbins, const Double_t* xmin, const Double_t* xmax,
   //           Int_t chunksize);
 
- 
+
   const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,multBins,zvtxBins};
   const Double_t xmin[] = {fphiL,-2.0 ,pT1min,pT2min,fMultMin,zvtxmin};
   const Double_t xmax[] = {fphiT, 2.0 ,pT1max,pT2max,fMultMax,zvtxmax};
-  
+
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
   strncat(tTitNumD,title, 100);
   fDPhiDEtaNum = new THnSparseF(tTitNumD,title,6,nbins,xmin,xmax);
-  
+
   // set up denominator
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
@@ -79,7 +79,7 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnD
   fZvtxMin(aCorrFctn.fZvtxMin),
   fZvtxMax(aCorrFctn.fZvtxMax),
   fMultMin(aCorrFctn.fMultMin),
-  fMultMax(aCorrFctn.fMultMax)  
+  fMultMax(aCorrFctn.fMultMax)
 {
   // copy constructor
   /*
@@ -87,7 +87,7 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnD
     fDPhiDEtaNum = new THnSparseF(*aCorrFctn.fDPhiDEtaNum);
   else
     fDPhiDEtaNum = 0;
-  
+
   if (aCorrFctn.fDPhiDEtaDen)
     fDPhiDEtaDen = new THnSparseF(*aCorrFctn.fDPhiDEtaDen);
   else
@@ -100,22 +100,22 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnD
     Int_t   pT2Bins=1;
     Int_t   multBins=5;
     Int_t   zvtxBins=10;
-   
+
     const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,multBins,zvtxBins};
     const Double_t xmin[] = {fphiL,-2,0,0,0,-10};
     const Double_t xmax[] = {fphiT,2,4,4,100,10};
-  
+
     // set up numerator
     char tTitNumD[101] = "NumDPhiDEta";
     strncat(tTitNumD,title, 100);
     fDPhiDEtaNum = new THnSparseF(tTitNumD,title,6,nbins,xmin,xmax);
-  
+
     // set up denominator
     char tTitDenD[101] = "DenDPhiDEta";
     strncat(tTitDenD,title, 100);
     fDPhiDEtaDen = new THnSparseF(tTitDenD,title,6,nbins,xmin,xmax);
-     
-    
+
+
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
@@ -141,16 +141,16 @@ AliFemtoCorrFctnDEtaDPhiTHn& AliFemtoCorrFctnDEtaDPhiTHn::operator=(const AliFem
     Int_t   pT2Bins=1;
     Int_t   multBins=5;
     Int_t   zvtxBins=10;
-   
+
     const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,multBins,zvtxBins};
     const Double_t xmin[] = {fphiL,-2,0,0,0,-10};
     const Double_t xmax[] = {fphiT,2,4,4,100,10};
-  
+
     // set up numerator
     char tTitNumD[101] = "NumDPhiDEta";
     strncat(tTitNumD,title, 100);
     fDPhiDEtaNum = new THnSparseF(tTitNumD,title,6,nbins,xmin,xmax);
-  
+
     // set up denominator
     char tTitDenD[101] = "DenDPhiDEta";
     strncat(tTitDenD,title, 100);
@@ -203,8 +203,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiTHn::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiTHn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -246,7 +247,7 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddRealPair( AliFemtoPair* pair){
     zvtx = pair->Track1()->V0()->Zvtx();
   }
 
-   
+
   //fDPhiDEtaNumerator->Fill(dphi, deta);
   //cout<<dphi<<" "<<deta<<" "<<pt1<<" "<<pt2<<" "<<mult<<" "<<zvtx<<endl;
   Double_t value[] = {dphi, deta, pt1, pt2, mult, zvtx};
@@ -257,8 +258,9 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiTHn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();

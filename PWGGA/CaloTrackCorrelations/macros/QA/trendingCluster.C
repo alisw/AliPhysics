@@ -61,7 +61,8 @@
 
 using namespace std;
 
-void  trendingCluster(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", const Int_t n = 10, TString fTrigger = "MB"){
+void  trendingCluster(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", const Int_t n = 10, TString fTrigger = "MB")
+{
   
   FILE * pFile;
   
@@ -200,7 +201,10 @@ void  trendingCluster(TString fCalorimeter = "EMCAL", TString period = "LHC11h",
     
     
     //for single module check
-    for(Int_t ism = 0 ; ism < n ; ism++){
+    TH1F*fhNCells =0;
+    TH1F*fhNClusters =0;
+    for(Int_t ism = 0 ; ism < n ; ism++)
+    {
       TString nameNCell = Form("%s_hNCells_Mod%d",fCalorimeter.Data(),ism);
       
       TString nameNCluster = Form("%s_hNClusters_Mod%d",fCalorimeter.Data(),ism);

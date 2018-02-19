@@ -45,11 +45,12 @@ fReconstructed(),
 fTotal(),
 fMCDalitzPlot(),
 fTree(nullptr),
-fMCTree(nullptr),
 fDeuteronVector(),
-fPionVector(),
+fPiPlusVector(),
+fPiMinusVector(),
 fMCDeuteronVector(),
-fMCPionVector()
+fMCPiPlusVector(),
+fMCPiMinusVector()
 {
   fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
@@ -64,7 +65,6 @@ AliAnalysisTaskdStar::~AliAnalysisTaskdStar() {
   if (fList)   delete fList;
   if (fPID)    delete fPID;
   if (fTree)   delete fTree;
-  if (fMCTree) delete fMCTree;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -103,16 +103,14 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   OpenFile(2);
   fTree = new TTree("dStarTree", "Data for dStar background analysis");
   fTree->Branch("Deuteron", &fDeuteronVector);
-  fTree->Branch("Pion", &fPionVector);
+  fTree->Branch("PiPlus", &fPiPlusVector);
+  fTree->Branch("PiMinus", &fPiMinusVector);
+  fTree->Branch("ZVertex", &fZvtx);
+  fTree->Branch("MCDeuteron", &fMCDeuteronVector);
+  fTree->Branch("MCPiPlus", &fMCPiPlusVector);
+  fTree->Branch("MCPiMinus", &fMCPiMinusVector);
   fTree->SetAutoSave(100000000);
   PostData(2,fTree);
-
-  OpenFile(3);
-  fMCTree = new TTree("dStarMCTree", "MC generated data for dStar background analysis");
-  fMCTree->Branch("MCDeuteron", &fMCDeuteronVector);
-  fMCTree->Branch("MCPion", &fMCPionVector);
-  fMCTree->SetAutoSave(100000000);
-  PostData(3,fMCTree);
 
 }
 
@@ -141,10 +139,12 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   if (!stack)
   ::Fatal("AliAnalysisTaskdStar::UserExec","MC analysis requested on a sample without the MC particle array.");
 
+  const AliVVertex *vertex = static_cast<const AliVVertex*>(fEventCut.GetPrimaryVertex());
+  fZvtx = vertex->GetZ();
+
   fMCDeuteronVector.clear();
-  fMCDeuteronVector.reserve(40);
-  fMCPionVector.clear();
-  fMCPionVector.reserve(800);
+  fMCPiPlusVector.clear();
+  fMCPiMinusVector.clear();
 
   // need comment
   for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -167,7 +167,10 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       daug.mother_id  = m_id;
       daug.vec        = tmp_vec;
       daug.properties = prop;
-      fMCPionVector.push_back(daug);
+      if (iC != 0) {
+        prop |= c;
+        fMCPiPlusVector.push_back(daug);
+      } else {fMCPiMinusVector.push_back(daug);}
     }
 
     if (pdg == 1000010020) {
@@ -205,12 +208,10 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   for (const auto& mcdeu : fMCDeuteronVector) {
     unsigned char pdeu = mcdeu.properties;
     if (mcdeu.mother_pdg != 900010020 || !(pdeu & c)) continue;
-    for (const auto& mcpim : fMCPionVector) {
-      unsigned char ppim = mcpim.properties;
-      if (mcpim.mother_id != mcdeu.mother_id || (ppim & c)) continue;
-      for (const auto& mcpip : fMCPionVector) {
-        unsigned char ppip = mcpip.properties;
-        if (mcpip.mother_id != mcdeu.mother_id || !(ppip & c)) continue;
+    for (const auto& mcpim : fMCPiMinusVector) {
+      if (mcpim.mother_id != mcdeu.mother_id) continue;
+      for (const auto& mcpip : fMCPiPlusVector) {
+        if (mcpip.mother_id != mcdeu.mother_id) continue;
         FourVector_t deu_vec = mcdeu.vec;
         FourVector_t pim_vec = mcpim.vec;
         FourVector_t pip_vec = mcpip.vec;
@@ -228,7 +229,8 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   mothers.reserve(40);
 
   fDeuteronVector.clear();
-  fPionVector.clear();
+  fPiPlusVector.clear();
+  fPiMinusVector.clear();
 
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
 
@@ -252,6 +254,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (track->Charge() > 0)               prop |= c;
       if (track->IsPhysicalPrimary())        prop |= p;
       if (track->IsSecondaryFromMaterial())  prop |= s;
+      if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.)) prop |= t;
       daughter_struct deu;
       deu.mother_pdg = mum_pdg;
       deu.mother_id  = mother_id;
@@ -267,52 +270,53 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (track->Charge() > 0)               prop |= c;
       if (track->IsPhysicalPrimary())        prop |= p;
       if (track->IsSecondaryFromMaterial())  prop |= s;
+      if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.)) prop |= t;
       daughter_struct pi;
       pi.mother_pdg = mum_pdg;
       pi.mother_id  = mother_id;
       pi.mc_truth   = pdg;
       pi.vec        = tmp_pi;
       pi.properties = prop;
-      fPionVector.push_back(pi);
+      track->Charge() > 0 ? fPiPlusVector.push_back(pi) : fPiMinusVector.push_back(pi);
     }
 
 
     // Check wheter the track belongs to a deuteron
     if (pdg == 1000010020 && mum_pdg == 900010020) {
-      if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kDeuteron))>3.) continue;
+      if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kDeuteron)) > 3.) continue;
       FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kDeuteron)};
       auto it = std::find(mothers.begin(),mothers.end(), mother_id);
       if (it == mothers.end()){
         mother_struct tmp_mum;
         tmp_mum.id = mother_id;
-        tmp_mum.deuteron_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron))<3.);
+        tmp_mum.deuteron_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.);
         tmp_mum.n_daughters = 1;
         tmp_mum.vec = tmp_vec;
         mothers.push_back(tmp_mum);
       }
       else{
         it->n_daughters++;
-        it->deuteron_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron))<3.);
+        it->deuteron_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.);
         it->vec+=tmp_vec;
       }
     }
 
     // Check wether the track belgons to a pion
     if (pdg == 211 && mum_pdg == 900010020) {
-      if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion))>3.) continue;
+      if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion)) > 3.) continue;
       FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kPion)};
       auto it = std::find(mothers.begin(),mothers.end(), mother_id);
       if (it == mothers.end()){
         mother_struct tmp_mum;
         tmp_mum.id = mother_id;
-        tmp_mum.pi_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
+        tmp_mum.pi_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.);
         tmp_mum.n_daughters = 1;
         tmp_mum.vec = tmp_vec;
         mothers.push_back(tmp_mum);
       }
       else {
         it->n_daughters++;
-        it->pi_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
+        it->pi_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.);
         it->vec+=tmp_vec;
       }
     }
@@ -321,7 +325,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
 
   // Filling three
   fTree->Fill();
-  fMCTree->Fill();
 
   // Filling histograms
   for (const auto& mum : mothers) {
@@ -339,7 +342,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   //  Post output data.
   PostData(1,fList);
   PostData(2,fTree);
-  PostData(3,fMCTree);
 }
 
 /// This function checks whether a track has or has not a prolongation in the TOF.

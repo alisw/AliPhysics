@@ -222,7 +222,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
   ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej1cuts->SetUseSimpleOfflinePatches(true);
-  ej1cuts->SetThreshold(9.);
+  ej1cuts->SetThreshold(20.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ1", ej1cuts));
 
   AliEmcalTriggerSelectionCuts *ej2cuts = new AliEmcalTriggerSelectionCuts;
@@ -230,7 +230,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   ej2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej2cuts->SetUseSimpleOfflinePatches(true);
-  ej2cuts->SetThreshold(4.);
+  ej2cuts->SetThreshold(16.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ2", ej2cuts));
 
   AliEmcalTriggerSelectionCuts *dj1cuts = new AliEmcalTriggerSelectionCuts;
@@ -246,7 +246,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   dj2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dj2cuts->SetUseSimpleOfflinePatches(true);
-  dj2cuts->SetThreshold(4.);
+  dj2cuts->SetThreshold(16.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
 }
 

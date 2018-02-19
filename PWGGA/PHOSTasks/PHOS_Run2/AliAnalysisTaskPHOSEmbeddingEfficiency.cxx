@@ -82,8 +82,7 @@ ClassImp(AliAnalysisTaskPHOSEmbeddingEfficiency)
 AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(const char *name):
   AliAnalysisTaskPHOSPi0EtaToGammaGamma(name),
   fParticleName(""),
-  fMCArray(0x0),
-  fWeightCen0005(0x0)
+  fMCArray(0x0)
 {
   // Constructor
 
@@ -99,9 +98,6 @@ AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(c
 //________________________________________________________________________
 AliAnalysisTaskPHOSEmbeddingEfficiency::~AliAnalysisTaskPHOSEmbeddingEfficiency()
 {
-  delete fWeightCen0005;
-  fWeightCen0005 = 0x0;
-
 
 }
 //________________________________________________________________________
@@ -109,8 +105,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-  fWeightCen0005 = new TF1("fWeightCen0005" ,"64.41*TMath::Power(x,-(5.88 + -92.9/(TMath::Power(x,4.12) + 54.1)))" ,0.,100.);
-  fWeightCen0005->SetNpx(1000);
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects();
 
@@ -343,7 +337,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
     FillMgg();
     FillMixMgg();
   }
-  AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency();
+  EstimatePIDCutEfficiency();
 
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
@@ -517,11 +511,16 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
 
-     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+    if(fIsPHOSTriggerAnalysis){
+      if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
+
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+
+
 
     weight = 1.;
     if(fIsMC){
@@ -594,19 +593,28 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
   Double_t value[4] = {};
   Double_t sp1 = -999;
 
-  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Double_t weight = 1., w1 = 1.;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
-      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+      if(fIsPHOSTriggerAnalysis){
+        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+        if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+      }
+
+      if(fForceActiveTRU 
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        ) continue;//only for kINT7
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -641,7 +649,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       weight = 1.;
       if(fIsMC){
         w1 = ph1->GetWeight();
-        w2 = ph2->GetWeight();
         weight = w1;//common weighting to all generated particles in embedding.
 
       }//end of if fIsMC
@@ -712,6 +719,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -719,6 +727,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+        if(!CheckMinimumEnergy(ph2)) continue;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
@@ -804,6 +813,100 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
+{
+  //tag and probe method is used.
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  TLorentzVector p12, p12core;
+  Double_t m12=0;
+  Double_t energy=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+
+    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
+    for(Int_t i2=0;i2<multClust;i2++){
+      AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
+      if(!CheckMinimumEnergy(ph2)) continue;
+
+      if(i2==i1) continue;//reject same cluster combination
+
+      p12 = *ph1 + *ph2;
+      m12 = p12.M();
+      energy = ph2->Energy();
+
+      if(fUseCoreEnergy){
+        p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+        m12 = p12core.M();
+        energy = (ph2->GetMomV2())->Energy();
+      }
+
+
+      weight = 1.;
+      if(fIsMC){
+        w1 = ph1->GetWeight();
+        w2 = ph2->GetWeight();
+        weight = w1;//common weighting to all generated particles in embedding.
+      }//end of if fIsMC
+
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2))
+        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy,weight);
+
+    }//end of ph2
+
+  }//end of ph1
+
+  //next mixed event
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
+    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+
+      for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
+        AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+        if(!CheckMinimumEnergy(ph2)) continue;
+
+        p12 = *ph1 + *ph2;
+        m12 = p12.M();
+        energy = ph2->Energy();
+
+        if(fUseCoreEnergy){
+          p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+          m12 = p12core.M();
+          energy = (ph2->GetMomV2())->Energy();
+        }
+
+        weight = 1.;
+        if(fIsMC){
+          w1= ph1->GetWeight();
+          w2 = ph2->GetWeight();
+          weight = w1*w2;
+        }//end of if fIsMC
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2))
+          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy,weight);
+
+      }//end of mix
+
+    }//end of ph2
+
+  }//end of ph1
+
+}
 //________________________________________________________________________
 //________________________________________________________________________
 Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::REMB(AliAODMCParticle* p)

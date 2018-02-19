@@ -133,6 +133,7 @@ set(SRCS
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
+    Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -237,6 +238,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
+				UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

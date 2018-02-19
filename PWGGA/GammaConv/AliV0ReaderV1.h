@@ -94,9 +94,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                      return NULL;}
     TString                   GetCurrentFileName()                  {return fCurrentFileName;}
     // Set Options
-    void	       SetAddv0sInESDFilter(Bool_t addv0s)	{kAddv0sInESDFilter = addv0s;}
+    void               SetAddv0sInESDFilter(Bool_t addv0s)          {kAddv0sInESDFilter = addv0s;}
     void               CountTracks();
     void               CountTPCoutTracks();
+
     void               SetConversionCuts(const TString cut);
     void               SetConversionCuts(AliConversionPhotonCuts *cuts) {fConversionCuts=cuts; return;}
     void               SetEventCuts(const TString cut);
@@ -152,7 +153,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t             CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
     void               SetImprovedPsiPair(Int_t p)                      {fImprovedPsiPair=p;return;}
     Int_t              GetImprovedPsiPair()                             {return fImprovedPsiPair;}
-  
+
+
     iterator           begin() const                                    {return iterator(this, iterator::kForwardDirection, 0);}
     iterator           end() const                                      {return iterator(this, iterator::kForwardDirection, GetNReconstructedGammas());}
     iterator           rbegin() const                                   {return iterator(this, iterator::kBackwardDirection, GetNReconstructedGammas() -1); }
@@ -181,7 +183,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t 	   kAddv0sInESDFilter; 	          // Add PCM v0s to AOD created in ESD filter
     TBits		     *fPCMv0BitField;	  // Pointer to bitfield of PCM v0s
     AliConversionPhotonCuts  *fConversionCuts;    // Pointer to the ConversionCut Selection
-    AliConvEventCuts         *fEventCuts;         // Pointer to the ConversionCut Selection
+    AliConvEventCuts         *fEventCuts;         // Pointer to the EventCut Selection
     TClonesArray             *fConversionGammas;  // TClonesArray holding the reconstructed photons
     Bool_t         fUseImprovedVertex;            // set flag to improve primary vertex estimation by adding photons
     Bool_t         fUseOwnXYZCalculation;         //flag that determines if we use our own calculation of xyz (markus)
@@ -194,7 +196,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Int_t          fPreviousV0ReaderPerformsAODRelabeling; // 0->not set, meaning V0Reader has not yet determined if it should do AODRelabeling, 1-> V0Reader perfomrs relabeling, 2-> previous V0Reader in list perfomrs relabeling
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
-    Int_t          fNumberOfTPCoutTracks;        // Number of TPC Tracks with TPCout flag
+    Int_t          fNumberOfTPCoutTracks;         // Number of TPC Tracks with TPCout flag
     TString        fPeriodName;
     Int_t          fPtHardBin;                    // ptHard bin from file
     Bool_t         fUseMassToZero;                // switch on setting the mass to 0 for AODConversionPhotons
@@ -244,12 +246,12 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TH1F          *fHistoRviaAlphaRecalc;                 // recalculated conversion radius
     TH1F          *fHistoRdiff;                   // difference in R between conflict cluster and conversion radius
     TH1F          *fHistoImpactParameterStudy;    // info about which cut rejected how many V0s
-    TTree         *fImpactParamTree;               // tree with y, pt and conversion radius 
-   
+    TTree         *fImpactParamTree;               // tree with y, pt and conversion radius
+
     vector<Int_t>  fVectorFoundGammas;            // vector with found MC labels of gammas
     TString       fCurrentFileName;               // current file name
     Bool_t        fMCFileChecked;                 // vector with MC file names which are broken
-    
+
   private:
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
@@ -268,7 +270,7 @@ inline void AliV0ReaderV1::SetConversionCuts(const TString cut){
     fConversionCuts=NULL;
   }
   if(fConversionCuts == NULL){
-    fConversionCuts=new AliConversionPhotonCuts("V0ReaderCuts","V0ReaderCuts");
+    fConversionCuts = new AliConversionPhotonCuts("V0ReaderCuts","V0ReaderCuts");
     fConversionCuts->InitializeCutsFromCutString(cut.Data());
   }
 }
@@ -276,10 +278,10 @@ inline void AliV0ReaderV1::SetConversionCuts(const TString cut){
 inline void AliV0ReaderV1::SetEventCuts(const TString cut){
   if(fEventCuts != NULL){
   delete fEventCuts;
-  fEventCuts=NULL;
+    fEventCuts=NULL;
   }
   if(fEventCuts == NULL){
-    fEventCuts=new AliConvEventCuts("V0ReaderEventCuts","V0ReaderEventCuts");
+    fEventCuts      = new AliConvEventCuts("V0ReaderEventCuts","V0ReaderEventCuts");
     fEventCuts->InitializeCutsFromCutString(cut.Data());
   }
 }

@@ -962,6 +962,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[4] = trigger.Contains("CCUP22-B"); 
   	fTrigger[5] = trigger.Contains("CCUP23-B"); 
   	fTrigger[6] = trigger.Contains("CCUP24-B");
+	fTrigger[7] = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
+	fTrigger[8] = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG
 	} 
    if(fTracking == 8){ 
   	fTrigger[0]  = trigger.Contains("CMUP10-B");	// *0VBA *0UBA *0UBC 0MSL			
@@ -1313,7 +1315,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
-  for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i=0; i<11; i++) fTriggerInputsMC[i] = kFALSE;
   
   UShort_t fTriggerAD = aod->GetADData()->GetTriggerBits();
   UShort_t fTriggerVZERO = aod->GetVZEROData()->GetTriggerBits();
@@ -1364,6 +1366,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
   if (fired != 0) fTriggerInputsMC[8] = kTRUE;
   //0SH1 - More then 6 hits on outer layer
   if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
+  //0SH1 2017 - Two hits on inner and outer layer
+  if (nInner >= 2 && nOuter >= 2) fTriggerInputsMC[10] = kTRUE;
   
 
   fGenPart->Clear("C");

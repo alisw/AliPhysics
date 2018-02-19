@@ -22,8 +22,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 100.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
+    const Double_t Emin = 0.2,//minimum energy for photon selection in GeV
     const Bool_t isJJMC = kFALSE,
-    const TString MCtype = "MBMC"
+    const TString MCtype = "MBMC",
+    const Bool_t ForceActiveTRU = kFALSE,
+    const Bool_t ApplyTOFTrigger = kFALSE,
+    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -106,21 +110,26 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       return NULL;
     }
 
-    taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC));
+    taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
   }
-  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
+  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
+
+  if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
+
+  if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
-  if(L1input == 7)       Ethre = 8.0;
-  else if(L1input == 6)  Ethre = 6.0;
-  else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 3.0;//LHC15n
-  else if(L0input == 17) Ethre = 4.0;//LHC17p
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
+  if(L1input == 7)       Ethre = 0.0;
+  else if(L1input == 6)  Ethre = 0.0;
+  else if(L1input == 5)  Ethre = 0.0;
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n
+  else if(L0input == 17) Ethre = 0.0;//LHC17p
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
   task->SelectCollisionCandidates(trigger);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
@@ -133,7 +142,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetMCFlag(isMC);
   task->SetCoreEnergyFlag(useCoreE);
 
-  task->SetEventCuts(isMC);
+  task->SetEventCuts(isMC,pf);
   task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
 
   task->SetCentralityMin(CenMin);
@@ -144,6 +153,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetFlowMethod(FlowMethod);
   task->SetQnDetector(QnDetector);
 
+  //set minimum energy
+  task->SetEmin(Emin);
 
   //centrality setting
   task->SetCentralityEstimator("V0M");
@@ -159,35 +170,75 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetNpx(1000);
     f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
 
   if(isMC){
-    //const Int_t centrality_Pi0[] = {0,10,30,50,90};
-    //const Int_t Ncen_Pi0 = sizeof(centrality_Pi0)/sizeof(centrality_Pi0[0]);
-    //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
-    //task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
 
+
+    //for pi0
+    const Int_t Ncen_Pi0 = 11;
+    const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
+    TArrayD *centarray_Pi0 = new TArrayD(Ncen_Pi0,centrality_Pi0);
+
+    TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
+    TF1 *f1weightPi0[Ncen_Pi0-1];
+    const Double_t p0_Pi0[Ncen_Pi0-1] = {8.52796e-02,9.57970e-02,1.09042e-01,1.28762e-01 ,1.51087e-01 ,1.82705e-01 ,2.16360e-01 ,2.37666e-01 ,2.52706e-01 ,3.34001e-01};
+    const Double_t p1_Pi0[Ncen_Pi0-1] = {8.34243e-01,8.11715e-01,7.73274e-01,7.28962e-01 ,6.77506e-01 ,6.06502e-01 ,5.31093e-01 ,4.52193e-01 ,3.86976e-01 ,3.22488e-01};
+    const Double_t p2_Pi0[Ncen_Pi0-1] = {9.27577e-01,9.53380e-01,9.52280e-01,9.78872e-01 ,9.82192e-01 ,1.01124e+00 ,1.08236e+00 ,1.14572e+00 ,1.12243e+00 ,2.16920e+00};
+    const Double_t p3_Pi0[Ncen_Pi0-1] = {2.13453e-01,2.09818e-01,2.03573e-01,2.00238e-01 ,1.94211e-01 ,1.87993e-01 ,1.94509e-01 ,1.95069e-01 ,1.75698e-01 ,3.62140e-01};
+
+    for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
+      f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0] + [1]*pow(x,[2])*exp(-[3]*x*x)",0,100);
+      f1weightPi0[icen]->SetParameters(p0_Pi0[icen],p1_Pi0[icen],p2_Pi0[icen],p3_Pi0[icen]);
+      farray_Pi0->Add(f1weightPi0[icen]);
+    }
+
+    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+
+    //for K0S
     const Int_t Ncen_K0S = 7;
     const Double_t centrality_K0S[Ncen_K0S] = {0,5,10,20,40,60,100};
     TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
 
     TObjArray *farray_K0S = new TObjArray(Ncen_K0S-1);
     TF1 *f1weightK0S[Ncen_K0S-1];
-    const Double_t p0[Ncen_K0S-1] = {  1.81,   1.83,   1.81,   1.70,   1.91,   1.85};
-    const Double_t p1[Ncen_K0S-1] = {  1.38,   1.31,   1.27,   1.30,   1.61,   1.06};
-    const Double_t p2[Ncen_K0S-1] = {-0.373, -0.398, -0.424, -0.565, -0.640, -0.714};
-    const Double_t p3[Ncen_K0S-1] = {  3.93,   3.70,   4.14,   4.88,  0.542,   1.30};
-    const Double_t p4[Ncen_K0S-1] = {-0.235, -0.279, -0.435,  -2.56, -0.356, -0.543};
+    const Double_t p0_K0S[Ncen_K0S-1] = {  1.81,   1.83,   1.81,   1.70,   1.91,   1.85};
+    const Double_t p1_K0S[Ncen_K0S-1] = {  1.38,   1.31,   1.27,   1.30,   1.61,   1.06};
+    const Double_t p2_K0S[Ncen_K0S-1] = {-0.373, -0.398, -0.424, -0.565, -0.640, -0.714};
+    const Double_t p3_K0S[Ncen_K0S-1] = {  3.93,   3.70,   4.14,   4.88,  0.542,   1.30};
+    const Double_t p4_K0S[Ncen_K0S-1] = {-0.235, -0.279, -0.435,  -2.56, -0.356, -0.543};
 
     for(Int_t icen=0;icen<Ncen_K0S-1;icen++){
       f1weightK0S[icen] = new TF1(Form("f1weightK0S_%d",icen),"[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1) )",0,100);
-      f1weightK0S[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+      f1weightK0S[icen]->SetParameters(p0_K0S[icen],p1_K0S[icen],p2_K0S[icen],p3_K0S[icen],p4_K0S[icen]);
       farray_K0S->Add(f1weightK0S[icen]);
     }
 
     task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
+
+     //for L0
+    const Int_t Ncen_L0 = 7;
+    const Double_t centrality_L0[Ncen_L0] = {0,5,10,20,40,60,100};
+    TArrayD *centarray_L0 = new TArrayD(Ncen_L0,centrality_L0);
+
+    TObjArray *farray_L0 = new TObjArray(Ncen_L0-1);
+    TF1 *f1weightL0[Ncen_L0-1];
+    const Double_t p0_L0[Ncen_L0-1] = {27.2   ,272    ,548    , 496    ,1880   ,2220  };
+    const Double_t p1_L0[Ncen_L0-1] = {0.0562 ,0.0420 ,0.0385 , 0.0420 ,0.0442 ,0.0562};
+    const Double_t p2_L0[Ncen_L0-1] = {-7.79  ,-11.6  ,-12.8  , -12.2  ,-13.1  ,-11.7 };
+    const Double_t p3_L0[Ncen_L0-1] = {0.231  ,0.245  ,0.286  , 0.371  ,0.470  ,0.570 };
+
+    for(Int_t icen=0;icen<Ncen_L0-1;icen++){
+      f1weightL0[icen] = new TF1(Form("f1weightL0_%d",icen),"[0] * TMath::Power(x,4) * TMath::Exp(-[1] * TMath::Power(x-[2],2)) + [3]",0,100);
+      f1weightL0[icen]->SetParameters(p0_L0[icen],p1_L0[icen],p2_L0[icen],p3_L0[icen]);
+      farray_L0->Add(f1weightL0[icen]);
+    }
+
+    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
+
   }
 
   mgr->AddTask(task);

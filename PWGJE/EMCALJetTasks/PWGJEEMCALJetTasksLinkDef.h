@@ -208,6 +208,7 @@
 #pragma link C++ namespace EmcalTriggerJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
 #pragma link C++ class Cumulants+;
@@ -246,5 +247,6 @@
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
+#pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #endif
 #endif

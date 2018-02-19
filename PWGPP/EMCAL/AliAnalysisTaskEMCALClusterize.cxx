@@ -40,6 +40,7 @@
 #include "AliAODMCParticle.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
+#include "AliDataFile.h"
 
 // --- EMCAL
 #include "AliEMCALAfterBurnerUF.h"
@@ -70,7 +71,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRecParam(0),           fClusterizer(0)
 , fUnfolder(0),           fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),    fOutputAODBranchName("")   
-, fOutputAODCells (0),    fOutputAODCellsName ("")  
+, fOutputAODCells (0),    fOutputAODCellsName (""),   fInputCaloCellsName ("")    
 , fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
@@ -101,8 +102,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   for(Int_t i = 0; i < 22;    i++)  
   {
     fGeomMatrix[i] = 0;
-    fTCardCorrInduceEnerProb[i] = 0;
-    
+    fTCardCorrInduceEnerProb   [i] = 0;
+    fTCardCorrInduceEnerFracMax[i] = 100;
+    fTCardCorrInduceEnerFracMin[i] =-100;
+
     for(Int_t j = 0; j < 4 ; j++)
     {
       fTCardCorrInduceEner         [j][i] =  0 ;   
@@ -131,7 +134,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRecParam(0),             fClusterizer(0)
 , fUnfolder(0),             fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),      fOutputAODBranchName("")
-, fOutputAODCells (0),      fOutputAODCellsName ("")
+, fOutputAODCells (0),      fOutputAODCellsName (""),  fInputCaloCellsName ("")  
 , fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
@@ -161,8 +164,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   for(Int_t i = 0; i < 22;    i++)  
   {
     fGeomMatrix[i] = 0;
-    fTCardCorrInduceEnerProb[i] = 0;
-    
+    fTCardCorrInduceEnerProb   [i] = 0;
+    fTCardCorrInduceEnerFracMax[i] = 100;
+    fTCardCorrInduceEnerFracMin[i] =-100;
+
     for(Int_t j = 0; j < 4 ; j++)
     {
       fTCardCorrInduceEner         [j][i] =  0 ;   
@@ -287,8 +292,11 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
   {
     AliOADBContainer *contBC=new AliOADBContainer("");
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels"); 
-    
+    if(fOADBFilePath!="")
+      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels");
+    else
+      contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels");
+
     TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     
     if(arrayBC)
@@ -325,8 +333,11 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   {
     AliOADBContainer *contRF=new AliOADBContainer("");
     
-    contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
-    
+    if(fOADBFilePath!="")
+      contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
+    else
+      contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+
     TObjArray *recal=(TObjArray*)contRF->GetObject(fRun); 
     
     if(recal)
@@ -371,8 +382,11 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   {
     AliOADBContainer *contRFTD=new AliOADBContainer("");
     
-    contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
-    
+    if(fOADBFilePath!="")
+      contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+    else
+      contRFTD->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
+
     TH1S *htd=(TH1S*)contRFTD->GetObject(fRun); 
     
     //If it did not exist for this run, get closes one
@@ -417,7 +431,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
             //      GetEMCALChannelRecalibrationFactor(ism,icol,irow) , htd->GetBinContent(absID) / 10000., factor);
             fRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
           } // columns
-        } // rows 
+        } // rows
       } // SM loop
     } else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
     
@@ -429,17 +443,20 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   {
     AliOADBContainer *contTRF=new AliOADBContainer("");
     
-    contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePath.Data()),"AliEMCALTimeCalib");
-    
-    TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRun); 
+    if(fOADBFilePath!="")
+      contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePath.Data()),"AliEMCALTimeCalib");
+    else
+      contTRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalib.root").data(),"AliEMCALTimeCalib");
+
+    TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRun);
     
     if(trecal)
-    {      
+    {
       // pass number should be pass1 except on Run1 and special cases
       TString passM = pass;
       if ( pass=="spc_calo"   ) passM = "pass3";
       if ( fRun > 209121 ) passM = "pass1"; // run2 periods
-      if ( pass == "muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
+      if ( pass == "muon_calo_pass1" && fRun > 209121 && fRun < 244284 )
         passM = "pass0";//period LHC15a-m
 
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
@@ -481,17 +498,25 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     AliOADBContainer *contBC = new AliOADBContainer("");
         
-    TFile *timeFile=new TFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"read");
+    TFile *timeFile;
+    if(fOADBFilePath!="")
+      timeFile = new TFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"read");
+    else
+      timeFile = new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"read");
+
     if (!timeFile || timeFile->IsZombie())
     {
       AliFatal(Form("EMCALTimeL1PhaseCalib.root was not found in the path provided: %s",fOADBFilePath.Data()));
       return ;
-    }  
+    }
     
     if (timeFile) delete timeFile;
     
-    contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"AliEMCALTimeL1PhaseCalib");    
-    
+    if(fOADBFilePath!="")
+      contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"AliEMCALTimeL1PhaseCalib");
+    else
+      contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"AliEMCALTimeL1PhaseCalib");
+
     TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     if (!arrayBC)
     {
@@ -684,7 +709,16 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   }
   
   //Recover the pointer to CaloCells container
-  fCaloCells = fEvent->GetEMCALCells();
+  if ( fInputCaloCellsName.Length() == 0 ) 
+    fCaloCells = fEvent->GetEMCALCells();
+  else      
+  {
+    fCaloCells = (AliVCaloCells*) fEvent->FindListObject(fInputCaloCellsName);
+    if ( !fCaloCells ) 
+      AliWarning(Form("CaloCells branch <%s> not found use STD!",fInputCaloCellsName.Data()));
+    else 
+      fCaloCells = fEvent->GetEMCALCells();
+  }
   
   //Process events if there is a high energy cluster
   if(!AcceptEventEMCAL())  { fEvent = 0x0 ; return ; }
@@ -1419,7 +1453,6 @@ void AliAnalysisTaskEMCALClusterize::Init()
   if(fDebug >=0) (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
 
   fOADBSet           = kFALSE;
-  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;          
   
   fBranchNames       = "ESD:AliESDHeader.,EMCALCells.";
   
@@ -1560,10 +1593,10 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
       {
         // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-        if      (fRun <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-        else if (fRun <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-        else if (fRun <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-        else                     fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
+        if      (fRun <  140000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2010.root").data();
+        else if (fRun <  171000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2011.root").data();
+        else if (fRun <  198000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2012.root").data(); // 2012-2013
+        else                     fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2015.root").data(); // >=2015
       }
       
       AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -1581,7 +1614,11 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
     
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
-    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    if(fOADBFilePath!="")
+      emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    else
+      emcGeoMat.InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
+
     TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(fRun,"EmcalMatrices");
     
     for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
@@ -1756,7 +1793,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
     
     AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
-    
+      
     //
     // Get the absId of the cells in the cross and same T-Card
     Int_t absIDup = -1;
@@ -1834,14 +1871,25 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
     Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
     
-    AliDebug(1,Form("Fraction for SM %d:\n\t up-down   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t up-down-lr: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t left-right: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t 2nd row   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", imod,
+    AliDebug(1,Form("Fraction for SM %d (min %2.3f, max %2.3f):\n"
+                    "\t up-down   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t up-down-lr: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t left-right: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
+                    "\t 2nd row   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f", 
+                    imod, fTCardCorrInduceEnerFracMin[imod], fTCardCorrInduceEnerFracMax[imod],
                     fTCardCorrInduceEner[0][imod],fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
                     fTCardCorrInduceEner[1][imod],fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
                     fTCardCorrInduceEner[2][imod],fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
                     fTCardCorrInduceEner[3][imod],fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
+    
+    if( fracupdown     < fTCardCorrInduceEnerFracMin[imod] ) fracupdown     = fTCardCorrInduceEnerFracMin[imod];
+    if( fracupdown     > fTCardCorrInduceEnerFracMax[imod] ) fracupdown     = fTCardCorrInduceEnerFracMax[imod];   
+    if( fracupdownleri < fTCardCorrInduceEnerFracMin[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMin[imod];
+    if( fracupdownleri > fTCardCorrInduceEnerFracMax[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMax[imod];
+    if( fracleri       < fTCardCorrInduceEnerFracMin[imod] ) fracleri       = fTCardCorrInduceEnerFracMin[imod];
+    if( fracleri       > fTCardCorrInduceEnerFracMax[imod] ) fracleri       = fTCardCorrInduceEnerFracMax[imod];
+    if( frac2nd        < fTCardCorrInduceEnerFracMin[imod] ) frac2nd        = fTCardCorrInduceEnerFracMin[imod];
+    if( frac2nd        > fTCardCorrInduceEnerFracMax[imod] ) frac2nd        = fTCardCorrInduceEnerFracMax[imod];
     
     // Randomize the induced fraction, if requested
     if(fRandomizeTCard)
@@ -1872,7 +1920,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     
     AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                     indEupdown,indEupdownleri,indEleri,indE2nd));
-    
+  
     //
     // Add the induced energy, check if cell existed
     if ( okup )
@@ -1967,6 +2015,9 @@ void AliAnalysisTaskEMCALClusterize::PrintParam()
   
   if ( fAccessOCDB ) AliInfo(Form("OCDB path name <%s>", fOCDBpath.Data()));
   if ( fAccessOADB ) AliInfo(Form("OADB path name <%s>", fOADBFilePath.Data()));
+ 
+  if ( fInputCaloCellsName.Length() > 0 ) 
+    AliInfo(Form("Input CaloCells <%s>", fInputCaloCellsName.Data()));
   
   AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>, new cells name <%s>", 
                fJustUnfold, fOutputAODBranchName.Data(), fOutputAODCellsName.Data()));
@@ -2003,15 +2054,19 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
                fTCardCorrClusEnerConserv,fRandomizeTCard));
   
-  AliInfo("T-Card emulation super-modules fraction:");
+  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f",
+               fTCardCorrMinAmp,fTCardCorrMaxInduced));
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
-    printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
+    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e max %2.3e \n",
+           ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
+    
     for(Int_t icell = 0; icell < 4; icell++)
     {
-      printf("\t \t cell type %d, c %2.2e, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
-             icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
+      printf("\t \t cell type %d, c %2.4e, p0 %2.4e, p1 %2.4e, sigma %2.4e \n",
+             icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],
+             fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
     }
   }
 }

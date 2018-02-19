@@ -77,6 +77,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
+  , fTrl2Tr(0x0)
   , fTrackStatus(0x0)
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
@@ -139,6 +140,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
+  , fTrl2Tr(0x0)
   , fTrackStatus(0x0)
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
@@ -188,6 +190,14 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     fTracks->Clear();
     delete fTracks;
     fTracks = 0x0;
+  }
+
+  // delete array of tracklet-track associations
+  if (fTrl2Tr) {
+    fTrl2Tr->SetOwner(kTRUE);
+    fTrl2Tr->Clear();
+    delete fTrl2Tr;
+    fTrl2Tr = 0x0;
   }
 
   // delete array of TrackStatus
@@ -302,16 +312,18 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fCEPEvent = new CEPEventBuffer();
   // fTracks
   fTracks = new TObjArray();
+  // fTrl2Tr
+  fTrl2Tr = new TObjArray();
   // fTrackStatus
   fTrackStatus = new TArrayI();
-
+  
   // fPhysicsSelection
   //fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection = static_cast<AliPhysicsSelection*> (fInputHandler->GetEventSelection());
   
   // fTrigger
   fTrigger = new AliTriggerAnalysis();
-   fTrigger->SetDoFMD(kTRUE);
+  fTrigger->SetDoFMD(kTRUE);
   fTrigger->SetFMDThreshold(0.3,0.5);
   fTrigger->ApplyPileupCuts(kTRUE);
  
@@ -519,6 +531,13 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   Int_t bsize = 16000; 
   fCEPtree->Branch("CEPEvents","CEPEventBuffer",&fCEPEvent, bsize, split);
   
+  // fCEPRawEvent
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitRawBuffer,AliCEPBase::kBitRawBuffer)) {
+    fCEPRawEvent = new CEPRawEventBuffer();
+    fCEPtree->Branch("CEPRawEvents","CEPRawEventBuffer",&fCEPRawEvent, bsize, split);
+  }
+
   PostOutputs();
   
 }
@@ -526,7 +545,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::UserExec(Option_t *)
 {
-
+  
   // update stats flow
   // events running through UserExec - thus all analyzed events
   fhStatsFlow->Fill(AliCEPBase::kBinTotalInput);
@@ -629,6 +648,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // -1: no vertex
   //  1: from SPD
   //  2: from tracks
+  const AliESDVertex *vertex = (AliESDVertex*) fEvent->GetPrimaryVertex();
   Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
   if (kVertexType!=AliCEPBase::kVtxUnknown)
     fhStatsFlow->Fill(AliCEPBase::kBinVtx);
@@ -645,8 +665,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replayed, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replayed, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[c,h,i,j,k,l,m,o]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l,m,o,r]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l,m,o,r]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
@@ -659,7 +679,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     ((TH1F*)flQArnum->At(4))->Fill(fRun);
   
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
-  // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
   // the trigger needs to be replayed
   // different triggers are considered
@@ -668,14 +687,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
   
   // The following is needed to replay the DG trigger
-  // The STG trigger in 2016 required two online tracklets without additional
+  // The OSTG trigger in 2016 required two online tracklets without additional
   // topology (dphiMin=0)
-  // The STRtrigger in 2017 requiered two online tracklets with
+  // The OSTG trigger in 2017 required two online tracklets with
   // min opening angle >=54 deg (dphiMin=4)
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
   
-  // each bit of fisSTGTriggerFired corresponds to a specific dphiMin
+  // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a specific
+  // dphiMin
+  // fisSTGTriggerFired & (1<<0): OSTG 2016
+  // fisSTGTriggerFired & (1<<4): OSTG 2017
   fisSTGTriggerFired  = IsSTGFired(&foMap,0) ? (1<<0) : 0;
   for (Int_t ii=1; ii<=10; ii++)
     fisSTGTriggerFired |= IsSTGFired(&foMap,ii) ? (1<<ii) : 0;
@@ -684,12 +706,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isReplay) {
     
     // this part of the code was proposed by Evgeny Kryshen
-    // to replay the DG trigger in MC data
+    // to replay the DG trigger in MC data, counts number of hits in V0
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
     AliVVZERO* esdV0 = fEvent->GetVZEROData();
-    for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
-    for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
+    for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);  // V0A
+    for (Int_t i=0;  i<32; i++) isV0Cfired |= esdV0->GetBBFlag(i);  // V0C
 
     isDGTrigger = (fisSTGTriggerFired & (1<<0)) && !isV0Afired && !isV0Cfired;
     
@@ -725,10 +747,21 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
   // }
   
-  // number of tracklets
+  // number of tracklets and singles
   Int_t nTracklets = mult->GetNumberOfTracklets();
+  Int_t nSingles   = ((AliMultiplicity*)mult)->GetNumberOfSingleClusters();
+  
+  // get number of ITS cluster
+  Short_t nITSCluster[6] = {0};
+  for (Int_t ii=0; ii<6; ii++)
+    nITSCluster[ii] = mult->GetNumberOfITSClusters(ii);
   
   // get the number of fired FastOR trigger chips
+  // this is needed to replay OSMB = IFO>=1 & OFO>=1
+  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
+  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
+  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
+  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
   Short_t nFiredChips[4] = {0};
   nFiredChips[0] = mult->GetNumberOfFiredChips(0);
   nFiredChips[1] = mult->GetNumberOfFiredChips(1);
@@ -1027,6 +1060,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    fCEPEvent->SetnITSCluster(nITSCluster);
     fCEPEvent->SetnFiredChips(nFiredChips);
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
@@ -1037,9 +1071,46 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // set event status word
     fCEPEvent->SetEventCondition(fEventCondition);
 
+    // fill and add raw event buffer
+    if (fCEPUtil->checkstatus(fAnalysisStatus,
+      AliCEPBase::kBitRawBuffer,AliCEPBase::kBitRawBuffer)) {
+      
+      fCEPRawEvent->SetEventVariables(fESDEvent);
+      
+    }
+    
     // number of tracklets and residuals, vertex
     fCEPEvent->SetnTracksTotal(nTracks);
     fCEPEvent->SetnTracklets(nTracklets);
+    
+    // tracklet-track associations
+    // To read the assosiations use ...
+    //    Int_t assL1, assL2;
+    //    TObjArray *q = fCEPEvent->GetTrl2Tr();
+    //    for (Int_t jj=0; jj<q->GetEntries(); jj++) {
+    //      assL1 = (Int_t)((TVector2*)q->At(jj))->X(),
+    //      assL2 = (Int_t)((TVector2*)q->At(jj))->Y());
+    //    }
+    Int_t nr;
+    UInt_t refs[5];
+    Double_t ref1, ref2;
+    for (Int_t ii=0; ii<nTracklets; ii++) {
+      
+      // which track uses the tracklet-clusters on layers 1 and 2
+      ref1=-1.; ref2=-1.;
+      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+      if (nr>0) ref1 = refs[0];
+      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+      if (nr>0) ref2 = refs[0];
+      
+      // new tracklet-track association
+      TVector2 *vec = new TVector2(ref1,ref2);
+
+      // add it to CEPEvent
+      fCEPEvent->AddTrl2Tr(vec,ii);
+    }
+    
+    fCEPEvent->SetnSingles(nSingles);
     fCEPEvent->SetnResiduals(fCEPUtil->GetResiduals(fESDEvent));
     fCEPEvent->SetnMSelection(nMartinSel);
     fCEPEvent->SetnV0(fNumV0s);
@@ -1056,59 +1127,19 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // and save it into the event buffer
     AliStack *stack = NULL;
     if (fMCEvent) {
-      
-      // MC generator and process type
-      TString fMCGenerator;
-      Int_t fMCProcess; 
-      fCEPUtil->DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
-      
-      // get MC vertex
-      TParticle *part = NULL;
-      TLorentzVector lvtmp, lvin, lvprod;
       stack = fMCEvent->Stack();
-      if (stack) {
-        Int_t nPrimaries = stack->GetNprimary();
-        //printf("number of tracks: primaries - %i, reconstructed - %i\n",
-        //  nPrimaries,nTracks);
-        
-        // incident beam-beam system
-        part = stack->Particle(0);
-        part->Momentum(lvtmp);
-        lvin  = lvtmp;
-        stack->Particle(1)->Momentum(lvtmp);
-        lvin += lvtmp;
-        
-        // for DIME and PYTHIA8-CD save the CEP particle
-        // add primaries except for the incoming and outgoing protons
-        lvprod = TLorentzVector(0,0,0,0);
-        if ( fMCGenerator.EqualTo("Dime") ||
-             ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
-           )
-        {
-          stack->Particle(4)->Momentum(lvtmp);
-          lvprod  = lvtmp;
-          for (Int_t ii=5; ii<nPrimaries; ii++) {
-            stack->Particle(ii)->Momentum(lvtmp);
-            lvprod += lvtmp;
-          }
-        }
-        
-        // update the event buffer
-        fCEPEvent->SetMCGenerator(fMCGenerator);
-        fCEPEvent->SetMCProcessType(fMCProcess);
-        fCEPEvent->SetMCVtxPos(part->Vx(),part->Vy(),part->Vz());
-        fCEPEvent->SetMCIniSystem(lvin);
-        fCEPEvent->SetMCParticle(lvprod);
-        
-      }
+      
+      // update fCEPEvent with MC truth
+      fCEPUtil->SetMCTruth(fCEPEvent,fMCEvent);
+                     
     }
     
     // add tracks
-    // all tracks are added, independent of the track status
+    // all tracks which fulfill TT requirements
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
-    
+
       // proper pointer into fTracks and fTrackStatus
       Int_t trkIndex = TTindices->At(ii);
       
@@ -1118,16 +1149,26 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       // create new CEPTrackBuffer and fill it
       CEPTrackBuffer *trk = new CEPTrackBuffer();
       
+      trk->SetTrackIndex((UInt_t) trkIndex);
       trk->SetTrackStatus(fTrackStatus->At(trkIndex));
       trk->SetTOFBunchCrossing(tmptrk->GetTOFBunchCrossing());
       trk->SetChargeSign((Int_t)tmptrk->Charge());
-      trk->SetITSncls(tmptrk->GetNumberOfITSClusters());
+      trk->SetGoldenChi2(tmptrk->GetChi2TPCConstrainedVsGlobal(vertex));
+      
+      trk->SetITSncls(tmptrk->GetITSClusterMap());
       trk->SetTPCncls(tmptrk->GetNumberOfTPCClusters());
       trk->SetTRDncls(tmptrk->GetNumberOfTRDClusters());
       trk->SetTPCnclsS(tmptrk->GetTPCnclsS());
-      trk->SetZv(tmptrk->Zv());
+      
+      Double_t dca[3] = {0.,0.,0.}; tmptrk->GetXYZ(dca);
+      trk->SetXYv(sqrt(pow(dca[0],2)+pow(dca[1],2)));
+      trk->SetZv(dca[2]);
+      
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));
+      
+      // check if track contributes to main vertex reconstruction
+      trk->SetinVertex(vertex->UsesTrack(trkIndex));      
       
       // set PID information
       // ... TPC
@@ -1171,11 +1212,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
+      // printf("MCind %i\n",MCind);
       if (fMCEvent && MCind >= 0) {
         
         TParticle* part = stack->Particle(MCind);
         // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
-        //  ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
         
         // set MC mass and momentum
         TLorentzVector lv;

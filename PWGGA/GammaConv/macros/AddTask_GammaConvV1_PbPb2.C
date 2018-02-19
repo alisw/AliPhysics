@@ -114,7 +114,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
 
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -221,7 +221,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     cuts.AddCut("52500013", "00200009247602008250404000", "0152501500000000");
   } else if (trainConfig == 41) {
     cuts.AddCut("50100013", "00200009247602008250404000", "0152501500000000");
-  \\ Xe-Xe configs
+    // Xe-Xe configs
   } else if (trainConfig == 42) {
     cuts.AddCut("10910113","00200009327000008250400000","0163103100000000"); // 0-90
   } else if (trainConfig == 43) {
@@ -232,6 +232,31 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
   } else if (trainConfig == 43) {
     cuts.AddCut("14910113","00200009327000008250400000","0163103100000000"); // 40-90
+    // Pb-Pb 5.02 TeV
+  } else if (trainConfig == 44) {
+    cuts.AddCut("52310013","00200009247602008250404000","0652501500000000"); // 20-30%
+  } else if (trainConfig == 45) {
+    cuts.AddCut("53410013","00200009247602008250404000","0652501500000000"); // 30-40%
+  } else if (trainConfig == 46) {
+    cuts.AddCut("54510013","00200009247602008250404000","0652501500000000"); // 40-50%
+  } else if (trainConfig == 47) {
+    cuts.AddCut("55610013","00200009247602008250404000","0652501500000000"); // 50-60%
+  } else if (trainConfig == 48) {
+    cuts.AddCut("56710013","00200009247602008250404000","0652501500000000"); // 60-70%
+  } else if (trainConfig == 49) {
+    cuts.AddCut("57810013","00200009247602008250404000","0652501500000000"); // 70-80%
+  } else if (trainConfig == 50) {
+    cuts.AddCut("58910013","00200009247602008250404000","0652501500000000"); // 80-90%
+  } else if (trainConfig == 51) {
+    cuts.AddCut("52310613","00200009247602008250404000","0652501500000000"); // 20-30% with PU cut
+  } else if (trainConfig == 52) {
+    cuts.AddCut("53410613","00200009247602008250404000","0652501500000000"); // 30-40% with PU cut
+  } else if (trainConfig == 53) {
+    cuts.AddCut("54610613","00200009247602008250404000","0652501500000000"); // 40-60% with PU cut
+  } else if (trainConfig == 54) {
+    cuts.AddCut("56810613","00200009247602008250404000","0652501500000000"); // 60-80% with PU cut
+  } else if (trainConfig == 55) {
+    cuts.AddCut("58910613","00200009247602008250404000","0652501500000000"); // 80-90% with PU cut
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

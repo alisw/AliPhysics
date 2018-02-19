@@ -96,6 +96,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
     
   void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
   void           SetAODCellsName(TString &name)                 { fOutputAODCellsName  = name  ; }
+  void           SetInputCaloCellsName(TString &name)           { fInputCaloCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
@@ -255,7 +256,6 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
       fTCardCorrInduceEnerFracP1[0][sm] = ud; fTCardCorrInduceEnerFracP1[1][sm] = udlr;  
       fTCardCorrInduceEnerFracP1[2][sm] = lr; fTCardCorrInduceEnerFracP1[3][sm] = sec ; } }
 
-  
   /// Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian, same for all SM
   /// \param ud energy lost in upper/lower cell, same column
   /// \param udlr energy lost in upper/lower cell, left or right
@@ -275,6 +275,28 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
       fTCardCorrInduceEnerFracWidth[0][sm] = ud; fTCardCorrInduceEnerFracWidth[1][sm] = udlr;  
       fTCardCorrInduceEnerFracWidth[2][sm] = lr; fTCardCorrInduceEnerFracWidth[3][sm] = sec ; } }
 
+  /// Maximum induced energy fraction when linear dependency is set, per SM number
+  /// \param max maximum fraction
+  /// \param sm  super-module number
+  void           SetInducedEnergyLossMaximumFractionPerSM(Float_t max, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMax[sm] = max ; }  
+  
+  /// Minimum induced energy fraction when linear dependency is set, per SM number
+  /// \param min minimum fraction
+  /// \param sm  super-module number
+  void           SetInducedEnergyLossMinimumFractionPerSM(Float_t min, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMin[sm] = min ; }  
+  
+  /// Maximum induced energy fraction when linear dependency is set, same for all SM
+  /// \param max maximum fraction
+  void           SetInducedEnergyLossMaximumFraction(Float_t max) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMax[ism] = max ; }  
+  
+  /// Minimum induced energy fraction when linear dependency is set, same for all SM
+  /// \param min minimum fraction
+  void           SetInducedEnergyLossMinimumFraction(Float_t min) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMin[ism] = min ; }  
+  
   /// fraction of times max cell energy correlates with cross cells, different for each super-module
   /// \param prob probability per event, from 0 to 1
   /// \param sm   probability assigned to this super-module number
@@ -328,7 +350,8 @@ private:
   TClonesArray          *fOutputAODBranch;         //!<! AOD Branch with output clusters
   TString                fOutputAODBranchName;     ///<  New of output clusters AOD branch
   AliAODCaloCells       *fOutputAODCells;          //!<! AOD Branch with output cells
-  TString                fOutputAODCellsName;      ///<  New of output cells AOD branch
+  TString                fOutputAODCellsName;      ///<  New of output cells AOD branch name
+  TString                fInputCaloCellsName;      ///<  Input cells branch name, if different from default branch
   Bool_t                 fOutputAODBranchSet ;     ///<  Set the AOD clusters branch in the input event once
   Bool_t                 fFillAODFile;             ///<  Fill the output AOD file with the new clusters, 
                                                    ///<  if not they will be only available for the event they were generated
@@ -405,7 +428,10 @@ private:
   Float_t               fTCardCorrInduceEnerFrac     [4 ][22]; ///< Induced energy loss gauss fraction param0 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
   Float_t               fTCardCorrInduceEnerFracP1   [4 ][22]; ///< Induced energy loss gauss fraction param1 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
   Float_t               fTCardCorrInduceEnerFracWidth[4 ][22]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
+  Float_t               fTCardCorrInduceEnerFracMax[22];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the maximum fraction of induced energy per SM  
+  Float_t               fTCardCorrInduceEnerFracMin[22];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the minimum fraction of induced energy per SM  
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
+ 
  
   TRandom3              fRandom   ;                ///<  Random generator
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
@@ -422,7 +448,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 40) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 42) ;
   /// \endcond
 
 };

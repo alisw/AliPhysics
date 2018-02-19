@@ -15,7 +15,7 @@
 
 class AliFemtoModelCorrFctnNonIdDR : public AliFemtoModelCorrFctn {
 public:
-  AliFemtoModelCorrFctnNonIdDR(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoModelCorrFctnNonIdDR(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoModelCorrFctnNonIdDR(const AliFemtoModelCorrFctnNonIdDR& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnNonIdDR();
 
@@ -27,7 +27,7 @@ public:
 
   virtual void Finish();
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
   virtual TList* GetOutputList();
   void Write();

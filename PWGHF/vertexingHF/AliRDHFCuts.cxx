@@ -1149,13 +1149,14 @@ void AliRDHFCuts::PrintAll() const {
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
   if(fUseCentrality>0) {
     TString estimator="";
-    if(fUseCentrality==1) estimator = "V0";
-    if(fUseCentrality==2) estimator = "Tracks";
-    if(fUseCentrality==3) estimator = "Tracklets";
-    if(fUseCentrality==4) estimator = "SPD clusters outer"; 
-    if(fUseCentrality==5) estimator = "ZNA"; 
-    if(fUseCentrality==6) estimator = "ZPA"; 
-    if(fUseCentrality==7) estimator = "V0A"; 
+    if(fUseCentrality==kCentV0M) estimator = "V0";
+    if(fUseCentrality==kCentTRK) estimator = "Tracks";
+    if(fUseCentrality==kCentTKL) estimator = "Tracklets";
+    if(fUseCentrality==kCentCL1) estimator = "SPD clusters outer";
+    if(fUseCentrality==kCentZNA) estimator = "ZNA"; 
+    if(fUseCentrality==kCentZPA) estimator = "ZPA"; 
+    if(fUseCentrality==kCentV0A) estimator = "V0A";
+    if(fUseCentrality==kCentCL0) estimator = "SPD clusters inner";
     printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
@@ -1334,6 +1335,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
     cent=multSelection->GetMultiplicityPercentile("ZNA");
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
+  }else if(estimator==kCentCL0){
+    cent=multSelection->GetMultiplicityPercentile("CL0");
   }else {
     AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
     return cent;

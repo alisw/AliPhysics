@@ -46,7 +46,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    static const Int_t nInputParticles = 14;
+    const Int_t nInputParticles = 14;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -60,7 +60,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
 
     // DCA input templates:
     TH1F** fh_DCAtemplates;
-    static const Int_t nbDCAtemplate = 6;
+    const Int_t nbDCAtemplate = 6;
 
     //VPH histogram (pT) and function (mass)
     TF1* ffVPHpT;
@@ -70,8 +70,12 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // before smearing+acceptance cuts:
     TH1F** fmee_orig;
     TH2F** fpteevsmee_orig;
+    TH1F** fmotherpT_orig;
     TH1F** fphi_orig;
     TH1F** frap_orig;
+    TH1F** fmee_orig_wALT;
+    TH2F** fpteevsmee_orig_wALT;
+    TH1F** fmotherpT_orig_wALT;
     // after smearing + acceptance cuts
     TH1F** fmee;
     TH2F** fpteevsmee;
@@ -79,11 +83,8 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TH1F** frap;
     TH2F* fDCAeevsmee;
     TH2F* fDCAeevsptee;
-    // after smearing + acceptance cuts + efficiency weight
     TH1F** fmee_wALT;
     TH2F** fpteevsmee_wALT;
-    TH1F** fmee_orig_wALT;
-    TH2F** fpteevsmee_orig_wALT;
     // LS, ULS histos
     TH2F* fULS_orig;
     TH2F* fLSpp_orig;

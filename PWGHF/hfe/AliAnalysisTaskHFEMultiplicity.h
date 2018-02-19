@@ -57,47 +57,115 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   
   
 	
-  
-  Bool_t  		PassEventSelect(AliAODEvent *fAOD);
-  Bool_t		Passtrackcuts(AliAODTrack *atrack);
-  Bool_t 		PassEIDCuts(AliAODTrack *track, AliAODCaloCluster *clust);
-  void    		GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff );
-  Int_t 		GetNcharged();
-  void 			GetElectronFromStack();
-  void   	        GetPi0EtaWeight(THnSparse *SparseWeight);
+//-----------------selections cuts----------------------------------------------------------------  
+  Bool_t  		PassEventSelect(AliAODEvent *fAOD); //event selection cuts
+  Bool_t		Passtrackcuts(AliAODTrack *atrack); // track selection cuts
+  Bool_t 		PassEIDCuts(AliAODTrack *track, AliAODCaloCluster *clust);// electron identification cuts
+//-----------------getters----------------------------------------------------------------
+  Bool_t  		GetTenderSwitch() {return fUseTender;};
+  Bool_t                GetEMCalTriggerEG1() { return fEMCEG1; };
+  Bool_t                GetEMCalTriggerEG2() { return fEMCEG2; };
+  Bool_t                GetEMCalTriggerDG1() { return fDCalDG1; };
+  Bool_t                GetEMCalTriggerDG2() { return fDCalDG2; };
+  Bool_t  		IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt); 
   Bool_t  		GetNMCPartProduced();
+  Int_t 		GetNcharged(); // n charge generated
+  Int_t 	        GetHFE(AliAODMCParticle *electron, TClonesArray *mcArray);
   Int_t                 GetPi0EtaType(AliAODMCParticle *part);
-  void    		SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
-  Bool_t  		GetTenderSwitch() {return fUseTender;};     
+  Double_t 		GetTrackletsMeanCorrection(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult); /*const*/
+  void    		GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff ); //trk clus matching
+  void   	        GetPi0EtaWeight(THnSparse *SparseWeight);
+  
+//-----------------setters----------------------------------------------------------------  
   void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
   void    		SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
   void    		SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-  void 			SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  
-  Bool_t                GetEMCalTriggerEG1() { return fEMCEG1; };
-  Bool_t                GetEMCalTriggerEG2() { return fEMCEG2; };
   void                  SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
   void                  SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
-  Bool_t                GetEMCalTriggerDG1() { return fDCalDG1; };
-  Bool_t                GetEMCalTriggerDG2() { return fDCalDG2; };
   void                  SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
-  Bool_t  		IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);  
   void    		SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Int_t iMCmom, Int_t MomPDG, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS, Int_t vzeroMultCorr,Int_t correctednAcc);
-  void 			SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
-
+  void 			SetReferenceMultiplicity(Double_t multi){fRefMult=multi;};
   void 			SetMultiProfileLHC16s(TProfile * hprof){
 			 if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
         		fMultEstimatorAvg[0]=new TProfile(*hprof);
-        		
-    			}
+        		}
   void 			SetMultiProfileLHC16r(TProfile * hprof){
         		 if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
         		 fMultEstimatorAvg[1]=new TProfile(*hprof);
     			}
-  
+
+  void 			SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;};
+  void    		SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
+
+  void 			SetNcontVCut(Int_t NcontV){fCutNcontV=NcontV;}
+  void 			SetEtaRange(Double_t Etarange){fCutTrackEta=Etarange;}
+  void 			SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
+  void 			SetNITSCluster(Int_t ITSNclus){fCutITSNCls=ITSNclus;}
+  void 			SetTrackpTMin(Double_t TrackPtMin){fCutpTMin = TrackPtMin;}
+
+  void 			SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){
+			fCutDCAxy=DCAxyCut;
+			fCutDCAz=DCAzCut;
+			}
+
+//------------Setters for PID electron------------------ 
+  void 			SetTPCnsigma(Double_t TPCNSigMin,Double_t TPCNSigMax){
+			fCutNsigmaEMin=TPCNSigMin;
+			fCutNsigmaEMax=TPCNSigMax;
+			}
+
+  void 			SetEopE(Double_t EopEMin,Double_t EopEMax){
+			fCutEopEMin=EopEMin;
+			fCutEopEMax=EopEMax;
+			}
+
+  void 			SetShowerShapeEM20(Double_t M20Min,Double_t M20Max){
+			fCutM20Min=M20Min;
+			fCutM20Max=M20Max;
+			}
+	
+	
+	
+//------------Setters for photonic electron pair------------------
+  void SetInvMassCut(Double_t InvmassCut){fCutInvmass=InvmassCut;}
+  void SetAssoTPCclus(Int_t AssoTPCCluster){fAssoTPCCluster=AssoTPCCluster;}
+  void SetAssoITSclus(Int_t AssoITSCluster){fAssoITSCluster=AssoITSCluster;}
+  void SetAssoITSrefit(Bool_t AssoITSRefit){fAssoITSRefit= AssoITSRefit;}
+  void SetAssopTMin(Double_t AssoEPt){fCutAssoEPt = AssoEPt;}
+  void SetAssoEtarange(Double_t AssoEEtarange){fCutAssoEEta=AssoEEtarange;}
+  void SetAssoTPCnsig(Double_t AssoENsigma){fCutAssoENsigma=AssoENsigma;}
+
+//---------------------------------------------------------------------------------  
 private:
   
+//--------------------Event Cut------------------
+  Int_t 		fCutNcontV;
+//--------------------Track Cut------------------
+  Int_t 		fCutTPCNCls;
+  Int_t 		fCutITSNCls;
+  Double_t 		fCutDCAxy;
+  Double_t 		fCutDCAz;
+  Double_t 		fCutTrackEta;
+  Double_t 		fCutpTMin;//!
+//--------------------PID Cut------------------
+  Double_t 		fCutEopEMin;
+  Double_t 		fCutEopEMax;
+  Double_t 		fCutNsigmaEMin;
+  Double_t 		fCutNsigmaEMax;
+  Double_t 		fCutM20Min;
+  Double_t 		fCutM20Max;
+//--------------------Loose cuts for photonic electron pair------------------
+  Int_t 		fAssoTPCCluster;//!
+  Int_t 		fAssoITSCluster;//!
+  Double_t 		fCutAssoEPt;	
+  Double_t 		fCutAssoEEta;
+  Double_t 		fCutAssoENsigma;
+  Bool_t 		fAssoITSRefit;//!
+//--------------------Mass Cut for photonic electron pair------------------
+  Double_t 		fCutInvmass;
+
+//---------------------------------------------------------------------------------  
   AliAODEvent*          fAOD;//! input event
   AliPIDResponse*       fpidResponse;//!pid response
   
@@ -176,53 +244,63 @@ private:
   TH1F*                	fEtaEmbInvmassULS;//!
   TH1F*                	fEtaEmbWeightInvmassLS;//!
   TH1F*                	fEtaEmbWeightInvmassULS;//!
-  TH2F*                	fRecoLSeTrkPt;//!
-  TH2F*                	fRecoLSeEmbTrkPt;//!
-  TH2F*                	fRecoLSeEmbWeightTrkPt;//!
-  TH2F*                	fRecoPi0LSeEmbWeightTrkPt;//!
-  TH2F*                	fRecoEtaLSeEmbWeightTrkPt;//!
-  TH2F*                	fRecoULSeTrkPt;//!
-  TH2F*                	fRecoULSeEmbTrkPt;//!
-  TH2F*                	fRecoULSeEmbWeightTrkPt;//!
-  TH2F*                	fRecoPi0ULSeEmbWeightTrkPt;//!
-  TH2F*                	fRecoEtaULSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoLSeTrkPt;//!
+  TH1F*                	fRecoLSeEmbTrkPt;//!
+  TH1F*                	fRecoLSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoPi0LSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoEtaLSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoULSeTrkPt;//!
+  TH1F*                	fRecoULSeEmbTrkPt;//!
+  TH1F*                	fRecoULSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoPi0ULSeEmbWeightTrkPt;//!
+  TH1F*                	fRecoEtaULSeEmbWeightTrkPt;//!
 
   Bool_t 		fReadMC;    //flag for access to MC
   Bool_t                fIsFrmEmbPi0;//!
   Bool_t                fIsFrmEmbEta;//!
   Int_t                 ftype;//!
   Double_t              fWeight;//!
-  TH2F*                 fInclsElecPt;//!
+  TH1F*                 fInclsElecPt;//!
   TH1F*                 fInclsElecPtAll;//!
-  TH2F*                 fInclsElecPtReco;//!
-  TH2F*                 fInclseEMCALElecPtReco;//!
-  TH2F*                 fInclseDCALElecPtReco;//!
-  TH2F*			fHFElecPtAll;//!
-  TH2F*			fHFElecPtReco_wTPC;//!
-  TH2F*			fHFElecPtReco_wCalo;//!
-  TH2F*                 fMissingEmbEtaEleTrkPt;//!
+  TH1F*                 fInclsElecPtReco;//!
+  TH1F*                 fInclseEMCALElecPtReco;//!
+  TH1F*                 fInclseDCALElecPtReco;//!
+  TH1F*                 fMissingEmbEtaEleTrkPt;//!
+  TH2F*                 fHFElecPtAll;//!
+  TH2F*                 fHFElecPtReco_wtrkcuts;//!
+  TH2F*                 fHFElecPtReco_wTPCPID;//!
+  TH2F*                 fHFElecPtReco_wtrkCalocuts;//!
+  TH2F*                 fHFElecPtReco_wTPCCaloPID;//!
   TF1*                  fPi0Weight;//!
   TF1*                  fEtaWeight;//!
-  TH2F*                	fNonHFeTrkPt;//!
-  TH2F*              	fNonHFeEmbAllTypeTrkPt;//!
-  TH2F*                	fNonHFeEmbTrkPt;//!
-  TH2F*                	fNonHFeEmbWeightTrkPt;//!
-  TH2F*                	fPi0eEmbWeightTrkPt;//!
-  TH2F*                	fEtaeEmbWeightTrkPt;//!
-  TH2F*                	fRecoNonHFeTrkPt;//!
-  TH2F*                	fRecoNonHFeEmbTrkPt;//!
-  TH2F*                	fRecoNonHFeEmbWeightTrkPt;//!
-  TH2F*                	fRecoPi0eEmbWeightTrkPt;//!
-  TH2F*                	fRecoEtaeEmbWeightTrkPt;//!
+  TH1F*                	fNonHFeTrkPt;//!
+  TH1F*              	fNonHFeEmbAllTypeTrkPt;//!
+  TH1F*                	fNonHFeEmbTrkPt;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt;//!
+  TH1F*                	fPi0eEmbWeightTrkPt;//!
+  TH1F*                	fEtaeEmbWeightTrkPt;//!
+  TH1F*                	fNonHFewPIDTrkPt;//!
+  TH1F*                	fNonHFeEmbwPIDTrkPt;//!
+  TH1F*                	fNonHFeEmbWeightwPIDTrkPt;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt_121_300;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt_95_121;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt_55_95;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt_38_55;//!
+  TH1F*                	fNonHFeEmbWeightTrkPt_0_38;//!
+  TH1F*                	fPi0eEmbWeightwPIDTrkPt;//!
+  TH1F*                	fEtaeEmbWeightwPIDTrkPt;//!
+  TH1F*                	fRecoNonHFeTrkPt;//!
+  TH1F*                	fRecoNonHFeEmbTrkPt;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt_121_300;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt_95_121;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt_55_95;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt_38_55;//!
+  TH1F*                	fRecoNonHFeEmbWeightTrkPt_0_38;//!
+  TH1F*                	fRecoPi0eEmbWeightTrkPt;//!
+  TH1F*                	fRecoEtaeEmbWeightTrkPt;//!
 
-  TH2F*                	fNonHFeEmbMomTrkPt;//!
-  TH2F*                	fNonHFeEmbMomWeightTrkPt;//!
-  TH2F*                	fPi0eEmbMomWeightTrkPt;//!
-  TH2F*                	fEtaeEmbMomWeightTrkPt;//!
-  TH2F*                	fRecoNonHFeMomEmbTrkPt;//!
-  TH2F*                	fRecoNonHFeEmbMomWeightTrkPt;//!
-  TH2F*                	fRecoPi0eEmbMomWeightTrkPt;//!
-  TH2F*                	fRecoEtaeEmbMomWeightTrkPt;//!
+  
   THnSparse*		fSprsPi0EtaWeightCal;//!
 
 //--------------------------------------------------------

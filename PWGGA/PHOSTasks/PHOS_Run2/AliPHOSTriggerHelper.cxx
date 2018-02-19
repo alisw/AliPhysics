@@ -41,7 +41,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kFALSE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
   
@@ -67,7 +69,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
    
@@ -123,7 +127,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0trigger
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
    
@@ -175,12 +181,17 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin)
 {
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
   fAODEvent = dynamic_cast<AliAODEvent*>(event);
   Int_t run = fEvent->GetRunNumber();
+
+  if(fIsMC && fDRN > 0){
+    run = fDRN;
+    AliInfo(Form("A dummy run number is set. run number = %d",run));
+  }
 
   if(run<209122) //Run1
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
@@ -286,7 +297,9 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       if(!cuts->AcceptPhoton(ph)) continue;
-      if(!ph->IsTOFOK()) continue;
+      if(fApplyTOFCut && !ph->IsTOFOK()) continue;
+
+      if(ph->Energy() < Emin) continue;
 
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
       //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
@@ -322,7 +335,7 @@ Bool_t AliPHOSTriggerHelper::IsMatched(Int_t *trgrelid, Int_t *clurelid)
   if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
   if(diffx < fXmin || fXmax < diffx) return kFALSE; // X-distance too large!
   if(diffz < fZmin || fZmax < diffz) return kFALSE; // Z-distance too large!
-  if(fTriggerInputL1 < 0 &&  (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.
+  //if(fTriggerInputL1 < 0 && (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.//not needed because L0 can detect very high energy photon at the border.
 
   if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
 

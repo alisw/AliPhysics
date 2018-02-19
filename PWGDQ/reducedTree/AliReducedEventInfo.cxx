@@ -31,6 +31,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTRDfired(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
@@ -99,12 +100,13 @@ AliReducedEventInfo::AliReducedEventInfo() :
 
 
 //____________________________________________________________________________
-AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=kNoInit*/) :
-  AliReducedBaseEvent(name, trackOption),
+AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=AliReducedBaseEvent::kNoInit*/, Int_t track2Option /*=AliReducedBaseEvent::kNoInit*/) :
+  AliReducedBaseEvent(name, trackOption, track2Option),
   fEventNumberInFile(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTRDfired(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
@@ -195,6 +197,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    fL0TriggerInputs = other->fL0TriggerInputs;
    fL1TriggerInputs = other->fL1TriggerInputs;
    fL2TriggerInputs = other->fL2TriggerInputs;
+   fTRDfired        = other->fTRDfired;
    fBC = other->fBC;
    fTimeStamp = other->fTimeStamp;
    fEventType = other->fEventType;
@@ -254,6 +257,7 @@ void AliReducedEventInfo::ClearEvent() {
   fL0TriggerInputs=0;
   fL1TriggerInputs=0;
   fL2TriggerInputs=0;
+  fTRDfired=0;
   fIRIntClosestIntMap[0] = 0; fIRIntClosestIntMap[1] = 0;
   fBC = 0;
   fTimeStamp = 0;

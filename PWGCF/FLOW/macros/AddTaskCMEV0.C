@@ -2,17 +2,17 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0;
 
-
- //void AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90, TString sAnalysisFile = "AOD", TString sDataSet = "2010", 
- AliAnalysisTaskCMEV0* AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90., Int_t gFilterBit = 768, Int_t gClusterTPC = 70, 
- Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, Double_t dDCAxy = 2.4, Double_t dDCAz  = 3.2,
- TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
- Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, 
- TString sCentEstimator = "V0", Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
+ AliAnalysisTaskCMEV0* AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
+ Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", TString sDataSet = "2015", TString sAnalysisType = "AUTOMATIC", 
+ TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., 
+ Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Float_t fPileUpSlope = 3.43, Float_t fPileUpConst = 43.0, TString sCentEstimator = "V0",
+ Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root",
+ TString sFBEffiDimension = "1D", 
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
- Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE, Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, 
- TString sNUAtype="NewR", const char *suffix = "")
+ Bool_t bV0MgainCorr= kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015_V0GainEq_RbyR_pPb_FAST.root", 
+ Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
+ Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -20,6 +20,13 @@ class AliAnalysisTaskCMEV0;
 
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -g ");
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
+
+  //Fixed Track cuts: only vary for systematic check
+  Double_t dDCAxy = 2.4;
+  Double_t dDCAz  = 3.2;
+  Double_t dcentrMin=0;
+  Double_t dcentrMax=90.;
+
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -37,7 +44,7 @@ class AliAnalysisTaskCMEV0;
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb"){
+  if(sDataSet=="2015"||sDataSet=="2015pPb"||sDataSet=="pPb"){
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else{
@@ -51,7 +58,8 @@ class AliAnalysisTaskCMEV0;
   cutsEvent->SetCheckPileup(kFALSE);
   cutsEvent->SetPrimaryVertexZrange(dVertexLow, dVertexHigh);      // vertex-z cut
   cutsEvent->SetQA(bEventCutsQA);                                  // enable the qa plots
-  if(sDataSet=="2015pPb"){
+
+  if(sDataSet=="2015pPb"||sDataSet=="pPb"){
     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE); 	   // multiplicity outlier cut
   }
   else {
@@ -164,15 +172,18 @@ class AliAnalysisTaskCMEV0;
 
 
 
-  TString taskFEQA = file;      // file is the common outfile filename
-  taskFEQA   += ":QAcharge";
-  //taskFEQA   += suffix;    should I do this or not?
 
-  TString ContainerFEQA;
-  ContainerFEQA.Form("FEContQA_%s", suffix);
+  if(bEventCutsQA || bTrackCutsQA){
+    TString taskFEQA = file;      // file is the common outfile filename
+    taskFEQA   += ":QAcharge";
+    //taskFEQA   += suffix;    
 
-  AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer(ContainerFEQA,TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
-  mgr->ConnectOutput(taskFE, 2, coutputFEQA);          // kOutputContainer: written to the output file
+    TString ContainerFEQA;
+    ContainerFEQA.Form("FEContQA_%s", suffix);
+
+    AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer(ContainerFEQA,TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
+    mgr->ConnectOutput(taskFE, 2, coutputFEQA);          // kOutputContainer: written to the output file
+  }
 
 
   //==========================================================================================
@@ -205,12 +216,18 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetApplyNUAinEP(bUseNUAinEP);
   taskQC_prot->SetSourceFileNUA(sNUAtype);
   //taskQC_prot->SetDebugLevel(0);
+  taskQC_prot->SetFillZDNCalHist(bFillZDCHist);
+  taskQC_prot->SetSkipNestedLoop(bSkipNestedLoop);
+  taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
+  taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
+  taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
+  taskQC_prot->SetPileUpCutParam(fPileUpSlope,fPileUpConst);
 
 
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
     TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
-     
+
     if(FBEffiListUse) {
       //std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
        taskQC_prot->SetFBEfficiencyList(FBEffiListUse);
@@ -218,7 +235,7 @@ class AliAnalysisTaskCMEV0;
     else{
        std::cout<<"\n\n !!!!**** ERROR: FB Efficiency Histograms not found  *****\n\n"<<std::endl;
       //exit(1);
-    }
+    }   
   }
   if(bApplyNUA && sNUAtype!="OldJ") {
     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
@@ -241,7 +258,7 @@ class AliAnalysisTaskCMEV0;
      if(!fZDCGainFile) {
        printf("\n\n *** ERROR: ZDC wgt file not found! **EXIT** \n\n");
        exit(1);
-     } 
+     }
 
      TList* fZDCWgtUse = dynamic_cast<TList*>(fZDCGainFile->FindObjectAny("fZDN_ZDP_Wgts"));
   
@@ -249,10 +266,34 @@ class AliAnalysisTaskCMEV0;
        taskQC_prot->SetGainCorrZDNP(fZDCWgtUse);
      }
      else{
-       printf("\n\n !!!!**** ERROR:ZDC Channel wgt List not found **EXIT**!!!\n\n");
+       printf("\n\n !!!!**** ERROR: ZDC Channel wgt List not found **EXIT**!!!\n\n");
        exit(1);
      }
   }
+
+
+  if(bV0MgainCorr){
+    TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
+     if(!fV0MFile) {
+       printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
+       exit(1);
+     } 
+     else{
+       TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+     }
+
+     if(fListV0MUse) {
+       taskQC_prot->SetInputListforV0M(fListV0MUse);
+     }
+     else{
+       printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
+       taskQC_prot->SetInputListforV0M(NULL);
+       //exit(1);
+     }
+  }
+
+
+ 
 
 
   /*
@@ -321,15 +362,19 @@ class AliAnalysisTaskCMEV0;
 
   TString fZDCCont1;
   fZDCCont1.Form("ResultsZDCCME_%s", suffix);
-
   AliAnalysisDataContainer *coutputSP1 = mgr->CreateContainer(fZDCCont1,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 1, coutputSP1);
 
   TString fZDCCont2;
   fZDCCont2.Form("QAandCalibHist_%s", suffix);
-
   AliAnalysisDataContainer *coutputSP2 = mgr->CreateContainer(fZDCCont2,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 2, coutputSP2);
+
+
+  TString fZDCCont3;
+  fZDCCont3.Form("NUACorrectionHist_%s", suffix);
+  AliAnalysisDataContainer *coutputSP3 = mgr->CreateContainer(fZDCCont3,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
+  mgr->ConnectOutput(taskQC_prot, 3, coutputSP3);
 
   //if(!mgr->InitAnalysis())  // check if we can initialize the manager
   //{

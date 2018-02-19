@@ -12,9 +12,10 @@
 #include <TString.h>
 
 class AliEmcalJet;
-class AliEmcalTrackSelection;
 class AliParticleContainer;
 class THistManager;
+
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -41,7 +42,7 @@ protected:
 
 private:
   THistManager                          *fHistos;                 //!<!
-  AliEmcalTrackSelection                *fTrackSelection;         /// EMCAL track selection
+  AliEmcalTrackSelection    *fTrackSelection;         /// EMCAL track selection
   AliEMCalTriggerBinningComponent       *fBinHandler;             /// Binning handler
 
   TString                               fNameJetContainer;        /// name of the jet container
