@@ -220,7 +220,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
-      fTPCbackgroundTpl[iC] = new TH3F(Form("f%fTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+      fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
 
       fList->Add(fTOFsignal[iC]);
@@ -385,14 +385,18 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
       if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
       fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
-      if (!pid_check || iTof == 0) continue;
-      /// \f$ m = \frac{p}{\beta\gamma} \f$
-      const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
-      fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+
+      if (iTof == 0) continue;
       if (std::abs(tof_n_sigma) < 4.)
         fTPCsignalTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
       else
         fTPCbackgroundTpl[iC]->Fill(centrality, pT, tpc_n_sigma);
+
+      if (!pid_check) continue;
+      /// \f$ m = \frac{p}{\beta\gamma} \f$
+      const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+      fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+
     }
 
   } // End AOD track loop
