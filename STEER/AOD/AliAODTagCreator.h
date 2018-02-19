@@ -65,9 +65,9 @@ class AliAODTagCreator : public AliTagCreator {
   TChain       *fTreeTEsd;  //!<! ESD tag Tree
   AliRunTag    *fRunTagEsd; //!<! ESD run tag
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTagCreator,0)  
-  /// \endcond
+
 };
 
 #endif

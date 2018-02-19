@@ -16,9 +16,9 @@
 #include "AliAODVZERO.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODVZERO)
-/// \endcond
+
 
 //__________________________________________________________________________
 AliAODVZERO::AliAODVZERO()

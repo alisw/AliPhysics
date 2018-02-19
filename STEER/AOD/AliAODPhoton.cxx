@@ -18,9 +18,9 @@
 #include <TLorentzVector.h>
 #include "AliAODPhoton.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODPhoton)
-/// \endcond
+
 
 
 //______________________________________________________________________________

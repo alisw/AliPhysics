@@ -146,9 +146,9 @@ protected:
   Double32_t    fMomBachY;            ///< momemtum of bachelor along Y
   Double32_t    fMomBachZ;            ///< momemtum of bachelor along Z
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODcascade,1)   
-  /// \endcond
+
 };
 
 //-----------------------------------------------------------

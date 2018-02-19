@@ -21,9 +21,9 @@
 
 
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODMCHeader)
-/// \endcond
+
 
 // Without a trailing dot root does not support
 // direct drawing of some variables if the name is not unique on top label

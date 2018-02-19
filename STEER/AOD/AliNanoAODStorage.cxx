@@ -3,9 +3,9 @@
 #include "AliNanoAODTrackMapping.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliNanoAODStorage)
-/// \endcond
+
 
 void AliNanoAODStorage::AllocateInternalStorage(Int_t size) {
   AllocateInternalStorage(size, 0);

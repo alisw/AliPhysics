@@ -2,9 +2,9 @@
 #include "AliNanoAODHeader.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliNanoAODHeader)
-/// \endcond
+
 
 AliNanoAODHeader::AliNanoAODHeader():
   AliVAODHeader(),

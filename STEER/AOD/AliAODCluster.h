@@ -138,9 +138,9 @@ class AliAODCluster : public AliVCluster {
   /// Array with fraction of deposited energy per MC particle contributing to the cluster.
   UShort_t     *fClusterMCEdepFraction;//[fNLabel]
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODCluster,7) ;
-  /// \endcond
+
 
 };
 

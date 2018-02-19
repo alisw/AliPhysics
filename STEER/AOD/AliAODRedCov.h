@@ -47,9 +47,9 @@ template <Int_t N> class AliAODRedCov {
   Double32_t   fDiag[N];         ///< Diagonal elements
   Double32_t   fODia[N*(N-1)/2]; ///< [-1, 1,8] 8 bit precision for off diagonal elements
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODRedCov,1)
-  /// \endcond
+
 
  };
 

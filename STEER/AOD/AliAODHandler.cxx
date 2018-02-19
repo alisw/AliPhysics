@@ -43,9 +43,9 @@
 
 using std::endl;
 using std::cout;
-/// \cond CLASSIMP
+
 ClassImp(AliAODHandler)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODHandler::AliAODHandler() :

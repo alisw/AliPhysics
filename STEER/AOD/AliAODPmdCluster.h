@@ -49,9 +49,9 @@ class AliAODPmdCluster : public AliAODCluster {
 
   TRef fAssocCluster;   ///< cluster of other layer associated with this cluster
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODPmdCluster,1);
-  /// \endcond
+
 };
 
 #endif

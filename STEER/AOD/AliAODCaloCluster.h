@@ -175,9 +175,9 @@ class AliAODCaloCluster : public AliAODCluster {
   ///
   UInt_t     * fCellsMCEdepFractionMap; //[fNCells]
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODCaloCluster,9) ;
-  /// \endcond
+
 
 };
 

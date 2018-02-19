@@ -372,9 +372,9 @@ class AliAODEvent : public AliVEvent {
   
   static const char* fAODListName[kAODListN]; //!<! 
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODEvent,94);
-  /// \endcond
+
 };
 
 #endif

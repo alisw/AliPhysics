@@ -95,9 +95,9 @@ class AliAODCaloCells : public AliVCaloCells
   
   Char_t      fType;         ///< Cell type
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODCaloCells, 5) ;
-  /// \endcond
+
 
 };
 

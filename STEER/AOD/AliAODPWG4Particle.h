@@ -205,9 +205,9 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fInputFileIndex;   ///< 0, standard input, 1 first input added. Only possible one for now, not really used.
   Int_t      fBtag;             ///< tag particle from B.
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODPWG4Particle, 9);
-  /// \endcond
+
 
 };
 

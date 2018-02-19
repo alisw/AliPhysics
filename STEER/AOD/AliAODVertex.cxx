@@ -18,9 +18,9 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODVertex)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex() : 

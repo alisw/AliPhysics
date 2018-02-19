@@ -23,9 +23,9 @@
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODRecoDecay)
-/// \endcond
+
 
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay() :

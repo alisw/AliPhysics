@@ -15,9 +15,9 @@
 
 #include "AliAODCaloCells.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODCaloCells) ;
-/// \endcond
+
 
 ///
 /// Default constructor.

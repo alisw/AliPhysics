@@ -184,9 +184,9 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODMCParticle,9)  // AliVParticle realisation for AODMCParticles
-  /// \endcond
+
 
 };
 

@@ -107,9 +107,9 @@ private:
   // Useful constants
   Double_t fMProton; //!<! Proton mass (not stored into file)
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODDimuon,2)  // AliAODDimuon track
-  /// \endcond
+
 };
 
 #endif

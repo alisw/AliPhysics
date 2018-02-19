@@ -61,9 +61,9 @@ class AliAODJetEventBackground : public TNamed {
 
     Double32_t      fSigma[kMaxBackground];             ///< Sigma
     Double32_t      fMeanArea[kMaxBackground];          ///< Mean area
-    /// \cond CLASSIMP
+
     ClassDef(AliAODJetEventBackground,3);
-    /// \endcond
+
 
 };
 

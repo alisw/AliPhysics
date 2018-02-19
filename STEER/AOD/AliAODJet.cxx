@@ -18,9 +18,9 @@
 #include <TLorentzVector.h>
 #include "AliAODJet.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODJet)
-/// \endcond
+
 
 
 //______________________________________________________________________________

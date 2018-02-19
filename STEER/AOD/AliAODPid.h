@@ -103,9 +103,9 @@ class AliAODPid : public TObject {
  
   AliTPCdEdxInfo * fTPCdEdxInfo; ///< object containing dE/dx information for different pad regions
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODPid, 15);
-  /// \endcond
+
 };
 
 //_____________________________________________________________

@@ -43,9 +43,9 @@
 
 #include "AliAODBranchReplicator.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODBranchReplicator)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODBranchReplicator::AliAODBranchReplicator(const char* name, const char* title)

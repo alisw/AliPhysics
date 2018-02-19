@@ -20,9 +20,9 @@
 #include "AliAODcascade.h"
 #include "AliAODTrack.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODcascade)
-/// \endcond
+
 
 
 AliAODcascade::AliAODcascade() : 

@@ -80,9 +80,9 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
   /// Assignment operator not implemented.
   AliAODPWG4ParticleCorrelation& operator=(const AliAODPWG4ParticleCorrelation& p);
     
-  /// \cond CLASSIMP
+
   ClassDef(AliAODPWG4ParticleCorrelation, 6);
-  /// \endcond
+
 
 };
 

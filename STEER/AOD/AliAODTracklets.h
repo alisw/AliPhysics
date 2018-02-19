@@ -83,9 +83,9 @@ class AliAODTracklets : public AliVMultiplicity
   TBits fFastOrFiredChips;   ///< Map of FastOr fired chips
   TBits fClusterFiredChips;  ///< Map of fired chips (= at least one cluster)
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTracklets, 5);
-  /// \endcond
+
 };
 
 

@@ -16,9 +16,9 @@
 #include "AliAODv0.h"
 #include "AliAODTrack.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODv0)
-/// \endcond
+
 
   AliAODv0::AliAODv0() : 
     AliAODRecoDecay(),

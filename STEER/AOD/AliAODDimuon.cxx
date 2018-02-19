@@ -2,9 +2,9 @@
 #include "TLorentzVector.h"
 #define AliAODDimuon_CXX
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODDimuon)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODDimuon::AliAODDimuon():AliVParticle(),fP(0),fMProton(0.93827231)

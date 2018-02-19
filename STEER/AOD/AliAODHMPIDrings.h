@@ -118,9 +118,9 @@ class AliAODHMPIDrings : public TObject {
   Double32_t  fHmpidAODpid[AliPID::kSPECIES];      ///< [0.,0.,8] "detector response probabilities" (for the PID)
   Double32_t  fHMPIDmom[3];                        ///< track momentum at the HMPID ring reconstruction
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODHMPIDrings,2)  
-  /// \endcond
+
         
 };
 #endif

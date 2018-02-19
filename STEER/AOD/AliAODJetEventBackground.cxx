@@ -16,9 +16,9 @@
 
 #include "AliAODJetEventBackground.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODJetEventBackground)
-/// \endcond
+
 
 TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 

@@ -160,9 +160,9 @@ private:
   /// alternative daughters for n-prong vertex
   TRef            *fProngs;       //[fNprong]
   
-  /// \cond CLASSIMP
+
   ClassDef(AliAODVertex, 8);
-  /// \endcond
+
 };
 
 inline  Int_t AliAODVertex::GetNDaughters() const

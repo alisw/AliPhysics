@@ -93,9 +93,9 @@ protected:
   Double32_t fDcaV0ToPrimVertex;    ///< dca of V0 to primary vertex
   Bool_t     fOnFlyStatus;          ///< if kTRUE, then this V0 is recontructed
                                     // "on fly" during the tracking
-  /// \cond CLASSIMP
+
   ClassDef(AliAODv0,2)
-  /// \endcond
+
 };
 
 inline Double_t AliAODv0::DecayVertexV0X() const {return this->GetSecVtxX();}

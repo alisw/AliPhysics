@@ -23,9 +23,9 @@
 #include <TGeoMatrix.h>
 #include <TObjString.h>
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODHeader)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader() : 

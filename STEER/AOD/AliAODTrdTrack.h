@@ -75,9 +75,9 @@ class AliAODTrdTrack : public AliVTrdTrack {
 
   Int_t fLabel;				  ///< Track label
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTrdTrack,1)
-  /// \endcond
+
 };
 
 #endif

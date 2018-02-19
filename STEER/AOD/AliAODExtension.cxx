@@ -16,9 +16,9 @@
 
 using std::endl;
 using std::cout;
-/// \cond CLASSIMP
+
 ClassImp(AliAODExtension)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODExtension::AliAODExtension() : TNamed(), 

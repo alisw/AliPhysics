@@ -18,9 +18,9 @@
 #include <TString.h>
 #include "AliAODTracklets.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODTracklets)
-/// \endcond
+
 
 AliAODTracklets::AliAODTracklets() 
 : AliVMultiplicity(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)

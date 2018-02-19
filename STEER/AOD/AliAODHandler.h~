@@ -22,7 +22,6 @@ class AliAODMCHeader;
 class AliGenEventHeader;
 class TMap;
 class AliAnalysisFilter;
-class AliVCuts;
 
 class AliAODHandler : public AliVEventHandler {
     
@@ -151,9 +150,9 @@ class AliAODHandler : public AliVEventHandler {
     TObjArray               *fExtensions;             ///< List of extensions
     TObjArray               *fFilters;                ///< List of filtered AOD's
 
-
+  /// \cond CLASSIMP
   ClassDef(AliAODHandler, 8)
-
+  /// \endcond
 };
 
 #endif

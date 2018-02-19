@@ -33,9 +33,9 @@ protected:
 
 private:
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODpidUtil,3)  // PID calculation class
-  /// \endcond
+
 };
 
 

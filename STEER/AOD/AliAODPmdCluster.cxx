@@ -17,9 +17,9 @@
 
 #include "AliAODPmdCluster.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODPmdCluster)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODPmdCluster::AliAODPmdCluster() : 

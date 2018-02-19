@@ -29,9 +29,9 @@
 #include "AliAODTrdTrack.h"
 #include "event.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODEvent)
-/// \endcond
+
 
 // definition of std AOD member names
   const char* AliAODEvent::fAODListName[kAODListN] = {"header",

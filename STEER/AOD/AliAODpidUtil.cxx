@@ -21,9 +21,9 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODpidUtil)
-/// \endcond
+
 
 
 //_________________________________________________________________________

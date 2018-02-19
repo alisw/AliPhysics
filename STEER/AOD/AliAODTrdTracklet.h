@@ -37,9 +37,9 @@ class AliAODTrdTracklet : public AliVTrdTracklet {
 				// pppp : pppp : zzzz : dddd : dddy : yyyy : yyyy : yyyy
   Int_t  fLabel;		///< MC label
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTrdTracklet,1)
-  /// \endcond
+
 };
 
 #endif

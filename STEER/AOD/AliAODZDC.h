@@ -153,9 +153,9 @@ protected:
   Bool_t    fIsZPCfired;	///< if true ZPC is fired in the event
 
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODZDC,4)
-  /// \endcond
+
 };
 
 #endif

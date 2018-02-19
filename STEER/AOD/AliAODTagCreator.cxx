@@ -39,9 +39,9 @@
 #include "AliAODTagCreator.h"
 
 using std::ifstream;
-/// \cond CLASSIMP
+
 ClassImp(AliAODTagCreator)
-/// \endcond
+
 
 
 //______________________________________________________________________________

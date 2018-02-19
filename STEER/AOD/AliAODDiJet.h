@@ -39,8 +39,8 @@ class AliAODDiJet : public AliAODJet {
     TRefArray*  fJetR;  ///< References to jets
     TRef        fJet1;  ///< Reference to Jet 1
     TRef        fJet2;  ///< Reference to Jet 2
-    /// \cond CLASSIMP
+
     ClassDef(AliAODDiJet, 1);
-    /// \endcond
+
 };
 #endif

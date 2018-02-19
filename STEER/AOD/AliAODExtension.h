@@ -97,9 +97,9 @@ private:
   Bool_t                   fEnableReferences; ///< whether or not to enable the TRefTable branch
   TList*                   fObjectList; //!<! internal list of which objects to keep
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODExtension, 3) // Support for extra AOD branches in a separate AOD file
-  /// \endcond
+
 };
 
 #endif

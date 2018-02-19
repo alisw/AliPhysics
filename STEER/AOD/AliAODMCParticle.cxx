@@ -21,9 +21,9 @@
 #include "TClonesArray.h"
 
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODMCParticle)
-/// \endcond
+
 
 TString AliAODMCParticle::fgkStdBranchName("mcparticles");
 

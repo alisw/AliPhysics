@@ -16,9 +16,9 @@
 #include <TMath.h>
 #include "AliAODZDC.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODZDC)
-/// \endcond
+
 
 AliAODZDC::AliAODZDC() :
   AliVZDC(),

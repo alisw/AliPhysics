@@ -20,9 +20,9 @@
 #include "AliAODDiJet.h"
 #include "AliAODJet.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODDiJet)
-/// \endcond
+
 
 
 //______________________________________________________________________________

@@ -7,9 +7,9 @@
 #include <iostream>
 
 
-/// \cond CLASSIMP
+
 ClassImp(AliNanoAODTrackMapping)
-/// \endcond
+
 
 AliNanoAODTrackMapping * AliNanoAODTrackMapping::fInstance = 0;
 TString  AliNanoAODTrackMapping::fMappingString = "";

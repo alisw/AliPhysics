@@ -20,9 +20,9 @@
 #include "AliLog.h"
 #include "AliTPCdEdxInfo.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODPid)
-/// \endcond
+
 
 
 //______________________________________________________________________________

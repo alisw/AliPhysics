@@ -51,9 +51,9 @@ protected:
   std::vector<Double32_t> fVars; // Array of kinematic vars. Here we use an STL vector because it produces ~5% smaller files. It may be aslo splittable
   std::vector<Int_t> fVarsInt; // Array of int vars. Use same structure as for fVars, int has to be used for a bitwise variable describing the fired trigger particles, because this is bitwise coded
 
-  /// \cond CLASSIMP
+
   ClassDef(AliNanoAODStorage, 3)
-  /// \endcond
+
 private:
   void Complain(Int_t index) const;
 };

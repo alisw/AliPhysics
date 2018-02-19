@@ -106,9 +106,9 @@ private:
   // more details in the headers
   TList  *fHeaders;                ///< List of all MC Headers
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODMCHeader,6)
-  /// \endcond
+
 
 };
 

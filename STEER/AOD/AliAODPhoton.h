@@ -58,9 +58,9 @@ class AliAODPhoton : public AliVParticle {
     
  private:
     TLorentzVector* fMomentum;           ///< Photon 4-momentum vector
-    /// \cond CLASSIMP
+
     ClassDef(AliAODPhoton,1);
-    /// \endcond
+
 };
 
 inline Double_t AliAODPhoton::Phi() const

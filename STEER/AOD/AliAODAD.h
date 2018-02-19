@@ -76,9 +76,9 @@ protected:
   Bool_t   fIsBB[16][21];  ///< BB flag for all channels and 21 clocks
   Bool_t   fIsBG[16][21];  ///< BG flag for all channels and 21 clocks
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODAD,2)
-  /// \endcond
+
 };
 
 #endif

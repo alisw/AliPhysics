@@ -181,9 +181,9 @@ private:
         Int_t    fTriggerBitWord;     ///< Trigger bit word
         Int_t    fL1DCALV0[2];        ///< L1 threshold components
 
- /// \cond CLASSIMP
+
 	ClassDef(AliAODCaloTrigger, 5)
- /// \endcond
+
 };
 #endif
 

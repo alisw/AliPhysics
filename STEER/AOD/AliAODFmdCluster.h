@@ -56,9 +56,9 @@ class AliAODFmdCluster : public AliAODCluster {
   TRef fProdVertex;     ///< vertex of origin
   TRef fPrimTrack;      ///< primary track associated with this cluster
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODFmdCluster,1);
-  /// \endcond
+
 };
 
 #endif

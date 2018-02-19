@@ -80,9 +80,9 @@ protected:
   Bool_t   fIsBB[64][21];  ///< 'Beam-Beam' flag for all channels and 21 clocks
   Bool_t   fIsBG[64][21];  ///< 'Beam-Gas' flag for all channels and 21 clocks
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODVZERO,3)
-  /// \endcond
+
 };
 
 #endif

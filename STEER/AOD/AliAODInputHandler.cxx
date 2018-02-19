@@ -29,9 +29,9 @@
 #include "AliAODpidUtil.h"
 #include "AliAODMCHeader.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODInputHandler)
-/// \endcond
+
 
 static Option_t *gAODDataType = "AOD";
 

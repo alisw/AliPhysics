@@ -63,9 +63,9 @@ protected:
   Float_t fT0Amp[26];          ///< amplitude on PMTs and MPD
   TBits fPileupBits;     ///< BC number
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTZERO,5)
-  /// \endcond
+
 };
 
 #endif

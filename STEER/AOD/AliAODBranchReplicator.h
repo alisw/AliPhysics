@@ -27,9 +27,9 @@ public:
   /// Replicate (and optionally filter) the given aod event
   virtual void ReplicateAndFilter(const AliAODEvent& source) = 0;
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODBranchReplicator,1) // AOD branch replicator base class
-  /// \endcond
+
 };
 
 #endif
@@ -66,9 +66,9 @@ public:
   /// Replicate (and optionally filter) the given aod event
   virtual void ReplicateAndFilter(const AliAODEvent& source) = 0;
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODBranchReplicator,1) // AOD branch replicator base class
-  /// \endcond
+
 };
 
 #endif
@@ -105,9 +105,9 @@ public:
   /// Replicate (and optionally filter) the given aod event
   virtual void ReplicateAndFilter(const AliAODEvent& source) = 0;
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODBranchReplicator,1) // AOD branch replicator base class
-  /// \endcond
+
 };
 
 #endif

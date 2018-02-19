@@ -16,9 +16,9 @@
 #include "AliAODAD.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODAD)
-/// \endcond
+
 
 //__________________________________________________________________________
 AliAODAD::AliAODAD()

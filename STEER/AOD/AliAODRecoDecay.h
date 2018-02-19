@@ -224,9 +224,9 @@ class AliAODRecoDecay : public AliVTrack {
   Double32_t *fPID;  //[fNPID]
                      //  (combined detector response probabilities)
                             
-  /// \cond CLASSIMP
+
   ClassDef(AliAODRecoDecay,5)  // base class for AOD reconstructed decays
-  /// \endcond
+
 };
 
 

@@ -133,9 +133,9 @@ class AliAODJet : public AliVParticle {
     TRefArray*      fRefTracks;              ///< array of references to the tracks belonging to the jet
 
 
-    /// \cond CLASSIMP
+
     ClassDef(AliAODJet,14);
-    /// \endcond
+
 
 };
 

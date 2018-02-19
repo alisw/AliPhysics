@@ -26,9 +26,9 @@
 
 #include "AliAODTrack.h"
 
-/// \cond CLASSIMP
+
 ClassImp(AliAODTrack)
-/// \endcond
+
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack() : 

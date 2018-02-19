@@ -525,9 +525,9 @@ class AliAODTrack : public AliVTrack {
   Int_t GetNumberOfTPCClusters() const { return GetTPCncls();}  
   Int_t GetNumberOfTRDClusters() const { return GetTRDncls();}  
 
-  /// \cond CLASSIMP
+
   ClassDef(AliAODTrack, 26);
-  /// \endcond
+
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
