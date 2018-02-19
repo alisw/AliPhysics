@@ -43,6 +43,7 @@ AliFemtoBaryoniaAnalysis* GetAnalysis(bool doEventMixing);
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoESDTrackCut* GetTrackCut(AliFemtoTrio::EPart particle);
 AliFemtoTrioCut* GetTrioCutAllDecays(ESys system);
+AliFemtoTrioCut* GetTrioCutDalitz(ESys system);
 AliFemtoTrioCut* GetTrioCutPionPionDecay(ESys system, EDecaysPionPion decay);
 AliFemtoTrioCut* GetTrioCutPionKaonDecay(ESys system, EDecaysPionKaon decay);
 void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
@@ -76,7 +77,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
   AliFemtoBaryoniaAnalysis  *baryoniaAnalysis[nSys*(nDecaysPionPion+nDecaysPionKaon+1)];
   AliFemtoBasicEventCut     *eventCut[nSys*(nDecaysPionPion+nDecaysPionKaon+1)];
   
-  AliFemtoTrioMinvFctn *distribution[nSys*(nDecaysPionPion+nDecaysPionKaon+1)];
+  AliFemtoTrioMinvFctn    *distribution[nSys*(nDecaysPionPion+nDecaysPionKaon+1)];
+  AliFemtoTrioMinvFctn    *dalitz[nSys];
   
   // setup analysis
   int anIter = 0;
@@ -117,11 +119,22 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
     baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
     
+    bool doMinv = true;
+    bool doDalitz = false;
+    
     // create m_inv distribution and add to the analysis
-    distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutWidth_%.2f",sysNames[iSys],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
+    distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutWidth_%.2f",sysNames[iSys],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys],doMinv,doDalitz);
     distribution[anIter]->SetTrioCut(trioCut);
     
+    doMinv = false;
+    doDalitz = true;
+    
+    AliFemtoTrioCut *dalitzTrioCut = GetTrioCutDalitz((ESys)iSys);
+    dalitz[iSys] = new AliFemtoTrioMinvFctn(Form("%s",sysNames[iSys]),300,0.0,3.0,doMinv,doDalitz);
+    dalitz[iSys]->SetTrioCut(dalitzTrioCut);
+    
     baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
+    baryoniaAnalysis[anIter]->AddDistribution(dalitz[iSys]);
     
     // add analysis to the manager
     Manager->AddAnalysis(baryoniaAnalysis[anIter]);
@@ -130,6 +143,10 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     //-----------------------------------------------------------------------------------
     // distributions with only selected pion-pion cuts applied
     //-----------------------------------------------------------------------------------
+    
+    doMinv = true;
+    doDalitz = false;
+    
     if(pionPionDecays){
       for(int iDec=0;iDec<nDecaysPionPion;iDec++){
         baryoniaAnalysis[anIter] = GetAnalysis(eventMixing);
@@ -143,7 +160,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
         baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
         baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
-        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionPionName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
+        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionPionName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys],doMinv,doDalitz);
         distribution[anIter]->SetTrioCut(trioCut);
         baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
         Manager->AddAnalysis(baryoniaAnalysis[anIter]);
@@ -167,7 +184,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         baryoniaAnalysis[anIter]->SetCollection1type(firstParticle);
         baryoniaAnalysis[anIter]->SetCollection2type(secondParticle);
         baryoniaAnalysis[anIter]->SetCollection3type(thirdParticle);
-        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionKaonName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys]);
+        distribution[anIter] = new AliFemtoTrioMinvFctn(Form("%s_cutOn_%s_cutWidth_%.2f",sysNames[iSys],decayPionKaonName[iDec],decayCutWidth),(distMax[iSys]-distMin[iSys])/distBinWidth[iSys],distMin[iSys],distMax[iSys],doMinv,doDalitz);
         distribution[anIter]->SetTrioCut(trioCut);
         baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
         Manager->AddAnalysis(baryoniaAnalysis[anIter]);
@@ -302,6 +319,14 @@ AliFemtoTrioCut* GetTrioCutAllDecays(ESys system)
   
   return trioCut;
 }
+
+AliFemtoTrioCut* GetTrioCutDalitz(ESys system)
+{
+  AliFemtoTrioCut *trioCut = new AliFemtoTrioCut();
+  trioCut->SetIncludeTrioOnly(2.130,0.125);
+  return trioCut;
+}
+
 
 AliFemtoTrioCut* GetTrioCutPionPionDecay(ESys system, EDecaysPionPion decay)
 {

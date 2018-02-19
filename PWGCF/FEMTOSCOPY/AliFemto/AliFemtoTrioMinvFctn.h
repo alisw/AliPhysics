@@ -11,6 +11,7 @@
 #include "AliFemtoTrioCut.h"
 
 #include <TH1D.h>
+#include <TH2D.h>
 
 /// \class AliFemtoTrioMinvFctn
 /// \brief 3-body M_inv distribution
@@ -22,7 +23,7 @@
 class AliFemtoTrioMinvFctn
 {
 public:
-  AliFemtoTrioMinvFctn(const char* name="", int nBins=1000, double min=0.0, double max=10.0);
+  AliFemtoTrioMinvFctn(const char* name="", int nBins=1000, double min=0.0, double max=10.0,bool doMinv=true, bool doDalitz=false);
   ~AliFemtoTrioMinvFctn();
   
   void AddRealTrio(AliFemtoTrio* trio);   // add real trio (same event)
@@ -41,6 +42,10 @@ private:
   
   TH1D *fRealDistribution;  // real distribution of invariant mass
   TH1D *fMixedDistribution; // mixed distribution of invariant mass
+  TH2D *fDalitzPlot;        // Dalitz plot for the trio
+  
+  bool fDoMinv;
+  bool fDoDalitz;
   
 #ifdef __ROOT__
   /// \cond CLASSIMP
