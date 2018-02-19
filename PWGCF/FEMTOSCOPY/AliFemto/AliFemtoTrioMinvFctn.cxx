@@ -4,19 +4,27 @@
 
 #include "AliFemtoTrioMinvFctn.h"
 
-AliFemtoTrioMinvFctn::AliFemtoTrioMinvFctn(const char* name, int nBins, double min, double max)
+AliFemtoTrioMinvFctn::AliFemtoTrioMinvFctn(const char* name, int nBins, double min, double max,bool doMinv, bool doDalitz) :
+fDoMinv(doMinv),
+fDoDalitz(doDalitz)
 {
-  fRealDistribution = new TH1D(Form("real_m_inv_%s",name),Form("real_m_inv_%s",name),nBins,min,max);
-  fMixedDistribution = new TH1D(Form("mixed_m_inv_%s",name),Form("mixed_m_inv_%s",name),nBins,min,max);
+  if(fDoMinv){
+    fRealDistribution = new TH1D(Form("real_m_inv_%s",name),Form("real_m_inv_%s",name),nBins,min,max);
+    fMixedDistribution = new TH1D(Form("mixed_m_inv_%s",name),Form("mixed_m_inv_%s",name),nBins,min,max);
+    fRealDistribution->Sumw2();
+    fMixedDistribution->Sumw2();
+  }
+  if(fDoDalitz){
+    fDalitzPlot = new TH2D(Form("dalitz_%s",name),Form("dalitz_%s",name),300,0.0,3.0,300,0.0,3.0);
+  }
   
-  fRealDistribution->Sumw2();
-  fMixedDistribution->Sumw2();
 }
 
 AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
 {
-  delete fRealDistribution;
-  delete fMixedDistribution;
+  if(fRealDistribution) delete fRealDistribution;
+  if(fMixedDistribution) delete fMixedDistribution;
+  if(fDalitzPlot) delete fDalitzPlot;
 }
 
 void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
@@ -25,7 +33,8 @@ void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
   if (fTrioCut && !fTrioCut->Pass(trio)){
     return;
   }
-  fRealDistribution->Fill(trio->MInv());
+  if(fDoMinv)   fRealDistribution->Fill(trio->MInv());
+  if(fDoDalitz) fDalitzPlot->Fill(trio->MInv12(),trio->MInv23());
 }
 void AliFemtoTrioMinvFctn::AddMixedTrio(AliFemtoTrio *trio)
 {
@@ -33,24 +42,32 @@ void AliFemtoTrioMinvFctn::AddMixedTrio(AliFemtoTrio *trio)
   if (fTrioCut && !fTrioCut->Pass(trio)){
     return;
   }
-  fMixedDistribution->Fill(trio->MInv());
+  if(fDoMinv) fMixedDistribution->Fill(trio->MInv());
 }
 
 void AliFemtoTrioMinvFctn::Write()
 {
   // Write out neccessary objects
-  fRealDistribution->Write();
-  fMixedDistribution->Write();
+  if(fDoMinv){
+    fRealDistribution->Write();
+    fMixedDistribution->Write();
+  }
+  if(fDoDalitz){
+    fDalitzPlot->Write();
+  }
 }
 
 TList* AliFemtoTrioMinvFctn::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   TList *outputList = new TList();
-  
-  outputList->Add(fRealDistribution);
-  outputList->Add(fMixedDistribution);
-  
+  if(fDoMinv){
+    outputList->Add(fRealDistribution);
+    outputList->Add(fMixedDistribution);
+  }
+  if(fDoDalitz){
+    outputList->Add(fDalitzPlot);
+  }
   return outputList;
 }
 

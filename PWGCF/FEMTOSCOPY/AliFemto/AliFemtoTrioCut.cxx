@@ -13,7 +13,9 @@ ClassImp(AliFemtoTrioCut)
 
 AliFemtoTrioCut::AliFemtoTrioCut():
   fNfailed(0),
-  fNpassed(0)
+  fNpassed(0),
+  fIncludeTrioMass(-1.0),
+  fIncludeTrioDelta(9999)
 {
 
 }
@@ -25,6 +27,14 @@ AliFemtoTrioCut::~AliFemtoTrioCut()
 
 bool AliFemtoTrioCut::Pass(AliFemtoTrio *trio)
 {
+  if(fIncludeTrioMass > 0){
+    if(trio->MInv() < (fIncludeTrioMass-fIncludeTrioDelta) ||
+       trio->MInv() > (fIncludeTrioMass+fIncludeTrioDelta)
+       ){
+      fNfailed++;
+      return false;
+    }
+  }
   AliFemtoTrio::EPart trioType[3];
   
   trioType[0] = trio->GetTrack1type();
@@ -83,6 +93,12 @@ void AliFemtoTrioCut::SetExcludePair(double mass, double delta,
   fExcludedPairsDeltas.push_back(delta);
   fExcludedPairsType1.push_back(type1);
   fExcludedPairsType2.push_back(type2);
+}
+
+void AliFemtoTrioCut::SetIncludeTrioOnly(double mass, double delta)
+{
+  fIncludeTrioMass = mass;
+  fIncludeTrioDelta = delta;
 }
 
 double AliFemtoTrioCut::GetPairMInv(AliFemtoParticle *track1,AliFemtoParticle *track2)

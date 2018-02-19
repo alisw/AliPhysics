@@ -25,6 +25,8 @@ public:
   
   void SetExcludePair(double mass, double delta, AliFemtoTrio::EPart type1, AliFemtoTrio::EPart type2);
   
+  void SetIncludeTrioOnly(double mass, double delta);
+  
   AliFemtoString Report(){return "";}
 private:
   int fNfailed;
@@ -34,6 +36,9 @@ private:
   std::vector<double> fExcludedPairsDeltas; // delta for pair masses to exclude
   std::vector<AliFemtoTrio::EPart> fExcludedPairsType1; // first paticle from pair to exclude
   std::vector<AliFemtoTrio::EPart> fExcludedPairsType2; // second particle from pair to exlude
+  
+  double fIncludeTrioMass;
+  double fIncludeTrioDelta;
   
   double GetPairMInv(AliFemtoParticle *track1,AliFemtoParticle *track2);
 #ifdef __ROOT__

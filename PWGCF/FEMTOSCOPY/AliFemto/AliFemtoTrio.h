@@ -30,6 +30,9 @@ public:
   inline void SetTrack3(AliFemtoParticle *track, EPart type){fTrack3 = track;fTrack3type=type;}
 
   double MInv(); // returns invariant mass of the trio
+  double MInv12(); // returns invariant mass of particles 1 and 2 from the trio
+  double MInv23(); // returns invariant mass of particles 2 and 3 from the trio
+  double MInv31(); // returns invariant mass of particles 3 and 1 from the trio
   
 private:
   AliFemtoParticle* fTrack1;  // first particle in the trio
