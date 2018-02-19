@@ -147,13 +147,15 @@ void AliMESpidTask::UserExec(Option_t *opt)
     vec_hNoEvts[6] = MC_directivity;
   }
 
-/*
+
  // !!!!!!!!!!
  // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
  // !!!!!!!!!!
 
-  if( !fEvInfo->HasTriggerMB() ) return;
+ if( !fEvInfo->HasTriggerMB() ) return;
+ // if( !fEvInfo->HasTriggerHM() ) return;
 
+/*
   if( !fEvInfo->HasVertex() ) return;
   vec_hNoEvts[0] = 0.;
   hNoEvts->Fill(vec_hNoEvts);
