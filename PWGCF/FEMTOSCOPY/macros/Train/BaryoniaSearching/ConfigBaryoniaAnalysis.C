@@ -131,11 +131,11 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     doDalitz = true;
     
     AliFemtoTrioCut *dalitzTrioCut = GetTrioCutDalitz((ESys)iSys);
-    dalitz[iSys] = new AliFemtoTrioMinvFctn(Form("%s",sysNames[iSys]),400,0.5,2.5,doMinv,doDalitz);
+    dalitz[iSys] = new AliFemtoTrioMinvFctn(Form("%s",sysNames[iSys]),500,0.0,3.0,doMinv,doDalitz);
     dalitz[iSys]->SetTrioCut(dalitzTrioCut);
     
     AliFemtoTrioCut *dalitzTrioCutTwoBody = GetTrioCutDalitz((ESys)iSys,true);
-    dalitzTwoBody[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutWidth_%.2f",sysNames[iSys],decayCutWidth),400,0.5,2.5,doMinv,doDalitz);
+    dalitzTwoBody[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutWidth_%.2f",sysNames[iSys],decayCutWidth),500,0.0,3.0,doMinv,doDalitz);
     dalitzTwoBody[iSys]->SetTrioCut(dalitzTrioCutTwoBody);
     
     baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
@@ -329,7 +329,7 @@ AliFemtoTrioCut* GetTrioCutAllDecays(ESys system)
 AliFemtoTrioCut* GetTrioCutDalitz(ESys system, bool twoBody)
 {
   AliFemtoTrioCut *trioCut = new AliFemtoTrioCut();
-  trioCut->SetIncludeTrioOnly(2.130,0.125);
+    trioCut->SetIncludeTrioOnly(2.130,0.125);
   
   if(twoBody){
     // ππ cuts
