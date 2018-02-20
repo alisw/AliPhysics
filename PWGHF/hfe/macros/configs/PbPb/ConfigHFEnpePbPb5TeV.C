@@ -428,7 +428,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
 
-  backe->SetMaxDCA(maxDCA);         // DCA max between inclusive and associated tracks (mfaggin, 20-Feb-2018)
+  //backe->SetMaxDCA(maxDCA);         // DCA max between inclusive and associated tracks (mfaggin, 20-Feb-2018)
 
   // Selection of associated tracks for the pool
   if(useCat1Tracks) backe->SelectCategory1Tracks(kTRUE);
