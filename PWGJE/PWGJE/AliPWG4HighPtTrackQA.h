@@ -1,24 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-//-----------------------------------------------------------------------
-// This class stores QA variables as function of pT for different type
-// of tracks and track selection criteria
-// Author : Marta Verweij - UU
-//-----------------------------------------------------------------------
-
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIPWG4HIGHPTTRACKQA_H
 #define ALIPWG4HIGHPTTRACKQA_H
 
@@ -44,6 +49,15 @@ class AliGenPythiaEventHeader;
 class AliMCEvent;
 //class AliAnalysisHelperJetTasks;
 
+/**
+ * @class AliPWG4HighPtTrackQAs
+ * @brief Track-based QA for the jet working group
+ * @author Marta Verweij - UU
+ * 
+ * This class stores QA variables as function of pT for different type
+ * of tracks and track selection criteria
+ * Output: Histograms for different set of cuts
+ */
 class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
  public:
@@ -102,30 +116,63 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
  protected:
 
  private:
+  /**
+   * @enum Variable_t  
+   * @brief Index of observables in the array
+   */
+  enum Variable_t {
+    kVarPT = 0,                   ///< pt
+    kVarPhi = 1,                  ///< phi
+    kVarEta = 2,                  ///< eta
+    kVarDCAXY = 3,                ///< dcaXY
+    kVarDCAZ = 4,                 ///< dcaZ
+    kVarClustersTPC = 5,          ///< nClustersTPC
+    kVarPointsITS = 6,            ///< nPointsITS
+    kVarChi2C = 7,                ///< chi2C
+    kVarNsigVtx = 8,              ///< nSigmaToVertex
+    kVarRelUncertaintyInvPt = 9,  ///< relUncertainty1Pt
+    kVarChi2ClusterTPC = 10,      ///< chi2PerClusterTPC
+    kVarCrossedRowsTPC = 11,      ///< #crossed rows
+    kVarCrossedRowsFindTPC = 12,  ///< (#crossed rows)/(#findable clusters)
+    kVarSigmaY2 = 13,             ///< SigmaY2
+    kVarSigmaZ2 = 14,             ///< SigmaZ2
+    kVarSigmaSnp2 = 15,           ///< SigmaSnp2
+    kVarSigmaTgl2 = 16,           ///< SigmaTgl2
+    kVarSigmaInvPt2 = 17,         ///< Sigma1Pt2
+    kVarClustersTPCIter1 = 18,    ///< NClustersTPCIter1
+    kVarChi2TPCIter1 = 19,        ///< TPCChi2Iter1
+    kVarClustersTPCShared = 20,   ///< NClustersTPCShared
+    kVarChi2Gold = 21,            ///< Chi2Gold (TPC constrained vs global)
+    kVarChi2ConstrainedGlob = 22, ///< Chi2GGC (global constrained vs global)
+    kVarNCrossedRowsFit = 23,     ///< NCrossed rows from fit map
+    kVarCrossedRowsFindFit = 24,  ///< (#crossed rows)/(#findable clusters) from fit map
+    kVarChi2ITS = 25,             ///< ITS chi2
+    kVarTPCclustersdEdx = 26      ///< TPC number of clusters for dE/dx
+  };
   AliPWG4HighPtTrackQA(const AliPWG4HighPtTrackQA&);
   AliPWG4HighPtTrackQA& operator=(const AliPWG4HighPtTrackQA&);
 
-  DataType fDataType;             // kESD or kAOD
+  DataType fDataType;             ///< kESD or kAOD
 
-  AliVEvent   *fEvent;            //! AliVEvent object
-  AliESDEvent *fESD;              //! ESD object
-  const AliESDVertex   *fVtx;     //! vertex object
-  const AliAODVertex   *fVtxAOD;  //! vertex object AOD
+  AliVEvent   *fEvent;            //!<! AliVEvent object
+  AliESDEvent *fESD;              //!<! ESD object
+  const AliESDVertex   *fVtx;     //!<! vertex object
+  const AliAODVertex   *fVtxAOD;  //!<! vertex object AOD
 
-  AliESDtrackCuts *fTrackCuts;         // TrackCuts
-  AliESDtrackCuts *fTrackCutsITSLoose; // Loose ITS track cuts
-  AliESDtrackCuts *fTrackCutsTPConly;  // TPC track cuts
-  Int_t   fTrackType;                  // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
-  UInt_t fFilterMask;                  // Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
-  Bool_t fIncludeNoITS;                // includes tracks with failed ITS refit
+  AliESDtrackCuts *fTrackCuts;         ///< TrackCuts
+  AliESDtrackCuts *fTrackCutsITSLoose; ///< Loose ITS track cuts
+  AliESDtrackCuts *fTrackCutsTPConly;  ///< TPC track cuts
+  Int_t   fTrackType;                  ///< 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
+  UInt_t fFilterMask;                  ///< Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
+  Bool_t fIncludeNoITS;                ///< includes tracks with failed ITS refit
 
-  Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
-  Float_t fPtMax;                 // Maximum pT for histograms
-  Float_t fPtBinEdges[3][2];      // 3 regions total with different binning for pT axis of histos
+  Double_t fSigmaConstrainedMax;  ///< max sigma on constrained fit
+  Float_t fPtMax;                 ///< Maximum pT for histograms
+  Float_t fPtBinEdges[4][2];      ///< 4 regions total with different binning for pT axis of histos
 
-  Bool_t   fIsPbPb;               // kTRUE if PbPb
-  Int_t fCentClass;               // Select only events from predefined centrality class
-  Bool_t   fInit;                 // true after initialization (relevant for ESD analysis)
+  Bool_t   fIsPbPb;               ///< kTRUE if PbPb
+  Int_t fCentClass;               ///< Select only events from predefined centrality class
+  Bool_t   fInit;                 ///< true after initialization (relevant for ESD analysis)
   AliAnalysisUtils                *fAliAnalysisUtils;           //!<!vertex selection (optional)
   Double_t                        fVertex[3];                  //!<!event vertex
   Double_t                        fVertexSPD[3];               //!<!event Svertex
@@ -134,35 +181,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Bool_t                           fTklVsClusSPDCut;            ///< Apply tracklet-vs-cluster SPD cut to reject background events in pp
   Double_t                         fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex
-
-  /*
-    QA variables stored in TArrayF *fVariables
-  0: pt
-  1: phi
-  2: eta
-  3: dca2D
-  4: dcaZ 
-  5: nClustersTPC
-  6: nPointITS   
-  7: chi2C       
-  8: nSigmaToVertex
-  9: relUncertainty1Pt
-  10: chi2PerClusterTPC
-  11: #crossed rows
-  12: (#crossed rows)/(#findable clusters)
-  13: SigmaY2
-  14: SigmaZ2
-  15: SigmaSnp2
-  16: SigmaTgl2
-  17: Sigma1Pt2
-  18: NClustersTPCIter1
-  19: TPCChi2Iter1
-  20: NClustersTPCShared
-  21: Chi2Gold (TPC constrained vs global)
-  22: Chi2GGC (global constrained vs global)
-  23: NCrossed rows from fit map
-  24: (#crossed rows)/(#findable clusters) from fit map
-  */
 
   Int_t fNVariables;             // Number of variables
   TArrayF *fVariables;           // QA variables
