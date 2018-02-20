@@ -106,5 +106,8 @@
 #pragma link C++ class AliHFCutVarFDsubMassFitter+;
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
 #pragma link C++ class AliHFVnVsMassFitter+;
+#pragma link C++ class AliAnalysisTaskDStartoKePi+;
+#pragma link C++ class AliDStarTrack+;
+#pragma link C++ class AliDStarEvent+;
 
 #endif

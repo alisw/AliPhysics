@@ -136,6 +136,7 @@ set(SRCS
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
+  AliAnalysisTaskDStartoKePi.cxx
   )
 
 # Headers from sources
