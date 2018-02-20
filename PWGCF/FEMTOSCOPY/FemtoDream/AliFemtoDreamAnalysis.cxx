@@ -244,9 +244,9 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     if (fCascCuts->isSelected(fFemtoCasc)) {
       //
     }
-//    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-//      //
-//    }
+    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+      //
+    }
   }
 
   //  std::cout << "=============================" <<std::endl;
