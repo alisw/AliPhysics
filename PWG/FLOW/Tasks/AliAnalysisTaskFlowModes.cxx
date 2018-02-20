@@ -98,18 +98,19 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   // flow related
   fCutFlowRFPsPtMin(0),
   fCutFlowRFPsPtMax(0),
-  fCutFlowDoFourCorrelations(kTRUE),
-  fDoOnlyMixedCorrelations(kFALSE),
-  fFlowFillWeights(kFALSE),
   fFlowPOIsPtMin(0),
   fFlowPOIsPtMax(20.),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
-  fFlowWeightsPath(),
+  fCutFlowDoFourCorrelations(kTRUE),
+  fDoOnlyMixedCorrelations(kFALSE),
+  fFlowFillWeights(kFALSE),
   fFlowUseWeights(kFALSE),
+  fFlowWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
+
 
 
   // events selection
@@ -265,14 +266,14 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fCutFlowRFPsPtMax(0),
   fFlowPOIsPtMin(0),
   fFlowPOIsPtMax(20.),
-  fCutFlowDoFourCorrelations(kTRUE),
-  fDoOnlyMixedCorrelations(kFALSE),
-  fFlowFillWeights(kFALSE),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
-  fFlowWeightsPath(),
+  fCutFlowDoFourCorrelations(kTRUE),
+  fDoOnlyMixedCorrelations(kFALSE),
+  fFlowFillWeights(kFALSE),
   fFlowUseWeights(kFALSE),
+  fFlowWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
 
@@ -443,11 +444,11 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
 
     if(!fDoOnlyMixedCorrelations){
       for(Short_t iHarm(0); iHarm < fNumHarmonics; iHarm++){
-          fpRefsCor4[iHarm] = 0x0;
-          fp2ChargedCor4[iHarm] = 0x0;
-          fp2PionCor4[iHarm] = 0x0;
-          fp2KaonCor4[iHarm] = 0x0;
-          fp2ProtonCor4[iHarm] = 0x0;
+          //fpRefsCor4[iHarm] = 0x0;
+          //fp2ChargedCor4[iHarm] = 0x0;
+          //fp2PionCor4[iHarm] = 0x0;
+          //fp2KaonCor4[iHarm] = 0x0;
+          //fp2ProtonCor4[iHarm] = 0x0;
 
        
         for(Short_t iGap(0); iGap < fNumEtaGap; iGap++){
@@ -1323,9 +1324,9 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   // cut on # ESD tracks vs # TPC only tracks
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fEventAOD->GetHeader())->GetNumberOfESDTracks();
-  Int_t multTrk = 0;
-  Int_t multTrkBefC = 0;
-  Int_t multTrkTOFBefC = 0;
+  //Int_t multTrk = 0;
+  //Int_t multTrkBefC = 0;
+  //Int_t multTrkTOFBefC = 0;
   Int_t multTPC = 0;
   for (Int_t it = 0; it < nTracks; it++) {
      AliAODTrack* AODTrk = (AliAODTrack*)fEventAOD->GetTrack(it);
@@ -2171,7 +2172,7 @@ void AliAnalysisTaskFlowModes::DoFlowRefs(const Short_t iEtaGapIndex)
   // Estimate <2>, <4> and <6> for reference flow for all harmonics based on relevant flow vectors
   // *************************************************************
 
-  Float_t dEtaGap = fEtaGap[iEtaGapIndex];
+  //Float_t dEtaGap = fEtaGap[iEtaGapIndex];
   Short_t iHarmonics = 0;
   Double_t Cn2 = 0;
   Double_t Dn4GapP = 0;
@@ -2238,7 +2239,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
 
   const Double_t dPtBinWidth = (fFlowPOIsPtMax - fFlowPOIsPtMin) / fFlowPOIsPtNumBins;
 
-  Float_t dEtaGap = fEtaGap[iEtaGapIndex];
+  //Float_t dEtaGap = fEtaGap[iEtaGapIndex];
   Short_t iHarmonics = 0;
   Double_t Dn2 = 0;
   Double_t DDn3GapP=0;
@@ -2342,7 +2343,7 @@ void AliAnalysisTaskFlowModes::DoFlowPID(const Short_t iEtaGapIndex, const PartS
  
     TProfile2D** profile2Pos = 0x0;
     TProfile2D** profile2Neg = 0x0;
-    TProfile2D** profile4 = 0x0;
+    //TProfile2D** profile4 = 0x0;
     TProfile2D** profile3Pos = 0x0;
     TProfile2D** profile3Neg = 0x0;
     TProfile2D* profile4Pos = 0x0;
@@ -2356,19 +2357,19 @@ void AliAnalysisTaskFlowModes::DoFlowPID(const Short_t iEtaGapIndex, const PartS
           case kPion:
               profile2Pos = fp2PionCor2Pos[iEtaGapIndex];
               profile2Neg = fp2PionCor2Neg[iEtaGapIndex];
-              profile4 = fp2PionCor4;
+              //profile4 = fp2PionCor4;
               break;
               
           case kKaon:
               profile2Pos = fp2KaonCor2Pos[iEtaGapIndex];
               profile2Neg = fp2KaonCor2Neg[iEtaGapIndex];
-              profile4 = fp2KaonCor4;
+              //profile4 = fp2KaonCor4;
               break;
               
           case kProton:
               profile2Pos = fp2ProtonCor2Pos[iEtaGapIndex];
               profile2Neg = fp2ProtonCor2Neg[iEtaGapIndex];
-              profile4 = fp2ProtonCor4;
+              //profile4 = fp2ProtonCor4;
               break;
               
           default:
@@ -2415,7 +2416,7 @@ void AliAnalysisTaskFlowModes::DoFlowPID(const Short_t iEtaGapIndex, const PartS
 
   const Double_t dPtBinWidth = (fFlowPOIsPtMax - fFlowPOIsPtMin) / fFlowPOIsPtNumBins;
 
-  Float_t dEtaGap = fEtaGap[iEtaGapIndex];
+  //Float_t dEtaGap = fEtaGap[iEtaGapIndex];
   Short_t iHarmonics = 0;
   Double_t Dn2 = 0;
   TComplex vector = TComplex(0,0,kFALSE);
@@ -2631,8 +2632,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   ResetPOIsVector(fFlowVecS);
 
   std::vector<FlowPart>* vector = 0x0;
-  TH3D* hist = 0x0;
-  Double_t dMassLow = 0, dMassHigh = 0;
+  //TH3D* hist = 0x0;
+  //Double_t dMassLow = 0, dMassHigh = 0;
   TH2D* h2Weights = 0x0;
 
   // swich based on species
@@ -2667,7 +2668,7 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   if(fFlowUseWeights && !h2Weights) { ::Error("FillPOIsVectors","Histogtram with weights not found."); return; }
 
   const Double_t dEtaGap = fEtaGap[iEtaGapIndex];
-  const Double_t dMass = (dMassLow+dMassHigh)/2;
+  //const Double_t dMass = (dMassLow+dMassHigh)/2;
 
   Short_t iPtBin = 0;
   Double_t dCos = 0, dSin = 0;
