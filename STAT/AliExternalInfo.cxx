@@ -32,7 +32,8 @@ const TString AliExternalInfo::fgkDefaultConfig="$ALICE_ROOT/STAT/Macros/AliExte
 AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation, Int_t verbose/*, Bool_t copyToLocalStorage*/) :
                                 /*fCopyDataToLocalStorage(copyToLocalStorage),*/
                                 TObject(),
-				fVerbose(verbose),
+				                        fVerbose(verbose),
+                                fLoadMetadata(kTRUE),
                                 fConfigLocation(configLocation),
                                 fLocalStorageDirectory(localStorageDirectory),
                                 fConfigMap(),
@@ -348,12 +349,12 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
       if (oldIndexName.Length()==0){
-        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix0").Data())); // use standard run number IDS
       }else{
-        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix0").Data())); // use standrad run number IDS
       }
 
-      gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix").Data(),  (mifFilePath+"RunFix").Data()).Data());
+      gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix0").Data(),  (mifFilePath+"RunFix").Data()).Data());
       // Store it in a tree inside a root file
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
@@ -487,7 +488,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   if (cache>0) tree->SetCacheSize(cache);
   //
 
-  if (metadataMacro.Length()>0){  // rename branch  with index if specified in configuration file
+  if (fLoadMetadata && metadataMacro.Length()>0){  // rename branch  with index if specified in configuration file
     if (fVerbose>1) printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,%d);",     metadataMacro.Data(),tree, fVerbose);
     gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,%d);",metadataMacro.Data(),tree,fVerbose).Data());
   }

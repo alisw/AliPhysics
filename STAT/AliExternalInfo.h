@@ -129,7 +129,8 @@ public:
   const TString CurlTree(const TString internalFilename, const TString& externalLocation);
   const TString CreatePath(TString type, TString period, TString pass);
   Bool_t IsDownloadNeeded(TString file, TString type);
-  Int_t fVerbose;                                   ///< verbosity flag 
+  Int_t fVerbose;                                   ///< verbosity flag
+  Bool_t fLoadMetadata;                             ///< flag load metadata
   // Bool_t fCopyDataToLocalStorage;
   TString fConfigLocation;                          ///< location of the config file
   TString fLocalStorageDirectory;                   ///< location of the local cache directory
