@@ -2652,6 +2652,10 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     ::Error("TStatToolkit::MakeDistortionMapFast","Invalid dimension of input histogram");
     return;
   }
+  if (fractionCut<0 || fractionCut>0.4){
+    ::Error("TStatToolkit::MakeDistortionMapFast","Invalid input fraction cut %f\r. Should be in range <0,0.4>", fractionCut);
+    return;
+  }
   const Double_t kMinEntries=30, kUseLLFrom=20;
   const Float_t  kDumpHistoFraction = TString(gSystem->Getenv("gDumpHistoFraction")).Atof();  // in debug mode - controlled by env variable "gDumpHistoFraction" fractio of histogram + fits dumped to the file 
   char tname[100];
