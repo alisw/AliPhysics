@@ -15,7 +15,9 @@ fDoDalitz(doDalitz)
     fMixedDistribution->Sumw2();
   }
   if(fDoDalitz){
-    fDalitzPlot = new TH2D(Form("dalitz_%s",name),Form("dalitz_%s",name),300,0.0,3.0,300,0.0,3.0);
+    fDalitzPlot12_23 = new TH2D(Form("dalitz_12_23_%s",name),Form("dalitz_12_23_%s",name),nBins,min,max,nBins,min,max);
+    fDalitzPlot23_31 = new TH2D(Form("dalitz_23_31_%s",name),Form("dalitz_23_31_%s",name),nBins,min,max,nBins,min,max);
+    fDalitzPlot12_31 = new TH2D(Form("dalitz_12_31_%s",name),Form("dalitz_12_31_%s",name),nBins,min,max,nBins,min,max);
   }
   
 }
@@ -24,7 +26,9 @@ AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
 {
   if(fRealDistribution) delete fRealDistribution;
   if(fMixedDistribution) delete fMixedDistribution;
-  if(fDalitzPlot) delete fDalitzPlot;
+  if(fDalitzPlot12_23) delete fDalitzPlot12_23;
+  if(fDalitzPlot23_31) delete fDalitzPlot23_31;
+  if(fDalitzPlot12_31) delete fDalitzPlot12_31;
 }
 
 void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
@@ -34,7 +38,11 @@ void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
     return;
   }
   if(fDoMinv)   fRealDistribution->Fill(trio->MInv());
-  if(fDoDalitz) fDalitzPlot->Fill(pow(trio->MInv12(),2),pow(trio->MInv23(),2));
+  if(fDoDalitz){
+    fDalitzPlot12_23->Fill(pow(trio->MInv12(),2),pow(trio->MInv23(),2));
+    fDalitzPlot23_31->Fill(pow(trio->MInv23(),2),pow(trio->MInv31(),2));
+    fDalitzPlot12_31->Fill(pow(trio->MInv12(),2),pow(trio->MInv31(),2));
+  }
 }
 void AliFemtoTrioMinvFctn::AddMixedTrio(AliFemtoTrio *trio)
 {
@@ -53,7 +61,9 @@ void AliFemtoTrioMinvFctn::Write()
     fMixedDistribution->Write();
   }
   if(fDoDalitz){
-    fDalitzPlot->Write();
+    fDalitzPlot12_23->Write();
+    fDalitzPlot23_31->Write();
+    fDalitzPlot12_31->Write();
   }
 }
 
@@ -66,7 +76,9 @@ TList* AliFemtoTrioMinvFctn::GetOutputList()
     outputList->Add(fMixedDistribution);
   }
   if(fDoDalitz){
-    outputList->Add(fDalitzPlot);
+    outputList->Add(fDalitzPlot12_23);
+    outputList->Add(fDalitzPlot23_31);
+    outputList->Add(fDalitzPlot12_31);
   }
   return outputList;
 }

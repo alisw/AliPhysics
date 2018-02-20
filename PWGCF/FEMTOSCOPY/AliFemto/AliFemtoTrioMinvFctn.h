@@ -42,7 +42,9 @@ private:
   
   TH1D *fRealDistribution;  // real distribution of invariant mass
   TH1D *fMixedDistribution; // mixed distribution of invariant mass
-  TH2D *fDalitzPlot;        // Dalitz plot for the trio
+  TH2D *fDalitzPlot12_23;        // Dalitz plot for pairs 12 and 23
+  TH2D *fDalitzPlot23_31;        // Dalitz plot for pairs 23 and 31
+  TH2D *fDalitzPlot12_31;        // Dalitz plot for pairs 12 and 31
   
   bool fDoMinv;
   bool fDoDalitz;
