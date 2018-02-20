@@ -848,16 +848,16 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fdPhiEP1 = new TH1F("fdPhiEP1","tr phi w.r.t. EP",628,-6.28,6.28);
   fOutputList->Add(fdPhiEP1);
 
-  fHistMcD0 = new TH2D("fHistMcD0","D0 pT in MC",2,-0.5,1.5,40,0,40);
+  fHistMcD0 = new TH2D("fHistMcD0","D0 pT in MC",3,-0.5,2.5,40,0,40);
   fOutputList->Add(fHistMcD0);
 
-  fHistMcD = new TH2D("fHistMcD","D pT in MC",2,-0.5,1.5,40,0,40);
+  fHistMcD = new TH2D("fHistMcD","D pT in MC",3,-0.5,2.5,40,0,40);
   fOutputList->Add(fHistMcD);
 
-  fHistMcDs = new TH2D("fHistMcDs","Ds pT in MC",2,-0.5,1.5,40,0,40);
+  fHistMcDs = new TH2D("fHistMcDs","Ds pT in MC",3,-0.5,2.5,40,0,40);
   fOutputList->Add(fHistMcDs);
 
-  fHistMcLc = new TH2D("fHistMcLc","Lc pT in MC",2,-0.5,1.5,40,0,40);
+  fHistMcLc = new TH2D("fHistMcLc","Lc pT in MC",3,-0.5,2.5,40,0,40);
   fOutputList->Add(fHistMcLc);
 
   PostData(1,fOutputList);
@@ -2196,7 +2196,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            //cout << "<------- imc = "<< gh->GetName() << endl;     
+            cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
             //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
@@ -2259,10 +2259,20 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
         }
       else
         {
-          if(pdgGen==421)fHistMcD0->Fill(1.0,pTtrue);
-          if(pdgGen==411)fHistMcD->Fill(1.0,pTtrue);
-          if(pdgGen==431)fHistMcDs->Fill(1.0,pTtrue);
-          if(pdgGen==4122)fHistMcLc->Fill(1.0,pTtrue);
+          if(Bevt)
+            {
+             if(pdgGen==421)fHistMcD0->Fill(1.0,pTtrue);
+             if(pdgGen==411)fHistMcD->Fill(1.0,pTtrue);
+             if(pdgGen==431)fHistMcDs->Fill(1.0,pTtrue);
+             if(pdgGen==4122)fHistMcLc->Fill(1.0,pTtrue);
+            }
+           else
+            {
+             if(pdgGen==421)fHistMcD0->Fill(2.0,pTtrue);
+             if(pdgGen==411)fHistMcD->Fill(2.0,pTtrue);
+             if(pdgGen==431)fHistMcDs->Fill(2.0,pTtrue);
+             if(pdgGen==4122)fHistMcLc->Fill(2.0,pTtrue);
+            }
         }
 
       Int_t pdgMom = -99;
