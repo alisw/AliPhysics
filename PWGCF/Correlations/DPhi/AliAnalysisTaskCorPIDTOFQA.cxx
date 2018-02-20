@@ -18,7 +18,7 @@
  * empty task which can serve as a starting point for building an analysis
  * as an example, one histogram is filled
  */
-//#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <cmath>
 //#include <iomanip>
@@ -33,7 +33,9 @@
 #include "TFile.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+//#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliAnalysisTaskCorPIDTOFQA.h"
 #include "AliPIDResponse.h"
 #include "AliAODHandler.h"
 
@@ -66,8 +68,11 @@
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
-//using namespace BSchaefer_devel;
-#include "AliAnalysisTaskCorPIDTOFQA.h"
+using namespace BSchaefer_devel;
+
+std::ofstream associates("associates.txt");
+std::ofstream triggers("triggers.txt");
+
 
 //ofstream file("output.txt");
 //const int multiplicity_cut       = 0;
@@ -122,7 +127,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
     trig_05_phi_pt_pos(0),        // T 15
     trig_05_phi_pt_neg(0),        // T 16
     trig_08_phi_pt_pos(0),        // T 17
-    trig_08_phi_pt_neg(0)         // T 18
+    trig_08_phi_pt_neg(0)        // T 18
 
 //    associates(0),
 //    triggers(0)
@@ -202,8 +207,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",          170,   3.0,  20.0,   288, lower, upper);          // 17
     trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",          170,   3.0,  20.0,   288, lower, upper);          // 18
 
-    associates                 = new std::ofstream("associates.txt");
-    triggers                   = new std::ofstream("triggers.txt");
+//    associates                 = new ofstream("associates.txt");
+//    triggers                   = new ofstream("triggers.txt");
 
 
 
@@ -407,20 +412,24 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     if(non_deut_count > 0  &&  deut_candidate_event == 0)
     {
-	*associates<<i_mult<<" "<<i_zvert<<" "<<non_deut_count<<endl;
+//	*associates<<i_mult<<" "<<i_zvert<<" "<<non_deut_count<<endl;
+	associates<<i_mult<<" "<<i_zvert<<" "<<non_deut_count<<endl;
 	for(int i=0; i<non_deut_count; i++)
 	{
-	    *associates<<skimmer_associate[i][0]<<" "<<skimmer_associate[i][1]<<" "<<skimmer_associate[i][2]<<endl;
+//	    *associates<<skimmer_associate[i][0]<<" "<<skimmer_associate[i][1]<<" "<<skimmer_associate[i][2]<<endl;
+	    associates<<skimmer_associate[i][0]<<" "<<skimmer_associate[i][1]<<" "<<skimmer_associate[i][2]<<endl;
 	}
     }
 
 
     if(trig_track_count > 0  &&  deut_candidate_event == 0)
     {
-	*triggers<<i_mult<<" "<<i_zvert<<" "<<trig_track_count<<endl;
+//	*triggers<<i_mult<<" "<<i_zvert<<" "<<trig_track_count<<endl;
+	triggers<<i_mult<<" "<<i_zvert<<" "<<trig_track_count<<endl;
 	for(int i=0; i<trig_track_count; i++)
 	{
-	    *triggers<<skimmer_trigger[i][0]<<" "<<skimmer_trigger[i][1]<<" "<<skimmer_trigger[i][2]<<endl;
+//	    *triggers<<skimmer_trigger[i][0]<<" "<<skimmer_trigger[i][1]<<" "<<skimmer_trigger[i][2]<<endl;
+	    triggers<<skimmer_trigger[i][0]<<" "<<skimmer_trigger[i][1]<<" "<<skimmer_trigger[i][2]<<endl;
 	}
     }
 
@@ -435,9 +444,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
 	if (oh)    oh->SetFillAOD(kFALSE);
 
-//  if ((non_deut_count>=1)  &&  (trig_03_track_count>0)  &&  oh)
-//  { // markA
-//    if ((non_deut_count >= 1) && oh  &&  i_mult == multiplicity_cut)
 	if ((non_deut_count >= 1) && oh)
 	{
 	    oh->SetFillAOD(kTRUE);
@@ -478,8 +484,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::Terminate(Option_t *)
 {
-    associates->close();
-    triggers->close();
+//    associates->close();
+//    triggers->close();
 //    file.close();
     // terminate
     // called at the END of the analysis (when all events are processed)

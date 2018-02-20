@@ -14,12 +14,8 @@
 
 class AliAODTrack;
 
-//namespace std{
-
-//namespace BSchaefer_devel{
-
-
-	
+namespace BSchaefer_devel{
+    
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
     public:
@@ -54,9 +50,6 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	
 	TH2F deut_dphi_deta[trig_bins][pt_bins][zvert_bins][mult_bins][physics_bins];
 
-	std::ofstream         *associates;
-	std::ofstream         *triggers;
-	
 //	ofstream file("output.txt");;
 
     private:
@@ -92,7 +85,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 trig_08_phi_pt_pos;          // 17
 	TH2F*                 trig_08_phi_pt_neg;          // 18
 
-
+//	ofstream         *associates;
+//	ofstream         *triggers;
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
@@ -100,8 +94,5 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
-//}  //// namespace BScahefer_devel
-
-//}  //// namespace std
-
+}  //// namespace
 #endif
