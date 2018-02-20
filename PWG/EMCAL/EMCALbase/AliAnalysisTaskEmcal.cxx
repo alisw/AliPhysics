@@ -535,9 +535,9 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // Protection: In case the pt-hard bin handling is not initialized we fall back to the
     // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
     // and after selection
-    fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, 1);
-    fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fXsection);
+    fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
+    fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard);
     if(fPtHardInitialized){
     	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
