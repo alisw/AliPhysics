@@ -156,25 +156,38 @@ float cosf(float x){
 
 extern "C" void sincos(double, double *, double *);
 void sincos(double x, double *s, double *c){
-  vdt::fast_sincos(x, *s, *c);
+  const double lm(INT_MAX*CosRangeConstant);
+  if(fabs(x) < lm) {
+    vdt::fast_sincos(x, *s, *c);
 #ifdef TEXTLOGGER
-  double libms, libmc;
-  sincosfunc(x, &libms, &libmc);
-  printLog("#VDTCHECK-SINCOS-SINPART", x, libms, *s);
-  printLog("#VDTCHECK-SINCOS-COSPART", x, libmc, *c);
+    double libms, libmc;
+    sincosfunc(x, &libms, &libmc);
+    printLog("#VDTCHECK-SINCOS-SINPART", x, libms, *s);
+    printLog("#VDTCHECK-SINCOS-COSPART", x, libmc, *c);
 #endif
-
+  }
+  else {
+    *s = sinfunc(x);
+    *c = cosfunc(x);
+  }
 }
 
 extern "C" void sincosf(float x, float *s, float *c);
 void sincosf(float x, float *s, float *c) {
-  vdt::fast_sincosf(x, *s, *c);
+  const double lm(INT_MAX*CosRangeConstant);
+  if(fabs(x) < static_cast<float>(lm)) {
+    vdt::fast_sincosf(x, *s, *c);
 #ifdef TEXTLOGGER
-  float libms, libmc;
-  sincosffunc(x, &libms, &libmc);
-  printLog("#VDTCHECK-SINCOSF-SINPART", x, libms, *s);
-  printLog("#VDTCHECK-SINCOSF-COSPART", x, libmc, *c);
+    float libms, libmc;
+    sincosffunc(x, &libms, &libmc);
+    printLog("#VDTCHECK-SINCOSF-SINPART", x, libms, *s);
+    printLog("#VDTCHECK-SINCOSF-COSPART", x, libmc, *c);
 #endif
+  }
+  else {
+    *s = sinfuncf(x);
+    *c = cosfuncf(x);
+  }
 }
 
 extern "C" double atan2(double, double);
