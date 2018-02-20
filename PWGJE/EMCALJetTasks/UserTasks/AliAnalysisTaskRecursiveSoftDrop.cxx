@@ -404,7 +404,7 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskRecursiveSoftDrop","No analysis manager found.");
+      ::Error("AddTaskRecursiveSoftDrop","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;

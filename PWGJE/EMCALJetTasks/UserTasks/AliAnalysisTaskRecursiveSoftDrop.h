@@ -48,7 +48,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
   void SetJetType(JetType t)                                { fJetType     = t   ;}
 
-  AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(
+  static AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(
 
 							     const char * njetsData, //data jets
 							     const char * njetsTrue, //Pythia Particle Level
