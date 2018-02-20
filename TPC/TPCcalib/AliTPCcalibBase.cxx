@@ -323,6 +323,10 @@ TGraphErrors * AliTPCcalibBase::FitSlices(TH2* hist, Int_t minEntries, Int_t nma
     Double_t binWidth = projectionHist->GetXaxis()->GetBinWidth(1);
     if (rms>0){
       // cut on +- 4 RMS
+      funcGaus.SetRange(xMin,xMax);
+      funcGaus.SetParameters(projectionHist->GetMaximum(),
+			     projectionHist->GetMean(),
+			     projectionHist->GetRMS());
       projectionHist->Fit(&funcGaus,"QN","",xMin, xMax);
       Double_t chi2 = funcGaus.GetChisquare();
       //  
