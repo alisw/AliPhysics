@@ -885,11 +885,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fPtvsSumUE_MC->Sumw2();
 	  fOutput->Add(fPtvsSumUE_MC);
 
-	  fSumEiso_MC = new TH1D ("hSumEiso_MC","#Sigma E_{T}^{iso cone} dist in MC truth",100,0.,100.);
+	  fSumEiso_MC = new TH1D ("hSumEiso_MC","#Sigma E_{T}^{iso cone} distribution (generated)",250,0.,100.);
 	  fSumEiso_MC->Sumw2();
 	  fOutput->Add(fSumEiso_MC);
 
-	  fSumUE_MC = new TH1D ("hSumUE_MC","UE dist (area normalised) in MC truth",100,0.,100.);
+	  fSumUE_MC = new TH1D ("hSumUE_MC","Total UE estimation with Eta Band (generated)",250,0.,100.);
 	  fSumUE_MC->Sumw2();
 	  fOutput->Add(fSumUE_MC);
 	}
@@ -4371,14 +4371,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
   for(iTrack = 0; iTrack < nTracks; iTrack ++){
     track = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
-    if(track->IsPrimary() && track->IsPhysicalPrimary() && track->MCStatusCode() == 1){ // Keep primary, "detected", final-state particles
-      if(TMath::Abs(track->Eta()) <= 0.87 && track->Charge() != 0)            // Count charged particles in TPC acceptance
-        nFinalStateParticles ++;
-      else
-        continue;
-    }
-    else
+    if(track->MCStatusCode() != 1 || !track->IsPhysicalPrimary()) // Discard non final-state particles and non physical primary
       continue;
+
+    if(TMath::Abs(track->Eta()) <= 0.87 && track->Charge() != 0)  // Count charged particles in TPC acceptance
+      nFinalStateParticles ++;
   }
 
   AliAODMCParticle *candidate, *particle/*, *candidateMother*/;
@@ -4390,8 +4387,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
     candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
     if(candidate->MCStatusCode() != 1)  continue; // Discard non final-state particles
-    if(!candidate->IsPrimary())         continue; // Discard non primary particles
-    if(!candidate->IsPhysicalPrimary()) continue; // Discard non "detected" particles
+    if(!candidate->IsPhysicalPrimary()) continue; // Discard non physical primary particles
 
     candidatePDG = candidate->GetPdgCode();
     if(candidatePDG != 22) continue;              // Discard particles which are not photons
@@ -4437,23 +4433,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
     }
 
     candidatePhotonLabel = iTrack;
-
-    /*
-    // USELESS FOR OUTPUT 2
-    
-    candidateMotherStatus = candidate->GetMother();
-    if(candidateMotherStatus > 0){
-      candidateMother    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidateMotherStatus));
-      candidateMotherPDG = TMath::Abs(candidateMother->GetPdgCode());
-    }
-    else
-      candidateMotherPDG = candidate->GetPdgCode();
-    */
-
     E_T = candidate->E()*(TMath::Sin(candidate->Theta())); // Transform to transverse Energy
-
-    if(fWho == 1)
-      fphietaPhotons->Fill(candidateEta,candidatePhi,E_T);
 
     radius = 0., particlePhi = 0., particleEta = 0., sumEiso = 0., sumUE = 0.;
 
@@ -4470,7 +4450,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       if     (fIsoMethod == 2 && particle->Charge() == 0) continue;                                           // Discard neutral particles for charged-only isolation
       else if(fIsoMethod == 3 && particle->Charge() != 0) continue;                                           // Discard charged particles for neutral-only isolation
 
-      if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary() || !particle->IsPrimary()) continue; // Discard non primary, non "detected", non final-state particles
+      if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
 
       particleMotherStatus = particle->GetMother();
       if(particleMotherStatus < 0 || particleMotherStatus > nTracks) continue;
@@ -4483,7 +4463,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       // Isolation and UE measurement
 
       etaMax = fGeom->GetArm1EtaMax()-0.03;
-
       if(fPeriod != ""){
       	phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
@@ -4500,20 +4479,20 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       if((TMath::Abs(candidateEta) <= etaMax) && (particlePhi >= phiMin) && (particlePhi <= phiMax)){
 	radius = TMath::Sqrt(TMath::Power(particlePhi-candidatePhi,2)+TMath::Power(particleEta-candidateEta,2));
 
-	if(radius > fIsoConeRadius){                                  // The cluster is outside the isolation cone -> add the particle pT to pT_UE
-	  if(particle->Charge() == 0 && particle->GetPdgCode() != 22) // Skipping neutral hadrons
-	    continue;
+	if(radius > fIsoConeRadius){                                  // UE energy
+	  if(particle->Charge() == 0 && particle->GetPdgCode() != 22)
+	    continue;                                                 // Skipping neutral hadrons
 	  else
 	    AddParticleToUEMC(sumUE, particle, candidateEta, candidatePhi);
 	}
-	else{                                                         // The cluster is inside the isolation cone -> add the particle pT to pT_iso
-	  if(particle->Charge() != 0)                                 // Using Pt() for charged particles
+	else{                                                         // Cone energy
+	  if(particle->Charge() != 0)
 	    sumEiso += particle->Pt();
 	  else{
-	    if(particle->GetPdgCode() == 22)                          // Using E_T for photons
+	    if(particle->GetPdgCode() == 22)
 	      sumEiso += particle->E()*(TMath::Sin(particle->Theta()));
-	    else                                                      // Skipping neutral hadrons
-	      continue;
+	    else
+	      continue;                                               // Skipping neutral hadrons
 	  }
 	}
       }
