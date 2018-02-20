@@ -211,7 +211,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   //// 
    const Int_t dimResol   = 4;
-   const Int_t nBinsResol[4]     = {10,10,20,20};
+   const Int_t nBinsResol[4]     = {10,10,80,80};
    const Double_t lowBinResol[4] = {0,0,-1,-1};
    const Double_t hiBinResol[4]  = {200,0.3,1,1};
    fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
