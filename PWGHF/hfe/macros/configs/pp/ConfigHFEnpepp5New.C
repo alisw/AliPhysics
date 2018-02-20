@@ -119,7 +119,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
       {
          kHadronDown = 1,
          kHadronUp= 2,
-         kHadronError = 3
+         kHadronError = 3,
+         kHadronTPCMinus05 = 4,
+         kHadronTPC0 = 5
       };
 
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
@@ -172,6 +174,28 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(4, 2.75397e-02);
                hBackground->SetParameter(5, 8.72389e-01);
                hBackground->SetParameter(6, 3.09841e-02);
+               break;
+            case kHadronTPCMinus05:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,4.99066e+00);
+               hBackground->SetParameter(1,1.24655e+01);
+               hBackground->SetParameter(2,3.07237e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,1.60480e-02);
+               hBackground->SetParameter(4,8.70417e-01);
+               hBackground->SetParameter(5,3.48478e-02);
+               break;
+            case kHadronTPC0:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,1.10227e+01);
+               hBackground->SetParameter(1,1.71063e+01);
+               hBackground->SetParameter(2,4.19606e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,2.05323e-02);
+               hBackground->SetParameter(4,8.69626e-01 );
+               hBackground->SetParameter(5,3.48474e-02 );
                break;
             default:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
