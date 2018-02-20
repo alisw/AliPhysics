@@ -531,6 +531,17 @@ AliESDtrack * AliCFSingleTrackEfficiencyTask::ConvertTrack(AliAODTrack *track)
   esdTrack->SetTPCClusterMap(track->GetTPCClusterMap());
   esdTrack->SetTPCSharedMap(track->GetTPCSharedMap());
   esdTrack->SetTPCPointsF(track->GetTPCNclsF());
+  esdTrack->SetTPCNcls(track->GetTPCNcls());
+  
+  // Set the chi2 in TPC
+  Int_t nTPCclus=track->GetNcls(1);
+  Double_t chi2ndf=track->Chi2perNDF();
+  Double_t chi2tpc=999.;
+  if(chi2ndf>0. && nTPCclus > 5){
+    chi2tpc=Float_t(nTPCclus-5)*chi2ndf;
+  }
+  esdTrack->SetTPCchi2(chi2tpc);
+
   // needed to calculate the impact parameters
   esdTrack->RelateToVertex(&vESD,0.,3.);
   //  std::cout << " primary vtx "<< primary << std::endl;
