@@ -5,7 +5,7 @@
 #include "AliAnalysisTaskFemtoDream.h"
 #include "TROOT.h"
 
-void AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
+AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 {
 	bool isMC=true;
 	bool DCAPlots=false;
@@ -336,6 +336,6 @@ void AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 	if (!mgr->InitAnalysis()) {
 		return;
 	}
-	return;
+	return task;
 }
 #endif
