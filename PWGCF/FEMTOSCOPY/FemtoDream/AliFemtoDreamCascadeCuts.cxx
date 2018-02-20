@@ -48,6 +48,7 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 ,fcutv0DaugMinDistVtx(false)
 ,fv0DaugMinDistVtx(0)
 ,fPDGCasc(0)
+,fPDGv0(0)
 ,fPDGPosDaug(0)
 ,fPDGNegDaug(0)
 ,fPDGBachDaug(0)
@@ -313,10 +314,12 @@ void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
   if (casc->UseParticle()) {
     fMCHist->FillMCIdent(pT);
     AliFemtoDreamBasePart::PartOrigin tmpOrg=casc->GetParticleOrigin();
-    if (casc->GetMCPDGCode()==fPDGCasc) {
-      fMCHist->FillMCCorr(pT);
-    } else {
-      casc->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+    if (casc->GetParticleOrigin()!=AliFemtoDreamBasePart::kFake) {
+      if (casc->GetMCPDGCode()==fPDGCasc) {
+        fMCHist->FillMCCorr(pT);
+      } else {
+        casc->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+      }
     }
     if (fContribSplitting) {
       FillMCContributions(casc);
@@ -352,6 +355,10 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
       fMCHist->FillMCCont(pT);
       iFill = 3;
       break;
+    case AliFemtoDreamBasePart::kFake:
+      fMCHist->FillMCCont(pT);
+      iFill = 4;
+      break;
     default:
       AliFatal("Type Not implemented");
       break;
@@ -375,9 +382,10 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
     fMCHist->FillMCDCADaugVtx(iFill,pT,casc->GetXiDCADaug());
     fMCHist->FillMCInvMass(iFill,casc->Getv0Mass());
     fMCHist->FillMCXiInvMass(iFill,pT,casc->GetXiMass());
-    fMCHist->FillMCOmegaInvMass(iFill,pT,casc->GetXiMass());
-    casc->GetOmegaMass();
+    fMCHist->FillMCOmegaInvMass(iFill,pT,casc->GetOmegaMass());
+
   } else {
     std::cout << "this should not happen \n";
   }
 }
+

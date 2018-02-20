@@ -23,7 +23,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
 ,fMCSecondaryCPAPtBins(0)
 ,fMCContCPAPtBins(0)
 {
-  for (int i=0;i<4;++i) {
+  for (int i=0;i<5;++i) {
     fMCQAPlots[i] = 0;
     fMCpTDist[i] = 0;
     fMCetaDist[i] = 0;
@@ -99,8 +99,8 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
     fMCContPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCContPt);
 
-    TString MCModes[4] = {"Primary","Secondary","Material","Contamination"};
-    for (int i=0;i<4;++i) {
+    TString MCModes[5] = {"Primary","Secondary","Material","Contamination","Fake"};
+    for (int i=0;i<5;++i) {
       fMCQAPlots[i] = new TList();
       fMCQAPlots[i]->SetOwner();
       fMCQAPlots[i]->SetName(MCModes[i].Data());
@@ -330,7 +330,7 @@ void AliFemtoDreamv0MCHist::FillMCCPAPtBins(
     fMCSecondaryCPAPtBins->Fill(pT,cpa);
   } else if(org == AliFemtoDreamBasePart::kMaterial) {
     fMCMaterialCPAPtBins->Fill(pT,cpa);
-  } else if(org == AliFemtoDreamBasePart::kContamination) {
+  } else if(org == AliFemtoDreamBasePart::kFake) {
     fMCContCPAPtBins->Fill(pT,cpa);
   } else {
     AliFatal("Particle Origin not implemented");

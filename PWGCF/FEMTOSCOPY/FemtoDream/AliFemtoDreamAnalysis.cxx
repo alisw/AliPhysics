@@ -66,6 +66,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fFemtoCasc->GetNegDaug()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
   fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
+  fFemtoCasc->Setv0PDGCode(fCascCuts->GetPDGv0());
 
   fEvtCuts->InitQA();
   fTrackCuts->Init();

@@ -9,6 +9,7 @@
 #define ALIFEMTODREAMCASCADECUTS_H_
 #include "Rtypes.h"
 #include "TList.h"
+#include "AliMCEvent.h"
 #include "AliFemtoDreamCascade.h"
 #include "AliFemtoDreamCascadeHist.h"
 #include "AliFemtoDreamv0MCHist.h"
@@ -55,6 +56,8 @@ class AliFemtoDreamCascadeCuts {
   int GetPDGCodeNegDaug(){return fPDGNegDaug;};
   void SetPDGCodeBach(int PDG){fPDGBachDaug=PDG;};
   int GetPDGCodeBach(){return fPDGBachDaug;};
+  void SetPDGCodev0(int PDG) {fPDGv0=PDG;};
+  int GetPDGv0() {return fPDGv0;};
   TString ClassName()const{return "AliFemtoDreamCascadeCuts";};
   void Init();
   bool isSelected(AliFemtoDreamCascade *casc);
@@ -102,6 +105,7 @@ class AliFemtoDreamCascadeCuts {
   bool fcutv0DaugMinDistVtx;
   double fv0DaugMinDistVtx;
   int fPDGCasc;
+  int fPDGv0;
   int fPDGPosDaug;
   int fPDGNegDaug;
   int fPDGBachDaug;

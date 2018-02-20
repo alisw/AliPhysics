@@ -257,10 +257,8 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   if (massPass&&fCPAPlots) {
     fHist->FillCPAPtBins(v0->GetPt(),v0->GetCPA());
     if (fMCData) {
-      AliFemtoDreamBasePart::PartOrigin tmpOrg=v0->GetParticleOrigin();
       fMCHist->FillMCCPAPtBins(
           v0->GetParticleOrigin(),v0->GetPt(),v0->GetCPA());
-      v0->SetParticleOrigin(tmpOrg);
     }
   }
   if (massPass) {
@@ -381,6 +379,10 @@ void AliFemtoDreamv0Cuts::FillMCContributions(AliFemtoDreamv0 *v0) {
       iFill = 2;
       break;
     case AliFemtoDreamBasePart::kContamination:
+      fMCHist->FillMCCont(pT);
+      iFill = 3;
+      break;
+    case AliFemtoDreamBasePart::kFake:
       fMCHist->FillMCCont(pT);
       iFill = 3;
       break;

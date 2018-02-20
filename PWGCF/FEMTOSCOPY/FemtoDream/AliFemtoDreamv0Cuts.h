@@ -118,9 +118,9 @@ class AliFemtoDreamv0Cuts {
   int fNumberXBins;                   //
   //PDG Codes of the Mother and the Daughter needed for Inv Mass Calc. and
   //matching in the MC Sample
-  int fPDGv0;
-  int fPDGDaugP;
-  int fPDGDaugN;
+  int fPDGv0;                         //
+  int fPDGDaugP;                      //
+  int fPDGDaugN;                      //
   ClassDef(AliFemtoDreamv0Cuts,1)
 };
 

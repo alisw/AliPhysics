@@ -158,10 +158,12 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt,AliAODv0 *v0) {
   if (label<0) {
     //label will be -1 if there was not 'real' candidate for matching,
     //therefore we have the case of a contamination/background v0
-    this->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+    //this should be kFake
+    this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
   } else {
     AliAODMCParticle* mcPart=(AliAODMCParticle*)mcarray->At(label);
     if (!mcPart) {
+      //this should be fIsSet!
       this->SetUse(false);
     } else {
       this->SetMCPDGCode(mcPart->GetPdgCode());
