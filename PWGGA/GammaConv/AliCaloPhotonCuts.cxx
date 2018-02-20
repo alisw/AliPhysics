@@ -5235,15 +5235,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
         } else if( fCurrentMC==k17f2a ) {
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.950536, -2.90823, -1.37953) ; //
+            energy /= FunctionNL_kSDM(energy, 0.951944, -3.38177, -0.597868) ; //  2018 02 20
           }
           if(fClusterType==2){
             energy /= (0.949117) ; //first iteration with constant
           }
         } else if( fCurrentMC==k17f2b ) {
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
-            energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
+            energy /= FunctionNL_kSDM(energy, 0.944333, -3.19899, -0.630433) ; //  2018 02 20
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5337,15 +5336,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
         } else if( fCurrentMC==k17f2a ) {
           if(fClusterType==1){
-            energy /= FunctionNL_DExp(energy, 0.9865776309, 0.3997752883, -2.8763122761, 1.0380564894, 0.5547181697, -2.3668992581); //
+            energy /= FunctionNL_DExp(energy, 0.9772393830, 0.9651600903, -2.8485741777, 1.0436698408, 0.4584792411, -2.3634185342); // 2018 02 20
           }
           if(fClusterType==2){
             energy /= (0.949117) ; //first iteration with constant
           }
         } else if( fCurrentMC==k17f2b ) {
           if(fClusterType==1){
-            energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
-            energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
+            energy /= FunctionNL_DExp(energy, 0.9806681039, 0.4840923907, -3.0169087842, 1.0436698408, 0.4584792411, -2.3634185342); // 2018 02 20
           } else if(fClusterType==2){
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.997*0.9965200155 ); // additional factors
