@@ -38,7 +38,7 @@ using TMath::TwoPi;
 
 const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"pos","neg"};
 const int AliAnalysisTaskLFefficiencies::fNcuts = 5;
-const std::string AliAnalysisTaskLFefficiencies::fCutNames[5] = {"FB4","FB8","FB8+PID TPC", "FB8 + TOF matching", "FB8 + PID TOF"};
+const std::string AliAnalysisTaskLFefficiencies::fCutNames[5] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF"};
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskLFefficiencies);
@@ -72,10 +72,16 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
       fGeneratedYPhiPt[iSpecies][iCharge] = new TH3D(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
         ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
       fOutputList->Add(fGeneratedYPhiPt[iSpecies][iCharge]);
+      fGeneratedEtaPhiPt[iSpecies][iCharge] = new TH3D(Form("GenEta_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
+        ";#eta;#varphi;#it{p}_{T} (GeV/#it{c})",10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+      fOutputList->Add(fGeneratedEtaPhiPt[iSpecies][iCharge]);
       for (int iCut = 0; iCut < fNcuts; ++iCut) {
         fReconstructedYPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
           Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
         fOutputList->Add(fReconstructedYPhiPt[iSpecies][iCharge][iCut]);
+        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("RecEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
+          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+        fOutputList->Add(fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]);
       }
     }
   }
@@ -118,6 +124,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
       if (pdg == AliPID::ParticleCode(iSpecies)) {
         fGeneratedYPhiPt[iSpecies][iCharge]->Fill(part->Y(), part->Phi(), part->Pt());
+        fGeneratedEtaPhiPt[iSpecies][iCharge]->Fill(part->Eta(), part->Phi(), part->Pt());
         break;
       }
     }
@@ -146,15 +153,17 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     if (iSpecies < 0) continue;
     v.SetPtEtaPhiM(track->Pt() * AliPID::ParticleCharge(iSpecies), track->Eta(), track->Phi(), AliPID::ParticleMass(iSpecies));
 
-    bool hasFB8 = track->TestFilterBit(BIT(8));
+    bool hasFB8 = track->TestFilterBit(BIT(5));
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool cuts[fNcuts] = {true, hasFB8, hasFB8 && TPCpid, hasFB8 && hasTOF, hasFB8 && TOFpid};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
-      if (cuts[iCut])
+      if (cuts[iCut]) {
         fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
+        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(track->Eta(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
+      }
     }
   } // End AOD track loop
 
