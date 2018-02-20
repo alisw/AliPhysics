@@ -5265,10 +5265,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_kSDM(energy, 0.962047, -3.18433, -0.586904); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.990771, -4.29086, -0.27403);
           }
+        } else if( fCurrentMC==k17f2a ) {
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.949402, -3.17052, -0.57999) ; // 2018 02 20 
+          }
         } else if( fCurrentMC==k17f2b ) {
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.973301, -3.66136, -1.20116) ; //with TM pt dep
-            energy /= (FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541) * 1.0036264536 );
+            energy /= FunctionNL_kSDM(energy, 0.941353, -2.80746, -0.662592) ; // 2018 02 20 
           }
         } else fPeriodNameAvailable = kFALSE;
       }
