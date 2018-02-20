@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
-
+# macro to cache production infromation and to create an "materrialized view
+# Input:
+#    MonALISA production tables - aceeesed using AliExternalInfo interface
+# Output:
+#    mcRunQATrending.root       - MC detectorQA+production per run
+#    mcPeriodQATrending.root    - MC detectorQA+production per period
+#    realDataRunTrending.root   - Real data QA+production per run
+#    realDataPeriodTrending.root- Real data QA+production per period
+# ( source $AliRoot_SRC/STAT/Macros/aliExternalInfo.sh; cacheMCInfo; cacheRealDataInfo )
 
 # cache MC trending trees and create summary trees with run statistic
 cacheMCInfo(){
     aliroot -n -b -l <<\EOF 2>&1 | tee cacheMC.log
     .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C+
      CacheTestMCProductions("QA.TPC",0);
-     //CacheTestMCProductions("QA.ITS",0);
-     //CacheTestMCProductions("QA.TRD",0);
+     CacheTestMCProductions("QA.ITS",0);
+     CacheTestMCProductions("QA.TRD",0);
     .q
 EOF
-# 2.) parse log to get production table info
-    echo 'period/C:type/C:runs/D:runList/C'  > mcPeriodQATrending.mif
+    # 2.) parse log to get production table info
+    echo 'period/C:type/C:nRuns/D:nRunsProd/D:runList/C'  > mcPeriodQATrending.mif
     cat  cacheMC.log |grep "CacheTestMCProductionsPeriod::"  | sed s_".*CacheTestMCProductionsPeriod::\ *"__  | sed s_"\t"_"\""_g >> mcPeriodQATrending.mif
     echo 'period/C:type/C:nRuns/D:nRunsProd/D/:index/D:run/D'  > mcRunQATrending.mif
     cat  cacheMC.log |grep "CacheTestMCProductionsRun::"  | sed s_".*CacheTestMCProductionsRun::\ *"__  | sed s_"\t"_"\""_g >> mcRunQATrending.mif
     #
-
-# 3.) convert ascii format to root file
-    aliroot -n -b -l <<\EOF 2>&1 | tee -a cacheRealData.log
+    # 3.) convert ascii format to root file
+    aliroot -n -b -l <<\EOF 2>&1 | tee -a cacheMC.log
     TTree treeRun; treeRun.ReadFile("mcRunQATrending.mif","",'\"');
     TTree treePeriod; treePeriod.ReadFile("mcPeriodQATrending.mif","",'\"');
     TFile *f0 = TFile::Open("mcRunQATrending.root","recreate"); treeRun->Write("trending"); delete f0;
