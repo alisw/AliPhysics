@@ -262,6 +262,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
 
   TH1D                       * fTrackMult;                      ///<  Track Multiplicity ---QA
   TH2D                       * fPtvsSumUE_MC;                   //!<!
+  TH1D                       * fSumEiso_MC;                     //!<!
+  TH1D                       * fSumUE_MC;                       //!<!
   TH2D                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2D                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH1D                       * fPT;                             //!<! Pt distribution

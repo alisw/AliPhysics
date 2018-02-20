@@ -141,6 +141,8 @@ fBinsDz(),
 fBinsDecay(),
 fTrackMult(0),
 fPtvsSumUE_MC(0),
+fSumEiso_MC(0),
+fSumUE_MC(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -340,6 +342,8 @@ fBinsDz(),
 fBinsDecay(),
 fTrackMult(0),
 fPtvsSumUE_MC(0),
+fSumEiso_MC(0),
+fSumUE_MC(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -880,6 +884,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fPtvsSumUE_MC = new TH2D("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters (already normalised by the appropriate areas)",200,0.,100.,400,-50.,150.);
 	  fPtvsSumUE_MC->Sumw2();
 	  fOutput->Add(fPtvsSumUE_MC);
+
+	  fSumEiso_MC = new TH1D ("hSumEiso_MC","#Sigma E_{T}^{iso cone} dist in MC truth",100,0.,100.);
+	  fSumEiso_MC->Sumw2();
+	  fOutput->Add(fSumEiso_MC);
+
+	  fSumUE_MC = new TH1D ("hSumUE_MC","UE dist (area normalised) in MC truth",100,0.,100.);
+	  fSumUE_MC->Sumw2();
+	  fOutput->Add(fSumUE_MC);
 	}
 
 	if(!fQA){
@@ -4509,8 +4521,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
     CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
-    if(fWho == 2)
+    if(fWho == 2){
       fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+      fSumEiso_MC->Fill(sumEiso);
+      fSumUE_MC->Fill(sumUE);
+    }
   }
 
   return;
