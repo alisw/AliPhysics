@@ -65,13 +65,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliPWG4HighPtTrackQA(const char *name);
   virtual ~AliPWG4HighPtTrackQA() {;}
  
-  //  virtual void   ConnectInputData(Option_t *);
-  virtual void   Init();
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *);
-  virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
-
   enum DataType {kESD,kAOD};
 
   Bool_t IsPbPb() {return fIsPbPb;}  //is PbPb data?
@@ -85,22 +78,23 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void FillHistograms();
 
   //Setters
-  void SetDataType(DataType d)             {fDataType = d;}
-  void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
-  void SetCentralityClass(int cent)        {fCentClass=cent;}
+  void SetDataType(DataType d)                     {fDataType=d;}
+  void SetIsPbPb(Bool_t cs)                        {fIsPbPb=cs;}
+  void SetEMCALTrigger(const char *emcaltrigger)   {fEmcalTrigger=emcaltrigger;}
+  void SetCentralityClass(int cent)                {fCentClass=cent;}
   void SetCuts(AliESDtrackCuts* trackCuts)         {fTrackCuts         = trackCuts;}
   void SetCutsITSLoose(AliESDtrackCuts* trackCuts) {fTrackCutsITSLoose = trackCuts;}
   void SetCutsTPConly(AliESDtrackCuts* trackCuts)  {fTrackCutsTPConly  = trackCuts;}
-  void SetTrackType(Int_t trackType) {fTrackType = trackType;}
-  void SetFilterMask(UInt_t filterMask)    {fFilterMask    = filterMask ;}
-  void SetIncludeNoITS(Bool_t f)           {fIncludeNoITS  = f          ; }
-  void SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
-  void SetZvertexDiffValue(Double_t cut)                     { fZvertexDiff  = cut                            ; }
+  void SetTrackType(Int_t trackType)               {fTrackType=trackType;}
+  void SetFilterMask(UInt_t filterMask)            {fFilterMask=filterMask;}
+  void SetIncludeNoITS(Bool_t f)                   {fIncludeNoITS=f;}
+  void SetUseSPDTrackletVsClusterBG(Bool_t b)      {fTklVsClusSPDCut=b;}
+  void SetZvertexDiffValue(Double_t cut)           {fZvertexDiff=cut;}
 
-  void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
-  void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
+  void SetSigmaConstrainedMax(Double_t sigma)      {fSigmaConstrainedMax=sigma;}
+  void SetPtMax(Float_t ptmax)                     {fPtMax = ptmax;}
   void SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth);
-  void SetNVariables(Int_t nv) {fNVariables = nv;}
+  void SetNVariables(Int_t nv)                     {fNVariables = nv;}
 
   Float_t GetPtMax()           {return fPtMax;}
   Float_t GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Bool_t useFitMap=kFALSE) const;
@@ -114,6 +108,11 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
 
  protected:
+  virtual void   Init();
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual void   Terminate(Option_t *);
+  virtual Bool_t Notify(); //Copied from AliAnalysisTaskJetSpectrum2
 
  private:
   /**
@@ -173,6 +172,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Bool_t                          fIsPbPb;                                ///< kTRUE if PbPb
   Int_t                           fCentClass;                             ///< Select only events from predefined centrality class
+  TString                         fEmcalTrigger;                          ///< EMCAL trigger class (data only)
   Bool_t                          fInit;                                  ///< true after initialization (relevant for ESD analysis)
   AliAnalysisUtils                *fAliAnalysisUtils;                     //!<!vertex selection (optional)
   Double_t                        fVertex[3];                             //!<!event vertex
@@ -278,7 +278,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TProfile                        *fProfPtSigma1Pt;                       //!<! pT vs sigma(1/Pt)
   TProfile                        *fProfPtPtSigma1Pt;                     //!<! pT vs pT*sigma(1/Pt)
 
-  TList                           *fHistList; //! List of Histograms
+  TList                           *fHistList;                             //!<! List of Histograms
  
   ClassDef(AliPWG4HighPtTrackQA,10)
 };
