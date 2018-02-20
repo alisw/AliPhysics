@@ -257,9 +257,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hPhiSum.Scale(1./nEvents)
 
   hPhiGlobal.SetTitle("#phi Distribution of Hybrid Tracks")
-  hPhiGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#varphi}")
+  hPhiGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#phi}")
   hPhiGlobal.GetYaxis().SetTitleSize(0.06)
   hPhiGlobal.GetXaxis().SetTitleSize(0.06)
+  hPhiGlobal.GetXaxis().SetTitleOffset(0.5)
   hPhiGlobal.GetYaxis().SetRangeUser(0,15.)
   if ispp:
     hPhiGlobal.GetYaxis().SetRangeUser(0,0.4)
@@ -430,7 +431,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     c25 = ROOT.TCanvas("c25","c25: pT Res Dist MC",600,450)
     c25.cd()
     c25.SetLogy()
-    hPtRes = matchedTHnSparse.Projection(6)
+    if ispp:
+      hPtRes = matchedTHnSparse.Projection(6)
+    else:
+      hPtRes = matchedTHnSparse.Projection(7)
     hPtRes.GetYaxis().SetTitle("counts")
     hPtRes.Draw("hist E")
     outputFilename = os.path.join(outputDirTracks, "hTrackPtResolutionMC" + fileFormat)
@@ -440,7 +444,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     c24 = ROOT.TCanvas("c24","c24: pT Resolution MC",600,450)
     c24.cd()
     # Project to (Pt, pT resolution, Track type)
-    hPtTracktypePtRes = matchedTHnSparse.Projection(3,7,6)
+    if ispp:
+      hPtTracktypePtRes = matchedTHnSparse.Projection(3,7,6)
+    else:
+      hPtTracktypePtRes = matchedTHnSparse.Projection(4,8,7)
     # Project to global tracks and take profile, to get the pT resolution as a function of pT
     hPtTracktypePtRes.GetYaxis().SetRange(1,1)
     hPtPtResGlobal = hPtTracktypePtRes.Project3D("zx")
@@ -500,13 +507,21 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     for dim in ["1D", "2D"]:
       if dim == "1D":
         # 1D case
-        hPtGenMatched = matchedTHnSparse.Projection(0)
-        hPtGen1D = generatorTHnSparse.Projection(0, 3)
+        if ispp:
+          hPtGenMatched = matchedTHnSparse.Projection(0)
+          hPtGen1D = generatorTHnSparse.Projection(0, 3)
+        else:
+          hPtGenMatched = matchedTHnSparse.Projection(1)
+          hPtGen1D = generatorTHnSparse.Projection(1, 4)
         hPtGenFindable = hPtGen1D.ProjectionY("trackEff", 2, 2)
       elif dim == "2D":
         # 2D case
-        hPtGenMatched = matchedTHnSparse.Projection(1, 0)
-        hPtGen2D = generatorTHnSparse.Projection(0, 1, 3)
+        if ispp:
+          hPtGenMatched = matchedTHnSparse.Projection(1, 0)
+          hPtGen2D = generatorTHnSparse.Projection(0, 1, 3)
+        else:
+          hPtGenMatched = matchedTHnSparse.Projection(2, 1)
+          hPtGen2D = generatorTHnSparse.Projection(1, 2, 4)
         hPtGen2D.GetZaxis().SetRange(2, 2)
         hPtGenFindable = hPtGen2D.Project3D("yx")
 
@@ -564,6 +579,7 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hEtaGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#eta}")
   hEtaGlobal.GetYaxis().SetTitleSize(0.06)
   hEtaGlobal.GetXaxis().SetTitleSize(0.06)
+  hEtaGlobal.GetXaxis().SetTitleOffset(0.7)
   hEtaGlobal.GetYaxis().SetRangeUser(0,20.)
   if ispp:
     hEtaGlobal.GetYaxis().SetRangeUser(0,0.6)
@@ -1576,6 +1592,7 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
       h2.GetYaxis().SetRangeUser(2e-11,20)
     h2.GetYaxis().SetLabelFont(43)
     h2.GetYaxis().SetLabelSize(20)
+    h2.GetXaxis().SetTitleOffset(1.4)
   if h3:
     h3.SetLineStyle(1)
     h3.SetLineColor(4)
@@ -1586,7 +1603,7 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
     c = ROOT.TCanvas("c","c: pT",600,450)
     c.cd()
 
-    ROOT.gPad.SetLeftMargin(0.15)
+    ROOT.gPad.SetLeftMargin(0.16)
     ROOT.gPad.SetRightMargin(0.05)
     ROOT.gPad.SetBottomMargin(0.14)
     ROOT.gPad.SetTopMargin(0.05)
