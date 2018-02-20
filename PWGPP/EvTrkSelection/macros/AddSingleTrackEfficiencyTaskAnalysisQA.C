@@ -58,7 +58,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskAnalysisQA(TString c
   //
   // Containter bining
 
-  const Int_t nbinpt=24;
+  const Int_t nbinpt=30;
   //   A2. Bins variation by hand for other variables
   const Int_t nbin2 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 8 : 8; //bins in eta
   const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 18; //bins in phi
@@ -79,9 +79,10 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskAnalysisQA(TString c
   iBin[6]=nbincent;
 
   //arrays for lower bounds :
-  Double_t binLimpT[nbinpt+1] = {0.,0.25,0.5,0.75,1.,1.25,1.5,1.75,
-				 2.,2.5,3.0,3.5,4.0,4.5,5.0,5.5,
-				 6.0,7.0,8.0,10.,12.,14.,16.,20.,30.};
+  Double_t binLimpT[nbinpt+1] = {0.00,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.50,0.60,
+				 0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,3.00,
+				 3.50,4.00,5.00,6.00,7.00,8.00,10.0,12.0,16.0,20.0,30.0};
+
   Double_t *binLim2 = new Double_t[iBin[1]+1];
   Double_t *binLim3 = new Double_t[iBin[2]+1];
   Double_t *binLim4 = new Double_t[iBin[3]+1];
