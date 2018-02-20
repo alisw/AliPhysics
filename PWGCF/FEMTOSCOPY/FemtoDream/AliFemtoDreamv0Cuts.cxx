@@ -7,10 +7,10 @@
 
 #include "AliFemtoDreamv0Cuts.h"
 #include "TDatabasePDG.h"
-#include <iostream>
 ClassImp(AliFemtoDreamv0Cuts)
 AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
 :fHistList()
+,fMCHistList()
 ,fMCHist(0)
 ,fHist(0)
 ,fPosCuts(0)
@@ -274,10 +274,6 @@ void AliFemtoDreamv0Cuts::Init() {
   fHist=new AliFemtoDreamv0Hist(fNumberXBins,fAxisMinMass,fAxisMaxMass,
                                 fCPAPlots);
   BookTrackCuts();
-  if (fMCData) {
-    fMCHist=new AliFemtoDreamv0MCHist(fNumberXBins,fAxisMinMass,fAxisMaxMass,
-                                      fContribSplitting,fCPAPlots);
-  }
   fPosCuts->Init();
   fNegCuts->Init();
   fHistList = new TList();
@@ -288,6 +284,19 @@ void AliFemtoDreamv0Cuts::Init() {
   fHistList->Add(fPosCuts->GetQAHists());
   fNegCuts->SetName("NegCuts");
   fHistList->Add(fNegCuts->GetQAHists());
+
+  if (fMCData) {
+    fMCHist=new AliFemtoDreamv0MCHist(fNumberXBins,fAxisMinMass,fAxisMaxMass,
+                                      fContribSplitting,fCPAPlots);
+    fMCHistList=new TList();
+    fMCHistList->SetOwner();
+    fMCHistList->SetName("v0MCCuts");
+    fMCHistList->Add(fMCHist->GetHistList());
+    fPosCuts->SetMCName("PosCuts");
+    fMCHistList->Add(fPosCuts->GetMCQAHists());
+    fNegCuts->SetMCName("NegCuts");
+    fMCHistList->Add(fNegCuts->GetMCQAHists());
+  }
 }
 
 
@@ -314,10 +323,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
   }
   v0->GetPosDaughter()->SetUse(v0->UseParticle());
   v0->GetNegDaughter()->SetUse(v0->UseParticle());
-  if (fMCData) {
-    v0->GetPosDaughter()->SetParticleOrigin(v0->GetParticleOrigin());
-    v0->GetNegDaughter()->SetParticleOrigin(v0->GetParticleOrigin());
-  }
+
   fPosCuts->BookQA(v0->GetPosDaughter());
   fNegCuts->BookQA(v0->GetNegDaughter());
 }
@@ -328,7 +334,7 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
     double etaNegDaug=v0->GetEta().at(1);
     double etaPosDaug=v0->GetEta().at(2);
     if (v0->GetMCPDGCode()==fPDGv0) {
-      if (fpTmin<pT&&pT<fpTmax) {
+       if (fpTmin<pT&&pT<fpTmax) {
         if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {
           if (fNegCuts->GetEtaMin()<etaNegDaug&&etaNegDaug<fNegCuts->GetEtaMax()) {
             fMCHist->FillMCGen(pT);
@@ -339,14 +345,20 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
   }
   if (v0->UseParticle()) {
     fMCHist->FillMCIdent(pT);
+    AliFemtoDreamBasePart::PartOrigin tmpOrg=v0->GetParticleOrigin();
     if (v0->GetMCPDGCode()==fPDGv0) {
       fMCHist->FillMCCorr(pT);
     } else {
       v0->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
     }
-//    if (fContribSplitting) {
-//      FillMCContributions(v0);
-//    }
+    if (fContribSplitting) {
+      FillMCContributions(v0);
+    }
+    v0->GetPosDaughter()->SetParticleOrigin(v0->GetParticleOrigin());
+    v0->GetNegDaughter()->SetParticleOrigin(v0->GetParticleOrigin());
+    fPosCuts->BookMC(v0->GetPosDaughter());
+    fNegCuts->BookMC(v0->GetNegDaughter());
+    v0->SetParticleOrigin(tmpOrg);
   }
 }
 
@@ -367,6 +379,10 @@ void AliFemtoDreamv0Cuts::FillMCContributions(AliFemtoDreamv0 *v0) {
       iFill = 2;
       break;
     case AliFemtoDreamBasePart::kContamination:
+      fMCHist->FillMCCont(pT);
+      iFill = 3;
+      break;
+    case AliFemtoDreamBasePart::kFake:
       fMCHist->FillMCCont(pT);
       iFill = 3;
       break;

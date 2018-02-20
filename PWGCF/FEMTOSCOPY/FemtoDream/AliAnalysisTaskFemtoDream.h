@@ -57,8 +57,10 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   TList *fAntiv0CutHistMCList;              //!
   AliFemtoDreamCascadeCuts *fCascCuts;      //
   TList *fCascCutList;                      //!
+  TList *fCascCutMCList;                    //!
   AliFemtoDreamCascadeCuts *fAntiCascCuts;  //
   TList *fAntiCascCutList;                  //!
+  TList *fAntiCascCutMCList;                //!
   AliFemtoDreamCollConfig *fConfig;         //
   TList *fResults;                          //!
   TList *fResultQA;                         //!

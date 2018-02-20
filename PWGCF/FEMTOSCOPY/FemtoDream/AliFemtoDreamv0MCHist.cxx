@@ -15,7 +15,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
 ,fMCIdentPt(0)
 ,fMCGenPt(0)
 ,fMCContPt(0)
-,fMCUnknownPt(0)
 ,fMCPrimaryPt(0)
 ,fMCMaterialPt(0)
 ,fMCFeeddownWeakPt(0)
@@ -24,7 +23,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
 ,fMCSecondaryCPAPtBins(0)
 ,fMCContCPAPtBins(0)
 {
-  for (int i=0;i<4;++i) {
+  for (int i=0;i<5;++i) {
     fMCQAPlots[i] = 0;
     fMCpTDist[i] = 0;
     fMCetaDist[i] = 0;
@@ -38,6 +37,15 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
     fMCDCADaugToVtx[i] = 0;
     fMCCosPointing[i] = 0;
     fMCInvMass[i] = 0;
+    fMCBachDCAToPV[i]=0;
+    fMCv0DecayLength[i]=0;
+    fMCXiDecayLength[i]=0;
+    fMCOmegaDecayLength[i]=0;
+    fMCXiRapidity[i]=0;
+    fMCOmegaRapidity[i]=0;
+    fMCPodolanski[i]=0;
+    fMCXiInvMass[i]=0;
+    fMCOmegaInvMass[i]=0;
   }
 }
 
@@ -68,34 +76,31 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
   fMCGenPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCGenPt);
 
-  fMCContPt = new TH1F("ContPt","ContPt",ptBins,ptmin,ptmax);
-  fMCContPt->Sumw2();
-  fMCContPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCContPt);
-
-  fMCUnknownPt = new TH1F("UnknPt","UnknPt",ptBins,ptmin,ptmax);
-  fMCUnknownPt->Sumw2();
-  fMCUnknownPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCUnknownPt);
-
-  fMCPrimaryPt = new TH1F("PrimaryPt","PrimaryPt",ptBins,ptmin,ptmax);
-  fMCPrimaryPt->Sumw2();
-  fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCPrimaryPt);
-
-  fMCMaterialPt = new TH1F("MatPt","MatPT",ptBins,ptmin,ptmax);
-  fMCMaterialPt->Sumw2();
-  fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCMaterialPt);
-
-  fMCFeeddownWeakPt = new TH2F(
-      "FeeddownPt","Feeddown Pt",ptBins,ptmin,ptmax,213,3121,3334);
-  fMCFeeddownWeakPt->Sumw2();
-  fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
-  fMCList->Add(fMCFeeddownWeakPt);
   if (contribSplitting) {
-    TString MCModes[4] = {"Primary","Secondary","Material","Contamination"};
-    for (int i=0;i<4;++i) {
+
+    fMCPrimaryPt = new TH1F("PrimaryPt","PrimaryPt",ptBins,ptmin,ptmax);
+    fMCPrimaryPt->Sumw2();
+    fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCPrimaryPt);
+
+    fMCMaterialPt = new TH1F("MatPt","MatPT",ptBins,ptmin,ptmax);
+    fMCMaterialPt->Sumw2();
+    fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCMaterialPt);
+
+    fMCFeeddownWeakPt = new TH2F(
+        "FeeddownPt","Feeddown Pt",ptBins,ptmin,ptmax,213,3121,3334);
+    fMCFeeddownWeakPt->Sumw2();
+    fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCFeeddownWeakPt);
+
+    fMCContPt = new TH1F("ContPt","ContPt",ptBins,ptmin,ptmax);
+    fMCContPt->Sumw2();
+    fMCContPt->GetXaxis()->SetTitle("p_{T}");
+    fMCList->Add(fMCContPt);
+
+    TString MCModes[5] = {"Primary","Secondary","Material","Contamination","Fake"};
+    for (int i=0;i<5;++i) {
       fMCQAPlots[i] = new TList();
       fMCQAPlots[i]->SetOwner();
       fMCQAPlots[i]->SetName(MCModes[i].Data());
@@ -179,8 +184,62 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
                                MassNBins,MassMin,MassMax);
       fMCInvMass[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCInvMass[i]);
+
+      TString MCBachDCAPV=Form("MCBachDCAPV%s",MCModes[i].Data());
+      fMCBachDCAToPV[i]= new TH2F(MCBachDCAPV.Data(),MCBachDCAPV.Data(),
+                             ptBins,ptmin,ptmax,50,0,10);
+      fMCQAPlots[i]->Add(fMCBachDCAToPV[i]);
+
+      TString MCv0DecayLength=Form("MCv0DecayLength%s",MCModes[i].Data());
+      fMCv0DecayLength[i]= new TH2F(MCv0DecayLength.Data(),MCv0DecayLength.Data(),
+                               ptBins,ptmin,ptmax,200,0,10);
+      fMCQAPlots[i]->Add(fMCv0DecayLength[i]);
+
+      TString MCv0CPA=Form("MCv0CPA%s",MCModes[i].Data());
+      fMCv0CPA[i]= new TH2F(MCv0CPA.Data(),MCv0CPA.Data(),
+                               ptBins,ptmin,ptmax,400,0.85,1.001);
+      fMCQAPlots[i]->Add(fMCv0CPA[i]);
+
+      TString MCXiDecayLength=Form("MCXiDecayLength%s",MCModes[i].Data());
+      fMCXiDecayLength[i]= new TH2F(MCXiDecayLength.Data(),MCXiDecayLength.Data(),
+                               ptBins,ptmin,ptmax,200,0,10);
+      fMCQAPlots[i]->Add(fMCXiDecayLength[i]);
+
+      TString MCOmegaDecayLength=Form("MCOmegaDecayLength%s",MCModes[i].Data());
+      fMCOmegaDecayLength[i]= new TH2F(MCOmegaDecayLength.Data(),MCOmegaDecayLength.Data(),
+                                  ptBins,ptmin,ptmax,200,0,10);
+      fMCQAPlots[i]->Add(fMCOmegaDecayLength[i]);
+
+      TString MCXiRapidity=Form("MCXiRapidity%s",MCModes[i].Data());
+      fMCXiRapidity[i]= new TH2F(MCXiRapidity.Data(),MCXiRapidity.Data(),
+                            50,-2,2,ptBins,ptmin,ptmax);
+      fMCQAPlots[i]->Add(fMCXiRapidity[i]);
+
+      TString MCOmegaRapidity=Form("MCOmegaRapidity%s",MCModes[i].Data());
+      fMCOmegaRapidity[i]= new TH2F(MCOmegaRapidity.Data(),MCOmegaRapidity.Data(),
+                               50,-2,2,ptBins,ptmin,ptmax);
+      fMCQAPlots[i]->Add(fMCOmegaRapidity[i]);
+
+      TString MCPodolanski=Form("MCPodolanski%s",MCModes[i].Data());
+      fMCPodolanski[i]= new TH2F(MCPodolanski.Data(),MCPodolanski.Data(),
+                            50,-1,1,50,0,1);
+      fMCQAPlots[i]->Add(fMCPodolanski[i]);
+
+      TString MCXiInvMass=Form("MCXiInvMass%s",MCModes[i].Data());
+      fMCXiInvMass[i]= new TH2F(MCXiInvMass.Data(),MCXiInvMass.Data(),
+                           ptBins,ptmin,ptmax,500,1.31486*0.9,1.31486*1.3);
+      fMCQAPlots[i]->Add(fMCXiInvMass[i]);
+
+      TString MCOmegaInvMass=Form("MCOmegaInvMass%s",MCModes[i].Data());
+      fMCOmegaInvMass[i]= new TH2F(MCOmegaInvMass.Data(),MCOmegaInvMass.Data(),
+                              ptBins,ptmin,ptmax,500,1.672*0.9,1.672*1.3);
+      fMCQAPlots[i]->Add(fMCOmegaInvMass[i]);
     }
   } else {
+    fMCPrimaryPt=0;
+    fMCMaterialPt=0;
+    fMCFeeddownWeakPt=0;
+    fMCContPt=0;
     for (int i=0;i<4;++i) {
       fMCQAPlots[i] = 0;
       fMCpTDist[i] = 0;
@@ -195,6 +254,15 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
       fMCDCADaugToVtx[i] = 0;
       fMCCosPointing[i] = 0;
       fMCInvMass[i] = 0;
+      fMCBachDCAToPV[i]=0;
+      fMCv0DecayLength[i]=0;
+      fMCXiDecayLength[i]=0;
+      fMCOmegaDecayLength[i]=0;
+      fMCXiRapidity[i]=0;
+      fMCOmegaRapidity[i]=0;
+      fMCPodolanski[i]=0;
+      fMCXiInvMass[i]=0;
+      fMCOmegaInvMass[i]=0;
     }
   }
 
@@ -262,7 +330,7 @@ void AliFemtoDreamv0MCHist::FillMCCPAPtBins(
     fMCSecondaryCPAPtBins->Fill(pT,cpa);
   } else if(org == AliFemtoDreamBasePart::kMaterial) {
     fMCMaterialCPAPtBins->Fill(pT,cpa);
-  } else if(org == AliFemtoDreamBasePart::kContamination) {
+  } else if(org == AliFemtoDreamBasePart::kFake) {
     fMCContCPAPtBins->Fill(pT,cpa);
   } else {
     AliFatal("Particle Origin not implemented");

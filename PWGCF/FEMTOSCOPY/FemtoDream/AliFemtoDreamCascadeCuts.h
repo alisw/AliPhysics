@@ -9,17 +9,23 @@
 #define ALIFEMTODREAMCASCADECUTS_H_
 #include "Rtypes.h"
 #include "TList.h"
+#include "AliMCEvent.h"
 #include "AliFemtoDreamCascade.h"
 #include "AliFemtoDreamCascadeHist.h"
+#include "AliFemtoDreamv0MCHist.h"
 #include "AliFemtoDreamTrackCuts.h"
 class AliFemtoDreamCascadeCuts {
  public:
   AliFemtoDreamCascadeCuts();
   virtual ~AliFemtoDreamCascadeCuts();
-  static AliFemtoDreamCascadeCuts *XiCuts(bool isMC);
+  static AliFemtoDreamCascadeCuts *XiCuts(bool isMC,bool contribSplitting);
   void Setv0Negcuts(AliFemtoDreamTrackCuts *cuts){fNegCuts=cuts;};
   void Setv0PosCuts(AliFemtoDreamTrackCuts *cuts){fPosCuts=cuts;};
   void SetBachCuts(AliFemtoDreamTrackCuts *cuts){fBachCuts=cuts;};
+  void SetIsMonteCarlo(bool isMC){fMCData=isMC;};
+  bool GetIsMonteCarlo() {return fMCData;};
+  void SetContributionSplitting(bool contrSplit){
+    fContribSplitting=contrSplit;};
   void SetXiMassRange(double mass,double width){
     fcutXiMass=true;fXiMass=mass;fXiMassWidth=width;};
   void SetXiCharge(int charge){fcutXiCharge=true;fXiCharge=charge;}
@@ -42,17 +48,34 @@ class AliFemtoDreamCascadeCuts {
     fcutv0MinDistVtx=true;fv0MinDistVtx=minDist;}
   void SetCutv0MinDaugDistToPrimVtx(double minDist){
     fcutv0DaugMinDistVtx=true;fv0DaugMinDistVtx=minDist;};
+  void SetPDGCodeCasc(int PDG){fPDGCasc=PDG;};
+  int GetPDGCodeCasc(){return fPDGCasc;};
+  void SetPDGCodePosDaug(int PDG){fPDGPosDaug=PDG;};
+  int GetPDGCodePosDaug(){return fPDGPosDaug;};
+  void SetPDGCodeNegDaug(int PDG){fPDGNegDaug=PDG;};
+  int GetPDGCodeNegDaug(){return fPDGNegDaug;};
+  void SetPDGCodeBach(int PDG){fPDGBachDaug=PDG;};
+  int GetPDGCodeBach(){return fPDGBachDaug;};
+  void SetPDGCodev0(int PDG) {fPDGv0=PDG;};
+  int GetPDGv0() {return fPDGv0;};
   TString ClassName()const{return "AliFemtoDreamCascadeCuts";};
   void Init();
   bool isSelected(AliFemtoDreamCascade *casc);
   void BookQA(AliFemtoDreamCascade *casc);
+  void BookMCQA(AliFemtoDreamCascade *casc);
+  void FillMCContributions(AliFemtoDreamCascade *casc);
   TList *GetQAHists() {return fHistList;};
+  TList *GetMCQAHists() {return fMCHistList;};
  private:
   AliFemtoDreamCascadeHist *fHist;
+  AliFemtoDreamv0MCHist *fMCHist;
   AliFemtoDreamTrackCuts *fNegCuts;
   AliFemtoDreamTrackCuts *fPosCuts;
   AliFemtoDreamTrackCuts *fBachCuts;
   TList *fHistList;
+  TList *fMCHistList;
+  bool fMCData;
+  bool fContribSplitting;
   bool fcutXiMass;
   double fXiMass;
   double fXiMassWidth;
@@ -81,7 +104,11 @@ class AliFemtoDreamCascadeCuts {
   double fv0MinDistVtx;
   bool fcutv0DaugMinDistVtx;
   double fv0DaugMinDistVtx;
-
+  int fPDGCasc;
+  int fPDGv0;
+  int fPDGPosDaug;
+  int fPDGNegDaug;
+  int fPDGBachDaug;
   ClassDef(AliFemtoDreamCascadeCuts,1)
 };
 

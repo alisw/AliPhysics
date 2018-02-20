@@ -72,7 +72,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass=false;
     }
   }
-  if (pass) {
+  if (pass&&fCutPID) {
     if (!PIDAODCuts(Track)) {
       pass=false;
     } else {
@@ -462,6 +462,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
     int PDGcode[5] = {11,13,211,321,2212};
     //Fill Identified
     fMCHists->FillMCIdent(pT);
+    AliFemtoDreamBasePart::PartOrigin tmpOrg=Track->GetParticleOrigin();
     if (!fcutCharge) {
       if (TMath::Abs(Track->GetMCPDGCode())==TMath::Abs(PDGcode[fParticleID])) {
         fMCHists->FillMCCorr(pT);
@@ -479,6 +480,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
     if (fContribSplitting) {
       FillMCContributions(Track);
     }
+    Track->SetParticleOrigin(tmpOrg);
   }
 }
 

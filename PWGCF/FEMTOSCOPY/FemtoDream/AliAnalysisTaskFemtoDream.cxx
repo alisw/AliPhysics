@@ -33,8 +33,10 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fAntiv0CutHistMCList(0)
 ,fCascCuts()
 ,fCascCutList(0)
+,fCascCutMCList(0)
 ,fAntiCascCuts()
 ,fAntiCascCutList(0)
+,fAntiCascCutMCList(0)
 ,fConfig()
 ,fResults()
 ,fResultQA()
@@ -64,8 +66,10 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isMC)
 ,fAntiv0CutHistMCList(0)
 ,fCascCuts()
 ,fCascCutList(0)
+,fCascCutMCList(0)
 ,fAntiCascCuts()
 ,fAntiCascCutList(0)
+,fAntiCascCutMCList(0)
 ,fConfig()
 ,fResults()
 ,fResultQA()
@@ -85,6 +89,8 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isMC)
     DefineOutput(12, TList::Class()); //Output for the AntiTrack Cut MC Info
     DefineOutput(13, TList::Class()); //Output for the v0 Cut MC Info
     DefineOutput(14, TList::Class()); //Output for the Antiv0 Cut MC Info
+    DefineOutput(15, TList::Class()); //Output for the Xi Cut MC Info
+    DefineOutput(16, TList::Class()); //Output for the AntiXi Cut MC Info
   }
 }
 
@@ -222,10 +228,22 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     } else {
       AliFatal("No Antiv0 cut MC Histograms");
     }
+    if (fCascCuts->GetIsMonteCarlo()) {
+      fCascCutMCList=fCascCuts->GetMCQAHists();
+    } else {
+      AliFatal("No Casc cut MC Histograms");
+    }
+    if (fAntiCascCuts->GetIsMonteCarlo()) {
+      fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
+    } else {
+      AliFatal("No Anti Casc cut MC Histograms");
+    }
     PostData(11,fTrackCutHistMCList);
     PostData(12,fAntiTrackCutHistMCList);
     PostData(13,fv0CutHistMCList);
     PostData(14,fAntiv0CutHistMCList);
+    PostData(15,fCascCutMCList);
+    PostData(16,fAntiCascCutMCList);
   }
 }
 
@@ -236,10 +254,10 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
   } else {
     fAnalysis->Make(Event);
     if (fAnalysis->GetQAList()) {
-       fQA=fAnalysis->GetQAList();
-     } else {
-       AliFatal("QA Histograms not available");
-     }
+      fQA=fAnalysis->GetQAList();
+    } else {
+      AliFatal("QA Histograms not available");
+    }
     if (fAnalysis->GetEventCutHists()) {
       fEvtHistList=fAnalysis->GetEventCutHists();
     } else {
@@ -316,10 +334,22 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
       } else {
         AliFatal("No Antiv0 cut MC Histograms");
       }
+      if (fCascCuts->GetIsMonteCarlo()) {
+        fCascCutMCList=fCascCuts->GetMCQAHists();
+      } else {
+        AliFatal("No Casc cut MC Histograms");
+      }
+      if (fAntiCascCuts->GetIsMonteCarlo()) {
+        fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
+      } else {
+        AliFatal("No Anti Casc cut MC Histograms");
+      }
       PostData(11,fTrackCutHistMCList);
       PostData(12,fAntiTrackCutHistMCList);
       PostData(13,fv0CutHistMCList);
       PostData(14,fAntiv0CutHistMCList);
+      PostData(15,fCascCutMCList);
+      PostData(16,fAntiCascCutMCList);
     }
   }
 }

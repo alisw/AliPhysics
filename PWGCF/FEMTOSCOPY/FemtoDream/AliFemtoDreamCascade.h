@@ -22,10 +22,13 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   TString ClassName(){return "Cascade";};
   double GetXiMass() {return fXiMass;};
   double GetOmegaMass() {return fOmegaMass;};
+  double GetDCAXiPrimVtx() {return fDCAXiPrimVtx;};
   double GetXiDCADaug() {return fDCAXiDaug;};
   double GetXiTransverseRadius() {return fTransRadius;};
   double GetXiRapidity() {return fRapXi;};
+  double GetOmegaRapidity() {return fRapOmega;};
   double GetXiAlpha() {return fAlphaXi;};
+  double GetPtArmXi() {return fPtArmXi;};
   double GetXiDecayLength() {return fXiLength;};
   double GetOmegaDecayLength() {return fOmegaLength;};
   double BachDCAPrimVtx() {return fDCABachPrimVtx;};
@@ -39,12 +42,17 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double Getv0XiPointingAngle() {return fv0ToXiPointAngle;};
   double Getv0DecayLength() {return fv0Length;};
   double GetDCAv0Xi() {return fDCAv0Xi;};
+  void SetPDGDaugPos(int PDGCode){fPosDaug->SetPDGCode(PDGCode);};
+  void SetPDGDaugNeg(int PDGCode){fNegDaug->SetPDGCode(PDGCode);};
+  void SetPDGDaugBach(int PDGCode){fBach->SetPDGCode(PDGCode);};
   TVector3 Getv0P() {return fv0Momentum;};
+  void Setv0PDGCode(int PDG) {fv0PDG=PDG;};
   AliFemtoDreamTrack *GetPosDaug()const{return fPosDaug;};
   AliFemtoDreamTrack *GetNegDaug()const{return fNegDaug;};
   AliFemtoDreamTrack *GetBach()const{return fBach;};
  private:
   void Reset();
+  void SetMCMotherInfo(AliAODEvent *evt, AliAODcascade *casc);
   AliFemtoDreamTrack *fPosDaug;
   AliFemtoDreamTrack *fNegDaug;
   AliFemtoDreamTrack *fBach;
@@ -53,8 +61,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double fDCAXiDaug;
   double fTransRadius;
   double fRapXi;
+  double fRapOmega;
   double fAlphaXi;
   double fPtArmXi;
+  double fDCAXiPrimVtx;
   double fXiLength;
   double fOmegaLength;
   double fMassv0;
@@ -69,6 +79,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   double fv0ToXiPointAngle;
   double fv0Length;
   double fDCAv0Xi;
+  int fv0PDG;
   ClassDef(AliFemtoDreamCascade,1)
 };
 

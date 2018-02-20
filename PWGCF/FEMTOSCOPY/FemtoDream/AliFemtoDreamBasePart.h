@@ -19,8 +19,9 @@ class AliFemtoDreamBasePart {
     kPhysPrimary=0,
     kWeak=1,
     kMaterial=2,
-    kContamination=3,
-    kUnknown=4
+    kFake=3,
+    kContamination=4,
+    kUnknown=5
   };
 
   void SetMomentum(double px,double py,double pz) {fP.SetXYZ(px,py,pz);};
@@ -87,8 +88,8 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   bool fIsMC;
-  bool fUse;
-  bool fIsSet;
+  bool fUse;    //passes cuts
+  bool fIsSet;  //has all the attributes set properly
   ClassDef(AliFemtoDreamBasePart,1);
 };
 

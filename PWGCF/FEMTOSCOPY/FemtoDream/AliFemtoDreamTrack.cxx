@@ -219,7 +219,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
     AliError("SPTrack: MC Array not found");
   }
   if (fGlobalTrack->GetLabel()>0) {
-    AliAODMCParticle * mcPart = (AliAODMCParticle*)mcarray->At(fGlobalTrack->GetLabel());;
+    AliAODMCParticle * mcPart = (AliAODMCParticle*)mcarray->At(fGlobalTrack->GetLabel());
     if (!(mcPart)) {
       this->fIsSet=false;
     } else {

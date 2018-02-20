@@ -11,10 +11,14 @@
 ClassImp(AliFemtoDreamCascadeCuts)
 AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 :fHist(0)
+,fMCHist(0)
 ,fNegCuts(0)
 ,fPosCuts(0)
 ,fBachCuts(0)
 ,fHistList(0)
+,fMCHistList(0)
+,fMCData(false)
+,fContribSplitting(false)
 ,fcutXiMass(false)
 ,fXiMass(0)
 ,fXiMassWidth(0)
@@ -43,6 +47,11 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 ,fv0MinDistVtx(0)
 ,fcutv0DaugMinDistVtx(false)
 ,fv0DaugMinDistVtx(0)
+,fPDGCasc(0)
+,fPDGv0(0)
+,fPDGPosDaug(0)
+,fPDGNegDaug(0)
+,fPDGBachDaug(0)
 {
 }
 
@@ -58,8 +67,11 @@ AliFemtoDreamCascadeCuts::~AliFemtoDreamCascadeCuts() {
   }
 }
 
-AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(bool isMC) {
+AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
+    bool isMC,bool contribSplitting) {
   AliFemtoDreamCascadeCuts *XiCuts=new AliFemtoDreamCascadeCuts();
+  XiCuts->SetIsMonteCarlo(isMC);
+  XiCuts->SetContributionSplitting(contribSplitting);
   XiCuts->SetXiMassRange(1.31486,0.05);
   XiCuts->SetCutXiDaughterDCA(1.6);
   XiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
@@ -127,21 +139,21 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     if (casc->GetXiDCADaug()>fMaxDCAXiDaug) {
       pass=false;
     } else {
-      fHist->FillCutCounter(23);
+      fHist->FillCutCounter(8);
     }
   }
   if (pass&&fcutMinDistVtxBach) {
     if (casc->BachDCAPrimVtx()<fMinDistVtxBach) {
       pass=false;
     } else {
-      fHist->FillCutCounter(24);
+      fHist->FillCutCounter(9);
     }
   }
   if (pass&&fcutCPAXi) {
     if (casc->GetCPA()<fCPAXi) {
       pass=false;
     } else {
-      fHist->FillCutCounter(25);
+      fHist->FillCutCounter(10);
     }
   }
   if (pass&&fcutXiTransRadius) {
@@ -149,21 +161,21 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->GetXiTransverseRadius()>fMaxXiTransRadius)) {
       pass=false;
     } else {
-      fHist->FillCutCounter(26);
+      fHist->FillCutCounter(11);
     }
   }
   if (pass&&fcutv0MaxDCADaug) {
     if (casc->Getv0DCADaug()>fv0MaxDCADaug) {
       pass=false;
     } else {
-      fHist->FillCutCounter(27);
+      fHist->FillCutCounter(12);
     }
   }
   if (pass&&fcutCPAv0) {
     if (casc->Getv0CPA()<fCPAv0) {
       pass=false;
     } else {
-      fHist->FillCutCounter(28);
+      fHist->FillCutCounter(13);
     }
   }
   if (pass&&fcutv0TransRadius) {
@@ -171,14 +183,14 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0TransverseRadius()>fMaxv0TransRadius)) {
       pass=false;
     } else {
-      fHist->FillCutCounter(29);
+      fHist->FillCutCounter(14);
     }
   }
   if (pass&&fcutv0MinDistVtx) {
     if (casc->Getv0DCAPrimVtx()<fv0MinDistVtx) {
       pass=false;
     } else {
-      fHist->FillCutCounter(30);
+      fHist->FillCutCounter(15);
     }
   }
   if (pass&&fcutv0DaugMinDistVtx) {
@@ -186,7 +198,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0NegToPrimVtx()<fv0DaugMinDistVtx)) {
       pass=false;
     } else {
-      fHist->FillCutCounter(31);
+      fHist->FillCutCounter(16);
     }
   }
   if (pass) {
@@ -197,7 +209,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0Mass()>(fv0Mass+fv0Width))) {
       pass=false;
     } else {
-      fHist->FillCutCounter(32);
+      fHist->FillCutCounter(17);
     }
   }
   if (pass) {
@@ -208,7 +220,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->GetXiMass()>(fXiMass+fXiMassWidth))) {
       pass=false;
     } else {
-      fHist->FillCutCounter(33);
+      fHist->FillCutCounter(18);
     }
   }
   casc->SetUse(pass);
@@ -216,13 +228,16 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   casc->GetPosDaug()->SetUse(pass);
   casc->GetBach()->SetUse(pass);
   BookQA(casc);
+  if (fMCData) {
+    BookMCQA(casc);
+  }
   return pass;
 }
 
 void AliFemtoDreamCascadeCuts::Init() {
   fHist=new AliFemtoDreamCascadeHist(fXiMass);
   if (!(fNegCuts||fPosCuts||fBachCuts)) {
-      AliFatal("Track Cuts Object Missing");
+    AliFatal("Track Cuts Object Missing");
   }
   fNegCuts->Init();
   fPosCuts->Init();
@@ -237,6 +252,22 @@ void AliFemtoDreamCascadeCuts::Init() {
   fHistList->Add(fPosCuts->GetQAHists());
   fBachCuts->SetName("BachelorCuts");
   fHistList->Add(fBachCuts->GetQAHists());
+
+  if (fMCData) {
+    fMCHist=new AliFemtoDreamv0MCHist(
+        400,1.0, 1.2,fContribSplitting,false);
+    fMCHistList=new TList();
+    fMCHistList->SetOwner();
+    fMCHistList->SetName("CascadeMC");
+    fMCHistList->Add(fMCHist->GetHistList());
+
+    fNegCuts->SetMCName("NegCuts");
+    fMCHistList->Add(fNegCuts->GetMCQAHists());
+    fPosCuts->SetMCName("PosCuts");
+    fMCHistList->Add(fPosCuts->GetMCQAHists());
+    fBachCuts->SetMCName("BachCuts");
+    fMCHistList->Add(fBachCuts->GetMCQAHists());
+  }
 }
 
 void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
@@ -256,6 +287,7 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
       fHist->FillMinDistPrimVtxv0(i,casc->Getv0DCAPrimVtx());
       fHist->FillMinDistPrimVtxv0DaugPos(i,casc->Getv0PosToPrimVtx());
       fHist->FillMinDistPrimVtxv0DaugNeg(i,casc->Getv0NegToPrimVtx());
+      fHist->FillPodolandski(i,casc->GetXiAlpha(),casc->GetPtArmXi());
     }
   }
   fNegCuts->BookQA(casc->GetNegDaug());
@@ -263,3 +295,97 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
   fBachCuts->BookQA(casc->GetBach());
   return;
 }
+
+void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
+  double pT=casc->GetPt();
+//  if (casc->GetHasDaughters()) {
+//    double etaNegDaug=casc->GetEta().at(1);
+//    double etaPosDaug=casc->GetEta().at(2);
+//    if (casc->GetMCPDGCode()==fPDGv0) {
+//      if (fpTmin<pT&&pT<fpTmax) {
+//        if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {
+//          if (fNegCuts->GetEtaMin()<etaNegDaug&&etaNegDaug<fNegCuts->GetEtaMax()) {
+//            fMCHist->FillMCGen(pT);
+//          }
+//        }
+//      }
+//    }
+//  }
+  if (casc->UseParticle()) {
+    fMCHist->FillMCIdent(pT);
+    AliFemtoDreamBasePart::PartOrigin tmpOrg=casc->GetParticleOrigin();
+    if (casc->GetParticleOrigin()!=AliFemtoDreamBasePart::kFake) {
+      if (casc->GetMCPDGCode()==fPDGCasc) {
+        fMCHist->FillMCCorr(pT);
+      } else {
+        casc->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+      }
+    }
+    if (fContribSplitting) {
+      FillMCContributions(casc);
+    }
+    casc->GetPosDaug()->SetParticleOrigin(casc->GetParticleOrigin());
+    casc->GetNegDaug()->SetParticleOrigin(casc->GetParticleOrigin());
+    casc->GetBach()->SetParticleOrigin(casc->GetParticleOrigin());
+    fPosCuts->BookMC(casc->GetPosDaug());
+    fNegCuts->BookMC(casc->GetNegDaug());
+    fBachCuts->BookMC(casc->GetBach());
+    casc->SetParticleOrigin(tmpOrg);
+  }
+  return;
+}
+
+void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
+  Double_t pT = casc->GetPt();
+  Int_t iFill = -1;
+  switch(casc->GetParticleOrigin()){
+    case AliFemtoDreamBasePart::kPhysPrimary:
+      fMCHist->FillMCPrimary(pT);
+      iFill = 0;
+      break;
+    case AliFemtoDreamBasePart::kWeak:
+      fMCHist->FillMCFeeddown(pT, TMath::Abs(casc->GetMotherWeak()));
+      iFill = 1;
+      break;
+    case AliFemtoDreamBasePart::kMaterial:
+      fMCHist->FillMCMaterial(pT);
+      iFill = 2;
+      break;
+    case AliFemtoDreamBasePart::kContamination:
+      fMCHist->FillMCCont(pT);
+      iFill = 3;
+      break;
+    case AliFemtoDreamBasePart::kFake:
+      fMCHist->FillMCCont(pT);
+      iFill = 4;
+      break;
+    default:
+      AliFatal("Type Not implemented");
+      break;
+  }
+  if (iFill!=-1) {
+    fMCHist->FillMCpT(iFill,pT);
+    fMCHist->FillMCEta(iFill,casc->GetEta().at(0));
+    fMCHist->FillMCPhi(iFill,casc->GetPhi().at(0));
+    fMCHist->FillMCPodolanski(iFill,casc->GetPtArmXi(),casc->GetXiAlpha());
+    fMCHist->FillMCCosPoint(iFill,pT,casc->GetCPA());
+    fMCHist->FillMCBachDCAToPV(iFill,pT,casc->BachDCAPrimVtx());
+    fMCHist->FillMCv0DecayLength(iFill,pT,casc->Getv0DecayLength());
+    fMCHist->FillMCv0CPA(iFill,pT,casc->Getv0CPA());
+    fMCHist->FillMCXiDecayLength(iFill,pT,casc->GetXiDecayLength());
+    fMCHist->FillMCOmegaDecayLength(iFill,pT,casc->GetOmegaDecayLength());
+    fMCHist->FillMCXiRapidity(iFill,casc->GetMomentum().Mag(),casc->GetXiRapidity());
+    fMCHist->FillMCOmegaRapidity(iFill,casc->GetMomentum().Mag(),casc->GetOmegaRapidity());
+    fMCHist->FillMCTransverseRadius(iFill,pT,casc->GetXiTransverseRadius());
+    fMCHist->FillMCDCAPosDaugPrimVtx(iFill,pT,casc->Getv0PosToPrimVtx());
+    fMCHist->FillMCDCANegDaugPrimVtx(iFill,pT,casc->Getv0NegToPrimVtx());
+    fMCHist->FillMCDCADaugVtx(iFill,pT,casc->GetXiDCADaug());
+    fMCHist->FillMCInvMass(iFill,casc->Getv0Mass());
+    fMCHist->FillMCXiInvMass(iFill,pT,casc->GetXiMass());
+    fMCHist->FillMCOmegaInvMass(iFill,pT,casc->GetOmegaMass());
+
+  } else {
+    std::cout << "this should not happen \n";
+  }
+}
+
