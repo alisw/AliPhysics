@@ -16,5 +16,6 @@ It is crucial, that the additional /OADB is added to the global variable OADB_PA
 In addition, a short history of changes to the files in EOS will be listed here:
 
 - 20180213: Moved all files to EOS.
+- 20180220: Update of EMCALBadChannels.root with LHC17o BC maps
 
 */
