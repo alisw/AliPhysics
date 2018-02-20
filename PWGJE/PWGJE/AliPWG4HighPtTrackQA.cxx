@@ -1,29 +1,34 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-//-----------------------------------------------------------------------
-// This class stores QA variables as function of pT for different type
-// of tracks and track selection criteria
-// Output: Histograms for different set of cuts
-//-----------------------------------------------------------------------
-// Author : M. Verweij - UU
-//-----------------------------------------------------------------------
-
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIPWG4HIGHPTTRACKQA_CXX
 #define ALIPWG4HIGHPTTRACKQA_CXX
 
+#include <memory>
+#include <vector>
 #include "AliPWG4HighPtTrackQA.h"
 
 #include "TH1.h"
@@ -54,20 +59,21 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisUtils.h"
 
-using namespace std; //required for resolving the 'cout' symbol
-
 ClassImp(AliPWG4HighPtTrackQA);
 
+/**
+ * @brief Constructor
+ */
 AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
     : AliAnalysisTaskSE(),
       fDataType(kESD),
-      fEvent(0x0),
-      fESD(0x0),
-      fVtx(0x0),
-      fVtxAOD(0x0),
-      fTrackCuts(0x0),
-      fTrackCutsITSLoose(0x0),
-      fTrackCutsTPConly(0x0),
+      fEvent(nullptr),
+      fESD(nullptr),
+      fVtx(nullptr),
+      fVtxAOD(nullptr),
+      fTrackCuts(nullptr),
+      fTrackCutsITSLoose(nullptr),
+      fTrackCutsTPConly(nullptr),
       fTrackType(0),
       fFilterMask(0),
       fIncludeNoITS(kFALSE),
@@ -76,13 +82,13 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
       fIsPbPb(0),
       fCentClass(10),
       fInit(0),
-      fAliAnalysisUtils(0x0),
+      fAliAnalysisUtils(nullptr),
       fNVertCont(0),
       fNVertSPDCont(0),
       fTklVsClusSPDCut(kFALSE),
       fZvertexDiff(0.5),
       fNVariables(27),
-      fVariables(0x0),
+      fVariables(nullptr),
       fITSClusterMap(0),
       fAvgTrials(1),
       fNEventAll(0),
@@ -90,78 +96,75 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
       fNEventReject(0),
       fhEvMult(0),
       fhTrackletsMult(0),
-      fh1Centrality(0x0),
+      fh1Centrality(nullptr),
       fh1Xsec(0),
       fh1Trials(0),
       fh1PtHard(0),
       fh1PtHardTrials(0),
-      fh1NTracksAll(0x0),
-      fh1NTracksReject(0x0),
-      fh1NTracksSel(0x0),
+      fh1NTracksAll(nullptr),
+      fh1NTracksReject(nullptr),
+      fh1NTracksSel(nullptr),
       fPtAll(0),
       fPtSel(0),
-      fPtPhi(0x0),
-      fPtEta(0x0),
-      fPtEtaPhi(0x0),
-      fPtDCA2D(0x0),
-      fPtDCAZ(0x0),
-      fPtNClustersTPC(0x0),
-      fPtNClustersTPCPhi(0x0),
-      fPtNClustersTPCIter1(0x0),
-      fPtNClustersTPCIter1Phi(0x0),
-      fPtNClustersTPCShared(0x0),
-      fPtNClustersTPCSharedFrac(0x0),
-      fPtNPointITS(0x0),
-      fPtNPointITSPhi(0x0),
-      fPtChi2C(0x0),
-      fPtNSigmaToVertex(0x0),
-      fPtRelUncertainty1Pt(0x0),
-      fPtRelUncertainty1PtNClus(0x0),
-      fPtRelUncertainty1PtNClusIter1(0x0),
-      fPtRelUncertainty1PtNPointITS(0x0),
-      fPtRelUncertainty1PtITSClusterMap(0x0),
-      fPtRelUncertainty1PtChi2(0x0),
-      fPtRelUncertainty1PtChi2Iter1(0x0),
-      fPtRelUncertainty1PtPhi(0x0),
-      fPtChi2PerClusterTPC(0x0),
-      fPtChi2PerClusterTPCIter1(0x0),
-      fPtNCrossedRows(0x0),
-      fPtNCrossedRowsPhi(0x0),
-      fPtNCrossedRowsNClusFPhi(0x0),
-      fPtNCrRNCrRNClusF(0x0),
-      fPtNCrossedRowsFit(0x0),
-      fPtNCrossedRowsFitPhi(0x0),
-      fPtNCrossedRowsNClusFFitPhi(0x0),
-      fNCrossedRowsNCrossedRowsFit(0x0),
-      fNClustersNCrossedRows(0x0),
-      fNClustersNCrossedRowsFit(0x0),
-      fPtNClustersNClustersFitMap(0x0),
-      fPtTPCSignalN(0x0),
-      fPtRelUncertainty1PtNCrossedRows(0x0),
-      fPtRelUncertainty1PtNCrossedRowsFit(0x0),
-      fPtChi2Gold(0x0),
-      fPtChi2GGC(0x0),
-      fPtChi2GoldPhi(0x0),
-      fPtChi2GGCPhi(0x0),
-      fChi2GoldChi2GGC(0x0),
-      fPtChi2ITSPhi(0x0),
-      fPtSigmaY2(0x0),
-      fPtSigmaZ2(0x0),
-      fPtSigmaSnp2(0x0),
-      fPtSigmaTgl2(0x0),
-      fPtSigma1Pt2(0x0),
-      fProfPtSigmaY2(0x0),
-      fProfPtSigmaZ2(0x0),
-      fProfPtSigmaSnp2(0x0),
-      fProfPtSigmaTgl2(0x0),
-      fProfPtSigma1Pt2(0x0),
-      fProfPtSigma1Pt(0x0),
-      fProfPtPtSigma1Pt(0x0),
+      fPtPhi(nullptr),
+      fPtEta(nullptr),
+      fPtEtaPhi(nullptr),
+      fPtDCA2D(nullptr),
+      fPtDCAZ(nullptr),
+      fPtNClustersTPC(nullptr),
+      fPtNClustersTPCPhi(nullptr),
+      fPtNClustersTPCIter1(nullptr),
+      fPtNClustersTPCIter1Phi(nullptr),
+      fPtNClustersTPCShared(nullptr),
+      fPtNClustersTPCSharedFrac(nullptr),
+      fPtNPointITS(nullptr),
+      fPtNPointITSPhi(nullptr),
+      fPtChi2C(nullptr),
+      fPtNSigmaToVertex(nullptr),
+      fPtRelUncertainty1Pt(nullptr),
+      fPtRelUncertainty1PtNClus(nullptr),
+      fPtRelUncertainty1PtNClusIter1(nullptr),
+      fPtRelUncertainty1PtNPointITS(nullptr),
+      fPtRelUncertainty1PtITSClusterMap(nullptr),
+      fPtRelUncertainty1PtChi2(nullptr),
+      fPtRelUncertainty1PtChi2Iter1(nullptr),
+      fPtRelUncertainty1PtPhi(nullptr),
+      fPtChi2PerClusterTPC(nullptr),
+      fPtChi2PerClusterTPCIter1(nullptr),
+      fPtNCrossedRows(nullptr),
+      fPtNCrossedRowsPhi(nullptr),
+      fPtNCrossedRowsNClusFPhi(nullptr),
+      fPtNCrRNCrRNClusF(nullptr),
+      fPtNCrossedRowsFit(nullptr),
+      fPtNCrossedRowsFitPhi(nullptr),
+      fPtNCrossedRowsNClusFFitPhi(nullptr),
+      fNCrossedRowsNCrossedRowsFit(nullptr),
+      fNClustersNCrossedRows(nullptr),
+      fNClustersNCrossedRowsFit(nullptr),
+      fPtNClustersNClustersFitMap(nullptr),
+      fPtTPCSignalN(nullptr),
+      fPtRelUncertainty1PtNCrossedRows(nullptr),
+      fPtRelUncertainty1PtNCrossedRowsFit(nullptr),
+      fPtChi2Gold(nullptr),
+      fPtChi2GGC(nullptr),
+      fPtChi2GoldPhi(nullptr),
+      fPtChi2GGCPhi(nullptr),
+      fChi2GoldChi2GGC(nullptr),
+      fPtChi2ITSPhi(nullptr),
+      fPtSigmaY2(nullptr),
+      fPtSigmaZ2(nullptr),
+      fPtSigmaSnp2(nullptr),
+      fPtSigmaTgl2(nullptr),
+      fPtSigma1Pt2(nullptr),
+      fProfPtSigmaY2(nullptr),
+      fProfPtSigmaZ2(nullptr),
+      fProfPtSigmaSnp2(nullptr),
+      fProfPtSigmaTgl2(nullptr),
+      fProfPtSigma1Pt2(nullptr),
+      fProfPtSigma1Pt(nullptr),
+      fProfPtPtSigma1Pt(nullptr),
       fHistList(0)
 {
-  //
-  // Constructor
-  //
   SetNVariables(27);
 
   fPtBinEdges[0][0] = 10.;
@@ -178,16 +181,21 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fVertexSPD[1] = 0;
   fVertexSPD[2] = 0;
 }
-//________________________________________________________________________
+
+/**
+ * @brief Constructor
+ * 
+ * Initialization of Inputs and Outputs
+ */
 AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE(name),
                                                                fDataType(kESD),
-                                                               fEvent(0x0),
-                                                               fESD(0x0),
-                                                               fVtx(0x0),
-                                                               fVtxAOD(0x0),
-                                                               fTrackCuts(0x0),
-                                                               fTrackCutsITSLoose(0x0),
-                                                               fTrackCutsTPConly(0x0),
+                                                               fEvent(nullptr),
+                                                               fESD(nullptr),
+                                                               fVtx(nullptr),
+                                                               fVtxAOD(nullptr),
+                                                               fTrackCuts(nullptr),
+                                                               fTrackCutsITSLoose(nullptr),
+                                                               fTrackCutsTPConly(nullptr),
                                                                fTrackType(0),
                                                                fFilterMask(0),
                                                                fIncludeNoITS(kFALSE),
@@ -196,13 +204,13 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE
                                                                fIsPbPb(0),
                                                                fCentClass(10),
                                                                fInit(0),
-                                                               fAliAnalysisUtils(0x0),
+                                                               fAliAnalysisUtils(nullptr),
                                                                fNVertCont(0),
                                                                fNVertSPDCont(0),
                                                                fTklVsClusSPDCut(kFALSE),
                                                                fZvertexDiff(0.5),
                                                                fNVariables(27),
-                                                               fVariables(0x0),
+                                                               fVariables(nullptr),
                                                                fITSClusterMap(0),
                                                                fAvgTrials(1),
                                                                fNEventAll(0),
@@ -210,78 +218,75 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE
                                                                fNEventReject(0),
                                                                fhEvMult(0),
                                                                fhTrackletsMult(0),
-                                                               fh1Centrality(0x0),
+                                                               fh1Centrality(nullptr),
                                                                fh1Xsec(0),
                                                                fh1Trials(0),
                                                                fh1PtHard(0),
                                                                fh1PtHardTrials(0),
-                                                               fh1NTracksAll(0x0),
-                                                               fh1NTracksReject(0x0),
-                                                               fh1NTracksSel(0x0),
+                                                               fh1NTracksAll(nullptr),
+                                                               fh1NTracksReject(nullptr),
+                                                               fh1NTracksSel(nullptr),
                                                                fPtAll(0),
                                                                fPtSel(0),
-                                                               fPtPhi(0x0),
-                                                               fPtEta(0x0),
-                                                               fPtEtaPhi(0x0),
-                                                               fPtDCA2D(0x0),
-                                                               fPtDCAZ(0x0),
-                                                               fPtNClustersTPC(0x0),
-                                                               fPtNClustersTPCPhi(0x0),
-                                                               fPtNClustersTPCIter1(0x0),
-                                                               fPtNClustersTPCIter1Phi(0x0),
-                                                               fPtNClustersTPCShared(0x0),
-                                                               fPtNClustersTPCSharedFrac(0x0),
-                                                               fPtNPointITS(0x0),
-                                                               fPtNPointITSPhi(0x0),
-                                                               fPtChi2C(0x0),
-                                                               fPtNSigmaToVertex(0x0),
-                                                               fPtRelUncertainty1Pt(0x0),
-                                                               fPtRelUncertainty1PtNClus(0x0),
-                                                               fPtRelUncertainty1PtNClusIter1(0x0),
-                                                               fPtRelUncertainty1PtNPointITS(0x0),
-                                                               fPtRelUncertainty1PtITSClusterMap(0x0),
-                                                               fPtRelUncertainty1PtChi2(0x0),
-                                                               fPtRelUncertainty1PtChi2Iter1(0x0),
-                                                               fPtRelUncertainty1PtPhi(0x0),
-                                                               fPtChi2PerClusterTPC(0x0),
-                                                               fPtChi2PerClusterTPCIter1(0x0),
-                                                               fPtNCrossedRows(0x0),
-                                                               fPtNCrossedRowsPhi(0x0),
-                                                               fPtNCrossedRowsNClusFPhi(0x0),
-                                                               fPtNCrRNCrRNClusF(0x0),
-                                                               fPtNCrossedRowsFit(0x0),
-                                                               fPtNCrossedRowsFitPhi(0x0),
-                                                               fPtNCrossedRowsNClusFFitPhi(0x0),
-                                                               fNCrossedRowsNCrossedRowsFit(0x0),
-                                                               fNClustersNCrossedRows(0x0),
-                                                               fNClustersNCrossedRowsFit(0x0),
-                                                               fPtNClustersNClustersFitMap(0x0),
-                                                               fPtTPCSignalN(0x0),
-                                                               fPtRelUncertainty1PtNCrossedRows(0x0),
-                                                               fPtRelUncertainty1PtNCrossedRowsFit(0x0),
-                                                               fPtChi2Gold(0x0),
-                                                               fPtChi2GGC(0x0),
-                                                               fPtChi2GoldPhi(0x0),
-                                                               fPtChi2GGCPhi(0x0),
-                                                               fChi2GoldChi2GGC(0x0),
-                                                               fPtChi2ITSPhi(0x0),
-                                                               fPtSigmaY2(0x0),
-                                                               fPtSigmaZ2(0x0),
-                                                               fPtSigmaSnp2(0x0),
-                                                               fPtSigmaTgl2(0x0),
-                                                               fPtSigma1Pt2(0x0),
-                                                               fProfPtSigmaY2(0x0),
-                                                               fProfPtSigmaZ2(0x0),
-                                                               fProfPtSigmaSnp2(0x0),
-                                                               fProfPtSigmaTgl2(0x0),
-                                                               fProfPtSigma1Pt2(0x0),
-                                                               fProfPtSigma1Pt(0x0),
-                                                               fProfPtPtSigma1Pt(0x0),
+                                                               fPtPhi(nullptr),
+                                                               fPtEta(nullptr),
+                                                               fPtEtaPhi(nullptr),
+                                                               fPtDCA2D(nullptr),
+                                                               fPtDCAZ(nullptr),
+                                                               fPtNClustersTPC(nullptr),
+                                                               fPtNClustersTPCPhi(nullptr),
+                                                               fPtNClustersTPCIter1(nullptr),
+                                                               fPtNClustersTPCIter1Phi(nullptr),
+                                                               fPtNClustersTPCShared(nullptr),
+                                                               fPtNClustersTPCSharedFrac(nullptr),
+                                                               fPtNPointITS(nullptr),
+                                                               fPtNPointITSPhi(nullptr),
+                                                               fPtChi2C(nullptr),
+                                                               fPtNSigmaToVertex(nullptr),
+                                                               fPtRelUncertainty1Pt(nullptr),
+                                                               fPtRelUncertainty1PtNClus(nullptr),
+                                                               fPtRelUncertainty1PtNClusIter1(nullptr),
+                                                               fPtRelUncertainty1PtNPointITS(nullptr),
+                                                               fPtRelUncertainty1PtITSClusterMap(nullptr),
+                                                               fPtRelUncertainty1PtChi2(nullptr),
+                                                               fPtRelUncertainty1PtChi2Iter1(nullptr),
+                                                               fPtRelUncertainty1PtPhi(nullptr),
+                                                               fPtChi2PerClusterTPC(nullptr),
+                                                               fPtChi2PerClusterTPCIter1(nullptr),
+                                                               fPtNCrossedRows(nullptr),
+                                                               fPtNCrossedRowsPhi(nullptr),
+                                                               fPtNCrossedRowsNClusFPhi(nullptr),
+                                                               fPtNCrRNCrRNClusF(nullptr),
+                                                               fPtNCrossedRowsFit(nullptr),
+                                                               fPtNCrossedRowsFitPhi(nullptr),
+                                                               fPtNCrossedRowsNClusFFitPhi(nullptr),
+                                                               fNCrossedRowsNCrossedRowsFit(nullptr),
+                                                               fNClustersNCrossedRows(nullptr),
+                                                               fNClustersNCrossedRowsFit(nullptr),
+                                                               fPtNClustersNClustersFitMap(nullptr),
+                                                               fPtTPCSignalN(nullptr),
+                                                               fPtRelUncertainty1PtNCrossedRows(nullptr),
+                                                               fPtRelUncertainty1PtNCrossedRowsFit(nullptr),
+                                                               fPtChi2Gold(nullptr),
+                                                               fPtChi2GGC(nullptr),
+                                                               fPtChi2GoldPhi(nullptr),
+                                                               fPtChi2GGCPhi(nullptr),
+                                                               fChi2GoldChi2GGC(nullptr),
+                                                               fPtChi2ITSPhi(nullptr),
+                                                               fPtSigmaY2(nullptr),
+                                                               fPtSigmaZ2(nullptr),
+                                                               fPtSigmaSnp2(nullptr),
+                                                               fPtSigmaTgl2(nullptr),
+                                                               fPtSigma1Pt2(nullptr),
+                                                               fProfPtSigmaY2(nullptr),
+                                                               fProfPtSigmaZ2(nullptr),
+                                                               fProfPtSigmaSnp2(nullptr),
+                                                               fProfPtSigmaTgl2(nullptr),
+                                                               fProfPtSigma1Pt2(nullptr),
+                                                               fProfPtSigma1Pt(nullptr),
+                                                               fProfPtPtSigma1Pt(nullptr),
                                                                fHistList(0)
 {
-  //
-  // Constructor. Initialization of Inputs and Outputs
-  //
   AliDebug(2, Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
   SetNVariables(27);
@@ -306,13 +311,15 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE
   DefineOutput(1, TList::Class());
 }
 
-//________________________________________________________________________
+/**
+ * @brief Set variable bin sizes for pT axis in histos
+ * 
+ * @param region 
+ * @param ptmax min. pt
+ * @param ptBinWidth Width of the bin
+ */
 void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth)
 {
-  //
-  // Set variable bin sizes for pT axis in histos
-  //
-
   if (region < 3)
   {
     fPtBinEdges[region][0] = ptmax;
@@ -325,10 +332,11 @@ void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t 
   }
 }
 
-//________________________________________________________________________
+/**
+ * @brief Create output objects
+ */
 void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
 {
-  //Create output objects
   AliDebug(2, Form(">> AliPWG4HighPtTrackQA::UserCreateOutputObjects \n"));
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -353,7 +361,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   const Int_t nbin13 = (int)((ptmax3 - ptmin3) / fPtBinEdges[2][1]) + nbin12;
   Int_t fgkNPtBins = nbin13;
   //Create array with low edges of each bin
-  Double_t *binsPt = new Double_t[fgkNPtBins + 1];
+  std::vector<double> binsPt(fgkNPtBins + 1);
   for (Int_t i = 0; i <= fgkNPtBins; i++)
   {
     if (i <= nbin11)
@@ -367,21 +375,21 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   Int_t fgkNPhiBins = 18 * 6;
   Float_t kMinPhi = 0.;
   Float_t kMaxPhi = 2. * TMath::Pi();
-  Double_t *binsPhi = new Double_t[fgkNPhiBins + 1];
+  std::vector<double> binsPhi(fgkNPhiBins + 1);
   for (Int_t i = 0; i <= fgkNPhiBins; i++)
     binsPhi[i] = (Double_t)kMinPhi + (kMaxPhi - kMinPhi) / fgkNPhiBins * (Double_t)i;
 
   Int_t fgkNEtaBins = 20;
   Float_t fgkEtaMin = -1.;
   Float_t fgkEtaMax = 1.;
-  Double_t *binsEta = new Double_t[fgkNEtaBins + 1];
+  std::vector<double> binsEta(fgkNEtaBins + 1);
   for (Int_t i = 0; i <= fgkNEtaBins; i++)
     binsEta[i] = (Double_t)fgkEtaMin + (fgkEtaMax - fgkEtaMin) / fgkNEtaBins * (Double_t)i;
 
   Int_t fgkNNClustersTPCBins = 80;
   Float_t fgkNClustersTPCMin = 0.5;
   Float_t fgkNClustersTPCMax = 160.5;
-  Double_t *binsNClustersTPC = new Double_t[fgkNNClustersTPCBins + 1];
+  std::vector<double> binsNClustersTPC(fgkNNClustersTPCBins + 1);
   for (Int_t i = 0; i <= fgkNNClustersTPCBins; i++)
     binsNClustersTPC[i] = (Double_t)fgkNClustersTPCMin + (fgkNClustersTPCMax - fgkNClustersTPCMin) / fgkNNClustersTPCBins * (Double_t)i;
 
@@ -393,7 +401,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
     fgkDCA2DMin = -2.;
     fgkDCA2DMax = 2.;
   }
-  Double_t *binsDCA2D = new Double_t[fgkNDCA2DBins + 1];
+  std::vector<double> binsDCA2D(fgkNDCA2DBins + 1);
   for (Int_t i = 0; i <= fgkNDCA2DBins; i++)
     binsDCA2D[i] = (Double_t)fgkDCA2DMin + (fgkDCA2DMax - fgkDCA2DMin) / fgkNDCA2DBins * (Double_t)i;
 
@@ -405,35 +413,35 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
     fgkDCAZMin = -5.;
     fgkDCAZMax = 5.;
   }
-  Double_t *binsDCAZ = new Double_t[fgkNDCAZBins + 1];
+  std::vector<double> binsDCAZ(fgkNDCAZBins + 1);
   for (Int_t i = 0; i <= fgkNDCAZBins; i++)
     binsDCAZ[i] = (Double_t)fgkDCAZMin + (fgkDCAZMax - fgkDCAZMin) / fgkNDCAZBins * (Double_t)i;
 
   Int_t fgkNNPointITSBins = 9;
   Float_t fgkNPointITSMin = -0.5;
   Float_t fgkNPointITSMax = 8.5;
-  Double_t *binsNPointITS = new Double_t[fgkNNPointITSBins + 1];
+  std::vector<double> binsNPointITS(fgkNNPointITSBins + 1);
   for (Int_t i = 0; i <= fgkNNPointITSBins; i++)
     binsNPointITS[i] = (Double_t)fgkNPointITSMin + (fgkNPointITSMax - fgkNPointITSMin) / fgkNNPointITSBins * (Double_t)i;
 
   Int_t fgkNITSClusterMapBins = 65;
   Float_t fgkITSClusterMapMin = -0.5;
   Float_t fgkITSClusterMapMax = 64.5;
-  Double_t *binsITSClusterMap = new Double_t[fgkNITSClusterMapBins + 1];
+  std::vector<double> binsITSClusterMap(fgkNITSClusterMapBins + 1);
   for (Int_t i = 0; i <= fgkNITSClusterMapBins; i++)
     binsITSClusterMap[i] = (Double_t)fgkITSClusterMapMin + (fgkITSClusterMapMax - fgkITSClusterMapMin) / fgkNITSClusterMapBins * (Double_t)i;
 
   Int_t fgkNNSigmaToVertexBins = 9;
   Float_t fgkNSigmaToVertexMin = 0.;
   Float_t fgkNSigmaToVertexMax = 9.;
-  Double_t *binsNSigmaToVertex = new Double_t[fgkNNSigmaToVertexBins + 1];
+  std::vector<double> binsNSigmaToVertex(fgkNNSigmaToVertexBins + 1);
   for (Int_t i = 0; i <= fgkNNSigmaToVertexBins; i++)
     binsNSigmaToVertex[i] = (Double_t)fgkNSigmaToVertexMin + (fgkNSigmaToVertexMax - fgkNSigmaToVertexMin) / fgkNNSigmaToVertexBins * (Double_t)i;
 
   Int_t fgkNChi2CBins = 10;
   //  Float_t fgkChi2CMin = 0.;
   //  Float_t fgkChi2CMax = 100.; //10 sigma
-  Double_t *binsChi2C = new Double_t[fgkNChi2CBins + 1];
+  std::vector<double> binsChi2C(fgkNChi2CBins + 1);
   for (Int_t i = 0; i <= fgkNChi2CBins; i++)
     binsChi2C[i] = (Double_t)i * (Double_t)i;
 
@@ -446,7 +454,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   Float_t binWidthRel1PtUncertainty2 = (fgkRel1PtUncertaintyMax - binEdgeRel1PtUncertainty1) / ((Float_t)fgkNRel1PtUncertaintyBins2);
   Int_t fgkNRel1PtUncertaintyBins = fgkNRel1PtUncertaintyBins1 + fgkNRel1PtUncertaintyBins2;
 
-  Double_t *binsRel1PtUncertainty = new Double_t[fgkNRel1PtUncertaintyBins + 1];
+  std::vector<double> binsRel1PtUncertainty(fgkNRel1PtUncertaintyBins + 1);
   for (Int_t i = 0; i <= fgkNRel1PtUncertaintyBins; i++)
   {
     if (i <= fgkNRel1PtUncertaintyBins1)
@@ -460,21 +468,21 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   Float_t fgkUncertainty1PtMax = 0.1;
   if (fTrackType == 1 || fTrackType == 2 || fTrackType == 4)
     fgkUncertainty1PtMax = 0.2;
-  Double_t *binsUncertainty1Pt = new Double_t[fgkNUncertainty1PtBins + 1];
+  std::vector<double> binsUncertainty1Pt(fgkNUncertainty1PtBins + 1);
   for (Int_t i = 0; i <= fgkNUncertainty1PtBins; i++)
     binsUncertainty1Pt[i] = (Double_t)fgkUncertainty1PtMin + (fgkUncertainty1PtMax - fgkUncertainty1PtMin) / fgkNUncertainty1PtBins * (Double_t)i;
 
   Float_t fgkChi2PerClusMin = 0.;
   Float_t fgkChi2PerClusMax = 4.;
   Int_t fgkNChi2PerClusBins = (int)(fgkChi2PerClusMax * 10.);
-  Double_t *binsChi2PerClus = new Double_t[fgkNChi2PerClusBins + 1];
+  std::vector<double> binsChi2PerClus(fgkNChi2PerClusBins + 1);
   for (Int_t i = 0; i <= fgkNChi2PerClusBins; i++)
     binsChi2PerClus[i] = (Double_t)fgkChi2PerClusMin + (fgkChi2PerClusMax - fgkChi2PerClusMin) / fgkNChi2PerClusBins * (Double_t)i;
 
   Int_t fgkNCrossedRowsNClusFBins = 45;
   Float_t fgkNCrossedRowsNClusFMin = 0.;
   Float_t fgkNCrossedRowsNClusFMax = 1.5;
-  Double_t *binsNCrossedRowsNClusF = new Double_t[fgkNCrossedRowsNClusFBins + 1];
+  std::vector<double> binsNCrossedRowsNClusF(fgkNCrossedRowsNClusFBins + 1);
   for (Int_t i = 0; i <= fgkNCrossedRowsNClusFBins; i++)
     binsNCrossedRowsNClusF[i] = (Double_t)fgkNCrossedRowsNClusFMin + (fgkNCrossedRowsNClusFMax - fgkNCrossedRowsNClusFMin) / fgkNCrossedRowsNClusFBins * (Double_t)i;
 
@@ -486,7 +494,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   Float_t binWidth1Pt2 = 0.1;
   Int_t fgkN1PtBins2 = (int)((fgk1PtMax - binEdge1Pt1) / binWidth1Pt2);
   Int_t fgkN1PtBins = fgkN1PtBins1 + fgkN1PtBins2;
-  Double_t *bins1Pt = new Double_t[fgkN1PtBins + 1];
+  std::vector<double> bins1Pt(fgkN1PtBins + 1);
 
   for (Int_t i = 0; i <= fgkN1PtBins; i++)
   {
@@ -503,14 +511,14 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
     fgkSigmaY2Max = 4.;
   if (fTrackType == 2 || fTrackType == 4)
     fgkSigmaY2Max = 0.1;
-  Double_t *binsSigmaY2 = new Double_t[fgkNSigmaY2Bins + 1];
+  std::vector<double> binsSigmaY2(fgkNSigmaY2Bins + 1);
   for (Int_t i = 0; i <= fgkNSigmaY2Bins; i++)
     binsSigmaY2[i] = (Double_t)fgkSigmaY2Min + (fgkSigmaY2Max - fgkSigmaY2Min) / fgkNSigmaY2Bins * (Double_t)i;
 
   Int_t fgkNSigmaZ2Bins = 50;
   Float_t fgkSigmaZ2Min = 0.;
   Float_t fgkSigmaZ2Max = 0.4;
-  Double_t *binsSigmaZ2 = new Double_t[fgkNSigmaZ2Bins + 1];
+  std::vector<double> binsSigmaZ2(fgkNSigmaZ2Bins + 1);
   for (Int_t i = 0; i <= fgkNSigmaZ2Bins; i++)
     binsSigmaZ2[i] = (Double_t)fgkSigmaZ2Min + (fgkSigmaZ2Max - fgkSigmaZ2Min) / fgkNSigmaZ2Bins * (Double_t)i;
 
@@ -521,7 +529,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
     fgkSigmaSnp2Max = 0.2;
   if (fTrackType == 2 || fTrackType == 4)
     fgkSigmaSnp2Max = 0.1;
-  Double_t *binsSigmaSnp2 = new Double_t[fgkNSigmaSnp2Bins + 1];
+  std::vector<double> binsSigmaSnp2(fgkNSigmaSnp2Bins + 1);
   for (Int_t i = 0; i <= fgkNSigmaSnp2Bins; i++)
     binsSigmaSnp2[i] = (Double_t)fgkSigmaSnp2Min + (fgkSigmaSnp2Max - fgkSigmaSnp2Min) / fgkNSigmaSnp2Bins * (Double_t)i;
 
@@ -532,21 +540,21 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
     fgkSigmaTgl2Max = 0.2;
   if (fTrackType == 2 || fTrackType == 4)
     fgkSigmaTgl2Max = 0.1;
-  Double_t *binsSigmaTgl2 = new Double_t[fgkNSigmaTgl2Bins + 1];
+  std::vector<double> binsSigmaTgl2(fgkNSigmaTgl2Bins + 1);
   for (Int_t i = 0; i <= fgkNSigmaTgl2Bins; i++)
     binsSigmaTgl2[i] = (Double_t)fgkSigmaTgl2Min + (fgkSigmaTgl2Max - fgkSigmaTgl2Min) / fgkNSigmaTgl2Bins * (Double_t)i;
 
   Int_t fgkNSigma1Pt2Bins = 50;
   Float_t fgkSigma1Pt2Min = 0.;
   Float_t fgkSigma1Pt2Max = 1.;
-  Double_t *binsSigma1Pt2 = new Double_t[fgkNSigma1Pt2Bins + 1];
+  std::vector<double> binsSigma1Pt2(fgkNSigma1Pt2Bins + 1);
   for (Int_t i = 0; i <= fgkNSigma1Pt2Bins; i++)
     binsSigma1Pt2[i] = (Double_t)fgkSigma1Pt2Min + (fgkSigma1Pt2Max - fgkSigma1Pt2Min) / fgkNSigma1Pt2Bins * (Double_t)i;
 
   Int_t fgkTPCsignalNBins = 80;
   Float_t fgkTPCsignalNMin = 0.5;
   Float_t fgkTPCsignalNMax = 160.5;
-  Double_t *binsTPCsignalN = new Double_t[fgkTPCsignalNBins + 1];
+  std::vector<double> binsTPCsignalN(fgkTPCsignalNBins + 1);
   for (Int_t i = 0; i <= fgkTPCsignalNBins; i++)
     binsTPCsignalN[i] = (Double_t)fgkTPCsignalNMin + (fgkTPCsignalNMax - fgkTPCsignalNMin) / fgkTPCsignalNBins * (Double_t)i;
 
@@ -611,245 +619,204 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   fh1NTracksSel = new TH1F("fh1NTracksSel", "fh1NTracksSel;N of Selected ESD tracks", 1, -0.5, 0.5);
   fHistList->Add(fh1NTracksSel);
 
-  fPtAll = new TH1F("fPtAll", "PtAll; #it{p}_{T, track}", fgkNPtBins, binsPt);
+  fPtAll = new TH1F("fPtAll", "PtAll; #it{p}_{T, track}", fgkNPtBins, binsPt.data());
   fHistList->Add(fPtAll);
-  fPtSel = new TH1F("fPtSel", "PtSel; #it{p}_{T, track}", fgkNPtBins, binsPt);
+  fPtSel = new TH1F("fPtSel", "PtSel; #it{p}_{T, track}", fgkNPtBins, binsPt.data());
   fHistList->Add(fPtSel);
 
-  fPtPhi = new TH2F("fPtPhi", "fPtPhi; #it{p}_{T, track}; #varphi", fgkNPtBins, binsPt, fgkNPhiBins, binsPhi);
+  fPtPhi = new TH2F("fPtPhi", "fPtPhi; #it{p}_{T, track}; #varphi", fgkNPtBins, binsPt.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtPhi);
 
-  fPtEta = new TH2F("fPtEta", "fPtEta; #it{p}_{T, track}; #eta", fgkNPtBins, binsPt, fgkNEtaBins, binsEta);
+  fPtEta = new TH2F("fPtEta", "fPtEta; #it{p}_{T, track}; #eta", fgkNPtBins, binsPt.data(), fgkNEtaBins, binsEta.data());
   fHistList->Add(fPtEta);
 
-  fPtEtaPhi = new TH3F("fPtEtaPhi", "fPtEtaPhi; #it{p}_{T, track}; #eta; #varphi", fgkNPtBins, binsPt, fgkNEtaBins, binsEta, fgkNPhiBins, binsPhi);
+  fPtEtaPhi = new TH3F("fPtEtaPhi", "fPtEtaPhi; #it{p}_{T, track}; #eta; #varphi", fgkNPtBins, binsPt.data(), fgkNEtaBins, binsEta.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtEtaPhi);
 
-  fPtDCA2D = new TH2F("fPtDCA2D", "fPtDCA2D; #it{p}_{T, track}; DCA_{xy}", fgkNPtBins, binsPt, fgkNDCA2DBins, binsDCA2D);
+  fPtDCA2D = new TH2F("fPtDCA2D", "fPtDCA2D; #it{p}_{T, track}; DCA_{xy}", fgkNPtBins, binsPt.data(), fgkNDCA2DBins, binsDCA2D.data());
   fHistList->Add(fPtDCA2D);
 
-  fPtDCAZ = new TH2F("fPtDCAZ", "fPtDCAZ; #it{p}_{T, track}; DCA_{z}", fgkNPtBins, binsPt, fgkNDCAZBins, binsDCAZ);
+  fPtDCAZ = new TH2F("fPtDCAZ", "fPtDCAZ; #it{p}_{T, track}; DCA_{z}", fgkNPtBins, binsPt.data(), fgkNDCAZBins, binsDCAZ.data());
   fHistList->Add(fPtDCAZ);
 
-  fPtNClustersTPC = new TH2F("fPtNClustersTPC", "fPtNClustersTPC; #it{p}_{T, track}; N Clusters TPC", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNClustersTPC = new TH2F("fPtNClustersTPC", "fPtNClustersTPC; #it{p}_{T, track}; N Clusters TPC", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNClustersTPC);
 
-  fPtNClustersTPCPhi = new TH2F("fPtNClustersTPCPhi", "fPtNClustersTPCPhi; #it{p}_{T, track}; #varphi; N Clusters TPC (TPC only track)", fgkNPhiBins, binsPhi, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNClustersTPCPhi = new TH2F("fPtNClustersTPCPhi", "fPtNClustersTPCPhi; #it{p}_{T, track}; #varphi; N Clusters TPC (TPC only track)", fgkNPhiBins, binsPhi.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNClustersTPCPhi);
 
-  fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1", "fPtNClustersTPCIter1; #it{p}_{T, track}; N Clusters TPC (TPC only track)", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1", "fPtNClustersTPCIter1; #it{p}_{T, track}; N Clusters TPC (TPC only track)", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNClustersTPCIter1);
 
-  fPtNClustersTPCIter1Phi = new TH3F("fPtNClustersTPCIter1Phi", "fPtNClustersTPCIter1Phi; #it{p}_{T, track}; N Clusters TPC (TPC only track); #varphi", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC, fgkNPhiBins, binsPhi);
+  fPtNClustersTPCIter1Phi = new TH3F("fPtNClustersTPCIter1Phi", "fPtNClustersTPCIter1Phi; #it{p}_{T, track}; N Clusters TPC (TPC only track); #varphi", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNClustersTPCIter1Phi);
 
-  fPtNClustersTPCShared = new TH2F("fPtNClustersTPCShared", "fPtNClustersTPCShared; #it{p}_{T, track}; N Clusters TPC Shared", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNClustersTPCShared = new TH2F("fPtNClustersTPCShared", "fPtNClustersTPCShared; #it{p}_{T, track}; N Clusters TPC Shared", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNClustersTPCShared);
 
-  fPtNClustersTPCSharedFrac = new TH2F("fPtNClustersTPCSharedFrac", "fPtNClustersTPCSharedFrac; #it{p}_{T, track}; TPC Sharef Fraction", fgkNPtBins, binsPt, fgkNSigma1Pt2Bins, binsSigma1Pt2);
+  fPtNClustersTPCSharedFrac = new TH2F("fPtNClustersTPCSharedFrac", "fPtNClustersTPCSharedFrac; #it{p}_{T, track}; TPC Sharef Fraction", fgkNPtBins, binsPt.data(), fgkNSigma1Pt2Bins, binsSigma1Pt2.data());
   fHistList->Add(fPtNClustersTPCSharedFrac);
 
-  fPtNPointITS = new TH2F("fPtNPointITS", "fPtNPointITS; #it{p}_{T, track}; N points ITS", fgkNPtBins, binsPt, fgkNNPointITSBins, binsNPointITS);
+  fPtNPointITS = new TH2F("fPtNPointITS", "fPtNPointITS; #it{p}_{T, track}; N points ITS", fgkNPtBins, binsPt.data(), fgkNNPointITSBins, binsNPointITS.data());
   fHistList->Add(fPtNPointITS);
 
-  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi", "fPtNPointITSPhi; #it{p}_{T, track}; N points ITS; #varphi", fgkNPtBins, binsPt, fgkNNPointITSBins, binsNPointITS, fgkNPhiBins, binsPhi);
+  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi", "fPtNPointITSPhi; #it{p}_{T, track}; N points ITS; #varphi", fgkNPtBins, binsPt.data(), fgkNNPointITSBins, binsNPointITS.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNPointITSPhi);
 
-  fPtChi2C = new TH2F("fPtChi2C", "fPtChi2C; #it{p}_{T, track}; #chi^{2} Constrained TPC", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C);
+  fPtChi2C = new TH2F("fPtChi2C", "fPtChi2C; #it{p}_{T, track}; #chi^{2} Constrained TPC", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data());
   fHistList->Add(fPtChi2C);
 
-  fPtNSigmaToVertex = new TH2F("fPtNSigmaToVertex", "fPtNSigmaToVertex; #it{p}_{T, track}; N #sigma to Vtx ", fgkNPtBins, binsPt, fgkNNSigmaToVertexBins, binsNSigmaToVertex);
+  fPtNSigmaToVertex = new TH2F("fPtNSigmaToVertex", "fPtNSigmaToVertex; #it{p}_{T, track}; N #sigma to Vtx ", fgkNPtBins, binsPt.data(), fgkNNSigmaToVertexBins, binsNSigmaToVertex.data());
   fHistList->Add(fPtNSigmaToVertex);
 
-  fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt", "fPtRelUncertainty1Pt; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track} ", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty);
+  fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt", "fPtRelUncertainty1Pt; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track} ", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data());
   fHistList->Add(fPtRelUncertainty1Pt);
 
-  fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus", "fPtRelUncertainty1PtNClus; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus", "fPtRelUncertainty1PtNClus; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtRelUncertainty1PtNClus);
 
-  fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1", "fPtRelUncertainty1PtNClusIter1; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1", "fPtRelUncertainty1PtNClusIter1; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtRelUncertainty1PtNClusIter1);
 
-  fPtRelUncertainty1PtNPointITS = new TH3F("fPtRelUncertainty1PtNPointITS", "fPtRelUncertainty1PtNPointITS; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNNPointITSBins, binsNPointITS);
+  fPtRelUncertainty1PtNPointITS = new TH3F("fPtRelUncertainty1PtNPointITS", "fPtRelUncertainty1PtNPointITS; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNNPointITSBins, binsNPointITS.data());
   fHistList->Add(fPtRelUncertainty1PtNPointITS);
 
-  fPtRelUncertainty1PtITSClusterMap = new TH3F("fPtRelUncertainty1PtITSClusterMap", "fPtRelUncertainty1PtITSClusterMap; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNITSClusterMapBins, binsITSClusterMap);
+  fPtRelUncertainty1PtITSClusterMap = new TH3F("fPtRelUncertainty1PtITSClusterMap", "fPtRelUncertainty1PtITSClusterMap; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNITSClusterMapBins, binsITSClusterMap.data());
   fHistList->Add(fPtRelUncertainty1PtITSClusterMap);
 
-  fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2", "fPtRelUncertainty1PtChi2; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNChi2PerClusBins, binsChi2PerClus);
+  fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2", "fPtRelUncertainty1PtChi2; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNChi2PerClusBins, binsChi2PerClus.data());
   fHistList->Add(fPtRelUncertainty1PtChi2);
 
-  fPtRelUncertainty1PtChi2Iter1 = new TH3F("fPtRelUncertainty1PtChi2Iter1", "fPtRelUncertainty1PtChi2Iter1; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNChi2PerClusBins, binsChi2PerClus);
+  fPtRelUncertainty1PtChi2Iter1 = new TH3F("fPtRelUncertainty1PtChi2Iter1", "fPtRelUncertainty1PtChi2Iter1; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNChi2PerClusBins, binsChi2PerClus.data());
+  
   fHistList->Add(fPtRelUncertainty1PtChi2Iter1);
 
-  fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi", "fPtRelUncertainty1PtPhi; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNPhiBins, binsPhi);
+  fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi", "fPtRelUncertainty1PtPhi; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtRelUncertainty1PtPhi);
 
-  fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC", "fPtChi2PerClusterTPC; #it{p}_{T, track}; ", fgkNPtBins, binsPt, fgkNChi2PerClusBins, binsChi2PerClus);
+  fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC", "fPtChi2PerClusterTPC; #it{p}_{T, track}; ", fgkNPtBins, binsPt.data(), fgkNChi2PerClusBins, binsChi2PerClus.data());
   fHistList->Add(fPtChi2PerClusterTPC);
 
-  fPtChi2PerClusterTPCIter1 = new TH2F("fPtChi2PerClusterTPCIter1", "fPtChi2PerClusterTPCIter1; #it{p}_{T, track}; #chi^{2}", fgkNPtBins, binsPt, fgkNChi2PerClusBins, binsChi2PerClus);
+  fPtChi2PerClusterTPCIter1 = new TH2F("fPtChi2PerClusterTPCIter1", "fPtChi2PerClusterTPCIter1; #it{p}_{T, track}; #chi^{2}", fgkNPtBins, binsPt.data(), fgkNChi2PerClusBins, binsChi2PerClus.data());
   fHistList->Add(fPtChi2PerClusterTPCIter1);
 
-  fPtNCrossedRows = new TH2F("fPtNCrossedRows", "fPtNCrossedRows; #it{p}_{T, track}; N crossed rows", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNCrossedRows = new TH2F("fPtNCrossedRows", "fPtNCrossedRows; #it{p}_{T, track}; N crossed rows", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNCrossedRows);
 
-  fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi", "fPtNCrossedRowsPhi; #it{p}_{T, track}; N crossed rows ; #varphi ", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC, fgkNPhiBins, binsPhi);
+  fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi", "fPtNCrossedRowsPhi; #it{p}_{T, track}; N crossed rows ; #varphi ", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNCrossedRowsPhi);
 
-  fPtNCrossedRowsNClusFPhi = new TH3F("fPtNCrossedRowsNClusFPhi", "fPtNCrossedRowsNClusFPhi; #it{p}_{T, track}; N crossed raw / N findable clusters; #varphi", fgkNPtBins, binsPt, fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF, fgkNPhiBins, binsPhi);
+  fPtNCrossedRowsNClusFPhi = new TH3F("fPtNCrossedRowsNClusFPhi", "fPtNCrossedRowsNClusFPhi; #it{p}_{T, track}; N crossed raw / N findable clusters; #varphi", fgkNPtBins, binsPt.data(), fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNCrossedRowsNClusFPhi);
 
-  fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF", "fPtNCrRNCrRNClusF; #it{p}_{T, track}; N Clusters TPC; N crossed raw / N findable clusters; ", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC, fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF);
+  fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF", "fPtNCrRNCrRNClusF; #it{p}_{T, track}; N Clusters TPC; N crossed raw / N findable clusters; ", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF.data());
   fHistList->Add(fPtNCrRNCrRNClusF);
 
-  fPtNCrossedRowsFit = new TH2F("fPtNCrossedRowsFit", "fPtNCrossedRowsFit; #it{p}_{T, track}; N crossed rows from fit map", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNCrossedRowsFit = new TH2F("fPtNCrossedRowsFit", "fPtNCrossedRowsFit; #it{p}_{T, track}; N crossed rows from fit map", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNCrossedRowsFit);
 
-  fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi", "fPtNCrossedRowsFitPhi; #it{p}_{T, track}; N crossed rows from fit map; #varphi ", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC, fgkNPhiBins, binsPhi);
+  fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi", "fPtNCrossedRowsFitPhi; #it{p}_{T, track}; N crossed rows from fit map; #varphi ", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNCrossedRowsFitPhi);
 
-  fPtNCrossedRowsNClusFFitPhi = new TH3F("fPtNCrossedRowsNClusFFitPhi", "fPtNCrossedRowsNClusFFitPhi; #it{p}_{T, track}; ", fgkNPtBins, binsPt, fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF, fgkNPhiBins, binsPhi);
+  fPtNCrossedRowsNClusFFitPhi = new TH3F("fPtNCrossedRowsNClusFFitPhi", "fPtNCrossedRowsNClusFFitPhi; #it{p}_{T, track}; ", fgkNPtBins, binsPt.data(), fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtNCrossedRowsNClusFFitPhi);
 
-  fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit", "fNCrossedRowsNCrossedRowsFit; N crossed rows; N crossed rows from fit map", fgkNNClustersTPCBins, binsNClustersTPC, fgkNNClustersTPCBins, binsNClustersTPC);
+  fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit", "fNCrossedRowsNCrossedRowsFit; N crossed rows; N crossed rows from fit map", fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fNCrossedRowsNCrossedRowsFit);
 
-  fNClustersNCrossedRows = new TH2F("fNClustersNCrossedRows", "fNClustersNCrossedRows; N clusters; N crossed rows", fgkNNClustersTPCBins, binsNClustersTPC, fgkNNClustersTPCBins, binsNClustersTPC);
+  fNClustersNCrossedRows = new TH2F("fNClustersNCrossedRows", "fNClustersNCrossedRows; N clusters; N crossed rows", fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fNClustersNCrossedRows);
 
-  fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit", "fNClustersNCrossedRowsFit; N clusters; N crossed rows from fit ", fgkNNClustersTPCBins, binsNClustersTPC, fgkNNClustersTPCBins, binsNClustersTPC);
+  fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit", "fNClustersNCrossedRowsFit; N clusters; N crossed rows from fit ", fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fNClustersNCrossedRowsFit);
 
-  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap", "fPtNClustersNClustersFitMap; #it{p}_{T, track}; N_{cls};N_{cls}^{fit map}", fgkNPtBins, binsPt, fgkNNClustersTPCBins, binsNClustersTPC, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap", "fPtNClustersNClustersFitMap; #it{p}_{T, track}; N_{cls};N_{cls}^{fit map}", fgkNPtBins, binsPt.data(), fgkNNClustersTPCBins, binsNClustersTPC.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtNClustersNClustersFitMap);
 
-  fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows", "fPtRelUncertainty1PtNCrossedRows; #it{p}_{T, track}; N crossed rows", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows", "fPtRelUncertainty1PtNCrossedRows; #it{p}_{T, track}; N crossed rows", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtRelUncertainty1PtNCrossedRows);
 
-  fPtRelUncertainty1PtNCrossedRowsFit = new TH3F("fPtRelUncertainty1PtNCrossedRowsFit", "fPtRelUncertainty1PtNCrossedRowsFit; #it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); N crossed rows from fit", fgkNPtBins, binsPt, fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty, fgkNNClustersTPCBins, binsNClustersTPC);
+  fPtRelUncertainty1PtNCrossedRowsFit = new TH3F("fPtRelUncertainty1PtNCrossedRowsFit", "fPtRelUncertainty1PtNCrossedRowsFit; #it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); N crossed rows from fit", fgkNPtBins, binsPt.data(), fgkNRel1PtUncertaintyBins, binsRel1PtUncertainty.data(), fgkNNClustersTPCBins, binsNClustersTPC.data());
   fHistList->Add(fPtRelUncertainty1PtNCrossedRowsFit);
 
-  fPtChi2Gold = new TH2F("fPtChi2Gold", "fPtChi2Gold; #it{p}_{T, track}; #chi^{2} gold ", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C);
+  fPtChi2Gold = new TH2F("fPtChi2Gold", "fPtChi2Gold; #it{p}_{T, track}; #chi^{2} gold ", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data());
   fHistList->Add(fPtChi2Gold);
 
-  fPtChi2GGC = new TH2F("fPtChi2GGC", "fPtChi2GGC; #it{p}_{T, track}; #chi^{2}_{ggc} ", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C);
+  fPtChi2GGC = new TH2F("fPtChi2GGC", "fPtChi2GGC; #it{p}_{T, track}; #chi^{2}_{ggc} ", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data());
   fHistList->Add(fPtChi2GGC);
 
-  fPtChi2GoldPhi = new TH3F("fPtChi2GoldPhi", "fPtChi2GoldPhi; #it{p}_{T, track}; #chi^{2} gold ; #varphi", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C, fgkNPhiBins, binsPhi);
+  fPtChi2GoldPhi = new TH3F("fPtChi2GoldPhi", "fPtChi2GoldPhi; #it{p}_{T, track}; #chi^{2} gold ; #varphi", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtChi2GoldPhi);
 
-  fPtChi2GGCPhi = new TH3F("fPtChi2GGCPhi", "fPtChi2GGCPhi; #it{p}_{T, track};#chi^{2}_{ggc}; #varphi ", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C, fgkNPhiBins, binsPhi);
+  fPtChi2GGCPhi = new TH3F("fPtChi2GGCPhi", "fPtChi2GGCPhi; #it{p}_{T, track};#chi^{2}_{ggc}; #varphi ", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtChi2GGCPhi);
 
-  fChi2GoldChi2GGC = new TH2F("fChi2GoldChi2GGC", "fChi2GoldChi2GGC;#chi^{2}_{gold};#chi^{2}_{ggc}", fgkNChi2CBins, binsChi2C, fgkNChi2CBins, binsChi2C);
+  fChi2GoldChi2GGC = new TH2F("fChi2GoldChi2GGC", "fChi2GoldChi2GGC;#chi^{2}_{gold};#chi^{2}_{ggc}", fgkNChi2CBins, binsChi2C.data(), fgkNChi2CBins, binsChi2C.data());
   fHistList->Add(fChi2GoldChi2GGC);
 
-  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi", "fPtChi2ITSPhi; #it{p}_{T, track}; #chi^{2}_{ITS};#varphi", fgkNPtBins, binsPt, fgkNChi2CBins, binsChi2C, fgkNPhiBins, binsPhi);
+  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi", "fPtChi2ITSPhi; #it{p}_{T, track}; #chi^{2}_{ITS};#varphi", fgkNPtBins, binsPt.data(), fgkNChi2CBins, binsChi2C.data(), fgkNPhiBins, binsPhi.data());
   fHistList->Add(fPtChi2ITSPhi);
 
-  fPtTPCSignalN = new TH2F("fPtTPCSignalN", "fPtTPCSignalN ; #it{p}_{T, track}; TPCsignalN", fgkNPtBins, binsPt, fgkTPCsignalNBins, binsTPCsignalN);
+  fPtTPCSignalN = new TH2F("fPtTPCSignalN", "fPtTPCSignalN ; #it{p}_{T, track}; TPCsignalN", fgkNPtBins, binsPt.data(), fgkTPCsignalNBins, binsTPCsignalN.data());
   fHistList->Add(fPtTPCSignalN);
 
-  fPtSigmaY2 = new TH2F("fPtSigmaY2", "fPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2 ", fgkN1PtBins, bins1Pt, fgkNSigmaY2Bins, binsSigmaY2);
+  fPtSigmaY2 = new TH2F("fPtSigmaY2", "fPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2 ", fgkN1PtBins, bins1Pt.data(), fgkNSigmaY2Bins, binsSigmaY2.data());
   fHistList->Add(fPtSigmaY2);
 
-  fPtSigmaZ2 = new TH2F("fPtSigmaZ2", "fPtSigmaZ2; #it{p}_{T, track}; #sigma z2 ", fgkN1PtBins, bins1Pt, fgkNSigmaZ2Bins, binsSigmaZ2);
+  fPtSigmaZ2 = new TH2F("fPtSigmaZ2", "fPtSigmaZ2; #it{p}_{T, track}; #sigma z2 ", fgkN1PtBins, bins1Pt.data(), fgkNSigmaZ2Bins, binsSigmaZ2.data());
   fHistList->Add(fPtSigmaZ2);
 
-  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2", "fPtSigmaSnp2; 1./#it{p}_{T, track};  #sigma Snp2", fgkN1PtBins, bins1Pt, fgkNSigmaSnp2Bins, binsSigmaSnp2);
+  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2", "fPtSigmaSnp2; 1./#it{p}_{T, track};  #sigma Snp2", fgkN1PtBins, bins1Pt.data(), fgkNSigmaSnp2Bins, binsSigmaSnp2.data());
   fHistList->Add(fPtSigmaSnp2);
 
-  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2", "fPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ", fgkN1PtBins, bins1Pt, fgkNSigmaTgl2Bins, binsSigmaTgl2);
+  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2", "fPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ", fgkN1PtBins, bins1Pt.data(), fgkNSigmaTgl2Bins, binsSigmaTgl2.data());
   fHistList->Add(fPtSigmaTgl2);
 
-  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2", "fPtSigma1Pt2; 1./#it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); ", fgkN1PtBins, bins1Pt, fgkNSigma1Pt2Bins, binsSigma1Pt2);
+  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2", "fPtSigma1Pt2; 1./#it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); ", fgkN1PtBins, bins1Pt.data(), fgkNSigma1Pt2Bins, binsSigma1Pt2.data());
   fHistList->Add(fPtSigma1Pt2);
 
-  fProfPtSigmaY2 = new TProfile("fProfPtSigmaY2", "fProfPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2", fgkN1PtBins, bins1Pt);
+  fProfPtSigmaY2 = new TProfile("fProfPtSigmaY2", "fProfPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2", fgkN1PtBins, bins1Pt.data());
   fHistList->Add(fProfPtSigmaY2);
 
-  fProfPtSigmaZ2 = new TProfile("fProfPtSigmaZ2", "fProfPtSigmaZ2; 1./#it{p}_{T, track}; #sigma z2", fgkN1PtBins, bins1Pt);
+  fProfPtSigmaZ2 = new TProfile("fProfPtSigmaZ2", "fProfPtSigmaZ2; 1./#it{p}_{T, track}; #sigma z2", fgkN1PtBins, bins1Pt.data());
   fHistList->Add(fProfPtSigmaZ2);
 
-  fProfPtSigmaSnp2 = new TProfile("fProfPtSigmaSnp2", "fProfPtSigmaSnp2; 1./#it{p}_{T, track}; #sigma Snp2", fgkN1PtBins, bins1Pt);
+  fProfPtSigmaSnp2 = new TProfile("fProfPtSigmaSnp2", "fProfPtSigmaSnp2; 1./#it{p}_{T, track}; #sigma Snp2", fgkN1PtBins, bins1Pt.data());
   fHistList->Add(fProfPtSigmaSnp2);
 
-  fProfPtSigmaTgl2 = new TProfile("fProfPtSigmaTgl2", "fProfPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ", fgkN1PtBins, bins1Pt);
+  fProfPtSigmaTgl2 = new TProfile("fProfPtSigmaTgl2", "fProfPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ", fgkN1PtBins, bins1Pt.data());
   fHistList->Add(fProfPtSigmaTgl2);
 
-  fProfPtSigma1Pt2 = new TProfile("fProfPtSigma1Pt2", "fProfPtSigma1Pt2", fgkN1PtBins, bins1Pt);
+  fProfPtSigma1Pt2 = new TProfile("fProfPtSigma1Pt2", "fProfPtSigma1Pt2", fgkN1PtBins, bins1Pt.data());
   fHistList->Add(fProfPtSigma1Pt2);
 
-  fProfPtSigma1Pt = new TProfile("fProfPtSigma1Pt", "fProfPtSigma1Pt;p_{T};#sigma(1/p_{T}); #sigma(1./#it{p}_{T, track});", fgkNPtBins, binsPt);
+  fProfPtSigma1Pt = new TProfile("fProfPtSigma1Pt", "fProfPtSigma1Pt;p_{T};#sigma(1/p_{T}); #sigma(1./#it{p}_{T, track});", fgkNPtBins, binsPt.data());
   fHistList->Add(fProfPtSigma1Pt);
 
-  fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt", "fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})", fgkNPtBins, binsPt);
+  fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt", "fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})", fgkNPtBins, binsPt.data());
   fHistList->Add(fProfPtPtSigma1Pt);
 
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fHistList);
-
-  if (binsPhi)
-    delete[] binsPhi;
-  if (binsPt)
-    delete[] binsPt;
-  if (binsNClustersTPC)
-    delete[] binsNClustersTPC;
-  if (binsDCA2D)
-    delete[] binsDCA2D;
-  if (binsDCAZ)
-    delete[] binsDCAZ;
-  if (binsNPointITS)
-    delete[] binsNPointITS;
-  if (binsITSClusterMap)
-    delete[] binsITSClusterMap;
-  if (binsNSigmaToVertex)
-    delete[] binsNSigmaToVertex;
-  if (binsChi2C)
-    delete[] binsChi2C;
-  if (binsEta)
-    delete[] binsEta;
-  if (binsRel1PtUncertainty)
-    delete[] binsRel1PtUncertainty;
-  if (binsUncertainty1Pt)
-    delete[] binsUncertainty1Pt;
-  if (binsChi2PerClus)
-    delete[] binsChi2PerClus;
-  if (binsChi2PerClus)
-    delete[] binsNCrossedRowsNClusF;
-  if (bins1Pt)
-    delete[] bins1Pt;
-  if (binsSigmaY2)
-    delete[] binsSigmaY2;
-  if (binsSigmaZ2)
-    delete[] binsSigmaZ2;
-  if (binsSigmaSnp2)
-    delete[] binsSigmaSnp2;
-  if (binsSigmaTgl2)
-    delete[] binsSigmaTgl2;
-  if (binsSigma1Pt2)
-    delete[] binsSigma1Pt2;
-  if (binsTPCsignalN)
-    delete[] binsTPCsignalN;
 }
 
-//________________________________________________________________________
+/**
+ * @brief Decide if event should be selected for analysis
+ * 
+ * Checks following requirements:
+ *  - fEvent available
+ *  - trigger info from AliPhysicsSelection
+ *  - MCevent available
+ *  - number of reconstructed tracks > 1
+ *  - primary vertex reconstructed
+ *  - z-vertex < 10 cm
+ *  - centrality in case of PbPb
+ *
+ * @return Bool_t True if the event is selected, false otherwise
+ */
 Bool_t AliPWG4HighPtTrackQA::SelectEvent()
 {
-  //
-  // Decide if event should be selected for analysis
-  //
-
-  // Checks following requirements:
-  // - fEvent available
-  // - trigger info from AliPhysicsSelection
-  // - MCevent available
-  // - number of reconstructed tracks > 1
-  // - primary vertex reconstructed
-  // - z-vertex < 10 cm
-  // - centrality in case of PbPb
 
   Bool_t selectEvent = kTRUE;
 
@@ -1026,13 +993,14 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent()
   return selectEvent;
 }
 
-//________________________________________________________________________
+/**
+ * @brief Get centrality from ESD or AOD
+ * 
+ * @param ev Event to check
+ * @return Int_t Centrality class
+ */
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev)
 {
-  //
-  // Get centrality from ESD or AOD
-  //
-
   if (fDataType == kESD)
     return CalculateCentrality(dynamic_cast<AliESDEvent *>(ev));
   else if (fDataType == kAOD)
@@ -1041,13 +1009,11 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev)
     return 5;
 }
 
-//________________________________________________________________________
+/**
+ * @brief Get centrality from ESD
+ */
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd)
 {
-  //
-  // Get centrality from ESD
-  //
-
   Float_t cent = -1;
 
   if (esd)
@@ -1063,13 +1029,11 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd)
   return GetCentralityClass(cent);
 }
 
-//________________________________________________________________________
+/**
+ * @brief Get centrality from AOD
+ */
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod)
 {
-  //
-  // Get centrality from AOD
-  //
-
   if (!aod)
     return 5;
   Float_t cent = ((AliVAODHeader *)aod->GetHeader())->GetCentrality();
@@ -1079,13 +1043,11 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod)
   return GetCentralityClass(cent);
 }
 
-//________________________________________________________________________
+/**
+ * @brief Get centrality class
+ */
 Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const
 {
-  //
-  // Get centrality class
-  //
-
   if (cent < 0)
     return 5; // OB - cent sometimes negative
   if (cent > 80)
@@ -1098,7 +1060,7 @@ Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const
     return 1;
   return 0;
 }
-//________________________________________________________________________
+
 void AliPWG4HighPtTrackQA::Init()
 {
   if (!fInit && fDataType == kESD)
@@ -1109,11 +1071,16 @@ void AliPWG4HighPtTrackQA::Init()
     fInit = kTRUE;
   }
 }
-//________________________________________________________________________
+
+/**
+ * @brief Main loop
+ * 
+ * Called for each event
+ * 
+ * @param Option_t Not used
+ */
 void AliPWG4HighPtTrackQA::UserExec(Option_t *)
 {
-  // Main loop
-  // Called for each event
   AliDebug(2, Form(">> AliPWG4HighPtTrackQA::UserExec \n"));
   Init();
   fEvent = InputEvent();
@@ -1147,12 +1114,11 @@ void AliPWG4HighPtTrackQA::UserExec(Option_t *)
   PostData(1, fHistList);
 }
 
-//________________________________________________________________________
+/**
+ * @brief Run analysis on ESD
+ */
 void AliPWG4HighPtTrackQA::DoAnalysisESD()
 {
-  //
-  // Run analysis on ESD
-  //
 
   if (!fESD)
   {
@@ -1223,14 +1189,14 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     fh1NTracksAll->Fill(0.);
 
     //Get track for analysis
-    AliESDtrack *track = 0x0;
+    AliESDtrack *track = nullptr;
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if (!esdtrack)
     {
       fh1NTracksReject->Fill("noESDtrack", 1);
       continue;
     }
-    AliESDtrack *origtrack = new AliESDtrack(*esdtrack);
+    std::unique_ptr<AliESDtrack> origtrack(new AliESDtrack(*esdtrack));
     if (!origtrack)
       continue;
 
@@ -1239,8 +1205,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
       if (!(fTrackCuts->AcceptTrack(esdtrack)))
       {
         fh1NTracksReject->Fill("trackCuts", 1);
-        if (origtrack)
-          delete origtrack;
         continue;
       }
     }
@@ -1253,8 +1217,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
       if (!track)
       {
         fh1NTracksReject->Fill("noTPConly", 1);
-        if (origtrack)
-          delete origtrack;
         continue;
       }
       AliExternalTrackParam exParam;
@@ -1264,8 +1226,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
         fh1NTracksReject->Fill("relate", 1);
         if (track)
           delete track;
-        if (origtrack)
-          delete origtrack;
         continue;
       }
       track->Set(exParam.GetX(), exParam.GetAlpha(), exParam.GetParameter(), exParam.GetCovariance());
@@ -1274,8 +1234,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     {
       if (fTrackCuts->AcceptTrack(esdtrack))
       {
-        if (origtrack)
-          delete origtrack;
         continue;
       }
       else
@@ -1290,8 +1248,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
             if (!track)
             {
               fh1NTracksReject->Fill("noTPConly", 1);
-              if (origtrack)
-                delete origtrack;
               continue;
             }
             AliExternalTrackParam exParam;
@@ -1301,8 +1257,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
               fh1NTracksReject->Fill("relate", 1);
               if (track)
                 delete track;
-              if (origtrack)
-                delete origtrack;
               continue;
             }
             track->Set(exParam.GetX(), exParam.GetAlpha(), exParam.GetParameter(), exParam.GetCovariance());
@@ -1326,8 +1280,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
 
     if (!track)
     {
-      if (origtrack)
-        delete origtrack;
       continue;
     }
 
@@ -1339,8 +1291,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
         fh1NTracksReject->Fill("chi2", 1);
         if (track)
           delete track;
-        if (origtrack)
-          delete origtrack;
         continue;
       }
     }
@@ -1355,8 +1305,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
         if (track)
           delete track;
       }
-      if (origtrack)
-        delete origtrack;
       continue;
     }
 
@@ -1368,8 +1316,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
         {
           if (track)
             delete track;
-          if (origtrack)
-            delete origtrack;
           continue;
         }
       }
@@ -1385,18 +1331,17 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
         if (track)
           delete track;
       }
-      if (origtrack)
-        delete origtrack;
       continue;
     }
 
     fh1NTracksSel->Fill(0.);
 
-    fVariables->Reset(0.);
+    TArrayF &variables = *fVariables;
+    variables.Reset(0.);
 
-    fVariables->SetAt(track->Pt(), 0);
-    fVariables->SetAt(track->Phi(), 1);
-    fVariables->SetAt(track->Eta(), 2);
+    variables[kVarPT] = track->Pt();
+    variables[kVarPhi] = track->Phi();
+    variables[kVarEta] = track->Eta();
 
     Float_t dca2D = 0.;
     Float_t dcaz = 0.;
@@ -1408,10 +1353,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     else
       track->GetImpactParameters(dca2D, dcaz); //Global
 
-    fVariables->SetAt(dca2D, 3);
-    fVariables->SetAt(dcaz, 4);
+    variables[kVarDCAXY] = dca2D;
+    variables[kVarDCAZ] = dcaz;
 
-    fVariables->SetAt((float)track->GetTPCNcls(), 5);
+    variables[kVarClustersTPC] = (float)track->GetTPCNcls();
 
     Int_t nPointITS = 0;
     fITSClusterMap = track->GetITSClusterMap();
@@ -1421,51 +1366,51 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
       if (itsMap & (1 << i))
         nPointITS++;
     }
-    fVariables->SetAt((float)nPointITS, 6);
+    variables[kVarPointsITS] = (float)nPointITS;
     Float_t chi2C = (float)track->GetConstrainedChi2();
     if (fTrackType == 1 || fTrackType == 2 || fTrackType == 4)
       chi2C = (float)track->GetConstrainedChi2TPC();
-    fVariables->SetAt(chi2C, 7);
-    fVariables->SetAt(fTrackCuts->GetSigmaToVertex(track), 8); // Calculates the number of sigma to the vertex for a track.
+    variables[kVarChi2C] = chi2C;
+    variables[kVarNsigVtx] = fTrackCuts->GetSigmaToVertex(track); // Calculates the number of sigma to the vertex for a track.
 
-    fVariables->SetAt(GetTrackLengthTPC(track), 9);
+    variables[kVarRelUncertaintyInvPt] = GetTrackLengthTPC(track);
 
-    if (fVariables->At(5) > 0.)
-      fVariables->SetAt(track->GetTPCchi2() / fVariables->At(5), 10);
+    if (variables[kVarClustersTPC] > 0.)
+      variables[kVarChi2ClusterTPC] = track->GetTPCchi2() / variables[kVarClustersTPC];
 
     //fVariables->SetAt(track->GetTPCClusterInfo(2,1),11); //#crossed rows
-    fVariables->SetAt(track->GetTPCCrossedRows(), 11); //#crossed rows
+    variables[kVarCrossedRowsTPC] = track->GetTPCCrossedRows(); //#crossed rows
 
     Float_t crossedRowsTPCNClsF = 1.; //track->GetTPCClusterInfo(2,0);
     if (track->GetTPCNclsF() > 0.)
-      crossedRowsTPCNClsF = fVariables->At(11) / track->GetTPCNclsF();
-    fVariables->SetAt(crossedRowsTPCNClsF, 12); //(#crossed rows)/(#findable clusters)
-    fVariables->SetAt(track->GetSigmaY2(), 13);
-    fVariables->SetAt(track->GetSigmaZ2(), 14);
-    fVariables->SetAt(track->GetSigmaSnp2(), 15);
-    fVariables->SetAt(track->GetSigmaTgl2(), 16);
-    fVariables->SetAt(track->GetSigma1Pt2(), 17);
+      crossedRowsTPCNClsF = variables[11] / track->GetTPCNclsF();
+    variables[kVarCrossedRowsFindTPC] = crossedRowsTPCNClsF; //(#crossed rows)/(#findable clusters)
+    variables[kVarSigmaY2] = track->GetSigmaY2();
+    variables[kVarSigmaZ2] = track->GetSigmaZ2();
+    variables[kVarSigmaSnp2] = track->GetSigmaSnp2();
+    variables[kVarSigmaTgl2] = track->GetSigmaTgl2();
+    variables[kVarSigmaInvPt2] = track->GetSigma1Pt2();
 
-    fVariables->SetAt(track->GetTPCNclsIter1(), 18);
-    fVariables->SetAt(track->GetTPCchi2Iter1(), 19);
+    variables[kVarClustersTPCIter1] = track->GetTPCNclsIter1();
+    variables[kVarChi2TPCIter1] = track->GetTPCchi2Iter1();
 
-    fVariables->SetAt(track->GetTPCnclsS(), 20);
+    variables[kVarClustersTPCShared] = track->GetTPCnclsS();
 
     Float_t chi2Gold = origtrack->GetChi2TPCConstrainedVsGlobal(fVtx); //GetGoldenChi2(origtrack);
-    Float_t chi2GGC = GetGGCChi2(origtrack);
+    Float_t chi2GGC = GetGGCChi2(origtrack.get());
 
-    fVariables->SetAt(chi2Gold, 21);
-    fVariables->SetAt(chi2GGC, 22);
+    variables[kVarChi2Gold] = chi2Gold;
+    variables[kVarChi2ConstrainedGlob] = chi2GGC;
 
-    fVariables->SetAt(GetTPCClusterInfoFitMap(track, 2, 1), 23);
+    variables[kVarNCrossedRowsFit] = GetTPCClusterInfoFitMap(track, 2, 1);
     Float_t crossedRowsTPCNClsFFit = 1.;
     if (track->GetTPCNclsF() > 0.)
-      crossedRowsTPCNClsFFit = fVariables->At(23) / track->GetTPCNclsF();
-    fVariables->SetAt(crossedRowsTPCNClsFFit, 24);
+      crossedRowsTPCNClsFFit = variables[kVarNCrossedRowsFit] / track->GetTPCNclsF();
+    variables[kVarCrossedRowsFindFit] = crossedRowsTPCNClsFFit;
 
-    fVariables->SetAt(track->GetITSchi2(), 25);
+    variables[kVarChi2ITS] = track->GetITSchi2();
 
-    fVariables->SetAt(track->GetTPCsignalN(), 26);
+    variables[kVarTPCclustersdEdx] = track->GetTPCsignalN();
 
     TBits fitmap = track->GetTPCFitMap();
     fPtNClustersNClustersFitMap->Fill(track->Pt(), track->GetTPCNcls(), (float)fitmap.CountBits());
@@ -1479,18 +1424,15 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
       if (track)
         delete track;
     }
-    if (origtrack)
-      delete origtrack;
 
   } //track loop
 }
 
-//________________________________________________________________________
+ /**
+  * @brief Do QA on AOD input
+  */
 void AliPWG4HighPtTrackQA::DoAnalysisAOD()
 {
-  //
-  // Do QA on AOD input
-  //
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fEvent);
   if (!aod)
     return;
@@ -1536,11 +1478,12 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
       }
     }
 
-    fVariables->Reset(0.);
+    TArrayF & variables = *fVariables;
+    variables.Reset(0.);
 
-    fVariables->SetAt(aodtrack->Pt(), 0);
-    fVariables->SetAt(aodtrack->Phi(), 1);
-    fVariables->SetAt(aodtrack->Eta(), 2);
+    variables[kVarPT] = aodtrack->Pt();
+    variables[kVarPhi] = aodtrack->Phi();
+    variables[kVarEta] = aodtrack->Eta();
 
     Double_t dca[2] = {0., 0.};
     if (aodtrack->IsGlobalConstrained())
@@ -1557,21 +1500,21 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
       dca[0] = pos[0] - v[0];
       dca[1] = pos[1] - v[1];
     }
-    fVariables->SetAt(dca[0], 3);
-    fVariables->SetAt(dca[1], 4);
-    fVariables->SetAt((float)aodtrack->GetTPCNcls(), 5);
-    fVariables->SetAt((float)aodtrack->GetITSNcls(), 6);
-    fVariables->SetAt(0., 7); //ConstrainedChi2TPC -> not available in AOD
-    fVariables->SetAt(0., 8);
-    fVariables->SetAt(GetTrackLengthTPC(aodtrack), 9);
+    variables[kVarDCAXY] = dca[0];
+    variables[kVarDCAZ] = dca[1];
+    variables[kVarClustersTPC] = (float)aodtrack->GetTPCNcls();
+    variables[kVarPointsITS] = (float)aodtrack->GetITSNcls();
+    variables[kVarChi2C] = 0.; //ConstrainedChi2TPC -> not available in AOD
+    variables[kVarNsigVtx] = 0.;
+    variables[kVarRelUncertaintyInvPt] = GetTrackLengthTPC(aodtrack);
     Float_t chi2pndf = aodtrack->Chi2perNDF();
     //if(fVariables->At(5)>0.) chi2pndf = aodtrack->GetTPCchi2()/fVariables->At(5);
-    fVariables->SetAt(chi2pndf, 10);
-    fVariables->SetAt(GetTPCClusterInfo(aodtrack, 2, 1, 0, 159, kFALSE), 11);
+    variables[kVarChi2ClusterTPC] = chi2pndf;
+    variables[kVarCrossedRowsTPC] = GetTPCClusterInfo(aodtrack, 2, 1, 0, 159, kFALSE);
     Float_t crossedRowsTPCNClsF = 0.;
     if (aodtrack->GetTPCNclsF() > 0.)
-      crossedRowsTPCNClsF = fVariables->At(11) / aodtrack->GetTPCNclsF();
-    fVariables->SetAt(crossedRowsTPCNClsF, 12);
+      crossedRowsTPCNClsF = variables[11] / aodtrack->GetTPCNclsF();
+    variables[kVarCrossedRowsFindTPC] = crossedRowsTPCNClsF;
 
     //get covariance matrix
     Double_t cov[21] = {
@@ -1589,132 +1532,143 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
     Short_t sign = aodtrack->Charge();
     exParam.Set(xyz, pxpypz, cov, sign);
 
-    fVariables->SetAt(exParam.GetSigmaY2(), 13);
-    fVariables->SetAt(exParam.GetSigmaZ2(), 14);
-    fVariables->SetAt(exParam.GetSigmaSnp2(), 15);
-    fVariables->SetAt(exParam.GetSigmaTgl2(), 16);
-    fVariables->SetAt(exParam.GetSigma1Pt2(), 17);
+    variables[kVarSigmaY2] = exParam.GetSigmaY2();
+    variables[kVarSigmaZ2] = exParam.GetSigmaZ2();
+    variables[kVarSigmaSnp2] = exParam.GetSigmaSnp2();
+    variables[kVarSigmaTgl2] = exParam.GetSigmaTgl2();
+    variables[kVarSigmaInvPt2] = exParam.GetSigma1Pt2();
 
-    fVariables->SetAt(0., 18); //NClustersTPCIter1
-    fVariables->SetAt(0., 19); //Chi2TPCIter1
+    variables[kVarClustersTPCIter1] = 0.; //NClustersTPCIter1
+    variables[kVarChi2TPCIter1] = 0.; //Chi2TPCIter1
 
     TBits sharedClusterMap = aodtrack->GetTPCSharedMap();
-    fVariables->SetAt(sharedClusterMap.CountBits(), 20);
+    variables[kVarClustersTPCShared] = sharedClusterMap.CountBits();
 
-    fVariables->SetAt(0., 21); //not available in AOD golden chi2
-    fVariables->SetAt(0., 22); //not available in AOD  Chi2 between global and global constrained
+    variables[kVarChi2Gold] = 0.; //not available in AOD golden chi2
+    variables[kVarChi2ConstrainedGlob] = 0.; //not available in AOD  Chi2 between global and global constrained
 
-    fVariables->SetAt(GetTPCClusterInfo(aodtrack, 2, 1, 0, 159, kTRUE), 23); //not available in AOD #crossed rows from fit map
+    variables[kVarNCrossedRowsFit] = GetTPCClusterInfo(aodtrack, 2, 1, 0, 159, kTRUE); //not available in AOD #crossed rows from fit map
     Float_t crossedRowsTPCNClsFFit = 0.;
     if (aodtrack->GetTPCNclsF() > 0.)
-      crossedRowsTPCNClsFFit = fVariables->At(23) / aodtrack->GetTPCNclsF();
-    fVariables->SetAt(crossedRowsTPCNClsFFit, 24); //(#crossed rows)/(#findable clusters) from fit map
+      crossedRowsTPCNClsFFit = variables[kVarNCrossedRowsFit] / aodtrack->GetTPCNclsF();
+    variables[kVarCrossedRowsFindFit] = crossedRowsTPCNClsFFit; //(#crossed rows)/(#findable clusters) from fit map
 
-    fVariables->SetAt(0., 25);
+    variables[kVarChi2ITS] = 0.;
 
-    fVariables->SetAt(aodtrack->GetTPCsignalN(), 26);
+    variables[kVarTPCclustersdEdx] = aodtrack->GetTPCsignalN();
 
-    fPtAll->Fill(fVariables->At(0));
+    fPtAll->Fill(variables[0]);
 
     FillHistograms();
   }
 }
 
-//________________________________________________________________________
+/**
+ * @brief Fill all QA histograms
+ */
 void AliPWG4HighPtTrackQA::FillHistograms()
 {
-  //
-  // Fill all QA histograms
-  //
+  // declare references to array entries
+  TArrayF &variables = *fVariables;
+  const Float_t &pt = variables[kVarPT], &phi = variables[kVarPhi], &eta = variables[kVarEta], &dcaXY = variables[kVarDCAXY], 
+                &dcaZ = variables[kVarDCAZ], &nclustersTPC = variables[kVarClustersTPC], &npointsITS = variables[kVarPointsITS], 
+                &chi2constrainedTPC = variables[kVarChi2C], &sigToVtx = variables[kVarNsigVtx], 
+                &relUncertaintyInvPt = variables[kVarRelUncertaintyInvPt], &chi2clusterTPC = variables[kVarChi2ClusterTPC], 
+                &ncrossedrowsTPC = variables[kVarCrossedRowsTPC], &crossedrowsoverfindable = variables[kVarCrossedRowsFindTPC], 
+                &sigmaY2 = variables[kVarSigmaY2], &sigmaZ2 = variables[kVarSigmaZ2], &sigmaSnp2 = variables[kVarSigmaSnp2],
+                &sigmaTgl2 = variables[kVarSigmaTgl2], &sigmaInvPt = variables[kVarSigmaInvPt2], &nclustersTPCIter1 = variables[kVarClustersTPCIter1], 
+                &chi2TPCIter1 = variables[kVarChi2TPCIter1], &nclustersTPCShared = variables[kVarClustersTPCShared], &chi2Gold = variables[kVarChi2Gold], 
+                &chi2GlobalConstrained = variables[kVarChi2ConstrainedGlob], &ncrossedrowsFit = variables[kVarNCrossedRowsFit], 
+                &ncrossedrowsFindableFit = variables[kVarCrossedRowsFindFit], &chi2ITS = variables[kVarChi2ITS], &nclustersdEdxTPC = variables[kVarTPCclustersdEdx];
 
-  fPtSel->Fill(fVariables->At(0));
-  fPtPhi->Fill(fVariables->At(0), fVariables->At(1));
-  fPtEta->Fill(fVariables->At(0), fVariables->At(2));
-  fPtEtaPhi->Fill(fVariables->At(0), fVariables->At(2), fVariables->At(1));
-  fPtDCA2D->Fill(fVariables->At(0), fVariables->At(3));
-  fPtDCAZ->Fill(fVariables->At(0), fVariables->At(4));
-  fPtNClustersTPC->Fill(fVariables->At(0), fVariables->At(5));
-  fPtNClustersTPCPhi->Fill(fVariables->At(1), fVariables->At(5));
-  fPtNPointITS->Fill(fVariables->At(0), fVariables->At(6));
-  fPtNPointITSPhi->Fill(fVariables->At(0), fVariables->At(6), fVariables->At(1));
+  // Fill the histograms using the references
+  fPtSel->Fill(pt);
+  fPtPhi->Fill(pt, phi);
+  fPtEta->Fill(pt, eta);
+  fPtEtaPhi->Fill(pt, eta, phi);
+  fPtDCA2D->Fill(pt, dcaXY);
+  fPtDCAZ->Fill(pt, dcaZ);
+  fPtNClustersTPC->Fill(pt, nclustersTPC);
+  fPtNClustersTPCPhi->Fill(phi, nclustersTPC);
+  fPtNPointITS->Fill(pt, npointsITS);
+  fPtNPointITSPhi->Fill(pt, npointsITS, phi);
 
-  fPtNClustersTPCIter1->Fill(fVariables->At(0), fVariables->At(18));
-  fPtNClustersTPCIter1Phi->Fill(fVariables->At(0), fVariables->At(18), fVariables->At(1));
-  fPtNClustersTPCShared->Fill(fVariables->At(0), fVariables->At(20));
-  if (fVariables->At(5) > 0.)
-    fPtNClustersTPCSharedFrac->Fill(fVariables->At(0), fVariables->At(20) / fVariables->At(5));
+  fPtNClustersTPCIter1->Fill(pt, nclustersTPCIter1);
+  fPtNClustersTPCIter1Phi->Fill(pt, nclustersTPCIter1, phi);
+  fPtNClustersTPCShared->Fill(pt, nclustersTPCShared);
+  if (nclustersTPC > 0.)
+    fPtNClustersTPCSharedFrac->Fill(pt, nclustersTPCShared / nclustersTPC);
 
-  if (fVariables->At(18) > 0.)
-    fPtChi2PerClusterTPCIter1->Fill(fVariables->At(0), fVariables->At(19) / fVariables->At(18));
+  if (nclustersTPCIter1 > 0.)
+    fPtChi2PerClusterTPCIter1->Fill(pt, chi2TPCIter1 / nclustersTPCIter1);
 
-  fPtChi2C->Fill(fVariables->At(0), fVariables->At(7));
-  fPtNSigmaToVertex->Fill(fVariables->At(0), fVariables->At(8));
-  fPtRelUncertainty1Pt->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)));
-  fPtRelUncertainty1PtNClus->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(5));
-  fPtRelUncertainty1PtNClusIter1->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(18));
-  fPtRelUncertainty1PtNPointITS->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(6));
+  fPtChi2C->Fill(pt, chi2constrainedTPC);
+  fPtNSigmaToVertex->Fill(pt, sigToVtx);
+  fPtRelUncertainty1Pt->Fill(pt, pt * TMath::Sqrt(sigmaInvPt));
+  fPtRelUncertainty1PtNClus->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), nclustersTPC);
+  fPtRelUncertainty1PtNClusIter1->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), nclustersTPCIter1);
+  fPtRelUncertainty1PtNPointITS->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), npointsITS);
 
-  fPtRelUncertainty1PtITSClusterMap->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), (int)fITSClusterMap);
+  fPtRelUncertainty1PtITSClusterMap->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), (int)fITSClusterMap);
 
-  fPtRelUncertainty1PtChi2->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(10));
-  if (fVariables->At(18) > 0.)
-    fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(19) / fVariables->At(18));
-  fPtRelUncertainty1PtPhi->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(1));
+  fPtRelUncertainty1PtChi2->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), chi2clusterTPC);
+  if (nclustersTPCIter1 > 0.)
+    fPtRelUncertainty1PtChi2Iter1->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), chi2TPCIter1 / nclustersTPCIter1);
+  fPtRelUncertainty1PtPhi->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), phi);
 
-  fPtSigmaY2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(13)));
-  fPtSigmaZ2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(14)));
-  fPtSigmaSnp2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(15)));
-  fPtSigmaTgl2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(16)));
-  fPtSigma1Pt2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(17)));
+  fPtSigmaY2->Fill(1. / pt, TMath::Sqrt(sigmaY2));
+  fPtSigmaZ2->Fill(1. / pt, TMath::Sqrt(sigmaZ2));
+  fPtSigmaSnp2->Fill(1. / pt, TMath::Sqrt(sigmaSnp2));
+  fPtSigmaTgl2->Fill(1. / pt, TMath::Sqrt(sigmaTgl2));
+  fPtSigma1Pt2->Fill(1. / pt, TMath::Sqrt(sigmaInvPt));
 
-  fProfPtSigmaY2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(13)));
-  fProfPtSigmaZ2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(14)));
-  fProfPtSigmaSnp2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(15)));
-  fProfPtSigmaTgl2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(16)));
-  fProfPtSigma1Pt2->Fill(1. / fVariables->At(0), TMath::Sqrt(fVariables->At(17)));
-  fProfPtSigma1Pt->Fill(fVariables->At(0), TMath::Sqrt(fVariables->At(17)));
-  fProfPtPtSigma1Pt->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)));
+  fProfPtSigmaY2->Fill(1. / pt, TMath::Sqrt(sigmaY2));
+  fProfPtSigmaZ2->Fill(1. / pt, TMath::Sqrt(sigmaZ2));
+  fProfPtSigmaSnp2->Fill(1. / pt, TMath::Sqrt(sigmaSnp2));
+  fProfPtSigmaTgl2->Fill(1. / pt, TMath::Sqrt(sigmaTgl2));
+  fProfPtSigma1Pt2->Fill(1. / pt, TMath::Sqrt(sigmaInvPt));
+  fProfPtSigma1Pt->Fill(pt, TMath::Sqrt(sigmaInvPt));
+  fProfPtPtSigma1Pt->Fill(pt, pt * TMath::Sqrt(sigmaInvPt));
 
-  fPtChi2PerClusterTPC->Fill(fVariables->At(0), fVariables->At(10));
-  fPtNCrossedRows->Fill(fVariables->At(0), fVariables->At(11));
-  fPtNCrossedRowsPhi->Fill(fVariables->At(0), fVariables->At(11), fVariables->At(1));
-  fPtNCrossedRowsNClusFPhi->Fill(fVariables->At(0), fVariables->At(12), fVariables->At(1));
-  fPtNCrRNCrRNClusF->Fill(fVariables->At(0), fVariables->At(11), fVariables->At(12));
+  fPtChi2PerClusterTPC->Fill(pt, chi2clusterTPC);
+  fPtNCrossedRows->Fill(pt, ncrossedrowsTPC);
+  fPtNCrossedRowsPhi->Fill(pt, ncrossedrowsTPC, phi);
+  fPtNCrossedRowsNClusFPhi->Fill(pt, crossedrowsoverfindable, phi);
+  fPtNCrRNCrRNClusF->Fill(pt, ncrossedrowsTPC, crossedrowsoverfindable);
 
-  fPtChi2Gold->Fill(fVariables->At(0), fVariables->At(21));
-  fPtChi2GGC->Fill(fVariables->At(0), fVariables->At(22));
+  fPtChi2Gold->Fill(pt, chi2Gold);
+  fPtChi2GGC->Fill(pt, chi2GlobalConstrained);
 
-  fPtChi2GoldPhi->Fill(fVariables->At(0), fVariables->At(21), fVariables->At(1));
-  fPtChi2GGCPhi->Fill(fVariables->At(0), fVariables->At(22), fVariables->At(1));
+  fPtChi2GoldPhi->Fill(pt, chi2Gold, phi);
+  fPtChi2GGCPhi->Fill(pt, chi2GlobalConstrained, phi);
 
-  fChi2GoldChi2GGC->Fill(fVariables->At(21), fVariables->At(22));
+  fChi2GoldChi2GGC->Fill(chi2Gold, chi2GlobalConstrained);
 
-  fPtNCrossedRowsFit->Fill(fVariables->At(0), fVariables->At(23));
-  fPtNCrossedRowsFitPhi->Fill(fVariables->At(0), fVariables->At(23), fVariables->At(1));
-  fPtNCrossedRowsNClusFFitPhi->Fill(fVariables->At(0), fVariables->At(24), fVariables->At(1));
-  fNCrossedRowsNCrossedRowsFit->Fill(fVariables->At(11), fVariables->At(23));
+  fPtNCrossedRowsFit->Fill(pt, ncrossedrowsFit);
+  fPtNCrossedRowsFitPhi->Fill(pt, ncrossedrowsFit, phi);
+  fPtNCrossedRowsNClusFFitPhi->Fill(pt, ncrossedrowsFindableFit, phi);
+  fNCrossedRowsNCrossedRowsFit->Fill(ncrossedrowsTPC, ncrossedrowsFit);
 
-  fNClustersNCrossedRows->Fill(fVariables->At(5), fVariables->At(11));
-  fNClustersNCrossedRowsFit->Fill(fVariables->At(5), fVariables->At(23));
+  fNClustersNCrossedRows->Fill(nclustersTPC, ncrossedrowsTPC);
+  fNClustersNCrossedRowsFit->Fill(nclustersTPC, ncrossedrowsFit);
 
-  fPtRelUncertainty1PtNCrossedRows->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(11));
-  fPtRelUncertainty1PtNCrossedRowsFit->Fill(fVariables->At(0), fVariables->At(0) * TMath::Sqrt(fVariables->At(17)), fVariables->At(23));
+  fPtRelUncertainty1PtNCrossedRows->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), ncrossedrowsTPC);
+  fPtRelUncertainty1PtNCrossedRowsFit->Fill(pt, pt * TMath::Sqrt(sigmaInvPt), ncrossedrowsFit);
 
-  if (fVariables->At(6) > 0.)
-    fPtChi2ITSPhi->Fill(fVariables->At(0), fVariables->At(25) / fVariables->At(6), fVariables->At(1));
+  if (npointsITS > 0.)
+    fPtChi2ITSPhi->Fill(pt, variables[25] / npointsITS, phi);
 
-  fPtTPCSignalN->Fill(fVariables->At(0), fVariables->At(26));
+  fPtTPCSignalN->Fill(pt, variables[26]);
 }
 
-//________________________________________________________________________
+/**
+ * @brief Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+ * 
+ * This is to called in Notify and should provide the path to the AOD/ESD file
+ * Copied from AliAnalysisTaskJetSpectrum2
+ */
 Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char *currFile, Float_t &fXsec, Float_t &fTrials)
 {
-  //
-  // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
-  // This is to called in Notify and should provide the path to the AOD/ESD file
-  // Copied from AliAnalysisTaskJetSpectrum2
-  //
-
   TString file(currFile);
   fXsec = 0;
   fTrials = 1;
@@ -1737,11 +1691,11 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char *currFile, Float_t &f
     file.ReplaceAll(gSystem->BaseName(file.Data()), "");
   }
 
-  TFile *fxsec = TFile::Open(Form("%s%s", file.Data(), "pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s", file.Data(), "pyxsec.root"))); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
   if (!fxsec)
   {
     // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s", file.Data(), "pyxsec_hists.root"));
+    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s", file.Data(), "pyxsec_hists.root")));
     if (!fxsec)
     {
       // not a severe condition but inciate that we have no information
@@ -1787,15 +1741,17 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char *currFile, Float_t &f
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * @brief Notify function called when file is changed
+ *
+ * Implemented Notify() to read the cross sections
+ * and number of trials from pyxsec.root
+ * Copied from AliAnalysisTaskJetSpectrum2
+ * 
+ * @return Bool_t false if failure, otherwise true
+ */
 Bool_t AliPWG4HighPtTrackQA::Notify()
 {
-  //
-  // Implemented Notify() to read the cross sections
-  // and number of trials from pyxsec.root
-  // Copied from AliAnalysisTaskJetSpectrum2
-  //
-
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
   Float_t ftrials = 1;
@@ -1824,7 +1780,6 @@ Bool_t AliPWG4HighPtTrackQA::Notify()
   return kTRUE;
 }
 
-//________________________________________________________________________
 AliGenPythiaEventHeader *AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMCEvent *mcEvent)
 {
 
@@ -1859,23 +1814,23 @@ AliGenPythiaEventHeader *AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMCE
   return pythiaGenHeader;
 }
 
-//_______________________________________________________________________
+/**
+ * @brief Get TPC cluster information
+ *
+ * TPC cluster information
+ *   type 0: get fraction of found/findable clusters with neighbourhood definition
+ *        1: findable clusters with neighbourhood definition
+ *        2: found clusters
+ *
+ *  definition of findable clusters:
+ *             a cluster is defined as findable if there is another cluster
+ *             within +- nNeighbours pad rows. The idea is to overcome threshold
+ *             effects with a very simple algorithm.
+ * 
+ * MV: copied from AliESDtrack since method is not available in AliAODTrack
+ */
 Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr, Int_t nNeighbours /*=3*/, Int_t type /*=0*/, Int_t row0, Int_t row1, Bool_t useFitMap) const
 {
-  //MV: copied from AliESDtrack since method is not available in AliAODTrack
-
-  //
-  // TPC cluster information
-  // type 0: get fraction of found/findable clusters with neighbourhood definition
-  //      1: findable clusters with neighbourhood definition
-  //      2: found clusters
-  //
-  // definition of findable clusters:
-  //            a cluster is defined as findable if there is another cluster
-  //           within +- nNeighbours pad rows. The idea is to overcome threshold
-  //           effects with a very simple algorithm.
-  //
-
   TBits fTPCClusterMap = 0;
   if (useFitMap)
     fTPCClusterMap = tr->GetTPCFitMap();
@@ -1930,21 +1885,28 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr, Int_t nNe
   return 0; // undefined type - default value
 }
 
-//_______________________________________________________________________
+/**
+ * @brief Get TPC cluster information from fit map
+ * 
+ * TPC cluster information from fit map
+ * type 0: get fraction of found/findable clusters with neighbourhood definition
+ *      1: findable clusters with neighbourhood definition
+ *      2: found clusters
+ * 
+ * definition of findable clusters:
+ *            a cluster is defined as findable if there is another cluster
+ *            within +- nNeighbours pad rows. The idea is to overcome threshold
+ *            effects with a very simple algorithm.
+ * 
+ * @param tr Track to check
+ * @param nNeighbours Number of neighbors
+ * @param type Track type
+ * @param row0 first row
+ * @param row1 last row
+ * @return Number of clusters from the fit 
+ */
 Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(const AliESDtrack *tr, Int_t nNeighbours /*=3*/, Int_t type /*=0*/, Int_t row0, Int_t row1) const
 {
-  //
-  // TPC cluster information from fit map
-  // type 0: get fraction of found/findable clusters with neighbourhood definition
-  //      1: findable clusters with neighbourhood definition
-  //      2: found clusters
-  //
-  // definition of findable clusters:
-  //            a cluster is defined as findable if there is another cluster
-  //           within +- nNeighbours pad rows. The idea is to overcome threshold
-  //           effects with a very simple algorithm.
-  //
-
   TBits fTPCFitMap = tr->GetTPCFitMap();
   if (type == 2)
     return fTPCFitMap.CountBits();
@@ -1994,13 +1956,18 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(const AliESDtrack *tr, Int
   return 0; // undefined type - default value
 }
 
-//_______________________________________________________________________
+/**
+ * @brief  Get track length
+ * 
+ * returns distance between 1st and last hit in TPC
+ * distance given in number of padrows
+ * 
+ * @param track Track to check
+ * @return Length of the track
+ */
 Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const
 {
-  //
-  // returns distance between 1st and last hit in TPC
-  // distance given in number of padrows
-  //
+  
 
   TBits fTPCClusterMap = track->GetTPCClusterMap();
   int firstHit = 0;
@@ -2022,13 +1989,17 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const
   return trackLength;
 }
 
-//_______________________________________________________________________
+/**
+ * @brief Get the TPC track length
+ * 
+ * returns distance between 1st and last hit in TPC
+ * distance given in number of padrows
+ *
+ * @param track Track to check
+ * @return Int_t Length of the track inside TPC
+ */
 Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const
 {
-  //
-  // returns distance between 1st and last hit in TPC
-  // distance given in number of padrows
-  //
 
   TBits fTPCClusterMap = track->GetTPCClusterMap();
   int firstHit = 0;
@@ -2050,18 +2021,20 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const
   return trackLength;
 }
 
-//_______________________________________________________________________
+/**
+ * @brief Get the golden chi2 for the given track
+ * 
+ * Return chi2 between global and TPC constrained track
+ * track should be the global unconstrained track
+ *
+ * @param origtrack Track to check
+ * @return Float_t Golden chi2
+ */
 Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack)
 {
-  //
-  // Return chi2 between global and TPC constrained track
-  // track should be the global unconstrained track
-  //
-
   Float_t chi2Gold = 0.;
 
-  AliESDtrack *tpcTrack = 0x0;
-  tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESD, origtrack->GetID());
+  std::unique_ptr<AliESDtrack> tpcTrack(AliESDtrackCuts::GetTPCOnlyTrack(fESD, origtrack->GetID()));
   if (tpcTrack)
   {
     AliExternalTrackParam exParam;
@@ -2073,45 +2046,48 @@ Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack)
     }
 
     tpcTrack->Propagate(origtrack->GetAlpha(), origtrack->GetX(), fESD->GetMagneticField());
-    chi2Gold = (Float_t)origtrack->GetPredictedChi2(tpcTrack);
+    chi2Gold = (Float_t)origtrack->GetPredictedChi2(tpcTrack.get());
   }
-
-  if (tpcTrack)
-    delete tpcTrack;
-
   return chi2Gold;
 }
 
-//_______________________________________________________________________
+/**
+ * @brief Get the global constrained chi2 of the track
+ * 
+ * Return chi2 between global and global constrained track
+ * track should be the global unconstrained track
+ *
+ * @param origtrack Track to check 
+ * @return Float_t Global constrained chi2
+ */
 Float_t AliPWG4HighPtTrackQA::GetGGCChi2(AliESDtrack *origtrack)
 {
-  //
-  // Return chi2 between global and global constrained track
-  // track should be the global unconstrained track
-  //
-
   Float_t chi2GGC = 0.;
 
-  AliESDtrack *esdtrackC = new AliESDtrack(*origtrack);
+  std::unique_ptr<AliESDtrack> esdtrackC(new AliESDtrack(*origtrack));
   if (esdtrackC)
   {
     if (origtrack->GetConstrainedParam())
     {
       esdtrackC->Set(origtrack->GetConstrainedParam()->GetX(), origtrack->GetConstrainedParam()->GetAlpha(), origtrack->GetConstrainedParam()->GetParameter(), origtrack->GetConstrainedParam()->GetCovariance());
-      chi2GGC = (Float_t)origtrack->GetPredictedChi2(esdtrackC);
+      chi2GGC = (Float_t)origtrack->GetPredictedChi2(esdtrackC.get());
     }
-    delete esdtrackC;
   }
 
   return chi2GGC;
 }
 
-//________________________________________________________________________
+/**
+ * @brief Terminate function
+ * 
+ * The Terminate() function is the last function to be called during
+ * a query. It always runs on the client, it can be used to present
+ * the results graphically or save the results to file.
+ * 
+ * @param Option_t Unused
+ */
 void AliPWG4HighPtTrackQA::Terminate(Option_t *)
 {
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
 }
 
 #endif
