@@ -447,6 +447,9 @@ class AliAODTrack : public AliVTrack {
   
  private :
 
+  // Silence -Woverloaded-virtual while disallowing use of AliVTrack::GetTPCdEdxInfo in derived classes
+  using AliVTrack::GetTPCdEdxInfo;
+
   // Momentum & position
   Double32_t    fMomentum[3];       ///< momemtum stored in pt, phi, theta
   Double32_t    fPosition[3];       ///< position of first point on track or dca
