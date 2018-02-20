@@ -168,7 +168,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Double_t fSigmaConstrainedMax;  ///< max sigma on constrained fit
   Float_t fPtMax;                 ///< Maximum pT for histograms
-  Float_t fPtBinEdges[3][2];      ///< 3 regions total with different binning for pT axis of histos
+  Float_t fPtBinEdges[4][2];      ///< 4 regions total with different binning for pT axis of histos
 
   Bool_t   fIsPbPb;               ///< kTRUE if PbPb
   Int_t fCentClass;               ///< Select only events from predefined centrality class

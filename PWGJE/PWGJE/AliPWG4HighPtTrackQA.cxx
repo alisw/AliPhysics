@@ -173,13 +173,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtBinEdges[1][1] = 2.;
   fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
+  fPtBinEdges[3][0] = 200.;
+  fPtBinEdges[3][1] = 10.;
 
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-  fVertexSPD[0] = 0;
-  fVertexSPD[1] = 0;
-  fVertexSPD[2] = 0;
+  memset(fVertex, 0, sizeof(double) *3);
+  memset(fVertex, 0, sizeof(double) * 3);
 }
 
 /**
@@ -297,13 +295,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE
   fPtBinEdges[1][1] = 2.;
   fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
+  fPtBinEdges[3][0] = 200.;
+  fPtBinEdges[3][1] = 10.;
 
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-  fVertexSPD[0] = 0;
-  fVertexSPD[1] = 0;
-  fVertexSPD[2] = 0;
+  memset(fVertex, 0, sizeof(double) * 3);
+  memset(fVertexSPD, 0, sizeof(double) * 3);
 
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
@@ -350,16 +346,19 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   //  Float_t fgkPtMax = fPtMax;
 
   //fPtBinEdges[region][0] = ptmax of region ; fPtBinEdges[region][1] = binWidth of region
-  const Float_t ptmin1 = fgkPtMin;
-  const Float_t ptmax1 = fPtBinEdges[0][0];
-  const Float_t ptmin2 = ptmax1;
-  const Float_t ptmax2 = fPtBinEdges[1][0];
-  const Float_t ptmin3 = ptmax2;
-  const Float_t ptmax3 = fPtBinEdges[2][0]; //fgkPtMax;
+  const Float_t &ptmin1 = fgkPtMin;
+  const Float_t &ptmax1 = fPtBinEdges[0][0];
+  const Float_t &ptmin2 = ptmax1;
+  const Float_t &ptmax2 = fPtBinEdges[1][0];
+  const Float_t &ptmin3 = ptmax2;
+  const Float_t &ptmax3 = fPtBinEdges[2][0]; //fgkPtMax;
+  const Float_t &ptmin4 = ptmax3;
+  const Float_t &ptmax4 = fPtBinEdges[3][0]; //fgkPtMax;
   const Int_t nbin11 = (int)((ptmax1 - ptmin1) / fPtBinEdges[0][1]);
   const Int_t nbin12 = (int)((ptmax2 - ptmin2) / fPtBinEdges[1][1]) + nbin11;
   const Int_t nbin13 = (int)((ptmax3 - ptmin3) / fPtBinEdges[2][1]) + nbin12;
-  Int_t fgkNPtBins = nbin13;
+  const Int_t nbin14 = (int)((ptmax4 - ptmin4) / fPtBinEdges[3][1]) + nbin13;
+  Int_t fgkNPtBins = nbin14;
   //Create array with low edges of each bin
   std::vector<double> binsPt(fgkNPtBins + 1);
   for (Int_t i = 0; i <= fgkNPtBins; i++)
@@ -370,6 +369,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
       binsPt[i] = (Double_t)ptmin2 + (ptmax2 - ptmin2) / (nbin12 - nbin11) * ((Double_t)i - (Double_t)nbin11);
     if (i <= nbin13 && i > nbin12)
       binsPt[i] = (Double_t)ptmin3 + (ptmax3 - ptmin3) / (nbin13 - nbin12) * ((Double_t)i - (Double_t)nbin12);
+    if (i <= nbin14 && i > nbin13)
+      binsPt[i] = (Double_t)ptmin4 + (ptmax4 - ptmin4) / (nbin14 - nbin13) * ((Double_t)i - (Double_t)nbin13);
   }
 
   Int_t fgkNPhiBins = 18 * 6;
