@@ -338,7 +338,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   delete daqSource; daqSource=0;
   
   TString runType = GetRunType();
-  if(runType.CompareTo("PHYSICS")==0){
+  if(runType.CompareTo("PHYSICS")==0 || runType.Contains("CALIBRATION")){
     Log(Form("RunType %s -> producing TDC calibration data",runType.Data()));
     
     // Reading the file for mapping from FXS
