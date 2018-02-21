@@ -68,7 +68,6 @@ AliPerformanceEff::AliPerformanceEff(TRootIOCtor* b):
   fTrackNClsFound(NULL),
   // histogram folder 
   fAnalysisFolder(NULL),
-  fNEvent(0),
   fNClsTreeFile(NULL),
   fNClsTree(NULL),
   fNClsVec(NULL)
@@ -87,7 +86,6 @@ AliPerformanceEff::AliPerformanceEff(const Char_t* name, const Char_t* title, In
 
   // histogram folder 
   fAnalysisFolder(NULL),
-  fNEvent(0),
   fNClsTreeFile(NULL),
   fNClsTree(NULL),
   fNClsVec(NULL)
@@ -195,7 +193,6 @@ void AliPerformanceEff::Init()
       AliDebug(AliLog::kFatal, "Stack not available for event");
     }
     fNClsTree->SetBranchAddress("nclPerTrack", &fNClsVec);
-    fNEvent = -1;
 
     fTrackPtNCls = new TH1D("fTrackPtNCls", "total number of cluster vs track Pt", nPtBins, binsPt);
     fTrackNClsFound = new TH2D("fTrackNClsFound", "found number of clusters vs mc number of clusters", 80, 0., 320, 40, 0., 160);
@@ -256,7 +253,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
   Int_t nPrim  = mcEvent->GetNumberOfPrimaries();
   if (fReadNClsTree)
   {
-    fNClsTree->GetEntry(fNEvent);
+    fNClsTree->GetEntry(vEvent->GetEventNumberInFile());
     if (nPart != fNClsVec->size())
     {
       AliDebug(AliLog::kFatal, "nMCTracks mismatch");
@@ -404,7 +401,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
     //Int_t nPart  = stack->GetNprimary();
     if (fReadNClsTree)
     {
-      fNClsTree->GetEntry(fNEvent);
+      fNClsTree->GetEntry(vEvent->GetEventNumberInFile());
       if (nPart != fNClsVec->size())
       {
         AliDebug(AliLog::kFatal, "nMCTracks mismatch");
@@ -715,7 +712,6 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 {
   // Process comparison information 
   
-  fNEvent++;
   if(!vEvent) 
   {
     Error("Exec","vEvent not available");
