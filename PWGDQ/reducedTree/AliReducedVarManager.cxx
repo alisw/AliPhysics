@@ -1908,8 +1908,9 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   //
   // fill pair-track correlation information
   // NOTE:  Add here only NEEDED information because this function is called during event mixing in the innermost loop
-   //
+  //
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
+  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) values[kTriggerRap] = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
   
   if(fgUsedVars[kDeltaPhi]) {
@@ -1919,34 +1920,10 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
     values[kDeltaPhi] = delta;
   }
   
-  if(fgUsedVars[kDeltaTheta]) 
-    values[kDeltaTheta] = trig->Theta() - assoc->Theta();
+  if(fgUsedVars[kDeltaTheta]) values[kDeltaTheta] = trig->Theta() - assoc->Theta();
   
   if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = trig->Eta() - assoc->Eta();
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
-}
-
-
-//__________________________________________________________________
-void AliReducedVarManager::FillCorrelationInfo(BASETRACK* t, Float_t* values) {
-  //
-  // fill pair-track correlation information
-  //
-
-  if (fgUsedVars[kTriggerPt])
-    values[kTriggerPt] = values[kPt];
-
-  if (fgUsedVars[kAssociatedPt])
-    values[kAssociatedPt] = t->Pt();
-
-  if (fgUsedVars[kDeltaPhi])  // gets filled in FillPairInfo...
-    values[kDeltaPhi] = TMath::Abs(values[kPhi] - t->Phi());
-
-  if (fgUsedVars[kDeltaTheta])
-    values[kDeltaTheta] = TMath::Abs(values[kTheta] - t->Theta());
-
-  if (fgUsedVars[kDeltaEta])  // gets filled in FillPairInfo...
-    values[kDeltaEta] = TMath::Abs(values[kEta] - t->Eta());
 }
 
 
@@ -2496,7 +2473,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kMass]      = "m";         fgVariableUnits[kMass]        = "GeV/c^{2}";
   fgVariableNames[kMassMC]      = "m^{MC}";         fgVariableUnits[kMassMC]        = "GeV/c^{2}";
   fgVariableNames[kMassMCfromLegs]      = "m^{MC-legs}";         fgVariableUnits[kMassMCfromLegs]        = "GeV/c^{2}";
-  fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";  
+  fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";
   fgVariableNames[kRapMC]       = "y^{MC}";         fgVariableUnits[kRapMC]         = "";  
   fgVariableNames[kRapMCfromLegs]       = "y^{MC-legs}";         fgVariableUnits[kRapMCfromLegs]         = "";  
   fgVariableNames[kPdgMC]       = "PDG code";          fgVariableUnits[kPdgMC]         = "";
@@ -2619,6 +2596,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kDeltaTheta]   = "#Delta #theta";  fgVariableUnits[kDeltaTheta] = "rad.";
   fgVariableNames[kDeltaEta]     = "#Delta #eta";    fgVariableUnits[kDeltaEta] = "";
   fgVariableNames[kTriggerPt]    = "p_{T} trigger particle";    fgVariableUnits[kTriggerPt] = "GeV/c";
+  fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap] = "";
   fgVariableNames[kAssociatedPt] = "p_{T} associated particle"; fgVariableUnits[kAssociatedPt] = "GeV/c";
 }
 
