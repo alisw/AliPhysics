@@ -175,27 +175,27 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fhEventCounter(0x0),
 
   // charged histogram
-  fhRefsMult(0x0),
-  fhRefsPt(0x0),
-  fhRefsEta(0x0),
-  fhRefsPhi(0x0),
+  fh2RefsMult(0x0),
+  fh2RefsPt(0x0),
+  fh2RefsEta(0x0),
+  fh2RefsPhi(0x0),
   fhChargedCounter(0x0),
 
   // PID histogram
-  fhPIDPionMult(0x0),
-  fhPIDPionPt(0x0),
-  fhPIDPionPhi(0x0),
-  fhPIDPionEta(0x0),
+  fh2PIDPionMult(0x0),
+  fh2PIDPionPt(0x0),
+  fh2PIDPionPhi(0x0),
+  fh2PIDPionEta(0x0),
   fhPIDPionCharge(0x0),
-  fhPIDKaonMult(0x0),
-  fhPIDKaonPt(0x0),
-  fhPIDKaonPhi(0x0),
-  fhPIDKaonEta(0x0),
+  fh2PIDKaonMult(0x0),
+  fh2PIDKaonPt(0x0),
+  fh2PIDKaonPhi(0x0),
+  fh2PIDKaonEta(0x0),
   fhPIDKaonCharge(0x0),
-  fhPIDProtonMult(0x0),
-  fhPIDProtonPt(0x0),
-  fhPIDProtonPhi(0x0),
-  fhPIDProtonEta(0x0),
+  fh2PIDProtonMult(0x0),
+  fh2PIDProtonPt(0x0),
+  fh2PIDProtonPhi(0x0),
+  fh2PIDProtonEta(0x0),
   fhPIDProtonCharge(0x0),
   fh2PIDPionTPCdEdx(0x0),
   fh2PIDPionTOFbeta(0x0),
@@ -338,27 +338,27 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fhEventCounter(0x0),
 
   // charged histogram
-  fhRefsMult(0x0),
-  fhRefsPt(0x0),
-  fhRefsEta(0x0),
-  fhRefsPhi(0x0),
+  fh2RefsMult(0x0),
+  fh2RefsPt(0x0),
+  fh2RefsEta(0x0),
+  fh2RefsPhi(0x0),
   fhChargedCounter(0x0),
 
   // PID histogram
-  fhPIDPionMult(0x0),
-  fhPIDPionPt(0x0),
-  fhPIDPionPhi(0x0),
-  fhPIDPionEta(0x0),
+  fh2PIDPionMult(0x0),
+  fh2PIDPionPt(0x0),
+  fh2PIDPionPhi(0x0),
+  fh2PIDPionEta(0x0),
   fhPIDPionCharge(0x0),
-  fhPIDKaonMult(0x0),
-  fhPIDKaonPt(0x0),
-  fhPIDKaonPhi(0x0),
-  fhPIDKaonEta(0x0),
+  fh2PIDKaonMult(0x0),
+  fh2PIDKaonPt(0x0),
+  fh2PIDKaonPhi(0x0),
+  fh2PIDKaonEta(0x0),
   fhPIDKaonCharge(0x0),
-  fhPIDProtonMult(0x0),
-  fhPIDProtonPt(0x0),
-  fhPIDProtonPhi(0x0),
-  fhPIDProtonEta(0x0),
+  fh2PIDProtonMult(0x0),
+  fh2PIDProtonPt(0x0),
+  fh2PIDProtonPhi(0x0),
+  fh2PIDProtonEta(0x0),
   fhPIDProtonCharge(0x0),
   fh2PIDPionTPCdEdx(0x0),
   fh2PIDPionTOFbeta(0x0),
@@ -820,14 +820,14 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     }//endif(!fDoOnlyMixedCorrelations)
 
     // charged (tracks) histograms
-    fhRefsMult = new TH2D("fhRefsMult","RFPs: Centrality: Multiplicity; centrality; multiplicity",fFlowCentNumBins,0,fFlowCentNumBins,1000,0,1000);
-    fQACharged->Add(fhRefsMult);
-    fhRefsPt = new TH1D("fhRefsPt","RFPs: #it{p}_{T};  #it{p}_{T} (GeV/#it{c})", 300,0,30);
-    fQACharged->Add(fhRefsPt);
-    fhRefsEta = new TH1D("fhRefsEta","RFPs: #eta; #eta", 151,-1.5,1.5);
-    fQACharged->Add(fhRefsEta);
-    fhRefsPhi = new TH1D("fhRefsPhi","RFPs: #varphi; #varphi", 100,0,TMath::TwoPi());
-    fQACharged->Add(fhRefsPhi);
+    fh2RefsMult = new TH2D("fh2RefsMult","RFPs: Centrality: Multiplicity; centrality; multiplicity",fFlowCentNumBins,0,fFlowCentNumBins,1000,0,1000);
+    fQACharged->Add(fh2RefsMult);
+    fh2RefsPt = new TH2D("fh2RefsPt","RFPs: #it{p}_{T};  centrality; #it{p}_{T} (GeV/#it{c})",fFlowCentNumBins,0,fFlowCentNumBins,300,0,30);
+    fQACharged->Add(fh2RefsPt);
+    fh2RefsEta = new TH2D("fh2RefsEta","RFPs: #eta; centrality; #eta",fFlowCentNumBins,0,fFlowCentNumBins, 151,-1.5,1.5);
+    fQACharged->Add(fh2RefsEta);
+    fh2RefsPhi = new TH2D("fh2RefsPhi","RFPs: #varphi; centrality; #varphi",fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
+    fQACharged->Add(fh2RefsPhi);
 
     if(fProcessCharged)
     {
@@ -841,37 +841,37 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     // PID tracks histograms
     if(fProcessPID)
     {
-      fhPIDPionMult = new TH1D("fhPIDPionMult","PID: #pi: Multiplicity; multiplicity", 200,0,200);
-      fQAPID->Add(fhPIDPionMult);
-      fhPIDKaonMult = new TH1D("fhPIDKaonMult","PID: K: Multiplicity; multiplicity", 100,0,100);
-      fQAPID->Add(fhPIDKaonMult);
-      fhPIDProtonMult = new TH1D("fhPIDProtonMult","PID: p: Multiplicity; multiplicity", 100,0,100);
-      fQAPID->Add(fhPIDProtonMult);
+        fh2PIDPionMult = new TH2D("fh2PIDPionMult","PID: #pi: Multiplicity; centrality; multiplicity", fFlowCentNumBins,0,fFlowCentNumBins,200,0,200);
+      fQAPID->Add(fh2PIDPionMult);
+        fh2PIDKaonMult = new TH2D("fh2PIDKaonMult","PID: K: Multiplicity; centrality; multiplicity", fFlowCentNumBins,0,fFlowCentNumBins,100,0,100);
+      fQAPID->Add(fh2PIDKaonMult);
+        fh2PIDProtonMult = new TH2D("fh2PIDProtonMult","PID: p: Multiplicity; centrality; multiplicity", fFlowCentNumBins,0,fFlowCentNumBins,100,0,100);
+      fQAPID->Add(fh2PIDProtonMult);
 
       if(fFillQA)
       {
-        fhPIDPionPt = new TH1D("fhPIDPionPt","PID: #pi: #it{p}_{T}; #it{p}_{T}", 150,0.,30.);
-        fQAPID->Add(fhPIDPionPt);
-        fhPIDPionPhi = new TH1D("fhPIDPionPhi","PID: #pi: #varphi; #varphi", 100,0,TMath::TwoPi());
-        fQAPID->Add(fhPIDPionPhi);
-        fhPIDPionEta = new TH1D("fhPIDPionEta","PID: #pi: #eta; #eta", 151,-1.5,1.5);
-        fQAPID->Add(fhPIDPionEta);
+        fh2PIDPionPt = new TH2D("fh2PIDPionPt","PID: #pi: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+        fQAPID->Add(fh2PIDPionPt);
+        fh2PIDPionPhi = new TH2D("fh2PIDPionPhi","PID: #pi: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
+        fQAPID->Add(fh2PIDPionPhi);
+        fh2PIDPionEta = new TH2D("fh2PIDPionEta","PID: #pi: centrality vs. #eta; centrality; #eta", fFlowCentNumBins,0,fFlowCentNumBins,151,-1.5,1.5);
+        fQAPID->Add(fh2PIDPionEta);
         fhPIDPionCharge = new TH1D("fhPIDPionCharge","PID: #pi: charge; charge", 3,-1.5,1.5);
         fQAPID->Add(fhPIDPionCharge);
-        fhPIDKaonPt = new TH1D("fhPIDKaonPt","PID: K: #it{p}_{T}; #it{p}_{T}", 150,0.,30.);
-        fQAPID->Add(fhPIDKaonPt);
-        fhPIDKaonPhi = new TH1D("fhPIDKaonPhi","PID: K: #varphi; #varphi", 100,0,TMath::TwoPi());
-        fQAPID->Add(fhPIDKaonPhi);
-        fhPIDKaonEta = new TH1D("fhPIDKaonEta","PID: K: #eta; #eta", 151,-1.5,1.5);
-        fQAPID->Add(fhPIDKaonEta);
+        fh2PIDKaonPt = new TH2D("fh2PIDKaonPt","PID: K: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+        fQAPID->Add(fh2PIDKaonPt);
+        fh2PIDKaonPhi = new TH2D("fh2PIDKaonPhi","PID: K: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
+        fQAPID->Add(fh2PIDKaonPhi);
+        fh2PIDKaonEta = new TH2D("fh2PIDKaonEta","PID: K: centrality vs. #eta; centrality; #eta", fFlowCentNumBins,0,fFlowCentNumBins,151,-1.5,1.5);
+        fQAPID->Add(fh2PIDKaonEta);
         fhPIDKaonCharge = new TH1D("fhPIDKaonCharge","PID: K: charge; charge", 3,-1.5,1.5);
         fQAPID->Add(fhPIDKaonCharge);
-        fhPIDProtonPt = new TH1D("fhPIDProtonPt","PID: p: #it{p}_{T}; #it{p}_{T}", 150,0.,30.);
-        fQAPID->Add(fhPIDProtonPt);
-        fhPIDProtonPhi = new TH1D("fhPIDProtonPhi","PID: p: #varphi; #varphi", 100,0,TMath::TwoPi());
-        fQAPID->Add(fhPIDProtonPhi);
-        fhPIDProtonEta = new TH1D("fhPIDProtonEta","PID: p: #eta; #eta", 151,-1.5,1.5);
-        fQAPID->Add(fhPIDProtonEta);
+        fh2PIDProtonPt = new TH2D("fh2PIDProtonPt","PID: p: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+        fQAPID->Add(fh2PIDProtonPt);
+        fh2PIDProtonPhi = new TH2D("fh2PIDProtonPhi","PID: p: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
+        fQAPID->Add(fh2PIDProtonPhi);
+        fh2PIDProtonEta = new TH2D("fh2PIDProtonEta","PID: p: centrality vs. #eta; centrality; #eta", fFlowCentNumBins,0,fFlowCentNumBins,151,-1.5,1.5);
+        fQAPID->Add(fh2PIDProtonEta);
         fhPIDProtonCharge = new TH1D("fhPIDProtonCharge","PID: p: charge; charge", 3,-1.5,1.5);
         fQAPID->Add(fhPIDProtonCharge);
         fh2PIDPionTPCdEdx = new TH2D("fh2PIDPionTPCdEdx","PID: #pi: TPC dE/dx; #it{p} (GeV/#it{c}); TPC dE/dx", 200,0,20, 131,-10,1000);
@@ -1593,7 +1593,7 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   }
 
   // fill QA charged multiplicity
-  fhRefsMult->Fill(fIndexCentrality,iNumRefs);
+  fh2RefsMult->Fill(fIndexCentrality,iNumRefs);
   if(fFillQA)
   {
     fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
@@ -1665,9 +1665,9 @@ void AliAnalysisTaskFlowModes::FillQARefs(const Short_t iQAindex, const AliAODTr
   if(!track) return;
   if(iQAindex == 0) return; // NOTE implemented only for selected RFPs
 
-  fhRefsPt->Fill(track->Pt());
-  fhRefsEta->Fill(track->Eta());
-  fhRefsPhi->Fill(track->Phi());
+  fh2RefsPt->Fill(fIndexCentrality,track->Pt());
+  fh2RefsEta->Fill(fIndexCentrality,track->Eta());
+  fh2RefsPhi->Fill(fIndexCentrality,track->Phi());
 
   return;
 }
@@ -1783,9 +1783,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
     if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
   }
 
-  fhPIDPionMult->Fill(fVectorPion->size());
-  fhPIDKaonMult->Fill(fVectorKaon->size());
-  fhPIDProtonMult->Fill(fVectorProton->size());
+  fh2PIDPionMult->Fill(fIndexCentrality,fVectorPion->size());
+  fh2PIDKaonMult->Fill(fIndexCentrality,fVectorKaon->size());
+  fh2PIDProtonMult->Fill(fIndexCentrality,fVectorProton->size());
 
   return;
 }
@@ -2017,9 +2017,9 @@ void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTra
   switch (species)
   {
     case kPion:
-      fhPIDPionPt->Fill(track->Pt());
-      fhPIDPionPhi->Fill(track->Phi());
-      fhPIDPionEta->Fill(track->Eta());
+      fh2PIDPionPt->Fill(fIndexCentrality,track->Pt());
+      fh2PIDPionPhi->Fill(fIndexCentrality,track->Phi());
+      fh2PIDPionEta->Fill(fIndexCentrality,track->Eta());
       fhPIDPionCharge->Fill(track->Charge());
       fh2PIDPionTPCdEdx->Fill(dPt,dTPCdEdx);
       fh2PIDPionTOFbeta->Fill(dPt,dTOFbeta);
@@ -2037,9 +2037,9 @@ void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTra
       break;
 
     case kKaon:
-      fhPIDKaonPt->Fill(track->Pt());
-      fhPIDKaonPhi->Fill(track->Phi());
-      fhPIDKaonEta->Fill(track->Eta());
+      fh2PIDKaonPt->Fill(fIndexCentrality,track->Pt());
+      fh2PIDKaonPhi->Fill(fIndexCentrality,track->Phi());
+      fh2PIDKaonEta->Fill(fIndexCentrality,track->Eta());
       fhPIDKaonCharge->Fill(track->Charge());
       fh2PIDKaonTPCdEdx->Fill(dP,dTPCdEdx);
       fh2PIDKaonTOFbeta->Fill(dP,dTOFbeta);
@@ -2057,9 +2057,9 @@ void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTra
       break;
 
     case kProton:
-      fhPIDProtonPt->Fill(track->Pt());
-      fhPIDProtonPhi->Fill(track->Phi());
-      fhPIDProtonEta->Fill(track->Eta());
+      fh2PIDProtonPt->Fill(fIndexCentrality,track->Pt());
+      fh2PIDProtonPhi->Fill(fIndexCentrality,track->Phi());
+      fh2PIDProtonEta->Fill(fIndexCentrality,track->Eta());
       fhPIDProtonCharge->Fill(track->Charge());
       fh2PIDProtonTPCdEdx->Fill(dP,dTPCdEdx);
       fh2PIDProtonTOFbeta->Fill(dP,dTOFbeta);

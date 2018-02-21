@@ -226,28 +226,28 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH2D*           fh2EventCentralityNumSelCharged; //! distribution of event centrality vs number of selected charged tracks
     TH1D*           fhEventCounter; //! counter following event selection
     // Charged
-    TH2D*           fhRefsMult; //!multiplicity distribution of selected RFPs
-    TH1D*           fhRefsPt; //! pt distribution of selected RFPs
-    TH1D*           fhRefsEta; //! pt distribution of selected RFPs
-    TH1D*           fhRefsPhi; //! pt distribution of selected RFPs
+    TH2D*           fh2RefsMult; //!multiplicity distribution of selected RFPs
+    TH2D*           fh2RefsPt; //! pt distribution of selected RFPs
+    TH2D*           fh2RefsEta; //! pt distribution of selected RFPs
+    TH2D*           fh2RefsPhi; //! pt distribution of selected RFPs
     TH1D*           fhChargedCounter; //! counter following charged track selection
     // PID
-    TH1D*           fhPIDPionMult; //! multiplicity distribution of selected pions
-    TH1D*           fhPIDPionPt; //! pt distribution of selected pions
-    TH1D*           fhPIDPionPhi; //! phi distribution of selected pions
-    TH1D*           fhPIDPionEta; //! eta distribution of selected pions
+    TH2D*           fh2PIDPionMult; //! multiplicity distribution of selected pions
+    TH2D*           fh2PIDPionPt; //! pt distribution of selected pions
+    TH2D*           fh2PIDPionPhi; //! phi distribution of selected pions
+    TH2D*           fh2PIDPionEta; //! eta distribution of selected pions
     TH1D*           fhPIDPionCharge; //! charge distribution of selected pions
     
-    TH1D*           fhPIDKaonMult; //! multiplicity distribution of selected pions
-    TH1D*           fhPIDKaonPt; //! pt distribution of selected kaons
-    TH1D*           fhPIDKaonPhi; //! phi distribution of selected kaons
-    TH1D*           fhPIDKaonEta; //! eta distribution of selected kaons
+    TH2D*           fh2PIDKaonMult; //! multiplicity distribution of selected pions
+    TH2D*           fh2PIDKaonPt; //! pt distribution of selected kaons
+    TH2D*           fh2PIDKaonPhi; //! phi distribution of selected kaons
+    TH2D*           fh2PIDKaonEta; //! eta distribution of selected kaons
     TH1D*           fhPIDKaonCharge; //! charge distribution of selected pions
     
-    TH1D*           fhPIDProtonMult; //! multiplicity distribution of selected pions
-    TH1D*           fhPIDProtonPt; //! pt distribution of selected protons
-    TH1D*           fhPIDProtonPhi; //! phi distribution of selected protons
-    TH1D*           fhPIDProtonEta; //! eta distribution of selected protons
+    TH2D*           fh2PIDProtonMult; //! multiplicity distribution of selected pions
+    TH2D*           fh2PIDProtonPt; //! pt distribution of selected protons
+    TH2D*           fh2PIDProtonPhi; //! phi distribution of selected protons
+    TH2D*           fh2PIDProtonEta; //! eta distribution of selected protons
     TH1D*           fhPIDProtonCharge; //! charge distribution of selected pions
     
     TH2D*           fh2PIDPionTPCdEdx; //! TPC dEdx response of selected pions
