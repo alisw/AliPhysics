@@ -715,10 +715,13 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
     AliTPCseed *seed0 = 0,*seed1=0;
     AliTPCseed tpcSeed0, tpcSeed1;
     //
+    Int_t nFriendTracks = Vfriend->GetNumberOfTracks();
+    if (index0 > nFriendTracks) continue; // most likely, we didn't save the friends for this event
     friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index0));
     if (!friendTrack) continue;
     if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
     if (index1>0){
+      if (index1 > nFriendTracks) continue; // most likely, we didn't save the friends for this event
       friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index1));
       if (!friendTrack) continue;
       if (friendTrack->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
