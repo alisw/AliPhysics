@@ -639,14 +639,12 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   //Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
   // propagate track to the radius of the first track reference within TPC
   //Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  Double_t field[3]; track->GetBxByBz(field);
   if (TGeoGlobalMagField::Instance()->GetField() == NULL) {
     Error("ProcessInnerTPC", "Magnetic Field not set");
   }
-  Bool_t isOK = track->PropagateToBxByBz(mclocal[0],field);
-  if(!isOK) {return;}
-  //track->AliExternalTrackParam::PropagateTo(mclocal[0],esdEvent->GetMagneticField());  //Use different propagation since above methods returns zero B field and does not work
   
+  Bool_t isOK = AliTrackerBase::PropagateTrackToBxByBz(track, mclocal[0], particle->GetMass(), 1., 0);
+  if(!isOK) {return;}
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
@@ -669,7 +667,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   }
   else
   {
-	  //If Track vertex is not used the above check does not work, hence we use the MC reference track
+    //If Track vertex is not used the above check does not work, hence we use the MC reference track
     isPrimary = mcEvent->IsPhysicalPrimary(label);
   }
   if(isPrimary) 
