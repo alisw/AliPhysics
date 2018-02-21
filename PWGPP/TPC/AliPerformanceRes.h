@@ -92,8 +92,9 @@ private:
   AliPerformanceRes(const AliPerformanceRes&); // not implemented
   AliPerformanceRes& operator=(const AliPerformanceRes&); // not implemented
   static Double_t            fgkMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
-
-  ClassDef(AliPerformanceRes,3);
+  char* fValidLabels; //!
+  
+  ClassDef(AliPerformanceRes,4);
 };
 
 #endif

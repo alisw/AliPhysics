@@ -60,6 +60,8 @@
 
 using namespace std;
 
+#define MATCH_VALID_LABELS 0 //Needs to run two times!!
+
 ClassImp(AliPerformanceRes)
 Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
 
@@ -70,7 +72,8 @@ AliPerformanceRes::AliPerformanceRes(TRootIOCtor* b):
   fPullHisto(0),
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fValidLabels(0)
 {
   // io constructor	
 }
@@ -82,7 +85,8 @@ AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, In
   fPullHisto(0),
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fValidLabels(0)
 {
   // named constructor	
   // 
@@ -673,6 +677,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   if(isPrimary) 
   { 
     if(mcpt == 0) return;
+    if (MATCH_VALID_LABELS) fValidLabels[label] = 1;
     
     deltaYTPC= track->GetY()-mclocal[1];
     deltaZTPC = track->GetZ()-ref0->Z();
@@ -936,19 +941,35 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   //    // TPC track vertex
   //    vtxESD = esdEvent->GetPrimaryVertexTPC();
   //  }
- 
-
-
-
+  
+  char *validLabelsIn, *validLabelsOut;
+  if (MATCH_VALID_LABELS)
+  {
+    validLabelsIn = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsIn[i] = 1;
+    validLabelsOut = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsOut[i] = 0;
+    char filename[32];
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "rb");
+    if (fp)
+    {
+      fread(validLabelsIn, sizeof(validLabelsIn[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    fValidLabels = validLabelsOut;
+  }
+  
   //  Process events
   for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
-  { 
+  {
     AliVTrack *vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
     if(!vTrack) continue;
     
     const AliVfriendTrack *friendTrack= NULL;
     
-    Int_t label = TMath::Abs(vTrack->GetLabel());
+    int mode = GetAnalysisMode();
+    Int_t label = (mode == 0 || mode == 3 || mode == 4) ? vTrack->GetTPCLabel() : vTrack->GetLabel();
+    
     /* // RS this check is not needed
     if ( label > mcEvent->GetNumberOfTracks() ) 
     {
@@ -969,8 +990,8 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       continue;
     }
 */
-    if (label == 0) continue;		//Cannot distinguish between track or fake track
-    if (vTrack->GetLabel() < 0) continue; //Do not consider fake tracks
+    if (label <= 0) continue; //Cannot distinguish between track or fake track for label = 0, do not process fakes (<0)
+    if (MATCH_VALID_LABELS && validLabelsIn[label] == 0) continue;
 
     if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vTrack,vEvent);
@@ -994,6 +1015,18 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
     }
+  }
+  if (MATCH_VALID_LABELS)
+  { 
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "w+b");
+    if (fp)
+    {
+      fwrite(validLabelsOut, sizeof(validLabelsOut[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    delete[] validLabelsIn;
+    delete[] validLabelsOut;
+    fValidLabels = NULL;
   }
 }
 
