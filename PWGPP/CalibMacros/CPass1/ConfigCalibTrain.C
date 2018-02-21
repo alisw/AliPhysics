@@ -49,7 +49,7 @@ void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
   
   if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
     gROOT->LoadMacro("localOCDBaccessConfig.C");
-    localOCDBaccessConfig();
+    //localOCDBaccessConfig();
   }
 
 }
