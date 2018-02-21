@@ -52,6 +52,8 @@
 #include "AliStack.h"
 #include "AliCentrality.h"
 #include "AliESDcascade.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
 
 //#include "AliLightV0vertexer.h"
 //#include "AliLightCascadeVertexer.h"
