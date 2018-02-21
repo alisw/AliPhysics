@@ -25,7 +25,7 @@
 /// \param year       : int, year, check in case of data set by hand for MC
 /// \param print      : bool to print recovered parameters
 ///
-void GetAlienGlobalProductionVariables(Bool_t simulation, 
+void GetAlienGlobalProductionVariables(Bool_t & simulation, 
                                        TString & col, TString & period, Int_t & year, 
                                        Bool_t print = kFALSE)
 {
