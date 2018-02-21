@@ -12,7 +12,7 @@ AliXiStarPbPb *AddTaskXiStarPbPb(bool AODcase=kFALSE, bool MCcase=kFALSE, int Cu
 
   //____________________________________________//
   // Create tasks
-  AliXiStarPbPb *XiStarTask = new AliXiStarPbPb("XiStarTask", AODcase, MCcase);
+  AliXiStarPbPb *XiStarTask = new AliXiStarPbPb("XiStarTask", AODcase, MCcase, CutList);
   if(!XiStarTask) exit(-1);
     
   mgr->AddTask(XiStarTask);
