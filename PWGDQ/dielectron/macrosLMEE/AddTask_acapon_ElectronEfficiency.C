@@ -159,13 +159,13 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(TString::Form("%s_ElectronEfficiency", directoryBaseName.Data()), TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(TString::Format("%s_ElectronEfficiency", directoryBaseName.Data()), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(TString::Form("%s_supportHistos", directoryBaseName.Data()), TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(TString::Format("%s_supportHistos", directoryBaseName.Data()), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(TString::Form("%s_EffTree", directoryBaseName.Data()), TTree::Class(),
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(TString::Format("%s_EffTree", directoryBaseName.Data()), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(TString::Form("%s_stats", directoryBaseName.Data()), TH1D::Class(),
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(TString::Format("%s_stats", directoryBaseName.Data()), TH1D::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);                                                          
 
   //connect input/output
