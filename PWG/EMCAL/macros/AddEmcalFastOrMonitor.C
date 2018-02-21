@@ -1,7 +1,7 @@
 PWG::EMCAL::AliEmcalFastOrMonitorTask *AddEmcalFastOrMonitor(const char *dummy = "", const char *subwagonname = "fastOrMonitor"){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  PWG::EMCAL::AliEmcalFastOrMonitorTask *mon = new AliEmcalFastOrMonitorTask(subwagonname);
+  PWG::EMCAL::AliEmcalFastOrMonitorTask *mon = new PWG::EMCAL::AliEmcalFastOrMonitorTask(subwagonname);
   mgr->AddTask(mon);
 
   TString contname(mgr->GetCommonFileName());
