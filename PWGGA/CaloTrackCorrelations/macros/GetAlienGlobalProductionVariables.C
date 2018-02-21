@@ -25,7 +25,7 @@
 /// \param year       : int, year, check in case of data set by hand for MC
 /// \param print      : bool to print recovered parameters
 ///
-void GetAlienGlobalProductionVariables(Bool_t simulation, 
+void GetAlienGlobalProductionVariables(Bool_t & simulation, 
                                        TString & col, TString & period, Int_t & year, 
                                        Bool_t print = kFALSE)
 {
@@ -67,5 +67,29 @@ void GetAlienGlobalProductionVariables(Bool_t simulation,
     else if(period.Contains("11")) year = 2011;
     else if(period.Contains("10")) year = 2010;
   } 
+  
+  // Check MC production tag name to match with data year and production name
+  if ( simulation && period=="" )
+  {
+    // 2011 MC productions
+   if ( prodType.Contains("14ka1")  || prodType.Contains("14k1b") || // 7 TeV jet-jet+gamma
+        prodType.Contains("12a15g") || prodType.Contains("13e4")  || // 7 TeV gamma-jet   
+        prodType.Contains("12f2a")  || prodType.Contains("12f2b") || // 7 TeV jet-jet+pi0, jet-jet+hadron
+        prodType.Contains("12a15f") || prodType.Contains("12a15a")|| // 7 TeV and 2.76 jet-jet
+        prodType.Contains("12a17")  || prodType.Contains("14a1")   ) // Pb-Pb LHC11h
+   {
+     year = 2011;
+     period = "LHC11";
+   }
+    
+    // 2012 MC productions
+    if ( prodType.Contains("15h1") || // 8 TeV min bias
+         prodType.Contains("16c2") || // 8 TeV jet-jet   
+         prodType.Contains("17g5")  ) // 8 TeV jet-jet+gamma, gamma-jet
+    {
+      year = 2012;
+      period = "LHC12";
+    }
+  } // Prod MC names
   
 }
