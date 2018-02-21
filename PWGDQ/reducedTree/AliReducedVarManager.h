@@ -551,6 +551,7 @@ class AliReducedVarManager : public TObject {
     kDeltaTheta,        
     kDeltaEta,
     kTriggerPt,     // pt of J/psi candidate
+    kTriggerRap,    // rapidity of J/psi candidate
     kAssociatedPt,  // pt of associated track
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
@@ -614,7 +615,6 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillCorrelationInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t, Float_t* values);
-  static void FillCorrelationInfo(AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
