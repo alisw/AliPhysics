@@ -38,7 +38,7 @@ AliAnalysisTaskTOFMC *AddTaskTOFMC(const char *PeriodName=NULL, Int_t nTPC_CR=70
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   // Create and configure the task
-  AliAnalysisTaskTOFMC *taskTOFMC = new AliAnalysisTaskTOFMC("AliAnalysisTaskTOFMC", nTPC_CR,Chi2_TPCcluser, DCAz);
+  AliAnalysisTaskTOFMC *taskTOFMC = new AliAnalysisTaskTOFMC(PeriodName, nTPC_CR,Chi2_TPCcluser, DCAz);
 
 	AliESDtrackCuts *fTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
 	fTrackCuts->SetMinNCrossedRowsTPC(nTPC_CR);
