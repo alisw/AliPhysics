@@ -81,6 +81,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
       fPtMax(100.),
       fIsPbPb(0),
       fCentClass(10),
+      fEmcalTrigger(),
       fInit(0),
       fAliAnalysisUtils(nullptr),
       fNVertCont(0),
@@ -201,6 +202,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name) : AliAnalysisTaskSE
                                                                fPtMax(100.),
                                                                fIsPbPb(0),
                                                                fCentClass(10),
+                                                               fEmcalTrigger(),
                                                                fInit(0),
                                                                fAliAnalysisUtils(nullptr),
                                                                fNVertCont(0),
@@ -826,6 +828,13 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent()
   {
     AliDebug(2, Form("ERROR: fInputEvent not available\n"));
     fNEventReject->Fill("noAliVEvent", 1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  if(fEmcalTrigger.Length() && !fEvent->GetFiredTriggerClasses().Contains(fEmcalTrigger)) {
+    AliDebug(2, Form("ERROR: Event not having the correct trigger string\n"));
+    fNEventReject->Fill("Trigger", 1);
     selectEvent = kFALSE;
     return selectEvent;
   }
