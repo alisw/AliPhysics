@@ -61,6 +61,7 @@
 using namespace std;
 
 #define MATCH_VALID_LABELS 0 //Needs to run two times!!
+#define FILTER_CLONES 0
 
 ClassImp(AliPerformanceRes)
 Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
@@ -649,6 +650,26 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   
   Bool_t isOK = AliTrackerBase::PropagateTrackToBxByBz(track, mclocal[0], particle->GetMass(), 1., 0);
   if(!isOK) {return;}
+  if (fabs(track->GetY() - mclocal[1]) > 2 || fabs(track->GetZ() - ref0->Z()) > 2) return;
+  if (FILTER_CLONES)
+  {
+    for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+    {
+      AliVTrack* compareTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+      if (!compareTrack) continue;
+      if (compareTrack->GetTPCLabel() != vTrack->GetTPCLabel()) continue;
+      if (vTrack == compareTrack) continue;
+      AliExternalTrackParam tmpTrack = *compareTrack->GetInnerParam();
+      if (AliTrackerBase::PropagateTrackToBxByBz(&tmpTrack, mclocal[0], particle->GetMass(), 1., 0))
+      {
+        float dy0 = (track->GetY() - mclocal[1]);
+        float dy1 = (tmpTrack.GetY() - mclocal[1]);
+        float dz0 = (track->GetZ() - ref0->Z());
+        float dz1 = (tmpTrack.GetZ() - ref0->Z());
+        if (dy1 * dy1 + dz1 * dz1 < dy0 * dy0 + dz0 * dz0) return;
+      }
+    }
+  }
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
