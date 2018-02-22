@@ -47,7 +47,7 @@
 ClassImp(AliAnalysisTaskCheckESDTracks)
 //______________________________________________________________________________
 AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() : 
-  AliAnalysisTaskSE("ITSsa resolution"), 
+  AliAnalysisTaskSE("QAofESDTracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
