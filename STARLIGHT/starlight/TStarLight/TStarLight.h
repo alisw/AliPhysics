@@ -54,6 +54,8 @@ class TStarLight : public TGenerator {
 
   virtual ~TStarLight();
 
+  static const char* GetSVNVersion() { return "r293"; }
+
   // TGenerator overloaded methods
   virtual void       GenerateEvent();
   virtual Int_t      ImportParticles(TClonesArray *particles, Option_t *opt="");
@@ -138,7 +140,7 @@ class TStarLight : public TGenerator {
   randomGenerator  fRandomGenerator;  //   STARLIGHT's own random generator
   upcEvent         fEvent;            //!  object holding STARlight simulated event.
 
-  ClassDef(TStarLight,4); // STARlight interface to ROOT's Virtual Monte Carlo
+  ClassDef(TStarLight,5); // STARlight interface to ROOT's Virtual Monte Carlo
 } ;
 
 #endif

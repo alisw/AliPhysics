@@ -25,6 +25,8 @@ public:
 
   virtual ~AliGenStarLight();
 
+  const char* GetSVNVersion() const { return TStarLight::GetSVNVersion(); }
+
   void ImportConfigurationFromFile(const char* filename);
   void SetParameter(const char* line);
   virtual void Init();
@@ -61,7 +63,7 @@ public:
 
   AliSLEventHeader *fHeader;      //!
 
-  ClassDef(AliGenStarLight,6);
+  ClassDef(AliGenStarLight,7);
 } ;
 
 #endif
