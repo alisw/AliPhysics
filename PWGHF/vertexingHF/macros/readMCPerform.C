@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "Riostream.h"
 #include "TFile.h"
 #include "TString.h"
@@ -8,22 +9,32 @@
 #include "TMap.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TPaveStats.h"
 #include "TLegend.h"
 #include "TCanvas.h"
 #include "TProfile.h"
 #include "TGridResult.h"
 #include "TObjString.h"
+#endif
 
-void readMCPerform(Int_t drawOnlyDzerDplus = 1)
+void readMCPerform(TString filename="QAresults_AOD.root", Int_t drawOnlyDzerDplus = 1)
 {
-  //TFile *ff = new TFile("QAresults_AOD.root");     ///alice/sim/2018/LHC18a4a_test/282343/ >cp QAresults_AOD.root
-  TFile *ff = new TFile("QAresults_AODdata.root"); ///alice/data/2017/LHC17p/000282341/pass1_CENT_wSDD/QAresults_AOD.root
+
+  TFile *ff = new TFile(filename.Data());
 
   Int_t color[5] = {kBlack, kRed, kGreen, kBlue, kOrange};
 
   TDirectoryFile *dirD2H = (TDirectoryFile *)ff->Get("PWG3_D2H_QA");
+  if(!dirD2H){
+    printf("Directory PWG3_D2H_QA not found in file %s\n",filename.Data());
+    return;
+  }
   TList *listD2H = (TList *)dirD2H->Get("nEntriesQA");
+  if(!listD2H){
+    printf("TList nEntriesQA not found in file %s\n",filename.Data());
+    return;  
+  }
   TH1F *hNentries = (TH1F *)listD2H->FindObject("hNentries");
   TH2F *hHasSelBit = (TH2F *)listD2H->FindObject("HasSelBit");
 
