@@ -21,7 +21,7 @@ const string kNames[2] = {"deuterons","antideuterons"};
 const string kBaseOutputDir = "/Users/lbariogl/cernbox/Deuterons13TeV/results/";
 const string kBaseInputDir = "/Users/lbariogl/cernbox/Deuterons13TeV/";
 
-const string kDataFilename = kBaseInputDir + "Dati/data_new_new.root";
+const string kDataFilename = kBaseInputDir + "Dati/data.root";
 const string kMCfilename = kBaseInputDir + "mc.root";
 
 const string kFilterListNames = "mpuccio_deuterons_";
@@ -50,7 +50,7 @@ const float  kCentralityBins[13] = {0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70
 const int    kNCentralityBins = 12;
 
 const int    kCentLength = 10;
-const int    kCentBinsArray[kCentLength][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,8},{9,10},{11,12},{1,12}};
+const int    kCentBinsArray[kCentLength][2] = {{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,9},{10,11},{12,13},{1,13}};
 const float  kCentPtLimits[kCentLength] = {3.4,3.4,3.,3.,2.6,2.6,2.2,2.,2.,3.8};
 const float  kCentLabels[kCentLength][2] = {{0.,1.},{1.,5.},{5.,10.},{10.,20.},{20.,30.},{30.,40.},{40.,60.},{60,80},{80.,100.},{0.,100.}};
 const float  kPtRebin[kCentLength] = {2.6,2.6,2.6,2.2,2.2,2.2,2.,0.6,0.6,3.4};

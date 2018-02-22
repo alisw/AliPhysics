@@ -156,7 +156,6 @@ void Final() {
       comp[iS][iC] = new TH1F(Form("comp_%d_%d",iS,iC),";#it{p}_{T} (GeV/#it{c}); #frac{N_{TPC} - N_{TOF}}{#sigma}",2,1.,1.2);
       plotting::SetHistStyle(comp[iS][iC],plotting::kSpectraColors[iC]);
       // Fit function
-      cout << "Iniziallizziamo sta funzione: " << Form("Levi-Tsallis_%d_%d",iS,iC) << endl;
       fit_function[iS][iC]=LevyTsallis(Form("Levi-Tsallis_%d_%d",iS,iC), AliPID::ParticleMass(AliPID::kDeuteron), n, nMin, nMax, C, CMin, CMax, normal, normMin, normMax);
       //funcMaker.GetTsallis(AliPID::ParticleMass(AliPID::kDeuteron),.1,1./0.9,1.,Form("func_%d_%d",iS,iC));
       fit_function[iS][iC]->SetLineColor(kBlack);
@@ -232,10 +231,7 @@ void Final() {
       syst_tpc[iS][iC]->Scale(1<<(kCentLength-iC-1));
       syst_tpc[iS][iC]->Write("syst_tpc");
       stat_all[iS][iC]->Scale(1<<(kCentLength-iC-1));
-      cout << "************************************************" << endl;
-      cout << "Fittiamo sta funzione: " << Form("func_%d_%d",iS,iC) << endl;
-      cout << "Quest è l'integrale dell'istogramma creato: " << stat_all[iS][iC]->Integral() << endl;
-      stat_all[iS][iC]->Fit(Form("Levi-Tsallis_%d_%d",iS,iC),"I");
+      stat_all[iS][iC]->Fit(Form("Levi-Tsallis_%d_%d",iS,iC),"IQ");
       //filling ratio_fit_data[iS][iC]
       for (int i = 1; i <= n_pt_bins; ++i) {
         ratio_fit_data[iS][iC]->SetBinContent(i, stat_all[iS][iC]->GetBinContent(i) / fit_function[iS][iC]->Eval(stat_all[iS][iC]->GetBinCenter(i)));
@@ -252,7 +248,6 @@ void Final() {
       fit_parameters[iS][e_norm]->SetBinError(iC+1,fit_function[iS][iC]->GetParError(e_norm));
       fit_parameters[iS][e_chi2]->SetBinContent(iC+1,fit_function[iS][iC]->GetChisquare()/fit_function[iS][iC]->GetNDF());
       //syst_all[iS][iC]->Scale(1<<(kCentLength-iC-1));
-      cout << "OK" << endl << "*********************************************************" << endl;
 
     }
 
@@ -335,13 +330,22 @@ void Final() {
 
   TDirectory* r_dir = final_file.mkdir("ratio");
   TF1* funcpol[n_centralities];
+
+  r_dir->cd();
+  TPad* pad[9] = {nullptr};
+  TCanvas ratio("ratio","ratio",3200,3200);
+  plotting::CanvasPartition(&ratio,pad,3,3);
+
   for (int iC = 0; iC < n_centralities -1; ++iC) {
     r_dir->mkdir(to_string(iC).data())->cd();
     stat_tof[1][iC]->Divide(stat_tof[0][iC]);
     syst_tof[1][iC]->Divide(syst_tof[0][iC]);
     stat_all[1][iC]->Divide(stat_all[0][iC]);
     funcpol[iC] = new TF1(Form("ratiopol_%d",iC),"pol0",0.6,kCentPtLimits[iC]);
-    stat_all[1][iC]->Fit(Form("ratiopol_%d",iC));
+    int nx = iC/3;
+    int ny = iC%3;
+    pad[iC]->cd();
+    stat_all[1][iC]->Fit(Form("ratiopol_%d",iC),"Q");
     for(int iB=1; iB<=n_pt_bins; iB++){
       if(stat_tof[1][iC]->GetBinCenter(iB)<1.){
         stat_tof[1][iC]->SetBinContent(iB, 0.);
@@ -373,33 +377,6 @@ void Final() {
       }
     }
 
-    TCanvas ratio("ratio","ratio",3200,2400);
-    ratio.DrawFrame(
-        0.5 * kPtRange[0],
-        0.1,
-        1.05 * kCentPtLimits[iC],
-        1.9,
-        Form("%4.0f - %2.0f %%;#it{p}_{T} (GeV/#it{c});#bar{d}/d",kCentLabels[iC][0],kCentLabels[iC][1])
-        );
-    stat_tof[1][iC]->Draw("esamex0");
-    syst_tof[1][iC]->Draw("e2same");
-    stat_tpc[1][iC]->Draw("esamex0");
-    syst_tpc[1][iC]->Draw("e2same");
-    stat_all[1][iC]->Draw("esamex0");
-    funcpol[iC]->Draw("same");
-    TLine *line = new TLine(0.5 * kPtRange[0],1,1.05 * kCentPtLimits[iC],1);
-    line->SetLineColor(kBlack);
-    line->Draw();
-    TLegend ratio_leg(0.14,0.64,0.34,0.85);
-    ratio_leg.SetBorderSize(0);
-    ratio_leg.AddEntry(syst_tof[0][iC],"TPC + TOF","p");
-    ratio_leg.AddEntry(syst_tpc[0][iC],"TPC","p");
-    ratio_leg.AddEntry((TObject*)0, Form("p0: %.2f #pm %.2f", funcpol[iC]->GetParameter(0),funcpol[iC]->GetParError(0)), "");
-    ratio_leg.AddEntry((TObject*)0, Form("#chi^{2}/NDF: %.2f / %d",funcpol[iC]->GetChisquare(),funcpol[iC]->GetNDF()),"");
-    ratio_leg.Draw();
-    if (kPrintFigures) ratio.SaveAs((kFiguresFolder + "ratio.eps").data());
-    ratio.Write();
-
     TCanvas cPull("pull","pull",3200,2400);
     RooMsgService::instance().setSilentMode(true);
     pull_gauss.fitTo(*ratio_pull[iC],RooFit::PrintEvalErrors(-1));
@@ -413,7 +390,54 @@ void Final() {
     pull_frame->SetMinimum(1e-5);
     pull_frame->Draw();
     cPull.Write();
+
+    //Fill the unique canvas with all the manti-matter/matter ratios
+    pad[iC]->cd();
+    double XaxisEdge = 0.;
+    switch (nx) {
+      case 0:
+        XaxisEdge=3.9;
+        break;
+      case 1:
+        XaxisEdge=3.2;
+        break;
+      default:
+        XaxisEdge=2.4;
+        break;
+    }
+    gPad->DrawFrame(
+        0.35,
+        0.1,
+        XaxisEdge,
+        1.9,
+    ";#it{p}_{T} (GeV/#it{c});#bar{d}/d"
+    );
+    stat_tof[1][iC]->Draw("esamex0");
+    syst_tof[1][iC]->Draw("e2same");
+    stat_tpc[1][iC]->Draw("esamex0");
+    syst_tpc[1][iC]->Draw("e2same");
+    stat_all[1][iC]->Draw("esamex0");
+    funcpol[iC]->Draw("same");
+    TLine *line_one = new TLine(0.35,1.,XaxisEdge,1.);
+    line_one->SetLineColor(kBlack);
+    line_one->SetLineStyle(2);
+    line_one->Draw();
+    TLegend* ratio_leg_one = new TLegend(0.719499,0.128318,0.920602,0.337758);
+    ratio_leg_one->SetHeader(Form("%4.0f - %2.0f %%",kCentLabels[iC][0],kCentLabels[iC][1]));
+    ratio_leg_one->SetBorderSize(0);
+    ratio_leg_one->AddEntry(syst_tof[0][iC],"TPC + TOF","p");
+    ratio_leg_one->AddEntry(syst_tpc[0][iC],"TPC","p");
+    ratio_leg_one->AddEntry((TObject*)0, Form("p0: %.2f #pm %.2f", funcpol[iC]->GetParameter(0),funcpol[iC]->GetParError(0)), "");
+    ratio_leg_one->AddEntry((TObject*)0, Form("#chi^{2}/NDF: %.2f / %d",funcpol[iC]->GetChisquare(),funcpol[iC]->GetNDF()),"");
+    ratio_leg_one->Draw();
+    // ratio->Update();
+
   }
+  r_dir->cd();
+  if (kPrintFigures) ratio.SaveAs((kFiguresFolder + "ratio.eps").data());
+  ratio.Write();
+
+
 }
 
 //________________________________________________________________________________________________

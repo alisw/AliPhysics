@@ -155,7 +155,7 @@ FitExpExpGaus::FitExpExpGaus(RooRealVar *x, bool extended_likelihood) : FitModul
 FitExpExpTailGaus::FitExpExpTailGaus(RooRealVar *x, bool extended_likelihood) : FitModule(x, extended_likelihood) {
   mTau0 = make_unique<RooRealVar>("#tau_{0}","#tau_{0}",-10.,-0.5);
   mTau1 = make_unique<RooRealVar>("#tau_{1}","#tau_{1}",-0.5,-0.01);
-  mKbkg = make_unique<RooRealVar>("K_{bkg}","K_{bkg}",0.,0.,1.);
+  mKbkg = make_unique<RooRealVar>("K_{bkg}","K_{bkg}",0.5,0.,1.);
   mBkg0 = make_unique<RooExponential>("mBkg0","background1",*mX,*mTau0);
   mBkg1 = make_unique<RooExponential>("mBkg1","background2",*mX,*mTau1);
   mBackground = make_unique<RooAddPdf>("mBackground","Background",RooArgList(*mBkg0,*mBkg1),
