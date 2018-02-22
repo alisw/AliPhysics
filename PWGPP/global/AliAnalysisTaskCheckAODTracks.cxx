@@ -51,7 +51,7 @@
 ClassImp(AliAnalysisTaskCheckAODTracks)
 //______________________________________________________________________________
 AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() : 
-  AliAnalysisTaskSE("ITSsa resolution"), 
+  AliAnalysisTaskSE("QAofAODtracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
