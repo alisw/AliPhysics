@@ -106,10 +106,16 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
 }
 
 bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
-  auto tracks = GetTrackContainer(fNameTrackContainer);
+  AliParticleContainer * tracks = GetTrackContainer(fNameTrackContainer);
+  if(!tracks) tracks = GetParticleContainer(fNameTrackContainer);
   const auto clusters = GetClusterContainer(fNameClusterContainer);
-  if(!(tracks && clusters)){
-    AliErrorStream() << "Either track or cluster container missing, aborting ..." << std::endl;
+  if(fNameTrackContainer.Length() && !tracks){
+    AliErrorStream() << "Track container " << fNameTrackContainer << " required but missing ..." << std::endl;
+    return kFALSE;
+  }
+  if(fNameClusterContainer.Length() && !clusters){
+    AliErrorStream() << "Cluster container " << fNameClusterContainer << " required but missing ..." << std::endl;
+    return kFALSE;
   }
 
   // Event selection
@@ -149,6 +155,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
       AliErrorStream() << "Jet container with name " << contname->String() << " not found in the list of jet containers" << std::endl;
       continue;
     } 
+    AliDebugStream(2) << "Reading " << jetcont->GetArray()->GetName() << std::endl;
 
     for(auto jet : jetcont->accepted()){
       AliDebugStream(3) << "Next accepted jet, found " << jet->GetNumberOfTracks() << " tracks and " << jet->GetNumberOfClusters() << " clusters." << std::endl;
@@ -156,22 +163,33 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
                pointcharged[6] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1.}, 
                pointneutral[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.};
       fHistos->FillTHnSparse(Form("hJetCounter%s", contname->String().Data()), pointjet);
-      for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
-        const auto trk = jet->TrackAt(itrk, tracks->GetArray());
-        if(!trk) continue;
-        pointcharged[4] = std::abs(trk->Pt());
-        pointcharged[5] = std::abs(jet->GetZ(trk));
-        fHistos->FillTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), pointcharged);
+      if(tracks){
+        for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
+          const auto trk = jet->TrackAt(itrk, tracks->GetArray());
+          if(!trk) continue;
+          if(trk->Charge()){
+            pointcharged[4] = std::abs(trk->Pt());
+            pointcharged[5] = std::abs(jet->GetZ(trk));
+            fHistos->FillTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), pointcharged);
+          } else {
+            // particle level jets
+            pointneutral[4] = pointneutral[5] = std::abs(trk->E());
+            pointneutral[6] = std::abs(jet->GetZ(trk));
+            fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+          }
+        }
       }
-      for(decltype(jet->GetNumberOfClusters()) icl = 0; icl < jet->GetNumberOfClusters(); icl++){
-        const auto clust = jet->ClusterAt(icl, clusters->GetArray());
-        if(!clust) continue; 
-        TLorentzVector ptvec;
-        clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
-        pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
-        pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
-        pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
-        fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+      if(clusters){
+        for(decltype(jet->GetNumberOfClusters()) icl = 0; icl < jet->GetNumberOfClusters(); icl++){
+          const auto clust = jet->ClusterAt(icl, clusters->GetArray());
+          if(!clust) continue; 
+          TLorentzVector ptvec;
+          clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
+          pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
+          pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
+          pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
+          fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+        }
       }
     }
   }
@@ -179,7 +197,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
   return kTRUE;
 }
 
-AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger){
+AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger, bool partmode){
   using AnalysisHelpers = EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
@@ -197,16 +215,26 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   auto isAOD = false;
   if(inputhandler->IsA() == AliAODInputHandler::Class()) isAOD = true;
 
-  auto tracksname = AnalysisHelpers::TrackContainerNameFactory(isAOD);
-  auto tracks = task->AddTrackContainer(tracksname);
-  task->SetNameTrackContainer(tracksname);
-  tracks->SetMinPt(0.15);
+  TString tracksname, clustername;
+  AliParticleContainer *tracks(nullptr);
+  AliClusterContainer *clusters(nullptr);
+  if(!partmode) {
+    tracksname = AnalysisHelpers::TrackContainerNameFactory(isAOD);
+    tracks = task->AddTrackContainer(tracksname);
+    task->SetNameTrackContainer(tracksname);
+    tracks->SetMinPt(0.15);
 
-  auto clustername = AnalysisHelpers::ClusterContainerNameFactory(isAOD);
-  auto clusters = task->AddClusterContainer(clustername);
-  task->SetNameClusterContainer(clustername);
-  clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-  clusters->SetClusHadCorrEnergyCut(0.3);
+    clustername = AnalysisHelpers::ClusterContainerNameFactory(isAOD);
+    clusters = task->AddClusterContainer(clustername);
+    task->SetNameClusterContainer(clustername);
+    clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    clusters->SetClusHadCorrEnergyCut(0.3);
+  } else {
+    tracksname = "mcparticles";
+    tracks = task->AddParticleContainer(tracksname);
+    task->SetNameTrackContainer(tracksname);
+    tracks->SetMinPt(0.);
+  }
 
   // create jet containers for R02 and R04 jets
   std::array<double, 2> jetradii = {{0.2, 0.4}};
@@ -222,6 +250,10 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   std::stringstream contname, outfilename;
   contname << "JetConstituentQA_" << trigger;
   outfilename << mgr->GetCommonFileName() << ":JetConstituentQA_" << trigger;
+  if(partmode) {
+    contname << "_part";
+    outfilename << "_part";
+  }
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
 

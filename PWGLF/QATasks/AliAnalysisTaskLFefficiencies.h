@@ -30,6 +30,7 @@ public:
 
   AliEventCuts  fEventCut;
 
+  bool fUseMCtruthParams;
   static const std::string fPosNeg[2];
   static const int fNcuts;
   static const std::string fCutNames[5];

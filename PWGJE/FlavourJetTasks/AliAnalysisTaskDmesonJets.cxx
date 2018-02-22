@@ -1119,16 +1119,16 @@ const char* AliAnalysisTaskDmesonJets::AnalysisEngine::GetName() const
   fName = fCandidateName;
   switch (fMCMode) {
   case kBackgroundOnly:
-    fName += "_kBackgroundOnly";
+    fName += "_BackgroundOnly";
     break;
   case kSignalOnly:
-    fName += "_kSignalOnly";
+    fName += "_SignalOnly";
     break;
   case kMCTruth:
     fName += "_MCTruth";
     break;
-  case kWrongPID:
-    fName += "_WrongPID";
+  case kD0Reflection:
+    fName += "_D0Reflection";
     break;
   default:
     break;
@@ -1317,7 +1317,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
-  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly || fMCMode == kWrongPID) {
+  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly || fMCMode == kD0Reflection) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
 
@@ -1342,7 +1342,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
     if (fMCMode == kNoMC ||
         (MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) ||
         (MCtruthPdgCode != fCandidatePDG && fMCMode == kBackgroundOnly) ||
-        (MCtruthPdgCode == -fCandidatePDG && fMCMode == kWrongPID)) {
+        (MCtruthPdgCode == -fCandidatePDG && (fMCMode == kD0Reflection || fMCMode == kOnlyWrongPIDAccepted))) {
       // both background and signal are requested OR (it is a true D0 AND signal is requested) OR (it is NOT a D0 and background is requested)
       AliDebug(10,"Selected as D0");
       invMassD = Dcand->InvMassD0();
@@ -1357,7 +1357,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
     if (fMCMode == kNoMC ||
         (MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) ||
         (MCtruthPdgCode != -fCandidatePDG && fMCMode == kBackgroundOnly) ||
-        (MCtruthPdgCode == fCandidatePDG && fMCMode == kWrongPID)) {
+        (MCtruthPdgCode == fCandidatePDG && (fMCMode == kD0Reflection || fMCMode == kOnlyWrongPIDAccepted))) {
       // both background and signal are requested OR (it is a true D0bar AND signal is requested) OR (it is NOT a D0bar and background is requested)
       AliDebug(10,"Selected as D0bar");
       invMassD = Dcand->InvMassD0bar();
@@ -1371,13 +1371,13 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
     // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
     if ((MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) ||
-        (MCtruthPdgCode == -fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kWrongPID))) {
+        (MCtruthPdgCode == -fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kD0Reflection))) {
       if (i != 0) return kFALSE;
       AliDebug(10, "MC truth is D0");
       invMassD = Dcand->InvMassD0();
     }
     else if ((MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) ||
-             (MCtruthPdgCode == fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kWrongPID))) {
+             (MCtruthPdgCode == fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kD0Reflection))) {
       if (i != 1) return kFALSE;
       AliDebug(10, "MC truth is D0bar");
       invMassD = Dcand->InvMassD0bar();
@@ -1584,10 +1584,14 @@ AliAODMCParticle* AliAnalysisTaskDmesonJets::AnalysisEngine::FindParticleOrigin(
         // If the last particle in the fragmentation tree (first when going reverse) was requested then stop the loop
         if (mode == kFindLast) break;
       }
+      if (mother == mcGranma->GetMother()) { // avoid infinite loop!
+        AliWarningClassStream() << "Particle " << mother << " (PDG=" << mcGranma->PdgCode() << ") is the mother of itself!?" << std::endl;
+        break;
+      }
       mother = mcGranma->GetMother();
     }
     else {
-      ::Error("AliAnalysisTaskDmesonJets::AnalysisParams::FindParticleOrigin", "Could not retrieve mother particle %d!", mother);
+      AliErrorClassStream() << "Could not retrieve mother particle " << mother << "!" << std::endl;
       break;
     }
   }

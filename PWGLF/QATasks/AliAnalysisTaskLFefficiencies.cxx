@@ -46,7 +46,8 @@ ClassImp(AliAnalysisTaskLFefficiencies);
 
 AliAnalysisTaskLFefficiencies::AliAnalysisTaskLFefficiencies(TString taskname) :
   AliAnalysisTaskSE(taskname.Data()),
-  fEventCut{false}
+  fEventCut{false},
+  fUseMCtruthParams{false}
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -151,7 +152,11 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
       }
     }
     if (iSpecies < 0) continue;
-    v.SetPtEtaPhiM(track->Pt() * AliPID::ParticleCharge(iSpecies), track->Eta(), track->Phi(), AliPID::ParticleMass(iSpecies));
+
+    const double pt = fUseMCtruthParams ? part->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
+    const double eta = fUseMCtruthParams ? part->Eta() : track->Eta();
+    const double phi = fUseMCtruthParams ? part->Phi() : track->Phi();
+    v.SetPtEtaPhiM(pt, eta, phi, AliPID::ParticleMass(iSpecies));
 
     bool hasFB8 = track->TestFilterBit(BIT(5));
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
@@ -161,8 +166,8 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {
-        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
-        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(track->Eta(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
+        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),phi,pt);
+        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
       }
     }
   } // End AOD track loop
