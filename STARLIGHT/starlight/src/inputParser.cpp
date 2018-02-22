@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 228                       $: revision of last commit
+// $Rev:: 293                       $: revision of last commit
 // $Author:: butter             $: author of last commit
-// $Date:: 2016-01-18 18:10:17 +#$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +#$: date of last commit
 //
 // Description:
 //
@@ -31,7 +31,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-#include "../include/inputParser.h"
+#include "inputParser.h"
 #include <fstream>
 #include <cstdlib>
 #include <algorithm>

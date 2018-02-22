@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 211                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2015-08-10 04:05:09 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //    calculates n-body phase space (constant matrix element) using various algorithms
@@ -109,7 +109,7 @@ class nBodyPhaseSpaceGen {
 
 public:
 
-	nBodyPhaseSpaceGen(const randomGenerator& randy);
+	nBodyPhaseSpaceGen(randomGenerator* randy);
 	virtual ~nBodyPhaseSpaceGen();
   
 	// generator setup
@@ -119,7 +119,7 @@ public:
 	              const double*              daughterMasses);  // array of daughter particle masses
   
 	// random generator
-	double random ()                        { return _randy.Rndom(); }  ///< returns number from internal random generator
+	 double random ()                        { return _randy->Rndom(); }  ///< returns number from internal random generator
 
 	// high-level generator interface
 	/// generates full event with certain n-body mass and momentum and returns event weight
@@ -195,7 +195,7 @@ private:
 	double                     _weight;             ///< phase space weight of generated event
 	double                     _maxWeightObserved;  ///< maximum event weight calculated processing the input data
 	double                     _maxWeight;          ///< maximum weight used to weight events in hit-miss MC
-	randomGenerator		   _randy;
+	randomGenerator*           _randy;
 
 };
 

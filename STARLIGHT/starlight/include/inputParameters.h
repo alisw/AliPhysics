@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 284                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -42,6 +42,7 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include <cstdlib>
 
 class parameterbase {
 public:
@@ -135,14 +136,12 @@ public:
     template<typename S, bool v>
     inline friend std::ostream& operator<<(std::ostream& os, const parameter<S,v>& par);
 
-private:
+ private:
     std::string _name;
 
     T _value; // Value
     bool _validate; // true if a change in the parameter invalidates x-sec tables
     bool _required; // true if this is required option.
-
-    parameter();
 };
 
 template<typename S, bool v>
@@ -201,11 +200,92 @@ public:
         double       bslope0               () const { return _bslope0.value();                }  ///<
         double       bslope_alphaprime     () const { return _bslope_alphaprime.value();      }  ///<
 	int          impulseVM             () const { return _impulseVM.value();              }  ///< returns the impulseVM value
+	int          quantumGlauber        () const { return _quantumGlauber.value();         }  ///< returns the quantum glauber value
+	double       bmin                  () const { return _bmin.value();                   }  // returns the minimum impact parameter for BREAKUP_MODE==6
+	double       bmax                  () const { return _bmax.value();                   }  // returns the maximum impact parameter for BREAKUP_MODE==6
+
 	starlightConstants::particleTypeEnum    prodParticleType     () const { return _particleType;    }  ///< returns type of produced particle
 	starlightConstants::decayTypeEnum       prodParticleDecayType() const { return _decayType;       }  ///< returns decay type of produced particle
 	starlightConstants::interactionTypeEnum interactionType      () const { return _interactionType; }  ///< returns interaction type
 	double protonEnergy                () const { return _protonEnergy.value(); }
         double inputBranchingRatio         () const { return _inputBranchingRatio; }
+
+        double deuteronSlopePar      () const {return _deuteronSlopePar      .value();}
+        double protonMass            () const {return _protonMass            .value();}
+        double pionChargedMass       () const {return _pionChargedMass       .value();}
+        double pionNeutralMass       () const {return _pionNeutralMass       .value();}
+        double kaonChargedMass       () const {return _kaonChargedMass       .value();}
+        double mel                   () const {return _mel                   .value();}
+        double muonMass              () const {return _muonMass              .value();}
+        double tauMass               () const {return _tauMass               .value();}
+        double f0Mass                () const {return _f0Mass                .value();}
+        double f0Width               () const {return _f0Width               .value();}
+        double f0BrPiPi              () const {return _f0BrPiPi              .value();}
+        double etaMass               () const {return _etaMass               .value();}
+        double etaWidth              () const {return _etaWidth              .value();}
+        double etaPrimeMass          () const {return _etaPrimeMass          .value();}
+        double etaPrimeWidth         () const {return _etaPrimeWidth         .value();}
+        double etaCMass              () const {return _etaCMass              .value();}
+        double etaCWidth             () const {return _etaCWidth             .value();}
+        double f2Mass                () const {return _f2Mass                .value();}
+        double f2Width               () const {return _f2Width               .value();}
+        double f2BrPiPi              () const {return _f2BrPiPi              .value();}
+        double a2Mass                () const {return _a2Mass                .value();}
+        double a2Width               () const {return _a2Width               .value();}
+        double f2PrimeMass           () const {return _f2PrimeMass           .value();}
+        double f2PrimeWidth          () const {return _f2PrimeWidth          .value();}
+        double f2PrimeBrKK           () const {return _f2PrimeBrKK           .value();}
+        double zoverz03Mass          () const {return _zoverz03Mass          .value();}
+        double f0PartialggWidth      () const {return _f0PartialggWidth      .value();}
+        double etaPartialggWidth     () const {return _etaPartialggWidth     .value();}
+        double etaPrimePartialggWidth() const {return _etaPrimePartialggWidth.value();}
+        double etaCPartialggWidth    () const {return _etaCPartialggWidth    .value();}
+        double f2PartialggWidth      () const {return _f2PartialggWidth      .value();}
+        double a2PartialggWidth      () const {return _a2PartialggWidth      .value();}
+        double f2PrimePartialggWidth () const {return _f2PrimePartialggWidth .value();}
+        double zoverz03PartialggWidth() const {return _zoverz03PartialggWidth.value();}
+        double f0Spin                () const {return _f0Spin                .value();}
+        double etaSpin               () const {return _etaSpin               .value();}
+        double etaPrimeSpin          () const {return _etaPrimeSpin          .value();}
+        double etaCSpin              () const {return _etaCSpin              .value();}
+        double f2Spin                () const {return _f2Spin                .value();}
+        double a2Spin                () const {return _a2Spin                .value();}
+        double f2PrimeSpin           () const {return _f2PrimeSpin           .value();}
+        double zoverz03Spin          () const {return _zoverz03Spin          .value();}
+        double axionSpin             () const {return _axionSpin             .value();}
+        double rho0Mass              () const {return _rho0Mass              .value();}
+        double rho0Width             () const {return _rho0Width             .value();}
+        double rho0BrPiPi            () const {return _rho0BrPiPi            .value();}
+        double rho0PrimeMass         () const {return _rho0PrimeMass         .value();}
+        double rho0PrimeWidth        () const {return _rho0PrimeWidth        .value();}
+        double rho0PrimeBrPiPi       () const {return _rho0PrimeBrPiPi       .value();}
+        double OmegaMass             () const {return _OmegaMass             .value();}
+        double OmegaWidth            () const {return _OmegaWidth            .value();}
+        double OmegaBrPiPi           () const {return _OmegaBrPiPi           .value();}
+        double PhiMass               () const {return _PhiMass               .value();}
+        double PhiWidth              () const {return _PhiWidth              .value();}
+        double PhiBrKK               () const {return _PhiBrKK               .value();}
+        double JpsiMass              () const {return _JpsiMass              .value();}
+        double JpsiWidth             () const {return _JpsiWidth             .value();}
+        double JpsiBree              () const {return _JpsiBree              .value();}
+        double JpsiBrmumu            () const {return _JpsiBrmumu            .value();}
+        double JpsiBrppbar           () const {return _JpsiBrppbar           .value();}
+        double Psi2SMass             () const {return _Psi2SMass             .value();}
+        double Psi2SWidth            () const {return _Psi2SWidth            .value();}
+        double Psi2SBree             () const {return _Psi2SBree             .value();}
+        double Psi2SBrmumu           () const {return _Psi2SBrmumu           .value();}
+        double Upsilon1SMass         () const {return _Upsilon1SMass         .value();}
+        double Upsilon1SWidth        () const {return _Upsilon1SWidth        .value();}
+        double Upsilon1SBree         () const {return _Upsilon1SBree         .value();}
+        double Upsilon1SBrmumu       () const {return _Upsilon1SBrmumu       .value();}
+        double Upsilon2SMass         () const {return _Upsilon2SMass         .value();}
+        double Upsilon2SWidth        () const {return _Upsilon2SWidth        .value();}
+        double Upsilon2SBree         () const {return _Upsilon2SBree         .value();}
+        double Upsilon2SBrmumu       () const {return _Upsilon2SBrmumu       .value();}
+        double Upsilon3SMass         () const {return _Upsilon3SMass         .value();}
+        double Upsilon3SWidth        () const {return _Upsilon3SWidth        .value();}
+        double Upsilon3SBree         () const {return _Upsilon3SBree         .value();}
+        double Upsilon3SBrmumu       () const {return _Upsilon3SBrmumu       .value();}
 
         void setBaseFileName          (std::string v )  {  _baseFileName = v;     }
 	void setBeam1Z                (unsigned int v)  {  _beam1Z = v;           }  ///< sets atomic number of beam particle 1
@@ -250,6 +330,9 @@ public:
 	int  printVM                  () const { return _printVM.value();         }  ///< returns the printVM value
 	void setprintVM               (int v)  {  _printVM = v;                   }  ///< sets the value of _printVM
         void setimpulseVM             (int v)  {  _impulseVM = v;                 }  ///< sets the value of _impulseVM
+	void setquantumGlauber        (int v)  {  _quantumGlauber = v;            }  ///< sets the value of quantum_glauber
+	void setbmin             (double v)    {  _bmin=v;                        }  ///< sets the minimum impact parameter (for BREAKUP_MODE==6
+	void setbmax             (double v)    {  _bmax=v;                        }  ///< sets the minimum impact parameter (for BREAKUP_MODE==6
 
 	void setProdParticleType      (starlightConstants::particleTypeEnum v)    { _particleType = v;    }  ///< sets type of produced particle
 	void setProdParticleDecayType (starlightConstants::decayTypeEnum v)       { _decayType = v;       }  ///< sets decay type of produced particle
@@ -257,7 +340,6 @@ public:
 
 	void setProtonEnergy        (double v)    { _protonEnergy = v;            }  ///< sets proton energy
 
-	//	template<typename T>   CM: template not needed
 	inline bool setParameter(std::string expression);
 
 	std::ostream& print(std::ostream& out) const;  ///< prints parameter summary
@@ -308,6 +390,7 @@ private:
 	                                                                     ///< 3 = a single neutron from each nucleus (1n1n),
 	                                                                     ///< 4 = neither nucleon breaks up (with b > 2R),
 	                                                                     ///< 5 = no hadronic break up (similar to option 1, but with the actual hadronic interaction)
+	                                                                     ///  6 = set impact parameter range via bmax and bmin
 	parameter<bool, VALIDITY_CHECK>            _interferenceEnabled;     ///< if VALIDITY_CHECK, interference is taken into account
 	parameter<double, VALIDITY_CHECK>          _interferenceStrength;    ///< percentage of interference: from 0 = none to 1 = full
 	parameter<double, VALIDITY_CHECK>          _maxPtInterference;       ///< maximum p_T for interference calculation [GeV/c]
@@ -326,6 +409,86 @@ private:
         parameter<double, VALIDITY_CHECK>          _bslope_alphaprime;       ///< Parameterization of slope parameter when _bslopeDefinition is set to 3
 	parameter<unsigned int, VALIDITY_CHECK>    _printVM;                 ///< Optional parameter to set printing options for VM cross section
         parameter<unsigned int, VALIDITY_CHECK>    _impulseVM;               ///< Optional parameter to use impulse approximation (no nuclear effects) for VM cross section.
+	parameter<unsigned int, VALIDITY_CHECK>    _quantumGlauber;          ///< Optional parameter.  Set = 1 to use Quantum Glauber calculation, rather than Classical Glauber
+	parameter<double, VALIDITY_CHECK>          _bmin;                    ///< Optional parameter minimum impact parameter for b-range calculation
+	parameter<double, VALIDITY_CHECK>          _bmax;                    /// < Optional parameter maximum impact parameter for b-range calculation
+
+        parameter<double, VALIDITY_CHECK> _deuteronSlopePar      ;           ///< deuteron slope parameter (effective temperature) [(GeV/c)^-2]
+        parameter<double, VALIDITY_CHECK> _protonMass            ;           ///< mass of the proton [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _pionChargedMass       ;           ///< mass of the pi^+/- [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _pionNeutralMass       ;           ///< mass of the pi^0 [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _kaonChargedMass       ;           ///< mass of the K^+/- [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _mel                   ;           ///< mass of the e^+/- [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _muonMass              ;           ///< mass of the mu^+/- [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _tauMass               ;           ///< mass of the tau^+/- [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f0Mass                ;           ///< mass of the f_0(980) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f0Width               ;           ///< width of the f_0(980) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f0BrPiPi              ;           ///< branching ratio f_0(980) -> pi^+ pi^- and pi^0 pi^0
+        parameter<double, VALIDITY_CHECK> _etaMass               ;           ///< mass of the eta [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaWidth              ;           ///< width of the eta [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaPrimeMass          ;           ///< mass of the eta' [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaPrimeWidth         ;           ///< width of the eta' [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaCMass              ;           ///< mass of the eta_c [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaCWidth             ;           ///< width of the eta_c [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2Mass                ;           ///< mass of the f_2(1270) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2Width               ;           ///< width of the f_2(1270) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2BrPiPi              ;           ///< branching ratio f_2(1270) -> pi^+ pi^-
+        parameter<double, VALIDITY_CHECK> _a2Mass                ;           ///< mass of the a_2(1320) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _a2Width               ;           ///< width of the a_2(1320) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2PrimeMass           ;           ///< mass of the f'_2(1525) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2PrimeWidth          ;           ///< width of the f'_2(1525) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2PrimeBrKK           ;           ///< branching ratio f'_2(1525) -> K^+ K^- and K^0 K^0bar
+        parameter<double, VALIDITY_CHECK> _zoverz03Mass          ;           ///< mass of four-quark resonance (rho^0 pair production) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f0PartialggWidth      ;           ///< partial width f_0(980) -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaPartialggWidth     ;           ///< partial width eta -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaPrimePartialggWidth;           ///< partial width eta' -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _etaCPartialggWidth    ;           ///< partial width eta_c -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2PartialggWidth      ;           ///< partial width f_2(1270) -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _a2PartialggWidth      ;           ///< partial width a_2(1320) -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f2PrimePartialggWidth ;           ///< partial width f'_2(1525) -> g g [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _zoverz03PartialggWidth;           ///< partial width four-quark resonance -> g g (rho^0 pair production) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _f0Spin                ;           ///< spin of the f_0(980)
+        parameter<double, VALIDITY_CHECK> _etaSpin               ;           ///< spin of the eta
+        parameter<double, VALIDITY_CHECK> _etaPrimeSpin          ;           ///< spin of the eta'
+        parameter<double, VALIDITY_CHECK> _etaCSpin              ;           ///< spin of the eta_c
+        parameter<double, VALIDITY_CHECK> _f2Spin                ;           ///< spin of the f_2(1270)
+        parameter<double, VALIDITY_CHECK> _a2Spin                ;           ///< spin of the a_2(1320)
+        parameter<double, VALIDITY_CHECK> _f2PrimeSpin           ;           ///< spin of the f'_2(1525)
+        parameter<double, VALIDITY_CHECK> _zoverz03Spin          ;           ///< spin of the four-quark resonance -> g g (rho^0 pair production)
+        parameter<double, VALIDITY_CHECK> _axionSpin             ;           ///< spin of the axion
+        parameter<double, VALIDITY_CHECK> _rho0Mass              ;           ///< mass of the rho^0 [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _rho0Width             ;           ///< width of the rho^0 [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _rho0BrPiPi            ;           ///< branching ratio rho^0 -> pi^+ pi^-
+        parameter<double, VALIDITY_CHECK> _rho0PrimeMass         ;           ///< mass of the rho'^0 (4 pi^+/- final state) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _rho0PrimeWidth        ;           ///< width of the rho'^0 (4 pi^+/- final state) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _rho0PrimeBrPiPi       ;           ///< branching ratio rho'^0 -> pi^+ pi^-
+        parameter<double, VALIDITY_CHECK> _OmegaMass             ;           ///< mass of the omega [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _OmegaWidth            ;           ///< width of the omega [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _OmegaBrPiPi           ;           ///< branching ratio omega -> pi^+ pi^-
+        parameter<double, VALIDITY_CHECK> _PhiMass               ;           ///< mass of the phi [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _PhiWidth              ;           ///< width of the phi [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _PhiBrKK               ;           ///< branching ratio phi -> K^+ K^-
+        parameter<double, VALIDITY_CHECK> _JpsiMass              ;           ///< mass of the J/psi [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _JpsiWidth             ;           ///< width of the J/psi [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _JpsiBree              ;           ///< branching ratio J/psi -> e^+ e^-
+        parameter<double, VALIDITY_CHECK> _JpsiBrmumu            ;           ///< branching ratio J/psi -> mu^+ mu^-
+        parameter<double, VALIDITY_CHECK> _JpsiBrppbar           ;           ///< branching ratio J/psi -> p pbar
+        parameter<double, VALIDITY_CHECK> _Psi2SMass             ;           ///< mass of the psi(2S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Psi2SWidth            ;           ///< width of the psi(2S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Psi2SBree             ;           ///< branching ratio psi(2S) -> e^+ e^-
+        parameter<double, VALIDITY_CHECK> _Psi2SBrmumu           ;           ///< branching ratio psi(2S) -> mu^+ mu^-
+        parameter<double, VALIDITY_CHECK> _Upsilon1SMass         ;           ///< mass of the Upsilon(1S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon1SWidth        ;           ///< width of the Upsilon(1S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon1SBree         ;           ///< branching ratio Upsilon(1S) -> e^+ e^-
+        parameter<double, VALIDITY_CHECK> _Upsilon1SBrmumu       ;           ///< branching ratio Upsilon(1S) -> mu^+ mu^-
+        parameter<double, VALIDITY_CHECK> _Upsilon2SMass         ;           ///< mass of the Upsilon(2S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon2SWidth        ;           ///< width of the Upsilon(2S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon2SBree         ;           ///< branching ratio Upsilon(2S) -> e^+ e^-
+        parameter<double, VALIDITY_CHECK> _Upsilon2SBrmumu       ;           ///< branching ratio Upsilon(2S) -> mu^+ mu^-
+        parameter<double, VALIDITY_CHECK> _Upsilon3SMass         ;           ///< mass of the Upsilon(3S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon3SWidth        ;           ///< width of the Upsilon(3S) [GeV/c^2]
+        parameter<double, VALIDITY_CHECK> _Upsilon3SBree         ;           ///< branching ratio Upsilon(3S) -> e^+ e^-
+        parameter<double, VALIDITY_CHECK> _Upsilon3SBrmumu       ;           ///< branching ratio Upsilon(3S) -> mu^+ mu^-
 
 	starlightConstants::particleTypeEnum       _particleType;
 	starlightConstants::decayTypeEnum          _decayType;
@@ -337,7 +500,6 @@ private:
 };
 
 
-inline
 bool inputParameters::setParameter(std::string expression)
 {
     return getInputParser().parseString(expression);

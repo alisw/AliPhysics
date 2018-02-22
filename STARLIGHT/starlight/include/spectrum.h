@@ -31,7 +31,7 @@ class spectrum
 public:
 
     /** Spectrum must be constructed with beam-beam system, default constructor disallowed */
-    spectrum(const randomGenerator &randy, beamBeamSystem *bbs);
+    spectrum(randomGenerator* randy, beamBeamSystem *bbs);
 
     /**
     * Generate a table of photon energy probabilities
@@ -148,7 +148,7 @@ private:
     bool _hadBreakProbCalculated;
 
     /** random number generator **/
-    randomGenerator _randy;
+    randomGenerator* _randy;
 
     /** Default constructed disallowed (not implemented) */
     spectrum();

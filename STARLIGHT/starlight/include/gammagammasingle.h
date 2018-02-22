@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 274                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2016-09-12 00:40:25 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -51,7 +51,7 @@
 class Gammagammasingle : public eventChannel
 {
  public:
-  Gammagammasingle(const inputParameters& input, beamBeamSystem& bbsystem);
+  Gammagammasingle(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   ~Gammagammasingle();
   
   void singleCrossSection();

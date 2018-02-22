@@ -28,7 +28,7 @@ class beamBeamSystem;
 class spectrumProtonNucleus : public spectrum
 {
 public:
-    spectrumProtonNucleus(const randomGenerator &randy, beamBeamSystem *bb);
+    spectrumProtonNucleus(randomGenerator* randy, beamBeamSystem *bb);
     virtual double getNucleonNucleonSigma() const { return 7.35; }
 protected:
     virtual bool generateBreakupProbabilities();

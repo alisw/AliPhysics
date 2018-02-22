@@ -43,6 +43,7 @@ TStarLight::TStarLight()
   , fConfigFileName("")    // Confiuration file name
   , fStarLight(NULL)       // STARlight simulation class.
   , fInputParameters()     // Input to simulation class
+  , fRandomGenerator()     // STARLIGHT random generator
   , fEvent() {}            // object holdng STARlight simulated event
 
 //----------------------------------------------------------------------
@@ -54,6 +55,7 @@ TStarLight::TStarLight(const char* name,         // The name of this object in t
   , fConfigFileName(slConfigFile) // Confiuration file name
   , fStarLight(NULL)              // STARlight simulation class.
   , fInputParameters()            // Input to simulation class
+  , fRandomGenerator()     // STARLIGHT random generator
   , fEvent()                      // object holding STARlight simulated event.
 {
   // if (NULL == fInputParameters) {

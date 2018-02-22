@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 276                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-09-13 20:54:42 +0200 #$: date of last commit
+// $Rev:: 293                         $: revision of last commit
+// $Author:: butter                   $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -50,7 +50,7 @@ class Gammaavectormeson : public eventChannel
 {
   
  public:
-  Gammaavectormeson(const inputParameters& ipnut, beamBeamSystem& bbsystem);
+  Gammaavectormeson(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   virtual ~Gammaavectormeson();
   starlightConstants::event produceEvent(int &ievent);
   
@@ -83,8 +83,8 @@ class Gammaavectormeson : public eventChannel
   int N0;
   int N1;
   int N2; 
+  int _VMNPT;
   double _VMgamma_em;
-  double _VMNPT;
   double _VMWmax;
   double _VMWmin;
   double _VMYmax;
@@ -106,21 +106,21 @@ class Gammaavectormeson : public eventChannel
 class Gammaanarrowvm : public Gammaavectormeson
 {
  public:
-  Gammaanarrowvm(const inputParameters& input, beamBeamSystem& bbsystem);
+  Gammaanarrowvm(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   virtual ~Gammaanarrowvm();
 };
 
 class Gammaawidevm : public Gammaavectormeson
 {  
  public:
-  Gammaawidevm(const inputParameters& input, beamBeamSystem& bbsystem);
+  Gammaawidevm(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   virtual ~Gammaawidevm();
 };
 
 class Gammaaincoherentvm : public Gammaavectormeson
 {  
  public:
-  Gammaaincoherentvm(const inputParameters& input, beamBeamSystem& bbsystem);
+  Gammaaincoherentvm(const inputParameters& input, randomGenerator* randy, beamBeamSystem& bbsystem);
   virtual ~Gammaaincoherentvm();
 };
 

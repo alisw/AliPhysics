@@ -33,7 +33,7 @@ class starlightPythia : public eventChannel
 
 public:
 
-    starlightPythia(const inputParameters& input, beamBeamSystem& bbsystem);
+    starlightPythia(const inputParameters& input,randomGenerator* randy,beamBeamSystem& bbsystem);
     virtual ~starlightPythia();
 
     int init(std::string pythiaParams, bool fullEventRecord = false);

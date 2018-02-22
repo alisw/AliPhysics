@@ -10,6 +10,7 @@
 #pragma link C++ class parameter<bool,0>+;
 #pragma link C++ class inputParametersBase+;
 #pragma link C++ class inputParameters+;
+#pragma link C++ class randomGenerator+;
 #pragma link C++ class TStarLight+;
 #pragma link C++ class AliGenStarLight+;
 #pragma link C++ class AliDecayerSLEvtGen+;

@@ -45,7 +45,7 @@ extern "C"
     void dt_initialise_();
 }
 
-starlightDpmJet::starlightDpmJet(const inputParameters& inputParametersInstance, beamBeamSystem& beamsystem ) : eventChannel(inputParametersInstance, beamsystem)
+starlightDpmJet::starlightDpmJet(const inputParameters& inputParametersInstance,randomGenerator* randy,beamBeamSystem& beamsystem ) : eventChannel(inputParametersInstance,randy,beamsystem)
         ,_spectrum(0)
         ,_doDoubleEvent(true)
 	,_minGammaEnergy(6.0)
@@ -140,7 +140,7 @@ upcEvent starlightDpmJet::produceDoubleEvent()
     //std::cout << "Gamma2 energy: " << gammaE2 << std::endl;
     
     //In which direction do we go?
-    int zdirection = (_randy.Rndom()) < 0.5 ? -1 : 1;
+    int zdirection = (_randy->Rndom()) < 0.5 ? -1 : 1;
 
     event = produceSingleEvent(zdirection, gammaE1);
 

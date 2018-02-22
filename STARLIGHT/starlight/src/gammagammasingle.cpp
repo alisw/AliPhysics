@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 274                         $: revision of last commit
+// $Rev:: 293                         $: revision of last commit
 // $Author:: butter                   $: author of last commit
-// $Date:: 2016-09-12 00:40:25 +0200 #$: date of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -44,8 +44,8 @@ using namespace std;
 
 
 //______________________________________________________________________________
-Gammagammasingle::Gammagammasingle(const inputParameters& inputParametersInstance, beamBeamSystem& bbsystem)
-: eventChannel(inputParametersInstance, bbsystem)
+Gammagammasingle::Gammagammasingle(const inputParameters& inputParametersInstance, randomGenerator* randy, beamBeamSystem& bbsystem)
+: eventChannel(inputParametersInstance, randy, bbsystem)
 #ifdef ENABLE_PYTHIA
 ,_pyDecayer()
 #endif
@@ -188,7 +188,7 @@ void Gammagammasingle::pickw(double &w)
       sgfint[i]=sgfint[i]/signorm;
     }
     //pick a random number
-    x = _randy.Rndom();
+    x = _randy->Rndom();
     //compare x and sgfint to find the ivalue which is just less than the random number x
     for(int i=0;i<_GGsingInputnumw;i++){
       if(x > sgfint[i]) ivalw=i;
@@ -249,7 +249,7 @@ void Gammagammasingle::picky(double &y)
     sgfint[j]=sgfint[j]/signorm;
   }
   //pick a random number
-  x = _randy.Rndom();
+  x = _randy->Rndom();
   //compare x and sgfint to find the ivalue which is just less then the random number x
   for(int i=0;i<_GGsingInputnumy;i++){
     if(x > sgfint[i]) 
@@ -285,8 +285,8 @@ void Gammagammasingle::parentMomentum(double w,double y,double &E,double &px,dou
   E2 = w*exp(-y)/2.;
   //calculate px and py
   //to get x and y components-- phi is random between 0 and 2*pi
-  anglepp1 = _randy.Rndom();
-  anglepp2 = _randy.Rndom();
+  anglepp1 = _randy->Rndom();
+  anglepp2 = _randy->Rndom();
   
   ppp1 = pp1(E1);
   ppp2 = pp2(E2);
@@ -297,7 +297,7 @@ void Gammagammasingle::parentMomentum(double w,double y,double &E,double &px,dou
   //W is the mass of the produced particle (not necessarily on-mass-shell).Now compute its energy and pz
   E = sqrt(w*w+pt*pt)*cosh(y);
   pz= sqrt(w*w+pt*pt)*sinh(y);
-  signpx = _randy.Rndom();
+  signpx = _randy->Rndom();
   //pick the z direction
   if(signpx > 0.5) 
     pz = -pz;	
@@ -323,18 +323,18 @@ double Gammagammasingle::pp1(double E)
   Coef = 3.0*(singleformfactorCm*singleformfactorCm*Cm*Cm*Cm)/((2.*(starlightConstants::pi)*(ereds+Cm*Cm))*(2.*(starlightConstants::pi)*(ereds+Cm*Cm)));
         
   //pick a test value pp, and find the amplitude there
-  x = _randy.Rndom();
+  x = _randy->Rndom();
   pp = x*5.*starlightConstants::hbarc/_bbs.beam1().nuclearRadius(); //Will use nucleus #1, there should be two for symmetry//nextline
   singleformfactorpp1=_bbs.beam1().formFactor(pp*pp+ereds);
   test = (singleformfactorpp1*singleformfactorpp1)*pp*pp*pp/((2.*starlightConstants::pi*(ereds+pp*pp))*(2.*starlightConstants::pi*(ereds+pp*pp)));
 
   while(satisfy==0){
-    u = _randy.Rndom();
+    u = _randy->Rndom();
     if(u*Coef <= test){
       satisfy =1;
     }
     else{
-      x =_randy.Rndom();
+      x =_randy->Rndom();
       pp = 5*starlightConstants::hbarc/_bbs.beam1().nuclearRadius()*x;
       singleformfactorpp2=_bbs.beam1().formFactor(pp*pp+ereds);//Symmetry
       test = (singleformfactorpp2*singleformfactorpp2)*pp*pp*pp/(2.*starlightConstants::pi*(ereds+pp*pp)*2.*starlightConstants::pi*(ereds+pp*pp));
@@ -362,18 +362,18 @@ double Gammagammasingle::pp2(double E)
   Coef = 3.0*(singleformfactorCm*singleformfactorCm*Cm*Cm*Cm)/((2.*(starlightConstants::pi)*(ereds+Cm*Cm))*(2.*(starlightConstants::pi)*(ereds+Cm*Cm)));
         
   //pick a test value pp, and find the amplitude there
-  x = _randy.Rndom();
+  x = _randy->Rndom();
   pp = x*5.*starlightConstants::hbarc/_bbs.beam2().nuclearRadius(); //Will use nucleus #1, there should be two for symmetry//nextline
   singleformfactorpp1=_bbs.beam2().formFactor(pp*pp+ereds);
   test = (singleformfactorpp1*singleformfactorpp1)*pp*pp*pp/((2.*starlightConstants::pi*(ereds+pp*pp))*(2.*starlightConstants::pi*(ereds+pp*pp)));
 
   while(satisfy==0){
-    u = _randy.Rndom();
+    u = _randy->Rndom();
     if(u*Coef <= test){
       satisfy =1;
     }
     else{
-      x =_randy.Rndom();
+      x =_randy->Rndom();
       pp = 5*starlightConstants::hbarc/_bbs.beam2().nuclearRadius()*x;
       singleformfactorpp2=_bbs.beam2().formFactor(pp*pp+ereds);//Symmetry
       test = (singleformfactorpp2*singleformfactorpp2)*pp*pp*pp/(2.*starlightConstants::pi*(ereds+pp*pp)*2.*starlightConstants::pi*(ereds+pp*pp));
@@ -398,16 +398,16 @@ void Gammagammasingle::twoBodyDecay(starlightConstants::particleTypeEnum &ipid,d
   switch(_GGsingInputpidtest){ 
   case starlightConstants::ZOVERZ03:
   case starlightConstants::F2:	
-    mdec = starlightConstants::pionChargedMass;
+    mdec = _ip->pionChargedMass();
     break;
   case starlightConstants::AXION:       // AXION HACK
     mdec = 0;//axion decays to two photons, set mass of decay products to zero
     break;
   case starlightConstants::F2PRIME:
     //  decays 50% to K+/K-, 50% to K_0's
-    ytest = _randy.Rndom();
+    ytest = _randy->Rndom();
     if(ytest >= 0.5){
-      mdec = starlightConstants::kaonChargedMass;
+      mdec = _ip->kaonChargedMass();
     }
     else{
       mdec = 0.493677;
@@ -427,15 +427,15 @@ void Gammagammasingle::twoBodyDecay(starlightConstants::particleTypeEnum &ipid,d
 //  }
   //     pick an orientation, based on the spin
   //      phi has a flat distribution in 2*pi
-  phi = _randy.Rndom()*2.*starlightConstants::pi;
+  phi = _randy->Rndom()*2.*starlightConstants::pi;
   
   //     find theta, the angle between one of the outgoing particles and
   //    the beamline, in the frame of the two photons
   //this will depend on spin, F2,F2' and z/z03 all have spin 2, all other photonphoton-single mesons are handled by jetset/pythia
   //Applies to spin2 mesons.
  L300td:
-  theta = starlightConstants::pi*_randy.Rndom();
-  xtest = _randy.Rndom();
+  theta = starlightConstants::pi*_randy->Rndom();
+  xtest = _randy->Rndom();
   dndtheta = sin(theta)*sin(theta)*sin(theta)*sin(theta)*sin(theta);
   if(xtest > dndtheta)
     goto L300td;
@@ -561,8 +561,8 @@ upcEvent Gammagammasingle::produceEvent()
 		
     single._numberOfTracks=4;//number of tracks per event
     if (iFbadevent==0){
-      xtest = _randy.Rndom();
-      ztest = _randy.Rndom();
+      xtest = _randy->Rndom();
+      ztest = _randy->Rndom();
       //Assigning charges randomly.
       if (xtest<0.5){
 	single._charge[0]=1;//q1=1;
@@ -611,7 +611,7 @@ upcEvent Gammagammasingle::produceEvent()
     
     single._numberOfTracks=2;
     if (iFbadevent==0){
-      xtest = _randy.Rndom();
+      xtest = _randy->Rndom();
       if (xtest<0.5){
 	single._charge[0]=1;//q1=1;
 	single._charge[1]=-1;//q2=-1;
@@ -674,28 +674,28 @@ double Gammagammasingle::getMass()
   double singlemass=0.;
   switch(_GGsingInputpidtest){
   case starlightConstants::ETA:
-    singlemass = starlightConstants::etaMass;
+    singlemass = _ip->etaMass();
     break;
   case starlightConstants::ETAPRIME:
-    singlemass = starlightConstants::etaPrimeMass;
+    singlemass = _ip->etaPrimeMass();
     break;
   case starlightConstants::ETAC:
-    singlemass = starlightConstants::etaCMass;
+    singlemass = _ip->etaCMass();
     break;
   case starlightConstants::F0:
-    singlemass = starlightConstants::f0Mass;
+    singlemass = _ip->f0Mass();
     break;
   case starlightConstants::F2:
-    singlemass = starlightConstants::f2Mass;
+    singlemass = _ip->f2Mass();
     break;
   case starlightConstants::A2:
-    singlemass = starlightConstants::a2Mass;
+    singlemass = _ip->a2Mass();
     break;
   case starlightConstants::F2PRIME:
-    singlemass = starlightConstants::f2PrimeMass;
+    singlemass = _ip->f2PrimeMass();
     break;
   case starlightConstants::ZOVERZ03:
-    singlemass = starlightConstants::zoverz03Mass;
+    singlemass = _ip->zoverz03Mass();
     break;
   case starlightConstants::AXION: // AXION HACK
     singlemass = _axionMass;      // AXION HACK
@@ -715,28 +715,28 @@ double Gammagammasingle::getWidth()
   double singlewidth=0.;
   switch(_GGsingInputpidtest){
   case starlightConstants::ETA:
-    singlewidth = starlightConstants::etaPartialggWidth;
+    singlewidth = _ip->etaPartialggWidth();
     break;
   case starlightConstants::ETAPRIME:
-    singlewidth = starlightConstants::etaPrimePartialggWidth;
+    singlewidth = _ip->etaPrimePartialggWidth();
     break;
   case starlightConstants::ETAC:
-    singlewidth = starlightConstants::etaCPartialggWidth;
+    singlewidth = _ip->etaCPartialggWidth();
     break;
   case starlightConstants::F0:
-    singlewidth = starlightConstants::f0PartialggWidth;
+    singlewidth = _ip->f0PartialggWidth();
     break;
   case starlightConstants::F2:
-    singlewidth = starlightConstants::f2PartialggWidth;
+    singlewidth = _ip->f2PartialggWidth();
     break;
   case starlightConstants::A2:
-    singlewidth = starlightConstants::a2PartialggWidth;
+    singlewidth = _ip->a2PartialggWidth();
     break;
   case starlightConstants::F2PRIME:
-    singlewidth = starlightConstants::f2PrimePartialggWidth;
+    singlewidth = _ip->f2PrimePartialggWidth();
     break;
   case starlightConstants::ZOVERZ03:
-    singlewidth = starlightConstants::zoverz03PartialggWidth;
+    singlewidth = _ip->zoverz03PartialggWidth();
     break;
   case starlightConstants::AXION: // AXION HACK
     singlewidth = 1/(64*starlightConstants::pi)*_axionMass*_axionMass*_axionMass/(1000*1000);//Fix Lambda=1000 GeV,rescaling is trivial.    // AXION HACK
@@ -754,31 +754,31 @@ double Gammagammasingle::getSpin()
   double singlespin=0.5;
   switch(_GGsingInputpidtest){
   case starlightConstants::ETA:
-    singlespin = starlightConstants::etaSpin;
+    singlespin = _ip->etaSpin();
     break;
   case starlightConstants::ETAPRIME:
-    singlespin = starlightConstants::etaPrimeSpin;
+    singlespin = _ip->etaPrimeSpin();
     break;
   case starlightConstants::ETAC:
-    singlespin = starlightConstants::etaCSpin;
+    singlespin = _ip->etaCSpin();
     break;
   case starlightConstants::F0:
-    singlespin = starlightConstants::f0Spin;
+    singlespin = _ip->f0Spin();
     break;
   case starlightConstants::F2:
-    singlespin = starlightConstants::f2Spin;
+    singlespin = _ip->f2Spin();
     break;
   case starlightConstants::A2:
-    singlespin = starlightConstants::a2Spin;
+    singlespin = _ip->a2Spin();
     break;
   case starlightConstants::F2PRIME:
-    singlespin = starlightConstants::f2PrimeSpin;
+    singlespin = _ip->f2PrimeSpin();
     break;
   case starlightConstants::ZOVERZ03:
-    singlespin = starlightConstants::zoverz03Spin;
+    singlespin = _ip->zoverz03Spin();
     break;
   case starlightConstants::AXION:// AXION HACK
-    singlespin = starlightConstants::axionSpin;// AXION HACK
+    singlespin = _ip->axionSpin();// AXION HACK
     break;// AXION HACK
   default:
     cout<<"Not a recognized single particle, Gammagammasingle::getspin(), spin = 0."<<endl;

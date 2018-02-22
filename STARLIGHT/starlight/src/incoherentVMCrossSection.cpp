@@ -102,8 +102,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
 	cout<<" Using Narrow Resonance ..."<<endl;
   
 	W = getChannelMass();
-	Eth=0.5*(((W+protonMass)*(W+protonMass)-
-	          protonMass*protonMass)/(_Ep+sqrt(_Ep*_Ep-protonMass*protonMass)));
+	Eth=0.5*(((W+_ip->protonMass())*(W+_ip->protonMass())-
+	          _ip->protonMass()*_ip->protonMass())/(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass())));
   
 	// cout<<" gamma+nucleon  Threshold: "<<Eth<<endl;
         printf(" gamma+nucleon threshold: %e GeV \n", Eth);
@@ -137,8 +137,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
 			continue;
 
 		// First point 
-                Wgp = sqrt(2.*ega1*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega1*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA1 = (csVA/csVN)*sigmagp(Wgp); 
@@ -147,8 +147,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
 		// Middle point 
-                Wgp = sqrt(2.*ega12*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega12*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA12 = (csVA/csVN)*sigmagp(Wgp); 
@@ -157,8 +157,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
 		// Last point 
-                Wgp = sqrt(2.*ega2*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega2*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA2 = (csVA/csVN)*sigmagp(Wgp); 
@@ -167,8 +167,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
 		// For printing  
-                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgpprint);            
                 csVA = sigma_A(csVN,beam); 
                 csgAprint = (csVA/csVN)*sigmagp(Wgpprint); 
@@ -220,8 +220,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
 			continue;
 
 		// First point 
-                Wgp = sqrt(2.*ega1*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega1*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA1 = (csVA/csVN)*sigmagp(Wgp); 
@@ -230,8 +230,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
 		// Middle point 
-                Wgp = sqrt(2.*ega12*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega12*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA12 = (csVA/csVN)*sigmagp(Wgp); 
@@ -240,8 +240,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
 		// Last point 
-                Wgp = sqrt(2.*ega2*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgp = sqrt(2.*ega2*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgp);            
                 csVA = sigma_A(csVN,beam); 
                 csgA2 = (csVA/csVN)*sigmagp(Wgp); 
@@ -250,8 +250,8 @@ incoherentVMCrossSection::crossSectionCalculation(const double)  // _bwnormsave 
                 }
 
  		// For printing  
-                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
-			          +starlightConstants::protonMass*starlightConstants::protonMass);
+                Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-_ip->protonMass()*_ip->protonMass()))
+			          +_ip->protonMass()*_ip->protonMass());
                 csVN = sigma_N(Wgpprint);            
                 csVA = sigma_A(csVN,beam); 
                 csgAprint = (csVA/csVN)*sigmagp(Wgpprint); 

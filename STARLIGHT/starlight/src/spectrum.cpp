@@ -24,7 +24,7 @@ p    This program is free software: you can redistribute it and/or modify
 #include <randomgenerator.h>
 #include <iostream>
 
-spectrum::spectrum(const randomGenerator &randy, beamBeamSystem *bbs) :
+spectrum::spectrum(randomGenerator* randy, beamBeamSystem *bbs) :
 	 _bMin(5.0)
         ,_bMax(128000.0)
 	,_nBbins(6400)
@@ -229,7 +229,7 @@ double spectrum::drawKsingle()
     int itest = 0;
     double egamma = 0.0;
 
-    xtest = _randy.Rndom();
+    xtest = _randy->Rndom();
     while (xtest > _fnSingleCumulative[itest])
     {
         itest++;
@@ -269,7 +269,7 @@ void spectrum::drawKdouble(float& egamma1, float& egamma2)
     int itest1 = 0;
     int itest2 = 0;
 
-    xtest1 = _randy.Rndom();
+    xtest1 = _randy->Rndom();
 
     while (xtest1 > _fnDoubleIntCumulative[itest1])
     {
@@ -316,7 +316,7 @@ void spectrum::drawKdouble(float& egamma1, float& egamma2)
       fn_second_cumulative[i] = norm_factor*fn_second_cumulative[i];
     }
     
-    xtest2 = _randy.Rndom();
+    xtest2 = _randy->Rndom();
 
     while (xtest2 > fn_second_cumulative[itest2])
     {

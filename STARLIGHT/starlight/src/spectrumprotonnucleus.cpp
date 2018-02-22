@@ -23,7 +23,7 @@
 #include "beam.h"
 #include <iostream>
 
-spectrumProtonNucleus::spectrumProtonNucleus(const randomGenerator &randy, beamBeamSystem *b) : spectrum(randy,b)
+spectrumProtonNucleus::spectrumProtonNucleus(randomGenerator* randy, beamBeamSystem *b) : spectrum(randy,b)
 {
       _bMin = 4.0;
 }

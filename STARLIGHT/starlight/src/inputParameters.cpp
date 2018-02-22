@@ -20,14 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 284 $: revision of last commit // $Author:: jnystra#$: author of last commit
-// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit //
+// $Rev:: 293 $: revision of last commit // $Author:: butter  $: author of last commit
+// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit //
 // Description:
 //
-//
-//
-///////////////////////////////////////////////////////////////////////////
-
 
 #include <iostream>
 #include <fstream>
@@ -49,7 +45,7 @@ using namespace starlightConstants;
 
 //______________________________________________________________________________
 inputParameters::inputParameters()
-         : inputParametersBase(),
+        : inputParametersBase(),
           _baseFileName          (this, "baseFileName","slight"),
  	  _beam1Z                (this, "BEAM_1_Z",0),
 	  _beam1A                (this, "BEAM_1_A",0),
@@ -85,12 +81,92 @@ inputParameters::inputParameters()
 	  _pythiaFullEventRecord (this, "PYTHIA_FULL_EVENTRECORD",false, NOT_REQUIRED),
 	  _xsecCalcMethod	 (this, "XSEC_METHOD",0, NOT_REQUIRED),
           _axionMass             (this, "AXION_MASS",50, NOT_REQUIRED),  // AXION HACK
-	  _bslopeDefinition      (this, "BSLOPE_DEFINITION",0, NOT_REQUIRED),
+          _bslopeDefinition      (this, "BSLOPE_DEFINITION",0, NOT_REQUIRED),
 	  _bslopeValue           (this, "BSLOPE_VALUE",4.0,NOT_REQUIRED),
-	  _bslope0               (this, "BSLOPE0",4.63,NOT_REQUIRED),
-	  _bslope_alphaprime     (this, "BSLOPE_ALPHAPRIME",0.164,NOT_REQUIRED),
-          _printVM               (this, "PRINT_VM",0,NOT_REQUIRED),
-          _impulseVM             (this, "SELECT_IMPULSE_VM",0,NOT_REQUIRED)
+          _bslope0               (this, "BSLOPE0",4.63,NOT_REQUIRED),
+          _bslope_alphaprime     (this, "BSLOPE_ALPHAPRIME",0.164,NOT_REQUIRED),
+	  _printVM               (this, "PRINT_VM",0,NOT_REQUIRED),
+	  _impulseVM             (this, "SELECT_IMPULSE_VM",0,NOT_REQUIRED),
+	  _quantumGlauber        (this, "QUANTUM_GLAUBER",0,NOT_REQUIRED),
+	  _bmin                  (this, "BMIN",0,NOT_REQUIRED),
+          _bmax                  (this, "BMAX",0,NOT_REQUIRED),
+
+          _deuteronSlopePar      (this, "deuteronSlopePar"      , 9.5           , NOT_REQUIRED),
+          _protonMass            (this, "protonMass"            , 0.938272046   , NOT_REQUIRED),
+          _pionChargedMass       (this, "pionChargedMass"       , 0.13957018    , NOT_REQUIRED),
+          _pionNeutralMass       (this, "pionNeutralMass"       , 0.1349766     , NOT_REQUIRED),
+          _kaonChargedMass       (this, "kaonChargedMass"       , 0.493677      , NOT_REQUIRED),
+          _mel                   (this, "mel"                   , 0.000510998928, NOT_REQUIRED),
+          _muonMass              (this, "muonMass"              , 0.1056583715  , NOT_REQUIRED),
+          _tauMass               (this, "tauMass"               , 1.77682       , NOT_REQUIRED),
+          _f0Mass                (this, "f0Mass"                , 0.990         , NOT_REQUIRED),
+          _f0Width               (this, "f0Width"               , 0.100         , NOT_REQUIRED),
+          _f0BrPiPi              (this, "f0BrPiPi"              , 1.0           , NOT_REQUIRED),
+          _etaMass               (this, "etaMass"               , 0.547862      , NOT_REQUIRED),
+          _etaWidth              (this, "etaWidth"              , 0.00000131    , NOT_REQUIRED),
+          _etaPrimeMass          (this, "etaPrimeMass"          , 0.95778       , NOT_REQUIRED),
+          _etaPrimeWidth         (this, "etaPrimeWidth"         , 0.000198      , NOT_REQUIRED),
+          _etaCMass              (this, "etaCMass"              , 2.9836        , NOT_REQUIRED),
+          _etaCWidth             (this, "etaCWidth"             , 0.0322        , NOT_REQUIRED),
+          _f2Mass                (this, "f2Mass"                , 1.2751        , NOT_REQUIRED),
+          _f2Width               (this, "f2Width"               , 0.1851        , NOT_REQUIRED),
+          _f2BrPiPi              (this, "f2BrPiPi"              , 0.561         , NOT_REQUIRED),
+          _a2Mass                (this, "a2Mass"                , 1.3183        , NOT_REQUIRED),
+          _a2Width               (this, "a2Width"               , 0.105         , NOT_REQUIRED),
+          _f2PrimeMass           (this, "f2PrimeMass"           , 1.525         , NOT_REQUIRED),
+          _f2PrimeWidth          (this, "f2PrimeWidth"          , 0.073         , NOT_REQUIRED),
+          _f2PrimeBrKK           (this, "f2PrimeBrKK"           , 0.887         , NOT_REQUIRED),
+          _zoverz03Mass          (this, "zoverz03Mass"          , 1.540         , NOT_REQUIRED),
+          _f0PartialggWidth      (this, "f0PartialggWidth"      , 0.29E-6       , NOT_REQUIRED),
+          _etaPartialggWidth     (this, "etaPartialggWidth"     , 0.516E-6      , NOT_REQUIRED),
+          _etaPrimePartialggWidth(this, "etaPrimePartialggWidth", 4.35E-6       , NOT_REQUIRED),
+          _etaCPartialggWidth    (this, "etaCPartialggWidth"    , 5.0E-6        , NOT_REQUIRED),
+          _f2PartialggWidth      (this, "f2PartialggWidth"      , 3.03E-6       , NOT_REQUIRED),
+          _a2PartialggWidth      (this, "a2PartialggWidth"      , 1.0E-6        , NOT_REQUIRED),
+          _f2PrimePartialggWidth (this, "f2PrimePartialggWidth" , 0.081E-6      , NOT_REQUIRED),
+          _zoverz03PartialggWidth(this, "zoverz03PartialggWidth", 0.1E-6        , NOT_REQUIRED),
+          _f0Spin                (this, "f0Spin"                , 0.0           , NOT_REQUIRED),
+          _etaSpin               (this, "etaSpin"               , 0.0           , NOT_REQUIRED),
+          _etaPrimeSpin          (this, "etaPrimeSpin"          , 0.0           , NOT_REQUIRED),
+          _etaCSpin              (this, "etaCSpin"              , 0.0           , NOT_REQUIRED),
+          _f2Spin                (this, "f2Spin"                , 2.0           , NOT_REQUIRED),
+          _a2Spin                (this, "a2Spin"                , 2.0           , NOT_REQUIRED),
+          _f2PrimeSpin           (this, "f2PrimeSpin"           , 2.0           , NOT_REQUIRED),
+          _zoverz03Spin          (this, "zoverz03Spin"          , 2.0           , NOT_REQUIRED),
+          _axionSpin             (this, "axionSpin"             , 0.0           , NOT_REQUIRED),
+          _rho0Mass              (this, "rho0Mass"              , 0.769         , NOT_REQUIRED),
+          _rho0Width             (this, "rho0Width"             , 0.1517        , NOT_REQUIRED),
+          _rho0BrPiPi            (this, "rho0BrPiPi"            , 1.0           , NOT_REQUIRED),
+          _rho0PrimeMass         (this, "rho0PrimeMass"         , 1.540         , NOT_REQUIRED),
+          _rho0PrimeWidth        (this, "rho0PrimeWidth"        , 0.570         , NOT_REQUIRED),
+          _rho0PrimeBrPiPi       (this, "rho0PrimeBrPiPi"       , 1.0           , NOT_REQUIRED),
+          _OmegaMass             (this, "OmegaMass"             , 0.78265       , NOT_REQUIRED),
+          _OmegaWidth            (this, "OmegaWidth"            , 0.00849       , NOT_REQUIRED),
+          _OmegaBrPiPi           (this, "OmegaBrPiPi"           , 0.0153        , NOT_REQUIRED),
+          _PhiMass               (this, "PhiMass"               , 1.019461      , NOT_REQUIRED),
+          _PhiWidth              (this, "PhiWidth"              , 0.004266      , NOT_REQUIRED),
+          _PhiBrKK               (this, "PhiBrKK"               , 0.489         , NOT_REQUIRED),
+          _JpsiMass              (this, "JpsiMass"              , 3.096916      , NOT_REQUIRED),
+          _JpsiWidth             (this, "JpsiWidth"             , 0.0000929     , NOT_REQUIRED),
+          _JpsiBree              (this, "JpsiBree"              , 0.05971       , NOT_REQUIRED),
+          _JpsiBrmumu            (this, "JpsiBrmumu"            , 0.05961       , NOT_REQUIRED),
+          _JpsiBrppbar           (this, "JpsiBrppbar"           , 0.002120      , NOT_REQUIRED),
+          _Psi2SMass             (this, "Psi2SMass"             , 3.686109      , NOT_REQUIRED),
+          _Psi2SWidth            (this, "Psi2SWidth"            , 0.000299      , NOT_REQUIRED),
+          _Psi2SBree             (this, "Psi2SBree"             , 0.00789       , NOT_REQUIRED),
+          _Psi2SBrmumu           (this, "Psi2SBrmumu"           , 0.0079        , NOT_REQUIRED),
+          _Upsilon1SMass         (this, "Upsilon1SMass"         , 9.46030       , NOT_REQUIRED),
+          _Upsilon1SWidth        (this, "Upsilon1SWidth"        , 0.00005402    , NOT_REQUIRED),
+          _Upsilon1SBree         (this, "Upsilon1SBree"         , 0.0238        , NOT_REQUIRED),
+          _Upsilon1SBrmumu       (this, "Upsilon1SBrmumu"       , 0.0248        , NOT_REQUIRED),
+          _Upsilon2SMass         (this, "Upsilon2SMass"         , 10.02326      , NOT_REQUIRED),
+          _Upsilon2SWidth        (this, "Upsilon2SWidth"        , 0.00003198    , NOT_REQUIRED),
+          _Upsilon2SBree         (this, "Upsilon2SBree"         , 0.0191        , NOT_REQUIRED),
+          _Upsilon2SBrmumu       (this, "Upsilon2SBrmumu"       , 0.0193        , NOT_REQUIRED),
+          _Upsilon3SMass         (this, "Upsilon3SMass"         , 10.3552       , NOT_REQUIRED),
+          _Upsilon3SWidth        (this, "Upsilon3SWidth"        , 0.00002032    , NOT_REQUIRED),
+          _Upsilon3SBree         (this, "Upsilon3SBree"         , 0.0218        , NOT_REQUIRED),
+          _Upsilon3SBrmumu       (this, "Upsilon3SBrmumu"       , 0.0218        , NOT_REQUIRED)
 {
   // All parameters must be initialised in initialisation list!
   // If not: error: 'parameter<T, validate>::parameter() [with T = unsigned int, bool validate = true]' is private
@@ -125,7 +201,10 @@ inputParameters::configureFromFile(const std::string &_configFileName)
  		          << *this;
  		return false;
  	}
- 	return true;
+
+	/// temporary output test
+	printWarn<< * this<<endl;
+	return true;
 }
  bool inputParameters::init()
  {
@@ -137,7 +216,7 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 
 	std::cout << "Rapidity beam 1: " << rap1 << ", rapidity beam 2: " << rap2 << ", rapidity CMS system: " << (rap1+rap2)/2 << ", beam gamma in CMS: " << _beamLorentzGamma<< std::endl;
 	_ptBinWidthInterference = maxPtInterference() / nmbPtBinsInterference();
-	_protonEnergy           = _beamLorentzGamma * protonMass;
+	_protonEnergy           = _beamLorentzGamma * protonMass();
 
 	// check for deuteron or tritium - these must be the second beam
 	if((beam1Z()==1) && (beam1A()==2)){
@@ -204,7 +283,7 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 11:  // e+e- pair
 		_particleType = ELECTRON;
 		_decayType    = LEPTONPAIR;
-		mass          = starlightConstants::mel;
+		mass          = mel();
 		defaultMinW   = 2*mass; // default is 0.01; up to 0.15 is safe for Summer 2000 triggering for e+e- pairs
                 defaultMaxW     = sqrt(beam1LorentzGamma()*beam2LorentzGamma())*2*(starlightConstants::hbarc)/(1.2*pow(float(beam1A()),1./6.)*pow(float(beam2A()),1./6.)); // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
@@ -212,21 +291,21 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 13:  // mu+mu- pair
 		_particleType = MUON;
 		_decayType    = LEPTONPAIR;
-		defaultMinW   = 2 * muonMass;
+		defaultMinW   = 2 * muonMass();
                 defaultMaxW     = sqrt(beam1LorentzGamma()*beam2LorentzGamma())*2*(starlightConstants::hbarc)/(1.2*pow(float(beam1A()),1./6.)*pow(float(beam2A()),1./6.)); // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
 		break;
 	case 15:  // tau+tau- pair
 		_particleType = TAUON;
 		_decayType    = LEPTONPAIR;
-		defaultMinW   = 2 * tauMass;
+		defaultMinW   = 2 * tauMass();
                 defaultMaxW     = sqrt(beam1LorentzGamma()*beam2LorentzGamma())*2*(starlightConstants::hbarc)/(1.2*pow(float(beam1A()),1./6.)*pow(float(beam2A()),1./6.)); // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
 		break;
 	case 10015:  // tau+tau- pair
 		_particleType = TAUONDECAY;
 		_decayType    = LEPTONPAIR;
-		defaultMinW   = 2 * tauMass;
+		defaultMinW   = 2 * tauMass();
                 defaultMaxW   = sqrt(beam1LorentzGamma()*beam2LorentzGamma())*2*(starlightConstants::hbarc)/(1.2*pow(float(beam1A()),1./6.)*pow(float(beam2A()),1./6.)); // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
 		break;
@@ -234,13 +313,13 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 // 	case 24:  // W+W- pair
 // 		_particleType = W;
 // 		_decayType    = WW;
-// 		defaultMinW   = 2 * muonMass;
+// 		defaultMinW   = 2 * muonMass();
 // 		break;
 	case 115:  // a_2(1320)
 		_particleType = A2;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::a2Mass;
-		width         = starlightConstants::a2Width;
+		mass          = a2Mass();
+		width         = a2Width();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW   = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
@@ -248,8 +327,8 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 221:  // eta
 		_particleType = ETA;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::etaMass;
-		width         = starlightConstants::etaWidth;
+		mass          = etaMass();
+		width         = etaWidth();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW   = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
@@ -257,17 +336,17 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 225:  // f_2(1270)
 		_particleType = F2;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::f2Mass;
-		width         = starlightConstants::f2Width;
+		mass          = f2Mass();
+		width         = f2Width();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW         = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
-                _inputBranchingRatio = starlightConstants::f2BrPiPi;
+                _inputBranchingRatio = f2BrPiPi();
 		break;
 	case 331:  // eta'(958)
 		_particleType = ETAPRIME;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::etaPrimeMass;
-		width         = starlightConstants::etaPrimeWidth;
+		mass          = etaPrimeMass();
+		width         = etaPrimeWidth();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW         = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
@@ -275,17 +354,17 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 335:  // f_2'(1525)
 		_particleType = F2PRIME;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::f2PrimeMass;
-		width         = starlightConstants::f2PrimeWidth;
+		mass          = f2PrimeMass();
+		width         = f2PrimeWidth();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW         = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
-                _inputBranchingRatio = starlightConstants::f2PrimeBrKK;
+                _inputBranchingRatio = f2PrimeBrKK();
 		break;
 	case 441:  // eta_c(1s)
 		_particleType = ETAC;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::etaCMass;
-		width         = starlightConstants::etaCWidth;
+		mass          = etaCMass();
+		width         = etaCWidth();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW         = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
@@ -293,16 +372,16 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 9010221:  // f_0(980), was orginally called 10221? updated to standard number
 		_particleType = F0;
 		_decayType    = SINGLEMESON;
-		mass          = starlightConstants::f0Mass;
-		width         = starlightConstants::f0Width;
+		mass          = f0Mass();
+		width         = f0Width();
                 defaultMinW   = mass - 5*width; // JES 6.17.2015 to avoid problems with default of 0
                 defaultMaxW         = mass + 5*width; // JES 6.17.2015 to avoid problems with no default
-               _inputBranchingRatio = starlightConstants::f0BrPiPi;
+               _inputBranchingRatio = f0BrPiPi();
 		break;
 	case 33:  // Z"/Z0  This is the rho^0 rho^0 final state SRK
 		_particleType = ZOVERZ03;
 		_decayType    = SINGLEMESON;
-                defaultMinW   = 4*pionChargedMass;
+                defaultMinW   = 4*pionChargedMass();
                 defaultMaxW         = 1.6; // JES 6.17.2015 to avoid problems with no default
                 _inputBranchingRatio = 1.0;
 		break;
@@ -321,193 +400,193 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 	case 113:  // rho(770)
 		_particleType = RHO;
 		_decayType    = WIDEVMDEFAULT;
-		mass          = starlightConstants::rho0Mass;
-		width         = starlightConstants::rho0Width;
-		defaultMinW   = 2 * pionChargedMass;
+		mass          = rho0Mass();
+		width         = rho0Width();
+		defaultMinW   = 2 * pionChargedMass();
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::rho0BrPiPi;
+		_inputBranchingRatio = rho0BrPiPi();
 		break;
 	case 913:  // rho(770) with direct pi+pi- decay, interference given by ZEUS data
 		_particleType = RHOZEUS;
 		_decayType    = WIDEVMDEFAULT;
-		mass          = starlightConstants::rho0Mass;
-		width         = starlightConstants::rho0Width;
-		defaultMinW   = 2 * pionChargedMass;
+		mass          = rho0Mass();
+		width         = rho0Width();
+		defaultMinW   = 2 * pionChargedMass();
 		defaultMaxW         = mass + 5 * width;  // use the same 1.5GeV max mass as ZEUS
-		_inputBranchingRatio = starlightConstants::rho0BrPiPi;
+		_inputBranchingRatio = rho0BrPiPi();
 		break;
 	case 999:  // pi+pi-pi+pi- phase space decay
 		_particleType = FOURPRONG;
 		_decayType    = WIDEVMDEFAULT;
-		mass          = starlightConstants::rho0PrimeMass;
-		width         = starlightConstants::rho0PrimeWidth;
-		defaultMinW   = 4 * pionChargedMass;
+		mass          = rho0PrimeMass();
+		width         = rho0PrimeWidth();
+		defaultMinW   = 4 * pionChargedMass();
                 defaultMaxW     = sqrt(beam1LorentzGamma()*beam2LorentzGamma())*2*(starlightConstants::hbarc)/(1.2*pow(float(beam1A()),1./6.)*pow(float(beam2A()),1./6.)); // JES 6.17.2015 to avoid problems with no default
 		_inputBranchingRatio = 1.0;
 		break;
 	case 223:  // omega(782)
 		_particleType = OMEGA;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::OmegaMass;
-		width         = starlightConstants::OmegaWidth;
+		mass          = OmegaMass();
+		width         = OmegaWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::OmegaBrPiPi;
+		_inputBranchingRatio = OmegaBrPiPi();
 		break;
 	case 333:  // phi(1020)
 		_particleType = PHI;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::PhiMass;
-		width         = starlightConstants::PhiWidth;
-		defaultMinW   = 2 * kaonChargedMass;
+		mass          = PhiMass();
+		width         = PhiWidth();
+		defaultMinW   = 2 * kaonChargedMass();
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::PhiBrKK;
+		_inputBranchingRatio = PhiBrKK();
 		break;
 	case 443:  // J/psi
 		_particleType = JPSI;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::JpsiMass;
-		width         = starlightConstants::JpsiWidth;
+		mass          = JpsiMass();
+		width         = JpsiWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = (starlightConstants::JpsiBree + starlightConstants::JpsiBrmumu)/2.;
+		_inputBranchingRatio = (JpsiBree() + JpsiBrmumu())/2.;
 		break;
    	case 443011:  // J/psi
 		_particleType = JPSI_ee;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::JpsiMass;
-		width         = starlightConstants::JpsiWidth;
+		mass          = JpsiMass();
+		width         = JpsiWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::JpsiBree;
+		_inputBranchingRatio = JpsiBree();
 		break;
 	case 443013:  // J/psi
 	        cout<<"In inputParameters setting J/psi mass!"<<endl;
 		_particleType = JPSI_mumu;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::JpsiMass;
-		width         = starlightConstants::JpsiWidth;
+		mass          = JpsiMass();
+		width         = JpsiWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::JpsiBrmumu;
+		_inputBranchingRatio = JpsiBrmumu();
 		break;
 	case 4432212:  // J/psi
 	        cout<<"In inputParameters setting J/psi mass!"<<endl;
 		_particleType = JPSI_ppbar;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::JpsiMass;
-		width         = starlightConstants::JpsiWidth;
+		mass          = JpsiMass();
+		width         = JpsiWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::JpsiBrppbar;
+		_inputBranchingRatio = JpsiBrppbar();
 		break;
 	case 444:  // psi(2S)
 		_particleType = JPSI2S;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Psi2SMass;
-		width         = starlightConstants::Psi2SWidth;
+		mass          = Psi2SMass();
+		width         = Psi2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = (starlightConstants::Psi2SBree + starlightConstants::Psi2SBrmumu)/2.;
+		_inputBranchingRatio = (Psi2SBree() + Psi2SBrmumu())/2.;
 		break;
 	case 444011: // psi(2S)
 		_particleType = JPSI2S_ee;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Psi2SMass;
-		width         = starlightConstants::Psi2SWidth;
+		mass          = Psi2SMass();
+		width         = Psi2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Psi2SBree;
+		_inputBranchingRatio = Psi2SBree();
 		break;
 	case 444013:  // psi(2S)
 		_particleType = JPSI2S_mumu;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Psi2SMass;
-		width         = starlightConstants::Psi2SWidth;
+		mass          = Psi2SMass();
+		width         = Psi2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Psi2SBrmumu;
+		_inputBranchingRatio = Psi2SBrmumu();
 		break;
 	case 553:  // Upsilon(1S)
 		_particleType = UPSILON;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon1SMass;
-		width         = starlightConstants::Upsilon1SWidth;
+		mass          = Upsilon1SMass();
+		width         = Upsilon1SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = (starlightConstants::Upsilon1SBree + starlightConstants::Upsilon1SBrmumu)/2.;
+		_inputBranchingRatio = (Upsilon1SBree() + Upsilon1SBrmumu())/2.;
 		break;
 	case 553011:  // Upsilon
 		_particleType = UPSILON_ee;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon1SMass;
-		width         = starlightConstants::Upsilon1SWidth;
+		mass          = Upsilon1SMass();
+		width         = Upsilon1SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon1SBree;
+		_inputBranchingRatio = Upsilon1SBree();
 		break;
 	case 553013:  // Upsilon
 		_particleType = UPSILON_mumu;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon1SMass;
-		width         = starlightConstants::Upsilon1SWidth;
+		mass          = Upsilon1SMass();
+		width         = Upsilon1SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon1SBrmumu;
+		_inputBranchingRatio = Upsilon1SBrmumu();
 		break;
 	case 554:  // Upsilon(2S)
 		_particleType = UPSILON2S;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon2SMass;
-		width         = starlightConstants::Upsilon2SWidth;
+		mass          = Upsilon2SMass();
+		width         = Upsilon2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = (starlightConstants::Upsilon2SBree + starlightConstants::Upsilon2SBrmumu)/2.;
+		_inputBranchingRatio = (Upsilon2SBree() + Upsilon2SBrmumu())/2.;
 		break;
 	case 554011:  // Upsilon(2S)
 		_particleType = UPSILON2S_ee;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon2SMass;
-		width         = starlightConstants::Upsilon2SWidth;
+		mass          = Upsilon2SMass();
+		width         = Upsilon2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon2SBree;
+		_inputBranchingRatio = Upsilon2SBree();
 		break;
 	case 554013:  // Upsilon(2S)
 		_particleType = UPSILON2S_mumu;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon2SMass;
-		width         = starlightConstants::Upsilon2SWidth;
+		mass          = Upsilon2SMass();
+		width         = Upsilon2SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon2SBrmumu;
+		_inputBranchingRatio = Upsilon2SBrmumu();
 		break;
 	case 555:  // Upsilon(3S)
 		_particleType = UPSILON3S;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon3SMass;
-		width         = starlightConstants::Upsilon3SWidth;
+		mass          = Upsilon3SMass();
+		width         = Upsilon3SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = (starlightConstants::Upsilon3SBree + starlightConstants::Upsilon3SBrmumu)/2.;
+		_inputBranchingRatio = (Upsilon3SBree() + Upsilon3SBrmumu())/2.;
 		break;
 	case 555011:  // Upsilon(3S)
 		_particleType = UPSILON3S_ee;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon3SMass;
-		width         = starlightConstants::Upsilon3SWidth;
+		mass          = Upsilon3SMass();
+		width         = Upsilon3SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon3SBree;
+		_inputBranchingRatio = Upsilon3SBree();
 		break;
 	case 555013:  // Upsilon(3S)
 		_particleType = UPSILON3S_mumu;
 		_decayType    = NARROWVMDEFAULT;
-		mass          = starlightConstants::Upsilon3SMass;
-		width         = starlightConstants::Upsilon3SWidth;
+		mass          = Upsilon3SMass();
+		width         = Upsilon3SWidth();
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW   = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::Upsilon3SBrmumu;
+		_inputBranchingRatio = Upsilon3SBrmumu();
 		break;
 	default:
 		printWarn << "unknown particle ID " << _prodParticleId << endl;
@@ -569,6 +648,24 @@ inputParameters::print(ostream& out) const
 	 	  out  << "    coherent scattering off nucleus ........ yes" << endl;
 		}
 	}
+    out     <<"    Quantum Glauber parameter...............  "<<_quantumGlauber.value()<<endl;
+    out     <<"    Impulse VM parameter....................  "<<_impulseVM.value()<<endl;
+    //   if (_quantumGlauber.value()==1) {out << "    Quantum Glauber calculation being used"<< endl;}
+    //if (_quantumGlauber.value()!=1) {out << "    Classical Glauber calculation being used"<< endl;}
+    if (_beamBreakupMode.value()==8) {
+      out <<"    Minimum impact parameter.................."<<_bmin.value()<<" fm"<<endl;
+      out <<"    Maximum impact parameter.................."<<_bmax.value()<<" fm"<<endl;
+    }
+
+    // Add some checks here  SRK September, 2017
+    if (_beamBreakupMode.value()==8 && _bmin.value() > _bmax.value()) {
+      out <<"****Error bmin > bmax"<<endl;
+      exit(-1);
+    }
+    if (_beamBreakupMode.value() == 8 && _productionMode.value() !=1) {
+	out <<"****Error.  Cannot use beam breakup mode 8 (with bmin and bmax) with photonuclear interactions"<<endl;
+	exit(-1);
+    }
 	return out;
 }
 
@@ -603,7 +700,10 @@ inputParameters::write(ostream& out) const
 	    << "INTERFERENCE"  << interferenceEnabled  () <<endl
 	    << "IF_STRENGTH"   << interferenceStrength () <<endl
 	    << "INT_PT_MAX"    << maxPtInterference    () <<endl
-	    << "INT_PT_N_BINS" << nmbPtBinsInterference() <<endl;
+	    << "INT_PT_N_BINS" << nmbPtBinsInterference() <<endl
+	    << "QUANTUM_GLAUBER"<<quantumGlauber       () <<endl
+	    << "BMIN"          <<bmin                  ()<<endl
+	    << "BMAX"          <<bmax                  ()<<endl;
 
 	return out;
 }
