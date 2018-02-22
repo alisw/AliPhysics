@@ -8,7 +8,7 @@ void AddMCSignals(AliDielectron *diele);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData=("TPC;EMCal;EMCal2");//EMCal2 with loose cuts only for CFContainers!
+TString namesDieleData=("TPC;EMCal");//EMCal2 with loose cuts only for CFContainers!
 
 TObjArray *arrNamesDieleData=namesDieleData.Tokenize("; ");
 
