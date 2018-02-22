@@ -43,7 +43,7 @@ public:
   AliAnalysisTaskEmcalJetConstituentQA(const char *name);
   virtual ~AliAnalysisTaskEmcalJetConstituentQA();
 
-  static AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger);
+  static AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger, bool parmode = kFALSE);
 
   void SetTriggerSelection(const char *trigger) { fTriggerSelectionString = trigger; } 
   void SetNameTrackContainer(const char *name) { fNameTrackContainer = name; }
