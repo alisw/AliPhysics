@@ -12,13 +12,16 @@
 #endif
 
 
-enum ESys  { kAPL, kPAL, kKKpi, nSys };
+enum ESys  { kAPL, kPAL, kApXz, kPrAxz, kKKpi, nSys };
 
-const char *sysNames[nSys]      = { "APL", "PAL", "KKpi"};
-const bool runSys[nSys]         = {   1  ,   1  ,   1  };
-const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.0 }; // everything in GeV here
-const double distMax[nSys]      = {  2.5 ,  2.5 ,  2.0 };
-const double distBinWidth[nSys] = { 0.001, 0.001, 0.001};
+const char *sysNames[nSys]      = { "APL", "PAL", "ApXz", "PrAxz", "KKpi"};
+const bool runSys[nSys]         = {   1  ,   1  ,   1   ,    1   ,    0  };
+const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.5  ,   1.5  ,   1.0 }; // everything in GeV here
+const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,   2.0 };
+const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 , 0.001 };
+
+const double dalitzCutMass[nSys]= { 2.148, 2.148, 2.330 ,  2.330 ,   0   };
+const double dalitzCutGamma[nSys]={ 0.134, 0.134, 0.100 ,  0.100 ,   0   };
 
 bool separationCuts;
 bool ppCollisions;
@@ -370,7 +373,7 @@ AliFemtoTrioCut* GetTrioCutAllDecays(ESys system, double cutWidth)
 AliFemtoTrioCut* GetTrioCutDalitz(ESys system, bool twoBody, double widthFraction)
 {
   AliFemtoTrioCut *trioCut = new AliFemtoTrioCut();
-    trioCut->SetIncludeTrioOnly(2.130,widthFraction*0.125);
+    trioCut->SetIncludeTrioOnly(dalitzCutMass[system],widthFraction*dalitzCutGamma[system]);
   
   if(twoBody){
     // ππ cuts
@@ -419,6 +422,16 @@ void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliF
   if(system == kPAL){
     firstParticle  = AliFemtoTrio::kKaonPlus;
     secondParticle = AliFemtoTrio::kPionPlus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
+  }
+  if(system == kApXz){
+    firstParticle  = AliFemtoTrio::kKaonMinus;
+    secondParticle = AliFemtoTrio::kKaonMinus;
+    thirdParticle  = AliFemtoTrio::kPionPlus;
+  }
+  if(system == kPrAxz){
+    firstParticle  = AliFemtoTrio::kKaonPlus;
+    secondParticle = AliFemtoTrio::kKaonPlus;
     thirdParticle  = AliFemtoTrio::kPionMinus;
   }
   if(system == kKKpi){
