@@ -37,11 +37,12 @@ ClassImp(AliDecayerExodus)
 // and generate electron-pair mass distributions for resonances according
 // to the Gounaris-Sakurai parametrization: G.J. Gounaris, J.J. Sakurai: Phys.Rev.Lett. 21(1968)244 
 //
-// For the electromagnetic form factor the parameterization from
-// Lepton-G is used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301
+// For the electromagnetic form factor the parameterizations from
+// Lepton-G and NA60 are used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301, R. Arnaldi et al., Physics Letters B 757 (2016) 437–444
 //
 // Ralf Averbeck (R.Averbeck@gsi.de) 
 // Irem Erdemir  (irem.erdemir@cern.ch)
+// Oton Vazquez Doce  (oton.vd@cern.ch)
 //
 //---------------------------------------------------------------------------------------------------
 
@@ -249,18 +250,20 @@ void AliDecayerExodus::Init()
                                            * (1.0 + 2.0 * epsilon_phi_toPi0 / q_phi_toPi0);
 
 
-    // Form factors from Lepton-G  
+    // Form factors from Lepton-G  (etaprime is a private B-W fit to Lepton-G data)
     formFactor_pion     = 1.0/(1.0-5.5*mLL_pion*mLL_pion);
-    formFactor_eta      = 1.0/(1.0-1.9*mLL_eta*mLL_eta);
-    formFactor_omega    = (TMath::Power(TMath::Power(0.6519,2),2))
-                          /(TMath::Power(TMath::Power(0.6519,2)-TMath::Power(mLL_omega, 2), 2)
-                          + TMath::Power(0.04198, 2)*TMath::Power(0.6519, 2));
     formFactor_etaprime = (TMath::Power(TMath::Power(0.764,2),2))
                           /(TMath::Power(TMath::Power(0.764,2)-TMath::Power(mLL_etaprime, 2), 2)
                           + TMath::Power(0.1020, 2)*TMath::Power(0.764, 2));
     formFactor_etaprime_toOmega = (TMath::Power(TMath::Power(0.764,2),2))
                           /(TMath::Power(TMath::Power(0.764,2)-TMath::Power(mLL_etaprime_toOmega, 2), 2)
                           + TMath::Power(0.1020, 2)*TMath::Power(0.764, 2));
+    // Form factors from  NA60 (omega is a private B-W fit to NA60 data)
+    formFactor_eta      = 1.0/(1.0-1.934*mLL_eta*mLL_eta);
+    formFactor_omega    = (TMath::Power(TMath::Power(0.67070,2),2))
+                          /(TMath::Power(TMath::Power(0.67070,2)-TMath::Power(mLL_omega, 2), 2)
+                          + TMath::Power(0.0534321, 2)*TMath::Power(0.67070, 2));
+    // No form factor for phi:
     formFactor_phi      = 1.0; 
     formFactor_phi_toPi0      = 1.0; 
 
