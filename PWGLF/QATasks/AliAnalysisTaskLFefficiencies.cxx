@@ -158,11 +158,11 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     const double phi = fUseMCtruthParams ? part->Phi() : track->Phi();
     v.SetPtEtaPhiM(pt, eta, phi, AliPID::ParticleMass(iSpecies));
 
-    bool hasFB8 = track->TestFilterBit(BIT(5));
+    bool hasFB5 = track->TestFilterBit(BIT(5));
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
-    bool cuts[fNcuts] = {true, hasFB8, hasFB8 && TPCpid, hasFB8 && hasTOF, hasFB8 && TOFpid};
+    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && TOFpid};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {
