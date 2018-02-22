@@ -1584,10 +1584,14 @@ AliAODMCParticle* AliAnalysisTaskDmesonJets::AnalysisEngine::FindParticleOrigin(
         // If the last particle in the fragmentation tree (first when going reverse) was requested then stop the loop
         if (mode == kFindLast) break;
       }
+      if (mother == mcGranma->GetMother()) { // avoid infinite loop!
+        AliWarningClassStream() << "Particle " << mother << " (PDG=" << mcGranma->PdgCode() << ") is the mother of itself!?" << std::endl;
+        break;
+      }
       mother = mcGranma->GetMother();
     }
     else {
-      ::Error("AliAnalysisTaskDmesonJets::AnalysisParams::FindParticleOrigin", "Could not retrieve mother particle %d!", mother);
+      AliErrorClassStream() << "Could not retrieve mother particle " << mother << "!" << std::endl;
       break;
     }
   }
