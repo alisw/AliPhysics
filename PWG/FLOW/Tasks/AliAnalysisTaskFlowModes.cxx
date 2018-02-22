@@ -110,6 +110,8 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fFlowWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
+  fPositivelyChargedPOI(kFALSE),
+  fNegativelyChargedPOI(kFALSE),
 
 
 
@@ -276,6 +278,8 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fFlowWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
+  fPositivelyChargedPOI(kFALSE),
+  fNegativelyChargedPOI(kFALSE),
 
   // events selection
   fPVtxCutZ(0.),
@@ -1057,6 +1061,8 @@ void AliAnalysisTaskFlowModes::ListParameters()
   printf("      fFlowUseWeights: (Bool_t) %s\n",    fFlowUseWeights ? "kTRUE" : "kFALSE");
   printf("      fPositivelyChargedRef: (Bool_t) %s\n", fPositivelyChargedRef ? "kTRUE" : "kFALSE");
   printf("      fNegativelyChargedRef: (Bool_t) %s\n", fNegativelyChargedRef ? "kTRUE" : "kFALSE");
+  printf("      fPositivelyChargedPOI: (Bool_t) %s\n", fPositivelyChargedPOI ? "kTRUE" : "kFALSE");
+  printf("      fNegativelyChargedPOI: (Bool_t) %s\n", fNegativelyChargedPOI ? "kTRUE" : "kFALSE");
   printf("      fFlowWeightsPath: (TString) '%s' \n",    fFlowWeightsPath.Data());
   printf("   -------- Events ----------------------------------------------\n");
   printf("      fTrigger: (Short_t) %d\n",    fTrigger);
@@ -1574,6 +1580,9 @@ void AliAnalysisTaskFlowModes::FilterCharged()
         weight = fh2WeightCharged->GetBinContent( fh2WeightCharged->FindBin(track->Eta(),track->Phi()) );
         fh3AfterWeightsCharged->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
       }
+      if(fNegativelyChargedRef==kTRUE && track->Charge()>0) continue;
+      if(fPositivelyChargedRef==kTRUE && track->Charge()<0) continue;
+        
       if(fFillQA) FillQACharged(1,track); // QA after selection
       //printf("pt %g | phi %g | eta %g\n",track->Pt(),track->Phi(),track->Eta());
 
@@ -1741,6 +1750,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
 
     if(fFillQA) FillPIDQA(0,track,kUnknown);   // filling QA for tracks before selection (but after charged criteria applied)
 
+    if(fNegativelyChargedPOI==kTRUE && track->Charge()>0) continue;
+    if(fPositivelyChargedPOI==kTRUE && track->Charge()<0) continue;
+      
     // PID track selection (return most favourable species)
     PartSpecies species = IsPIDSelected(track);
     // check if only protons should be used
@@ -2550,10 +2562,6 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       ::Warning("FillRefsVectors","Unexpected part. species (%d) in selected sample (expected %d)",part->species,kCharged);
       continue;
     }
-
-    if(fNegativelyChargedRef==kTRUE && part->charge>0) continue;
-    if(fPositivelyChargedRef==kTRUE && part->charge<0) continue;
-
     
     // RFPs pT check
     if(fCutFlowRFPsPtMin > 0. && part->pt < fCutFlowRFPsPtMin)
@@ -2675,6 +2683,7 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
 
   for (auto part = vector->begin(); part != vector->end(); part++)
   {
+      
     // checking species of used particles (just for double checking purpose)
     if( part->species != species)
     {
