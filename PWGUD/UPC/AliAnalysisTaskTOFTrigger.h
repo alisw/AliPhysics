@@ -25,24 +25,27 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs)
   			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;}
   void GetLTMIndex(const Int_t * const detind, Int_t *indexLTM);
-  
+
  private:
-  
+
   TList *fOutputList;		//<
-  
-  AliPIDResponse *fPIDResponse;		
-  AliESDtrackCuts *fTrackCuts; 
+
+  AliPIDResponse *fPIDResponse;
+  AliESDtrackCuts *fTrackCuts;
   AliTOFTriggerMask *fTOFmask;
   TEfficiency *eff_MaxiPadLTM_All;	//!
   TEfficiency *eff_MaxiPadLTM_Mu;	//!
   TEfficiency *eff_MaxiPadLTM_El;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_All;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_Mu;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_El;	//!
   TH2F *hTrackDistributionLTM;		//!
   TH2F *hTrackDistribution_Mu;		//!
   TH2F *hTrackDistribution_El;		//!
   TH2F *hTrackDistribution;		//!
   TH2F *hFiredMaxiPad;			//!
   TH2F *hNotFiredMaxiPad;		//!
-  TH2F *hTrackPadCorrPhi;		//!  
+  TH2F *hTrackPadCorrPhi;		//!
   TH2F *hTrackPadCorrEta;		//!
   TH2F *hNoiseMaxiPad;			//!
   TH1I *hTriggerCounter;		//!
@@ -57,20 +60,20 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH1I *hDetIn4;			//!
   TH1F *hPadDistance;			//!
   TH1F *hTrackPt;			//!
-  TH1I *hNMaxiPadIn;			//! 
- 
+  TH1I *hNMaxiPadIn;			//!
+
   Bool_t fGeomLoaded;
   Float_t fMaxPt;
   Float_t fMinPt;
   Int_t fMaxMulti;
   TString fTriggerClass;
   Int_t fMaxBCs;
-   
-  
+
+
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
-  
-  ClassDef(AliAnalysisTaskTOFTrigger, 4); 
+
+  ClassDef(AliAnalysisTaskTOFTrigger, 5);
 };
 
 #endif
