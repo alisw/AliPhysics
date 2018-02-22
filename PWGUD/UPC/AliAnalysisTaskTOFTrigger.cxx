@@ -22,6 +22,7 @@
 #include "TFile.h"
 #include "TColor.h"
 #include "TEfficiency.h"
+#include "TMatrixT.h"
 
 // aliroot headers
 #include "AliAnalysisManager.h"
@@ -57,6 +58,9 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	eff_MaxiPadLTM_All(0),
 	eff_MaxiPadLTM_Mu(0),
 	eff_MaxiPadLTM_El(0),
+	eff_MaxiPadLTM_1Trk_All(0),
+	eff_MaxiPadLTM_1Trk_Mu(0),
+	eff_MaxiPadLTM_1Trk_El(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -101,6 +105,9 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	eff_MaxiPadLTM_All(0),
 	eff_MaxiPadLTM_Mu(0),
 	eff_MaxiPadLTM_El(0),
+	eff_MaxiPadLTM_1Trk_All(0),
+	eff_MaxiPadLTM_1Trk_Mu(0),
+	eff_MaxiPadLTM_1Trk_El(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -169,6 +176,13 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(eff_MaxiPadLTM_Mu);
   eff_MaxiPadLTM_El = new TEfficiency("eff_MaxiPadLTM_El"," ",72,0,72,23,0,23);
   fOutputList->Add(eff_MaxiPadLTM_El);
+
+  eff_MaxiPadLTM_1Trk_All = new TEfficiency("eff_MaxiPadLTM_1Trk_All"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_1Trk_All);
+  eff_MaxiPadLTM_1Trk_Mu = new TEfficiency("eff_MaxiPadLTM_1Trk_Mu"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_1Trk_Mu);
+  eff_MaxiPadLTM_1Trk_El = new TEfficiency("eff_MaxiPadLTM_1Trk_El"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_1Trk_El);
 
   hTrackDistributionLTM = new TH2F("hTrackDistributionLTM","hTrackDistributionLTM",72,0,72,23,0,23);
   fOutputList->Add(hTrackDistributionLTM);
@@ -290,6 +304,13 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   hNTracklets->Fill(fNtracklets);
   if(fNtracklets>fMaxMulti) return;
 
+  TMatrixT<Int_t> numTracksPerMaxiPad(72, 23);
+  TMatrixT<Int_t> numMuonTracksPerMaxiPad(72, 23);
+  TMatrixT<Int_t> numElectronTracksPerMaxiPad(72, 23);
+  numTracksPerMaxiPad = 0;
+  numMuonTracksPerMaxiPad = 0;
+  numElectronTracksPerMaxiPad = 0;
+
   //Track loop
   for(Int_t iTrack=0; iTrack<esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iTrack));
@@ -394,17 +415,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackPadCorrEta->Fill(trc->Eta(),channelCTTM);
 		    }
 
-		eff_MaxiPadLTM_All->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+                numTracksPerMaxiPad(indexLTM[0],channelCTTM) += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);
 		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
 		if(TMath::Abs(fPIDTPCMuon) < TMath::Abs(fPIDTPCElectron)){
 		    hTrackDistribution_Mu->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
-		    eff_MaxiPadLTM_Mu->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+                    numMuonTracksPerMaxiPad(indexLTM[0],channelCTTM) += 1;
 		    }
 		if(TMath::Abs(fPIDTPCMuon) > TMath::Abs(fPIDTPCElectron)){
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
-		    eff_MaxiPadLTM_El->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+                    numElectronTracksPerMaxiPad(indexLTM[0],channelCTTM) += 1;
 		    }
 		if(trigger.Contains("CCUP8-B")){
 			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
@@ -412,7 +433,32 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
      	}
 	hNMaxiPadIn->Fill(nFiredPads);
+  }
+
+  // filling TEfficiency object
+  for (Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
+    for (Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
+
+      if (numTracksPerMaxiPad(indexLTM, channelCTTM))
+        eff_MaxiPadLTM_All->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+
+      if (numMuonTracksPerMaxiPad(indexLTM, channelCTTM))
+        eff_MaxiPadLTM_Mu->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+
+      if (numElectronTracksPerMaxiPad(indexLTM, channelCTTM))
+        eff_MaxiPadLTM_El->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+
+      if (numTracksPerMaxiPad(indexLTM, channelCTTM) == 1) {
+        eff_MaxiPadLTM_1Trk_All->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+
+        if (numMuonTracksPerMaxiPad(indexLTM, channelCTTM))
+          eff_MaxiPadLTM_1Trk_Mu->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+
+        if (numElectronTracksPerMaxiPad(indexLTM, channelCTTM))
+          eff_MaxiPadLTM_1Trk_El->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+      }
     }
+  }
 
   PostData(1, fOutputList);
 

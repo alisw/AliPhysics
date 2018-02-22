@@ -36,6 +36,9 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TEfficiency *eff_MaxiPadLTM_All;	//!
   TEfficiency *eff_MaxiPadLTM_Mu;	//!
   TEfficiency *eff_MaxiPadLTM_El;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_All;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_Mu;	//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_El;	//!
   TH2F *hTrackDistributionLTM;		//!
   TH2F *hTrackDistribution_Mu;		//!
   TH2F *hTrackDistribution_El;		//!
@@ -70,7 +73,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 4);
+  ClassDef(AliAnalysisTaskTOFTrigger, 5);
 };
 
 #endif
