@@ -100,7 +100,8 @@ void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor
 
     // Don't scale profiles and histograms used for scaling
     TString histogram_class (listObject->ClassName());
-    if (!strcmp(listObject->GetName(), "fHistXsection") || !strcmp(listObject->GetName(), "fHistTrials"))
+    TString histogram_name (listObject->GetName());
+    if (histogram_name.Contains("fHistXsection") || histogram_name.Contains("fHistTrials") || histogram_name.Contains("fHistEvents"))
     {
       AliInfo(Form("Histogram %s will not be scaled, because a scaling histogram", listObject->GetName()));
       continue;
