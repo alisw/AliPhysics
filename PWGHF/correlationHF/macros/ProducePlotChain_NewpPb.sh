@@ -89,7 +89,7 @@ declare averageOpt=0  #0 = weighted, 1=arithmetic (BE AWARE THAT SETTINGS FOR FI
 declare -a includev2=( 0 0 1 ) 
 ##### Subtraction of b-origin modulation (MC closure) - Set 0 in pp2010, pPb2013; set 1 in pPb2016. IF 1, REMEMBER TO SET THE UNCERTAINTY UPWARDS!
 declare subtrMCclos=1  #0: don't do anything for MC closure structures (use old approach), #1 apply correction for MC closure b->D structures
-declare purityOpt=10 #0: simple rescale (flat), 10: multiply by prim/inclusive histogram, 20: multiply by template fit on prim/inclusive histogram, 30: multiply by moving mean of prim/inclusive histogram
+declare purityOpt=0 #0: simple rescale (flat), 10: multiply by prim/inclusive histogram, 20: multiply by template fit on prim/inclusive histogram, 30: multiply by moving mean of prim/inclusive histogram
 
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
