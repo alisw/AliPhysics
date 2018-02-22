@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 293                         $: revision of last commit
-// $Author:: butter                   $: author of last commit
-// $Date:: 2017-11-11 15:46:05 +0100 #$: date of last commit
+// $Rev:: 298                         $: revision of last commit
+// $Author:: srklein                  $: author of last commit
+// $Date:: 2018-02-22 00:23:57 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -278,8 +278,10 @@ beamBeamSystem::probabilityOfHadronBreakup(const double impactparameter)
 	//use parameter from Constants
 	R1 = ( _beam1.nuclearRadius());  
         R2 = ( _beam2.nuclearRadius());
-	A1 = 0.535; //This is woodsaxonskindepth
-        A2 = 0.535; 
+	A1 = (_beam1.woodSaxonSkinDepth()); // take values from nucleus.cpp, since this parameter may now change  // SRK Feb. 2018
+        A2 = (_beam2.woodSaxonSkinDepth()); 
+	//A1 = 0.535; //This is woodsaxonskindepth
+        //A2 = 0.535; 
 	//write(6,12)r1,a1,signn  Here is where we could probably set this up asymmetrically R2=_beam2.nuclearRadius() and RHO2=ap2=_beam2.A()
 	// R2 = R1;
 	RHO1 = a1;
