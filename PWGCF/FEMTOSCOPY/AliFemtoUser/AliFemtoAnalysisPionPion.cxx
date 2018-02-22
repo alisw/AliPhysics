@@ -71,12 +71,12 @@ MultBinning = {30, 0.0f, 10000.0f};
 const bool default_verbose = kFALSE
          , default_enable_pair_monitors = kTRUE
          , default_group_output_objects = kTRUE
-         , default_output_settings = kTRUE
+         , default_output_settings = kFALSE
          , default_is_mc_analysis = kFALSE
          ;
 
 const UInt_t default_num_events_to_mix = 6
-           , default_min_coll_size = 100
+           , default_min_coll_size = 15
            ;
 
 #include <initializer_list>
