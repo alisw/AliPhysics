@@ -92,6 +92,8 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedNoTOFrejection = reject; }
     void                    SetPositivelyChargedRef(Bool_t Pos=kFALSE){fPositivelyChargedRef = Pos;}
     void                    SetNegativelyChargedRef(Bool_t Neg=kFALSE){fNegativelyChargedRef = Neg;}
+    void                    SetPositivelyChargedPOI(Bool_t Pos=kFALSE){fPositivelyChargedPOI = Pos;}
+    void                    SetNegativelyChargedPOI(Bool_t Neg=kFALSE){fNegativelyChargedPOI = Neg;}
     void                    SetBayesianProbability(Double_t prob=0.9){fParticleProbability = prob;}
     void                    SetPriors(Float_t centr = 0); // set Noferini's favourite priors for Bayesian PID (requested if Bayesian PID is used)
     AliESDpid&              GetESDpid() {return fESDpid;}
@@ -144,6 +146,9 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TString                 fFlowWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
     Bool_t                  fPositivelyChargedRef; //for same charged reference particle studies
     Bool_t                  fNegativelyChargedRef; //for same charged reference particle studies
+    Bool_t                  fPositivelyChargedPOI; //for like sign reference particles and POIs studies
+    Bool_t                  fNegativelyChargedPOI; //for unlike sign reference particle and POIs studies
+    
     
     //cuts & selection: events
     Float_t                    fPVtxCutZ; // (cm) PV z cut
