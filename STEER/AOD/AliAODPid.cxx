@@ -15,14 +15,17 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD Pid class to store additional pid information
+//     Author: Annalisa Mastroserio
+//-------------------------------------------------------------------------
+
 #include "AliAODPid.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliTPCdEdxInfo.h"
 
-
 ClassImp(AliAODPid)
-
 
 
 //______________________________________________________________________________
@@ -76,8 +79,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTOFesdsignal(pid.fTOFesdsignal),
   fTPCdEdxInfo(0x0)
 {
-  /// Copy constructor
-
+  // Copy constructor
   SetTRDslices(fTRDnSlices, pid.fTRDslices);
     for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
 
@@ -96,8 +98,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
 //______________________________________________________________________________
 AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
 {
-  /// Assignment operator
-
+  // Assignment operator
   if(this!=&pid) {
     // copy stuff
     TObject::operator=(pid);
@@ -141,8 +142,8 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
 //_______________________________________________________________________________
 void AliAODPid::GetIntegratedTimes(Double_t *timeint, Int_t nspec) const
 {
-  /// Returns the array with integrated times for each particle hypothesis
-
+  // Returns the array with integrated times for each particle hypothesis
+  //
   for(Int_t i=0; i<AliPID::kSPECIES; i++) timeint[i]=fIntTime[i];
   //Note: at the moment only kSPECIES entries are available
   if (nspec>AliPID::kSPECIES) for (int i=AliPID::kSPECIES;i<AliPID::kSPECIESC;i++) timeint[i]=0;
@@ -151,8 +152,7 @@ void AliAODPid::GetIntegratedTimes(Double_t *timeint, Int_t nspec) const
 //_______________________________________________________________________________
 void AliAODPid::SetIntegratedTimes(Double_t timeint[AliPID::kSPECIES])
 {
- /// Returns the array with integrated times for each particle hypothesis
-
+ // Returns the array with integrated times for each particle hypothesis
  for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]=timeint[i];
 }
 //______________________________________________________________________________
@@ -170,22 +170,25 @@ void AliAODPid::GetTOFpidResolution(Double_t tofRes[5]) const
 //______________________________________________________________________________
 void AliAODPid::SetITSdEdxSamples(const Double_t s[4])
 {
-  /// Set the 4 values of dE/dx from individual ITS layers that are read from ESD
-
+  //
+  // Set the 4 values of dE/dx from individual ITS layers that are read from ESD
+  //  
   for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=s[i];
 }
 //______________________________________________________________________________
 void AliAODPid::GetITSdEdxSamples(Double_t s[4]) const
 {
-  /// Get the 4 values of dE/dx from individual ITS layers that are read from ESD
-
+  //
+  // Get the 4 values of dE/dx from individual ITS layers that are read from ESD
+  //  
   for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
 }
 //______________________________________________________________________________
 void AliAODPid::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo)
 {
-  /// Set TPC dEdx info
-
+  //
+  // Set TPC dEdx info
+  //
   if (dEdxInfo==0x0){
     delete fTPCdEdxInfo;
     fTPCdEdxInfo=0x0;

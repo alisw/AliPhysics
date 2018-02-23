@@ -13,12 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-------------------------------------------------------------------------
+//     Analysis Oriented Data (AOD) V0 vertex class
+//     Authors: B.Hippolyte, IReS, hippolyt@in2p3.fr 
+//              G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
+//-------------------------------------------------------------------------
+
 #include "AliAODv0.h"
 #include "AliAODTrack.h"
 
-
 ClassImp(AliAODv0)
-
 
   AliAODv0::AliAODv0() : 
     AliAODRecoDecay(),
@@ -33,8 +37,9 @@ AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t 
   fDcaV0ToPrimVertex(rDcaV0ToPrimVertex),
   fOnFlyStatus(kFALSE)
 {
-  /// Constructor via setting each data member
-
+  //--------------------------------------------------------------------
+  // Constructor via setting each data member
+  //--------------------------------------------------------------------
   fCharge  = 0;
   fNProngs = 2;
   fNDCA    = 1;
@@ -63,13 +68,15 @@ AliAODv0::AliAODv0(const AliAODv0& rAliAODv0) :
   fDcaV0ToPrimVertex(rAliAODv0.fDcaV0ToPrimVertex),
   fOnFlyStatus(rAliAODv0.fOnFlyStatus)
  {
-  /// Copy constructor
-
+  //--------------------------------------------------------------------
+  // Copy constructor
+  //--------------------------------------------------------------------
 }
 
 AliAODv0& AliAODv0::operator=(const AliAODv0& rAliAODv0){
-  /// Assignment overload
-
+  //--------------------------------------------------------------------
+  // Assignment overload
+  //--------------------------------------------------------------------
   if(this!=&rAliAODv0) {
     AliAODRecoDecay::operator=(rAliAODv0);
     fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
@@ -79,14 +86,16 @@ AliAODv0& AliAODv0::operator=(const AliAODv0& rAliAODv0){
 }
 
 AliAODv0::~AliAODv0(){
-  /// Empty destructor
-
+  //--------------------------------------------------------------------
+  // Empty destructor
+  //--------------------------------------------------------------------
 }
 
 void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
 		    const Double_t *rMomPos, const Double_t *rMomNeg, const Double_t *rDcaDaughterToPrimVertex){
-  /// Filling with all needed info
-
+  //--------------------------------------------------------------------
+  // Filling with all needed info
+  //--------------------------------------------------------------------
   this->SetSecondaryVtx(rAODVertex);
 
   fDCA[0] = rDcaV0Daughters;
@@ -105,8 +114,9 @@ void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t
 }
 
 void AliAODv0::ResetV0(){
-  /// Resetting all the info
-
+  //--------------------------------------------------------------------
+  // Resetting all the info
+  //--------------------------------------------------------------------
   GetSecondaryVtx()->SetChi2perNDF(999);
   GetSecondaryVtx()->RemoveCovMatrix();
   GetSecondaryVtx()->RemoveDaughters();
@@ -143,8 +153,9 @@ Short_t AliAODv0::GetNegID() const {
 }
 
 void AliAODv0::Print(Option_t* /*option*/) const {
-  /// Print some information
-
+  //
+  // Print some information
+  //
   AliAODRecoDecay::Print();
   printf("AliAODv0: invariant mass (k0s %.6f, lambda %.6f, anti-lambda %.6f) \n",MassK0Short(),MassLambda(),MassAntiLambda());
   printf("AliAODv0: dca (v0d %.6f, v0tpv %.6f, postpv %.6f, negtpv %.6f ) \n",DcaV0Daughters(),DcaV0ToPrimVertex(),DcaPosToPrimVertex(),DcaNegToPrimVertex());

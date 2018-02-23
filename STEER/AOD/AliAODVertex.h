@@ -5,12 +5,11 @@
 
 /* $Id$ */
 
-/// \class AliAODVertex
-/// \brief AOD vertex base class
-///
-/// Inheritance from AliVVertex: A. Dainese
-///
-/// \author Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+//     AOD vertex base class
+//     Author: Markus Oldenburg, CERN
+//     Inheritance from AliVVertex: A. Dainese
+//-------------------------------------------------------------------------
 
 #include <TRef.h>
 #include <TRefArray.h>
@@ -146,23 +145,20 @@ private:
 	  
  private:
 
-  Double32_t      fPosition[3];   ///< vertex position
-  Double32_t      fChi2perNDF;    ///< chi2/NDF of vertex fit
-  Short_t         fID;            ///< vertex ID; corresponds to the array index of the appropriate ESD container
-  Char_t          fBCID;          ///< BC ID assigned to vertex
-  Char_t          fType;          ///< vertex type
-  Int_t           fNprong;        ///< number of prongs
-  Int_t           fIprong;        //!<! index  of prong
-  Int_t           fNContributors; ///< Number of contributors for SPD vertex
-  AliAODRedCov<3> *fCovMatrix;    ///< vertex covariance matrix; values of and below the diagonal
-  TRef            fParent;        ///< reference to the parent particle
-  TRefArray       fDaughters;     ///< references to the daughter particles
-  /// alternative daughters for n-prong vertex
-  TRef            *fProngs;       //[fNprong]
+  Double32_t      fPosition[3];   // vertex position
+  Double32_t      fChi2perNDF;    // chi2/NDF of vertex fit
+  Short_t         fID;            // vertex ID; corresponds to the array index of the appropriate ESD container
+  Char_t          fBCID;          // BC ID assigned to vertex
+  Char_t          fType;          // vertex type
+  Int_t           fNprong;        // number of prongs
+  Int_t           fIprong;        //!index  of prong
+  Int_t           fNContributors; // Number of contributors for SPD vertex
+  AliAODRedCov<3> *fCovMatrix;    // vertex covariance matrix; values of and below the diagonal
+  TRef            fParent;        // reference to the parent particle
+  TRefArray       fDaughters;     // references to the daughter particles
+  TRef            *fProngs;       //[fNprong] alternative daughters for n-prong vertex
   
-
   ClassDef(AliAODVertex, 8);
-
 };
 
 inline  Int_t AliAODVertex::GetNDaughters() const

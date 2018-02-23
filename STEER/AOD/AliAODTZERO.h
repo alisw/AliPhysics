@@ -1,11 +1,11 @@
 #ifndef ALIAODTZERO_H
 #define ALIAODTZERO_H
 
-/// \class AliAODTZERO
-/// \brief Container class for AOD TZERO data
-///
-/// \author Filip Krizek, <filip.krizek@cern.ch>
-/// \date 23/02/2012
+//-------------------------------------------------------------------------
+//     Container class for AOD TZERO data
+//     Author: Filip Krizek
+//     filip.krizek@cern.ch 23/02/2012
+//-------------------------------------------------------------------------
 
 #include <TObject.h>
 #include <TBits.h>
@@ -53,19 +53,17 @@ public:
      
   
 protected:
-  Double32_t   fT0TOF[3];    ///< interaction time in ps with 1st time( A&C, A, C)
-  Bool_t       fPileup;      ///< pile-up flag
-  Bool_t       fSattelite;   ///< sattelite flag
-  Bool_t       fBackground;  ///< sattelite flag
-  Double32_t   fT0TOFbest[3];///< interaction time in ps ( A&C, A, C) with best time
-  Float_t      fT0VertexRaw; ///< raw T0 vertex without any cuts
-  Double32_t   fT0zVertex;    ///< reconstructed T0 vertex
-  Float_t fT0Amp[26];          ///< amplitude on PMTs and MPD
-  TBits fPileupBits;     ///< BC number
-
+  Double32_t   fT0TOF[3];    // interaction time in ps with 1st time( A&C, A, C)
+  Bool_t       fPileup;      // pile-up flag
+  Bool_t       fSattelite;   // sattelite flag
+  Bool_t       fBackground;  // sattelite flag
+  Double32_t   fT0TOFbest[3];// interaction time in ps ( A&C, A, C) with best time
+  Float_t      fT0VertexRaw; // raw T0 vertex without any cuts 
+  Double32_t   fT0zVertex;    // reconstructed T0 vertex
+  Float_t fT0Amp[26];          //amplitude on PMTs and MPD
+  TBits fPileupBits;     //BC number
 
   ClassDef(AliAODTZERO,5)
-
 };
 
 #endif

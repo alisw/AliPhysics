@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODFmdCluster
-/// \brief AOD FMD cluster class
-///
-/// \author Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+//     AOD FMD cluster class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
 
 #include <TRef.h>
 
@@ -53,12 +53,10 @@ class AliAODFmdCluster : public AliAODCluster {
 
  private :
 
-  TRef fProdVertex;     ///< vertex of origin
-  TRef fPrimTrack;      ///< primary track associated with this cluster
-
+  TRef fProdVertex;     // vertex of origin
+  TRef fPrimTrack;      // primary track associated with this cluster
 
   ClassDef(AliAODFmdCluster,1);
-
 };
 
 #endif

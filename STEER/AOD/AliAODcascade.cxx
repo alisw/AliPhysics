@@ -13,6 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-------------------------------------------------------------------------
+//     Implementation of the Analysis Oriented Data (AOD) Xi vertex class
+//     Origin: A.Maire, IReS, antonin.maire@ires.in2p3.fr 
+//             G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
+//
+//     Purpose: Having physics observables available for Xis
+//-------------------------------------------------------------------------
+
 #include <TVector3.h>
 #include <TMath.h>
 #include <TDatabasePDG.h>
@@ -20,9 +28,7 @@
 #include "AliAODcascade.h"
 #include "AliAODTrack.h"
 
-
 ClassImp(AliAODcascade)
-
 
 
 AliAODcascade::AliAODcascade() : 
@@ -63,8 +69,10 @@ AliAODcascade::AliAODcascade(const AliAODcascade& rSource) :
   fMomBachZ( rSource.fMomBachZ )
   
 {
-  /// Copy constructor
-
+  //--------------------------------------------------------------------
+  // Copy constructor
+  //--------------------------------------------------------------------
+  
 }
 
 
@@ -93,8 +101,10 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
   fMomBachY( rMomBach[1] ),      
   fMomBachZ( rMomBach[2] )  
 {
-  /// Constructor via setting each data member
-
+  //--------------------------------------------------------------------
+  // Constructor via setting each data member
+  //--------------------------------------------------------------------
+ 
 }
 
 
@@ -117,8 +127,10 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
   fMomBachY( rMomBach[1] ),      
   fMomBachZ( rMomBach[2] )
 {
-  /// Constructor via setting each Xi data member + setting AODv0
-
+  //--------------------------------------------------------------------
+  // Constructor via setting each Xi data member + setting AODv0 
+  //--------------------------------------------------------------------
+ 
 }
 
 
@@ -126,8 +138,10 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
 
 
 AliAODcascade& AliAODcascade::operator=(const AliAODcascade& rSource){
-  /// Assignment overload
-
+  //--------------------------------------------------------------------
+  // Assignment overload
+  //--------------------------------------------------------------------
+  
   if (this == &rSource) return *this;
      
   AliAODv0::operator=(rSource);
@@ -149,8 +163,9 @@ AliAODcascade& AliAODcascade::operator=(const AliAODcascade& rSource){
 
 
 AliAODcascade::~AliAODcascade(){
-  /// Empty destructor
-
+  //--------------------------------------------------------------------
+  // Empty destructor
+  //--------------------------------------------------------------------
 }
 
 void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi, 
@@ -167,7 +182,9 @@ void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi,
 		const Double_t*     rMomNeg,
 		      Double_t*     rDcaDaughterToPrimVertex )
 {
-  /// Fill the AODcascade
+  //--------------------------------------------------------------------
+  //  Fill the AODcascade
+  //--------------------------------------------------------------------
 
   AliAODv0::Fill(rAODVertexV0,rDcaV0Daughters,rDcaV0ToPrimVertex,rMomPos,rMomNeg,rDcaDaughterToPrimVertex);
       fDecayVertexXi =  rAODVertexXi;
@@ -185,8 +202,10 @@ void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi,
 
 
 void AliAODcascade::ResetXi(){
-  /// Reset the values of the AOD data members to the default ones
-
+  //--------------------------------------------------------------------
+  // Reset the values of the AOD data members to the default ones
+  //--------------------------------------------------------------------
+  
   ResetV0();
       
   GetDecayVertexXi()->SetChi2perNDF(-999);
@@ -214,8 +233,9 @@ void AliAODcascade::PrintXi(const Double_t& rPrimVtxX,
                             const Double_t& rPrimVtxY, 
                             const Double_t& rPrimVtxZ) const
 {
-  /// Print the AOD data members
-
+  //--------------------------------------------------------------------
+  // Print the AOD data members
+  //--------------------------------------------------------------------
    AliAODv0::Print();  
    printf("- \n");
    printf("AliAODcascade : posXiVtx (%.6f, %.6f, %.6f) \n", DecayVertexXiX(), DecayVertexXiY(), DecayVertexXiZ() );
@@ -260,9 +280,9 @@ Double_t AliAODcascade::CosPointingAngleXi(const Double_t& rPrimVtxX,
                                            const Double_t& rPrimVtxY, 
                                            const Double_t& rPrimVtxZ) const { 
  
-  /// Cosine of Xi pointing angle in 3D space, with respect to a point
-  /// (primary vtx ...)
-
+  // Cosine of Xi pointing angle in 3D space, with respect to a point 
+  // (primary vtx ...)
+  
   TVector3 lMomXi( MomXiX(),MomXiY(),MomXiZ() );
   TVector3 lVectPrimVtxToXi(DecayVertexXiX() - rPrimVtxX,
 			    DecayVertexXiY() - rPrimVtxY,
@@ -277,8 +297,9 @@ Double_t AliAODcascade::CosPointingAngleXi(const Double_t& rPrimVtxX,
 Double_t AliAODcascade::DcaXiToPrimVertex(const Double_t& rPrimVtxX, 
                                           const Double_t& rPrimVtxY, 
                                           const Double_t& rPrimVtxZ) const {
-  /// Compute the DCA between this Xi and the primary vertex
-
+  //
+  // Compute the DCA between this Xi and the primary vertex
+  //
     Double_t rMomXiX = MomXiX();
     Double_t rMomXiY = MomXiY();
     Double_t rMomXiZ = MomXiZ();
@@ -289,7 +310,9 @@ Double_t AliAODcascade::DcaXiToPrimVertex(const Double_t& rPrimVtxX,
 }
 
 Int_t	AliAODcascade::GetBachID()  const     {
-  /// Return the ID of the bachelor
+  //
+  // Return the ID of the bachelor
+  //
 
 	if( GetDecayVertexXi() == 0) return -1;
 

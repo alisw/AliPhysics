@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODHeader
-/// \brief AOD event header class
-///
-/// \author Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+//     AOD event header class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
 
 #include <TVector2.h>
 
@@ -228,67 +228,65 @@ class AliAODHeader : public AliVAODHeader {
   
  private :
   
-  Double32_t  fMagneticField;       ///< Solenoid Magnetic Field in kG
-  Double32_t  fMuonMagFieldScale;   ///< magnetic field scale of muon arm magnet
-  Double32_t  fCentrality;          ///< Centrality
-  Double32_t  fEventplane;          ///< Event plane angle
-  Double32_t  fEventplaneMag;       ///< Length of Q vector from TPC event plance
-  Double32_t  fEventplaneQx;        ///< Q vector component x from TPC event plance
-  Double32_t  fEventplaneQy;        ///< Q vector component y from TPC event plance
-  Double32_t  fZDCN1Energy;         ///< reconstructed energy in the neutron1 ZDC
-  Double32_t  fZDCP1Energy;         ///< reconstructed energy in the proton1 ZDC
-  Double32_t  fZDCN2Energy;         ///< reconstructed energy in the neutron2 ZDC
-  Double32_t  fZDCP2Energy;         ///< reconstructed energy in the proton2 ZDC
-  Double32_t  fZDCEMEnergy[2];      ///< reconstructed energy in the electromagnetic ZDCs
-  Int_t       fNQTheta;             ///< number of QTheta elements
-  Double32_t *fQTheta;              ///< [fNQTheta] values to store Lee-Yang-Zeros
-  ULong64_t   fTriggerMask;         ///< Trigger Type (mask)
-  ULong64_t   fTriggerMaskNext50;   ///< Trigger Type (mask) for upper 50 slots
-  TString     fFiredTriggers;       ///< String with fired triggers
-  Int_t       fRunNumber;           ///< Run Number
-  Int_t       fRefMult;             ///< reference multiplicity
-  Int_t       fRefMultPos;          ///< reference multiplicity of positive particles
-  Int_t       fRefMultNeg;          ///< reference multiplicity of negative particles
-  Int_t       fNMuons;              ///< number of muons in the forward spectrometer
-  Int_t       fNDimuons;            ///< number of dimuons in the forward spectrometer
-  Int_t       fNGlobalMuons;        ///< number of muons in the forward spectrometer + MFT       // AU
-  Int_t       fNGlobalDimuons;      ///< number of dimuons in the forward spectrometer + MFT     // AU
-  UInt_t      fDAQAttributes;       ///< DAQ attibutes
-  UInt_t      fEventType;           ///< Type of Event
-  UInt_t      fOrbitNumber;         ///< Orbit Number
-  UInt_t      fPeriodNumber;        ///< Period Number
-  UShort_t    fBunchCrossNumber;    ///< BunchCrossingNumber
-  UInt_t      fTimeStamp;           ///< Time stamp
-  Short_t     fRefMultComb05;       ///< combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.5
-  Short_t     fRefMultComb08;       ///< combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
-  Short_t     fRefMultComb10;       ///< combined reference multiplicity (tracklets + ITSTPC) in |eta|<1.0
-  UChar_t     fTriggerCluster;      ///< Trigger cluster (mask)
-  Double32_t      fDiamondXY[2];    ///< Interaction diamond (x,y) in RUN
-  Double32_t      fDiamondCovXY[3]; ///< Interaction diamond covariance (x,y) in RUN
-  Double32_t      fDiamondZ;        ///< Interaction diamond (z) in RUN
-  Double32_t      fDiamondSig2Z;    ///< Interaction diamond sigma^2 (z) in RUN
-  TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   ///< PHOS module position and orientation matrices
-  TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; ///< EMCAL supermodule position and orientation matrices
-  UInt_t      fOfflineTrigger;      ///< fired offline triggers for this event
-  TString     fESDFileName;         ///< ESD file name to which this event belongs
-  Int_t       fEventNumberESDFile;  ///< Event number in ESD file
-  Int_t       fNumberESDTracks;     ///< Number of tracks in origingal ESD event
-  Int_t       fNumberTPCTracks;     ///< Number of TPCrefit tracks in origingal ESD event
-  Int_t       fNumberTPCClusters;   ///< total number of TPC clusters
-  UInt_t      fL0TriggerInputs;     ///< L0 Trigger Inputs (mask)
-  UInt_t      fL1TriggerInputs;     ///< L1 Trigger Inputs (mask)
-  UShort_t    fL2TriggerInputs;     ///< L2 Trigger Inputs (mask)
-  UInt_t      fITSClusters[6];      ///< Number of ITS cluster per layer
-  Int_t       fTPConlyRefMult;      ///< Reference multiplicty for standard TPC only tracks
-  AliCentrality* fCentralityP;      ///< Pointer to full centrality information
-  AliEventplane* fEventplaneP;	    ///< Pointer to full event plane information
-  Float_t     fVZEROEqFactors[64];  ///< V0 channel equalization factors for event-plane reconstruction
-  Float_t     fT0spread[kT0SpreadSize]; ///< spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
-  TBits   fIRInt2InteractionsMap;  ///< map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
-  TBits   fIRInt1InteractionsMap;  ///< map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-
+  Double32_t  fMagneticField;       // Solenoid Magnetic Field in kG
+  Double32_t  fMuonMagFieldScale;   // magnetic field scale of muon arm magnet
+  Double32_t  fCentrality;          // Centrality
+  Double32_t  fEventplane;          // Event plane angle
+  Double32_t  fEventplaneMag;       // Length of Q vector from TPC event plance
+  Double32_t  fEventplaneQx;        // Q vector component x from TPC event plance
+  Double32_t  fEventplaneQy;        // Q vector component y from TPC event plance
+  Double32_t  fZDCN1Energy;         // reconstructed energy in the neutron1 ZDC
+  Double32_t  fZDCP1Energy;         // reconstructed energy in the proton1 ZDC
+  Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
+  Double32_t  fZDCP2Energy;         // reconstructed energy in the proton2 ZDC
+  Double32_t  fZDCEMEnergy[2];      // reconstructed energy in the electromagnetic ZDCs
+  Int_t       fNQTheta;             // number of QTheta elements
+  Double32_t *fQTheta;              // [fNQTheta] values to store Lee-Yang-Zeros
+  ULong64_t   fTriggerMask;         // Trigger Type (mask)
+  ULong64_t   fTriggerMaskNext50;   // Trigger Type (mask) for upper 50 slots
+  TString     fFiredTriggers;       // String with fired triggers
+  Int_t       fRunNumber;           // Run Number
+  Int_t       fRefMult;             // reference multiplicity
+  Int_t       fRefMultPos;          // reference multiplicity of positive particles
+  Int_t       fRefMultNeg;          // reference multiplicity of negative particles
+  Int_t       fNMuons;              // number of muons in the forward spectrometer
+  Int_t       fNDimuons;            // number of dimuons in the forward spectrometer
+  Int_t       fNGlobalMuons;        // number of muons in the forward spectrometer + MFT       // AU
+  Int_t       fNGlobalDimuons;      // number of dimuons in the forward spectrometer + MFT     // AU
+  UInt_t      fDAQAttributes;       // DAQ attibutes
+  UInt_t      fEventType;           // Type of Event
+  UInt_t      fOrbitNumber;         // Orbit Number
+  UInt_t      fPeriodNumber;        // Period Number
+  UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
+  UInt_t      fTimeStamp;           // Time stamp
+  Short_t     fRefMultComb05;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.5
+  Short_t     fRefMultComb08;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
+  Short_t     fRefMultComb10;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<1.0
+  UChar_t     fTriggerCluster;      // Trigger cluster (mask)
+  Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
+  Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
+  Double32_t      fDiamondZ;        // Interaction diamond (z) in RUN
+  Double32_t      fDiamondSig2Z;    // Interaction diamond sigma^2 (z) in RUN
+  TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
+  TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
+  UInt_t      fOfflineTrigger;      // fired offline triggers for this event
+  TString     fESDFileName;         // ESD file name to which this event belongs
+  Int_t       fEventNumberESDFile;  // Event number in ESD file
+  Int_t       fNumberESDTracks;     // Number of tracks in origingal ESD event
+  Int_t       fNumberTPCTracks;     // Number of TPCrefit tracks in origingal ESD event
+  Int_t       fNumberTPCClusters;   // total number of TPC clusters  
+  UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
+  UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
+  UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
+  UInt_t      fITSClusters[6];      // Number of ITS cluster per layer
+  Int_t       fTPConlyRefMult;      // Reference multiplicty for standard TPC only tracks
+  AliCentrality* fCentralityP;      // Pointer to full centrality information
+  AliEventplane* fEventplaneP;	    // Pointer to full event plane information
+  Float_t     fVZEROEqFactors[64];  // V0 channel equalization factors for event-plane reconstruction
+  Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
+  TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
+  TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
   ClassDef(AliAODHeader, 30);
-
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

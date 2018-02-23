@@ -1,5 +1,3 @@
-/// \class AliAODTrdTracklet
-
 #ifndef ALIAODTRDTRACKLET_H
 #define ALIAODTRDTRACKLET_H
 
@@ -32,14 +30,12 @@ class AliAODTrdTracklet : public AliVTrdTracklet {
   virtual Int_t GetLabel() const { return fLabel; }
 
  protected:
-  Short_t fHCId;		///< half-chamber ID
-  UInt_t fTrackletWord;		///< tracklet word (as from FEE)
+  Short_t fHCId;		// half-chamber ID
+  UInt_t fTrackletWord;		// tracklet word (as from FEE)
 				// pppp : pppp : zzzz : dddd : dddy : yyyy : yyyy : yyyy
-  Int_t  fLabel;		///< MC label
-
+  Int_t  fLabel;		// MC label
 
   ClassDef(AliAODTrdTracklet,1)
-
 };
 
 #endif

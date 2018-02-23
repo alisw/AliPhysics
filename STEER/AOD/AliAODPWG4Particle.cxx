@@ -16,9 +16,9 @@
 
 #include "AliAODPWG4Particle.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliAODPWG4Particle)
-
+/// \endcond
 
 
 //______________________________________________________________________________

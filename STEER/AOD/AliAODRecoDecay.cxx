@@ -13,6 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/////////////////////////////////////////////////////////////
+//
+// Base class for AOD reconstructed decay
+//
+// Author: A.Dainese, andrea.dainese@lnl.infn.it
+/////////////////////////////////////////////////////////////
+
 #include <TDatabasePDG.h>
 #include <TVector3.h>
 #include <TClonesArray.h>
@@ -23,9 +30,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 
-
 ClassImp(AliAODRecoDecay)
-
 
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay() :
@@ -58,7 +63,9 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   fDCA(0x0),
   fPID(0x0) 
 {
-  /// Constructor with AliAODVertex for decay vertex
+  //
+  // Constructor with AliAODVertex for decay vertex
+  //
 
   fPx = new Double32_t[GetNProngs()];
   fPy = new Double32_t[GetNProngs()];
@@ -85,7 +92,9 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   fDCA(0x0),
   fPID(0x0) 
 {
-  /// Constructor with AliAODVertex for decay vertex and without prongs momenta
+  //
+  // Constructor with AliAODVertex for decay vertex and without prongs momenta
+  //
 
   fPx = new Double32_t[GetNProngs()];
   fPy = new Double32_t[GetNProngs()];
@@ -110,8 +119,9 @@ AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
   fDCA(0x0),
   fPID(0x0) 
 {
-  /// Copy constructor
-
+  //
+  // Copy constructor
+  //
   if(source.GetNProngs()>0) {
     fd0 = new Double32_t[GetNProngs()];
     memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double32_t));
@@ -136,8 +146,9 @@ AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
 //--------------------------------------------------------------------------
 AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
 {
-  /// assignment operator
-
+  //
+  // assignment operator
+  //
   if(&source == this) return *this;
   fSecondaryVtx = source.fSecondaryVtx;
   fOwnSecondaryVtx = source.fOwnSecondaryVtx;
@@ -175,8 +186,9 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecay::~AliAODRecoDecay() {
-  /// Default Destructor
-
+  //  
+  // Default Destructor
+  //
   if(fPx) { delete [] fPx; fPx=NULL; } 
   if(fPy) { delete [] fPy; fPy=NULL; }
   if(fPz) { delete [] fPz; fPz=NULL; }
@@ -188,8 +200,9 @@ AliAODRecoDecay::~AliAODRecoDecay() {
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::Alpha() const 
 {
-  /// Armenteros-Podolanski alpha for 2-prong decays
-
+  //
+  // Armenteros-Podolanski alpha for 2-prong decays
+  //
   if(GetNProngs()!=2) {
     printf("Can be called only for 2-prong decays");
     return (Double_t)-99999.;
@@ -199,8 +212,9 @@ Double_t AliAODRecoDecay::Alpha() const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::DecayLength2(Double_t point[3]) const 
 {
-  /// Decay length assuming it is produced at "point" [cm]
-
+  //
+  // Decay length assuming it is produced at "point" [cm]
+  //
   return (point[0]-GetSecVtxX())
     *(point[0]-GetSecVtxX())
     +(point[1]-GetSecVtxY())
@@ -211,8 +225,9 @@ Double_t AliAODRecoDecay::DecayLength2(Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::DecayLengthXY(Double_t point[3]) const 
 {
-  /// Decay length in XY assuming it is produced at "point" [cm]
-
+  //
+  // Decay length in XY assuming it is produced at "point" [cm]
+  //
   return TMath::Sqrt((point[0]-GetSecVtxX())
 		    *(point[0]-GetSecVtxX())
 		    +(point[1]-GetSecVtxY())
@@ -221,8 +236,9 @@ Double_t AliAODRecoDecay::DecayLengthXY(Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::CosPointingAngle(Double_t point[3]) const 
 {
-  /// Cosine of pointing angle in space assuming it is produced at "point"
-
+  //
+  // Cosine of pointing angle in space assuming it is produced at "point"
+  //
   TVector3 mom(Px(),Py(),Pz());
   TVector3 fline(GetSecVtxX()-point[0],
 		 GetSecVtxY()-point[1],
@@ -241,9 +257,10 @@ Double_t AliAODRecoDecay::CosPointingAngle(Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::CosPointingAngleXY(Double_t point[3]) const 
 {
-  /// Cosine of pointing angle in transverse plane assuming it is produced
-  /// at "point"
-
+  //
+  // Cosine of pointing angle in transverse plane assuming it is produced 
+  // at "point"
+  //
   TVector3 momXY(Px(),Py(),0.);
   TVector3 flineXY(GetSecVtxX()-point[0],
 		   GetSecVtxY()-point[1],
@@ -262,11 +279,12 @@ Double_t AliAODRecoDecay::CosPointingAngleXY(Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::CosThetaStar(Int_t ip,UInt_t pdgvtx,UInt_t pdgprong0,UInt_t pdgprong1) const 
 {
-  /// Only for 2-prong decays:
-  /// Cosine of decay angle (theta*) in the rest frame of the mother particle
-  /// for prong ip (0 or 1) with mass hypotheses pdgvtx for mother particle,
-  /// pdgprong0 for prong 0 and pdgprong1 for prong1
-
+  //
+  // Only for 2-prong decays: 
+  // Cosine of decay angle (theta*) in the rest frame of the mother particle
+  // for prong ip (0 or 1) with mass hypotheses pdgvtx for mother particle,
+  // pdgprong0 for prong 0 and pdgprong1 for prong1
+  //
   if(GetNProngs()!=2) {
     printf("Can be called only for 2-prong decays");
     return (Double_t)-99999.;
@@ -289,42 +307,47 @@ Double_t AliAODRecoDecay::CosThetaStar(Int_t ip,UInt_t pdgvtx,UInt_t pdgprong0,U
 //---------------------------------------------------------------------------
 Double_t AliAODRecoDecay::Ct(UInt_t pdg,Double_t point[3]) const
 {
-  /// Decay time * c assuming it is produced at "point" [cm]
-
+  //
+  // Decay time * c assuming it is produced at "point" [cm]
+  //
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return DecayLength(point)*mass/P();
 }
 //---------------------------------------------------------------------------
 Double_t AliAODRecoDecay::E2(UInt_t pdg) const 
 {
-  /// Energy
-
+  //
+  // Energy
+  //
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return mass*mass+P2();
 }
 //---------------------------------------------------------------------------
 Double_t AliAODRecoDecay::E2Prong(Int_t ip,UInt_t pdg) const 
 {
-  /// Energy of ip-th prong
-
+  //
+  // Energy of ip-th prong 
+  //
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return mass*mass+P2Prong(ip);
 }
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecay::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
-  /// This function returns the global covariance matrix of the track params
-  ///
-  /// Cov(x,x) ... :   cv[0]
-  /// Cov(y,x) ... :   cv[1]  cv[2]
-  /// Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
-  /// Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
-  /// Cov(py,x)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
-  /// Cov(pz,x)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
-  ///
-  /// For XYZ we take the cov of the vertex, for PxPyPz we take the
-  /// sum of the covs of PxPyPz from the daughters, for the moment
-  /// we set the cov between position and momentum as the sum of
-  /// the same cov from the daughters.
+  //
+  // This function returns the global covariance matrix of the track params
+  // 
+  // Cov(x,x) ... :   cv[0]
+  // Cov(y,x) ... :   cv[1]  cv[2]
+  // Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
+  // Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
+  // Cov(py,x)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // Cov(pz,x)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
+  //
+  // For XYZ we take the cov of the vertex, for PxPyPz we take the 
+  // sum of the covs of PxPyPz from the daughters, for the moment 
+  // we set the cov between position and momentum as the sum of 
+  // the same cov from the daughters.
+  //
 
   Int_t j;
   for(j=0;j<21;j++) cv[j]=0.;
@@ -370,9 +393,10 @@ Bool_t AliAODRecoDecay::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
 }
 //----------------------------------------------------------------------------
 UChar_t  AliAODRecoDecay::GetITSClusterMap() const {
-  /// We take the logical AND of the daughters cluster maps
-  /// (only if all daughters have the bit for given layer, we set the bit)
-
+  //
+  // We take the logical AND of the daughters cluster maps 
+  // (only if all daughters have the bit for given layer, we set the bit)
+  //
   UChar_t map=0;
 
   if(!GetNDaughters()) {
@@ -393,8 +417,9 @@ UChar_t  AliAODRecoDecay::GetITSClusterMap() const {
 }
 //--------------------------------------------------------------------------
 ULong_t AliAODRecoDecay::GetStatus() const {
-  /// Same as for ITSClusterMap
-
+  // 
+  // Same as for ITSClusterMap
+  //
   ULong_t status=0;
 
   if(!GetNDaughters()) {
@@ -415,9 +440,9 @@ ULong_t AliAODRecoDecay::GetStatus() const {
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecay::PropagateToDCA(const AliVVertex* vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]) 
 {
-  /// compute impact parameters to the vertex vtx and their covariance matrix
-  /// b is the Bz, needed to propagate correctly the track to vertex
-  /// return kFALSE is something went wrong
+  // compute impact parameters to the vertex vtx and their covariance matrix
+  // b is the Bz, needed to propagate correctly the track to vertex 
+  // return kFALSE is something went wrong
 
   AliWarning("The AliAODRecoDecay momentum is not updated to the DCA");
 
@@ -436,9 +461,10 @@ Bool_t AliAODRecoDecay::PropagateToDCA(const AliVVertex* vtx,Double_t b,Double_t
 //--------------------------------------------------------------------------
 Double_t AliAODRecoDecay::ImpParXY(Double_t point[3]) const 
 {
-  /// Impact parameter in the bending plane of the particle
-  /// w.r.t. to "point"
-
+  //
+  // Impact parameter in the bending plane of the particle 
+  // w.r.t. to "point"
+  //
   Double_t k = -(GetSecVtxX()-point[0])*Px()-(GetSecVtxY()-point[1])*Py();
   k /= Pt()*Pt();
   Double_t dx = GetSecVtxX()-point[0]+k*Px();
@@ -454,8 +480,9 @@ Double_t AliAODRecoDecay::ImpParXY(Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::InvMass2(Int_t npdg,UInt_t *pdg) const 
 {
-  /// Invariant mass for prongs mass hypotheses in pdg array
-
+  //
+  // Invariant mass for prongs mass hypotheses in pdg array
+  //
   if(GetNProngs()!=npdg) {
     printf("npdg != GetNProngs()");
     return (Double_t)-99999.;
@@ -472,7 +499,9 @@ Double_t AliAODRecoDecay::InvMass2(Int_t npdg,UInt_t *pdg) const
 }
 //----------------------------------------------------------------------------
 Bool_t AliAODRecoDecay::PassInvMassCut(Int_t pdgMom,Int_t npdgDg,UInt_t *pdgDg,Double_t cut) const {
-  /// Apply mass cut
+  //
+  // Apply mass cut
+  //
 
   Double_t invmass2=InvMass2(npdgDg,pdgDg);
   Double_t massMom=TDatabasePDG::Instance()->GetParticle(pdgMom)->Mass();
@@ -492,8 +521,9 @@ Bool_t AliAODRecoDecay::PassInvMassCut(Int_t pdgMom,Int_t npdgDg,UInt_t *pdgDg,D
 Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,
 				      UInt_t pdg1,UInt_t pdg2) const 
 {
-  /// 2-prong(ip1,ip2) invariant mass for prongs mass hypotheses in pdg1,2
-
+  //
+  // 2-prong(ip1,ip2) invariant mass for prongs mass hypotheses in pdg1,2
+  //
   Double_t energysum = EProng(ip1,pdg1) + EProng(ip2,pdg2);
   Double_t psum2 = (PxProng(ip1)+PxProng(ip2))*(PxProng(ip1)+PxProng(ip2))
                   +(PyProng(ip1)+PyProng(ip2))*(PyProng(ip1)+PyProng(ip2))
@@ -506,12 +536,13 @@ Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,
 Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs, TClonesArray *mcArray,
 				 Int_t ndgCk, const Int_t *pdgDg) const
 {
-  /// Check if this candidate is matched to a MC signal
-  /// If no, return -1
-  /// If yes, return label (>=0) of the AliAODMCParticle
-  ///
-  /// if ndgCk>0, checks also daughters PDGs
-
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+  // if ndgCk>0, checks also daughters PDGs
+  //
   Int_t ndg=GetNDaughters();
   if(!ndg) {
     AliError("No daughters available");
@@ -541,9 +572,11 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
 				 Int_t dgLabels[10],Int_t ndg,
 				 Int_t ndgCk, const Int_t *pdgDg) const
 {
-  /// Check if this candidate is matched to a MC signal
-  /// If no, return -1
-  /// If yes, return label (>=0) of the AliAODMCParticle
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
 
   Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t i,j,lab,labMother,pdgMother,pdgPart;
@@ -647,8 +680,9 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
 //---------------------------------------------------------------------------
 void AliAODRecoDecay::Print(Option_t* /*option*/) const 
 {
-  /// Print some information
-
+  //
+  // Print some information
+  //
   printf("AliAODRecoDecay with %d prongs\n",GetNProngs());
   printf("Secondary Vertex: (%f, %f, %f)\n",GetSecVtxX(),GetSecVtxY(),GetSecVtxZ());
 
@@ -657,8 +691,9 @@ void AliAODRecoDecay::Print(Option_t* /*option*/) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::ProngsRelAngle(Int_t ip1,Int_t ip2) const 
 {
-  /// Relative angle between two prongs
-
+  //
+  // Relative angle between two prongs
+  //
   TVector3 momA(PxProng(ip1),PyProng(ip1),PzProng(ip1));
   TVector3 momB(PxProng(ip2),PyProng(ip2),PzProng(ip2));
 
@@ -669,8 +704,9 @@ Double_t AliAODRecoDecay::ProngsRelAngle(Int_t ip1,Int_t ip2) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::QlProng(Int_t ip) const 
 {
-  /// Longitudinal momentum of prong w.r.t. to total momentum
-
+  //
+  // Longitudinal momentum of prong w.r.t. to total momentum
+  //
   TVector3 mom(PxProng(ip),PyProng(ip),PzProng(ip));
   TVector3 momTot(Px(),Py(),Pz());
 
@@ -679,8 +715,9 @@ Double_t AliAODRecoDecay::QlProng(Int_t ip) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::QtProng(Int_t ip) const 
 {
-  /// Transverse momentum of prong w.r.t. to total momentum
-
+  //
+  // Transverse momentum of prong w.r.t. to total momentum  
+  //
   TVector3 mom(PxProng(ip),PyProng(ip),PzProng(ip));
   TVector3 momTot(Px(),Py(),Pz());
 
@@ -689,9 +726,10 @@ Double_t AliAODRecoDecay::QtProng(Int_t ip) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::QlProngFlightLine(Int_t ip,Double_t point[3]) const 
 {
-  /// Longitudinal momentum of prong w.r.t. to flight line between "point"
-  /// and fSecondaryVtx
-
+  //
+  // Longitudinal momentum of prong w.r.t. to flight line between "point"
+  // and fSecondaryVtx
+  //
   TVector3 mom(PxProng(ip),PyProng(ip),PzProng(ip));
   TVector3 fline(GetSecVtxX()-point[0],
 		 GetSecVtxY()-point[1],
@@ -702,9 +740,10 @@ Double_t AliAODRecoDecay::QlProngFlightLine(Int_t ip,Double_t point[3]) const
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::QtProngFlightLine(Int_t ip,Double_t point[3]) const 
 {
-  /// Transverse momentum of prong w.r.t. to flight line between "point" and
-  /// fSecondaryVtx
-
+  //
+  // Transverse momentum of prong w.r.t. to flight line between "point" and 
+  // fSecondaryVtx 
+  //
   TVector3 mom(PxProng(ip),PyProng(ip),PzProng(ip));
   TVector3 fline(GetSecVtxX()-point[0],
 		 GetSecVtxY()-point[1],
@@ -714,10 +753,9 @@ Double_t AliAODRecoDecay::QtProngFlightLine(Int_t ip,Double_t point[3]) const
 }
 //--------------------------------------------------------------------------
 void AliAODRecoDecay::DeleteRecoD(){
- /// Delete data members to reduce the dAOD size.
- /// The missing info will be reconstructed on-the-fly
- /// at the analysis level
-
+ //Delete data members to reduce the dAOD size. 
+ //The missing info will be reconstructed on-the-fly
+ //at the analysis level
  if(fPx) {delete [] fPx; fPx=NULL;}
  if(fPy) {delete [] fPy; fPy=NULL;}
  if(fPz) {delete [] fPz; fPz=NULL;}

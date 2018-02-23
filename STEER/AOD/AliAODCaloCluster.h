@@ -3,13 +3,15 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//-------------------------------------------------------------------------
 /// \class AliAODCaloCluster
 /// \brief Class for calorimeter cluster, EMCal and PHOS, data handling
 ///
-/// Class to access calorimeter, EMCAL and PHOS, cluster data
+///   Class to access calorimeter, EMCAL and PHOS, cluster data
 ///
-/// \author Markus Oldenburg, CERN.
-/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
+///  \author Markus Oldenburg, CERN
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
+//-------------------------------------------------------------------------
 
 #include "AliAODCluster.h"
 
@@ -152,19 +154,19 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t     fNExMax;           ///< Number of local (Ex-)maxima before unfolding.
   
   /// Cluster time-of-flight
-  Double32_t   fTOF;              //[0,0,12]
+  Double32_t   fTOF;              //[0,0,12] 
   Double32_t   fCoreEnergy;       ///< Energy of the core of cluster, PHOS.
 
   TRefArray    fTracksMatched;    ///< References to tracks close to cluster. First entry is the most likely match.
 
-  Int_t        fNCells ;          ///< Number of cells in cluster.
+  Int_t        fNCells ;          ///< Number of cells in cluster. 
   
   /// Array of cluster cell absolute Id numbers.
-  UShort_t   * fCellsAbsId;       //[fNCells]
+  UShort_t   * fCellsAbsId;       //[fNCells] 
   
   /// Array with cell amplitudes fraction. Only usable for unfolded clusters, where cell can be shared.
   /// here we store what fraction of the cell energy is assigned to a given cluster.
-  Double32_t * fCellsAmpFraction; //[fNCells]
+  Double32_t * fCellsAmpFraction; //[fNCells][0.,1.,16] 
   
   Double_t     fMCEnergyFraction;                    //!<! MC energy (embedding).
   Bool_t       fIsExotic;                            //!<! Cluster marked as "exotic" (high energy deposition concentrated in a single cell).
@@ -172,12 +174,11 @@ class AliAODCaloCluster : public AliAODCluster {
 
   /// Array of maps (4 bits, each bit a different information) with fraction of deposited energy 
   //  per MC particle contributing to the cluster (4 particles maximum) per cell in the cluster.
-  ///
-  UInt_t     * fCellsMCEdepFractionMap; //[fNCells]
+  UInt_t     * fCellsMCEdepFractionMap; //[fNCells] 
   
-
+  /// \cond CLASSIMP
   ClassDef(AliAODCaloCluster,9) ;
-
+  /// \endcond
 
 };
 

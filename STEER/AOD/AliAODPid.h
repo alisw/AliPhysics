@@ -5,15 +5,14 @@
 
 /* $Id$ */
 
-/// \class AliAODPid
-/// \brief AOD Pid object for additional pid information
-///
-/// \author Annalisa Mastroserio, CERN
+//-------------------------------------------------------------------------
+//     AOD Pid object for additional pid information
+//     Author: Annalisa Mastroserio, CERN
+//-------------------------------------------------------------------------
 
 #include <TObject.h>
 #include "AliPID.h"
-
-class AliTPCdEdxInfo;
+#include "AliTPCdEdxInfo.h"
 
 class AliAODPid : public TObject {
 
@@ -51,7 +50,10 @@ class AliAODPid : public TObject {
   }
   Double_t  GetTPCsignal()       const {return  fTPCsignal;}
   UShort_t  GetTPCsignalN()      const {return  (UShort_t)fTPCsignalN;}
-  AliTPCdEdxInfo * GetTPCdEdxInfo()const{return fTPCdEdxInfo;}
+  Bool_t  GetTPCdEdxInfo( AliTPCdEdxInfo &v) const {
+    if( fTPCdEdxInfo ){ v = *fTPCdEdxInfo; return kTRUE;}
+    return kFALSE;
+  }
 
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Double_t  GetTPCTgl()          const {return  fTPCTgl;}
@@ -69,49 +71,36 @@ class AliAODPid : public TObject {
   void      GetTOFpidResolution (Double_t tofRes[5]) const;
 
  private :
-  /// detector raw signal
-  Double32_t  fITSsignal;        //[0.,0.,10]
-  /// ITS dE/dx samples
-  Double32_t  fITSdEdxSamples[4];//[0.,0.,10]
+  Double32_t  fITSsignal;        //[0.,0.,10] detector raw signal
+  Double32_t  fITSdEdxSamples[4];//[0.,0.,10] ITS dE/dx samples
 
-  /// detector raw signal
-  Double32_t  fTPCsignal;        //[0.,0.,10]
-  UChar_t     fTPCsignalN;       ///< number of points used for TPC dE/dx
-  /// momentum at the inner wall of TPC;
-  Double32_t  fTPCmomentum;      //[0.,0.,20]
-  /// track momentum dip angle at the inner wall of TPC;
-  Double32_t  fTPCTgl;           //[0.,0.,10]
+  Double32_t  fTPCsignal;        //[0.,0.,10] detector raw signal
+  UChar_t     fTPCsignalN;       // number of points used for TPC dE/dx
+  Double32_t  fTPCmomentum;      //[0.,0.,20] momentum at the inner wall of TPC;
+  Double32_t  fTPCTgl;           //[0.,0.,10] track momentum dip angle at the inner wall of TPC;
   
-  Int_t       fTRDnSlices;       ///< N slices used for PID in the TRD (as number of slices per tracklet * number of layers)
-  UChar_t     fTRDntls;          ///< number of tracklets used for PID calculation
-  UChar_t     fTRDncls[6];       ///< number of clusters used for dE/dx calculation
-  /// [0.,0.,10]
-  Double32_t* fTRDslices;        //[fTRDnSlices]
-  /// TRD signal
-  Double32_t  fTRDsignal;        //[0.,0.,10]
-  /// momentum at the TRD layers
-  Double32_t  fTRDmomentum[6];   //[0.,0.,10]
-  /// TRD chi2
-  Double32_t  fTRDChi2;          //[0.,0.,10]
+  Int_t       fTRDnSlices;       // N slices used for PID in the TRD (as number of slices per tracklet * number of layers)
+  UChar_t     fTRDntls;          // number of tracklets used for PID calculation
+  UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
+  Double32_t* fTRDslices;        //[fTRDnSlices][0.,0.,10]
+  Double32_t  fTRDsignal;        //[0.,0.,10]  TRD signal
+  Double32_t  fTRDmomentum[6];   //[0.,0.,10]  momentum at the TRD layers
+  Double32_t  fTRDChi2;          //[0.,0.,10]  TRD chi2
 
-  /// TOF signal - t0 (T0 interaction time)
-  Double32_t  fTOFesdsignal;     //[0.,0.,20]
-  /// TOF pid resolution for each mass hypotesys
-  Double32_t  fTOFpidResolution[5]; //[0.,0.,20]
-  /// track time hypothesis
-  Double32_t  fIntTime[5];       //[0.,0.,20]
+  Double32_t  fTOFesdsignal;     //[0.,0.,20] TOF signal - t0 (T0 interaction time)
+  Double32_t  fTOFpidResolution[5]; //[0.,0.,20] TOF pid resolution for each mass hypotesys 
+  Double32_t  fIntTime[5];       //[0.,0.,20] track time hypothesis
  
-  AliTPCdEdxInfo * fTPCdEdxInfo; ///< object containing dE/dx information for different pad regions
-
+  AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
   ClassDef(AliAODPid, 15);
-
 };
 
 //_____________________________________________________________
 inline void AliAODPid::SetTRDslices(Int_t nslices, const Double_t * const trdslices) {
-  /// Set TRD dE/dx slices and the number of dE/dx slices per track
-
+  //
+  // Set TRD dE/dx slices and the number of dE/dx slices per track
+  //
   if(fTRDslices && fTRDnSlices != nslices) {
     delete [] fTRDslices; fTRDslices = NULL;
   };
@@ -122,9 +111,10 @@ inline void AliAODPid::SetTRDslices(Int_t nslices, const Double_t * const trdsli
 
 //_____________________________________________________________
 inline void AliAODPid::SetTRDncls(UChar_t ncls, Int_t layer) { 
-  /// Set the number of clusters / tracklet
-  /// If no layer is specified the full number of clusters will be put in layer 0
-
+  //
+  // Set the number of clusters / tracklet
+  // If no layer is specified the full number of clusters will be put in layer 0
+  //
   if(layer > 5) return; 
   if(layer < 0) fTRDncls[0] = ncls;
   else fTRDncls[layer] = ncls;
@@ -132,9 +122,10 @@ inline void AliAODPid::SetTRDncls(UChar_t ncls, Int_t layer) {
 
 //_____________________________________________________________
 inline UChar_t AliAODPid::GetTRDncls() const {
-  /// Get number of clusters per track
-  /// Calculated as sum of the number of clusters per tracklet
-
+  //
+  // Get number of clusters per track
+  // Calculated as sum of the number of clusters per tracklet
+  //
   UChar_t ncls = 0;
   for(Int_t ily = 0; ily < 6; ily++) ncls += fTRDncls[ily];
   return ncls;

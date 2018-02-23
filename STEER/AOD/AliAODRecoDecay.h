@@ -3,12 +3,11 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/// \class AliAODRecoDecay
-/// \brief Class AliAODRecoDecay
-///
-/// base class for AOD reconstructed decays
-///
-/// \author A.Dainese, <andrea.dainese@lnl.infn.it>
+//***********************************************************
+// Class AliAODRecoDecay
+// base class for AOD reconstructed decays
+// Author: A.Dainese, andrea.dainese@lnl.infn.it
+//***********************************************************
 
 #include <TMath.h>
 #include <TRef.h>
@@ -195,9 +194,9 @@ class AliAODRecoDecay : public AliVTrack {
   Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg,Int_t ndgCk=0,const Int_t *pdgDg=0) const;
   Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10]) const { return MatchToMC(pdgabs,mcArray,dgLabels,GetNDaughters()); }
 
-  TRef     fSecondaryVtx;  ///< decay vertex
-  AliAODVertex *fOwnSecondaryVtx;  ///< temporary solution (to work outside AliAODEvent)
-  Short_t  fCharge;  ///< charge, use this convention for prongs charges:
+  TRef     fSecondaryVtx;  // decay vertex
+  AliAODVertex *fOwnSecondaryVtx;  // temporary solution (to work outside AliAODEvent)
+  Short_t  fCharge;  // charge, use this convention for prongs charges:
                      // if(charge== 0) even-index prongs are +
                      //                odd-index prongs are -
                      // if(charge==+1) even-index prongs are +
@@ -206,27 +205,19 @@ class AliAODRecoDecay : public AliVTrack {
                      //                odd-index prongs are +
 
   // TEMPORARY, to be removed when we do analysis on AliAODEvent
-  Int_t fNProngs;    ///< number of prongs
-  Int_t fNDCA;       ///< number of dca's
-  Int_t fNPID;       ///< number of PID probabilities
-  /// px of tracks at the vertex [GeV/c]
-  Double32_t *fPx;   //[fNProngs]
-  /// py of tracks at the vertex [GeV/c]
-  Double32_t *fPy;   //[fNProngs]
-  /// pz of tracks at the vertex [GeV/c]
-  Double32_t *fPz;   //[fNProngs]
-  /// rphi impact params w.r.t. Primary Vtx [cm]
-  Double32_t *fd0;   //[fNProngs]
-  /// prong-to-prong DCA [cm]
-  Double32_t *fDCA;  //[fNDCA]
+  Int_t fNProngs;    // number of prongs
+  Int_t fNDCA;       // number of dca's
+  Int_t fNPID;       // number of PID probabilities
+  Double32_t *fPx;   //[fNProngs] px of tracks at the vertex [GeV/c]
+  Double32_t *fPy;   //[fNProngs] py of tracks at the vertex [GeV/c]
+  Double32_t *fPz;   //[fNProngs] pz of tracks at the vertex [GeV/c]
+  Double32_t *fd0;   //[fNProngs] rphi impact params w.r.t. Primary Vtx [cm]
+  Double32_t *fDCA;  //[fNDCA] prong-to-prong DCA [cm]
                      // convention:fDCA[0]=p0p1,fDCA[1]=p0p2,fDCA[2]=p1p2,...
-  /// combined pid
-  Double32_t *fPID;  //[fNPID]
+  Double32_t *fPID;  //[fNPID] combined pid
                      //  (combined detector response probabilities)
                             
-
   ClassDef(AliAODRecoDecay,5)  // base class for AOD reconstructed decays
-
 };
 
 

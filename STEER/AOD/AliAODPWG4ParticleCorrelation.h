@@ -3,22 +3,24 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//-------------------------------------------------------------------------
 /// \class AliAODPWG4ParticleCorrelation
 /// \brief Daughter of AliAODPWG4Particle that includes correlation part
 ///
-/// AOD objects class in use in the CaloTrackCorrelations
-/// analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations).
-/// Common format for selected tracks or calorimeter clusters to give as input
-/// for different analysis. Basically it contains the particle kinematics
-/// and some detailed parameters of the calorimeter cluster and of the intermediate
-/// steps of the analysis.
+///  AOD objects class in use in the CaloTrackCorrelations
+///  analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations). 
+///  Common format for selected tracks or calorimeter clusters to give as input
+///  for different analysis. Basically it contains the particle kinematics
+///  and some detailed parameters of the calorimeter cluster and of the intermediate
+///  steps of the analysis. 
 ///
-/// Daughter of AliAODPWG4Particle, it includes correlations with respect
-/// this (trigger) object: jets, tracks.
+///  Daughter of AliAODPWG4Particle, it includes correlations with respect 
+///  this (trigger) object: jets, tracks.
 ///
-/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///  More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
 ///
-/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+///  \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//-------------------------------------------------------------------------
 
 //-- ROOT system --
 #include "TList.h"
@@ -80,9 +82,9 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
   /// Assignment operator not implemented.
   AliAODPWG4ParticleCorrelation& operator=(const AliAODPWG4ParticleCorrelation& p);
     
-
+  /// \cond CLASSIMP
   ClassDef(AliAODPWG4ParticleCorrelation, 6);
-
+  /// \endcond
 
 };
 

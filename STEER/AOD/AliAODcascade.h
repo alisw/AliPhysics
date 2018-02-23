@@ -4,13 +4,13 @@
 /* Copyright(c) 2004-2005, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/// \class AliAODcascade
-/// \brief Implementation of the Analysis Oriented Data (AOD) Xi vertex class
-///
-/// Purpose: Having physics observables available for Xis
-///
-/// \author G.Van Buren, BNL,  <gene@bnl.gov>
-/// \author A.Maire, IReS, <antonin.maire@ires.in2p3.fr>
+//-------------------------------------------------------------------------
+//     Implementation of the Analysis Oriented Data (AOD) Xi vertex class
+//     Origin: A.Maire, IReS, antonin.maire@ires.in2p3.fr 
+//             G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
+//
+//     Purpose: Having physics observables available for Xis
+//-------------------------------------------------------------------------
 
 
 #include "AliAODv0.h"
@@ -135,20 +135,18 @@ public:
 
 protected:
 
-  TRef          fDecayVertexXi;           ///< ref to decay vertex of the cascade (Xi vertex)
-  Short_t       fChargeXi;                ///< charge of Xi
+  TRef          fDecayVertexXi;           // ref to decay vertex of the cascade (Xi vertex)
+  Short_t       fChargeXi;                // charge of Xi
     
-  Double32_t    fDcaXiDaughters;          ///< dca between Xi daughters
-  Double32_t    fDcaXiToPrimVertex;       ///< dca of Xi to primary vertex
-  Double32_t    fDcaBachToPrimVertex; ///< dca of bachelor to primary vertex
+  Double32_t    fDcaXiDaughters;          // dca between Xi daughters
+  Double32_t    fDcaXiToPrimVertex;       // dca of Xi to primary vertex 
+  Double32_t    fDcaBachToPrimVertex; // dca of bachelor to primary vertex 
   
-  Double32_t    fMomBachX;            ///< momemtum of bachelor along X
-  Double32_t    fMomBachY;            ///< momemtum of bachelor along Y
-  Double32_t    fMomBachZ;            ///< momemtum of bachelor along Z
+  Double32_t    fMomBachX;            // momemtum of bachelor along X
+  Double32_t    fMomBachY;            // momemtum of bachelor along Y
+  Double32_t    fMomBachZ;            // momemtum of bachelor along Z
   
-
   ClassDef(AliAODcascade,1)   
-
 };
 
 //-----------------------------------------------------------

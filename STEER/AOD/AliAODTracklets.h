@@ -3,12 +3,11 @@
 
 /* $Id$ */
 
-/// \class AliAODTracklets
-/// \brief AOD class to store tracklets
-///
-/// Class created from AliMultiplicity
-///
-/// \author Jan Fiete Grosse-Oetringhaus, CERN
+//-------------------------------------------------------------------------
+//     AOD class to store tracklets
+//     Author: Jan Fiete Grosse-Oetringhaus, CERN
+//     Class created from AliMultiplicity
+//-------------------------------------------------------------------------
 
 #ifndef ALIAODTRACKLETS_H
 #define ALIAODTRACKLETS_H
@@ -66,26 +65,19 @@ class AliAODTracklets : public AliVMultiplicity
   virtual void   SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
 
  protected:
-  Int_t      fNTracks;       ///< Number of tracklets
-  /// array with theta values
-  Double32_t *fTheta;        //[fNTracks]
-  /// array with phi values
-  Double32_t *fPhi;          //[fNTracks]
-  /// array with delta phi values
-  Double32_t *fDeltaPhi;     //[fNTracks]
-  /// array with labels of cluster in L1 used for the tracklet
-  Int_t      *fLabels;       //[fNTracks]
-  /// array with labels of cluster in L2 used for the tracklet
-  Int_t      *fLabelsL2;     //[fNTracks]
+  Int_t      fNTracks;       // Number of tracklets
+  Double32_t *fTheta;        //[fNTracks] array with theta values
+  Double32_t *fPhi;          //[fNTracks] array with phi values
+  Double32_t *fDeltaPhi;     //[fNTracks] array with delta phi values
+  Int_t      *fLabels;       //[fNTracks] array with labels of cluster in L1 used for the tracklet
+  Int_t      *fLabelsL2;     //[fNTracks] array with labels of cluster in L2 used for the tracklet
 
-  Short_t fFiredChips[2];    ///< Number of fired chips in the two SPD layers
-  UInt_t fITSClusters[6];    ///< Number of ITS cluster per layer
-  TBits fFastOrFiredChips;   ///< Map of FastOr fired chips
-  TBits fClusterFiredChips;  ///< Map of fired chips (= at least one cluster)
-
+  Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
+  UInt_t fITSClusters[6];    // Number of ITS cluster per layer
+  TBits fFastOrFiredChips;   // Map of FastOr fired chips
+  TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
 
   ClassDef(AliAODTracklets, 5);
-
 };
 
 

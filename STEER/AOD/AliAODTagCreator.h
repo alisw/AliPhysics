@@ -5,10 +5,12 @@
 
 /* $Id$ */
 
-/// \class AliAODTagCreator
-/// \brief Class AliAODTagCreator
-///
-/// \author Panos Christakoglou, UOA-CERN, <Panos.Christakoglou@cern.ch>
+//-------------------------------------------------------------------------
+//                          Class AliAODTagCreator
+//   This is the AliAODTagCreator class for the tag creation (post process)
+//
+//    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//-------------------------------------------------------------------------
 
 
 
@@ -58,16 +60,14 @@ class AliAODTagCreator : public AliTagCreator {
   AliAODTagCreator(const AliAODTagCreator& creator);             
   AliAODTagCreator& operator=(const AliAODTagCreator& creator);    
  private:
-  TChain       *fChain;     //!<! Chain of esd files
-  AliAODEvent  *fAODEvent;  //!<! AOD Event
-  TTree        *fTreeT;     //!<! Tag Tree
-  AliRunTag    *fRunTag;    //!<! Run tag
-  TChain       *fTreeTEsd;  //!<! ESD tag Tree
-  AliRunTag    *fRunTagEsd; //!<! ESD run tag
+  TChain       *fChain;     //! Chain of esd files
+  AliAODEvent  *fAODEvent;  //! AOD Event 
+  TTree        *fTreeT;     //! Tag Tree
+  AliRunTag    *fRunTag;    //! Run tag
+  TChain       *fTreeTEsd;  //! ESD tag Tree
+  AliRunTag    *fRunTagEsd; //! ESD run tag
   
-
   ClassDef(AliAODTagCreator,0)  
-
 };
 
 #endif

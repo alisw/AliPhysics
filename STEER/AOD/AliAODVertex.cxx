@@ -15,12 +15,18 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD track base class
+//     Base class for Analysis Object Data
+//     Generic version
+//     Author: Markus Oldenburg, CERN
+//     Inheritance from AliVVertex: A. Dainese
+//-------------------------------------------------------------------------
+
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
-
 ClassImp(AliAODVertex)
-
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex() : 
@@ -63,7 +69,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
   fDaughters(),
   fProngs(0)
 {
-  /// constructor
+  // constructor
 
   SetPosition(position);
   if (covMatrix) SetCovMatrix(covMatrix);
@@ -92,7 +98,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
   fDaughters(),
   fProngs(0)
 {
-  /// constructor
+  // constructor
 
   SetPosition(position);
   if (covMatrix) SetCovMatrix(covMatrix);
@@ -117,7 +123,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
   fDaughters(),
   fProngs(0)
 {
-  /// constructor without covariance matrix
+  // constructor without covariance matrix
 
   SetPosition(position);  
   MakeProngs();
@@ -140,7 +146,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
   fDaughters(),
   fProngs(0)
 {
-  /// constructor without covariance matrix
+  // constructor without covariance matrix
 
   SetPosition(position);  
   MakeProngs();
@@ -149,7 +155,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 //______________________________________________________________________________
 AliAODVertex::~AliAODVertex() 
 {
-  /// Destructor
+  // Destructor
 
   delete fCovMatrix;
   if (fNprong > 0) delete[] fProngs;
@@ -170,8 +176,8 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   fDaughters(vtx.fDaughters),
   fProngs(0)
 {
-  /// Copy constructor.
-
+  // Copy constructor.
+  
   for (int i = 0; i < 3; i++) 
     fPosition[i] = vtx.fPosition[i];
 
@@ -185,8 +191,8 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
 //______________________________________________________________________________
 AliAODVertex* AliAODVertex::CloneWithoutRefs() const
 {
-  /// Special method to copy all but the refs
-
+  // Special method to copy all but the refs 
+  
   Double_t cov[6] = { 0.0 };
       
   if (fCovMatrix) fCovMatrix->GetCovMatrix(cov);
@@ -215,8 +221,7 @@ AliAODVertex* AliAODVertex::CloneWithoutRefs() const
 //______________________________________________________________________________
 AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx) 
 {
-  /// Assignment operator
-
+  // Assignment operator
   if (this != &vtx) {
 
     // name and type
@@ -255,8 +260,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
 //______________________________________________________________________________
 void AliAODVertex::AddDaughter(TObject *daughter)
 {
-  /// Add reference to daughter track
-
+  // Add reference to daughter track
     if (!fProngs) {
 	if (fDaughters.GetEntries()==0) {
 	    TRefArray* arr = &fDaughters;
@@ -297,8 +301,7 @@ template <class T> void AliAODVertex::GetSigmaXYZ(T sigma[3]) const
 //______________________________________________________________________________
 Int_t AliAODVertex::GetNContributors() const 
 {
-  /// Returns the number of tracks used to fit this vertex.
-
+  // Returns the number of tracks used to fit this vertex.
   Int_t cont  = 0;
 
   TString vtitle = GetTitle();
@@ -320,8 +323,7 @@ Int_t AliAODVertex::GetNContributors() const
 //______________________________________________________________________________
 Bool_t AliAODVertex::HasDaughter(TObject *daughter) const 
 {
-  /// Checks if the given daughter (particle) is part of this vertex.
-
+  // Checks if the given daughter (particle) is part of this vertex.
     if (!fProngs) {
 	TRefArrayIter iter(&fDaughters);
 	while (TObject *daugh = iter.Next()) {
@@ -340,8 +342,8 @@ Bool_t AliAODVertex::HasDaughter(TObject *daughter) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixXX(Double_t phi, Double_t theta) const
 {
-  /// XX term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // XX term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -368,8 +370,8 @@ Double_t AliAODVertex::RotatedCovMatrixXX(Double_t phi, Double_t theta) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixXY(Double_t phi, Double_t theta) const
 {
-  /// XY term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // XY term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -395,8 +397,8 @@ Double_t AliAODVertex::RotatedCovMatrixXY(Double_t phi, Double_t theta) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixXZ(Double_t phi, Double_t theta) const
 {
-  /// XZ term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // XZ term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -423,8 +425,8 @@ Double_t AliAODVertex::RotatedCovMatrixXZ(Double_t phi, Double_t theta) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixYY(Double_t phi) const
 {
-  /// YY term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // YY term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -446,8 +448,8 @@ Double_t AliAODVertex::RotatedCovMatrixYY(Double_t phi) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixYZ(Double_t phi, Double_t theta) const
 {
-  /// YZ term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // YZ term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -473,8 +475,8 @@ Double_t AliAODVertex::RotatedCovMatrixYZ(Double_t phi, Double_t theta) const
 //______________________________________________________________________________
 Double_t AliAODVertex::RotatedCovMatrixZZ(Double_t phi, Double_t theta) const
 {
-  /// ZZ term of covariance matrix after rotation by phi around z-axis
-  /// and, then, by theta around new y-axis
+  // ZZ term of covariance matrix after rotation by phi around z-axis
+  // and, then, by theta around new y-axis
 
   if (!fCovMatrix) {
     //AliFatal("Covariance matrix not set");
@@ -501,7 +503,7 @@ Double_t AliAODVertex::RotatedCovMatrixZZ(Double_t phi, Double_t theta) const
 //______________________________________________________________________________
 Double_t AliAODVertex::Distance2ToVertex(const AliAODVertex *vtx) const
 {
-  /// distance in 3D to another AliAODVertex
+  // distance in 3D to another AliAODVertex
 
   Double_t dx = GetX()-vtx->GetX();
   Double_t dy = GetY()-vtx->GetY();
@@ -513,7 +515,7 @@ Double_t AliAODVertex::Distance2ToVertex(const AliAODVertex *vtx) const
 //______________________________________________________________________________
 Double_t AliAODVertex::DistanceXY2ToVertex(const AliAODVertex *vtx) const
 {
-  /// distance in XY to another AliAODVertex
+  // distance in XY to another AliAODVertex
 
   Double_t dx = GetX()-vtx->GetX();
   Double_t dy = GetY()-vtx->GetY();
@@ -524,7 +526,7 @@ Double_t AliAODVertex::DistanceXY2ToVertex(const AliAODVertex *vtx) const
 //______________________________________________________________________________
 Double_t AliAODVertex::Error2DistanceToVertex(AliAODVertex *vtx) const
 {
-  /// error on the distance in 3D to another AliAODVertex
+  // error on the distance in 3D to another AliAODVertex
 
   Double_t phi,theta;
   PhiAndThetaToVertex(vtx,phi,theta);
@@ -539,7 +541,7 @@ Double_t AliAODVertex::Error2DistanceToVertex(AliAODVertex *vtx) const
 //______________________________________________________________________________
 Double_t AliAODVertex::Error2DistanceXYToVertex(AliAODVertex *vtx) const
 {
-  /// error on the distance in XY to another AliAODVertex
+  // error on the distance in XY to another AliAODVertex
 
   Double_t phi,theta;
   PhiAndThetaToVertex(vtx,phi,theta);
@@ -567,7 +569,7 @@ void AliAODVertex::PhiAndThetaToVertex(AliAODVertex *vtx, P &phi, T &theta) cons
 //______________________________________________________________________________
 void AliAODVertex::PrintIndices() const 
 {
-  /// Print indices of particles originating form this vertex
+  // Print indices of particles originating form this vertex
 
   TRefArrayIter iter(&fDaughters);
   while (TObject *daugh = iter.Next()) {
@@ -578,8 +580,8 @@ void AliAODVertex::PrintIndices() const
 //______________________________________________________________________________
 const char* AliAODVertex::AsString() const
 {
-  /// Make a string describing this object
-
+  // Make a string describing this object
+  
   TString tmp(Form("%10s pos(%7.2f,%7.2f,%7.2f)",GetTypeName((AODVtx_t)GetType()),GetX(),GetY(),GetZ()));
   
   if (GetType()==kPrimary || GetType()==kMainSPD || GetType()==kPileupSPD )
@@ -610,8 +612,8 @@ const char* AliAODVertex::AsString() const
 //______________________________________________________________________________
 const char* AliAODVertex::GetTypeName(AODVtx_t type)
 {
-  /// Return an ASCII version of type
-
+  // Return an ASCII version of type
+  
   switch (type)
   {
     case kPrimary:
@@ -647,7 +649,7 @@ const char* AliAODVertex::GetTypeName(AODVtx_t type)
 //______________________________________________________________________________
 void AliAODVertex::Print(Option_t* /*option*/) const 
 {
-  /// Print information of all data members
+  // Print information of all data members
 
   printf("Vertex position:\n");
   printf("     x = %f\n", fPosition[0]);

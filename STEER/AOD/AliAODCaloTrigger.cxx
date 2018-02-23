@@ -28,9 +28,9 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "Riostream.h"
 #include <cstdlib>
 
-
+/// \cond CLASSIMP
 ClassImp(AliAODCaloTrigger)
-
+/// \endcond
 
 //_______________
 AliAODCaloTrigger::AliAODCaloTrigger() : AliVCaloTrigger(),
@@ -78,8 +78,7 @@ AliAODCaloTrigger::AliAODCaloTrigger(const char* name, const char* title) : AliV
 	fL1FrameMask(0),
 	fL1DCALV0()
 {
- ///
-
+	//
 	fL1Threshold[0] = fL1Threshold[1] = 0;
 	fL1V0[0] = fL1V0[1] = 0;	
 	fL1DCALV0[0] = fL1DCALV0[1] = 0;
@@ -103,16 +102,14 @@ fL1V0(),
 fL1FrameMask(0),
 fL1DCALV0()
 {
- ///
-
+	//
 	src.Copy(*this);
 }
 
 //_______________
 AliAODCaloTrigger::~AliAODCaloTrigger()
 {
- ///
-
+	//
 	if (fNEntries) DeAllocate();
 	
 	delete fL0Times; fL0Times = 0x0;
@@ -121,8 +118,7 @@ AliAODCaloTrigger::~AliAODCaloTrigger()
 //_______________
 void AliAODCaloTrigger::DeAllocate()
 {
- ///
-
+	//
 	delete [] fColumn;      fColumn      = 0x0;
 	delete [] fRow;         fRow         = 0x0;     
 	delete [] fAmplitude;   fAmplitude   = 0x0;
@@ -141,8 +137,7 @@ void AliAODCaloTrigger::DeAllocate()
 //_______________
 AliAODCaloTrigger& AliAODCaloTrigger::operator=(const AliAODCaloTrigger& src)
 {
- ///
-
+	//
 	if (this != &src) src.Copy(*this);
 	
 	return *this;
@@ -180,8 +175,7 @@ void AliAODCaloTrigger::Copy(TObject &obj) const
 //_______________
 void AliAODCaloTrigger::Allocate(Int_t size)
 {
- ///
-
+	//
 	if (!size) return;
 	
 	fNEntries = size;
@@ -213,8 +207,7 @@ void AliAODCaloTrigger::Allocate(Int_t size)
 //_______________
 Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t trgbits)
 {
- ///
-
+	//
 	fCurrent++;
 	
 	     fColumn[fCurrent] = col;
@@ -239,8 +232,7 @@ Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, I
 //_______________
 Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t subra, Int_t trgbits)
 {
-  ///
-
+  //
   Add(col, row, amp, time, trgtimes, ntrgtimes, trgts, trgbits);
   fL1SubRegion[fCurrent] = subra; 
   
@@ -250,8 +242,7 @@ Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, I
 //_______________
 Bool_t AliAODCaloTrigger::Next()
 {
- ///
-
+	//
 	if (fCurrent >= fNEntries - 1 || !fNEntries) return kFALSE;
 	
 	fCurrent++;
@@ -262,8 +253,7 @@ Bool_t AliAODCaloTrigger::Next()
 //_______________
 void AliAODCaloTrigger::GetPosition(Int_t& col, Int_t& row) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 	
 	col = fColumn[fCurrent];
@@ -273,8 +263,7 @@ void AliAODCaloTrigger::GetPosition(Int_t& col, Int_t& row) const
 //_______________
 void AliAODCaloTrigger::GetAmplitude(Float_t& amp) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	amp = fAmplitude[fCurrent];
@@ -283,8 +272,7 @@ void AliAODCaloTrigger::GetAmplitude(Float_t& amp) const
 //_______________
 void AliAODCaloTrigger::GetTime(Float_t& time) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	time = fTime[fCurrent];
@@ -293,8 +281,7 @@ void AliAODCaloTrigger::GetTime(Float_t& time) const
 //_______________
 void AliAODCaloTrigger::GetL1TimeSum(Int_t& amp) const
 {
- ///
-
+	//	
 	if (fCurrent == -1) return;
 
 	amp = fL1TimeSum[fCurrent];
@@ -303,8 +290,7 @@ void AliAODCaloTrigger::GetL1TimeSum(Int_t& amp) const
 //_______________
 Int_t AliAODCaloTrigger::GetL1TimeSum() const
 {
-  ///
-
+  //      
   if (fCurrent == -1) return -1;
   
   return ((fL1TimeSum)?fL1TimeSum[fCurrent]:0);
@@ -313,8 +299,7 @@ Int_t AliAODCaloTrigger::GetL1TimeSum() const
 //_______________
 void AliAODCaloTrigger::GetL1SubRegion(Int_t& sb) const
 {
-  ///
-
+  //      
   if (fCurrent == -1) return;
   
   sb = fL1SubRegion?fL1SubRegion[fCurrent]:0;
@@ -323,8 +308,7 @@ void AliAODCaloTrigger::GetL1SubRegion(Int_t& sb) const
 //_______________
 Int_t AliAODCaloTrigger::GetL1SubRegion() const
 {
-  ///
-
+  //      
   if (fCurrent == -1) return -1;
   
   return ((fL1SubRegion)?fL1SubRegion[fCurrent]:0);
@@ -333,8 +317,7 @@ Int_t AliAODCaloTrigger::GetL1SubRegion() const
 //_______________
 void AliAODCaloTrigger::GetNL0Times(Int_t& ntimes) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	ntimes = fNL0Times[fCurrent];
@@ -343,8 +326,7 @@ void AliAODCaloTrigger::GetNL0Times(Int_t& ntimes) const
 //_______________
 void AliAODCaloTrigger::GetTriggerBits(Int_t& bits) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	bits = fTriggerBits[fCurrent];
@@ -353,8 +335,7 @@ void AliAODCaloTrigger::GetTriggerBits(Int_t& bits) const
 //_______________
 void AliAODCaloTrigger::GetL0Times(Int_t times[]) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	for (Int_t i = 0; i < fNL0Times[fCurrent]; i++) times[i] = fL0Times->At(10 * fCurrent + i);
@@ -363,8 +344,7 @@ void AliAODCaloTrigger::GetL0Times(Int_t times[]) const
 //_______________
 void AliAODCaloTrigger::Print(const Option_t* /*opt*/) const
 {
- ///
-
+	//
 	if (fCurrent == -1) return;
 
 	printf("============\n");

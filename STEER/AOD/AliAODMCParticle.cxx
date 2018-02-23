@@ -13,6 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+//-------------------------------------------------------------------------
+//     Realisation of AliVParticle for MC Particles
+//     Basically a stripped down AliMCParicle / TParticle
+//     with minimum information on MC tracks
+//     Author: Christian Klein-Bösing, CERN
+//-------------------------------------------------------------------------
+
+
 #include "AliAODMCParticle.h"
 #include "AliAODEvent.h"
 
@@ -21,9 +30,7 @@
 #include "TClonesArray.h"
 
 
-
 ClassImp(AliAODMCParticle)
-
 
 TString AliAODMCParticle::fgkStdBranchName("mcparticles");
 
@@ -43,8 +50,7 @@ AliVParticle(),
   fVt(0),
   fGeneratorIndex(-1)
 {
-  /// Default Constructor
-
+  // Default Constructor
   fDaughter[0] =   fDaughter[1] = 0;
 }
 
@@ -65,8 +71,7 @@ AliAODMCParticle::AliAODMCParticle(const AliMCParticle* mcpart, Int_t label,Int_
     fVt(mcpart->Particle()->T()),
     fGeneratorIndex(mcpart->GetGeneratorIndex())
 {
-    /// Constructor
-
+    // Constructor
   fDaughter[0] =  mcpart->GetFirstDaughter(); 
   fDaughter[1] =  mcpart->GetLastDaughter();
 }
@@ -88,16 +93,16 @@ AliAODMCParticle::AliAODMCParticle(const AliAODMCParticle& mcPart) :
     fVt(mcPart.fVt),
     fGeneratorIndex(-1)
 {
-  /// Copy constructor
-
+  // Copy constructor
   fDaughter[0] = mcPart.fDaughter[0]; 
   fDaughter[1] = mcPart.fDaughter[1]; 
 }
 
 AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
 { 
-  /// assignment operator
-
+  //
+  // assignment operator
+  //
   if (this!=&mcPart) { 
     AliVParticle::operator=(mcPart);
     fPdgCode    = mcPart.fPdgCode;
@@ -123,8 +128,9 @@ AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
 
 Double_t AliAODMCParticle::M()         const
 {
-  /// return the mass
-
+  //
+  // return the mass 
+  //
     TParticlePDG* pdg =  TDatabasePDG::Instance()->GetParticle(fPdgCode);
     if (pdg) {
 	return (pdg->Mass());
@@ -136,8 +142,9 @@ Double_t AliAODMCParticle::M()         const
 
 Short_t AliAODMCParticle::Charge()     const
 {
-  /// return tha charge
-
+  //
+  // return tha charge
+  //
     TParticlePDG* pdg =  TDatabasePDG::Instance()->GetParticle(fPdgCode);
     if (pdg) {
 	return (Short_t (pdg->Charge()));
@@ -147,8 +154,7 @@ Short_t AliAODMCParticle::Charge()     const
 }
 
 void AliAODMCParticle::Print(const Option_t */*opt*/) const {
-/// Print particle information
-
+// Print particle information
   if(TDatabasePDG::Instance()->GetParticle(fPdgCode)){
     Printf(">>> PDG (%d) : %s",fPdgCode,TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName());
   }

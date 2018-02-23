@@ -1,10 +1,7 @@
-
 #include "AliNanoAODHeader.h"
 #include "AliLog.h"
 
-
 ClassImp(AliNanoAODHeader)
-
 
 AliNanoAODHeader::AliNanoAODHeader():
   AliVAODHeader(),
@@ -65,8 +62,7 @@ AliNanoAODHeader& AliNanoAODHeader::operator=(const AliNanoAODHeader& evt) {
 
 
 void  AliNanoAODHeader::Clear(Option_t * /*opt*/) {
-  /// empty storage
-
+  // empty storage
   fVars.clear();
   fVarsInt.clear();
   fNVars = 0;

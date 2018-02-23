@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODPhoton
-/// \brief AOD photon class
-///
-/// \author Yves Schutz, CERN
+//-------------------------------------------------------------------------
+//     AOD photon class
+//     Author: Yves Schutz, CERN
+//-------------------------------------------------------------------------
 
 #include <TLorentzVector.h>
 #include "AliVParticle.h"
@@ -57,16 +57,13 @@ class AliAODPhoton : public AliVParticle {
     
     
  private:
-    TLorentzVector* fMomentum;           ///< Photon 4-momentum vector
-
+    TLorentzVector* fMomentum;           // Photon 4-momentum vector
     ClassDef(AliAODPhoton,1);
-
 };
 
 inline Double_t AliAODPhoton::Phi() const
 {
-    /// Return phi
-
+    // Return phi
     Double_t phi = fMomentum->Phi();
     if (phi < 0.) phi += 2. * TMath::Pi();
     return phi;

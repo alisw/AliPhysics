@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODPmdCluster
-/// \brief AOD PMD cluster class
-///
-/// \author Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+//     AOD PMD cluster class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
 
 #include <TRef.h>
 
@@ -47,11 +47,9 @@ class AliAODPmdCluster : public AliAODCluster {
 
  private :
 
-  TRef fAssocCluster;   ///< cluster of other layer associated with this cluster
-
+  TRef fAssocCluster;   // cluster of other layer associated with this cluster
 
   ClassDef(AliAODPmdCluster,1);
-
 };
 
 #endif

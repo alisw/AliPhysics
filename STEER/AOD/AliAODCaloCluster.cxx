@@ -17,9 +17,9 @@
 #include "AliLog.h"
 #include "AliAODCaloCluster.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliAODCaloCluster) ;
-
+/// \endcond
 
 ///
 /// Default constructor.

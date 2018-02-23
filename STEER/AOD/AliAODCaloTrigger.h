@@ -1,7 +1,3 @@
-/// \class AliAODCaloTrigger
-/// \brief Container with calorimeter trigger information in the AOD event
-/// \author R. GUERNANE LPSC Grenoble CNRS/IN2P3
-
 #ifndef ALIAODCALOTRIGGER_H
 #define ALIAODCALOTRIGGER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -11,6 +7,12 @@
 
 class TArrayI;
 
+/**
+ * @class AliAODCaloTrigger
+ * @brief Container with calorimeter trigger information in the AOD event
+ *
+ * @author  R. Guernane, LPSC Grenoble CNRS/IN2P3
+ */
 class AliAODCaloTrigger : public AliVCaloTrigger 
 {
 public:
@@ -143,47 +145,47 @@ private:
         Int_t    fCurrent;					///< Index of the current entry
 
     	/** Array of col positions for a trigger entry, one entry corresponds to a certain fastor channel */
-	Int_t*   fColumn;             ///< [fNEntries]
+	Int_t*   fColumn;             // [fNEntries]
 
 	/** Array of row positions for a trigger entry, one entry corresponds to a certain fastor channel */
-	Int_t*   fRow;                ///< [fNEntries]
+	Int_t*   fRow;                // [fNEntries]
 
 	/** Array with L0 amplitudes for a trigger entry, one entry corresponds to a certain fastor channel */
-	Float_t* fAmplitude;          ///< [fNEntries]
+	Float_t* fAmplitude;          // [fNEntries]
 
 	/** Array of trigger times, one entry corresponds to a certain fastor channel */
-	Float_t* fTime;               ///< [fNEntries]
+	Float_t* fTime;               // [fNEntries]
 
 	/** Array of the number of Level0 times, one entry corresponds to a certain L0 patch */
-	Int_t*   fNL0Times;           ///< [fNEntries]
+	Int_t*   fNL0Times;           // [fNEntries]
 
 	/** Array of Level0 times, one entry corresponds to a certain L0 patch */
-	TArrayI* fL0Times;            ///<
+	TArrayI* fL0Times;            //
 
 	/** Array of the L1 time sums (L1 ADC values), one entry corresponds to a certain fastor channel */
-	Int_t*   fL1TimeSum;          ///< [fNEntries]
+	Int_t*   fL1TimeSum;          // [fNEntries]
 
 	/** Array of trigger bits: Each bit position corresponds to a certain trigger (L0/L1) fired. Note
 	 * that there is a MC offset to be taken into account. Reconsturcted triggers start from the position
 	 * of the MC offset. Trigger bits are defined in AliEMCALTriggerTypes.h. One entry correspons to a
 	 * certain fastor position.
 	 */
-	Int_t*   fTriggerBits;        ///< [fNEntries]
+	Int_t*   fTriggerBits;        // [fNEntries]
 	
 	Int_t    fL1Threshold[4];     ///< L1 thresholds from raw data
 	Int_t    fL1V0[2];            ///< L1 threshold components
 	Int_t    fL1FrameMask;        ///< Validation flag for L1 data
 	
         Int_t    fL1DCALThreshold[4]; ///< L1 thresholds from raw data
-        Int_t*   fL1SubRegion;        ///< [fNEntries]
+        Int_t*   fL1SubRegion;        // [fNEntries]
         Int_t    fL1DCALFrameMask;    ///< Validation flag for L1 data
         Int_t    fMedian[2];          ///< Background median
         Int_t    fTriggerBitWord;     ///< Trigger bit word
         Int_t    fL1DCALV0[2];        ///< L1 threshold components
 
-
+    /// \cond CLASSIMP
 	ClassDef(AliAODCaloTrigger, 5)
-
+    /// \endcond
 };
 #endif
 

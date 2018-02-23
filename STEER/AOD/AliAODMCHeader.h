@@ -1,15 +1,15 @@
+// -*- mode: C++ -*- 
 #ifndef ALIAODMCHEADER_H
 #define ALIAODMCHEADER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/// \class AliAODMCHeader
-/// \brief Implementation of   Class AliAODMCHeader
-///
-/// Header data for the ESD
-///
-/// \author Christian Klein-Boesing, CERN, <Christian.Klein-Boesing@cern.ch>
+//-------------------------------------------------------------------------
+//                      Class AliAODMCHeader
+//   Some MC specific inforamtion for filtering KINE infomration to the AOD   
+//   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
+//-------------------------------------------------------------------------
 
 class AliGenEventHeader;
 
@@ -90,25 +90,23 @@ public:
 
 private:
 
-  static TString fgkStdBranchName;      ///< Standard branch name
+  static TString fgkStdBranchName;      // Standard branch name
 
   // General event information
 
-  TString      fGenerator;         ///< Name of the generator, combination of names in case of gen cocktail
-  Double32_t   fVertex[3];         ///< MC vertex
-  Double32_t   fImpactPar;         ///< Impact parameter in case of Pb+Pb
-  Double32_t   fPtHard;            ///< [0,0,12] Pt hard for jet events
-  Double32_t   fXsection;          ///< Cross section for particlar process
-  UInt_t       fTrials;            ///< Number of trials
-  UInt_t       fEventType;         ///< MC Process Type of Event
-  Double32_t   fReactionPlaneAngle;///< MC Reaction Plane Angle
+  TString      fGenerator;         // Name of the generator, combination of names in case of gen cocktail 
+  Double32_t   fVertex[3];         // MC vertex
+  Double32_t   fImpactPar;         // Impact parameter in case of Pb+Pb
+  Double32_t   fPtHard;            // [0,0,12] Pt hard for jet events
+  Double32_t   fXsection;          // Cross section for particlar process
+  UInt_t       fTrials;            // Number of trials
+  UInt_t       fEventType;         // MC Process Type of Event
+  Double32_t   fReactionPlaneAngle;// MC Reaction Plane Angle
 
   // more details in the headers
-  TList  *fHeaders;                ///< List of all MC Headers
-
+  TList  *fHeaders;                // List of all MC Headers 
 
   ClassDef(AliAODMCHeader,6)
-
 
 };
 

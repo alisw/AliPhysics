@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODHandler
-/// \brief Implementation of the Event Handler Interface for AOD
-///
-/// \author Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+//     Implementation of the Event Handler Interface for AOD
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
 
 #include "AliVEventHandler.h"
 #include "AliAODExtension.h"
@@ -119,41 +119,39 @@ class AliAODHandler : public AliVEventHandler {
   void PrintExtensions(const TObjArray& array) const;
 
  private:
-    Bool_t                   fIsStandard;                         ///< Flag for standard aod creation
-    Bool_t                   fFillAOD;                            ///< Flag for filling of the AOD tree at the end (all or nothing evt by evt)
-    Bool_t                   fFillAODRun;                         ///< Flag for filling of the AOD tree at the end (run)
-    Bool_t                   fFillExtension;                      ///< Flag for filling or the delta AOD tree at the end
-    Bool_t                   fNeedsHeaderReplication;             ///< Flag for header replication
-    Bool_t                   fNeedsTOFHeaderReplication;          ///< Flag for header replication
-    Bool_t                   fNeedsVZEROReplication;              ///< Flag for header replication
-    Bool_t                   fNeedsTracksBranchReplication;       ///< Flag for tracks replication
-    Bool_t                   fNeedsVerticesBranchReplication;     ///< Flag for vertices replication
-    Bool_t                   fNeedsV0sBranchReplication;          ///< Flag for V0s replication
-    Bool_t                   fNeedsCascadesBranchReplication;     ///< Flag for Cascade replication
-    Bool_t                   fNeedsTrackletsBranchReplication;    ///< Flag for Tracklets replication
-    Bool_t                   fNeedsPMDClustersBranchReplication;  ///< Flag for PMDClusters replication
-    Bool_t                   fNeedsJetsBranchReplication;         ///< Flag for Jets replication
-    Bool_t                   fNeedsFMDClustersBranchReplication;  ///< Flag for FMDClusters replication
-    Bool_t                   fNeedsCaloClustersBranchReplication; ///< Flag for CaloClusters replication
-    Bool_t                   fNeedsCaloTriggerBranchReplication;  ///< Flag for Calo Trigger replication
-    Bool_t                   fNeedsMCParticlesBranchReplication;  ///< Flag for MCParticles replication
-    Bool_t                   fNeedsDimuonsBranchReplication;      ///< Flag for Dimuons replication
-    Bool_t                   fNeedsHMPIDBranchReplication;        ///< Flag for HMPID replication
-    Bool_t                   fAODIsReplicated;                    ///< Flag true if replication as been executed
+    Bool_t                   fIsStandard;                         // Flag for standard aod creation
+    Bool_t                   fFillAOD;                            // Flag for filling of the AOD tree at the end (all or nothing evt by evt)
+    Bool_t                   fFillAODRun;                         // Flag for filling of the AOD tree at the end (run)
+    Bool_t                   fFillExtension;                      // Flag for filling or the delta AOD tree at the end
+    Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
+    Bool_t                   fNeedsTOFHeaderReplication;          // Flag for header replication
+    Bool_t                   fNeedsVZEROReplication;              // Flag for header replication
+    Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
+    Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
+    Bool_t                   fNeedsV0sBranchReplication;          // Flag for V0s replication
+    Bool_t                   fNeedsCascadesBranchReplication;     // Flag for Cascade replication
+    Bool_t                   fNeedsTrackletsBranchReplication;    // Flag for Tracklets replication
+    Bool_t                   fNeedsPMDClustersBranchReplication;  // Flag for PMDClusters replication
+    Bool_t                   fNeedsJetsBranchReplication;         // Flag for Jets replication
+    Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
+    Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
+    Bool_t                   fNeedsCaloTriggerBranchReplication;  // Flag for Calo Trigger replication
+    Bool_t                   fNeedsMCParticlesBranchReplication;  // Flag for MCParticles replication
+    Bool_t                   fNeedsDimuonsBranchReplication;      // Flag for Dimuons replication
+    Bool_t                   fNeedsHMPIDBranchReplication;        // Flag for HMPID replication
+    Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
     // Counters for SetAutoFlush configuration
-    Long64_t                 fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
-    Long64_t                 fMemCountAOD;            //!<! accumulated AOD size before AutoSave
-    AliAODEvent             *fAODEvent;               //!<! Pointer to the AOD event
-    AliMCEventHandler       *fMCEventH;               //!<! Pointer to mc event handler needed not to depend on the manager
-    TTree                   *fTreeA;                  //!<! tree for AOD persistency
-    TFile                   *fFileA;                  //!<! Output file
-    TString                  fFileName;               ///< Output file name
-    TObjArray               *fExtensions;             ///< List of extensions
-    TObjArray               *fFilters;                ///< List of filtered AOD's
-
+    Long64_t                 fTreeBuffSize;           //  allowed uncompressed buffer size per tree
+    Long64_t                 fMemCountAOD;            //! accumulated AOD size before AutoSave 
+    AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
+    AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager
+    TTree                   *fTreeA;                  //! tree for AOD persistency
+    TFile                   *fFileA;                  //! Output file
+    TString                  fFileName;               //  Output file name
+    TObjArray               *fExtensions;             //  List of extensions
+    TObjArray               *fFilters;                //  List of filtered AOD's
 
   ClassDef(AliAODHandler, 8)
-
 };
 
 #endif
