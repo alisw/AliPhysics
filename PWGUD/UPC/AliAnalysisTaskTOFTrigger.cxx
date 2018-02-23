@@ -211,7 +211,7 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTriggerCounterIR2);
   hNFiredMaxiPads = new TH1F("hNFiredMaxiPads","hNFiredMaxiPads",1657,-0.5,1656.5);
   fOutputList->Add(hNFiredMaxiPads);
-  hNTracklets = new TH1F("hNTracklets","hNTracklets",1657,-0.5,1656.5);
+  hNTracklets = new TH1F("hNTracklets","hNTracklets",1001,-0.5,1000.5);
   fOutputList->Add(hNTracklets);
   hDetIn0 = new TH1I("hDetIn0","hDetIn0",18,-0.5,17.5),
   fOutputList->Add(hDetIn0);
@@ -229,6 +229,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTrackPt);
   hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",13,-2.5,10.5);
   fOutputList->Add(hNMaxiPadIn);
+  hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
+  fOutputList->Add(hNCrossTracks);
 
   PostData(1, fOutputList);
 
@@ -441,6 +443,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   // filling TEfficiency object
   for (Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
     for (Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
+      hNCrossTracks->Fill(numTracksPerMaxiPad[indexLTM][channelCTTM]);
       const Bool_t isON = fTOFmask->IsON(indexLTM, channelCTTM);
       for (Int_t l=0; l<numTracksPerMaxiPad[indexLTM][channelCTTM]; ++l)
         eff_MaxiPadLTM_All->Fill(isON, indexLTM, channelCTTM);
