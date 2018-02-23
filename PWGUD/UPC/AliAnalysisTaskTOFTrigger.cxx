@@ -441,24 +441,24 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   // filling TEfficiency object
   for (Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
     for (Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
+      const Bool_t isON = fTOFmask->IsON(indexLTM, channelCTTM);
+      for (Int_t l=0; l<numTracksPerMaxiPad[indexLTM][channelCTTM]; ++l)
+        eff_MaxiPadLTM_All->Fill(isON, indexLTM, channelCTTM);
 
-      if (numTracksPerMaxiPad[indexLTM][channelCTTM])
-        eff_MaxiPadLTM_All->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+      for (Int_t l=0; l<numMuonTracksPerMaxiPad[indexLTM][channelCTTM]; ++l)
+        eff_MaxiPadLTM_Mu->Fill(isON, indexLTM, channelCTTM);
 
-      if (numMuonTracksPerMaxiPad[indexLTM][channelCTTM])
-        eff_MaxiPadLTM_Mu->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
-
-      if (numElectronTracksPerMaxiPad[indexLTM][channelCTTM])
-        eff_MaxiPadLTM_El->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+      for (Int_t l=0; l<numElectronTracksPerMaxiPad[indexLTM][channelCTTM]; ++l)
+        eff_MaxiPadLTM_El->Fill(isON, indexLTM, channelCTTM);
 
       if (numTracksPerMaxiPad[indexLTM][channelCTTM] == 1) {
-        eff_MaxiPadLTM_1Trk_All->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+        eff_MaxiPadLTM_1Trk_All->Fill(isON, indexLTM, channelCTTM);
 
         if (numMuonTracksPerMaxiPad[indexLTM][channelCTTM])
-          eff_MaxiPadLTM_1Trk_Mu->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+          eff_MaxiPadLTM_1Trk_Mu->Fill(isON, indexLTM, channelCTTM);
 
         if (numElectronTracksPerMaxiPad[indexLTM][channelCTTM])
-          eff_MaxiPadLTM_1Trk_El->Fill(fTOFmask->IsON(indexLTM, channelCTTM), indexLTM, channelCTTM);
+          eff_MaxiPadLTM_1Trk_El->Fill(isON, indexLTM, channelCTTM);
       }
     }
   }
