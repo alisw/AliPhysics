@@ -3,14 +3,16 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//-------------------------------------------------------------------------
 /// \class AliAODCluster
 /// \brief Base class for calorimeter cluster data handling
 ///
-/// Base class to access calorimeter
-/// (EMCAL, PHOS, PMD, FMD) cluster data
+///   Base class to access calorimeter 
+///   (EMCAL, PHOS, PMD, FMD) cluster data
 ///
 ///  \author Markus Oldenburg, CERN
-/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble, PHOS/EMCal stuff.
+//-------------------------------------------------------------------------
 
 #include <AliVCluster.h>
 
@@ -120,14 +122,14 @@ class AliAODCluster : public AliVCluster {
   Double32_t    fChi2;           ///< Chi2 of unfolding fit (probably not necessary for PMD).
   
   /// Pointer to PID object, array with bayesian probability weights.
-  Double32_t    fPID[13];        //[0.,1.,8]
+  Double32_t    fPID[13];        //[0.,1.,8] 
   
   Int_t         fID;             ///< Unique cluster ID, points back to the ESD cluster.
   
-  Int_t         fNLabel;         ///< Number of original MC particles generating this cluster.
+  Int_t         fNLabel;         ///< Number of original MC particles generating this cluster.     
   
   /// Particle label array, points back to MC particles that generated the cluster.
-  Int_t        *fLabel;          //[fNLabel]
+  Int_t        *fLabel;          //[fNLabel] 
   
   UInt_t        fFilterMap;      ///< Filter information, one bit per set of cuts.
   
@@ -136,11 +138,11 @@ class AliAODCluster : public AliVCluster {
   Double_t      fMCEnergyFraction; //!<! MC energy (embedding)
   
   /// Array with fraction of deposited energy per MC particle contributing to the cluster.
-  UShort_t     *fClusterMCEdepFraction;//[fNLabel]
+  UShort_t     *fClusterMCEdepFraction;//[fNLabel] 
 
-
+  /// \cond CLASSIMP
   ClassDef(AliAODCluster,7) ;
-
+  /// \endcond
 
 };
 

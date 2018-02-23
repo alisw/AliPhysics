@@ -16,9 +16,9 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliAODJet.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliAODPWG4ParticleCorrelation)
-
+/// \endcond
 
 //______________________________________________________________________________
 ///

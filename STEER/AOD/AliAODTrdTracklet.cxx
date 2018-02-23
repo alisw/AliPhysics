@@ -1,12 +1,12 @@
-
 #include "AliAODTrdTracklet.h"
+
 AliAODTrdTracklet::AliAODTrdTracklet() :
   AliVTrdTracklet(),
   fHCId(-1),
   fTrackletWord(0),
   fLabel(-1)
 {
-  /// default constructor
+  // default constructor
 
 }
 
@@ -16,7 +16,7 @@ AliAODTrdTracklet::AliAODTrdTracklet(const AliVTrdTracklet &rhs) :
   fTrackletWord(rhs.GetTrackletWord()),
   fLabel(rhs.GetLabel())
 {
-  /// default constructor
+  // default constructor
 
 }
 
@@ -26,7 +26,7 @@ AliAODTrdTracklet::AliAODTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t la
   fTrackletWord(trackletWord),
   fLabel(label)
 {
-  /// constructor
+  // constructor
 
 }
 
@@ -36,13 +36,13 @@ AliAODTrdTracklet::AliAODTrdTracklet(const AliAODTrdTracklet& rhs) :
   fTrackletWord(rhs.fTrackletWord),
   fLabel(rhs.fLabel)
 {
-  /// copy constructor
+  // copy constructor
 
 }
 
 AliAODTrdTracklet& AliAODTrdTracklet::operator=(const AliAODTrdTracklet& rhs)
 {
-  /// assignment operator
+  // assignment operator
 
   if (&rhs != this) {
     AliVTrdTracklet::operator=(rhs);
@@ -57,14 +57,14 @@ AliAODTrdTracklet& AliAODTrdTracklet::operator=(const AliAODTrdTracklet& rhs)
 
 void AliAODTrdTracklet::Copy(TObject &rhs) const
 {
-  /// copy
+  // copy
 
   AliVTrdTracklet::Copy(rhs);
 }
 
 Int_t AliAODTrdTracklet::GetBinY() const
 {
-  /// returns (signed) value of Y
+  // returns (signed) value of Y
 
   if (fTrackletWord & 0x1000) {
     return -((~(fTrackletWord-1)) & 0x1fff);
@@ -76,7 +76,7 @@ Int_t AliAODTrdTracklet::GetBinY() const
 
 Int_t AliAODTrdTracklet::GetBinDy() const
 {
-  /// returns (signed) value of the deflection length
+  // returns (signed) value of the deflection length
 
   if (fTrackletWord & (1 << 19)) {
     return -((~((fTrackletWord >> 13) - 1)) & 0x7f);

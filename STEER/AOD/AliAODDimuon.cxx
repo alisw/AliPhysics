@@ -1,10 +1,24 @@
+// AliAODDimuon: a class for AODs for the MUON Arm of the ALICE Experiment
+// Author: P. Cortese, Universita' del Piemonte Orientale in Alessandria and
+// INFN of Torino - Italy
+//
+// The class defines a dimuon pair object from two AliAODTrack objects.
+// AliAODDimuon objects are supposed to be added to the AliAODEvent structure
+// during analysis. They would then allow to calculate the dimuon-related
+// kinematic variables with a minimal disk occupancy.
+// The payload of the class has been reduced to two pointers to the two
+// tracks. An instance of this class has also to be added to the AliAODEvent 
+// structure to provide additional information that is specific to MUON and 
+// therefore has not been included into the AOD header.
+// Two transient data members are not stored on file as they can be recomputed
+// at runtime.
+//
+
 #include "AliAODDimuon.h"
 #include "TLorentzVector.h"
 #define AliAODDimuon_CXX
 
-
 ClassImp(AliAODDimuon)
-
 
 //______________________________________________________________________________
 AliAODDimuon::AliAODDimuon():AliVParticle(),fP(0),fMProton(0.93827231)
@@ -19,8 +33,7 @@ AliAODDimuon::AliAODDimuon(const AliAODDimuon& dimu):
   AliVParticle(dimu),
   fP(0),fMProton(0.93827231)
 {
-  /// copy constructor
-
+  // copy constructor
   fMu[0]=dimu.Mu(0);
   fMu[1]=dimu.Mu(1);
 }
@@ -28,8 +41,7 @@ AliAODDimuon::AliAODDimuon(const AliAODDimuon& dimu):
 //______________________________________________________________________________
 AliAODDimuon &AliAODDimuon::operator=(const AliAODDimuon& dimu)
 {
-  /// assignment operator
-
+  // assignment operator
   if(&dimu != this){
     delete fP;
     fP=0;
@@ -44,7 +56,7 @@ AliAODDimuon &AliAODDimuon::operator=(const AliAODDimuon& dimu)
 AliAODDimuon::AliAODDimuon(TObject *mu0, TObject *mu1):
   fP(0),fMProton(0.93827231)
 {
-  /// Creates a dimuon pair from two tracks
+  // Creates a dimuon pair from two tracks
 
   fMu[0]=mu0;
   fMu[1]=mu1;
@@ -53,8 +65,7 @@ AliAODDimuon::AliAODDimuon(TObject *mu0, TObject *mu1):
 //______________________________________________________________________________
 AliAODDimuon::~AliAODDimuon()
 {
-  /// destructor
-
+  // destructor
   delete fP;
 }
 
@@ -62,15 +73,13 @@ AliAODDimuon::~AliAODDimuon()
 void AliAODDimuon::Clear(Option_t*)
 {
   /// delete our internal memory
-
   delete fP;
   fP = 0x0;
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Px() const {
-  /// Px of the dimuon
-
+  // Px of the dimuon
   if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Px()+
          ((AliAODTrack*)fMu[1].GetObject())->Px();
@@ -78,8 +87,7 @@ Double_t AliAODDimuon::Px() const {
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Py() const {
-  /// Py of the dimuon
-
+  // Py of the dimuon
   if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Py()+
          ((AliAODTrack*)fMu[1].GetObject())->Py();
@@ -87,8 +95,7 @@ Double_t AliAODDimuon::Py() const {
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Pz() const {
-  /// Pz of the dimuon
-
+  // Pz of the dimuon
   if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Pz()+
          ((AliAODTrack*)fMu[1].GetObject())->Pz();
@@ -96,8 +103,7 @@ Double_t AliAODDimuon::Pz() const {
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Pt() const {
-  /// Pt of the dimuon
-
+  // Pt of the dimuon
   if(CheckPointers())return -999999999;
   Double_t px=Px();
   Double_t py=Py();
@@ -107,8 +113,8 @@ Double_t AliAODDimuon::Pt() const {
 //______________________________________________________________________________
 Double_t AliAODDimuon::E() const 
 {
-    /// Dimuon energy
-
+    // Dimuon energy
+  
   if(CheckPointers())return -999999999;
 
   return ((AliAODTrack*)fMu[0].GetObject())->E()+ ((AliAODTrack*)fMu[1].GetObject())->E();
@@ -116,32 +122,28 @@ Double_t AliAODDimuon::E() const
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::P() const {
-  /// Dimuon momentum
-
+  // Dimuon momentum
   if(CheckPointers())return -999999999;
   return TLV()->P();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::M() const {
-  /// Dimuon invariant mass
-
+  // Dimuon invariant mass
   if(CheckPointers())return -999999999;
   return TLV()->M();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Eta() const {
-  /// Dimuon pseudorapidity
-
+  // Dimuon pseudorapidity
   if(CheckPointers())return -999999999;
   return TLV()->Eta();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Phi() const {
-  /// Dimuon asimuthal angle
-
+  // Dimuon asimuthal angle
   if(CheckPointers())return -999999999;
   return TLV()->Phi();
 }
@@ -149,24 +151,21 @@ Double_t AliAODDimuon::Phi() const {
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Theta() const {
-  /// Dimuon polar angle
-
+  // Dimuon polar angle
   if(CheckPointers())return -999999999;
   return TLV()->Theta();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Y() const {
-  /// Dimuon rapidity
-
+  // Dimuon rapidity
   if(CheckPointers())return -999999999;
   return TLV()->Rapidity();
 }
 
 //______________________________________________________________________________
 Short_t AliAODDimuon::Charge() const {
-  /// Dimuon charge
-
+  // Dimuon charge
   if(CheckPointers())return -999;
   return ((AliAODTrack*)fMu[0].GetObject())->Charge()+
          ((AliAODTrack*)fMu[1].GetObject())->Charge();
@@ -174,8 +173,7 @@ Short_t AliAODDimuon::Charge() const {
 
 //______________________________________________________________________________
 Int_t AliAODDimuon::CheckPointers() const{
-  /// Checks if the track pointers have been initialized
-
+  // Checks if the track pointers have been initialized
   if(fMu[0]==0||fMu[1]==0){
     printf("Dimuon not initialized\n");
     return -999;
@@ -189,8 +187,7 @@ Int_t AliAODDimuon::CheckPointers() const{
 
 //______________________________________________________________________________
 void AliAODDimuon::SetMu(Int_t imu, AliAODTrack *mu){
-  /// Assign a track pointer
-
+  // Assign a track pointer
   if (imu==0||imu==1){
     delete fP;
     fP=0;
@@ -200,8 +197,7 @@ void AliAODDimuon::SetMu(Int_t imu, AliAODTrack *mu){
 
 //______________________________________________________________________________
 void AliAODDimuon::SetMuons(AliAODTrack *mu0, AliAODTrack *mu1){
-  /// Assign the track pointers
-
+  // Assign the track pointers
   fMu[0]=mu0;
   fMu[1]=mu1;
   delete fP;
@@ -210,7 +206,7 @@ void AliAODDimuon::SetMuons(AliAODTrack *mu0, AliAODTrack *mu1){
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::XF() {
-  /// Dimuon Feynman x
+  // Dimuon Feynman x
 
   if(CheckPointers())return -999999999;
 
@@ -227,8 +223,7 @@ Double_t AliAODDimuon::XF() {
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::CostCS(){
-  /// Calculation the Collins-Soper angle (adapted from code by R. Arnaldi)
-
+  // Calculation the Collins-Soper angle (adapted from code by R. Arnaldi)
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500.;  //temporary
   if(ebeam<=0){
@@ -296,8 +291,7 @@ Double_t AliAODDimuon::CostCS(){
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::CostHe(){
-  /// Calculation the Helicity polarization angle (adapted from code by R. Arnaldi)
-
+  // Calculation the Helicity polarization angle (adapted from code by R. Arnaldi)
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500; //temporary
   if(ebeam<=0){
@@ -356,8 +350,7 @@ Double_t AliAODDimuon::CostHe(){
 
 //________________________________________________________________________
 Double_t AliAODDimuon::PhiCS(){
-  /// Cosinus of the Collins-Soper polar decay angle
-
+  // Cosinus of the Collins-Soper polar decay angle
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500.;  //temporary
   if(ebeam<=0){
@@ -421,8 +414,7 @@ Double_t AliAODDimuon::PhiCS(){
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::PhiHe(){
-  /// Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
-
+  // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500; //temporary
   if(ebeam<=0){
@@ -486,8 +478,7 @@ Double_t AliAODDimuon::PhiHe(){
 
 //______________________________________________________________________________
 Int_t AliAODDimuon::AnyPt(){
-  /// Test if the two muons match two trigger tracks
-
+  // Test if the two muons match two trigger tracks
   if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTrigger());
@@ -495,8 +486,7 @@ Int_t AliAODDimuon::AnyPt(){
 
 //______________________________________________________________________________
 Int_t AliAODDimuon::LowPt(){
-  /// Test if the two muons match two trigger tracks with a "Low Pt" cut
-
+  // Test if the two muons match two trigger tracks with a "Low Pt" cut
   if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerLowPt())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerLowPt());
@@ -504,8 +494,7 @@ Int_t AliAODDimuon::LowPt(){
 
 //______________________________________________________________________________
 Int_t AliAODDimuon::HighPt(){
-  /// Test if the two muons match two trigger tracks with a "High Pt" cut
-
+  // Test if the two muons match two trigger tracks with a "High Pt" cut
   if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerHighPt())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerHighPt());
@@ -513,8 +502,7 @@ Int_t AliAODDimuon::HighPt(){
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::MaxChi2Match(){
-  /// Maximum matching Chi2 between track and trigger track
-
+  // Maximum matching Chi2 between track and trigger track
   if(CheckPointers())return -999999999;
   return TMath::Max((((AliAODTrack*)fMu[0].GetObject())->GetChi2MatchTrigger()),
                     (((AliAODTrack*)fMu[1].GetObject())->GetChi2MatchTrigger()));

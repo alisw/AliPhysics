@@ -4,12 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 
-/// \class AliAODMCParticle
-/// \brief AliVParticle realisation for MC Particles in the AOD
-///
-/// Stripped dow AliMCParticle
-///
-/// \author Christian Klein Bösing, CERN
+//-------------------------------------------------------------------------
+//     AliVParticle realisation for MC Particles in the AOD
+//     Stripped dow AliMCParticle
+//     Author: Christian Klein Bösing, CERN
+//-------------------------------------------------------------------------
 
 #include <Rtypes.h>
 #include <TParticlePDG.h>
@@ -97,8 +96,7 @@ class AliAODMCParticle: public AliVParticle {
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
     virtual UInt_t GetStatus() const {
-      /// bit shift by 16
-
+      // bit shift by 16
       return fFlag>>16;
     }
 
@@ -149,24 +147,24 @@ class AliAODMCParticle: public AliVParticle {
 
  private:
 
-    static TString fgkStdBranchName;      ///< Standard branch name
+    static TString fgkStdBranchName;      // Standard branch name
 
 
-  Int_t            fPdgCode;              ///< PDG code of the particle
-  UInt_t           fFlag;                 ///< Flag for indication of primary etc, Status code in the upper 16 bits 17-32, MC process id (AKA UniqueID) in bins 16-9)
-  Int_t            fLabel;                ///< Label of the original MCParticle
-  Int_t            fMother;               ///< Index of the mother particles
-  Int_t            fDaughter[2];          ///< Indices of the daughter particles
-  Double32_t       fPx;                   ///< x component of momentum
-  Double32_t       fPy;                   ///< y component of momentum
-  Double32_t       fPz;                   ///< z component of momentum
-  Double32_t       fE;                    ///< Energy
+  Int_t            fPdgCode;              // PDG code of the particle
+  UInt_t           fFlag;                 // Flag for indication of primary etc, Status code in the upper 16 bits 17-32, MC process id (AKA UniqueID) in bins 16-9)  
+  Int_t            fLabel;                // Label of the original MCParticle 
+  Int_t            fMother;               // Index of the mother particles
+  Int_t            fDaughter[2];          // Indices of the daughter particles
+  Double32_t       fPx;                   // x component of momentum
+  Double32_t       fPy;                   // y component of momentum
+  Double32_t       fPz;                   // z component of momentum
+  Double32_t       fE;                    // Energy
 
-  Double32_t       fVx;                   ///< [0.,0.,12] x of production vertex
-  Double32_t       fVy;                   ///< [0.,0.,12] y of production vertex
-  Double32_t       fVz;                   ///< [0.,0.,12] z of production vertex
-  Double32_t       fVt;                   ///< [0.,0.,12] t of production vertex
-  Short_t          fGeneratorIndex;       //!<! Index of generator in cocktail
+  Double32_t       fVx;                   // [0.,0.,12] x of production vertex
+  Double32_t       fVy;                   // [0.,0.,12] y of production vertex
+  Double32_t       fVz;                   // [0.,0.,12] z of production vertex
+  Double32_t       fVt;                   // [0.,0.,12] t of production vertex
+  Short_t          fGeneratorIndex;       //! Index of generator in cocktail     
   // Copy the uniquID to another data member? unique ID is correctly handled 
   // via TOBject Copy construct but not by AliVParticle ctor (no passing of 
   // TParticles
@@ -184,9 +182,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-
   ClassDef(AliAODMCParticle,9)  // AliVParticle realisation for AODMCParticles
-
 
 };
 

@@ -3,19 +3,21 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//_________________________________________________________________________
 /// \class AliAODPWG4Particle
 /// \brief Container for input particle information on CaloTrackCorr package
 ///
-/// AOD objects class in use in the CaloTrackCorrelations
-/// analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations)
-/// Common format for selected tracks or calorimeter clusters to give as input
-/// for different analysis. Basically it contains the particle kinematics
-/// and some detailed parameters of the calorimeter cluster and of the intermediate
-/// steps of the analysis.
+///  AOD objects class in use in the CaloTrackCorrelations
+///  analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations)
+///  Common format for selected tracks or calorimeter clusters to give as input
+///  for different analysis. Basically it contains the particle kinematics
+///  and some detailed parameters of the calorimeter cluster and of the intermediate
+///  steps of the analysis.
 ///
-/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///  More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
 ///
-/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+///  \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//-------------------------------------------------------------------------
 
 //-- ROOT system --
 #include <TLorentzVector.h>
@@ -170,11 +172,11 @@ class AliAODPWG4Particle : public AliVParticle {
  private:
   
   TLorentzVector* fMomentum;    ///< Photon 4-momentum vector
-  Int_t      fPdg ;             ///< type of identified particle, same code as PDG, but this is not a MonteCarlo particle
+  Int_t      fPdg ;             ///< type of identified particle, same code as PDG, but this is not a MonteCarlo particle 
   Int_t      fTag ;             ///< tag of particle (decay, fragment, prompt photon), MC
   Int_t      fLabel ;           ///< MC label
   Int_t      fCaloLabel[2];     ///< CaloCluster index, 1 for photons, 2 for pi0.
-  Int_t      fTrackLabel[4];    ///< Track lable, 1 for pions, 2 for conversion photons
+  Int_t      fTrackLabel[4];    ///< Track lable, 1 for pions, 2 for conversion photons 
   UInt_t     fDetectorTag ;     ///< Detector where particle was measured, integer
   
   // Calo specific
@@ -205,9 +207,9 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fInputFileIndex;   ///< 0, standard input, 1 first input added. Only possible one for now, not really used.
   Int_t      fBtag;             ///< tag particle from B.
 
-
+  /// \cond CLASSIMP
   ClassDef(AliAODPWG4Particle, 9);
-
+  /// \endcond
 
 };
 

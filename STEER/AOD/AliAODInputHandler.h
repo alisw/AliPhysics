@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODInputHandler
-/// \brief AOD Input Handler realisation of the AliVEventHandler interface
-///
-/// \author Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+//     AOD Input Handler realisation of the AliVEventHandler interface
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
 
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
@@ -74,30 +74,28 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
  private:
-    AliAODEvent    *fEvent;   //!<! Pointer to the event
-    AliMCEvent     *fMCEvent; //!<! Pointer to the MCEvent
-    TList          *fFriends; ///< List of friend trees
-    AliAODpidUtil  *fAODpidUtil; //!<! Pointer to PID information
+    AliAODEvent    *fEvent;   //! Pointer to the event
+    AliMCEvent     *fMCEvent; //! Pointer to the MCEvent
+    TList          *fFriends; //  List of friend trees
+    AliAODpidUtil  *fAODpidUtil; //! Pointer to PID information
   
 // Support for merged events
-    Bool_t          fMergeEvents;     ///< Flag for event merging
-    Bool_t          fMergeTracks;        ///< Merge tracks
-    Bool_t          fMergeEMCALClusters; ///< Merge PHOS  cluster
-    Bool_t          fMergePHOSClusters;  ///< Merge EMCAL cluster
-    Bool_t          fMergeEMCALCells;    ///< Merge PHOS  cluster
-    Bool_t          fMergePHOSCells;     ///< Merge EMCAL cluster
-    Bool_t          fMergeEMCALTrigger;    ///< Merge EMCAL  cluster
-    Bool_t          fMergePHOSTrigger;     ///< Merge PHOS cluster
-    Bool_t          fMergeHMPIDrings;      ///< Merge HMPID rings information
-    Bool_t          fFriendsConnected;///< Friends are connected
-    TFile          *fFileToMerge;     //!<! File for merging
-    TTree          *fTreeToMerge;     //!<! Tree for merging
-    AliAODEvent    *fAODEventToMerge; //!<! Event for merging
-    Int_t           fMergeOffset;     //!<! Event offset for merging
-    TH2F*           fHistStatistics[2]; //!<! how many events are cut away why {all,bin 0}
-
+    Bool_t          fMergeEvents;     // Flag for event merging
+    Bool_t          fMergeTracks;        // Merge tracks
+    Bool_t          fMergeEMCALClusters; // Merge PHOS  cluster
+    Bool_t          fMergePHOSClusters;  // Merge EMCAL cluster
+    Bool_t          fMergeEMCALCells;    // Merge PHOS  cluster
+    Bool_t          fMergePHOSCells;     // Merge EMCAL cluster
+    Bool_t          fMergeEMCALTrigger;    // Merge EMCAL  cluster
+    Bool_t          fMergePHOSTrigger;     // Merge PHOS cluster
+    Bool_t          fMergeHMPIDrings;      // Merge HMPID rings information
+    Bool_t          fFriendsConnected;// Friends are connected
+    TFile          *fFileToMerge;     //! File for merging
+    TTree          *fTreeToMerge;     //! Tree for merging
+    AliAODEvent    *fAODEventToMerge; //! Event for merging
+    Int_t           fMergeOffset;     //! Event offset for merging
+    TH2F*           fHistStatistics[2]; //! how many events are cut away why {all,bin 0}
     ClassDef(AliAODInputHandler, 4);
-
 };
 
 #endif

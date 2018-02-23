@@ -6,14 +6,13 @@
 
 /* $Id$ */
 
-/// \class AliAODExtension
-/// \brief Support class for AOD extensions.
-///
-/// This is created by the user analysis that requires a separate file for some AOD branches.
-/// The name of the AliAODExtension object is the file name where the AOD branches will be
-/// stored.
-///
-/// \author Andrei Gheata, CERN
+//-------------------------------------------------------------------------
+//     Support class for AOD extensions. This is created by the user analysis
+//     that requires a separate file for some AOD branches. The name of the 
+//     AliAODExtension object is the file name where the AOD branches will be
+//     stored.
+//     Author: Andrei Gheata, CERN
+//-------------------------------------------------------------------------
 
 #ifndef ROOT_TNamed
 #  include "TNamed.h"
@@ -82,24 +81,22 @@ private:
   AliAODExtension& operator=(const AliAODExtension&);  // Not implemented
   
 private:
-  AliAODEvent             *fAODEvent;               //!<! Pointer to the AOD event
-  TTree                   *fTreeE;                  //!<! tree for AOD persistency
-  TFile                   *fFileE;                  //!<! Output file
-  Int_t                    fNtotal;                 //!<! Number of processed events
-  Int_t                    fNpassed;                //!<! Number of events that passed the filter
-  Bool_t                   fSelected;               //!<! Select current event for filtered AOD's. Made false at event start.
-  Long64_t                 fTreeBuffSize;            ///< Requested buffer size for AOD tree
-  Long64_t                 fMemCountAOD;             ///< Number of bytes filled in tree (accumulates until requested bytes reached)
+  AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
+  TTree                   *fTreeE;                  //! tree for AOD persistency
+  TFile                   *fFileE;                  //! Output file
+  Int_t                    fNtotal;                 //! Number of processed events
+  Int_t                    fNpassed;                //! Number of events that passed the filter
+  Bool_t                   fSelected;               //! Select current event for filtered AOD's. Made false at event start.
+  Long64_t                 fTreeBuffSize;            // Requested buffer size for AOD tree
+  Long64_t                 fMemCountAOD;             // Number of bytes filled in tree (accumulates until requested bytes reached)
   
-  TMap*                    fRepFiMap; ///< which branch(es) to filter out / and or replicate
-  TList*                   fRepFiList; ///< list of unique filter/replicator
+  TMap*                    fRepFiMap; // which branch(es) to filter out / and or replicate
+  TList*                   fRepFiList; // list of unique filter/replicator
   
-  Bool_t                   fEnableReferences; ///< whether or not to enable the TRefTable branch
-  TList*                   fObjectList; //!<! internal list of which objects to keep
-
+  Bool_t                   fEnableReferences; // whether or not to enable the TRefTable branch
+  TList*                   fObjectList; //! internal list of which objects to keep 
 
   ClassDef(AliAODExtension, 3) // Support for extra AOD branches in a separate AOD file
-
 };
 
 #endif

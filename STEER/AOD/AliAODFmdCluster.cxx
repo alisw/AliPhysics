@@ -15,11 +15,14 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD FMD cluster class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+
 #include "AliAODFmdCluster.h"
 
-
 ClassImp(AliAODFmdCluster)
-
   
 //______________________________________________________________________________
 AliAODFmdCluster::AliAODFmdCluster() : 
@@ -44,8 +47,7 @@ AliAODFmdCluster::AliAODFmdCluster(Int_t id,
   fProdVertex(prodVertex),
   fPrimTrack(primTrack)
 {
-  /// constructor
-
+  // constructor
 }
 
 //______________________________________________________________________________
@@ -62,16 +64,14 @@ AliAODFmdCluster::AliAODFmdCluster(Int_t id,
   fProdVertex(prodVertex),
   fPrimTrack(primTrack)
 {
-  /// constructor
-
+  // constructor
 }
 
 
 //______________________________________________________________________________
 AliAODFmdCluster::~AliAODFmdCluster() 
 {
-  /// destructor
-
+  // destructor
 }
 
 
@@ -81,15 +81,13 @@ AliAODFmdCluster::AliAODFmdCluster(const AliAODFmdCluster& clus) :
   fProdVertex(clus.fProdVertex),
   fPrimTrack(clus.fPrimTrack)
 {
-  /// Copy constructor
-
+  // Copy constructor
 }
 
 //______________________________________________________________________________
 AliAODFmdCluster& AliAODFmdCluster::operator=(const AliAODFmdCluster& clus)
 {
-  /// Assignment operator
-
+  // Assignment operator
   if(this!=&clus) {
 
     AliAODCluster::operator=(clus);

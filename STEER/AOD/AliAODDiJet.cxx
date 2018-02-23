@@ -15,14 +15,18 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD class for di-jets
+//     The present version is for test purposes only
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+
 #include <TLorentzVector.h>
 #include <TProcessID.h>
 #include "AliAODDiJet.h"
 #include "AliAODJet.h"
 
-
 ClassImp(AliAODDiJet)
-
 
 
 //______________________________________________________________________________
@@ -41,8 +45,7 @@ AliAODDiJet::AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     fJet1(0),
     fJet2(0)
 {
-  /// another constructor
-
+  // another constructor
 }
 
 AliAODDiJet::AliAODDiJet(TLorentzVector & p):
@@ -51,23 +54,20 @@ AliAODDiJet::AliAODDiJet(TLorentzVector & p):
     fJet1(0),
     fJet2(0)
 {
-  /// constructor
-
+  // constructor
 }
 
 
 //______________________________________________________________________________
 AliAODDiJet::~AliAODDiJet() 
 {
-  /// destructor
-
+  // destructor
     if (fJetR) fJetR->Delete();
 }
 
 void AliAODDiJet::SetJetRefs(AliAODJet* jet1, AliAODJet* jet2) 
 {
-/// Set references to the two jets
-
+// Set references to the two jets
     if (fJetR) fJetR->Delete();
     fJetR = new TRefArray(TProcessID::GetProcessWithUID( jet1 ));
     fJetR->Add(jet1);
@@ -80,8 +80,8 @@ void AliAODDiJet::SetJetRefs(AliAODJet* jet1, AliAODJet* jet2)
 //______________________________________________________________________________
 Float_t AliAODDiJet::DeltaPhi()
 {
-  /// phi distance between the two jets
-  /// the result is in the interval [0,pi]
+  // phi distance between the two jets
+  // the result is in the interval [0,pi]
 
     Float_t phi1 = Jet(0)->Phi();
     Float_t phi2 = Jet(1)->Phi();
@@ -94,8 +94,8 @@ Float_t AliAODDiJet::DeltaPhi()
 //______________________________________________________________________________
 Float_t AliAODDiJet::PhiImbalance()
 {
-  /// phi imbalance wrt back-to-back
-  /// the result is in the interval [-pi,pi]
+  // phi imbalance wrt back-to-back
+  // the result is in the interval [-pi,pi]
 
     Float_t phi1 = Jet(0)->Phi();
     Float_t phi2 = Jet(1)->Phi();

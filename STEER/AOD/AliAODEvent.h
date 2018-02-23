@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODEvent
-/// \brief AOD base class
-///
-/// \author Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+//     AOD base class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
 
 #include <TBuffer.h>
 #include <TClonesArray.h>
@@ -339,42 +339,40 @@ class AliAODEvent : public AliVEvent {
 
   private :
 
-  TList   *fAODObjects; ///< list of AODObjects
-  TFolder *fAODFolder;  ///< folder structure of branches
-  Bool_t   fConnected;  //!<! flag if leaves are alreday connected
-  Bool_t   fTracksConnected;      //!<! flag if tracks have already pointer to event set
+  TList   *fAODObjects; //  list of AODObjects
+  TFolder *fAODFolder;  //  folder structure of branches
+  Bool_t   fConnected;  //! flag if leaves are alreday connected 
+  Bool_t   fTracksConnected;      //! flag if tracks have already pointer to event set
   // standard content
-  AliVAODHeader   *fHeader;       //!<! event information
-  TClonesArray    *fTracks;       //!<! charged tracks
-  TClonesArray    *fVertices;     //!<! vertices
-  TClonesArray    *fV0s;          //!<! V0s
-  TClonesArray    *fCascades;     //!<! Cascades
-  AliAODTracklets *fTracklets;    //!<! SPD tracklets
-  TClonesArray    *fJets;         //!<! jets
-  AliAODCaloCells *fEmcalCells;   //!<! EMCAL calorimenter cells
-  AliAODCaloCells *fPhosCells;    //!<! PHOS calorimenter cells
-  TClonesArray    *fCaloClusters; //!<! calorimeter clusters
-  AliAODCaloTrigger *fEMCALTrigger; //!<! EMCAL Trigger information
-  AliAODCaloTrigger *fPHOSTrigger;  //!<! PHOS Trigger information
-  TClonesArray    *fFmdClusters;  //!<! FMDclusters
-  TClonesArray    *fPmdClusters;  //!<! PMDclusters
-  TClonesArray    *fHMPIDrings;   //!<! HMPID signals
-  TClonesArray    *fDimuons;      //!<! dimuons
-  AliAODTZERO     *fAODTZERO;     //!<! TZERO AOD
-  AliAODVZERO     *fAODVZERO;     //!<! VZERO AOD
-  AliAODZDC       *fAODZDC;       //!<! ZDC AOD
-  AliAODAD        *fAODAD;        //!<! AD AOD
-  AliTOFHeader    *fTOFHeader;  //!<! event times (and sigmas) as estimated by TOF
+  AliVAODHeader   *fHeader;       //! event information
+  TClonesArray    *fTracks;       //! charged tracks
+  TClonesArray    *fVertices;     //! vertices
+  TClonesArray    *fV0s;          //! V0s
+  TClonesArray    *fCascades;     //! Cascades
+  AliAODTracklets *fTracklets;    //! SPD tracklets
+  TClonesArray    *fJets;         //! jets
+  AliAODCaloCells *fEmcalCells;   //! EMCAL calorimenter cells
+  AliAODCaloCells *fPhosCells;    //! PHOS calorimenter cells
+  TClonesArray    *fCaloClusters; //! calorimeter clusters
+  AliAODCaloTrigger *fEMCALTrigger; //! EMCAL Trigger information
+  AliAODCaloTrigger *fPHOSTrigger;  //! PHOS Trigger information
+  TClonesArray    *fFmdClusters;  //! FMDclusters
+  TClonesArray    *fPmdClusters;  //! PMDclusters
+  TClonesArray    *fHMPIDrings;   //! HMPID signals
+  TClonesArray    *fDimuons;      //! dimuons
+  AliAODTZERO     *fAODTZERO;     //! TZERO AOD
+  AliAODVZERO     *fAODVZERO;     //! VZERO AOD
+  AliAODZDC       *fAODZDC;       //! ZDC AOD
+  AliAODAD        *fAODAD;        //! AD AOD
+  AliTOFHeader    *fTOFHeader;  //! event times (and sigmas) as estimated by TOF
 			     //  combinatorial algorithm.
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
-  TClonesArray    *fTrdTracks;    //!<! TRD AOD tracks (triggered)
+  TClonesArray    *fTrdTracks;    //! TRD AOD tracks (triggered)
   
-  static const char* fAODListName[kAODListN]; //!<! 
-
+  static const char* fAODListName[kAODListN]; //!
 
   ClassDef(AliAODEvent,94);
-
 };
 
 #endif

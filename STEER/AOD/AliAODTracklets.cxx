@@ -15,12 +15,16 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD class to store tracklets
+//     Author: Jan Fiete Grosse-Oetringhaus, CERN
+//     Class created from AliMultiplicity
+//-------------------------------------------------------------------------
+
 #include <TString.h>
 #include "AliAODTracklets.h"
 
-
 ClassImp(AliAODTracklets)
-
 
 AliAODTracklets::AliAODTracklets() 
 : AliVMultiplicity(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
@@ -35,8 +39,7 @@ AliAODTracklets::AliAODTracklets(const char* name, const char* title)
 : AliVMultiplicity(name, title), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
 , fFastOrFiredChips(),fClusterFiredChips()
 {
-  /// Named constructor
-
+  // Named constructor
   fFiredChips[0] = fFiredChips[1] = 0;
   for (int i=6;i--;) fITSClusters[i] = 0;
 }
@@ -51,8 +54,7 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
     fLabelsL2(0),
     fFastOrFiredChips(tracklet.fFastOrFiredChips),fClusterFiredChips(tracklet.fClusterFiredChips)
 {
-/// Copy constructor
-
+// Copy constructor
     fTheta = new Double32_t[fNTracks];
     fPhi = new Double32_t[fNTracks];
     fDeltaPhi = new Double32_t[fNTracks];
@@ -72,8 +74,7 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
 
 AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
 {
-/// Assignment operator
-
+// Assignment operator
     if(&tracklet == this) return *this;
     AliVMultiplicity::operator=(tracklet);
     if(fNTracks!=tracklet.fNTracks){
@@ -97,7 +98,7 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
 
 void AliAODTracklets::CreateContainer(Int_t nTracks)
 {
-  /// function that creates container to store tracklets
+  // function that creates container to store tracklets
 
   DeleteContainer();
   
@@ -118,15 +119,14 @@ void AliAODTracklets::CreateContainer(Int_t nTracks)
 
 AliAODTracklets::~AliAODTracklets()
 {
-  /// destructor
+  // destructor
 
   DeleteContainer();
 }
 
 void AliAODTracklets::DeleteContainer()
 {
-  /// deletes allocated memory
-
+  // deletes allocated memory
   if (fTheta)
   {
     delete[] fTheta;
@@ -162,7 +162,7 @@ void AliAODTracklets::DeleteContainer()
 
 Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t labelL1, Int_t labelL2)
 {
-  /// Sets a tracklet at the given position
+  // Sets a tracklet at the given position
 
   if (pos < 0 || pos >= fNTracks)
     return kFALSE;
@@ -179,8 +179,7 @@ Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi,
 //______________________________________________________________________
 void AliAODTracklets::Print(Option_t *opt) const
 {
-  /// print
-
+  // print
   printf("N.tracklets: %4d | ScaleDThtSin2T:%s\n",fNTracks,GetScaleDThetaBySin2T() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   //
@@ -196,8 +195,7 @@ void AliAODTracklets::Print(Option_t *opt) const
 //________________________________________________________________
 void AliAODTracklets::SetLabel(Int_t i, Int_t layer,Int_t label)  
 {
-  /// set labels
-
+  // set labels
   if (i>=0 && i<fNTracks) 
   {
     if(layer == 0) fLabels[i] = label;
@@ -208,8 +206,7 @@ void AliAODTracklets::SetLabel(Int_t i, Int_t layer,Int_t label)
 //________________________________________________________________
 Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const 
 {
-  /// access labels
-
+  // access labels
   if (i>=0 && i<fNTracks) 
   {
     return (layer == 0) ? fLabels[i] : fLabelsL2[i];
@@ -221,8 +218,7 @@ Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const
 //________________________________________________________________
 Double_t AliAODTracklets::GetTheta(Int_t i) const 
 { 
-  /// access theta's
-
+  // access theta's
   if (i>=0 && i<fNTracks) 
   {
     return fTheta[i];
@@ -234,8 +230,7 @@ Double_t AliAODTracklets::GetTheta(Int_t i) const
 //________________________________________________________________
 Double_t AliAODTracklets::GetPhi(Int_t i) const 
 { 
-  /// access phi's
-
+  // access phi's
   if (i>=0 && i<fNTracks) 
   {
     return fPhi[i];
@@ -247,8 +242,7 @@ Double_t AliAODTracklets::GetPhi(Int_t i) const
 //________________________________________________________________
 Double_t AliAODTracklets::GetDeltaPhi(Int_t i) const 
 {
-  /// access delta phi's
-
+  // access delta phi's
   if (i>=0 && i<fNTracks) 
   {
     return fDeltaPhi[i];

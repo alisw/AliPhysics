@@ -2,11 +2,11 @@
 #define ALIAODHMPIDRINGS_H
 
 
-/// \class AliAODHMPIDrings
-/// \brief Class to handle the AOD tracks with good HMPID rings
-///
-/// \author Levente Molnar, <levente.molnar@cern.ch>
-/// \date March 2012
+//
+// Class to handle the AOD tracks with good HMPID rings 
+// Author: Levente Molnar
+// levente.molnar@cern.ch , March 2012
+// 
 
 
 
@@ -102,25 +102,23 @@ class AliAODHMPIDrings : public TObject {
   
  protected:
   
-  Int_t       fHmpidAODtrkId;                      ///< Unique track id as in ESD
-  Int_t       fHmpidAODqn;                         ///< 1000000*number of photon clusters + QDC
-  Int_t       fHmpidAODcluIdx;                     ///< 1000000*chamber id + cluster idx of the assigned MIP cluster
-
-  Double32_t  fHmpidAODtrkTheta;                   ///< [-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
-  Double32_t  fHmpidAODtrkPhi;                     ///< [-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
-  Double32_t  fHmpidAODsignal;                     ///< HMPID signal (Theta ckov, rad)
-  Double32_t  fHmpidAODocc;                        ///< chamber occupancy where the track passed through: number of pads
-  Double32_t  fHmpidAODchi2;                       ///< [0.,0.,8] chi2 in the HMPID
-  Double32_t  fHmpidAODtrkX;                       ///< x of the track impact, LORS
-  Double32_t  fHmpidAODtrkY;                       ///< y of the track impact, LORS
-  Double32_t  fHmpidAODmipX;                       ///< x of the MIP in LORS
-  Double32_t  fHmpidAODmipY;                       ///< y of the MIP in LORS
-  Double32_t  fHmpidAODpid[AliPID::kSPECIES];      ///< [0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t  fHMPIDmom[3];                        ///< track momentum at the HMPID ring reconstruction
-
-
+  Int_t       fHmpidAODtrkId;                      // Unique track id as in ESD
+  Int_t       fHmpidAODqn;                         // 1000000*number of photon clusters + QDC
+  Int_t       fHmpidAODcluIdx;                     // 1000000*chamber id + cluster idx of the assigned MIP cluster
+  
+  Double32_t  fHmpidAODtrkTheta;                   // [-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
+  Double32_t  fHmpidAODtrkPhi;                     // [-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
+  Double32_t  fHmpidAODsignal;                     // HMPID signal (Theta ckov, rad)
+  Double32_t  fHmpidAODocc;                        // chamber occupancy where the track passed through: number of pads
+  Double32_t  fHmpidAODchi2;                       // [0.,0.,8] chi2 in the HMPID  
+  Double32_t  fHmpidAODtrkX;                       // x of the track impact, LORS 
+  Double32_t  fHmpidAODtrkY;                       // y of the track impact, LORS 
+  Double32_t  fHmpidAODmipX;                       // x of the MIP in LORS
+  Double32_t  fHmpidAODmipY;                       // y of the MIP in LORS
+  Double32_t  fHmpidAODpid[AliPID::kSPECIES];      // [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t  fHMPIDmom[3];                        // track momentum at the HMPID ring reconstruction
+  
   ClassDef(AliAODHMPIDrings,2)  
-
         
 };
 #endif

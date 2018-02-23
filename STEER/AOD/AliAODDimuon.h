@@ -1,23 +1,21 @@
 #ifndef AliAODDimuon_H
 #define AliAODDimuon_H
 
-/// \class AliAODDimuon
-/// \brief AliAODDimuon: a class for AODs for the MUON Arm of the ALICE Experiment
-///
-/// INFN of Torino - Italy
-///
-/// The class defines a dimuon pair object from two AliAODTrack objects.
-/// AliAODDimuon objects are supposed to be added to the AliAODEvent structure
-/// during analysis. They would then allow to calculate the dimuon-related
-/// kinematic variables with a minimal disk occupancy.
-/// The payload of the class has been reduced to two pointers to the two
-/// tracks. An instance of this class has also to be added to the AliAODEvent
-/// structure to provide additional information that is specific to MUON and
-/// therefore has not been included into the AOD header.
-/// Two transient data members are not stored on file as they can be recomputed
-/// at runtime.
-///
-/// \author P. Cortese, Universita' del Piemonte Orientale in Alessandria and
+// AliAODDimuon: a class for AODs for the MUON Arm of the ALICE Experiment
+// Author: P. Cortese, Universita' del Piemonte Orientale in Alessandria and
+// INFN of Torino - Italy
+//
+// The class defines a dimuon pair object from two AliAODTrack objects.
+// AliAODDimuon objects are supposed to be added to the AliAODEvent structure
+// during analysis. They would then allow to calculate the dimuon-related
+// kinematic variables with a minimal disk occupancy.
+// The payload of the class has been reduced to two pointers to the two
+// tracks. An instance of this class has also to be added to the AliAODEvent 
+// structure to provide additional information that is specific to MUON and 
+// therefore has not been included into the AOD header.
+// Two transient data members are not stored on file as they can be recomputed
+// at runtime.
+//
 
 // 2007/07/07 v1.00 Initial version
 // 2007/12/06 v1.01 Introduction of AliAODEventInfo
@@ -101,15 +99,13 @@ private:
   TLorentzVector* TLV() const; 
 
   // Data members
-  TRef fMu[2];	///< Pointers to the reconstructed muons
-  mutable TLorentzVector *fP; //!<! TLorentzVector of dimuon momentum (not stored into file)
+  TRef fMu[2];	// Pointers to the reconstructed muons
+  mutable TLorentzVector *fP; //! TLorentzVector of dimuon momentum (not stored into file)
 
   // Useful constants
-  Double_t fMProton; //!<! Proton mass (not stored into file)
-
+  Double_t fMProton; //! Proton mass (not stored into file)
 
   ClassDef(AliAODDimuon,2)  // AliAODDimuon track
-
 };
 
 #endif

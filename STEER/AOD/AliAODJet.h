@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-/// \class AliAODJet
-/// \brief AOD jet class
-///
-/// \author Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+//     AOD jet class
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
 
 #include <TLorentzVector.h>
 #include "AliVParticle.h"
@@ -117,32 +117,25 @@ class AliAODJet : public AliVParticle {
 
 
  private:
-    Double32_t      fBackgEnergy[2];         ///< Subtracted background energy
-    Double32_t      fEffectiveArea[2];       ///< Effective jet area used for background subtraction
-    /// relative error of jet areas, 10 bit precision
-    Double32_t      fEffectiveAreaError[2];  //[0,1,10]
-    /// Neutral fraction between 0 and 1 12 bit precision;
-    Double32_t      fNeutralFraction;        //[0,1,12]
-    /// pT after subtraction can be negative four momentum close to 0 in this case, 12 bit precision
-    Double32_t      fPtSubtracted[2];        //[0,0,12]
-    /// pT of leading constituent
-    Double32_t      fPtLeadingConstituent;   //[0,0,12]
-    UInt_t          fTrigger;                ///< Bit mask to flag jets triggered by a certain detector
-    TLorentzVector* fMomentum;               ///< Jet 4-momentum vector
-    TLorentzVector* fVectorAreaCharged;      ///< jet area four momentum
-    TRefArray*      fRefTracks;              ///< array of references to the tracks belonging to the jet
-
+    Double32_t      fBackgEnergy[2];         // Subtracted background energy
+    Double32_t      fEffectiveArea[2];       // Effective jet area used for background subtraction
+    Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
+    Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
+    Double32_t      fPtSubtracted[2];        //[0,0,12] pT after subtraction can be negative four momentum close to 0 in this case, 12 bit precision
+    Double32_t      fPtLeadingConstituent;   //[0,0,12] pT of leading constituent
+    UInt_t          fTrigger;                // Bit mask to flag jets triggered by a certain detector  
+    TLorentzVector* fMomentum;               // Jet 4-momentum vector
+    TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
+    TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
 
     ClassDef(AliAODJet,14);
-
 
 };
 
 inline Double_t AliAODJet::Phi() const
 {
-    /// Return phi
-
+    // Return phi
     Double_t phi = fMomentum->Phi();
     if (phi < 0.) phi += 2. * TMath::Pi();
     return phi;

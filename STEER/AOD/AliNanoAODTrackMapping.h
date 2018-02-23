@@ -1,5 +1,3 @@
-/// \class AliNanoAODTrackMapping
-
 #ifndef _ALINANOAODTRACKMAPPING_H_
 #define _ALINANOAODTRACKMAPPING_H_
 
@@ -85,47 +83,47 @@ private:
 
   static void  LoadInstance() ;
   
-  Int_t fSize; ///< Number of variables actually allocated
+  Int_t fSize; // Number of variables actually allocated
   void  SetSize (Int_t var) { fSize = var;}
   // FIXME: should this be static?
-  Int_t fPt;      	  ///< Mapping variable
-  Int_t fPhi;		  ///< Mapping variable
-  Int_t fTheta;		  ///< Mapping variable
-  Int_t fChi2PerNDF;	  ///< Mapping variable
-  Int_t fPosX;		  ///< Mapping variable
-  Int_t fPosY;		  ///< Mapping variable
-  Int_t fPosZ;		  ///< Mapping variable
-  Int_t fPDCAX;		  ///< Mapping variable
-  Int_t fPDCAY;		  ///< Mapping variable
-  Int_t fPDCAZ;		  ///< Mapping variable
-  Int_t fPosDCAx;	  ///< Mapping variable
-  Int_t fPosDCAy;	  ///< Mapping variable
-  Int_t fRAtAbsorberEnd;  ///< Mapping variable
-  Int_t fTPCncls;	  ///< Mapping variable
-  Int_t fid;		  ///< Mapping variable
-  Int_t fTPCnclsF;	  ///< Mapping variable
-  Int_t fTPCNCrossedRows; ///< Mapping variable
-  Int_t fTrackPhiOnEMCal; ///< Mapping variable
-  Int_t fTrackEtaOnEMCal; ///< Mapping variable
-  Int_t fTrackPtOnEMCal; ///< Mapping variable
-  Int_t fITSsignal;	  ///< Mapping variable
-  Int_t fTPCsignal;	  ///< Mapping variable
-  Int_t fTPCsignalTuned;  ///< Mapping variable
-  Int_t fTPCsignalN;	  ///< Mapping variable
-  Int_t fTPCmomentum;	  ///< Mapping variable
-  Int_t fTPCTgl;	  ///< Mapping variable
-  Int_t fTOFsignal;	  ///< Mapping variable
-  Int_t fintegratedLenght;///< Mapping variable
-  Int_t fTOFsignalTuned;  ///< Mapping variable
-  Int_t fHMPIDsignal;	  ///< Mapping variable
-  Int_t fHMPIDoccupancy;  ///< Mapping variable
-  Int_t fTRDsignal;	  ///< Mapping variable
-  Int_t fTRDChi2;	  ///< Mapping variable
-  Int_t fTRDnSlices;	  ///< Mapping variable
-  Int_t fIsMuonTrack;     ///< Mapping variable
-  Int_t fTPCnclsS;    ///< Mapping variable
-  Int_t fFilterMap;      ///< Mapping variable
-  Int_t fcovmat[21];          ///< Mapping variables
+  Int_t fPt;      	  // Mapping variable
+  Int_t fPhi;		  // Mapping variable
+  Int_t fTheta;		  // Mapping variable
+  Int_t fChi2PerNDF;	  // Mapping variable
+  Int_t fPosX;		  // Mapping variable
+  Int_t fPosY;		  // Mapping variable
+  Int_t fPosZ;		  // Mapping variable
+  Int_t fPDCAX;		  // Mapping variable
+  Int_t fPDCAY;		  // Mapping variable
+  Int_t fPDCAZ;		  // Mapping variable
+  Int_t fPosDCAx;	  // Mapping variable
+  Int_t fPosDCAy;	  // Mapping variable
+  Int_t fRAtAbsorberEnd;  // Mapping variable
+  Int_t fTPCncls;	  // Mapping variable
+  Int_t fid;		  // Mapping variable
+  Int_t fTPCnclsF;	  // Mapping variable
+  Int_t fTPCNCrossedRows; // Mapping variable
+  Int_t fTrackPhiOnEMCal; // Mapping variable
+  Int_t fTrackEtaOnEMCal; // Mapping variable
+  Int_t fTrackPtOnEMCal; // Mapping variable
+  Int_t fITSsignal;	  // Mapping variable
+  Int_t fTPCsignal;	  // Mapping variable
+  Int_t fTPCsignalTuned;  // Mapping variable
+  Int_t fTPCsignalN;	  // Mapping variable
+  Int_t fTPCmomentum;	  // Mapping variable
+  Int_t fTPCTgl;	  // Mapping variable
+  Int_t fTOFsignal;	  // Mapping variable
+  Int_t fintegratedLenght;// Mapping variable
+  Int_t fTOFsignalTuned;  // Mapping variable
+  Int_t fHMPIDsignal;	  // Mapping variable
+  Int_t fHMPIDoccupancy;  // Mapping variable
+  Int_t fTRDsignal;	  // Mapping variable
+  Int_t fTRDChi2;	  // Mapping variable
+  Int_t fTRDnSlices;	  // Mapping variable
+  Int_t fIsMuonTrack;     // Mapping variable
+  Int_t fTPCnclsS;    // Mapping variable
+  Int_t fFilterMap;      // Mapping variable
+  Int_t fcovmat[21];          // Mapping variables
 
   
   // Setters are private because we don't want the mapping to change once the class has been instantiated 
@@ -169,12 +167,10 @@ private:
   void  SetCovMat           (Int_t var, Int_t index) { fcovmat[index] = var; }
 
 
-  static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
-  static TString fMappingString; ///< the string which this class was initialized with
+  static AliNanoAODTrackMapping * fInstance; //instance, needed for the singleton implementation
+  static TString fMappingString; // the string which this class was initialized with
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
-
   ClassDef(AliNanoAODTrackMapping, 2)
-
   
 };
 

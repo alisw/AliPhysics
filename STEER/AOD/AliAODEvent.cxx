@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD base class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+
 #include <TROOT.h>
 #include <TTree.h>
 #include <TFolder.h>
@@ -29,9 +34,7 @@
 #include "AliAODTrdTrack.h"
 #include "event.h"
 
-
 ClassImp(AliAODEvent)
-
 
 // definition of std AOD member names
   const char* AliAODEvent::fAODListName[kAODListN] = {"header",
@@ -88,8 +91,7 @@ AliAODEvent::AliAODEvent() :
   fTOFHeader(0),
   fTrdTracks(0)
 {
-  /// default constructor
-
+  // default constructor
   if (TClass::IsCallingNew() != TClass::kDummyNew) fAODObjects = new TList();
 }
 
@@ -124,8 +126,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fTOFHeader(new AliTOFHeader(*aod.fTOFHeader)),
   fTrdTracks(new TClonesArray(*aod.fTrdTracks))
 {
-  /// Copy constructor
-
+  // Copy constructor
   AddHeader(fHeader);
   AddObject(fHeader);
   AddObject(fTracks);
@@ -158,7 +159,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
 //______________________________________________________________________________
 AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 
-    /// Assignment operator
+    // Assignment operator
 
   if(&aod == this) return *this;
   AliVEvent::operator=(aod);
@@ -256,8 +257,7 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 //______________________________________________________________________________
 AliAODEvent::~AliAODEvent() 
 {
-/// destructor
-
+// destructor
     delete fAODFolder;
     fAODFolder = 0;
     if(!fConnected) {
@@ -269,10 +269,10 @@ AliAODEvent::~AliAODEvent()
 //______________________________________________________________________________
 void AliAODEvent::AddObject(TObject* obj) 
 {
-  /// Add an object to the list of objects.
-  /// Please be aware that in order to increase performance you should
-  /// refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
-
+  // Add an object to the list of objects.
+  // Please be aware that in order to increase performance you should
+  // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
+  
 //  if ( !fAODObjects ) {
 //     fAODObjects = new TList();
 //     fAODObjects->SetOwner();
@@ -286,8 +286,7 @@ void AliAODEvent::AddObject(TObject* obj)
 //______________________________________________________________________________
 Int_t AliAODEvent::AddTrack(const AliAODTrack* trk)
 {
-/// Add new AOD track. Make sure to set the event if needed.
-
+// Add new AOD track. Make sure to set the event if needed.
   AliAODTrack *track =  new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk);
   track->SetAODEvent(this);
   return fTracks->GetEntriesFast()-1;
@@ -296,15 +295,15 @@ Int_t AliAODEvent::AddTrack(const AliAODTrack* trk)
 //______________________________________________________________________________
 void AliAODEvent::RemoveObject(TObject* obj) 
 {
-  /// Removes an object from the list of objects.
-
+  // Removes an object from the list of objects.
+  
   fAODObjects->Remove(obj);
 }
 
 //______________________________________________________________________________
 TObject *AliAODEvent::FindListObject(const char *objName) const
 {
-  /// Return the pointer to the object with the given name.
+  // Return the pointer to the object with the given name.
 
   return fAODObjects->FindObject(objName);
 }
@@ -312,7 +311,7 @@ TObject *AliAODEvent::FindListObject(const char *objName) const
 //______________________________________________________________________________
 void AliAODEvent::CreateStdContent() 
 {
-  /// create the standard AOD content and set pointers
+  // create the standard AOD content and set pointers
 
   // create standard objects and add them to the TList of objects
   AddObject(new AliAODHeader());
@@ -348,8 +347,8 @@ void AliAODEvent::CreateStdContent()
 
 void  AliAODEvent::MakeEntriesReferencable()
 {
-    /// Make all entries referencable in a subsequent process
-
+    // Make all entries referencable in a subsequent process
+    //
     TIter next(fAODObjects);
     TObject* obj;
     while ((obj = next()))
@@ -364,7 +363,7 @@ void  AliAODEvent::MakeEntriesReferencable()
 //______________________________________________________________________________
 void AliAODEvent::SetStdNames()
 {
-  /// introduce the standard naming
+  // introduce the standard naming
 
   if(fAODObjects->GetEntries()==kAODListN){
     for(int i = 0;i < fAODObjects->GetEntries();i++){
@@ -385,8 +384,7 @@ void AliAODEvent::SetStdNames()
 //______________________________________________________________________________
 void AliAODEvent::CreateStdFolders()
 {
-    /// Create the standard folder structure
-
+    // Create the standard folder structure
   if(fAODFolder)delete fAODFolder;
     fAODFolder = gROOT->GetRootFolder()->AddFolder("AOD", "AOD");
     if(fAODObjects->GetEntries()==kAODListN){
@@ -407,7 +405,7 @@ void AliAODEvent::CreateStdFolders()
 //______________________________________________________________________________
 void AliAODEvent::GetStdContent()
 {
-  /// set pointers for standard content
+  // set pointers for standard content
 
   fHeader        = (AliVAODHeader*)fAODObjects->FindObject("header");
   fTracks        = (TClonesArray*)fAODObjects->FindObject("tracks");
@@ -447,8 +445,7 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
             Int_t nTrdTracks
 			   )
 {
-  /// deletes content of standard arrays and resets size
-
+  // deletes content of standard arrays and resets size 
   fTracksConnected = kFALSE;
   if (fTracks) {
     fTracks->Delete();
@@ -526,8 +523,7 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 //______________________________________________________________________________
 void AliAODEvent::ClearStd()
 {
-  /// clears the standard arrays
-
+  // clears the standard arrays
   if (fHeader){
     // FIXME: this if-else patch was introduced by Michele Floris on 17/03/14 to test nano AOD. To be removed.
     if(fHeader->InheritsFrom("AliAODHeader")){
@@ -578,8 +574,8 @@ void AliAODEvent::ClearStd()
 //_________________________________________________________________
 Int_t AliAODEvent::GetPHOSClusters(TRefArray *clusters) const
 {
-  /// fills the provided TRefArray with all found phos clusters
-
+  // fills the provided TRefArray with all found phos clusters
+  
   clusters->Clear();
   
   AliAODCaloCluster *cl = 0;
@@ -602,7 +598,7 @@ Int_t AliAODEvent::GetPHOSClusters(TRefArray *clusters) const
 //_________________________________________________________________
 Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
 {
-  /// fills the provided TRefArray with all found emcal clusters
+  // fills the provided TRefArray with all found emcal clusters
 
   clusters->Clear();
   AliAODCaloCluster *cl = 0;
@@ -626,7 +622,7 @@ Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
 //______________________________________________________________________________
 Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 {
-  /// fills the provided TRefArray with all found muon tracks
+  // fills the provided TRefArray with all found muon tracks
 
   muonTracks->Clear();
 
@@ -646,8 +642,7 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 //______________________________________________________________________________
 Int_t AliAODEvent::GetNumberOfMuonTracks() const
 {
-  /// get number of muon tracks
-
+  // get number of muon tracks
   int ntr = GetNumberOfTracks();
   if (!ntr) return 0;
   Int_t nMuonTracks=0;
@@ -668,7 +663,7 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
 //______________________________________________________________________________
 Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const           // AU
 {
-  /// fills the provided TRefArray with all found muon global tracks
+  // fills the provided TRefArray with all found muon global tracks
 
   muonGlobalTracks->Clear();
 
@@ -688,8 +683,7 @@ Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const       
 //______________________________________________________________________________
 Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                                    // AU
 {
-  /// get number of muon global tracks
-
+  // get number of muon global tracks
   int ntr = GetNumberOfTracks();
   if (!ntr) return 0;
   Int_t nMuonGlobalTracks=0;
@@ -709,8 +703,8 @@ Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                          
 //______________________________________________________________________________
 void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
-    /// Connects aod event to tree
-
+    // Connects aod event to tree
+  
   if(!tree){
     AliWarning("Zero Pointer to Tree \n");
     return;
@@ -824,8 +818,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 }
   //______________________________________________________________________________
 Int_t  AliAODEvent::GetNumberOfPileupVerticesSPD() const{
-  /// count number of SPD pileup vertices
-
+  // count number of SPD pileup vertices
   Int_t nVertices=GetNumberOfVertices();
   Int_t nPileupVertices=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -836,8 +829,7 @@ Int_t  AliAODEvent::GetNumberOfPileupVerticesSPD() const{
 }
 //______________________________________________________________________________
 Int_t  AliAODEvent::GetNumberOfPileupVerticesTracks() const{
-  /// count number of track pileup vertices
-
+  // count number of track pileup vertices
   Int_t nVertices=GetNumberOfVertices();
   Int_t nPileupVertices=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -848,8 +840,7 @@ Int_t  AliAODEvent::GetNumberOfPileupVerticesTracks() const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
-  /// Get SPD primary vertex
-
+  // Get SPD primary vertex
   Int_t nVertices=GetNumberOfVertices();
   for(Int_t iVert=0; iVert<nVertices; iVert++){
     AliAODVertex *v=GetVertex(iVert);
@@ -859,8 +850,7 @@ AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPrimaryVertexTPC() const{
-  /// Get SPD primary vertex
-
+  // Get SPD primary vertex
   Int_t nVertices=GetNumberOfVertices();
   for(Int_t iVert=0; iVert<nVertices; iVert++){
     AliAODVertex *v=GetVertex(iVert);
@@ -870,8 +860,7 @@ AliAODVertex* AliAODEvent::GetPrimaryVertexTPC() const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
-  /// Get pile-up vertex iV
-
+  // Get pile-up vertex iV
   Int_t nVertices=GetNumberOfVertices();
   Int_t counter=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -885,8 +874,7 @@ AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPileupVertexTracks(Int_t iV) const{
-  /// Get pile-up vertex iV
-
+  // Get pile-up vertex iV
   Int_t nVertices=GetNumberOfVertices();
   Int_t counter=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -904,9 +892,10 @@ Bool_t  AliAODEvent::IsPileupFromSPD(Int_t minContributors,
 				     Double_t nSigmaZdist, 
 				     Double_t nSigmaDiamXY, 
 				     Double_t nSigmaDiamZ) const{
-  /// This function checks if there was a pile up
-  /// reconstructed with SPD
-
+  //
+  // This function checks if there was a pile up
+  // reconstructed with SPD
+  //
   AliAODVertex *mainV=GetPrimaryVertexSPD();
   if(!mainV) return kFALSE;
   Int_t nc1=mainV->GetNContributors();
@@ -953,8 +942,7 @@ Bool_t  AliAODEvent::IsPileupFromSPD(Int_t minContributors,
 //______________________________________________________________________________
 void AliAODEvent::Print(Option_t *) const
 {
-  /// Print the names of the all branches
-
+  // Print the names of the all branches
   TIter next(fAODObjects);
   TNamed *el;
   Printf(">>>>>  AOD  Content <<<<<");    
@@ -969,11 +957,10 @@ void AliAODEvent::Print(Option_t *) const
 //______________________________________________________________________________
 void AliAODEvent::AssignIDtoCollection(const TCollection* col)
 {
-    /// Static method which assigns a ID to each object in a collection
-    /// In this way the objects are marked as referenced and written with
-    /// an ID. This has the advantage that TRefs to this objects can be
-    /// written by a subsequent process.
-
+    // Static method which assigns a ID to each object in a collection
+    // In this way the objects are marked as referenced and written with 
+    // an ID. This has the advantage that TRefs to this objects can be 
+    // written by a subsequent process.
     TIter next(col);
     TObject* obj;
     while ((obj = next()))
@@ -991,8 +978,8 @@ Bool_t AliAODEvent::IsPileupFromSPDInMultBins() const {
 //______________________________________________________________________________
 void AliAODEvent::Reset()
 {
-  /// Handle the cases
-  /// Std content + Non std content
+  // Handle the cases
+  // Std content + Non std content
 
   ClearStd();
   
@@ -1031,11 +1018,10 @@ void AliAODEvent::Reset()
 // FIXME: Why is this in event and not in header?
 Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
 {
-  /// Get VZERO Multiplicity for channel i
-  /// Themethod uses the equalization factors
-  /// stored in the ESD-run object in order to
-  /// get equal multiplicities within a VZERO rins (1/8 of VZERO)
-
+  // Get VZERO Multiplicity for channel i
+  // Themethod uses the equalization factors
+  // stored in the ESD-run object in order to
+  // get equal multiplicities within a VZERO rins (1/8 of VZERO)
   if (!fAODVZERO || !fHeader) return -1;
 
   Int_t ring = i/8;
@@ -1051,7 +1037,9 @@ Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
 //------------------------------------------------------------
 void  AliAODEvent::SetTOFHeader(const AliTOFHeader *header)
 {
-  /// Set the TOF event_time
+  //
+  // Set the TOF event_time
+  //
 
   if (fTOFHeader) {
     *fTOFHeader=*header;
@@ -1068,8 +1056,9 @@ void  AliAODEvent::SetTOFHeader(const AliTOFHeader *header)
 //------------------------------------------------------------
 AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID) const
 {
-  /// Returns the HMPID object if any for a given track ID
-
+  //
+  // Returns the HMPID object if any for a given track ID
+  //
   if(GetHMPIDrings())
   {
     for(Int_t ien = 0 ; ien < GetNHMPIDrings(); ien++)
@@ -1082,16 +1071,18 @@ AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID) const
 //------------------------------------------------------------
 Int_t AliAODEvent::GetNHMPIDrings() const   
 { 
-  /// If there is a list of HMPID rings in the given AOD event, return their number
-
+  //
+  // If there is a list of HMPID rings in the given AOD event, return their number
+  //
   if ( fHMPIDrings) return fHMPIDrings->GetEntriesFast(); 
   else return -1;
 } 
 //------------------------------------------------------------
 AliAODHMPIDrings *AliAODEvent::GetHMPIDring(Int_t nRings) const
 { 
-  /// If there is a list of HMPID rings in the given AOD event, return corresponding ring
-
+  //
+  // If there is a list of HMPID rings in the given AOD event, return corresponding ring
+  //
   if(fHMPIDrings) {
     if(   (AliAODHMPIDrings*)fHMPIDrings->UncheckedAt(nRings) ) {
       return (AliAODHMPIDrings*)fHMPIDrings->UncheckedAt(nRings);
@@ -1107,8 +1098,7 @@ AliAODTrdTrack& AliAODEvent::AddTrdTrack(const AliVTrdTrack *track) {
 
 //______________________________________________________________________________
 void AliAODEvent::ConnectTracks() {
-/// Connect tracks to this event
-
+// Connect tracks to this event
   if (fTracksConnected || !fTracks || !fTracks->GetEntriesFast()) return;
   AliAODTrack *track = 0;
   track = dynamic_cast<AliAODTrack*>(GetTrack(0));
@@ -1125,8 +1115,7 @@ void AliAODEvent::ConnectTracks() {
 //______________________________________________________________________________
 Bool_t AliAODEvent::IsIncompleteDAQ() 
 {
-  /// check if DAQ has set the incomplete event attributes
-
+  // check if DAQ has set the incomplete event attributes
   UInt_t daqAttr = GetDAQAttributes();
   return (daqAttr&ATTR_2_B(ATTR_INCOMPLETE_EVENT))!=0 
     ||   (daqAttr&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;

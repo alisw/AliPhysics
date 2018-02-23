@@ -1,11 +1,11 @@
 #ifndef ALIAODZDC_H
 #define ALIAODZDC_H
 
-/// \class AliAODZDC
-/// \brief Class for AOD ZDC data
-///
-/// \author Chiara Oppedisano <Chiara.Oppedisano@cern.ch>
-/// \date March 2011
+//-------------------------------------------------------------------------
+//     Class for AOD ZDC data
+//     Author: Chiara Oppedisano
+//     Chiara.Oppedisano@cern.ch March 2011
+//-------------------------------------------------------------------------
 
 #include <AliVZDC.h>
 
@@ -110,52 +110,50 @@ public:
 
 protected:
 
-  mutable Double32_t   fZNCEnergy;    //!<! E in ZNC
-  mutable Double32_t   fZNAEnergy;    //!<! E in ZNA
-  mutable Double32_t   fZPCEnergy;    //!<! E in ZPC
-  mutable Double32_t   fZPAEnergy;    //!<! E in ZPA
-  Double32_t   fZEM1Energy;   	      ///< E in ZEM1
-  Double32_t   fZEM2Energy;	      ///< E in ZEM2
-  Double32_t   fZNCTowerEnergy[5];    ///< E in 5 ZNC sectors - high gain chain
-  Double32_t   fZNATowerEnergy[5];    ///< E in 5 ZNA sectors - high gain chain
-  Double32_t   fZPCTowerEnergy[5];    ///< E in 5 ZPC sectors - high gain chain
-  Double32_t   fZPATowerEnergy[5];    ///< E in 5 ZPA sectors - high gain chain
-  Double32_t   fZNCTowerEnergyLR[5];  ///< E in 5 ZNC sectors - low gain chain
-  Double32_t   fZNATowerEnergyLR[5];  ///< E in 5 ZNA sectors - low gain chain
-  Double32_t   fZPCTowerEnergyLR[5];  ///< E in 5 ZPC sectors - low gain chain
-  Double32_t   fZPATowerEnergyLR[5];  ///< E in 5 ZPA sectors - low gain chain
+  mutable Double32_t   fZNCEnergy;    //!E in ZNC
+  mutable Double32_t   fZNAEnergy;    //!E in ZNA
+  mutable Double32_t   fZPCEnergy;    //!E in ZPC
+  mutable Double32_t   fZPAEnergy;    //!E in ZPA
+  Double32_t   fZEM1Energy;   	      // E in ZEM1
+  Double32_t   fZEM2Energy;	      // E in ZEM2
+  Double32_t   fZNCTowerEnergy[5];    // E in 5 ZNC sectors - high gain chain
+  Double32_t   fZNATowerEnergy[5];    // E in 5 ZNA sectors - high gain chain
+  Double32_t   fZPCTowerEnergy[5];    // E in 5 ZPC sectors - high gain chain
+  Double32_t   fZPATowerEnergy[5];    // E in 5 ZPA sectors - high gain chain
+  Double32_t   fZNCTowerEnergyLR[5];  // E in 5 ZNC sectors - low gain chain
+  Double32_t   fZNATowerEnergyLR[5];  // E in 5 ZNA sectors - low gain chain
+  Double32_t   fZPCTowerEnergyLR[5];  // E in 5 ZPC sectors - low gain chain
+  Double32_t   fZPATowerEnergyLR[5];  // E in 5 ZPA sectors - low gain chain
   //
-  Int_t     fZDCParticipants;	   ///< number of participants estimated by the ZDC (ONLY in A-A)
-  Int_t     fZDCPartSideA;	   ///< number of participants estimated by the ZDC (ONLY in A-A)
-  Int_t     fZDCPartSideC;	   ///< number of participants estimated by the ZDC (ONLY in A-A)
+  Int_t     fZDCParticipants;	   // number of participants estimated by the ZDC (ONLY in A-A)
+  Int_t     fZDCPartSideA;	   // number of participants estimated by the ZDC (ONLY in A-A)
+  Int_t     fZDCPartSideC;	   // number of participants estimated by the ZDC (ONLY in A-A)
   //
-  Double32_t   fImpactParameter;   ///< impact parameter estimated by the ZDC (ONLY in A-A)
-  Double32_t   fImpactParamSideA;  ///< impact parameter estimated by the ZDC (ONLY in A-A)
-  Double32_t   fImpactParamSideC;  ///< impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParameter;   // impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParamSideA;  // impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParamSideC;  // impact parameter estimated by the ZDC (ONLY in A-A)
   //
   // These data members deals only with the 1st stored TDC hit
-  Float_t   fZDCTDCSum;	   	   ///< ZDC TDC sum in ns corrected 4 phase shift
-  Float_t   fZDCTDCDifference;	   ///< ZDC TDC diff. in ns corrected 4 phase shift
-  Float_t   fZNCTDC; 	   	   ///< ZNC TDC in ns corrected 4 phase shift
-  Float_t   fZNATDC;     	   ///< ZNA TDC in ns corrected 4 phase shift;
-  Float_t   fZPCTDC; 	   	   ///< ZNC TDC in ns corrected 4 phase shift
-  Float_t   fZPATDC;     	   ///< ZNA TDC in ns corrected 4 phase shift;
+  Float_t   fZDCTDCSum;	   	   // ZDC TDC sum in ns corrected 4 phase shift
+  Float_t   fZDCTDCDifference;	   // ZDC TDC diff. in ns corrected 4 phase shift
+  Float_t   fZNCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift
+  Float_t   fZNATDC;     	   // ZNA TDC in ns corrected 4 phase shift;
+  Float_t   fZPCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift
+  Float_t   fZPATDC;     	   // ZNA TDC in ns corrected 4 phase shift;
   //
   // Jan.2016: propagating multi-hit structure of TDC hits to AODs
-  Float_t   fZNCTDCm[4];	///< true if ZNC TDC has at least 1 hit
-  Float_t   fZNATDCm[4];	///< true if ZNA TDC has at least 1 hit
-  Float_t   fZPCTDCm[4];	///< true if ZPC TDC has at least 1 hit
-  Float_t   fZPATDCm[4];	///< true if ZPA TDC has at least 1 hit
+  Float_t   fZNCTDCm[4];	// true if ZNC TDC has at least 1 hit
+  Float_t   fZNATDCm[4];	// true if ZNA TDC has at least 1 hit
+  Float_t   fZPCTDCm[4];	// true if ZPC TDC has at least 1 hit
+  Float_t   fZPATDCm[4];	// true if ZPA TDC has at least 1 hit
   //
-  Bool_t    fIsZNAfired;	///< if true ZNA is fired in the event
-  Bool_t    fIsZNCfired;	///< if true ZNC is fired in the event
-  Bool_t    fIsZPAfired;	///< if true ZPA is fired in the event
-  Bool_t    fIsZPCfired;	///< if true ZPC is fired in the event
-
+  Bool_t    fIsZNAfired;	// if true ZNA is fired in the event
+  Bool_t    fIsZNCfired;	// if true ZNC is fired in the event
+  Bool_t    fIsZPAfired;	// if true ZPA is fired in the event
+  Bool_t    fIsZPCfired;	// if true ZPC is fired in the event
 
 
   ClassDef(AliAODZDC,4)
-
 };
 
 #endif

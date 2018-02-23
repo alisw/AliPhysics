@@ -16,6 +16,12 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     Implementation of the Virtual Event Handler Interface for AOD
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+
+
 #include <TTree.h>
 #include <TFile.h>
 #include <TString.h>
@@ -43,9 +49,7 @@
 
 using std::endl;
 using std::cout;
-
 ClassImp(AliAODHandler)
-
 
 //______________________________________________________________________________
 AliAODHandler::AliAODHandler() :
@@ -118,15 +122,14 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fExtensions(NULL),
     fFilters(NULL)
 {
-/// Normal constructor.
-
+// Normal constructor.
 }
 
 //______________________________________________________________________________
 AliAODHandler::~AliAODHandler() 
 {
- /// Destructor.
-
+ // Destructor.
+  
   delete fAODEvent;
 
   if (fFileA) fFileA->Close();
@@ -140,10 +143,10 @@ AliAODHandler::~AliAODHandler()
 //______________________________________________________________________________
 Bool_t AliAODHandler::Init(Option_t* opt)
 {
-  /// Initialize IO
-  ///
-  /// Create the AODevent object
-
+  // Initialize IO
+  //
+  // Create the AODevent object
+    
   Bool_t createStdAOD = fIsStandard || fFillAOD;
   if(!fAODEvent && createStdAOD){
     fAODEvent = new AliAODEvent();
@@ -189,7 +192,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
 //______________________________________________________________________________
 void AliAODHandler::Print(Option_t* opt) const
 {
-  /// Print info about this object
+  // Print info about this object
 
   cout << opt << Form("IsStandard %d filename=%s",fIsStandard,fFileName.Data()) << endl;
   
@@ -208,8 +211,7 @@ void AliAODHandler::Print(Option_t* opt) const
 //______________________________________________________________________________
 void AliAODHandler::PrintExtensions(const TObjArray& array) const
 {
-  /// Show the list of aod extensions
-
+  // Show the list of aod extensions
   TIter next(&array);
   AliAODExtension* ext(0x0);
   while ( ( ext = static_cast<AliAODExtension*>(next()) ) )
@@ -221,21 +223,22 @@ void AliAODHandler::PrintExtensions(const TObjArray& array) const
 //______________________________________________________________________________
 void AliAODHandler::StoreMCParticles(){
 
-  /// Remap the labels from ESD stack and store
-  /// the AODMCParticles, makes only sense if we have
-  /// the mcparticles branch
-  /// has to be done here since we cannot know in advance
-  /// which particles are needed (e.g. by the tracks etc.)
-  ///
-  /// Particles have been selected by AliMCEventhanlder->SelectParticle()
-  /// To use the MCEventhandler here we need to set it from the outside
-  /// can vanish when Handler go to the ANALYSISalice library
-  ///
-  /// The Branch booking for mcParticles and mcHeader has to happen
-  /// in an external task for now since the AODHandler does not have access
-  /// the AnalysisManager. For the same reason the pointer t o the MCEventH
-  /// has to passed to the AOD Handler by this task
-  /// (doing this in the steering macro would not work on PROOF)
+  // 
+  // Remap the labels from ESD stack and store
+  // the AODMCParticles, makes only sense if we have
+  // the mcparticles branch
+  // has to be done here since we cannot know in advance 
+  // which particles are needed (e.g. by the tracks etc.)
+  //
+  // Particles have been selected by AliMCEventhanlder->SelectParticle()
+  // To use the MCEventhandler here we need to set it from the outside
+  // can vanish when Handler go to the ANALYSISalice library
+  //
+  // The Branch booking for mcParticles and mcHeader has to happen 
+  // in an external task for now since the AODHandler does not have access
+  // the AnalysisManager. For the same reason the pointer t o the MCEventH
+  // has to passed to the AOD Handler by this task 
+  // (doing this in the steering macro would not work on PROOF)
 
   if (!fAODEvent) return;
   TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
@@ -506,8 +509,7 @@ void AliAODHandler::StoreMCParticles(){
 //______________________________________________________________________________
 Bool_t AliAODHandler::FinishEvent()
 {
-  /// Fill data structures
-
+  // Fill data structures
   if(fFillAOD && fFillAODRun && fAODEvent){
       fAODEvent->MakeEntriesReferencable();
       fTreeA->BranchRef();
@@ -552,8 +554,7 @@ Bool_t AliAODHandler::FinishEvent()
 //______________________________________________________________________________
 Bool_t AliAODHandler::Terminate()
 {
-  /// Terminate
-
+  // Terminate 
   AddAODtoTreeUserInfo();
   
   TIter nextF(fFilters);
@@ -575,8 +576,7 @@ Bool_t AliAODHandler::Terminate()
 //______________________________________________________________________________
 Bool_t AliAODHandler::TerminateIO()
 {
-  /// Terminate IO
-
+  // Terminate IO
   if (fFileA) {
     fFileA->Write();
     fFileA->Close();
@@ -605,8 +605,7 @@ Bool_t AliAODHandler::TerminateIO()
 //______________________________________________________________________________
 void AliAODHandler::CreateTree(Int_t flag)
 {
-    /// Creates the AOD Tree
-
+    // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
     if (flag == 0) fTreeA->SetDirectory(0);
@@ -617,8 +616,7 @@ void AliAODHandler::CreateTree(Int_t flag)
 void AliAODHandler::FillTree()
 {
  
-    /// Fill the AOD Tree
-
+    // Fill the AOD Tree
    Long64_t nbf = fTreeA->Fill();
    if (fTreeBuffSize>0 && fTreeA->GetAutoFlush()<0 && (fMemCountAOD += nbf)>fTreeBuffSize ) { // default limit is still not reached
     nbf = fTreeA->GetZipBytes();
@@ -634,8 +632,7 @@ void AliAODHandler::FillTree()
 //______________________________________________________________________________
 void AliAODHandler::AddAODtoTreeUserInfo()
 {
-  /// Add aod event to tree user info
-
+  // Add aod event to tree user info
   if (fTreeA) fTreeA->GetUserInfo()->Add(fAODEvent);
   // Now the tree owns our fAODEvent...
   fAODEvent = 0;
@@ -644,9 +641,9 @@ void AliAODHandler::AddAODtoTreeUserInfo()
 //______________________________________________________________________________
 void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filename)
 {
-  /// Add a new branch to the aod. Added optional filename parameter if the
-  /// branch should be written to a separate file.
-
+  // Add a new branch to the aod. Added optional filename parameter if the
+  // branch should be written to a separate file.
+  
   if (strlen(filename)) 
   {
     AliAODExtension *ext = AddExtension(filename);
@@ -690,8 +687,8 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filen
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title, Bool_t tomerge)
 {
-  /// Add an AOD extension with some branches in a different file.
-
+  // Add an AOD extension with some branches in a different file.
+  
   TString fname(filename);
   if (!fname.EndsWith(".root")) fname += ".root";
   if (!fExtensions) {
@@ -710,8 +707,7 @@ AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *t
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::GetExtension(const char *filename) const
 {
-  /// Getter for AOD extensions via file name.
-
+  // Getter for AOD extensions via file name.
   if (!fExtensions) return NULL;
   return (AliAODExtension*)fExtensions->FindObject(filename);
 }   
@@ -719,8 +715,7 @@ AliAODExtension *AliAODHandler::GetExtension(const char *filename) const
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char *filtername, Bool_t tomerge)
 {
-  /// Add an AOD extension that can write only AOD events that pass a user filter.
-
+  // Add an AOD extension that can write only AOD events that pass a user filter.
   if (!fFilters) {
     fFilters = new TObjArray();
     fFilters->SetOwner();
@@ -737,8 +732,7 @@ AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char 
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::GetFilteredAOD(const char *filename) const
 {
-  /// Getter for AOD filters via file name.
-
+  // Getter for AOD filters via file name.
   if (!fFilters) return NULL;
   return (AliAODExtension*)fFilters->FindObject(filename);
 }   
@@ -746,24 +740,21 @@ AliAODExtension *AliAODHandler::GetFilteredAOD(const char *filename) const
 //______________________________________________________________________________
 void AliAODHandler::SetOutputFileName(const char* fname)
 {
-/// Set file name.
-
+// Set file name.
    fFileName = fname;
 }
 
 //______________________________________________________________________________
 const char *AliAODHandler::GetOutputFileName() const
 {
-/// Get file name.
-
+// Get file name.
    return fFileName.Data();
 }
 
 //______________________________________________________________________________
 const char *AliAODHandler::GetExtraOutputs(Bool_t merge) const
 {
-  /// Get extra outputs as a string separated by commas.
-
+  // Get extra outputs as a string separated by commas.
   static TString eoutputs;
   eoutputs = "";
   AliAODExtension *obj;
@@ -789,8 +780,8 @@ const char *AliAODHandler::GetExtraOutputs(Bool_t merge) const
 //______________________________________________________________________________
 Bool_t AliAODHandler::HasExtensions() const
 {
-  /// Whether or not we manage extensions
-
+  // Whether or not we manage extensions
+  
   if ( fExtensions && fExtensions->GetEntries()>0 ) return kTRUE;
   
   return kFALSE;
@@ -800,9 +791,9 @@ Bool_t AliAODHandler::HasExtensions() const
 void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader){
 
 
-  /// Utility function to cover different cases for the AliGenEventHeader
-  /// Needed since different ProcessType and ImpactParamter are not
-  /// in the base class...
+  // Utility function to cover different cases for the AliGenEventHeader
+  // Needed since different ProcessType and ImpactParamter are not 
+  // in the base class...
 
   if(!genHeader)return;
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);

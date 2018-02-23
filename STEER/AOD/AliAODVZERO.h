@@ -1,11 +1,11 @@
 #ifndef ALIAODVZERO_H
 #define ALIAODVZERO_H
 
-/// \class AliAODVZERO
-/// \brief Container class for AOD VZERO data
-///
-/// \author Cvetan Cheshkov <cvetan.cheshkov@cern.ch>
-/// \date 2/02/2011
+//-------------------------------------------------------------------------
+//     Container class for AOD VZERO data
+//     Author: Cvetan Cheshkov
+//     cvetan.cheshkov@cern.ch 2/02/2011
+//-------------------------------------------------------------------------
 
 #include "AliVVZERO.h"
 
@@ -57,32 +57,30 @@ public:
   
 protected:
 
-  UInt_t  fBBtriggerV0A;     ///< bit mask for Beam-Beam trigger in V0A
-  UInt_t  fBGtriggerV0A;     ///< bit mask for Beam-Gas trigger in V0A
-  UInt_t  fBBtriggerV0C;     ///< bit mask for Beam-Beam trigger in V0C
-  UInt_t  fBGtriggerV0C;     ///< bit mask for Beam-Gas trigger in V0C
+  UInt_t  fBBtriggerV0A;     // bit mask for Beam-Beam trigger in V0A
+  UInt_t  fBGtriggerV0A;     // bit mask for Beam-Gas trigger in V0A
+  UInt_t  fBBtriggerV0C;     // bit mask for Beam-Beam trigger in V0C
+  UInt_t  fBGtriggerV0C;     // bit mask for Beam-Gas trigger in V0C
 
-  Float_t fMultiplicity[64]; ///< multiplicity for each channel
+  Float_t fMultiplicity[64]; //  multiplicity for each channel
 
-  Bool_t  fBBFlag[64];       ///< BB Flags from Online V0 Electronics
-  Bool_t  fBGFlag[64];       ///< BG Flags from Online V0 Electronics
+  Bool_t  fBBFlag[64];       //  BB Flags from Online V0 Electronics
+  Bool_t  fBGFlag[64];       //  BG Flags from Online V0 Electronics
 
-  Float_t fV0ATime;          ///< Average time in V0A
-  Float_t fV0CTime;          ///< Average time in V0C
+  Float_t fV0ATime;          // Average time in V0A
+  Float_t fV0CTime;          // Average time in V0C
 
-  Decision fV0ADecision;     ///< V0A final decision based on average time of channels
-  Decision fV0CDecision;     ///< V0C final decision based on average time of channels
+  Decision fV0ADecision;     // V0A final decision based on average time of channels
+  Decision fV0CDecision;     // V0C final decision based on average time of channels
 
-  UShort_t fTriggerChargeA;  ///< Sum of the trigger (clock=10) charge on A side
-  UShort_t fTriggerChargeC;  ///< Sum of the trigger (clock=10) charge on C side
-  UShort_t fTriggerBits;     ///< V0 trigger bits as defined in the firmware
+  UShort_t fTriggerChargeA;  // Sum of the trigger (clock=10) charge on A side
+  UShort_t fTriggerChargeC;  // Sum of the trigger (clock=10) charge on C side
+  UShort_t fTriggerBits;     // V0 trigger bits as defined in the firmware
 
-  Bool_t   fIsBB[64][21];  ///< 'Beam-Beam' flag for all channels and 21 clocks
-  Bool_t   fIsBG[64][21];  ///< 'Beam-Gas' flag for all channels and 21 clocks
-
+  Bool_t   fIsBB[64][21];  // 'Beam-Beam' flag for all channels and 21 clocks
+  Bool_t   fIsBG[64][21];  // 'Beam-Gas' flag for all channels and 21 clocks
 
   ClassDef(AliAODVZERO,3)
-
 };
 
 #endif

@@ -15,12 +15,15 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD class for jets
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+
 #include <TLorentzVector.h>
 #include "AliAODJet.h"
 
-
 ClassImp(AliAODJet)
-
 
 
 //______________________________________________________________________________
@@ -53,8 +56,7 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
 
 
 {
-  /// constructor
-
+  // constructor
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
@@ -74,8 +76,7 @@ AliAODJet::AliAODJet(TLorentzVector & p):
     fRefTracks(new TRefArray())
 
 {
-  /// constructor
-
+  // constructor
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
@@ -89,8 +90,7 @@ AliAODJet::AliAODJet(TLorentzVector & p):
 //______________________________________________________________________________
 AliAODJet::~AliAODJet() 
 {
-  /// destructor
-
+  // destructor
     delete fMomentum;
     delete fVectorAreaCharged;
     delete fRefTracks;
@@ -107,8 +107,7 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
     fRefTracks(0)
 
 {
-  /// Copy constructor
-
+  // Copy constructor
     fBackgEnergy[0]   = jet.fBackgEnergy[0];
     fBackgEnergy[1]   = jet.fBackgEnergy[1];
     fEffectiveArea[0] = jet.fEffectiveArea[0];
@@ -125,8 +124,7 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
 //______________________________________________________________________________
 AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
 {
-  /// Assignment operator
-
+  // Assignment operator
   if(this!=&jet) {
 
     fBackgEnergy[0]   = jet.fBackgEnergy[0];
@@ -186,8 +184,10 @@ void AliAODJet::Print(Option_t* option) const
 }
 
 void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){
-  /// Set the four Momentum from outside
-  /// MomentumVector()->SetPxPyPzE() cannot be used since pointer can be 0x0
+  // 
+  // Set the four Momentum from outside
+  // MomentumVector()->SetPxPyPzE() cannot be used since pointer can be 0x0
+  //
 
   if(!fMomentum){
     fMomentum = new TLorentzVector(px,py,pz,e);
@@ -198,8 +198,10 @@ void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){
 }
 
 void  AliAODJet::SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t m){
-  /// Set the four Momentum from outside with pt eta phi and M
-  /// MomentumVector()->SetPtPhiEtaM() cannot be used since pointer can be 0x0
+  // 
+  // Set the four Momentum from outside with pt eta phi and M
+  // MomentumVector()->SetPtPhiEtaM() cannot be used since pointer can be 0x0
+  //
 
   if(!fMomentum){
     fMomentum = new TLorentzVector();
@@ -211,8 +213,8 @@ void  AliAODJet::SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t 
 
 Double_t AliAODJet::DeltaR(const AliVParticle* part) const {
 
-  /// Helper function to calculate the distance between two jets
-  /// or a jet and particle
+  // Helper function to calculate the distance between two jets
+  // or a jet and particle
 
   Double_t dPhi = Phi() - part->Phi(); 
   if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
@@ -224,8 +226,7 @@ Double_t AliAODJet::DeltaR(const AliVParticle* part) const {
 
 
 void  AliAODJet::AddTrack(TObject *tr) {
-    /// Add a track to the list of referenced tracks
-
+    // Add a track to the list of referenced tracks
     if (fRefTracks->GetEntries() == 0) {
       fRefTracks->Delete();
       new(fRefTracks) TRefArray(TProcessID::GetProcessWithUID(tr));

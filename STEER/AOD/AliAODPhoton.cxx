@@ -15,12 +15,15 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     AOD class for photons
+//     Author: Yves Schutz, CERN
+//-------------------------------------------------------------------------
+
 #include <TLorentzVector.h>
 #include "AliAODPhoton.h"
 
-
 ClassImp(AliAODPhoton)
-
 
 
 //______________________________________________________________________________
@@ -35,8 +38,7 @@ AliAODPhoton::AliAODPhoton(Double_t px, Double_t py, Double_t pz, Double_t e):
     AliVParticle(),
     fMomentum(0)
 {
-  /// constructor
-
+  // constructor
     fMomentum = new TLorentzVector(px, py, pz, e);
 }
 
@@ -44,8 +46,7 @@ AliAODPhoton::AliAODPhoton(TLorentzVector & p):
     AliVParticle(),
     fMomentum(0)
 {
-  /// constructor
-
+  // constructor
     fMomentum = new TLorentzVector(p);
 }
 
@@ -53,8 +54,7 @@ AliAODPhoton::AliAODPhoton(TLorentzVector & p):
 //______________________________________________________________________________
 AliAODPhoton::~AliAODPhoton() 
 {
-  /// destructor
-
+  // destructor
     delete fMomentum;
 }
 
@@ -63,8 +63,7 @@ AliAODPhoton::AliAODPhoton(const AliAODPhoton& photon) :
     AliVParticle(photon),
     fMomentum(0)
 {
-  /// Copy constructor
-
+  // Copy constructor
     fMomentum = new TLorentzVector(*photon.fMomentum);
     
 }
@@ -72,8 +71,7 @@ AliAODPhoton::AliAODPhoton(const AliAODPhoton& photon) :
 //______________________________________________________________________________
 AliAODPhoton& AliAODPhoton::operator=(const AliAODPhoton& photon)
 {
-  /// Assignment operator
-
+  // Assignment operator
   if(this!=&photon) {
   }
 
@@ -82,8 +80,7 @@ AliAODPhoton& AliAODPhoton::operator=(const AliAODPhoton& photon)
 
 void AliAODPhoton::Print(Option_t* /*option*/) const 
 {
-  /// Print information of all data members
-
+  // Print information of all data members
   printf("Photon 4-vector:\n");
   printf("     E  = %13.3f\n", E() );
   printf("     Px = %13.3f\n", Px());

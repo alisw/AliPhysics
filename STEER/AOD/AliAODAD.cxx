@@ -13,12 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-------------------------------------------------------------------------
+//     Container class for AOD AD data
+//     Author: Michal Broz
+//     michal.broz@cern.ch
+//-------------------------------------------------------------------------
+
 #include "AliAODAD.h"
 #include "AliLog.h"
 
-
 ClassImp(AliAODAD)
-
 
 //__________________________________________________________________________
 AliAODAD::AliAODAD()
@@ -59,8 +63,7 @@ AliAODAD::AliAODAD(const AliAODAD &source)
    fTriggerChargeC(source.fTriggerChargeC),
    fTriggerBits(source.fTriggerBits)
 {   
-   /// Default constructor
-
+   // Default constructor 
    for(Int_t j=0; j<16; j++) {
        fMultiplicity[j] = source.fMultiplicity[j];
        fBBFlag[j] = source.fBBFlag[j];
@@ -87,8 +90,7 @@ AliAODAD::AliAODAD(const AliVAD &source)
    fTriggerChargeC(source.GetTriggerChargeC()),
    fTriggerBits(source.GetTriggerBits())
 {   
-   /// Default constructor
-
+   // Default constructor 
    for(Int_t j=0; j<16; j++) {
      fMultiplicity[j] = source.GetMultiplicity(j);
      fBBFlag[j] = source.GetBBFlag(j);
@@ -110,8 +112,8 @@ AliAODAD::AliAODAD(const AliVAD &source)
 //__________________________________________________________________________
 AliAODAD& AliAODAD::operator=(const AliAODAD& source)
 {
-  /// Assignment operator
-
+  // Assignment operator
+  //
   if(this==&source) return *this;
   AliVAD::operator=(source);
   // Assignment operator
@@ -143,9 +145,8 @@ AliAODAD& AliAODAD::operator=(const AliAODAD& source)
 //__________________________________________________________________________
 AliAODAD& AliAODAD::operator=(const AliVAD& source)
 {
-  /// Assignment operator
-  /// used in esd->aod filter
-
+  // Assignment operator
+  // used in esd->aod filter
   if(this==&source) return *this;
   AliVAD::operator=(source);
 
@@ -183,9 +184,8 @@ AliAODAD& AliAODAD::operator=(const AliVAD& source)
 //__________________________________________________________________________
 Short_t AliAODAD::GetNbPMADA() const
 {
-  /// Returns the number of
-  /// fired PM in ADA
-
+  // Returns the number of
+  // fired PM in ADA
   Short_t n=0;
   for(Int_t i=8;i<16;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -195,9 +195,8 @@ Short_t AliAODAD::GetNbPMADA() const
 //__________________________________________________________________________
 Short_t AliAODAD::GetNbPMADC() const
 {
-  /// Returns the number of
-  /// fired PM in ADC
-
+  // Returns the number of
+  // fired PM in ADC
   Short_t n=0;
   for(Int_t i=0;i<8;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -207,9 +206,8 @@ Short_t AliAODAD::GetNbPMADC() const
 //__________________________________________________________________________
 Float_t AliAODAD::GetMTotADA() const
 {
-  /// returns total multiplicity
-  /// in ADA
-
+  // returns total multiplicity
+  // in ADA
   Float_t mul=0.0;
   for(Int_t i=8;i<16;i++) 
     mul+=  fMultiplicity[i];
@@ -219,9 +217,8 @@ Float_t AliAODAD::GetMTotADA() const
 //__________________________________________________________________________
 Float_t AliAODAD::GetMTotADC() const
 {
-  /// returns total multiplicity
-  /// in ADC
-
+  // returns total multiplicity
+  // in ADC
   Float_t mul=0.0;
   for(Int_t i=0;i<8;i++) 
     mul+=  fMultiplicity[i];
@@ -232,9 +229,8 @@ Float_t AliAODAD::GetMTotADC() const
 Float_t AliAODAD::GetMultiplicity(Int_t i) const
 
 {
-  /// returns multiplicity in a
-  /// given cell of AD
-
+  // returns multiplicity in a
+  // given cell of AD
   if (OutOfRange(i, "AliAODAD::GetMultiplicity:",16)) return -1;
   return fMultiplicity[i];
 }
@@ -243,9 +239,8 @@ Float_t AliAODAD::GetMultiplicity(Int_t i) const
 Float_t AliAODAD::GetMultiplicityADA(Int_t i) const
 
 {
-  /// returns multiplicity in a
-  /// given cell of ADA
-
+  // returns multiplicity in a
+  // given cell of ADA
   if (OutOfRange(i, "AliAODAD::GetMultiplicityADA:",8)) return -1;
   return fMultiplicity[8+i];
 }
@@ -254,9 +249,8 @@ Float_t AliAODAD::GetMultiplicityADA(Int_t i) const
 Float_t AliAODAD::GetMultiplicityADC(Int_t i) const
 
 {
-  /// returns multiplicity in a
-  /// given cell of ADC
-
+  // returns multiplicity in a
+  // given cell of ADC
   if (OutOfRange(i, "AliAODAD::GetMultiplicityADC:",8)) return -1;
   return fMultiplicity[i];
 }
@@ -264,9 +258,8 @@ Float_t AliAODAD::GetMultiplicityADC(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODAD::BBTriggerADA(Int_t i) const
 {
-  /// returns offline beam-beam flags in ADA
-  /// one bit per cell
-
+  // returns offline beam-beam flags in ADA
+  // one bit per cell
   if (OutOfRange(i, "AliAODAD:::BBTriggerADA",8)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerADA & (test << i) ? kTRUE : kFALSE );
@@ -275,9 +268,8 @@ Bool_t AliAODAD::BBTriggerADA(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODAD::BGTriggerADA(Int_t i) const
 {
-  /// returns offline beam-gas flags in ADA
-  /// one bit per cell
-
+  // returns offline beam-gas flags in ADA
+  // one bit per cell
   if (OutOfRange(i, "AliAODAD:::BGTriggerADA",8)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerADA & (test << i) ? kTRUE : kFALSE );
@@ -286,9 +278,8 @@ Bool_t AliAODAD::BGTriggerADA(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODAD::BBTriggerADC(Int_t i) const
 {
-  /// returns offline beam-beam flags in ADC
-  /// one bit per cell
-
+  // returns offline beam-beam flags in ADC
+  // one bit per cell
   if (OutOfRange(i, "AliAODAD:::BBTriggerADC",8)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerADC & (test << i) ? kTRUE : kFALSE );
@@ -297,9 +288,8 @@ Bool_t AliAODAD::BBTriggerADC(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODAD::BGTriggerADC(Int_t i) const
 {
-  /// returns offline beam-gasflags in ADC
-  /// one bit per cell
-
+  // returns offline beam-gasflags in ADC
+  // one bit per cell
   if (OutOfRange(i, "AliAODAD:::BGTriggerADC",8)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerADC & (test << i) ? kTRUE : kFALSE );
@@ -309,9 +299,8 @@ Bool_t AliAODAD::BGTriggerADC(Int_t i) const
 Bool_t AliAODAD::GetBBFlag(Int_t i) const
 
 {
-  /// returns online beam-beam flag in AD
-  /// one boolean per cell
-
+  // returns online beam-beam flag in AD
+  // one boolean per cell
   if (OutOfRange(i, "AliAODAD::GetBBFlag:",16)) return kFALSE;
   return fBBFlag[i];
 }
@@ -320,9 +309,8 @@ Bool_t AliAODAD::GetBBFlag(Int_t i) const
 Bool_t AliAODAD::GetBGFlag(Int_t i) const
 
 {
-  /// returns online beam-gas flag in AD
-  /// one boolean per cell
-
+  // returns online beam-gas flag in AD
+  // one boolean per cell
   if (OutOfRange(i, "AliAODAD::GetBGFlag:",16)) return kFALSE;
   return fBGFlag[i];
 }
