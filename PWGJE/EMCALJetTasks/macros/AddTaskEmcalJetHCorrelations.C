@@ -16,7 +16,7 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
    const Bool_t lessSparseAxes      = 0,
    const Bool_t widerTrackBin       = 0,
    // Corrections
-   const Int_t doEffCorrSW          = 0,
+   const AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency = AliAnalysisTaskEmcalJetHCorrelations::kEffDisable,
    const Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection",
@@ -31,7 +31,7 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
                           trigEvent, mixEvent,
                           lessSparseAxes,
                           widerTrackBin,
-                          doEffCorrSW,
+                          singleTrackEfficiency,
                           embeddingCorrection,
                           embeddingCorrectionFilename, embeddingCorrectionHistName,
                           suffix
