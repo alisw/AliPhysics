@@ -14,7 +14,8 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
         kSystAsociatedTPCcluster = 5,
         kSystAsociatedMinpTWeights = 6,
 	kSystTrackPIDMixedCuts = 7,
-	kSystAssoTrackPIDAssoMinPtMixedCuts = 8
+	kSystAssoTrackPIDAssoMinPtMixedCuts = 8,
+	kSystHC = 9,
     };
 
     // Default settings (TOF-TPC pp)
@@ -153,7 +154,10 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
                     break;
                 case kSystTPCcluster:
                     break;
-                case kSystPID:
+                case kSystHC:
+                 RegisterTaskNPEpp(  MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                      dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                      kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,1);
                     break;
             }
         }
