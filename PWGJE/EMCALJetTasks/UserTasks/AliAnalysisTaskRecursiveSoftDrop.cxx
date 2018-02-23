@@ -448,6 +448,8 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
     trackContDet = task->AddParticleContainer(ntracksDet);
     trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+    trackContHybridS = task->AddParticleContainer(ntracksHybridS);
+    trackContHybridUs = task->AddParticleContainer(ntracksHybridUs);
   }
   AliJetContainer *JetContData=0x0;
   AliJetContainer *JetContTrue=0x0;
