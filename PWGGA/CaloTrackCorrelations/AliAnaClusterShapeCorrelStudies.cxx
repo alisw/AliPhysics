@@ -1862,7 +1862,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     AliVCluster* clus =  (AliVCluster*) fCaloClusList->At(iclus);
         
     // away from dead region
-    if ( clus->GetDistanceToBadChannel() < fMinDistToBad ) 
+    if (  clus->GetDistanceToBadChannel() > -1 && // in case it was not calculated 
+          clus->GetDistanceToBadChannel() < fMinDistToBad ) 
     {
       AliDebug(1,Form("Small distance to bad channel %2.2f < %2.2f",clus->GetDistanceToBadChannel(),fMinDistToBad));
       continue ; 
