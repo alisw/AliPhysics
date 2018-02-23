@@ -19,7 +19,26 @@ fDoDalitz(doDalitz)
     fDalitzPlot23_31 = new TH2D(Form("dalitz_23_31_%s",name),Form("dalitz_23_31_%s",name),nBins,min,max,nBins,min,max);
     fDalitzPlot12_31 = new TH2D(Form("dalitz_12_31_%s",name),Form("dalitz_12_31_%s",name),nBins,min,max,nBins,min,max);
   }
-  
+}
+
+AliFemtoTrioMinvFctn::AliFemtoTrioMinvFctn(const char* name,
+                                           int nBinsX, double minX, double maxX,
+                                           int nBinsY, double minY, double maxY,
+                                           bool doMinv, bool doDalitz) :
+fDoMinv(doMinv),
+fDoDalitz(doDalitz)
+{
+  if(fDoMinv){
+    fRealDistribution = new TH1D(Form("real_m_inv_%s",name),Form("real_m_inv_%s",name),nBinsX,minX,maxX);
+    fMixedDistribution = new TH1D(Form("mixed_m_inv_%s",name),Form("mixed_m_inv_%s",name),nBinsX,minX,maxX);
+    fRealDistribution->Sumw2();
+    fMixedDistribution->Sumw2();
+  }
+  if(fDoDalitz){
+    fDalitzPlot12_23 = new TH2D(Form("dalitz_12_23_%s",name),Form("dalitz_12_23_%s",name),nBinsX,minX,maxX,nBinsY,minY,maxY);
+    fDalitzPlot23_31 = new TH2D(Form("dalitz_23_31_%s",name),Form("dalitz_23_31_%s",name),nBinsX,minX,maxX,nBinsY,minY,maxY);
+    fDalitzPlot12_31 = new TH2D(Form("dalitz_12_31_%s",name),Form("dalitz_12_31_%s",name),nBinsX,minX,maxX,nBinsY,minY,maxY);
+  }
 }
 
 AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
