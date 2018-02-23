@@ -60,6 +60,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
+  void SetMinWeightedDzVtxPileupMV(Float_t min=15.) {fMinWDzPileupMV=min;}
+  void SetRejectPlpFromDifferentBCMV(Bool_t ok=kTRUE) {fRejectPlpFromDiffBCMV=ok;}
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
   void SetUseOnlyOneTrigger(Bool_t onlyOne) {fUseOnlyOneTrigger=onlyOne;}
@@ -391,6 +393,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxRedChi2; /// maximum chi2/ndf
   Float_t fMaxVtxZ; /// maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; /// SPD multiplicity
+  Float_t fMinWDzPileupMV; /// minimum weighted distance in Z between 2 vertices (multi-vertexer)
+  Bool_t fRejectPlpFromDiffBCMV; /// flag to reject pileup from different BC (multi-vertexer)
   ULong64_t fTriggerMask; /// trigger mask
   Bool_t fUseOnlyOneTrigger; /// flag to select one trigger only
   TString  fTriggerClass[2]; /// trigger class
@@ -459,7 +463,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,40);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,41);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

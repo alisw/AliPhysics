@@ -65,9 +65,11 @@ AliRDHFCuts::AliRDHFCuts(const Char_t* name, const Char_t* title) :
 AliAnalysisCuts(name,title),
 fMinVtxType(3),
 fMinVtxContr(1),
-fMaxVtxRedChi2(1e6),
+fMaxVtxRedChi2(5.),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
+fMinWDzPileupMV(15.),
+fRejectPlpFromDiffBCMV(kFALSE),
 fTriggerMask(AliVEvent::kAnyINT),
 fUseOnlyOneTrigger(kFALSE),
 fTrackCuts(0),
@@ -140,6 +142,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
+  fMinWDzPileupMV(source.fMinWDzPileupMV),
+  fRejectPlpFromDiffBCMV(source.fRejectPlpFromDiffBCMV),
   fTriggerMask(source.fTriggerMask),
   fUseOnlyOneTrigger(source.fUseOnlyOneTrigger),
   fTriggerClass(),
@@ -233,6 +237,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
+  fMinWDzPileupMV=source.fMinWDzPileupMV;
+  fRejectPlpFromDiffBCMV=source.fRejectPlpFromDiffBCMV;
   fTriggerMask=source.fTriggerMask;
   fUseOnlyOneTrigger=source.fUseOnlyOneTrigger;
   fTriggerClass[0]=source.fTriggerClass[0];
@@ -684,6 +690,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
   else if(fOptPileup==kRejectMVPileupEvent){
     AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(fMinContrPileup);  // min. multiplicity of the pile-up vertex to consider
+    utils.SetMaxPlpChi2MV(fMaxVtxRedChi2);      // max chi2 per contributor of the pile-up vertex to consider.
+    utils.SetMinWDistMV(fMinWDzPileupMV);       // minimum weighted distance in Z between 2 vertices (i.e. (zv1-zv2)/sqrt(sigZv1^2+sigZv2^2) )
+    utils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV); // vertex with |BCID|>2 will trigger pile-up (based on TOF)
     Bool_t isPUMV = utils.IsPileUpMV(event);
     if(isPUMV) {
       if(accept) fWhyRejection=1;
