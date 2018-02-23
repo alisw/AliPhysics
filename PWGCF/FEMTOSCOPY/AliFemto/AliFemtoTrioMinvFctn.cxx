@@ -19,7 +19,6 @@ fDoDalitz(doDalitz)
     fDalitzPlot23_31 = new TH2D(Form("dalitz_23_31_%s",name),Form("dalitz_23_31_%s",name),nBins,min,max,nBins,min,max);
     fDalitzPlot12_31 = new TH2D(Form("dalitz_12_31_%s",name),Form("dalitz_12_31_%s",name),nBins,min,max,nBins,min,max);
   }
-  
 }
 
 AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
