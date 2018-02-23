@@ -702,6 +702,37 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kXeXe5440GeV ){
+    binWidthPt                = 0.1;
+    nBinsPt                   = 90;
+    minPt                     = 0;
+    maxPt                     = 20;
+    for(Int_t i=0; i<nBinsPt+1;i++){
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<58) arrPtBinning[i]           = 0.3+0.1*(i-1);
+      else if(i<82) arrPtBinning[i]           = 6.+0.25*(i-58);
+      else if(i<90) arrPtBinning[i]           = 12.+1.0*(i-82);
+      else arrPtBinning[i]                    = maxPt;
+    }
+    nBinsQAPt                 = 92;
+    maxQAPt                   = 20;
+    for(Int_t i=0; i<nBinsQAPt+1;i++){
+      if(i<60) arrQAPtBinning[i]              = 0.1*i;
+      else if(i<84) arrQAPtBinning[i]         = 6.+0.25*(i-60);
+      else if(i<92) arrQAPtBinning[i]         = 12.+1.0*(i-84);
+      else arrQAPtBinning[i]                  = maxQAPt;
+    }
+    nBinsClusterPt            = 124;
+    minClusterPt              = 0;
+    maxClusterPt              = 40;
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<58) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<88) arrClusPtBinning[i]       = 6.+0.2*(i-58);
+      else if(i<104) arrClusPtBinning[i]      = 12.+0.5*(i-88);
+      else if(i<124) arrClusPtBinning[i]      = 20.+1.0*(i-104);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
   } else {
     for(Int_t i=0; i<nBinsPt+1;i++){
       arrPtBinning[i]         = ((maxPt-minPt)/nBinsPt)*i;
