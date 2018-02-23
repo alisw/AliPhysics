@@ -25,9 +25,6 @@ class AliFemtoTrioMinvFctn
 public:
   AliFemtoTrioMinvFctn(const char* name="", int nBins=1000, double min=0.0, double max=10.0,
                                             bool doMinv=true, bool doDalitz=false);
-  AliFemtoTrioMinvFctn(const char* name="", int nBinsX=1000, double minX=0.0, double maxX=10.0,
-                                            int nBinsY=1000, double minY=0.0, double maxY=10.0,
-                                            bool doMinv=true, bool doDalitz=false);
   ~AliFemtoTrioMinvFctn();
   
   void AddRealTrio(AliFemtoTrio* trio);   // add real trio (same event)

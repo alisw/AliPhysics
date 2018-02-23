@@ -157,20 +157,17 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     AliFemtoTrioCut *dalitzTrioCut = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,1.0);
     dalitz[iSys] = new AliFemtoTrioMinvFctn(Form("%s",sysNames[iSys]),
                                             (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
-                                            (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
                                             doMinv,doDalitz);
     dalitz[iSys]->SetTrioCut(dalitzTrioCut);
     
     AliFemtoTrioCut *dalitzTrioCutUp = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,1.5);
     dalitzCutUp[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutUp",sysNames[iSys]),
                                                  (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
-                                                 (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
                                                  doMinv,doDalitz);
     dalitzCutUp[iSys]->SetTrioCut(dalitzTrioCutUp);
     
     AliFemtoTrioCut *dalitzTrioCutDown = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,0.5);
     dalitzCutDown[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutDown",sysNames[iSys]),
-                                                   (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
                                                    (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
                                                    doMinv,doDalitz);
     dalitzCutDown[iSys]->SetTrioCut(dalitzTrioCutDown);
