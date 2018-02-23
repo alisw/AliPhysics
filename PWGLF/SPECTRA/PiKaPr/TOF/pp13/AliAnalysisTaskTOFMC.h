@@ -97,7 +97,8 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
 {}
 
 */
- AliAnalysisTaskTOFMC(const char *name, Int_t nTPC_CR,Int_t Chi2_TPCcluser, Int_t DCAz);
+ AliAnalysisTaskTOFMC();
+ AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR,Int_t Chi2_TPCcluser, Int_t DCAz);
  //AliAnalysisTaskTOFMC(const char *name);
   virtual ~AliAnalysisTaskTOFMC() {}
 
