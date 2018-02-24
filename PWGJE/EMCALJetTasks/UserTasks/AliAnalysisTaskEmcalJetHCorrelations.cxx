@@ -194,7 +194,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   PostData(1, fOutput);
 
   // Event Mixing
-  Int_t poolSize = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+  Int_t poolSize = -1;  // Maximum number of events. Set to -1 to avoid limits on number of events
   // ZVertex
   Int_t nZVertexBins = 10;
   Double_t* zVertexBins = GenerateFixedBinArray(nZVertexBins, -10, 10);
