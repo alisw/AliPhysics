@@ -38,13 +38,10 @@ void Plotter(bool bTPC = false, bool short_mode = true){
     TTList* list = (TTList*)file_in.Get(list_key->GetName());
     TDirectory* base_dir = file_out.mkdir(list_key->GetName());
     file_out.cd(list_key->GetName());
-    std::cout << string(list_key->GetName()).data() << std::endl;
     for(int iS=0; iS<2; iS++){
-      std::cout << "   " << kNames[iS] << std::endl;
       TDirectory* dir = base_dir->mkdir(kNames[iS].data());
       dir->cd();
       for(int iC=0; iC<kCentLength; iC++){
-        std::cout << "      " << iC << std::endl;
         dir->mkdir(Form("cent_%d",iC));
         dir->cd(Form("cent_%d",iC));
         iPad = 0;
@@ -64,7 +61,6 @@ void Plotter(bool bTPC = false, bool short_mode = true){
           }
           fCanvas->cd(iPad%6+1);
           string path = string(list_key->GetName()) + "/" + kNames[iS] + input_dir.data();
-          //std::cout << "path " << path.data() << std::endl;
           RooPlot* fPlot = (bTPC) ? (RooPlot*)file_in.Get(Form("%s/TPC_d_%i_%i",path.data(),iC,iB)) : (RooPlot*)file_in.Get(Form("%s/C_%d/d%i_%i",path.data(),iC,iC,iB));
           (bTPC) ? Requires(fPlot,Form("%s/TPC_d_%i_%i",path.data(),iC,iB)) : Requires(Form("%s/C_%d/d%i_%i",path.data(),iC,iC,iB));
           fPlot->Draw();

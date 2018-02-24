@@ -50,28 +50,31 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
   TFile output_file(kSignalOutput.data(),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1,1.5,"GeV^{2}/#it{c}^{4}");
   m.setBins(1000,"cache");
-  m.setRange("Full", -1.2, 1.5);
+  m.setRange("Full", -1, 1.5);
 
-  FitExpExpTailGaus fExpExpTailGaus(&m,use_extended);
+  FitExpExpTailTailGaus fExpExpTailGaus(&m,use_extended);
   fExpExpTailGaus.mMu->setRange(0.00001,0.5);
   fExpExpTailGaus.mMu->setVal(0.1);
   fExpExpTailGaus.mMu->setUnit("GeV^{2}/#it{c}^{4}");
   fExpExpTailGaus.mSigma->setRange(0.05,0.15);
   fExpExpTailGaus.mSigma->setVal(0.1);
   fExpExpTailGaus.mSigma->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mAlpha0->setRange(1.1,4.);
-  fExpExpTailGaus.mAlpha0->setVal(1.2);
+  fExpExpTailGaus.mAlpha0->setRange(-4.,-1.);
+  fExpExpTailGaus.mAlpha0->setVal(-1.3);
   fExpExpTailGaus.mAlpha0->setUnit("GeV^{2}/#it{c}^{4}");
+  fExpExpTailGaus.mAlpha1->setRange(1.,4.);
+  fExpExpTailGaus.mAlpha1->setVal(1.2);
+  fExpExpTailGaus.mAlpha1->setUnit("GeV^{2}/#it{c}^{4}");
   fExpExpTailGaus.mSigCounts->setRange(0.,4000.);
   fExpExpTailGaus.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
   fExpExpTailGaus.mTau1 ->setUnit("GeV^{-2}#it{c}^{4}");
 
   //Background
-  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1,1.5,"GeV^{2}/#it{c}^{4}");
   m_bis.setBins(1000,"cache");
-  m_bis.setRange("Full", -1.2, 1.5);
+  m_bis.setRange("Full", -1, 1.5);
   FitExpExpTailGaus fBkg(&m_bis,use_extended);
   fBkg.UseSignal(false);
   fBkg.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
@@ -160,7 +163,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
     TH1D* hShiftRangeSystTPC[2][kCentLength];
 
     /// Creating the directories to be used to store the results
-    for (int iS = 0; iS < 2; ++iS) {
+    for (int iS = 1; iS>=0; iS--) {
       TDirectory* dir = base_dir->mkdir(kNames[iS].data());
       dir->cd();
       TDirectory* sig_dir = dir->mkdir("Fits");
@@ -177,7 +180,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
       dir->mkdir("ChiSquare");
     }
 
-    for (int iS = 0; iS < 2; ++iS) {
+    for (int iS = 1; iS>=0; iS--) {
       for (int iC = 0; iC < kCentLength; ++iC) {
         hTPConly[iS][iC] = new TH1D(Form("hTPConly%c%i",kLetter[iS],iC),";p_{T} GeV/c; TPC raw counts",n_pt_bins,pt_labels.GetArray());
         hSignificance[iS][iC] = new TH1D(Form("hSignificance%c%i",kLetter[iS],iC),"; p_{T}(GeV/c); #frac{S}{#sqrt{S+B}}",n_pt_bins,pt_labels.GetArray());
@@ -201,7 +204,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
       if (pt_axis->GetBinCenter(iB+1) < kPtRange[0] || pt_axis->GetBinCenter(iB+1) > kPtRange[1]) continue;
       float sigma_deut[kCentLength];
       float sigma_deut_tpc[kCentLength];
-      for (int iS = 0; iS < 2; ++iS) {
+      for (int iS = 1; iS>=0; iS--) {
         for (int iC = kCentLength; iC--; ) {
           // TOF analysis
           if (pt_axis->GetBinCenter(iB+1) > kCentPtLimits[iC]) continue;
@@ -224,16 +227,22 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
 
           /// Fits
           base_dir->cd(Form("%s/Fits/C_%d",kNames[iS].data(),iC));
-          if(iB<=8){
+          if(iB<=9){
             fExpExpTailGaus.UseBackground(false);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.11);
+            fExpExpTailGaus.mSigma->setRange(0.05,0.18);
             fExpExpTailGaus.mSigma->setVal(0.1);
+            fExpExpTailGaus.mAlpha0->setVal(-1.1);
+            //fExpExpTailGaus.mAlpha0->setConstant(true);
+            fExpExpTailGaus.mAlpha1->setVal(1.1);
+            fExpExpTailGaus.mAlpha1->setConstant(true);
           }
           else{
             fExpExpTailGaus.UseBackground(true);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.18);
+            fExpExpTailGaus.mSigma->setRange(0.05,0.25);
             fExpExpTailGaus.mSigma->setVal(0.1);
-            if(iB<10){
+            fExpExpTailGaus.mAlpha0->setConstant(false);
+            fExpExpTailGaus.mAlpha1->setConstant(false);
+            if(iB<=10){
               fExpExpTailGaus.mKbkg->setVal(0.);
               fExpExpTailGaus.mKbkg->setConstant(true);
               fExpExpTailGaus.mTau0->setConstant(true);
@@ -261,7 +270,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
               fExpExpTailGaus.mAlpha0->setConstant(false);
             }
           }
-          RooPlot* expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-1.2,1.5);
+          RooPlot* expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-1,1.5);
           if(useMBsignal){
             if(iC==kCentLength-1){
               fExpExpTailGaus.mMu->setConstant(true);
@@ -301,7 +310,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
             fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
             if (iSigma==0) {
-              fBkg.mX->setRange("left",-1.2,left_edge_float);
+              fBkg.mX->setRange("left",-1,left_edge_float);
               fBkg.mX->setRange("right",right_edge_float,1.5);
               RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
               base_dir->cd(Form("%s/Sidebands/C_%d",kNames[iS].data(),iC));
@@ -317,7 +326,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             float sig_integral = tot_integral - bkg_integral;
             float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
             if(iSigma==0){
-              if(iB<=8){
+              if(iB<=9){
                 hRawCounts[iS][iC]->SetBinContent(iB + 1, sig_integral);
                 hRawCounts[iS][iC]->SetBinError(iB + 1, sig_err);
               }

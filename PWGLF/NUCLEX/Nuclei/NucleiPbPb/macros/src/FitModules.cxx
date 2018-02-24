@@ -170,12 +170,12 @@ FitExpExpTailGaus::FitExpExpTailGaus(RooRealVar *x, bool extended_likelihood) : 
 FitExpExpTailTailGaus::FitExpExpTailTailGaus(RooRealVar *x, bool extended_likelihood) : FitModule(x, extended_likelihood) {
   mTau0 = make_unique<RooRealVar>("#tau_{0}","#tau_{0}",-6.5,-2.);
   mTau1 = make_unique<RooRealVar>("#tau_{1}","#tau_{1}",-2.,-0.001);
-  mKbkg = make_unique<RooRealVar>("K_{bkg}","K_{bkg}",0.,0.,1.);
+  mKbkg = make_unique<RooRealVar>("K_{bkg}","K_{bkg}",0.5,0.,1.);
   mBkg0 = make_unique<RooExponential>("mBkg0","background1",*mX,*mTau0);
   mBkg1 = make_unique<RooExponential>("mBkg1","background2",*mX,*mTau1);
   mBackground = make_unique<RooAddPdf>("mBackground","Background",RooArgList(*mBkg0,*mBkg1),
                                        RooArgList(*mKbkg));
-  mAlpha0 = make_unique<RooRealVar>("#alpha_{0}","Alpha0",-3.,1.); // tight range based on low pT
+  mAlpha0 = make_unique<RooRealVar>("#alpha_{0}","Alpha0",-3.,-1.); // tight range based on low pT
   mAlpha1 = make_unique<RooRealVar>("#alpha_{1}","Alpha1",1.,3.); // tight range based on low pT
   mSignal = make_unique<RooGausDExp>("mSignal","Signal",*mX,*mMu,*mSigma,*mAlpha0,*mAlpha1);
   mTemplate = (mExtended) ? make_unique<RooAddPdf>("mTemplate","Template",RooArgList(*mSignal,*mBackground),
