@@ -223,6 +223,12 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetOptPileup(Int_t opt=0){
     /// see enum below
     fOptPileup=opt;
+    if (fOptPileup==kRejectMVPileupEvent) {
+      fMinContrPileup=5.;
+      fMaxVtxChi2PileupMV=5.;
+      fMinWDzPileupMV=15.;
+      fRejectPlpFromDiffBCMV=kFALSE;
+    }
   }
   void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
