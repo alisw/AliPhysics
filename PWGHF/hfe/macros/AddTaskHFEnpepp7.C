@@ -154,11 +154,7 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
                     break;
                 case kSystTPCcluster:
                     break;
-                case kSystHC:
-                 RegisterTaskNPEpp(  MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
-                                      dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                                      kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,1);
-                    break;
+
             }
         }
         switch (RunSystematic) {
@@ -511,7 +507,11 @@ case kSystAssoTrackPIDAssoMinPtMixedCuts:
                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.15,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
 
 		break;
-
+case kSystHC:
+                 RegisterTaskNPEpp(  MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                      dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                      kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,1);
+                    break;
 
         }
         
