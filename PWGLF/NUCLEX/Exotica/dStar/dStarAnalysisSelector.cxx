@@ -12,12 +12,15 @@ using namespace std;
 dStarAnalysisSelector::dStarAnalysisSelector(TTree *) :
 fChain{nullptr},
 fTOFpid{nullptr},
+fPool{nullptr},
 fNSigmaDe{3.}, fNSigmaPi{3.},
 fZVertex{nullptr},
 fDedxPi{ nullptr },
-fDeuPT{nullptr}, fPiPT{nullptr},
+fDeuPT{nullptr}, fPiPlusPT{nullptr}, fPiMinusPT{nullptr},
 fMInvBlind{nullptr},
-fOutputFileName{"dStarAnalysisTEST.root"} {}
+fMEMInvBackground{nullptr},
+fLSPlusMInvBackground{nullptr}, fLSMinusMInvBackground{nullptr},
+fOutputFileName{"dStarAnalysis.root"} {}
 
 //______________________________________________________________________________
 
@@ -40,9 +43,14 @@ void dStarAnalysisSelector::SlaveBegin(TTree * /*tree*/) {
 
   TString option = GetOption();
 
+  /// event mixing pool instantiation and setting
+  fPool = new AliAnalysisCODEX::EventMixingPool<1, 20, 1>(100, 10., 5);
+  fPool->SetPartMassI(0, AliAnalysisCODEX::kDeuteronMass);
+
   /// output histogram instantiation
-  fZVertex      = new TH1F("z_vertex", "", 20, -10000, 10000);
-  fPiPT         = new TH1F("pion_pT", "", 200, 0., 10.);
+  fZVertex      = new TH1F("z_vertex", "", 22, -11, 11);
+  fPiPlusPT     = new TH1F("pion_plus_pT", "", 200, 0., 10.);
+  fPiMinusPT    = new TH1F("pion_minus_pT", "", 200, 0., 10.);
   fDeuPT        = new TH1F("deuteron_pT", "", 200, 0., 10.);
 
   /// energy loss in TPC for Pions
@@ -51,16 +59,37 @@ void dStarAnalysisSelector::SlaveBegin(TTree * /*tree*/) {
   /// invariant mass distribution with blinded region for different cuts on π+ π- invariant mass.
   for (int i = 0; i < 10; i++) {
     fMInvBlind[i]    = new TH2D(Form("minv_blind_%.2fcut", 0.4 + (0.02*i)), "", 840, 2.120, 8.000, 10, 0, 10);
-    GetOutputList()->Add(fMInvBlind[i]);
   }
   /// the last one with no cuts
   fMInvBlind[10]    = new TH2D("minv_blind_nocut", "", 840, 2.120, 8.000, 10, 0, 10);
 
+  /// event mixing background with cuts on pi pi invariant mass
+  for (int i = 0; i < 10; i++) {
+    fMEMInvBackground[i] = new TH2D(Form("background_em_%.2fcut", 0.4 + (0.02*i)), "", 840, 2.120, 8.000, 10, 0, 10);
+  }
+  /// last oune with no cuts
+  fMEMInvBackground[10] = new TH2D("background_em_nocut", "", 840, 2.120, 8.000, 10, 0, 10);
+
+  /// like-sign background
+  for (int i = 0; i < 10; i++) {
+    fLSPlusMInvBackground[i]  = new TH2D(Form("background_lsPlus_%.2fcut", 0.4 + (0.02*i)), "", 840, 2.120, 8.000, 10, 0, 10);
+    fLSMinusMInvBackground[i] = new TH2D(Form("background_lsMinus_%.2fcut", 0.4 + (0.02*i)), "", 840, 2.120, 8.000, 10, 0, 10);
+  }
+  /// last one with no cuts
+  fLSPlusMInvBackground[10]  = new TH2D("background_lsPlus_nocut", "", 840, 2.120, 8.000, 10, 0, 10);
+  fLSMinusMInvBackground[10] = new TH2D("background_lsMinus_nocut", "", 840, 2.120, 8.000, 10, 0, 10);
+
   GetOutputList()->Add(fZVertex);
-  GetOutputList()->Add(fMInvBlind[10]);
-  GetOutputList()->Add(fPiPT);
+  GetOutputList()->Add(fPiPlusPT);
+  GetOutputList()->Add(fPiMinusPT);
   GetOutputList()->Add(fDeuPT);
   GetOutputList()->Add(fDedxPi);
+  for (int i = 0; i < 11; i++) {
+    GetOutputList()->Add(fMInvBlind[i]);
+    GetOutputList()->Add(fMEMInvBackground[i]);
+    GetOutputList()->Add(fLSPlusMInvBackground[i]);
+    GetOutputList()->Add(fLSMinusMInvBackground[i]);
+  }
 
   BinLogAxis(fDedxPi);
 
@@ -86,6 +115,9 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
   //
   // The return value is currently not used.
 
+  bool eventmixing = true;
+  bool likesign = true;
+
   fReader.SetEntry(entry);
 
 
@@ -93,7 +125,7 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
   fPiPlus.clear();
   fPiMinus.clear();
 
-  Short_t zvtx = (short)*mZvert.Get();
+  Short_t zvtx = ((short)*fZvert.Get())/1000.;
 
 
   /// PID cuts on deuterons and pions (definition below)
@@ -115,11 +147,11 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
   }
   /// pions pT for check
   for (const auto &pip : fPiPlus) {
-    fPiPT->Fill(pip.Pt());
+    fPiPlusPT->Fill(pip.Pt());
   }
   /// like above
   for (const auto &pim : fPiMinus) {
-    fPiPT->Fill(pim.Pt());
+    fPiMinusPT->Fill(pim.Pt());
   }
 
   /// invarian mass distribution for π+ π- d  with blinded region
@@ -137,6 +169,67 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
         }
         if (v.M() < 2.480 && v.M() > 2.280) continue;
         fMInvBlind[10]->Fill(v.M(), v.Pt());
+      }
+    }
+  }
+
+  if (eventmixing) {
+    /// Event Mixing (da valutare le varie possibilita di mixing)
+    if (!fDeuteron.empty()) {
+      for (int i = 0; i < fPool->GetNLevelOccupied('a', zvtx, 0); i++ ) {
+        // int rDeuIndex = gRandom->Rndm() * fPool->GetNLevelOccupied('a', zvtx, 0);
+        auto deu = fPool->GetVectorFV('a', zvtx, 0, i);
+        for (const auto &deuvec : deu) {
+          for (const auto &pip : fPiPlus) {
+            for (const auto &pim : fPiMinus) {
+              FourVector_t vpp = pip + pim;
+              FourVector_t v = vpp + deuvec;
+              for (int j = 0; j < 10; j++) {
+                if (vpp.M() < (0.4+(0.02*j))) {
+                  fMEMInvBackground[j]->Fill(v.M(), v.Pt());
+                }
+              }
+              fMEMInvBackground[10]->Fill(v.M(), v.Pt());
+            }
+          }
+        }
+      }
+      fPool->FillEvent(fDeuteron, 'a', zvtx, 0);
+    }
+  }
+
+  if (likesign) {
+    /// like-sign background model
+    if (!fDeuteron.empty()) {
+      /// like sign with pi plus
+      for (const auto &deu : fDeuteron) {
+        for (const auto &pip1 : fPiPlus) {
+          for (const auto &pip2 : fPiPlus) {
+            FourVector_t vpp = pip1 + pip2;
+            FourVector_t v = vpp + deu;
+            for (int j = 0; j < 10; j++) {
+              if (vpp.M() < (0.4+(0.02*j))) {
+                fLSPlusMInvBackground[j]->Fill(v.M(), v.Pt());
+              }
+            }
+            fLSPlusMInvBackground[10]->Fill(v.M(), v.Pt());
+          }
+        }
+      }
+      /// like sign with pi minus
+      for (const auto &deu : fDeuteron) {
+        for (const auto &pim1 : fPiMinus) {
+          for (const auto &pim2 : fPiMinus) {
+            FourVector_t vpp = pim1 + pim2;
+            FourVector_t v = vpp + deu;
+            for (int j = 0; j < 10; j++) {
+              if (vpp.M() < (0.4+(0.02*j))) {
+                fLSMinusMInvBackground[j]->Fill(v.M(), v.Pt());
+              }
+            }
+            fLSMinusMInvBackground[10]->Fill(v.M(), v.Pt());
+          }
+        }
       }
     }
   }
@@ -163,6 +256,7 @@ void dStarAnalysisSelector::Terminate() {
   // the results graphically or save the results to file.
 
   TFile output(Form("~/results/%s", fOutputFileName.data()),"RECREATE");
+  // fDeuteronTree->Write();
   GetOutputList()->Write();
   output.Close();
 
