@@ -73,6 +73,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   /// Require jet to be matched when embedding
   Bool_t                  GetRequireMatchedJetWhenEmbedding() const   { return fRequireMatchedJetWhenEmbedding; }
   void                    SetRequireMatchedJetWhenEmbedding(Bool_t b) { fRequireMatchedJetWhenEmbedding = b; }
+  /// Mimimum shared momentum fraction for matched jet
+  double                  GetMinimumSharedMomentumFraction() const    { return fMinSharedMomentumFraction; }
+  void                    SetMinimumSharedMomentumFraction(double d)  { fMinSharedMomentumFraction = d; }
 
   // Mixed events
   virtual void            SetEventMixing(Bool_t enable)              { fDoEventMixing = enable;}
@@ -208,6 +211,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Bool_t                 fDoLessSparseAxes;        ///< True if there should be fewer THnSparse axes
   Bool_t                 fDoWiderTrackBin;         ///< True if the track pt bins in the THnSparse should be wider
   Bool_t                 fRequireMatchedJetWhenEmbedding; ///< True if jets are required to be matched (ie. jet->MatchedJet() != nullptr)
+  Double_t               fMinSharedMomentumFraction; ///< Minimum shared momentum with matched jet
 
   // Histograms
   TH1                   *fHistTrackPt;             //!<! Track pt spectrum

@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
+  fMinSharedMomentumFraction(0.),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -101,6 +102,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
+  fMinSharedMomentumFraction(0.),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -494,6 +496,16 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
             if (jet->MatchedJet()) {
               AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+              // Check shared momentum fraction
+              // We explicitly want to use indices instead of geometric matching
+              double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
+              if (sharedFraction < fMinSharedMomentumFraction) {
+                AliDebugStream(4) << "Jet is rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+                continue;
+              }
+              else {
+                AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
+              }
             }
             else {
               AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
