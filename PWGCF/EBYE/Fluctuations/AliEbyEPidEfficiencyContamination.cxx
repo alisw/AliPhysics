@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: ALICE Offline.                                                 *
  * Contributors are mentioned in the code where appropriate.              *
@@ -21,7 +21,7 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/02/12)                       //
+//                        (Last Modified 2018/02/24)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -98,6 +98,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fIsMC(kFALSE),
   fIsAOD(kFALSE),
   fIsQA(kFALSE),
+  fIsRapCut(kFALSE),
   fIsTrig(kFALSE),
   fIsThn(kFALSE),
 
@@ -199,6 +200,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fIsMC(kFALSE),
     fIsAOD(kFALSE),
     fIsQA(kFALSE),
+    fIsRapCut(kFALSE),
     fIsTrig(kFALSE),
     fIsThn(kFALSE),
     
@@ -688,7 +690,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   fanaUtils->SetUseOutOfBunchPileUp(kTRUE);
   
   if(fanaUtils->IsPileUpMV(fVevent)) return;
-  if(fanaUtils->IsOutOfBunchPileUp(fVevent)) return;
+  //if(fanaUtils->IsOutOfBunchPileUp(fVevent)) return;
   if(fanaUtils->IsSPDClusterVsTrackletBG(fVevent)) return;
 
   const AliVVertex *vertex = fVevent->GetPrimaryVertex();
@@ -1080,12 +1082,17 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
     rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
   }
   else rap = -999.;
-  
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  
-  if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE; 
+  }
+  
   return kTRUE;
+  
 }
 
 
@@ -1107,10 +1114,16 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   }
   else rap = -999;
   
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE; //rapidity cut
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
   
   return kTRUE;
+  
 }
 //---------------------------------------------------------------
 Int_t AliEbyEPidEfficiencyContamination::GetPtBin(Double_t pt){
