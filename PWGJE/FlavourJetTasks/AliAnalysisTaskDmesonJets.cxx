@@ -1130,6 +1130,9 @@ const char* AliAnalysisTaskDmesonJets::AnalysisEngine::GetName() const
   case kD0Reflection:
     fName += "_D0Reflection";
     break;
+  case kOnlyWrongPIDAccepted:
+    fName += "_OnlyWrongPIDAccepted";
+    break;
   default:
     break;
   }
@@ -1317,7 +1320,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
-  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly || fMCMode == kD0Reflection) {
+  if (fMCMode != kNoMC) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
 
