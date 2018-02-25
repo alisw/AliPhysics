@@ -27,7 +27,7 @@ AliAnalysisTaskLFefficiencies* AddTaskLFefficiencies(TString suffix = "") {
   mgr->AddTask(eff);
 
   TString output = "AnalysisResults.root:PWGLF_QA";
-  AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("efficiencies%s"), suffix.Data()),
+  AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("efficiencies%s", suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
