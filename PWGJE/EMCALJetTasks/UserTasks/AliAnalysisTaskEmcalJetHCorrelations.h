@@ -27,6 +27,10 @@ class AliEmcalJet;
 class AliEventPoolManager;
 class AliTLorentzVector;
 
+class AliEmcalJet;
+class AliJetContainer;
+class AliParticleContainer;
+
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
@@ -163,6 +167,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Utility functions
   AliParticleContainer * CreateParticleOrTrackContainer(std::string const & collectionName) const;
 
+  // Determine if a jet has been matched
+  bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet);
   // Apply artificial tracking inefficiency
   bool CheckArtificialTrackEfficiency(unsigned int trackIndex, std::vector<unsigned int> & rejectedTrackIndices, bool useRejectedList);
   // Reduce event mixing memory usage

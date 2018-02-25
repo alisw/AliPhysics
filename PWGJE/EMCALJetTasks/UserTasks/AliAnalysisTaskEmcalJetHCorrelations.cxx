@@ -359,11 +359,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
     if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-      if (jet->MatchedJet()) {
-        AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
-      }
-      else {
-        AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+      bool foundMatchedJet = CheckForMatchedJet(jets, jet);
+      if (foundMatchedJet == false) {
         continue;
       }
     }
@@ -494,21 +491,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           // Require the found jet to be matched
           // This match should be between detector and particle level MC
           if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-            if (jet->MatchedJet()) {
-              AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
-              // Check shared momentum fraction
-              // We explicitly want to use indices instead of geometric matching
-              double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
-              if (sharedFraction < fMinSharedMomentumFraction) {
-                AliDebugStream(4) << "Jet is rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
-                continue;
-              }
-              else {
-                AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
-              }
-            }
-            else {
-              AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+            bool foundMatchedJet = CheckForMatchedJet(jets, jet);
+            if (foundMatchedJet == false) {
               continue;
             }
           }
@@ -679,6 +663,39 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
         returnValue = true;
       }
     }
+  }
+
+  return returnValue;
+}
+
+/**
+ * Check for matched jet based on the jet being identified as matched to another jet and their shared momentum fraction
+ * being larger than fMinSharedMomentumFraction.
+ *
+ * @param[in] jets Jet container corresponding to the matched jet
+ * @param[in] jet Jet to be checked
+ * @return true if the jet passes the criteria. false otherwise.
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet)
+{
+  bool returnValue = false;
+  if (jet->MatchedJet()) {
+    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+    // Check shared momentum fraction
+    // We explicitly want to use indices instead of geometric matching
+    double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
+    if (sharedFraction < fMinSharedMomentumFraction) {
+      AliDebugStream(4) << "Jet is rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
+      returnValue = true;
+    }
+  }
+  else {
+    AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+    returnValue = false;
   }
 
   return returnValue;
