@@ -42,12 +42,12 @@ AliADLogicalSignal::AliADLogicalSignal(UShort_t profilClock, UInt_t delay, UInt_
   , fStart(0.)
   , fStop(0.)
 {
-  /*/
+  /*
     std::cout << "P " << std::bitset<5>(profilClock)<< std::endl;
     std::cout << "L " << std::bitset<5>(latch)<< std::endl;
     std::cout << "R " << std::bitset<5>(reset)<< std::endl;
     std::cout << "Delay " <<delay<< std::endl;
-    /*/
+    */
 
   // Constructor using the profilClock and delay parameters comming from the FEE
   Bool_t fClock[11];
@@ -63,12 +63,12 @@ AliADLogicalSignal::AliADLogicalSignal(UShort_t profilClock, UInt_t delay, UInt_
   if(reset>latch) for(Int_t i=0; i<11; i++) fTimes[i] = -5+5*i;
   if(reset<latch) for(Int_t i=0; i<11; i++) fTimes[i] = -30+5*i;
 
-  /*/
+  /*
     for(Int_t i=0; i<10; i++)std::cout<<fTimes[i]<<" ";
     std::cout<<std::endl;
     for(Int_t i=0; i<10; i++)std::cout<<fClock[i]<<" ";
     std::cout<<std::endl;
-    /*/
+    */
 
   for(Int_t i=1; i<11; i++){
     if(!risingFound && !fClock[i-1] && fClock[i]){
