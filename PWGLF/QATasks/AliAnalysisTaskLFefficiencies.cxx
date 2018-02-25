@@ -86,6 +86,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
       }
     }
   }
+  fEventCut.AddQAplotsToList(fOutputList);
 
   PostData(1,fOutputList);
 }
