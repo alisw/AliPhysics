@@ -221,7 +221,7 @@ class AliSigma0EventContainer : public TObject {
   TH1F *fHistAntiSigmaInvMassRec;   //
 
  private:
-  ClassDef(AliSigma0EventContainer, 1)
+  ClassDef(AliSigma0EventContainer, 2)
 };
 
 #endif
