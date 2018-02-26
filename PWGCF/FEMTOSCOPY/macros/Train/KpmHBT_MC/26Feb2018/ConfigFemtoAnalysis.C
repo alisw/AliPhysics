@@ -400,7 +400,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
            // model--------------
            
-          cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKK(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+          cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKK(Form("cqinvModelKK%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
 
 	      cqinvkttpcmodel[ktm]->SetPairSelectionCut(ktpcuts[ktm]);//add kT bins
 	      //cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);//Special MC analysis for K selected by PDG code -->
