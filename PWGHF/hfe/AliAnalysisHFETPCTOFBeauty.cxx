@@ -738,9 +738,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     Double_t binLimITSsha[nBinsITSsha+1];
     for(Int_t i=0; i<=nBinsITSsha; i++) binLimITSsha[i]=(Double_t)minITSsha + (maxITSsha-minITSsha)/nBinsITSsha*(Double_t)i ;
     
-    Int_t nBinstype = 7;
+    Int_t nBinstype = 9;
     Double_t mintype = -1.;
-    Double_t maxtype = 6.;
+    Double_t maxtype = 8.;
     Double_t binLimtype[nBinstype+1];
     for(Int_t i=0; i<=nBinstype; i++) binLimtype[i]=(Double_t)mintype + (maxtype-mintype)/nBinstype*(Double_t)i ;
     
@@ -760,7 +760,7 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
     fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
     fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
-    fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm
+    fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
     fD0->SetBinEdges(8,binLimdcaxy); ///dca distribution - before resolution correction
     fD0->Sumw2();
     fOutputList->Add(fD0);
@@ -1558,18 +1558,14 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
                 pdg_mother = fMCparticleMother->GetPdgCode();
                 
                 ///Photonic Electrons:
-                if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221){
-					
+                if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
 					if(TMath::Abs(pdg_mother) == 111) qadca[1]=4.5; 
 					if(TMath::Abs(pdg_mother) == 221) qadca[1]=5.5;
+					if(TMath::Abs(pdg_mother) == 22) qadca[1]=6.5;
 					Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
 					qadca[7]=fType;
                 }
                 
-                if(TMath::Abs(pdg_mother) == 22){
-                    Bool_t primMC = fMCparticleMother->IsPrimary();
-                    if(primMC) qadca[1]=6.5;
-                }
             }
             
                        
@@ -1918,7 +1914,7 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClone
     // Return what type of pi0, eta it is
     //
     
-    // IsPrimary
+    //IsPrimary
     Bool_t primMC = pi0eta->IsPrimary(); ///Does not include particles from weak decays or created in an interaction with the material
     if(!primMC) return kNoIsPrimary;
     
@@ -1929,8 +1925,20 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClone
         
         AliAODMCParticle *mother = (AliAODMCParticle*)fMCarray->At(motherlabel);
         Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
-        ///pi0, eta, omega, phi, eta',rho0, rho+,k*0,K*+,lambda(strangeness)
-        if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323 || motherpdg == 3122) return kLightMesons;
+        ///pi0, eta, omega, phi, eta',rho0, rho+
+        if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213) return kLightMesons;
+        
+        ///If the mother is kaons from heavy-flavour decay (K0L,K0S,K0,K+,,k*0,,K*+)
+        if(motherpdg == 130 || motherpdg == 310 || motherpdg == 311 || motherpdg == 321 || motherpdg == 313 || motherpdg == 323){
+			Int_t kaonmotherlabel = mother->GetMother();
+			if(kaonmotherlabel>0){
+				AliAODMCParticle *kaonmother = (AliAODMCParticle*)fMCarray->At(kaonmotherlabel);
+				Int_t kaonmotherpdg = TMath::Abs(kaonmother->GetPdgCode());
+				if ( (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 4 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 4 ) return kKaonFromHF;
+				else return kKaonFromNonHF;
+			}
+			else return kKaonFromNonHF;
+        }
         
         if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty; ///beauty mesons and barions
         if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm; ///charmed mesons and barions
