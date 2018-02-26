@@ -858,7 +858,7 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
   LinkBranch(jettree, &fPhi, Form("Phi%s", tag), "D");
   LinkBranch(jettree, &fArea, Form("Area%s", tag), "D");
   LinkBranch(jettree, &fMass, Form("Mass%s", tag), "D");
-  LinkBranch(jettree, &fNEF, Form("NEFt%s", tag), "D");
+  LinkBranch(jettree, &fNEF, Form("NEF%s", tag), "D");
   LinkBranch(jettree, &fPt, Form("PtJet%s", tag), "D");
   LinkBranch(jettree, &fNCharged, Form("NCharged%s", tag), "I");
   LinkBranch(jettree, &fNNeutral, Form("NNeutral%s", tag), "I");
