@@ -47,6 +47,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliVfriendTrack.h"
 #include "AliVfriendEvent.h"
+#include "AliESDtrack.h"
 #include "AliLog.h" 
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
@@ -978,8 +979,15 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 4) {
-      if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE && iTrack<vfriendEvent->GetNumberOfTracks()) {
-	friendTrack=vfriendEvent->GetTrack(iTrack);
+      if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE) {
+	if (vTrack->IsA()==AliESDtrack::Class()) {
+	  friendTrack = ((AliESDtrack*)vTrack)->GetFriendTrack();
+	}
+	else {
+	  if (iTrack<vfriendEvent->GetNumberOfTracks()) {
+	    friendTrack=vfriendEvent->GetTrack(iTrack);
+	  }
+	}
 	if(!friendTrack) continue;
       }
       ProcessOuterTPC(mcEvent,vTrack,friendTrack,vEvent);
