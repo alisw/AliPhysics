@@ -85,8 +85,9 @@ void AliTaskCDBconnect::InitGRP()
     else if (fRun<208504) year = 2014;
     else if (fRun<247170) year = 2015;
     else if (fRun<267255) year = 2016;
+    else if (fRun<282901) year = 2017;
     else {
-      year = 2017;
+      year = 2018;
       TDatime today;
       if (today.GetYear()!=year) AliErrorF("Adjust CDB connect, we are now in %d!",today.GetYear());
     }
