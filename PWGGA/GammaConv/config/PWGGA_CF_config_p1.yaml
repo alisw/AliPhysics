@@ -1,5 +1,5 @@
 configurationName: "PWGGA configuration"
-pass: "pass4"
+pass: "pass1"
 inputObjects:
     cells:
         defaultCells:

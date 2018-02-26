@@ -1,5 +1,5 @@
 configurationName: "PWGGA configuration"
-pass: "pass4"
+pass: "pass1"
 inputObjects:
     cells:
         defaultCells:
@@ -34,10 +34,11 @@ inputObjects:
     trackContainers:
         defaultTrackContainer:
             branchName: "usedefault"
+
 CellEnergy:
-    createHistos: true
+    createHistos: false
 CellEnergy_defaultSetting:
-    enabled: true
+    enabled: false
 
 CellBadChannel:
     createHistos: true
@@ -45,15 +46,15 @@ CellBadChannel_defaultSetting:
     enabled: true
 
 CellTimeCalib:
-    createHistos: true
+    createHistos: false
 CellTimeCalib_defaultSetting:
-    enabled: true
+    enabled: false
 
 Clusterizer:
     createHistos: true
     clusterizer: kClusterizerv2
-    cellTimeMin: -500e-9
-    cellTimeMax: +500e-9
+    cellTimeMin: -1000e-9
+    cellTimeMax: +1000e-9
     clusterTimeLength: 1e6
     recalDistToBadChannels: true
     remapMcAod: false
@@ -145,7 +146,6 @@ Clusterizer_S500A150:
     seedE: 0.5
     clusterContainersNames:
         - ClusterContainerS500A150
-
 
 ClusterNonLinearity:
     createHistos: true
