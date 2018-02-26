@@ -31,6 +31,7 @@
 #include "AliTrackContainer.h"
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliAnalysisTaskEmcalJetHBase.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcalJetHCorrelations);
@@ -378,7 +379,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
     biasedJet = BiasedJet(jet);
-    epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -509,7 +510,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
           biasedJet = BiasedJet(jet);
-          epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
           if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
@@ -597,42 +598,6 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentz
 
   // Adjust to the normal range after the DeltaR caluclation
   deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.);
-}
-
-/**
- * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
- * Adapted from AliAnalysisTaskEmcalJetHadEPpid.
- *
- * @param jetAngle Phi angle of the jet (could be any particle)
- * @param epAngle Event plane angle
- *
- * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
- */
-Double_t AliAnalysisTaskEmcalJetHCorrelations::GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const
-{
-  Double_t dphi = (epAngle - jetAngle);
-
-  // ran into trouble with a few dEP<-Pi so trying this...
-  if( dphi<-1*TMath::Pi() ) {
-    dphi = dphi + 1*TMath::Pi();
-  } // this assumes we are doing full jets currently
-
-  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ) {
-    // Do nothing! we are in quadrant 1
-  } else if ( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ) {
-    dphi = 1*TMath::Pi() - dphi;
-  } else if ( (dphi<0) && (dphi>-1*TMath::Pi()/2) ) {
-    dphi = std::abs(dphi);
-  } else if ( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ) {
-    dphi = dphi + 1*TMath::Pi();
-  }
-
-  // Warn if we are not in the proper range
-  if ( dphi < 0 || dphi > TMath::Pi()/2 ) {
-    AliWarningStream() << GetName() << ": dPHI not in range [0, 0.5*Pi]!\n";
-  }
-
-  return dphi;   // dphi in [0, Pi/2]
 }
 
 /**
