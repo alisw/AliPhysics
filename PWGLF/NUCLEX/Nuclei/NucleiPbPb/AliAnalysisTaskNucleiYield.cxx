@@ -337,7 +337,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
-    if (track->GetID() <= 0) continue;
+    if (track->GetID() < 0) continue;
     Double_t dca[2] = {0.};
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
     if (!AcceptTrack(track,dca)) continue;
