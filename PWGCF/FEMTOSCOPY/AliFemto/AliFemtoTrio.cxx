@@ -100,3 +100,73 @@ double AliFemtoTrio::MInv31()
   double pz = p3.pz() + p1.pz();
   return sqrt(E*E-(px*px+py*py+pz*pz));
 }
+
+double AliFemtoTrio::GetCosTheta12()
+{
+  AliFemtoLorentzVector a = fTrack1->FourMomentum();
+  AliFemtoLorentzVector b = fTrack2->FourMomentum();
+  AliFemtoLorentzVector c = fTrack3->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector JeFrame = r+c;
+  
+  r.boost(JeFrame);
+  c.boost(JeFrame);
+  
+  double modR = sqrt(r.e()*r.e() - (r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
+  double modC = sqrt(c.e()*c.e() - (c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
+  
+  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
+  
+  double cosTheta = r.e()*c.e() - (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
+  cosTheta /= (modR*modC);
+  return cosTheta;
+}
+
+double AliFemtoTrio::GetCosTheta23()
+{
+  AliFemtoLorentzVector a = fTrack2->FourMomentum();
+  AliFemtoLorentzVector b = fTrack3->FourMomentum();
+  AliFemtoLorentzVector c = fTrack1->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector JeFrame = r+c;
+  
+  r.boost(JeFrame);
+  c.boost(JeFrame);
+  
+  double modR = sqrt(r.e()*r.e() - (r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
+  double modC = sqrt(c.e()*c.e() - (c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
+  
+  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
+  
+  double cosTheta = r.e()*c.e() - (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
+  cosTheta /= (modR*modC);
+  return cosTheta;
+}
+
+double AliFemtoTrio::GetCosTheta31()
+{
+  AliFemtoLorentzVector a = fTrack3->FourMomentum();
+  AliFemtoLorentzVector b = fTrack1->FourMomentum();
+  AliFemtoLorentzVector c = fTrack2->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector JeFrame = r+c;
+  
+  r.boost(JeFrame);
+  c.boost(JeFrame);
+  
+  double modR = sqrt(r.e()*r.e() - (r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
+  double modC = sqrt(c.e()*c.e() - (c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
+  
+  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
+  
+  double cosTheta = r.e()*c.e() - (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
+  cosTheta /= (modR*modC);
+  return cosTheta;
+}
+
+
+
+

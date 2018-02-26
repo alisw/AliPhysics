@@ -34,6 +34,10 @@ public:
   double MInv23(); // returns invariant mass of particles 2 and 3 from the trio
   double MInv31(); // returns invariant mass of particles 3 and 1 from the trio
   
+  double GetCosTheta12();
+  double GetCosTheta23();
+  double GetCosTheta31();
+  
 private:
   AliFemtoParticle* fTrack1;  // first particle in the trio
   AliFemtoParticle* fTrack2;  // second particle in the trio
