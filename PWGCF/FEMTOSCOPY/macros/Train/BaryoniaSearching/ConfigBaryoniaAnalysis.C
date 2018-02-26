@@ -29,6 +29,9 @@ const double dalitzBinWidth  = 0.005;
 
 bool separationCuts;
 bool ppCollisions;
+double decayCutWidth;
+bool skipIntermediateDecays;
+bool doAngles;
 
 enum EDecaysPionPion { kRho_770, kOmega_783, kF0_980, kF2_1270, kRho_1450, kF0_1500, kRho3_1690, kF0_1710, kF4_2050, kK0s, nDecaysPionPion };
 
@@ -41,9 +44,7 @@ const char*  decayPionKaonName[nDecaysPionKaon]  = {"K*(892)","K*(1410)","K*2(14
 const double decayPionKaonMass[nDecaysPionKaon]  = { 0.294   , 1.421    , 1.425     , 1.718    , 1.776     , 2.045     , 1.865};
 const double decayPionKaonGamma[nDecaysPionKaon] = { 0.050   , 0.236    , 0.099     , 0.322    , 0.159     , 0.198     , 0.010};
 
-double decayCutWidth;
 
-int skipIntermediateDecays;
 
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
@@ -59,12 +60,13 @@ AliFemtoTrioCut* GetTrioCutPionKaonDecay(ESys system, EDecaysPionKaon decay);
 void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8, bool pionPionDecays=false, bool pionKaonDecays=false, bool skipIntDecays=false)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8, bool pionPionDecays=false, bool pionKaonDecays=false, bool skipIntDecays=false,bool _doAngles=false)
 {
   separationCuts = sepCuts;
   ppCollisions = ppAnalysis;
   decayCutWidth = cutWidth;
   skipIntermediateDecays = skipIntDecays;
+  doAngles = _doAngles;
   
   // create analysis managers
   AliFemtoManager* Manager = new AliFemtoManager();
@@ -157,19 +159,19 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     AliFemtoTrioCut *dalitzTrioCut = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,1.0);
     dalitz[iSys] = new AliFemtoTrioMinvFctn(Form("%s",sysNames[iSys]),
                                             (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
-                                            doMinv,doDalitz);
+                                            doMinv,doDalitz,doAngles);
     dalitz[iSys]->SetTrioCut(dalitzTrioCut);
     
     AliFemtoTrioCut *dalitzTrioCutUp = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,1.5);
     dalitzCutUp[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutUp",sysNames[iSys]),
                                                  (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
-                                                 doMinv,doDalitz);
+                                                 doMinv,doDalitz,doAngles);
     dalitzCutUp[iSys]->SetTrioCut(dalitzTrioCutUp);
     
     AliFemtoTrioCut *dalitzTrioCutDown = GetTrioCutDalitz((ESys)iSys,twoBodyCuts,0.5);
     dalitzCutDown[iSys] = new AliFemtoTrioMinvFctn(Form("%s_cutDown",sysNames[iSys]),
                                                    (dalitzMax-dalitzMin)/dalitzBinWidth,dalitzMin,dalitzMax,
-                                                   doMinv,doDalitz);
+                                                   doMinv,doDalitz,doAngles);
     dalitzCutDown[iSys]->SetTrioCut(dalitzTrioCutDown);
     
     baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
