@@ -110,7 +110,9 @@ fEventV0MPS(0),fEventV0MVtx(0),fEventV0M(0),
 fTOFLabel(),
 
 fV0MPC_vertexcut(0),
-fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
+fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0)
 
 {}
 
@@ -169,7 +171,9 @@ fTOFLabel(),
 fV0MPC_vertexcut(0),
 fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
-fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0)
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0)
 
 
 
