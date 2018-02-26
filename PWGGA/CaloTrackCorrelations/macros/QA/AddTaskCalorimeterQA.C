@@ -27,7 +27,6 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -151,7 +150,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simulation,
                           bExotic,

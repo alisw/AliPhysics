@@ -1,4 +1,4 @@
-AliAnalysisTaskPHOSTriggerQA* AddTaskPHOSTriggerQA(char* fname="PHOSTriggerQA.root", char* contname=NULL)
+AliAnalysisTaskPHOSTriggerQA* AddTaskPHOSTriggerQA(TString fname="PHOSTriggerQA.root", TString contname="")
 {
   //Add PHOS trigger QA task to the PWGPP QA train.
 
@@ -20,12 +20,12 @@ AliAnalysisTaskPHOSTriggerQA* AddTaskPHOSTriggerQA(char* fname="PHOSTriggerQA.ro
 
   // container output into particular file
   if (fname && contname)
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, fname));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),TList::Class(), AliAnalysisManager::kOutputContainer, fname.Data()));
   
   // container output into common file
   if (!fname) {
     if (!contname) contname = "PHOSTriggerQAResults";
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));      
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));      
   }
   
   return task;
