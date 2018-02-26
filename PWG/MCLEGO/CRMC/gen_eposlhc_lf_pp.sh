@@ -13,7 +13,7 @@ source /cvmfs/alice.cern.ch/etc/login.sh
 eval $(alienv printenv CRMC::v1.5.4-3)
 
 # force path to requested output
-sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"
+sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"# ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template.param > crmc.param
 
 # ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template.param > crmc.param
 # ${ALICE_PHYSICS}/PWGLF/CommonUtils/MConthefly/macros/crmc_template.param > crmc.param
