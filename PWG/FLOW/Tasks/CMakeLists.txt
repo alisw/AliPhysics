@@ -75,6 +75,7 @@ set(SRCS
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
   AliAnalysisTaskCMEV0.cxx
+  AliAnalysisTaskCMEV0PID.cxx
   )
 
 # Headers from sources
