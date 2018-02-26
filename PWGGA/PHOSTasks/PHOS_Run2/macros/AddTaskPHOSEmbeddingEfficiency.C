@@ -136,14 +136,13 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
       TF1 *f1weightPi0[Ncen_Pi0-1];
 
-      const Double_t p0[Ncen_Pi0-1] = {3.18267e+02 ,2.44081e+02 ,1.77962e+02 ,1.15425e+02 ,7.23043e+01 ,4.27143e+01 ,2.27384e+01 ,1.20589e+01 ,5.19782e+00 ,2.21696e+00 };//Ae
-      const Double_t p1[Ncen_Pi0-1] = {3.62832e-01 ,3.67392e-01 ,3.69301e-01 ,3.70063e-01 ,3.69763e-01 ,3.67347e-01 ,3.66015e-01 ,3.59030e-01 ,3.55767e-01 ,3.32155e-01 };//Te
-      const Double_t p2[Ncen_Pi0-1] = {1.14168e+03 ,9.09219e+02 ,7.14470e+02 ,5.31632e+02 ,3.71758e+02 ,2.53351e+02 ,1.65379e+02 ,9.26156e+01 ,4.70983e+01 ,1.96575e+01 };//A
-      const Double_t p3[Ncen_Pi0-1] = {2.94251e-01 ,2.97964e-01 ,2.94918e-01 ,2.86290e-01 ,2.79035e-01 ,2.69087e-01 ,2.58438e-01 ,2.45666e-01 ,2.40322e-01 ,2.32497e-01 };//T
-      const Double_t p4[Ncen_Pi0-1] = {2.62420e+00 ,2.61387e+00 ,2.57966e+00 ,2.53356e+00 ,2.48885e+00 ,2.43577e+00 ,2.39862e+00 ,2.34710e+00 ,2.34961e+00 ,2.29716e+00 };//n
+      const Double_t p0[Ncen_Pi0-1] = {2.39991e+02, 1.78111e+02, 1.21109e+02, 6.91786e+01, 4.07880e+01, 2.05577e+01, 1.08079e+01, 4.98463e+00, 2.23119e+00, 1.16590e+00};//Ae
+      const Double_t p1[Ncen_Pi0-1] = {3.84238e-01, 3.90424e-01, 3.96450e-01, 4.05978e-01, 4.11701e-01, 4.22538e-01, 4.23961e-01, 4.31410e-01, 4.28510e-01, 3.85667e-01};//Te
+      const Double_t p2[Ncen_Pi0-1] = {1.16561e+03, 9.25084e+02, 7.15782e+02, 5.01254e+02, 3.55730e+02, 2.36175e+02, 1.49593e+02, 8.91887e+01, 4.56253e+01, 1.97146e+01};//A
+      const Double_t p3[Ncen_Pi0-1] = {3.06202e-01, 3.12875e-01, 3.13599e-01, 3.14247e-01, 3.05660e-01, 3.01051e-01, 2.89748e-01, 2.75489e-01, 2.64481e-01, 2.50078e-01};//T
+      const Double_t p4[Ncen_Pi0-1] = {2.73068e+00, 2.72595e+00, 2.70812e+00, 2.68939e+00, 2.64558e+00, 2.61370e+00, 2.56506e+00, 2.53088e+00, 2.51428e+00, 2.43636e+00};//n
 
       for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
-        //f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0]*TMath::Power(x,-([1] + [2]/(TMath::Power(x,[3]) + [4])))",0,100);
         f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.139*0.139) - 0.139) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
         f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         f1weightPi0[icen]->SetNpx(1000);
@@ -161,14 +160,14 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       TObjArray *farray_Eta = new TObjArray(Ncen_Eta-1);
       TF1 *f1weightEta[Ncen_Eta-1];
 
-      const Double_t p0[Ncen_Eta-1] = {3.18267e+02 ,2.44081e+02 ,1.77962e+02 ,1.15425e+02 ,7.23043e+01 ,4.27143e+01 ,2.27384e+01 ,1.20589e+01 ,5.19782e+00 ,2.21696e+00 };
-      const Double_t p1[Ncen_Eta-1] = {3.62832e-01 ,3.67392e-01 ,3.69301e-01 ,3.70063e-01 ,3.69763e-01 ,3.67347e-01 ,3.66015e-01 ,3.59030e-01 ,3.55767e-01 ,3.32155e-01 };
-      const Double_t p2[Ncen_Eta-1] = {1.14168e+03 ,9.09219e+02 ,7.14470e+02 ,5.31632e+02 ,3.71758e+02 ,2.53351e+02 ,1.65379e+02 ,9.26156e+01 ,4.70983e+01 ,1.96575e+01 };
-      const Double_t p3[Ncen_Eta-1] = {2.94251e-01 ,2.97964e-01 ,2.94918e-01 ,2.86290e-01 ,2.79035e-01 ,2.69087e-01 ,2.58438e-01 ,2.45666e-01 ,2.40322e-01 ,2.32497e-01 };
-      const Double_t p4[Ncen_Eta-1] = {2.62420e+00 ,2.61387e+00 ,2.57966e+00 ,2.53356e+00 ,2.48885e+00 ,2.43577e+00 ,2.39862e+00 ,2.34710e+00 ,2.34961e+00 ,2.29716e+00 };
+      const Double_t p0[Ncen_Eta-1] = {2.39991e+02, 1.78111e+02, 1.21109e+02, 6.91786e+01, 4.07880e+01, 2.05577e+01, 1.08079e+01, 4.98463e+00, 2.23119e+00, 1.16590e+00};//Ae
+      const Double_t p1[Ncen_Eta-1] = {3.84238e-01, 3.90424e-01, 3.96450e-01, 4.05978e-01, 4.11701e-01, 4.22538e-01, 4.23961e-01, 4.31410e-01, 4.28510e-01, 3.85667e-01};//Te
+      const Double_t p2[Ncen_Eta-1] = {1.16561e+03, 9.25084e+02, 7.15782e+02, 5.01254e+02, 3.55730e+02, 2.36175e+02, 1.49593e+02, 8.91887e+01, 4.56253e+01, 1.97146e+01};//A
+      const Double_t p3[Ncen_Eta-1] = {3.06202e-01, 3.12875e-01, 3.13599e-01, 3.14247e-01, 3.05660e-01, 3.01051e-01, 2.89748e-01, 2.75489e-01, 2.64481e-01, 2.50078e-01};//T
+      const Double_t p4[Ncen_Eta-1] = {2.73068e+00, 2.72595e+00, 2.70812e+00, 2.68939e+00, 2.64558e+00, 2.61370e+00, 2.56506e+00, 2.53088e+00, 2.51428e+00, 2.43636e+00};//n
 
       for(Int_t icen=0;icen<Ncen_Eta-1;icen++){
-        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.139*0.139) - 0.139) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
+        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"0.48 * ([0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.547*0.547) - 0.547) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4]))",0,100);//TCM fit to PbPb
         f1weightEta[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         f1weightEta[icen]->SetNpx(1000);
         farray_Eta->Add(f1weightEta[icen]);
@@ -178,25 +177,26 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 
     else if(parname.Contains("Gamma",TString::kIgnoreCase)){
       //for gamma pT weighting
-      const Int_t Ncen_Gamma = 7;
-      const Double_t centrality_Gamma[Ncen_Gamma] = {0,5,10,20,40,60,100};
+      const Int_t Ncen_Gamma = 11;
+      const Double_t centrality_Gamma[Ncen_Gamma] = {0,5,10,20,30,40,50,60,70,80,100};
       TArrayD *centarray_Gamma = new TArrayD(Ncen_Gamma,centrality_Gamma);
 
       TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
       TF1 *f1weightGamma[Ncen_Gamma-1];
 
-      const Double_t p0[Ncen_Gamma-1] = {64.41, 64.88, 43.92, 24.84,  8.33,  2.08};
-      const Double_t p1[Ncen_Gamma-1] = { 5.88,  5.90,  5.80,  5.74,  5.61,  5.66};
-      const Double_t p2[Ncen_Gamma-1] = {-92.9,  -430,  -396, -83.6, -25.1, -6.97};
-      const Double_t p3[Ncen_Gamma-1] = { 4.12,  5.49,  5.25,  4.01,  2.93,  1.66};
-      const Double_t p4[Ncen_Gamma-1] = { 54.1,   411,   382,  72.3,  21.1,  4.06};
+      const Double_t p0[Ncen_Gamma-1] = {2.39991e+02, 1.78111e+02, 1.21109e+02, 6.91786e+01, 4.07880e+01, 2.05577e+01, 1.08079e+01, 4.98463e+00, 2.23119e+00, 1.16590e+00};//Ae
+      const Double_t p1[Ncen_Gamma-1] = {3.84238e-01, 3.90424e-01, 3.96450e-01, 4.05978e-01, 4.11701e-01, 4.22538e-01, 4.23961e-01, 4.31410e-01, 4.28510e-01, 3.85667e-01};//Te
+      const Double_t p2[Ncen_Gamma-1] = {1.16561e+03, 9.25084e+02, 7.15782e+02, 5.01254e+02, 3.55730e+02, 2.36175e+02, 1.49593e+02, 8.91887e+01, 4.56253e+01, 1.97146e+01};//A
+      const Double_t p3[Ncen_Gamma-1] = {3.06202e-01, 3.12875e-01, 3.13599e-01, 3.14247e-01, 3.05660e-01, 3.01051e-01, 2.89748e-01, 2.75489e-01, 2.64481e-01, 2.50078e-01};//T
+      const Double_t p4[Ncen_Gamma-1] = {2.73068e+00, 2.72595e+00, 2.70812e+00, 2.68939e+00, 2.64558e+00, 2.61370e+00, 2.56506e+00, 2.53088e+00, 2.51428e+00, 2.43636e+00};//n
 
       for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
-        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0]*TMath::Power(x,-([1] + [2]/(TMath::Power(x,[3]) + [4])))",0,100);//this is iterative procedure.
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.139*0.139) - 0.139) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
         f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         f1weightGamma[icen]->SetNpx(1000);
         farray_Gamma->Add(f1weightGamma[icen]);
       }
+
       task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);
     }
 
