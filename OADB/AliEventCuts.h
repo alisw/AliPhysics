@@ -81,6 +81,7 @@ class AliEventCuts : public TList {
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC11h();
     void   SetupLHC15o();
+    void   SetupLHC17n();
     void   SetupRun2pp();
     void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);

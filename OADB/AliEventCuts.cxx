@@ -391,9 +391,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
-    ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts.");
-    SetupLHC15o();
-    fUseEstimatorsCorrelationCut = false;
+    SetupLHC17n();
     return;
   }
 
@@ -771,4 +769,15 @@ void AliEventCuts::UseMultSelectionEventSelection(bool useIt) {
   if (useIt) {
     SetCentralityRange(0.,100.);
   }
+}
+
+void AliEventCuts::SetupLHC17n() {
+  ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts with somewhat different correlation cuts settings (switched off by default).");
+  SetName("StandardLHC17nEventCuts");
+  SetupLHC15o();
+  fUseEstimatorsCorrelationCut = false;
+
+  array<double,5> vzero_tpcout_polcut = {-1000.0, 2.8, 1.2e-5,0.,0.};
+  std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
+
 }
