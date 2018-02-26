@@ -124,18 +124,19 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   
  protected:
   
-  void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI                          ); // Fill some QA histograms
-  void                         EtIsoCellPhiBand      ( TLorentzVector c, Double_t &etIso, Double_t &phiBand              ); // EIsoCone via Cells UE via PhiBand EMCal
-  void                         EtIsoCellEtaBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand              ); // EIsoCone via Cells UE via EtaBand EMCal
-  void                         EtIsoClusPhiBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
-  void                         EtIsoClusEtaBand      ( TLorentzVector c, Double_t &etIso, Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
-  void                         PtIsoTrackPhiBand     ( TLorentzVector c, Double_t &ptIso, Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
-  void                         PtIsoTrackEtaBand     ( TLorentzVector c, Double_t &ptIso, Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
-  void                         PtIsoTrackOrthCones   ( TLorentzVector c, Double_t &ptIso, Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
-  void                         PtIsoTrackFullTPC     ( TLorentzVector c, Double_t &ptIso, Double_t &full                 ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
-  void                         ComputeConeArea       ( Double_t etaCand, Double_t phiCand, Double_t &coneArea            ); // Isolation cone area depending on the cluster position
-  void                         ComputeEtaBandArea    ( Double_t phiCand, Double_t coneArea, Double_t &etaBandArea        ); // Eta-band area depending on the cluster position
-  void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI                               ); // Applying smearing on MC
+  void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI                            ); // Fill some QA histograms
+  void                         EtIsoCellPhiBand      ( TLorentzVector c, Double_t &etIso  , Double_t &phiBand              ); // EIsoCone via Cells UE via PhiBand EMCal
+  void                         EtIsoCellEtaBand      ( TLorentzVector c, Double_t &etIso  , Double_t &etaBand              ); // EIsoCone via Cells UE via EtaBand EMCal
+  void                         EtIsoClusPhiBand      ( TLorentzVector c, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         EtIsoClusEtaBand      ( TLorentzVector c, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         PtIsoTrackPhiBand     ( TLorentzVector c, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
+  void                         PtIsoTrackEtaBand     ( TLorentzVector c, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
+  void                         PtIsoTrackOrthCones   ( TLorentzVector c, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
+  void                         PtIsoTrackFullTPC     ( TLorentzVector c, Double_t &ptIso  , Double_t &full                 ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
+  void                         ComputeConeArea       ( Double_t etaCand, Double_t phiCand , Double_t &coneArea             ); // Isolation cone area depending on the cluster position
+  void                         ComputeEtaBandArea    ( Double_t phiCand, Double_t coneArea, Double_t &etaBandArea          ); // Eta-band area depending on the cluster position
+  void                         ComputePhiBandArea    ( Double_t etaCand, Double_t coneArea, Double_t &phiBandArea          ); // Phi-band area depending on the cluster position
+  void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI                                 ); // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching    ( AliVCluster * emccluster, Bool_t candidate );
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells );
@@ -321,7 +322,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
   TH2F                       * fEtaBandVsConeArea;              //!<! Eta-band vs. cone area distribution (depending on the cluster position)
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
-  TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<! Energy cone clusters vs tracks test (area normalised)
+  TH3F                       * fPtVsNormConeVsNormPhiBand;      //!<!
+  TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<!
   TH3F                       * fPtvsM02vsSumUE_Norm;
   TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D                       * fInvMassM02iso;                  //!<!
@@ -380,7 +382,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 23);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 24);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
