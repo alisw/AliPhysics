@@ -329,7 +329,8 @@ class AliKFParticle :public AliKFParticleBase
 
   //* Method to access ALICE field 
  
-  static Double_t GetFieldAlice();
+  static Double_t GetFieldAlice() { return fgBz;}
+
   
   //* Other methods required by the abstract AliKFParticleBase class 
   
@@ -903,11 +904,6 @@ inline Double_t AliKFParticle::GetDeviationFromParticle( const AliKFParticle &p 
 inline void AliKFParticle::SubtractFromVertex( AliKFParticle &v ) const 
 {
   AliKFParticleBase::SubtractFromVertex( v );
-}
-
-inline Double_t AliKFParticle::GetFieldAlice()
-{ 
-  return fgBz; 
 }
 
 inline void AliKFParticle::GetFieldValue( const Double_t * /*xyz*/, Double_t B[] ) const 
