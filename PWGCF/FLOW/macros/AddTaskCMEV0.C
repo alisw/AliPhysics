@@ -242,14 +242,15 @@ class AliAnalysisTaskCMEV0;
     if(!fNUAFile) {
       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
       //exit(1);
-    } 
-    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-    if(fListNUA){
-      taskQC_prot->SetInputListNUA(fListNUA);
     }
-    else{
-      printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
-      //return NULL;
+    else{ 
+      TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+      if(fListNUA){
+        taskQC_prot->SetInputListNUA(fListNUA);
+      }
+      else{
+        printf("\n\n *** ERROR: NUA file Exist, But fList name is wrong !! **EXIT** \n\n");
+      }
     }
   }
 
