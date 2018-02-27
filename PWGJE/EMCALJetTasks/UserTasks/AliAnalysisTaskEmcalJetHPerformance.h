@@ -17,7 +17,7 @@ class AliEmcalJet;
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliEmcalEmbeddingQA.h"
-#include "AliAnalysisTaskEmcalJetHBase.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 // operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
@@ -103,7 +103,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   #endif
   bool fResponseFromThreeJetCollections; ///<  If true, the det level jets in collection 2 are only an intermediate step. They are used to get part level jets to match to hybrid jets
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
-  AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
+  AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
   ClassDef(AliAnalysisTaskEmcalJetHPerformance, 1);
 };

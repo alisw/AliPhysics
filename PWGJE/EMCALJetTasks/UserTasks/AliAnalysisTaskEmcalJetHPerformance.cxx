@@ -3,7 +3,7 @@
  */
 
 #include "AliAnalysisTaskEmcalJetHPerformance.h"
-#include "AliAnalysisTaskEmcalJetHBase.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 #include <map>
 #include <vector>
@@ -42,7 +42,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
-  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHBase::kCharged)
+  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHUtils::kCharged)
 {
 }
 
@@ -59,7 +59,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
-  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHBase::kCharged)
+  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHUtils::kCharged)
 {
 }
 
@@ -112,7 +112,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveTaskPropertiesFromYAMLConfig()
   bool res = fYAMLConfig.GetProperty({baseName, "leadingHadronBiasType"}, hadronBiasStr, false);
   // Only attempt to set the property if it is retrieved successfully
   if (res) {
-    fLeadingHadronBiasType = AliAnalysisTaskEmcalJetHBase::fgkLeadingHadronBiasMap.at(hadronBiasStr);
+    fLeadingHadronBiasType = AliAnalysisTaskEmcalJetHUtils::fgkLeadingHadronBiasMap.at(hadronBiasStr);
   }
 
   // Base class options
@@ -416,9 +416,9 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
     else if (title == "distance")
       values.emaplce_back(jet2->ClosestJetDistance());
     else if (title == "#theta_{jet,1}^{EP}")
-      values.emaplce_back(AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet1->Phi(), fEPV0));
+      values.emaplce_back(AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet1->Phi(), fEPV0));
     else if (title == "#theta_{jet,2}^{EP}")
-      values.emaplce_back(AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet2->Phi(), fEPV0));
+      values.emaplce_back(AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet2->Phi(), fEPV0));
     else if (title == "p_{T,particle,1}^{leading} (GeV/c)")
       values.emplace_back(GetLeadingHadronPt(jets1, jet1));
     else if (title == "p_{T,particle,2}^{leading} (GeV/c)")
@@ -444,8 +444,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliRMJet AliAnalysisTaskEmcalJetHPerformanc
   rmJet.fArea = jet->Area();
   rmJet.fPhi = jet->Phi();
   rmJet.fDistance = jet->ClosestJetDistance();
-  rmJet.fRelativeEPAngle = AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
-  rmJet.fLeadingHadronPt = AliAnalysisTaskEmcalJetHBase::GetLeadingHadronPt(jet, fLeadingHadronBiasType);
+  rmJet.fRelativeEPAngle = AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+  rmJet.fLeadingHadronPt = AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(jet, fLeadingHadronBiasType);
 
   return rmJet;
 }

@@ -1,9 +1,9 @@
-#ifndef ALIANALYSISTASKEMCALJETHBASE_H
-#define ALIANALYSISTASKEMCALJETHBASE_H
+#ifndef ALIANALYSISTASKEMCALJETHUTILS_H
+#define ALIANALYSISTASKEMCALJETHUTILS_H
 
 /**
- * @class AliAnalysisTaskEmcalJetHBase
- * @brief Jet-hadron correlations base class
+ * @class AliAnalysisTaskEmcalJetHUtils
+ * @brief Jet-hadron correlations utilities class
  *
  * Contains funtionality that is shared between the various classes
  *
@@ -19,7 +19,7 @@ class AliEmcalJet;
 namespace PWGJE {
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalJetHBase {
+class AliAnalysisTaskEmcalJetHUtils {
  public:
   /**
    * @enum ELeadingHadronBiasType_t
@@ -39,4 +39,4 @@ class AliAnalysisTaskEmcalJetHBase {
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
 
-#endif /* AliAnalysisTaskEmcalJetHBase.h */
+#endif /* AliAnalysisTaskEmcalJetHUtils.h */

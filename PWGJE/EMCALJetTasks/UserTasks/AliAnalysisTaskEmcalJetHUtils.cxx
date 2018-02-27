@@ -1,8 +1,8 @@
 //
-// Base class for Jet-Hadron correlation analysis
+// Utilities class for Jet-Hadron correlation analysis
 //
 
-#include "AliAnalysisTaskEmcalJetHBase.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 #include <TMath.h>
 
@@ -13,10 +13,10 @@
 namespace PWGJE {
 namespace EMCALJetTasks {
 
-const std::map<std::string, AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t> AliAnalysisTaskEmcalJetHBase::fgkLeadingHadronBiasMap = {
-  { "kCharged", AliAnalysisTaskEmcalJetHBase::kCharged},
-  { "kNeutral", AliAnalysisTaskEmcalJetHBase::kNeutral},
-  { "kBoth", AliAnalysisTaskEmcalJetHBase::kBoth}
+const std::map<std::string, AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t> AliAnalysisTaskEmcalJetHUtils::fgkLeadingHadronBiasMap = {
+  { "kCharged", AliAnalysisTaskEmcalJetHUtils::kCharged},
+  { "kNeutral", AliAnalysisTaskEmcalJetHUtils::kNeutral},
+  { "kBoth", AliAnalysisTaskEmcalJetHUtils::kBoth}
 };
 
 /**
@@ -31,7 +31,7 @@ const std::map<std::string, AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType
  *
  * @return Value of the leading hadron pt
  */
-double AliAnalysisTaskEmcalJetHBase::GetLeadingHadronPt(AliEmcalJet * jet, AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t leadingHadronType)
+double AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(AliEmcalJet * jet, AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t leadingHadronType)
 {
   double maxTrackPt = 0;
   double maxClusterPt = 0;
@@ -58,7 +58,7 @@ double AliAnalysisTaskEmcalJetHBase::GetLeadingHadronPt(AliEmcalJet * jet, AliAn
  *
  * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
  */
-double AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(double jetAngle, double epAngle)
+double AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(double jetAngle, double epAngle)
 {
   double dphi = (epAngle - jetAngle);
 
@@ -79,7 +79,7 @@ double AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(double jetAngle, double epA
 
   // Warn if we are not in the proper range
   if ( dphi < 0 || dphi > TMath::Pi()/2 ) {
-    AliWarningGeneralStream("AliAnalysisTaskEmcalJetHBase") << ": dPHI not in range [0, 0.5*Pi]!\n";
+    AliWarningGeneralStream("AliAnalysisTaskEmcalJetHUtils") << ": dPHI not in range [0, 0.5*Pi]!\n";
   }
 
   return dphi;   // dphi in [0, Pi/2]

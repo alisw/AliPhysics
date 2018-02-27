@@ -31,7 +31,7 @@
 #include "AliTrackContainer.h"
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
-#include "AliAnalysisTaskEmcalJetHBase.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations);
 
@@ -380,7 +380,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
     biasedJet = BiasedJet(jet);
-    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
+    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -511,7 +511,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
           biasedJet = BiasedJet(jet);
-          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
           if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
