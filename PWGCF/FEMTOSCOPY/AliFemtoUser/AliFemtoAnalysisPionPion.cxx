@@ -142,8 +142,8 @@ struct CutConfig_Pion {
            , nSigma = {-3.0, 3.0}
            ;
 
-    Int_t charge = 1,
-          min_tpc_ncls = 80;
+    Int_t charge = 1;
+    UInt_t min_tpc_ncls = 80;
 
     Float_t max_impact_xy = 2.4
           , max_impact_z = 3.0
@@ -169,6 +169,8 @@ struct CutConfig_Pair {
 
   Bool_t remove_same_label { kFALSE },
          TPCOnly { kTRUE };
+
+  CutConfig_Pair(){};
 };
 
 template<>
