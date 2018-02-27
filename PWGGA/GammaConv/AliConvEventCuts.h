@@ -277,7 +277,18 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
         kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
         kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
-
+        //13 TeV LHC2017 JJ
+        kLHC17f8f,              //!LHC17k JJ
+        kLHC17f8k,              //!LHC17p JJ
+        kLHC17f8j,              //!LHC17h JJ
+        kLHC17f8i,              //!LHC17e JJ
+        kLHC17f8h,              //!LHC17d JJ
+        kLHC17f8g,              //!LHC17i JJ
+        kLHC17f8e,              //!LHC17o JJ
+        kLHC17f8d,              //!LHC17j JJ
+        kLHC17f8c,              //!LHC17g JJ
+        kLHC17f8b,              //!LHC17f JJ
+        kLHC17f8a,              //!LHC17l JJ
 	//
         kUnknownPeriod//!< kUnknownPeriod
       };
@@ -645,7 +656,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,44)
+      ClassDef(AliConvEventCuts,45)
       /// \endcond
 };
 
