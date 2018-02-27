@@ -137,6 +137,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
+  
   void         SwitchOnFillEMCALRegionHistograms()   { fFillEMCALRegionHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionHistograms()  { fFillEMCALRegionHistograms = kFALSE ; }  
   
@@ -243,6 +246,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
@@ -612,7 +616,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
 //TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
+  TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons  per SM (do not apply SS cut previously).
 
+  
   /// Candidate Pt distribution depending on bin of cone leading particle.
   TH1F **  fhPtLeadConeBin ;                           //![fNBkgBin]
     
