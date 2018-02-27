@@ -48,6 +48,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fRemoveNegativeLabelTracks(kTRUE),
   fMatchToKinematicTrack(kTRUE),
   fUseGeneratedKine(kFALSE),
+  fUseRecoEventSelForKine(kFALSE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -72,6 +73,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fRemoveNegativeLabelTracks(kTRUE),
   fMatchToKinematicTrack(kTRUE),
   fUseGeneratedKine(kFALSE),
+  fUseRecoEventSelForKine(kFALSE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -116,7 +118,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fRemoveNegativeLabelTracks = c.fRemoveNegativeLabelTracks;
     fMatchToKinematicTrack = c.fMatchToKinematicTrack;
     fUseGeneratedKine = c.fUseGeneratedKine;
-
+    fUseRecoEventSelForKine = c.fUseRecoEventSelForKine;
     fEvalCentrality = c.fEvalCentrality;
     fCentralityEstimator = c.fCentralityEstimator;
       
@@ -141,6 +143,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fRemoveNegativeLabelTracks(c.fRemoveNegativeLabelTracks),
   fMatchToKinematicTrack(c.fMatchToKinematicTrack),
   fUseGeneratedKine(c.fUseGeneratedKine),
+  fUseRecoEventSelForKine(c.fUseRecoEventSelForKine),
   fEvalCentrality(c.fEvalCentrality),
   fCentralityEstimator(c.fCentralityEstimator),
   fConfiguration(c.fConfiguration),
@@ -261,6 +264,14 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   }
   fHistEventsProcessed->Fill(1.5); // # of Event after passing MC cuts
        
+  Bool_t isRecoEventOk = fMCCuts->IsRecoEventSelected(event);
+  if(fUseRecoEventSelForKine && !isRecoEventOk){
+    AliDebug(3,"Quality criteria for resontructed event requested before filling MC quantities: event discarded \n");
+    PostData(1,fHistEventsProcessed);
+    PostData(2,fCFManager->GetParticleContainer());
+    PostData(3,fQAHistList);
+    return;
+  }
 
   //
   // Step 1-3: Check the MC generated particles
@@ -271,7 +282,6 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   //
   // Step 4-7: Reconstructed event and track selection
   //
-  Bool_t isRecoEventOk = fMCCuts->IsRecoEventSelected(event);
 
   if(isRecoEventOk) {
     fHistEventsProcessed->Fill(2.5); // # of Event after passing all cuts
