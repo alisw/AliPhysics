@@ -17,6 +17,7 @@ class AliEmcalJet;
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliEmcalEmbeddingQA.h"
+#include "AliAnalysisTaskEmcalJetHBase.h"
 
 // operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
@@ -33,12 +34,12 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
    * Wrapper to contain the properties for a jet to simplify filling the response matrix histogram
    */
   struct AliRMJet {
-    double fPt;
-    double fArea;
-    double fPhi;
-    double fRelativeEPAngle;
-    double fLeadingHadronPt;
-    double fDistance;
+    double fPt;                 //!<! Jet pt
+    double fArea;               //!<! Jet area
+    double fPhi;                //!<! jet phi
+    double fRelativeEPAngle;    //!<! Angle relative to the event plane
+    double fLeadingHadronPt;    //!<! Leading hadron pt
+    double fDistance;           //!<! Distance to the matched jet
   };
 
   AliAnalysisTaskEmcalJetHPerformance();
@@ -76,8 +77,8 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Response matrix functions
   void SetupResponseMatrixHists();
   void CreateResponseMatrix();
-  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, AliJetContainer * jets1, AliJetContainer * jets2);
-  AliRMJet CreateAliRMJet(AliEmcalJet * jet, AliJetContainer * jetCont) const;
+  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
+  AliRMJet CreateAliRMJet(AliEmcalJet * jet) const;
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file
@@ -102,6 +103,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   #endif
   bool fResponseFromThreeJetCollections; ///<  If true, the det level jets in collection 2 are only an intermediate step. They are used to get part level jets to match to hybrid jets
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
+  AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
   ClassDef(AliAnalysisTaskEmcalJetHPerformance, 1);
 };

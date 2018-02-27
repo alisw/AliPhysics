@@ -17,6 +17,7 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
+#include "yaml-cpp/yaml.h"
 #include "THistManager.h"
 #include "AliJetContainer.h"
 #include "AliEmcalJet.h"
@@ -40,7 +41,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fCreateResponseMatrix(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
-  fMinFractionShared(0.)
+  fMinFractionShared(0.),
+  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHBase::kCharged)
 {
 }
 
@@ -56,7 +58,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fCreateResponseMatrix(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
-  fMinFractionShared(0.)
+  fMinFractionShared(0.),
+  fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHBase::kCharged)
 {
 }
 
@@ -71,7 +74,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const A
   fCreateResponseMatrix(other.fCreateResponseMatrix),
   fResponseMatrixFillMap(other.fResponseMatrixFillMap),
   fResponseFromThreeJetCollections(other.fResponseFromThreeJetCollections),
-  fMinFractionShared(other.fMinFractionShared)
+  fMinFractionShared(other.fMinFractionShared),
+  fLeadingHadronBiasType(other.fLeadingHadronBiasType)
 {
   TIter next(other.fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -103,6 +107,13 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveTaskPropertiesFromYAMLConfig()
   baseName = "responseMatrix";
   fYAMLConfig.GetProperty({baseName, "useThreeJetCollections"}, fResponseFromThreeJetCollections, false);
   fYAMLConfig.GetProperty({baseName, "minFractionSharedPt"}, fMinFractionShared, false);
+  std::string hadronBiasStr = "";
+  baseName = "jets";
+  bool res = fYAMLConfig.GetProperty({baseName, "leadingHadronBiasType"}, hadronBiasStr, false);
+  // Only attempt to set the property if it is retrieved successfully
+  if (res) {
+    fLeadingHadronBiasType = AliAnalysisTaskEmcalJetHBase::fgkLeadingHadronBiasMap.at(hadronBiasStr);
+  }
 
   // Base class options
   fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
@@ -323,7 +334,6 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
   {
     // Get jet the det level jet from the hybrid jet
     AliEmcalJet * jet2 = jet1->ClosestJet();
-    AliJetContainer * jets2ToPass = jetsDetLevel;
     if(!jet2) continue;
 
     // Check shared fraction
@@ -350,11 +360,10 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
 
       // Assign to jet 2 so it will be filled in the response
       jet2 = jet3;
-      jets2ToPass = jetsPartLevel;
     }
 
     // Fill response
-    FillResponseMatrix(jet1, jet2, jetsHybrid, jets2ToPass);
+    FillResponseMatrix(jet1, jet2);
   }
 
 }
@@ -362,21 +371,17 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
 /**
  * If given multiple jet collections, handle creating a reasponse matrix
  */
-void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, AliJetContainer * jets1, AliJetContainer * jets2)
+void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2)
 {
-  if (!jets1) {
-    AliErrorStream() << "Could not retrieve jet collection 1.\n";
-    return;
-  }
-  if (!jets2) {
-    AliErrorStream() << "Could not retrieve jet collection 2.\n";
-    return;
+  if (!jet1 || !jet2) {
+    AliErrorStream() << "Null jet passed to fill response matrix";
   }
 
   // Create map from jetNumber to jet and initialize the objects
-  std::map<unsigned int, AliRMJet> jetNumberToJet;
-  jetNumberToJet.insert(std::make_pair(1, CreateAliRMJet(jet1, jets1)));
-  jetNumberToJet.insert(std::make_pair(2, CreateAliRMJet(jet2, jets2)));
+  std::map<unsigned int, AliRMJet> jetNumberToJet = {
+    std::make_pair(1, CreateAliRMJet(jet1)),
+    std::make_pair(2, CreateAliRMJet(jet2))
+  };
 
   // Fill histograms
   std::string histName = "fHistResponseMatrix";
@@ -428,15 +433,11 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
 /**
  *
  */
-AliAnalysisTaskEmcalJetHPerformance::AliRMJet AliAnalysisTaskEmcalJetHPerformance::CreateAliRMJet(AliEmcalJet * jet, AliJetContainer * jetCont) const
+AliAnalysisTaskEmcalJetHPerformance::AliRMJet AliAnalysisTaskEmcalJetHPerformance::CreateAliRMJet(AliEmcalJet * jet) const
 {
   AliRMJet rmJet;
   if (!jet) {
     AliErrorStream() << "Must pass valid jet to create object.\n";
-    return rmJet;
-  }
-  if (!jetCont) {
-    AliErrorStream() << "Must pass valid jet container to create object.\n";
     return rmJet;
   }
   rmJet.fPt = jet->Pt();
@@ -444,10 +445,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliRMJet AliAnalysisTaskEmcalJetHPerformanc
   rmJet.fPhi = jet->Phi();
   rmJet.fDistance = jet->ClosestJetDistance();
   rmJet.fRelativeEPAngle = AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
-  // Leading hadron
-  AliTLorentzVector leadPart;
-  jetCont->GetLeadingHadronMomentum(leadPart, jet);
-  rmJet.fLeadingHadronPt = leadPart.Pt();
+  rmJet.fLeadingHadronPt = AliAnalysisTaskEmcalJetHBase::GetLeadingHadronPt(jet, fLeadingHadronBiasType);
 
   return rmJet;
 }
@@ -510,7 +508,8 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   tempSS << "Response matrix:\n";
   tempSS << "\tEnabled: " << fCreateResponseMatrix << "\n";
   tempSS << "\tConstruct response from 3 jet collections: " << fResponseFromThreeJetCollections << "\n";
-  tempSS << "\tMin fraction shared pt: " << fMinFractionShared <<"\n";
+  tempSS << "\tMin fraction shared pt: " << fMinFractionShared << "\n";
+  tempSS << "\tJet leading hadron bias type: " << fLeadingHadronBiasType << "\n";
   tempSS << "\tResponse matrix fill map: \n";
   for (auto el : fResponseMatrixFillMap) {
     tempSS << "\t\tProperty " << el.first << " applied to jet " << el.second.first << "\n";
@@ -573,5 +572,6 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   swap(first.fResponseMatrixFillMap, second.fResponseMatrixFillMap);
   swap(first.fResponseFromThreeJetCollections, second.fResponseFromThreeJetCollections);
   swap(first.fMinFractionShared, second.fMinFractionShared);
+  swap(first.fLeadingHadronBiasType, second.fLeadingHadronBiasType);
 }
 

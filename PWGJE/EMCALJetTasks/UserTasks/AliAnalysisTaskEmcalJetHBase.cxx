@@ -8,8 +8,46 @@
 
 #include <AliLog.h>
 
+#include "AliEmcalJetTask.h"
+
 namespace PWGJE {
 namespace EMCALJetTasks {
+
+const std::map<std::string, AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t> AliAnalysisTaskEmcalJetHBase::fgkLeadingHadronBiasMap = {
+  { "kCharged", AliAnalysisTaskEmcalJetHBase::kCharged},
+  { "kNeutral", AliAnalysisTaskEmcalJetHBase::kNeutral},
+  { "kBoth", AliAnalysisTaskEmcalJetHBase::kBoth}
+};
+
+/**
+ * Determine leading hadron pt in a jet. This is inspired by AliJetContainer::GetLeadingHadronMomentum(), but
+ * that particular function is avoided because the cluster energy retrieved is always the raw E while the
+ * cluster energy used in creating the jet would be preferred. One could create a cluster container and go
+ * through all of those steps, but there is a simpler approach: the leading charged and neutral momenta
+ * are stored in AliEmcalJet while performing jet finding.
+ *
+ * @param[in] jet Jet from which the leading hadron pt should be extracted
+ * @param[in] leadingHadronType Type of leading hadron pt to retrieve
+ *
+ * @return Value of the leading hadron pt
+ */
+double AliAnalysisTaskEmcalJetHBase::GetLeadingHadronPt(AliEmcalJet * jet, AliAnalysisTaskEmcalJetHBase::ELeadingHadronBiasType_t leadingHadronType)
+{
+  double maxTrackPt = 0;
+  double maxClusterPt = 0;
+
+  if (leadingHadronType == kCharged || leadingHadronType == kBoth) {
+    maxTrackPt = jet->MaxChargedPt();
+  }
+  if (leadingHadronType == kNeutral || leadingHadronType == kBoth) {
+    maxClusterPt = jet->MaxNeutralPt();
+  }
+
+  // The max value will be 0 unless it was filled. Thus, it will only be greater if
+  // it was requested.
+  return (maxTrackPt > maxClusterPt) ? maxTrackPt : maxClusterPt;
+}
+
 
 /**
  * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
