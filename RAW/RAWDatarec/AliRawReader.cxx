@@ -338,12 +338,9 @@ AliRawReader* AliRawReader::Create(const char *uri)
 	continue;
       }
       else if((option.BeginsWith("Contain=",TString::kIgnoreCase))){
-	if(contExpr.IsNull()){
-	  option.ReplaceAll("Contain=","");
-	  contExpr=option.Data();
-	}else{
-	  AliWarningClass(Form("Ingnoring multiple Contain requests: %s",option.Data()));
-	}
+	option.ReplaceAll("Contain=","");
+	option.ReplaceAll("||"," ");
+	contExpr += Form("%s ",option.Data());
 	continue;
       }
       else if((option.BeginsWith("Exclude=",TString::kIgnoreCase))){
@@ -536,10 +533,17 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
   if (TPRegexp(Form("%s%s%s",kMyWordBond,name,kMyWordBond)).Substitute(fSelectTriggerExpr,incrInd.Data(),"g")) {
     selTrigger=kTRUE;
   }else if(!fContainTriggerExpr.IsNull()) {
-    if (names.Contains(fContainTriggerExpr.Data())){
-      fSelectTriggerExpr += incrInd;
-      selTrigger=kTRUE;
+    TObjArray* arrc=fContainTriggerExpr.Tokenize(" ");
+    Int_t nSelTri=arrc->GetEntries();
+    for(Int_t jtri=0; jtri<nSelTri; jtri++){
+      TObjString* seltri=(TObjString*)arrc->At(jtri);
+      TString seltris=seltri->GetString();
+      if (names.Contains(seltris.Data())){
+	fSelectTriggerExpr += incrInd;
+	selTrigger=kTRUE;
+      }
     }
+    delete arrc;
   }
   if(!fExcludeTriggerExpr.IsNull()){
     if(index>=0 && names.Contains(fExcludeTriggerExpr.Data())){
