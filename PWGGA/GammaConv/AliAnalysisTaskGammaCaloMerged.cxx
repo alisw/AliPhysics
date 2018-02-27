@@ -1456,7 +1456,6 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
-
   Int_t nclus = 0;
   TClonesArray * arrClustersProcess = NULL;
   if(!fCorrTaskSetting.CompareTo("")){

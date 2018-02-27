@@ -3840,7 +3840,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     if (!clus1) return;
     TLorentzVector clusterVector1;
     clus1->GetMomentum(clusterVector1,vertex);
-
+    if(arrClustersMesonCand) delete clus1;
     TLorentzVector* tmpvec1 = new TLorentzVector();
     tmpvec1->SetPxPyPzE(clusterVector1.Px(),clusterVector1.Py(),clusterVector1.Pz(),clusterVector1.E());
     // convert to AODConversionPhoton
@@ -3864,6 +3864,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     if (!clus2) return;
     TLorentzVector clusterVector2;
     clus2->GetMomentum(clusterVector2,vertex);
+    if(arrClustersMesonCand) delete clus2;
     TLorentzVector* tmpvec2 = new TLorentzVector();
     tmpvec2->SetPxPyPzE(clusterVector2.Px(),clusterVector2.Py(),clusterVector2.Pz(),clusterVector2.E());
     // convert to AODConversionPhoton
