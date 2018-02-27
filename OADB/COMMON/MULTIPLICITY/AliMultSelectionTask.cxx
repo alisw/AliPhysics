@@ -1956,6 +1956,10 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             }
             if ( (!lItsHijing) && (!lItsDPMJet) && (!lItsEPOSLHC) ){
                 AliWarning(" Unable to detect generator type from header. Sorry.");
+		AliMCEvent *mcevptr = MCEvent(); 
+		if(mcevptr){ 
+			AliWarning(Form(" Header title for debug: %s",mcevptr->GenEventHeader()->GetTitle()));
+		} 
             }
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
