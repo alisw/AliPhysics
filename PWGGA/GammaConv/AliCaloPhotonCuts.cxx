@@ -3197,9 +3197,15 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         cluster = event->GetCaloCluster(iclus);
       }
 
-      if (!cluster) continue;
+      if (!cluster){
+        if(arrClustersMatch) delete cluster;
+        continue;
+      }
       Float_t dEta, dPhi;
-      if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)) continue;
+      if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)){
+        if(arrClustersMatch) delete cluster;
+        continue;
+      }
       cluster->GetPosition(clsPos);
       Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
@@ -3250,6 +3256,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
+        if(arrClustersMatch) delete cluster;
         break;
       } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
@@ -3262,11 +3269,11 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         }
        // cout << "no match" << endl;
       }
+      if(arrClustersMatch) delete cluster;
     }
-
     delete trackParam;
-  }
 
+  }
   if(EsdTrackCuts){
     delete EsdTrackCuts;
     EsdTrackCuts=0x0;

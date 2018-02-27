@@ -4126,6 +4126,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             tESDClusterNLM = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(cluster, fInputEvent);
             tESDGammaERM02[fiCut]->Fill();
           }
+          if(arrClustersMesonCand) delete cluster;
         }
 
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
@@ -4190,8 +4191,14 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                       secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));;
                   }
 
-                  if(!secondClus) continue;
-                  if(secondClus->GetID() == cluster->GetID()) continue;
+                  if(!secondClus){
+                    if(arrClustersMesonCand) delete secondClus;
+                    continue;
+                  }
+                  if(secondClus->GetID() == cluster->GetID()) {
+                    if(arrClustersMesonCand) delete secondClus;
+                    continue;
+                  }
                   secondClus->GetPosition(secondClsPos);
                   TVector3 secondClsPosVec(secondClsPos);
 
@@ -4240,6 +4247,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 
                 tESDInvMassShowerShape[fiCut]->Fill();
               }
+              if(arrClustersMesonCand) delete cluster;
             }
           }
 

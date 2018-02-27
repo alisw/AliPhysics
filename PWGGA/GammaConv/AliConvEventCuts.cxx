@@ -3097,14 +3097,28 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           clus = event->GetCaloCluster(i);
       }
 
-      if (!clus) continue;
-      if (!clus->IsEMCAL()) continue;
-      if (clus->GetM02()<0.1) continue;
-      if (clus->GetNCells()<2) continue;
+      if (!clus){
+        if(arrClustersMimic) delete clus;
+        continue;
+      }
+      if (!clus->IsEMCAL()) {
+        if(arrClustersMimic) delete clus;
+        continue;
+      }
+      if (clus->GetM02()<0.1) {
+        if(arrClustersMimic) delete clus;
+        continue;
+      }
+      if (clus->GetNCells()<2) {
+        if(arrClustersMimic) delete clus;
+        continue;
+      }
       if (clus->E() > threshold ){
 //         cout << "found L0" << endl;
         eventIsAccepted = kTRUE;
       }
+      if(arrClustersMimic)
+        delete clus;
     }
     return eventIsAccepted;
 
@@ -3161,14 +3175,28 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           else
             clus = event->GetCaloCluster(i);
         }
-        if (!clus) continue;
-        if (!clus->IsEMCAL()) continue;
-        if (clus->GetM02()<0.1) continue;
-        if (clus->GetNCells()<2) continue;
+        if (!clus) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (!clus->IsEMCAL()) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (clus->GetM02()<0.1) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (clus->GetNCells()<2) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
         if (clus->E() > threshold ){
 //           cout << "found L1G1" << endl;
           eventIsAccepted = kTRUE;
         }
+        if(arrClustersMimic)
+          delete clus;
       }
       return eventIsAccepted;
     } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){
@@ -3218,14 +3246,28 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           else
             clus = event->GetCaloCluster(i);
         }
-        if (!clus) continue;
-        if (!clus->IsEMCAL()) continue;
-        if (clus->GetM02()<0.1) continue;
-        if (clus->GetNCells()<2) continue;
+        if (!clus) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (!clus->IsEMCAL()) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (clus->GetM02()<0.1) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
+        if (clus->GetNCells()<2) {
+          if(arrClustersMimic) delete clus;
+          continue;
+        }
         if (clus->E() > threshold ){
 //           cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
         }
+        if(arrClustersMimic)
+          delete clus;
       }
       return eventIsAccepted;
     }
