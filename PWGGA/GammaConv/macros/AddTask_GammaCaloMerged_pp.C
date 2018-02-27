@@ -688,6 +688,12 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111101010032200000","1111101010022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 103){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 104){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 105){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00081113","1111101010032200000","1111101010022700001","0163300000000000"); // EGA
   } else if (trainConfig == 107){  // no M02, pt dep TM
     cuts.AddCut("00010113","1111111067032200000","1111111067022000001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000001","0163300000000000"); // EMC7

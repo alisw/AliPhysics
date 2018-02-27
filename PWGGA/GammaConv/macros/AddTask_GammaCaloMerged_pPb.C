@@ -273,6 +273,23 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     cuts.AddCut("80085113","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
     cuts.AddCut("80083113","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
 
+    // pPb 8 TeV LHC16 periods
+  } else if (trainConfig == 200){ // open timing, TB nonlin, no TM
+    cuts.AddCut("80010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 201){ // open timing, TB nonlin, no TM
+    cuts.AddCut("80052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 202){ // open timing, TB nonlin, no TM
+    cuts.AddCut("80085113","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 203){ // open timing, TB nonlin, no TM
+    cuts.AddCut("80083113","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 204){ // open timing, TB nonlin
+    cuts.AddCut("80010113","1111101017032200000","1111101017022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 205){ // open timing, TB nonlin
+    cuts.AddCut("80052113","1111101017032200000","1111101017022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 206){ // open timing, TB nonlin
+    cuts.AddCut("80085113","1111101017032200000","1111101017022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 207){ // open timing, TB nonlin
+    cuts.AddCut("80083113","1111101017032200000","1111101017022700001","0163300000000000"); // EG1
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
