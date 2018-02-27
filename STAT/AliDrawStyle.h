@@ -93,7 +93,7 @@ public:
   static TString GetProperty(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID);
   static TString  GetPropertyValue(TString input, TString propertyName);
   //static Int_t    GetObjectIndex(TString &objName);
-  static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID, Int_t &objNum);
+  static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID);
   static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status);
   static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index, Bool_t &status);
   static Double_t UnitsConverter(TString value, Double_t k);
@@ -131,4 +131,8 @@ protected:
   static void  RegisterDefaultMarkers();                      ///< initialize default Markers/Colors
 
   ClassDef(AliDrawStyle,1);
+  private:
+    static Int_t objectNumber;
+    static void SetObjectNumber(Int_t num) {objectNumber = num;};
+    static Int_t GetObjectNumber() {return objectNumber;};
 };
