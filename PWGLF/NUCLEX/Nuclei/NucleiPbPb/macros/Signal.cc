@@ -38,7 +38,7 @@ using std::vector;
 
 using namespace RooFit;
 
-void Signal(bool useMBsignal=false, bool use_extended=true) {
+void Signal(bool useMBsignal=true, bool use_extended=true) {
 
   /// Suppressing the output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -50,35 +50,41 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
   TFile output_file(kSignalOutput.data(),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
   m.setBins(1000,"cache");
-  m.setRange("Full", -1, 1.5);
+  m.setRange("Full", -2., 2.5);
 
-  FitExpExpTailTailGaus fExpExpTailGaus(&m,use_extended);
+  FitExpExpTailGaus fExpExpTailGaus(&m,use_extended);
   fExpExpTailGaus.mMu->setRange(0.00001,0.5);
   fExpExpTailGaus.mMu->setVal(0.1);
   fExpExpTailGaus.mMu->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mSigma->setRange(0.05,0.15);
+  fExpExpTailGaus.mSigma->setRange(0.05,0.11);
   fExpExpTailGaus.mSigma->setVal(0.1);
   fExpExpTailGaus.mSigma->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mAlpha0->setRange(-4.,-1.);
-  fExpExpTailGaus.mAlpha0->setVal(-1.3);
+  // fExpExpTailGaus.mAlpha0->setRange(-4.,-1.);
+  // fExpExpTailGaus.mAlpha0->setVal(-1.3);
+  //fExpExpTailGaus.mAlpha0->setUnit("GeV^{2}/#it{c}^{4}");
+  fExpExpTailGaus.mAlpha0->setRange(1.1,4.);
+  fExpExpTailGaus.mAlpha0->setVal(1.2);
   fExpExpTailGaus.mAlpha0->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mAlpha1->setRange(1.,4.);
-  fExpExpTailGaus.mAlpha1->setVal(1.2);
-  fExpExpTailGaus.mAlpha1->setUnit("GeV^{2}/#it{c}^{4}");
   fExpExpTailGaus.mSigCounts->setRange(0.,4000.);
   fExpExpTailGaus.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
   fExpExpTailGaus.mTau1 ->setUnit("GeV^{-2}#it{c}^{4}");
+  fExpExpTailGaus.mTau0->setRange(-10.,-1.5);
+  fExpExpTailGaus.mTau1->setRange(-0.5,-0.01);
+  fExpExpTailGaus.mKbkg->setRange(0.,1.);
 
   //Background
-  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
   m_bis.setBins(1000,"cache");
-  m_bis.setRange("Full", -1, 1.5);
+  m_bis.setRange("Full", -2., 2.5);
   FitExpExpTailGaus fBkg(&m_bis,use_extended);
   fBkg.UseSignal(false);
   fBkg.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
   fBkg.mTau1->setUnit("GeV^{-2}#it{c}^{4}");
+  fBkg.mTau0->setRange(-10.,-1.5);
+  fBkg.mTau1->setRange(-0.5,-0.01);
+  fBkg.mKbkg->setRange(0.,1.);
 
   // Setting up the fitting environment for the TPC analysis
   RooRealVar ns("ns","n#sigma_{d}",-3.,3,"a. u.");
@@ -207,156 +213,157 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
       for (int iS = 1; iS>=0; iS--) {
         for (int iC = kCentLength; iC--; ) {
           // TOF analysis
-          if (pt_axis->GetBinCenter(iB+1) > kCentPtLimits[iC]) continue;
-          TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
-          TString iName = Form("d%i_%i",iC,iB);
-          TH1D *dat = tof_histo[iS]->ProjectionZ(Form("data%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB + 1,iB + 1);
-          // if (pt_axis->GetBinCenter(iB+1) > kPtRebin[iC]){
-          //   dat->Rebin();
-          //   fExpExpTailGaus.mTau0->setRange(-10.,-3.);
-          //   fExpExpTailGaus.mTau1->setRange(-2.,-0.01);
-          //   fExpExpTailGaus.mKbkg->setRange(0.2,1.);
-          // }
-          // else{
-          //   fExpExpTailGaus.mTau0->setRange(-10.,-1.5);
-          //   fExpExpTailGaus.mTau1->setRange(-0.5,-0.01);
-          //   fExpExpTailGaus.mKbkg->setRange(0.,1.);
-          // }
-          // fExpExpTailGaus.mTau1->setVal(-0.3);
-          // fExpExpTailGaus.mTau0->setVal(0.5);
+          if(pt_axis->GetBinCenter(iB+1) > 1){
+            if(pt_axis->GetBinCenter(iB+1) > kCentPtLimits[iC]) continue;
+            TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
+            TString iName = Form("d%i_%i",iC,iB);
+            TH1D *dat = tof_histo[iS]->ProjectionZ(Form("data%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB + 1,iB + 1);
+            // if (pt_axis->GetBinCenter(iB+1) > kPtRebin[iC]){
+            //   dat->Rebin();
+            //   fExpExpTailGaus.mTau0->setRange(-10.,-3.);
+            //   fExpExpTailGaus.mTau1->setRange(-2.,-0.01);
+            //   fExpExpTailGaus.mKbkg->setRange(0.2,1.);
+            // }
+            // else{
+            //   fExpExpTailGaus.mTau0->setRange(-10.,-1.5);
+            //   fExpExpTailGaus.mTau1->setRange(-0.5,-0.01);
+            //   fExpExpTailGaus.mKbkg->setRange(0.,1.);
+            // }
+            // fExpExpTailGaus.mTau1->setVal(-0.3);
+            // fExpExpTailGaus.mTau0->setVal(0.5);
 
-          /// Fits
-          base_dir->cd(Form("%s/Fits/C_%d",kNames[iS].data(),iC));
-          if(iB<=9){
-            fExpExpTailGaus.UseBackground(false);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.18);
-            fExpExpTailGaus.mSigma->setVal(0.1);
-            fExpExpTailGaus.mAlpha0->setVal(-1.1);
-            //fExpExpTailGaus.mAlpha0->setConstant(true);
-            fExpExpTailGaus.mAlpha1->setVal(1.1);
-            fExpExpTailGaus.mAlpha1->setConstant(true);
-          }
-          else{
-            fExpExpTailGaus.UseBackground(true);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.25);
-            fExpExpTailGaus.mSigma->setVal(0.1);
-            fExpExpTailGaus.mAlpha0->setConstant(false);
-            fExpExpTailGaus.mAlpha1->setConstant(false);
-            if(iB<=10){
-              fExpExpTailGaus.mKbkg->setVal(0.);
-              fExpExpTailGaus.mKbkg->setConstant(true);
-              fExpExpTailGaus.mTau0->setConstant(true);
-              fBkg.mKbkg->setVal(0.);
-              fBkg.mKbkg->setConstant(true);
-              fBkg.mTau0->setConstant(true);
-            }
-            else{
-              fExpExpTailGaus.mKbkg->setVal(0.5);
-              fExpExpTailGaus.mKbkg->setConstant(false);
-              fExpExpTailGaus.mTau0->setConstant(false);
-              fBkg.mKbkg->setVal(0.5);
-              fBkg.mKbkg->setConstant(false);
-              fBkg.mTau0->setConstant(false);
-            }
-          }
-          // if(iS==1){
-          //   fExpExpTailGaus.mSigma->setVal(sigma_deut[iC]);
-          //   fExpExpTailGaus.mSigma->setConstant(true);
-          // }
-          if(useMBsignal){
-            if(iC==kCentLength-1){
-              fExpExpTailGaus.mMu->setConstant(false);
-              fExpExpTailGaus.mSigma->setConstant(false);
-              fExpExpTailGaus.mAlpha0->setConstant(false);
-            }
-          }
-          RooPlot* expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-1,1.5);
-          if(useMBsignal){
-            if(iC==kCentLength-1){
-              fExpExpTailGaus.mMu->setConstant(true);
-              fExpExpTailGaus.mSigma->setConstant(true);
+            /// Fits
+            base_dir->cd(Form("%s/Fits/C_%d",kNames[iS].data(),iC));
+            if(iB<=8){
+              fExpExpTailGaus.UseBackground(false);
+              fExpExpTailGaus.mSigma->setRange(0.05,0.11);
+              fExpExpTailGaus.mSigma->setVal(0.1);
+              //fExpExpTailGaus.mAlpha0->setVal(-1.1);
+              //fExpExpTailGaus.mAlpha0->setConstant(true);
+              fExpExpTailGaus.mAlpha0->setVal(1.1);
               fExpExpTailGaus.mAlpha0->setConstant(true);
             }
-          }
-          //fExpExpTailGaus.mSigma->setConstant(false);
-          if(iS==0) sigma_deut[iC] = fExpExpTailGaus.mSigma->getVal();
-          if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailGausPlot->Write();
-          if(use_extended){
-            hSignalTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
-            hSignalTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
-          }
-          else{
-            hSignalTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mFraction->getVal()*fExpExpTailGaus.mNentries);
-            hSignalTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mFraction->getError()*fExpExpTailGaus.mNentries);
-          }
-          if(iB>8){
+            else{
+              fExpExpTailGaus.UseBackground(true);
+              fExpExpTailGaus.mSigma->setRange(0.05,0.18);
+              fExpExpTailGaus.mSigma->setVal(0.1);
+              //fExpExpTailGaus.mAlpha0->setConstant(false);
+              fExpExpTailGaus.mAlpha0->setConstant(false);
+              if(iB<=10){
+                fExpExpTailGaus.mKbkg->setVal(0.);
+                fExpExpTailGaus.mKbkg->setConstant(true);
+                fExpExpTailGaus.mTau0->setConstant(true);
+                fBkg.mKbkg->setVal(0.);
+                fBkg.mKbkg->setConstant(true);
+                fBkg.mTau0->setConstant(true);
+              }
+              else{
+                fExpExpTailGaus.mKbkg->setVal(0.5);
+                fExpExpTailGaus.mKbkg->setConstant(false);
+                fExpExpTailGaus.mTau0->setConstant(false);
+                fBkg.mKbkg->setVal(0.5);
+                fBkg.mKbkg->setConstant(false);
+                fBkg.mTau0->setConstant(false);
+              }
+            }
+            // if(iS==1){
+            //   fExpExpTailGaus.mSigma->setVal(sigma_deut[iC]);
+            //   fExpExpTailGaus.mSigma->setConstant(true);
+            // }
+            if(useMBsignal){
+              if(iC==kCentLength-1){
+                fExpExpTailGaus.mMu->setConstant(false);
+                fExpExpTailGaus.mSigma->setConstant(false);
+                fExpExpTailGaus.mAlpha0->setConstant(false);
+              }
+            }
+            RooPlot* expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-2.,2.5);
+            if(useMBsignal){
+              if(iC==kCentLength-1){
+                fExpExpTailGaus.mMu->setConstant(true);
+                fExpExpTailGaus.mSigma->setConstant(true);
+                fExpExpTailGaus.mAlpha0->setConstant(true);
+              }
+            }
+            //fExpExpTailGaus.mSigma->setConstant(false);
+            if(iS==0) sigma_deut[iC] = fExpExpTailGaus.mSigma->getVal();
+            if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailGausPlot->Write();
             if(use_extended){
-              hRawCounts[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
-              hRawCounts[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
+              hSignalTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
+              hSignalTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
             }
             else{
-              hRawCounts[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mFraction->getVal()*fExpExpTailGaus.mNentries);
-              hRawCounts[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mFraction->getError()*fExpExpTailGaus.mNentries);
+              hSignalTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mFraction->getVal()*fExpExpTailGaus.mNentries);
+              hSignalTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mFraction->getError()*fExpExpTailGaus.mNentries);
             }
-          }
-          /// Bin counting TOF
-          float residual_vector[n_sigma_vec.size()];
-          for(size_t iSigma=0; iSigma < n_sigma_vec.size(); iSigma++){
-            float left_sigma = fExpExpTailGaus.mMu->getVal() - n_sigma_vec[iSigma]*fExpExpTailGaus.mSigma->getVal();
-            float right_sigma = fExpExpTailGaus.mMu->getVal() + (float(n_sigma_vec[iSigma])+2.)*fExpExpTailGaus.mSigma->getVal();
-            int left_edge_bin = dat->FindBin(left_sigma);
-            float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
-            int right_edge_bin = dat->FindBin(right_sigma);
-            float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
-            fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
-            if (iSigma==0) {
-              fBkg.mX->setRange("left",-1,left_edge_float);
-              fBkg.mX->setRange("right",right_edge_float,1.5);
-              RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
-              base_dir->cd(Form("%s/Sidebands/C_%d",kNames[iS].data(),iC));
-              if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) bkgPlot->Write();
-
-            }
-            float bkg_integral = (iB>8) ? fBkg.mBackground->createIntegral(m_bis,NormSet(m_bis),Range("signal"))->getVal() * fBkg.mBkgCounts->getVal() : 0;
             if(iB>8){
-              hChiSquare[iS][iC]->SetBinContent(iB+1, fBkg.mChi2);
-              hChiSquare[iS][iC]->SetBinError(iB+1, 0);
-            }
-            float tot_integral = dat->Integral(left_edge_bin,right_edge_bin);
-            float sig_integral = tot_integral - bkg_integral;
-            float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
-            if(iSigma==0){
-              if(iB<=9){
-                hRawCounts[iS][iC]->SetBinContent(iB + 1, sig_integral);
-                hRawCounts[iS][iC]->SetBinError(iB + 1, sig_err);
+              if(use_extended){
+                hRawCounts[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
+                hRawCounts[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
               }
-              hSignificance[iS][iC]->SetBinContent(iB + 1, sig_integral / TMath::Sqrt(tot_integral));
+              else{
+                hRawCounts[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mFraction->getVal()*fExpExpTailGaus.mNentries);
+                hRawCounts[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mFraction->getError()*fExpExpTailGaus.mNentries);
+              }
             }
-            residual_vector[iSigma] = sig_integral;
-          }
-          width_range_syst = TMath::RMS(n_sigma_vec.size(),residual_vector);
-          width_range_syst /= hRawCounts[iS][iC]->GetBinContent(iB + 1);
-          hWidenRangeSyst[iS][iC]->SetBinContent(iB + 1, width_range_syst);
-          // Moving the counting range
-          float shift_vector[n_shifts];
-          for(int iShift=0; iShift<n_shifts; iShift++){
-            float left_sigma = fExpExpTailGaus.mMu->getVal()-3.*fExpExpTailGaus.mSigma->getVal()-v_shift[iShift];
-            float right_sigma = fExpExpTailGaus.mMu->getVal()+5.*fExpExpTailGaus.mSigma->getVal()-v_shift[iShift];
-            int left_edge_bin = dat->FindBin(left_sigma);
-            float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
-            int right_edge_bin = dat->FindBin(right_sigma);
-            float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
-            fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
-            float bkg_integral = (iB>7) ? fBkg.mBackground->createIntegral(m_bis,NormSet(m_bis),Range("signal"))->getVal() * fBkg.mBkgCounts->getVal() : 0;
-            float tot_integral = dat->Integral(left_edge_bin,right_edge_bin);
-            float sig_integral = tot_integral - bkg_integral;
-            float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
-            shift_vector[iShift] = sig_integral;
-          }
-          pos_range_syst = TMath::RMS(n_shifts,shift_vector);
-          pos_range_syst /= hRawCounts[iS][iC]->GetBinContent(iB + 1);
-          hShiftRangeSyst[iS][iC]->SetBinContent(iB + 1, pos_range_syst);
+            /// Bin counting TOF
+            float residual_vector[n_sigma_vec.size()];
+            for(size_t iSigma=0; iSigma < n_sigma_vec.size(); iSigma++){
+              float left_sigma = fExpExpTailGaus.mMu->getVal() - n_sigma_vec[iSigma]*fExpExpTailGaus.mSigma->getVal();
+              float right_sigma = fExpExpTailGaus.mMu->getVal() + (float(n_sigma_vec[iSigma])+2.)*fExpExpTailGaus.mSigma->getVal();
+              int left_edge_bin = dat->FindBin(left_sigma);
+              float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
+              int right_edge_bin = dat->FindBin(right_sigma);
+              float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
+              fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
+              if (iSigma==0) {
+                fBkg.mX->setRange("left",-2.,left_edge_float);
+                fBkg.mX->setRange("right",right_edge_float,2.5);
+                RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
+                base_dir->cd(Form("%s/Sidebands/C_%d",kNames[iS].data(),iC));
+                if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) bkgPlot->Write();
 
+              }
+              float bkg_integral = (iB>8) ? fBkg.mBackground->createIntegral(m_bis,NormSet(m_bis),Range("signal"))->getVal() * fBkg.mBkgCounts->getVal() : 0;
+              if(iB>8){
+                hChiSquare[iS][iC]->SetBinContent(iB+1, fBkg.mChi2);
+                hChiSquare[iS][iC]->SetBinError(iB+1, 0);
+              }
+              float tot_integral = dat->Integral(left_edge_bin,right_edge_bin);
+              float sig_integral = tot_integral - bkg_integral;
+              float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
+              if(iSigma==0){
+                if(iB<=8){
+                  hRawCounts[iS][iC]->SetBinContent(iB + 1, sig_integral);
+                  hRawCounts[iS][iC]->SetBinError(iB + 1, sig_err);
+                }
+                hSignificance[iS][iC]->SetBinContent(iB + 1, sig_integral / TMath::Sqrt(tot_integral));
+              }
+              residual_vector[iSigma] = sig_integral;
+            }
+            width_range_syst = TMath::RMS(n_sigma_vec.size(),residual_vector);
+            width_range_syst /= hRawCounts[iS][iC]->GetBinContent(iB + 1);
+            hWidenRangeSyst[iS][iC]->SetBinContent(iB + 1, width_range_syst);
+            // Moving the counting range
+            float shift_vector[n_shifts];
+            for(int iShift=0; iShift<n_shifts; iShift++){
+              float left_sigma = fExpExpTailGaus.mMu->getVal()-3.*fExpExpTailGaus.mSigma->getVal()-v_shift[iShift];
+              float right_sigma = fExpExpTailGaus.mMu->getVal()+5.*fExpExpTailGaus.mSigma->getVal()-v_shift[iShift];
+              int left_edge_bin = dat->FindBin(left_sigma);
+              float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
+              int right_edge_bin = dat->FindBin(right_sigma);
+              float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
+              fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
+              float bkg_integral = (iB>8) ? fBkg.mBackground->createIntegral(m_bis,NormSet(m_bis),Range("signal"))->getVal() * fBkg.mBkgCounts->getVal() : 0;
+              float tot_integral = dat->Integral(left_edge_bin,right_edge_bin);
+              float sig_integral = tot_integral - bkg_integral;
+              float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
+              shift_vector[iShift] = sig_integral;
+            }
+            pos_range_syst = TMath::RMS(n_shifts,shift_vector);
+            pos_range_syst /= hRawCounts[iS][iC]->GetBinContent(iB + 1);
+            hShiftRangeSyst[iS][iC]->SetBinContent(iB + 1, pos_range_syst);
+          }
           /// TPC analysis
           if(pt_axis->GetBinCenter(iB+1) < kTPCmaxPt){
             base_dir->cd(Form("%s/TPConly",kNames[iS].data()));
@@ -369,6 +376,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             //   fGausGaus.mSigma->setVal(sigma_deut_tpc[iC]);
             //   fGausGaus.mSigma->setConstant(true);
             // }
+            TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
             RooPlot* gausGausPlot = fGausGaus.FitData(tpc_dat,Form("TPC_d_%i_%i",iC,iB),iTitle,"Full","Full");
             //fGausGaus.mSigma->setConstant(false);
             if(iS==0) sigma_deut_tpc[iC] = fGausGaus.mSigma->getVal();
@@ -416,16 +424,16 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             for(int iShift=0; iShift<n_shifts; iShift++){
               float left_sigma = fGausGaus.mMu->getVal()-3.*fGausGaus.mSigma->getVal()-v_shift[iShift];
               float right_sigma = fGausGaus.mMu->getVal()+3.*fGausGaus.mSigma->getVal()-v_shift[iShift];
-              int left_edge_bin = dat->FindBin(left_sigma);
-              float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
-              int right_edge_bin = dat->FindBin(right_sigma);
-              float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
+              int left_edge_bin = tpc_dat->FindBin(left_sigma);
+              float left_edge_float = tpc_dat->GetBinLowEdge(left_edge_bin);
+              int right_edge_bin = tpc_dat->FindBin(right_sigma);
+              float right_edge_float = tpc_dat->GetBinLowEdge(right_edge_bin+1);
               fGausGaus.mX->setRange("signal",left_edge_float,right_edge_float);
               float bkg_integral = (iB>5) ? fGausGaus.mBackground->createIntegral(ns,NormSet(ns),Range("signal"))->getVal() * fGausGaus.mBkgCounts->getVal() : 0;
               float tot_integral = tpc_dat->Integral(left_edge_bin,right_edge_bin);
               float sig_integral = tot_integral - bkg_integral;
               float sig_err = TMath::Sqrt(tot_integral+bkg_integral);
-              shift_vector[iShift] = sig_integral;
+              shift_vector_tpc[iShift] = sig_integral;
             }
             pos_range_syst_tpc = TMath::RMS(n_shifts,shift_vector_tpc);
             pos_range_syst_tpc /= hTPConly[iS][iC]->GetBinContent(iB + 1);

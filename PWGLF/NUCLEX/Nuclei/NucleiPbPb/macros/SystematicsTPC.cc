@@ -28,12 +28,13 @@ using std::to_string;
 float zTest(const float mu0, const float sig0, const float mu1, const float sig1) {
   const float sigma = sqrt(sig0 * sig0 + sig1 * sig1);
   if (sigma < FLT_MIN * 10.f) return FLT_MAX;
-  else return (mu0 - mu1) / sqrt(sig1 * sig1 + sig0 * sig0);
+  else return (mu0 - mu1) / std::abs(sig1-sig0);
 }
 
 void SystematicsTPC() {
   TFile input_file(kSpectraOutput.data());
   TFile countsyst_file(kSignalOutput.data());
+  TFile shiftsyst_file(kSignalOutput.data());
   TFile matsyst_file(kMaterialOutput.data());
   //TFile secsyst_tpc_file(kSecondariesTPCoutput.data());
   TFile output_file(kSystematicsOutputTPC.data(),"recreate");
@@ -50,6 +51,7 @@ void SystematicsTPC() {
   vector<TH1F*> matsyst_tpc(n_centralities,nullptr);
   vector<TH1F*> abssyst_tpc(n_centralities,nullptr);
   vector<TH1F*> countsyst_tpc(n_centralities,nullptr);
+  vector<TH1F*> shiftsyst_tpc(n_centralities,nullptr);
   vector<TH1F*> totsyst_tpc(n_centralities,nullptr);
 
   for (int iC = 0; iC < n_centralities; ++iC) {
@@ -68,6 +70,11 @@ void SystematicsTPC() {
       TH1F* countsyst_tpc_tmp = (TH1F*)countsyst_file.Get(count_sys_path.data());
       Requires(countsyst_tpc_tmp,"Missing systematic");
       countsyst_tpc[iC] = (TH1F*)countsyst_tpc_tmp->Rebin(n_pt_bins,Form("countsyst_tpc_%d",iC),pt_bin_limits);
+
+      string shift_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hShiftRangeSystTPC" + kLetter[iS] + to_string(iC);
+      TH1F* shiftsyst_tpc_tmp = (TH1F*)shiftsyst_file.Get(shift_sys_path.data());
+      Requires(shiftsyst_tpc_tmp,"Missing systematic");
+      shiftsyst_tpc[iC] = (TH1F*)shiftsyst_tpc_tmp->Rebin(n_pt_bins,Form("shiftsyst_tpc_%d",iC),pt_bin_limits);
 
       string mat_sys_path = Form("deuterons%ctpc",kLetter[iS]);
       TH1F* matsyst_tmp = (TH1F*)matsyst_file.Get(mat_sys_path.data());
@@ -108,7 +115,7 @@ void SystematicsTPC() {
           if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if (ptAxis->GetBinCenter(iB) > 1.4) continue;
+          if (ptAxis->GetBinCenter(iB) > 1.) continue;
           abssyst_tpc[iC]->SetBinContent(iB,kAbsSyst[iS]);
           const float m0 = references_tpc[iC]->GetBinContent(iB);
           const float s0 = references_tpc[iC]->GetBinError(iB);
@@ -162,31 +169,35 @@ void SystematicsTPC() {
           if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if (ptAxis->GetBinCenter(iB) > 1.4) continue;
+          if (ptAxis->GetBinCenter(iB) > 1.) continue;
           h_rms->SetBinContent(iB,rms[iB-1]);
         }
         h_rms->Write();
       }
       for (int iB = 1; iB <= cutsyst_tpc[iC]->GetNbinsX(); ++iB) {
-        if (ptAxis->GetBinCenter(iB) > 1.4) continue;
+        if (ptAxis->GetBinCenter(iB) > 1.1) continue;
         cutsyst_tpc[iC]->SetBinContent(iB,sqrt(cutsyst_tpc[iC]->GetBinContent(iB)));
       }
 
       if (kSmoothSystematics) {
-        cutsyst_tpc[iC]->GetXaxis()->SetRange(cutsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),cutsyst_tpc[iC]->FindBin(kPtRange[1]-0.01));
+        cutsyst_tpc[iC]->GetXaxis()->SetRange(cutsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),cutsyst_tpc[iC]->FindBin(0.99));
+        countsyst_tpc[iC]->GetXaxis()->SetRange(countsyst_tpc[iC]->FindBin(1.01),countsyst_tpc[iC]->FindBin(0.99));
+        shiftsyst_tpc[iC]->GetXaxis()->SetRange(shiftsyst_tpc[iC]->FindBin(1.01),shiftsyst_tpc[iC]->FindBin(0.99));
         cutsyst_tpc[iC]->Smooth(1,"R");
         countsyst_tpc[iC]->Smooth(1,"R");
+        shiftsyst_tpc[iC]->Smooth(1,"R");
       }
 
       for (int iB = 1; iB <= cutsyst_tpc[iC]->GetNbinsX(); ++iB) {
         if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
             ptAxis->GetBinCenter(iB) > kPtRange[1])
           continue;
-        if (ptAxis->GetBinCenter(iB) > 1.4){
+        if (ptAxis->GetBinCenter(iB) > 1.){
           cutsyst_tpc[iC]->SetBinContent(iB,0.);
           matsyst_tpc[iC]->SetBinContent(iB,0.);
           abssyst_tpc[iC]->SetBinContent(iB,0.);
           countsyst_tpc[iC]->SetBinContent(iB,0.);
+          shiftsyst_tpc[iC]->SetBinContent(iB,0.);
           totsyst_tpc[iC]->SetBinContent(iB,0.);
         }
         else{
@@ -194,14 +205,15 @@ void SystematicsTPC() {
               cutsyst_tpc[iC]->GetBinContent(iB) * cutsyst_tpc[iC]->GetBinContent(iB) +
               matsyst_tpc[iC]->GetBinContent(iB) * matsyst_tpc[iC]->GetBinContent(iB) +
               abssyst_tpc[iC]->GetBinContent(iB) * abssyst_tpc[iC]->GetBinContent(iB) +
-              countsyst_tpc[iC]->GetBinContent(iB) * countsyst_tpc[iC]->GetBinContent(iB)
+              countsyst_tpc[iC]->GetBinContent(iB) * countsyst_tpc[iC]->GetBinContent(iB)+
+              shiftsyst_tpc[iC]->GetBinContent(iB) * shiftsyst_tpc[iC]->GetBinContent(iB)
               );
           totsyst_tpc[iC]->SetBinContent(iB,tot);
         }
       }
 
       TCanvas summary("summary","Summary");
-      summary.DrawFrame(0.3,0.,1.7,0.2,";#it{p}_{T} (GeV/#it{c}); Systematics uncertainties");
+      summary.DrawFrame(0.3,0.,1.3,0.2,";#it{p}_{T} (GeV/#it{c}); Systematics uncertainties");
       TLegend leg (0.6,0.56,0.89,0.84);
       leg.SetBorderSize(0);
       cutsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[0]);
@@ -210,6 +222,9 @@ void SystematicsTPC() {
       countsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[1]);
       countsyst_tpc[iC]->Draw("same");
       leg.AddEntry(countsyst_tpc[iC],"Range broadening","l");
+      shiftsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[5]);
+      shiftsyst_tpc[iC]->Draw("same");
+      leg.AddEntry(shiftsyst_tpc[iC],"Range shifting","l");
       matsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[2]);
       matsyst_tpc[iC]->Draw("same");
       leg.AddEntry(matsyst_tpc[iC],"Material budget","l");
@@ -226,6 +241,7 @@ void SystematicsTPC() {
       species_dir->cd();
       cutsyst_tpc[iC]->Write("cutsyst_tpc");
       countsyst_tpc[iC]->Write("countsyst_tpc");
+      shiftsyst_tpc[iC]->Write("shiftsyst_tpc");
       abssyst_tpc[iC]->Write("abssyst_tpc");
       matsyst_tpc[iC]->Write("matsyst_tpc");
       totsyst_tpc[iC]->Write("totsyst_tpc");

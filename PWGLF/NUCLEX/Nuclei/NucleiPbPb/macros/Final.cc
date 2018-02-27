@@ -68,6 +68,9 @@ void Final() {
   TH1F* vec_syst_tpc[2][n_centralities][5];
   //inclusive histogram with both tpc and TOF
   TH1F* stat_all[2][n_centralities];
+  TH1F* syst_all[2][n_centralities];
+
+  TH1F* all[2][n_centralities];
 
   //fit function and parameters;
   TF1* fit_function[2][n_centralities];
@@ -129,6 +132,10 @@ void Final() {
       syst_tpc[iS][iC]->Reset();
       stat_all[iS][iC] = (TH1F*)totsyst->Clone(("stat_all" + to_string(iC)).data());
       stat_all[iS][iC]->Reset();
+      syst_all[iS][iC] = (TH1F*)totsyst->Clone(("syst_all" + to_string(iC)).data());
+      syst_all[iS][iC]->Reset();
+      all[iS][iC] = (TH1F*)totsyst->Clone(("all" + to_string(iC)).data());
+      all[iS][iC]->Reset();
       //syst_all[iS][iC] = (TH1F*)totsyst->Clone(("syst_all" + to_string(iC)).data());
       //syst_all[iS][iC]->Reset();
       for(int iSyst=0; iSyst<5; iSyst++){
@@ -165,28 +172,34 @@ void Final() {
           stat_tof[iS][iC]->SetBinError(iB,0.);
           syst_tof[iS][iC]->SetBinContent(iB,0.);
           syst_tof[iS][iC]->SetBinError(iB,0.);
-        }
-        else{
-          syst_tof[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
-          syst_tof[iS][iC]->SetBinError(iB,totsyst->GetBinContent(iB) * stat_tof[iS][iC]->GetBinContent(iB));
-          stat_all[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
-          stat_all[iS][iC]->SetBinError(iB,/*stat_tof[iS][iC]->GetBinError(iB));//*/TMath::Sqrt(stat_tof[iS][iC]->GetBinError(iB)*stat_tof[iS][iC]->GetBinError(iB) +            syst_tof[iS][iC]->GetBinError(iB)*syst_tof[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)-min_material_tof*min_material_tof*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)));
-          //syst_all[iS][iC]->SetBinContent(iB,syst_tof[iS][iC]->GetBinContent(iB));
-          //syst_all[iS][iC]->SetBinError(iB,syst_tof[iS][iC]->GetBinError(iB));
-        }
-        if(ptAxis->GetBinCenter(iB)<1.){
+          //
           syst_tpc[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
           syst_tpc[iS][iC]->SetBinError(iB,totsyst_tpc->GetBinContent(iB) * stat_tpc[iS][iC]->GetBinContent(iB));
+          //
           stat_all[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
-          stat_all[iS][iC]->SetBinError(iB,/*stat_tpc[iS][iC]->GetBinError(iB));//*/TMath::Sqrt(stat_tpc[iS][iC]->GetBinError(iB)*stat_tpc[iS][iC]->GetBinError(iB) +                      syst_tpc[iS][iC]->GetBinError(iB)*syst_tpc[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)-min_material_tpc*min_material_tpc*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)));
-          //syst_all[iS][iC]->SetBinContent(iB,syst_tpc[iS][iC]->GetBinContent(iB));
-          //syst_all[iS][iC]->SetBinError(iB,syst_tpc[iS][iC]->GetBinError(iB));
+          stat_all[iS][iC]->SetBinError(iB,stat_tpc[iS][iC]->GetBinError(iB));
+          syst_all[iS][iC]->SetBinContent(iB,syst_tpc[iS][iC]->GetBinContent(iB));
+          syst_all[iS][iC]->SetBinError(iB,syst_tpc[iS][iC]->GetBinError(iB));
+          //
+          all[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
+          all[iS][iC]->SetBinError(iB,TMath::Sqrt(stat_tpc[iS][iC]->GetBinError(iB)*stat_tpc[iS][iC]->GetBinError(iB) +                      syst_tpc[iS][iC]->GetBinError(iB)*syst_tpc[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)-min_material_tpc*min_material_tpc*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)));
         }
         else{
           stat_tpc[iS][iC]->SetBinContent(iB,0.);
           stat_tpc[iS][iC]->SetBinError(iB,0.);
           syst_tpc[iS][iC]->SetBinContent(iB,0.);
           syst_tpc[iS][iC]->SetBinError(iB,0.);
+          //
+          syst_tof[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
+          syst_tof[iS][iC]->SetBinError(iB,totsyst->GetBinContent(iB) * stat_tof[iS][iC]->GetBinContent(iB));
+          //
+          stat_all[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
+          stat_all[iS][iC]->SetBinError(iB,stat_tof[iS][iC]->GetBinError(iB));
+          syst_all[iS][iC]->SetBinContent(iB,syst_tof[iS][iC]->GetBinContent(iB));
+          syst_all[iS][iC]->SetBinError(iB,syst_tof[iS][iC]->GetBinError(iB));
+          //
+          all[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
+          all[iS][iC]->SetBinError(iB,TMath::Sqrt(stat_tof[iS][iC]->GetBinError(iB)*stat_tof[iS][iC]->GetBinError(iB) +            syst_tof[iS][iC]->GetBinError(iB)*syst_tof[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)-min_material_tof*min_material_tof*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)));
         }
         if(ptAxis->GetBinCenter(iB)>1. && ptAxis->GetBinCenter(iB)<1.2){ //comparing TPC and TOF where both
           float z = stat_tpc[iS][iC]->GetBinContent(iB) - stat_tof[iS][iC]->GetBinContent(iB);
@@ -230,12 +243,16 @@ void Final() {
       stat_tpc[iS][iC]->Write("stat_tpc");
       syst_tpc[iS][iC]->Scale(1<<(kCentLength-iC-1));
       syst_tpc[iS][iC]->Write("syst_tpc");
-      stat_all[iS][iC]->Scale(1<<(kCentLength-iC-1));
-      stat_all[iS][iC]->Fit(Form("Levi-Tsallis_%d_%d",iS,iC),"IQ");
+      all[iS][iC]->Scale(1<<(kCentLength-iC-1));
+      all[iS][iC]->Fit(Form("Levi-Tsallis_%d_%d",iS,iC),"IQ");
+      plotting::SetHistStyle(stat_all[iS][iC],plotting::kSpectraColors[iC],25);
+      plotting::SetHistStyle(syst_all[iS][iC],plotting::kSpectraColors[iC],25);
+      stat_all[iS][iC]->Write("stat_all");
+      syst_all[iS][iC]->Write("syst_all");
       //filling ratio_fit_data[iS][iC]
       for (int i = 1; i <= n_pt_bins; ++i) {
-        ratio_fit_data[iS][iC]->SetBinContent(i, stat_all[iS][iC]->GetBinContent(i) / fit_function[iS][iC]->Eval(stat_all[iS][iC]->GetBinCenter(i)));
-        ratio_fit_data[iS][iC]->SetBinError(i, stat_all[iS][iC]->GetBinError(i) / fit_function[iS][iC]->Eval(stat_all[iS][iC]->GetBinCenter(i)));
+        ratio_fit_data[iS][iC]->SetBinContent(i, all[iS][iC]->GetBinContent(i) / fit_function[iS][iC]->Eval(all[iS][iC]->GetBinCenter(i)));
+        ratio_fit_data[iS][iC]->SetBinError(i, all[iS][iC]->GetBinError(i) / fit_function[iS][iC]->Eval(all[iS][iC]->GetBinCenter(i)));
       }
       ratio_fit_data[iS][iC]->Write();
       fit_parameters[iS][e_mass]->SetBinContent(iC+1,fit_function[iS][iC]->GetParameter(e_mass));
@@ -259,9 +276,9 @@ void Final() {
     fit_parameters[iS][e_chi2]->Write();
     TCanvas spectra("spectra","spectra",3200,2400);
     spectra.DrawFrame(
-        0.,
+        0.4,
         1e-6,
-        1.1 * 4.4,
+        3.8,
         1,
         ";#it{p}_{T} (GeV/#it{c});#frac{1}{#it{N}_{ev}} #frac{d^{2}#it{N}}{d#it{p}_{T}d#it{y}}"
         );
@@ -269,7 +286,7 @@ void Final() {
     spectra.SetRightMargin(0.027121);
     spectra.SetTopMargin(0.06053269);
     spectra.SetBottomMargin(0.1598063);
-    TLegend final_leg(0.74,0.51,0.92,0.91);
+    TLegend final_leg(0.771116,0.202655,0.927529,0.5451330);
     final_leg.SetBorderSize(0);
     final_leg.SetHeader(Form("%s, pp #sqrt{s} = 13 TeV",kNames[iS].data()));
     final_leg.SetNColumns(2);
@@ -280,8 +297,8 @@ void Final() {
       syst_tof[iS][iC]->Draw("e2same");
       stat_tpc[iS][iC]->Draw("esamex0");
       syst_tpc[iS][iC]->Draw("e2same");
-      //stat_all[iS][iC]->Draw("esamex0");
-      //fit_function[iS][iC]->SetRange(0.,1.1*kCentPtLimits[iC]);
+      //all[iS][iC]->Draw("esamex0");
+      fit_function[iS][iC]->SetRange(0.5,1.05*kCentPtLimits[iC]);
       fit_function[iS][iC]->SetLineStyle(2);
       fit_function[iS][iC]->Draw("lsame");
       final_leg.AddEntry(syst_tpc[iS][iC],Form("%4.0f - %2.0f %% (#times %d)",kCentLabels[iC][0],kCentLabels[iC][1],1<<(kCentLength-iC-1)),"fp");
@@ -340,12 +357,12 @@ void Final() {
     r_dir->mkdir(to_string(iC).data())->cd();
     stat_tof[1][iC]->Divide(stat_tof[0][iC]);
     syst_tof[1][iC]->Divide(syst_tof[0][iC]);
-    stat_all[1][iC]->Divide(stat_all[0][iC]);
+    all[1][iC]->Divide(all[0][iC]);
     funcpol[iC] = new TF1(Form("ratiopol_%d",iC),"pol0",0.6,kCentPtLimits[iC]);
     int nx = iC/3;
     int ny = iC%3;
     pad[iC]->cd();
-    stat_all[1][iC]->Fit(Form("ratiopol_%d",iC),"Q");
+    all[1][iC]->Fit(Form("ratiopol_%d",iC),"Q");
     for(int iB=1; iB<=n_pt_bins; iB++){
       if(stat_tof[1][iC]->GetBinCenter(iB)<1.){
         stat_tof[1][iC]->SetBinContent(iB, 0.);
@@ -416,7 +433,7 @@ void Final() {
     syst_tof[1][iC]->Draw("e2same");
     stat_tpc[1][iC]->Draw("esamex0");
     syst_tpc[1][iC]->Draw("e2same");
-    stat_all[1][iC]->Draw("esamex0");
+    //all[1][iC]->Draw("esamex0");
     funcpol[iC]->Draw("same");
     TLine *line_one = new TLine(0.35,1.,XaxisEdge,1.);
     line_one->SetLineColor(kBlack);

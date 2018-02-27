@@ -28,7 +28,7 @@ using std::to_string;
 float zTest(const float mu0, const float sig0, const float mu1, const float sig1) {
   const float sigma = sqrt(sig0 * sig0 + sig1 * sig1);
   if (sigma < FLT_MIN * 10.f) return FLT_MAX;
-  else return (mu0 - mu1) / sqrt(sig1 * sig1 + sig0 * sig0);
+  else return (mu0 - mu1) / std::abs(sig1-sig0);
 }
 
 void Systematics() {
@@ -70,6 +70,8 @@ void Systematics() {
       string count_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hWidenRangeSyst" + kLetter[iS] + to_string(iC);
       TH1F* countsyst_tmp = (TH1F*)countsyst_file.Get(count_sys_path.data());
       Requires(countsyst_tmp,"Missing systematic");
+      species_dir->cd();
+      countsyst_tmp->Write("count_tmo");
       countsyst[iC] = (TH1F*)countsyst_tmp->Rebin(n_pt_bins,Form("countsyst_%d",iC),pt_bin_limits);
 
       string shift_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hShiftRangeSyst" + kLetter[iS] + to_string(iC);
@@ -115,10 +117,11 @@ void Systematics() {
 
         vector<float> rms(n_pt_bins,0.f);
         for (int iB = 1; iB <= n_pt_bins; ++iB) {
-          if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
+          if (ptAxis->GetBinCenter(iB) < 1. ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
           if (ptAxis->GetBinCenter(iB)<1) continue;
+          if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) continue;
           abssyst[iC]->SetBinContent(iB,kAbsSyst[iS]);
           const float m0 = references[iC]->GetBinContent(iB);
           const float s0 = references[iC]->GetBinError(iB);
@@ -169,10 +172,11 @@ void Systematics() {
         h_rms->GetYaxis()->SetTitle("RMS");
         h_rms->Reset();
         for (int iB = 1; iB <= n_pt_bins; ++iB) {
-          if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
+          if (ptAxis->GetBinCenter(iB) < 1. ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
           if(ptAxis->GetBinCenter(iB) <1) continue;
+          if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) continue;
           h_rms->SetBinContent(iB,rms[iB-1]);
         }
         h_rms->Write();
@@ -182,8 +186,9 @@ void Systematics() {
       }
 
       if (kSmoothSystematics) {
-        cutsyst[iC]->GetXaxis()->SetRange(cutsyst[iC]->FindBin(kPtRange[0]+0.01),cutsyst[iC]->FindBin(kPtRange[1]-0.01));
-        //countsyst[iC]->GetXaxis()->SetRange(countsyst[iC]->FindBin(kPtRange[0]+0.01),countsyst[iC]->FindBin(kPtRange[1]-0.01));
+        cutsyst[iC]->GetXaxis()->SetRange(cutsyst[iC]->FindBin(1.01),cutsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        countsyst[iC]->GetXaxis()->SetRange(countsyst[iC]->FindBin(1.01),countsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        shiftsyst[iC]->GetXaxis()->SetRange(shiftsyst[iC]->FindBin(1.01),shiftsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
         cutsyst[iC]->Smooth(1,"R");
         countsyst[iC]->Smooth(1,"R");
         shiftsyst[iC]->Smooth(1,"R");
@@ -193,6 +198,7 @@ void Systematics() {
         if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
             ptAxis->GetBinCenter(iB) > kPtRange[1])
           continue;
+        if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) matsyst[iC]->SetBinContent(iB,0.);
         if (ptAxis->GetBinCenter(iB) < 1.){
           cutsyst[iC]->SetBinContent(iB,0.);
           matsyst[iC]->SetBinContent(iB,0.);

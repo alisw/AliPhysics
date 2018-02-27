@@ -87,14 +87,14 @@ void MaterialBudget(bool bRMS = false) {
         tpc_tmp = (effTpcMB[iS][0]->GetBinContent(iB)>1.e-8) ? TMath::RMS(3,file_vector_tpc)/effTpcMB[iS][0]->GetBinContent(iB) : 0;
       }
       else{
-        tpc_tmp = (effTpcMB[iS][0]->GetBinContent(iB)>1.e-8) ? (file_vector_tpc[2]-file_vector_tpc[1])/TMath::Sqrt(12)/effTpcMB[iS][0]->GetBinContent(iB) : 0;
+        tpc_tmp = (effTpcMB[iS][0]->GetBinContent(iB)>1.e-8) ? TMath::Abs(file_vector_tpc[2]-file_vector_tpc[1])/TMath::Sqrt(12)/effTpcMB[iS][0]->GetBinContent(iB) : 0;
       }
       correctTPC[iS]->SetBinContent(iB,tpc_tmp);
       if(bRMS){
         tof_tmp = (effTofMB[iS][0]->GetBinContent(iB)>1.e-8) ? TMath::RMS(3,file_vector_tof)/effTofMB[iS][0]->GetBinContent(iB) : 0;
       }
       else{
-        tof_tmp = (effTofMB[iS][0]->GetBinContent(iB)>1.e-8) ? (file_vector_tof[2]-file_vector_tof[1])/TMath::Sqrt(12)/effTofMB[iS][0]->GetBinContent(iB) : 0;
+        tof_tmp = (effTofMB[iS][0]->GetBinContent(iB)>1.e-8) ? TMath::Abs(file_vector_tof[2]-file_vector_tof[1])/TMath::Sqrt(12)/effTofMB[iS][0]->GetBinContent(iB) : 0;
       }
       correctTOF[iS]->SetBinContent(iB,tof_tmp);
     }

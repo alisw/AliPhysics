@@ -39,6 +39,8 @@ const string kFitSystematicsOutput = kBaseOutputDir + "fitsystematics.root";
 const string kSystematicsOutput = kBaseOutputDir + "systematics.root";
 const string kSystematicsOutputTPC = kBaseOutputDir + "systematics_TPC.root";
 const string kFinalOutput = kBaseOutputDir + "final.root";
+const string kJoinSystematicsOutput = kBaseOutputDir + "joinsystematics.root";
+const string kBWfitsOutput = kBaseOutputDir + "BWfits.root";
 
 const bool   kPrintFigures{true};
 const string kFiguresFolder = "/Users/lbariogl/cernbox/Deuterons13TeV/results/images/";
@@ -63,7 +65,7 @@ const float  kPtRangeMatCorrectionTPC[2] = {0.65,1.35};
 
 const bool   kUseBarlow{true};
 const bool   kSmoothSystematics{true};
-const float  kAbsSyst[2] = {0.08,0.1f};
+const float  kAbsSyst[2] = {0.15,0.15f};
 
 const map<string,vector<float> > kCutNames {
 	{"dcaz",{0.75f,1.25f,1.5f,2.f}},
