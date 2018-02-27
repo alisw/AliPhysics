@@ -115,6 +115,7 @@
 #include "AliVTrack.h"
 #include "AliVfriendTrack.h"
 #include "AliESDVertex.h"
+#include "AliESDtrack.h"
 //#include "AliVEventHandler.h"
 //#include "AliAnalysisManager.h"
 
@@ -488,7 +489,12 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     AliVfriendTrack *friendTrack = 0;
     AliTPCseed *seed0 = 0;
     //
-    friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
+    if (track0->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track0)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
+    }
     if (!friendTrack) {
         //Printf("ERROR!! NO FRIEND TRACK!!"); //
         continue;}
@@ -538,10 +544,21 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
       AliTPCseed *seed0 = 0,*seed1=0;
       AliTPCseed tpcSeed0, tpcSeed1;
       //
-      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
-      if (!friendTrack) continue;
+      if (track0->IsA()==AliESDtrack::Class()) {
+	friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track0)->GetFriendTrack());
+      }
+      else {
+	friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
+      }    
+      if (!friendTrack) continue;      
       if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
-      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i1));
+
+      if (track1->IsA()==AliESDtrack::Class()) {
+	friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track1)->GetFriendTrack());
+      }
+      else {
+	friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i1));
+      }
       if (!friendTrack) continue;
       if (friendTrack->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
       if (!seed0) continue;
@@ -715,14 +732,22 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
     AliTPCseed *seed0 = 0,*seed1=0;
     AliTPCseed tpcSeed0, tpcSeed1;
     //
-    Int_t nFriendTracks = Vfriend->GetNumberOfTracks();
-    if (index0 > nFriendTracks) continue; // most likely, we didn't save the friends for this event
-    friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index0));
+    if (track0->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track0)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index0));
+    }
     if (!friendTrack) continue;
     if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
     if (index1>0){
-      if (index1 > nFriendTracks) continue; // most likely, we didn't save the friends for this event
-      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index1));
+      AliVTrack *track1 = event->GetVTrack(index1);
+      if (track1->IsA()==AliESDtrack::Class()) {
+	friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track1)->GetFriendTrack());
+      }
+      else {
+	friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index1));
+      } 
       if (!friendTrack) continue;
       if (friendTrack->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
     }
