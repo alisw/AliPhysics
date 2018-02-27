@@ -95,6 +95,7 @@ std::map<TString, std::vector<int> > AliDrawStyle::fFillColors;
 std::map<TString, std::vector<float> > AliDrawStyle::fLineWidth;
 std::map<TString, std::vector<float> > AliDrawStyle::fLineStyle;
 std::map<TString, std::vector<float> > AliDrawStyle::fLineColor;
+Int_t AliDrawStyle::objectNumber = 0;
 
 void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultLatexSymbols();
