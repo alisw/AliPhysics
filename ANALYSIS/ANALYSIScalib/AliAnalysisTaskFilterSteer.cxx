@@ -130,8 +130,9 @@ void AliAnalysisTaskFilterSteer::UserExec(Option_t */*option*/)
 	//
 
 	for (Int_t i = 0; i< fESDInput->GetNumberOfTracks(); i++){
-		AliESDfriendTrack* tOld = (AliESDfriendTrack*)fESDfriendInput->GetTrack(i);
-		AddFriendTrackAt(tOld,i);
+	  AliESDtrack* tr = fESDInput->GetTrack(i);
+	  AliESDfriendTrack* tOld = (AliESDfriendTrack*)tr->GetFriendTrack();
+	  AddFriendTrackAt(tOld,i);
 	}			 
 	AliDebug(2,Form("Number of tracks in output friendsNew after filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
 	AliDebug(2,Form("Number of tracks in output friendsNew after filtering with GetEntries() = %d ",esdFriendOutput->GetEntriesInTracks()));
