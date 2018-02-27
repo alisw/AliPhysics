@@ -159,6 +159,7 @@ TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
 #include "AliESDVertex.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
+#include "AliESDtrack.h"
 #include "AliVfriendEvent.h"
 #include "AliVfriendTrack.h"
 #include "AliAnalysisManager.h"
@@ -364,7 +365,13 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
 
     AliVTrack *track = event->GetVTrack(i);
     if (!track) continue;
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    }
     if (!friendTrack) continue;
 
     AliExternalTrackParam trckIn;
@@ -432,7 +439,13 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
 
     AliVTrack *track = event->GetVTrack(i);
     if (!track) continue;
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    }
     if (!friendTrack) continue;
         
     AliExternalTrackParam trckIn;
@@ -523,7 +536,13 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
       Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
       AliVTrack * trackP = event->GetVTrack(index);
       if (!trackP) continue; //Printf("***ERROR*** trackP not available!");
-      AliVfriendTrack *friendTrackP = const_cast<AliVfriendTrack*>(vFriend->GetTrack(index));
+      AliVfriendTrack *friendTrackP = 0;
+      if (trackP->IsA()==AliESDtrack::Class()) {
+	friendTrackP = (AliVfriendTrack*)(((AliESDtrack*)trackP)->GetFriendTrack());
+      }
+      else {
+	friendTrackP = const_cast<AliVfriendTrack*>(vFriend->GetTrack(idaughter));
+      }
       if (!friendTrackP) continue;
 
       AliExternalTrackParam trckPIn;

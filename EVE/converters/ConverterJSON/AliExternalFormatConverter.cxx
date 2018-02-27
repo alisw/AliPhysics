@@ -532,10 +532,10 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticCascadePare
 void AliExternalFormatConverter::ExtractTrackPointArrays(
         AliMinimalisticCluster &cluster, Int_t trackNumber) const
 {
-    AliESDfriendTrack *track = fESDFriend->GetTrack(trackNumber);
+    AliESDfriendTrack *track = (AliESDfriendTrack*)fESDEvent->GetTrack(trackNumber)->GetFriendTrack();
     if (!track){
-        std::cerr << "Corrupted friend track: " << trackNumber << std::endl;
-        return;
+      //        std::cerr << "Corrupted friend track: " << trackNumber << std::endl;
+      return;
     }
     const AliTrackPointArray *array = track->GetTrackPointArray();
     int nPoints = array->GetNPoints();

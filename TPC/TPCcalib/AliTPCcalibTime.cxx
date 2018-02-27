@@ -58,6 +58,7 @@ Comments to be written here:
 #include "AliTPCseed.h"
 #include "AliTrackPointArray.h"
 #include "AliTracker.h"
+#include "AliESDtrack.h"
 #include "AliKFVertex.h"
 #include <AliLog.h>
 
@@ -586,7 +587,13 @@ void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
     AliExternalTrackParam trckOut;
     if ( (track->GetTrackParamOp(trckOut)) <0) continue;
     
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    }
     if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
     if (friendTrack) ProcessAlignITS(track,friendTrack,event,vFriend);
@@ -849,7 +856,13 @@ void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
     AliVTrack *track = event->GetVTrack(itrack);
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(itrack));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(itrack));
+    }
     if (!friendTrack) continue;
 
     AliExternalTrackParam trkprm;
@@ -1626,7 +1639,12 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
     if (!trackITS) continue;
     if (ITSStandaloneOnly && trackITS->GetNumberOfTPCClusters()) continue;
     if (trackITS->GetNumberOfITSClusters()<kMinITS) continue;  // minimal amount of clusters
-    itsfriendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    if (trackITS->IsA()==AliESDtrack::Class()) {
+      itsfriendTrack = (AliVfriendTrack*)(((AliESDtrack*)trackITS)->GetFriendTrack());
+    }
+    else {
+      itsfriendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    }
     if (!itsfriendTrack) continue;
 
     AliExternalTrackParam itstrckOut;

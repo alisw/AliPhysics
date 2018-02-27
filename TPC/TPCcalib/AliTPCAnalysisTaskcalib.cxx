@@ -26,6 +26,7 @@
 #include "AliVEvent.h"
 #include "AliVfriendEvent.h"
 #include "AliVTrack.h"
+#include "AliESDtrack.h"
 #include "AliVfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliVEventHandler.h"
@@ -106,9 +107,15 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   if (fVfriend->TestSkipBit()) return;
   Int_t run = fV->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
-    AliVfriendTrack *friendTrack=const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
-    if (!friendTrack) continue;
     AliVTrack *track=fV->GetVTrack(i);
+    AliVfriendTrack *friendTrack = 0;
+    if (fV->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)( ((AliESDtrack*)track )->GetFriendTrack());
+    }
+    else {
+      friendTrack=const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
+    }
+    if (!friendTrack) continue;
     AliTPCseed *seed=0;
     AliTPCseed tpcSeed;
     if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;

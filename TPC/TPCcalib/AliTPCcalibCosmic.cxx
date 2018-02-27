@@ -54,6 +54,7 @@
 #include "AliVTrack.h"
 #include "AliVfriendEvent.h"
 #include "AliVfriendTrack.h"
+#include "AliESDtrack.h"
 
 #include "AliTracker.h"
 #include "AliMagF.h"
@@ -496,7 +497,13 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
 
    if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
-   const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
+   const AliVfriendTrack *friendTrack = 0;
+   if (track->IsA()==AliESDtrack::Class()) {
+     friendTrack = ((AliESDtrack*)track)->GetFriendTrack();
+   }
+   else {
+     friendTrack = friendEvent->GetTrack(i);
+   }
    if (!friendTrack) continue;
    AliTPCseed *seed = new AliTPCseed();   
    if (friendTrack->GetTPCseed(*seed)==0) {
