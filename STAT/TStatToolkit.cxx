@@ -431,6 +431,15 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
     TH1 *projection = his->ProjectionY(name,TMath::Max(jx-deltaBin,1),TMath::Min(jx+deltaBin,nbinx));
     Double_t stat= 0;
     Double_t err =0;
+    if (projection->Integral()==0) {
+      vecX[icount] = xcenter;
+      vecY[icount] = stat;
+      vecYErr[icount] = err;
+      icount++;
+      delete projection;
+      continue;
+    }
+
     TStatToolkit::LTMHisto((TH1F*)projection,vecLTM,fraction);  
     //
     if (returnType==0) {
@@ -464,6 +473,10 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
       const Int_t    maxBin = projection->GetMaximumBin();
       const Double_t max    = projection->GetXaxis()->GetBinCenter(maxBin);
       const Double_t range  = fraction*(projection->GetXaxis()->GetXmax()-projection->GetXaxis()->GetXmin());
+      f1.SetParameters(projection->GetMaximum(),
+		       projection->GetMean(),
+		       projection->GetRMS());
+      f1.SetRange(max-range, max+range);
       projection->Fit(&f1,"QN","QN", max-range, max+range);
       stat= f1.GetParameter(1);
       err=f1.GetParError(1);
