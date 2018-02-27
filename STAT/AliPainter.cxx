@@ -673,6 +673,7 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
   Int_t histCnt = 1;
   Ssiz_t fromStart;
   Double_t xMin = fitOptions[4].Atof(), xMax = fitOptions[5].Atof();
+  Double_t yMin, yMax;
 
   std::vector<TString> rangeVec;
   TString range = "";
@@ -717,7 +718,6 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
           hisN->GetAxis(i / 2)->SetRange(rangeVec[i].Atoi(), rangeVec[i + 1].Atoi());
           if (verbose == 4) ::Info("AliPainter::DrawHistogram", "his->GetAxis(%d)->SetRange(%s,%s);", i / 2, rangeVec[i].Data(), rangeVec[i + 1].Data());
         }
-
       }
     }
     //fixme: such names don't work with AliDrawStyle::ApplyCssStyle() @Boris
@@ -738,20 +738,20 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
         keepArray->AddLast((TObject *) hisArray[j]);
         if (verbose == 4) ::Info("AliPainter::DrawHistogram", "keepArray->AddLast((TObject*) %s)", uniqName.Data());
       }
-      if (optionValues["ylim"].CountChar('[') != 0) {
-        hisArray[j]->SetMinimum(TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atoi());
-        hisArray[j]->SetMaximum(TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
-                                                             optionValues["ylim"].Index("]") -
-                                                                     optionValues["ylim"].Index(",") - 1)).Atoi());
-        if (verbose == 4)
-          ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMinimum(%d)", j,
-                 TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atoi());
-        if (verbose == 4)
-          ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMaximum(%d)", j,
-                 TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
+        if (TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)) != TString("")) {
+          yMin = TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atof();
+          hisArray[j]->SetMinimum(yMin);
+          if (verbose == 4) ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMinimum(%f)", j, yMin);
+        }
+        if (TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
+                                         optionValues["ylim"].Index("]") -
+                                         optionValues["ylim"].Index(",") - 1)) != TString("")) {
+          yMax = TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
                                               optionValues["ylim"].Index("]") -
-                                                      optionValues["ylim"].Index(",") - 1)).Atoi());
-      }
+                                              optionValues["ylim"].Index(",") - 1)).Atof();
+          hisArray[j]->SetMaximum(yMax);
+          if (verbose == 4) ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMaximum(%f)", j, yMax);
+        }
       if (optionValues["div"] == TString("1")) {
         if (pad != NULL) {
           if (pad->InheritsFrom("TCanvas")) pad->cd(j + 1);
