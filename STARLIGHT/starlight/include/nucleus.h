@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 262                         $: revision of last commit
-// $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-06-01 15:14:20 +0200 #$: date of last commit
+// $Rev:: 298                         $: revision of last commit
+// $Author:: srklein                  $: author of last commit
+// $Date:: 2018-02-22 00:23:57 +0100 #$: date of last commit
 //
 // Description:
 //
@@ -66,10 +66,11 @@ public:
 
 	double nuclearRadius() const { return _Radius; }
 	double rho0() const { return _rho0; }
+	double woodSaxonSkinDepth() const {return _woodSaxonSkinDepth;}
 	
 private:
 
-	double woodSaxonSkinDepth() const { return 0.53; } // 0.53 fm skin depth
+
 	double rws(const double r) const;
 
 	int    _Z;                      ///< atomic number of nucleus
@@ -79,6 +80,7 @@ private:
 	double _r0;
 	double _Radius;
 	double _rho0;
+	double _woodSaxonSkinDepth;
 
 };
 

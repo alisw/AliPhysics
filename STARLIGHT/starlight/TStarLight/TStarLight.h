@@ -54,7 +54,7 @@ class TStarLight : public TGenerator {
 
   virtual ~TStarLight();
 
-  static const char* GetSVNVersion() { return "r293"; }
+  static const char* GetSVNVersion() { return "r299"; }
 
   // TGenerator overloaded methods
   virtual void       GenerateEvent();
