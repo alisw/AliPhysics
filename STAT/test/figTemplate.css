@@ -1,0 +1,75 @@
+/*
+Implementations of template for QA via css convention.
+Style created for this example:
+todo: add link on some test function
+fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPtTgl(0,100,0:80:20:20,0,10)(0)(gaus)(div=0,,class=Mass,dOption=E)[0].calss(Mass)" mb problem in class=Mass
+todo: if we want to draw histograms on the one pad we can use only arrays of ranges, in the rest cases redrawing
+{
+    TFile::SetCacheFileDir(".");
+    TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/alice/data/2015/LHC15o/pass1/LHC15o.pass1.B1.Bin0/performanceHisto.root",
+                                "CACHEREAD");
+    TTree *tree = (TTree *) finput.Get("hisPtAll");
+    hisArray = new TObjArray();
+    TList *keys = finput->GetListOfKeys();
+    for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
+        TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
+        hisArray->AddLast(o);
+    }
+    TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
+    AliPainter::DivideTPad(canvasQA, "<horizontal>[1b,1t,1,1]", "Raw");
+    canvasQA->cd(1);
+    AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
+    AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(-1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
+
+    AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplate.css"));
+    AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplate");
+
+    // AliDrawStyle::SetDefaults();
+    // AliDrawStyle::ApplyStyle("figTemplate");
+
+}
+
+*/
+
+TH1D  {
+    marker_size: 1;
+    line_width: 0.5;
+    line_style: 7;
+}
+
+.PtAll  {
+    marker_style: 20;
+    marker_color: 14;
+    line_color: 14;
+}
+
+.PtIts  {
+    marker_style: 21;
+    marker_color: 2;
+    line_color: 2;
+}
+
+.Tgl    {
+    marker_style: 24;
+    marker_color: 4;
+    line_color: 4;
+}
+
+.Mass {
+    marker_style: 20,21,24,27;
+    marker_color: 14,2,4,8;
+    line_color: 14,1,4,8;
+}
+
+TPad {
+   gridX:       0;
+   gridY:       0;
+   fill_color:  10,10,10,10;
+   tickX:       1,1,1,1;
+   tickY:       1,1,1,1;
+   logY:        0,0,0,1;
+   border_mode: 0,0,0,0;
+
+}
