@@ -739,18 +739,18 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
         if (verbose == 4) ::Info("AliPainter::DrawHistogram", "keepArray->AddLast((TObject*) %s)", uniqName.Data());
       }
       if (optionValues["ylim"].CountChar('[') != 0) {
-        hisArray[j]->SetMinimum(TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atoi());
+        hisArray[j]->SetMinimum(TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atof());
         hisArray[j]->SetMaximum(TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
                                                              optionValues["ylim"].Index("]") -
-                                                                     optionValues["ylim"].Index(",") - 1)).Atoi());
+                                                                     optionValues["ylim"].Index(",") - 1)).Atof());
         if (verbose == 4)
           ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMinimum(%d)", j,
-                 TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atoi());
+                 TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)).Atof());
         if (verbose == 4)
           ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMaximum(%d)", j,
                  TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
                                               optionValues["ylim"].Index("]") -
-                                                      optionValues["ylim"].Index(",") - 1)).Atoi());
+                                                      optionValues["ylim"].Index(",") - 1)).Atof());
       }
       if (optionValues["div"] == TString("1")) {
         if (pad != NULL) {

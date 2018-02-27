@@ -6,8 +6,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
 todo: if we want to draw histograms on the one pad we can use only arrays of ranges, in the rest cases redrawing
 {
     TFile::SetCacheFileDir(".");
-    TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/alice/data/2015/LHC15o/pass1/LHC15o.pass1.B1.Bin0/performanceHisto.root",
-                                "CACHEREAD");
+    TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/alice/data/2015/LHC15o/pass1/LHC15o.pass1.B1.Bin0/performanceHisto.root","CACHEREAD");
     TTree *tree = (TTree *) finput.Get("hisPtAll");
     hisArray = new TObjArray();
     TList *keys = finput->GetListOfKeys();
@@ -16,11 +15,11 @@ todo: if we want to draw histograms on the one pad we can use only arrays of ran
         hisArray->AddLast(o);
     }
     TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-    AliPainter::DivideTPad(canvasQA, "<horizontal>[1b,1t,1,1]", "Raw");
+    AliPainter::DivideTPad(canvasQA, "<horizontal>[1b,1t,1,1,1]", "Raw");
     canvasQA->cd(1);
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(-1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
 
     AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplate.css"));
