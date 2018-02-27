@@ -259,4 +259,14 @@ void CacheTrendingProductions(TString dataType){
   }
 }
 
+void CheckProductions(){
+  AliExternalInfo info;
+  //to add there production yer
+  TTree * treeRaw= info.GetTree("QA.Period","data","");
+  treeRaw->SetAlias("isTPC","type==\"QA.TPC\"");
+  treeRaw->SetAlias("isITS","type==\"QA.ITS\"");
+  treeRaw->SetAlias("isTRD","type==\"QA.TRD\"");
+  // black list for production
+  treeRaw->SetAlias("isBlack","strstr(pass,\"clean\")!=0||strstr(pass,\"rec\")!=0||strstr(pass,\"its\")!=0||strstr(pass,\"cpass\")!=0||strstr(pass,\"vpass\")!=0||strstr(pass,\"muon\")!=0||strstr(pass,\"cosmic\")!=0||strstr(pass,\"align\")!=0||strstr(pass,\"FAST\")!=0||strstr(pass,\"scan\")!=0||strstr(pass,\"test\")!=0");
 
+}
