@@ -32,6 +32,10 @@ public:
               Double_t (*YPara )(const Double_t*, const Double_t*),
               Double_t (*V2Para)(const Double_t*, const Double_t*),
               Int_t    (*IpPara)(TRandom*)           );
+  AliGenParam(const char* name, Int_t npart, int pdg,
+              Double_t (*PtPara)(const Double_t*, const Double_t*) = 0x0,
+              Double_t (*YPara )(const Double_t*, const Double_t*) = 0x0,
+              Double_t (*V2Para)(const Double_t*, const Double_t*) = 0x0);
 
   virtual ~AliGenParam();
   virtual void GenerateN(Int_t ntimes);
@@ -100,6 +104,8 @@ protected:
   Bool_t      fKeepParent;   //  Store parent even if it does not have childs within cuts
   Bool_t      fKeepIfOneChildSelected; //Accept parent and child even if other children are not within cut.
   Bool_t      fPreserveFullDecayChain; //Prevent flagging(/skipping) of decay daughter particles; preserves complete forced decay chain
+
+  Int_t       fPDGcode;                // PDG code in case of single particle injector
 
 private:
   AliGenParam(const AliGenParam &Param);

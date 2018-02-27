@@ -72,7 +72,8 @@ AliGenParam::AliGenParam()
   fForceConv(kFALSE),
   fKeepParent(kFALSE),
   fKeepIfOneChildSelected(kFALSE),
-  fPreserveFullDecayChain(kFALSE)
+  fPreserveFullDecayChain(kFALSE),
+  fPDGcode(0)
 {
   // Default constructor
 }
@@ -99,7 +100,8 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
    fForceConv(kFALSE),
    fKeepParent(kFALSE),
    fKeepIfOneChildSelected(kFALSE),
-   fPreserveFullDecayChain(kFALSE)
+   fPreserveFullDecayChain(kFALSE),
+   fPDGcode(0)
 {
   // Constructor using number of particles parameterisation id and library
   fName     = "Param";
@@ -130,7 +132,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
   fForceConv(kFALSE),
   fKeepParent(kFALSE),
   fKeepIfOneChildSelected(kFALSE),
-  fPreserveFullDecayChain(kFALSE)
+  fPreserveFullDecayChain(kFALSE),
+  fPDGcode(0)
 {
   // Constructor using parameterisation id and number of particles
   //
@@ -181,7 +184,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
    fDecayer(0),
    fForceConv(kFALSE),
    fKeepParent(kFALSE),
-   fKeepIfOneChildSelected(kFALSE)
+   fKeepIfOneChildSelected(kFALSE),
+   fPDGcode(0)
 {
   // Constructor
   // Gines Martinez 1/10/99
@@ -197,6 +201,53 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
   SetChildPtRange();
   SetChildPhiRange();
   SetChildThetaRange();
+}
+
+//____________________________________________________________
+AliGenParam::AliGenParam(const char* name, Int_t npart, int pdg,
+                         Double_t (*PtPara) (const Double_t*, const Double_t*),
+                         Double_t (*YPara ) (const Double_t* ,const Double_t*),
+                         Double_t (*V2Para) (const Double_t* ,const Double_t*))
+  :AliGenMC(npart),
+   fPtParaFunc(0x0),
+   fYParaFunc(0x0),
+   fIpParaFunc(0x0),
+   fV2ParaFunc(0x0),
+   fPtPara(0),
+   fYPara(0),
+   fV2Para(0),
+   fdNdPhi(0),
+   fParam(0),
+   fdNdy0(0.),
+   fYWgt(0.),
+   fPtWgt(0.),
+   fBias(0.),
+   fTrials(0),
+   fDeltaPt(0.01),
+   fSelectAll(kFALSE),
+   fDecayer(0),
+   fForceConv(kFALSE),
+   fKeepParent(kFALSE),
+   fKeepIfOneChildSelected(kFALSE),
+   fPDGcode(pdg)
+{
+  // Constructor
+  // Gines Martinez 1/10/99
+  fName   = name;
+  fTitle  = Form("Particle Generator using pT and y parameterisation for %s",name);
+
+  fAnalog = kAnalog;
+  fChildSelect.Set(5);
+  for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
+  SetForceDecay();
+  SetCutOnChild();
+  SetChildMomentumRange();
+  SetChildPtRange();
+  SetChildPhiRange();
+  SetChildThetaRange();
+  fPtParaFunc = PtPara ? PtPara : [](const double*, const double*) -> double { return 1.; };
+  fYParaFunc = YPara ? YPara : [](const double*, const double*) -> double { return 1.; };
+  fV2ParaFunc = V2Para ? V2Para : [](const double*, const double*) -> double { return 0.; };
 }
 
 //____________________________________________________________
@@ -501,7 +552,7 @@ void AliGenParam::Init()
   Float_t intPt0 = ptPara.Integral(0,15,1.e-6);
   Float_t intPtS = ptPara.Integral(fPtMin,fPtMax,1.e-6);
 #endif
-  Float_t phiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();    //TR: should probably be done differently in case of anisotropic phi...
+  Float_t phiWgt=(fPhiMax-fPhiMin)/TMath::TwoPi();    //TR: should probably be done differently in case of anisotropic phi...
   if (fAnalog == kAnalog) {
     fYWgt  = intYS/fdNdy0;
     fPtWgt = intPtS/intPt0;
@@ -585,7 +636,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
     while(1) {
       //
       // particle type
-      Int_t iPart = fIpParaFunc(fRandom);
+      Int_t iPart = fIpParaFunc ? fIpParaFunc(fRandom) : fPDGcode;
       Int_t iTemp = iPart;
 
       // custom pdg codes to destinguish direct photons
