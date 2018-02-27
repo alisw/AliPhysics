@@ -64,7 +64,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   // flag to match or skip the matching of reconstructed to kinematic tracks
   void SetMatchToKinematicTrack(Bool_t flag) { fMatchToKinematicTrack=flag; }
   void SetUseGeneratedKine(Bool_t flag) {fUseGeneratedKine=flag;}
-
+  void ApplyRecoEventSelectionsToFillMCKine(){fUseRecoEventSelForKine=kTRUE;}
   // select trigger event mask
   void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
   // set whether to evaluate centrality
@@ -121,6 +121,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t fRemoveNegativeLabelTracks; // flag to remove fake tracks (reconstructed tracks with negative label)
   Bool_t fMatchToKinematicTrack;  // flag to check if the reconstructed track matches to a kinematic one in the good acceptance
   Bool_t fUseGeneratedKine;      // flag to use the generated pt, eta phi
+  Bool_t fUseRecoEventSelForKine;      // flag to use the reconstructed event selection (phys sel and vertex) also for MC particles
 
   Bool_t fEvalCentrality;        // flag to enable centrality determination
   TString fCentralityEstimator;  // centrality estimator
@@ -129,7 +130,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
 
   TH1I  *fHistEventsProcessed;   //! histo for monitoring the number of events processed slot 1
 
-  ClassDef(AliCFSingleTrackEfficiencyTask,6)
+  ClassDef(AliCFSingleTrackEfficiencyTask,7)
 };
 
 #endif
