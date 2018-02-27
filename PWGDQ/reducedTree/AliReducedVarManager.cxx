@@ -207,7 +207,14 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kRap]) {
     fgUsedVars[kMass] = kTRUE;
     fgUsedVars[kP] = kTRUE;
+    fgUsedVars[kEta] = kTRUE;
   }
+  if(fgUsedVars[kTriggerRap]) {
+	  fgUsedVars[kMass] = kTRUE;
+	  fgUsedVars[kP] = kTRUE;
+	  fgUsedVars[kEta] = kTRUE;
+  }
+
   if(fgUsedVars[kEta]) fgUsedVars[kP] = kTRUE;
   
   for(Int_t ih=0; ih<6; ++ih) {
@@ -1910,9 +1917,9 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   // NOTE:  Add here only NEEDED information because this function is called during event mixing in the innermost loop
   //
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
-  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) values[kTriggerRap] = ((PAIR*)trig)->Rapidity();
+  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	values[kTriggerRap] = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
-  
+
   if(fgUsedVars[kDeltaPhi]) {
     Double_t delta = trig->Phi() - assoc->Phi();
     if(delta>3.0/2.0*TMath::Pi()) delta -= 2.0*TMath::Pi();
