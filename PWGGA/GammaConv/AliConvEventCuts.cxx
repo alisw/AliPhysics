@@ -2491,7 +2491,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus &&                                     // LHC12 JetJet MC
-        fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus &&
         fPeriodEnum != kLHC17f8f && fPeriodEnum != kLHC17f8k && fPeriodEnum != kLHC17f8j &&
         fPeriodEnum != kLHC17f8i && fPeriodEnum != kLHC17f8h && fPeriodEnum != kLHC17f8g &&
         fPeriodEnum != kLHC17f8e && fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8c &&
