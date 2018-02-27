@@ -235,6 +235,7 @@ void AliPainter::DivideTPad(TPad *pad, const char *division, const char* classID
       newPad->SetNumber(nPads);
     }
   }
+  pad->SetName(TString::Format("%s.class(%s)",pad->GetName(),classID).Data());  ///TODO set class name if not before
 }
 ///
 /// \brief Function parse division string from AliPainter::DivideTPad and set attributes.
