@@ -1624,7 +1624,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          */
          if(centrality>=0 && centrality<10)
            { 
-            cout << "iCorr = " << iCorr << endl;
+            //cout << "iCorr = " << iCorr << endl;
             if(iCorr==0)
               {
                eop += (Eop010Corr_data0->Eval(track->Pt()) - Eop010Corr_mc0->Eval(track->Pt())); 
@@ -2232,7 +2232,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            cout << "<------- imc = "<< gh->GetName() << endl;     
+            //cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
             //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
