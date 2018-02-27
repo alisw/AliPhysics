@@ -2543,6 +2543,10 @@ void AliESDEvent::ConnectTracks() {
     TIter nextTOF(fESDTOFClusters);
     while ((clus=(AliESDTOFCluster*)nextTOF())) clus->SetEvent((AliVEvent *) this);
   }
+
+  // If relevant, conver ITSpureSA tracks to complementarySA tracks in events w/o TPC
+  FixITSSAFlags();
+  
   fTracksConnected = kTRUE;
   //
 }
@@ -2718,4 +2722,35 @@ void AliESDEvent::AdjustMCLabels(const AliVEvent *mcTruth)
   }
   
   
+}
+
+void AliESDEvent::FixITSSAFlags()
+{
+  // between 2015 and 2017 in absence of TPC only ITS pureSA tracks were reconstructed.
+  // This created some problem in filtering, therefer we reverted this behaviour to reconstruct
+  // only complementarySA in absence of TPC (they will be physically equivalent to pureSA in this case)
+  // For emulate this behavoiur, we need to override the pureSA flag for TPC-less events in old ESDs
+
+  // this is relevant only events w/o TPC
+  if (GetNumberOfTPCClusters()>0) return;
+  
+  int nPureSA = 0;
+  // check if this event is affected, i.e. it has no ITScomplementary tracks but has SA tracks
+  for (int i=GetNumberOfTracks();i--;) {
+    AliESDtrack* tr = GetTrack(i);
+    ULong_t flags = tr->GetStatus();
+    if ( flags & AliESDtrack::kTPCin ) continue;
+    if ( flags & AliESDtrack::kITSpureSA ) {
+      nPureSA++;
+      continue;
+    }
+    if ( flags & AliESDtrack::kITSin ) return; // if there is at least 1 complementary SA track, do nothing 
+  }
+  if (!nPureSA) return;
+  // change all pureSA tracks to complementarySA
+  for (int i=GetNumberOfTracks();i--;) {
+    AliESDtrack* tr = GetTrack(i);
+    if (tr->IsOn(AliESDtrack::kITSpureSA)) tr->ResetStatus(AliESDtrack::kITSpureSA);
+  }
+   
 }
