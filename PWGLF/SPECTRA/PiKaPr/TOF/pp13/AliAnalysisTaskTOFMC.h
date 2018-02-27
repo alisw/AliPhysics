@@ -98,7 +98,7 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
 
 */
  AliAnalysisTaskTOFMC();
- AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR,Int_t Chi2_TPCcluser, Int_t DCAz);
+ AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR,Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy);
  //AliAnalysisTaskTOFMC(const char *name);
   virtual ~AliAnalysisTaskTOFMC() {}
 
@@ -114,16 +114,15 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
         Bool_t  IsGoodSPDvertexRes(const AliESDVertex *spdVertex);
 
 
-	AliESDtrackCuts *GetTrackCuts();// const {return *fesdTrackCuts;}; // getter
+//	AliESDtrackCuts *GetTrackCuts();// const {return *fesdTrackCuts;}; // getter
 //	AliESDtrackCuts *GetTrackCuts() const {return *fesdTrackCuts_no_dca;}; // getter
-
-	void SetTrackCuts(AliESDtrackCuts *value) {fesdTrackCuts = value;}; // setter
-	void SetTrackCuts2(AliESDtrackCuts *value) {fesdTrackCuts_no_dca = value;}; // setter
+//	void SetTrackCuts(AliESDtrackCuts *value) {fesdTrackCuts = value;}; // setter
+//	void SetTrackCuts2(AliESDtrackCuts *value) {fesdTrackCuts_no_dca = value;}; // setter
 
 	void SetMinNCrossedRowsTPC(Int_t MinTPCcr) {fMinTPCcr=MinTPCcr;}
 	void SetMaxChi2PerClusterTPC(Int_t MaxChi2PerTPC) {fMaxChi2PerTPC=MaxChi2PerTPC;}
 	void SetMaxDCAToVertexZ(Int_t MaxDCAz) {fMaxDCAz=MaxDCAz;}
-//	void SetMaxDCAToVertexXYPtDep(Int_t MaxDCAxy) {fMaxDCAxy=MaxDCAxy;}
+	void SetDCAtoVertexXYPtDep(const char *MaxDCAxy) {fMaxDCAxy=MaxDCAxy;}
         
 
  private:
@@ -136,12 +135,11 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
 
 	AliPPVsMultUtils *fPPVsMultUtils;
 
-	TAxis         fZaxis;
 
 	Int_t           fMinTPCcr;
 	Int_t           fMaxChi2PerTPC;
 	Int_t           fMaxDCAz;
-//	Int_t           fMaxDCAxy;
+	TString           fMaxDCAxy;
 
 	AliESDEvent *fESD;    //! ESD object
 	TList       *fOutputList; //! Output list
