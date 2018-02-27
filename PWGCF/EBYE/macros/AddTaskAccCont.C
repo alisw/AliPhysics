@@ -10,7 +10,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 				       TString centEstim = "V0M",
 				       AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
 				       AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
-				       AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
+				       AliPID::EParticleType particleType = AliPID::kMuon,
 				       TString fileNameBase="AnalysisResults") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -61,7 +61,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 
     if(PID){
     suffixName[iCentralityBin] += "_PID_";
-    suffixName[iCentralityBin] += particleType;
+    suffixName[iCentralityBin] += AliPID::ParticleShortName(particleType);
     }
     
     if(UseRapidity)
@@ -120,7 +120,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   //PID
   if(PID){
   task[iCentralityBin]->UsePID();
-  task[iCentralityBin]->SetNSigmaPID(nsigma);
+  //task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);
   mgr->AddTask(task[iCentralityBin]);  
   }
@@ -140,6 +140,9 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   coutResults[iCentralityBin] = mgr->CreateContainer(Form("listResults_%s",suffixName[iCentralityBin].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectOutput(task[iCentralityBin], 2, coutResults[iCentralityBin]);
-}
+
+  return task[iCentralityBin];
+  
+  }
 
 }
