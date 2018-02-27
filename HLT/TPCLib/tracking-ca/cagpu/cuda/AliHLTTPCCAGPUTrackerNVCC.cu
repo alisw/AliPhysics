@@ -172,7 +172,8 @@ int AliHLTTPCCAGPUTrackerNVCC::InitGPU_Runtime(int sliceCount, int forceDeviceID
 #else
 	fConstructorBlockCount = fCudaDeviceProp.multiProcessorCount * HLTCA_GPU_BLOCK_COUNT_CONSTRUCTOR_MULTIPLIER;
 #endif
-	selectorBlockCount = fCudaDeviceProp.multiProcessorCount * HLTCA_GPU_BLOCK_COUNT_SELECTOR_MULTIPLIER;
+	fConstructorThreadCount = HLTCA_GPU_THREAD_COUNT_CONSTRUCTOR;
+	fSelectorBlockCount = fCudaDeviceProp.multiProcessorCount * HLTCA_GPU_BLOCK_COUNT_SELECTOR_MULTIPLIER;
 
 	if (fCudaDeviceProp.major < 1 || (fCudaDeviceProp.major == 1 && fCudaDeviceProp.minor < 2))
 	{
@@ -267,7 +268,7 @@ int AliHLTTPCCAGPUTrackerNVCC::GPUSync(const char* state, int stream, int slice)
 		HLTError("CUDA Error while synchronizing (%s) (Stream %d; %d/%d)", state, stream, slice, fgkNSlices);
 		return(1);
 	}
-	if (fDebugLevel >= 3) HLTInfo("CUDA Sync Done");
+	if (fDebugLevel >= 3) HLTInfo("GPU Sync Done");
 	return(0);
 }
 
@@ -505,14 +506,8 @@ int AliHLTTPCCAGPUTrackerNVCC::Reconstruct(AliHLTTPCCASliceOutput** pOutput, Ali
 			}
 			GPUFailedMsg(cudaMemcpy(fSlaveTrackers[firstSlice + iSlice].TrackletMemory(), fGpuTracker[iSlice].TrackletMemory(), fGpuTracker[iSlice].TrackletMemorySize(), cudaMemcpyDeviceToHost));
 			GPUFailedMsg(cudaMemcpy(fSlaveTrackers[firstSlice + iSlice].HitMemory(), fGpuTracker[iSlice].HitMemory(), fGpuTracker[iSlice].HitMemorySize(), cudaMemcpyDeviceToHost));
-			if (0 && fSlaveTrackers[firstSlice + iSlice].NTracklets() && fSlaveTrackers[firstSlice + iSlice].Tracklet(0).NHits() < 0)
-			{
-				cudaThreadSynchronize();
-				cuCtxPopCurrent((CUcontext*) fCudaContext);
-				printf("INTERNAL ERROR\n");
-				return(1);
-			}
 			if (fDebugMask & 128) fSlaveTrackers[firstSlice + iSlice].DumpTrackletHits(*fOutFile);
+			delete[] fSlaveTrackers[firstSlice + iSlice].TrackletMemory();
 		}
 	}
 
@@ -523,11 +518,18 @@ int AliHLTTPCCAGPUTrackerNVCC::Reconstruct(AliHLTTPCCASliceOutput** pOutput, Ali
 	{
 		if (runSlices < HLTCA_GPU_TRACKLET_SELECTOR_SLICE_COUNT) runSlices++;
 		runSlices = CAMath::Min(runSlices, sliceCountLocal - iSlice);
-		if (HLTCA_GPU_NUM_STREAMS && useStream + 1== HLTCA_GPU_NUM_STREAMS) runSlices = sliceCountLocal - iSlice;
+		if (fSelectorBlockCount < runSlices) runSlices = fSelectorBlockCount;
+		if (HLTCA_GPU_NUM_STREAMS && useStream + 1 == HLTCA_GPU_NUM_STREAMS) runSlices = sliceCountLocal - iSlice;
+		if (fSelectorBlockCount < runSlices)
+		{
+			HLTError("Insufficient number of blocks for tracklet selector");
+			cuCtxPopCurrent((CUcontext*) fCudaContext);
+			return(1);
+		}
 		
 		if (fDebugLevel >= 3) HLTInfo("Running HLT Tracklet selector (Stream %d, Slice %d to %d)", useStream, iSlice, iSlice + runSlices);
 		fSlaveTrackers[firstSlice + iSlice].StartTimer(7);
-		AliHLTTPCCAProcessMulti<AliHLTTPCCATrackletSelector><<<selectorBlockCount, HLTCA_GPU_THREAD_COUNT_SELECTOR, 0, cudaStreams[useStream]>>>(iSlice, runSlices);
+		AliHLTTPCCAProcessMulti<AliHLTTPCCATrackletSelector><<<fSelectorBlockCount, HLTCA_GPU_THREAD_COUNT_SELECTOR, 0, cudaStreams[useStream]>>>(iSlice, runSlices);
 		if (GPUSync("Tracklet Selector", iSlice, iSlice + firstSlice) RANDOM_ERROR)
 		{
 			cudaThreadSynchronize();
@@ -599,11 +601,9 @@ int AliHLTTPCCAGPUTrackerNVCC::Reconstruct(AliHLTTPCCASliceOutput** pOutput, Ali
 		if (fDebugLevel >= 3) HLTInfo("Tracks Transfered: %d / %d", *fSlaveTrackers[firstSlice + iSlice].NTracks(), *fSlaveTrackers[firstSlice + iSlice].NTrackHits());
 
 		if (Reconstruct_Base_FinishSlices(pOutput, iSlice, firstSlice)) return(1);
-
 		if (fDebugLevel >= 4)
 		{
 			delete[] fSlaveTrackers[firstSlice + iSlice].HitMemory();
-			delete[] fSlaveTrackers[firstSlice + iSlice].TrackletMemory();
 		}
 	}
 
@@ -745,7 +745,7 @@ int AliHLTTPCCAGPUTrackerNVCC::ExitGPU_Runtime()
 	return(0);
 }
 
-int AliHLTTPCCAGPUTrackerNVCC::RefitMergedTracks(AliHLTTPCGMMerger* Merger)
+int AliHLTTPCCAGPUTrackerNVCC::RefitMergedTracks(AliHLTTPCGMMerger* Merger, bool resetTimers)
 {
 #ifndef HLTCA_GPU_MERGER
 	HLTError("HLTCA_GPU_MERGER compile flag not set");
@@ -758,8 +758,13 @@ int AliHLTTPCCAGPUTrackerNVCC::RefitMergedTracks(AliHLTTPCGMMerger* Merger)
 	}
 
 	HighResTimer timer;
-	static double times[3];
+	static double times[3] = {};
 	static int nCount = 0;
+	if (resetTimers)
+	{
+		for (unsigned int k = 0;k < sizeof(times) / sizeof(times[0]);k++) times[k] = 0;
+		nCount = 0;
+	}
 	char* gpumem = (char*) fGPUMergerMemory;
 	AliHLTTPCGMMergedTrackHit *clusters;
 	AliHLTTPCGMMergedTrack* tracks;

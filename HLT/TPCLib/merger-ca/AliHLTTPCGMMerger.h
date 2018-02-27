@@ -39,11 +39,11 @@ public:
   AliHLTTPCGMMerger();
   ~AliHLTTPCGMMerger();
   
-  void SetSliceParam( const AliHLTTPCCAParam &v );
+  void SetSliceParam( const AliHLTTPCCAParam &v, long int TimeStamp=0, bool isMC=0  );
   
   void Clear();
   void SetSliceData( int index, const AliHLTTPCCASliceOutput *SliceData );
-  bool Reconstruct();
+  bool Reconstruct(bool resetTimers = false);
   
   Int_t NOutputTracks() const { return fNOutputTracks; }
   const AliHLTTPCGMMergedTrack * OutputTracks() const { return fOutputTracks; }
@@ -59,7 +59,7 @@ public:
   int NClusters() const { return(fNClusters); }
   int NOutputTrackClusters() const { return(fNOutputTrackClusters); }
   AliHLTTPCGMMergedTrackHit* Clusters() const {return(fClusters);}
-  
+
 private:
   
   AliHLTTPCGMMerger( const AliHLTTPCGMMerger& );
@@ -77,7 +77,7 @@ private:
   void MergeWithingSlices();
   void MergeSlices();
   void CollectMergedTracks();
-  void Refit();
+  void Refit(bool resetTimers);
   
   static const int fgkNSlices = 36;       //* N slices
   int fNextSliceInd[fgkNSlices];

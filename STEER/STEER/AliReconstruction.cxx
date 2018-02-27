@@ -2273,6 +2273,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	  !FillESD(fhltesd, "HLT")) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
+      //Reset, since this is overwritten by online HLT esd, which has no idea about number in chunk
+      fhltesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
     }
 
     // local single event reconstruction

@@ -2,7 +2,7 @@
 #define ALIHLTTPCCASETTINGS_H
 
 #define EXTERN_ROW_HITS
-#define TRACKLET_SELECTOR_MIN_HITS(QPT) (QPT > 10 ? 10 : (QPT > 5 ? 15 : 29)) //Minimum hits should depend on Pt, low Pt tracks can have few hits. 29 Hits default, 15 for < 200 mev, 10 for < 100 mev
+#define TRACKLET_SELECTOR_MIN_HITS(QPT) (fabs(QPT) > 10 ? 10 : (fabs(QPT) > 5 ? 15 : 29)) //Minimum hits should depend on Pt, low Pt tracks can have few hits. 29 Hits default, 15 for < 200 mev, 10 for < 100 mev
 
 #define GLOBAL_TRACKING_RANGE 45					//Number of rows from the upped/lower limit to search for global track candidates in for
 #define GLOBAL_TRACKING_Y_RANGE_UPPER_LEFT 0.85		//Inner portion of y-range in slice that is not used in searching for global track candidates
@@ -25,6 +25,15 @@
 
 #define HLTCA_TIMING_SUM 1
 
+#define HLTCA_MAX_SIN_PHI_LOW 0.99f						//Must be preprocessor define because c++ pre 11 cannot use static constexpr for initializes
+#define HLTCA_MAX_SIN_PHI 0.999f
+
+#ifdef HLTCA_TPC_GEOMETRY_O2
+#define HLTCA_ROW_COUNT 152
+#else
+#define HLTCA_ROW_COUNT 159
+#endif
+
 #define REPRODUCIBLE_CLUSTER_SORTING
 
 #ifdef HLTCA_BUILD_O2_LIB
@@ -37,7 +46,7 @@ typedef unsigned short cahit;
 
 #ifdef HLTCA_GPUCODE
 #define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP 6
-#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 3500
+#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 6000
 #else
 #define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP HLTCA_GPU_MAXN
 #define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 200000

@@ -56,13 +56,6 @@ class AliHLTTPCCAStandaloneFramework
     void StartDataReading( int guessForNumberOfClusters = 256 );
 
     /**
-     *  read next cluster
-     */
-    void ReadCluster( int id, int iSlice, int iRow, float X, float Y, float Z, float Amp ) {
-      fClusterData[iSlice].ReadCluster( id, iRow, X, Y, Z, Amp );
-    }
-
-    /**
      * finish reading of the event
      */
     void FinishDataReading();
@@ -79,7 +72,7 @@ class AliHLTTPCCAStandaloneFramework
     double StatTime( int iTimer ) const { return fStatTime[iTimer]; }
     int StatNEvents() const { return fStatNEvents; }
 
-    void SetSettings(float solenoidBz = -5.00668, bool constBz = false);
+    void SetSettings(float solenoidBz, bool toyMCEvents, bool constBz);
     void WriteEvent( std::ostream &out ) const;
     int ReadEvent( std::istream &in, bool ResetIds = false, bool addData = false, float shift = 0., float minZ = -1e6, float maxZ = -1e6, bool silent = false, bool doQA = true );
 

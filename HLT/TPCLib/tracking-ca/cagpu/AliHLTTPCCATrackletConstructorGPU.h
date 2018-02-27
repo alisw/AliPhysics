@@ -5,17 +5,14 @@ GPUdi() int AliHLTTPCCATrackletConstructor::FetchTracklet(GPUconstant() MEM_CONS
 	const int nativeslice = get_group_id(0) % tracker.GPUParametersConst()->fGPUnSlices;
 	const int nTracklets = *tracker.NTracklets();
 	GPUsync();
-	if (sMem.fNextTrackletFirstRun == 1)
+	if (get_local_id(0) == 0)
 	{
-		if (get_local_id(0) == 0)
+		if (sMem.fNextTrackletFirstRun == 1)
 		{
 			sMem.fNextTrackletFirst = (get_group_id(0) - nativeslice) / tracker.GPUParametersConst()->fGPUnSlices * HLTCA_GPU_THREAD_COUNT_CONSTRUCTOR;
 			sMem.fNextTrackletFirstRun = 0;
 		}
-	}
-	else
-	{
-		if (get_local_id(0) == 0)
+		else
 		{
 			if (tracker.GPUParameters()->fNextTracklet < nTracklets)
 			{
@@ -36,33 +33,32 @@ GPUdi() int AliHLTTPCCATrackletConstructor::FetchTracklet(GPUconstant() MEM_CONS
 GPUdi() void AliHLTTPCCATrackletConstructor::AliHLTTPCCATrackletConstructorGPU(GPUconstant() MEM_CONSTANT(AliHLTTPCCATracker) *pTracker, GPUsharedref() AliHLTTPCCATrackletConstructor::MEM_LOCAL(AliHLTTPCCASharedMemory)& sMem)
 {
 	const int nSlices = pTracker[0].GPUParametersConst()->fGPUnSlices;
-	const int nativeslice = get_group_id(0) % nSlices;
+	int mySlice = get_group_id(0) % nSlices;
 	int currentSlice = -1;
 
-	if (get_local_id(0))
+	if (get_local_id(0) == 0)
 	{
 		sMem.fNextTrackletFirstRun = 1;
 	}
 
 	for (int iSlice = 0;iSlice < nSlices;iSlice++)
 	{
-		GPUconstant() MEM_CONSTANT(AliHLTTPCCATracker) &tracker = pTracker[(nativeslice + iSlice) % nSlices];
+		GPUconstant() MEM_CONSTANT(AliHLTTPCCATracker) &tracker = pTracker[mySlice];
 
 		AliHLTTPCCAThreadMemory rMem;
 
-		int tmpTracklet;
-		while ((tmpTracklet = FetchTracklet(tracker, sMem)) != -2)
+		while ((rMem.fItr = FetchTracklet(tracker, sMem)) != -2)
 		{
-			if (tmpTracklet >= 0)
+			if (rMem.fItr >= 0 && get_local_id(0) < HLTCA_GPU_THREAD_COUNT_CONSTRUCTOR)
 			{
-				rMem.fItr = tmpTracklet + get_local_id(0);
+				rMem.fItr += get_local_id(0);
 			}
 			else
 			{
 				rMem.fItr = -1;
 			}
 
-			if (iSlice != currentSlice)
+			if (mySlice != currentSlice)
 			{
 				if (get_local_id(0) == 0)
 				{
@@ -73,14 +69,17 @@ GPUdi() void AliHLTTPCCATrackletConstructor::AliHLTTPCCATrackletConstructorGPU(G
 				{
 					reinterpret_cast<GPUsharedref() int*>(&sMem.fRows)[i] = reinterpret_cast<GPUglobalref() int*>(tracker.SliceDataRows())[i];
 				}
-				currentSlice = iSlice;
 				GPUsync();
+				currentSlice = mySlice;
 			}
 
-			rMem.fGo = rMem.fItr < sMem.fNTracklets;
-
-			DoTracklet(tracker, sMem, rMem);
+			if (rMem.fItr >= 0 && rMem.fItr < sMem.fNTracklets)
+			{
+				rMem.fGo = true;
+				DoTracklet(tracker, sMem, rMem);
+			}
 		}
+		if (++mySlice >= nSlices) mySlice = 0;
 	}
 }
 

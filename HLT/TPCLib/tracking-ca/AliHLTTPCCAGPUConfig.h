@@ -37,7 +37,7 @@
 #define HLTCA_GPU_THREAD_COUNT_SELECTOR 256
 #define HLTCA_GPU_THREAD_COUNT_FINDER 256
 #define HLTCA_GPU_NUM_STREAMS 0
-#else
+#elif defined(TESLA)
 #define HLTCA_GPU_BLOCK_COUNT_CONSTRUCTOR_MULTIPLIER 1
 #define HLTCA_GPU_BLOCK_COUNT_SELECTOR_MULTIPLIER 1
 #define HLTCA_GPU_THREAD_COUNT 256
@@ -46,6 +46,14 @@
 #define HLTCA_GPU_THREAD_COUNT_FINDER 256
 #define HLTCA_GPU_NUM_STREAMS 0
 #define HLTCA_GPU_USE_TEXTURES
+#else
+#define HLTCA_GPU_BLOCK_COUNT_CONSTRUCTOR_MULTIPLIER ??error
+#define HLTCA_GPU_BLOCK_COUNT_SELECTOR_MULTIPLIER ??error
+#define HLTCA_GPU_THREAD_COUNT ??error
+#define HLTCA_GPU_THREAD_COUNT_CONSTRUCTOR ??error
+#define HLTCA_GPU_THREAD_COUNT_SELECTOR ??error
+#define HLTCA_GPU_THREAD_COUNT_FINDER ??error
+#define HLTCA_GPU_NUM_STREAMS ??error
 #endif
 
 #define HLTCA_GPU_DEFAULT_HELPER_THREADS 2				//Number of helper threads to speed up initialization/output
@@ -57,9 +65,6 @@
 #ifdef HLTCA_STANDALONE
 #define HLTCA_GPU_MERGER								//Use GPU Merger
 #endif
-
-//Detector Parameters
-#define HLTCA_ROW_COUNT 159
 
 #define HLTCA_GPU_ROWALIGNMENT uint4					//Align Row Hits and Grid
 #define HLTCA_GPU_ROWCOPY int							//must not be bigger than row alignment!!!

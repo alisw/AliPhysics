@@ -1468,6 +1468,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   const Int_t kNOS = fParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
   fNclusters  = 0;
+  int nClustersAll = 0;
 
   // noise and dead channel treatment -- should be the same as in offline clusterizer
   const AliTPCCalPad * gainTPC  = AliTPCcalibDB::Instance() -> GetPadGainFactor();
@@ -1583,11 +1584,12 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       
     } // for (fRow = 0; fRow < nRows; fRow++) {
     fNclusters+=nClusterSectorGood;
+    nClustersAll+=nClusterSector;
   } // for(fSector = 0; fSector < kNS; fSector++) {
 
   pClusterAccess->Clear("event");
 
-  Info("Digits2Clusters", "Number of converted HLT clusters : %d", fNclusters);
+  Info("Digits2Clusters", "Number of converted HLT clusters : %d/%d", fNclusters,nClustersAll);
   
   return 0;
 }

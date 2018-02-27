@@ -191,13 +191,17 @@ MEM_CLASS_PRE() class AliHLTTPCCATracker
 
 #endif  
   
-  MEM_CLASS_PRE2() GPUd() void GetErrors2( int iRow,  const MEM_LG2(AliHLTTPCCATrackParam) &t, float &Err2Y, float &Err2Z ) const {fParam.GetClusterErrors2( iRow, fParam.GetSearchWindowDZDR() != 0. ? 125. : t.Z(), t.SinPhi(), t.GetCosPhi(), t.DzDs(), Err2Y, Err2Z );}
-  GPUd() void GetErrors2( int iRow, float z, float sinPhi, float cosPhi, float DzDs, float &Err2Y, float &Err2Z ) const
+  MEM_CLASS_PRE2() GPUd() void GetErrors2( int iRow,  const MEM_LG2(AliHLTTPCCATrackParam) &t, float &ErrY2, float &ErrZ2 ) const
   {
-	fParam.GetClusterErrors2( iRow, z, sinPhi, cosPhi, DzDs, Err2Y, Err2Z );
-	Err2Y*=fParam.ClusterError2CorrectionY();
-	Err2Z*=fParam.ClusterError2CorrectionZ();
+    //fParam.GetClusterErrors2( iRow, fParam.GetContinuousTracking() != 0. ? 125. : t.Z(), t.SinPhi(), t.DzDs(), ErrY2, ErrZ2 );
+    fParam.GetClusterRMS2( iRow, fParam.GetContinuousTracking() != 0. ? 125. : t.Z(), t.SinPhi(), t.DzDs(), ErrY2, ErrZ2 );
   }
+  GPUd() void GetErrors2( int iRow, float z, float sinPhi, float DzDs, float &ErrY2, float &ErrZ2 ) const
+  {
+    //fParam.GetClusterErrors2( iRow, fParam.GetContinuousTracking() != 0. ? 125. : z, sinPhi, DzDs, ErrY2, ErrZ2 );
+    fParam.GetClusterRMS2( iRow, fParam.GetContinuousTracking() != 0. ? 125. : z, sinPhi, DzDs, ErrY2, ErrZ2 );
+  }
+  
   
   void SetupCommonMemory();
   void SetPointersHits( int MaxNHits );
@@ -339,7 +343,7 @@ private:
   GPUglobalref() AliHLTTPCCAClusterData *fClusterData; // ^
   MEM_LG(AliHLTTPCCASliceData) fData; // The SliceData object. It is used to encapsulate the storage in memory from the access
   
-  bool fIsGPUTracker; // is it GPU tracker object
+  char fIsGPUTracker; // is it GPU tracker object
   int fGPUDebugLevel; // debug level
 
 #if !defined(__OPENCL__) || defined(HLTCA_HOSTCODE)

@@ -18,6 +18,10 @@
 #ifndef ALIHLTTPCCAGPUTRACKERNVCC_H
 #define ALIHLTTPCCAGPUTRACKERNVCC_H
 
+#ifdef __CLING__
+typedef int cudaError_t;
+#endif
+
 #include "AliHLTTPCCAGPUTrackerBase.h"
 
 class AliHLTTPCCAGPUTrackerNVCC : public AliHLTTPCCAGPUTrackerBase
@@ -29,7 +33,7 @@ public:
 	virtual int InitGPU_Runtime(int sliceCount = -1, int forceDeviceID = -1);
 	virtual int Reconstruct(AliHLTTPCCASliceOutput** pOutput, AliHLTTPCCAClusterData* pClusterData, int fFirstSlice, int fSliceCount = -1);
 	virtual int ExitGPU_Runtime();
-	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger);
+	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger, bool resetTimers);
 	virtual int GPUMergerAvailable();
 
 protected:

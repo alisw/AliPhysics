@@ -322,3 +322,11 @@ struct cahit2{cahit x, y;};
 #endif
 
 #endif //ALIHLTTPCCADEF_H
+
+#if defined(HLTCA_CADEBUG) && !defined(CADEBUG)
+#if HLTCA_CADEBUG == 1
+#define CADEBUG(...) __VA_ARGS__
+#else
+#define CADEBUG(...)
+#endif
+#endif

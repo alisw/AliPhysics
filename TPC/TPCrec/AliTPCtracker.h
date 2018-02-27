@@ -188,7 +188,8 @@ public:
    Double_t GetYSectEdgeDist(int sec, int row, double ymax, double z);
    static Int_t GetTrackSector(double alpha);
 
-private:
+ protected:
+   //private:
 
   int GetAdjustedLabels(const AliTPCclusterMI* cl, int *lbReal);
   Bool_t IsFindable(AliTPCseed & t);

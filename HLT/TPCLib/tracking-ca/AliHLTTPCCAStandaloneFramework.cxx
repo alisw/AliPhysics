@@ -166,7 +166,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 #ifdef HLTCA_GPU_MERGER
 	  if (fTracker.GetGPUTracker()->GPUMergerAvailable()) fMerger.SetGPUTracker(fTracker.GetGPUTracker());
 #endif
-	  fMerger.Reconstruct();
+	  fMerger.Reconstruct(resetTimers);
 #ifdef HLTCA_STANDALONE
       timerMerger.Stop();
 #endif
@@ -253,7 +253,9 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 
   nCount++;
 #ifndef HLTCA_BUILD_O2_LIB
-  printf("Tracking Time: %1.0f us\n", 1000000 * timerTracking.GetElapsedTime() / nCount);
+  char nAverageInfo[16] = "";
+  if (nCount > 1) sprintf(nAverageInfo, " (%d)", nCount);
+  printf("Tracking Time: %1.0f us%s\n", 1000000 * timerTracking.GetElapsedTime() / nCount, nAverageInfo);
   if (fRunMerger) printf("Merging and Refit Time: %1.0f us\n", 1000000 * timerMerger.GetElapsedTime() / nCount);
   if (fRunQA) printf("QA Time: %1.0f us\n", 1000000 * timerQA.GetElapsedTime() / nCount);
 #endif
@@ -299,7 +301,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 }
 
 
-void AliHLTTPCCAStandaloneFramework::SetSettings(float solenoidBz, bool constBz)
+void AliHLTTPCCAStandaloneFramework::SetSettings(float solenoidBz, bool toyMCEvents, bool constBz)
 {
     for (int slice = 0;slice < fgkNSlices;slice++)
     {
@@ -311,7 +313,10 @@ void AliHLTTPCCAStandaloneFramework::SetSettings(float solenoidBz, bool constBz)
       float minusZmin = -249.645;
       float minusZmax = -0.0799937;
       float dalpha = 0.349066;
-      float alpha = 0.174533 + dalpha * (iSec < 18 ? iSec : iSec - 18);
+      int tmp = iSec;
+      if (tmp >= 18) tmp -= 18;
+      if (tmp >= 9) tmp -= 18;
+      float alpha = 0.174533 + dalpha * tmp;
 
       bool zPlus = ( iSec < 18 );
       float zMin =  zPlus ? plusZmin : minusZmin;
@@ -348,7 +353,7 @@ void AliHLTTPCCAStandaloneFramework::SetSettings(float solenoidBz, bool constBz)
 	  float plusZmin = 0.0529937;
 	  float plusZmax = 249.778;
 	  float dalpha = 0.349066;
-	  float alpha = 0.174533 + dalpha * iSec;
+	  float alpha = 0.174533;
 	  float zMin =  plusZmin;
 	  float zMax =  plusZmax;
 	  int nRows = HLTCA_ROW_COUNT;
@@ -362,6 +367,7 @@ void AliHLTTPCCAStandaloneFramework::SetSettings(float solenoidBz, bool constBz)
 	  param.Initialize( iSec, nRows, rowX, alpha, dalpha,
 						inRmin, outRmax, zMin, zMax, padPitch, sigmaZ, solenoidBz );
 	  param.SetAssumeConstantBz(constBz);
+	  param.SetToyMCEventsFlag( toyMCEvents );
 	  param.SetClusterError2CorrectionZ( 1.1 );
 	  param.Update();
 

@@ -66,7 +66,7 @@ public:
 	virtual const AliHLTTPCCASliceOutput::outputControlStruct* OutputControl() const;
 	virtual int GetSliceCount() const;
 
-	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger) = 0;
+	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger, bool resetTimers) = 0;
 	virtual char* MergerHostMemory() {return((char*) fGPUMergerHostMemory);}
 
 protected:
@@ -84,12 +84,12 @@ protected:
 		AliHLTTPCCASliceOutput** pOutput;
 		int fFirstSlice;
 		void* fMutex;
-		bool fTerminate;
+		char fTerminate;
 		int fPhase;
 		int CPUTracker;
 		volatile int fDone;
-		volatile bool fError;
-		volatile bool fReset;
+		volatile char fError;
+		volatile char fReset;
 	};
 
 	static void* RowMemory(void* const BaseMemory, int iSlice)       { return( ((char*) BaseMemory) + iSlice * sizeof(AliHLTTPCCARow) * (HLTCA_ROW_COUNT + 1) ); }
@@ -153,7 +153,8 @@ protected:
 	int fSelfheal; //Reinitialize GPU on failure
 
 	int fConstructorBlockCount; //GPU blocks used in Tracklet Constructor
-	int selectorBlockCount; //GPU blocks used in Tracklet Selector
+	int fSelectorBlockCount; //GPU blocks used in Tracklet Selector
+	int fConstructorThreadCount;
 	
 #ifdef HLTCA_GPU_TIME_PROFILE
 	unsigned long long int fProfTimeC, fProfTimeD; //Timing

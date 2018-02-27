@@ -124,6 +124,7 @@ set(SRCS
     merger-ca/AliHLTTPCGMPropagator.cxx
     merger-ca/AliHLTTPCGMPolynomialField.cxx
     merger-ca/AliHLTTPCGMPolynomialFieldCreator.cxx
+    merger-ca/AliHLTTPCGMOfflineFitter.cxx
     offline/AliHLTTPCDigitPublisherComponent.cxx
     offline/AliHLTTPCOfflineCluster.cxx
     tracking-ca/AliHLTTPCCABaseTrackParam.cxx
@@ -134,7 +135,6 @@ set(SRCS
     tracking-ca/AliHLTTPCCAHitArea.cxx
     tracking-ca/AliHLTTPCCAMCPoint.cxx
     tracking-ca/AliHLTTPCCAMCTrack.cxx
-    tracking-ca/AliHLTTPCCAMerger.cxx
     tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
     tracking-ca/AliHLTTPCCANeighboursFinder.cxx
     tracking-ca/AliHLTTPCCAParam.cxx
@@ -147,7 +147,6 @@ set(SRCS
     tracking-ca/AliHLTTPCCATrackerComponent.cxx
     tracking-ca/AliHLTTPCCATrackerFramework.cxx
     tracking-ca/AliHLTTPCCATracker.cxx
-    tracking-ca/AliHLTTPCCATrackerOutputConverter.cxx
     tracking-ca/AliHLTTPCCATrack.cxx
     tracking-ca/AliHLTTPCCATrackletConstructor.cxx
     tracking-ca/AliHLTTPCCATracklet.cxx

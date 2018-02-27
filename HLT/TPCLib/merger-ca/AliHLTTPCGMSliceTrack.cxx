@@ -28,13 +28,9 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
   float lastX = fOrigTrack->Cluster(fOrigTrack->NClusters()-1 ).GetX();
 
   const int N = 3;
-  const float *cy = param.GetParamS0Par(0,0);
-  const float *cz = param.GetParamS0Par(1,0);
 
   float bz = -param.ConstBz();
-  const float kZLength = 250.f - 0.275f;
 
-  float trDzDs2 = fDzDs*fDzDs;
   float k  = fQPt*bz;               
   float dx = .33*(lastX - fX);  
   float kdx = k*dx;
@@ -42,21 +38,8 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
   float kdx205 = 2.f+kdx*kdx*0.5f;
 
   {
-    float secPhi2 = fSecPhi*fSecPhi;
-    float zz = param.GetContinuousTracking() ? 125. : fabs( kZLength - fabs(fZ) );
-    float zz2 = zz*zz;
-    float angleY2 = secPhi2 - 1.f; 
-    float angleZ2 = trDzDs2 * secPhi2 ;
-    
-    float cy0 = cy[0] + cy[1]*zz + cy[3]*zz2;
-    float cy1 = cy[2] + cy[5]*zz;
-    float cy2 = cy[4];
-    float cz0 = cz[0] + cz[1]*zz + cz[3]*zz2;
-    float cz1 = cz[2] + cz[5]*zz;
-    float cz2 = cz[4];
-    
-    fC0 = fabs( cy0 + angleY2 * ( cy1 + angleY2*cy2 ) );
-    fC2 = fabs( cz0 + angleZ2 * ( cz1 + angleZ2*cz2 ) );    
+    //param.GetClusterErrors2( 0, fZ, fSinPhi, fDzDs, fC0, fC2 );
+    param.GetClusterRMS2( 0, fZ, fSinPhi, fDzDs, fC0, fC2 );
 
     fC3 = 0;
     fC5 = 1;
@@ -99,23 +82,9 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
  
       float dz = dS * fDzDs;      
       float ex1i =1.f/ex1;
-      float z = fZ+ dz;
       {	
-	float secPhi2 = ex1i*ex1i;
-	float zz = param.GetContinuousTracking() ? 125. : fabs( kZLength - fabs(z) );
-	float zz2 = zz*zz;
-	float angleY2 = secPhi2 - 1.f; 
-	float angleZ2 = trDzDs2 * secPhi2 ;
-
-	float cy0 = cy[0] + cy[1]*zz + cy[3]*zz2;
-	float cy1 = cy[2] + cy[5]*zz;
-	float cy2 = cy[4];
-	float cz0 = cz[0] + cz[1]*zz + cz[3]*zz2;
-	float cz1 = cz[2] + cz[5]*zz;
-	float cz2 = cz[4];
-	
-	err2Y = fabs( cy0 + angleY2 * ( cy1 + angleY2*cy2 ) );
-	err2Z = fabs( cz0 + angleZ2 * ( cz1 + angleZ2*cz2 ) );
+	//param.GetClusterErrors2( 0, fZ, fSinPhi, fDzDs, err2Y, err2Z );
+	param.GetClusterRMS2( 0, fZ, fSinPhi, fDzDs, err2Y, err2Z );
       }
 
       float hh = kdx205 * dxcci*ex1i; 
@@ -329,7 +298,7 @@ bool AliHLTTPCGMSliceTrack::TransportToXAlpha( float newX, float sinAlpha, float
     cosPhi =  cP * cosAlpha + sP * sinAlpha;
     sinPhi = -cP * sinAlpha + sP * cosAlpha;
     
-    if ( CAMath::Abs( sinPhi ) > .999 || CAMath::Abs( cP ) < 1.e-2  ) return 0;
+    if ( CAMath::Abs( sinPhi ) > HLTCA_MAX_SIN_PHI || CAMath::Abs( cP ) < 1.e-2  ) return 0;
     
     secPhi = 1./cosPhi;
     float j0 = cP *secPhi;

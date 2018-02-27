@@ -78,12 +78,17 @@ class AliHLTTPCGMPhysicalTrackModel
   
   GPUd() int PropagateToLpBz( float Lp, float Bz );
 
+  GPUd() bool SetDirectionAlongX();
+
   GPUd() void UpdateValues();
 
   GPUd() void Print() const;
 
   GPUd() float GetMirroredY( float Bz ) const ;
-  
+
+  GPUd() void Rotate( float alpha );
+  GPUd() void RotateLight( float alpha );
+
  private:
 
   // physical parameters of the trajectory
@@ -120,8 +125,8 @@ GPUd() inline void AliHLTTPCGMPhysicalTrackModel::Set( const AliHLTTPCGMTrackPar
   
   fPt = 1./pti;  
   fSinPhi = t.GetSinPhi();
-  if( fSinPhi >  .999f ) fSinPhi = .999f;
-  if( fSinPhi < -.999f ) fSinPhi = -.999f;
+  if( fSinPhi >  HLTCA_MAX_SIN_PHI ) fSinPhi = HLTCA_MAX_SIN_PHI;
+  if( fSinPhi < -HLTCA_MAX_SIN_PHI ) fSinPhi = -HLTCA_MAX_SIN_PHI;
   fCosPhi = sqrt( (1. - fSinPhi)*(1.+fSinPhi) );  
   fSecPhi = 1./fCosPhi;
   fDzDs = t.GetDzDs();
@@ -151,29 +156,62 @@ GPUd() inline void AliHLTTPCGMPhysicalTrackModel::Set( float X, float Y, float Z
 
 GPUd() inline void AliHLTTPCGMPhysicalTrackModel::UpdateValues()
 {
-  if( fPx<0.f ){ // should not happen, change direction of the movenment
-    fPx = -fPx;
-    fPy = -fPy;
-    fPz = -fPz;
-    fQ = -fQ;
-  }
-  if( fPx<1.e-8f ) fPx = 1.e-8f;  
-  fPt = sqrt( fPx*fPx + fPy*fPy );
+  float px = fPx;
+  if( fabs(px) < 1.e-4f ) px = copysign(1.e-4f,px);
+
+  fPt = sqrt( px*px + fPy*fPy );
   float pti = 1.f/fPt;
-  fP = sqrt(fPx*fPx + fPy*fPy + fPz*fPz );
+  fP = sqrt( px*px + fPy*fPy + fPz*fPz );
   fSinPhi = fPy*pti;
-  fCosPhi = fPx*pti;
-  fSecPhi = 1.f/fCosPhi;
+  fCosPhi = px*pti;
+  fSecPhi = fPt/px;
   fDzDs = fPz*pti;
   fDlDs = fP*pti;
   fQPt = fQ*pti;
 }
+
+GPUd() inline bool AliHLTTPCGMPhysicalTrackModel::SetDirectionAlongX()
+{
+  //
+  // set direction of movenment collinear to X axis
+  // return value is true when direction has been changed
+  //
+  if( fPx >= 0 ) return 0;
+
+  fPx = -fPx;
+  fPy = -fPy;
+  fPz = -fPz;
+  fQ = -fQ;  
+  UpdateValues();
+  return 1;
+}
+
 
 GPUd() inline float AliHLTTPCGMPhysicalTrackModel::GetMirroredY( float Bz ) const
 {
   // get Y of the point which has the same X, but located on the other side of trajectory
   if( fabs(Bz)<1.e-8 ) Bz = 1.e-8;
   return fY - 2.f*fQ*fPx/Bz;
+}
+
+GPUd() inline void AliHLTTPCGMPhysicalTrackModel::RotateLight( float alpha )
+{
+  //* Rotate the coordinate system in XY on the angle alpha
+
+  float cA = CAMath::Cos( alpha );
+  float sA = CAMath::Sin( alpha );
+  float x = fX, y = fY, px = fPx, py = fPy;    
+  fX  =  x*cA + y*sA;
+  fY  = -x*sA + y*cA;
+  fPx =  px*cA + py*sA;
+  fPy = -px*sA + py*cA;
+}
+
+GPUd() inline void AliHLTTPCGMPhysicalTrackModel::Rotate( float alpha )
+{
+  //* Rotate the coordinate system in XY on the angle alpha
+  RotateLight(alpha);
+  UpdateValues();  
 }
 
 #endif

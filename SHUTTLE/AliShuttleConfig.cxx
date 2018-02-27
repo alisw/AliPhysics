@@ -1328,7 +1328,7 @@ UInt_t AliShuttleConfig::SetPasswords(){
 
 	// Retrieving Passwords for DAQ lb, DAQ/DCS/HLT/DQM FXS
 
-	ifstream *inputfile = new ifstream(fPasswdFilePath.Data());
+	std::ifstream *inputfile = new std::ifstream(fPasswdFilePath.Data());
 	if (!*inputfile) {
 		AliError(Form("Error opening file %s !", fPasswdFilePath.Data()));
 		inputfile->close();

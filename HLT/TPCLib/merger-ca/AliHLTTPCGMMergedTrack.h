@@ -32,7 +32,8 @@ class AliHLTTPCGMMergedTrack
   GPUd() float LastX()                        const { return fLastX; }
   GPUd() float LastY()                        const { return fLastY; }
   GPUd() float LastZ()                        const { return fLastZ; }
-  GPUd() bool OK() const{ return fOK; }
+  GPUd() bool OK() const { return fOK; }
+  GPUd() char CSide() const { return fCSide; }
 
   GPUd() void SetNClusters      ( int v )                { fNClusters = v;       }
   GPUd() void SetNClustersFitted( int v )                { fNClustersFitted = v; }
@@ -43,6 +44,7 @@ class AliHLTTPCGMMergedTrack
   GPUd() void SetLastY( float v )                        { fLastY = v; }
   GPUd() void SetLastZ( float v )                        { fLastZ = v; }
   GPUd() void SetOK( bool v ) {fOK = v;}
+  GPUd() void SetCSide( char v ) {fCSide = v;}
   
  private:
 
@@ -56,6 +58,7 @@ class AliHLTTPCGMMergedTrack
   int fNClusters;               //* number of track clusters
   int fNClustersFitted;         //* number of clusters used in fit
   bool fOK;//
+  char fCSide;
 };
 
 #endif 

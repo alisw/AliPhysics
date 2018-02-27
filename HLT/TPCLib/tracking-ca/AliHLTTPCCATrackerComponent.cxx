@@ -28,7 +28,6 @@
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCCATrackerFramework.h"
 #include "AliHLTTPCCAParam.h"
-#include "AliHLTTPCCATrackConvertor.h"
 #include "AliHLTArray.h"
 
 #include "AliHLTTPCRawCluster.h"
@@ -52,6 +51,7 @@
 #include "AliMCParticle.h"
 #include "AliTrackReference.h"
 #include "AliHLTTPCCAMCInfo.h"
+#include "AliHLTTPCGMMergedTrackHit.h"
 #include "TPDGCode.h"
 #if __GNUC__>= 3
 using namespace std;
@@ -470,6 +470,7 @@ void AliHLTTPCCATrackerComponent::ConfigureSlices()
     param.SetMinNTrackClusters( fMinNTrackClusters );
     param.SetMinTrackPt( fMinTrackPt );
     param.SetSearchWindowDZDR(fSearchWindowDZDR);
+    param.LoadClusterErrors();
 
     param.Update();
     fTracker->InitializeSliceParam( slice, param );
@@ -599,7 +600,11 @@ int AliHLTTPCCATrackerComponent::DoEvent
   tmpPar.fOutputBlocks = &outputBlocks;
   
   static int trackerTimeout = 0;
-  if (trackerTimeout) return(-ENODEV);
+  if (trackerTimeout)
+  {
+    size = 0;
+    return(0);
+  }
   
   int retVal;
   if (fAsync)
@@ -609,6 +614,7 @@ int AliHLTTPCCATrackerComponent::DoEvent
     {
       HLTError( "Tracking timed out, disabling this tracker instance" );
       trackerTimeout = 1;
+      size = 0;
       return(-ENODEV);
     }
     else
@@ -722,6 +728,8 @@ void* AliHLTTPCCATrackerComponent::TrackerDoEvent(void* par)
             pCluster->fY = c.GetY();
             pCluster->fZ = c.GetZ();
             pCluster->fRow = firstRow + cRaw.GetPadRow();
+            pCluster->fFlags = cRaw.GetFlags();
+            if (cRaw.GetSigmaPad2() < kAlmost0 || cRaw.GetSigmaTime2() < kAlmost0) pCluster->fFlags |= AliHLTTPCGMMergedTrackHit::flagSingle;
             pCluster->fAmp = cRaw.GetCharge();
 #ifdef HLTCA_FULL_CLUSTERDATA
             pCluster->fPad = cRaw.GetPad();
@@ -729,7 +737,6 @@ void* AliHLTTPCCATrackerComponent::TrackerDoEvent(void* par)
             pCluster->fAmpMax = cRaw.GetQMax();
             pCluster->fSigmaPad2 = cRaw.GetSigmaPad2();
             pCluster->fSigmaTime2 = cRaw.GetSigmaTime2();
-            pCluster->fFlags = cRaw.GetFlags();
 #endif
             pCluster++;
           }
