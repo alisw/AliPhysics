@@ -112,13 +112,13 @@ fTOFLabel(),
 fV0MPC_vertexcut(0),
 fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
-fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0)
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
 
 {}
 
 //________________________________________________________________________
 //AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name)
-AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz)
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy)
      : AliAnalysisTaskSE("name"),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
 fdEdxPt(0),fdEdxP(0),fdEdxPtq(0),fdEdxPq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
@@ -173,7 +173,7 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
 fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
 
-fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0)
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
 
 
 
@@ -523,11 +523,17 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
         fOutputList->Add(fDCAxy);
 
 	 //ESD track cut
-//        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	fesdTrackCuts->SetMinNCrossedRowsTPC(fMinTPCcr);
+	fesdTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+	fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAz);
+	fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fMaxDCAxy);
 
-//	fesdTrackCuts_no_dca->GetTrackCuts();
-        //fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	//no DCAxy cut for secondaries
+        fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	fesdTrackCuts->SetMinNCrossedRowsTPC(fMinTPCcr);
+        fesdTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+        fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAz);
 
 
 
@@ -1397,7 +1403,7 @@ fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
         fTOFTimeV0MPtMismatchDecayP->Draw();
 
 
-
+/*
 TFile *f=new TFile("result/12dec/MC_final_TOF_output.root","recreate");//v0m bin different
 f->cd();
 
@@ -1519,6 +1525,8 @@ fPtTPC_AllP->Write();
 fPtTPC_AllN->Write();
 fPtTOF_AllP->Write();
 fPtTOF_AllN->Write();	
+*/
+
 }
 //-----------------------------------------------------------------
 Bool_t AliAnalysisTaskTOFMC::selectVertex2015pp(AliESDEvent *esd,
