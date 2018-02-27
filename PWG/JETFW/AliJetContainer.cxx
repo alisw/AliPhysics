@@ -632,6 +632,10 @@ Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 /**
  * Retrieve the 4-momentum of leading hadron of the jet.
  * The mass hypothesis is always set to the pion mass (0.139 GeV/c^2).
+ * NOTE: The cluster energy used to calculate the momentum will always be
+ *       the _raw_ energy because the cluster container is not used. Amongst
+ *       other possible alternatives, the user could use the neutral energy
+ *       calculated at jet finding via AliEmcalJet::MaxNeutralEnergy() (for example).
  * @param[out] mom Reference to a TLorentzVector object where the result is returned
  * @param[in] jet Pointer to a AliEmcalJet object
  */
