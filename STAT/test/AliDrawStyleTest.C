@@ -34,11 +34,6 @@ void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
 //  void AliDrawStyleTest_CSSReadWrite();
 void AliDrawStyleTest_GetProperty();
-// void AliDrawStyleTest_TGraphApplyStyle();
-// void AliDrawStyleTest_TH1ApplyStyle();
-// void AliDrawStyleTest_TF1ApplyStyle();
-// void AliDrawStyleTest_TPadApplyStyle();
-// void AliDrawStyleTest_TCanvasApplyCssStyle();
 void AliDrawStyleTest_ApplyCssStyle();
 TCanvas *MakeTestPlot(Int_t nHis);
 
@@ -49,11 +44,6 @@ void AliDrawStyleTest(){
   AliDrawStyleTest_GetFloatValues();
   //  AliDrawStyleTest_CSSReadWrite();
   AliDrawStyleTest_GetProperty();
-  // AliDrawStyleTest_TGraphApplyStyle();
-  // AliDrawStyleTest_TH1ApplyStyle();
-  // AliDrawStyleTest_TF1ApplyStyle();
-  // AliDrawStyleTest_TPadApplyStyle();
-  // AliDrawStyleTest_TCanvasApplyCssStyle();
   AliDrawStyleTest_ApplyCssStyle();
 }
 
@@ -264,7 +254,7 @@ void AliDrawStyleTest_ApplyCssStyle(){
   AliDrawStyle::RegisterCssStyle("test1",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/test1.css",0));
   AliDrawStyle::ApplyCssStyle(canv, "test1");
   canv->Print("test1.xml");
-  AliDrawStyle::RegisterCssStyle("test2",AliDrawStyle::ReadCSSFile("test2.css",0));
+  AliDrawStyle::RegisterCssStyle("test2",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/test2.css",0));
   AliDrawStyle::ApplyCssStyle(canv, "test2");
   AliDrawStyle::ApplyCssStyle(canv, "test1");
   canv->Print("test2-1.xml");
@@ -275,56 +265,48 @@ void AliDrawStyleTest_ApplyCssStyle(){
     ::Error("AliDrawStyleTest","AliDrawStyle::ApplyStyle(\"canv\",\"test1\")- FAILED");
   }
 }
-
-
 ///
 TCanvas *MakeTestPlot(Int_t nHis) {
+  TRandom r;
+  TCanvas *exampleCanvas = new TCanvas("c1", "The AliDrawStyle::ApplyCssStyle example", 200, 10, 1200, 900);
+  AliPainter::DivideTPad(exampleCanvas,"<vertical>[1l,1r]", "Pad");
+  exampleCanvas->cd(1);
+  TH1F *hisArray[nHis];
+  for (Int_t i = 0; i < nHis; i++) {
+    hisArray[i] = new TH1F(TString::Format("his%d.class(Raw)", i).Data(),
+                           TString::Format("his%d.class(Raw)", i).Data(), 100, -5, 5);
+    hisArray[i]->SetStats(0);
+    hisArray[i]->SetTitle(TString::Format("his%d", i).Data());
+    hisArray[i]->SetMarkerStyle(1);
+    hisArray[i]->FillRandom("gaus", 100000 / (i + 2));
+    if (i == 0) hisArray[i]->Draw("err");
+    else hisArray[i]->Draw("SAMEerr");
+  }
+  gPad->BuildLegend();
 
-    TRandom r;
-    TCanvas *exampleCanvas = new TCanvas("c1", "The AliDrawStyle::ApplyCssStyle example", 200, 10, 1200, 900);
-    AliPainter::DivideTPad(exampleCanvas,"<vertical>[1l,1r]", "Pad");
-    exampleCanvas->cd(1);
-    TH1F *hisArray[nHis];
-    for (Int_t i = 0; i < nHis; i++) {
-      hisArray[i] = new TH1F(TString::Format("his[%d].class(Raw)", i).Data(),
-                             TString::Format("his[%d].class(Raw)", i).Data(), 100, -5, 5);
-      hisArray[i]->SetStats(0);
-      hisArray[i]->SetTitle("TH1");
-      hisArray[i]->SetMarkerStyle(1);
-      hisArray[i]->FillRandom("gaus", 100000 / (i + 2));
-      if (i == 0) {
-        hisArray[i]->Draw("err");
-      } else {
-        hisArray[i]->Draw("SAMEerr");
-      }
-    }
-    //
-    exampleCanvas->cd(2);
-    TLegend *legend = new TLegend(0.1, 0.1, 0.4, 0.4, "Graph");
-    const Int_t n = 100;
-    Double_t x[n], y[n];
-    TGraph *grArray[nHis];
+  exampleCanvas->cd(2);
+  const Int_t n = 100;
+  Double_t x[n], y[n];
+  TGraph *grArray[nHis];
+  for (Int_t j = 0; j < n; j++) {
+    x[j] = j * 0.6 + 5;
+    y[j] = (nHis) * log(x[j]);
+  }
+
+  for (Int_t i = 0; i < nHis; i++) {
     for (Int_t j = 0; j < n; j++) {
       x[j] = j * 0.6 + 5;
-      y[j] = (nHis) * log(x[j]);
+      y[j] = log(x[j]) / (i + 1);
     }
-
-    for (Int_t i = 0; i < nHis; i++) {
-      for (Int_t j = 0; j < n; j++) {
-        x[j] = j * 0.6 + 5;
-        y[j] = log(x[j]) / (i + 1);
-      }
-      grArray[i] = new TGraph(n, x, y);
-      grArray[i]->SetName(TString::Format("graph[%d].class(Raw)", i).Data());
-      grArray[i]->SetTitle(TString::Format("gr[%d]", i).Data());
-      if (i == 0) {
-        grArray[i]->SetMinimum(0);
-        grArray[i]->Draw("alp");
-      } else {
-        grArray[i]->Draw("lp");
-      }
-      legend->AddEntry(grArray[i], "", "p");
+    grArray[i] = new TGraph(n, x, y);
+    grArray[i]->SetName(TString::Format("graph%d.class(Raw)", i).Data());
+    grArray[i]->SetTitle(TString::Format("gr%d", i).Data());
+    if (i == 0) {
+      grArray[i]->SetMinimum(0);
+      grArray[i]->Draw("alp");
     }
-    legend->Draw();
+    else grArray[i]->Draw("lp");
+  }
+  gPad->BuildLegend();
   return exampleCanvas;
 }
