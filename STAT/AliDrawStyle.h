@@ -59,6 +59,8 @@ class TF1;
 class TH1;
 class TGraph;
 class TMultiGraph;
+class TFrame;
+class TPaveText;
 class AliDrawStyle : public TObject{
 public:
   static void ApplyStyle(const char * styleName);
@@ -73,7 +75,10 @@ public:
   static void TF1ApplyStyle(const char* styleName, TF1 *cFunc);
   static void TPadApplyStyle(const char* styleName, TPad *cPad);
   static void TCanvasApplyCssStyle(const char* styleName, TCanvas *cCanvas);
+  //static void TFrameApplyCssStyle(const char* styleName, TFrame *cFrame);
+  //static void TPaveTextApplyCssStyle(const char* styleName, TPaveText *cPaveText);
   static void ApplyCssStyle(TPad *pad, const char* styleName);
+
   /// \brief Set Css style by styleName.
   ///  Setter for css style.
   /// \param styleName  - name of style.

@@ -712,8 +712,8 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
       }
     }
   }
-    return false;
-  }
+  return false;
+}
 
 ///
 /// \param styleName      - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
@@ -801,6 +801,39 @@ void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *cGraph){
   property = AliDrawStyle::GetProperty(styleName, "fill_style", elementID, classID, objectID);
   valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
   if (property != "" && status) cGraph->SetFillStyle(valueI);
+
+//
+//  property = AliDrawStyle::GetProperty(styleName, "Xaxis_color", elementID, classID, objectID);
+//  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cGraph->GetXaxis()->SetAxisColor(valueI);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "label_color", elementID, classID, objectID);
+//  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cGraph->GetXaxis()->SetLabelColor(valueI);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "label_font", elementID, classID, objectID);
+//  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetLabelFont(valueI);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "label_size", elementID, classID, objectID);
+//  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetLabelSize(valueF);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "label_offset", elementID, classID, objectID);
+//  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetLabelOffset(valueF);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "title_font", elementID, classID, objectID);
+//  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetTitleFont(valueI);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "title_offset", elementID, classID, objectID);
+//  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetTitleOffset(valueF);
+//
+//  property = AliDrawStyle::GetProperty(styleName, "title_size", elementID, classID, objectID);
+//  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+//  if (property != "" && status) cHis->SetTitleSize(valueF);
 }
 
 ///
@@ -853,6 +886,39 @@ void AliDrawStyle::TH1ApplyStyle(const char* styleName, TH1 *cHis){
   property = AliDrawStyle::GetProperty(styleName, "fill_style", elementID, classID, objectID);
   valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
   if (property != "" && status) cHis->SetFillStyle(valueI);
+
+  property = AliDrawStyle::GetProperty(styleName, "axis_color", elementID, classID, objectID);
+  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetAxisColor(valueI);
+
+  property = AliDrawStyle::GetProperty(styleName, "label_color", elementID, classID, objectID);
+  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetLabelColor(valueI);
+
+  property = AliDrawStyle::GetProperty(styleName, "label_font", elementID, classID, objectID);
+  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetLabelFont(valueI);
+
+  property = AliDrawStyle::GetProperty(styleName, "label_size", elementID, classID, objectID);
+  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetLabelSize(valueF);
+
+  property = AliDrawStyle::GetProperty(styleName, "label_offset", elementID, classID, objectID);
+  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetLabelOffset(valueF);
+
+  property = AliDrawStyle::GetProperty(styleName, "title_font", elementID, classID, objectID);
+  valueI = AliDrawStyle::GetNamedIntegerAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetTitleFont(valueI);
+
+  property = AliDrawStyle::GetProperty(styleName, "title_offset", elementID, classID, objectID);
+  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetTitleOffset(valueF);
+
+  property = AliDrawStyle::GetProperty(styleName, "title_size", elementID, classID, objectID);
+  valueF = AliDrawStyle::GetNamedFloatAt(property, "", AliDrawStyle::GetObjectNumber(), status);
+  if (property != "" && status) cHis->SetTitleSize(valueF);
+
 }
 
 ///
@@ -1058,21 +1124,22 @@ void AliDrawStyle::ApplyCssStyle(TPad *pad, const char* styleName){
   if (elementID == "TCanvas") {
     AliDrawStyle::TCanvasApplyCssStyle(styleName, (TCanvas *) pad);
     pad->Modified();
-    for(Int_t c = 0; c < oList->GetEntries() && oList->At(c)->InheritsFrom("TPad"); c++) {
+    for(Int_t c = 0; c < oList->GetEntries(); c++) {
       AliDrawStyle::ApplyCssStyle((TPad *) oList->At(c), styleName);
     }
   }
+
   //fixme: for pads we can use indexes only from name
   AliDrawStyle::SetObjectNumber(TString(TString(TString(pad->GetName())(numPat0))(numPat1)).Atoi());
   if (elementID == "TPad" || elementID == "TCanvas") AliDrawStyle::TPadApplyStyle(styleName, pad);
 
   for (Int_t k = 0; k < oList->GetEntries(); k++) {
-      cObj = oList->At(k);
-      if (TString(TString(cObj->GetName())(numPat0))(numPat1) == TString("")) AliDrawStyle::SetObjectNumber(k);
-      else AliDrawStyle::SetObjectNumber(TString(TString(TString(cObj->GetName())(numPat0))(numPat1)).Atoi());
-      if (cObj->InheritsFrom("TH1")) AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj);
-      if (cObj->InheritsFrom("TGraph")) AliDrawStyle::TGraphApplyStyle (styleName, (TGraph *) cObj);
-      if (cObj->InheritsFrom("TF1")) AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj);
+    cObj = oList->At(k);
+    if (TString(TString(cObj->GetName())(numPat0))(numPat1) == TString("")) AliDrawStyle::SetObjectNumber(k);
+    else AliDrawStyle::SetObjectNumber(TString(TString(TString(cObj->GetName())(numPat0))(numPat1)).Atoi());
+    if (cObj->InheritsFrom("TH1")) AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj);
+    if (cObj->InheritsFrom("TGraph")) AliDrawStyle::TGraphApplyStyle (styleName, (TGraph *) cObj);
+    if (cObj->InheritsFrom("TF1")) AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj);
   }
   pad->Modified();
 }
