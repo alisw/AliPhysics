@@ -35,6 +35,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerMapping.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -67,13 +68,15 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fMaskedFastors(),
   fOnlineTriggerThresholds(),
   fNameAcceptanceOADB(),
+  fNameTriggerSelectionContainer("EmcalTriggerDecision"),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
   fEnableCentralityTriggers(false),
   fEnableT0Triggers(false),
   fRequireL0forL1(false),
-  fExclusiveMinBias(false)
+  fExclusiveMinBias(false),
+  fUseTriggerSelectionContainer(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -100,13 +103,15 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fMaskedFastors(),
   fOnlineTriggerThresholds(),
   fNameAcceptanceOADB(),
+  fNameTriggerSelectionContainer("EmcalTriggerDecision"),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
   fEnableCentralityTriggers(false),
   fEnableT0Triggers(false),
   fRequireL0forL1(false),
-  fExclusiveMinBias(false)
+  fExclusiveMinBias(false),
+  fUseTriggerSelectionContainer(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -229,6 +234,15 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     return;
   }
 
+  PWG::EMCAL::AliEmcalTriggerDecisionContainer *triggersel(nullptr);
+  if(fUseTriggerSelectionContainer) {
+    triggersel = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->GetList()->FindObject(fNameTriggerSelectionContainer.Data()));
+    if(!triggersel) {
+      AliErrorStream() << "Trigger selection container requested but not found - not possible to select EMCAL triggers" << std::endl;
+      return;
+    }
+  }
+
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
   if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
   if(!isMC){
@@ -254,7 +268,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
         }
       }
     }
-
+    
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
     // triggers
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
@@ -268,10 +282,14 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
         std::unique_ptr<TObjArray> options(kSelectTriggerStrings[iclass].Tokenize("|"));
         for(auto o : *options){
           TObjString *optstring = static_cast<TObjString *>(o);
-          if(triggerstring.Contains(optstring->String())) selectionStatus = true;
+          if(triggerstring.Contains(optstring->String())){
+            selectionStatus = true;
+            if(fUseTriggerSelectionContainer) selectionStatus = selectionStatus && triggersel->IsEventSelected(optstring->String().Data());
+          }
         }
       } else {
         selectionStatus = triggerstring.Contains(kSelectTriggerStrings[iclass]);
+        if(fUseTriggerSelectionContainer) selectionStatus = selectionStatus && triggersel->IsEventSelected(kSelectTriggerStrings[iclass]);
       }
       if(isT0trigger) {
         emc8Triggers[iclass] &= selectionStatus;
