@@ -340,9 +340,6 @@ def MovingAverage(hist, index, numberOfCountsBelowIndex = 0, numberOfCountsAbove
     # Avoid going over histogram limits
     if i < 0 or i >= hist.GetNcells():
       continue
-    # TEMP - Hack due to entries in pt hard value = 1 for large pt hard bins for no apparent reason
-    if i == 1:
-      continue
     #print("Adding {}".format(hist.GetBinContent(i)))
     average += hist.GetBinContent(i)
     count += 1
