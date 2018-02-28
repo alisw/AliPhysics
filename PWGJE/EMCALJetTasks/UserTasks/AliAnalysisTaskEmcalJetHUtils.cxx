@@ -8,7 +8,7 @@
 
 #include <AliLog.h>
 
-#include "AliEmcalJetTask.h"
+#include "AliEmcalJet.h"
 
 namespace PWGJE {
 namespace EMCALJetTasks {
