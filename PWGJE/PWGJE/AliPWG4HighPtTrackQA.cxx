@@ -27,6 +27,7 @@
 #ifndef ALIPWG4HIGHPTTRACKQA_CXX
 #define ALIPWG4HIGHPTTRACKQA_CXX
 
+#include <iostream>
 #include <memory>
 #include <vector>
 #include "AliPWG4HighPtTrackQA.h"
@@ -1473,6 +1474,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(aod->GetTrack(iTrack));
     if (!aodtrack)
       AliFatal("Not a standard AOD");
+    AliDebugStream(2) << GetName() << ": Applying filter bits " << fFilterMask << std::endl;
     if (!aodtrack->TestFilterBit(fFilterMask))
     {
       fh1NTracksReject->Fill("noHybridTrack", 1);
