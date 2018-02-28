@@ -74,10 +74,12 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fAOD(NULL),
   fPIDResponse(NULL),
   fMultSelection(NULL),
+  fAnalysisUtil(NULL),
   fListHist(NULL),
   mfileFBHijing(NULL),
   fListFBHijing(NULL),
   fHistTaskConfigParameters(NULL),
+  fHistPileUpCount(NULL),
   fHistEtaPtBefore(NULL),
   fHistEtaPtAfter(NULL),
   fHistTPCvsGlobalMultBefore(NULL),
@@ -92,12 +94,18 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fHistTPConlyVsCentBefore(NULL),
   fHistTPConlyVsCentAfter(NULL),
   fHistRawVsCorrMult(NULL),
-  fHistRawVsCorrMultFB96(NULL),
+  fHistRawVsCorrMultFB(NULL),
   hCentvsTPCmultCuts(NULL),
   fFilterBit(1),
   fNSigmaCut(2),
+  fMinPtCut(0.2),
+  fMaxPtCut(5.0),
+  fMinEtaCut(-0.8),
+  fMaxEtaCut(0.8),
   fCentralityPercentMin(0),
   fCentralityPercentMax(90),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
   bApplyMCcorr(kFALSE),
   sPathOfMCFile(""),
   fHistEventCount(NULL)
@@ -132,10 +140,12 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():AliAnalysisTaskSE(),
   fAOD(NULL),
   fPIDResponse(NULL),
   fMultSelection(NULL),
+  fAnalysisUtil(NULL),
   fListHist(NULL),
   mfileFBHijing(NULL),
   fListFBHijing(NULL),
   fHistTaskConfigParameters(NULL),
+  fHistPileUpCount(NULL),
   fHistEtaPtBefore(NULL),
   fHistEtaPtAfter(NULL),
   fHistTPCvsGlobalMultBefore(NULL),
@@ -150,12 +160,18 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():AliAnalysisTaskSE(),
   fHistTPConlyVsCentBefore(NULL),
   fHistTPConlyVsCentAfter(NULL),
   fHistRawVsCorrMult(NULL),
-  fHistRawVsCorrMultFB96(NULL),
+  fHistRawVsCorrMultFB(NULL),
   hCentvsTPCmultCuts(NULL),
   fFilterBit(1),
   fNSigmaCut(2),
+  fMinPtCut(0.2),
+  fMaxPtCut(5.0),
+  fMinEtaCut(-0.8),
+  fMaxEtaCut(0.8),
   fCentralityPercentMin(0),
   fCentralityPercentMax(90),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
   bApplyMCcorr(kFALSE),
   sPathOfMCFile(""),
   fHistEventCount(NULL)
@@ -186,8 +202,21 @@ AliAnalysisTaskCMEV0PID::~AliAnalysisTaskCMEV0PID()
   //Destructor
   //if(fPIDResponse)   delete fPIDResponse;
   //if(fMultSelection) delete fMultSelection;
-    
-}
+  if(fListHist){
+    delete fListHist;
+  }  
+  if(mfileFBHijing->IsOpen()){
+     mfileFBHijing->Close();
+     if(fListFBHijing) delete fListFBHijing;
+  }
+  for(int i=0;i<10;i++){
+    if(fFB_Efficiency_Cent[i])
+      delete fFB_Efficiency_Cent[i];
+  }
+  if(fAnalysisUtil){
+    delete fAnalysisUtil; // its 'new' !!
+  }
+}//---------------- sanity ------------------------
 
 
 
@@ -198,12 +227,13 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
   if (!inputHandler) {  printf("\n ...Input handler missing!!!...\n");    return; }
 
+  //PileUp Multi-Vertex
+  fAnalysisUtil = new AliAnalysisUtils();
+  fAnalysisUtil->SetUseMVPlpSelection(kTRUE);
+  fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
+
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();
-  if(!fPIDResponse){
-    printf("\n\n...... PIDResponse object not found..... \n\n");
-    return;
-  }
     
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
@@ -252,8 +282,8 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   fHistRawVsCorrMult = new TH2F("fHistRawVsCorrMult","FB 1; Mult_{raw}; Mult_{corr}",4500,0,4500,5000,0,5000);
   fListHist->Add(fHistRawVsCorrMult);
 
-  fHistRawVsCorrMultFB96 = new TH2F("fHistRawVsCorrMultFB96","FB 96; Mult_{raw}; Mult_{corr}",4500,0,4500,5000,0,5000);
-  fListHist->Add(fHistRawVsCorrMultFB96);
+  fHistRawVsCorrMultFB = new TH2F("fHistRawVsCorrMultFB",Form("FB %d; Mult_{raw}; Mult_{corr}",fFilterBit),4500,0,4500,5000,0,5000);
+  fListHist->Add(fHistRawVsCorrMultFB);
 
   fHistTPCdEdxvsPBefore = new TH2F("fHistTPCdEdxvsPBefore","Before; p (GeV/c); dEdx (arb)",200,-5,5,200,0,250);
   fListHist->Add(fHistTPCdEdxvsPBefore);
@@ -298,6 +328,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
   
+  
  //-------------------------- Define NUA Hist for PID ------------------------------------
   Int_t gCentForNUA[6] = {0,5,10,20,40,90};
   Char_t  name[100];
@@ -305,18 +336,20 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
   for(int i=0;i<3;i++){
     for(int j=0;j<5;j++){
-      sprintf(name,"fHistEtaPhiVz_%s_Pos_Cent%d_Run%d",gSpecies[i],j,246087);
-      sprintf(title,"eta,phi,Vz %s Pos Cent%d-%d%%",gSpecies[i],gCentForNUA[j],gCentForNUA[j+1]);
+      sprintf(name,"fHistEtaPhiVz_%s_Pos_Cent%d_Run%d",gSpecies[i],j,1);
+      sprintf(title,"eta,phi,Vz %sPos, Cent%d-%d, FB %d",gSpecies[i],gCentForNUA[j],gCentForNUA[j+1],fFilterBit);
       fHist3DEtaPhiVz_Pos_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
       fListHist->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
 
-      sprintf(name,"fHistEtaPhiVz_%s_Neg_Cent%d_Run%d",gSpecies[i],j,246087);
-      sprintf(title,"eta,phi,Vz  %s Neg Cent%d-%d%%",gSpecies[i],gCentForNUA[j],gCentForNUA[j+1]);
+      sprintf(name,"fHistEtaPhiVz_%s_Neg_Cent%d_Run%d",gSpecies[i],j,1);
+      sprintf(title,"eta,phi,Vz %sNeg, Cent%d-%d, FB %d",gSpecies[i],gCentForNUA[j],gCentForNUA[j+1],fFilterBit);
       fHist3DEtaPhiVz_Neg_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
       fListHist->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
     }
   }
  //---------------------------------------------------------------------------------
+
+
 
 
   PostData(1,fListHist);
@@ -333,7 +366,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   //printf("info: UserExec is called.... 1  \n");
 
-  Float_t stepCount = 1.5;
+  Float_t stepCount = 0.5;
 
   fHistEventCount->Fill(stepCount); //1
   stepCount++;
@@ -351,6 +384,15 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   stepCount++;
 
 
+
+  //--------- Check if I have PID response object --------
+  if(!fPIDResponse){
+    printf("\n\n...... PIDResponse object not found..... \n\n");
+    return;
+  }
+
+
+
   //-------------- Vtx cuts ---------------
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
     
@@ -366,11 +408,15 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
   if(!fMultSelection) { printf("\n\n **WARNING** \n::UserExec() AliMultSelection object not found.\n\n"); exit(1); }
 
-  Float_t centrality = fMultSelection->GetMultiplicityPercentile("V0M");
-//centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-//centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
-//centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
-    
+  Float_t centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+  Float_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+//Float_t centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
+//Float_t centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
+
+
+
+  Float_t centrality = centrV0M;
+
   if(centrality<fCentralityPercentMin || centrality>fCentralityPercentMax){ 
     return;
   }
@@ -420,22 +466,82 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Float_t ptTrk  = 0.1;
 
 
-  //--------------------- Track loop for Centrality outlier cut----------
+ //-------------- Track loop for outlier and PileUp cut -------------------
+
+  Bool_t BisPileup=kFALSE;
+
+  Int_t isPileup = fAOD->IsPileupFromSPD(3);
+
+  if(isPileup != 0) {
+    fHistPileUpCount->Fill(0.5);
+    BisPileup=kTRUE;          
+  }
+  else if(PileUpMultiVertex(fAOD)) {
+    fHistPileUpCount->Fill(1.5);
+    BisPileup=kTRUE;
+  }
+  else if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) {
+    fHistPileUpCount->Fill(2.5);
+    BisPileup=kTRUE;
+  }
+  else if(fAOD->IsIncompleteDAQ())  {
+    fHistPileUpCount->Fill(3.5);
+    BisPileup=kTRUE;
+  }
+  else if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5
+    fHistPileUpCount->Fill(4.5);
+    BisPileup=kTRUE;
+  }
+
+  // check vertex consistency
+  const AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
+  const AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+
+  if(vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1) {
+    fHistPileUpCount->Fill(5.5);
+    BisPileup=kTRUE;
+  }
+
+  double covTrc[6], covSPD[6];
+  vtTrc->GetCovarianceMatrix(covTrc);
+  vtSPD->GetCovarianceMatrix(covSPD);
+
+  double dz = vtTrc->GetZ() - vtSPD->GetZ();
+
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = dz/errTot;
+  double nsigTrc = dz/errTrc;
+
+  if(TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+    fHistPileUpCount->Fill(6.5);
+    BisPileup=kTRUE;
+  }
+
+  //---------------- a dobrin --------------
+
   Bool_t  pass=kTRUE;
 
+  Float_t multTPC     = 0;    // tpc mult estimate
   Float_t RefMultRaw  = 0;    // tpc mult estimate
   Float_t RefMultCorr = 0;    // tpc mult estimate
-  Float_t RefMultRawFB96 = 0;
-  Float_t RefMultCorrFB96= 0;
+  Float_t RefMultRawFB = 0;
+  Float_t RefMultCorrFB= 0;
 
-  Float_t multTPC     = 0;    // tpc mult estimate
+  Float_t multTPCAll  = 0;    // tpc mult estimate
   Float_t multGlobal  = 0; // global multiplicity
     
-  const Int_t nGoodTracks = fVevent->GetNumberOfTracks();
 
-  for(Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) { 
+//const Int_t nGoodTracks = fVevent->GetNumberOfTracks();
+  const Int_t nGoodTracks = fAOD->GetNumberOfTracks();
+
+  for(Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) { //-------------------------
+
     AliAODTrack* AODtrack =dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
+
+    if(AODtrack->TestFilterBit(128)) multTPCAll++; //A. Dobrin, no track cuts
+
     if(!(AODtrack->TestFilterBit(1))) continue;
     if((AODtrack->Pt() < .2) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
     multTPC++;
@@ -449,9 +555,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
         //cout<<iTrack<<"cent = "<<cent10bin<<" pt = "<<ptTrk<<"\t bin = "<<ptBinMC<<"\t Wgt = "<<ptWgtMC<<endl;    
 	RefMultRaw++;
 	RefMultCorr += ptWgtMC;
-        if((AODtrack->TestFilterBit(96))){
-	  RefMultRawFB96++;
-	  RefMultCorrFB96 += ptWgtMC;
+        if((AODtrack->TestFilterBit(fFilterBit))){
+	  RefMultRawFB++;
+	  RefMultCorrFB += ptWgtMC;
 	}
       }
     }  
@@ -463,20 +569,70 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
     multGlobal++;
 
-  }//-------------- track loop outlier -----------------
+  }//--- track loop outlier/PileUp ----
+
+  Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
+
+  Float_t multESDTPCDiff = (Float_t) multEsd - fPileUpSlopeParm*multTPCAll;
+
+  if(multESDTPCDiff > fPileUpConstParm) { 
+    fHistPileUpCount->Fill(7.5);
+    BisPileup=kTRUE;
+  }
+  else if(BisPileup==kFALSE) {
+    if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+    if(BisPileup) fHistPileUpCount->Fill(9.5);
+  }  
+  //-----------------------------------------------------------------
 
 
-        
+
+
+
   fHistTPCvsGlobalMultBefore->Fill(multGlobal,multTPC);
+     
+
         
 //if(multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal)) { pass = kFALSE;} //Run-1 or 2011
-  if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.40*multGlobal)) { pass = kFALSE;}
+  if(multTPC < (-20.0+1.15*multGlobal) || multTPC > (200.+1.40*multGlobal)) { pass = kFALSE;}
+       
+  fHistEventCount->Fill(stepCount); //6
+  stepCount++;
 
-        
-  if(!pass) return;
+  fHistGlobalVsCentBefore->Fill(centrCL1, multGlobal);
+  fHistTPConlyVsCentBefore->Fill(centrCL1, multTPCAll);
 
-  fHistGlobalVsCentBefore->Fill(centrality,multGlobal);
-  fHistTPConlyVsCentBefore->Fill(centrality,multTPC);
+
+
+
+
+
+
+  if(!pass) return; //outlier TPC vs Global
+
+  fHistEventCount->Fill(stepCount); //7
+  stepCount++;
+
+
+  if(BisPileup) return;  //PileUp A. Dobrin
+
+  fHistEventCount->Fill(stepCount); //8
+  stepCount++;
+
+
+
+
+
+
+
+
+
 
   Int_t icentBin = centrality;
   icentBin++;
@@ -484,25 +640,65 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Float_t TPCmultLowLimit  =  hCentvsTPCmultCuts->GetBinContent(icentBin,1);
   Float_t TPCmultHighLimit =  hCentvsTPCmultCuts->GetBinContent(icentBin,1);
 
-  TPCmultLowLimit  -=  4.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean - 4sigma
-  TPCmultHighLimit +=  4.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean + 4sigma
+  TPCmultLowLimit  -=  5.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean - 5sigma
+  TPCmultHighLimit +=  5.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean + 5sigma
   //std::cout<<" Cent = "<<centrality<<"\t icent = "<<icentBin<<" low = "<<TPCmultLowLimit<<"\t high = "<<TPCmultHighLimit<<std::endl;
 
   if(multTPC<TPCmultLowLimit || multTPC>TPCmultHighLimit) return;
 
-  fHistTPConlyVsCentAfter->Fill(centrality,multTPC);
+  fHistEventCount->Fill(stepCount); //9
+  stepCount++;
 
+
+  fHistTPConlyVsCentAfter->Fill(centrCL1, multTPCAll);
   fHistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
 
-  fHistRawVsCorrMult->Fill(RefMultRaw,RefMultCorr);   //FB1
-  fHistRawVsCorrMultFB96->Fill(RefMultRawFB96,RefMultCorrFB96); //FB96
-  //-------------------------------------
+
+  // MC corrected Refmult:
+  fHistRawVsCorrMult->Fill(RefMultRaw,RefMultCorr);       // FB-1
+  fHistRawVsCorrMultFB->Fill(RefMultRawFB,RefMultCorrFB); // FB set by AddTask.. 
+
+  //--------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
   //if(nGoodTracks!=ntracks) std::cout<<" Event with ntracks = "<<ntracks<<"\t good Tracks = "<<nGoodTracks<<std::endl;
 
             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //--------- PID works begin ----------
   Double_t   PDGmassPion   = 0.13957;
@@ -524,9 +720,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Int_t    TOFmatch=0; 
   Int_t    charge;
         
-
-
-
   //--------- Track Loop for PID studies ----------------
 
   for(Int_t itrack = 0; itrack < ntracks; itrack++) {
@@ -593,9 +786,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
     //-------- Apply all track cuts for analsys: ---------
-    if(pT < fMinPtCut  || pT > fMaxPtCut)        continue;
-    if(eta < fMinEtaCut || eta > fMaxEtaCut)     continue;
-
+    if(pT < fMinPtCut  || pT > fMaxPtCut)     continue;
+    if(eta < fMinEtaCut || eta > fMaxEtaCut)  continue;
+    if(!(track->TestFilterBit(fFilterBit)))   continue;
     //-----------------------------------------------------
 
 
@@ -802,23 +995,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       fHistPtwithTOFmasscut[2]->Fill(pT*charge);
     }
 
-   
-  
-
-
-
-
-
-
-
-
-
-
-
-
   }//track loop ends
 
 
+
+
+
+
+  PostData(1,fListHist);
+
+  fHistEventCount->Fill(stepCount); //10
+  stepCount++;
 
 }//================ UserExec ==============
 
@@ -828,6 +1015,72 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
+double AliAnalysisTaskCMEV0PID::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+{
+  // calculate sqrt of weighted distance to other vertex
+  if (!v0 || !v1) {
+    AliDebug(2,"\n\n ::GetWDist => One of vertices is not valid\n\n");
+    return 0;
+  }
+  static TMatrixDSym vVb(3);
+  double dist = -1;
+  double dx = v0->GetX()-v1->GetX();
+  double dy = v0->GetY()-v1->GetY();
+  double dz = v0->GetZ()-v1->GetZ();
+  double cov0[6],cov1[6];
+  v0->GetCovarianceMatrix(cov0);
+  v1->GetCovarianceMatrix(cov1);
+  vVb(0,0) = cov0[0]+cov1[0];
+  vVb(1,1) = cov0[2]+cov1[2];
+  vVb(2,2) = cov0[5]+cov1[5];
+  vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+  vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+  vVb.InvertFast();
+  if (!vVb.IsValid()) {
+    AliDebug(2,"Singular Matrix\n");
+    return dist;
+  }
+  dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+  +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+  return dist>0 ? TMath::Sqrt(dist) : -1;
+}
+
+
+Bool_t AliAnalysisTaskCMEV0PID::PileUpMultiVertex(const AliAODEvent* faod)
+ {  // check for multi-vertexer pile-up
+  const int    kMinPlpContrib = 5;
+  const double kMaxPlpChi2    = 5.0;
+  const double kMinWDist      = 15;
+
+  const AliVVertex* vtPrm = 0;
+  const AliVVertex* vtPlp = 0;
+
+  int nPlp = 0;
+
+  if(!(nPlp=faod->GetNumberOfPileupVerticesTracks()))
+  return kFALSE;
+
+  vtPrm = faod->GetPrimaryVertex();
+  if(vtPrm == faod->GetPrimaryVertexSPD())
+  return kTRUE;  // there are pile-up vertices but no primary
+
+  //int bcPrim = vtPrm->GetBC();
+
+  for(int ipl=0;ipl<nPlp;ipl++) {
+    vtPlp = (const AliVVertex*)faod->GetPileupVertexTracks(ipl);
+    if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+    if (vtPlp->GetChi2perNDF()    > kMaxPlpChi2)    continue;
+    //int bcPlp = vtPlp->GetBC();
+    //if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2)
+    // return kTRUE; // pile-up from other BC
+
+    double wDst = GetWDist(vtPrm,vtPlp);
+    if (wDst<kMinWDist)        continue;
+
+    return kTRUE; // pile-up: well separated vertices
+    }
+  return kFALSE;
+}
 
 
 
@@ -929,21 +1182,37 @@ void AliAnalysisTaskCMEV0PID::SetupEventAndTaskConfigInfo(){
 
 
 
-  fHistEventCount = new TH1F("fHistEventCount","Event counts",10,0,10);
+  fHistPileUpCount = new TH1F("fHistPileUpCount", "fHistPileUpCount", 15, 0., 15.);
+  fHistPileUpCount->GetXaxis()->SetBinLabel(1,"plpMV");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultComb08");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(4,"IncompleteDAQ");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>5.0");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
+  Int_t puConst = fPileUpConstParm;
+  fHistPileUpCount->GetXaxis()->SetBinLabel(8,Form("multESDTPCDif>%d",puConst));
+  fHistPileUpCount->GetXaxis()->SetBinLabel(9,Form("multGlobTPCDif>%d",puConst));
+  fHistPileUpCount->GetXaxis()->SetBinLabel(10,"PileUpMultSelTask");
+  fListHist->Add(fHistPileUpCount);
+
+
+
+
+  fHistEventCount = new TH1F("fHistEventCount","Event counts",15,0,15);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Called UserExec()");
   fHistEventCount->GetXaxis()->SetBinLabel(2,"Called Exec()");
   fHistEventCount->GetXaxis()->SetBinLabel(3,"AOD Exist");
   fHistEventCount->GetXaxis()->SetBinLabel(4,"Vz<10");
-  fHistEventCount->GetXaxis()->SetBinLabel(5,"Cent<90");
+  fHistEventCount->GetXaxis()->SetBinLabel(5,Form("%2.0f<Cent<%2.0f",fCentralityPercentMin,fCentralityPercentMax));
   fHistEventCount->GetXaxis()->SetBinLabel(6,"noAODtrack>2 ");
-  fHistEventCount->GetXaxis()->SetBinLabel(7," ");
-  fHistEventCount->GetXaxis()->SetBinLabel(8," ");
-  fHistEventCount->GetXaxis()->SetBinLabel(9," ");
-  fHistEventCount->GetXaxis()->SetBinLabel(10,"Survived ");
-
+  fHistEventCount->GetXaxis()->SetBinLabel(7,"TPC vs Global");
+  fHistEventCount->GetXaxis()->SetBinLabel(8,"TPC128 vs ESD");
+  fHistEventCount->GetXaxis()->SetBinLabel(9,"Cent vs TPC");
+  fHistEventCount->GetXaxis()->SetBinLabel(10,"Survived Events");
   fListHist->Add(fHistEventCount);
 
-  fHistEventCount->Fill(1);
+  //fHistEventCount->Fill(1);
 
 }
 

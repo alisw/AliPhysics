@@ -26,11 +26,13 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 
-class    AliVEvent;       
+class    AliVEvent;      
+class    AliVVertex;    
 class    AliESDEvent;       
-class    AliAODEvent;         
+class    AliAODEvent;      
 class    AliPIDResponse;    
 class    AliMultSelection;    
+class    AliAnalysisUtils;
 
 
 
@@ -58,6 +60,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetFBEfficiencyList(TList *flist)     {this->fListFBHijing  =  flist;}
   void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
   void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
+  void SetPileUpCutParam(Float_t m,Float_t c){this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
 
 
  protected:
@@ -70,12 +73,14 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   AliAODEvent           *fAOD;                //! aod
   AliPIDResponse        *fPIDResponse;        //! PID response Handler
   AliMultSelection      *fMultSelection;      //!
+  AliAnalysisUtils      *fAnalysisUtil;       //! Event selection
   TList                 *fListHist;           //!
   TFile                 *mfileFBHijing;       //!
   TList                 *fListFBHijing;       //!
 
   //histograms:
   TH1F         *fHistTaskConfigParameters;   //! Task input parameters FB / cut values etc.
+  TH1F                  *fHistPileUpCount;   //!
   TH2F                  *fHistEtaPtBefore;   //! Eta-Pt acceptance
   TH2F                   *fHistEtaPtAfter;   //! Eta-Pt acceptance
   TH2F        *fHistTPCvsGlobalMultBefore;   //!
@@ -93,7 +98,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH2F          *fHistTPConlyVsCentBefore;   //!    
   TH2F           *fHistTPConlyVsCentAfter;   //!    
   TH2F                *fHistRawVsCorrMult;   //!    
-  TH2F            *fHistRawVsCorrMultFB96;   //!  
+  TH2F              *fHistRawVsCorrMultFB;   //!  
   TH2F                *hCentvsTPCmultCuts;   //! 
 
 
@@ -105,6 +110,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Float_t               fMaxEtaCut;  //
   Float_t    fCentralityPercentMin;  //
   Float_t    fCentralityPercentMax;  //
+  Float_t         fPileUpSlopeParm;  //
+  Float_t         fPileUpConstParm;  //
   Bool_t              bApplyMCcorr;  //
   TString            sPathOfMCFile;  //
 
@@ -130,8 +137,11 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   TH1D           *fFB_Efficiency_Cent[10];   //!
 
-
-
+  //--------- PileUp Functions -----------
+  Bool_t CheckEventIsPileUp(AliAODEvent* faod);
+  Bool_t PileUpMultiVertex(const AliAODEvent* faod);
+  double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
+  //----------- other functions ----------
   void  SetUpCentralityOutlierCut();
   void  SetupEventAndTaskConfigInfo();
   void  SetupMCcorrectionMap(TString sMCfilePath);

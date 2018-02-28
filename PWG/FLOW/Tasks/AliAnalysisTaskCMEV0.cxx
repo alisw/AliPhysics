@@ -147,6 +147,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fRejectRatioVsCR(NULL),
   fCentDistvsRun(NULL),
   fHCorrectV0M(NULL),
+  fHAvgerageQnV0A(NULL),
+  fHAvgerageQnV0C(NULL),
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
   fTPCvsGlobalTrk(NULL),
@@ -383,6 +385,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fRejectRatioVsCR(NULL),
   fCentDistvsRun(NULL),
   fHCorrectV0M(NULL),
+  fHAvgerageQnV0A(NULL),
+  fHAvgerageQnV0C(NULL),
   fCentV0MvsVzRun(NULL),
   fCent3pvsVzRun(NULL),
   fTPCvsGlobalTrk(NULL),
@@ -603,8 +607,12 @@ AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 
   delete            fHCentBinTrkRecenter;
 
-  if(fHCorrectV0M)   delete fHCorrectV0M;
-  if(fHCorrectZDNP)  delete fHCorrectZDNP;
+  if(fHCorrectZDNP)   delete fHCorrectZDNP;
+  if(fHCorrectV0M)    delete fHCorrectV0M;
+  if(fHAvgerageQnV0A) delete fHAvgerageQnV0A;
+  if(fHAvgerageQnV0C) delete fHAvgerageQnV0C;
+
+
 
   for(int i=0;i<5;i++){
     if(fHCorrectNUApos[i]) delete fHCorrectNUApos[i];
@@ -847,6 +855,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fV0AQ3xVsCentRun->Fill(centrCL1,runindex,Qxan3); 
    fV0AQ3yVsCentRun->Fill(centrCL1,runindex,Qyan3); 
 
+   Int_t icentV0Qn = centrCL1;
+   icentV0Qn += 1;
 
    if(sDataSet=="2015pPb" || sDataSet=="pPb"){
      if(psiN==3.0){
@@ -854,12 +864,25 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        QxcnCor = Qxcn3;
        QyanCor = Qyan3;
        QycnCor = Qycn3;
+
+       if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
+         QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,3);  //x = Cos
+         QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,3);  //x = Cos
+         QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,4);  //y = Sin
+         QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,4);  //y = Sin
+       }
      }
      else{
        QxanCor = Qxan2;  //2nd or higher
        QxcnCor = Qxcn2;
        QyanCor = Qyan2;
        QycnCor = Qycn2;
+       if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
+         QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,1);  //x = Cos
+         QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,1);  //x = Cos
+         QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,2);  //y = Sin
+         QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,2);  //y = Sin
+       }
      }
    }
 
@@ -998,9 +1021,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Int_t nRefMult = 0;
  Int_t n = fHarmonicN; 
  Int_t m = fHarmonicM; 
- Int_t p = (fHarmonicN+fHarmonicM);  // cos(nphi1 + mphi2 - p*Psi)
+ Int_t p = (fHarmonicN+fHarmonicM);  // cos(nphi1 + mphi2 - p*Psi_{2,3}) //not 4 
 
  Double_t nRefMultWgt = 0.;
+ Int_t skipPairHBT = 0;
 
 
 
@@ -1428,9 +1452,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      //---------- Femto Cuts ----------
      deltaEta = dEta1 - dEta2;
      deltaPhi = dPhi1 - dPhi2;
+     skipPairHBT = 0;
 
      if(TMath::Abs(deltaEta) < fHBTCutValue * 2.5 * 3) //fHBTCutValue = 0.02 [default for dphicorrelations]
-       {	
+     {	
 	 Float_t phi1rad = dPhi1;   // phi in rad
 	 Float_t phi2rad = dPhi2;
 
@@ -1455,18 +1480,17 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 	     }
 	   }
 	   //Float_t dPtDiff = fabs(dPt1-dPt2);
-	   if(dChrg1==dChrg2){ 
-	     if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue) {
-	       //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<"  Eta1 "<<dEta1<<"  Eta2 "<<dEta2<<"\t"<<dChrg1<<" Ch2 "<<dChrg2<<"  phi1 = "<<phi1rad<<"  phi2 = "<<phi2rad<<" |dPt| = "<<dPtDiff<<endl;
-	       if(dChrg1==dChrg2) {
-		 fdPhiFemtoCut->Fill(3.5,1e-8);
-	       }
-	       else{
-		 fdPhiFemtoCut->Fill(1.5,1e-8);
-	       }
-	       continue;
+	   if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue) {
+	     //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<"  Eta1 "<<dEta1<<"  Eta2 "<<dEta2<<"\t"<<dChrg1<<" Ch2 "<<dChrg2<<"  phi1 = "<<phi1rad<<"  phi2 = "<<phi2rad<<" |dPt| = "<<dPtDiff<<endl;
+	     if(dChrg1==dChrg2) {
+	       fdPhiFemtoCut->Fill(3.5,1e-8);
 	     }
-	   }
+	     else{
+	       fdPhiFemtoCut->Fill(1.5,1e-8);
+	     }
+	     skipPairHBT = 1;
+	     //continue;
+	   }   
 	 }
        }
 
@@ -1508,7 +1532,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
          fHist_Corr3p_EtaDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        }
      }
-     else if(dChrg1>0 && dChrg2>0){
+     else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0){
+
        fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
 
@@ -1529,7 +1554,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
          fHist_Corr3p_EtaDiff_EP_V0C_PP[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        }
      }
-     else if(dChrg1<0 && dChrg2<0){
+     else if(dChrg1<0 && dChrg2<0 && skipPairHBT==0){
+
        fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
 
@@ -1567,21 +1593,28 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
- Double_t Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
+ Double_t QTPCRe3 = QxTPC[2];
+ Double_t QTPCIm3 = QyTPC[2];
+
+
+ Double_t Psi2TPC = 0;
+
+ if(psiN<=2){
+
+ Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
  if(Psi2TPC < 0.) Psi2TPC += TMath::Pi();
 
  fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
  fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+ }
+ else if(psiN>=3){
 
- Double_t QTPCRe3 = QxTPC[2];
- Double_t QTPCIm3 = QyTPC[2];
+ Psi2TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
+ if(Psi2TPC < 0.) Psi2TPC += 2./3*TMath::Pi();
 
- Double_t Psi3TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
- if(Psi3TPC < 0.) Psi3TPC += 2./3*TMath::Pi();
-
- fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi3TPC));
- fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi3TPC));//centrCL1
-
+ fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+ fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+ }
 
 
 
@@ -2509,25 +2542,25 @@ void AliAnalysisTaskCMEV0::GetV0MCorrectionHist(Int_t run)
   TList *mListV0M = dynamic_cast<TList*> (fileV0M->FindObjectAny("fV0MChWgts"));
 */
   if(fListV0MCorr){
-    fHCorrectV0M = (TH1D *) fListV0MCorr->FindObject(Form("fHistV0Gain_Run%d",run));
-    //TH2D *fV0QnAvgTemp = (TH2D *) mListV0M->FindObject(Form("fHistV0_AvgQnAC_Run%d",run));
-    //fV0Qn_AvgCorr  = (TH2D *) fV0QnAvgTemp->Clone("fV0Qn_AvgCorr");
-    //TH2D *fV0QnSigTemp = (TH2D *) mListV0M->FindObject(Form("fHistV0_SigQnAC_Run%d",run));
-    //fV0Qn_SigCorr  = (TH2D *) fV0QnSigTemp->Clone("fV0Qn_SigCorr");
+    fHCorrectV0M    = (TH1D *) fListV0MCorr->FindObject(Form("fHistV0Gain_Run%d",run));
+    fHAvgerageQnV0A = (TH2D *) fListV0MCorr->FindObject(Form("fHistAvgQnV0A_Run%d",run));
+    fHAvgerageQnV0C = (TH2D *) fListV0MCorr->FindObject(Form("fHistAvgQnV0C_Run%d",run));
   }
   else{
     fHCorrectV0M  = new TH1D("fHCorrectV0M","",64,0,64);
     for(int i=1;i<=64;i++){
       fHCorrectV0M->SetBinContent(i,1.0);
     }
-    //fV0Qn_AvgCorr = NULL;
-    //fV0Qn_SigCorr = NULL;
-    //printf("\n\n ********** V0M ch wgt Histograms NotFound, use Wgt = 1.0 ***************\n\n");
-    //exit(1);
+    fHAvgerageQnV0A = new TH2D("fHAvgerageQnV0A_empty","<Cos2>,<Sin2>,<Cos3>,<Sin3> V0A",90,0,90,8,0,8);
+    fHAvgerageQnV0C = new TH2D("fHAvgerageQnV0C_empty","<Cos2>,<Sin2>,<Cos3>,<Sin3> V0A",90,0,90,8,0,8);
+    for(int i=1;i<=90;i++){
+      for(int j=1;j<=8;j++){
+        fHAvgerageQnV0A->SetBinContent(i,j,0.0);
+        fHAvgerageQnV0C->SetBinContent(i,j,0.0);
+      }
+    }
   }
-  //fileV0M->Close();
 }
-
 
 
 

@@ -28,6 +28,7 @@ class AliVVertex;
 class AliFlowEventSimple;
 class AliMultSelection;
 class AliAnalysisUtils;
+class AliPIDResponse;    
 class TList;
 
 class AliAnalysisTaskCMEV0 : public AliAnalysisTaskSE {
@@ -240,6 +241,10 @@ private:
 
   TH2F            *fCentDistvsRun; //! 
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
+  TH2D           *fHAvgerageQnV0A; //!   V0A Average <Qn>, n=2,3
+  TH2D           *fHAvgerageQnV0C; //!   V0C Average <Qn>, n=2,3
+
+
 
   TProfile2D     *fCentV0MvsVzRun; //!
   TProfile2D      *fCent3pvsVzRun; //!
