@@ -61,6 +61,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fMinFractionShared(0.),
   fLeadingHadronBiasType(AliAnalysisTaskEmcalJetHUtils::kCharged)
 {
+  // Ensure that additional general histograms are created
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 /**
@@ -247,20 +249,25 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
 
   // Retrieve binning from the YAML configuration
   std::vector<TAxis *> binning;
-  std::map<std::string, std::vector<double>> sparseAxes;
+  // This structure is designed to preserve the order of the axis in the YAML by using a YAML sequence (decoded into
+  // a vector), while defining a pair of the axis name and axis limts. Using this structure avoids the need to create
+  // a new object and conversion to retrieve the data
+  std::vector<std::pair<std::string, std::vector<double>>> sparseAxes;
   std::string baseName = "responseMatrix";
   fYAMLConfig.GetProperty({baseName, "axes"}, sparseAxes, true);
   for (auto axis : sparseAxes) {
     auto axisLimits = axis.second;
-    binning.emplace_back(new TAxis(axisLimits.at(0), axisLimits.at(1), axisLimits.at(1)));
+    AliDebugStream(4) << "Creating axis " << axis.first << " with nBins " << axisLimits.at(0) << ", min: " << axisLimits.at(1) << ", max: " << axisLimits.at(2) << "\n";
+    binning.emplace_back(new TAxis(axisLimits.at(0), axisLimits.at(1), axisLimits.at(2)));
   }
 
   // "s" ensures that Sumw2() is called
   // The explicit const_cast is required
-  THnSparse * hist = fHistManager.CreateTHnSparse(name.c_str(), title.c_str(), binning.size(), const_cast<const TAxis **>(&binning[0]), "s");
+  THnSparse * hist = fHistManager.CreateTHnSparse(name.c_str(), title.c_str(), binning.size(), const_cast<const TAxis **>(binning.data()), "s");
   // Set the axis titles
   int axisNumber = 0;
   for (auto axis = sparseAxes.begin(); axis != sparseAxes.end(); axis++) {
+    AliDebugStream(5) << "ResponseMatrix: Add axis " << axis->first << " to sparse\n";
     hist->GetAxis(axisNumber)->SetTitle(axis->first.c_str());
     axisNumber++;
   }
@@ -387,12 +394,13 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
   std::string histName = "fHistResponseMatrix";
   std::vector<double> values;
   THnSparse * response = static_cast<THnSparse*>(fHistManager.FindObject(histName.c_str()));
-  AliDebugStream(3) << "About to fill response matrix values";
+  AliDebugStream(3) << "About to fill response matrix values\n";
   AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
   AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
   for (unsigned int i = 0; i < response->GetNdimensions(); i++) {
     std::string title = response->GetAxis(i)->GetTitle();
 
+    // Retrieve pair of jet and pointer to extract the fill value
     auto jetPair = fResponseMatrixFillMap.find(title);
     if (jetPair != fResponseMatrixFillMap.end()) {
       auto rmJet = jetNumberToJet.at(jetPair->second.first);
@@ -403,31 +411,9 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
     else {
       AliWarningStream() << "Unable to fill dimension " << title << "!\n";
     }
-
-    // Fill sparse values
-    /*if (title == "p_{T,1}")
-      values.emplace_back(jet1->Pt());
-    else if (title == "p_{T,2}")
-      values.emplace_back(jet2->Pt());
-    else if (title == "A_{jet,1}")
-      values.emaplce_back(jet1->Area());
-    else if (title == "A_{jet,2}")
-      values.emaplce_back(jet2->Area());
-    else if (title == "distance")
-      values.emaplce_back(jet2->ClosestJetDistance());
-    else if (title == "#theta_{jet,1}^{EP}")
-      values.emaplce_back(AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet1->Phi(), fEPV0));
-    else if (title == "#theta_{jet,2}^{EP}")
-      values.emaplce_back(AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet2->Phi(), fEPV0));
-    else if (title == "p_{T,particle,1}^{leading} (GeV/c)")
-      values.emplace_back(GetLeadingHadronPt(jets1, jet1));
-    else if (title == "p_{T,particle,2}^{leading} (GeV/c)")
-      values.emplace_back(GetLeadingHadronPt(jets2, jet2));
-    else 
-      AliWarningStream() << "Unable to fill dimension " << title << "!\n";*/
   }
 
-  fHistManager.FillTHnSparse(histName.c_str(), &values[0]);
+  fHistManager.FillTHnSparse(histName.c_str(), values.data());
 }
 
 /**
