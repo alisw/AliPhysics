@@ -2728,10 +2728,6 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   htitle = hname + ";#phi_{charm};counts";
   fHistManager.CreateTH1(hname, htitle, 125, 0, TMath::TwoPi());
 
-  hname = "fHistCharmPt_Eta05";
-  htitle = hname + ";#it{p}_{T,charm} (GeV/#it{c});counts";
-  fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
-
   hname = "fHistBottomPt";
   htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
   fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
@@ -2743,10 +2739,6 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   hname = "fHistBottomPhi";
   htitle = hname + ";#phi_{bottom};counts";
   fHistManager.CreateTH1(hname, htitle, 125, 0, TMath::TwoPi());
-
-  hname = "fHistBottomPt_Eta05";
-  htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
-  fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
 
   hname = "fHistHighestPartonPt";
   htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
@@ -3168,6 +3160,8 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
   Double_t highestPartonPt = 0;
   Int_t absPdgHighParton = 0;
   for (auto part : itcont) {
+    if (part.first.Pt() == 0) continue;
+
     Int_t absPdgCode = TMath::Abs(part.second->GetPdgCode());
 
     // Skip all particles that are not either quarks or gluons
@@ -3178,50 +3172,50 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
       highestPartonPt = part.first.Pt();
       absPdgHighParton = absPdgCode;
     }
-    /*
-    // Look for the mother PDG code
-    Int_t motherIndex = part.second->GetMother();
-    AliAODMCParticle *mother = 0;
-    Int_t motherPdg = 0;
-    Double_t motherPt = 0;
-    if (motherIndex >= 0) {
-      mother = fMCContainer->GetMCParticle(motherIndex);
-      if (motherIndex) {
-        motherPdg =  TMath::Abs(mother->GetPdgCode());
-        motherPt = mother->Pt();
-      }
-    }
-    */
+
+    AliDebugStream(5) << "Parton with pdg=" << absPdgCode << ", pt=" << part.first.Pt() << std::endl;
     if (absPdgCode != 4 && absPdgCode != 5) continue;
-    Bool_t notLastInPartonShower = kFALSE;
-    for (Int_t idaugh = 0; idaugh < 2; idaugh++){
+    Bool_t lastInPartonShower = kTRUE;
+    Bool_t hadronDaughter = kFALSE;
+    for (Int_t idaugh = 0; idaugh < part.second->GetNDaughters(); idaugh++){
       Int_t daughterIndex = part.second->GetDaughter(idaugh);
       if (daughterIndex < 0) {
-        AliDebug(10, Form("Could not find daughter of heavy quark (pdg=%d, pt=%.3f)!", absPdgCode, part.first.Pt()));
+        AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;
       }
       AliAODMCParticle *daughter = fMCContainer->GetMCParticle(daughterIndex);
       if (!daughter) {
-        AliDebug(10, Form("Could not find daughter %d of heavy quark (pdg=%d, pt=%.3f)!", daughterIndex, absPdgCode, part.first.Pt()));
+        AliDebugStream(5) << "Could not find particle with index " << daughterIndex << "!" << std::endl;
         continue;
       }
       Int_t daughterAbsPdgCode = TMath::Abs(daughter->GetPdgCode());
-      if (daughterAbsPdgCode <= 9 || daughterAbsPdgCode == 21) notLastInPartonShower = kTRUE; // this parton is not the last parton in the shower
-      AliDebug(10, Form("Found daughter with PDG=%d, pt=%.3f", daughterAbsPdgCode, daughter->Pt()));
+      AliDebugStream(5) << "Found daughter with pdg=" << daughterAbsPdgCode << ", pt=" << daughter->Pt() << "!" << std::endl;
+      if (daughterAbsPdgCode == absPdgCode) lastInPartonShower = kFALSE; // this parton is not the last parton in the shower
+      if (daughterAbsPdgCode >= 111) hadronDaughter = kTRUE;
     }
-    if (notLastInPartonShower) continue;
+    if (lastInPartonShower) {
+      AliDebugStream(5) << "This particle is the last in the parton shower!" << std::endl;
+      if (!hadronDaughter) AliWarningStream() << "Odly, quark with PDG " << absPdgCode << " (pt = " << part.first.Pt() << ") is the last in the parton shower but no hadron found among its daughters?!" << std::endl;
+    }
+    else {
+      AliDebugStream(5) << "This particle is not the last in the parton shower!" << std::endl;
+      if (hadronDaughter) {
+        AliWarningStream() << "Odly, quark with PDG " << absPdgCode << " (pt = " << part.first.Pt() << ") is not the last in the parton shower but at least a hadron found among its daughters?!" << std::endl;
+      }
+      else {
+        continue;
+      }
+    }
 
     if (absPdgCode == 4) {
       fHistManager.FillTH1("fHistCharmPt", part.first.Pt());
       fHistManager.FillTH1("fHistCharmEta", part.first.Eta());
       fHistManager.FillTH1("fHistCharmPhi", part.first.Phi_0_2pi());
-      if (TMath::Abs(part.first.Eta()) < 0.5) fHistManager.FillTH1("fHistCharmPt_Eta05", part.first.Pt());
     }
     else if (absPdgCode == 5) {
       fHistManager.FillTH1("fHistBottomPt", part.first.Pt());
       fHistManager.FillTH1("fHistBottomEta", part.first.Eta());
       fHistManager.FillTH1("fHistBottomPhi", part.first.Phi_0_2pi());
-      if (TMath::Abs(part.first.Eta()) < 0.5) fHistManager.FillTH1("fHistBottomPt_Eta05", part.first.Pt());
     }
     nHQ++;
   }
