@@ -1888,7 +1888,7 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     
     // Loop over clusters, if the jet container is for full jets. Sum the cluster ET:
     // (1) in the EMCal, (2) in the EMCal fiducial volume, (3) in the DCal, (4), in the DCal fiducial volume, (5) in the EMCal random cone, (6) in the DCal random cone
-    if (jetCont->GetArrayName().Contains("Full")) {
+    if (jetCont->GetClusterContainer()) {
       AliClusterContainer* clusCont = GetClusterContainer(0);
       
       AliTLorentzVector clus;
