@@ -888,24 +888,34 @@ void AliCalorimeterUtils::ConfigureEMCALRecoUtils
   
   // Non linearity
   
-  if( bNonLin ) 
-  { 
+  if( bNonLin )
+  {
+    fCorrectELinearity = kTRUE;
+    
     if(!bMC)
     {
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      
       fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
     }
     else
-    {       
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+    {
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      
       fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
-  }
-  else 
+  } // Non linearity correction ON
+  else
   {
-    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    fCorrectELinearity = kFALSE;
+
+    if ( debug > 0 )
+      printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    
     fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-  }
+  } // Non linearity correction OFF
   
 }
 

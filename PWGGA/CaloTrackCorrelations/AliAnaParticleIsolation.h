@@ -137,6 +137,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
+  
   void         SwitchOnFillEMCALRegionHistograms()   { fFillEMCALRegionHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionHistograms()  { fFillEMCALRegionHistograms = kFALSE ; }  
   
@@ -243,6 +246,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
@@ -394,7 +398,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
- 
+  
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
   TH2F *   fhConeSumPtTrackExoTrigger ;                //!<! Tracks Sum Pt  in the cone. Trigger considered exotic
@@ -612,7 +616,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
 //TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
-
+  
+  // Selection parameters per supermodule number
+  TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
+  TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
+ 
+  TH2F *   fhConeSumPtPerSM[20] ;                      //!<! Cluster and tracks Sum Pt in the cone, per supermodule.
+  TH2F *   fhConeSumPtClusterPerSM[20] ;               //!<! Clusters Sum Pt in the cone, per supermodule.
+  TH2F *   fhConeSumPtTrackPerSM[20] ;                 //!<! Tracks Sum Pt in the cone, per supermodule.
+  
+  TH2F *   fhPtInConePerSM[20] ;                       //!<! Cluster and tracks Pt in the cone, per supermodule.
+  TH2F *   fhPtClusterInConePerSM[20] ;                //!<! Clusters Pt in the cone, per supermodule.
+  TH2F *   fhPtTrackInConePerSM[20] ;                  //!<! Tracks Pt in the cone, per supermodule.
+  
   /// Candidate Pt distribution depending on bin of cone leading particle.
   TH1F **  fhPtLeadConeBin ;                           //![fNBkgBin]
     
@@ -877,7 +893,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,40) ;
+  ClassDef(AliAnaParticleIsolation,41) ;
   /// \endcond
 
 } ;
