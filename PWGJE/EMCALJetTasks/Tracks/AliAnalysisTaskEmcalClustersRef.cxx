@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <array>
 #include <bitset>
 #include <iostream>
@@ -65,6 +77,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
+    fDoFillMultiplicityHistograms(false),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -78,6 +91,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
+    fDoFillMultiplicityHistograms(false),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -108,7 +122,7 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH1("hEventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
-    fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
+    if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
     fHistos->CreateTH1("hClusterEnergy" + trg, "Cluster energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterET" + trg, "Cluster transverse energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterEnergyFired" + trg, "Cluster energy for trigger class " + trg + ", firing the trigger", energybinning, optionstring);
@@ -231,7 +245,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
       if(trg.Contains("DG2")) selpatches = &dg2patches;
       if(trg.Contains("EG1")) selpatches = &eg1patches;
       if(trg.Contains("DG1")) selpatches = &dg1patches;
-      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), nullptr);
+      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), selpatches);
     }
   }
   return true;
@@ -302,8 +316,10 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
 
     // Multiplicity correlation (no correction for downscaling)
-    double data[6] = {v0amult, trackletmult, emctrackletmult, itsclustermult, emcclustermult, emccellocc};
-    fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
+    if(fDoFillMultiplicityHistograms){
+      double data[6] = {v0amult, trackletmult, emctrackletmult, itsclustermult, emcclustermult, emccellocc};
+      fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
+    }
   }
 }
 
