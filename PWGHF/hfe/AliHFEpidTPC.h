@@ -77,7 +77,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
     void ApplyCentralityCorrection(AliVTrack *track, Double_t centralityEstimator, AliHFEpidObject::AnalysisType_t anatype) const;
-    Double_t GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma, Double_t mom) const;
+    Double_t GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma, Double_t mom = 0) const;
     Double_t GetCorrectedTPCnSigmaJpsi(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const;
     void UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
 

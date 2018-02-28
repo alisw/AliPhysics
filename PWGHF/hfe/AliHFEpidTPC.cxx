@@ -383,7 +383,7 @@ void AliHFEpidTPC::ApplyCentralityCorrection(AliVTrack *track, Double_t centrali
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTPC::GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma, Double_t mom = 0 ) const{
+Double_t AliHFEpidTPC::GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma, Double_t mom) const{
    //
    // Apply correction for the eta dependence
    // N.B. This correction has to be applied on a copy track
