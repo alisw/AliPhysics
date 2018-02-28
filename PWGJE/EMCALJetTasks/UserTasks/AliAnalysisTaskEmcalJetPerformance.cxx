@@ -285,7 +285,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     // (Centrality, pT, NEF)
     Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
-    Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+    Int_t nbinsy = fMaxPt; Int_t miny = 0; Int_t maxy = fMaxPt;
     Int_t nbinsz = 50; Int_t minz = 0; Int_t maxz = 1.;
     
     histname = TString::Format("%s/JetHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
@@ -1886,53 +1886,56 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
       }
     }
     
-    // Loop over clusters. Sum the cluster ET:
+    // Loop over clusters, if the jet container is for full jets. Sum the cluster ET:
     // (1) in the EMCal, (2) in the EMCal fiducial volume, (3) in the DCal, (4), in the DCal fiducial volume, (5) in the EMCal random cone, (6) in the DCal random cone
-    AliClusterContainer* clusCont = GetClusterContainer(0);
-    AliTLorentzVector clus;
-    Double_t clusEta;
-    Double_t clusPhi;
-    Double_t clusPt;
-    for (auto clusIterator : clusCont->accepted_momentum() ) {
+    if (jetCont->GetArrayName().Contains("Full")) {
+      AliClusterContainer* clusCont = GetClusterContainer(0);
       
-      clus.Clear();
-      clus = clusIterator.first;
-      clusEta = clus.Eta();
-      clusPhi = clus.Phi_0_2pi();
-      clusPt = clus.Pt();
-      
-      // (1)
-      if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
-        clusPtSumEMCal += clusPt;
+      AliTLorentzVector clus;
+      Double_t clusEta;
+      Double_t clusPhi;
+      Double_t clusPt;
+      for (auto clusIterator : clusCont->accepted_momentum() ) {
+        
+        clus.Clear();
+        clus = clusIterator.first;
+        clusEta = clus.Eta();
+        clusPhi = clus.Phi_0_2pi();
+        clusPt = clus.Pt();
+        
+        // (1)
+        if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
+          clusPtSumEMCal += clusPt;
+        }
+        
+        // (2)
+        if (TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinEMCalfid && clusPhi < phiMaxEMCalfid) {
+          clusPtSumEMCalfid += clusPt;
+        }
+        
+        // (3)
+        if (TMath::Abs(clusEta) > etaMinDCal && TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinDCal && clusPhi < phiMaxDCal) {
+          clusPtSumDCal += clusPt;
+        }
+        
+        // (4)
+        if (TMath::Abs(clusEta) > etaMinDCalfid && TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinDCalfid && clusPhi < phiMaxDCalfid) {
+          clusPtSumDCalfid += clusPt;
+        }
+        
+        // (5)
+        deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
+        if (deltaR < jetR) {
+          clusPtSumEMCalRC += clusPt;
+        }
+        
+        // (6)
+        deltaR = GetDeltaR(&clus, etaDCalRC, phiDCalRC);
+        if (deltaR < jetR) {
+          clusPtSumDCalRC += clusPt;
+        }
+        
       }
-      
-      // (2)
-      if (TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinEMCalfid && clusPhi < phiMaxEMCalfid) {
-        clusPtSumEMCalfid += clusPt;
-      }
-      
-      // (3)
-      if (TMath::Abs(clusEta) > etaMinDCal && TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinDCal && clusPhi < phiMaxDCal) {
-        clusPtSumDCal += clusPt;
-      }
-      
-      // (4)
-      if (TMath::Abs(clusEta) > etaMinDCalfid && TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinDCalfid && clusPhi < phiMaxDCalfid) {
-        clusPtSumDCalfid += clusPt;
-      }
-      
-      // (5)
-      deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
-      if (deltaR < jetR) {
-        clusPtSumEMCalRC += clusPt;
-      }
-      
-      // (6)
-      deltaR = GetDeltaR(&clus, etaDCalRC, phiDCalRC);
-      if (deltaR < jetR) {
-        clusPtSumDCalRC += clusPt;
-      }
-      
     }
     
     // Compute the scale factor, as a function of centrality, for (1) EMCal, (2) EMCalfid, (3) DCal, (4) DCalfid
