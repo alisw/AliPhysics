@@ -440,6 +440,8 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
      fhConeSumPtTrackPerNCellPerSM  [i]=0;
    }
   
+  fhPtPerSM[0] = 0;
+  fhPtPerSM[1] = 0;
   for(Int_t ism =0; ism < 20; ism++)
   {
     fhPtLambda0PerSM    [0][ism] = 0;
@@ -2453,7 +2455,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     //fhELambda1 [isolated]->Fill(energy, m20);
     
     if ( fFillPerSMHistograms )
+    {
+      fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight());
       fhPtLambda0PerSM[isolated][iSM]->Fill(pt,m02, GetEventWeight());
+    }
     
     //
     // MC
@@ -5849,6 +5854,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         if ( fFillPerSMHistograms )
         {
+          Int_t totalSM = fLastModule-fFirstModule+1;
+
+          fhPtPerSM[iso] = new TH2F
+          (Form("hPtPerSM_%s",isoName[iso].Data()),
+           Form("%s candidate #it{p}_{T} and super-module number, %s",isoTitle[iso].Data(), parTitle.Data()),
+           nptbins,ptmin,ptmax,totalSM,fFirstModule-0.5,fLastModule+0.5);
+          fhPtPerSM[iso]->SetYTitle("SuperModule ");
+          fhPtPerSM[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtPerSM[iso]) ;
+          
           for(Int_t ism = 0; ism < fNModules; ism++)
           {
             if ( ism < fFirstModule || ism > fLastModule ) continue;

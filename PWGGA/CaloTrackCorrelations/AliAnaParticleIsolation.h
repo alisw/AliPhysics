@@ -618,6 +618,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 //TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   
   // Selection parameters per supermodule number
+  TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
  
   TH2F *   fhConeSumPtPerSM[20] ;                      //!<! Cluster and tracks Sum Pt in the cone, per supermodule.
