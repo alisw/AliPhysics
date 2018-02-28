@@ -4797,15 +4797,21 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if( fCurrentMC==k14j4 ){
             energy = FunctionNL_PHOS(energy, 1.008, 0.015, 0.4);
           // for LHC13bc
-          } else if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == k13e7){
+          } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
             energy = FunctionNL_PHOS(energy, 1.0135, 0.018, 1.9);
           // for run 2 without fine tuning
-          } else if( fCurrentMC==k16h3 || fCurrentMC == k16h3b || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a ||
-                     fCurrentMC==k16k3b || fCurrentMC == k16k5a || fCurrentMC == k16k5b || fCurrentMC == k17a2a || fCurrentMC == k17a2b ||
-                     fCurrentMC==k17a3a || fCurrentMC == k17a3b || fCurrentMC == k17a4a || fCurrentMC == k17a4b || fCurrentMC == k17e2 ||
-                     fCurrentMC==k17f2a || fCurrentMC == k17f2b || fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a ||
-                     fCurrentMC == k17f4b ){
-            energy = FunctionNL_PHOSRun2(energy);
+          } else if(  // pp 5 TeV 2015
+                      fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 ||
+                      // PbPb 5 TeV 2015
+                      fCurrentMC == k16k3b ||
+                      // pPb 5 TeV 2016
+                      fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
+                      // pPb 8 TeV 2016
+                      fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
+                      // XeXe 5.44 TeV 2017
+                      fCurrentMC == kXeXe5T17HIJING
+                     ){
+            energy = FunctionNL_PHOSRun2(energy, -0.06, 0.7, 1.012);
           } else {
             energy = FunctionNL_PHOS(energy, 0, 0, 0);
           }
@@ -4818,6 +4824,26 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if (fClusterType == 1|| fClusterType == 3){
         if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
         else energy *= FunctionNL_kPi0MCv3(energy);
+      // Nonlin from PHOS group only MC part
+      } else if (fClusterType == 2 ){
+          if( fCurrentMC==k14j4 ){
+            energy = FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
+            // for LHC13bc
+          } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
+            energy = FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
+          } else if(  // pp 5 TeV 2015
+              fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 ||
+              // PbPb 5 TeV 2015
+              fCurrentMC == k16k3b ||
+              // pPb 5 TeV 2016
+              fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
+              // pPb 8 TeV 2016
+              fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
+              // XeXe 5.44 TeV 2017
+              fCurrentMC == kXeXe5T17HIJING
+          ){
+            energy = FunctionNL_PHOSOnlyMC(energy, -0.06, 0.7, 1.012);
+        }
       }
       break;
     // kPi0MCv3 for MC and kTestBeamv2 for data
@@ -4884,20 +4910,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         // 8TeV LHC12x
         //pass1
-        if( fCurrentMC==k14e2a || fCurrentMC==k14e2b ){
+        if( fCurrentMC==k14e2b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.983251, -3.44339, -1.70998);
 
-        } else if( fCurrentMC==k14e2c ){
-          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.984462, -3.00363, -2.63773);
-
         //pass2
-        } else if( fCurrentMC == k15h1 ){
+        } else if( fCurrentMC == kPP8T12P2Pyt8 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.96874*0.991*0.9958*0.999, -3.76064, -0.193181);
 
-        } else if( fCurrentMC == k15h2 ){
+        } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.969703*0.989*0.9969*0.9991, -3.80387, -0.200546);
 
-        } else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        } else if( fCurrentMC == kPP8T12P2JJ ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974859*0.987*0.996, -3.85842, -0.405277);
 
         // 2.76TeV LHC11a/LHC13g
@@ -4907,7 +4930,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if(fCurrentMC==k12f1b){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.984384*0.995*0.9970, -3.30287, -1.48516);
 
-        } else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b || fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ){
+        } else if( fCurrentMC==kPP2T11P4JJ || fCurrentMC==k15g1b || fCurrentMC==kPP2T13P1JJ || fCurrentMC==k15a3b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.981892*0.995*0.9970, -5.43438, -1.05468);
 
         // 7 TeV LHC10x
@@ -4954,20 +4977,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         // 8TeV LHC12x
         //pass1
-        if( fCurrentMC==k14e2a || fCurrentMC==k14e2b ){
+        if( fCurrentMC==k14e2b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(2.0*energy, 0.967301, -3.1683, -0.653058);
 
-        } else if( fCurrentMC==k14e2c ){
-          if(fClusterType==1) energy /= FunctionNL_kSDM(2.0*energy, 0.96728, -2.96279, -0.903677);
-
-        //pass2
-        } else if( fCurrentMC == k15h1 ){
+          //pass2
+        } else if( fCurrentMC == kPP8T12P2Pyt8 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.963379*0.9985*0.9992, -3.61217, -0.614043);
 
-        } else if( fCurrentMC == k15h2 ){
+        } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.96105*0.999*0.9996, -3.62239, -0.556256);
 
-        } else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        } else if( fCurrentMC == kPP8T12P2JJ  ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.960596*0.999*0.999, -3.48444, -0.766862);
 
         // 2.76TeV LHC11a/LHC13g
@@ -4977,7 +4997,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k12f1b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(2.0*energy, 0.988814*0.995*0.9981, 0.335011, -4.30322);
 
-        } else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b || fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ){
+        } else if( fCurrentMC==kPP2T11P4JJ || fCurrentMC==k15g1b || fCurrentMC==kPP2T13P1JJ || fCurrentMC==k15a3b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(2.0*energy, 0.979994*0.995*0.9981, -3.24431, -0.760205);
 
         // 7TeV LHC10x
@@ -5005,7 +5025,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
 
           //pp 13 TeV LHC16
-        } else if ( fCurrentMC==k16P1Pyt8 ){
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
 
         } else fPeriodNameAvailable = kFALSE;
@@ -5032,13 +5052,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 15:
       if (fClusterType == 1 || fClusterType == 3){
         // 8TeV LHC12x
-        if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        if ( fCurrentMC==k14e2b || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ ){
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04979, 1.3, 0.0967998, 219.381, 63.1604, 1.011);
           if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9846, -3.319, -2.033);
 
         // 2.76TeV LHC11a/LHC13g
         } else if ( fCurrentMC == k12f1a || fCurrentMC == k12i3 || fCurrentMC == k15g2 || fCurrentMC == k12f1b ||
-                    fCurrentMC == k15g1a || fCurrentMC == k15g1b || fCurrentMC == k15a3a || fCurrentMC == k15a3a_plus || fCurrentMC == k15a3b ||
+                    fCurrentMC == kPP2T11P4JJ || fCurrentMC == k15g1b || fCurrentMC == kPP2T13P1JJ || fCurrentMC == k15a3b ||
                     fCurrentMC == k11pp2760GeV || fCurrentMC == k13pp2760GeV
                   ) {
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
@@ -5052,13 +5072,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 16:
       if (fClusterType == 1 || fClusterType == 3){
         // 8TeV LHC12x
-        if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        if ( fCurrentMC==k14e2b  || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ ){
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06539, 1.121, 0.0967998, 219.381, 63.1604, 1.011);
           if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9676, -3.216, -0.6828);
 
         // 2.76TeV LHC11a/LHC13g
         } else if ( fCurrentMC == k12f1a || fCurrentMC == k12i3 || fCurrentMC == k15g2 || fCurrentMC == k12f1b ||
-                    fCurrentMC == k15g1a || fCurrentMC == k15g1b || fCurrentMC == k15a3a || fCurrentMC == k15a3a_plus || fCurrentMC == k15a3b ||
+                    fCurrentMC == kPP2T11P4JJ || fCurrentMC == k15g1b || fCurrentMC == kPP2T13P1JJ || fCurrentMC == k15a3b ||
                     fCurrentMC == k11pp2760GeV || fCurrentMC == k13pp2760GeV
                   ) {
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
@@ -5091,16 +5111,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.1716155406, -0.1962930603, -0.0193959829, 1.0336659741, -0.0467778485, -0.4407662248) - 0.0055);
         } else if(fCurrentMC==k12f1b){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0166321784, -0.0440799552, -0.2611899222, 1.0636538464, -0.0816662488, -0.2173961316) - 0.007);
-        } else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b ){
+        } else if( fCurrentMC==kPP2T11P4JJ || fCurrentMC==k15g1b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.1100193881, -0.1389194936, -0.0800000242, 1.1673716264, -0.1853095466, -0.0848801702) - 0.017);
-        } else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ){
+        } else if( fCurrentMC==kPP2T13P1JJ || fCurrentMC==k15a3b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0520183153, -0.0806102847, -0.1450415920, 1.0336724056, -0.0467844121, -0.4406992764) - 0.016);
         // 8TeV
-        } else if( fCurrentMC == k15h1 ){
+        } else if( fCurrentMC == kPP8T12P2Pyt8 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0654169768, -0.0935785719, -0.1137883054, 1.1814766150, -0.1980098061, -0.0854569214) - 0.0138);
-        } else if( fCurrentMC == k15h2 ){
+        } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0652493513, -0.0929276101, -0.1113762695, 1.1837801885, -0.1999914832, -0.0854569214) - 0.0145);
-        } else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        } else if( fCurrentMC == kPP8T12P2JJ ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0489259285, -0.0759079646, -0.1239772934, 1.1835846739, -0.1998987993, -0.0854186691) - 0.014);
         // 7 TeV
         } else if( fCurrentMC == k14j4 ){ //v3
@@ -5153,16 +5173,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0795372569, -0.1347324732, -0.1630736190, 1.1614181498, -0.199995361, -0.1711378093) - 0.0035);
         } else if( fCurrentMC==k12f1b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0232969083, -0.090409434, -0.3592406513, 1.0383412435, -0.0851830429, -0.4999999996) + 0.0007);
-        } else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b ){
+        } else if( fCurrentMC==kPP2T11P4JJ || fCurrentMC==k15g1b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0106037132, -0.0748250591, -0.4999999996, 1.0383412435, -0.0851830429, -0.4999999996) - 0.014);
-        } else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ) {
+        } else if( fCurrentMC==kPP2T13P1JJ || fCurrentMC==k15a3b ) {
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0119417393, -0.0755250741, -0.4999999996, 1.1614181498, -0.1999995361, -0.1711378093) - 0.006);
         //8TeV
-        } else if( fCurrentMC == k15h1 ){
+        } else if( fCurrentMC == kPP8T12P2Pyt8 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.1389201636, -0.1999994717, -0.1622237979, 1.1603460704, -0.1999999989, -0.2194447313) - 0.0025);
-        } else if( fCurrentMC == k15h2 ){
+        } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0105301622, -0.0732424689, -0.5000000000, 1.0689250170, -0.1082682369, -0.4388156470) - 0.001);
-        } else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
+        } else if( fCurrentMC == kPP8T12P2JJ ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9922456908, -0.0551212559, -0.5000000000, 1.0513459039, -0.0894163252, -0.5000000000) + 0.002);
         // 7 TeV
         } else if( fCurrentMC == k14j4 ){ //v3
@@ -5191,7 +5211,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 0.9629798154, -0.0178058455, -0.4999999880, 1.1467423891, -0.1999980199, -0.1753999427));
 
         //pp 13 TeV LHC16
-        } else if ( fCurrentMC==k16P1Pyt8 ){
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9708378317, 1.2383710975, -2.0138106810, 1.0194960585, 0.8124178583, -1.9786865028));
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -5230,24 +5250,24 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 41:
       label_case_41:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
+        if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
           }
-        } else if( fCurrentMC==k13e7 ) {
+        } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
             energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
             energy /=  (FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746)*0.9953479301) ;//with TM pt dep
           }
-        } else if( fCurrentMC==k17f2a ) {
+        } else if( fCurrentMC==kPPb5T16EPOS ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.951944, -3.38177, -0.597868) ; //  2018 02 20
           }
           if(fClusterType==2){
             energy /= (0.949117) ; //first iteration with constant
           }
-        } else if( fCurrentMC==k17f2b ) {
+        } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.944333, -3.19899, -0.630433) ; //  2018 02 20
           }
@@ -5261,23 +5281,23 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 42:
       label_case_42:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
+        if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.973301, -3.66136, -1.20116) ; //with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541) * 1.0036264536 );
           }
-        } else if( fCurrentMC==k13e7 ) {
+        } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.962047, -3.18433, -0.586904); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.990771, -4.29086, -0.27403);
           }
-        } else if( fCurrentMC==k17f2a ) {
+        } else if( fCurrentMC==kPPb5T16EPOS ) {
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.949402, -3.17052, -0.57999) ; // 2018 02 20 
+            energy /= FunctionNL_kSDM(energy, 0.949402, -3.17052, -0.57999) ; // 2018 02 20
           }
-        } else if( fCurrentMC==k17f2b ) {
+        } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.941353, -2.80746, -0.662592) ; // 2018 02 20 
+            energy /= FunctionNL_kSDM(energy, 0.941353, -2.80746, -0.662592) ; // 2018 02 20
           }
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -5301,13 +5321,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     // NonLinearity LHC13 pPb ConvCalo  - applying f^2
     case 45:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
+        if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
             //apply again the same
             energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
           }
-        } else if( fCurrentMC==k13e7 ) {
+        } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
             energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
             //apply again the same
@@ -5324,7 +5344,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 51:
       label_case_51:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
+        if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
@@ -5333,7 +5353,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= ( 0.997*0.9965200155 ); // additional factors
             energy /= ( 0.9969 ); // additional factors
           }
-        } else if( fCurrentMC==k13e7 ) {
+        } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9978241421, 0.2054669115, -3.7888984452, 1.0255088817, 0.3070452373, -2.9149185308) ; //with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.986673, -4.14594, -0.450765)* 0.9953727823);
@@ -5341,14 +5361,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.993485*0.9971126333 );
           }
-        } else if( fCurrentMC==k17f2a ) {
+        } else if( fCurrentMC==kPPb5T16EPOS ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9772393830, 0.9651600903, -2.8485741777, 1.0436698408, 0.4584792411, -2.3634185342); // 2018 02 20
           }
           if(fClusterType==2){
             energy /= (0.949117) ; //first iteration with constant
           }
-        } else if( fCurrentMC==k17f2b ) {
+        } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9806681039, 0.4840923907, -3.0169087842, 1.0436698408, 0.4584792411, -2.3634185342); // 2018 02 20
           } else if(fClusterType==2){
@@ -5363,7 +5383,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 52:
       label_case_52:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
+        if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9795532189, 0.8578583955, -2.3447892540, 1.0165873637, 0.6999387334, -2.1324782465) ;//with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) * 1.0040232773) ;
@@ -5371,7 +5391,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
-        } else if( fCurrentMC==k13e7 ) {
+        } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9746342307, 0.9576270870, -2.5098585110, 1.0165871862, 0.6999571530, -2.1324658480) ; //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.993562, -4.52817, -0.366368) ;
@@ -5379,14 +5399,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DPOW(energy, 1.0154784875, -0.0161589457, -0.4999999976, 1.0086650887, -0.0010000001, -0.0800000139 ) * 0.9983468115 );
           }
-       } else if( fCurrentMC==k17f2a ) {
+       } else if( fCurrentMC==kPPb5T16EPOS ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9707112053, 1.4050445187, -2.0357906356, 1.0241095707, 0.9217457498, -1.9020815528) ;//2018 02 20
           } else if(fClusterType==2) {
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
-       } else if( fCurrentMC==k17f2b ) {
+       } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9658016089, 1.2050187956, -2.3839606887, 1.0241095707, 0.9217457498, -1.9020815528) ;//2018 02 20
           } else if(fClusterType==2) {
@@ -5422,8 +5442,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 71:
       if(isMC>0){
         if( fCurrentMC==k14a1 ){
-          if(fClusterType==1){
+          if (fClusterType == 1 || fClusterType == 3){
             energy /= 0.972607; //
+          }
+        } else if( fCurrentMC==kXeXe5T17HIJING ){
+          if (fClusterType == 1 ){
+            energy /= FunctionNL_kSDM(energy, 0.973646, -0.901289, -4.32682) ; // based on peripheral XeXe
+          } else if (fClusterType == 2 ){
+            energy /= 0.9599764493; // based on peripheral XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5436,6 +5462,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC==k14a1 ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 1.00926, -2.42107, -1.60995);
+          }
+        } else if( fCurrentMC==kXeXe5T17HIJING ){
+          if (fClusterType == 1 ){
+            energy /= 0.9737701536; // based on peripheral XeXe
+          } else if (fClusterType == 2 ){
+            energy /= 0.9350697962; // based on semi-central XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5452,6 +5484,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.95597, -3.09059, -0.702889) ;
           }
+        } else if( fCurrentMC==kXeXe5T17HIJING ){
+          if (fClusterType == 1 ){
+            energy /= (FunctionNL_DPOW(energy, 1.0547527663, -0.0927180446, -0.0800012482, 1.0254208020, -0.0345156682, -0.4999999199)); // based on peripheral XeXe
+          } else if (fClusterType == 2 ){
+            energy /= 0.9764119296; // based on peripheral XeXe
+          }
         } else {
           fPeriodNameAvailable = kFALSE;
         }
@@ -5464,6 +5502,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC== k15PbPb5TeV){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.095, -0.175739, 0.00776757) ;
+          }
+        } else if( fCurrentMC==kXeXe5T17HIJING ){
+          if (fClusterType == 1 ){
+            energy /= (FunctionNL_DPOW(energy, 1.1223479533, -0.1999999659, -0.1954398178, 1.0373041075, -0.0913333671, -0.5000000000)); // based on peripheral XeXe
+          } else if (fClusterType == 2 ){
+            energy /= (FunctionNL_DExp(energy, 0.9840385879, 0.4801589926, -2.8482099501, 1.0214220397, 5.8987542970, -12.5701079799)) ; // based on  semi-central XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5624,8 +5668,17 @@ Float_t AliCaloPhotonCuts::FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Fl
 }
 
 //________________________________________________________________________
-Float_t AliCaloPhotonCuts::FunctionNL_PHOSRun2(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
-    return (1.-p0/(1.+e*e/p1))*(p2+p3*TMath::Sqrt(e)+e);
+Float_t AliCaloPhotonCuts::FunctionNL_PHOSRun2(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+  if (p0 == 0 || p2 == 0){
+    return (1.-0.08/(1.+e*e/0.055))*(0.03+6.65e-02*TMath::Sqrt(e)+e) ;
+  } else {
+    return (1.-0.08/(1.+e*e/0.055))*(0.03+6.65e-02*TMath::Sqrt(e)+e)*p0*(1+p1/(1.+e*e/p2/p2)) ;
+  }
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+    return p0*(1+p1/(1.+e*e/p2/p2)) ;
 }
 
 
@@ -5687,83 +5740,110 @@ Float_t AliCaloPhotonCuts::FunctionM02(Float_t E, Float_t a, Float_t b, Float_t 
 
 //________________________________________________________________________
 AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod){
-  if(       namePeriod.CompareTo("LHC14e2a")==0)        return k14e2a;
-  else if(  namePeriod.CompareTo("LHC14e2b")==0)        return k14e2b;
-  else if(  namePeriod.CompareTo("LHC14e2c")==0)        return k14e2c;
+  // pp 7TeV MB MCs pass 4
+  if(       namePeriod.CompareTo("LHC14j4b")==0 ||
+            namePeriod.CompareTo("LHC14j4c")==0 ||
+            namePeriod.CompareTo("LHC14j4d")==0 ||
+            namePeriod.CompareTo("LHC14j4e")==0 ||
+            namePeriod.CompareTo("LHC14j4f")==0)        return k14j4;
+
+  // pp 2.76 TeV LHC11a anch MC's pass 4
   else if(  namePeriod.CompareTo("LHC12f1a")==0)        return k12f1a;
   else if(  namePeriod.CompareTo("LHC12f1b")==0)        return k12f1b;
   else if(  namePeriod.CompareTo("LHC12i3")==0)         return k12i3;
-  else if(  namePeriod.CompareTo("LHC15g1a")==0)        return k15g1a;
+  else if(  namePeriod.CompareTo("LHC15g1a")==0)        return kPP2T11P4JJ;
   else if(  namePeriod.CompareTo("LHC15g1b")==0)        return k15g1b;
-  else if(  namePeriod.CompareTo("LHC15g2")==0)         return k15g2;
-  else if(  namePeriod.CompareTo("LHC15a3a")==0)        return k15a3a;
-  else if(  namePeriod.CompareTo("LHC15a3a_plus")==0)   return k15a3a_plus;
-  else if(  namePeriod.CompareTo("LHC15a3b")==0)        return k15a3b;
-  else if(  namePeriod.Contains("LHC13b2_efix"))        return k13b2_efix;
-  else if(  namePeriod.Contains("LHC13e7"))             return k13e7;
-  else if(  namePeriod.CompareTo("LHC15h1a1")==0 ||
+
+  // PbPb 2.76TeV 2011 MC add sig
+  else if(  namePeriod.CompareTo("LHC14a1a")==0 ||
+            namePeriod.CompareTo("LHC14a1b")==0 ||
+            namePeriod.CompareTo("LHC14a1c")==0)        return k14a1;
+
+    // pp 8 TeV MC MCs
+  // pass 1
+  else if(  namePeriod.CompareTo("LHC14e2b")==0)        return k14e2b;
+  // pass 2
+  else if(  namePeriod.CompareTo("LHC12P2Pyt8")==0 ||
+            namePeriod.CompareTo("LHC15h1")==0 ||
+            namePeriod.CompareTo("LHC15h1a1")==0 ||
             namePeriod.CompareTo("LHC15h1b")==0 ||
             namePeriod.CompareTo("LHC15h1c")==0 ||
             namePeriod.CompareTo("LHC15h1d")==0 ||
             namePeriod.CompareTo("LHC15h1f")==0 ||
             namePeriod.CompareTo("LHC15h1g")==0 ||
             namePeriod.CompareTo("LHC15h1h")==0 ||
-            namePeriod.CompareTo("LHC15h1i")==0)        return k15h1;
-  else if(  namePeriod.CompareTo("LHC15h2a")==0 ||
+            namePeriod.CompareTo("LHC15h1i")==0)        return kPP8T12P2Pyt8;
+  else if(  namePeriod.CompareTo("LHC12P2Pho")==0 ||
+            namePeriod.CompareTo("LHC15h2")==0 ||
+            namePeriod.CompareTo("LHC15h2a")==0 ||
             namePeriod.CompareTo("LHC15h2b")==0 ||
             namePeriod.CompareTo("LHC15h2c")==0 ||
             namePeriod.CompareTo("LHC15h2d")==0 ||
             namePeriod.CompareTo("LHC15h2f")==0 ||
             namePeriod.CompareTo("LHC15h2g")==0 ||
             namePeriod.CompareTo("LHC15h2h")==0 ||
-            namePeriod.CompareTo("LHC15h2i")==0)        return k15h2;
-  else if(  namePeriod.CompareTo("LHC14j4b")==0 ||
-            namePeriod.CompareTo("LHC14j4c")==0 ||
-            namePeriod.CompareTo("LHC14j4d")==0 ||
-            namePeriod.CompareTo("LHC14j4e")==0 ||
-            namePeriod.CompareTo("LHC14j4f")==0)        return k14j4;
-  else if(  namePeriod.CompareTo("LHC14a1a")==0 ||
-            namePeriod.CompareTo("LHC14a1b")==0 ||
-            namePeriod.CompareTo("LHC14a1c")==0)        return k14a1;
-  else if ( namePeriod.CompareTo("LHC16c2") == 0 )      return k16c2;
-  else if ( namePeriod.CompareTo("LHC16c2_plus") == 0 ) return k16c2_plus;
-  else if ( namePeriod.CompareTo("LHC16c3a") == 0 )     return k16c3a;
-  else if ( namePeriod.CompareTo("LHC16c3b") == 0 )     return k16c3b;
-  else if ( namePeriod.CompareTo("LHC16c3c") == 0 )     return k16c3c;
-  else if ( namePeriod.CompareTo("LHC16h3") == 0 )      return k16h3;
-  else if ( namePeriod.CompareTo("LHC16h3b") == 0 )     return k16h3b;
+            namePeriod.CompareTo("LHC15h2i")==0)        return kPP8T12P2Pho;
+  // pp 8 TeV JJ MC pass 2
+  else if ( namePeriod.CompareTo("LHC12P2JJ") == 0 ||
+            namePeriod.CompareTo("LHC16c2") == 0 ||
+            namePeriod.CompareTo("LHC16c2_plus") == 0 ) return kPP8T12P2JJ;
+
+  // pPb 5 TeV 2013 MC pass 2
+  else if(  namePeriod.Contains("LHC13b2_efix"))        return kPPb5T13P2DPMJet;
+  else if(  namePeriod.Contains("LHC13e7"))             return kPPb5T13P2HIJAdd;
+  // pPb 5 TeV 2013 MC JJ EMC enhanced
+  else if ( namePeriod.CompareTo("LHC16c3a") == 0 ||
+            namePeriod.CompareTo("LHC16c3a2") == 0 )    return k16c3a;
+  else if ( namePeriod.CompareTo("LHC16c3b") == 0 ||
+            namePeriod.CompareTo("LHC16c3b2") == 0 )    return k16c3b;
+  // pPb 5 TeV 2013 MC GJ
+  else if ( namePeriod.CompareTo("LHC16c3c") == 0 ||
+            namePeriod.CompareTo("LHC16c3c2") == 0 )    return k16c3c;
+
+  // pp 2.76 TeV LHC13g anch MC's pass 4
+  else if(  namePeriod.CompareTo("LHC15g2")==0)         return k15g2;
+  else if(  namePeriod.CompareTo("LHC15a3a")==0 ||
+            namePeriod.CompareTo("LHC15a3a_plus")==0)   return kPP2T13P1JJ;
+  else if(  namePeriod.CompareTo("LHC15a3b")==0)        return k15a3b;
+
+  // pp 13 TeV 2015 MB pass 2
+  else if ( namePeriod.CompareTo("LHC15P2Pyt8") == 0 ||
+            namePeriod.CompareTo("LHC17i4") == 0 ||
+            namePeriod.CompareTo("LHC17i4_2") == 0 ||
+            namePeriod.CompareTo("LHC17g7") == 0 )      return kPP13T15P2Pyt8;
+  else if ( namePeriod.CompareTo("LHC15P2EPos") == 0 ||
+            namePeriod.CompareTo("LHC16d3") == 0 )      return kPP13T15P2EPOS;
+  // pp 13 TeV 2015 HF prod
+  else if ( namePeriod.CompareTo("LHC15k5a") == 0 ||
+            namePeriod.CompareTo("LHC15k5b") == 0 ||
+            namePeriod.CompareTo("LHC15k5c") == 0 ||
+            namePeriod.CompareTo("LHC15k5a2") == 0 ||
+            namePeriod.CompareTo("LHC15k5b2") == 0 ||
+            namePeriod.CompareTo("LHC15k5c2") == 0 )    return k15k5;
+
+  // pp 5 TeV 2015 MB MC pass 2
   else if ( namePeriod.CompareTo("LHC16h8a") == 0 )     return k16h8a;
   else if ( namePeriod.CompareTo("LHC16h8b") == 0 )     return k16h8b;
-  else if ( namePeriod.CompareTo("LHC16k3a") == 0 ||
-            namePeriod.CompareTo("LHC16k3a2") == 0 )     return k16k3a;
-  else if ( namePeriod.CompareTo("LHC16k3b") == 0 ||
-            namePeriod.CompareTo("LHC16k3b2") == 0 )     return k16k3b;
-  else if ( namePeriod.CompareTo("LHC16k5a") == 0  )     return k16k5a;
-  else if ( namePeriod.CompareTo("LHC16k5b") == 0  )     return k16k5b;
-  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2a;
-  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2b;
-  else if ( namePeriod.CompareTo("LHC17a3a") == 0  )     return k17a3a;
-  else if ( namePeriod.CompareTo("LHC17a3b") == 0  )     return k17a3b;
-  else if ( namePeriod.CompareTo("LHC17a4a") == 0  )     return k17a4a;
-  else if ( namePeriod.CompareTo("LHC17a4b") == 0  )     return k17a4b;
-  else if ( namePeriod.CompareTo("LHC17e2") == 0  )      return k17e2;
-  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )     return k17f2a;
-  else if ( namePeriod.CompareTo("LHC17f2b") == 0  )     return k17f2b;
-  else if ( namePeriod.CompareTo("LHC17f3a") == 0  )     return k17f3a;
-  else if ( namePeriod.CompareTo("LHC17f3b") == 0  )     return k17f3b;
-  else if ( namePeriod.CompareTo("LHC17f4a") == 0  )     return k17f4a;
-  else if ( namePeriod.CompareTo("LHC17f4b") == 0  )     return k17f4b;
-  else if ( namePeriod.CompareTo("LHC17g8a") == 0  )     return k17g8a;
-  else if ( namePeriod.CompareTo("LHC17g8b") == 0  )     return k17g8b;
-  else if ( namePeriod.CompareTo("LHC17g8c") == 0  )     return k17g8c;
+  else if ( namePeriod.CompareTo("LHC16k3a") == 0 ||                    // special pileup prods
+            namePeriod.CompareTo("LHC16k3a2") == 0 )    return k16k3a;
+  // pp 5 TeV 2015 MB MC pass 3
+  else if ( namePeriod.CompareTo("LHC16k5a") == 0  )    return k16k5a;
+  else if ( namePeriod.CompareTo("LHC16k5b") == 0  )    return k16k5b;
+  // pp 5 TeV 2015 MB MC pass 4
+  else if ( namePeriod.CompareTo("LHC17e2") == 0  )     return k17e2;
+  // pp 5 TeV 2015 JJ pass 3
+  else if ( namePeriod.CompareTo("LHC16h3") == 0 )      return k16h3;
 
-  else if ( namePeriod.CompareTo("LHC15P2Pyt8") == 0 ||
-    namePeriod.CompareTo("LHC17i4") == 0 ||
-    namePeriod.CompareTo("LHC17g7") == 0 )   return k15P2Pyt8;
+  // PbPb 5TeV 2015 MB prods
+  else if ( namePeriod.CompareTo("LHC16g1") == 0 ||
+            namePeriod.CompareTo("LHC16g1a") == 0 ||
+            namePeriod.CompareTo("LHC16g1b") == 0 ||
+            namePeriod.CompareTo("LHC16g1c") == 0 ||
+            namePeriod.CompareTo("LHC16h4") == 0)       return kPbPb5T15HIJING;
+  else if ( namePeriod.CompareTo("LHC16k3b") == 0 ||                    // special pileup prods
+            namePeriod.CompareTo("LHC16k3b2") == 0 )    return k16k3b;
 
-  else if ( namePeriod.CompareTo("LHC15P2EPos") == 0 ||
-    namePeriod.CompareTo("LHC16d3") == 0 )   return k15P2EPos;
-
+  // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
             namePeriod.CompareTo("LHC17f6") == 0 ||
             namePeriod.CompareTo("LHC17d17") == 0 ||
@@ -5777,12 +5857,13 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17d16") == 0 ||
             namePeriod.CompareTo("LHC17d18") == 0 ||
             namePeriod.CompareTo("LHC17f9") == 0 ||
-            namePeriod.CompareTo("LHC17f9_test") == 0 )   return k16P1Pyt8;
+            namePeriod.CompareTo("LHC17f9_test") == 0 ) return kPP13T16P1Pyt8;
   else if ( namePeriod.CompareTo("LHC16P1Pyt8LowB") == 0 ||
-            namePeriod.CompareTo("LHC17d1") == 0 )   return k16P1Pyt8LowB;
+            namePeriod.CompareTo("LHC17d1") == 0 )      return kPP13T16P1Pyt8LowB;
   else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
             namePeriod.CompareTo("LHC17d20b1") == 0 ||
-            namePeriod.CompareTo("LHC17d20b2") == 0 )     return k16P1EPOS;
+            namePeriod.CompareTo("LHC17d20b2") == 0 )   return kPP13T16P1EPOS;
+  // pp 13 TeV 2016 JJ prod
   else if ( namePeriod.CompareTo("LHC16P1JJ") == 0 ||
             namePeriod.CompareTo("LHC17f8a") == 0 ||
             namePeriod.CompareTo("LHC17f8c") == 0 ||
@@ -5793,39 +5874,54 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17f8h") == 0 ||
             namePeriod.CompareTo("LHC17f8i") == 0 ||
             namePeriod.CompareTo("LHC17f8j") == 0 ||
-            namePeriod.CompareTo("LHC17f8k") == 0 )      return k16P1JJ;
+            namePeriod.CompareTo("LHC17f8k") == 0 )     return kPP13T16P1JJ;
   else if ( namePeriod.CompareTo("LHC16P1JJLowB") == 0 ||
-            namePeriod.CompareTo("LHC17f8b") == 0  )      return k16P1JJLowB;
-  else if ( namePeriod.CompareTo("LHC17h8a") == 0 )        return k17h8a;
-  else if ( namePeriod.CompareTo("LHC17h8b") == 0 )        return k17h8b;
-  else if ( namePeriod.CompareTo("LHC17h8c") == 0 )        return k17h8c;
-  else if ( namePeriod.CompareTo("LHC17c3b1") == 0 )        return k17c3b1;
-  else if ( namePeriod.CompareTo("LHC17c3a1") == 0 )        return k17c3a1;
-  else if ( namePeriod.CompareTo("LHC17c3b2") == 0 )        return k17c3b2;
-  else if ( namePeriod.CompareTo("LHC17c3a2") == 0 )        return k17c3a2;
-  else if ( namePeriod.CompareTo("LHC17d2a_fast") == 0 )        return k17d2a_fast;
-  else if ( namePeriod.CompareTo("LHC17d2a_cent") == 0 )        return k17d2a_cent;
-  else if ( namePeriod.CompareTo("LHC17d2b_fast") == 0 )        return k17d2b_fast;
-  else if ( namePeriod.CompareTo("LHC17d2b_cent") == 0 )        return k17d2b_cent;
-  else if ( namePeriod.CompareTo("LHC17j7") == 0 )        return k17j7;
+            namePeriod.CompareTo("LHC17f8b") == 0  )    return kPP13T16P1JJLowB;
+  // pp 13 TeV 2016 HF prods
+  else if ( namePeriod.CompareTo("LHC17h8a") == 0 )     return k17h8a;
+  else if ( namePeriod.CompareTo("LHC17h8b") == 0 )     return k17h8b;
+  else if ( namePeriod.CompareTo("LHC17h8c") == 0 )     return k17h8c;
+  else if ( namePeriod.CompareTo("LHC17c3b1") == 0 )    return k17c3b1;
+  else if ( namePeriod.CompareTo("LHC17c3a1") == 0 )    return k17c3a1;
+  else if ( namePeriod.CompareTo("LHC17c3b2") == 0 )    return k17c3b2;
+  else if ( namePeriod.CompareTo("LHC17c3a2") == 0 )    return k17c3a2;
+
+  // pPb 5 TeV 2016 MB MC
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )    return kPPb5T16EPOS;
+  else if ( namePeriod.CompareTo("LHC17f2b") == 0  )    return kPPb5T16DPMJet;
+  // pPb 5 TeV 2016 JJ MC
+  else if ( namePeriod.CompareTo("LHC17g8a") == 0  )    return k17g8a;
+  // pPb 5 TeV 2016 HF prod
+  else if ( namePeriod.CompareTo("LHC17d2a") == 0 )     return k17d2a;
+  else if ( namePeriod.CompareTo("LHC17d2b") == 0 )     return k17d2b;
+
+  // pPb 8 TeV 2016 MB MC
+  else if ( namePeriod.CompareTo("LHC17f3a") == 0  )    return k17f3a;
+  else if ( namePeriod.CompareTo("LHC17f3b") == 0  )    return k17f3b;
+  else if ( namePeriod.CompareTo("LHC17f4a") == 0  )    return k17f4a;
+  else if ( namePeriod.CompareTo("LHC17f4b") == 0  )    return k17f4b;
+  // pPb 8 TeV 2016 JJ MC
+  else if ( namePeriod.CompareTo("LHC17g8b") == 0  )    return k17g8b;
+  else if ( namePeriod.CompareTo("LHC17g8c") == 0  )    return k17g8c;
+
   //pp 13 TeV LHC17
-  else if ( namePeriod.CompareTo("LHC17k1") ==0 ) return k17k1;
-  else if ( namePeriod.CompareTo("LHC17k4") ==0 ) return k17k4;
-  else if ( namePeriod.CompareTo("LHC17h11") ==0 ) return k17h11;
-  else if ( namePeriod.CompareTo("LHC17h7b") ==0 ) return k17h7b;
-  else if ( namePeriod.CompareTo("LHC17h7a") ==0 ) return k17h7a;
-  else if ( namePeriod.CompareTo("LHC17j5a") ==0 ) return k17j5a;
-  else if ( namePeriod.CompareTo("LHC17j5b") ==0 ) return k17j5b;
-  else if ( namePeriod.CompareTo("LHC17j5c") ==0 ) return k17j5c;
-  else if ( namePeriod.CompareTo("LHC17h1") == 0 )        return k17h1;
-  else if ( namePeriod.CompareTo("LHC17h3") == 0 )        return k17h3;
-  else if ( namePeriod.CompareTo("LHC17l5") == 0 )        return k17l5;
-  else if ( namePeriod.CompareTo("LHC15k5a") == 0 ||
-            namePeriod.CompareTo("LHC15k5b") == 0 ||
-            namePeriod.CompareTo("LHC15k5c") == 0 ||
-            namePeriod.CompareTo("LHC15k5a2") == 0 ||
-            namePeriod.CompareTo("LHC15k5b2") == 0 ||
-            namePeriod.CompareTo("LHC15k5c2") == 0 )        return k15k5;
+  else if ( namePeriod.CompareTo("LHC17k1") ==0 )       return k17k1; // HF low B
+  else if ( namePeriod.CompareTo("LHC17k4") ==0 ||
+            namePeriod.CompareTo("LHC17h11") ==0 ||
+            namePeriod.CompareTo("LHC17h1") == 0 ||
+            namePeriod.CompareTo("LHC17l5") == 0 )      return kPP13T17P1Pyt8;
+  else if ( namePeriod.CompareTo("LHC17h7b") ==0 )      return kPP13T17P1Pho;
+  else if ( namePeriod.CompareTo("LHC17h7a") ==0 )      return kPP13T17P1Pyt6;
+
+  else if ( namePeriod.CompareTo("LHC17j5a") ==0 ||
+            namePeriod.CompareTo("LHC17j5b") ==0 ||
+            namePeriod.CompareTo("LHC17j5c") ==0 ||
+            namePeriod.CompareTo("LHC17j5d") ==0 ||
+            namePeriod.CompareTo("LHC17j5e") ==0 )      return kPP13T17P1Pyt8Str;
+  else if ( namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
+  // XeXe 5.44 TeV 2017 MB MC
+  else if ( namePeriod.CompareTo("LHC17j7") == 0 )      return kXeXe5T17HIJING;
+
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
@@ -5868,12 +5964,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC15l") == 0 ||
             namePeriod.CompareTo("LHC15m") == 0 )       return k15pp13TeV;
   else if ( namePeriod.CompareTo("LHC15n") == 0 )       return k15pp5TeV;
-  else if ( namePeriod.CompareTo("LHC15o") == 0 ||
-            namePeriod.CompareTo("LHC16g1") == 0 ||
-            namePeriod.CompareTo("LHC16g1a") == 0 ||
-            namePeriod.CompareTo("LHC16g1b") == 0 ||
-            namePeriod.CompareTo("LHC16g1c") == 0 ||
-            namePeriod.CompareTo("LHC16h4") == 0)       return k15PbPb5TeV;
+  else if ( namePeriod.CompareTo("LHC15o") == 0 )       return k15PbPb5TeV;
   else if ( namePeriod.CompareTo("LHC16f") == 0 )       return k16pp13TeVLow;
   else if ( namePeriod.CompareTo("LHC16dp") == 0 ||
             namePeriod.CompareTo("LHC16d") == 0 ||
@@ -5906,11 +5997,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17l") == 0 ||
             namePeriod.CompareTo("LHC17m") == 0 ||
             namePeriod.CompareTo("LHC17o") == 0 ||
-            namePeriod.CompareTo("LHC17r") == 0 )        return k17pp13TeV;
+            namePeriod.CompareTo("LHC17r") == 0 )       return k17pp13TeV;
   else if ( namePeriod.CompareTo("LHC17g") == 0 )       return k17pp13TeVLow;
   else if ( namePeriod.CompareTo("LHC17pq") == 0 ||
             namePeriod.CompareTo("LHC17p") == 0 ||
-            namePeriod.CompareTo("LHC17q") == 0  )       return k17pp5TeV;
+            namePeriod.CompareTo("LHC17q") == 0  )      return k17pp5TeV;
   else if ( namePeriod.CompareTo("LHC17n") == 0 )       return k17XeXe5440GeV;
   else return kNoMC;
 }

@@ -722,15 +722,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<92) arrQAPtBinning[i]         = 12.+1.0*(i-84);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
-    nBinsClusterPt            = 124;
+    nBinsClusterPt            = 148;
     minClusterPt              = 0;
     maxClusterPt              = 40;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
       if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<58) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
-      else if(i<88) arrClusPtBinning[i]       = 6.+0.2*(i-58);
-      else if(i<104) arrClusPtBinning[i]      = 12.+0.5*(i-88);
-      else if(i<124) arrClusPtBinning[i]      = 20.+1.0*(i-104);
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<123) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<148) arrClusPtBinning[i]      = 15.+1.0*(i-123);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else {
