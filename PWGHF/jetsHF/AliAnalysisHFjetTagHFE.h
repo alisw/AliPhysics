@@ -67,6 +67,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
+    Int_t NembMCpi0;
+    Int_t NembMCeta;
+    Int_t NpureMCproc;
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -102,7 +105,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistHfEleMC;
   TH1F                        *fHistHfEleMCreco;
   TH1F                        *fHistPhoEleMC;
+  TH1F                        *fHistPhoEleMCpi0;
+  TH1F                        *fHistPhoEleMCeta;
   TH1F                        *fHistPhoEleMCreco;
+  TH1F                        *fHistPhoEleMCrecopi0;
+  TH1F                        *fHistPhoEleMCrecoeta;
+  TH1F                        *fHistMCorgPi0;
+  TH1F                        *fHistMCorgEta;
   TH2F                        *fHistIncjet;
   TH2F                        *fHistIncjetFrac;
   TH2F                        *fHistIncjetOrg;
@@ -124,6 +133,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
+  TF1                         *fPi0Weight;
+  TF1                         *fEtaWeight;
 
 
   AliJetContainer            *fJetsCont;                   //!Jets
@@ -139,6 +150,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+  void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
 
  private:
 
