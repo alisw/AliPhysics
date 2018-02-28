@@ -69,16 +69,17 @@ ClassImp(AliXiStarPbPb)
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb():
 AliAnalysisTaskSE(),
+fESDTrack4(0x0),
+fXiTrack(0x0),
+fCutList(0),
 fname(0),
 fESD(0x0),
 fOutputList(0x0),
 fTrackCut(0x0),
 fPIDResponse(0x0),
-
 fCentrality(0),
 fEC(0x0),
 fEvt(0x0),
-
 fTempStruct(0x0),
 fZvertexBins(0),
 fEventsToMix(0),
@@ -92,12 +93,7 @@ fTrueMassPr(0),
 fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
-fTrueMassXi(0),
-
-fESDTrack4(0x0),
-fXiTrack(0x0),
-fCutList(0)
-
+fTrueMassXi(0)
 
 {
     // Default Constructor
@@ -139,6 +135,9 @@ fCutList(0)
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption)
 : AliAnalysisTaskSE(name),
+fESDTrack4(0x0),
+fXiTrack(0x0),
+fCutList(CutListOption),
 fname(name),
 fESD(0x0),
 fOutputList(0x0),
@@ -160,11 +159,7 @@ fTrueMassPr(0),
 fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
-fTrueMassXi(0),
-
-fESDTrack4(0x0),
-fXiTrack(0x0),
-fCutList(CutListOption)
+fTrueMassXi(0)
 
 
 
@@ -233,6 +228,9 @@ fCutList(CutListOption)
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb(const AliXiStarPbPb &obj)
 : AliAnalysisTaskSE(obj.fname),
+fESDTrack4(obj.fESDTrack4),
+fXiTrack(obj.fXiTrack),
+fCutList(obj.fCutList),
 fname(obj.fname),
 fESD(obj.fESD),
 fOutputList(obj.fOutputList),
@@ -255,12 +253,7 @@ fTrueMassPr(obj.fTrueMassPr),
 fTrueMassPi(obj.fTrueMassPi),
 fTrueMassK(obj.fTrueMassK),
 fTrueMassLam(obj.fTrueMassLam),
-fTrueMassXi(obj.fTrueMassXi),
-
-fESDTrack4(obj.fESDTrack4),
-fXiTrack(obj.fXiTrack),
-fCutList(obj.fCutList)
-
+fTrueMassXi(obj.fTrueMassXi)
 
 {
     // Copy constructor
@@ -407,7 +400,7 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
-    fTempStruct = new AliXiStarPbPbTrackStruct[kNbinsM*8];    
+    fTempStruct = new AliXiStarPbPbTrackStruct[20000];
     
     
     fESDTrack4 = new AliESDtrack();
