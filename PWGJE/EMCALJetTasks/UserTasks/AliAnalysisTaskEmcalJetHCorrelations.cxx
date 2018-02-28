@@ -31,11 +31,12 @@
 #include "AliTrackContainer.h"
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
-#include "AliAnalysisTaskEmcalJetHBase.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetHCorrelations);
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations);
+
+namespace PWGJE {
+namespace EMCALJetTasks {
 
 // 0-10% centrality: Semi-Good Runs
 Double_t AliAnalysisTaskEmcalJetHCorrelations::p0_10SG[17] = {0.906767, 0.0754127, 1.11638, -0.0233078, 0.795454, 0.00935385, -0.000327857, 1.08903, 0.0107272, 0.443252, -0.143411, 0.965822, 0.359156, -0.581221, 1.0739, 0.00632828, 0.706356};
@@ -379,7 +380,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
     biasedJet = BiasedJet(jet);
-    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
+    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -510,7 +511,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
           biasedJet = BiasedJet(jet);
-          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHBase::RelativeEPAngle(jet->Phi(), fEPV0);
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
           if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
@@ -1528,3 +1529,6 @@ AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTra
 
   return partCont;
 }
+
+} /* namespace EMCALJetTasks */
+} /* namespace PWGJE */

@@ -33,6 +33,9 @@ class AliParticleContainer;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
+namespace PWGJE {
+namespace EMCALJetTasks {
+
 class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
  public:
   /**
@@ -247,8 +250,10 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 15);
-  /// \endcond
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 16);
 };
+
+} /* namespace EMCALJetTasks */
+} /* namespace PWGJE */
+
 #endif
