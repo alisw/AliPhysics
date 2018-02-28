@@ -407,8 +407,7 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
-    fTempStruct = new AliXiStarPbPbTrackStruct[20000]; //1000 was best but wired EM bg distribution comes from this ?!//20000 for BG
-    
+    fTempStruct = new AliXiStarPbPbTrackStruct[kNbinsM*8];    
     
     
     fESDTrack4 = new AliESDtrack();
