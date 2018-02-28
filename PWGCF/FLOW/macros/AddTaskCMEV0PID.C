@@ -1,15 +1,13 @@
 #include<TList.h>
 #include<TGrid.h>
-#include"TSystem.h"
-
+#include "TSystem.h"
 class AliAnalysisTaskCMEV0PID;
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,Bool_t bUseMC=kFALSE,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90., Float_t fSlope=3.45, Float_t fConst=100, Bool_t bUseMC=kFALSE,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", const char *suffix = "")
 {
-
   // standard with task
   printf("========================================================================================\n");
-  printf("                      Initializing AliAnalysisTaskCMEV0PID                              \n");
+  printf("               PID: Initialising AliAnalysisTaskCMEV0PID \n");
   printf("========================================================================================\n");
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -21,33 +19,34 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
 
   AliAnalysisDataContainer    *cinput = mgr->GetCommonInputContainer();  //AOD event
 
-  Double_t centrMin[9] = {0, 5,10,20,30,40,50,60,70};
-  Double_t centrMax[9] = {5,10,20,30,40,50,60,70,90};
 
 
   TString TaskCMEV0PID;
+  TString fCME_container;
 
   TString listOutName1 = file;      // file is the common outfile filename
   listOutName1 += ":Results";
 
-  TString fCME_container;
 
-  const Int_t NumberOfCuts = 1;
+  const Int_t NumberOfCuts = 1;  //max 5
 
   Double_t nSigmaCuts[5]  = {2.0, 2.5, 3.0};
 
-  AliAnalysisTaskCMEV0PID *task_CME[10];
-  AliAnalysisDataContainer *coutputCont1[10];
 
-  for(int i=0; i<10; i++) {
+
+  AliAnalysisTaskCMEV0PID *task_CME[5];
+  AliAnalysisDataContainer *coutputCont1[5];
+
+  for(int i=0; i<5; i++) {
     task_CME[i] = NULL;
     coutputCont1[i] = NULL;
   }
 
-
+  Int_t gCentMin = fCentralityMin;
+  Int_t gCentMax = fCentralityMax;
 
   for(int i=0;i<NumberOfCuts;i++){
-    TaskCMEV0PID.Form("TaskCMEV0PID_Cent%2.0f_%2.0f_%s_%2.1f",fCentralityMin,fCentralityMax, suffix, nSigmaCuts[i]);
+    TaskCMEV0PID.Form("TaskCMEV0PID_Cent_%d_%d_%s_%2.1f", gCentMin, gCentMax, suffix, nSigmaCuts[i]);
     //cout<<"Add taskname = "<<TaskCMEV0PID.Data()<<endl;
     task_CME[i] = new AliAnalysisTaskCMEV0PID(TaskCMEV0PID);
     task_CME[i]->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -59,7 +58,9 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     task_CME[i]->SetEtaRangeMax(fEtaMax);
     task_CME[i]->SetCentralityPercentileMin(fCentralityMin);
     task_CME[i]->SetCentralityPercentileMax(fCentralityMax);
-    if(bUseMC){
+    task_CME[i]->SetPileUpCutParam(fSlope,fConst);
+
+    if(bUseMC) {
       task_CME[i]->SetFlagForMCcorrection(kTRUE);
       task_CME[i]->SetFBEfficiencyFilePath(sMCfilePath);
     }
@@ -75,6 +76,9 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     mgr->ConnectOutput(task_CME[i], 1, coutputCont1[i]);
   }
  
+
+
+
   printf("\n ===================> AddTaskCMEV0PID() Configured properly <=====================\n");
 
 }//main ends

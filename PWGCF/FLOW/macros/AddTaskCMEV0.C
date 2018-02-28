@@ -22,10 +22,11 @@ class AliAnalysisTaskCMEV0;
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
 
   //Fixed Track cuts: only vary for systematic check
-  Double_t dDCAxy = 2.4;
-  Double_t dDCAz  = 3.2;
-  Double_t dcentrMin=0;
-  Double_t dcentrMax=90.;
+  Float_t dDCAxy = 2.4;
+  Float_t dDCAz  = 3.2;
+
+  Float_t dcentrMin= 0.;
+  Float_t dcentrMax=90.;
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -247,6 +248,7 @@ class AliAnalysisTaskCMEV0;
       TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
       if(fListNUA){
         taskQC_prot->SetInputListNUA(fListNUA);
+        printf("\n\n ========= Info: Reading NUACorr = %s ===========\n\n ",sNUAFile.Data());
       }
       else{
         printf("\n\n *** ERROR: NUA file Exist, But fList name is wrong !! **EXIT** \n\n");
