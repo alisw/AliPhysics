@@ -7,9 +7,9 @@
 #include "AliXMLEngine.h"
 #include "AliTriggerBCMask.h"
 
-class AliVdMData {
+class AliVdMMetaData {
 public:
-  AliVdMData(const char* xmlFileName)
+  AliVdMMetaData(const char* xmlFileName)
     : fXML(xmlFileName)
     , fNodeVdM(fXML.GetRootNode())
     , fFillNumber(std::stoi(fNodeVdM.GetAttr("fill").GetData()))
