@@ -1,3 +1,28 @@
+TF1* GetTPCCorrection(TString type){
+   TString Map="TPCCorrMaps_5TeV.root";
+   TFile *f = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", Map.Data()));
+   if (!f->IsOpen()) {
+      printf("TPC map file not found \n");
+      return 0;
+   }
+   gROOT->cd();
+   TF1* CorrectionFunction(NULL);
+   if (type == "Momentum") {
+      CorrectionFunction = (TF1*) f->GetObjectChecked("TPCnsigmavspcor","TF1");
+      if(!CorrectionFunction) printf("TPCCorrMaps_5TeV.root:TPCnsigmavspcor not found \n");
+   } else if (type == "Momentum_Width"){
+      CorrectionFunction = (TF1*) f->GetObjectChecked("TPCnsigmavspcor_width","TF1");
+      if(!CorrectionFunction) printf("TPCCorrMaps_5TeV.root:TPCnsigmavspcor_width not found \n");
+   } else if (type == "Eta"){
+      CorrectionFunction = (TF1*) f->GetObjectChecked("TPCnsigmavsetacor","TF1");
+      if(!CorrectionFunction) printf("TPCCorrMaps_5TeV.root:TPCnsigmavsetacor not found \n");
+   } else if (type == "Eta_Width"){
+      CorrectionFunction = (TF1*) f->GetObjectChecked("TPCnsigmavsetacor_width","TF1");
+      if(!CorrectionFunction) printf("TPCCorrMaps_5TeV.root:TPCnsigmavsetacor_width not found \n");
+   }
+   return CorrectionFunction;
+}
+
 AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appendix,
                                     UChar_t TPCcl=70, UChar_t TPCclPID = 80,
                                     UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
@@ -14,6 +39,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                                     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1,
                                     Int_t HadronContFunc=0, Int_t PrimaryVertexTyp)
 {
+
+   Bool_t etacor = true;
+   Bool_t MomCor = true;
 
    //***************************************//
    //        Setting up the HFE cuts        //
@@ -121,7 +149,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          kHadronUp= 2,
          kHadronError = 3,
          kHadronTPCMinus05 = 4,
-         kHadronTPC0 = 5
+         kHadronTPC0 = 5,
+         kHadronTPC025 = 6,
+         kHadronTPCMinus025 = 7,
+         kHadronTPCMinus075 = 8,
+         kHadronTPCMinus13 = 9
       };
 
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
@@ -163,7 +195,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
 
                hBackground->SetParameter(3, 2.77234e-02);
                hBackground->SetParameter(4, 8.72315e-01);
-               hBackground->SetParameter(5, 3.15486e-02);               break;
+               hBackground->SetParameter(5, 3.15486e-02);
+               break;
             case kHadronError:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3]) + [4] * TMath::Gaus(x, [5], [6])",0. ,60.);
                hBackground->SetParameter(0, 4.99954e-01);
@@ -174,6 +207,39 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(4, 2.75397e-02);
                hBackground->SetParameter(5, 8.72389e-01);
                hBackground->SetParameter(6, 3.09841e-02);
+               break;
+            case kHadronTPC025:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,4.15174e+02);
+               hBackground->SetParameter(1,2.72143e+01);
+               hBackground->SetParameter(2,6.51237e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,2.43621e-02);
+               hBackground->SetParameter(4,8.69103e-01);
+               hBackground->SetParameter(5,3.48518e-02);
+               break;
+            case kHadronTPC0:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,1.10227e+01);
+               hBackground->SetParameter(1,1.71063e+01);
+               hBackground->SetParameter(2,4.19606e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,2.05323e-02);
+               hBackground->SetParameter(4,8.69626e-01 );
+               hBackground->SetParameter(5,3.48474e-02 );
+               break;
+            case kHadronTPCMinus025:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,4.90030e+00);
+               hBackground->SetParameter(1,1.38406e+01);
+               hBackground->SetParameter(2,3.40256e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,1.78808e-02);
+               hBackground->SetParameter(4,8.70064e-01);
+               hBackground->SetParameter(5,3.48471e-02);
                break;
             case kHadronTPCMinus05:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
@@ -186,16 +252,27 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(4,8.70417e-01);
                hBackground->SetParameter(5,3.48478e-02);
                break;
-            case kHadronTPC0:
+            case kHadronTPCMinus075:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,1.10227e+01);
-               hBackground->SetParameter(1,1.71063e+01);
-               hBackground->SetParameter(2,4.19606e+00);
+               hBackground->SetParameter(0,5.95574e+00);
+               hBackground->SetParameter(1,1.14992e+01);
+               hBackground->SetParameter(2,2.84904e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,2.05323e-02);
-               hBackground->SetParameter(4,8.69626e-01 );
-               hBackground->SetParameter(5,3.48474e-02 );
+               hBackground->SetParameter(3,1.47756e-02);
+               hBackground->SetParameter(4,8.70712e-01);
+               hBackground->SetParameter(5,3.48949e-02);
+               break;
+            case kHadronTPCMinus13:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,6.00345e+00);
+               hBackground->SetParameter(1,8.94393e+00);
+               hBackground->SetParameter(2,2.24553e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,1.32202e-02);
+               hBackground->SetParameter(4,8.71015e-01);
+               hBackground->SetParameter(5,3.51323e-02);
                break;
             default:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
@@ -256,6 +333,24 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
     pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
     }
     */
+
+   if(!useMC){
+      AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
+      if(etacor){
+         printf("CONFIGURATION FILE: Eta correction of electrons in the TPC \n");
+         // Apply eta correction
+         TF1 *etacorrection = GetTPCCorrection("Eta");
+         TF1 *etacorrectionWidth = GetTPCCorrection("Eta_Width");
+         if(etacorrection) tpcpid->SetEtaCorrections(etacorrection,etacorrectionWidth);
+      }
+      if(MomCor){
+         printf("CONFIGURATION FILE: Momentum correction of electrons in the TPC \n");
+         // Apply eta correction
+         TF1 *MomCorrection = GetTPCCorrection("Momentum");
+         TF1 *MomCorrectionWidth = GetTPCCorrection("Momentum_Width");
+         if(MomCorrection) tpcpid->SetMomentumCorrections(MomCorrection, MomCorrectionWidth);
+      }
+   }
 
    // Configure TOF PID
    if (usetof){
