@@ -636,6 +636,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   if (bmap) SetTPCFitMap(*bmap);
   bmap = GetTPCSharedMapPtr();
   if (bmap) SetTPCSharedMap(*bmap);
+  // Set TPC chi2
+  fTPCchi2 = track->GetTPCchi2();
   //
   // Set the combined PID
   const Double_t *pid = track->PID();
