@@ -1,13 +1,13 @@
 //
-//  AliAnalysisTaskTPCCalBeauty.h
+//  AliAnalysisTaskTPCCalBeautyTest2.h
 //  
 //
 //  Created by Erin Gauger
 //
 //
 
-#ifndef AliAnalysisTaskTPCCalBeauty_cxx
-#define AliAnalysisTaskTPCCalBeauty_cxx
+#ifndef AliAnalysisTaskTPCCalBeautyTest2_cxx
+#define AliAnalysisTaskTPCCalBeautyTest2_cxx
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
@@ -19,14 +19,14 @@ class AliMultSelection;
 class AliAODMCParticle;
 class AliAODMCHeader;
 
-class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
+class AliAnalysisTaskTPCCalBeautyTest2 : public AliAnalysisTaskSE
 {
     public:
         //two class constructors
-                        AliAnalysisTaskTPCCalBeauty();
-                        AliAnalysisTaskTPCCalBeauty(const char *name);
+                        AliAnalysisTaskTPCCalBeautyTest2();
+                        AliAnalysisTaskTPCCalBeautyTest2(const char *name);
         //class destructor
-        virtual         ~AliAnalysisTaskTPCCalBeauty();
+        virtual         ~AliAnalysisTaskTPCCalBeautyTest2();
         //called once at beginning of runtime
         virtual void    UserCreateOutputObjects();
         //called for each event
@@ -53,7 +53,8 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
 
         void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
         void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
-        void            InvMassCheck(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+        void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+        void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort);
     
     private:
         AliAODEvent         *fAOD;           //! input event
@@ -100,11 +101,37 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
     
         TH1F                *fInvmassLS;     //! Plots LS mass dist
         TH1F                *fInvmassULS;    //! Plots ULS mass dist
-        TH1F                *fPhotonicElecYield; //! Photonic electron yield vs. pT
+    
+        TH1F                *fInvmassLSWeightEnhEta;   //! Plots LS mass dist
+        TH1F                *fInvmassULSWeightEnhEta;  //!
+        TH1F                *fInvmassLSWeightEnhPi0;   //!
+        TH1F                *fInvmassULSWeightEnhPi0;  //!
+        TH1F                *fInvmassLSHijingEta;      //!
+        TH1F                *fInvmassULSHijingEta;     //!
+        TH1F                *fInvmassLSHijingPi0;      //!
+        TH1F                *fInvmassULSHijingPi0;     //!
+        TH1F                *fInvmassLSHijingPhoton;   //!
+        TH1F                *fInvmassULSHijingPhoton;  //!
+        TH1F                *fInvmassLSEnhPhoton;         //!
+        TH1F                *fInvmassULSEnhPhoton;        //!
+    
         TH2F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
         TH2F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
+    
+        TH1F                *fLSWeightEnhEta;     //! LS for Weighted enhanced eta
+        TH1F                *fULSWeightEnhEta; //! ULS for Weighted enhanced eta
+        TH1F                *fLSWeightEnhPi0;  //! LS for Weighted enhanced pi0
+        TH1F                *fULSWeightEnhPi0; //! ULS for Weighted enhanced pi0
+        TH1F                *fLSHijingEta;     //! LS for hijing eta
+        TH1F                *fULSHijingEta;    //! ULS for hijing eta
+        TH1F                *fLSHijingPi0;     //! LS for hijing pi0
+        TH1F                *fULSHijingPi0;    //! ULS for hijing pi0
+        TH1F                *fLSHijingPhoton;  //! LS for hijing photon
+        TH1F                *fULSHijingPhoton; //! ULS for hijing photon
+        TH1F                *fLSEnhPhoton;     //! LS for all photon e
+        TH1F                *fULSEnhPhoton;    //! ULS for all photon e
+    
         TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
-        TH2F                *fDalitzDCA;     //! pion and eta DCA using MC PID
         TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
         TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
         TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
@@ -113,18 +140,49 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
         TF1                 *fEtaWeight;    //! Function to weight enhanced eta
         //TF1                 *fPi0EtaWeight; //! Function to weight enhanced eta+pi0
+        TH1F                *fDWeight; //!
+    
+    
         Double_t            fWeight;        //!
     
         TH2F                *fPi0DCA;           //! Pi0 DCA vs. pT
         TH2F                *fEtaDCA;           //! Eta DCA vs. pT
-        //TH2F                *fPi0EtaDCA;        //! Pi0+Eta DCA vs. pT
-        TH2F                *fPhotonMCTrueDCA;  //! gamma DCA vs. pT
-        TH2F               *fPi0MCTrueWeightEnhDCA; //!
-        TH2F               *fEtaMCTrueWeightEnhDCA; //!
-        //TH2F               *fPi0EtaMCTrueWeightEnhDCA; //!
-        TH2F               *fPi0MCTrueHijingDCA; //!
-        TH2F               *fEtaMCTrueHijingDCA; //!
-        //TH2F               *fPi0EtaMCTrueHijingDCA; //!
+    
+        TH2F                *fEnhEtaDCA;           //! 
+        TH1F                *fEnhEtaWeightedPt;    //!
+        TH2F                *fEnhPi0DCA;           //!
+        TH1F                *fEnhPi0WeightedPt;    //!
+        TH2F                *fEtaHijingDCA;        //!
+        TH1F                *fEtaHijingPt;         //!
+        TH2F                *fPi0HijingDCA;        //!
+        TH1F                *fPi0HijingPt;         //!
+        TH2F                *fPhotonHijingDCA;     //!
+        TH1F                *fPhotonHijingPt;      //!
+        TH2F                *fEnhPhotonDCA;        //!
+        TH1F                *fEnhPhotonWeightedPt; //!
+    
+        TH1F                *ComboNumWeight;       //!
+        TH1F                *ComboNumNoWeight;     //!
+        TH1F                *ComboDenomWeight;     //!
+        TH1F                *ComboDenomNoWeight;   //!
+    
+        TH1F                *DMesonPDG; //! plots abs(pdg) of D mesons in the stack
+        TH1F                *fD0MesonPt;  //!
+        TH1F                *fD0MesonFromDStarPt; //!
+        TH1F                *fDPlusMesonPt; //!
+        TH1F                *fDsMesonPt;//!
+        TH1F                *fDStarMesonPt;//!
+        TH1F                *fAllDMesonPt; //!
+    
+        TH1F                *fLambdaCPt; //!
+        TH1F                *fEtaCPt; //!
+        TH1F                *fCBaryonPt; //!
+    
+        TH2F    *fPromptD0DCAWeight; //!
+        TH2F    *fD0FromDStarDCAWeight; //!
+    TH2F    *fPromptD0DCANoWeight; //!
+    TH2F    *fD0FromDStarDCANoWeight; //!
+
     
         Int_t               fNtotMCpart;     //! N of total MC particles produced by generator
         Int_t               fNpureMC;        //! N of particles from main generator (Hijing/Pythia)
@@ -132,13 +190,18 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         Int_t               fNembMCeta;      //! N > fNembMCeta = particles from eta generator
     
         THnSparse           *fSprsPi0EtaWeightCal;  //! Sparse for pi0,eta weight calc
-        THnSparse           *fSprsTemplates;  //! Sparse for templates
+        THnSparse           *fSprsTemplatesNoWeight;  //! Sparse for templates
+        THnSparse           *fSprsTemplatesWeight;  //! Sparse for templates
+    
+        TH2F                *fDTemplateWeight; //!
+        TH2F                *fDTemplateNoWeight; //!
+    
         //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
         //Double_t            *fvalueElectron; //! Electron info
     
-    AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    AliAnalysisTaskTPCCalBeauty& operator=(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    ClassDef(AliAnalysisTaskTPCCalBeauty, 1);
+    AliAnalysisTaskTPCCalBeautyTest2(const AliAnalysisTaskTPCCalBeautyTest2&); // not implemented???
+    AliAnalysisTaskTPCCalBeautyTest2& operator=(const AliAnalysisTaskTPCCalBeautyTest2&); // not implemented???
+    ClassDef(AliAnalysisTaskTPCCalBeautyTest2, 1);
 };
 
 #endif
