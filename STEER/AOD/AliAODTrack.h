@@ -144,6 +144,11 @@ class AliAODTrack : public AliVTrack {
   }
   
   UShort_t GetTPCNcls()  const { return GetTPCncls(); }
+  Double_t GetTPCchi2() const {
+    Int_t nTPCclus=GetNcls(1);
+    if(fChi2perNDF>0. && nTPCclus > 5) return fChi2perNDF*(nTPCclus-5);
+    else return 999.;
+  }
 
   Int_t GetNcls(Int_t idet) const;
 
