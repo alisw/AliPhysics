@@ -164,6 +164,13 @@ Double_t AliNonseparationModelFit::MinuitFunction(const Double_t *par) {
     t->SetBranchAddress("modelPar", mom.GetMatrixArray());
     t->SetBranchAddress("modelCov", cov.GetMatrixArray());
 
+    Int_t nn = t->Draw("Entry$", "abs(beamSep.X)<0.001 && abs(beamSep.Y)<0.001", "GOFF");
+    Int_t tmp = t->GetV1()[0];
+    t->GetEntry(tmp);
+    Double_t p0[3] = {
+      mom(0), mom(1), mom(2)
+    };
+    //    Printf("TT: k=%d nn=%d tmp=%d %f %f %f", k, nn, tmp, p0[0], p0[1], p0[2]);
     for (Long64_t i=0, m=elist->GetN(); i<m; ++i) {
       t->GetEntry(elist->GetEntry(i));
       //Printf("%p %p %p", sep.GetMatrixArray(), mom.GetMatrixArray(), cov.GetMatrixArray());
@@ -191,11 +198,12 @@ Double_t AliNonseparationModelFit::MinuitFunction(const Double_t *par) {
 			       0.01};
       for (Int_t j1=0; j1<7; ++j1) {
 	for (Int_t j2=0; j2<7; ++j2) {
-	  if (j2 != j1) continue;
+          //	  if (j2 != j1) continue;
 	  xx +=
-	    (mom(j1) - (j1<3 ? par[20+j1+3*(k>=4)] : 0.0) - profile(1+j1)) *
-	    // (mom(j2) - (j2<3 ? par[20+j2] : 0.0) - profile(1+j2)) / (j1>=0 && j1<=6 ? cx[j1]*cx[j2] : cov(j1,j2));
-            (mom(j2) - (j2<3 ? par[20+j2+3*(k>=4)] : 0.0) - profile(1+j2)) * covData_Inv(j1,j2);
+	    (mom(j1) - (j1<3 ? par[20+j1+3*(k>=4)]*0 + p0[j1] : 0.0) - profile(1+j1)) *
+            (mom(j2) - (j2<3 ? par[20+j2+3*(k>=4)]*0 + p0[j2] : 0.0) - profile(1+j2)) * covData_Inv(j1,j2);
+
+          // (mom(j2) - (j2<3 ? par[20+j2] : 0.0) - profile(1+j2)) / (j1>=0 && j1<=6 ? cx[j1]*cx[j2] : cov(j1,j2));
 	}
       }
       fChi2Moments[k] += xx;
@@ -230,13 +238,14 @@ void AliNonseparationModelFit::SetVar(Int_t idx, Double_t val, Double_t step, Do
   fMinimizer.SetLimitedVariable(idx, GetParName(idx), val, step, min, max);
 }
 
-void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
+void AliNonseparationModelFit::DoFit(const TString &saveFileName,
+                                     const TString &options) {
 
   for (Int_t i=0; i<6; ++i) {
     TGraph *g = (TGraph*)fRates.At(i);
     if (NULL == g)
       continue;
-    TF1 *fg = (TF1*)g->FindObject("gaus");
+    TF1 *fg = (TF1*)g->FindObject("fg");
     if ((i%2)==0)
       fMuOffsetsX[i/2] = 0.1*fg->GetParameter(1); // conversion mm -> cm
     else
@@ -247,10 +256,10 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
 
   // (1) fit without rates
   SetFitToRates(kFALSE);
-  fMinimizer.FixVariable(3);
-  fMinimizer.FixVariable(7);
-  fMinimizer.FixVariable(12);
-  fMinimizer.FixVariable(16);
+  // fMinimizer.FixVariable(3);
+  // fMinimizer.FixVariable(7);
+  // fMinimizer.FixVariable(12);
+  // fMinimizer.FixVariable(16);
 
   if (fMoments.At(4) == NULL) { // do not use DeltaXYZ^O without offset scans
     fMinimizer.FixVariable(23);
@@ -259,12 +268,14 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
   }
 
   //X crossing angles
-  fMinimizer.FixVariable(18);
-  fMinimizer.FixVariable(19);
+  if (options.Contains("fix_alpha_XZ"))
+    fMinimizer.FixVariable(18);
+  if (options.Contains("fix_alpha_YZ"))
+    fMinimizer.FixVariable(19);
 
-  fMinimizer.FixVariable(23+3);
-  fMinimizer.FixVariable(24+3);
-  fMinimizer.FixVariable(25+3);
+  // fMinimizer.FixVariable(23+3);
+  // fMinimizer.FixVariable(24+3);
+  // fMinimizer.FixVariable(25+3);
 
   fMinimizer.Minimize();
   fMinimizer.PrintResults();
@@ -272,20 +283,22 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
   Printf("chi2=%.0f NDF=%.0f chi2/NDF=%.1f",
    	 GetChi2(), GetNDF()-fMinimizer.NFree(), GetChi2()/(GetNDF()-fMinimizer.NFree()));
 
-  fMinimizer.ReleaseVariable(3);
-  fMinimizer.ReleaseVariable(7);
-  fMinimizer.ReleaseVariable(12);
-  fMinimizer.ReleaseVariable(16);
+  // fMinimizer.ReleaseVariable(3);
+  // fMinimizer.ReleaseVariable(7);
+  // fMinimizer.ReleaseVariable(12);
+  // fMinimizer.ReleaseVariable(16);
 
-  fMinimizer.ReleaseVariable(18);
-  fMinimizer.ReleaseVariable(19);
+  // if (!options.Contains("fix_alpha_XZ"))
+  //   fMinimizer.ReleaseVariable(18);
+  // if (!options.Contains("fix_alpha_YZ"))
+  // fMinimizer.ReleaseVariable(19);
 
-  fMinimizer.Clear();
-  fMinimizer.Minimize();
-  fMinimizer.PrintResults();
+  // fMinimizer.Clear();
+  // fMinimizer.Minimize();
+  // fMinimizer.PrintResults();
 
-  Printf("chi2=%.0f NDF=%.0f chi2/NDF=%.1f",
-	 GetChi2(), GetNDF()-fMinimizer.NFree(), GetChi2()/(GetNDF()-fMinimizer.NFree()));
+  // Printf("chi2=%.0f NDF=%.0f chi2/NDF=%.1f",
+  //        GetChi2(), GetNDF()-fMinimizer.NFree(), GetChi2()/(GetNDF()-fMinimizer.NFree()));
 
   fFitToOffsetScans = kTRUE;
 
@@ -295,14 +308,32 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
   // fMinimizer.FixVariable(12);
   // fMinimizer.FixVariable(16);
 
+  SetFitToRates(kTRUE);
+  Bool_t fixedVars[29];
+  for (Int_t i=0; i<29; ++i) {
+    fixedVars[i] = fMinimizer.IsFixedVariable(i);
+    fMinimizer.FixVariable(i);
+  }
+  fMinimizer.ReleaseVariable(26);
+
+  SetScaleRateError(1.0/(10*10));
   fMinimizer.Clear();
   fMinimizer.Minimize();
   fMinimizer.PrintResults();
 
-  Printf("chi2=%.0f NDF=%.0f chi2/NDF=%.1f",
-	 GetChi2(), GetNDF()-fMinimizer.NFree(), GetChi2()/(GetNDF()-fMinimizer.NFree()));
+   for (Int_t i=0; i<29; ++i) {
+     if (!fixedVars[i])
+       fMinimizer.ReleaseVariable(i);
+   }
+  fMinimizer.Clear();
+  fMinimizer.Minimize();
+  fMinimizer.PrintResults();
+
+  // Printf("chi2=%.0f NDF=%.0f chi2/NDF=%.1f",
+  //        GetChi2(), GetNDF()-fMinimizer.NFree(), GetChi2()/(GetNDF()-fMinimizer.NFree()));
 
 
+#if 0
   if (fNRates) {
     // (2a) fit with rates leaving only the scale free
     SetFitToRates(kTRUE);
@@ -357,6 +388,7 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName) {
       }
     }
   }
+#endif
   printf("   ");
   for (Int_t j=0; j<24; ++j)
     printf("%5d ", 1+j);
