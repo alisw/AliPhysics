@@ -1593,21 +1593,28 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
- Double_t Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
+ Double_t QTPCRe3 = QxTPC[2];
+ Double_t QTPCIm3 = QyTPC[2];
+
+
+ Double_t Psi2TPC = 0;
+
+ if(psiN<=2){
+
+ Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
  if(Psi2TPC < 0.) Psi2TPC += TMath::Pi();
 
  fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
  fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+ }
+ else if(psiN>=3){
 
- Double_t QTPCRe3 = QxTPC[2];
- Double_t QTPCIm3 = QyTPC[2];
-
- Double_t Psi3TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
- if(Psi3TPC < 0.) Psi3TPC += 2./3*TMath::Pi();
+ Psi2TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
+ if(Psi2TPC < 0.) Psi2TPC += 2./3*TMath::Pi();
 
  fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi3TPC));
  fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi3TPC));//centrCL1
-
+ }
 
 
 

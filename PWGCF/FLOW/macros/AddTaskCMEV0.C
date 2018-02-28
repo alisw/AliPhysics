@@ -248,7 +248,6 @@ class AliAnalysisTaskCMEV0;
       TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
       if(fListNUA){
         taskQC_prot->SetInputListNUA(fListNUA);
-        printf("\n\n ========= Info: Reading NUACorr = %s ===========\n\n ",sNUAFile.Data());
       }
       else{
         printf("\n\n *** ERROR: NUA file Exist, But fList name is wrong !! **EXIT** \n\n");
