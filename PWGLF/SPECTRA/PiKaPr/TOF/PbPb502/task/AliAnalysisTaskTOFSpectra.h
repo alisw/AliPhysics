@@ -64,7 +64,7 @@ using namespace AliUtilTOFParams;
 class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   public:
   //Constructors and destructor
-  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", Bool_t hi = kTRUE, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
+  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", CollSys collsys = AliUtilTOFParams::kPbPb, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
   virtual ~AliAnalysisTaskTOFSpectra();
 
   //////////////////////////////
@@ -340,7 +340,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Bool_t FillT0Histograms();
 
   //Setter methods
-  void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
+  void SetHeavyIonFlag(CollSys mode) { fCollSysMode = mode; };
   void SetMCFlag(Bool_t mode = kTRUE) { fMCmode = mode; };
   void SetTreeFlag(Bool_t mode = kTRUE) { fTreemode = mode; };
   void SetChannelFlag(Bool_t mode = kTRUE) { fChannelmode = mode; };
@@ -425,7 +425,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   /////////////////////////
   // Configuration Flags //
   /////////////////////////
-  Bool_t fHImode;             ///<  Flag for the Heavy Ion Mode
+  CollSys fCollSysMode;       ///<  Flag for the Heavy Ion Mode
   Bool_t fMCmode;             ///<  Flag for the Monte Carlo Mode
   Bool_t fTreemode;           ///<  Flag for the Tree analysis Mode
   Bool_t fChannelmode;        ///<  Flag to set the analysis only on channel TOF
@@ -769,7 +769,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Copy constructor
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 12); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 13); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
