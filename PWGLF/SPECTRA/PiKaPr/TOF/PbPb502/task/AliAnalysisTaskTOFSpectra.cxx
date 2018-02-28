@@ -66,8 +66,18 @@
 ClassImp(AliAnalysisTaskTOFSpectra);
 
 //________________________________________________________________________
-AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, CollSys collsys, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
     : AliAnalysisTaskSE(taskname)
+    // Soft configuration flags
+    , fBuilTPCTOF(kFALSE)
+    , fBuilDCAchi2(kFALSE)
+    , fUseTPCShift(kFALSE)
+    , fPerformance(kFALSE)   //kTRUE for performance plots!
+    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
+    , fRecalibrateTOF(kFALSE)
+    , fCutOnMCImpact(kFALSE)
+    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
+    , fFineEfficiency(kFALSE)
     //Standard track and event cuts
     , fEventCut(0)
     , fESDtrackCuts(0x0)
@@ -92,23 +102,14 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fAnTOFevent()
     , fTreeTrackMC(0x0)
     //Task configuration flags
-    , fHImode(hi)
+    , fCollSysMode(collsys)
     , fMCmode(mc)
     , fTreemode(tree)
     , fChannelmode(chan)
     , fCutmode(cuts)
     , fSimpleCutmode(simplecuts)
-    //Task setup parameters
+    //Task setup for working configuration
     , fUseAliEveCut(kTRUE)
-    , fBuilTPCTOF(kFALSE)
-    , fBuilDCAchi2(kFALSE)
-    , fUseTPCShift(kFALSE)
-    , fPerformance(kFALSE) //kTRUE for performance plots!
-    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
-    , fRecalibrateTOF(kFALSE)
-    , fCutOnMCImpact(kFALSE)
-    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
-    , fFineEfficiency(kFALSE)
     , fDCAXYshift(0)
     //Mask for physics selection
     , fSelectBit(AliVEvent::kINT7)
@@ -290,6 +291,25 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
 }
 
 //________________________________________________________________________
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra& copy)
+    : AliAnalysisTaskTOFSpectra(copy.GetName(), copy.fCollSysMode, copy.fMCmode, copy.fTreemode, copy.fChannelmode, copy.fCutmode, copy.fSimpleCutmode)
+{
+  fBuilTPCTOF = copy.fBuilTPCTOF;
+  fBuilDCAchi2 = copy.fBuilDCAchi2;
+  fUseTPCShift = copy.fUseTPCShift;
+  fPerformance = copy.fPerformance;
+  fMCPerformance = copy.fMCPerformance;
+  fRecalibrateTOF = copy.fRecalibrateTOF;
+  fCutOnMCImpact = copy.fCutOnMCImpact;
+  fFineTOFReso = copy.fFineTOFReso;
+  fFineEfficiency = copy.fFineEfficiency;
+  fSelectBit = copy.fSelectBit;
+  fMultiplicityBin = copy.fMultiplicityBin;
+  fESDtrackCuts = copy.fESDtrackCuts;
+  fESDtrackCutsPrm = copy.fESDtrackCutsPrm;
+}
+
+//________________________________________________________________________
 AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra()
 { //Destructor
   AliInfo("**** DESTRUCTOR CALLED ****");
@@ -388,7 +408,7 @@ void AliAnalysisTaskTOFSpectra::Init()
       AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i - 1), fMultiplicityBin.At(i)));
   }
   // Only for pp
-  if (!fHImode) {
+  if (fCollSysMode == AliUtilTOFParams::kpp) {
     TArrayD ppLimits(10);
     Int_t j = 0;
     ppLimits.AddAt(-1000, j++);
@@ -403,8 +423,8 @@ void AliAnalysisTaskTOFSpectra::Init()
     ppLimits.AddAt(1000, j++);
     fMultiplicityBin.Set(j, ppLimits.GetArray());
   }
-  // Only for cutting on the impact parameter!
-  if (fCutOnMCImpact && fMCmode && fHImode) {
+  // Only for cutting on the MC impact parameter!
+  if (fCutOnMCImpact && fMCmode && (fCollSysMode == kPbPb || fCollSysMode == kXeXe)) {
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
     Int_t j = 0;
@@ -664,6 +684,10 @@ void AliAnalysisTaskTOFSpectra::Init()
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+    if (species < kExpSpecies - 1) {
+      hTOFSepVsP[species] = 0x0;
+      hTOFSepVsPt[species] = 0x0;
+    }
   }
 
   //TPC expected
@@ -712,13 +736,17 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
   fListHist->SetOwner();
 
   //Object for the event selection
-  if (fHImode)
+  switch (fCollSysMode) {
+  case kPbPb:
     fEventCut.SetupLHC15o();
-  else {
+  case kXeXe:
+    break;
+  case kpp:
     fEventCut.SetupRun2pp();
     fEventCut.fCentralityFramework = 0;
+  default:
+    fEventCut.SetManualMode();
   }
-  fEventCut.SetManualMode();
 
   //Histograms for event Selection
   fEventCut.AddQAplotsToList(fListHist);
@@ -758,7 +786,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     } else {
-      if (fHImode) {
+      switch (fCollSysMode) {
+      case kXeXe:
+      case kPbPb:
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");      //Multiplicity estimator initialized
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");      //kNoCalib: centrality not calibrated, this is the default value for the centrality code
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");              //kRejTrigger: do not pass the trigger
@@ -768,7 +798,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");     //kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters"); // kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");   //kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
-      } else {
+        break;
+      case kpp:
 
         //AliPPVsMultUtils::IsMinimumBias(fESD))
         //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
@@ -784,12 +815,16 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO");                         //AliPPVsMultUtils::IsINELgtZERO(fESD))
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins");             //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices"); //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        break;
+      default:
+        AliFatal("Not implemented yet");
       }
     }
 
     //Check on the bins present in the histograms
     if (binstart > hNEvt->GetNbinsX() + 1)
       AliFatal(Form("binstart out of bounds!!"));
+    //
     fListHist->AddLast(hNEvt);
 
     hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
@@ -2446,7 +2481,7 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar()
 void AliAnalysisTaskTOFSpectra::PrintStatus()
 {
   AliInfo("- PrintStatus -");
-  AliInfo(Form("Using fHImode %i", fHImode));
+  AliInfo(Form("Using fCollSysMode %i", fCollSysMode));
   AliInfo(Form("Using fMCmode %i", fMCmode));
   AliInfo(Form("Using fTreemode %i", fTreemode));
   AliInfo(Form("Using fChannelmode %i", fChannelmode));
@@ -2501,8 +2536,10 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t*)
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity()
 {
-  if (fHImode) {
-    if (fMCmode && fCutOnMCImpact && fHImode) { //If requested, using the MC impact parameter instead of the measured centrality
+  switch (fCollSysMode) {
+  case kXeXe:
+  case kPbPb:
+    if (fMCmode && fCutOnMCImpact) { //If requested, using the MC impact parameter instead of the measured centrality
       fEvtMult = static_cast<AliGenHepMCEventHeader*>(fMCEvt->GenEventHeader())->impact_parameter();
       return;
     }
@@ -2515,10 +2552,13 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity()
       AliDebug(2, "Estimating centrality");
       fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE); //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
     }
-
-  } else {
+    break;
+  case kpp:
     AliDebug(2, "Estimating Multiplicity at midrapidity");
     fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE); //fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+    break;
+  default:
+    AliFatal("Wrong coll. sys. index when computing event multiplicity. May be not implemented yet");
   }
 }
 
@@ -2830,7 +2870,9 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
     return kTRUE;
   }
 
-  if (fHImode) {            //Heavy Ion
+  switch (fCollSysMode) {
+  case kXeXe:
+  case kPbPb:
     if (fEvtMult == -999) { //Multiplicity estimator not initialized
       return kFALSE;
     }
@@ -2882,8 +2924,8 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
     }
     hNEvt->Fill(binstart++);
 
-  } else { //pp
-
+    break;
+  case kpp: {
     //------------------------------------------------
     // Selection Investigation with AliPPVsMultUtils
     //------------------------------------------------
@@ -2930,6 +2972,11 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
       return kFALSE;
     } else if (!passall)
       AliFatal("The event selection for pp is inchoerent");
+    //
+    break;
+  }
+  default:
+    AliFatal("Wrong coll. sys. index when checking if event is selected. May be not implemented yet");
   }
 
   return kTRUE;
@@ -3538,6 +3585,14 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 
     hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
     fListHist->AddLast(hdEdxExpectedTPCp[i]);
+
+    if (i < kExpSpecies - 1) {
+      hTOFSepVsP[i] = new TProfile(Form("hTOFSepVsP%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), pstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsP[i]);
+
+      hTOFSepVsPt[i] = new TProfile(Form("hTOFSepVsPt%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), ptstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsPt[i]);
+    }
   }
 
   hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
@@ -3615,6 +3670,11 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
       if (TMath::Abs(fEta) > 0.2)
         hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
     }
+  }
+
+  for (Int_t i = 0; i < kExpSpecies - 1; i++) {
+    hTOFSepVsP[i]->Fill(fP, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
+    hTOFSepVsPt[i]->Fill(fPt, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
   }
 
   //*****
@@ -3793,6 +3853,14 @@ void AliAnalysisTaskTOFSpectra::SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t valu
   else
     SetMaskBit(fMCTrkMask, (Int_t)bit, value);
 };
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetMultiplicityBinning(TArrayD bin)
+{
+  fMultiplicityBin.Set(bin.GetSize(), bin.GetArray());
+  if (fMultiplicityBin.GetSize() != bin.GetSize())
+    AliFatal(Form("Number of bins do not match: %i and %i", fMultiplicityBin.GetSize(), bin.GetSize()));
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetTPCRowsCut(Double_t cut)
