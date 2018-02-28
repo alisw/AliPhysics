@@ -30,16 +30,18 @@ const double dalitzBinWidth  = 0.005;
 bool separationCuts;
 bool ppCollisions;
 double decayCutWidth;
-bool skipIntermediateDecays;
 bool doAngles;
 
 enum EDecaysPionPion { kRho_770, kOmega_783, kF0_980, kF2_1270, kRho_1450, kF0_1500, kRho3_1690, kF0_1710, kF4_2050, kK0s, nDecaysPionPion };
 
+const bool   doDecayPionPion[nDecaysPionPion]    = {   0      ,    1       ,    0    ,    1     ,    1      ,    1     ,    1       ,     1    ,    1     ,  1  };
 const char*  decayPionPionName[nDecaysPionPion]  = {"rho(770)","omega(783)","f0(980)","f2(1270)","rho(1450)","f0(1500)","rho3(1690)","f0(1710)","f4(2050)","K0s"};
 const double decayPionPionMass[nDecaysPionPion]  = { 0.775    , 0.783      , 0.990   , 1.276    , 1.465     , 1.504    , 1.689      , 1.723    , 2.018    , 0.497};
 const double decayPionPionGamma[nDecaysPionPion] = { 0.145    , 0.008      , 0.010   , 0.187    , 0.400     , 0.109    , 0.161      , 0.139    , 0.237    , 0.005};
 
 enum EDecaysPionKaon { kKstar_892, kKstar_1410, kKstar2_1430, kKstar_1680, kKstar3_1780, kKstar4_2045, kD0, nDecaysPionKaon };
+
+const bool   doDecayPionKaon[nDecaysPionKaon]    = {   0     ,    1     ,     1     ,    1     ,    1      ,    1     ,   0 };
 const char*  decayPionKaonName[nDecaysPionKaon]  = {"K*(892)","K*(1410)","K*2(1430)","K*(1680)","K*3(1780)","K*4(2045)","D0"};
 const double decayPionKaonMass[nDecaysPionKaon]  = { 0.294   , 1.421    , 1.425     , 1.718    , 1.776     , 2.045     , 1.865};
 const double decayPionKaonGamma[nDecaysPionKaon] = { 0.050   , 0.236    , 0.099     , 0.322    , 0.159     , 0.198     , 0.010};
@@ -60,12 +62,11 @@ AliFemtoTrioCut* GetTrioCutPionKaonDecay(ESys system, EDecaysPionKaon decay);
 void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8, bool pionPionDecays=false, bool pionKaonDecays=false, bool skipIntDecays=false,bool _doAngles=false)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, double cutWidth=0.8, bool pionPionDecays=false, bool pionKaonDecays=false, bool _doAngles=false)
 {
   separationCuts = sepCuts;
   ppCollisions = ppAnalysis;
   decayCutWidth = cutWidth;
-  skipIntermediateDecays = skipIntDecays;
   doAngles = _doAngles;
   
   // create analysis managers
@@ -336,24 +337,15 @@ AliFemtoTrioCut* GetTrioCutAllDecays(ESys system, double cutWidth)
   
   // ππ cuts
   for(int iDec=0;iDec<nDecaysPionPion;iDec++){
-    if(skipIntermediateDecays &&
-       (system==kAPL || system==kPAL) &&
-       iDec==kRho_770
-       ){
-      continue;
-    }
+    if(!doDecayPionPion[iDec]) continue;
+    
     trioCut->SetExcludePair(decayPionPionMass[iDec],cutWidth*decayPionPionGamma[iDec],
                             AliFemtoTrio::kPionPlus,AliFemtoTrio::kPionMinus);
   }
 
   // Kπ cuts:
   for(int iDec=0;iDec<nDecaysPionKaon;iDec++){
-    if(skipIntermediateDecays &&
-       (system==kAPL || system==kPAL) &&
-       iDec==kKstar_892
-       ){
-      continue;
-    }
+    if(!doDecayPionKaon[iDec]) continue;
     
     trioCut->SetExcludePair(decayPionKaonMass[iDec],cutWidth*decayPionKaonGamma[iDec],
                             AliFemtoTrio::kKaonPlus,AliFemtoTrio::kPionMinus);
