@@ -686,6 +686,190 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("10410113","1111102007032230000","01631031000000d0"); // 0-40
     cuts.AddCut("14810113","1111102007032230000","01631031000000d0"); // 40-80
 
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-20 EMC
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 310){ // EMCal clusters non lin variations 0-20 %
+    cuts.AddCut("10210113","1111171007032230000","01631031000000d0");
+    cuts.AddCut("10210113","1111172007032230000","01631031000000d0");
+    cuts.AddCut("10210113","1111181007032230000","01631031000000d0");
+    cuts.AddCut("10210113","1111182007032230000","01631031000000d0");
+  } else if (trainConfig == 311){ // second set of variations CLUSTER
+    cuts.AddCut("10210113","1111102007022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("10210113","1111102007042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("10210113","1111102007052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCut("10210113","1111102007032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCut("10210113","1111102007032200000","01631031000000d0"); // min/max M02  0.1<M<100
+  } else if (trainConfig == 312){ // third set of variations CLUSTER
+    cuts.AddCut("10210113","1111102007032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("10210113","1111102007032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+    cuts.AddCut("10210113","1111102007031230000","01631031000000d0"); // min number of cells variation 1  1 cell
+    cuts.AddCut("10210113","1112102007032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCut("10210113","1111302007032230000","01631031000000d0"); // no modules with TRD infront
+  } else if (trainConfig == 313){ // third set of variations MESON
+    cuts.AddCut("10210113","1111102007032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCut("10210113","1111102007032230000","01634031000000d0"); // rapidity variation  y<0.5
+    cuts.AddCut("10210113","1111102007032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("10210113","1111102007032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 314){ // opening angle variations
+    cuts.AddCut("10210113","1111102007032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("10210113","1111102007032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("10210113","1111102007032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("10210113","1111102007032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("10210113","1111102007032230000","0163103100000090"); // min opening angle 0.018
+  } else if (trainConfig == 315){ // TM variations
+    cuts.AddCut("10210113","1111102003032230000","01631031000000d0"); // fixed window
+    cuts.AddCut("10210113","1111102006032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCut("10210113","1111102008032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCut("10210113","1111102009032230000","01631031000000d0"); // tm pt dependent var 3
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 20-40 EMC
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 320){ // EMCal clusters non lin variations 20-40 %
+    cuts.AddCut("12410113","1111171007032230000","01631031000000d0");
+    cuts.AddCut("12410113","1111172007032230000","01631031000000d0");
+    cuts.AddCut("12410113","1111181007032230000","01631031000000d0");
+    cuts.AddCut("12410113","1111182007032230000","01631031000000d0");
+  } else if (trainConfig == 321){ // second set of variations CLUSTER
+    cuts.AddCut("12410113","1111102007022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("12410113","1111102007042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("12410113","1111102007052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCut("12410113","1111102007032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCut("12410113","1111102007032200000","01631031000000d0"); // min/max M02  0.1<M<100
+  } else if (trainConfig == 322){ // third set of variations CLUSTER
+    cuts.AddCut("12410113","1111102007032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("12410113","1111102007032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+    cuts.AddCut("12410113","1111102007031230000","01631031000000d0"); // min number of cells variation 1  1 cell
+    cuts.AddCut("12410113","1112102007032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCut("12410113","1111302007032230000","01631031000000d0"); // no modules with TRD infront
+  } else if (trainConfig == 323){ // third set of variations MESON
+    cuts.AddCut("12410113","1111102007032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCut("12410113","1111102007032230000","01634031000000d0"); // rapidity variation  y<0.5
+    cuts.AddCut("12410113","1111102007032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("12410113","1111102007032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 324){ // opening angle variations
+    cuts.AddCut("12410113","1111102007032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("12410113","1111102007032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("12410113","1111102007032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("12410113","1111102007032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("12410113","1111102007032230000","0163103100000090"); // min opening angle 0.018
+  } else if (trainConfig == 325){ // TM variations
+    cuts.AddCut("12410113","1111102003032230000","01631031000000d0"); // fixed window
+    cuts.AddCut("12410113","1111102006032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCut("12410113","1111102008032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCut("12410113","1111102009032230000","01631031000000d0"); // tm pt dependent var 3
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 40-80 EMC
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 330){ // EMCal clusters non lin variations 40-80 %
+    cuts.AddCut("14810113","1111171007032230000","01631031000000d0");
+    cuts.AddCut("14810113","1111172007032230000","01631031000000d0");
+    cuts.AddCut("14810113","1111181007032230000","01631031000000d0");
+    cuts.AddCut("14810113","1111182007032230000","01631031000000d0");
+  } else if (trainConfig == 331){ // second set of variations CLUSTER
+    cuts.AddCut("14810113","1111102007022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("14810113","1111102007042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("14810113","1111102007052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCut("14810113","1111102007032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCut("14810113","1111102007032200000","01631031000000d0"); // min/max M02  0.1<M<100
+  } else if (trainConfig == 332){ // third set of variations CLUSTER
+    cuts.AddCut("14810113","1111102007032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("14810113","1111102007032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+    cuts.AddCut("14810113","1111102007031230000","01631031000000d0"); // min number of cells variation 1  1 cell
+    cuts.AddCut("14810113","1112102007032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCut("14810113","1111302007032230000","01631031000000d0"); // no modules with TRD infront
+  } else if (trainConfig == 333){ // third set of variations MESON
+    cuts.AddCut("14810113","1111102007032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCut("14810113","1111102007032230000","01634031000000d0"); // rapidity variation  y<0.5
+    cuts.AddCut("14810113","1111102007032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("14810113","1111102007032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 334){ // opening angle variations
+    cuts.AddCut("14810113","1111102007032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("14810113","1111102007032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("14810113","1111102007032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("14810113","1111102007032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("14810113","1111102007032230000","0163103100000090"); // min opening angle 0.018
+  } else if (trainConfig == 335){ // TM variations
+    cuts.AddCut("14810113","1111102003032230000","01631031000000d0"); // fixed window
+    cuts.AddCut("14810113","1111102006032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCut("14810113","1111102008032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCut("14810113","1111102009032230000","01631031000000d0"); // tm pt dependent var 3
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-40 EMC
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 340){ // EMCal clusters non lin variations 0-40 %
+    cuts.AddCut("10410113","1111171007032230000","01631031000000d0");
+    cuts.AddCut("10410113","1111172007032230000","01631031000000d0");
+    cuts.AddCut("10410113","1111181007032230000","01631031000000d0");
+    cuts.AddCut("10410113","1111182007032230000","01631031000000d0");
+  } else if (trainConfig == 341){ // second set of variations CLUSTER
+    cuts.AddCut("10410113","1111102007022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("10410113","1111102007042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("10410113","1111102007052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCut("10410113","1111102007032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCut("10410113","1111102007032200000","01631031000000d0"); // min/max M02  0.1<M<100
+  } else if (trainConfig == 342){ // third set of variations CLUSTER
+    cuts.AddCut("10410113","1111102007032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("10410113","1111102007032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+    cuts.AddCut("10410113","1111102007031230000","01631031000000d0"); // min number of cells variation 1  1 cell
+    cuts.AddCut("10410113","1112102007032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCut("10410113","1111302007032230000","01631031000000d0"); // no modules with TRD infront
+  } else if (trainConfig == 343){ // third set of variations MESON
+    cuts.AddCut("10410113","1111102007032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCut("10410113","1111102007032230000","01634031000000d0"); // rapidity variation  y<0.5
+    cuts.AddCut("10410113","1111102007032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("10410113","1111102007032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 344){ // opening angle variations
+    cuts.AddCut("10410113","1111102007032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("10410113","1111102007032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("10410113","1111102007032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("10410113","1111102007032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("10410113","1111102007032230000","0163103100000090"); // min opening angle 0.018
+  } else if (trainConfig == 345){ // TM variations
+    cuts.AddCut("10410113","1111102003032230000","01631031000000d0"); // fixed window
+    cuts.AddCut("10410113","1111102006032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCut("10410113","1111102008032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCut("10410113","1111102009032230000","01631031000000d0"); // tm pt dependent var 3
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-80 EMC
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 350){ // EMCal clusters non lin variations 0-80 %
+    cuts.AddCut("10810113","1111171007032230000","01631031000000d0");
+    cuts.AddCut("10810113","1111172007032230000","01631031000000d0");
+    cuts.AddCut("10810113","1111181007032230000","01631031000000d0");
+    cuts.AddCut("10810113","1111182007032230000","01631031000000d0");
+  } else if (trainConfig == 351){ // second set of variations CLUSTER
+    cuts.AddCut("10810113","1111102007022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("10810113","1111102007042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("10810113","1111102007052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCut("10810113","1111102007032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCut("10810113","1111102007032200000","01631031000000d0"); // min/max M02  0.1<M<100
+  } else if (trainConfig == 352){ // third set of variations CLUSTER
+    cuts.AddCut("10810113","1111102007032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("10810113","1111102007032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+    cuts.AddCut("10810113","1111102007031230000","01631031000000d0"); // min number of cells variation 1  1 cell
+    cuts.AddCut("10810113","1112102007032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCut("10810113","1111302007032230000","01631031000000d0"); // no modules with TRD infront
+  } else if (trainConfig == 353){ // third set of variations MESON
+    cuts.AddCut("10810113","1111102007032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCut("10810113","1111102007032230000","01634031000000d0"); // rapidity variation  y<0.5
+    cuts.AddCut("10810113","1111102007032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("10810113","1111102007032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 354){ // opening angle variations
+    cuts.AddCut("10810113","1111102007032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("10810113","1111102007032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("10810113","1111102007032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("10810113","1111102007032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("10810113","1111102007032230000","0163103100000090"); // min opening angle 0.018
+  } else if (trainConfig == 355){ // TM variations
+    cuts.AddCut("10810113","1111102003032230000","01631031000000d0"); // fixed window
+    cuts.AddCut("10810113","1111102006032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCut("10810113","1111102008032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCut("10810113","1111102009032230000","01631031000000d0"); // tm pt dependent var 3
 
   // **********************************************************************************************************
   // ***************************** PHOS configurations XeXe run 2 *********************************************
@@ -704,6 +888,55 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("10410113","2446601040013300000","0163103100000010"); // 0-40
     cuts.AddCut("14810113","2446601040013300000","0163103100000010"); // 40-80
 
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-20 PHOS
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 410){ // PHOS clusters - non lin variations 0-20%
+    cuts.AddCut("10210113","2446601040013300000","0163103100000010");
+    cuts.AddCut("10210113","2446671040013300000","0163103100000010");
+    cuts.AddCut("10210113","2446672040013300000","0163103100000010");
+    cuts.AddCut("10210113","2446681040013300000","0163103100000010");
+    cuts.AddCut("10210113","2446682040013300000","0163103100000010");
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 20-40 PHOS
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 420){ // PHOS clusters - non lin variations 20-40%
+    cuts.AddCut("12410113","2446601040013300000","0163103100000010");
+    cuts.AddCut("12410113","2446671040013300000","0163103100000010");
+    cuts.AddCut("12410113","2446672040013300000","0163103100000010");
+    cuts.AddCut("12410113","2446681040013300000","0163103100000010");
+    cuts.AddCut("12410113","2446682040013300000","0163103100000010");
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 40-80 PHOS
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 430){ // PHOS clusters - non lin variations 40-80%
+    cuts.AddCut("14810113","2446601040013300000","0163103100000010");
+    cuts.AddCut("14810113","2446671040013300000","0163103100000010");
+    cuts.AddCut("14810113","2446672040013300000","0163103100000010");
+    cuts.AddCut("14810113","2446681040013300000","0163103100000010");
+    cuts.AddCut("14810113","2446682040013300000","0163103100000010");
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-40 PHOS
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 440){ // PHOS clusters - non lin variations 0-40%
+    cuts.AddCut("10410113","2446601040013300000","0163103100000010");
+    cuts.AddCut("10410113","2446671040013300000","0163103100000010");
+    cuts.AddCut("10410113","2446672040013300000","0163103100000010");
+    cuts.AddCut("10410113","2446681040013300000","0163103100000010");
+    cuts.AddCut("10410113","2446682040013300000","0163103100000010");
+
+  //-----------------------------------------------------------------------------------------------
+  // Systematics variations 0-80 PHOS
+  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 450){ // PHOS clusters - non lin variations 0-80%
+    cuts.AddCut("10810113","2446601040013300000","0163103100000010");
+    cuts.AddCut("10810113","2446671040013300000","0163103100000010");
+    cuts.AddCut("10810113","2446672040013300000","0163103100000010");
+    cuts.AddCut("10810113","2446681040013300000","0163103100000010");
+    cuts.AddCut("10810113","2446682040013300000","0163103100000010");
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
