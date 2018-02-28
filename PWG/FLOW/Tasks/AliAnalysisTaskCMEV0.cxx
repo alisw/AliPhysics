@@ -1612,8 +1612,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Psi2TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
  if(Psi2TPC < 0.) Psi2TPC += 2./3*TMath::Pi();
 
- fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi3TPC));
- fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi3TPC));//centrCL1
+ fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+ fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
  }
 
 
