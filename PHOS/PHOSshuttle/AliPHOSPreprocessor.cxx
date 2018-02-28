@@ -79,6 +79,9 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   TString runType = GetRunType();
   Log(Form("Run type: %s",runType.Data()));
 
+  Bool_t isBadMapFromDCSok = ProcessBadMapFromDCS();
+  Log(Form("ProcessBadMapFromDCS() return isBadMapFromDCSok = %d",isBadMapFromDCSok));
+    
   if(runType=="LED") {
     Bool_t ledOK = ProcessLEDRun();
     Bool_t badmap_OK = FindBadChannelsEmc();
@@ -109,7 +112,6 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   return 0;
 
 }
-
 
 Bool_t AliPHOSPreprocessor::ProcessLEDRun()
 {
@@ -223,6 +225,69 @@ Bool_t AliPHOSPreprocessor::ProcessPEDRun()
   if(refOK) Log(Form("PEDESTAL reference data successfully stored."));  
   return refOK;
   
+}
+
+Bool_t AliPHOSPreprocessor::ProcessBadMapFromDCS()
+{
+    TList* list = GetFileSources(kDCS, "BadMap");
+    
+    if(!list) {
+        Log("GetFileSources(kDCS, BadMap) returned null TList* pointer, exit.");
+        return kFALSE;
+    }
+ 
+    if(!list->GetEntries()) {
+        Log("Sources list for (kDCS, BadMap) is empty, exit.");
+        return kFALSE;
+    }
+
+    TH2I * PHOSBadMaps[5] = {0x0};
+    char hname[80];
+
+    TIter iter(list);
+    TObjString *source;
+    
+    // Extracting file with bad channel map from DCS
+    
+    while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+        AliInfo(Form("found source %s", source->String().Data()));
+        
+        TString fileName = GetFile(kDCS, "BadMap", source->GetName());
+        AliInfo(Form("Got filename: %s",fileName.Data()));
+        
+        TFile f(fileName);
+        
+        if(!f.IsOpen()) {
+            Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+            return kFALSE;
+        }
+        
+        for (Int_t i=1; i<5; i++) {
+            sprintf(hname,"PHOS_BadMap_mod%d",i);
+            PHOSBadMaps[i] = (TH2I*)f.Get(hname);
+        }
+    }
+    
+    AliPHOSEmcBadChannelsMap* badMap = new AliPHOSEmcBadChannelsMap();
+    
+    for (Int_t smOnline=1; smOnline<5; smOnline++) {
+        TH2I* bm = PHOSBadMaps[smOnline];
+        if(!bm) continue;
+        
+        for (int iBinX=1; iBinX<=bm->GetXaxis()->GetNbins(); iBinX++) {
+            for (int iBinY=1; iBinY<=bm->GetYaxis()->GetNbins(); iBinY++) {
+                
+                Int_t isBad = bm->GetBinContent(iBinX,iBinY);
+                if(isBad) badMap->SetBadChannel(5-smOnline,iBinY,iBinX);
+            }
+        }
+    }
+
+    AliCDBMetaData md;
+    md.SetResponsible("Boris Polishchuk");
+
+    Bool_t storeOK = Store("Calib", "EmcBadChannels", badMap, &md, 0, kTRUE);
+    return storeOK;
 }
 
 Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)

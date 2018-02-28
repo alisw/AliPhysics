@@ -31,6 +31,7 @@ class AliPHOSPreprocessor : public AliPreprocessor {
   Bool_t FindBadChannelsEmc();
   Bool_t CalibrateEmc();
   Float_t HG2LG(Int_t module, Int_t X, Int_t Z, TFile* f);
+  Bool_t ProcessBadMapFromDCS();
 
  private:
 
