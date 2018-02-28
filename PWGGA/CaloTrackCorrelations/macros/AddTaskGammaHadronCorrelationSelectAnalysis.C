@@ -319,12 +319,12 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOffUseEMCALTimeCut();
   reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   
-  // For data, check what is the range needed depending on the sample
-  //  if( !simulation) 
-  //  {
-  //    reader->SwitchOnUseEMCALTimeCut();
-  //    reader->SetEMCALTimeCut(-25,20);
-  //  }
+   For data, check what is the range needed depending on the sample
+    if( !simulation) 
+    {
+      reader->SwitchOnUseEMCALTimeCut();
+      reader->SetEMCALTimeCut(-25,20);
+    }
   
   // CAREFUL
   if(nonLinOn) reader->SwitchOnClusterELinearityCorrection();
