@@ -172,8 +172,8 @@ AliXiStarPbPbEventCollection::AliXiStarPbPbEventCollection(short a):
   for(Int_t ii = 0; ii < fFIFO; ii++){   //Initialize to NULL
     (fEvtStr + ii)->fTracks = NULL;
     (fEvtStr + ii)->fNTracks = 0;
-      static int nStruct = 1000; //1000 was best but wired EM bg distribution comes from this ?!//20000
-    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[nStruct];
+   //   static int nStruct = 1000; //1000 was best but wired EM bg distribution comes from this ?!//20000
+    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[300];
   }
   
 }
