@@ -890,6 +890,8 @@ void AliCalorimeterUtils::ConfigureEMCALRecoUtils
   
   if( bNonLin )
   {
+    fCorrectELinearity = kTRUE;
+    
     if(!bMC)
     {
       if ( debug > 0 )
@@ -904,14 +906,16 @@ void AliCalorimeterUtils::ConfigureEMCALRecoUtils
       
       fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
-  }
+  } // Non linearity correction ON
   else
   {
+    fCorrectELinearity = kFALSE;
+
     if ( debug > 0 )
       printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
     
     fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-  }
+  } // Non linearity correction OFF
   
 }
 
