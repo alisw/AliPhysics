@@ -24,7 +24,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fAntiv0Cuts()
 ,fCascCuts()
 ,fAntiCascCuts()
-,fPairCleaner(new AliFemtoDreamPairCleaner(2,2))
+,fPairCleaner(new AliFemtoDreamPairCleaner(4,4))
 ,fTrackBufferSize(0)
 ,fGTI(0)
 ,fConfig(0)
@@ -236,34 +236,39 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
   for (int iXi=0;iXi<numcascades;++iXi) {
     AliAODcascade *xi = evt->GetCascade(iXi);
     if (!xi) continue;
     fFemtoCasc->SetCascade(evt,xi);
     if (fCascCuts->isSelected(fFemtoCasc)) {
-      //
+      XiDecays.push_back(*fFemtoCasc);
     }
     if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-      //
+      AntiXiDecays.push_back(*fFemtoCasc);
     }
   }
 
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "======Particle Cleaner=======" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Particles,&Decays,0);
+  fPairCleaner->CleanTrackAndDecay(&Particles,&XiDecays,2);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiDecays,1);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiXiDecays,3);
+
   fPairCleaner->CleanDecay(&Decays,0);
   fPairCleaner->CleanDecay(&AntiDecays,1);
+  fPairCleaner->CleanDecay(&XiDecays,2);
+  fPairCleaner->CleanDecay(&AntiXiDecays,3);
+
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(Decays);
   fPairCleaner->StoreParticle(AntiDecays);
+  fPairCleaner->StoreParticle(XiDecays);
+  fPairCleaner->StoreParticle(AntiXiDecays);
+
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
                       fEvent->GetSPDMult());
 }

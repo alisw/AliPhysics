@@ -49,8 +49,8 @@ void AliFemtoDreamPartCollection::SetEvent(
   itZVtx+=bins[0];
   auto itMult=itZVtx->begin();
   itMult+=bins[1];
-  itMult->PairParticlesSE(Particles,fResults);
-  itMult->PairParticlesME(Particles,fResults);
+  itMult->PairParticlesSE(Particles,fResults,bins[1]);
+  itMult->PairParticlesME(Particles,fResults,bins[1]);
   itMult->SetEvent(Particles);
   return;
 }
