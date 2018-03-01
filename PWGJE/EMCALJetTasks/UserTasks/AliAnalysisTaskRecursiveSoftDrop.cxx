@@ -65,6 +65,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fCentMax(10),
   fJetRadius(0.4),
   fSharedFractionPtMin(0.5),
+  fReclusteringAlgo(0),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -94,6 +95,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fCentMax(10),
   fJetRadius(0.4),
   fSharedFractionPtMin(0.5),
+  fReclusteringAlgo(0),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -152,7 +154,6 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
     cout<<"looping over variables"<<endl;
     fTreeRecursive_Det->Branch(fShapesVarNames_Det[ivar].Data(), &fShapesVar_Det[ivar], Form("%s/D", fShapesVarNames_Det[ivar].Data()));
     fTreeRecursive_True->Branch(fShapesVarNames_True[ivar].Data(), &fShapesVar_True[ivar], Form("%s/D", fShapesVarNames_True[ivar].Data()));
-
   }
   
   fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );   
@@ -207,7 +208,7 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
 	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
-	  RecursiveParents(Jet1,JetCont,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+	  RecursiveParents(Jet1,JetCont,kFALSE);
 	}
       }
     }
@@ -270,8 +271,8 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
       else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
       fhJetPhi->Fill(JetPhi);
       fhJetEta->Fill(JetHybridS->Eta());
-      RecursiveParents(JetHybridS,JetContHybridS,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
-      RecursiveParents(JetPythTrue,JetContPythTrue,1,kTRUE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+      RecursiveParents(JetHybridS,JetContHybridS,kFALSE); 
+      RecursiveParents(JetPythTrue,JetContPythTrue,kTRUE); 
      
       
     
@@ -283,7 +284,7 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Bool_t bTruth){
+void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont,Bool_t bTruth){
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
@@ -302,13 +303,13 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
 
 
   fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
-  if(ReclusterAlgo==0){ xflagalgo=0.5;
+  if(fReclusteringAlgo==0){ xflagalgo=0.5;
     jetalgo=fastjet::kt_algorithm ;}
       
-  if(ReclusterAlgo==1){ xflagalgo=1.5;
+  if(fReclusteringAlgo==1){ xflagalgo=1.5;
     jetalgo=fastjet::cambridge_algorithm;
   }
-  if(ReclusterAlgo==2){ xflagalgo=2.5;
+  if(fReclusteringAlgo==2){ xflagalgo=2.5;
     jetalgo=fastjet::antikt_algorithm;
   } 
   

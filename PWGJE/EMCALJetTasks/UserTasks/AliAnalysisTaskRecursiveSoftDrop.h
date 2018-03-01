@@ -47,6 +47,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
   void SetJetType(JetType t)                                { fJetType     = t   ;}
+  void SetReclusterAlgo(Int_t a)                            { fReclusteringAlgo = a;}
 
   static AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(
 
@@ -77,7 +78,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
-  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Bool_t bTruth);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont,Bool_t bTruth);
 
   
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
@@ -87,7 +88,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   JetType                             fJetType;                // jet type data/embedded
   Float_t                             fPtThreshold;            // jet pt threshold
   Float_t                             fSharedFractionPtMin;    // minimum pt shared fraction to be used to match jets
-
+  Int_t                               fReclusteringAlgo;
   
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
