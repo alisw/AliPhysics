@@ -52,7 +52,7 @@
 
 using namespace std;
 
-#define TPC_PRIMARY_MIN_PT 0.05
+#define TPC_PRIMARY_MIN_PT 0.08
 
 ClassImp(AliPerformanceEff)
 
@@ -276,11 +276,8 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     
     // --- check for double filling in stack
     // use only particles with no daughters in the list of primaries
-    Int_t nDaughters = 0;// particle->GetNDaughters();
-    
     //RS we just need to know if there are prim. daughters
     if (particle->GetFirstDaughter() != -1 && particle->GetFirstDaughter() < nPrim) break;
-    // --- check for double filling in stack
     
     /*Bool_t findable = kFALSE;
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 

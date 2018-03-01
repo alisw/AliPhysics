@@ -121,7 +121,7 @@ void AliPerformanceRes::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 15.e-3, ptMax = 20.;
+  Double_t ptMin = 80.e-3, ptMax = 20.;
 
   Double_t *binsPt = 0;
 
