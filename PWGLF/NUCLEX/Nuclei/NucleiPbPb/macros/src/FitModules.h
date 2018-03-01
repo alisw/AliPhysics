@@ -6,6 +6,7 @@
 #include <RooAddPdf.h>
 #include <RooChebychev.h>
 #include <RooExponential.h>
+#include <RooGaussian.h>
 #include <RooPlot.h>
 #include <RooRealVar.h>
 
@@ -17,15 +18,20 @@ using namespace RooFit;
 
 class FitModule {
 public:
-  FitModule(RooRealVar *xm)
+  FitModule(RooRealVar *xm, bool extended_likelihood=true)
   : mX(xm)
   , mBkgCounts(new RooRealVar("N_{bkg}","Bkg counts",1000.,0.,1.e8))
   , mSigCounts(new RooRealVar("N_{sig}","Sig counts",1000.,0.,1.e8))
+  , mFraction(new RooRealVar("f_{sig}","Signal fraction",0.5,0.,1.))
   , mMu(new RooRealVar("#mu","Mu",-0.15,0.15))
   , mSigma(new RooRealVar("#sigma","Sigma",0.02,.61))
-    {}
+    {
+      mExtended = extended_likelihood;
+      mNentries = 0.;
+    }
 
   virtual RooPlot* FitData(TH1* h, TString name, TString title, TString range = "", TString plotrange="", bool change_range = false, float low_x = -2., float high_x = 2.);
+
   static RooPlot* FitAndPlot(RooRealVar &x, RooAbsData &data, RooAbsPdf &model, RooAbsPdf &sig,
                              RooAbsPdf &bkg,TString range,TString plotrange) {
     RooPlot *plot = x.frame();
@@ -42,114 +48,130 @@ public:
   void UseSignal(bool);
 
   RooRealVar  *mX;
-  std::unique_ptr<RooRealVar> mBkgCounts;
-  std::unique_ptr<RooRealVar> mSigCounts;
-  std::unique_ptr<RooRealVar> mMu;
-  std::unique_ptr<RooRealVar> mSigma;
-  std::unique_ptr<RooAddPdf>  mTemplate;
-  std::unique_ptr<RooAbsPdf>  mSignal;
-  std::unique_ptr<RooAbsPdf>  mBackground;
+  unique_ptr<RooRealVar> mFraction;
+  unique_ptr<RooRealVar> mBkgCounts;
+  unique_ptr<RooRealVar> mSigCounts;
+  unique_ptr<RooRealVar> mMu;
+  unique_ptr<RooRealVar> mSigma;
+  unique_ptr<RooAddPdf>  mTemplate;
+  unique_ptr<RooAbsPdf>  mSignal;
+  unique_ptr<RooAbsPdf>  mBackground;
   float        mChi2;
+  bool         mExtended;
+  double       mNentries;
 };
 
 class FitGausGaus : public FitModule {
 public:
-  FitGausGaus(RooRealVar *xm);
+  FitGausGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooRealVar> mMuBkg;
-  std::unique_ptr<RooRealVar> mSigmaBkg;
+  unique_ptr<RooRealVar> mMuBkg;
+  unique_ptr<RooRealVar> mSigmaBkg;
 
 };
 
 class FitExpTailGaus : public FitModule {
 public:
-  FitExpTailGaus(RooRealVar *xm);
+  FitExpTailGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mAlpha0;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mAlpha0;
 };
 
 class FitExpGaus : public FitModule {
 public:
-  FitExpGaus(RooRealVar *xm);
+  FitExpGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooRealVar> mTau;
-  std::unique_ptr<RooRealVar> mA1;
-  std::unique_ptr<RooRealVar> mA2;
-  std::unique_ptr<RooRealVar> mA3;
+  unique_ptr<RooRealVar> mTau;
+  unique_ptr<RooRealVar> mA1;
+  unique_ptr<RooRealVar> mA2;
+  unique_ptr<RooRealVar> mA3;
 
 };
 
 class FitExpCB : public FitModule {
 public:
-  FitExpCB(RooRealVar *xm);
+  FitExpCB(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooRealVar> mTau;
-  std::unique_ptr<RooRealVar> mAlpha;
-  std::unique_ptr<RooRealVar> mN;
+  unique_ptr<RooRealVar> mTau;
+  unique_ptr<RooRealVar> mAlpha;
+  unique_ptr<RooRealVar> mN;
 };
 
 class FitExpExpCB : public FitModule {
 public:
-  FitExpExpCB(RooRealVar *xm);
+  FitExpExpCB(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooExponential> mBkg0;
-  std::unique_ptr<RooExponential> mBkg1;
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mTau1;
-  std::unique_ptr<RooRealVar> mKbkg;
-  std::unique_ptr<RooRealVar> mAlpha;
-  std::unique_ptr<RooRealVar> mN;
+  unique_ptr<RooExponential> mBkg0;
+  unique_ptr<RooExponential> mBkg1;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha;
+  unique_ptr<RooRealVar> mN;
 };
 
 class FitExpExpGaus : public FitModule {
 public:
-  FitExpExpGaus(RooRealVar *xm);
+  FitExpExpGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooExponential> mBkg0;
-  std::unique_ptr<RooExponential> mBkg1;
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mTau1;
-  std::unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooExponential> mBkg0;
+  unique_ptr<RooExponential> mBkg1;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mKbkg;
 };
 
 class FitExpExpTailGaus : public FitModule {
 public:
-  FitExpExpTailGaus(RooRealVar *xm);
+  FitExpExpTailGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooExponential> mBkg0;
-  std::unique_ptr<RooExponential> mBkg1;
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mTau1;
-  std::unique_ptr<RooRealVar> mKbkg;
-  std::unique_ptr<RooRealVar> mAlpha0;
+  unique_ptr<RooExponential> mBkg0;
+  unique_ptr<RooExponential> mBkg1;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha0;
 };
 
 class FitExpExpTailTailGaus : public FitModule {
 public:
-  FitExpExpTailTailGaus(RooRealVar *xm);
+  FitExpExpTailTailGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooExponential> mBkg0;
-  std::unique_ptr<RooExponential> mBkg1;
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mTau1;
-  std::unique_ptr<RooRealVar> mKbkg;
-  std::unique_ptr<RooRealVar> mAlpha0;
-  std::unique_ptr<RooRealVar> mAlpha1;
+  unique_ptr<RooExponential> mBkg0;
+  unique_ptr<RooExponential> mBkg1;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha0;
+  unique_ptr<RooRealVar> mAlpha1;
 };
 
 
 class FitExpPolTailGaus : public FitModule {
 public:
-  FitExpPolTailGaus(RooRealVar *xm);
+  FitExpPolTailGaus(RooRealVar *xm, bool extended_likelihood=true);
 
-  std::unique_ptr<RooExponential> mBkg0;
-  std::unique_ptr<RooChebychev> mBkg1;
-  std::unique_ptr<RooRealVar> mTau0;
-  std::unique_ptr<RooRealVar> mA0;
-  std::unique_ptr<RooRealVar> mA1;
-  std::unique_ptr<RooRealVar> mKbkg;
-  std::unique_ptr<RooRealVar> mAlpha0;
+  unique_ptr<RooExponential> mBkg0;
+  unique_ptr<RooChebychev> mBkg1;
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mA0;
+  unique_ptr<RooRealVar> mA1;
+  unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha0;
+};
+
+class FitGausExpTailGaus : public FitModule {
+public:
+  FitGausExpTailGaus(RooRealVar *xm, bool extended_likelihood=true);
+
+  unique_ptr<RooGaussian> mBkg0;
+  unique_ptr<RooRealVar> mMuBkg;
+  unique_ptr<RooRealVar> mSigmaBkg;
+  unique_ptr<RooExponential> mBkg1;
+  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha0;
 };
 
 #endif /* FitModules_hpp */

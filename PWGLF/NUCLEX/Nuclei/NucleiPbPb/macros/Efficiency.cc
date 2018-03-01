@@ -9,6 +9,8 @@ using namespace utils;
 #include <TFile.h>
 #include <TGraphAsymmErrors.h>
 #include <TH2F.h>
+#include <TStyle.h>
+#include <TError.h>
 
 int kCentBins[12][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11},{1,11}};
 int kNcentBins = 12;
@@ -47,11 +49,16 @@ void Efficiency(bool MBonly = false) {
   TFile input_file(kMCfilename.data());
   TFile output_file(kEfficiencyOutput.data(),"recreate");
 
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gErrorIgnoreLevel=kError;
+
   int iList = 0;
   int counter=0;
   for (auto list_key : *input_file.GetListOfKeys()) {
     /// Preliminary operation to read the list and create an output dir
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName())=="mpuccio_deuterons_chisquare0") continue;
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
     output_file.mkdir(list_key->GetName());
     output_file.cd(list_key->GetName());

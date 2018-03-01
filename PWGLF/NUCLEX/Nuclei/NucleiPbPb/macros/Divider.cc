@@ -21,6 +21,9 @@ void Divider(bool short_mode = true){
   TFile file_RooFit_TPC(kSecondariesTPCoutputRooFit.data());
   TFile file_out(output_name.data(),"RECREATE");
 
+  const int kNCustomPtBins = 8;
+  const double kCustomPtBins[9] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6};
+
   int counter = 0;
 
   for (auto list_key : *file_TFF_TOF.GetListOfKeys()) {
@@ -35,18 +38,25 @@ void Divider(bool short_mode = true){
 
     TH1F* TofFraction[kCentLength];
     TH1F* TpcFraction[kCentLength];
+    TH1F* TofTFFCorrection[kCentLength];
+    TH1F* TpcTFFCorrection[kCentLength];
+
 
     for (int iC = 0; iC < kCentLength; ++iC) {
       TH1* hResTFFtof = (TH1*)file_TFF_TOF.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
       Requires(hResTFFtof,"hResTFFtof");
       TF1* prim_frac_TFF_TOF = hResTFFtof->GetFunction("fitFrac");
       Requires(prim_frac_TFF_TOF,"prim_frac_TFF_TOF");
+      TofTFFCorrection[iC] = (TH1F*) hResTFFtof->Rebin(kNCustomPtBins,Form("TofTFFCorrection_%d",iC),kCustomPtBins);
+      TofTFFCorrection[iC]->GetListOfFunctions()->Clear();
 
 
       TH1* hResTFFtpc = (TH1*)file_TFF_TPC.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
       Requires(hResTFFtpc,"hResTFFtpc");
       TF1* prim_frac_TFF_TPC = hResTFFtpc->GetFunction("fitFrac");
       Requires(prim_frac_TFF_TPC,"prim_frac_TFF_TPC");
+      TpcTFFCorrection[iC] = (TH1F*) hResTFFtpc->Rebin(kNCustomPtBins,Form("TpcTFFCorrection_%d",iC),kCustomPtBins);
+      TpcTFFCorrection[iC]->GetListOfFunctions()->Clear();
 
       TH1* hResRooFitTof = (TH1*)file_RooFit_TOF.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
       Requires(hResRooFitTof,"hResRooFitTof");
@@ -58,10 +68,10 @@ void Divider(bool short_mode = true){
       TF1* prim_frac_RooFit_TPC = hResRooFitTpc->GetFunction("fitFrac");
       Requires(prim_frac_RooFit_TPC,"prim_frac_RooFit_TPC");
 
-      TofFraction[iC] = new TH1F(Form("FractionTof_%i",iC),";p_{T} (GeV/c);RooFit / TFF",kNPtBins,kPtBins);
-      TpcFraction[iC] = new TH1F(Form("FractionTpc_%i",iC),";p_{T} (GeV/c);RooFit / TFF",kNPtBins,kPtBins);
+      TofFraction[iC] = new TH1F(Form("FractionTof_%i",iC),";p_{T} (GeV/c);RooFit / TFF",kNCustomPtBins,kCustomPtBins);
+      TpcFraction[iC] = new TH1F(Form("FractionTpc_%i",iC),";p_{T} (GeV/c);RooFit / TFF",kNCustomPtBins,kCustomPtBins);
 
-      for(int iB=1; iB<=kNPtBins; iB++){
+      for(int iB=1; iB<=kNCustomPtBins; iB++){
         TofFraction[iC]->SetBinContent(iB,prim_frac_RooFit_TOF->Eval(TofFraction[iC]->GetBinCenter(iB))/prim_frac_TFF_TOF->Eval(TofFraction[iC]->GetBinCenter(iB)));
         TofFraction[iC]->SetBinError(iB,0.);
 
@@ -72,9 +82,35 @@ void Divider(bool short_mode = true){
       TpcFraction[iC]->Write();
     }
 
-    TCanvas RatioTof("ratio_tof","ratio_tof");
-    RatioTof.DrawFrame(0.6,0.95,3.8,1.15,";#it{p}_{T} (GeV/#it{c});RooFit/TFF");
-    TLegend legtof(0.70,0.60,0.90,0.88);
+    TCanvas CorrTof("corr_tof","corr_tof",3200,2400);
+    CorrTof.DrawFrame(0.6,0.6,2.,1.,";#it{p}_{T} (GeV/#it{c});");
+    TLegend legcorrtof(0.77,0.56,0.87,0.84);
+    legcorrtof.SetBorderSize(0);
+    legcorrtof.SetHeader("TOF (TFF)");
+    for (int iC = 0; iC < kCentLength; ++iC) {
+      plotting::SetHistStyle(TofTFFCorrection[iC],plotting::kSpectraColors[iC]);
+      TofTFFCorrection[iC]->Draw("pex0same");
+      legcorrtof.AddEntry(TofTFFCorrection[iC],Form("%4.0f - %2.0f %%",kCentLabels[iC][0],kCentLabels[iC][1]),"pe");
+    }
+    legcorrtof.Draw();
+    CorrTof.Write();
+
+    TCanvas CorrTpc("corr_tpc","corr_tpc",3200,2400);
+    CorrTpc.DrawFrame(0.6,0.6,2.,1.,";#it{p}_{T} (GeV/#it{c});");
+    TLegend legcorrtpc(0.77,0.56,0.87,0.84);
+    legcorrtpc.SetBorderSize(0);
+    legcorrtpc.SetHeader("TPC (TFF)");
+    for (int iC = 0; iC < kCentLength; ++iC) {
+      plotting::SetHistStyle(TpcTFFCorrection[iC],plotting::kSpectraColors[iC]);
+      TpcTFFCorrection[iC]->Draw("pex0same");
+      legcorrtpc.AddEntry(TpcTFFCorrection[iC],Form("%4.0f - %2.0f %%",kCentLabels[iC][0],kCentLabels[iC][1]),"pe");
+    }
+    legcorrtpc.Draw();
+    CorrTpc.Write();
+
+    TCanvas RatioTof("ratio_tof","ratio_tof",3200,2400);
+    RatioTof.DrawFrame(0.6,0.95,1.6,1.15,";#it{p}_{T} (GeV/#it{c});RooFit/TFF");
+    TLegend legtof(0.77,0.56,0.87,0.84);
     legtof.SetBorderSize(0);
     legtof.SetHeader("TOF");
     for (int iC = 0; iC < kCentLength; ++iC) {
@@ -85,9 +121,9 @@ void Divider(bool short_mode = true){
     legtof.Draw();
     RatioTof.Write();
 
-    TCanvas RatioTpc("ratio_tpc","ratio_tpc");
-    RatioTpc.DrawFrame(0.6,0.95,3.8,1.15,";#it{p}_{T} (GeV/#it{c});RooFit/TFF");
-    TLegend legtpc(0.70,0.60,0.90,0.88);
+    TCanvas RatioTpc("ratio_tpc","ratio_tpc",3200,2400);
+    RatioTpc.DrawFrame(0.6,0.95,1.4,1.15,";#it{p}_{T} (GeV/#it{c});RooFit/TFF");
+    TLegend legtpc(0.77,0.56,0.87,0.84);
     legtpc.SetBorderSize(0);
     legtpc.SetHeader("TPC");
     for (int iC = 0; iC < kCentLength; ++iC) {

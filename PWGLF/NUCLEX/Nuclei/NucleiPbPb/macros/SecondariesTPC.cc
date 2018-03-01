@@ -12,6 +12,7 @@ using namespace utils;
 #include <TList.h>
 #include <TStyle.h>
 #include <TRandom3.h>
+#include <TError.h>
 
 void SecondariesTPC() {
   /// Taking all the histograms from the MC and data files
@@ -24,7 +25,9 @@ void SecondariesTPC() {
   fitModel.SetParLimits(0, -100000, 0);
   fitModel.SetParLimits(1, -30, 30);
 
+  gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
+  gErrorIgnoreLevel=kError;
 
   const int nDCAbins = 34;
   const double dcabins[35] = {
@@ -35,8 +38,9 @@ void SecondariesTPC() {
   };
 
   TObjArray obj(2);
-  for (auto&& list_key : *mc_file.GetListOfKeys()) {
+  for (auto&& list_key : *data_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName()).find("_MV") != string::npos) continue;
     TTList* mcList = (TTList*)mc_file.Get(list_key->GetName());
     TTList* dtList = (TTList*)data_file.Get(list_key->GetName());
 
@@ -54,7 +58,7 @@ void SecondariesTPC() {
     TAxis *pt = data->GetYaxis();
     TAxis *cen = data->GetXaxis();
 
-    int n_cent_bins = secondaries->GetNbinsX();
+    int n_cent_bins = data->GetNbinsX();
 
     TH1D* hResTFF[kCentLength] = {nullptr};
     for(int iC=0; iC<kCentLength; iC++){
