@@ -208,8 +208,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetUseAdditionalVtxCuts(Bool_t useAdditionalVtxCuts) {
     fUseAdditionalVtxCuts=useAdditionalVtxCuts;}
 
-  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
-    fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
+  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts, Float_t slope=3.38, Float_t offset=15000) {
+    fUseOutOfBunchPileUpCutsLHC15o = useOutOfBunchPileUpCuts;
+    fPileupLHC15oSlope = slope;
+    fPileupLHC15oOffset = offset;
+  }
   
   void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
     fDetailedTracksQA=useDetailedTracksQA;}
@@ -462,6 +465,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
 
+  Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
+  Float_t fPileupLHC15oOffset;
+
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
@@ -515,13 +521,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
 
+  TH2F *fHistGlobalvsESDBeforePileUpCuts; //histos to monitor Out of bunch pile up selection
+  TH2F *fHistGlobalvsESDAfterPileUpCuts;
+
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 12); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 13); // example of analysis
 };
 
 

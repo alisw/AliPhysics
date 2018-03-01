@@ -195,6 +195,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCforKinematics(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fPileupLHC15oSlope(3.38),
+  fPileupLHC15oOffset(15000),
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -235,6 +237,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
   fHistVZEROChannelGainEqualizationMap(0),
+  fHistGlobalvsESDBeforePileUpCuts(0),
+  fHistGlobalvsESDAfterPileUpCuts(0),
   fUtils(0) {
   // Constructor
   // Define input and output slots here
@@ -515,6 +519,11 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   
   fHistMeanPtVsSphericityAfter = new TH2F("fHistMeanPtVsSphericityAfter",";#LT p_{T} #GT;S_{T};Counts",1000,-0.01,9.99,501,-0.05,1.05);
   fList->Add(fHistMeanPtVsSphericityAfter);
+
+  fHistGlobalvsESDBeforePileUpCuts = new TH2F("fHistGlobalvsESDBeforePileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
+  fList->Add(fHistGlobalvsESDBeforePileUpCuts);
+  fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
+  fList->Add(fHistGlobalvsESDAfterPileUpCuts);
 
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
@@ -1392,14 +1401,15 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       gMultiplicity = multSelection->GetEstimator(fCentralityEstimator)->GetValue();
       fHistMultiplicity->Fill(gMultiplicity);
       fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
-      
-      if (fUseOutOfBunchPileUpCutsLHC15o) {
+
+      if (fUseOutOfBunchPileUpCutsLHC15o) {	
 	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
 	  fHistEventStats->Fill(9, -1);
 	  return -1;
 	}
 	const Int_t nTracks = event->GetNumberOfTracks();
 	Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+	fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
 	Int_t multTPC = 0;
 	for (Int_t it = 0; it < nTracks; it++) {
 	  AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
@@ -1407,8 +1417,8 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	  if (AODTrk->TestFilterBit(128)) {multTPC++;}
 	} // end of for (Int_t it = 0; it < nTracks; it++)
 	
-	if ((multEsd - 3.38*multTPC) > 15000) return -1;
-	
+	if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
+	fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
       }
       
       fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));

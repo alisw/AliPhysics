@@ -257,8 +257,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   //++++++++++++++++++++++
   // Efficiency + Contamination corrections
   // If correctionFileName = "", do not use corrections
-  if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
-    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
+  // if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
+  // taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
   
   /*else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 
