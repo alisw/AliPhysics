@@ -75,7 +75,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fh2RPJetsC20(0x0),
 	fh2RPTC10(0x0),
 	fh2RPTC20(0x0),
-	fhTTPt(0x0),
 	fHJetPhiCorr(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRef(0x0)
@@ -113,7 +112,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fh2RPJetsC20(0x0),
 	fh2RPTC10(0x0),
 	fh2RPTC20(0x0),
-	fhTTPt(0x0),
 	fHJetPhiCorr(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRef(0x0)
@@ -434,10 +432,6 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	// azimuthal correlation
 	if(fRunAnaAzimuthalCorrelation) {
 
-		fhTTPt = new TH2F("hTTPt","Trigger track pT vs centrality",100,0,100,250,0,250);
-		fhTTPt->GetXaxis()->SetTitle("centrality (%)");
-		fhTTPt->GetYaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-
 		const Int_t dimCor = 5;
 		const Int_t nBinsCor[dimCor]     = {50, 200, 100,              100,   100};
 		const Double_t lowBinCor[dimCor] = {0,  -50, -0.5*TMath::Pi(), 0,   0};
@@ -451,7 +445,6 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 		fhDphiPtRef->GetXaxis()->SetTitle("#Delta #phi"); 
 		fhDphiPtRef->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 
-		fOutput->Add(fhTTPt);
 		fOutput->Add(fHJetPhiCorr);
 		fOutput->Add(fhDphiPtRef);  
 		fOutput->Add(fhDphiPtSig);  
@@ -572,7 +565,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
     Double_t phiBinT = RelativePhi(partback->Phi(),fEPV0);
     if(fCent<20.) fh2RPTC20->Fill(TMath::Abs(phiBinT),partback->Pt());
     if(fCent<10.) fh2RPTC10->Fill(TMath::Abs(phiBinT),partback->Pt());
-		fhTTPt->Fill(fCent,partback->Pt());
 
 		Double_t etabig=0;
 		Double_t ptbig=0;
@@ -631,7 +623,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 
 		//Implementation in old task
 //			if(fRunAnaAzimuthalCorrelation) {
-//				fhTTPt->Fill(centValue,partback->Pt());
 //				for(auto jetbig : jetCont->accepted()) {
 //					if (!jetbig) continue;
 //					Double_t jetPt   = jetbig->Pt();
