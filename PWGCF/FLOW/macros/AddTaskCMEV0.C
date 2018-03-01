@@ -2,7 +2,7 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0;
 
- AliAnalysisTaskCMEV0* AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
+ void AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
  Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", TString sDataSet = "2015", TString sAnalysisType = "AUTOMATIC", 
  TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., 
  Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Float_t fPileUpSlope = 3.43, Float_t fPileUpConst = 43.0, TString sCentEstimator = "V0",
@@ -31,11 +31,6 @@ class AliAnalysisTaskCMEV0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"); // Needed for LHC2015o
-  //AliMultSelectionTask *task = AddTaskMultSelection(kFALSE);            // kFALSE == User mode, kTRUE == Calibration mode
-  //task->SetSelectedTriggerClass(AliVEvent::kINT7); //kMB ?                     
-  //mgr->AddTask(task);
-
 
   TString taskFEname;
   taskFEname.Form("ZDCFlowEventTask%s", suffix);
@@ -45,7 +40,7 @@ class AliAnalysisTaskCMEV0;
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb"||sDataSet=="pPb"){
+  if(sDataSet=="2015"||sDataSet=="2015LI"||sDataSet=="2015pPb"||sDataSet=="pPb"){
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else{
@@ -67,7 +62,7 @@ class AliAnalysisTaskCMEV0;
     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	 
   }
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb")
+  if(sDataSet=="2015"||sDataSet=="2015LI"||sDataSet=="2015pPb")
   {
    cutsEvent->SetCentralityPercentileRange(dcentrMin, dcentrMax, kTRUE);
   }
@@ -194,7 +189,7 @@ class AliAnalysisTaskCMEV0;
 
   AliAnalysisTaskCMEV0 *taskQC_prot = new AliAnalysisTaskCMEV0(TaskZDCflow);
 
-  if(sDataSet == "2015"||sDataSet == "2015pPb")
+  if(sDataSet == "2015"||sDataSet == "2015LI"||sDataSet == "2015pPb")
   {
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kINT7);
   }
@@ -295,65 +290,14 @@ class AliAnalysisTaskCMEV0;
   }
 
 
- 
-
-
-  /*
-  if(bApplyRecent){
-     TFile* fRecentFile = TFile::Open(sRecentFile,"READ");
-     if(!fRecentFile) {
-       printf("\n\n **** ERROR: ZDC Recenter file not found! **EXIT** \n\n");
-       exit(1);
-     }
-
-     TList* fZDCRecentUse = dynamic_cast<TList*>(fRecentFile->FindObjectAny("recenterZDC"));
-  
-     if(fZDCRecentUse) {
-       taskQC_prot->SetZDCESEList(fZDCRecentUse);
-     }
-     else{
-       printf("\n\n !!!!**** ERROR:ZDC Recenter Histograms not found **EXIT**!!!\n\n");
-       exit(1);
-     }
-
-  }//if(bApplyRecent)
-*/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  mgr->AddTask(taskQC_prot);            // connect the task to the analysis manager
+  mgr->AddTask(taskQC_prot);                      // connect the task to the analysis manager
   mgr->ConnectInput(taskQC_prot, 0, cinput);      // give AOD event to my Task..!!
   mgr->ConnectInput(taskQC_prot, 1, coutputFE);   // give FlowEvent object to my Task..!!
 
  //mgr->ConnectInput(taskQC_prot, 2,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -384,8 +328,8 @@ class AliAnalysisTaskCMEV0;
   //}
 
 
-  return taskQC_prot;
+  //return taskQC_prot;
 
-   printf("\n\n ***** AddTask Configured properly. *******\n\n");
+  printf("\n\n=======================  Info: AliAnalysisTaskCMEV0 Configured properly =============================\n\n");
 
 }//main ends

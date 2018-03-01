@@ -54,6 +54,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetPtRangeMax(Float_t b)              {this->fMaxPtCut  = b;}
   void SetEtaRangeMin(Float_t b)             {this->fMinEtaCut = b;}
   void SetEtaRangeMax(Float_t b)             {this->fMaxEtaCut = b;}
+  void SetCollisionSystem(TString s)         {this->sNucleiTP  = s;}
 
   void SetCentralityPercentileMin(Float_t b) {this->fCentralityPercentMin = b;}
   void SetCentralityPercentileMax(Float_t b) {this->fCentralityPercentMax = b;}
@@ -94,14 +95,20 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   TH2F                *fHistTOFMatchCount;   //!    
 
-  TH2F           *fHistGlobalVsCentBefore;   //!   
-  TH2F          *fHistTPConlyVsCentBefore;   //!    
-  TH2F           *fHistTPConlyVsCentAfter;   //!    
-  TH2F                *fHistRawVsCorrMult;   //!    
+  TH2F            *fHistTPCVsESDTrkBefore;   //!  
+  TH2F             *fHistTPCVsESDTrkAfter;   //!    
+
+  TH2F           *fHistTPConlyVsCL1Before;   //!  
+  TH2F           *fHistTPConlyVsV0MBefore;   //!    
+  TH2F            *fHistTPConlyVsCL1After;   //!    
+  TH2F            *fHistTPConlyVsV0MAfter;   //!   
+  TH2F            *fHistGlobalVsV0MBefore;   //!   
+  TH2F             *fHistGlobalVsV0MAfter;   //!   
+
   TH2F              *fHistRawVsCorrMultFB;   //!  
   TH2F                *hCentvsTPCmultCuts;   //! 
 
-
+  Int_t            fSkipOutlierCut;  //!
   Int_t                 fFilterBit;  //
   Float_t               fNSigmaCut;  //
   Float_t                fMinPtCut;  //
@@ -114,8 +121,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Float_t         fPileUpConstParm;  //
   Bool_t              bApplyMCcorr;  //
   TString            sPathOfMCFile;  //
-
-
+  TString                sNucleiTP;  //
+ 
 
 
 

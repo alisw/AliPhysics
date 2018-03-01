@@ -3,7 +3,7 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0PID;
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90., Float_t fSlope=3.45, Float_t fConst=100, Bool_t bUseMC=kFALSE,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", Float_t fSlope=3.45, Float_t fConst=100, Bool_t bUseMC=kFALSE,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
@@ -59,6 +59,8 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     task_CME[i]->SetCentralityPercentileMin(fCentralityMin);
     task_CME[i]->SetCentralityPercentileMax(fCentralityMax);
     task_CME[i]->SetPileUpCutParam(fSlope,fConst);
+    task_CME[i]->SetCollisionSystem(sNuclei);
+
 
     if(bUseMC) {
       task_CME[i]->SetFlagForMCcorrection(kTRUE);
