@@ -523,11 +523,12 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
 
 void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
 {
+
  this->InitializeRunArray(sDataSet);
 
- //fAnalysisUtil = new AliAnalysisUtils();
- //fAnalysisUtil->SetUseMVPlpSelection(kTRUE);
- //fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
+ fAnalysisUtil = new AliAnalysisUtils();
+ fAnalysisUtil->SetUseMVPlpSelection(kTRUE);
+ fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
 
 
  if(fListFBHijing) {
