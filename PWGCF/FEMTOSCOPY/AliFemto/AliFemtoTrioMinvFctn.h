@@ -49,6 +49,9 @@ private:
   TH1D *fAngle12;           // angle distribution between 12-particles plane and third particle
   TH1D *fAngle23;           // angle distribution between 23-particles plane and third particle
   TH1D *fAngle31;           // angle distribution between 31-particles plane and third particle
+  TH1D *fCosAngle12;        // angle distribution between 12-particles plane and third particle
+  TH1D *fCosAngle23;        // angle distribution between 23-particles plane and third particle
+  TH1D *fCosAngle31;        // angle distribution between 31-particles plane and third particle
   
   bool fDoMinv;
   bool fDoDalitz;

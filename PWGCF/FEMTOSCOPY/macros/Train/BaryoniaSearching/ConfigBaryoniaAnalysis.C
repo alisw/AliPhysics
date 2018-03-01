@@ -20,7 +20,7 @@ const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.5  ,   1.5  ,   1.0 ,  1.0 
 const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,   2.8 ,  2.0  };
 const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 , 0.001 , 0.001 };
 
-const double dalitzCutMass[nSys]= { 1.148, 2.148, 2.330 ,  2.330 ,1.86959,   0   };
+const double dalitzCutMass[nSys]= { 2.148, 2.148, 2.330 ,  2.330 ,1.86959,   0   };
 const double dalitzCutGamma[nSys]={ 0.134, 0.134, 0.100 ,  0.100 ,0.00063,   0   };
 
 const double dalitzMin       = 0.0;
