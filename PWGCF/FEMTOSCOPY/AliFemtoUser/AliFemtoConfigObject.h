@@ -136,6 +136,10 @@ public:
   /// class for visualizing on a canvas (TPad)
   class Painter;
 
+  static const ULong_t EMPTY_ARRAY_HASH = 0x742e2b13ab659L,
+                       EMPTY_MAP_HASH = 0x66fa474be7ae5L,
+                       EMPTY_RANGELIST_HASH = 0x905193fc5bfc52L;
+
 protected:
 
   /// finite number of posslbe types
