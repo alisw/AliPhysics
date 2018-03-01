@@ -75,6 +75,9 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
   fMinSharedMomentumFraction(0.),
+  fRequireMatchedPartLevelJet(false),
+  fMaxMatchedJetDistance(-1),
+  fHistManager(),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -105,6 +108,9 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
   fMinSharedMomentumFraction(0.),
+  fRequireMatchedPartLevelJet(false),
+  fMaxMatchedJetDistance(-1),
+  fHistManager(name),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -165,6 +171,19 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
     fOutput->Add(fHistJetPtBias[centralityBin]);
   }
 
+  // Jet matching cuts
+  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+  for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
+    name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
+    std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
+    auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
+  }
+
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
@@ -194,6 +213,13 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
   fhnTrigger->Sumw2();
   fOutput->Add(fhnTrigger);
+
+  // Store hist manager output in the output list
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
+  }
   
   PostData(1, fOutput);
 
@@ -361,7 +387,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
     if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-      bool foundMatchedJet = CheckForMatchedJet(jets, jet);
+      bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingSameEventCuts");
       if (foundMatchedJet == false) {
         continue;
       }
@@ -493,7 +519,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           // Require the found jet to be matched
           // This match should be between detector and particle level MC
           if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-            bool foundMatchedJet = CheckForMatchedJet(jets, jet);
+            bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingMixedEventCuts");
             if (foundMatchedJet == false) {
               continue;
             }
@@ -635,32 +661,77 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
 }
 
 /**
- * Check for matched jet based on the jet being identified as matched to another jet and their shared momentum fraction
- * being larger than fMinSharedMomentumFraction.
+ * Check for whether a matched jet should be accepted based on:
+ * - Jet being identified as matched to another jet
+ * - The shared momentum fraction being larger than some minimum value
+ * - Their matched distance being below the max matching distance
+ * - A particle level jet being matched to the detector level jet
+ *
+ * All of the above options are configurable and off by default (except for requiring a basic match).
+ *
+ * NOTE: AliEmcalJet::ClosestJet() is called instead of AliEmcalJet::MatchedJet() because ClosestJet() will work
+ * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
+ * due to the design of the classes.
  *
  * @param[in] jets Jet container corresponding to the matched jet
  * @param[in] jet Jet to be checked
+ * @param[in] histName Name of the hist in the hist manager where QA information will be filled
  * @return true if the jet passes the criteria. false otherwise.
  */
-bool AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet)
+bool AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName)
 {
   bool returnValue = false;
-  if (jet->MatchedJet()) {
-    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+  if (jet->ClosestJet()) {
+    fHistManager.FillTH1(histName.c_str(), "matchedJet");
+    returnValue = true;
+    // TODO: Can it be merged with the function in JetHPerformance?
+    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString() << "\n";
     // Check shared momentum fraction
     // We explicitly want to use indices instead of geometric matching
     double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
     if (sharedFraction < fMinSharedMomentumFraction) {
-      AliDebugStream(4) << "Jet is rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+      AliDebugStream(4) << "Jet rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
       returnValue = false;
     }
     else {
       AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
-      returnValue = true;
+      fHistManager.FillTH1(histName.c_str(), "sharedMomentumFraction");
+    }
+
+    if (fRequireMatchedPartLevelJet) {
+      AliEmcalJet * detLevelJet = jet->ClosestJet();
+      AliEmcalJet * partLevelJet = detLevelJet->ClosestJet();
+      if (!partLevelJet) {
+        AliDebugStream(4) << "Jet rejected due to no matching part level jet.\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Det level jet has a required match to a part level jet.\n" << "Part level jet: " << partLevelJet->toString() << "\n";
+        fHistManager.FillTH1(histName.c_str(), "partLevelMatchedJet");
+      }
+    }
+
+    // Only check matched jet distance if a value has been set
+    if (fMaxMatchedJetDistance > 0) {
+      double matchedJetDistance = jet->ClosestJetDistance();
+      if (matchedJetDistance > fMaxMatchedJetDistance) {
+        AliDebugStream(4) << "Jet rejected due to matching distance of " << matchedJetDistance << ", which is larger than the max distance of " << fMaxMatchedJetDistance << "\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Jet passed distance cut with distance of " << matchedJetDistance << "\n";
+        fHistManager.FillTH1(histName.c_str(), "jetDistance");
+      }
+    }
+
+    // Record all cuts passed
+    if (returnValue == true) {
+      fHistManager.FillTH1(histName.c_str(), "passedAllCuts");
     }
   }
   else {
     AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+    fHistManager.FillTH1(histName.c_str(), "noMatch");
     returnValue = false;
   }
 
@@ -1516,7 +1587,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
  *
  * @return A newly created particle or track container.
  */
-AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(std::string const & collectionName) const
+AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(const std::string & collectionName) const
 {
   AliParticleContainer * partCont = 0;
   if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
