@@ -17,6 +17,7 @@ class AliAODEvent;
 class AliAODInputHandler;
 class TH2D;
 
+#include <AliPID.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 
@@ -91,10 +92,13 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fdEtaBin(64),
     fPtBin(100),
     fHistSurvived4EtaPtPhiPlus(0), 
-    fHistSurvived8EtaPtPhiPlus(0){}
+    fHistSurvived8EtaPtPhiPlus(0),
+    fUsePID(kFALSE),
+    fpartOfInterest(AliPID::kPion),
+    fPDGCodeWanted(0){}
     AliAnalysisTaskEffContBF(const char *name);
     virtual ~AliAnalysisTaskEffContBF() {}
-
+  
     enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
     
   virtual void   UserCreateOutputObjects();
@@ -177,7 +181,14 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetPtRange(Double_t minRangePt, Double_t maxRangePt,Int_t binPt){
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
-    fPtBin = binPt;}  
+    fPtBin = binPt;}
+
+  void SetUsePID(Bool_t usePID, AliPID::EParticleType partOfInterest = AliPID::kPion) {
+    fUsePID = usePID;
+    fpartOfInterest = partOfInterest;
+  }
+    
+  
  private:
   AliAODEvent* fAOD; //! AOD object  
   TClonesArray *fArrayMC; //! array of MC particles  
@@ -270,10 +281,14 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!
 
+  Bool_t fUsePID; //flag to switch on PID
+  AliPID::EParticleType fpartOfInterest;
+  Int_t fPDGCodeWanted;
+
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 2); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 3); // example of analysis
 };
 
 #endif
