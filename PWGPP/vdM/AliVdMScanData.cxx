@@ -6,9 +6,9 @@
 
 ClassImp(AliVdMScanData);
 
-void AliVdMScanData::FillDefaultBranches(const AliVdMMetaData& vdmMetaData,
-                                         TTree *VdM,
-                                         const std::vector<std::string>& triggerNames)
+AliVdMScanData& AliVdMScanData::FillDefaultBranches(const AliVdMMetaData& vdmMetaData,
+                                                    TTree *VdM,
+                                                    const std::vector<std::string>& triggerNames)
 {
   const Double_t deltaT_tree = 2.0;
   const AliTriggerBCMask& bcMask = vdmMetaData.GetTriggerBCMask();
@@ -71,7 +71,8 @@ void AliVdMScanData::FillDefaultBranches(const AliVdMMetaData& vdmMetaData,
           if (bcMask.GetMask(bc))
             continue;
           defBranchData.BCID() = bc;
-          for (Int_t deltaBC=0; deltaBC<30; ++deltaBC) {
+          for (Int_t deltaBC=0, maxDeltaBC=defBranchData.Counters().GetNoElements();
+               deltaBC<maxDeltaBC; ++deltaBC) {
             const Int_t _bc = ((3564+bc-deltaBC) % 3564);
             defBranchData.Counter(deltaBC) = sumOfCounters[j][_bc];
           }
@@ -81,4 +82,5 @@ void AliVdMScanData::FillDefaultBranches(const AliVdMMetaData& vdmMetaData,
     }
     ++counter;
   }
+  return *this;
 }

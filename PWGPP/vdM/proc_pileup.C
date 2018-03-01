@@ -53,7 +53,7 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
                  v1 /= mapAC["rate"];
                  // v1 /= mapAC["relBkgd"];
                  v1 *= mapAnotC["relBkgd"];
-                 if (!v1.isInf()) {
+                 if (!v1.isInf() && v1.val()) {
                    const Int_t m1 = gAnotC[d.BCID()].GetN();
                    gAnotC[d.BCID()].SetPoint     (m1, mapAC["mu"].val(), v1.val());
                    gAnotC[d.BCID()].SetPointError(m1, mapAC["mu"].err(), v1.err());
@@ -62,7 +62,7 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
                  v2 /= mapAC["rate"];
                  // v2 /= mapAC["relBkgd"];
                  v2 *= mapCnotA["relBkgd"];
-                 if (!v2.isInf()) {
+                 if (!v2.isInf() && v2.val()) {
                    const Int_t m2 = gCnotA[d.BCID()].GetN();
                    gCnotA[d.BCID()].SetPoint     (m2, mapAC["mu"].val(), v2.val());
                    gCnotA[d.BCID()].SetPointError(m2, mapAC["mu"].err(), v2.err());
@@ -100,7 +100,7 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
     c1->Clear();
     c1->SetLogx();
     c1->SetLogy();
-    TH1 *hf = c1->DrawFrame(1e-5, 0.01, 0.5, 20);
+    TH1 *hf = c1->DrawFrame(1e-6, 0.01, 0.5, 20);
     hf->SetTitle(TString::Format("BCID=%d %s;two-arm #mu;one-arm/two-arm", bc, classAC));
     pileupModel.DoFit(&gAnotC[bc], &gCnotA[bc], &par0[0]);
 
