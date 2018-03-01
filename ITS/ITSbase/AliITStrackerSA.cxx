@@ -141,23 +141,18 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
   else {
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
   }
-  if(!rc){
-    bool isTPC = event->GetNumberOfTPCClusters();
-    bool canUseAllCl = event->GetPrimaryVertexSPD()->GetNContributors()
-      < AliITSReconstructor::GetRecoParam()->GetMaxSPDcontrForSAToUseAllClusters();
-
-    //RS: do complementary reco. If TPC is absent, the complementary is equivalent to pureSA, do it only
-    // if the SPD mult does not exceed requested threshold
-    if (isTPC || canUseAllCl) { 
+  if(!rc){ 
+    if (event->GetNumberOfTPCClusters()) {
       sw.Start();
-      rc=FindTracks(event,kFALSE); 
+      rc=FindTracks(event,kFALSE); //RS: do complementary reco if there are TPC clusters
       sw.Stop();
       AliInfoF("timingSAcompl: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
     }
-
-    //RS: do pureSA reco only if TPC is present, otherwise the complementary one will play the role of
-    // pureSA
-    if (isTPC && AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kTRUE &&  canUseAllCl) {
+    Int_t nSPDcontr=0;
+    const AliESDVertex *spdv = event->GetPrimaryVertexSPD();
+    if(spdv) nSPDcontr = spdv->GetNContributors();
+    if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kTRUE && 
+       nSPDcontr<=AliITSReconstructor::GetRecoParam()->GetMaxSPDcontrForSAToUseAllClusters()) {
       sw.Start();
       rc=FindTracks(event,kTRUE);
       sw.Stop();
