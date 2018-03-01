@@ -72,6 +72,11 @@ public :
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
   static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
+  
+  struct comparisonContainer
+  {
+    float mcX, mcY, mcZ, mcPt, mcPhi, mcDzds, deltaY, deltaZ, deltaPhi, deltaDzds, deltaPt, oldX, oldY, oldZ, nCls;
+  };
 
 private:
   //
@@ -93,6 +98,7 @@ private:
   AliPerformanceRes& operator=(const AliPerformanceRes&); // not implemented
   static Double_t            fgkMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
   char* fValidLabels; //!
+  comparisonContainer* fComparisonContainer; //!
   
   ClassDef(AliPerformanceRes,4);
 };

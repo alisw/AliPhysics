@@ -74,7 +74,8 @@ AliPerformanceRes::AliPerformanceRes(TRootIOCtor* b):
 
   // histogram folder 
   fAnalysisFolder(0),
-  fValidLabels(0)
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
 {
   // io constructor	
 }
@@ -87,7 +88,8 @@ AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, In
 
   // histogram folder 
   fAnalysisFolder(0),
-  fValidLabels(0)
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
 {
   // named constructor	
   // 
@@ -630,12 +632,13 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
 
   // exclude electrons
   if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
-  
+
   const float kDeg2Rad = 3.1415926535897 / 180.f;
   const float kSectAngle = 2*3.1415926535897 / 18.f;
   float mcAngle = (floor(atan2(ref0->Y(), ref0->X()) / kDeg2Rad / 20.f) + 0.5) * kSectAngle;
   if (fabs(mcAngle - track->GetAlpha()) > 1.5 * kSectAngle) return; //This is most likely the backward leg of a looper that entered the TPC somewhere else
   if (!track->Rotate(mcAngle)) return;
+  float oldX = track->GetX(), oldY = track->GetY(), oldZ = track->GetZ();
   Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates, we use the local coordinate system in the sector of the MC label
   Double_t c = TMath::Cos(track->GetAlpha());
   Double_t s = TMath::Sin(track->GetAlpha());
@@ -727,6 +730,12 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
     //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
     if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
     else pull1PtTPC = 0.;
+    
+    if (MATCH_VALID_LABELS)
+    {
+      comparisonContainer cont = {(float) mclocal[0], (float) mclocal[1], ref0->Z(), mcpt, mcphi, mctgl, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC, deltaPtTPC, oldX, oldY, oldZ, (float) vTrack->GetTPCNcls()};
+      fComparisonContainer[label] = cont;
+    }
 
     Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,ref0->Y(),ref0->Z(),mcphi,mceta,mcpt};
     fResolHisto->Fill(vResolHisto);
@@ -976,7 +985,6 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsIn[i] = 1;
     validLabelsOut = new char[mcEvent->GetNumberOfTracks()];
     for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsOut[i] = 0;
-    char filename[32];
     FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "rb");
     if (fp)
     {
@@ -984,6 +992,7 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       fclose(fp);
     }
     fValidLabels = validLabelsOut;
+    fComparisonContainer = new comparisonContainer[mcEvent->GetNumberOfTracks()];
   }
   
   //  Process events
@@ -1054,6 +1063,23 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     delete[] validLabelsIn;
     delete[] validLabelsOut;
     fValidLabels = NULL;
+
+    static int lastNum = -1;
+    static int repeat = 0;
+    if (lastNum != vEvent->GetEventNumberInFile())
+    {
+        lastNum = vEvent->GetEventNumberInFile();
+        repeat = 0;
+    }
+    else
+    {
+        repeat++;
+    }
+    fp = fopen(Form("result.%d.%d.tmp", vEvent->GetEventNumberInFile(), repeat), "w+b");
+    fwrite(fComparisonContainer, sizeof(fComparisonContainer[0]), mcEvent->GetNumberOfTracks(), fp);
+    fclose(fp);
+    delete[] fComparisonContainer;
+    fComparisonContainer = NULL;
   }
 }
 
