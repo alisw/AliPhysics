@@ -3163,12 +3163,18 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
     auto part = *it;
     if (part.first.Pt() == 0) continue;
 
-    Int_t PdgCode = TMath::Abs(part.second->GetPdgCode());
+    Int_t PdgCode = part.second->GetPdgCode();
 
     // Skip all particles that are not either quarks or gluons
-    if (PdgCode > 9 && PdgCode != 21 && PdgCode < -9 && PdgCode != -21) continue;
+    if ((PdgCode < -9 || PdgCode > 9) && PdgCode != 21  && PdgCode != -21) continue;
 
-    AliDebugStream(5) << "Parton " << it.current_index() << " with pdg=" << PdgCode << ", pt=" << part.first.Pt() << ", n daughters = " << part.second->GetNDaughters() << std::endl;
+    AliDebugStream(5) << "Parton " << it.current_index() <<
+        " with pdg=" << PdgCode <<
+        ", px=" << part.first.Px() <<
+        ", py=" << part.first.Py() <<
+        ", pz=" << part.first.Pz() <<
+        ", n daughters = " << part.second->GetNDaughters() <<
+        std::endl;
 
     // Skip partons that do not have any children
     // Unclear how this can happen, it would seem that this parton were not fragmented by the generator
@@ -3195,13 +3201,23 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
         AliDebugStream(5) << "Could not find particle with index " << daughterIndex << "!" << std::endl;
         continue;
       }
-      Int_t daughterPdgCode = TMath::Abs(daughter->GetPdgCode());
+      Int_t daughterPdgCode = daughter->GetPdgCode();
       if (daughter->GetMother() != it.current_index()) {
-        AliDebugStream(5) << "Particle " << daughterIndex << " with pdg=" << daughterPdgCode << ", pt=" << daughter->Pt() << ", is not a daughter of " << it.current_index() << "!" << std::endl;
+        AliDebugStream(5) << "Particle " << daughterIndex << " with pdg=" << daughterPdgCode <<
+            ", px=" << daughter->Px() <<
+            ", py=" << daughter->Py() <<
+            ", pz=" << daughter->Pz() <<
+            ", is not a daughter of " << it.current_index() <<
+            "!" << std::endl;
         continue;
       }
 
-      AliDebugStream(5) << "Found daughter " << daughterIndex << " with pdg=" << daughterPdgCode << ", pt=" << daughter->Pt() << "!" << std::endl;
+      AliDebugStream(5) << "Found daughter " << daughterIndex <<
+          " with pdg=" << daughterPdgCode <<
+          ", px=" << daughter->Px() <<
+          ", py=" << daughter->Py() <<
+          ", pz=" << daughter->Pz() <<
+          std::endl;
       if (daughterPdgCode == PdgCode) lastInPartonShower = kFALSE; // this parton is not the last parton in the shower
       if (TMath::Abs(daughterPdgCode) >= 111) hadronDaughter = kTRUE;
     }
