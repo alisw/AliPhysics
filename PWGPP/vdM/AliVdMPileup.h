@@ -1,7 +1,6 @@
 // -*- C++ -*-
 
-#include <TFitResultPtr.h>
-#include <TFitResult.h>
+#include <TF1.h>
 #include <TGraphErrors.h>
 #include <TMath.h>
 #include <TMinuit.h>
@@ -28,8 +27,8 @@ public:
 
     fMinuit.SetLimitedVariable( 0, "r_{A}",    par0[0], 0.01, 0, 1);
     fMinuit.SetLimitedVariable( 1, "r_{C}",    par0[1], 0.01, 0, 1);
-    fMinuit.SetLimitedVariable( 2, "bkgd_{A}", par0[2], 1e-6, 0, 1e-3);
-    fMinuit.SetLimitedVariable( 3, "bkgd_{C}", par0[3], 1e-6, 0, 1e-3);
+    fMinuit.SetLimitedVariable( 2, "bkgd_{A}", par0[2], 1e-6, 1e-6, 1e-3);
+    fMinuit.SetLimitedVariable( 3, "bkgd_{C}", par0[3], 1e-6, 1e-6, 1e-3);
     fMinuit.Minimize();
     fMinuit.PrintResults();
   }
@@ -45,7 +44,7 @@ public:
     y  = fCnotA->GetY();
     ex = fCnotA->GetEY();
     ey = fCnotA->GetEY();
-    TF1 fcnCnotA("fcnCnotA", this, &AliVdMPileup::fcnCnotA,0,1,5);
+    TF1 fcnCnotA("fcnCnotA", this, &AliVdMPileup::fcnCnotA,0,1,4);
     fcnCnotA.SetParameters(par);
     for (Int_t j=0, n=fCnotA->GetN(); j<n; ++j) {
       const Double_t mu = x[j];
@@ -57,7 +56,7 @@ public:
     y  = fAnotC->GetY();
     ex = fAnotC->GetEX();
     ey = fAnotC->GetEY();
-    TF1 fcnAnotC("fcnAnotC", this, &AliVdMPileup::fcnAnotC,0,1,5);
+    TF1 fcnAnotC("fcnAnotC", this, &AliVdMPileup::fcnAnotC,0,1,4);
     fcnAnotC.SetParameters(par);
     for (Int_t j=0, n=fAnotC->GetN(); j<n; ++j) {
       const Double_t mu = x[j];

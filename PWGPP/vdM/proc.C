@@ -1,62 +1,26 @@
 // -*- C++ -*-
 
-#include <vector>
-#include <string>
-#include <memory>
-
-#include <TFile.h>
-#include <TTree.h>
+#include <TPad.h>
 #include <TVectorD.h>
 #include <TMath.h>
 #include <TGraphErrors.h>
 #include <TF1.h>
 
-#include <TCanvas.h>
+#include "proc.h"
 
-#include "AliVdMMetaData.h"
-#include "AliVdMScanData.h"
-
-#include "AliVdMPileup.h"
-
-#include "proc_pileup.h"
-
-// -----------------------------------------------------------------------------
-//  analysis for fill 4937
-
-AliVdMScanData allData;
-
-void proc()
+void proc(const AliVdMMetaData& vdmMetaData,
+          AliVdMScanData& vdmScanData,
+          const std::vector<std::string>& triggerNames)
 {
-  const std::vector<std::string> triggerNames{
-    "c2TVX",
-    "c2VBAandVBC",
-    "c2UBAandUBC",
 
-    "c2T0AandNotT0C",
-    "c2T0CandNotT0A",
-
-    "c2VBAandNotVBC",
-    "c2VBCandNotVBA",
-
-    "c2UBAandNotUBC",
-    "c2UBCandNotUBA"
-};
-
-  const AliVdMMetaData vdmMetaData(AliVdMMetaData::GetFileName("4937/4937.xml"));
-
-  TFile::Open(AliVdMMetaData::GetFileName("4937/vdm_time_4937_6m11_12p17_1_v3.root"), "READ");
-  TTree * VdM = nullptr;
-  gFile->GetObject("VdM", VdM);
-  VdM->AddFriend("DDL2", AliVdMMetaData::GetFileName("4937/vdm_DDL2_4937.root"));
-
-  allData.FillDefaultBranches(vdmMetaData, VdM, triggerNames);
-
-  Printf("#scans: %ld", std::distance(vdmMetaData.GetScansBegin(), vdmMetaData.GetScansEnd()));
+  const Int_t nScans = vdmScanData.GetNScans();
+  Printf("nScans = %d", nScans);
 
   // (1) compute uncorrected rates
-  for (Int_t iScan=0; iScan<6; ++iScan) {
+  for (Int_t iScan=0; iScan<nScans; ++iScan) {
+    Printf("%d", iScan);
     for (const std::string& triggerName : triggerNames) {
-      AliVdMTree& vt = allData.GetMap(iScan)[triggerName];
+      AliVdMTree& vt = vdmScanData.GetMap(iScan)[triggerName];
       vt.AddBranch("rate", [](const AliVdMTree::DefaultBranchData& d,
                               AliVdMTree::branchMap_t& map) {
                      map["rate"].val() = d.Counter() / d.DeltaT();
@@ -64,12 +28,13 @@ void proc()
                    });
     }
   }
+
   // (2) compute mu for (T0,V0,AD)_and triggers
-  for (Int_t iScan=0; iScan<6; ++iScan) {
+  for (Int_t iScan=0; iScan<nScans; ++iScan) {
     for (const std::string& triggerName : triggerNames) {
       if (TString(triggerName.c_str()).Contains("Not")) // skip one-arm triggers
         continue;
-      AliVdMTree& vt = allData.GetMap(iScan)[triggerName];
+      AliVdMTree& vt = vdmScanData.GetMap(iScan)[triggerName];
       vt.AddBranch("mu", [](const AliVdMTree::DefaultBranchData& d,
                             AliVdMTree::branchMap_t& map) {
                      map["mu"].val() = map["rate"].val() / 11245.0;
@@ -79,9 +44,9 @@ void proc()
   }
 
   // (3) compute bkgd due to from tails from previous interactions
-  for (Int_t iScan=0; iScan<6; ++iScan) {
+  for (Int_t iScan=0; iScan<nScans; ++iScan) {
     for (const std::string& triggerName : triggerNames) {
-      AliVdMTree& vt = allData.GetMap(iScan)[triggerName];
+      AliVdMTree& vt = vdmScanData.GetMap(iScan)[triggerName];
       vt.AddBranch("relBkgd", [](const AliVdMTree::DefaultBranchData& d,
                                  AliVdMTree::branchMap_t& map)
                    {
@@ -111,16 +76,5 @@ void proc()
                    });
     }
   }
-
-  // (3) determine pile-up (work in progress)
-  proc_pileup(vdmMetaData, allData,
-              "c2UBAandUBC", "c2UBAandNotUBC", "c2UBCandNotUBA",
-              {0.24,0.13, 4.4e-5,2.3e-5});
-  proc_pileup(vdmMetaData, allData,
-              "c2VBAandVBC", "c2VBAandNotVBC", "c2VBCandNotVBA",
-              {0.061,0.076, 14e-5,3.5e-5});
-  proc_pileup(vdmMetaData, allData,
-              "c2TVX", "c2T0AandNotT0C", "c2T0CandNotT0A",
-              {0.39,0.44, 13e-5,3.3e-5});
 }
 

@@ -5,5 +5,6 @@
 
   gROOT->LoadMacro("AliVdMTree.cxx+");
   gROOT->LoadMacro("AliVdMScanData.cxx+");
+  gROOT->LoadMacro("proc.C+");
   gROOT->LoadMacro("proc_pileup.C+");
 }

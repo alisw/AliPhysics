@@ -24,7 +24,7 @@ public:
       : fTime(2)
       , fSep(2)
       , fBC(0)
-      , fCounter(30) {}
+      , fCounter(20) {}
 
     DefaultBranchData& operator=(const DefaultBranchData& d) {
       for (Int_t i=0; i<2; ++i) {
@@ -54,7 +54,7 @@ public:
       t->Branch("fTime",     fTime.GetMatrixArray(),    "start/D:stop");
       t->Branch("fSep",      fSep.GetMatrixArray(),     "X/D:Y");
       t->Branch("fBC",      &fBC);
-      t->Branch("fCounter",  fCounter.GetMatrixArray(), "counter[30]/D");
+      t->Branch("fCounter",  fCounter.GetMatrixArray(), Form("counter[%d]/D", fCounter.GetNoElements()));
     }
   protected:
   private:
@@ -78,7 +78,8 @@ public:
     //   return *this;
     // }
     Bool_t isInf() const {
-      return (std::isinf(fArray[0]) || std::isinf(fArray[1]));
+      return (std::isinf(fArray[0]) || std::isinf(fArray[1]) ||
+              std::isnan(fArray[0]) || std::isnan(fArray[1]));
     }
 
     Double_t& val() { return fArray[0]; }

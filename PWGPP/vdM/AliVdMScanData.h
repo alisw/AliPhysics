@@ -3,6 +3,7 @@
 #ifndef PWGPP_VDM_ALIVDMSCANDATA_H
 #define PWGPP_VDM_ALIVDMSCANDATA_H
 
+#include <vector>
 #include <map>
 
 #include <TObject.h>
@@ -17,8 +18,7 @@
 class AliVdMScanData : public TObject {
 public:
   typedef std::map<std::string, AliVdMTree> map_type;
-
-  enum { MaxNumScans = 6 };
+  typedef std::vector<map_type> vector_type;
 
   AliVdMScanData()
     : TObject()
@@ -27,25 +27,31 @@ public:
   virtual ~AliVdMScanData() {}
 
   TTree* GetTTree(Int_t iScan, const char* trigName) {
-    return fData[iScan][trigName].GetTTree();
+    return GetMap(iScan)[trigName].GetTTree();
   }
 
-  void FillDefaultBranches(const AliVdMMetaData& vdmMetaData, TTree *t,
-                           const std::vector<std::string>& triggerNames);
+  Int_t GetNScans() const { return fData.size(); }
 
-  map_type& GetMap(Int_t iScan) { return fData[iScan]; }
+  AliVdMScanData& FillDefaultBranches(const AliVdMMetaData& vdmMetaData, TTree *t,
+                                      const std::vector<std::string>& triggerNames);
+
+  map_type& GetMap(std::size_t iScan) {
+    for (; iScan >= fData.size();)
+      fData.emplace_back(map_type());
+    return fData[iScan];
+  }
 
 protected:
   TTree* CreateDefaultBranches(Int_t iScan, std::string trigName) {
     const TString treeName = MakeTreeName(iScan, trigName);
-    return fData[iScan][trigName].CreateDefaultBranches(treeName);
+    return GetMap(iScan)[trigName].CreateDefaultBranches(treeName);
   }
 
   static TString MakeTreeName(Int_t iScan, TString trigName) {
     return TString::Format("T%s_scan%d", trigName.Data(), iScan);
   }
 private:
-  map_type fData[MaxNumScans]; // max number of scans = MaxNumScans
+  vector_type fData; // vector<map<string, VdMTree> >
 
   ClassDef(AliVdMScanData, 1);
 } ;
