@@ -112,6 +112,8 @@ fTOFLabel(),
 fV0MPC_vertexcut(0),
 fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
 fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
 
 {}
@@ -531,9 +533,9 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
 
 	//no DCAxy cut for secondaries
         fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
-	fesdTrackCuts->SetMinNCrossedRowsTPC(fMinTPCcr);
-        fesdTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
-        fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAz);
+	fesdTrackCuts_no_dca->SetMinNCrossedRowsTPC(fMinTPCcr);
+        fesdTrackCuts_no_dca->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+        fesdTrackCuts_no_dca->SetMaxDCAToVertexZ(fMaxDCAz);
 
 
 
