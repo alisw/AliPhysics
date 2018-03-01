@@ -296,8 +296,10 @@ void AliHFENonPhotonicElectron::Init()
     Double_t binLimEtaAssociat[kBinsEtaAssociated+1] = {-1.5,-1.3,-1.1,-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9,1.1,1.3,1.5};
     
     // additional phi (inclusive electron) axis
-    const Int_t kBinsPhiInclusiveDefault = 2;
-    Double_t binLimPhiInclusiveDefault[kBinsPhiInclusiveDefault+1] = {0., TMath::Pi(), 2*TMath::Pi()};
+    //const Int_t kBinsPhiInclusiveDefault = 2;
+    //Double_t binLimPhiInclusiveDefault[kBinsPhiInclusiveDefault+1] = {0., TMath::Pi(), 2*TMath::Pi()};
+    const Int_t kBinsPhiInclusiveDefault = 7;   // mfaggin, 01-Mar-2018
+    Double_t binLimPhiInclusiveDefault[kBinsPhiInclusiveDefault+1] = {0.,0.7,1.4,2.33,TMath::Pi(),3.26,4.77,2*TMath::Pi()};  // mfaggin, 01-Mar-2018
     
     // additional charge axis (inclusive electron) axis
     const Int_t kBinsCharge = 2;
@@ -679,8 +681,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
     fkPIDRespons = fPIDBackground->GetPIDResponse();
 
     //Set Fill-Arrays for THnSparse
-    Double_t valueIncElectron[6]	= { (Double_t) binct, track1->Pt(), (Double_t)source, track1->Eta(), track1->Phi(), (Double_t)track1->Charge()};	//Centrality	Pt	Source  eta phi charge
-    Double_t valueSign[11]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1, track1->Phi(), (Double_t)track1->Charge()};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	OpeningAngle	Pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
+    Double_t valueIncElectron[6]	= { (Double_t) binct, track1->Pt(), (Double_t)source, track1->Eta(), track1->Phi(),(Double_t) track1->Charge()};	//Centrality	Pt	Source  eta phi charge
+    Double_t valueSign[11]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1, track1->Phi(),(Double_t) track1->Charge()};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	OpeningAngle	Pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
     //Double_t valueAngle[3]	= { -1, binct, source};	
     Double_t valueradius[4]	= { (Double_t)binct, track1->Pt(), 0.,(Double_t)source};	
 
