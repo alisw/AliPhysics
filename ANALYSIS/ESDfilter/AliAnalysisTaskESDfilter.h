@@ -36,6 +36,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *option);
   virtual void   ConvertESDtoAOD();
+  void AdjustCutsForEvent(const AliESDEvent& esd, TList& modifiedCuts, bool revert);
 
   // Setters
   virtual void SetTrackFilter   (AliAnalysisFilter*   trackF)                {fTrackFilter                 = trackF;}
@@ -81,7 +82,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   
   void SetMuonCaloPass();
   void SetAddPCMv0s(Bool_t addPCMv0s) {fAddPCMv0s=addPCMv0s;}
-  
+
+  AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter;}
+
 private:
   AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
   AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);

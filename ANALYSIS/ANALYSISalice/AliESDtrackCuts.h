@@ -154,6 +154,7 @@ public:
   Bool_t  GetRequireTPCStandAlone()  const   { return fCutRequireTPCStandAlone;}
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
   Bool_t  GetRequireITSStandAlone()  const   { return fCutRequireITSStandAlone; }
+  Bool_t  GetRequireITSpureSA()      const   { return fCutRequireITSpureSA; }
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
   Bool_t  GetAcceptSharedTPCClusters()        const   {return fCutAcceptSharedTPCClusters;}
   Float_t GetMaxFractionSharedTPCClusters()   const   {return fCutMaxFractionSharedTPCClusters;}

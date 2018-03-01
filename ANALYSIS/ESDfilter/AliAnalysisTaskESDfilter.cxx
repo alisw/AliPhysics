@@ -2362,6 +2362,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 
   AliCodeTimerAuto("",0);
 
+  TList modifiedCuts; // cuts modified to adjust them for particular event condition
+  AdjustCutsForEvent(*esd, modifiedCuts, kFALSE);
+  
   if (fRefitVertexTracks>=0) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
 							       fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
   
@@ -2532,6 +2535,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   delete[] fUsedV0; fUsedV0=0x0;
   delete[] fUsedKink; fUsedKink=0x0;
 
+  if (modifiedCuts.GetEntries()) AdjustCutsForEvent(*esd, modifiedCuts, kTRUE); // revert
+  
   if (fIsPidOwner) {
     delete fESDpid;
     fESDpid = 0x0;
@@ -2733,4 +2738,65 @@ void AliAnalysisTaskESDfilter::SetMuonCaloPass()
   DisableV0s();
   DisablePmdClusters();
   SetPropagateTrackToEMCal(kFALSE);
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::AdjustCutsForEvent(const AliESDEvent& esd, TList& modifiedCuts, bool revert)
+{
+  // adjust cut for specific events
+  // At the moment, if event has no TPC (therefore only ITS pureSA tracks are present),
+  // and there are cuts asking for complementary ITS_SA tracks, force cuts to accept pureSA instead
+  if (revert) {
+    TIter next(&modifiedCuts);
+    AliESDtrackCuts* cut = 0;
+    while ( (cut=(AliESDtrackCuts*)next()) ) {
+      cut->SetRequireITSStandAlone(kTRUE);
+      cut->SetRequireITSPureStandAlone(kFALSE);
+    }
+    static Bool_t printOnce = kTRUE;
+    if (printOnce) {
+      AliInfoF("Event w/oTPC, reverted %d cuts asking for ITS_SA tracks, no more such messages will be printed",
+	       modifiedCuts.GetEntries());
+      printOnce = kFALSE;
+    }
+    modifiedCuts.Clear();
+    return;
+  }
+  
+  // this is relevant only events w/o TPC
+  if (esd.GetNumberOfTPCClusters()>0) return;
+  int nPureSA = 0, nCompSA = 0;
+  // check if this event is affected, i.e. it has no ITScomplementary tracks but has SA tracks
+  for (int i=esd.GetNumberOfTracks();i--;) {
+    AliESDtrack* tr = esd.GetTrack(i);
+    ULong_t flags = tr->GetStatus();
+    if ( flags & AliESDtrack::kTPCin ) continue;
+    if ( flags & AliESDtrack::kITSpureSA ) {
+      nPureSA++;
+      continue;
+    }
+    if ( flags & AliESDtrack::kITSin ) {
+      nCompSA++;
+      break;
+    };    
+  }
+  if (nPureSA && !nCompSA) {
+    // check if there are cuts asking for complementary ITS_SA tracks
+    TIter next(fTrackFilter->GetCuts());
+    AliESDtrackCuts* cut = 0;
+    while ( (cut=(AliESDtrackCuts*)next()) ) {
+      if (cut->GetRequireITSStandAlone()) {
+	cut->SetRequireITSStandAlone(kFALSE);
+	cut->SetRequireITSPureStandAlone(kTRUE);
+	modifiedCuts.Add(cut);
+      }
+    }
+    modifiedCuts.SetOwner(kFALSE);
+    static Bool_t printOnce = kTRUE;
+    if (printOnce) {
+      AliInfoF("Event w/oTPC, forced %d cuts asking for ITS_SA tracks to accept ITS_pureSA",modifiedCuts.GetEntries());
+      printOnce = kFALSE;
+    }
+  }
+  
 }
