@@ -36,9 +36,7 @@ class AliFemtoXiParticle // Reconstructed Lambdas parameters needed for correlat
   short fBachID; //Bachelor ID of Xi candidate
   bool fXitag;
   double fPointing;
-  
-#ifdef __ROOT__
-  ClassDef(AliFemtoXiParticle, 1);
-#endif
+
+  ClassDef(AliFemtoXiParticle, 2)
 };
 #endif

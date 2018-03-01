@@ -26,12 +26,15 @@ class AliFemtoLambdaParticle // Reconstructed Lambdas parameters needed for corr
   
   AliFemtoLambdaParticle();
   virtual ~AliFemtoLambdaParticle();
-  //AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj);
+//  AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj);
   AliFemtoLambdaParticle &operator=(const AliFemtoLambdaParticle &obj);
   
   TVector3 fMomentum;  //v0 momentum
   TVector3 fMomentumMC;  //v0 Monte Carlo momentum
   TVector3 fMomentumMCMother;  //v0 Monte Carlo momentum of mother particle
+  TVector3 fPositionPosTPC[9];
+  TVector3 fPositionNegTPC[9];
+
   int fPDGCode;
   int fPDGCodeMother;
   double fPt;           //v0 transverse momentum
@@ -49,11 +52,9 @@ class AliFemtoLambdaParticle // Reconstructed Lambdas parameters needed for corr
   double fEtaPosdaughter;
   double fPhiNegdaughter;
   double fEtaNegdaughter;
-  double fPosDaughPosTPC[9][3];
-  double fNegDaughPosTPC[9][3];
-  
-#ifdef __ROOT__
-  ClassDef(AliFemtoLambdaParticle, 1);
-#endif
+  //double fPosDaughPosTPC[9][3];
+  //double fNegDaughPosTPC[9][3];
+
+  ClassDef(AliFemtoLambdaParticle, 2)
 };
 #endif
