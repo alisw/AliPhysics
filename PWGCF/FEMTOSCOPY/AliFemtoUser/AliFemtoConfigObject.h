@@ -136,6 +136,10 @@ public:
   /// class for visualizing on a canvas (TPad)
   class Painter;
 
+  static const ULong_t EMPTY_ARRAY_HASH = 0x742e2b13ab659L,
+                       EMPTY_MAP_HASH = 0x66fa474be7ae5L,
+                       EMPTY_RANGELIST_HASH = 0x905193fc5bfc52L;
+
 protected:
 
   /// finite number of posslbe types
@@ -424,6 +428,16 @@ public:
 
   /// Return copy of object with given keys removed
   AliFemtoConfigObject WithoutKeys(const std::vector<Key_t>&) const;
+
+  #define IMPL_POP_ITEM(__dest_type, __name)           \
+    __dest_type __name(const Key_t &key, const __dest_type &_def) \
+      { __dest_type res(_def); pop_and_load(key, res); return res; }
+
+    IMPL_POP_ITEM(StringValue_t, pop_str);
+    IMPL_POP_ITEM(IntValue_t, pop_int);
+
+  #undef IMPL_POP_ITEM
+
 
   /// \defgroup Pop&Load Methods
   /// @{
