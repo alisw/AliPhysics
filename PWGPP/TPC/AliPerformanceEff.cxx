@@ -1334,6 +1334,7 @@ TH1D* AliPerformanceEff::WeightedProjection(THnSparseF* src, Int_t axis, Int_t n
             weight += coords[weightCoords[j]] - 1;
         }
         tmp->SetBinContent(i, weight);
+        tmp->SetBinError(i, weight);
     }
     
     TH1D* ret = tmp->Projection(axis);
