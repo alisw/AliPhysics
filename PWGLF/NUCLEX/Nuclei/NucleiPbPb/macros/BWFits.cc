@@ -12,7 +12,6 @@
 #include "src/Common.h"
 #include "YieldMean.C"
 #include "AliPWGFunc.h"
-#include "AliPID.h"
 #include "AdditionalFunctions.h"
 
 static TF1 *fBGBlastWave_Integrand = NULL;
@@ -95,7 +94,8 @@ void Denormalize(TH1 * h) {
   }
 }
 
-void BWFits() {
+void BWFits(bool antimatter_analysys = false) {
+  const char* kind_of_particle = (antimatter_analysys) ? "anti" : "";
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0);
   gStyle->SetTitleXOffset(1.3);
@@ -115,40 +115,37 @@ void BWFits() {
     pwgfunc.GetMTExp(kParticleMass, 0.1, 1, kFitFunctionNames[3].data())
   };
 
-  TFile bwfile(kBWfitsOutput.data(),"recreate");
+  TFile bwfile("fits.root","recreate");
   TDirectory* datadir = bwfile.mkdir("data");
   TDirectory* function_dir[4]{nullptr};
   for (int iF = 0; iF < kNfitFunctions; ++iF)
     function_dir[iF] = bwfile.mkdir(kFitFunctionNames[iF].data());
-  for (int iC = 0; iC < kCentLength; ++iC) {
-    speM[iC] = (TH1D*)mineF->Get(Form("deuterons/%i/stat_all",iC));
-    mysystM[iC] = (TH1D*)mineF->Get(Form("antideuterons/%i/syst_all",iC));
-    if (!mysystM[iC]) cout << "Missing " << Form("syst%i",iC) << endl;
-    if (!speM[iC]) cout << "Missing " << Form("syst%i",iC) << endl;
-    if (!speM[iC] || !mysystM[iC]) return;
-    TH1D *m = new TH1D(Form("m%i",iC),";#it{p}_{T} (GeV / #it{c}); 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-1}",speM[iC]->GetNbinsX(), speM[iC]->GetXaxis()->GetXbins()->GetArray());
-    TH1D *sm = new TH1D(Form("sm%i",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",speM[iC]->GetNbinsX(), speM[iC]->GetXaxis()->GetXbins()->GetArray());
+  for (int i = 0; i < kCentLength; ++i) {
+    speM[i] = (TH1D*)mineF->Get(Form("%sdeuterons/%i/stat_all",kind_of_particle,i));
+    mysystM[i] = (TH1D*)mineF->Get(Form("%sdeuterons/%i/syst_all",kind_of_particle,i));
+    if (!mysystM[i]) cout << "Missing " << Form("syst%i",i) << endl;
+    if (!speM[i]) cout << "Missing " << Form("syst%i",i) << endl;
+    if (!speM[i] || !mysystM[i]) return;
+    TH1D *m = new TH1D(Form("m%i",i),";#it{p}_{T} (GeV / #it{c}); 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-1}",speM[i]->GetNbinsX(), speM[i]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *sm = new TH1D(Form("sm%i",i),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",speM[i]->GetNbinsX(), speM[i]->GetXaxis()->GetXbins()->GetArray());
 
-    for (int iB = 1; iB <= speM[iC]->GetNbinsX(); ++iB) {
-      double x = speM[iC]->GetBinCenter(iB);
-      if (x < 0.6 || x > kCentPtLimits[iC]) continue;
-      float stat = speM[iC]->GetBinError(speM[iC]->FindBin(m->GetBinCenter(iB)));
-      float syst = mysystM[iC]->GetBinError(speM[iC]->FindBin(m->GetBinCenter(iB)));
-      m->SetBinContent(iB,speM[iC]->GetBinContent(speM[iC]->FindBin(m->GetBinCenter(iB))));
-      m->SetBinError(iB,stat);
-      sm->SetBinContent(iB,speM[iC]->GetBinContent(speM[iC]->FindBin(m->GetBinCenter(iB))));
-      sm->SetBinError(iB,syst);
+    for (int j = 1; j <= speM[i]->GetNbinsX(); ++j) {
+      double x = speM[i]->GetBinCenter(j);
+      if (x < 0.6 || x > kCentPtLimits[i]) continue;
+      float stat = speM[i]->GetBinError(speM[i]->FindBin(m->GetBinCenter(j)));
+      float syst = mysystM[i]->GetBinError(speM[i]->FindBin(m->GetBinCenter(j)));
+      m->SetBinContent(j,speM[i]->GetBinContent(speM[i]->FindBin(m->GetBinCenter(j))));
+      m->SetBinError(j,stat);
+      sm->SetBinContent(j,speM[i]->GetBinContent(speM[i]->FindBin(m->GetBinCenter(j))));
+      sm->SetBinError(j,syst);
     }
 
     for (int iF = 0; iF < kNfitFunctions; ++iF) {
-      if (!iF && iC == 1) {
-        fit_functions[iF]->SetParLimits(1, 0.04, 0.94);
-        fit_functions[iF]->SetParLimits(2, 0.01, 0.250);
-        fit_functions[iF]->SetParLimits(3, 0.0, 5.);
-      } else if (!iF && iC == 2) {
-        fit_functions[iF]->SetParLimits(1, 0.4, 0.94);
-        fit_functions[iF]->SetParLimits(2, 0.10, 0.250);
-        fit_functions[iF]->SetParLimits(3, 0.09, 2.);
+      if(iF==2){
+        fit_functions[iF]->SetParameters(kParticleMass, n, C, normal);
+        fit_functions[iF]->SetParLimits(1, nMin, nMax);
+        fit_functions[iF]->SetParLimits(2, CMin, CMax);
+        fit_functions[iF]->SetParLimits(3, normMin, normMax);
       }
       function_dir[iF]->cd();
 		  TH1* h = YieldMean(m,sm,fit_functions[iF],0,10.1);
@@ -158,12 +155,12 @@ void BWFits() {
         cout << " +/- " << fit_functions[iF]->GetParError(iP) << endl;
       }
       cout << "*****************************" << endl << endl;
-      fit_functions[iF]->Write(Form("%s%i",kFitFunctionNames[iF].data(),iC));
-      h->Write(Form("result%i",iC));
+      fit_functions[iF]->Write(Form("%s%i",kFitFunctionNames[iF].data(),i));
+      h->Write(Form("result%i",i));
     }
     datadir->cd();
-    m->Write(Form("stat%i",iC));
-    sm->Write(Form("syst%i",iC));
+    m->Write(Form("stat%i",i));
+    sm->Write(Form("syst%i",i));
   }
 
   bwfile.Close();

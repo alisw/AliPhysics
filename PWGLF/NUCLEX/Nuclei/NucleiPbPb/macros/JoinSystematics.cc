@@ -20,7 +20,7 @@ void JoinSystematics(){
 
   const char* syst_names[6] = {"cutsyst","countsyst","shiftsyst","abssyst","matsyst","totsyst"};
 
-  const char* syst_labels[6] = {"PID and cuts", "Range broadening", "Hadronic interaction", "Material budget", "Range shifting","Total" };
+  const char* syst_labels[6] = {"PID and cuts", "Range broadening", "Range shifting", "Hadronic interaction", "Material budget", "Total" };
 
   const int syst_colors[6] = {plotting::kHighContrastColors[0],plotting::kHighContrastColors[1],plotting::kHighContrastColors[5],plotting::kHighContrastColors[3],plotting::kHighContrastColors[2],plotting::kHighContrastColors[4]};
 
