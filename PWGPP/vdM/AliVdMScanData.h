@@ -36,7 +36,7 @@ public:
                                       const std::vector<std::string>& triggerNames);
 
   map_type& GetMap(std::size_t iScan) {
-    if (iScan >= fData.size())
+    for (; iScan >= fData.size();)
       fData.emplace_back(map_type());
     return fData[iScan];
   }
