@@ -252,7 +252,7 @@ TObject* MakeGSE(TDirectory* d,
     gse->SetPointError(j, eEta, eEta);
     gse->SetStatError(j, g->GetBinError(i),g->GetBinError(i));
     if (acc > 0) gse->SetSysError(acc, j, eEta, eEta, ea/100, ea/100);
-    if (pte > 0) gse->SetSysError(ptr, j, eEta, eEta, ep/100, ep/100);
+    if (pte > 0) gse->SetSysError(pte, j, eEta, eEta, ep/100, ep/100);
     j++;
   }
   return gse;
