@@ -31,6 +31,7 @@ class AliEmcalJet;
 class AliJetContainer;
 class AliParticleContainer;
 
+#include "THistManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 namespace PWGJE {
@@ -83,6 +84,10 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   /// Mimimum shared momentum fraction for matched jet
   double                  GetMinimumSharedMomentumFraction() const    { return fMinSharedMomentumFraction; }
   void                    SetMinimumSharedMomentumFraction(double d)  { fMinSharedMomentumFraction = d; }
+  double                  GetMaximumMatchedJetDistance() const        { return fMaxMatchedJetDistance; }
+  void                    SetMaximumMatchedJetDistance(double d)      { fMaxMatchedJetDistance = d; }
+  bool                    GetRequireMatchedPartLevelJet() const       { return fRequireMatchedPartLevelJet; }
+  void                    SetRequireMatchedPartLevelJet(bool b)       { fRequireMatchedPartLevelJet = b; }
 
   // Mixed events
   virtual void            SetEventMixing(Bool_t enable)              { fDoEventMixing = enable;}
@@ -168,10 +173,10 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Bool_t                 Run();
 
   // Utility functions
-  AliParticleContainer * CreateParticleOrTrackContainer(std::string const & collectionName) const;
+  AliParticleContainer * CreateParticleOrTrackContainer(const std::string & collectionName) const;
 
   // Determine if a jet has been matched
-  bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet);
+  bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName);
   // Apply artificial tracking inefficiency
   bool CheckArtificialTrackEfficiency(unsigned int trackIndex, std::vector<unsigned int> & rejectedTrackIndices, bool useRejectedList);
   // Reduce event mixing memory usage
@@ -221,8 +226,11 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Bool_t                 fDoWiderTrackBin;         ///< True if the track pt bins in the THnSparse should be wider
   Bool_t                 fRequireMatchedJetWhenEmbedding; ///< True if jets are required to be matched (ie. jet->MatchedJet() != nullptr)
   Double_t               fMinSharedMomentumFraction; ///< Minimum shared momentum with matched jet
+  bool                   fRequireMatchedPartLevelJet; ///< True if matched jets are required to be matched to a particle level jet
+  Double_t               fMaxMatchedJetDistance;  ///< Maximum distance between two matched jets
 
   // Histograms
+  THistManager           fHistManager;             ///<  Histogram manager
   TH1                   *fHistTrackPt;             //!<! Track pt spectrum
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
