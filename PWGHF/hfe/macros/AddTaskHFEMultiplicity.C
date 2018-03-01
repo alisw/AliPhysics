@@ -8,6 +8,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
 					TString estimatorFilename="",
 					Double_t refMult=61.2,
 					Int_t NcontV =2,
+					Int_t MaxTPCclus = 100.,
 					Int_t TPCNclus =80.,
   					Int_t ITSNclus =3.,
   					Double_t DCAxyCut =2.4,
@@ -60,6 +61,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     HFEtaskINT7->SetClusterTypeDCAL(ClsTypeDCAL);
     HFEtaskINT7->SetNcontVCut(NcontV);
     HFEtaskINT7->SetEtaRange(Etarange);
+    HFEtaskINT7->SetMaxTPCCluster(MaxTPCclus);
     HFEtaskINT7->SetNTPCCluster(TPCNclus);
     HFEtaskINT7->SetNITSCluster(ITSNclus);
     HFEtaskINT7->SetTrackpTMin(TrackPtMin);
@@ -133,6 +135,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskGA1->SetClusterTypeDCAL(ClsTypeDCAL);
      HFEtaskGA1->SetNcontVCut(NcontV);
      HFEtaskGA1->SetEtaRange(Etarange);
+     HFEtaskGA1->SetMaxTPCCluster(MaxTPCclus);
      HFEtaskGA1->SetNTPCCluster(TPCNclus);
      HFEtaskGA1->SetNITSCluster(ITSNclus);
      HFEtaskGA1->SetTrackpTMin(TrackPtMin);
