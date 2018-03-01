@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <string>
@@ -271,6 +272,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   AliDebugStream(1) << "Inspecting jet radius " << (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius()) << std::endl;
   this->fGlobalTreeParams->fJetRadius = (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius());
+  fGlobalTreeParams->fTriggerClusterIndex = -1;       // Reset trigger cluster index
 
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
@@ -289,6 +291,21 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
         }
       }
+
+      // decode trigger string in order to determine the trigger clusters
+      std::vector<std::string> clusternames;
+      auto triggerinfos = DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      for(auto t : triggerinfos) {
+        if(std::find(clusternames.begin(), clusternames.end(), t.fTriggerCluster) == clusternames.end()) clusternames.emplace_back(t.fTriggerCluster);
+      }
+      bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
+           isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
+           isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
+           isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+      if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 0;
+      else if(isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 1;
+      else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 2;
+      else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
     } else {
       if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
         // Simulation - do EMCAL trigger selection from trigger selection object
@@ -867,6 +884,7 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
 void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRho) {
   LinkBranch(jettree, &fJetRadius, "Radius", "D");
   LinkBranch(jettree, &fEventWeight, "EventWeight", "D");
+  LinkBranch(jettree, &fTriggerClusterIndex, "TriggerClusterIndex", "I");
   if(fillRho) {
     std::string varnames[] = {"RhoPtRec", "RhoPtSim", "RhoMassRec", "RhoMassSim"};
     for(int i = 0; i < 4; i++){
