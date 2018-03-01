@@ -137,9 +137,10 @@ struct AliJetStructureParameters {
 };
 
 struct AliJetTreeGlobalParameters {
-  Double_t fJetRadius;
-  Double_t fEventWeight;
-  Double_t fRhoParamters[4];
+  Double_t fJetRadius;                        ///< jet radius
+  Double_t fEventWeight;                      ///< event weight (downscale factor)
+  Int_t    fTriggerClusterIndex;              ///< Index of the trigger cluster (0 - CENT, 1 - CENTNOTRD)
+  Double_t fRhoParamters[4];                  ///< Rho parameters
 
   void LinkJetTreeBranches(TTree *jettree, bool fillRho);
 };
@@ -235,7 +236,7 @@ protected:
 	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
   void FillLuminosity();
-
+  
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
   std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
