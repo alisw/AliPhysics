@@ -523,6 +523,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
 
 void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
 {
+
  this->InitializeRunArray(sDataSet);
 
  fAnalysisUtil = new AliAnalysisUtils();
@@ -593,7 +594,7 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
  PostData(2,fListCalibs); 
  PostData(3,fListNUAHist);
 
- //printf("\n ... ::UserCreateOutPutObject Called.......  \n");
+ printf("\n ======================== Info::UserCreateOutPutObject Called ========================  \n");
  
 }
 
@@ -633,6 +634,7 @@ AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 
 void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 {
+//printf("\n ======================== Debug::UserExec Called ========================  \n");
 
  Float_t stepCount = 0.5;
  fHist_Event_count->Fill(stepCount); //1
@@ -858,7 +860,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    Int_t icentV0Qn = centrCL1;
    icentV0Qn += 1;
 
-   if(sDataSet=="2015pPb" || sDataSet=="pPb"){
+   if(sDataSet=="2015pPb" || sDataSet=="pPb" || sDataSet=="2015LI") {
      if(psiN==3.0){
        QxanCor = Qxan3;  //3rd
        QxcnCor = Qxcn3;
@@ -871,6 +873,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
          QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,4);  //y = Sin
          QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,4);  //y = Sin
        }
+       //printf("\n .... I am using my own V0 gain correction for Psi3...\n");
      }
      else{
        QxanCor = Qxan2;  //2nd or higher
@@ -881,12 +884,11 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
          QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,1);  //x = Cos
          QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,1);  //x = Cos
          QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,2);  //y = Sin
-         QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,2);  //y = Sin
+         QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,2);  //y = Sin  
        }
+       //printf("\n .... I am using my own V0 gain correction for Psi2...\n");
      }
    }
-
-
 
  //} else (other than 2015o_pass1 HI data)
 

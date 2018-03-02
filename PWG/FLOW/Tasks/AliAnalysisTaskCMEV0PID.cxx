@@ -90,12 +90,17 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fHistTOFBetavsPAfter(NULL),
   fHistTOFMassvsPtBefore(NULL),
   fHistTOFMatchCount(NULL),
-  fHistGlobalVsCentBefore(NULL),
-  fHistTPConlyVsCentBefore(NULL),
-  fHistTPConlyVsCentAfter(NULL),
-  fHistRawVsCorrMult(NULL),
+  fHistTPCVsESDTrkBefore(NULL),
+  fHistTPCVsESDTrkAfter(NULL),
+  fHistTPConlyVsCL1Before(NULL),
+  fHistTPConlyVsV0MBefore(NULL),
+  fHistTPConlyVsCL1After(NULL),
+  fHistTPConlyVsV0MAfter(NULL),
+  fHistGlobalVsV0MBefore(NULL),
+  fHistGlobalVsV0MAfter(NULL),
   fHistRawVsCorrMultFB(NULL),
   hCentvsTPCmultCuts(NULL),
+  fSkipOutlierCut(0),
   fFilterBit(1),
   fNSigmaCut(2),
   fMinPtCut(0.2),
@@ -107,7 +112,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bApplyMCcorr(kFALSE),
-  sPathOfMCFile(""),
+  sPathOfMCFile("/alien"),
+  sNucleiTP("PbPb"),
   fHistEventCount(NULL)
 {
   for(int i=0;i<3;i++){
@@ -156,12 +162,17 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():AliAnalysisTaskSE(),
   fHistTOFBetavsPAfter(NULL),
   fHistTOFMassvsPtBefore(NULL),
   fHistTOFMatchCount(NULL),
-  fHistGlobalVsCentBefore(NULL),
-  fHistTPConlyVsCentBefore(NULL),
-  fHistTPConlyVsCentAfter(NULL),
-  fHistRawVsCorrMult(NULL),
+  fHistTPCVsESDTrkBefore(NULL),
+  fHistTPCVsESDTrkAfter(NULL),
+  fHistTPConlyVsCL1Before(NULL),
+  fHistTPConlyVsV0MBefore(NULL),
+  fHistTPConlyVsCL1After(NULL),
+  fHistTPConlyVsV0MAfter(NULL),
+  fHistGlobalVsV0MBefore(NULL),
+  fHistGlobalVsV0MAfter(NULL),
   fHistRawVsCorrMultFB(NULL),
   hCentvsTPCmultCuts(NULL),
+  fSkipOutlierCut(0),
   fFilterBit(1),
   fNSigmaCut(2),
   fMinPtCut(0.2),
@@ -173,7 +184,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():AliAnalysisTaskSE(),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bApplyMCcorr(kFALSE),
-  sPathOfMCFile(""),
+  sPathOfMCFile("/alien"),
+  sNucleiTP("PbPb"),
   fHistEventCount(NULL)
 {
   for(int i=0;i<3;i++){
@@ -259,42 +271,82 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   fHistTOFMatchCount = new TH2F("fHistTOFMatchCount","TofMatchFlag vs mismatch Prob",10,0,10,200,-5,5);
   fListHist->Add(fHistTOFMatchCount);
 
-  fHistEtaPtBefore = new TH2F("fHistEtaPtBefore","Eta vs pT",50,-1.25,1.25,50,0,10);
+  fHistEtaPtBefore = new TH2F("fHistEtaPtBefore","Eta vs pT",100,-1.25,1.25,100,0,10);
   fListHist->Add(fHistEtaPtBefore);
 
-  fHistEtaPtAfter  = new TH2F("fHistEtaPtAfter","Eta vs pT",50,-1.25,1.25,50,0,10);
+  fHistEtaPtAfter  = new TH2F("fHistEtaPtAfter","Eta vs pT",100,-1.25,1.25,100,0,10);
   fListHist->Add(fHistEtaPtAfter);
 
-  fHistTPCvsGlobalMultBefore = new TH2F("fHistTPCvsGlobalMultBefore","Before; Global; TPC ",200,0,4000,200,0,4000);
-  fListHist->Add(fHistTPCvsGlobalMultBefore);
 
-  fHistTPCvsGlobalMultAfter = new TH2F("fHistTPCvsGlobalMultAfter","After; Global; TPC ",200,0,4000,200,0,4000);
+  Int_t gMaxTPCFB1mult  = 0;
+  Int_t gMaxGlobalmult  = 0;
+  Int_t gMaxTPCcorrmult = 0;
+  Int_t gMaxESDtracks   = 0;
+
+  if(sNucleiTP=="pp"||sNucleiTP=="PP"){  
+    gMaxGlobalmult  = 200;
+    gMaxTPCFB1mult  = 200;
+    gMaxTPCcorrmult = 500;
+    gMaxESDtracks   = 1000;
+    fSkipOutlierCut = 1;
+  }
+  else if(sNucleiTP=="pPb"||sNucleiTP=="Pbp"||sNucleiTP=="PbP"||sNucleiTP=="PPb"){  
+    gMaxGlobalmult  = 400;
+    gMaxTPCFB1mult  = 400;
+    gMaxTPCcorrmult = 500;
+    gMaxESDtracks   = 2000;
+    fSkipOutlierCut = 1;
+  }
+  else{
+    gMaxGlobalmult  = 4000;
+    gMaxTPCFB1mult  = 4000;
+    gMaxTPCcorrmult = 5000;
+    gMaxESDtracks   = 20000;
+    fSkipOutlierCut =  0;
+  }
+
+
+
+  fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
+  fListHist->Add(fHistTPCVsESDTrkBefore);
+  fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
+  fListHist->Add(fHistTPCVsESDTrkAfter);
+
+  fHistTPCvsGlobalMultBefore = new TH2F("fHistTPCvsGlobalMultBefore","Before; Global; TPC(fb1) ",200,0,gMaxGlobalmult,200,0,gMaxTPCFB1mult);
+  fListHist->Add(fHistTPCvsGlobalMultBefore);
+  fHistTPCvsGlobalMultAfter  = new TH2F("fHistTPCvsGlobalMultAfter"," After;  Global; TPC(fb1) ",200,0,gMaxGlobalmult,200,0,gMaxTPCFB1mult);
   fListHist->Add(fHistTPCvsGlobalMultAfter);
 
-  fHistGlobalVsCentBefore = new TH2F("fHistGlobalVsCentBefore","Before; Cent; Global ",100,0,100,500,0,5000);
-  fListHist->Add(fHistGlobalVsCentBefore);
+  fHistGlobalVsV0MBefore = new TH2F("fHistGlobalVsV0MBefore","Before;Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
+  fListHist->Add(fHistGlobalVsV0MBefore);
+  fHistGlobalVsV0MAfter  = new TH2F("fHistGlobalVsV0MAfter"," After; Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
+  fListHist->Add(fHistGlobalVsV0MAfter);
 
-  fHistTPConlyVsCentBefore = new TH2F("fHistTPConlyVsCentBefore","Before; Cent(%); TPC(FB1) ",100,0,100,250,0,5000);
-  fListHist->Add(fHistTPConlyVsCentBefore);
-  fHistTPConlyVsCentAfter  = new TH2F("fHistTPConlyVsCentAfter","AfterCut; Cent(%); TPC(FB1) ",100,0,100,250,0,5000);
-  fListHist->Add(fHistTPConlyVsCentAfter);
+  fHistTPConlyVsCL1Before = new TH2F("fHistTPConlyVsCL1Before","Before;Cent(CL1); TPC(FB1)",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsCL1Before);
+  fHistTPConlyVsCL1After  = new TH2F("fHistTPConlyVsCL1After","After; Cent(CL1); TPC(FB1) ",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsCL1After);
 
-  fHistRawVsCorrMult = new TH2F("fHistRawVsCorrMult","FB 1; Mult_{raw}; Mult_{corr}",4500,0,4500,5000,0,5000);
-  fListHist->Add(fHistRawVsCorrMult);
+  fHistTPConlyVsV0MBefore = new TH2F("fHistTPConlyVsV0MBefore","Before;Cent(V0M); TPC(FB1)",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsV0MBefore);
+  fHistTPConlyVsV0MAfter  = new TH2F("fHistTPConlyVsV0MAfter","After; Cent(V0M); TPC(FB1) ",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsV0MAfter);
 
-  fHistRawVsCorrMultFB = new TH2F("fHistRawVsCorrMultFB",Form("FB %d; Mult_{raw}; Mult_{corr}",fFilterBit),4500,0,4500,5000,0,5000);
+  fHistRawVsCorrMultFB = new TH2F("fHistRawVsCorrMultFB",Form("FB%d;Mult_{raw};Mult_{corr}",fFilterBit),gMaxTPCFB1mult,0,gMaxTPCFB1mult,gMaxTPCcorrmult,0,gMaxTPCcorrmult);
   fListHist->Add(fHistRawVsCorrMultFB);
+
 
   fHistTPCdEdxvsPBefore = new TH2F("fHistTPCdEdxvsPBefore","Before; p (GeV/c); dEdx (arb)",200,-5,5,200,0,250);
   fListHist->Add(fHistTPCdEdxvsPBefore);
-
-  fHistTPCdEdxvsPAfter  = new TH2F("fHistTPCdEdxvsPAfter","After; p (GeV/c); dEdx (arb)",200,-5,5, 200,0,250);
+  fHistTPCdEdxvsPAfter  = new TH2F("fHistTPCdEdxvsPAfter"," After;  p (GeV/c); dEdx (arb)",200,-5,5, 200,0,250);
   fListHist->Add(fHistTPCdEdxvsPAfter);
+
 
   fHistTOFBetavsPBefore = new TH2F("fHistTOFBetavsPBefore","Before; p (GeV/c); beta ",200,-5,5,100,0.0,1.2);
   fListHist->Add(fHistTOFBetavsPBefore);
-  fHistTOFBetavsPAfter  = new TH2F("fHistTOFBetavsPAfter","After; p (GeV/c); beta  ",200,-5,5,100,0.0,1.2);
+  fHistTOFBetavsPAfter  = new TH2F("fHistTOFBetavsPAfter"," After;  p (GeV/c); beta ",200,-5,5,100,0.0,1.2);
   fListHist->Add(fHistTOFBetavsPAfter);
+
 
   fHistTOFMassvsPtBefore = new TH2F("fHistTOFMassvsPtBefore","Before; p_{T}(GeV/c); m^{2}(GeV^{2}/c^{4})",200,-5,5,500,-0.5,4.5);
   fListHist->Add(fHistTOFMassvsPtBefore);
@@ -307,15 +359,16 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   char const *gSpecies[3] = {"Pion","Kaon","proton"};
 
   for(int i=0;i<3;i++){
-    fHistPtwithTPCNsigma[i] = new TH1F(Form("fHistPtwithTPCNsigma_%s",gSpecies[i]), Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
+    fHistPtwithTPCNsigma[i]  = new TH1F(Form("fHistPtwithTPCNsigma_%s",gSpecies[i]), Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
     fListHist->Add(fHistPtwithTPCNsigma[i]);
     fHistPtwithTOFmasscut[i] = new TH1F(Form("fHistPtwithTOFmasscut_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
     fListHist->Add(fHistPtwithTOFmasscut[i]);
-    fHistPtwithTOFSignal[i] = new TH1F(Form("fHistPtwithTOFSignal_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
+    fHistPtwithTOFSignal[i]  = new TH1F(Form("fHistPtwithTOFSignal_%s", gSpecies[i]),Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
     fListHist->Add(fHistPtwithTOFSignal[i]);
+
     fHistTOFnSigmavsPtAfter[i] = new TH2F(Form("fHistTOFnSigmavsPtAfter_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c);n#sigma_{TOF}",gSpecies[i]),200,-5,5,400,-10.0,10.0);
     fListHist->Add(fHistTOFnSigmavsPtAfter[i]);
-    fHistTPCnSigmavsPtAfter[i] = new TH2F(Form("fHistTPCnSigmavsPtAfter_%s",gSpecies[i]),Form("%s; p_{T}(GeV/c); n#sigma_{TPC}", gSpecies[i]),200,-5,5,400,-10.0,10.0);
+    fHistTPCnSigmavsPtAfter[i] = new TH2F(Form("fHistTPCnSigmavsPtAfter_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c);n#sigma_{TPC}",gSpecies[i]),200,-5,5,400,-10.0,10.0);
     fListHist->Add(fHistTPCnSigmavsPtAfter[i]);
 
     fHistTPCTOFnSigmavsPtAfter[i] = new TH3F(Form("fHistTPCTOFnSigmavsPtAfter_%s",gSpecies[i]),Form("%s; p_{T}(GeV/c); n#sigma_{TPC}; n#sigma_{TOF}",gSpecies[i]),100,0,5,400,-10,10,400,-10,10);
@@ -468,29 +521,29 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
  //-------------- Track loop for outlier and PileUp cut -------------------
 
-  Bool_t BisPileup=kFALSE;
+  Bool_t bIsPileup=kFALSE;
 
   Int_t isPileup = fAOD->IsPileupFromSPD(3);
 
   if(isPileup != 0) {
     fHistPileUpCount->Fill(0.5);
-    BisPileup=kTRUE;          
+    bIsPileup=kTRUE;          
   }
   else if(PileUpMultiVertex(fAOD)) {
     fHistPileUpCount->Fill(1.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
   else if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) {
     fHistPileUpCount->Fill(2.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
   else if(fAOD->IsIncompleteDAQ())  {
     fHistPileUpCount->Fill(3.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
   else if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5
     fHistPileUpCount->Fill(4.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
 
   // check vertex consistency
@@ -499,7 +552,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
   if(vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1) {
     fHistPileUpCount->Fill(5.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
 
   double covTrc[6], covSPD[6];
@@ -515,12 +568,12 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
   if(TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
     fHistPileUpCount->Fill(6.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
 
   //---------------- a dobrin --------------
 
-  Bool_t  pass=kTRUE;
+  Bool_t  bIsOutLier=kTRUE;
 
   Float_t multTPC     = 0;    // tpc mult estimate
   Float_t RefMultRaw  = 0;    // tpc mult estimate
@@ -577,36 +630,38 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
   if(multESDTPCDiff > fPileUpConstParm) { 
     fHistPileUpCount->Fill(7.5);
-    BisPileup=kTRUE;
+    bIsPileup=kTRUE;
   }
-  else if(BisPileup==kFALSE) {
-    if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
-    if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-    if(BisPileup) fHistPileUpCount->Fill(9.5);
+  else if(bIsPileup==kFALSE) {
+    if(!fMultSelection->GetThisEventIsNotPileup()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupMV()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) bIsPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasGoodVertex2016()) bIsPileup=kTRUE;
+    if(bIsPileup) fHistPileUpCount->Fill(9.5);
   }  
   //-----------------------------------------------------------------
 
 
 
-
+  fHistTPCVsESDTrkBefore->Fill(multTPCAll,multEsd);   //A. Dobrin
 
   fHistTPCvsGlobalMultBefore->Fill(multGlobal,multTPC);
      
 
         
-//if(multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal)) { pass = kFALSE;} //Run-1 or 2011
-  if(multTPC < (-20.0+1.15*multGlobal) || multTPC > (200.+1.40*multGlobal)) { pass = kFALSE;}
+//if(multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal)) { bIsOutLier = kFALSE;} //Run-1 or 2011
+  if(multTPC < (-20.0+1.15*multGlobal) || multTPC > (200.+1.40*multGlobal)) { bIsOutLier = kFALSE;}
        
   fHistEventCount->Fill(stepCount); //6
   stepCount++;
 
-  fHistGlobalVsCentBefore->Fill(centrCL1, multGlobal);
-  fHistTPConlyVsCentBefore->Fill(centrCL1, multTPCAll);
+
+  fHistTPConlyVsCL1Before->Fill(centrCL1,multTPCAll);
+  fHistTPConlyVsV0MBefore->Fill(centrV0M,multTPCAll);
+  fHistGlobalVsV0MBefore->Fill(centrV0M, multGlobal);
 
 
 
@@ -614,13 +669,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-  if(!pass) return; //outlier TPC vs Global
+  if(!fSkipOutlierCut && bIsOutLier) return; //outlier TPC vs Global
+
+  fHistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
 
   fHistEventCount->Fill(stepCount); //7
   stepCount++;
 
 
-  if(BisPileup) return;  //PileUp A. Dobrin
+  if(!fSkipOutlierCut && bIsPileup) return;         //PileUp A. Dobrin
+
+  fHistTPCVsESDTrkAfter->Fill(multTPCAll,multEsd);  
 
   fHistEventCount->Fill(stepCount); //8
   stepCount++;
@@ -644,18 +703,21 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   TPCmultHighLimit +=  5.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean + 5sigma
   //std::cout<<" Cent = "<<centrality<<"\t icent = "<<icentBin<<" low = "<<TPCmultLowLimit<<"\t high = "<<TPCmultHighLimit<<std::endl;
 
-  if(multTPC<TPCmultLowLimit || multTPC>TPCmultHighLimit) return;
+  if(!fSkipOutlierCut){
+    if(multTPC<TPCmultLowLimit || multTPC>TPCmultHighLimit) return;
+  }
 
   fHistEventCount->Fill(stepCount); //9
   stepCount++;
 
 
-  fHistTPConlyVsCentAfter->Fill(centrCL1, multTPCAll);
-  fHistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
+
+  fHistTPConlyVsCL1After->Fill(centrCL1,multTPCAll);
+  fHistTPConlyVsV0MAfter->Fill(centrV0M,multTPCAll);
+  fHistGlobalVsV0MAfter->Fill(centrV0M, multGlobal);
 
 
   // MC corrected Refmult:
-  fHistRawVsCorrMult->Fill(RefMultRaw,RefMultCorr);       // FB-1
   fHistRawVsCorrMultFB->Fill(RefMultRawFB,RefMultCorrFB); // FB set by AddTask.. 
 
   //--------------------------------------------------------
