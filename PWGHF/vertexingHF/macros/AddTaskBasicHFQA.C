@@ -31,7 +31,7 @@ AliAnalysisTaskSEHFQA* AddTaskBasicHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,
     suffix="Lc";
     break;
   case 6:
-    analysiscuts = new AliRDHFCutsLctoV0bachelor();
+    analysiscuts = new AliRDHFCutsLctoV0();
      suffix="LcToV0x";
     break;
   }
