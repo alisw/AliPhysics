@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskFBFqa(const Char_t *name, Bool_t debug=kFALSE)
+AliGlobalFBFqa* AddTaskFBFqa(const Char_t *name, Bool_t debug=kFALSE)
 {
   // Creates a QA task to explore main observables related to FLOW and BALANCE FUNCTION analysis
   
