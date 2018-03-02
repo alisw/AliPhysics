@@ -18,7 +18,9 @@
 #include "AliESDtrackCuts.h"
 
 #include <AliESDtrack.h>
+#include <AliAODTrack.h>
 #include <AliESDVertex.h>
+#include <AliAODVertex.h>
 #include <AliESDEvent.h>
 #include <AliMultiplicity.h>
 #include <AliLog.h>
@@ -1612,6 +1614,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     }
   }
 
+
   //########################################################################
   // filling histograms
   if (fHistogramsOn) {
@@ -1735,6 +1738,42 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   if(const AliESDtrack *esdTrack = dynamic_cast<const AliESDtrack*>(vTrack)){
     return AcceptTrack(esdTrack);
   }
+
+  //Check if the track is an AliAODtrack.
+  // If so, convert it to ESD track and pass it to AcceptTrack()
+  // to use the full set of cuts
+  if(vTrack->IsA() == AliAODTrack::Class()){
+    const AliAODTrack *aodTrack = dynamic_cast<const AliAODTrack*>(vTrack);
+    // apply cut on kink daughters
+    // (kink information not preserved in the conversion from AOD to ESD)
+    if(!fCutAcceptKinkDaughters){
+      AliAODVertex* av=aodTrack->GetProdVertex();
+      if(av && av->GetType()==AliAODVertex::kKink) return kFALSE;
+    }
+    // golden chi2 cut applied on the value stored in the AOD track
+    if(fCutMaxChi2TPCConstrainedVsGlobal<1e9){
+      Double_t goldenchi2=aodTrack->GetChi2TPCConstrainedVsGlobal();
+      if(goldenchi2>fCutMaxChi2TPCConstrainedVsGlobal) return kFALSE;
+    }
+
+    AliESDtrack esdTrack(aodTrack);
+    // settings needed for the geometrical cut
+    esdTrack.SetESDEvent((AliESDEvent*)aodTrack->GetEvent());
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(aodTrack);
+    esdTrack.ResetTrackParamIp(&etp);
+    // disable gloden chi2 cut
+    Float_t cachedCut=fCutMaxChi2TPCConstrainedVsGlobal;
+    fCutMaxChi2TPCConstrainedVsGlobal=1e10;
+
+    Bool_t accept=AcceptTrack(&esdTrack);
+
+    // re-enable gloden chi2 cut
+    fCutMaxChi2TPCConstrainedVsGlobal=cachedCut;
+    return accept;
+  }
+
+
 
   //The track is not an AliESDtrack.  Perform a more limited
   //set of cuts
