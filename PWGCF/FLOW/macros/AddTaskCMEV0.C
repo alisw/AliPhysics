@@ -218,7 +218,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
   taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
   taskQC_prot->SetPileUpCutParam(fPileUpSlope,fPileUpConst);
-
+  taskQC_prot->SetTrackFilterBit(gFilterBit);
 
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
