@@ -15,6 +15,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TH2F.h"
 #include "TProfile2D.h"
 #include "TProfile.h"
 #include "TString.h"
@@ -68,7 +69,8 @@ public:
   void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
   void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
   void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
-  void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
+  void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm   = m;  this->fPileUpConstParm = c;}
+  void    SetTrackFilterBit(Int_t gf)                 {this->gFilterBit         = gf;}
 
 
 private:
@@ -136,6 +138,9 @@ private:
   Int_t                 fHarmonicPsi;         //   Harmonic psi
   Float_t           fPileUpSlopeParm;         //
   Float_t           fPileUpConstParm;         //
+  Int_t                   gFilterBit;         //
+  Float_t               fRefMultCorr;         //!
+  Float_t                fRefMultRaw;         //!
 
 
   TH1F            *fHist_Event_count;         //!  event count with different cuts
@@ -248,6 +253,8 @@ private:
 
   TProfile2D     *fCentV0MvsVzRun; //!
   TProfile2D      *fCent3pvsVzRun; //!
+
+  TH2F         *fRefMultCorrvsRaw; //!
   TH2F           *fTPCvsGlobalTrk; //!
   TH2F         *fTPCuncutvsGlobal; //!
   TH1F             *fGlobalTracks; //!
@@ -298,6 +305,14 @@ private:
   TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
+
+  //CME(EP) vs Refmult:
+  TProfile     *fHist_Corr3p_EP_Refm_PN[2][3];  //! 
+  TProfile     *fHist_Corr3p_EP_Refm_PP[2][3];  //!
+  TProfile     *fHist_Corr3p_EP_Refm_NN[2][3];  //!
+  TProfile     *fHist_Reso2n_EP_Refm_Det[2][3]; //! 
+
+
 
   TProfile2D      *fHist_Corr3p_vsRun_EP_PN[2];  // 0=V0A,1=V0C
   TProfile2D      *fHist_Corr3p_vsRun_EP_PP[2];  //
@@ -380,10 +395,16 @@ private:
   TProfile2D   *fHist_NonIso_SP_NN_Mag1[2];  //!
 
 
-  //2particle correlation:
+  //2particle correlation vs Cent:
   TProfile2D  *fHist_Corr2p_EP_Norm_PN[2];  //!  Two magnetic fields
   TProfile2D  *fHist_Corr2p_EP_Norm_PP[2];  //! 
   TProfile2D  *fHist_Corr2p_EP_Norm_NN[2];  //! 
+
+  //2particle correlation vs Refm:
+  TProfile2D  *fHist_Corr2p_EP_Refm_PN[2];  //!  Two magnetic fields
+  TProfile2D  *fHist_Corr2p_EP_Refm_PP[2];  //! 
+  TProfile2D  *fHist_Corr2p_EP_Refm_NN[2];  //! 
+
 
 
 
