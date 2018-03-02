@@ -390,6 +390,11 @@ else()
       MONITOR MUON PHOS PMD STARLIGHT STAT STRUCT T0 TEvtGen TOF TPC TRD TRIGGER
       TTherminator VZERO ZDC ALIGN data GRP OCDB QAref)
 
+  # Unneeded modules to disable on DARPM/SHUTTLE builds
+  set(ALIROOT_MODULES_NOONLINE
+      MONITOR EVGEN DIME DRGEN PYTHIA6 PYTHIA8 STARLIGHT TAmpt TDPMjet TEPEMGEN
+      THbtp THerwig THijing THydjet TPHIC TTherminator TUHKMgen)
+
   # AliRoot modules requiring OpenGL
   set(ALIROOT_MODULES_OPENGL
       EVE)
@@ -418,6 +423,13 @@ else()
   else()
     string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
     message(WARNING "The following modules require Fortran and will not be built: ${ALIROOT_MODULES_FORTRAN_FLAT}")
+  endif()
+
+  # We disable some unneeded modules if this is a SHUTTLE or DARPM build
+  if(SHUTTLE OR DARPM)
+    string(REPLACE ";" " " ALIROOT_MODULES_NOONLINE_FLAT "${ALIROOT_MODULES_NOONLINE}")
+    message(WARNING "Online build detected: disabling unneeded modules: ${ALIROOT_MODULES_NOONLINE_FLAT}")
+    list(APPEND EXCLUDE_MODULES "${ALIROOT_MODULES_NOONLINE}")
   endif()
 
   # Selectively exclude modules (with -DEXCLUDE_MODULES="mod1;mod2"...)
