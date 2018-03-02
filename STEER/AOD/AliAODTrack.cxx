@@ -549,6 +549,62 @@ void AliAODTrack::SetDCA(Double_t d, Double_t z)
 }
 
 //______________________________________________________________________________
+void  AliAODTrack::GetImpactParameters(Float_t &xy,Float_t &z) const
+{
+  // get track impact parameters
+  Float_t p[2], cov[3];
+  GetImpactParameters(p,cov);
+  xy=p[0];
+  z=p[1];
+  return;
+}
+//______________________________________________________________________________
+void  AliAODTrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const
+{
+  // computes track impact parameters and convariance matrix
+
+  p[0]=DCA();
+  p[1]=ZAtDCA();
+  cov[0]=99999.;
+  cov[1]=99999.;
+  cov[2]=99999.;
+  if(IsMuonTrack()) return;
+  if (TestBit(AliAODTrack::kIsDCA)) {
+    // Global constrained track OR TPC only track
+    p[0] = fPosition[0];
+    p[1] = fPosition[1];
+  } else {
+    // global track
+    if(!fAODEvent){
+      AliError("Pointer to AOD event is NULL: call aod->ConnectTracks or track->SetAODEvent");
+      return;
+    }
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(this);
+    Double_t alpha = etp.GetAlpha();
+    Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+    AliVVertex* vtx = (AliVVertex*)fAODEvent->GetPrimaryVertex();
+    Double_t xv= vtx->GetX()*cs + vtx->GetY()*sn;
+    Double_t yv=-vtx->GetX()*sn + vtx->GetY()*cs, zv=vtx->GetZ();
+    if ( TMath::Abs(xv - etp.GetX())<1e-5 ) {
+      // make sure that the track is indeed defined at the X of the vertex, rotated to track's alpha frame
+      p[0] = etp.GetY() - yv;
+      p[1] = etp.GetZ() - zv;
+      Double_t vtxcov[6];
+      vtx->GetCovarianceMatrix(vtxcov);
+      Double_t s2ylocvtx = vtxcov[0]*sn*sn + vtxcov[2]*cs*cs - 2.*vtxcov[1]*cs*sn;
+      cov[0] = etp.GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
+      cov[1] = etp.GetCovariance()[1];               // between (x,y) and z
+      cov[2] = etp.GetCovariance()[2] + vtxcov[5];      // in vertex's covariance matrix
+    } else {
+      AliWarning("Track is not defined at the X of vertex");
+      p[0] = -999;
+      p[1] = -999;
+    }
+  }
+  return;
+}
+//______________________________________________________________________________
 void AliAODTrack::Print(Option_t* /* option */) const
 {
   // prints information about AliAODTrack

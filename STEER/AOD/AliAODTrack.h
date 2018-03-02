@@ -261,6 +261,9 @@ class AliAODTrack : public AliVTrack {
   Double_t PAtDCA() const { return TMath::Sqrt(PxAtDCA()*PxAtDCA() + PyAtDCA()*PyAtDCA() + PzAtDCA()*PzAtDCA()); }
   Bool_t   PxPyPzAtDCA(Double_t p[3]) const { p[0] = PxAtDCA(); p[1] = PyAtDCA(); p[2] = PzAtDCA(); return kTRUE; }
   
+  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const;
+  void GetImpactParameters(Float_t p[2], Float_t cov[3]) const;
+
   Double_t GetRAtAbsorberEnd() const { return fRAtAbsorberEnd; }
   
   Double_t GetITSchi2()       const       {return fITSchi2;}
