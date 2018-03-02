@@ -51,15 +51,16 @@ void AliFemtoDreamPartCollection::SetEvent(
         Form("No Multiplicity bin (%i) for this multiplicity (%i) "
             " or Vtx Bin (%i) for this zVtx (%4.2f) \n",bins[1],Mult,bins[0],ZVtx);
     std::cout << "Mult ("<<Mult<<") Bin ("<<bins[1]<<") and ZVtx ("<<ZVtx<<") Bin ("<<bins[0]<<")\n";
-    AliFatal(fatalOut.Data());
+    AliWarning(fatalOut.Data());
+  } else {
+    auto itZVtx=fZVtxMultBuffer.begin();
+    itZVtx+=bins[0];
+    auto itMult=itZVtx->begin();
+    itMult+=bins[1];
+    itMult->PairParticlesSE(Particles,fResults,bins[1]);
+    itMult->PairParticlesME(Particles,fResults,bins[1]);
+    itMult->SetEvent(Particles);
   }
-  auto itZVtx=fZVtxMultBuffer.begin();
-  itZVtx+=bins[0];
-  auto itMult=itZVtx->begin();
-  itMult+=bins[1];
-  itMult->PairParticlesSE(Particles,fResults,bins[1]);
-  itMult->PairParticlesME(Particles,fResults,bins[1]);
-  itMult->SetEvent(Particles);
   return;
 }
 

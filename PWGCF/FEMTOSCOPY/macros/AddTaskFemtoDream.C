@@ -6,7 +6,7 @@
 #include "TROOT.h"
 
 AliAnalysisTask* AddTaskFemtoDream(
-    bool isMC=false, TString CentEst="kInt7",
+    bool isMC=false, TString CentEst="kInt7",bool notpp=true,
     bool DCAPlots=false,bool CPAPlots=false,
     bool CombSigma=false,bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
@@ -115,14 +115,21 @@ AliAnalysisTask* AddTaskFemtoDream(
 
 	std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
 	std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
-	std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,80};
+//	std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,80};
 	std::vector<int> NBins= {750,750,150,150,150,150,750,150,150,150,150,150,150,150,150,150,150,150,150,150,150};
 	std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 	std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
 	AliFemtoDreamCollConfig *config=new AliFemtoDreamCollConfig("Femto","Femto");
+	if (notpp) {
+	  std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,80};
+	  config->SetMultBins(MultBins);
+	} else {
+	  std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,60,80};
+	  config->SetMultBins(MultBins);
+	}
 	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins);
-	config->SetMultBins(MultBins);
+//	config->SetMultBins(MultBins);
 	config->SetPDGCodes(PDGParticles);
 	config->SetNBinsHist(NBins);
 	config->SetMinKRel(kMin);

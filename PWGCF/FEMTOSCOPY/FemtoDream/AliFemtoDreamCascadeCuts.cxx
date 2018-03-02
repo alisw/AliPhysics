@@ -218,7 +218,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
   }
   if (pass&&fRejOmega) {
-    if ((casc->GetOmegaMass()>(fRejOmegaMass-fRejOmegaWidth))||
+    if ((casc->GetOmegaMass()>(fRejOmegaMass-fRejOmegaWidth))&&
         (casc->GetOmegaMass()<(fRejOmegaMass+fRejOmegaWidth))) {
       pass=false;
     } else {
