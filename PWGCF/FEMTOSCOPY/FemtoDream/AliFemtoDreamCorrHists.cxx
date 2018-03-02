@@ -15,9 +15,12 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fPairs(0)
 ,fPairQA(0)
 ,fSameEventDist(0)
+,fSameEventMultDist(0)
 ,fPairCounterSE(0)
 ,fMixedEventDist(0)
+,fMixedEventMultDist(0)
 ,fPairCounterME(0)
+,fDoMultBinning(false)
 {
 }
 
@@ -31,6 +34,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
   fQA->SetName("PairQA");
   fQA->SetOwner();
 
+  fDoMultBinning=conf->GetDoMultBinning();
+  int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
   const int nHists=conf->GetNParticleCombinations();
   std::vector<int> NBinsHist=conf->GetNBinsHist();
@@ -61,7 +66,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
   fPairCounterSE=new TH2F*[nHists];
   fMixedEventDist=new TH1F*[nHists];
   fPairCounterME=new TH2F*[nHists];
-
+  if (fDoMultBinning) {
+    fSameEventMultDist=new TH2F*[nHists];
+    fMixedEventMultDist=new TH2F*[nHists];
+  } else {
+    fSameEventMultDist=0;
+    fMixedEventMultDist=0;
+  }
   int Counter=0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
     for (int iPar2 = iPar1; iPar2 < nParticles; ++iPar2) {
@@ -109,6 +120,26 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
       fPairCounterME[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
       fPairQA[Counter]->Add(fPairCounterME[Counter]);
 
+      if (fDoMultBinning) {
+        TString SameMultEventName=
+            Form("SEMultDist_Particle%d_Particle%d",iPar1,iPar2);
+        fSameEventMultDist[Counter]=new TH2F(SameMultEventName.Data(),
+                                         SameMultEventName.Data(),
+                                         *itNBins,*itKMin,*itKMax,
+                                         multbins,1,multbins);
+        fSameEventMultDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fSameEventMultDist[Counter]);
+
+        TString MixedMultEventName=
+            Form("MEMultDist_Particle%d_Particle%d",iPar1,iPar2);
+        fMixedEventMultDist[Counter]=new TH2F(MixedMultEventName.Data(),
+                                          MixedMultEventName.Data(),
+                                          *itNBins,*itKMin,*itKMax,
+                                          multbins,1,multbins);
+        fMixedEventMultDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fMixedEventMultDist[Counter]);
+
+      }
       ++Counter;
       ++itNBins;
       ++itKMin;

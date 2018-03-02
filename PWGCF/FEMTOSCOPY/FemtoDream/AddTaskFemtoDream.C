@@ -20,16 +20,16 @@ AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
 	if (!mgr)
 	{
 		printf("No analysis manager to connect to!\n");
-		return;
+		return nullptr;
 	}
 	// just to see if all went well, check if the input event handler has been
 	// connected
 	if (!mgr->GetInputEventHandler()) {
 		printf("This task requires an input event handler!\n");
-		return;
+		return nullptr;
 	}
 	AliFemtoDreamEventCuts *evtCuts=
-			AliFemtoDreamEventCuts::StandardCutsRun1();
+			AliFemtoDreamEventCuts::StandardCutsRun2();
 
 	//Track Cuts
 	AliFemtoDreamTrackCuts *TrackCuts=
@@ -111,13 +111,14 @@ AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
 	AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
 	AntiCascadeCuts->SetPDGCodeBach(-211);
 
-	std::vector<int> PDGParticles ={2212,2212,3122,3122};
+	std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
 	std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 	std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,80};
-	std::vector<int> NBins={750,750,150,150,750,150,150,150,150,150};
-	std::vector<double> kMin={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-	std::vector<double> kMax={3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
+	std::vector<int> NBins= {750,750,150,150,150,150,750,150,150,150,150,150,150,150,150,150,150,150,150,150,150};
+	std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+	std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
 	AliFemtoDreamCollConfig *config=new AliFemtoDreamCollConfig("Femto","Femto");
+	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins);
 	config->SetMultBins(MultBins);
 	config->SetPDGCodes(PDGParticles);
@@ -292,7 +293,7 @@ AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
 		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
 	}
 	if (!mgr->InitAnalysis()) {
-		return;
+		return nullptr;
 	}
 	return task;
 }

@@ -57,7 +57,7 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 }
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist)
+    AliFemtoDreamCorrHists *ResultsHist,int iMult)
 {
   double RelativeK = 0;
   int _intSpec1 = 0;
@@ -83,6 +83,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                                          itPart2->GetMomentum(),
                                          *itPDGPar2);
           ResultsHist->FillSameEventDist(HistCounter,RelativeK);
+          if (ResultsHist->GetDoMultBinning()) {
+            ResultsHist->FillSameEventMultDist(HistCounter,iMult+1,RelativeK);
+          }
           ++itPart2;
         }
       }
@@ -97,7 +100,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist)
+    AliFemtoDreamCorrHists *ResultsHist,int iMult)
 {
   double RelativeK = 0;
   int _intSpec1 = 0;
@@ -124,6 +127,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             RelativeK=RelativePairMomentum(itPart1->GetMomentum(),*itPDGPar1,
                                            itPart2->GetMomentum(),*itPDGPar2);
             ResultsHist->FillMixedEventDist(HistCounter,RelativeK);
+            if (ResultsHist->GetDoMultBinning()) {
+              ResultsHist->FillMixedEventMultDist(HistCounter,iMult+1,RelativeK);
+            }
           }
         }
       }

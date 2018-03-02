@@ -66,36 +66,38 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
         fHist->FillEvtCounter(5);
       }
     }
-    if (pass&&fCleanEvtMult) {
-      if (pass&&fUseSPDMult) {
-        if (!(evt->GetSPDMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(6);
-        }
+  }
+  //we need to make sure that our evt mult estimator is >0 else we wont
+  //be able to find a bin to put the event in.
+  if (pass&&fCleanEvtMult) {
+    if (pass&&fUseSPDMult) {
+      if (!(evt->GetSPDMult()>0)) {
+        pass=false;
+      } else {
+        fHist->FillEvtCounter(6);
       }
-      if (pass&&fUseV0AMult) {
-        if (!(evt->GetV0AMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(7);
-          //Fill Hist
-        }
+    }
+    if (pass&&fUseV0AMult) {
+      if (!(evt->GetV0AMult()>0)) {
+        pass=false;
+      } else {
+        fHist->FillEvtCounter(7);
+        //Fill Hist
       }
-      if (pass&&fUseV0CMult) {
-        if (!(evt->GetV0CMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(8);
-          //Fill Hist
-        }
+    }
+    if (pass&&fUseV0CMult) {
+      if (!(evt->GetV0CMult()>0)) {
+        pass=false;
+      } else {
+        fHist->FillEvtCounter(8);
+        //Fill Hist
       }
-      if (pass&&fUseRef08Mult) {
-        if (!(evt->GetRefMult08()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(9);
-        }
+    }
+    if (pass&&fUseRef08Mult) {
+      if (!(evt->GetRefMult08()>0)) {
+        pass=false;
+      } else {
+        fHist->FillEvtCounter(9);
       }
     }
   }

@@ -19,8 +19,15 @@ class AliFemtoDreamCorrHists {
   AliFemtoDreamCorrHists();
   AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf);
   virtual ~AliFemtoDreamCorrHists();
+  bool GetDoMultBinning(){return fDoMultBinning;};
   void FillSameEventDist(int i,double RelK){fSameEventDist[i]->Fill(RelK);};
+  void FillSameEventMultDist(int i,int iMult,double RelK){
+    if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
+  }
   void FillMixedEventDist(int i,double RelK){fMixedEventDist[i]->Fill(RelK);};
+  void FillMixedEventMultDist(int i,int iMult,double RelK){
+     if (fMixedEventMultDist[i])fMixedEventMultDist[i]->Fill(RelK,iMult);
+   }
   void FillPartnersSE(int hist,int nPart1,int nPart2){
     fPairCounterSE[hist]->Fill(nPart1,nPart2);
   }
@@ -35,9 +42,12 @@ class AliFemtoDreamCorrHists {
   TList         **fPairs;
   TList         **fPairQA;
   TH1F          **fSameEventDist;
+  TH2F          **fSameEventMultDist;
   TH2F          **fPairCounterSE;
   TH1F          **fMixedEventDist;
+  TH2F          **fMixedEventMultDist;
   TH2F          **fPairCounterME;
+  bool          fDoMultBinning;
 
   ClassDef(AliFemtoDreamCorrHists,1);
 };

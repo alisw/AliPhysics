@@ -22,10 +22,10 @@ class AliFemtoDreamZVtxMultContainer {
   virtual ~AliFemtoDreamZVtxMultContainer();
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist);
+      AliFemtoDreamCorrHists *ResultsHist,int iMult);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist);
+      AliFemtoDreamCorrHists *ResultsHist,int iMult);
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles);
   TString ClassName() {return "zVtxMult Container";};
  private:

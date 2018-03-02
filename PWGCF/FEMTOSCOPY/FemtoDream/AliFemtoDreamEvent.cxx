@@ -48,14 +48,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
 ,fHasMagField(false)
 ,fisSelected(false)
 {
-//  if (mvPileUp) {
-//    //For pPb this is necessary according to DPG Processing status news
-//    //(week 29 April - 5 May 2017)
-//    fUtils->SetUseMVPlpSelection(true);
-//  } else {
-//    //Following the analysis in pp Run1 of O.Arnold
-//    fUtils->SetMinPlpContribSPD(3);
-//  }
+  if (mvPileUp) {
+    //For pPb this is necessary according to DPG Processing status news
+    //(week 29 April - 5 May 2017)
+    fUtils->SetUseMVPlpSelection(true);
+  } else {
+    //Following the analysis in pp Run1 of O.Arnold
+    fUtils->SetMinPlpContribSPD(3);
+  }
   if (EvtCutQA) {
     fEvtCutList=new TList();
     fEvtCutList->SetName("AliEventCuts");
@@ -99,11 +99,11 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fxVtx=vtx->GetX();
   this->fyVtx=vtx->GetY();
   this->fzVtx=vtx->GetZ();
-//  if (fUtils->IsPileUpEvent(evt)) {
-//    this->fisPileUp=true;
-//  } else {
-//    this->fisPileUp=false;
-//  }
+  if (fUtils->IsPileUpEvent(evt)) {
+    this->fisPileUp=true;
+  } else {
+    this->fisPileUp=false;
+  }
   if (fEvtCuts->AcceptEvent(evt)) {
     this->fPassAliEvtSelection=true;
   } else {
