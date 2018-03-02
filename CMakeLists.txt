@@ -426,7 +426,7 @@ else()
   endif()
 
   # We disable some unneeded modules if this is a SHUTTLE or DARPM build
-  if(SHUTTLE OR DARPM)
+  if(SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}")
     string(REPLACE ";" " " ALIROOT_MODULES_NOONLINE_FLAT "${ALIROOT_MODULES_NOONLINE}")
     message(WARNING "Online build detected: disabling unneeded modules: ${ALIROOT_MODULES_NOONLINE_FLAT}")
     list(APPEND EXCLUDE_MODULES "${ALIROOT_MODULES_NOONLINE}")
