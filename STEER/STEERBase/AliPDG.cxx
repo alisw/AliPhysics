@@ -87,7 +87,7 @@ void AliPDG::AddParticlesToPdgDataBase()
   pdgDB->AddParticle("A_0+    ", " ", 0.9960, kFALSE, 0.0,+3, "meson",  9000211);
   pdgDB->AddParticle("A_0-    ", " ", 0.9960, kFALSE, 0.0,-3, "meson", -9000211);
 
-  pdgDB->AddParticle("F0P0    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9010221);
+  //pdgDB->AddParticle("F0P0    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9010221);
 
   pdgDB->AddParticle("KDL_2+  ", " ", 1.773,  kFALSE, 0.0,+3, "meson",   10325);
   pdgDB->AddParticle("KDL_2-  ", " ", 1.773,  kFALSE, 0.0,-3, "meson",  -10325);
