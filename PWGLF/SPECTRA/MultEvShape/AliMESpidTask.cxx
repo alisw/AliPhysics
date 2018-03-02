@@ -60,6 +60,36 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   AliMESbaseTask::UserExec(opt);
 
+
+  // if( !fEvInfo->HasTriggerMB() ) return;
+  // if( !fEvInfo->HasTriggerHM() ) return;
+
+ /*
+
+ // !!!!!!!!!!
+ // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
+ // !!!!!!!!!!
+
+   if( !fEvInfo->HasVertex() ) return;
+   vec_hNoEvts[0] = 0.;
+   hNoEvts->Fill(vec_hNoEvts);
+
+   if( fEvInfo->IsPileUp() ) return;
+   vec_hNoEvts[0] = 1.;
+   hNoEvts->Fill(vec_hNoEvts);
+
+   if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
+   vec_hNoEvts[0] = 2.;
+   hNoEvts->Fill(vec_hNoEvts);
+
+   if(mult_comb08 < 0. || mult_V0M < 0.) return;
+ //   if(mult_comb08 < 0.){
+     return;
+   }
+
+   // !!!!!!!!!!
+ */
+
   // number of events counter
   Double_t vec_hNoEvts[7];   // vector used to fill hNoEvts
   THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
@@ -71,11 +101,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // event shape for data (from ESD)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-  Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+  // Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 
   vec_hNoEvts[0] = 0.;
   // hNoEvts->Fill(vec_hNoEvts);
 
+/*
   // select events with both dirs in the same interval
   const Int_t lenght = 4;
   Double_t intervals[lenght] = {0., 0.3, 0.6, 1.0};
@@ -97,16 +128,19 @@ void AliMESpidTask::UserExec(Option_t *opt)
           directivity =  (directivity_plus + directivity_minus) / 2.0;
       }
   }
+*/
+  Double_t directivity = directivity_plus;
 
 
   // event shape for MC (from MC event)
   Double_t MC_directivity_plus = 0;
-  Double_t MC_directivity_minus = 0;
+  // Double_t MC_directivity_minus = 0;
   Double_t MC_directivity = 0;
   if( HasMCdata() ){ // run only on MC
       MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
-      MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-      MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
+      // MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
+      // MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
+      MC_directivity = MC_directivity_plus;
   }
 
 /*
@@ -148,33 +182,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
   }
 
 
- // !!!!!!!!!!
- // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
- // !!!!!!!!!!
-
- if( !fEvInfo->HasTriggerMB() ) return;
- // if( !fEvInfo->HasTriggerHM() ) return;
-
-/*
-  if( !fEvInfo->HasVertex() ) return;
-  vec_hNoEvts[0] = 0.;
-  hNoEvts->Fill(vec_hNoEvts);
-
-  if( fEvInfo->IsPileUp() ) return;
-  vec_hNoEvts[0] = 1.;
-  hNoEvts->Fill(vec_hNoEvts);
-
-  if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
-  vec_hNoEvts[0] = 2.;
-  hNoEvts->Fill(vec_hNoEvts);
-
-  if(mult_comb08 < 0. || mult_V0M < 0.) return;
-//   if(mult_comb08 < 0.){
-	  return;
-  }
-
-  // !!!!!!!!!!
-*/
   vec_hNoEvts[0] = 3.;
   hNoEvts->Fill(vec_hNoEvts);
 
