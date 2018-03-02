@@ -61,7 +61,7 @@ const Double_t AliITSUv2Layer::fgkMetalLayerThick     =  15*fgkmicron;
 // Inner Barrel Parameters
 const Int_t    AliITSUv2Layer::fgkIBChipsPerRow       =   9;
 const Int_t    AliITSUv2Layer::fgkIBNChipRows         =   1;
-const Double_t AliITSUv2Layer::fgkIBChipZGap          =   0.01 *fgkcm;
+const Double_t AliITSUv2Layer::fgkIBChipZGap          = 150.0  *fgkmicron;
 
 const Double_t AliITSUv2Layer::fgkIBFPCWiderXPlus     = 850.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBFPCWiderXNeg      = 300.0  *fgkmicron;
@@ -71,6 +71,11 @@ const Double_t AliITSUv2Layer::fgkIBFPCAlAnodeWidth1  =  13.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBFPCAlAnodeWidth2  =  14.7  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBFlexCableKapThick =  75.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBFlexCablePolyThick=  20.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFlexCapacitorXWid =   0.2  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBFlexCapacitorYHi  =   0.2  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBFlexCapacitorZLen =   0.4  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBColdPlateWidth    =  15.4  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBColdPlateZLen     = 290.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBGlueThick         =  50.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBCarbonFleeceThick =  20.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBCarbonPaperThick  =  30.0  *fgkmicron;
@@ -84,10 +89,13 @@ const Double_t AliITSUv2Layer::fgkIBTopVertexHeight   =   0.04 *fgkcm;
 const Double_t AliITSUv2Layer::fgkIBTopVertexAngle    =  60.0; // Deg
 const Double_t AliITSUv2Layer::fgkIBSideVertexWidth   =   0.05 *fgkcm;
 const Double_t AliITSUv2Layer::fgkIBSideVertexHeight  =   0.074*fgkcm;
-const Double_t AliITSUv2Layer::fgkIBTopFilamentLength =   0.9  *fgkcm;
-const Double_t AliITSUv2Layer::fgkIBTopFilamentSide   =   0.02 *fgkcm;
-const Double_t AliITSUv2Layer::fgkIBTopFilamentAlpha  =  57.0; // Deg
-const Double_t AliITSUv2Layer::fgkIBTopFilamentGamma  =  65.0; // Deg
+const Double_t AliITSUv2Layer::fgkIBTopFilamentLength =   1.09 *fgkcm;
+const Double_t AliITSUv2Layer::fgkIBTopFilamentSide   =   0.04 *fgkcm;
+const Double_t AliITSUv2Layer::fgkIBTopFilamentAlpha  = 109.8; // Deg
+const Double_t AliITSUv2Layer::fgkIBTopFilamentTheta  =  30.33;// Deg
+const Double_t AliITSUv2Layer::fgkIBTopFilamentInterZ =  15.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBTopFilamentYPos   =   3.1  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBEndSupportZLen    =   2.5  *fgkmm;
 
 const Double_t AliITSUv2Layer::fgkIBConnectorXWidth   =  10.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnectorYTot     =   4.7  *fgkmm;
@@ -99,20 +107,19 @@ const Double_t AliITSUv2Layer::fgkIBConnTailZLen      =   2.5  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTailOpenPhi   = 120.0; // Deg
 const Double_t AliITSUv2Layer::fgkIBConnRoundHoleD    =   2.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnRoundHoleZ    =(7.0-2.0)*fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnSquareHoleX   =   3.0  *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnSquareHoleZ   =   3.3  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnSquareHoleX   =   2.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnSquareHoleZ   =   2.8  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnSquareHoleZPos=   9.0  *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnInsertHoleD   =   3.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnInsertHoleD   =   2.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnInsertHoleZPos=   9.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubeHole1D    =   1.6  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubeHole1ZLen =   3.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnTubeHole1ZLen2=   2.7  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubeHole2D    =   1.2  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubeHole3XPos =   1.0  *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnTubeHole3ZPos =   2.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnTubeHole3ZPos =  14.5  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubesXDist    =   5.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnTubesYPos     =   1.25 *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnInsertInnerX  =   2.0  *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnInsertZThick  =   0.7  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnInsertD       =   2.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnInsertHeight  =   2.3  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnectAFitExtD   =   1.65 *fgkmm;
@@ -121,7 +128,7 @@ const Double_t AliITSUv2Layer::fgkIBConnectAFitZLen   =  12.5  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnectAFitZOut   =  10.0  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnPlugInnerD    =   0.8  *fgkmm;
 const Double_t AliITSUv2Layer::fgkIBConnPlugTotLen    =   1.7  *fgkmm;
-const Double_t AliITSUv2Layer::fgkIBConnPlugThick     =   0.5  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnPlugInnerLen  =   1.0  *fgkmm;
 
 const Double_t AliITSUv2Layer::fgkIBStaveHeight       =   0.5  *fgkcm;
 
@@ -889,7 +896,7 @@ TGeoVolume* AliITSUv2Layer::CreateModuleInnerB(Double_t xmod,
 
   ytot = ymod;
   if (fStaveModel == AliITSUv2::kIBModel4)
-    ytot += (fgkIBGlueThick/2 + ygnd + fgkIBFlexCableKapThick/2 + yano);
+    ytot += (fgkIBGlueThick/2 + ygnd + fgkIBFlexCableKapThick/2 + yano + fgkIBFlexCapacitorYHi/2);
 
   TGeoBBox *module = new TGeoBBox(xtot, ytot, ztot);
 
@@ -933,11 +940,173 @@ TGeoVolume* AliITSUv2Layer::CreateModuleInnerB(Double_t xmod,
 
       ypos += (kapCable->GetDY() + yano);
       modVol->AddNode(aluAnodeCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+      ypos += yano;
     }
   }
 
+  // Add the capacitors
+  CreateIBCapacitors(modVol, zchip, ypos);
+
   // Done, return the module
   return modVol;
+}
+
+//________________________________________________________________________
+void AliITSUv2Layer::CreateIBCapacitors(TGeoVolume* modvol,
+                                        Double_t zchip, Double_t yzero,
+                                        const TGeoManager* mgr){
+//
+// Adds the capacitors to the IB FPC
+//
+// Input:
+//         modvol : the volume containing the IB module
+//         zchip  : the chip Z dimension
+//         yzero  : the basis Y position
+//         mgr    : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//
+// Created:      28 Feb 2018  Mario Sitta (backported from O2)
+//
+
+
+  // Position of the various capacitors (A.Junique private communication
+  // where: X_capacitor = Z_module , Y_capacitor = X_module)
+  // Capacitors (different groups)
+  const Double_t xGroup1A    =     4265.9 *fgkmicron;
+  const Double_t zGroup1A[2] = {  -7142.9 *fgkmicron,    7594.1 *fgkmicron };
+  const Double_t xGroup1B    =      690.9 *fgkmicron;
+  const Double_t zGroup1B    =    -7142.9 *fgkmicron;
+  const Double_t xGroup2     =     6300.0 *fgkmicron;
+  const Double_t zGroup2     =    15075.0 *fgkmicron;
+  const Double_t xGroup3     =     5575.0 *fgkmicron;
+  const Double_t zGroup3     =   131900.0 *fgkmicron;
+  const Double_t xGroup4[2]  = {   5600.0 *fgkmicron,    5575.0 *fgkmicron };
+  const Double_t zGroup4[fgkIBChipsPerRow]
+                             = {    275.0 *fgkmicron,    250.0 *fgkmicron,
+                                    275.0 *fgkmicron,    250.0 *fgkmicron,
+                                    250.0 *fgkmicron,    300.0 *fgkmicron,
+                                    250.0 *fgkmicron,    300.0 *fgkmicron,
+                                    250.0 *fgkmicron };
+  const Int_t nGroup5A = 5, nGroup5B = 4;
+  const Double_t xGroup5A[2] = {   1400.0 *fgkmicron,   1350.0 *fgkmicron };
+  const Double_t zGroup5A[nGroup5A]
+                             = {-112957.5 *fgkmicron, -82854.5 *fgkmicron,
+                                   7595.5 *fgkmicron,  37745.5 *fgkmicron,
+                                 128194.1 *fgkmicron };
+  const Double_t xGroup5B    =     1100.0 *fgkmicron;
+  const Double_t zGroup5B[nGroup5B]
+                             = { -51525.0 *fgkmicron, -21375.0 *fgkmicron,
+                                  69075.0 *fgkmicron,  99225.0 *fgkmicron };
+  // Resistors
+  const Int_t nResist = 2;
+  const Double_t xResist     =    -7975.0 *fgkmicron;
+  const Double_t zResist[nResist]
+                             = { 114403.0 *fgkmicron, 119222.0 *fgkmicron };
+
+  Double_t xpos, ypos, zpos;
+  Double_t mIBModuleZLength;
+  Int_t nCapacitors;
+
+  TGeoVolume *capacitor, *resistor;
+
+  // Check whether we already have the volume, otherwise create it
+  // (so as to avoid creating multiple copies of the very same volume
+  // for each layer)
+  capacitor = mgr->GetVolume("IBFPCCapacitor");
+
+  if (!capacitor) {
+    TGeoBBox* capsh = new TGeoBBox(fgkIBFlexCapacitorXWid/2,
+                                   fgkIBFlexCapacitorYHi /2,
+                                   fgkIBFlexCapacitorZLen/2);
+
+    TGeoMedium* medCeramic = mgr->GetMedium("ITS_CERAMIC$");
+
+    capacitor = new TGeoVolume("IBFPCCapacitor", capsh, medCeramic);
+    capacitor->SetLineColor(kBlack);
+    capacitor->SetFillColor(kBlack);
+
+    TGeoBBox* ressh = new TGeoBBox(fgkIBFlexCapacitorXWid/2,  // Resistors have
+                                   fgkIBFlexCapacitorYHi /2,  // the same dim's
+                                   fgkIBFlexCapacitorZLen/2); // as capacitors
+
+    resistor = new TGeoVolume("IBFPCResistor", ressh, medCeramic);
+    resistor->SetLineColor(kBlack);
+    resistor->SetFillColor(kBlack);
+  } else { // Volumes already defined, get them
+    resistor = mgr->GetVolume("IBFPCResistor");
+  }
+
+  // Place all the capacitors (they are really a lot...)
+  ypos = yzero + fgkIBFlexCapacitorYHi/2;
+
+//  mIBModuleZLength = 2*zchip*fgkIBChipsPerRow + (fgkIBChipsPerRow - 1)*fgkIBChipZGap;
+  mIBModuleZLength = ((TGeoBBox*)modvol->GetShape())->GetDZ();
+
+  xpos = xGroup1A;
+  for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
+    zpos = -mIBModuleZLength + j*(2*zchip + fgkIBChipZGap) + zchip + zGroup1A[0];
+    modvol->AddNode(capacitor, 2*j+1, new TGeoTranslation(xpos, ypos, zpos));
+    zpos = -mIBModuleZLength + j*(2*zchip + fgkIBChipZGap) + zchip + zGroup1A[1];
+    modvol->AddNode(capacitor, 2*j+2, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  nCapacitors = 2*fgkIBChipsPerRow;
+  xpos = xGroup1B;
+  for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
+    zpos = -mIBModuleZLength + j*(2*zchip + fgkIBChipZGap) + zchip + zGroup1B;
+    modvol->AddNode(capacitor, j+1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  nCapacitors += fgkIBChipsPerRow;
+  xpos = xGroup2;
+  // We have only 8 in these group, missing the central one
+  for (Int_t j=0; j<fgkIBChipsPerRow - 1; j++) {
+    zpos = -mIBModuleZLength + j*(2*zchip + fgkIBChipZGap) + zchip + zGroup2;
+    modvol->AddNode(capacitor, j+1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  nCapacitors += (fgkIBChipsPerRow - 1);
+  xpos = xGroup3;
+  zpos = zGroup3;
+  modvol->AddNode(capacitor, 1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+
+  nCapacitors++;
+  for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
+    if (j == (fgkIBChipsPerRow - 1))
+      xpos = xGroup4[1];
+    else
+      xpos = xGroup4[0];
+    zpos = -mIBModuleZLength + j*(2*zchip + fgkIBChipZGap) + zchip + zGroup4[j];
+    modvol->AddNode(capacitor, j+1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  nCapacitors += fgkIBChipsPerRow;
+  for (Int_t j=0; j<nGroup5A; j++) {
+    if (j == 0)
+      xpos = xGroup5A[0];
+    else
+      xpos = xGroup5A[1];
+    zpos = zGroup5A[j];
+    modvol->AddNode(capacitor, j+1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  nCapacitors += nGroup5A;
+  xpos = xGroup5B;
+  for (Int_t j=0; j<nGroup5B; j++) {
+    zpos = zGroup5B[j];
+    modvol->AddNode(capacitor, j+1+nCapacitors, new TGeoTranslation(xpos, ypos, zpos));
+  }
+
+  // Place the resistors
+  xpos = xResist;
+  for (Int_t j=0; j<nResist; j++) {
+    zpos = zResist[j];
+    modvol->AddNode(resistor, j+1, new TGeoTranslation(xpos, ypos, zpos));
+  }
 }
 
 //________________________________________________________________________
@@ -1092,7 +1261,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveStructInnerB(const Double_t xsta,
       mechStavVol = CreateStaveModelInnerB3(xsta,zsta,mgr);
       break;
     case AliITSUv2::kIBModel4:
-      mechStavVol = CreateStaveModelInnerB4(xsta,zsta,mgr);
+      mechStavVol = CreateStaveModelInnerB4(mgr);
       break;
     default:
       AliFatal(Form("Unknown stave model %d",fStaveModel));
@@ -2360,9 +2529,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB3(const Double_t xsta,
 
 // model4
 //________________________________________________________________________
-TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
-						    const Double_t zstave,
-						    const TGeoManager *mgr){
+TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 2.2 of TDR
 // Logic is similar to method CreateStaveModelInnerB22
@@ -2373,8 +2540,6 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 // - comply with latest (nov '14) C.Gargiulo data
 //
 // Input:
-//         xstave : stave X half length
-//         zstave : stave Z half length
 //         mgr    : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -2385,73 +2550,74 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 // Updated:      03 Mar 2015  Mario Sitta  FPC in right position (beyond chip)
 // Updated:      06 Mar 2015  Mario Sitta  Space Frame corrected (C.G. data)
 // Updated:      30 Apr 2015  Mario Sitta  End-stave connectors added
+// Updated:      26 Feb 2018  Mario Sitta  To last drawings (backport from O2)
 //
 
   
   // Local parameters
+  const Double_t xstave = fgkIBColdPlateWidth/2;
+
   Double_t layerHeight = 0.;
 
   Double_t rPipeMin = fgkIBCoolPipeInnerD/2;
   Double_t rPipeMax = rPipeMin + fgkIBCoolPipeThick;
 
-  Double_t topFilTheta = fgkIBTopFilamentAlpha*TMath::DegToRad();
-  Double_t topFilLProj = xstave/TMath::Sin(topFilTheta); // Top filament length projected on stave XZ plane
-  Double_t topFilYLen = xstave/TMath::Tan(topFilTheta); // Filament length on Y
-  Int_t  nFilaments = (Int_t)(zstave/topFilYLen);
-  // Question: would it be better to fix the number of filaments and
-  // compute the angle alpha from it, or leave as it is now, i.e. fix the
-  // filament inclination angle alpha and compute their number ?
-
   const Int_t nv = 6;
   Double_t xv[nv], yv[nv]; // The stave container Xtru
-  Double_t xlen, ylen, zlen;
-  Double_t xpos, ypos, zpos, ylay;
+  Double_t xlen, ylen, zlen, ztot;
+  Double_t xpos, ypos, zpos, ylay, yposPipe;
   Double_t beta, gamma, theta;
 
 
   // First create all needed shapes
-  TGeoBBox *glue     = new TGeoBBox(xstave, fgkIBGlueThick/2, zstave);
+  ztot = fgkIBColdPlateZLen/2;
 
-  TGeoBBox *fleecbot = new TGeoBBox(xstave, fgkIBCarbonFleeceThick/2, zstave);
+  TGeoBBox *glue     = new TGeoBBox(xstave, fgkIBGlueThick/2, ztot);
 
-  TGeoBBox *cfplate  = new TGeoBBox(xstave, fgkIBK13D2UThick/2, zstave);
+  TGeoBBox *fleecbot = new TGeoBBox(xstave, fgkIBCarbonFleeceThick/2, ztot);
 
-  TGeoTube *pipe     = new TGeoTube(rPipeMin, rPipeMax, zstave);
+  TGeoBBox *cfplate  = new TGeoBBox(xstave, fgkIBK13D2UThick/2, ztot);
 
-  TGeoTube *water    = new TGeoTube(0., rPipeMin, zstave);
+  TGeoTube *pipe     = new TGeoTube(rPipeMin, rPipeMax, ztot);
+
+  TGeoTube *water    = new TGeoTube(0., rPipeMin, ztot);
 
   TGeoTubeSeg *cpaptub  = new TGeoTubeSeg(rPipeMax,
 					  rPipeMax + fgkIBCarbonPaperThick,
-					  zstave, 0, 180);
+					  ztot, 0, 180);
 
   TGeoBBox *cpapvert = new TGeoBBox(fgkIBCarbonPaperThick/2,
-				    pipe->GetRmax()/2, zstave);
+				    pipe->GetRmax()/2, ztot);
 
   xlen = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - fgkIBCarbonPaperThick;
-  TGeoBBox *cpapmid  = new TGeoBBox(xlen, fgkIBCarbonPaperThick/2, zstave);
+  TGeoBBox *cpapmid  = new TGeoBBox(xlen, fgkIBCarbonPaperThick/2, ztot);
 
   xlen = xstave -fgkIBCoolPipeXDist/2 -pipe->GetRmax() -fgkIBCarbonPaperThick;
-  TGeoBBox *cpaplr   = new TGeoBBox(xlen/2, fgkIBCarbonPaperThick/2, zstave);
+  TGeoBBox *cpaplr   = new TGeoBBox(xlen/2, fgkIBCarbonPaperThick/2, ztot);
 
   TGeoTubeSeg *fleecpipe = new TGeoTubeSeg(cpaptub->GetRmax(),
 			       cpaptub->GetRmax() + fgkIBCarbonFleeceThick,
-					   zstave, 0, 180); 
+					   ztot, 0, 180);
 
   TGeoBBox *fleecvert = new TGeoBBox(fgkIBCarbonFleeceThick/2,
 			 	     (pipe->GetRmax()-fgkIBCarbonPaperThick)/2,
-				     zstave);
+				     ztot);
 
   xlen = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - fgkIBCarbonPaperThick
        - fgkIBCarbonFleeceThick;
-  TGeoBBox *fleecmid  = new TGeoBBox(xlen, fgkIBCarbonFleeceThick/2, zstave);
+  TGeoBBox *fleecmid  = new TGeoBBox(xlen, fgkIBCarbonFleeceThick/2, ztot);
 
   xlen = xstave - fgkIBCoolPipeXDist/2 - pipe->GetRmax()
        - fgkIBCarbonPaperThick - fgkIBCarbonFleeceThick;
-  TGeoBBox *fleeclr   = new TGeoBBox(xlen/2, fgkIBCarbonFleeceThick/2, zstave);
+  TGeoBBox *fleeclr   = new TGeoBBox(xlen/2, fgkIBCarbonFleeceThick/2, ztot);
+
+  // The total height of the layer can now be computed
+  layerHeight = 2*(    glue->GetDY() + fleecbot->GetDY() + cfplate->GetDY()
+                   + cpaplr->GetDY() +  fleeclr->GetDY() );
 
   // The spaceframe structure
   TGeoTrd1 *topv  = new TGeoTrd1(fgkIBTopVertexWidth1/2,
-				 fgkIBTopVertexWidth2/2, zstave,
+				 fgkIBTopVertexWidth2/2, ztot,
 				 fgkIBTopVertexHeight/2);
 
   xv[0] = 0;
@@ -2463,8 +2629,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 
   TGeoXtru *sidev = new TGeoXtru(2);
   sidev->DefinePolygon(3, xv, yv);
-  sidev->DefineSection(0,-zstave);
-  sidev->DefineSection(1, zstave);
+  sidev->DefineSection(0,-ztot);
+  sidev->DefineSection(1, ztot);
 
   TGeoBBox *topfil = new TGeoBBox(fgkIBTopFilamentLength/2,
 				  fgkIBTopFilamentSide/2,
@@ -2472,15 +2638,12 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 
 
   // The half stave container (an XTru to avoid overlaps between neighbours)
-  layerHeight = 2*(    glue->GetDY() + fleecbot->GetDY() + cfplate->GetDY()
-                   + cpaplr->GetDY() +  fleeclr->GetDY() );
-
-  xv[0] = xstave;
+  xv[0] = xstave + fgkIBTopFilamentSide;
   yv[0] = 0;
   xv[1] = xv[0];
   yv[1] = layerHeight + fgkIBSideVertexHeight + topfil->GetDZ();;
   xv[2] = fgkIBTopVertexWidth2/2;
-  yv[2] = fgkIBStaveHeight;
+  yv[2] = fgkIBStaveHeight + fgkIBTopFilamentSide/SinD(fgkIBTopFilamentTheta);
   for (Int_t i = 0; i<nv/2; i++) {
     xv[3+i] = -xv[2-i];
     yv[3+i] =  yv[2-i];
@@ -2489,8 +2652,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
   TGeoXtru *mechStruct = new TGeoXtru(2);
   mechStruct->DefinePolygon(nv, xv, yv);
   mechStruct->SetName("mechStruct");
-  mechStruct->DefineSection(0,-zstave);
-  mechStruct->DefineSection(1, zstave);
+  mechStruct->DefineSection(0,-ztot);
+  mechStruct->DefineSection(1, ztot);
 
   // The connectors' containers
   zlen = fgkIBConnectBlockZLen - fgkIBConnTailZLen + fgkIBConnectAFitZOut;
@@ -2502,14 +2665,15 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 				     fgkIBConnectorYTot/2, zlen/2);
 
   // The StaveStruct container, a Composite Shape
-  ypos = connAside->GetDY() - fgkIBConnTailYShift + layerHeight;
-  zpos = zstave + connAside->GetDZ();
+  yposPipe = 2*glue->GetDY() + 2*fleecbot->GetDY() + 2*cfplate->GetDY() + pipe->GetRmax();
+  ypos = connAside->GetDY() - fgkIBConnTubesYPos + yposPipe;
+  zpos = ztot + connAside->GetDZ();
   TGeoTranslation *transAside = new TGeoTranslation("transAsideIB",
 						    0, ypos, zpos);
   transAside->RegisterYourself();
 
-  ypos = connCside->GetDY() - fgkIBConnTailYShift + layerHeight;
-  zpos = zstave + connCside->GetDZ();
+  ypos = connCside->GetDY() - fgkIBConnTubesYPos + yposPipe;
+  zpos = ztot + connCside->GetDZ();
   TGeoTranslation *transCside = new TGeoTranslation("transCsideIB",
 						    0, ypos,-zpos);
   transCside->RegisterYourself();
@@ -2696,32 +2860,32 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
     mechStavVol->AddNode(sidevVol, 2, new TGeoCombiTrans(-xpos, ypos, 0,
 					    new TGeoRotation("",90,180,-90)));
 
-    gamma = fgkIBTopFilamentGamma;
-    theta = 90. - fgkIBTopFilamentAlpha;
+    gamma = 180. - fgkIBTopFilamentAlpha;
+    theta = -fgkIBTopFilamentTheta;
     xpos = xstave/2 + topfil->GetDZ();
-    ypos = ( layerHeight + fgkIBStaveHeight )/2 +
-	   fgkIBSideVertexWidth/TMath::Sin(gamma*TMath::DegToRad())/2 ;
-    for(int i=0; i<nFilaments; i++){ // i<28 (?)
+    ypos = fgkIBTopFilamentYPos;
+    Int_t nFilamentGroups = (Int_t)(2*(ztot - fgkIBEndSupportZLen)/fgkIBTopFilamentInterZ);
+    for (int i = 0; i<nFilamentGroups; i++) { // i<19
       // 1) Front Left Top Filament
 //      zpos = -zstave + (i*2*topFilYLen) + topFilLProj/4; // ?????
 //      zpos = -zstave + (i*2*topFilYLen) + topFilLProj/2;
-      zpos = -zstave + (i*2*topFilYLen) + topFilLProj/4 + topfil->GetDY();
+      zpos = -(ztot - fgkIBEndSupportZLen) + i*fgkIBTopFilamentInterZ + fgkIBTopFilamentInterZ/4;
       mechStavVol->AddNode(topfilVol, i*4+1,
-			 new TGeoCombiTrans( xpos, ypos, zpos,
-			      new TGeoRotation("", 90, theta, gamma)));
+                         new TGeoCombiTrans( xpos, ypos, zpos,
+                              new TGeoRotation("", 90+theta, gamma/2, -90)));
       // 2) Front Right Top Filament
       mechStavVol->AddNode(topfilVol, i*4+2,
-			 new TGeoCombiTrans(-xpos, ypos, zpos,
-			      new TGeoRotation("", 90,-theta,-gamma)));
+                         new TGeoCombiTrans(-xpos, ypos, zpos,
+                              new TGeoRotation("", 90-theta,-gamma/2, -90)));
       // 3) Back Left  Top Filament
-      zpos += topFilYLen;
+      zpos += fgkIBTopFilamentInterZ/2;
       mechStavVol->AddNode(topfilVol, i*4+3,
-			 new TGeoCombiTrans( xpos, ypos, zpos,
-			      new TGeoRotation("", 90,-theta, gamma)));
+                         new TGeoCombiTrans( xpos, ypos, zpos,
+                              new TGeoRotation("", 90+theta,-gamma/2, -90)));
       // 4) Back Right Top Filament
       mechStavVol->AddNode(topfilVol, i*4+4,
-			 new TGeoCombiTrans(-xpos, ypos, zpos,
-			      new TGeoRotation("", 90, theta,-gamma)));
+                         new TGeoCombiTrans(-xpos, ypos, zpos,
+                              new TGeoRotation("", 90-theta, gamma/2, -90)));
     }
   }
 
@@ -2739,13 +2903,13 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
   }
   connectorCSide = mgr->GetVolume("IBConnectorCSide");
 
-  ypos = ((TGeoBBox*)connectorASide->GetShape())->GetDY()
-       - fgkIBConnTailYShift + ylay;
-  zpos = zstave +
+  ypos = ((TGeoBBox*)connectorASide->GetShape())->GetDY() - fgkIBConnTubesYPos
+         + yposPipe; // We center the pipe and hole axes
+  zpos = ztot +
         (fgkIBConnectBlockZLen - fgkIBConnTailZLen + fgkIBConnectAFitZOut)/2;
   mechStavVol->AddNode(connectorASide, 1, new TGeoTranslation(0, ypos, zpos));
 
-  zpos = zstave + (fgkIBConnectBlockZLen - fgkIBConnTailZLen)/2;
+  zpos = ztot + (fgkIBConnectBlockZLen - fgkIBConnTailZLen)/2;
   mechStavVol->AddNode(connectorCSide, 1, new TGeoCombiTrans(0, ypos,-zpos,
 					     new TGeoRotation("",90,180,-90)));
 
@@ -2788,6 +2952,7 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
 // Return:
 //
 // Created:      22 Apr 2015  Mario Sitta
+// Updated:      27 Feb 2018  Mario Sitta  To last drawings (backport from O2)
 //
 
   // Local variables
@@ -2801,11 +2966,11 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
   // Gather all material pointers
   TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medPEEK     = mgr->GetMedium("ITS_PEEKCF30$");
-  TGeoMedium *medWC       = mgr->GetMedium("ITS_TUNGCARB$");
   TGeoMedium *medInox304  = mgr->GetMedium("ITS_INOX304$");
 
 
   // First create all elements
+  // (All measures refer to the blueprint ALIITSUP0051)
 
   // The connector block, two Composite Shapes:
   // the body...
@@ -2858,7 +3023,7 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
   TGeoTranslation *connTubes3Trans2 = new TGeoTranslation("tubes3Trans2A", xpos, ypos,-zpos);
   connTubes3Trans2->RegisterYourself();
 
-  zlen = fgkIBConnectAFitZLen - fgkIBConnectAFitZOut;
+  zlen = fgkIBConnTubeHole1ZLen2;
   TGeoTube *connFitHole = new TGeoTube("fitHoleA", 0, fgkIBConnectAFitExtD/2, zlen);
 
   TGeoTranslation *connFitHoleTrans1 = new TGeoTranslation("fitTrans1A", -xpos, ypos, zpos);
@@ -2922,32 +3087,6 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
   connBlockTail->SetLineColor(42);
 
 
-  // The steel insert, an Xtru
-  xv[0] = (fgkIBConnSquareHoleX - fgkIBConnInsertInnerX)/2;
-  yv[0] =  fgkIBConnSquareHoleZ/2 - fgkIBConnInsertZThick;
-  xv[1] = xv[0];
-  yv[1] = -fgkIBConnSquareHoleZ/2;
-  xv[2] =  fgkIBConnSquareHoleX/2;
-  yv[2] = yv[1];
-  xv[3] = xv[2];
-  yv[3] =  fgkIBConnSquareHoleZ/2;
-
-  for (Int_t i = 0; i<nv/2; i++) {
-    xv[4+i] = -xv[3-i];
-    yv[4+i] =  yv[3-i];
-  }
-
-  TGeoXtru *connInsertSh = new TGeoXtru(2);
-  connInsertSh->DefinePolygon(nv, xv, yv);
-  connInsertSh->DefineSection(0,-fgkIBConnInsertHeight/2);
-  connInsertSh->DefineSection(1, fgkIBConnInsertHeight/2);
-
-  TGeoVolume *connInsert = new TGeoVolume("IBConnectorInsertASide",
-					  connInsertSh, medWC);
-  connInsert->SetFillColor(kGray);
-  connInsert->SetLineColor(kGray);
-
-
   // The fitting tubes, a Tube
   TGeoTube *connFitSh = new TGeoTube(fgkIBConnectAFitIntD/2,
 				     fgkIBConnectAFitExtD/2,
@@ -2987,8 +3126,16 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
 							     xpos, ypos, zpos);
   connTubeHollTrans2->RegisterYourself();
 
+  zpos = -connBox->GetDZ() + connTubeHole2->GetDz() - 2*connFitHole->GetDz();
+  TGeoTranslation* connTubes2Trans1Body = new TGeoTranslation("tubes2Trans1BA",
+                                                            -xpos, ypos, zpos);
+  connTubes2Trans1Body->RegisterYourself();
+  TGeoTranslation* connTubes2Trans2Body = new TGeoTranslation("tubes2Trans2BA",
+                                                             xpos, ypos, zpos);
+  connTubes2Trans2Body->RegisterYourself();
+
   TGeoCompositeShape *connBoxSh = new TGeoCompositeShape(
-      "connBoxA+connTailA:transTailA-tubeHollowA:tubeHollTrans1A-tubeHollowA:tubeHollTrans2A");
+      "connBoxA-tube2HoleA:tubes2Trans1BA-tube2HoleA:tubes2Trans2BA+connTailA:transTailA-tubeHollowA:tubeHollTrans1A-tubeHollowA:tubeHollTrans2A");
 
   TGeoVolume *connBoxASide = new TGeoVolume("IBConnectorASide",
 					    connBoxSh, medAir);
@@ -3003,10 +3150,6 @@ void AliITSUv2Layer::CreateIBConnectorsASide(const TGeoManager *mgr){
   ypos = -connBox->GetDY() + connBody->GetDY();
   zpos = -connBox->GetDZ() + connBody->GetDZ();
   connBoxASide->AddNode(connBlockBody, 1, new TGeoTranslation(0, ypos, zpos));
-
-  zpos = -connBox->GetDZ() + fgkIBConnSquareHoleZPos;
-  connBoxASide->AddNode(connInsert, 1, new TGeoCombiTrans(0, ypos, zpos,
-					   new TGeoRotation("",0,-90,0)));
 
   xpos = fgkIBConnTubesXDist/2;
   ypos = -connBox->GetDY() + fgkIBConnTubesYPos;
@@ -3029,6 +3172,7 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
 // Return:
 //
 // Created:      05 May 2015  Mario Sitta
+// Updated:      27 Feb 2018  Mario Sitta  To last drawings (backport from O2)
 //
 
   // Local variables
@@ -3042,10 +3186,10 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
   // Gather all material pointers
   TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medPEEK     = mgr->GetMedium("ITS_PEEKCF30$");
-  TGeoMedium *medWC       = mgr->GetMedium("ITS_TUNGCARB$");
 
 
   // First create all elements
+  // (All measures refer to the blueprint ALIITSUP0051)
 
   // The connector block, two Composite Shapes:
   // the body...
@@ -3083,7 +3227,7 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
 
   xpos = fgkIBConnTubesXDist/2;
   ypos = -connBody->GetDY() + fgkIBConnTubesYPos;
-  zpos = fgkIBConnTubeHole3ZPos;
+  zpos = fgkIBConnectBlockZLen - fgkIBConnTubeHole3ZPos;
   TGeoTranslation *connTubes2Trans1 = new TGeoTranslation("tubes2Trans1C",
 							  -xpos, ypos,-zpos);
   connTubes2Trans1->RegisterYourself();
@@ -3098,7 +3242,7 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
 					 zlen/2);
 
   xpos = fgkIBConnTubeHole3XPos;
-  zpos = connBody->GetDZ() - fgkIBConnTubeHole3ZPos;
+  zpos = connBody->GetDZ() - (fgkIBConnectBlockZLen - fgkIBConnTubeHole3ZPos);
   TGeoCombiTrans *connTubes3Trans = new TGeoCombiTrans("tubes3TransC",
 						        xpos, ypos, zpos,
 					       new TGeoRotation("",90,-90,90));
@@ -3175,25 +3319,13 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
   connBlockTail->SetLineColor(42);
 
 
-  // The steel insert, an Tube
-  TGeoTube *connInsertSh = new TGeoTube(fgkIBConnInsertD/2,
-					fgkIBConnInsertHoleD/2,
-					fgkIBConnInsertHeight/2);
-
-  TGeoVolume *connInsert = new TGeoVolume("IBConnectorInsertCSide",
-					  connInsertSh, medWC);
-  connInsert->SetFillColor(kGray);
-  connInsert->SetLineColor(kGray);
-
-
   // The plug, a Pcon
-  TGeoPcon *connPlugSh = new TGeoPcon(0,360,4);
-  connPlugSh->DefineSection(0,                 0., 0., fgkIBConnTubeHole2D/2);
-  connPlugSh->DefineSection(1, fgkIBConnPlugThick, 0., fgkIBConnTubeHole2D/2);
-  connPlugSh->DefineSection(2, fgkIBConnPlugThick,
-			        fgkIBConnPlugInnerD/2, fgkIBConnTubeHole2D/2);
-  connPlugSh->DefineSection(3, fgkIBConnPlugTotLen,
-			        fgkIBConnPlugInnerD/2, fgkIBConnTubeHole2D/2);
+  zlen = fgkIBConnPlugTotLen - fgkIBConnPlugInnerLen;
+  TGeoPcon* connPlugSh = new TGeoPcon(0, 360, 4);
+  connPlugSh->DefineSection(0,   0., 0., fgkIBConnTubeHole2D/2);
+  connPlugSh->DefineSection(1, zlen, 0., fgkIBConnTubeHole2D/2);
+  connPlugSh->DefineSection(2, zlen, fgkIBConnPlugInnerD/2, fgkIBConnTubeHole2D/2);
+  connPlugSh->DefineSection(3, fgkIBConnPlugTotLen, fgkIBConnPlugInnerD/2, fgkIBConnTubeHole2D/2);
 
   TGeoVolume *connPlug = new TGeoVolume("IBConnectorPlugC",
 					connPlugSh,medPEEK);
@@ -3229,8 +3361,14 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
 							     xpos, ypos, zpos);
   connTubeHollTrans2->RegisterYourself();
 
+  zpos = connBody->GetDZ() - (fgkIBConnectBlockZLen - fgkIBConnTubeHole3ZPos);
+  TGeoTranslation* connTubes2Trans1Body = new TGeoTranslation("tubes2Trans1BC", -xpos, ypos, -zpos);
+  connTubes2Trans1Body->RegisterYourself();
+  TGeoTranslation* connTubes2Trans2Body = new TGeoTranslation("tubes2Trans2BC", xpos, ypos, -zpos);
+  connTubes2Trans2Body->RegisterYourself();
+
   TGeoCompositeShape *connBoxSh = new TGeoCompositeShape(
-      "connBoxC+connTailC:transTailC-tubeHollowC:tubeHollTrans1C-tubeHollowC:tubeHollTrans2C");
+      "connBoxC-tube2HoleC:tubes2Trans1BC-tube2HoleC:tubes2Trans2BC+connTailC:transTailC-tubeHollowC:tubeHollTrans1C-tubeHollowC:tubeHollTrans2C");
 
   TGeoVolume *connBoxCSide = new TGeoVolume("IBConnectorCSide",
 					    connBoxSh, medAir);
@@ -3245,13 +3383,9 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
   ypos = -connBoxSh->GetDY() + connBodySh->GetDY();
   connBoxCSide->AddNode(connBlockBody, 1, new TGeoTranslation(0, ypos, 0));
 
-  zpos = -connBox->GetDZ() + fgkIBConnInsertHoleZPos;
-  connBoxCSide->AddNode(connInsert, 1, new TGeoCombiTrans(0, ypos, zpos,
-					   new TGeoRotation("",0,90,0)));
-
   xpos =  connBox->GetDX();
   ypos = -connBox->GetDY() + fgkIBConnTubesYPos;
-  zpos =  connBox->GetDZ() - fgkIBConnTubeHole3ZPos;;
+  zpos = connBody->GetDZ() - (fgkIBConnectBlockZLen - fgkIBConnTubeHole3ZPos);
   connBoxCSide->AddNode(connPlug, 1, new TGeoCombiTrans(xpos, ypos, zpos,
 					   new TGeoRotation("",90,-90,90)));
 
