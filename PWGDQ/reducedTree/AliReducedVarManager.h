@@ -168,6 +168,7 @@ class AliReducedVarManager : public TObject {
     kVertexCorrectionGlobalGainLoss,
     kVertexCorrectionRunwiseGainLoss,
     kVertexCorrection2D,
+    kGainLossCorrection,
     kNCorrections
   };
 
@@ -379,6 +380,9 @@ class AliReducedVarManager : public TObject {
     kTZEROpileup,                              // TZERO pileup flag
     kTZEROsatellite,                           // TZERO satellite flag
     // External Multiplicity estimators
+    kMultEstimatorV0M,
+    kMultEstimatorV0A,
+    kMultEstimatorV0C,
     kMultEstimatorOnlineV0M,
     kMultEstimatorOnlineV0A,
     kMultEstimatorOnlineV0C,
@@ -389,6 +393,9 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorSPDTracklets,
     kMultEstimatorRefMult05,
     kMultEstimatorRefMult08,
+    kMultEstimatorPercentileV0M,
+    kMultEstimatorPercentileV0A,
+    kMultEstimatorPercentileV0C,
     kMultEstimatorPercentileOnlineV0M,
     kMultEstimatorPercentileOnlineV0A,
     kMultEstimatorPercentileOnlineV0C,
