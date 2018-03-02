@@ -607,7 +607,6 @@ protected:
 
   void AddMuonTrack(const AliESDMuonTrack *t);
   void AddMuonGlobalTrack(const AliESDMuonGlobalTrack *t);     // AU
-  void FixITSSAFlags();
   
   TList *fESDObjects;             // List of esd Objects
 
