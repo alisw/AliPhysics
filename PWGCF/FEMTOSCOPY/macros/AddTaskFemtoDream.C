@@ -143,6 +143,8 @@ AliAnalysisTask* AddTaskFemtoDream(
 	}else if(CentEst == "kMB"){
 		task->SelectCollisionCandidates(AliVEvent::kMB);
 		task->SetMVPileUp(kFALSE);
+	} else if (CentEst == "kHM") {
+		task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
 	}else{
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;

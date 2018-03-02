@@ -4,13 +4,16 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliAnalysisTaskFemtoDream.h"
 #include "TROOT.h"
-
+#include <stdio.h>
 AliAnalysisTask* AddTaskFemtoDreamSysVar(
-    bool isMC=false, TString CentEst="kInt7",int sysVar=0,
-    bool notpp=true, bool DCAPlots=false,bool CPAPlots=false,
-    bool CombSigma=false,bool ContributionSplitting=false,
-    bool ContributionSplittingDaug=false)
+    bool isMC=false, TString CentEst="kInt7",bool notpp=true,
+    const char *suffix="")
 {
+  bool DCAPlots=false;
+  bool CPAPlots=false;
+  bool CombSigma=false;
+  bool ContributionSplitting=false;
+  bool ContributionSplittingDaug=false;
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
   gROOT->ProcessLine(".include $ROOTSYS/include");
@@ -42,46 +45,35 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
           isMC,DCAPlots,CombSigma,ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
 
-  switch(sysVar){
-    case 1:
-      TrackCuts->SetPtRange(0.4,4.05);
-      AntiTrackCuts->SetPtRange(0.4,4.05);
-      break;
-    case 2:
-      TrackCuts->SetPtRange(0.5,4.05);
-      AntiTrackCuts->SetPtRange(0.5,4.05);
-      break;
-    case 3:
-      TrackCuts->SetEtaRange(-0.7,0.7);
-      AntiTrackCuts->SetEtaRange(-0.7,0.7);
-      break;
-    case 3:
-      TrackCuts->SetEtaRange(-0.9,0.9);
-      AntiTrackCuts->SetEtaRange(-0.7,0.7);
-      break;
-    case 5:
-      TrackCuts->SetPID(AliPID::kProton,0.75,2);
-      AntiTrackCuts->SetPID(AliPID::kProton,0.75,2);
-      break;
-    case 6:
-      TrackCuts->SetPID(AliPID::kProton,0.75,5);
-      AntiTrackCuts->SetPID(AliPID::kProton,0.75,5);
-      break;
-    case 7:
-      TrackCuts->SetFilterBit(96);
-      AntiTrackCuts->SetFilterBit(96);
-      break;
-    case 8:
-      TrackCuts->SetNClsTPC(70);
-      AntiTrackCuts->SetNClsTPC(70);
-      break;
-    case 9:
-      TrackCuts->SetNClsTPC(90);
-      AntiTrackCuts->SetNClsTPC(90);
-      break;
-    default:
-      break;
+  if (std::strcmp(suffix,"1")==0) {
+    TrackCuts->SetPtRange(0.4,4.05);
+    AntiTrackCuts->SetPtRange(0.4,4.05);
+  } else if (std::strcmp(suffix,"2")==0) {
+    TrackCuts->SetPtRange(0.5,4.05);
+    AntiTrackCuts->SetPtRange(0.5,4.05);
+  } else if (std::strcmp(suffix,"3")==0) {
+    TrackCuts->SetEtaRange(-0.7,0.7);
+    AntiTrackCuts->SetEtaRange(-0.7,0.7);
+  } else if (std::strcmp(suffix,"4")==0) {
+    TrackCuts->SetEtaRange(-0.9,0.9);
+    AntiTrackCuts->SetEtaRange(-0.9,0.9);
+  } else if (std::strcmp(suffix,"5")==0) {
+    TrackCuts->SetPID(AliPID::kProton,0.75,2);
+    AntiTrackCuts->SetPID(AliPID::kProton,0.75,2);
+  } else if (std::strcmp(suffix,"6")==0) {
+    TrackCuts->SetPID(AliPID::kProton,0.75,5);
+    AntiTrackCuts->SetPID(AliPID::kProton,0.75,5);
+  } else if (std::strcmp(suffix,"7")==0) {
+    TrackCuts->SetFilterBit(96);
+    AntiTrackCuts->SetFilterBit(96);
+  } else if (std::strcmp(suffix,"8")==0) {
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+  } else if (std::strcmp(suffix,"9")==0) {
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
   }
+
 
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
@@ -105,54 +97,41 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
       isMC,false);
   NegAntiv0Daug->SetCutCharge(-1);
 
-
-  switch(sysVar){
-    case 10:
-      v0Cuts->SetPtRange(0.24,999.9);
-      Antiv0Cuts->SetPtRange(0.24,999.9);
-      break;
-    case 11:
-      v0Cuts->SetPtRange(0.36,999.9);
-      Antiv0Cuts->SetPtRange(0.36,999.9);
-      break;
-    case 12:
-      v0Cuts->SetCutCPA(0.998);
-      Antiv0Cuts->SetCutCPA(0.998);
-      break;
-    case 13:
-      Posv0Daug->SetPID(AliPID::kProton,999.9,4);
-      Negv0Daug->SetPID(AliPID::kPion,999.9,4);
-      PosAntiv0Daug->SetPID(AliPID::kPion,999.9,4);
-      NegAntiv0Daug->SetPID(AliPID::kProton,999.9,4);
-      break;
-    case 14:
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-      break;
-    case 15:
-      Posv0Daug->SetEtaRange(-0.7,0.7);
-      Negv0Daug->SetEtaRange(-0.7,0.7);
-      PosAntiv0Daug->SetEtaRange(-0.7,0.7);
-      NegAntiv0Daug->SetEtaRange(-0.7,0.7);
-      break;
-    case 16:
-      Posv0Daug->SetEtaRange(-0.9,0.9);
-      Negv0Daug->SetEtaRange(-0.9,0.9);
-      PosAntiv0Daug->SetEtaRange(-0.9,0.9);
-      NegAntiv0Daug->SetEtaRange(-0.9,0.9);
-      break;
-    case 17:
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      break;
-    case 18:
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      break;
-    default:
-      break;
+  if (std::strcmp(suffix,"10")==0) {
+    v0Cuts->SetPtRange(0.24,999.9);
+    Antiv0Cuts->SetPtRange(0.24,999.9);
+  } else if (std::strcmp(suffix,"11")==0) {
+    v0Cuts->SetPtRange(0.36,999.9);
+    Antiv0Cuts->SetPtRange(0.36,999.9);
+  } else if (std::strcmp(suffix,"12")==0) {
+    v0Cuts->SetCutCPA(0.998);
+    Antiv0Cuts->SetCutCPA(0.998);
+  } else if (std::strcmp(suffix,"13")==0) {
+    Posv0Daug->SetPID(AliPID::kProton,999.9,4);
+    Negv0Daug->SetPID(AliPID::kPion,999.9,4);
+    PosAntiv0Daug->SetPID(AliPID::kPion,999.9,4);
+    NegAntiv0Daug->SetPID(AliPID::kProton,999.9,4);
+  } else if (std::strcmp(suffix,"14")==0) {
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+  } else if (std::strcmp(suffix,"15")==0) {
+    Posv0Daug->SetEtaRange(-0.7,0.7);
+    Negv0Daug->SetEtaRange(-0.7,0.7);
+    PosAntiv0Daug->SetEtaRange(-0.7,0.7);
+    NegAntiv0Daug->SetEtaRange(-0.7,0.7);
+  } else if (std::strcmp(suffix,"16")==0) {
+    Posv0Daug->SetEtaRange(-0.9,0.9);
+    Negv0Daug->SetEtaRange(-0.9,0.9);
+    PosAntiv0Daug->SetEtaRange(-0.9,0.9);
+    NegAntiv0Daug->SetEtaRange(-0.9,0.9);
+  } else if (std::strcmp(suffix,"17")==0) {
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  } else if (std::strcmp(suffix,"18")==0) {
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -190,71 +169,56 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   AliFemtoDreamTrackCuts *AntiXiBachCuts=
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,false);
   AntiXiBachCuts->SetCutCharge(1);
-
-  switch(sysVar){
-    case 19:
-      CascadeCuts->SetCutXiDaughterDCA(1.3);
-      AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
-      break;
-    case 20:
-      CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-      AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-      break;
-    case 21:
-      CascadeCuts->SetCutXiCPA(0.99);
-      AntiCascadeCuts->SetCutXiCPA(0.99);
-      break;
-    case 22:
-      CascadeCuts->SetCutXiTransverseRadius(1.0,200);
-      AntiCascadeCuts->SetCutXiTransverseRadius(1.0,200);
-      break;
-    case 23:
-      CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-      AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-      break;
-    case 24:
-      CascadeCuts->SetCutv0CPA(0.99);
-      AntiCascadeCuts->SetCutv0CPA(0.99);
-      break;
-    case 25:
-      CascadeCuts->SetCutv0TransverseRadius(1.7,200);
-      AntiCascadeCuts->SetCutv0TransverseRadius(1.7,200);
-      break;
-    case 26:
-      CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
-      AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
-      break;
-    case 27:
-      CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-      AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-      break;
-    case 28:
-      XiNegCuts->SetEtaRange(-0.7,0.7);
-      XiPosCuts->SetEtaRange(-0.7,0.7);
-      XiBachCuts->SetEtaRange(-0.7,0.7);
-      AntiXiNegCuts->SetEtaRange(-0.7,0.7);
-      AntiXiPosCuts->SetEtaRange(-0.7,0.7);
-      AntiXiBachCuts->SetEtaRange(-0.7,0.7);
-      break;
-    case 29:
-      XiNegCuts->SetEtaRange(-0.9,0.9);
-      XiPosCuts->SetEtaRange(-0.9,0.9);
-      XiBachCuts->SetEtaRange(-0.9,0.9);
-      AntiXiNegCuts->SetEtaRange(-0.9,0.9);
-      AntiXiPosCuts->SetEtaRange(-0.9,0.9);
-      AntiXiBachCuts->SetEtaRange(-0.9,0.9);
-      break;
-    case 30:
-      XiNegCuts->SetPID(AliPID::kPion,999,3);
-      XiPosCuts->SetPID(AliPID::kProton,999,3);
-      XiBachCuts->SetPID(AliPID::kPion,999,3);
-      AntiXiNegCuts->SetPID(AliPID::kProton,999,3);
-      AntiXiPosCuts->SetPID(AliPID::kPion,999,3);
-      AntiXiBachCuts->SetPID(AliPID::kPion,999,3);
-      break;
-    default:
-      break;
+  if (std::strcmp(suffix,"19")==0) {
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+  } else if (std::strcmp(suffix,"20")==0) {
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+  } else if (std::strcmp(suffix,"21")==0) {
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+  } else if (std::strcmp(suffix,"22")==0) {
+    CascadeCuts->SetCutXiTransverseRadius(1.0,200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0,200);
+  } else if (std::strcmp(suffix,"23")==0) {
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+  } else if (std::strcmp(suffix,"24")==0) {
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+  } else if (std::strcmp(suffix,"25")==0) {
+    CascadeCuts->SetCutv0TransverseRadius(1.7,200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7,200);
+  } else if (std::strcmp(suffix,"26")==0) {
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+  } else if (std::strcmp(suffix,"27")==0) {
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
+  } else if (std::strcmp(suffix,"28")==0) {
+    XiNegCuts->SetEtaRange(-0.7,0.7);
+    XiPosCuts->SetEtaRange(-0.7,0.7);
+    XiBachCuts->SetEtaRange(-0.7,0.7);
+    AntiXiNegCuts->SetEtaRange(-0.7,0.7);
+    AntiXiPosCuts->SetEtaRange(-0.7,0.7);
+    AntiXiBachCuts->SetEtaRange(-0.7,0.7);
+  } else if (std::strcmp(suffix,"29")==0) {
+    XiNegCuts->SetEtaRange(-0.9,0.9);
+    XiPosCuts->SetEtaRange(-0.9,0.9);
+    XiBachCuts->SetEtaRange(-0.9,0.9);
+    AntiXiNegCuts->SetEtaRange(-0.9,0.9);
+    AntiXiPosCuts->SetEtaRange(-0.9,0.9);
+    AntiXiBachCuts->SetEtaRange(-0.9,0.9);
+  } else if (std::strcmp(suffix,"30")==0) {
+    XiNegCuts->SetPID(AliPID::kPion,999,3);
+    XiPosCuts->SetPID(AliPID::kProton,999,3);
+    XiBachCuts->SetPID(AliPID::kPion,999,3);
+    AntiXiNegCuts->SetPID(AliPID::kProton,999,3);
+    AntiXiPosCuts->SetPID(AliPID::kPion,999,3);
+    AntiXiBachCuts->SetPID(AliPID::kPion,999,3);
   }
+
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
@@ -293,14 +257,17 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
-
-  AliAnalysisTaskFemtoDream *task=new AliAnalysisTaskFemtoDream("FemtoDream",isMC);
+  TString TaskName=Form("FemtoDream_%s",suffix);
+  std::cout << TaskName.Data() << std::endl;
+  AliAnalysisTaskFemtoDream *task=new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC);
   if(CentEst == "kInt7"){
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetMVPileUp(kTRUE);
   }else if(CentEst == "kMB"){
     task->SelectCollisionCandidates(AliVEvent::kMB);
     task->SetMVPileUp(kFALSE);
+  }else if (CentEst == "kHM") {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   }else{
     std::cout << "=====================================================================" << std::endl;
     std::cout << "=====================================================================" << std::endl;
@@ -326,13 +293,13 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   //  TString CascadeOutput="AnalysisQACascade.root";
 
   TString file = AliAnalysisManager::GetCommonFileName();
-
+  std::cout << file.Data() << std::endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("QA");
+  TString QAName = Form("QA_%s",suffix);
   coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       QAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -340,7 +307,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 1, coutputQA);
 
   AliAnalysisDataContainer *coutputEvtCuts;
-  TString EvtCutsName = Form("EvtCuts");
+  TString EvtCutsName = Form("EvtCuts_%s",suffix);
   coutputEvtCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       EvtCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -348,7 +315,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 2, coutputEvtCuts);
 
   AliAnalysisDataContainer *couputTrkCuts;
-  TString TrackCutsName = Form("TrackCuts");
+  TString TrackCutsName = Form("TrackCuts_%s",suffix);
   couputTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -356,7 +323,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 3, couputTrkCuts);
 
   AliAnalysisDataContainer *coutputAntiTrkCuts;
-  TString AntiTrackCutsName = Form("AntiTrackCuts");
+  TString AntiTrackCutsName = Form("AntiTrackCuts_%s",suffix);
   coutputAntiTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -364,7 +331,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputv0Cuts;
-  TString v0CutsName = Form("v0Cuts");
+  TString v0CutsName = Form("v0Cuts_%s",suffix);
   coutputv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       v0CutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -372,7 +339,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 5, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
-  TString Antiv0CutsName = Form("Antiv0Cuts");
+  TString Antiv0CutsName = Form("Antiv0Cuts_%s",suffix);
   coutputAntiv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       Antiv0CutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -380,7 +347,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputCascadeCuts;
-  TString CascadeCutsName = Form("CascadeCuts");
+  TString CascadeCutsName = Form("CascadeCuts_%s",suffix);
   coutputCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       CascadeCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -388,7 +355,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 7, coutputCascadeCuts);
 
   AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  TString AntiCascadeCutsName = Form("AntiCascadeCuts");
+  TString AntiCascadeCutsName = Form("AntiCascadeCuts_%s",suffix);
   coutputAntiCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       AntiCascadeCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -396,7 +363,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 8, coutputAntiCascadeCuts);
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("Results");
+  TString ResultsName = Form("Results_%s",suffix);
   coutputResults = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       ResultsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -404,7 +371,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 9, coutputResults);
 
   AliAnalysisDataContainer *coutputResultQA;
-  TString ResultQAName = Form("ResultQA");
+  TString ResultQAName = Form("ResultQA_%s",suffix);
   coutputResultQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       ResultQAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -412,7 +379,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 10, coutputResultQA);
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
-    TString TrkCutsMCName = Form("TrkCutsMC");
+    TString TrkCutsMCName = Form("TrkCutsMC_%s",suffix);
     coutputTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -420,7 +387,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("AntiTrkCutsMC");
+    TString AntiTrkCutsMCName = Form("AntiTrkCutsMC_%s",suffix);
     coutputAntiTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -428,7 +395,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
-    TString v0CutsMCName = Form("v0CutsMC");
+    TString v0CutsMCName = Form("v0CutsMC_%s",suffix);
     coutputv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         v0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -436,7 +403,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 13, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
-    TString Antiv0CutsMCName = Form("Antiv0CutsMC");
+    TString Antiv0CutsMCName = Form("Antiv0CutsMC_%s",suffix);
     coutputAntiv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         Antiv0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -444,7 +411,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
-    TString XiCutsMCName = Form("XiCutsMC");
+    TString XiCutsMCName = Form("XiCutsMC_%s",suffix);
     coutputXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         XiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -452,7 +419,7 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 15, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
-    TString AntiXiCutsMCName = Form("AntiXiCutsMC");
+    TString AntiXiCutsMCName = Form("AntiXiCutsMC_%s",suffix);
     coutputAntiXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         AntiXiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
