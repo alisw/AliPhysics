@@ -145,12 +145,12 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
       if (allContainers->At(i)){
 	containerName = allContainers->At(i)->GetName();
 	if (containerName.CompareTo("PCM offlineV0Finder container")==0){
-	  cinputPCMv0sA = allContainers->At(i);
+	  cinputPCMv0sA = (AliAnalysisDataContainer *)allContainers->At(i);
 	}
 	else{
 	  cout << "No container for offline v0s" << endl;}
 	if (containerName.CompareTo("PCM onflyV0Finder container")==0){
-	  cinputPCMv0sB = allContainers->At(i);
+	  cinputPCMv0sB = (AliAnalysisDataContainer *)allContainers->At(i);
 	}
 	else{
 	  cout << "No container for onfly v0s found" << endl;
