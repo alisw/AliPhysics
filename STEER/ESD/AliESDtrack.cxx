@@ -620,7 +620,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   // Set ITS cluster map
   fITSClusterMap=track->GetITSClusterMap();
   fITSSharedMap=0;
-
+  fITSchi2=track->GetITSchi2();
   fITSncls=0;
   for(i=0; i<6; i++) {
     if(HasPointOnITSLayer(i)) fITSncls++;
