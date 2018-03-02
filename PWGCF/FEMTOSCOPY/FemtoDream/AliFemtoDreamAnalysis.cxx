@@ -268,7 +268,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
-
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
                       fEvent->GetSPDMult());
 }

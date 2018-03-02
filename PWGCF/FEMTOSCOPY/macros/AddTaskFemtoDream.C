@@ -5,12 +5,13 @@
 #include "AliAnalysisTaskFemtoDream.h"
 #include "TROOT.h"
 
-AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
-		bool DCAPlots=false,bool CPAPlots=false,
-		bool CombSigma=false,bool ContributionSplitting=false,
-		bool ContributionSplittingDaug=false)
+AliAnalysisTask* AddTaskFemtoDream(
+    bool isMC=false, TString CentEst="kInt7",
+    bool DCAPlots=false,bool CPAPlots=false,
+    bool CombSigma=false,bool ContributionSplitting=false,
+    bool ContributionSplittingDaug=false)
 {
-	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->ProcessLine(".include $ALICE_ROOT/include");
 	gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
 	gROOT->ProcessLine(".include $ROOTSYS/include");
 
@@ -29,7 +30,8 @@ AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
 		return nullptr;
 	}
 	AliFemtoDreamEventCuts *evtCuts=
-			AliFemtoDreamEventCuts::StandardCutsRun1();
+			AliFemtoDreamEventCuts::StandardCutsRun2();
+	evtCuts->CleanUpMult(false,false,false,true);
 
 	//Track Cuts
 	AliFemtoDreamTrackCuts *TrackCuts=

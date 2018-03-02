@@ -47,6 +47,9 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 ,fv0MinDistVtx(0)
 ,fcutv0DaugMinDistVtx(false)
 ,fv0DaugMinDistVtx(0)
+,fRejOmega(false)
+,fRejOmegaMass(0)
+,fRejOmegaWidth(0)
 ,fPDGCasc(0)
 ,fPDGv0(0)
 ,fPDGPosDaug(0)
@@ -72,9 +75,10 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   AliFemtoDreamCascadeCuts *XiCuts=new AliFemtoDreamCascadeCuts();
   XiCuts->SetIsMonteCarlo(isMC);
   XiCuts->SetContributionSplitting(contribSplitting);
-  XiCuts->SetXiMassRange(1.31486,0.05);
+  XiCuts->SetXiMassRange(1.31486,0.005);
   XiCuts->SetCutXiDaughterDCA(1.6);
   XiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
+
   XiCuts->SetCutXiCPA(0.97);
   XiCuts->SetCutXiTransverseRadius(0.8,200);
   XiCuts->Setv0MassRange(1.116,0.006);
@@ -83,6 +87,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   XiCuts->SetCutv0TransverseRadius(1.4,200);
   XiCuts->SetCutv0MinDistToPrimVtx(0.07);
   XiCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
+  XiCuts->SetRejectOmegas(1672,0.005);
   return XiCuts;
 }
 
@@ -212,6 +217,14 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       fHist->FillCutCounter(17);
     }
   }
+  if (pass&&fRejOmega) {
+    if ((casc->GetOmegaMass()>(fRejOmegaMass-fRejOmegaWidth))||
+        (casc->GetOmegaMass()<(fRejOmegaMass+fRejOmegaWidth))) {
+      pass=false;
+    } else {
+      fHist->FillCutCounter(18);
+    }
+  }
   if (pass) {
     fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
   }
@@ -220,7 +233,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->GetXiMass()>(fXiMass+fXiMassWidth))) {
       pass=false;
     } else {
-      fHist->FillCutCounter(18);
+      fHist->FillCutCounter(19);
     }
   }
   casc->SetUse(pass);

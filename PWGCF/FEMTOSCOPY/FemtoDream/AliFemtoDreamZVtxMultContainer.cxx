@@ -84,7 +84,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                                          *itPDGPar2);
           ResultsHist->FillSameEventDist(HistCounter,RelativeK);
           if (ResultsHist->GetDoMultBinning()) {
-            ResultsHist->FillSameEventMultDist(HistCounter,RelativeK,iMult);
+            ResultsHist->FillSameEventMultDist(HistCounter,iMult,RelativeK);
           }
           ++itPart2;
         }
@@ -128,7 +128,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                                            itPart2->GetMomentum(),*itPDGPar2);
             ResultsHist->FillMixedEventDist(HistCounter,RelativeK);
             if (ResultsHist->GetDoMultBinning()) {
-              ResultsHist->FillMixedEventMultDist(HistCounter,RelativeK,iMult);
+              ResultsHist->FillMixedEventMultDist(HistCounter,iMult,RelativeK);
             }
           }
         }

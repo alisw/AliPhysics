@@ -29,7 +29,7 @@ AliAnalysisTask* AddTaskFemtoDream(bool isMC=false, TString CentEst="kInt7",
 		return nullptr;
 	}
 	AliFemtoDreamEventCuts *evtCuts=
-			AliFemtoDreamEventCuts::StandardCutsRun1();
+			AliFemtoDreamEventCuts::StandardCutsRun2();
 
 	//Track Cuts
 	AliFemtoDreamTrackCuts *TrackCuts=

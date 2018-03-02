@@ -27,6 +27,7 @@ class AliFemtoDreamPartCollection {
   void PrintEvent(int ZVtx,int Mult);
   TList* GetHistList(){return fResults->GetHistList();};
   TList* GetQAList(){return fResults->GetQAHists();};
+  TString ClassName() {return "ParticleCollection";};
  private:
   void FindBin(double ZVtxPos,double Multiplicity,int *returnBins);
   AliFemtoDreamCorrHists *fResults;

@@ -48,6 +48,9 @@ class AliFemtoDreamCascadeCuts {
     fcutv0MinDistVtx=true;fv0MinDistVtx=minDist;}
   void SetCutv0MinDaugDistToPrimVtx(double minDist){
     fcutv0DaugMinDistVtx=true;fv0DaugMinDistVtx=minDist;};
+  void SetRejectOmegas(double mass, double width) {
+    fRejOmega=true;fRejOmegaMass=mass;fRejOmegaWidth=width;
+  }
   void SetPDGCodeCasc(int PDG){fPDGCasc=PDG;};
   int GetPDGCodeCasc(){return fPDGCasc;};
   void SetPDGCodePosDaug(int PDG){fPDGPosDaug=PDG;};
@@ -104,6 +107,9 @@ class AliFemtoDreamCascadeCuts {
   double fv0MinDistVtx;
   bool fcutv0DaugMinDistVtx;
   double fv0DaugMinDistVtx;
+  bool fRejOmega;
+  double fRejOmegaMass;
+  double fRejOmegaWidth;
   int fPDGCasc;
   int fPDGv0;
   int fPDGPosDaug;

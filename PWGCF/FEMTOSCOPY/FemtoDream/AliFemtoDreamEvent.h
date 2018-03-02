@@ -45,6 +45,7 @@ class AliFemtoDreamEvent {
   bool GetMagneticField() const {return fHasMagField;};
   void SetSelectionStatus(bool pass){fisSelected=pass;};
   bool GetSelectionStatus() const {return fisSelected;};
+  TString ClassName() {return "AliFemtoDreamEvent";};
  private:
   int CalculateITSMultiplicity(AliAODEvent *evt);
   AliAnalysisUtils *fUtils;   //!

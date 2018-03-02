@@ -7,6 +7,7 @@
  */
 #include <iostream>
 #include "AliFemtoDreamPartCollection.h"
+#include "AliLog.h"
 ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 :fResults()
@@ -38,12 +39,19 @@ void AliFemtoDreamPartCollection::SetEvent(
     double ZVtx,double Mult)
 {
   if (Particles.size()!=fNSpecies) {
-    std::cout<<"Particles too small!"<<std::endl;
+    TString fatalOut=
+        Form("Too few Species %d for %d",Particles.size(),fNSpecies);
+    AliFatal(fatalOut.Data());
   }
   int bins[2] = {0,0};
   FindBin(ZVtx,Mult,bins);
   if (bins[0]==-99||bins[1]==-99) {
-    //TODO: error msg!
+    std::cout << "Mult ("<<Mult<<") Bin ("<<bins[1]<<") and ZVtx ("<<ZVtx<<") Bin ("<<bins[0]<<")\n";
+    TString fatalOut=
+        Form("No Multiplicity bin (%i) for this multiplicity (%i) "
+            " or Vtx Bin (%i) for this zVtx (%4.2f) \n",bins[1],Mult,bins[0],ZVtx);
+    std::cout << "Mult ("<<Mult<<") Bin ("<<bins[1]<<") and ZVtx ("<<ZVtx<<") Bin ("<<bins[0]<<")\n";
+    AliFatal(fatalOut.Data());
   }
   auto itZVtx=fZVtxMultBuffer.begin();
   itZVtx+=bins[0];
