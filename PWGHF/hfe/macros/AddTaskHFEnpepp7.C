@@ -107,6 +107,10 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
         kWeiLHC11b10b = 20,    // pass2                                LHC11b10b, Pythia + HF + pi0
         kWeiLHC12a9 = 21,      //                                      LHC12a9: Pythia + HF->e
         kWeiLHC12e6 = 22,      //                                      LHC12e6: Pythia min. bias
+        kWeiLHC14j4_u = 54,      //                                      LHC14j4 upper
+        kWeiLHC14j4_d = 55,      //                                      LHC14j4 lower
+        kWeiLHC14j4_tu = 56,      //                                      LHC14j4 tilted up
+        kWeiLHC14j4_td = 57,      //                                      LHC14j4 tilted down
     };
     int kWeiData;
     // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
@@ -133,6 +137,21 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
                               dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                               kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
             
+            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                              dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiLHC14j4_u);
+                              
+            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                              dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiLHC14j4_d);
+                              
+            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                              dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiLHC14j4_tu);
+                              
+            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                              dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiLHC14j4_td);
             
 //            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
 //                              dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
@@ -628,7 +647,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
     task->SelectCollisionCandidates(AliVEvent::kMB);
     
     if(useMC && weightlevelback>=0) {
-        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp7_New.root");
+        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp7_tilted.root");
     }
     
     //create data containers

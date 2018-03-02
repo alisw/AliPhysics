@@ -205,6 +205,22 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
                     hRatio = (TH1F*)weightFile->Get(Form("hRatio_14j4c_%s",backNameMC[iSpecies]));
                 }
                 
+                else if(collType == 54){
+                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_14j4c_%s_u",backNameMC[iSpecies]));
+                }
+                
+                else if(collType == 55){
+                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_14j4c_%s_d",backNameMC[iSpecies]));
+                }
+                
+                else if(collType == 56){
+                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_14j4c_%s_tu",backNameMC[iSpecies]));
+                }
+                
+                else if(collType == 57){
+                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_14j4c_%s_td",backNameMC[iSpecies]));
+                }
+                
                 else if(collType == 2){
                     if((iCent == 1)||(iCent == 4)){
                         hRatio = (TH1F*)weightFile->Get(Form("hRatio%s%d",backNameMC[iSpecies],iCent-1));
