@@ -6,9 +6,9 @@
 #include "TROOT.h"
 #include <stdio.h>
 AliAnalysisTask* AddTaskFemtoDreamSysVar(
-    bool isMC=false, TString CentEst="kInt7",bool notpp=true,
-    const char *suffix="")
+    bool isMC=false, TString CentEst="kInt7",bool notpp=true,const char *suffix="")
 {
+//  TString suffix=Form("%s",swuffix);
   bool DCAPlots=false;
   bool CPAPlots=false;
   bool CombSigma=false;
