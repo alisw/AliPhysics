@@ -24,6 +24,8 @@
 
 #include "AliFemtoLambdaEventCollection2.h"
 
+ClassImp(AliFemtoLambdaEventCollection2)
+
 //_____________________________________________________________________________
 AliFemtoLambdaEventCollection2::AliFemtoLambdaEventCollection2() : 
  fBufferSize(0),
@@ -51,29 +53,22 @@ AliFemtoLambdaEventCollection2::AliFemtoLambdaEventCollection2(short a, int lim)
   for(int ii = 0; ii < fBufferSize; ii++)   //Initialize particle table pointers to NULL
     {
       (fEvt + ii)->fLambdaParticle = 0;
-      (fEvt + ii)->fLambdaSideBand_left = 0;
-      (fEvt + ii)->fLambdaSideBand_right = 0;
       (fEvt + ii)->fAntiLambdaParticle = 0;
       (fEvt + ii)->fProtonParticle = 0;
       (fEvt + ii)->fAntiProtonParticle = 0;
+      (fEvt + ii)->fXiParticle = 0;
       
       (fEvt + ii)->fNumV0s = 0;
       (fEvt + ii)->fNumAntiV0s = 0;
       (fEvt + ii)->fNumProtons = 0;
       (fEvt + ii)->fNumAntiProtons = 0;
-      (fEvt + ii)->fNumAntiProtons = 0;
       (fEvt + ii)->fNumXis = 0;
-      (fEvt + ii)->fNumV0SideBand_left = 0;
-      (fEvt + ii)->fNumV0SideBand_right = 0;
-      (fEvt + ii)->fFillStatus = 0;
       
       (fEvt + ii)->fLambdaParticle = new AliFemtoLambdaParticle[fLimit];
       (fEvt + ii)->fAntiLambdaParticle = new AliFemtoLambdaParticle[fLimit];
       (fEvt + ii)->fProtonParticle = new AliFemtoProtonParticle[fLimit];
       (fEvt + ii)->fAntiProtonParticle = new AliFemtoProtonParticle[fLimit];
       (fEvt + ii)->fXiParticle = new AliFemtoXiParticle[fLimit];
-      (fEvt + ii)->fLambdaSideBand_left = new AliFemtoLambdaParticle[fLimit];
-      (fEvt + ii)->fLambdaSideBand_right = new AliFemtoLambdaParticle[fLimit];;
     }
 }
 //_____________________________________________________________________________
@@ -125,16 +120,6 @@ AliFemtoLambdaEventCollection2::~AliFemtoLambdaEventCollection2()
 	 delete [] (fEvt + i)->fAntiProtonParticle;
 	 (fEvt + i)->fAntiProtonParticle = 0;
        }
-     if((fEvt + i)->fLambdaSideBand_left != 0)
-       {
-	 delete [] (fEvt + i)->fLambdaSideBand_left;
-	 (fEvt + i)->fLambdaSideBand_left = 0;
-       }
-     if((fEvt + i)->fLambdaSideBand_right != 0)
-       {
-	 delete [] (fEvt + i)->fLambdaSideBand_right;
-	 (fEvt + i)->fLambdaSideBand_right = 0;
-       }
      if((fEvt + i)->fXiParticle != 0)
        {
 	 delete [] (fEvt + i)->fXiParticle;
@@ -154,32 +139,20 @@ void AliFemtoLambdaEventCollection2::FIFOShift(){ //Shift elements in FIFO by on
       for(int j=0; j<(fEvt + i-1)->fNumAntiV0s; j++) (fEvt + i)->fAntiLambdaParticle[j] = (fEvt + i-1)->fAntiLambdaParticle[j];
       for(int j=0; j<(fEvt + i-1)->fNumProtons; j++) (fEvt + i)->fProtonParticle[j] = (fEvt + i-1)->fProtonParticle[j];
       for(int j=0; j<(fEvt + i-1)->fNumAntiProtons; j++) (fEvt + i)->fAntiProtonParticle[j] = (fEvt + i-1)->fAntiProtonParticle[j];
-      for(int j=0; j<(fEvt + i-1)->fNumV0SideBand_left; j++) (fEvt + i)->fLambdaSideBand_left[j] = (fEvt + i-1)->fLambdaSideBand_left[j];
-      for(int j=0; j<(fEvt + i-1)->fNumV0SideBand_right; j++) (fEvt + i)->fLambdaSideBand_right[j] = (fEvt + i-1)->fLambdaSideBand_right[j];
       for(int j=0; j<(fEvt + i-1)->fNumXis; j++) (fEvt + i)->fXiParticle[j] = (fEvt + i-1)->fXiParticle[j];
       
-      (fEvt + i)->fFillStatus = (fEvt + i-1)->fFillStatus;
       (fEvt + i)->fNumV0s = (fEvt + i-1)->fNumV0s;
       (fEvt + i)->fNumAntiV0s = (fEvt + i-1)->fNumAntiV0s;
       (fEvt + i)->fNumProtons = (fEvt + i-1)->fNumProtons;
       (fEvt + i)->fNumAntiProtons = (fEvt + i-1)->fNumAntiProtons;
-      (fEvt + i)->fMultBin = (fEvt + i-1)->fMultBin;
-      (fEvt + i)->fBoostVal = (fEvt + i-1)->fBoostVal;
-      (fEvt + i)->fSphericity = (fEvt + i-1)->fSphericity;
-      (fEvt + i)->fNumV0SideBand_left = (fEvt + i-1)->fNumV0SideBand_left;
-      (fEvt + i)->fNumV0SideBand_right = (fEvt + i-1)->fNumV0SideBand_right;
       (fEvt + i)->fNumXis = (fEvt + i-1)->fNumXis;
+      (fEvt + i)->fEventNumber = (fEvt + i-1)->fEventNumber;
     }
 
   (fEvt)->fNumV0s = 0;
   (fEvt)->fNumAntiV0s = 0;
   (fEvt)->fNumProtons = 0;
   (fEvt)->fNumAntiProtons = 0;
-  (fEvt)->fFillStatus = 0;
-  (fEvt)->fMultBin = 0;
-  (fEvt)->fBoostVal = 0;
-  (fEvt)->fSphericity = 0;
-  (fEvt)->fNumV0SideBand_left = 0;
-  (fEvt)->fNumV0SideBand_right = 0;
   (fEvt)->fNumXis = 0;
+  (fEvt)->fEventNumber = 0;
 }
