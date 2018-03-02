@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
+AliAnalysisTaskPIDResponse *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
                                     Bool_t tuneOnData=kTRUE, TString recoPass="2",
                                     Bool_t cachePID=kFALSE, TString detResponse="",
                                     Bool_t useTPCEtaCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
