@@ -78,7 +78,7 @@ class AliESDCosmicTrack;
 class AliMCEvent;
 class TList;
 class TString;
-
+class AliGRPRecoParam;
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -369,14 +369,15 @@ public:
   Int_t GetNumberOfTPCClusters()      const {return fNTPCClusters;}
   void  SetNumberOfTPCClusters(int n)       {fNTPCClusters = n;}
 
-  Bool_t Clean(Float_t *cleanPars, TObjArray* track2destroy);
+  Bool_t Clean(TObjArray* track2destroy,const AliGRPRecoParam *grpRecoParam);
+  int CleanV0s(const AliGRPRecoParam *grpRecoParam);
 
   void EmptyOfflineV0Prongs();
   void RestoreOfflineV0Prongs();
   
   Bool_t RemoveKink(Int_t i)   const;
   Bool_t RemoveV0(Int_t i)     const;
-  AliESDfriendTrack* RemoveTrack(Int_t i)  const;
+  AliESDfriendTrack* RemoveTrack(Int_t i, Bool_t checkPrimVtx) const;
 
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
     return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->At(i):0x0);

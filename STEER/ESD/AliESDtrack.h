@@ -269,6 +269,7 @@ public:
   Int_t   GetTPCLabel() const {return fTPCLabel;}
   void    SetTPCLabel(int lbl) {fTPCLabel = lbl;}  
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
+  Int_t*  GetKinkIndices() { return &fKinkIndexes[0];}
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
   const TBits* GetTPCFitMapPtr() const {return &fTPCFitMap;}

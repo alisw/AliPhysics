@@ -62,6 +62,7 @@ class AliVertex : public AliVVertex {
   virtual void     SetIndices(Int_t nindices,UShort_t *indices); 
   virtual UShort_t *GetIndices() const { return fIndices; }
   virtual Bool_t   UsesTrack(Int_t index) const;
+  virtual Bool_t   SubstituteTrack(Int_t indexOld, Int_t indexNew);
   virtual void     PrintIndices() const {
     if(fNIndices>0) {
       for(Int_t i=0;i<fNIndices;i++) { printf("AliVertex uses track %d\n",fIndices[i]); }

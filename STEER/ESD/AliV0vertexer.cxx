@@ -56,6 +56,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 
    if (nentr<2) return 0; 
 
+   AliV0HypSel::AccountBField(b);
+
    TArrayI neg(nentr);
    TArrayI pos(nentr);
 
@@ -77,7 +79,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
      else pos[npos++]=i;
    }   
 
-   int nHypSel = fV0HypSelArray.GetEntriesFast();
+   int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
 
    for (i=0; i<nneg; i++) {
       Int_t nidx=neg[i];
@@ -139,8 +141,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 	 if (nHypSel) { // do we select particular hypthesese?
 	   Bool_t reject = kTRUE;
 	   float pt = vertex.Pt();
-	   for (int ih=0;ih<nHypSel;nHypSel++) {
-	     const AliV0HypSel* hyp = (const AliV0HypSel*)fV0HypSelArray[ih];
+	   for (int ih=0;ih<nHypSel;ih++) {
+	     const AliV0HypSel* hyp = (const AliV0HypSel*)(*fV0HypSelArray)[ih];
 	     double m = vertex.GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
 	     if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
 	       reject = kFALSE;
@@ -170,20 +172,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 void AliV0vertexer::SetV0HypSel(const TObjArray* selArr)
 {
   if (!selArr || !selArr->GetEntriesFast()) {
-    AliFatal("No V0 hypothesis selection will be performed");
+    AliInfo("No V0 hypothesis selection will be performed");
     return;
   }
-  for (int i=0;i<selArr->GetEntriesFast();i++) {
-    const AliV0HypSel* h = dynamic_cast<const AliV0HypSel*>(selArr->At(i));
-    if (!h) {
-      AliFatal("Object provided as V0 hypothesis selection cut is not recognized");      
-    }
-    AddV0HypSel(*h);
-  }
+  fV0HypSelArray = selArr;
 }
 
-//________________________________________________
-void AliV0vertexer::AddV0HypSel(const AliV0HypSel& h)
-{
-  fV0HypSelArray.AddLast( new AliV0HypSel(h));
-}

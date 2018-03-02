@@ -80,6 +80,8 @@
 #include "AliTriggerCluster.h"
 #include "AliEventplane.h"
 #include "AliMCEvent.h"
+#include "AliGRPRecoParam.h"
+#include "AliV0HypSel.h"
 
 ClassImp(AliESDEvent)
 
@@ -710,24 +712,24 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const
 Bool_t  AliESDEvent::RemoveKink(Int_t rm) const 
 {
 // ---------------------------------------------------------
-// Remove a kink candidate and references to it from ESD,
-// if this candidate does not come from a reconstructed decay
-// Not yet implemented...
+// Remove a kink candidate and references to it from ESD
 // ---------------------------------------------------------
   Int_t last=GetNumberOfKinks()-1;
   if ((rm<0)||(rm>last)) return kFALSE;
   TClonesArray &a=*fKinks;
   AliESDkink* kink = GetKink(rm);
   // release kink indices from ESDtracks
-  for (int i=2;i--;) {
-    AliESDtrack* trc = GetTrack(kink->GetIndex(i));
-    int indK[3]={0,0,0},restK=0;
-    for (int j=0;j<3;j++) {
-      int ind = trc->GetKinkIndex(j);
-      if (!ind) break;
-      if (TMath::Abs(ind)!=rm+1) indK[restK++] = ind;
+  if (kink->GetIndex(0)>=0 && kink->GetIndex(1)>=0) { // the indices migh have been already disabled
+    for (int i=2;i--;) {
+      AliESDtrack* trc = GetTrack(kink->GetIndex(i));
+      int indK[3]={0,0,0},restK=0;
+      for (int j=0;j<3;j++) {
+	int ind = trc->GetKinkIndex(j);
+	if (!ind) break;
+	if (TMath::Abs(ind)!=rm+1) indK[restK++] = ind;
+      }
+      trc->SetKinkIndexes(indK);
     }
-    trc->SetKinkIndexes(indK);
   }
   //
   a.RemoveAt(rm);
@@ -736,18 +738,21 @@ Bool_t  AliESDEvent::RemoveKink(Int_t rm) const
   new (a[rm]) AliESDkink(*kink);
   // 
   // update references on the moved kink
-  for (int i=2;i--;) {
-    AliESDtrack* trc = GetTrack(kink->GetIndex(i));
-    int indK[3]={0,0,0},restK=0;
-    for (int j=0;j<3;j++) {
-      int ind = trc->GetKinkIndex(j);
-      if (!ind) break;
-      int lastI = last+1;
-      if (ind==lastI) indK[j] = lastI;
-      else if (ind==-lastI) indK[j] = -lastI;
+  if (kink->GetIndex(0)>=0 && kink->GetIndex(1)>=0) { // the indices migh have been already disabled
+    for (int i=2;i--;) {
+      AliESDtrack* trc = GetTrack(kink->GetIndex(i));
+      int indK[3]={0,0,0},restK=0;
+      for (int j=0;j<3;j++) {
+	int ind = trc->GetKinkIndex(j);
+	if (!ind) break;
+	int lastI = last+1;
+	if (ind==lastI) indK[j] = rm+1;
+	else if (ind==-lastI) indK[j] = -(rm+1);
+      }
+      trc->SetKinkIndexes(indK);
     }
-    trc->SetKinkIndexes(indK);
   }
+  a.RemoveAt(last); // remove original copy of moved tracks
   //
   return kTRUE;
 }
@@ -765,145 +770,90 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
   AliESDv0 *v0=GetV0(rm);
   Int_t idxP=v0->GetPindex(), idxN=v0->GetNindex();
 
-  v0=GetV0(last);
-  Int_t lastIdxP=v0->GetPindex(), lastIdxN=v0->GetNindex();
-
-  Int_t used=0;
-
-  /* // RS if it is, so what? Cascade has complete information
   // Check if this V0 comes from a reconstructed decay
   Int_t ncs=GetNumberOfCascades();
   for (Int_t n=0; n<ncs; n++) {
     AliESDcascade *cs=GetCascade(n);
-
-    Int_t csIdxP=cs->GetPindex();
-    Int_t csIdxN=cs->GetNindex();
-
-    if (idxP==csIdxP)
-       if (idxN==csIdxN) return kFALSE;
-
-    if (csIdxP==lastIdxP)
-       if (csIdxN==lastIdxN) used++;
+    if (idxP==cs->GetPindex() && idxN==cs->GetNindex()) return kFALSE; // cannot remove
   }
-  */ 
 
   //Replace the removed V0 with the last V0 
   TClonesArray &a=*fV0s;
   delete a.RemoveAt(rm);
-
-  if (rm==last) return kTRUE;
-
-  //v0 is pointing to the last V0 candidate... 
-  new (a[rm]) AliESDv0(*v0);
-  delete a.RemoveAt(last);
-
-  /* 
-     // RS: why do we need to remap indices of the tracks when just the V0 is removed?
-
-  if (!used) return kTRUE;
-  
-
-  // Remap the indices of the daughters of reconstructed decays
-  for (Int_t n=0; n<ncs; n++) {
-    AliESDcascade *cs=GetCascade(n);
-
-
-    Int_t csIdxP=cs->GetPindex();
-    Int_t csIdxN=cs->GetNindex();
-
-    if (csIdxP==lastIdxP)
-      if (csIdxN==lastIdxN) {
-         cs->AliESDv0::SetIndex(1,idxP);
-         cs->AliESDv0::SetIndex(0,idxN);
-         used--;
-         if (!used) return kTRUE;
-      }
+  if (rm!=last) {
+    //move last v0 in place of removed one
+    v0=GetV0(last);
+    new (a[rm]) AliESDv0(*v0);
+    delete a.RemoveAt(last);
   }
-  */
   return kTRUE;
 }
 
 //______________________________________________________________________________
-AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const 
+AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm, Bool_t checkPrimVtx) const 
 {
 // ---------------------------------------------------------
 // Remove a track and references to it from ESD,
 // if this track does not come from a reconstructed decay
 // ---------------------------------------------------------
+
+  AliESDtrack* trc = GetTrack(rm);
+  if (trc->GetKinkIndex(0)!=0) return 0;
+
   Int_t last=GetNumberOfTracks()-1;
   if ((rm<0)||(rm>last)) return 0;
-
+  Int_t ncs=GetNumberOfCascades();
+  Int_t nv0=GetNumberOfV0s();
+  Int_t ncl=GetNumberOfCaloClusters();
   Int_t used=0;
+  Bool_t lastUsePVTrc=kFALSE,lastUsePVTPC=kFALSE,lastUseV0=kFALSE,lastUseCasc=kFALSE;
 
-  // Check if this track comes from the reconstructed primary vertices
   if (fTPCVertex && fTPCVertex->GetStatus()) {
-     UShort_t *primIdx=fTPCVertex->GetIndices();
-     Int_t n=fTPCVertex->GetNIndices();
-     while (n--) {
-       Int_t idx=Int_t(primIdx[n]);
-       if (rm==idx) return 0;
-       if (idx==last) used++; 
-     }
+    if (checkPrimVtx && fTPCVertex->UsesTrack(rm)) return 0;// Check if this track comes from the reconstructed primary vertices
+    if (fTPCVertex->UsesTrack(last)) {
+      lastUsePVTPC = kTRUE;
+      used++;
+    }
   }
   if (fPrimaryVertex && fPrimaryVertex->GetStatus()) {
-     UShort_t *primIdx=fPrimaryVertex->GetIndices();
-     Int_t n=fPrimaryVertex->GetNIndices();
-     while (n--) {
-       Int_t idx=Int_t(primIdx[n]);
-       if (rm==idx) return 0;
-       if (idx==last) used++; 
-     }
+    if (checkPrimVtx && fPrimaryVertex->UsesTrack(rm)) return 0;// Check if this track comes from the reconstructed primary vertices
+    if (fPrimaryVertex->UsesTrack(last)) {
+      lastUsePVTrc = kTRUE;
+      used++;
+    }
   }
-  
+
   // Check if this track comes from a reconstructed decay
-  Int_t nv0=GetNumberOfV0s();
   for (Int_t n=0; n<nv0; n++) {
     AliESDv0 *v0=GetV0(n);
-
+    
     Int_t idx=v0->GetNindex();
     if (rm==idx) return 0;
     if (idx==last) used++;
-
+    
     idx=v0->GetPindex();
     if (rm==idx) return 0;
     if (idx==last) used++;
   }
 
-  Int_t ncs=GetNumberOfCascades();
   for (Int_t n=0; n<ncs; n++) {
     AliESDcascade *cs=GetCascade(n);
-
+    
     Int_t idx=cs->GetIndex();
     if (rm==idx) return 0;
     if (idx==last) used++;
-
+    
     AliESDv0 *v0=cs;
     idx=v0->GetNindex();
     if (rm==idx) return 0;
     if (idx==last) used++;
-
+    
     idx=v0->GetPindex();
     if (rm==idx) return 0;
     if (idx==last) used++;
   }
 
-  Int_t nkn=GetNumberOfKinks();
-  /*RS
-  for (Int_t n=0; n<nkn; n++) {
-    AliESDkink *kn=GetKink(n);
-
-    Int_t idx=kn->GetIndex(0);
-    if (rm==idx) return 0;
-    if (idx==last) used++;
-
-    idx=kn->GetIndex(1);
-    if (rm==idx) return 0;
-    if (idx==last) used++;
-  }
-  */
   // Check if this track is associated with a CaloCluster
-  Int_t ncl=GetNumberOfCaloClusters();
-
   for (Int_t n=0; n<ncl; n++) {
     AliESDCaloCluster *cluster=GetCaloCluster(n);
     TArrayI *arr=cluster->GetTracksMatched();
@@ -937,89 +887,49 @@ AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const
   t->ReleaseESDfriendTrack(); // nullify friend pointer
   AliESDtrack* trMove = new (a[rm]) AliESDtrack(*t);
   trMove->SetFriendTrackPointer(tfr);
-  trMove->SetFriendTrackID(trm->GetFriendTrackID());
   trMove->SetFriendNotStored(tfr==0);
   tfr->SetESDtrackID(rm);
   delete a.RemoveAt(last);
 
+  // check if moved track was pointing to a kink, fix index
+  for (int iki=0;iki<3;iki++) {
+    int idkink = trMove->GetKinkIndex(iki);
+    if (!idkink) break;
+    AliESDkink *kn = (AliESDkink*)GetKink(TMath::Abs(idkink)-1);
+    kn->SetIndex(rm, idkink<0 ? 0:1);    
+  }
+  
   if (!used) return trfKeep;
   
-
   // Remap the indices of the tracks used for the primary vertex reconstruction
-  if (fTPCVertex && fTPCVertex->GetStatus()) {
-     UShort_t *primIdx=fTPCVertex->GetIndices();
-     Int_t n=fTPCVertex->GetNIndices();
-     while (n--) {
-       Int_t idx=Int_t(primIdx[n]);
-       if (idx==last) {
-          primIdx[n]=Short_t(rm); 
-          used--;
-          if (!used) return trfKeep;
-       }
-     }
-  }  
-  if (fPrimaryVertex && fPrimaryVertex->GetStatus()) {
-     UShort_t *primIdx=fPrimaryVertex->GetIndices();
-     Int_t n=fPrimaryVertex->GetNIndices();
-     while (n--) {
-       Int_t idx=Int_t(primIdx[n]);
-       if (idx==last) {
-          primIdx[n]=Short_t(rm); 
-          used--;
-          if (!used) return trfKeep;
-       }
-     }
-  }  
+  if ( lastUsePVTPC && fTPCVertex->SubstituteTrack(last,rm)) used--;
+  if ( lastUsePVTrc && fPrimaryVertex->SubstituteTrack(last,rm)) used--;
+  if (used<1) return trfKeep;
 
   // Remap the indices of the daughters of reconstructed decays
   for (Int_t n=0; n<nv0; n++) {
     AliESDv0 *v0=GetV0(n);
-    if (v0->GetIndex(0)==last) {
-       v0->SetIndex(0,rm);
-       used--;
-       if (!used) return trfKeep;
-    }
-    if (v0->GetIndex(1)==last) {
-       v0->SetIndex(1,rm);
-       used--;
-       if (!used) return trfKeep;
+    for (int ip=2;ip--;) {
+      if (v0->GetIndex(ip)==last) {
+	v0->SetIndex(ip,rm);
+	if (--used<1) return trfKeep;
+      }
     }
   }
-
   for (Int_t n=0; n<ncs; n++) {
     AliESDcascade *cs=GetCascade(n);
     if (cs->GetIndex()==last) {
-       cs->SetIndex(rm);
-       used--;
-       if (!used) return trfKeep;
+      cs->SetIndex(rm);
+      if (--used<1) return trfKeep;
     }
     AliESDv0 *v0=cs;
-    if (v0->GetIndex(0)==last) {
-       v0->SetIndex(0,rm);
-       used--;
-       if (!used) return trfKeep;
-    }
-    if (v0->GetIndex(1)==last) {
-       v0->SetIndex(1,rm);
-       used--;
-       if (!used) return trfKeep;
+    for (int ip=2;ip--;) {
+      if (v0->GetIndex(ip)==last) {
+	v0->SetIndex(ip,rm);
+	if (--used<1) return trfKeep;
+      }
     }
   }
-
-  for (Int_t n=0; n<nkn; n++) {
-    AliESDkink *kn=GetKink(n);
-    if (kn->GetIndex(0)==last) {
-       kn->SetIndex(rm,0);
-       used--;
-       if (!used) return trfKeep;
-    }
-    if (kn->GetIndex(1)==last) {
-       kn->SetIndex(rm,1);
-       used--;
-       if (!used) return trfKeep;
-    }
-  }
-
   // Remap the indices of the tracks accosicated with CaloClusters
   for (Int_t n=0; n<ncl; n++) {
     AliESDCaloCluster *cluster=GetCaloCluster(n);
@@ -1028,16 +938,181 @@ AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const
     while (s--) {
       Int_t idx=arr->At(s);
       if (idx==last) {
-         arr->AddAt(rm,s);
-         used--; 
-         if (!used) return trfKeep;
+	arr->AddAt(rm,s);
+	if (--used<1) return trfKeep;
       }
     }
   }
-
   return trfKeep;
 }
 
+//______________________________________________________________________________
+int AliESDEvent::CleanV0s(const AliGRPRecoParam *grpRecoParam) 
+{
+  // remove v0's not contributing to physics
+  double etaMax = grpRecoParam ? grpRecoParam->GetVertexerV0EtaMax() : 5.0;
+  const TObjArray* v0HypSel =  grpRecoParam ? grpRecoParam->GetV0HypSelArray() : 0;
+  int nv0Rem=0, nhypsel = v0HypSel ? v0HypSel->GetEntriesFast() : 0;
+  Bool_t cleanProngs = grpRecoParam ? grpRecoParam->GetCleanOfflineV0Prongs() : kFALSE;
+  if (!cleanProngs && !nhypsel && etaMax>3) return nv0Rem;
+  const double zeroArr[15] = {0.};
+
+  AliV0HypSel::AccountBField(GetMagneticField());
+  
+  for (int iv=GetNumberOfV0s();iv--;) {
+    const AliESDv0 *v0 = GetV0(iv);
+    int badV0 = 0;
+    if (v0->GetUsedByCascade()) continue; // don't touch V0s used for cascades
+    //
+    if (v0->GetOnFlyStatus()) {
+      if (TMath::Abs(v0->Eta())>etaMax) badV0 = 1;
+      else if (nhypsel) {
+	Bool_t reject = kTRUE;
+	float pt = v0->Pt();
+	for (int ih=nhypsel;ih--;) {
+	  const AliV0HypSel* hyp = (const AliV0HypSel*)(*v0HypSel)[ih];
+	  double m = v0->GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
+	  if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
+	    reject = kFALSE;
+	    break;
+	  }
+	} // loop over hypotheses
+	if (reject) badV0 = 2;
+      }
+    } // end of online V0 check
+    else {
+      if ( TMath::Abs(v0->Eta())>etaMax) badV0 = 1; // offline V0s have passed mass hypothesis check already at V0-vertexer level      
+      else if (cleanProngs) { // empty redundand prongs info
+	AliExternalTrackParam *parP=(AliExternalTrackParam*)v0->GetParamP();
+	AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
+	parP->Set(parP->GetX(),0.,zeroArr,zeroArr);
+	parN->Set(parN->GetX(),0.,zeroArr,zeroArr);
+      }
+    } // end of offline V0 check
+    
+    if (badV0) nv0Rem += RemoveV0(iv);
+  }
+  return nv0Rem;
+}
+
+//______________________________________________________________________________
+Bool_t AliESDEvent::Clean(TObjArray* tracks2destroy, const AliGRPRecoParam *grpRecoParam) 
+{
+  static TBits trackUsed, removeCand;
+  Bool_t rc = kFALSE;
+  // 
+  trackUsed.ResetAllBits();
+  removeCand.ResetAllBits();
+  //
+  ULong_t flagsToKeep = grpRecoParam ? grpRecoParam->GetFlagsNotToClean() : 0;
+
+  // flag the tracks used by primary vertices, they will not be touched. 
+  if (fTPCVertex && fTPCVertex->GetStatus()) {
+    const UShort_t *vind = fTPCVertex->GetIndices();
+    if (vind) for (int id=fTPCVertex->GetNIndices();id--;) trackUsed.SetBitNumber(vind[id]);
+  }
+  if (fPrimaryVertex && fPrimaryVertex->GetStatus()) {
+    const UShort_t *vind = fPrimaryVertex->GetIndices();
+    if (vind) for (int id=fPrimaryVertex->GetNIndices();id--;) trackUsed.SetBitNumber(vind[id]);
+  }
+
+  for (int ic=GetNumberOfCascades();ic--;) {
+    // flag the tracks used by cascades, they will not be touched. Note that cascades use only offline V0's
+    const AliESDcascade* casc = GetCascade(ic); 
+    trackUsed.SetBitNumber(casc->GetIndex());
+    trackUsed.SetBitNumber(casc->GetPindex());
+    trackUsed.SetBitNumber(casc->GetNindex());
+  }
+  //
+  for (int iv=GetNumberOfV0s();iv--;) {
+    const AliESDv0 *v0 = GetV0(iv);
+    trackUsed.SetBitNumber(v0->GetIndex(0));
+    trackUsed.SetBitNumber(v0->GetIndex(1));
+  }
+  //
+  for (int it=GetNumberOfCosmicTracks();it--;) {
+    const AliESDCosmicTrack *tc = GetCosmicTrack(it);
+    if (!tc) continue;
+    trackUsed.SetBitNumber(tc->GetESDUpperTrackIndex());
+    trackUsed.SetBitNumber(tc->GetESDLowerTrackIndex());
+  }
+  // Flag tracks matched to Calo clusters
+  int nec = GetNumberOfCaloClusters(), necMatch=0;
+  for (Int_t ic=0; ic<nec; ic++) {
+    AliESDCaloCluster *cluster = GetCaloCluster(ic);
+    TArrayI *arr = cluster->GetTracksMatched();
+    Int_t s = arr->GetSize();
+    while (s--) {
+      int tid = arr->At(s);
+      if (!trackUsed.TestBitNumber(tid)) necMatch++;
+      trackUsed.SetBitNumber(tid);      
+    }
+  }
+  
+  // remove TPC-only tracks not used by dependent objects
+  int nRemCand = 0;
+  float dcaZCut = grpRecoParam ? grpRecoParam->GetCleanDCAZCut() : -1;
+  if (dcaZCut>0) {
+    const AliESDVertex* vtx = GetPrimaryVertex();
+    float zVtx = vtx->GetStatus() ? vtx->GetZ() : 0.;
+    for (int itr=0;itr<GetNumberOfTracks();itr++) {
+      if (trackUsed.TestBitNumber(itr)) continue; // used by other objects
+      AliESDtrack* trc = GetTrack(itr);
+      if ( (trc->GetStatus() & flagsToKeep)!=0 ) continue; // don't discard with these flags
+      //
+      float impPar[2],impCov[3]={0.,0.,0.};
+      trc->GetImpactParameters(impPar,impCov);       
+      if (impCov[2]<1e-9) { // track was not propagated to vertex, use straight line propagation
+	impPar[1] = trc->GetZ()-trc->GetTgl()*trc->GetX() - zVtx;
+      }
+      if (TMath::Abs(impPar[1])<dcaZCut) continue; // don't touch tracks close to the vtx
+
+      // check if track is a candidate to be matched with PHOS
+      const AliExternalTrackParam* outPar = trc->GetOuterParam();
+      double xEst=0, xyzPHOS[3];
+      if ( outPar && outPar->GetXatLabR(460.,xEst, GetMagneticField()) &&
+	   outPar->GetXYZAt(xEst,GetMagneticField(),xyzPHOS) &&
+	   TMath::Abs(xyzPHOS[2])<95. && // +-64cm + safety margin
+	   TMath::Abs(-1.3963-TMath::ATan2(xyzPHOS[1],xyzPHOS[0]))<7.854e-01) { // 240<phi<330 with 5 degrees margin
+	continue; // spare this track for potential PHOS matching
+      }
+      // flag candidate for removal track
+      removeCand.SetBitNumber(itr);
+      nRemCand++;
+    } // loop over TPConly tracks
+  }
+
+  if (!nRemCand) return kFALSE; // not track to be removed
+  
+  // check if there are kinks whose both legs are flagged for removal
+  for (int ik=GetNumberOfKinks();ik--;) {
+    const AliESDkink *kink = GetKink(ik);
+    int indM = kink->GetIndex(0);
+    int indD = kink->GetIndex(1);
+    // remove kink only if both mother and daughter are to be spared
+    if (removeCand.TestBitNumber(indM) && removeCand.TestBitNumber(indD)) { 
+      RemoveKink(ik);
+    }
+    else {
+      removeCand.ResetBitNumber(indM); // make sure both legs of spared kink are spared
+      removeCand.ResetBitNumber(indD);
+    }
+  }
+  //
+  for (int itr=GetNumberOfTracks();itr--;) {
+    if (removeCand.TestBitNumber(itr)) {
+      AliESDfriendTrack *remTr = RemoveTrack(itr, kFALSE);
+      if (remTr) {
+	rc=kTRUE;
+	tracks2destroy->Add(remTr);
+      }
+    }
+  }
+  
+  return rc;  
+}
+
+/*
 //______________________________________________________________________________
 Bool_t AliESDEvent::Clean(Float_t *cleanPars, TObjArray* tracks2destroy) 
 {
@@ -1109,7 +1184,7 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars, TObjArray* tracks2destroy)
 
   return rc;
 }
-
+*/
 //______________________________________________________________________________
 Char_t  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx) 
 {
@@ -2543,6 +2618,7 @@ void AliESDEvent::ConnectTracks() {
     TIter nextTOF(fESDTOFClusters);
     while ((clus=(AliESDTOFCluster*)nextTOF())) clus->SetEvent((AliVEvent *) this);
   }
+  RestoreOfflineV0Prongs();
   fTracksConnected = kTRUE;
   //
 }
@@ -2748,7 +2824,8 @@ void AliESDEvent::RestoreOfflineV0Prongs()
     if (v0->GetOnFlyStatus()) continue;    
     AliExternalTrackParam *parP = (AliExternalTrackParam*) v0->GetParamP();
     AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
-    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) continue; // were not filled by 0s
+    // if at least 1 v0 was not filled by 0s, this is true for all
+    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) break; 
     double xP = parP->GetX(), xN = parN->GetX(); // Only X info is valid
     *parP = *GetTrack(v0->GetPindex());
     *parN = *GetTrack(v0->GetNindex());

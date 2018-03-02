@@ -613,7 +613,9 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
   if (!fEvent) return;
 
   AliESDtrack iotrack;
-  
+  static TArrayI supKinks; // list of kinks to suppress
+  int nSupKink = 0;
+  supKinks.Set(fEvent->GetNumberOfKinks());
     // write tracks to the event
     // store index of the track
     Int_t nseed=arr->GetEntriesFast();
@@ -632,7 +634,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	  "\n";       
       }
       //      pt->PropagateTo(fkParam->GetInnerRadiusLow());
-      if (pt->GetKinkIndex(0)<=0){  //don't propagate daughter tracks 
+      int knkIndex = pt->GetKinkIndex(0);
+      if (knkIndex<=0){  //don't propagate daughter tracks 
 	pt->PropagateTo(fkParam->GetInnerRadiusLow());
 	pt->SetRow(0); // RS: memorise row
       }
@@ -669,15 +672,16 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       //
       // short tracks  - maybe decays
 
-      //RS Seed don't keep their cluster pointers, cache cluster usage stat. for fast evaluation
+      //RS Seeds don't keep their cluster pointers, cache cluster usage stat. for fast evaluation
       // FillSeedClusterStatCache(pt); // RS use this slow method only if info on shared statistics is needed
 
-      if ( (pt->GetNumberOfClusters()>30) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.70) {
+      if ( knkIndex || // RS don't reject track belonging to kinks
+	   ((pt->GetNumberOfClusters()>30) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.70)) {
 	Int_t found,foundable; //,shared;
 	//GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
 	//pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
 	pt->GetClusterStatistic(0,60,found, foundable);
-	if ( (found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2)){
+	if ( knkIndex || ((found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2)) ) {
 	  iotrack.~AliESDtrack();
 	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
@@ -698,8 +702,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	//RS GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
 	//pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
 	pt->GetClusterStatistic(0,60,found,foundable);
-	if (found<20) continue;
-	if (pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
+	if (found<20 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
 	//
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
@@ -742,10 +745,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	//GetCachedSeedClusterStatistic(138,158,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
 	//RS pt->GetClusterStatistic(138,158,found, foundable,shared,kFALSE);  //RS: avoid this method: seed does not keep clusters
 	pt->GetClusterStatistic(138,158,found, foundable);
-	if (found<15) continue;
-	if (foundable<=0) continue;
-	if (pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
-	if (float(found)/float(foundable)<0.8) continue;
+	if (found<15 || foundable<=0 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2
+	    || float(found)/float(foundable)<0.8) continue;
 	//
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
@@ -759,9 +760,10 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
 	continue;
-      }   
+      }      
     }
     // >> account for suppressed tracks in the kink indices (RS)
+    Bool_t accKM[fEvent->GetNumberOfKinks()] = {kFALSE}, accKD[fEvent->GetNumberOfKinks()] = {kFALSE};
     int nESDtracks = fEvent->GetNumberOfTracks();
     for (int it=nESDtracks;it--;) {
       AliESDtrack* esdTr = fEvent->GetTrack(it);
@@ -769,15 +771,50 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       for (int ik=0;ik<3;ik++) {
 	int knkId=0;
 	if (!(knkId=esdTr->GetKinkIndex(ik))) break; // no more kinks for this track
-	AliESDkink* kink = fEvent->GetKink(TMath::Abs(knkId)-1);
+	int kinkID =  TMath::Abs(knkId)-1;
+	AliESDkink* kink = fEvent->GetKink(kinkID);
 	if (!kink) {
 	  AliError(Form("ESDTrack%d refers to non-existing kink %d",it,TMath::Abs(knkId)-1));
 	  continue;
 	}
-	kink->SetIndex(it, knkId<0 ? 0:1); // update track index of the kink: mother at 0, daughter at 1
+	if (knkId<0) { // update track index of the kink: mother at 0, daughter at 1
+	  kink->SetIndex(it, 0); 
+	  accKM[kinkID] = kTRUE;
+	}
+	else {
+	  kink->SetIndex(it, 1); 
+	  accKD[kinkID] = kTRUE;
+	}
       }
     }
-
+    // make sure all kinks accounted, remove those which have just one track in the ESD
+    int nremKinks = 0;
+    for (int ik=0;ik<fEvent->GetNumberOfKinks();ik++) {
+      if ( accKM[ik] && accKD[ik] ) continue; // both tracks are in ESD
+      AliESDkink* knk = fEvent->GetKink(ik);
+      int idxOK = accKM[ik] ? 0 : (accKD[ik] ? 1 : -1);
+      if (idxOK != -1) { 
+	// suppress reference from survived track to the kink to be suppressed
+	AliESDtrack* trSurv = fEvent->GetTrack( knk->GetIndex( idxOK ) );
+	int idx[3] = {0,0,0};
+	int kid = 0, nidx=0;
+	for (int ii=0;ii<3;ii++) {
+	  if ( !(kid=trSurv->GetKinkIndex(ii)) ) break;
+	  if (TMath::Abs(kid)-1 == ik) continue;
+	  idx[nidx++] = kid;
+	}
+	trSurv->SetKinkIndexes(idx);
+      }
+      knk->SetIndex(-1,0);
+      knk->SetIndex(-1,1);
+      nremKinks++;
+    }
+    if (nremKinks) {
+      for (int ik=fEvent->GetNumberOfKinks();ik--;) {
+	AliESDkink* knk = fEvent->GetKink(ik);
+	if (knk->GetIndex(0)<0) fEvent->RemoveKink(ik);
+      }
+    }
     // << account for suppressed tracks in the kink indices (RS)  
     AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
   
@@ -7675,7 +7712,8 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	continue;
       }
       //
-      Int_t index = esd->AddKink(&kinkl);      
+      Int_t index = esd->AddKink(&kinkl);
+      AliESDkink* kinkNew = esd->GetKink(index);
       mother.SetKinkIndex(0,-(index+1));
       daughter.SetKinkIndex(0,index+1);
       if (mother.GetNumberOfClusters()>50) {
@@ -7683,15 +7721,18 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	AliTPCseed* mtc = new( NextFreeSeed() ) AliTPCseed(mother);
 	mtc->SetPoolID(fLastSeedID);
 	array->AddAt(mtc,i);
+	kinkNew->SetIndex(i,0);
       }
       else{
 	AliTPCseed* mtc = new( NextFreeSeed() ) AliTPCseed(mother);
 	mtc->SetPoolID(fLastSeedID);
 	array->AddLast(mtc);
+	kinkNew->SetIndex(array->GetLast(),0);
       }
       AliTPCseed* dtc = new( NextFreeSeed() ) AliTPCseed(daughter);
       dtc->SetPoolID(fLastSeedID);
-      array->AddLast(dtc);      
+      array->AddLast(dtc);
+      kinkNew->SetIndex(array->GetLast(),1);
       for (Int_t icl=0;icl<row0;icl++) {
 	Int_t tpcindex= mother.GetClusterIndex2(icl);
 	if (tpcindex<0) continue;

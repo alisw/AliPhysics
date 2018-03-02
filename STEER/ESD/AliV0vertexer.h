@@ -29,8 +29,7 @@ public:
   static void GetDefaultCuts(Double_t *cuts);
 
   void SetV0HypSel(const TObjArray* selArr);
-  void AddV0HypSel(const AliV0HypSel& h);
-  const TObjArray& GetV0HypSelArray() const {return fV0HypSelArray;}
+  const TObjArray* GetV0HypSelArray() const {return fV0HypSelArray;}
   
 private:
   static
@@ -56,7 +55,7 @@ private:
   Double_t fCPAmin;       // minimal allowed cosine of V0's pointing angle
   Double_t fRmin, fRmax;  // max & min radii of the fiducial volume
 
-  TObjArray fV0HypSelArray; // array of V0 hypothesis to select
+  const TObjArray* fV0HypSelArray; // array of V0 hypothesis to select
   
   ClassDef(AliV0vertexer,5)  // V0 verterxer 
 };
@@ -71,9 +70,8 @@ inline AliV0vertexer::AliV0vertexer() :
   fCPAmin(fgCPAmin), 
   fRmin(fgRmin),
   fRmax(fgRmax),
-  fV0HypSelArray()
+  fV0HypSelArray(0)
 {
-  fV0HypSelArray.SetOwner(kTRUE);
 }
 
 inline void AliV0vertexer::SetCuts(const Double_t *cuts) {

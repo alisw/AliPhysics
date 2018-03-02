@@ -2517,6 +2517,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 vtxer.SetCuts(cutsV0vertexer);
 	 //
 	 vtxer.SetV0HypSel(grpRecoParam->GetV0HypSelArray());
+	 if (iEvent==0 && grpRecoParam->GetV0HypSelArray()) {
+	   AliInfo("V0 selection hypotheses:");
+	   grpRecoParam->GetV0HypSelArray()->Print();
+	 }
        }
        vtxer.Tracks2V0vertices(fesd);
        AliSysInfo::AddStamp(Form("V0Finder_%d",iEvent), 0,0,iEvent); 
@@ -2558,9 +2562,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // write ESD
     UInt_t specie = fesd->GetEventSpecie();
     Bool_t keepAll = (specie==AliRecoParam::kCosmic || specie==AliRecoParam::kCalib);
-    if (fCleanESD && (!keepAll) ) {
-      CleanESD(fesd);
-      AliSysInfo::AddStamp(Form("CleanESD_%d",iEvent), 0,0,iEvent); 
+    if (!keepAll) {
+      fesd->CleanV0s(grpRecoParam);
+      if (fCleanESD ) {
+	CleanESD(fesd,grpRecoParam);
+	AliSysInfo::AddStamp(Form("CleanESD_%d",iEvent), 0,0,iEvent); 
+      }
     }
     // 
     // RS run updated trackleter: since we want to mark the clusters used by tracks and also mark the 
@@ -3392,7 +3399,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
+Bool_t AliReconstruction::CleanESD(AliESDEvent *esd, const AliGRPRecoParam *grpRecoParam) {
   //
   // Remove the data which are not needed for the physics analysis.
   //
@@ -3402,8 +3409,7 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   AliInfo
   (Form("Number of ESD tracks and V0s before cleaning: %d %d",nTracks,nV0s));
   TObjArray tracks2remove;
-  Float_t cleanPars[]={fV0DCAmax,fV0CsPmin,fDmax,fZmax};
-  Bool_t rc=esd->Clean(cleanPars,&tracks2remove);
+  Bool_t rc=esd->Clean(&tracks2remove,grpRecoParam);
   if (rc) { // physically destroy removed tracks
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (!fTracker[iDet]) continue;
