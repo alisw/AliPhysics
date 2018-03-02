@@ -82,6 +82,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hPadDistance(0),
 	hTrackPt(0),
 	hNMaxiPadIn(0),
+	hNCrossTracks(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(0),
 	fMinPt(0),
@@ -129,6 +130,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hPadDistance(0),
 	hTrackPt(0),
 	hNMaxiPadIn(0),
+	hNCrossTracks(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(highpt),
 	fMinPt(lowpt),
@@ -420,7 +422,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackPadCorrEta->Fill(trc->Eta(),channelCTTM);
 		    }
 
-                numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
+                if(nFiredPads<2)numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);
 		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
