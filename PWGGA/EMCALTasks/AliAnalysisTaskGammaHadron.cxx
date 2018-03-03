@@ -2,7 +2,7 @@
 // Task to estimate the number of gamma-hadron
 // statistic available in the Pb+Pb run.
 //
-// Author: E. Epple, based on code by  B. Sahlmueller and C. Loizides
+// Authors: E. Epple, M. Oliver, based on code by  B. Sahlmueller and C. Loizides
 
 #include <Riostream.h>
 #include <TClonesArray.h>
@@ -60,7 +60,7 @@ fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -88,7 +88,7 @@ fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -178,11 +178,33 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	//fPoolSize       = 1;     //1000 - Raymond/Megan value, says it is ignored anyway
   fPoolSize       = -1; // fPoolSize is no longer ignored ?  Must be -1 or the max number of events to mix in each pool
 
+  // Pi0 Fixed Bin Mass, Sigma values
+//  Double_t fPi0MassFixedValue[kNoGammaBins] = {0.135,0.135,0.135,
+//                                          0.135,0.135,0.135,
+//                                          0.135,0.135,0.135}; //9
+//  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.01,0.01,0.01,
+//                                           0.01,0.01,0.01,
+//                                           0.01,0.01,0.01}; //9
+
+  // These cuts correspond to
+  // Lambda Range: [0.10 - 0.40]       Bins: 1 3
+  // Energy Range: [2.00 - 119.94]     Bins: 5 6
+  // Asym Range:   [0.00 - 0.80]       Bins: 1 4
+  Double_t fPi0MassFixedValue[kNoGammaBins] = {0.136189, 0.132716, 0.137215,
+                                               0.144112, 0.155093, 0.167641,
+                                               0.192909, 0.219976, 0.219976};
+  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.013780,0.016556, 0.015154,
+                                                0.014779, 0.017486, 0.018040,
+                                                0.021053, 0.029528, 0.029528}; //9
+  memcpy (fPi0MassFixed, fPi0MassFixedValue, sizeof(fPi0MassFixed));
+  memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue, sizeof(fPi0SigmaFixed));
+
 	// Pi0 Mass and Sigma Fit parameters (for mass window)
 	Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
 	memcpy (fPi0MassFitPars, fPi0MassFitParsValue, sizeof(fPi0MassFitPars));
 	Double_t fPi0SigmaFitParsValue[5] = {8.34,9.90e-3,-1.09e-4,6.86e-4,0};
 	memcpy (fPi0SigmaFitPars, fPi0SigmaFitParsValue, sizeof(fPi0SigmaFitPars));
+
 
 
 	//..member function of AliAnalysisTaskEmcal
@@ -1944,18 +1966,34 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
   Double_t Pi0Mass = 0;
   Double_t Pi0Sigma = 0;
 
-  // Estimate Mass Peak
-  if (Pi0Pt < fPi0MassFitPars[0]) {
-    Pi0Mass = fPi0MassFitPars[2]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[2]*fPi0MassFitPars[0];
-  } else {
-    Pi0Mass = fPi0MassFitPars[3]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[3]*fPi0MassFitPars[0];
+  if (fUseParamMassSigma) {
+    // Estimate Mass Peak
+    if (Pi0Pt < fPi0MassFitPars[0]) {
+      Pi0Mass = fPi0MassFitPars[2]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[2]*fPi0MassFitPars[0];
+    } else {
+      Pi0Mass = fPi0MassFitPars[3]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[3]*fPi0MassFitPars[0];
+    }
+    // Estimate Mass Sigma
+    if (Pi0Pt < fPi0SigmaFitPars[0]) {
+      Pi0Sigma = fPi0SigmaFitPars[2]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[2]*fPi0SigmaFitPars[0];
+    } else {
+      Pi0Sigma = fPi0SigmaFitPars[3]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[3]*fPi0SigmaFitPars[0];
+    }
+  } else { // Using fixed mass windows
+    // Finding pT Bin:
+    Int_t ptBin = 0; // Default is to use lowest bin
+
+    for (Int_t k = 0; k < kNoGammaBins-1; k++) {
+      if ((Pi0Pt >= fArray_G_Bins[k]) && (Pi0Pt < fArray_G_Bins[k+1])) {
+        ptBin = k;
+        break;
+      }
+    }
+
+    Pi0Mass = fPi0MassFixed[ptBin];
+    Pi0Sigma = fPi0SigmaFixed[ptBin];
   }
-  // Estimate Mass Sigma
-  if (Pi0Pt < fPi0SigmaFitPars[0]) {
-    Pi0Sigma = fPi0SigmaFitPars[2]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[2]*fPi0SigmaFitPars[0];
-  } else {
-    Pi0Sigma = fPi0SigmaFitPars[3]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[3]*fPi0SigmaFitPars[0];
-  }
+
   if (TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma) {
     fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
     return 0;
