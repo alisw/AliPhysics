@@ -428,7 +428,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
       const int nDEDXbins = 1000;
       float dedxBins[nDEDXbins+1];
-      SetBins(nDEDXbins, -10., 10., dedxBins);
+      SetBins(nDEDXbins, 0., 1000., dedxBins);
       hist_name = Form("fHistNSigmaSep%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
       fHistNSigmaSep[index] = new TH2F(hist_name.data(), hist_name.data(), hnbins, hxbins, 1000, -10., 10.);
       fOutput->Add(fHistNSigmaSep[index]);
@@ -462,7 +462,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
         hist_name = Form("fHistRecoMC%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
         const UInt_t nDims = 5;                                   // cent, recPt, genPt, truePID, IsPrim
-        int nBins[nDims] = { nCentBins, nPtBins, 4, nPtBins, 2 }; //
+        int nBins[nDims] = { nCentBins, nPtBins, nPtBins, 4, 2 }; //
         double minBin[nDims] = { 0., 0., 0., -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
         double maxBin[nDims] = { 1., 1., 1., 2.5, 1.5 };          // Dummy limits for cent, recPt, genPt
         fHistRecoMC[index] =
@@ -1189,6 +1189,12 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
       return kFALSE;
     }
     evtSel = kPassTrig;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kINELgt0)) {
+      AliDebug(3, "Event doesn't pass INEL>0 cut");
+      return kFALSE;
+    }
+    evtSel = kPassINELgtZERO;
 
     if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
       AliDebug(3, "Event with PileUp");
