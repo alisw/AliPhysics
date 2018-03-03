@@ -40,6 +40,7 @@
     void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
     void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
     void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+    void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
     void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma = input;}
     void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut = input;} 
 
@@ -156,6 +157,9 @@
   Int_t           fNRotBkgSamples;  ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;       //!<! Michael's THnSparse for pi0 Candidates
 
+  Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
+  Double_t        fPi0MassFixed[kNoGammaBins];            ///< Fixed Mass Peak per pT bin
+  Double_t        fPi0SigmaFixed[kNoGammaBins];           ///< Fixed Sigma per pT bin
   Double_t        fPi0MassFitPars[5];          ///< Fit Parameters for mass peak
   Double_t        fPi0SigmaFitPars[5];         ///< Fit Parameters for sigma
   Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
