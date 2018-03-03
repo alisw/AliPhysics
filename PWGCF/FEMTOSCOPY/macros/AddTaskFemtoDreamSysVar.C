@@ -1,8 +1,5 @@
 #ifndef ADDTASKFEMTODREAM_C
 #define ADDTASKFEMTODREAM_C
-#include "AliFemtoDreamEventCuts.h"
-#include "AliFemtoDreamTrackCuts.h"
-#include "AliAnalysisTaskFemtoDream.h"
 #include "TROOT.h"
 #include <stdio.h>
 AliAnalysisTask* AddTaskFemtoDreamSysVar(
