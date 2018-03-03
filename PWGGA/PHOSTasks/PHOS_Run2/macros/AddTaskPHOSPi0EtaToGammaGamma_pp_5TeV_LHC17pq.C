@@ -147,9 +147,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);//this was not sufficient in LHC17pq
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - (  [3]/(exp( -(x-[4]) / [5] ) + 1) * [6]/(exp( -(x-[7]) / [8] ) + 1) )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.992,2.47,5.81e-2,0.523,7.71,0.586);//2018023
+    f1tof->SetParameters(0.992,2.47,5.80e-2,0.750,6.23,0.280,0.731,7.82,0.857);//20180302
+    //f1tof->SetParameters(0.992,2.47,5.81e-2,0.523,7.71,0.586);//2018023
     //f1tof->SetParameters(0.990,2.52,6.10e-2,0.513,7.62,0.546);
     //f1tof->SetParameters(0.991,2.38,8.12e-3,0.425,7.63,0.677);
     //f1tof->SetParameters(0.996,2.33,1.97e-3,0.332,7.56,0.774);
