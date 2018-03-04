@@ -1337,10 +1337,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fZDCCtime = fZDCdata->GetZNCTime();
   
   if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
-  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
-  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
+  if(fZNAenergy < 11500 && fZNCenergy < 11500) fHistZDCCuts->Fill(2); //was 8200
+  if(fZNAenergy < 1500 && fZNCenergy < 1500) fHistZDCCuts->Fill(3); //was 683
   if(fZDCAtime == 0 && fZDCCtime == 0) fHistZDCCuts->Fill(4);
-
+  
   //primary vertex
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   fVtxContrib = fAODVertex->GetNContributors();
@@ -1374,8 +1374,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fHistNeventsEtaC3PiPiChannel->Fill(4);
   fHistNeventsEtaC4KaonChannel->Fill(4);
 
-  //if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
-  if( fZNAenergy > 1190 || fZNCenergy > 1190) return;
+  if( fZNAenergy > 11500 || fZNCenergy > 11500) return; // was 8200
+  if( fZNAenergy <= 1500 || fZNCenergy <= 1500) return;
 
   fHistNeventsEtaCK0sChannel->Fill(5);
   fHistNeventsEtaC->Fill(5); 
