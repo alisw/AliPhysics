@@ -293,7 +293,9 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
   // Shared momentum fraction
   name = "fHistFractionSharedPt";
   title = "Fraction of p_{T} shared between matched jets";
-  fHistManager.CreateTH1(name.c_str(), title.c_str(), 100, 0, 1);
+  // Need to include the bin from 1-1.01 to ensure that jets which shared all of their momentum
+  // due not end up in the overflow bin!
+  fHistManager.CreateTH1(name.c_str(), title.c_str(), 101, 0, 1.01);
 }
 
 /**
@@ -343,10 +345,13 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
     AliEmcalJet * jet2 = jet1->ClosestJet();
     if(!jet2) continue;
 
+    AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
+
     // Check shared fraction
     double sharedFraction = jetsHybrid->GetFractionSharedPt(jet1);
     fHistManager.FillTH1("fHistFractionSharedPt", sharedFraction);
     if (sharedFraction < fMinFractionShared) {
+      AliDebugStream(4) << "Rejecting jet due to momentum fraction of " << sharedFraction << ", smaller than the minimum.\n";
       continue;
     }
 
@@ -354,7 +359,8 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
     // TODO: Should we apply acceptance criteria to jet 2 here?
 
     // Get MC level jet
-    if(fResponseFromThreeJetCollections) {
+    AliEmcalJet * jetToPass = 0;
+    if (fResponseFromThreeJetCollections) {
       AliEmcalJet * jet3 = jet2->ClosestJet();
 
       // Accept jet 3
@@ -365,12 +371,20 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
         continue;
       }
 
-      // Assign to jet 2 so it will be filled in the response
-      jet2 = jet3;
+      AliDebugStream(4) << "jet3: " << jet3->toString() << "\n";
+
+      // Use for the response
+      AliDebugStream(4) << "Using part level jet for response\n";
+      jetToPass = jet3;
+    }
+    else {
+      // Use for the response
+      AliDebugStream(4) << "Using det level jet for response\n";
+      jetToPass = jet2;
     }
 
     // Fill response
-    FillResponseMatrix(jet1, jet2);
+    FillResponseMatrix(jet1, jetToPass);
   }
 
 }
@@ -384,6 +398,9 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
     AliErrorStream() << "Null jet passed to fill response matrix";
   }
 
+  AliDebugStream(3) << "About to create AliRMJets\n";
+  AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
+  AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
   // Create map from jetNumber to jet and initialize the objects
   std::map<unsigned int, AliRMJet> jetNumberToJet = {
     std::make_pair(1, CreateAliRMJet(jet1)),
