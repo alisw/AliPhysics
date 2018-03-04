@@ -4,11 +4,16 @@
 
 #include "AliAnalysisTaskEmcalJetHUtils.h"
 
+// Require to use AliLog streams with some types
+#include <iostream>
+
 #include <TMath.h>
 
 #include <AliLog.h>
 
 #include "AliEmcalJet.h"
+#include "AliEmcalParticleJetConstituent.h"
+#include "AliEmcalClusterJetConstituent.h"
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -37,17 +42,46 @@ double AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(AliEmcalJet * jet, AliA
   double maxClusterPt = 0;
 
   if (leadingHadronType == kCharged || leadingHadronType == kBoth) {
-    maxTrackPt = jet->MaxChargedPt();
+    auto particleConstituents = jet->GetParticleConstituents();
+    for (auto particle : particleConstituents) {
+      if (particle.Pt() > maxTrackPt) {
+        maxTrackPt  = particle.Pt();
+      }
+    }
+    // Swtich to this method once it is fixed in AliEmcalJet
+    /*auto particle = jet->GetLeadingParticleConstituent();
+    if (particle) {
+      maxTrackPt = particle->Pt();
+    }*/
   }
   if (leadingHadronType == kNeutral || leadingHadronType == kBoth) {
-    maxClusterPt = jet->MaxNeutralPt();
+    // NOTE: We don't want to use jet->MaxNeutralPt() because this uses energy
+    //       from the neutral particles at the particle level. While this is not
+    //       strictly wrong, it can be rather misleading to have a leading neutral
+    //       particle value when we are really interested in the cluster pt that is
+    //       only meaningful at detector level.
+    auto clusterConstituents = jet->GetClusterConstituents();
+    for (auto cluster : clusterConstituents) {
+      AliDebugGeneralStream("AliAnalysisTaskEmcalJetHUtils", 4) << "global index " << cluster.GetGlobalIndex() << ", E(): " << cluster.E() << ", pt(): " << cluster.Pt() << "\n";
+      if (cluster.Pt() > maxClusterPt) {
+        maxClusterPt = cluster.Pt();
+      }
+    }
+    AliDebugGeneralStream("AliAnalysisTaskEmcalJetHUtils", 4) << "N clusters: " << clusterConstituents.size() << ", Max cluster pt: " << maxClusterPt << "\n";
+
+    // Swtich to this method once it is fixed in AliEmcalJet
+    /*auto cluster = jet->GetLeadingClusterConstituent();
+    if (cluster) {
+      // Uses the energy definition that was used when the constituent was created
+      // to calculate the Pt(). Usually, this would be the hadronic corrected energy
+      maxClusterPt = cluster->Pt();
+    }*/
   }
 
   // The max value will be 0 unless it was filled. Thus, it will only be greater if
   // it was requested.
   return (maxTrackPt > maxClusterPt) ? maxTrackPt : maxClusterPt;
 }
-
 
 /**
  * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
