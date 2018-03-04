@@ -40,7 +40,7 @@ class AliVEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
 class AliStack;
-class AliAnalysisUtils;
+class AliEventCuts;
 class AliVParticle;
 class AliVTrack;
 class TClonesArray;
@@ -105,7 +105,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   AliESDtrackCuts     *fESDtrackCuts;  // ESD Track Cuts
   AliMCEvent          *fMCEvent;       // Current MC Event
   AliStack            *fMCStack;       // Stak tree
-  AliAnalysisUtils    *fanaUtils;      //using for pileup check
+  AliEventCuts        *fEventCuts;      //using for pileup check
   TString             fRun;            //Run  production name 
   TString             fCentralityEstimator;   // "V0M","TRK","CL1"
  
@@ -212,7 +212,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 3);
+  ClassDef(AliEbyEPidEfficiencyContamination, 4);
 };
 
 #endif

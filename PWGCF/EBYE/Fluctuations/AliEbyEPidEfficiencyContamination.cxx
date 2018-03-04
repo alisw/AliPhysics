@@ -44,7 +44,7 @@
 #include "AliPIDCombined.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
-#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliMultSelection.h"
 //#include "AliHelperPID.h"
 #include "AliAnalysisTaskSE.h"
@@ -76,7 +76,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fESDtrackCuts(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
-  fanaUtils(NULL),
+  fEventCuts(NULL),
   fRun("LHC10h"),
   fCentralityEstimator("V0M"),
   
@@ -179,7 +179,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fESDtrackCuts(NULL),
     fMCEvent(NULL),
     fMCStack(NULL),
-    fanaUtils(NULL),
+    fEventCuts(NULL),
     fRun("LHC10h"),
     fCentralityEstimator("V0M"),
     
@@ -274,7 +274,7 @@ AliEbyEPidEfficiencyContamination::~AliEbyEPidEfficiencyContamination() {
   
    // Default destructor
   if( fThnList ) delete fThnList;
-  if( fanaUtils ) delete fanaUtils;
+  if( fEventCuts ) delete fEventCuts;
   if( fESDtrackCuts ) delete fESDtrackCuts;
   
 }
@@ -292,7 +292,7 @@ void AliEbyEPidEfficiencyContamination::UserCreateOutputObjects(){
     AliError("No PID response task found !!");
   }
   
-  fanaUtils = new AliAnalysisUtils();
+  fEventCuts = new AliEventCuts();
   
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
@@ -679,20 +679,12 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     LocalPost();
     return;
   }
- 
-  //---Check pileup
-  if(!fanaUtils){
-    cout << "No pileup check ! " << endl;
+  
+  if(!fEventCuts->AcceptEvent(fVevent)) {
+    LocalPost();
     return;
   }
   
-  fanaUtils->SetUseMVPlpSelection(kTRUE);
-  fanaUtils->SetUseOutOfBunchPileUp(kTRUE);
-  
-  if(fanaUtils->IsPileUpMV(fVevent)) return;
-  //if(fanaUtils->IsOutOfBunchPileUp(fVevent)) return;
-  if(fanaUtils->IsSPDClusterVsTrackletBG(fVevent)) return;
-
   const AliVVertex *vertex = fVevent->GetPrimaryVertex();
   if(!vertex) { LocalPost(); return; }
 
