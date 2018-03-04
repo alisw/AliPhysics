@@ -891,7 +891,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
   }
 
   TObjArray *tokens = sztmp.Tokenize(",");
-  if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
+  if ((tokens->GetEntries() == 3) || (tokens->GetEntries() == 4)) {
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
       fProcessCorrelations.SetSameSign(kTRUE);
@@ -989,33 +989,24 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
       return kFALSE;
     }
 
-    /* resonace rejection configuration */
-    if (((TObjString*) tokens->At(2))->String().Contains("resonances:")) {
-      fProcessCorrelations.ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
-    }
-    else {
-      AliFatal("Resonance string not properly configured.ABORTING!!!");
-      return kFALSE;
-    }
-
     /* use weights or efficiency corrections or both */
-    if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
-        ((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
-        ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
-        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
+    if (((TObjString*) tokens->At(2))->String().EqualTo("weights") ||
+        ((TObjString*) tokens->At(2))->String().EqualTo("effcorr") ||
+        ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ||
+        ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff") ) {
       /* we will use weights or efficiency corrections so the weights filename has to be there */
-      if (tokens->GetEntries() == 5) {
+      if (tokens->GetEntries() == 4) {
         /* get the weights histos */
         TFile *weights;
         Char_t localbuffer[2048];
 
         TGrid::Connect("alien:");
-        weights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
+        weights = TFile::Open(((TObjString*) tokens->At(3))->String(),"OLD");
         if (weights != NULL && weights->IsOpen()) {
           /* the weights correction */
-          if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
-              ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
-              ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff")) {
+          if (((TObjString*) tokens->At(2))->String().EqualTo("weights") ||
+              ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ||
+              ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff")) {
             sprintf(localbuffer,"%s%s", pattern,szTrack1.Data());
             fhWeightsTrack_1 = (TH3F*) weights->Get(localbuffer);
             sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
@@ -1033,8 +1024,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
-          if (((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
-              ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ) {
+          if (((TObjString*) tokens->At(2))->String().EqualTo("effcorr") ||
+              ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ) {
             /* the efficiency correction */
             sprintf(localbuffer,"%seff_%s", pattern,szTrack1.Data());
             fhEffCorrTrack_1 = (TH1F*) weights->Get(localbuffer);
@@ -1052,8 +1043,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
-          if (((TObjString*) tokens->At(3))->String().EqualTo("pairseff") ||
-              ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
+          if (((TObjString*) tokens->At(2))->String().EqualTo("pairseff") ||
+              ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff") ) {
             /* the pairs efficiencies */
             sprintf(localbuffer,"%spairseff_PP", pattern);
             fhPairEfficiency_PP = (THn*) weights->Get(localbuffer);
@@ -1088,24 +1079,24 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
         return kFALSE;
       }
     }
-    else if (((TObjString*) tokens->At(3))->String().BeginsWith("simulate")) {
+    else if (((TObjString*) tokens->At(2))->String().BeginsWith("simulate")) {
       /* get the number of events to generate per real event */
       Int_t nSimEventsPerEvent;
-      if (((TObjString*) tokens->At(3))->String().EqualTo("simulate"))
+      if (((TObjString*) tokens->At(2))->String().EqualTo("simulate"))
         nSimEventsPerEvent = 1;
       else
-        sscanf(((TObjString*) tokens->At(3))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
+        sscanf(((TObjString*) tokens->At(2))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
 
       fProcessCorrelations.SetUseSimulation(kTRUE);
       fProcessCorrelations.SetSimEventsPerEvent(nSimEventsPerEvent);
       /* we will use particle profiles so the particle profiles filename has to be there */
-      if (tokens->GetEntries() == 5) {
+      if (tokens->GetEntries() == 4) {
         /* get the weights histos */
         TFile *trkprofiles;
         Char_t localbuffer[2048];
 
         TGrid::Connect("alien:");
-        trkprofiles = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
+        trkprofiles = TFile::Open(((TObjString*) tokens->At(3))->String(),"OLD");
         if (trkprofiles != NULL && trkprofiles->IsOpen()) {
           /* get the positive tracks density function */
           fPositiveTrackPdf = new TObjArray(64); fPositiveTrackPdf->SetOwner(kTRUE);
@@ -1153,12 +1144,12 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
         return kFALSE;
       }
     }
-    else if (((TObjString*) tokens->At(3))->String().EqualTo("effcorrtrue")) {
+    else if (((TObjString*) tokens->At(2))->String().EqualTo("effcorrtrue")) {
       fCorrectOnTrueEfficiency = kTRUE;
       fProcessCorrelations.SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
-    else if (((TObjString*) tokens->At(3))->String().EqualTo("noweights")) {
+    else if (((TObjString*) tokens->At(2))->String().EqualTo("noweights")) {
       fProcessCorrelations.SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
