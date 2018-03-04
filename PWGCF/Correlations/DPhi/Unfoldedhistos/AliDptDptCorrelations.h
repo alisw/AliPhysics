@@ -57,7 +57,9 @@ public:
   void                        SetRequestedCharge_2(Int_t q) { fRequestedCharge_2 = q; }
 
   void                        ConfigureBinning(const char *configstring);
+  void                        ConfigureResonances(const char *confstring);
   TString                     GetBinningConfigurationString() const;
+  TString                     GetResonancesConfigurationString() const;
 
 
   Bool_t                      SetWeigths(const TH3F *h3_1, const TH3F *h3_2);
@@ -86,6 +88,7 @@ public:
 private:
   void                        ProcessLikeSignPairs(Int_t bank);
   void                        ProcessNotHalfSymmLikeSignPairs(Int_t bank);
+  void                        FlagConversionsAndResonances();
   void                        ProcessUnlikeSignPairs();
   void                        ProcessNotHalfSymmUnlikeSignPairs();
 
@@ -95,6 +98,8 @@ private:
   void                        fillHistoWithArray(TH1 * h, float * array, int size);
   void                        fillHistoWithArray(TH2 * h, float * array, int size1, int size2);
   void                        fillHistoWithArray(TH3 * h, float * array, int size1, int size2, int size3);
+
+  Float_t                     checkIfResonance(Int_t ires, Bool_t fill, Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2);
 
 private:
   TList                      *fOutput;                      //!<! Output histograms list
@@ -119,14 +124,20 @@ private:
   Int_t                      *fCharge_1;                    //!<! the array of track 1 charge
   Int_t                      *fIxEtaPhi_1;                  //!<! the array of track 1 combined eta phi bin index
   Int_t                      *fIxPt_1;                      //!<! the array of track 1 pT bin index
-  Float_t                    *fPt_1;                        //!<! the array of track 1 pT
+  UInt_t                     *fFlags_1;                     //!<! the array of track 1 flags
+  Float_t                    *fPt_1;                        //!<! the array of track 1 \f$p_T\f$
+  Float_t                    *fEta_1;                       //!<! the array of track 1 \f$\eta\f$
+  Float_t                    *fPhi_1;                       //!<! the array of track 1 \f$\varphi\f$
   Float_t                    *fCorrection_1;                //!<! the array of the correction to apply to track 1
   Int_t                       fNoOfTracks2;                 ///< the number of stored track 2 tracks
   Int_t                      *fId_2;                        //!<! the array of track 2 Ids
   Int_t                      *fCharge_2;                    //!<! the array of track 2 charge
   Int_t                      *fIxEtaPhi_2;                  //!<! the array of track 2 combined eta phi bin index
   Int_t                      *fIxPt_2;                      //!<! the array of track 2 pT bin index
-  Float_t                    *fPt_2;                        //!<! the array of track 2 pT
+  UInt_t                     *fFlags_2;                     //!<! the array of track 2 flags
+  Float_t                    *fPt_2;                        //!<! the array of track 2 \f$p_T\f$
+  Float_t                    *fEta_2;                       //!<! the array of track 2 \f$\eta\f$
+  Float_t                    *fPhi_2;                       //!<! the array of track 2 \f$\varphi\f$
   Float_t                    *fCorrection_2;                //!<! the array of the correction to apply to track 2
 
   Float_t                    *fCorrectionWeights_1;         //!<! structure with the track 1 correction weights
@@ -247,6 +258,15 @@ private:
   TProfile                   *fhSum2PtNnw_12_vsC;           //!<! track 1 and 2 un-weighted accumulated \f${p_T}_1 n_2\f$ distribution vs event centrality
   TProfile                   *fhSum2NPtnw_12_vsC;           //!<! track 1 and 2 un-weighted accumulated \f$n_1 {p_T}_2\f$ distribution vs event centrality
 
+  static Int_t                fgkNoOfResonances;            ///< the number of resonances conversions to consider
+  static Double_t             fgkMass[16];                  ///< the masses of resonances conversions to consider
+  static Double_t             fgkChildMass[2][16];          ///< the masses of the resonances / conversions products
+  static Double_t             fgkMassThreshold[16];         ///< the resonance / conversion mass threshold modulus
+  Int_t                       fThresholdMult[16];           ///< the threshold multiplier, in 1/4 modulus units (i.e, four is one modulus, zero disable it)
+  TH2F                       *fhResonanceRoughMasses;       ///< the resonance approximate invariant mass histogram
+  TH2F                       *fhResonanceMasses;            ///< the resonance invariant mass histogram
+  TH2F                       *fhDiscardedResonanceMasses;   ///< the discarded resonance invariant mass histogram
+
 
 private:
   /// Copy constructor
@@ -258,8 +278,147 @@ private:
   AliDptDptCorrelations& operator=(const AliDptDptCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(AliDptDptCorrelations,2);
+  ClassDef(AliDptDptCorrelations,3);
   /// \endcond
 };
+
+inline Float_t GetSquaredInvMass(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
+{
+  /* original reference */
+  /* $Id: AliUEHistograms.h 20164 2007-08-14 15:31:50Z morsch $ */
+  // encapsulates several AliUEHist objects for a full UE analysis plus additional control histograms
+  // Author: Jan Fiete Grosse-Oetringhaus, Sara Vallero
+
+  // calculate inv mass squared
+  // same can be achieved, but with more computing time with
+  /*TLorentzVector photon, p1, p2;
+  p1.SetPtEtaPhiM(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), 0.510e-3);
+  p2.SetPtEtaPhiM(particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
+  photon = p1+p2;
+  photon.M()*/
+
+  Float_t tantheta1 = 1e10;
+
+  if (eta1 < -1e-10 || eta1 > 1e-10)
+  {
+    Float_t expTmp = TMath::Exp(-eta1);
+    tantheta1 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+
+  Float_t tantheta2 = 1e10;
+  if (eta2 < -1e-10 || eta2 > 1e-10)
+  {
+    Float_t expTmp = TMath::Exp(-eta2);
+    tantheta2 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+
+  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+
+  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
+
+  return mass2;
+}
+
+inline Float_t GetSquaredInvMassCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
+{
+  /* original reference */
+  /* $Id: AliUEHistograms.h 20164 2007-08-14 15:31:50Z morsch $ */
+  // encapsulates several AliUEHist objects for a full UE analysis plus additional control histograms
+  // Author: Jan Fiete Grosse-Oetringhaus, Sara Vallero
+
+  // calculate inv mass squared approximately
+
+  Float_t tantheta1 = 1e10;
+
+  if (eta1 < -1e-10 || eta1 > 1e-10)
+  {
+    Float_t expTmp = 1.0-eta1+eta1*eta1/2-eta1*eta1*eta1/6+eta1*eta1*eta1*eta1/24;
+    tantheta1 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+
+  Float_t tantheta2 = 1e10;
+  if (eta2 < -1e-10 || eta2 > 1e-10)
+  {
+    Float_t expTmp = 1.0-eta2+eta2*eta2/2-eta2*eta2*eta2/6+eta2*eta2*eta2*eta2/24;
+    tantheta2 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+
+  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+
+  // fold onto 0...pi
+  Float_t deltaPhi = TMath::Abs(phi1 - phi2);
+  while (deltaPhi > TMath::TwoPi())
+    deltaPhi -= TMath::TwoPi();
+  if (deltaPhi > TMath::Pi())
+    deltaPhi = TMath::TwoPi() - deltaPhi;
+
+  Float_t cosDeltaPhi = 0;
+  if (deltaPhi < TMath::Pi()/3)
+    cosDeltaPhi = 1.0 - deltaPhi*deltaPhi/2 + deltaPhi*deltaPhi*deltaPhi*deltaPhi/24;
+  else if (deltaPhi < 2*TMath::Pi()/3)
+    cosDeltaPhi = -(deltaPhi - TMath::Pi()/2) + 1.0/6 * TMath::Power((deltaPhi - TMath::Pi()/2), 3);
+  else
+    cosDeltaPhi = -1.0 + 1.0/2.0*(deltaPhi - TMath::Pi())*(deltaPhi - TMath::Pi()) - 1.0/24.0 * TMath::Power(deltaPhi - TMath::Pi(), 4);
+
+  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( cosDeltaPhi + 1.0 / tantheta1 / tantheta2 ) ) );
+
+  return mass2;
+}
+
+inline Float_t AliDptDptCorrelations::checkIfResonance(Int_t ires, Bool_t fill, Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2) {
+  /* inspired on */
+  /* $Id: AliUEHistograms.h 20164 2007-08-14 15:31:50Z morsch $ */
+  // encapsulates several AliUEHist objects for a full UE analysis plus additional control histograms
+  // Author: Jan Fiete Grosse-Oetringhaus, Sara Vallero
+
+  Bool_t itcouldbe = kFALSE;
+  Float_t mass = GetSquaredInvMassCheap(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[0][ires], fgkChildMass[1][ires]);
+
+  if (TMath::Abs(mass - fgkMass[ires]*fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
+    if (fill) fhResonanceRoughMasses->Fill(ires,TMath::Sqrt(mass));
+    mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[0][ires], fgkChildMass[1][ires]);
+
+    Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
+    Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
+
+    if ((low < mass) && (mass < high)) {
+      itcouldbe = kTRUE;
+    }
+    else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
+      /* switch masses hypothesis */
+      mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
+
+      Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
+      Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
+
+      if ((low < mass) && (mass < high)) {
+        itcouldbe = kTRUE;
+      }
+    }
+  }
+  else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
+    /* switch masses hypothesis */
+    mass = GetSquaredInvMassCheap(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
+
+    if (TMath::Abs(mass - fgkMass[ires]*fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
+      if (fill) fhResonanceRoughMasses->Fill(ires,TMath::Sqrt(mass));
+      mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
+
+      Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
+      Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
+
+      if ((low < mass) && (mass < high)) {
+        itcouldbe = kTRUE;
+      }
+    }
+  }
+  if (itcouldbe)
+    return mass;
+  else
+    return -1.0;
+}
+
 
 #endif // ALIDPTDPTCORRELATIONS_H
