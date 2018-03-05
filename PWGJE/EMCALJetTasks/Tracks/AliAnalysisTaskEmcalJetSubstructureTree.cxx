@@ -183,6 +183,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
  fQAHistos->CreateTH2("hClusterConstituentEHC", "cluster constituent hadronic-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
  fQAHistos->CreateTH2("hClusterIndexENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
  fQAHistos->CreateTH2("hClusterIndexEHC", "cluster constituent hadronic-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hLeadingChargedConstituentPt", "Pt of the leading charged constituent in jet; p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hLeadingClusterConstituentPt", "Pt of the leading cluster constituent in jet; p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
 #endif
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
@@ -658,21 +660,31 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
   }
 
   // Look over charged constituents
-  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().GetEntriesFast() << std::endl;
-  for(auto pconst : jet->GetParticleConstituents()) {
-    auto part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
-    AliDebugStream(3) << "Found particle constituent with pt " << part->Pt() << ", from VParticle " << part->GetParticle()->Pt() << std::endl;
-    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part->Pt());
+  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().size() << std::endl;
+  for(auto part : jet->GetParticleConstituents()) {
+    //auto part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
+    AliDebugStream(3) << "Found particle constituent with pt " << part.Pt() << ", from VParticle " << part.GetParticle()->Pt() << std::endl;
+    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part.Pt());
   }
 
   // Loop over neutral constituents
-  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().GetEntriesFast() << std::endl;
-  for(auto cconst : jet->GetClusterConstituents()){
-    auto clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
-    AliDebugStream(3) << "Found cluster constituent with energy " << clust->E() << " using energy definition " << static_cast<int>(clust->GetDefaultEnergyType()) << std::endl;
-    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust->E());
-    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust->GetCluster()->GetNonLinCorrEnergy());
-    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust->GetCluster()->GetHadCorrEnergy());
+  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().size() << std::endl;
+  for(auto clust : jet->GetClusterConstituents()){
+    //auto clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
+    AliDebugStream(3) << "Found cluster constituent with energy " << clust.E() << " using energy definition " << static_cast<int>(clust.GetDefaultEnergyType()) << std::endl;
+    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust.E());
+    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust.GetCluster()->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust.GetCluster()->GetHadCorrEnergy());
+  }
+
+  // Fill global observables: Leading charged and cluster constituents
+  auto leadingcharged = jet->GetLeadingParticleConstituent();
+  auto leadingcluster = jet->GetLeadingClusterConstituent();
+  if(leadingcluster){
+    fQAHistos->FillTH1("hLeadingClusterConstituentPt", jet->Pt(), leadingcluster->GetCluster()->GetHadCorrEnergy());
+  }
+  if(leadingcharged) {
+    fQAHistos->FillTH1("hLeadingChargedConstituentPt", jet->Pt(), leadingcharged->GetParticle()->Pt());
   }
 #endif
 }
