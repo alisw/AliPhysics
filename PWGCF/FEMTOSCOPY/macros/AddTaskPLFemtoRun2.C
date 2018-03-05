@@ -47,23 +47,74 @@ AliAnalysisTaskSE *AddTaskPLFemtoRun2(Int_t system=0/*0=pp,1=PbPb*/,
   if (task->GetTrigger() == AliVEvent::kHighMultV0) task->SetV0Percentile(0.1);
 
   if(suffix == "0") task->SetSystematics(AliFemtoCutValues::kDefault);
-  else if(suffix == "1") task->SetSystematics(AliFemtoCutValues::kProtonVariationLowerPtThresholdDown);
-  else if(suffix == "2") task->SetSystematics(AliFemtoCutValues::kProtonVariationLowerPtThresholdUp);
-  else if(suffix == "3") task->SetSystematics(AliFemtoCutValues::kProtonVariationEtaRangeUp);
-  else if(suffix == "4") task->SetSystematics(AliFemtoCutValues::kProtonVariationEtaRangeDown);
-  else if(suffix == "5") task->SetSystematics(AliFemtoCutValues::kProtonVariationNsigmaUp);
-  else if(suffix == "6") task->SetSystematics(AliFemtoCutValues::kProtonVariationNsigmaDown);
-  else if(suffix == "7") task->SetSystematics(AliFemtoCutValues::kProtonTPCClusterUp);
-  else if(suffix == "8") task->SetSystematics(AliFemtoCutValues::kProtonVariationFilterBitGlobal);
-  else if(suffix == "9") task->SetSystematics(AliFemtoCutValues::kV0VariationLowerPtThresholdDown);
-  else if(suffix == "10") task->SetSystematics(AliFemtoCutValues::kV0VariationLowerPtThresholdUp);
-  else if(suffix == "11") task->SetSystematics(AliFemtoCutValues::kV0VariationCosinePointingUp);
-  else if(suffix == "12") task->SetSystematics(AliFemtoCutValues::kV0VariationNsigmaDown);
-  else if(suffix == "13") task->SetSystematics(AliFemtoCutValues::kV0VariationTPCClusterUp);
-  else if(suffix == "14") task->SetSystematics(AliFemtoCutValues::kV0VariationEtaRangeUp);
-  else if(suffix == "15") task->SetSystematics(AliFemtoCutValues::kV0VariationEtaRangeDown);
-  else if(suffix == "16") task->SetSystematics(AliFemtoCutValues::kV0VariationDCAatV0DecayDown);
-  else if(suffix == "17") task->SetSystematics(AliFemtoCutValues::kV0VariationDCADaughtersToPVUp);
+  else if(suffix == "1") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationLowerPtThresholdDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "2") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationLowerPtThresholdUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "3") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationEtaRangeUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "4") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationEtaRangeDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "5") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationNsigmaUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "6") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationNsigmaDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "7") {
+    task->SetSystematics(AliFemtoCutValues::kProtonTPCClusterUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "8") {
+    task->SetSystematics(AliFemtoCutValues::kProtonVariationFilterBitGlobal);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "9") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationLowerPtThresholdDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "10") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationLowerPtThresholdUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "11") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationCosinePointingUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "12") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationNsigmaDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "13") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationTPCClusterUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "14") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationEtaRangeUp);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "15") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationEtaRangeDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "16") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationDCAatV0DecayDown);
+    task->SetIsLightweight(true);
+  }
+  else if(suffix == "17") {
+    task->SetSystematics(AliFemtoCutValues::kV0VariationDCADaughtersToPVUp);
+    task->SetIsLightweight(true);
+  }
   else {
       std::cout << "Unknown cut variation " << suffix << "\n";
       return nullptr;

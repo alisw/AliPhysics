@@ -113,6 +113,7 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   TVector3 GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield,double Rwanted,double PrimaryVertex[3]);
   
   void SetRun1(bool run1) { fIsRun1 = run1; }
+  void SetIsLightweight(bool isLight) { fIsLightweight = isLight; }
   Bool_t SelectPID(const AliAODTrack *track,const AliAODEvent *aodevent,Int_t type);
   Bool_t SelectV0PID(const AliAODv0 *v0,TString ParOrAPar);
   Bool_t GoodTPCFitMapSharedMap(const AliAODTrack *track);
@@ -155,6 +156,7 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   
   UInt_t fTrigger;
   bool fIsRun1;
+  bool fIsLightweight;
   float fV0PercentileMax;
   Bool_t fUseMCInfo;             //  Use MC info
   Bool_t fOnlineV0;
