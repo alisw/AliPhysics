@@ -261,7 +261,8 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     if( TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    } else if (particleGrandMotherLabel > -1 &&  TMath::Abs(particleMotherPDG) == 22 && (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
+    } else if (particleGrandMotherLabel > -1 &&  TMath::Abs(particleMotherPDG) == 22 &&
+                (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
       fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
       fNCaloPhotonMotherMCLabels++;
     } else {
@@ -304,15 +305,12 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     }
     // consider the rare case, where the conversion electron stems from photon, which stems from electron, which stems from photon, ...
     if (isConversion && TMath::Abs(particleGrandMotherPDG) == 11   && particleGrandMotherX2PDG == 22){
-//      printf("gamma -> electron -> gamma -> electron!\n");
       SetCaloPhotonMCLabel(0,particleGrandMotherLabel);
       fCaloPhotonMotherMCLabels[0] = particleGrandMotherX3Label;
       if (TMath::Abs(particleGrandMotherX3PDG) == 11 && particleGrandMotherX4PDG == 22  ){
-//        printf("gamma -> electron -> gamma -> electron -> gamma -> electron!\n");
         SetCaloPhotonMCLabel(0,particleGrandMotherX3Label);
         fCaloPhotonMotherMCLabels[0] = particleGrandMotherX5Label;
         if (TMath::Abs(particleGrandMotherX5PDG) == 11 && particleGrandMotherX6PDG == 22  ){
-//          printf("gamma -> electron -> gamma -> electron -> gamma -> electron -> gamma -> electron!\n");
           SetCaloPhotonMCLabel(0,particleGrandMotherX5Label);
           fCaloPhotonMotherMCLabels[0] = particleGrandMotherX7Label;
         }
@@ -324,10 +322,15 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       TParticle *dummyMother = mcEvent->Particle(particleMotherLabel);
       if (dummyMother){
         while (dummyMother->GetPdgCode() == 22){ // follow conversion photon's history, as long as the mother is a photon
-          dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
-          if (TMath::Abs(dummyMother->GetPdgCode()) == 11) // in case of additional conversion skip to photon's grandma, which should be a photon
+          if (dummyMother->GetMother(0) > -1){
             dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
-          isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+            if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
+              if (dummyMother->GetMother(0) > -1){
+                dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
+              }
+            }
+            isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+          }
         }
       }
     }
@@ -515,6 +518,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
   Bool_t isPhotonWithElecMother     = kFALSE; // this cluster is from a photon with an electron as mother
   Bool_t isShower                   = kFALSE; // this cluster contains as a largest contribution a particle from a shower or radiative process
   Bool_t isSubLeadingEM             = kFALSE; // cluster contains at least one electron or photon from a pi0 or eta in subleading contribution
+  Bool_t isElectronFromFragPhoton   = kFALSE; // largest contribution to cluster is from converted electron, but photon stems from fragmentation photon ( q -> q gamma)
 
   AliAODMCParticle* Photon;
   AliAODMCParticle* PhotonMother;
@@ -566,6 +570,18 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
   Int_t particleGrandMotherPDG        = -1;
   Int_t particleMotherNDaugthers      = 0;
   Int_t particleGrandMotherNDaugthers = 0;
+  Int_t particleGrandMotherX2Label    = -1;
+  Int_t particleGrandMotherX3Label    = -1;
+  Int_t particleGrandMotherX4Label    = -1;
+  Int_t particleGrandMotherX5Label    = -1;
+  Int_t particleGrandMotherX6Label    = -1;
+  Int_t particleGrandMotherX7Label    = -1;
+  Int_t particleGrandMotherX2PDG      = -1;
+  Int_t particleGrandMotherX3PDG      = -1;
+  Int_t particleGrandMotherX4PDG      = -1;
+  Int_t particleGrandMotherX5PDG      = -1;
+  Int_t particleGrandMotherX6PDG      = -1;
+
   if (particleMotherLabel > -1){
     PhotonMother                      = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
     particleMotherNDaugthers          = PhotonMother->GetNDaughters();
@@ -575,6 +591,34 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
       PhotonGrandMother               = (AliAODMCParticle*) AODMCTrackArray->At(PhotonMother->GetMother());
       particleGrandMotherPDG          = PhotonGrandMother->GetPdgCode();
       particleGrandMotherNDaugthers   = PhotonGrandMother->GetNDaughters();
+      AliAODMCParticle* dummyGMM      = NULL;
+
+      particleGrandMotherX2Label      = PhotonGrandMother->GetMother();
+      if (particleGrandMotherX2Label > -1){
+        dummyGMM                        = (AliAODMCParticle*) AODMCTrackArray->At(particleGrandMotherX2Label);
+        particleGrandMotherX2PDG        = dummyGMM->GetPdgCode();
+        particleGrandMotherX3Label      = dummyGMM->GetMother();
+        if (particleGrandMotherX3Label > -1){
+          dummyGMM                        = (AliAODMCParticle*) AODMCTrackArray->At(particleGrandMotherX3Label);
+          particleGrandMotherX3PDG        = dummyGMM->GetPdgCode();
+          particleGrandMotherX4Label      = dummyGMM->GetMother();
+          if (particleGrandMotherX4Label > -1){
+            dummyGMM                        = (AliAODMCParticle*) AODMCTrackArray->At(particleGrandMotherX4Label);
+            particleGrandMotherX4PDG        = dummyGMM->GetPdgCode();
+            particleGrandMotherX5Label      = dummyGMM->GetMother();
+            if (particleGrandMotherX5Label > -1){
+              dummyGMM                        = (AliAODMCParticle*) AODMCTrackArray->At(particleGrandMotherX5Label);
+              particleGrandMotherX5PDG        = dummyGMM->GetPdgCode();
+              particleGrandMotherX6Label      = dummyGMM->GetMother();
+              if (particleGrandMotherX6Label > -1){
+                dummyGMM                        = (AliAODMCParticle*) AODMCTrackArray->At(particleGrandMotherX6Label);
+                particleGrandMotherX6PDG        = dummyGMM->GetPdgCode();
+                particleGrandMotherX7Label      = dummyGMM->GetMother();
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -625,7 +669,39 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
         isShower                      = kTRUE;
       }
     }
+    // consider the rare case, where the conversion electron stems from photon, which stems from electron, which stems from photon, ...
+    if (isConversion && TMath::Abs(particleGrandMotherPDG) == 11   && particleGrandMotherX2PDG == 22){
+      SetCaloPhotonMCLabel(0,particleGrandMotherLabel);
+      fCaloPhotonMotherMCLabels[0] = particleGrandMotherX3Label;
+      if (TMath::Abs(particleGrandMotherX3PDG) == 11 && particleGrandMotherX4PDG == 22  ){
+        SetCaloPhotonMCLabel(0,particleGrandMotherX3Label);
+        fCaloPhotonMotherMCLabels[0] = particleGrandMotherX5Label;
+        if (TMath::Abs(particleGrandMotherX5PDG) == 11 && particleGrandMotherX6PDG == 22  ){
+          SetCaloPhotonMCLabel(0,particleGrandMotherX5Label);
+          fCaloPhotonMotherMCLabels[0] = particleGrandMotherX7Label;
+        }
+      }
+    }
+
+    // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
+    if (particleMotherLabel > -1){
+      AliAODMCParticle* dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
+      if (dummyMother){
+        while (dummyMother->GetPdgCode() == 22){ // follow conversion photon's history, as long as the mother is a photon
+          if (dummyMother->GetMother() > -1){
+            dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
+            if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
+              if (dummyMother->GetMother() > -1){
+                dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
+              }
+            }
+            isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+          }
+        }
+      }
+    }
   }
+
 
 
   // check whether there were other contributions to the cluster
@@ -786,7 +862,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
       }
     }
   }
-  fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024;
+  fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024 + isElectronFromFragPhoton * 2048;;
 }
 
 //_____________________________________________________________________________
