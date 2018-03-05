@@ -43,6 +43,8 @@ class AliEmcalJet;
 class AliParticleContainer;
 class AliTrackContainer;
 
+#define EXPERIMENTAL_JETCONSTITUENTS
+
 namespace EmcalTriggerJets {
 
 /**
