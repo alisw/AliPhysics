@@ -105,6 +105,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            GetFractionSharedPt_SubMatching(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
   Double_t                            LeadingTrackPt(fastjet::PseudoJet jet);
   static Bool_t                       SameParticle(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Bool_t bTrue);
 
 
   
@@ -182,8 +183,10 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhJetCounter_True;
   TH1F                                *fhNumberOfJetTracks_Det;
   TH1F                                *fhNumberOfJetTracks_True;
-  TH2F                                *fh2PtRatio; 
-    
+  TH2F                                *fh2PtRatio;
+  THnSparse                           *fhLundIterative;
+  THnSparse                           *fhLundIterativeTrue;
+
   
 
  private:
