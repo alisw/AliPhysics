@@ -8,22 +8,24 @@
 #include <TH3F.h>
 #include <TH1D.h>
 #include <TF1.h>
+#include <TStyle.h>
 #include <TLatex.h>
 #include <TPaveText.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TDatabasePDG.h>
 #include "AliHFInvMassFitter.h"
+#include "AliVertexingHFUtils.h"
 #include "AliNormalizationCounter.h"
 #endif
 
 enum Method{kME,kRot,kLS,kSB};
 
 // input files and pt binning
-TString fileName="DataTrains/AnalysisResults_FAST_wSDD_train912915.root";
-TString suffix="Pt400_SPDany_3SigPID_FidY_PilMV_EM1";
-TString fileNameMC="MCtrains/AnalysisResults_FAST_wSDD_train834835.root";//AnalysisResults_FAST_wSDD_train826827.root";
-TString suffixMC="_Prompt_Pt400_SPDany_3SigPID_FidY_PilMV_EM1";
+TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2104.root";
+TString suffix="3SigPID_Pt300_FidY_PilSPD5_EM1";
+TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+TString suffixMC="_Prompt_3SigPID_Pt300_FidY_PilSPD5_EM1";
 TString meson="Dzero";
 const Int_t nPtBins=8;
 Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
@@ -68,6 +70,7 @@ TH1D* hMCReflPtBin;
 TH1D* hMCSigPtBin;
 
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo);
+TH1F* FitMCInvMassSpectra(TList* lMC);
 
 AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
@@ -431,6 +434,11 @@ void ProjectCombinHFAndFit(){
   TH1F* hRelStatME=new TH1F("hRelStatME","",nPtBins,binLims);
   TH1F* hRelStatSBfit=new TH1F("hRelStatSBfit","",nPtBins,binLims);
 
+  TH1F* hSignifRot=new TH1F("hSignifRot","",nPtBins,binLims);
+  TH1F* hSignifLS=new TH1F("hSignifLS","",nPtBins,binLims);
+  TH1F* hSignifME=new TH1F("hSignifME","",nPtBins,binLims);
+  TH1F* hSignifSBfit=new TH1F("hSignifSBfit","",nPtBins,binLims);
+
   TH1F* hSoverBRot=new TH1F("hSoverBRot","",nPtBins,binLims);
   TH1F* hSoverBLS=new TH1F("hSoverBLS","",nPtBins,binLims);
   TH1F* hSoverBME=new TH1F("hSoverBME","",nPtBins,binLims);
@@ -587,6 +595,8 @@ void ProjectCombinHFAndFit(){
     printf("Background norm bin %d DONE\n",iPtBin);
 
     c1->cd(iPtBin+1);
+    hMassPtBin->GetXaxis()->SetRangeUser(minMass,maxMass);
+    hMassPtBin->SetMinimum(0);
     hMassPtBin->Draw();
     hMassPtBin->GetYaxis()->SetTitle("Counts");
     hMassPtBin->GetYaxis()->SetTitleOffset(2.);
@@ -643,7 +653,8 @@ void ProjectCombinHFAndFit(){
     Bool_t out2=kFALSE;
     if(hMassPtBinls) out2=fitterLS[iPtBin]->MassFitter(0);
     Bool_t out3=fitterME[iPtBin]->MassFitter(0);
-
+    
+    Double_t background=999999999.;
     Bool_t out4=kFALSE;
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
@@ -663,6 +674,8 @@ void ProjectCombinHFAndFit(){
 	  hRelStatSBfit->SetBinError(iPtBin+1,0.00000001);
 	}
 	fitterSB[iPtBin]->Background(3.,background,ebkg);
+	hSignifSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterSB[iPtBin]->GetRawYield()));
+	hSignifSBfit->SetBinError(iPtBin+1,0.00000001);
 	hSoverBSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/background);
 	hSoverBSBfit->SetBinError(iPtBin+1,0.00000001);
 	hGausMeanSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMean());
@@ -765,6 +778,8 @@ void ProjectCombinHFAndFit(){
       hSoverBRot->SetBinError(iPtBin+1,0.000001);
       hRelStatRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError()/fitterRot[iPtBin]->GetRawYield());
       hRelStatRot->SetBinError(iPtBin+1,0.000001);
+      hSignifRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterRot[iPtBin]->GetRawYield()));
+      hSignifRot->SetBinError(iPtBin+1,0.00000001);
       hGausMeanRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMean());
       hGausMeanRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetMeanUncertainty());
       hGausSigmaRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetSigma());
@@ -819,6 +834,8 @@ void ProjectCombinHFAndFit(){
       hSoverBLS->SetBinError(iPtBin+1,0.000001);
       hRelStatLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError()/fitterLS[iPtBin]->GetRawYield());
       hRelStatLS->SetBinError(iPtBin+1,0.0000001);
+      hSignifLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterLS[iPtBin]->GetRawYield()));
+      hSignifLS->SetBinError(iPtBin+1,0.00000001);
       hGausMeanLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMean());
       hGausMeanLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetMeanUncertainty());
       hGausSigmaLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetSigma());
@@ -872,6 +889,8 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       hSoverBME->SetBinError(iPtBin+1,0.000001);
       hRelStatME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYieldError()/fitterME[iPtBin]->GetRawYield());
       hRelStatME->SetBinError(iPtBin+1,0.000001);
+      hSignifME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterME[iPtBin]->GetRawYield()));
+      hSignifME->SetBinError(iPtBin+1,0.00000001);
       hGausMeanME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMean());
       hGausMeanME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetMeanUncertainty());
       hGausSigmaME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetSigma());
@@ -925,6 +944,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   }
 
   if(saveCanvasAsEps>0){
+    c1->SaveAs(Form("figures/InvMassSpectra_%s_%s_NoBkgSub.eps",sigConf.Data(),suffix.Data()));
     c2->SaveAs(Form("figures/InvMassSpectra_%s_%s_Rot.eps",sigConf.Data(),suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_%s_LS.eps",sigConf.Data(),suffix.Data()));
     c4->SaveAs(Form("figures/InvMassSpectra_%s_%s_EM.eps",sigConf.Data(),suffix.Data()));
@@ -1198,6 +1218,10 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hRelStatLS->Write();
   hRelStatME->Write();
   hRelStatSBfit->Write();
+  hSignifRot->Write();
+  hSignifLS->Write();
+  hSignifME->Write();
+  hSignifSBfit->Write();
   hSoverBRot->Write();
   hSoverBLS->Write();
   hSoverBME->Write();
