@@ -15,5 +15,6 @@ add_subdirectory(UNICOR)
 add_subdirectory(V0LamAnalysis)
 add_subdirectory(PLamAnalysisPP)
 add_subdirectory(FemtoDream)
+add_subdirectory(KPAnalysis)
 
 install(DIRECTORY macros DESTINATION PWGCF/FEMTOSCOPY)
