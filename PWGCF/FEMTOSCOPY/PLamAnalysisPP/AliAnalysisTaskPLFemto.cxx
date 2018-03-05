@@ -3404,7 +3404,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
       HistName += ptbins;
 
       fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins] = new TH2F(HistName.Data(),"DCAz vs DCAxy for different pt Bins",500,-5,5,500,-5,5);
-      fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins]->Sumw2();
       if(fUseMCInfo) fOutputSP->Add(fProtonDCAxyDCAzMCPtBin[ProtonCases][ptbins]);
 
       if(ProtonCases == 0)
@@ -3414,7 +3413,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
           HistName += ptbins;
 
           fProtonDCAxyDCAzMCPtBinLambda[ptbins] = new TH2F(HistName.Data(),"DCAz vs DCAxy for different pt Bins for Lambda hyperons",500,-5,5,500,-5,5);
-          fProtonDCAxyDCAzMCPtBinLambda[ptbins]->Sumw2();
           if(fUseMCInfo) fOutputSP->Add(fProtonDCAxyDCAzMCPtBinLambda[ptbins]);
 
           HistName = "fProtonDCAxyDCAzMCPtBinSigma";
@@ -3422,7 +3420,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
           HistName += ptbins;
 
           fProtonDCAxyDCAzMCPtBinSigma[ptbins] = new TH2F(HistName.Data(),"DCAz vs DCAxy for different pt Bins for Sigma+ hyperons",500,-5,5,500,-5,5);
-          fProtonDCAxyDCAzMCPtBinSigma[ptbins]->Sumw2();
           if(fUseMCInfo) fOutputSP->Add(fProtonDCAxyDCAzMCPtBinSigma[ptbins]);
         }
 
@@ -3431,7 +3428,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
           HistName = "fProtonDCAxyDCAzPt";
           HistName += ptbins;
           fProtonDCAxyDCAzPt[ptbins] = new TH2F(HistName.Data(),"DCAz vs DCAxy for different pt Bins",500,-5,5,500,-5,5);
-          fProtonDCAxyDCAzPt[ptbins]->Sumw2();
           fOutputSP->Add(fProtonDCAxyDCAzPt[ptbins]);
         }
     }
@@ -3564,31 +3560,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     TH1F* fNCrossedRowsAntiProton = new TH1F("fNCrossedRowsAntiProton","Number of crossed rows for protons",200,0,200);
     TH1F* fRatioFindableCrossedAntiProton = new TH1F("fRatioFindableCrossedAntiProton","Number of crossed rows over findable cluster for protons",200,0,1.5);
 
-
-    fInvMassLambdawCuts->Sumw2();
-    fInvMassAntiLambdawCuts->Sumw2();
-    fInvMassLambdawoCuts->Sumw2();
-    fInvMassAntiLambdawoCuts->Sumw2();
-    fInvMassLambdawCutsAfterMassCut->Sumw2();
-    fInvMassLambdawCutsAfterSelection->Sumw2();
-    fInvMassMissIDK0s->Sumw2();
-    fInvMassMissIDK0swCuts->Sumw2();
-
-    fInvMassLambdaRejected->Sumw2();
-    fInvMassLambdaKept->Sumw2();
-
-    fXiInvMasswoCuts->Sumw2();
-    fXiInvMasswCuts->Sumw2();
-
-    fProtonDCAxy->Sumw2();
-    fProtonDCAxyCutz->Sumw2();
-    fProtonDCAz->Sumw2();
-    fProtonDCAxyDCAz->Sumw2();
-    fAntiProtonDCAxy->Sumw2();
-    fAntiProtonDCAxyCutz->Sumw2();
-    fAntiProtonDCAz->Sumw2();
-    fAntiProtonDCAxyDCAz->Sumw2();
-
     fOutputSP->Add(fHistTrackFilterMap);
     fOutputSP->Add(fNBinsMultmixing);
     fOutputSP->Add(fNBinsVertexmixing);
@@ -3670,8 +3641,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fProtonLambdaRelKMulti[i] = new TH1F(Form("fProtonLambdaRelKMulti_%i", i),"Relative momentum of V0-p RE",150,0.,3.); //first choice was 300 bins
         fProtonLambdaRelKMEMulti[i] = new TH1F(Form("fProtonLambdaRelKMEMulti_%i", i),"Relative momentum of V0-p ME",150,0.,3.);
-        fProtonLambdaRelKMulti[i]->Sumw2();
-        fProtonLambdaRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fProtonLambdaRelKMulti[i]);
         fOutputTP->Add(fProtonLambdaRelKMEMulti[i]);
       }
@@ -3708,8 +3677,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fAntiProtonAntiLambdaRelKMulti[i] = new TH1F(Form("fAntiProtonAntiLambdaRelKMulti_%i", i), Form("Relative momentum of AntiV0-Antip RE %i", i),150,0.,3.); //first choice was 300 bins
         fAntiProtonAntiLambdaRelKMEMulti[i] = new TH1F(Form("fAntiProtonAntiLambdaRelKMEMulti_%i", i), Form("Relative momentum of AntiV0-Antip ME %i", i),150,0.,3.);
-        fAntiProtonAntiLambdaRelKMulti[i]->Sumw2();
-        fAntiProtonAntiLambdaRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fAntiProtonAntiLambdaRelKMulti[i]);
         fOutputTP->Add(fAntiProtonAntiLambdaRelKMEMulti[i]);
       }
@@ -3744,8 +3711,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fProtonXiRelKMulti[i] = new TH1F(Form("fProtonXiRelKMulti_%i", i), Form("Relative momentum of Xi-p RE %i", i),150,0.,3.); //first choice was 300 bins
         fProtonXiRelKMEMulti[i] = new TH1F(Form("fProtonXiRelKMEMulti_%i", i), Form("Relative momentum of Xi-p ME %i", i),150,0.,3.);
-        fProtonXiRelKMulti[i]->Sumw2();
-        fProtonXiRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fProtonXiRelKMulti[i]);
         fOutputTP->Add(fProtonXiRelKMEMulti[i]);
     }
@@ -3759,8 +3724,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fAntiProtonXiRelKMulti[i] = new TH1F(Form("fAntiProtonXiRelKMulti_%i", i), Form("Relative momentum of Xi-Antip RE %i", i),150,0.,3.); //first choice was 300 bins
         fAntiProtonXiRelKMEMulti[i] = new TH1F(Form("fAntiProtonXiRelKMEMulti_%i", i), Form("Relative momentum of Xi-Antip ME %i", i),150,0.,3.);
-        fAntiProtonXiRelKMulti[i]->Sumw2();
-        fAntiProtonXiRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fAntiProtonXiRelKMulti[i]);
         fOutputTP->Add(fAntiProtonXiRelKMEMulti[i]);
     }
@@ -3775,8 +3738,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fProtonProtonRelKMulti[i] = new TH1F(Form("fProtonProtonRelKMulti_%i", i), Form("Relative momentum of pp RE %i", i),150,0.,3.); //first choice was 300 bins
         fProtonProtonRelKMEMulti[i] = new TH1F(Form("fProtonProtonRelKMEMulti_%i", i), Form("Relative momentum of pp ME %i", i),150,0.,3.);
-        fProtonProtonRelKMulti[i]->Sumw2();
-        fProtonProtonRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fProtonProtonRelKMulti[i]);
         fOutputTP->Add(fProtonProtonRelKMEMulti[i]);
     }
@@ -3829,8 +3790,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fAntiProtonAntiProtonRelKMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMulti_%i", i), Form("Relative momentum of AntipAntip RE %i", i),150,0.,3.); //first choice was 300 bins
         fAntiProtonAntiProtonRelKMEMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMEMulti_%i", i), Form("Relative momentum of AntipAntip ME %i", i),150,0.,3.);
-        fAntiProtonAntiProtonRelKMulti[i]->Sumw2();
-        fAntiProtonAntiProtonRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fAntiProtonAntiProtonRelKMulti[i]);
         fOutputTP->Add(fAntiProtonAntiProtonRelKMEMulti[i]);
     }
@@ -3850,8 +3809,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fLambdaLambdaRelKMulti[i] = new TH1F(Form("fLambdaLambdaRelKMulti_%i", i), Form("Relative momentum of V0-V0 RE %i", i),150,0.,3.); //first choice was 300 bins
         fLambdaLambdaRelKMEMulti[i] = new TH1F(Form("fLambdaLambdaRelKMEMulti_%i", i), Form("Relative momentum of V0-V0 ME %i", i),150,0.,3.);
-        fLambdaLambdaRelKMulti[i]->Sumw2();
-        fLambdaLambdaRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fLambdaLambdaRelKMulti[i]);
         fOutputTP->Add(fLambdaLambdaRelKMEMulti[i]);
     }
@@ -3886,8 +3843,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     for(int i=0; i<13; ++i) {
         fAntiLambdaAntiLambdaRelKMulti[i] = new TH1F(Form("fAntiLambdaAntiLambdaRelKMulti_%i", i), Form("Relative momentum of AntiV0-AntiV0 RE %i", i),150,0.,3.); //first choice was 300 bins
         fAntiLambdaAntiLambdaRelKMEMulti[i] = new TH1F(Form("fAntiLambdaAntiLambdaRelKMEMulti_%i", i), Form("Relative momentum of AntiV0-AntiV0 ME %i", i),150,0.,3.);
-        fAntiLambdaAntiLambdaRelKMulti[i]->Sumw2();
-        fAntiLambdaAntiLambdaRelKMEMulti[i]->Sumw2();
         fOutputTP->Add(fAntiLambdaAntiLambdaRelKMulti[i]);
         fOutputTP->Add(fAntiLambdaAntiLambdaRelKMEMulti[i]);
     }
@@ -3942,7 +3897,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         TString HistName = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton[i]);
 
         HistDesc = "#Delta #eta vs. #Delta #phi for primary proton and decay pion evaluated at TPCradnum = ";
@@ -3950,7 +3904,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         HistName = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion[i]);
 
         HistDesc = "#Delta #eta vs. #Delta #phi for primary proton and decay proton in mixed event evaluated at TPCradnum = ";
@@ -3958,7 +3911,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         HistName = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME[i]);
 
         HistDesc = "#Delta #eta vs. #Delta #phi for primary proton and decay pion in mixed event evaluated at TPCradnum = ";
@@ -3966,7 +3918,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         HistName = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME[i]);
 
         HistDesc = "#Delta #eta vs. #Delta #phi for proton-proton pairs evaluated at TPCradnum = ";
@@ -3974,7 +3925,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         HistName = "fDeltaEtaDeltaPhiTPCradpp";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradpp[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradpp[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradpp[i]);
 
         HistDesc = "#Delta #eta vs. #Delta #phi for proton-proton pairs evaluated at TPCradnum = ";
@@ -3982,7 +3932,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
         HistName = "fDeltaEtaDeltaPhiTPCradppME";
         HistName += i;
         fDeltaEtaDeltaPhiTPCradppME[i] = new TH2F(HistName.Data(),HistDesc.Data(),400,0,4,400,0,1.);
-        fDeltaEtaDeltaPhiTPCradppME[i]->Sumw2();
         fOutputTP->Add(fDeltaEtaDeltaPhiTPCradppME[i]);
      }
   }
@@ -4035,37 +3984,6 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     fOutputTP->Add(fProtonPhiCorrelationME);
 
   }
-
-
-  fProtonLambdaMT->Sumw2();
-  fProtonLambdaMTrelKcut->Sumw2();
-  fProtonLambdaRelK->Sumw2();
-  fProtonLambdaRelKME->Sumw2();
-
-  fAntiProtonLambdaRelK->Sumw2();
-  fAntiProtonLambdaRelKME->Sumw2();
-  fProtonAntiLambdaRelK->Sumw2();
-  fProtonAntiLambdaRelKME->Sumw2();
-  fAntiProtonAntiLambdaRelK->Sumw2();
-  fAntiProtonAntiLambdaRelKME->Sumw2();
-  fProtonXiRelK->Sumw2();
-  fProtonXiRelKME->Sumw2();
-  fAntiProtonXiRelK->Sumw2();
-  fAntiProtonXiRelKME->Sumw2();
-  fProtonProtonMT->Sumw2();
-  fProtonProtonMTrelKcut->Sumw2();
-  fProtonProtonRelK->Sumw2();
-  fProtonProtonRelKME->Sumw2();
-  fAntiProtonAntiProtonRelK->Sumw2();
-  fAntiProtonAntiProtonRelKME->Sumw2();
-  fAntiProtonProtonRelK->Sumw2();
-  fAntiProtonProtonRelKME->Sumw2();
-  fLambdaLambdaRelK->Sumw2();
-  fLambdaLambdaRelKME->Sumw2();
-  fAntiLambdaAntiLambdaRelK->Sumw2();
-  fAntiLambdaAntiLambdaRelKME->Sumw2();
-  fAntiLambdaLambdaRelK->Sumw2();
-  fAntiLambdaLambdaRelKME->Sumw2();
 
   fOutputTP->Add(fProtonLambdaMT);
   fOutputTP->Add(fProtonLambdaMTrelKcut);
@@ -4122,11 +4040,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
 
 
     TH1F* fProtonsCorrectlyIdentified = new TH1F("fProtonsCorrectlyIdentified","Particles that were correctly identified as protons",100,fCuts->GetProtonPIDthrPtLow(),fCuts->GetProtonPIDthrPtUp());
-    fProtonsCorrectlyIdentified->Sumw2();
     TH1F* fProtonsTotallyIdentified = new TH1F("fProtonsTotallyIdentified","All Particles that were identified as protons",100,fCuts->GetProtonPIDthrPtLow(),fCuts->GetProtonPIDthrPtUp());
-    fProtonsTotallyIdentified->Sumw2();
     TH1F* fProtonsBkgIdentified = new TH1F("fProtonsBkgIdentified","All Particles that were identified as protons",100,fCuts->GetProtonPIDthrPtLow(),fCuts->GetProtonPIDthrPtUp());
-    fProtonsBkgIdentified->Sumw2();
 
 
     if(fUseMCInfo)
