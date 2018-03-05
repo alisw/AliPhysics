@@ -19,11 +19,10 @@
 #include "AliHLTTPCGMSliceTrack.h"
 #include "AliHLTTPCCAMath.h"
 #include "AliHLTTPCGMBorderTrack.h"
-#include "AliHLTTPCGMTrackLinearisation.h"
 #include "AliHLTTPCCAParam.h"
 #include <cmath>
 
-bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinPhi )
+bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinPhi, float sinPhiMargin )
 {
   float lastX = fOrigTrack->Cluster(fOrigTrack->NClusters()-1 ).GetX();
 
@@ -31,8 +30,8 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
 
   float bz = -param.ConstBz();
 
-  float k  = fQPt*bz;               
-  float dx = .33*(lastX - fX);  
+  float k  = fQPt*bz;
+  float dx = .33*(lastX - fX);
   float kdx = k*dx;
   float dxBz = dx * bz;
   float kdx205 = 2.f+kdx*kdx*0.5f;
@@ -59,7 +58,12 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
       float ex = fCosPhi; 
       float ey = fSinPhi;
       float ey1 = kdx + ey;
-      if( fabs( ey1 ) > maxSinPhi ) return 0;
+      if( fabs( ey1 ) > maxSinPhi )
+      {
+        if (ey1 > maxSinPhi && ey1 < maxSinPhi + sinPhiMargin) ey1 = maxSinPhi - 0.01;
+        else if (ey1 > -maxSinPhi - sinPhiMargin) ey1 = -maxSinPhi + 0.01;
+        else return 0;
+      }
 
       float ss = ey + ey1;      
       float ex1 = sqrt(1.f - ey1*ey1);
@@ -80,7 +84,7 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
 	dS = dl + dl*a*(k2 + a*(k4 ));//+ k6*a) );
       }
  
-      float dz = dS * fDzDs;      
+      float dz = dS * fDzDs;
       float ex1i =1.f/ex1;
       {	
 	//param.GetClusterErrors2( 0, fZ, fSinPhi, fDzDs, err2Y, err2Z );

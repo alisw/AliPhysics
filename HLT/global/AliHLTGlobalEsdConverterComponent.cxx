@@ -146,7 +146,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
   list.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
-  list.push_back( AliHLTTPCDefinitions::TracksDataType() | kAliHLTDataOriginTPC );
+  list.push_back(AliHLTTPCDefinitions::TracksOuterDataType() | kAliHLTDataOriginTPC);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -699,7 +699,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   std::map<int,int> mapTpcId2esdId;
   
   const AliHLTTracksData* tpcTrackOuterParam = NULL;
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksDataType()|kAliHLTDataOriginTPC); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksOuterDataType()|kAliHLTDataOriginTPC); pBlock!=NULL; pBlock=GetNextInputBlock()) {
     if (tpcTrackOuterParam) {
       HLTWarning("Multiple instances of outer TPC tracks found!!!");
       tpcTrackOuterParam = NULL;

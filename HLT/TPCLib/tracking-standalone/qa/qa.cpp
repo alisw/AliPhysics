@@ -563,7 +563,6 @@ void RunQA()
 		prop.SetMaxSinPhi( .999 );
 		prop.SetMaterial( kRadLen, kRho );
 		prop.SetPolynomialField( merger.pField() );		
-		prop.SetUseMeanMomentum(kFALSE );
 		prop.SetContinuousTracking( kFALSE );
 		prop.SetToyMCEventsFlag( merger.SliceParam().ToyMCEventsFlag());
 
@@ -585,6 +584,7 @@ void RunQA()
 			if (mc2.nWeightCls < MIN_WEIGHT_CLS) continue;
 			if (config.resPrimaries == 1 && (!mc1.fPrim || mc1.fPrimDaughters)) continue;
 			else if (config.resPrimaries == 2 && (mc1.fPrim || mc1.fPrimDaughters)) continue;
+			if (trackMCLabelsReverse[trackMCLabels[i]] != i) continue;
 			
 			float mclocal[4]; //Rotated x,y,Px,Py mc-coordinates - the MC data should be rotated since the track is propagated best along x
 			float c = std::cos(track.GetAlpha());

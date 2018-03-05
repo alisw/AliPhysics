@@ -43,6 +43,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -485,3 +486,30 @@ void AliHLTTPCClusterTransformationComponent::GetOCDBObjectDescription( TMap* co
   targetMap->Add(new TObjString("TPC/Calib/HighVoltage"), new TObjString("high voltage values, not used"));
   targetMap->Add(new TObjString("TPC/Calib/Ref"),         new TObjString("unknown content"));
 }
+
+/*
+void AliHLTTPCClusterTransformationComponent::PrintDebugInfo()
+{
+  //
+  // Debug output to check if everything is initialised properly.
+  // It transforms some selected points in TPC.
+  // One can do the same in TPC/TPCrec/AliTPCclusterer.cxx
+  // and compare the results
+  //
+
+  Int_t sector= 60;
+  for( int row=10; row<20; row++){
+    Int_t slice=-1;
+    Int_t slicerow=-1;
+    AliHLTTPCGeometry::Sector2Slice( slice, slicerow, sector, row); 
+    Float_t f[3]; 
+    fgTransform.Transform( slice, slicerow, 10., 500., f );
+    Double_t xyz[3] = { f[0], f[1], f[2] };    
+    std::cout<<std::scientific;
+#if __cplusplus >= 201103L      
+    std::cout<<std::setprecision( 10 );
+#endif
+    std::cout<<"HLT transform: "<<" sec "<<sector<<" row "<< row<<" "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<std::endl;
+  }
+}
+*/

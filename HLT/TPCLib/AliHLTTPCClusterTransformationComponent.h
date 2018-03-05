@@ -56,7 +56,7 @@ public:
   AliHLTComponent* Spawn(); 							   
   /** interface function, see @ref AliHLTComponent for description */
   void GetOCDBObjectDescription( TMap* const targetMap);
-  
+
 protected:
 	
   // Protected functions to implement AliHLTComponent's interface.
@@ -82,6 +82,8 @@ private:
 
   /** assignment operator prohibited */
   AliHLTTPCClusterTransformationComponent& operator=(const AliHLTTPCClusterTransformationComponent&);
+
+  void PrintDebugInfo();
 
   static const char* fgkOCDBEntryClusterTransformation; //!transient
   static AliHLTTPCClusterTransformation fgTransform; //!transient

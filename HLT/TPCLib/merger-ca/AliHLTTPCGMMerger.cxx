@@ -35,7 +35,6 @@
 #include "AliHLTTPCCATrackLinearisation.h"
 
 #include "AliHLTTPCGMTrackParam.h"
-#include "AliHLTTPCGMTrackLinearisation.h"
 #include "AliHLTTPCGMSliceTrack.h"
 #include "AliHLTTPCGMBorderTrack.h"
 #include <cmath>
@@ -320,8 +319,8 @@ void AliHLTTPCGMMerger::UnpackSlices()
     for ( int itr = 0; itr < slice.NLocalTracks(); itr++, sliceTr = sliceTr->GetNextTrack() ) {
       AliHLTTPCGMSliceTrack &track = fSliceTrackInfos[nTracksCurrent];
       track.Set( sliceTr, alpha, iSlice );
-      if( !track.FilterErrors( fSliceParam, HLTCA_MAX_SIN_PHI ) ) continue;
-      if (DEBUG) printf("Slice %d, Track %d, QPt %f DzDs %f\n", iSlice, itr, track.QPt(), track.DzDs());
+      if( !track.FilterErrors( fSliceParam, HLTCA_MAX_SIN_PHI, 0.1f ) ) continue;
+      if (DEBUG) printf("INPUT Slice %d, Track %d, QPt %f DzDs %f\n", iSlice, itr, track.QPt(), track.DzDs());
       track.SetPrevNeighbour( -1 );
       track.SetNextNeighbour( -1 );
       track.SetSliceNeighbour( -1 );
@@ -788,9 +787,14 @@ void AliHLTTPCGMMerger::CollectMergedTracks()
           cl[i].fZ = trackClusters[i].GetZ();
           cl[i].fRow = trackClusters[i].GetRow();
           cl[i].fId = trackClusters[i].GetId();
+          cl[i].fAmp = trackClusters[i].GetAmp();
           cl[i].fState = trackClusters[i].GetFlags() & AliHLTTPCGMMergedTrackHit::hwcfFlags; //Only allow edge and deconvoluted flags
           cl[i].fSlice = clA[i].x;
           cl[i].fLeg = clA[i].y;
+#ifdef GMPropagatePadRowTime
+          cl[i].fPad = trackClusters[i].fPad;
+          cl[i].fTime = trackClusters[i].fTime;
+#endif
       }
 
       AliHLTTPCGMMergedTrack &mergedTrack = fOutputTracks[fNOutputTracks];
@@ -827,6 +831,25 @@ void AliHLTTPCGMMerger::CollectMergedTracks()
       nOutTrackClusters += nHits;
     }
   }
+  
+  unsigned int maxId = 0;
+  for (int k = 0;k < nOutTrackClusters;k++)
+  {
+    if (fClusters[k].fId > maxId) maxId = fClusters[k].fId;
+  }
+  maxId++;
+  unsigned char* sharedCount = new unsigned char[maxId];
+  for (unsigned int k = 0;k < maxId;k++) sharedCount[k] = 0;
+  for (int k = 0;k < nOutTrackClusters;k++)
+  {
+    if (sharedCount[fClusters[k].fId] < 255) sharedCount[fClusters[k].fId]++;
+  }
+  for (int k = 0;k < nOutTrackClusters;k++)
+  {
+    if (sharedCount[fClusters[k].fId] >= 2) fClusters[k].fState |= AliHLTTPCGMMergedTrackHit::flagShared;
+  }
+  delete[] sharedCount;
+  
   fNOutputTrackClusters = nOutTrackClusters;
 }
 

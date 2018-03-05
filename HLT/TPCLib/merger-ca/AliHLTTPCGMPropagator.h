@@ -14,6 +14,7 @@
 #include "AliHLTTPCCAMath.h"
 #include "AliHLTTPCGMPhysicalTrackModel.h"
 #include "AliHLTTPCGMPolynomialField.h"
+#include "AliHLTTPCGMOfflineStatisticalErrors.h"
 
 class AliHLTTPCGMTrackParam;
 class AliHLTTPCCAParam;
@@ -41,7 +42,6 @@ public:
 
   GPUd() void SetPolynomialField( const AliHLTTPCGMPolynomialField* field ){ fField = field; }
 
-  GPUd() void SetUseMeanMomentum( bool Flag ){ fUseMeanMomentum = Flag; CalculateMaterialCorrection(); }
   GPUd() void SetContinuousTracking( bool Flag ){ fContinuousTracking = Flag; }
   GPUd() void SetFitInProjections( bool Flag ){ fFitInProjections = Flag; }
   GPUd() void SetToyMCEventsFlag( bool Flag ){ fToyMCEvents = Flag; }
@@ -58,12 +58,20 @@ public:
 
   //  GPUd() int PropagateToXAlphaBz( float posX, float posAlpha, bool inFlyDirection );
 
-  GPUd() int Update( float posY, float posZ, int iRow, const AliHLTTPCCAParam &param, bool rejectChi2 );  
+  GPUd() int Update( float posY, float posZ, int iRow, const AliHLTTPCCAParam &param, short clusterState, bool rejectChi2 );  
+  GPUd() int RejectCluster(float chiY, float chiZ, unsigned char clusterState)
+  {
+    if (chiY > 9.f || chiZ > 9.f) return 2;
+    if ((chiY > 6.25f || chiZ > 6.25f) && (clusterState & (AliHLTTPCGMMergedTrackHit::flagSplit | AliHLTTPCGMMergedTrackHit::flagShared))) return 2;
+    if ((chiY > 1.f || chiZ > 6.25f) && (clusterState & (AliHLTTPCGMMergedTrackHit::flagEdge | AliHLTTPCGMMergedTrackHit::flagSingle))) return 2;
+    return 0;
+  }
+      
 
   GPUd() float GetBz( float Alpha, float X, float Y, float Z ) const;
   GPUd() void  GetBxByBz( float Alpha, float X, float Y, float Z, float B[3] ) const;
   
-  GPUd() void GetErr2( float& err2Y, float& err2Z, const AliHLTTPCCAParam &param, float posZ, int iRow);
+  GPUd() void GetErr2( float& err2Y, float& err2Z, const AliHLTTPCCAParam &param, float posZ, int iRow, short clusterState);
 
   GPUd() float GetAlpha() const { return fAlpha; }
   GPUd() float GetQPt0() const { return fT0.GetQPt(); }
@@ -72,9 +80,11 @@ public:
   GPUd() void Mirror(bool inFlyDirection);
   GPUd() float GetMirroredYModel() const;
   GPUd() float GetMirroredYTrack() const;
+  GPUd() int GetPropagatedYZ(float x, float& projY, float& projZ);
   
   GPUd() AliHLTTPCGMPhysicalTrackModel& Model() {return fT0;}
   GPUd() void CalculateMaterialCorrection();
+  GPUd() void SetStatErrorCurCluster(AliHLTTPCGMMergedTrackHit* c) {fStatErrors.SetCurCluster(c);}
 
 private:
 
@@ -85,17 +95,18 @@ private:
   float fAlpha; // rotation angle of the track coordinate system
   AliHLTTPCGMPhysicalTrackModel fT0;
   MaterialCorrection fMaterial;
-  bool fUseMeanMomentum;//
   bool fSpecialErrors;
   bool fContinuousTracking; // take field at the mean TPC Z
   bool fFitInProjections; // fit (Y,SinPhi,QPt) and (Z,DzDs) paramteres separatelly
   bool fToyMCEvents; // events are simulated with simple home-made simulation
   float fMaxSinPhi;
+  
+  AliHLTTPCGMOfflineStatisticalErrors fStatErrors;
 };
 
 GPUd() inline AliHLTTPCGMPropagator::AliHLTTPCGMPropagator()
 : fField(0), fT(0), fAlpha(0), fT0(), fMaterial(),
-  fUseMeanMomentum(0), fSpecialErrors(0), fContinuousTracking(0), fFitInProjections(1), fToyMCEvents(0), fMaxSinPhi(HLTCA_MAX_SIN_PHI)
+  fSpecialErrors(0), fContinuousTracking(0), fFitInProjections(1), fToyMCEvents(0), fMaxSinPhi(HLTCA_MAX_SIN_PHI), fStatErrors()
 {
 }
 
