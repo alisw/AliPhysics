@@ -24,7 +24,7 @@ TH1D* hToSave[100];
 Int_t nToSave=0;
 
 
-void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix="1"){
+void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix=""){
 
 
   // Graphical setting for particle species
@@ -175,7 +175,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   hFramePt->GetYaxis()->SetTitle("Efficiency");
   hFramePt->GetYaxis()->SetTitleOffset(1.2);
 
-  TH2F* hFrameRatio=new TH2F("hFrameRatio","",100,0.,30.,100.,0.8,1.2);
+  TH2F* hFrameRatio=new TH2F("hFrameRatio","",100,0.05,30.,100.,0.8,1.2);
   hFrameRatio->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hFrameRatio->GetYaxis()->SetTitle("Ratio +/- efficiency");
   hFrameRatio->GetYaxis()->SetTitleOffset(1.2);
@@ -252,13 +252,13 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
     nx=TMath::Ceil((Float_t)nToShow/2.);
   }
   TCanvas* ceptch=new TCanvas("ceptch","EffVsPtByCharge",1600,800);
-  ceptch->Divide(nx,ny);
+  ceptch->Divide(nx,ny,0,0);
   thePad=1;
   for(Int_t iSp=0; iSp<AliPID::kSPECIESC; iSp++){
     if(!show[iSp]) continue;
     ceptch->cd(thePad);
-    TPad* thisPad=(TPad*)gPad;
-    thisPad->Divide(1,2,0,0);
+    TPad* thisPad=(TPad*)ceptch->GetPad(thePad);
+    thisPad->Divide(1,2,0);
     thisPad->cd(1);
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.08);
