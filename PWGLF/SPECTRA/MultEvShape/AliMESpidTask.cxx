@@ -352,6 +352,16 @@ void AliMESpidTask::UserExec(Option_t *opt)
     vec_hAllESD[l_delta_phi] = ComputeDeltaPhi(t->Phi(), phi_LP);
 
 
+    // fill the deltaPhi sparse
+    THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(5);
+    // vec_hDeltaPhi[0] = t->Pt();
+    vec_hDeltaPhi[0] = mult_comb08;
+    vec_hDeltaPhi[1] = directivity;
+    vec_hDeltaPhi[2] = ComputeDeltaPhi(t->Phi(), phi_LP);       // rec info
+    vec_hDeltaPhi[3] = 0;
+    vec_hDeltaPhi[4] = 0;
+
+
 	if( HasMCdata() ){ // run only on MC
 		// ---------------------------
 		// get the MC PDG code
@@ -388,20 +398,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		else vec_hAllESD[l_yMCPID] = -9999;
 		if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
 
-
-        // fill the deltaPhi sparse
-        THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(5);
-        // vec_hDeltaPhi[0] = t->Pt();
-        vec_hDeltaPhi[0] = mult_comb08;
-        vec_hDeltaPhi[1] = directivity;
-        vec_hDeltaPhi[2] = ComputeDeltaPhi(t->Phi(), phi_LP);       // rec info
         vec_hDeltaPhi[3] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);  // gen info
         vec_hDeltaPhi[4] = ComputeDeltaPhi(t->Phi(), phi_LP_MC);    // rec tracks vs gen LP
-        hDeltaPhi->Fill(vec_hDeltaPhi);
 	}
 
 	// ---------------------------
 	// fill the hSparse
+    hDeltaPhi->Fill(vec_hDeltaPhi);
 	hAllESD->Fill(vec_hAllESD);
 
 
@@ -726,7 +729,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   // hDeltaPhi->GetAxis(0)->Set(52, binLimits);
   fHistosQA->AddAt(hDeltaPhi, 5);
 
-
+/*
 	// used for DCA corrections
 	const Int_t ndimDCA(12);
 	const Int_t cldNbinsDCA[ndimDCA]   = {150, 21, 52, 2, 5, 5, 20, 2, 80, 3, 121, 2};
@@ -735,7 +738,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
 	THnSparseD *hDCA = new THnSparseD("DCA","DCA;multiplicity;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;MCorigin;DCA;pass_DCAcut;",ndimDCA, cldNbinsDCA, cldMinDCA, cldMaxDCA);
 	hDCA->GetAxis(2)->Set(52, binLimits);
 	fHistosQA->AddAt(hDCA, 6);
-
+*/
 
   return kTRUE;
 }
