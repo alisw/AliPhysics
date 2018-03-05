@@ -52,7 +52,7 @@
 
 ClassImp(AliAnalysisTaskPLFemto)
 
-Double_t TPCradii[9] = {85.,105.,125.,145.,165.,185.,205.,225.,245.};//must be global to be used on grid
+Float_t TPCradii[9] = {85.,105.,125.,145.,165.,185.,205.,225.,245.};//must be global to be used on grid
 //__________________________________________________________________________
 AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   AliAnalysisTaskSE(),
@@ -761,13 +761,13 @@ Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent
   return MixingBins;
 }
 //_________________________________________________________________
-Double_t AliAnalysisTaskPLFemto::CalcSphericityEvent(AliAODEvent *aodEvent)
+Float_t AliAnalysisTaskPLFemto::CalcSphericityEvent(AliAODEvent *aodEvent)
 {
-  Double_t ptTot = 0.; //total Pt of all protons and v0s in the event
+  Float_t ptTot = 0.; //total Pt of all protons and v0s in the event
 
-  Double_t s00 = 0.; //Elements of the sphericity matrix
-  Double_t s11 = 0.;
-  Double_t s10 = 0.;
+  Float_t s00 = 0.; //Elements of the sphericity matrix
+  Float_t s11 = 0.;
+  Float_t s10 = 0.;
 
   Int_t numOfTracks = aodEvent->GetNumberOfTracks();
   if(numOfTracks<3) return -9999.;//if already at this point not enough tracks are in the event -> return
@@ -779,11 +779,11 @@ Double_t AliAnalysisTaskPLFemto::CalcSphericityEvent(AliAODEvent *aodEvent)
 
       if(!aodtrack->TestFilterBit(fWhichfilterbit)) continue;
 
-      Double_t pt = aodtrack->Pt();
+      Float_t pt = aodtrack->Pt();
       //Double_t Phi = aodtrack->Phi();
-      Double_t px = aodtrack->Px();
-      Double_t py = aodtrack->Py();
-      Double_t eta = aodtrack->Eta();
+      Float_t px = aodtrack->Px();
+      Float_t py = aodtrack->Py();
+      Float_t eta = aodtrack->Eta();
 
 
       if(!(eta>-0.8 && eta<0.8)) continue;
@@ -806,18 +806,18 @@ Double_t AliAnalysisTaskPLFemto::CalcSphericityEvent(AliAODEvent *aodEvent)
   s10 /= ptTot;
 
   //Calculate the trace of the sphericity matrix:
-  Double_t T = s00+s11;
+  Float_t T = s00+s11;
 
   //Calculate the determinant of the sphericity matrix:
-  Double_t D = s00*s11 - s10*s10;//S10 = S01
+  Float_t D = s00*s11 - s10*s10;//S10 = S01
 
   //Calculate the eigenvalues of the sphericity matrix:
-  Double_t lambda1 = 0.5*(T + TMath::Sqrt(T*T - 4.*D));
-  Double_t lambda2 = 0.5*(T - TMath::Sqrt(T*T - 4.*D));
+  Float_t lambda1 = 0.5*(T + TMath::Sqrt(T*T - 4.*D));
+  Float_t lambda2 = 0.5*(T - TMath::Sqrt(T*T - 4.*D));
 
   if((lambda1 + lambda2) == 0.) return -9999.;
 
-  Double_t ST = -1.;
+  Float_t ST = -1.;
 
   if(lambda2>lambda1)
     {
@@ -864,7 +864,7 @@ Float_t AliAnalysisTaskPLFemto::GetCorrectedTOFSignal(const AliVTrack *track,con
   if(statusTOF != AliPIDResponse::kDetPidOk) return -9999.;
 
   // The expected time
-  Double_t expectedTimes[AliPID::kSPECIES];
+  Float_t expectedTimes[AliPID::kSPECIES];
   //Double_t expectedTimes[AliPID::kProton];
 
   //(fGTI[-track->GetID()-1])->GetIntegratedTimes(expectedTimes);
@@ -4412,7 +4412,7 @@ Bool_t AliAnalysisTaskPLFemto::SelectV0PID(const AliAODv0 *v0,TString ParOrAPar)
 }
 
 //________________________________________________________________________
-TVector3 AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield,double Rwanted,double PrimaryVertex[3])
+TVector3 AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield,double Rwanted,float PrimaryVertex[3])
 {
   // Gets the global position of the track at nine different radii in the TPC
   // track is the track you want to propagate
@@ -4569,24 +4569,23 @@ TVector3 AliAnalysisTaskPLFemto::GetGlobalPositionAtGlobalRadiiThroughTPC(const 
   */
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPLFemto::DEtacalc(const double zprime1, const double zprime2, const double radius)
+Float_t AliAnalysisTaskPLFemto::DEtacalc(const double zprime1, const double zprime2, const double radius)
 {
-  double thetaS1 = TMath::Pi()/2. - TMath::ATan(zprime1/radius);
-  double thetaS2 = TMath::Pi()/2. - TMath::ATan(zprime2/radius);
+  float thetaS1 = TMath::Pi()/2. - TMath::ATan(zprime1/radius);
+  float thetaS2 = TMath::Pi()/2. - TMath::ATan(zprime2/radius);
 
-  double etaS1 = -TMath::Log(TMath::Tan(thetaS1/2.));
-  double etaS2 = -TMath::Log(TMath::Tan(thetaS2/2.));
+  float etaS1 = -TMath::Log(TMath::Tan(thetaS1/2.));
+  float etaS2 = -TMath::Log(TMath::Tan(thetaS2/2.));
 
-  double detaS = etaS1 - etaS2;
+  float detaS = etaS1 - etaS2;
 
   return detaS;
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPLFemto::DPhicalc(const double dxprime, const double dyprime, const double radius)
+Float_t AliAnalysisTaskPLFemto::DPhicalc(const double dxprime, const double dyprime, const double radius)
 {
-  double dist = TMath::Sqrt(pow(dxprime,2.) + pow(dyprime,2.));
-
-  double dphi = 2.*TMath::ATan(dist/(2.*radius));
+  float dist = TMath::Sqrt(pow(dxprime,2.) + pow(dyprime,2.));
+  float dphi = 2.*TMath::ATan(dist/(2.*radius));
 
   return dphi;
 }

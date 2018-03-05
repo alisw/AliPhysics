@@ -110,7 +110,7 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   void DCAxy(const AliAODTrack *track, const AliVEvent *evt,Double_t *dcaxy);
   void BufferFiller(Int_t zBin,Int_t multBin,Int_t *NumberOfParticles);
   
-  TVector3 GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield,double Rwanted,double PrimaryVertex[3]);
+  TVector3 GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield,double Rwanted,float PrimaryVertex[3]);
   
   void SetRun1(bool run1) { fIsRun1 = run1; }
   void SetIsLightweight(bool isLight) { fIsLightweight = isLight; }
@@ -180,8 +180,8 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   int fWhichfilterbit;
   //PID:
   
-  Double_t *fTPCradii; //!
-  Double_t fPrimVertex[3];
+  Float_t *fTPCradii; //!
+  Float_t fPrimVertex[3];
 
   AliFemtoCutValues::systematics fcutType;
 
@@ -207,9 +207,9 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   Int_t *MultiplicityBinFinderzVertexBinFinder(AliAODEvent *aodEvent,Double_t zVertex);
   Float_t GetCorrectedTOFSignal(const AliVTrack *track,const AliAODEvent *aodevent); //!
 
-  Double_t CalcSphericityEvent(AliAODEvent *AODevent);
-  Double_t DEtacalc(const double zprime1, const double zprime2, const double radius);
-  Double_t DPhicalc(const double dxprime, const double dyprime, const double radius);
+  Float_t CalcSphericityEvent(AliAODEvent *AODevent);
+  Float_t DEtacalc(const double zprime1, const double zprime2, const double radius);
+  Float_t DPhicalc(const double dxprime, const double dyprime, const double radius);
 
   enum 
   {
