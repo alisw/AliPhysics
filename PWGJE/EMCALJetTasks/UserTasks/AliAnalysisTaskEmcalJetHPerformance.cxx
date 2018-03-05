@@ -364,6 +364,9 @@ void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
       AliDebugStream(4) << "Rejecting jet due to momentum fraction of " << sharedFraction << ", smaller than the minimum.\n";
       continue;
     }
+    else {
+      AliDebugStream(4) << "Jet passed momentum fraction cut with value of " << sharedFraction << "\n";
+    }
 
     // Apply additional selection to jet 2
     // TODO: Should we apply acceptance criteria to jet 2 here?
