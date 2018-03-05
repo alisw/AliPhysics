@@ -23,35 +23,35 @@ class AliFemtoCutValues
  private:
 
   //Event:
-  Double_t fEvtZvtxLow; //lower z-vertex selection
-  Double_t fEvtZvtxUp; //upper z-vertex selection
+  Float_t fEvtZvtxLow; //lower z-vertex selection
+  Float_t fEvtZvtxUp; //upper z-vertex selection
 
   //V0s
-  Double_t fV0PIDThresholdPtTPCLow; //At which pt-value the PID for V0s starts
-  Double_t fV0PIDThresholdPtTPCUp; //At which pt-value the PID for V0s stops
-  Double_t fV0SelWidth;
-  Double_t fV0EtaRange;
-  Double_t fAntiCutK0sLow;
-  Double_t fAntiCutK0sUp;
-  Double_t fV0Nsigma;
-  Double_t fV0Pointing;
-  Double_t fV0RxyLow;
-  Double_t fV0RxyUp;
-  Double_t fV0Decayvtx;
-  Double_t fV0DCAtrackPV;
-  Double_t fV0DCAtracksV0decay;
+  Float_t fV0PIDThresholdPtTPCLow; //At which pt-value the PID for V0s starts
+  Float_t fV0PIDThresholdPtTPCUp; //At which pt-value the PID for V0s stops
+  Float_t fV0SelWidth;
+  Float_t fV0EtaRange;
+  Float_t fAntiCutK0sLow;
+  Float_t fAntiCutK0sUp;
+  Float_t fV0Nsigma;
+  Float_t fV0Pointing;
+  Float_t fV0RxyLow;
+  Float_t fV0RxyUp;
+  Float_t fV0Decayvtx;
+  Float_t fV0DCAtrackPV;
+  Float_t fV0DCAtracksV0decay;
   Int_t fV0PtBinsCPA; //Number of pt bins to do cosine pointing angle differentially
   Int_t fV0PtBinsInvMass; //Number of pt bins to do invariant mass differentially
   Int_t fV0TPCCluster;
 
   //Protons
-  Double_t fProtonPIDThresholdPtTPCLow; //At which pt-value the PID for Protons starts
-  Double_t fProtonPIDThresholdPtTOFUp; //At which pt-value the PID for Protons stops
-  Double_t fProtonPIDTPCTOFSwitch; //Value at which additionally also the TOF is used for PID
-  Double_t fProtonDCAxyCut;
-  Double_t fProtonDCAzCut;
-  Double_t fProtonEtaRange;
-  Double_t fProtonNsigma;
+  Float_t fProtonPIDThresholdPtTPCLow; //At which pt-value the PID for Protons starts
+  Float_t fProtonPIDThresholdPtTOFUp; //At which pt-value the PID for Protons stops
+  Float_t fProtonPIDTPCTOFSwitch; //Value at which additionally also the TOF is used for PID
+  Float_t fProtonDCAxyCut;
+  Float_t fProtonDCAzCut;
+  Float_t fProtonEtaRange;
+  Float_t fProtonNsigma;
   Int_t fProtonPtBinsDCA; //Number of pt bins to do DCA plots differentially
   Int_t fProtonPtBinsPurity; //Number of pt bins to do Purity plots differentially
   Int_t fProtonTPCCluster;

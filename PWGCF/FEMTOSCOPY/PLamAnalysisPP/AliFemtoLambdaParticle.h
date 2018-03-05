@@ -37,24 +37,24 @@ class AliFemtoLambdaParticle // Reconstructed Lambdas parameters needed for corr
 
   int fPDGCode;
   int fPDGCodeMother;
-  double fPt;           //v0 transverse momentum
-  double fMass;         //v0 reconstructed mass
+  float fPt;           //v0 transverse momentum
+  float fMass;         //v0 reconstructed mass
   short fDaughterID1;   //Daughter (proton) AODtrack ID
   short fDaughterID2;   //Daughter (pion) AODtrack ID
   bool fV0tag;
-  double fPointing;
+  float fPointing;
   bool fReal;
 
   //stuff related to daughter tracks:
   TVector3 fMomentumPosDaughter;//momentum of positive daughter particle
   TVector3 fMomentumNegDaughter;//momentum of negative daughter particle
-  double fPhiPosdaughter;
-  double fEtaPosdaughter;
-  double fPhiNegdaughter;
-  double fEtaNegdaughter;
+  float fPhiPosdaughter;
+  float fEtaPosdaughter;
+  float fPhiNegdaughter;
+  float fEtaNegdaughter;
   //double fPosDaughPosTPC[9][3];
   //double fNegDaughPosTPC[9][3];
 
-  ClassDef(AliFemtoLambdaParticle, 2)
+  ClassDef(AliFemtoLambdaParticle, 3)
 };
 #endif
