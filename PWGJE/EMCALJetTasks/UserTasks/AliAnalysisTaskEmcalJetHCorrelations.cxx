@@ -1560,7 +1560,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   }
 
   // Jets
-  // The tag "hybridJets" is defined in the jet finder
+  // The tag "hybridLevelJets" is defined in the jet finder
   AliJetContainer * jetContainer = this->AddJetContainer(AliJetContainer::kFullJet,
                               AliJetContainer::antikt_algorithm,
                               AliJetContainer::pt_scheme,

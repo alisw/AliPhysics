@@ -151,7 +151,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
     const double jetConstituentPtCut = 3,
     const double trackEta = 0.8,
     const double jetRadius = 0.2,
-    const std::string & jetTag = "hybridJets",
+    const std::string & jetTag = "hybridLevelJets",
     const std::string & correlationsTracksCutsPeriod = "lhc11a");
 
  protected:
