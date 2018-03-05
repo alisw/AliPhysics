@@ -223,7 +223,10 @@ public:
   //
   void   FlagFakes(const TObjArray &itsTracks);
   //
-protected:
+  static Bool_t GetFixBugAfterV0() { return fgFixBugAfterV0; }
+  static void   SetFixBugAfterV0(Bool_t v) { fgFixBugAfterV0 = v; }
+
+ protected: 
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
     
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
@@ -333,6 +336,7 @@ protected:
   Bool_t* fSPDChipIntPlaneEff;      //! Map of the SPD chips already intersected by a track (for FO studies)
   AliITSPIDResponse *fITSPid;            //! parameters for ITS pid 
   //
+  static Bool_t fgFixBugAfterV0;     // steer reproduction or correction of fAfterV0 non-resetting bug
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
