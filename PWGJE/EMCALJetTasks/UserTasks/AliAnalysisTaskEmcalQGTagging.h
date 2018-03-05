@@ -68,7 +68,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
    void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
-  Float_t SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
+  void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
