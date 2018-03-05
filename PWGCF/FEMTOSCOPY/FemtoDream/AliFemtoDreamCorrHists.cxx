@@ -105,7 +105,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fSameEventMultDist[Counter]=new TH2F(SameMultEventName.Data(),
                                              SameMultEventName.Data(),
                                              *itNBins,*itKMin,*itKMax,
-                                             multbins,1,multbins);
+                                             multbins,1,multbins+1);
         fSameEventMultDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventMultDist[Counter]);
 
@@ -114,7 +114,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fMixedEventMultDist[Counter]=new TH2F(MixedMultEventName.Data(),
                                               MixedMultEventName.Data(),
                                               *itNBins,*itKMin,*itKMax,
-                                              multbins,1,multbins);
+                                              multbins,1,multbins+1);
         fMixedEventMultDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventMultDist[Counter]);
 
