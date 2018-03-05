@@ -62,7 +62,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
   void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
   void SetPileUpCutParam(Float_t m,Float_t c){this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-
+  void SetListForNUACorr(TList *fl)          {this->fListNUACorr   = fl;}
+  
 
  protected:
 
@@ -78,6 +79,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TList                 *fListHist;           //!
   TFile                 *mfileFBHijing;       //!
   TList                 *fListFBHijing;       //!
+  TList                 *fListNUACorr;        //
 
   //histograms:
   TH1F         *fHistTaskConfigParameters;   //! Task input parameters FB / cut values etc.
@@ -137,6 +139,26 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH3F     *fHistTPCTOFnSigmavsPtAfter[3];   //!
   TH2F       *fHistTPCdEdxvsPtPIDAfter[3];   //!
 
+  TH3D                *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
+  TH3D                *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
+
+
+
+  //CME Using Event plane method:
+  TProfile     *fHist_Corr3p_EP_Norm_PN[2][3];  //! 
+  TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
+  TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
+  TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
+
+  //CME(EP) vs Refmult:
+  //TProfile     *fHist_Corr3p_EP_Refm_PN[2][3];  //! 
+  //TProfile     *fHist_Corr3p_EP_Refm_PP[2][3];  //!
+  //TProfile     *fHist_Corr3p_EP_Refm_NN[2][3];  //!
+  //TProfile     *fHist_Reso2n_EP_Refm_Det[2][3]; //! 
+
+
+
+  // NUA histograms:
   TH3F        *fHist3DEtaPhiVz_Pos_Run[3][5];  //! 3 particle 5 centrality bin 
   TH3F        *fHist3DEtaPhiVz_Neg_Run[3][5];  //! 3 particle 5 centrality bin 
 
@@ -148,12 +170,22 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
+
+  //for NUA and gain corrections:
+  void  GetNUACorrectionHist(Int_t run);
+
+
+  
   //----------- other functions ----------
   void  SetUpCentralityOutlierCut();
   void  SetupEventAndTaskConfigInfo();
   void  SetupMCcorrectionMap(TString sMCfilePath);
   Int_t GetCentralityScaled0to10(Float_t fCent);
 
+
+
+
+  
   AliAnalysisTaskCMEV0PID(const AliAnalysisTaskCMEV0PID &other);
   AliAnalysisTaskCMEV0PID& operator=(const AliAnalysisTaskCMEV0PID &other);    
   ClassDef(AliAnalysisTaskCMEV0PID,1) 
