@@ -487,7 +487,7 @@ void AliHLTTPCClusterTransformationComponent::GetOCDBObjectDescription( TMap* co
   targetMap->Add(new TObjString("TPC/Calib/Ref"),         new TObjString("unknown content"));
 }
 
-
+/*
 void AliHLTTPCClusterTransformationComponent::PrintDebugInfo()
 {
   //
@@ -512,3 +512,4 @@ void AliHLTTPCClusterTransformationComponent::PrintDebugInfo()
     std::cout<<"HLT transform: "<<" sec "<<sector<<" row "<< row<<" "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<std::endl;
   }
 }
+*/
