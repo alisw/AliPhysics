@@ -68,25 +68,15 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,bool MinimalBooking) {
   fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
   fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc->Setv0PDGCode(fCascCuts->GetPDGv0());
-  std::cout<<"Init QA of Event the Cut Objects \n";
   fEvtCuts->InitQA(MinimalBooking);
-  std::cout<<"Init QA of Track the Cut Objects \n";
   fTrackCuts->Init(MinimalBooking);
-  std::cout<<"Init QA of AntiTrack the Cut Objects \n";
   fAntiTrackCuts->Init(MinimalBooking);
-  std::cout<<"Init QA of V0 the Cut Objects \n";
   fv0Cuts->Init(MinimalBooking);
-  std::cout<<"Init QA of Antiv0 the Cut Objects \n";
   fAntiv0Cuts->Init(MinimalBooking);
-  std::cout<<"Init QA of Casc the Cut Objects \n";
   fCascCuts->Init(MinimalBooking);
-  std::cout<<"Init QA of AntiCasc the Cut Objects \n";
   fAntiCascCuts->Init(MinimalBooking);
-  std::cout<<"Init QA of GTI \n";
   fGTI=new AliAODTrack*[fTrackBufferSize];
-  std::cout<<"Init QA of Evt the Cut Objects \n";
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA);
-  std::cout<<"Init Pair Cleaner \n";
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinimalBooking);
 
   if (!MinimalBooking) {
@@ -96,9 +86,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,bool MinimalBooking) {
     fQA->Add(fPairCleaner->GetHistList());
     if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
   }
-  std::cout<<"Init QA of Part Collection \n";
   fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
-  std::cout<<"Init QA of all the Cut Objects \n";
   return;
 }
 
