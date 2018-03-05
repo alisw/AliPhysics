@@ -173,11 +173,11 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
   list.push_back(kAliHLTDataTypeESDFriendContent);
-  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
-  list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
+  list.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType());
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
-  list.push_back( AliHLTTPCDefinitions::TracksDataType() | kAliHLTDataOriginTPC );
+  list.push_back(AliHLTTPCDefinitions::TracksOuterDataType() | kAliHLTDataOriginTPC);
 }
 
 AliHLTComponentDataType AliHLTGlobalFlatEsdConverterComponent::GetOutputDataType()
@@ -356,7 +356,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d",
 	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
-    pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksDataType()|kAliHLTDataOriginITSOut);
+    pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksOuterDataType()|kAliHLTDataOriginITSOut);
     if (pBlock) tpcTrackOuterParam = (AliHLTTracksData*) pBlock->fPtr;
   }
 
