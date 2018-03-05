@@ -361,6 +361,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   //cell QA histograms
   const Int_t Nmod=5;
+  const Int_t Ntru=8;
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellNXZM%d",imod),Form("Cell N(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellEXZM%d",imod),Form("Cell E(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellAmpTimeM%d_LG",imod),Form("Cell Amplitude vs. Time LG M%d",imod),200,0,20,1000,-500,500));
@@ -460,7 +461,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);%s;",axistitle.Data()),Ndimg,Nbing,xming,xmaxg);
   hs_Photon_TOF->Sumw2();
   fOutputContainer->Add(hs_Photon_TOF);
-
 
   const Int_t Ndim = 4;
   const Int_t Nbin[Ndim]    = { 240, 500, 10, NbinQ};
@@ -575,8 +575,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h1PID);
   };
 
+  TH1F *h1all = new TH1F("hAllClusterEnergy","all cluster energy;E_{cluster} (GeV)",500,0,50);
+  h1all->Sumw2();
+  fOutputContainer->Add(h1all);
 
+  const TString str[4] = {"L0","L1L","L1M","L1H"};
+  for(Int_t it=0;it<4;it++){
+    TH1F *h1matched = new TH1F(Form("hMatchedClusterEnergy%s",str[it].Data()),"matched cluster energy;E_{cluster} (GeV)",500,0,50);
+    h1matched->Sumw2();
+    fOutputContainer->Add(h1matched);
 
+    //for(Int_t imod=1;imod<Nmod;imod++){
+    //  for(Int_t itru=1;itru<=Ntru;itru++){
+    //    TH1F *h1all_mt     = new TH1F(Form("hAllClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru)    ,Form("all cluster energy M%d TRU%d",imod,itru)    ,500,0,50);
+    //    TH1F *h1matched_mt = new TH1F(Form("hMatchedClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru),Form("matched cluster energy M%d TRU%d",imod,itru),500,0,50);
+
+    //    h1all_mt->Sumw2();
+    //    h1matched_mt->Sumw2();
+
+    //    fOutputContainer->Add(h1all_mt);
+    //    fOutputContainer->Add(h1matched_mt);
+
+    //  }//end of TRU loop
+    //}//end of module loop
+  }//end of trigger type loop
 
   if(fIsPHOSTriggerAnalysis){
 
@@ -585,7 +607,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5));
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hMatchedFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5,100,0,50));
 
-    const Int_t Ntru=8;
     for(Int_t imod=1;imod<Nmod;imod++){
       fOutputContainer->Add(new TH1F(Form("hClusterEnergyM%d",imod)       ,Form("cluster energy M%d",imod),500,0,50));
       fOutputContainer->Add(new TH1F(Form("hMatchedClusterEnergyM%d",imod),Form("cluster energy M%d",imod),500,0,50));
@@ -1482,17 +1503,21 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
 
+    energy  = ph->Energy();
+    if(fUseCoreEnergy){
+      energy = (ph->GetMomV2())->Energy();
+    }
+
+    if(ph->IsTOFOK()){
+      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
+    }
+
     if(fIsPHOSTriggerAnalysis){
       if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
 
-    energy  = ph->Energy();
-    if(fUseCoreEnergy){
-      energy = (ph->GetMomV2())->Energy();
-    }
-    
     digMult = ph->GetNCells();
     tof     = ph->GetTime();//unit is second.
     M02 = ph->GetLambda2();
@@ -1524,7 +1549,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     FillHistogramTH2(fOutputContainer,Form("hCluNXZM%d",module),cellx,cellz);
     FillHistogramTH2(fOutputContainer,Form("hCluEXZM%d",module),cellx,cellz,energy);
 
-   
     R     = ph->GetNsigmaFullDisp();
     coreR = ph->GetNsigmaCoreDisp();
     coreE = (ph->GetMomV2())->Energy();
@@ -3431,6 +3455,107 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   if(Is1PHLfired && Is1PHHmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 8);//1PHL
   if(Is1PHMfired && Is1PHMmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 9);//1PHM
   if(Is1PHHfired && Is1PHLmatched) FillHistogramTH1(fOutputContainer,"hEventSummary",10);//1PHH
+
+  if(Is0PH0fired) FillTriggerInfoMB(fPHOSTriggerHelperL0,-1);
+  if(Is1PHLfired) FillTriggerInfoMB(fPHOSTriggerHelperL1L,2);
+  if(Is1PHMfired) FillTriggerInfoMB(fPHOSTriggerHelperL1M,1);
+  if(Is1PHHfired) FillTriggerInfoMB(fPHOSTriggerHelperL1H,0);
+
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTriggerInfoMB(AliPHOSTriggerHelper *helper, const Int_t L1)
+{
+  Double_t energy = 0;
+  //Double_t pT = 0;
+  Float_t position[3] = {};
+  Int_t trgrelId[4]={};
+  Int_t tmod=0; //"Online" module number
+  Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
+  Int_t trgmodule=0,trgcellx=0,trgcellz=0;
+
+
+  Int_t relId[4]={};
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+
+  TString type = "";
+  if(L1== -1) type = "L0";
+  else if(L1== 0) type = "L1H";
+  else if(L1== 1) type = "L1M";
+  else if(L1== 2) type = "L1L";
+  else{
+    AliInfo(Form("Your choice of trigger type %d is wrong. return.",L1));
+    return;
+  }
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  for(Int_t i=0;i<multClust;i++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    if(!ph->IsTOFOK()) continue;//MB data requires timing cut.
+
+    //pT = ph->Pt();
+    energy = ph->Energy();
+
+    if(fUseCoreEnergy){
+      //pT = (ph->GetMomV2())->Pt();
+      energy = (ph->GetMomV2())->Energy();
+    }
+
+    position[0] = ph->EMCx();
+    position[1] = ph->EMCy();
+    position[2] = ph->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = helper->WhichTRU(cellx,cellz);
+
+    if(module < 1 || module > 4){
+      AliError(Form("Wrong module number %d",module));
+      return;
+    }
+    AliInfo(Form("cluster position M:%d, X:%d , Z:%d , TRU:%d",module,cellx,cellz,tru));
+
+    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s",type.Data()),energy);//all cluster
+    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s_M%d_TRU%d",type.Data(),module,tru),energy);//all cluster
+
+    AliVCaloTrigger* trg = fEvent->GetCaloTrigger("PHOS");
+    trg->Reset();
+
+    while(trg->Next()){
+
+      // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
+      if(trg->GetL1TimeSum() != L1) continue;
+
+      trg->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
+
+      fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
+      //for offline numbering, relId should be used.
+
+      trgmodule = trgrelId[0];
+      trgcellx  = trgrelId[2];
+      trgcellz  = trgrelId[3];
+
+      AliInfo(Form("fired TRU channel M:%d, X:%d , Z:%d",trgmodule,trgcellx,trgcellz));
+
+      if(trgmodule < 1 || trgmodule > 4){
+        AliError(Form("Wrong module number %d",trgmodule));
+        return;
+      }
+
+      if(helper->IsMatched(trgrelId,relId)){
+        FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%s",type.Data()),energy);//matched cluster
+        //FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%sM%dTRU%d",type.Data(),module,tru),energy);//all cluster
+        break;//exit from trigger patch loop
+      }
+    }//end of while trigger patch loop
+
+  }//end of cluster loop
 
 }
 //_______________________________________________________________________________

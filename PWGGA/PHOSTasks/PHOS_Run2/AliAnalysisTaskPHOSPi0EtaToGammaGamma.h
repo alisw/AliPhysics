@@ -267,6 +267,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void EstimateTriggerEfficiency();
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
+    void FillTriggerInfoMB(AliPHOSTriggerHelper *helper, const Int_t L1);
     void FillEpRatio();
     void DDAPhotonPurity();//this can not be measured in neither single nor embedding M.C.
 
@@ -443,7 +444,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 50);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 51);
 };
 
 #endif
