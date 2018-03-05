@@ -63,6 +63,8 @@
 
 ClassImp(AliITStrackerMI)
 
+Bool_t AliITStrackerMI::fgFixBugAfterV0 = kTRUE;
+
 AliITStrackerMI::AliITSlayer AliITStrackerMI::fgLayers[AliITSgeomTGeo::kNLayers]; // ITS layers
 
 AliITStrackerMI::AliITStrackerMI():AliTracker(),
@@ -290,6 +292,8 @@ fITSPid(0) {
   fUseImproveKalman = AliITSReconstructor::GetRecoParam()->GetUseImproveKalman();
   //
   fITSPid=new AliITSPIDResponse();
+
+  AliInfoF("Fixing of AfterV0 reset bug: %s",fgFixBugAfterV0 ? "ON":"OFF");
 }
 /*
 //------------------------------------------------------------------------
@@ -552,7 +556,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
 
   fTrackingPhase="Clusters2Tracks";
-  fAfterV0 = kFALSE;
+  if (fgFixBugAfterV0) fAfterV0 = kFALSE;
   //
   // RS
   fSelectBestMIP03  = kFALSE;//AliITSReconstructor::GetRecoParam()->GetSelectBestMIP03();
@@ -686,7 +690,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fAfterV0 = kTRUE;
   //
   itsTracks.Clear();
-  //
+  // 
   Int_t entries = fTrackHypothesys.GetEntriesFast();
   for (Int_t ientry=0; ientry<entries; ientry++) {
     TObjArray * array =(TObjArray*)fTrackHypothesys.At(ientry);
