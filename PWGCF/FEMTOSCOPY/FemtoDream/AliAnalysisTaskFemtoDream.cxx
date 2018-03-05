@@ -373,7 +373,7 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
       } else {
         AliFatal("Results List not Available");
       }
-      PostData(9,fResults);
+      PostData(1,fResults);
     }
   }
 }

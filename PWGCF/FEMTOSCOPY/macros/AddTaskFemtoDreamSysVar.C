@@ -377,7 +377,6 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   TString TaskName=Form("FemtoDream_%s",suffix);
-  std::cout << TaskName.Data() << std::endl;
   AliAnalysisTaskFemtoDream *task=
       new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);
   if(CentEst == "kInt7"){
@@ -413,7 +412,6 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
   //  TString CascadeOutput="AnalysisQACascade.root";
 
   TString file = AliAnalysisManager::GetCommonFileName();
-  std::cout << file.Data() << std::endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
