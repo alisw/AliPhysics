@@ -7,11 +7,13 @@
 
 #include "AliFemtoDreamTrackCuts.h"
 #include "TMath.h"
+#include "AliLog.h"
 #include <iostream>
 ClassImp(AliFemtoDreamTrackCuts)
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 :fMCHists(0)
 ,fHists(0)
+,fMinimalBooking(false)
 ,fMCData(false)
 ,fDCAPlots(false)
 ,fCombSigma(false)
@@ -65,7 +67,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
   if (!Track->IsSet()) {
     pass=false;
   } else {
-    fHists->FillTrackCounter(0);
+    if (!fMinimalBooking) fHists->FillTrackCounter(0);
   }
   if (pass) {
     if (!TrackingCuts(Track)) {
@@ -76,7 +78,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     if (!PIDAODCuts(Track)) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(19);
+      if (!fMinimalBooking) fHists->FillTrackCounter(19);
     }
   }
   if (pass) {
@@ -85,11 +87,11 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     }
   }
   Track->SetUse(pass);
-  if (!fFillQALater) {
-    BookQA(Track);
-    if (fMCData) {
-      BookMC(Track);
-    }
+  if (!fFillQALater&&!fMinimalBooking) {
+      BookQA(Track);
+      if (fMCData) {
+        BookMC(Track);
+      }
   }
   return pass;
 }
@@ -103,83 +105,83 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       //if there is Filterbit -1 .. see Prong cuts! Daughters don't check for FB
       pass=false;
     } else {
-      fHists->FillTrackCounter(1);
+      if (!fMinimalBooking) fHists->FillTrackCounter(1);
     }
   }
   if (pass && fcutPt) {
     if (Track->GetPt()<fpTmin||Track->GetPt()>fpTmax) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(2);
+      if (!fMinimalBooking) fHists->FillTrackCounter(2);
     }
   }
   if (pass && fcutEta) {
     if (eta[0]< fetamin||eta[0]>fetamax) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(3);
+      if (!fMinimalBooking) fHists->FillTrackCounter(3);
     }
   }
   if (pass && fcutCharge) {
     if (!(charge[0]==fCharge)) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(4);
+      if (!fMinimalBooking) fHists->FillTrackCounter(4);
     }
   }
   if (pass&&fCheckPileUpITS) {
     if (!Track->GetHasITSHit()) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(5);
+      if (!fMinimalBooking) fHists->FillTrackCounter(5);
     }
   }
   if (pass&&fCheckPileUpTOF) {
     if (!Track->GetTOFTimingReuqirement()) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(6);
+      if (!fMinimalBooking) fHists->FillTrackCounter(6);
     }
   }
   if (pass&&fCheckPileUp) {
     if (!(Track->GetTOFTimingReuqirement()||Track->GetHasITSHit())) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(7);
+      if (!fMinimalBooking) fHists->FillTrackCounter(7);
     }
   }
   if (pass && fcutnTPCCls) {
     if (Track->GetNClsTPC()<fnTPCCls) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(8);
+      if (!fMinimalBooking) fHists->FillTrackCounter(8);
     }
   }
   if (pass && fCutSharedCls) {
     if (!Track->isnoSharedClst()) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(9);
+      if (!fMinimalBooking) fHists->FillTrackCounter(9);
     }
   }
   if (pass && fCheckTPCRefit) {
     if (!Track->GetHasTPCRefit()) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(10);
+      if (!fMinimalBooking) fHists->FillTrackCounter(10);
     }
   }
   if (pass && fCutTPCCrossedRows) {
     if (Track->GetTPCCrossedRows()<70) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(11);
+      if (!fMinimalBooking) fHists->FillTrackCounter(11);
     }
     if (pass) {
       if (Track->GetRatioCr()<0.83) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(12);
+        if (!fMinimalBooking) fHists->FillTrackCounter(12);
       }
     }
   }
@@ -209,7 +211,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
     if (!TPCisthere) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(13);
+      if (!fMinimalBooking) fHists->FillTrackCounter(13);
       if (fRejectPions&&TOFisthere) {
         double nSigTOF=(Track->GetnSigmaTOF((int)(AliPID::kPion)));
         if (TMath::Abs(nSigTOF)<fNSigValue) {
@@ -220,7 +222,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
           //if the particle is a Pion according to the TOF, reject it!
           pass=false;
         } else {
-          fHists->FillTrackCounter(14);
+          if (!fMinimalBooking) fHists->FillTrackCounter(14);
         }
       }
       if (pass) {
@@ -228,7 +230,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
         if (!(TMath::Abs(nSigTPC)<fNSigValue)) {
           pass=false;
         } else {
-          fHists->FillTrackCounter(15);
+          if (!fMinimalBooking) fHists->FillTrackCounter(15);
         }
       }
     }
@@ -236,19 +238,19 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
     if (!(TPCisthere&&TOFisthere)) {
       pass=false;
     } else {
-      fHists->FillTrackCounter(16);
+      if (!fMinimalBooking) fHists->FillTrackCounter(16);
       double nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
       double nSigTOF=(Track->GetnSigmaTOF((int)(fParticleID)));
       double nSigComb=TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
       if (!(nSigComb<fNSigValue)) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(17);
+        if (!fMinimalBooking) fHists->FillTrackCounter(17);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass=false;
           } else {
-            fHists->FillTrackCounter(18);
+            if (!fMinimalBooking) fHists->FillTrackCounter(18);
           }
         }
       }
@@ -288,17 +290,17 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
       if (!(TMath::Abs(Track->GetDCAZProp())<fDCAToVertexZ)) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(20);
+        if (!fMinimalBooking) fHists->FillTrackCounter(20);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ())<fDCAToVertexZ)) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(20);
+        if (!fMinimalBooking) fHists->FillTrackCounter(20);
       }
     }
   }
-  if (pass&&fDCAPlots) {
+  if (pass&&fDCAPlots&&!fMinimalBooking) {
     if (fDCAProp) {
       fHists->FillDCAXYPtBins(Track->GetPt(),Track->GetDCAXYProp());
     } else {
@@ -325,115 +327,121 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
       if (!(TMath::Abs(Track->GetDCAXYProp())<fDCAToVertexXY)) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(21);
+        if (!fMinimalBooking) fHists->FillTrackCounter(21);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY())<fDCAToVertexXY)) {
         pass=false;
       } else {
-        fHists->FillTrackCounter(21);
+        if (!fMinimalBooking) fHists->FillTrackCounter(21);
       }
     }
   }
   return pass;
 }
-void AliFemtoDreamTrackCuts::Init() {
-  fHists=new AliFemtoDreamTrackHist(fDCAPlots,fCombSigma);
-  if (fMCData) {
-    fMCHists=new AliFemtoDreamTrackMCHist(fContribSplitting,fDCAPlots);
+
+void AliFemtoDreamTrackCuts::Init(bool MinimalBooking) {
+  fMinimalBooking=MinimalBooking;
+  if (!MinimalBooking) {
+    fHists=new AliFemtoDreamTrackHist(fDCAPlots,fCombSigma);
+    if (fMCData) {
+      fMCHists=new AliFemtoDreamTrackMCHist(fContribSplitting,fDCAPlots);
+    }
+    BookTrackCuts();
   }
-  BookTrackCuts();
 }
 
 void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
-  std::vector<double> eta=Track->GetEta();
-  std::vector<double> phi=Track->GetPhi();
-  double pT = Track->GetPt();
-  double p = Track->GetMomTPC();
-  for (int i=0;i<2;++i) {
-    if (i==0||(i==1&&Track->UseParticle())) {
-      fHists->FilletaCut(i,eta.at(0));
-      fHists->FillphiCut(i,phi.at(0));
-      fHists->FillpTCut(i,pT);
-      fHists->FillpTPCCut(i,p);
-      fHists->FillTPCclsCut(i,Track->GetNClsTPC());
-      if (fDCAProp) {
-        fHists->FillDCAxyCut(i,pT,Track->GetDCAXYProp());
-        fHists->FillDCAzCut(i,pT,Track->GetDCAZProp());
-      } else {
-        fHists->FillDCAxyCut(i,pT,Track->GetDCAXY());
-        fHists->FillDCAzCut(i,pT,Track->GetDCAZ());
-      }
-      fHists->FillTPCCrossedRowCut(i,Track->GetTPCCrossedRows());
-      fHists->FillTPCRatioCut(i,Track->GetRatioCr());
-      fHists->FillTPCClsS(i,Track->GetTPCClsC());
-      for (int j=0;j<6;++j) {
-        if (Track->GetITSHit(j)) {
-          fHists->FillTPCClsCPileUp(i,j,Track->GetTPCClsC());
-        } else if (Track->GetHasITSHit()||Track->GetTOFTimingReuqirement()){
-          fHists->FillTPCClsCPileUp(i,j+7,Track->GetTPCClsC());
-        }
-      }
-      if (Track->GetTOFTimingReuqirement()) {
-        fHists->FillTPCClsCPileUp(i,6,Track->GetTPCClsC());
-      } else if (Track->GetHasITSHit()) {
-        fHists->FillTPCClsCPileUp(i,13,Track->GetTPCClsC());
-      } else {
-        fHists->FillTPCClsCPileUp(i,14,Track->GetTPCClsC());
-      }
-
-      for (int j=0;j<6;++j) {
-        if (Track->GetSharedClusterITS(j)) {
-          fHists->FillHasSharedClsITS(i,j+1,0);
+  if (!fMinimalBooking) {
+    std::vector<double> eta=Track->GetEta();
+    std::vector<double> phi=Track->GetPhi();
+    double pT = Track->GetPt();
+    double p = Track->GetMomTPC();
+    for (int i=0;i<2;++i) {
+      if (i==0||(i==1&&Track->UseParticle())) {
+        fHists->FilletaCut(i,eta.at(0));
+        fHists->FillphiCut(i,phi.at(0));
+        fHists->FillpTCut(i,pT);
+        fHists->FillpTPCCut(i,p);
+        fHists->FillTPCclsCut(i,Track->GetNClsTPC());
+        if (fDCAProp) {
+          fHists->FillDCAxyCut(i,pT,Track->GetDCAXYProp());
+          fHists->FillDCAzCut(i,pT,Track->GetDCAZProp());
         } else {
-          fHists->FillHasSharedClsITS(i,j+1,1);
+          fHists->FillDCAxyCut(i,pT,Track->GetDCAXY());
+          fHists->FillDCAzCut(i,pT,Track->GetDCAZ());
         }
-        for (int k=0;k<6;++k) {
-          if (Track->GetITSHit(k)) {
-            if (Track->GetSharedClusterITS(j)) {
-              fHists->FillITSSharedPileUp(i,k,j);
-            } else {
-              fHists->FillITSSharedPileUp(i,k,j+6);
-            }
-          } else  if (Track->GetHasITSHit()||Track->GetTOFTimingReuqirement()) {
-            if (Track->GetSharedClusterITS(j)) {
-              fHists->FillITSSharedPileUp(i,k+7,j);
-            } else {
-              fHists->FillITSSharedPileUp(i,k+7,j+6);
-            }
+        fHists->FillTPCCrossedRowCut(i,Track->GetTPCCrossedRows());
+        fHists->FillTPCRatioCut(i,Track->GetRatioCr());
+        fHists->FillTPCClsS(i,Track->GetTPCClsC());
+        for (int j=0;j<6;++j) {
+          if (Track->GetITSHit(j)) {
+            fHists->FillTPCClsCPileUp(i,j,Track->GetTPCClsC());
+          } else if (Track->GetHasITSHit()||Track->GetTOFTimingReuqirement()){
+            fHists->FillTPCClsCPileUp(i,j+7,Track->GetTPCClsC());
           }
         }
         if (Track->GetTOFTimingReuqirement()) {
-          if (Track->GetSharedClusterITS(j)) {
-            fHists->FillITSSharedPileUp(i,6,j);
-          } else {
-            fHists->FillITSSharedPileUp(i,6,j+6);
-          }
+          fHists->FillTPCClsCPileUp(i,6,Track->GetTPCClsC());
         } else if (Track->GetHasITSHit()) {
-          if (Track->GetSharedClusterITS(j)) {
-            fHists->FillITSSharedPileUp(i,13,j);
-          } else {
-            fHists->FillITSSharedPileUp(i,13,j+6);
-          }
+          fHists->FillTPCClsCPileUp(i,13,Track->GetTPCClsC());
         } else {
+          fHists->FillTPCClsCPileUp(i,14,Track->GetTPCClsC());
+        }
+
+        for (int j=0;j<6;++j) {
           if (Track->GetSharedClusterITS(j)) {
-            fHists->FillITSSharedPileUp(i,14,j);
+            fHists->FillHasSharedClsITS(i,j+1,0);
           } else {
-            fHists->FillITSSharedPileUp(i,14,j+6);
+            fHists->FillHasSharedClsITS(i,j+1,1);
+          }
+          for (int k=0;k<6;++k) {
+            if (Track->GetITSHit(k)) {
+              if (Track->GetSharedClusterITS(j)) {
+                fHists->FillITSSharedPileUp(i,k,j);
+              } else {
+                fHists->FillITSSharedPileUp(i,k,j+6);
+              }
+            } else  if (Track->GetHasITSHit()||Track->GetTOFTimingReuqirement()) {
+              if (Track->GetSharedClusterITS(j)) {
+                fHists->FillITSSharedPileUp(i,k+7,j);
+              } else {
+                fHists->FillITSSharedPileUp(i,k+7,j+6);
+              }
+            }
+          }
+          if (Track->GetTOFTimingReuqirement()) {
+            if (Track->GetSharedClusterITS(j)) {
+              fHists->FillITSSharedPileUp(i,6,j);
+            } else {
+              fHists->FillITSSharedPileUp(i,6,j+6);
+            }
+          } else if (Track->GetHasITSHit()) {
+            if (Track->GetSharedClusterITS(j)) {
+              fHists->FillITSSharedPileUp(i,13,j);
+            } else {
+              fHists->FillITSSharedPileUp(i,13,j+6);
+            }
+          } else {
+            if (Track->GetSharedClusterITS(j)) {
+              fHists->FillITSSharedPileUp(i,14,j);
+            } else {
+              fHists->FillITSSharedPileUp(i,14,j+6);
+            }
           }
         }
-      }
 
-      fHists->FillTPCdedx(i,p,Track->GetdEdxTPC());
-      fHists->FillTOFbeta(i,p,Track->GetbetaTOF());
-      fHists->FillNSigTPC(i,p,(Track->GetnSigmaTPC(fParticleID)));
-      fHists->FillNSigTOF(i,p,(Track->GetnSigmaTOF(fParticleID)));
-      fHists->FillTPCStatus(i,Track->GetstatusTPC());
-      fHists->FillTOFStatus(i,Track->GetstatusTOF());
-      //Fill These Before
-      if (i==0&&fCombSigma) {
-        fHists->FillNSigComb(pT,Track->GetnSigmaTPC(fParticleID),
-                             Track->GetnSigmaTOF(fParticleID));
+        fHists->FillTPCdedx(i,p,Track->GetdEdxTPC());
+        fHists->FillTOFbeta(i,p,Track->GetbetaTOF());
+        fHists->FillNSigTPC(i,p,(Track->GetnSigmaTPC(fParticleID)));
+        fHists->FillNSigTOF(i,p,(Track->GetnSigmaTOF(fParticleID)));
+        fHists->FillTPCStatus(i,Track->GetstatusTPC());
+        fHists->FillTOFStatus(i,Track->GetstatusTOF());
+        //Fill These Before
+        if (i==0&&fCombSigma) {
+          fHists->FillNSigComb(pT,Track->GetnSigmaTPC(fParticleID),
+                               Track->GetnSigmaTOF(fParticleID));
+        }
       }
     }
   }
@@ -441,176 +449,182 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 }
 
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
-  Int_t PDGcode[5] = {11,13,211,321,2212};
-  //this is not the correct way to do it, since there might be double counting
-  if (fpTmin<Track->GetPt()&&Track->GetPt()<fpTmax) {
-    if (fetamin<Track->GetEta().at(0)&&Track->GetEta().at(0)<fetamax) {
-      if(!fcutCharge){
-        if(TMath::Abs(Track->GetMCPDGCode())==PDGcode[fParticleID]){
-          fMCHists->FillMCGen(Track->GetPt());
+  if (!fMinimalBooking) {
+    Int_t PDGcode[5] = {11,13,211,321,2212};
+    //this is not the correct way to do it, since there might be double counting
+    if (fpTmin<Track->GetPt()&&Track->GetPt()<fpTmax) {
+      if (fetamin<Track->GetEta().at(0)&&Track->GetEta().at(0)<fetamax) {
+        if(!fcutCharge){
+          if(TMath::Abs(Track->GetMCPDGCode())==PDGcode[fParticleID]){
+            fMCHists->FillMCGen(Track->GetPt());
+          }
+        }else{
+          Int_t sign = (Int_t)fCharge/TMath::Abs(fCharge);
+          if(Track->GetMCPDGCode() == sign*PDGcode[fParticleID]){
+            fMCHists->FillMCGen(Track->GetPt());
+          }
         }
-      }else{
+      }
+    }
+    if (Track->UseParticle()) {
+      double pT = Track->GetPt();
+      int PDGcode[5] = {11,13,211,321,2212};
+      //Fill Identified
+      fMCHists->FillMCIdent(pT);
+      AliFemtoDreamBasePart::PartOrigin tmpOrg=Track->GetParticleOrigin();
+      if (!fcutCharge) {
+        if (TMath::Abs(Track->GetMCPDGCode())==TMath::Abs(PDGcode[fParticleID])) {
+          fMCHists->FillMCCorr(pT);
+        } else {
+          Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+        }
+      } else {
         Int_t sign = (Int_t)fCharge/TMath::Abs(fCharge);
-        if(Track->GetMCPDGCode() == sign*PDGcode[fParticleID]){
-          fMCHists->FillMCGen(Track->GetPt());
+        if (Track->GetMCPDGCode() == sign*PDGcode[fParticleID]) {
+          fMCHists->FillMCCorr(pT);
+        } else {
+          Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
         }
       }
-    }
-  }
-  if (Track->UseParticle()) {
-    double pT = Track->GetPt();
-    int PDGcode[5] = {11,13,211,321,2212};
-    //Fill Identified
-    fMCHists->FillMCIdent(pT);
-    AliFemtoDreamBasePart::PartOrigin tmpOrg=Track->GetParticleOrigin();
-    if (!fcutCharge) {
-      if (TMath::Abs(Track->GetMCPDGCode())==TMath::Abs(PDGcode[fParticleID])) {
-        fMCHists->FillMCCorr(pT);
-      } else {
-        Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
+      if (fContribSplitting) {
+        FillMCContributions(Track);
       }
-    } else {
-      Int_t sign = (Int_t)fCharge/TMath::Abs(fCharge);
-      if (Track->GetMCPDGCode() == sign*PDGcode[fParticleID]) {
-        fMCHists->FillMCCorr(pT);
-      } else {
-        Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
-      }
+      Track->SetParticleOrigin(tmpOrg);
     }
-    if (fContribSplitting) {
-      FillMCContributions(Track);
-    }
-    Track->SetParticleOrigin(tmpOrg);
   }
 }
 
 void AliFemtoDreamTrackCuts::FillMCContributions(
     AliFemtoDreamTrack *Track)
 {
-  double pT=Track->GetPt();
-  AliFemtoDreamBasePart::PartOrigin org=Track->GetParticleOrigin();
-  Int_t iFill = -1;
-  switch(org) {
-    case AliFemtoDreamBasePart::kPhysPrimary:
-      fMCHists->FillMCPrimary(pT);
-      iFill = 0;
-      break;
-    case AliFemtoDreamBasePart::kWeak:
-      fMCHists->FillMCFeeddown(pT,TMath::Abs(Track->GetMotherWeak()));
-      iFill = 1;
-      break;
-    case AliFemtoDreamBasePart::kMaterial:
-      fMCHists->FillMCMaterial(pT);
-      iFill = 2;
-      break;
-    case AliFemtoDreamBasePart::kContamination:
-      fMCHists->FillMCCont(pT);
-      iFill = 3;
-      break;
-    default:
-      AliFatal("Type Not implemented");
-      break;
-  }
-  if (iFill >= 0 && iFill < 4) {
-    std::vector<double> eta=Track->GetEta();
-    std::vector<double> phi=Track->GetPhi();
-    fMCHists->FillMCpTPCCut(iFill,Track->GetMomTPC());
-    fMCHists->FillMCetaCut(iFill,eta[0]);
-    fMCHists->FillMCphiCut(iFill,phi[0]);
-    fMCHists->FillMCTPCclsCut(iFill,pT,Track->GetNClsTPC());
-    if (fDCAProp) {
-      fMCHists->FillMCDCAxyCut(iFill,pT,Track->GetDCAXYProp());
-      fMCHists->FillMCDCAzCut(iFill,pT,Track->GetDCAZProp());
-    } else {
-      fMCHists->FillMCDCAxyCut(iFill,pT,Track->GetDCAXY());
-      fMCHists->FillMCDCAzCut(iFill,pT,Track->GetDCAZ());
+  if (!fMinimalBooking) {
+    double pT=Track->GetPt();
+    AliFemtoDreamBasePart::PartOrigin org=Track->GetParticleOrigin();
+    Int_t iFill = -1;
+    switch(org) {
+      case AliFemtoDreamBasePart::kPhysPrimary:
+        fMCHists->FillMCPrimary(pT);
+        iFill = 0;
+        break;
+      case AliFemtoDreamBasePart::kWeak:
+        fMCHists->FillMCFeeddown(pT,TMath::Abs(Track->GetMotherWeak()));
+        iFill = 1;
+        break;
+      case AliFemtoDreamBasePart::kMaterial:
+        fMCHists->FillMCMaterial(pT);
+        iFill = 2;
+        break;
+      case AliFemtoDreamBasePart::kContamination:
+        fMCHists->FillMCCont(pT);
+        iFill = 3;
+        break;
+      default:
+        AliFatal("Type Not implemented");
+        break;
     }
-    fMCHists->FillMCTPCCrossedRowCut(iFill,pT,Track->GetTPCCrossedRows());
-    fMCHists->FillMCTPCRatioCut(iFill,pT,Track->GetRatioCr());
-    fMCHists->FillMCTPCdedx(iFill,pT,Track->GetdEdxTPC());
-    fMCHists->FillMCTOFbeta(iFill,pT,Track->GetbetaTOF());
-    fMCHists->FillMCNSigTPC(iFill,pT,Track->GetnSigmaTPC(fParticleID));
-    fMCHists->FillMCNSigTOF(iFill,pT,Track->GetnSigmaTOF(fParticleID));
-  } else {
-    TString errMSG =  Form("iFill = %d", iFill);
-    AliFatal(errMSG.Data());
+    if (iFill >= 0 && iFill < 4) {
+      std::vector<double> eta=Track->GetEta();
+      std::vector<double> phi=Track->GetPhi();
+      fMCHists->FillMCpTPCCut(iFill,Track->GetMomTPC());
+      fMCHists->FillMCetaCut(iFill,eta[0]);
+      fMCHists->FillMCphiCut(iFill,phi[0]);
+      fMCHists->FillMCTPCclsCut(iFill,pT,Track->GetNClsTPC());
+      if (fDCAProp) {
+        fMCHists->FillMCDCAxyCut(iFill,pT,Track->GetDCAXYProp());
+        fMCHists->FillMCDCAzCut(iFill,pT,Track->GetDCAZProp());
+      } else {
+        fMCHists->FillMCDCAxyCut(iFill,pT,Track->GetDCAXY());
+        fMCHists->FillMCDCAzCut(iFill,pT,Track->GetDCAZ());
+      }
+      fMCHists->FillMCTPCCrossedRowCut(iFill,pT,Track->GetTPCCrossedRows());
+      fMCHists->FillMCTPCRatioCut(iFill,pT,Track->GetRatioCr());
+      fMCHists->FillMCTPCdedx(iFill,pT,Track->GetdEdxTPC());
+      fMCHists->FillMCTOFbeta(iFill,pT,Track->GetbetaTOF());
+      fMCHists->FillMCNSigTPC(iFill,pT,Track->GetnSigmaTPC(fParticleID));
+      fMCHists->FillMCNSigTOF(iFill,pT,Track->GetnSigmaTOF(fParticleID));
+    } else {
+      TString errMSG =  Form("iFill = %d", iFill);
+      AliFatal(errMSG.Data());
+    }
   }
   return;
 }
 
 void AliFemtoDreamTrackCuts::BookTrackCuts() {
-  if (!fHists) {
-    AliFatal("AliFemtoPPbpbLamSpTrackCuts::BookTrackCuts No Histograms to work with");
-  }
-  if (fcutPt) {
-    fHists->FillConfig(0, fpTmin);
-    fHists->FillConfig(1, fpTmax);
-  }
-  if (fcutEta) {
-    fHists->FillConfig(2, fetamin);
-    fHists->FillConfig(3, fetamax);
-  }
-  if (fcutCharge) {
-    fHists->FillConfig(4, fCharge);
-  }
+  if (!fMinimalBooking) {
+    if (!fHists) {
+      AliFatal("AliFemtoPPbpbLamSpTrackCuts::BookTrackCuts No Histograms to work with");
+    }
+    if (fcutPt) {
+      fHists->FillConfig(0, fpTmin);
+      fHists->FillConfig(1, fpTmax);
+    }
+    if (fcutEta) {
+      fHists->FillConfig(2, fetamin);
+      fHists->FillConfig(3, fetamax);
+    }
+    if (fcutCharge) {
+      fHists->FillConfig(4, fCharge);
+    }
 
-  if (fcutnTPCCls) {
-    fHists->FillConfig(5, fnTPCCls);
-  }
+    if (fcutnTPCCls) {
+      fHists->FillConfig(5, fnTPCCls);
+    }
 
-  if (fCheckFilterBit) {
-    fHists->FillConfig(6, fFilterBit);
-  } else {
-    fHists->FillConfig(6, -1);
-  }
-
-  if (fMCData) {
-    fHists->FillConfig(7, 1);
-  }
-  if (fCutDCAToVtxXY) {
-    fHists->FillConfig(8, fDCAToVertexXY);
-  }
-  if (fCutDCAToVtxZ) {
-    fHists->FillConfig(9, fDCAToVertexZ);
-  }
-  if (fCutSharedCls) {
-    fHists->FillConfig(10, 1);
-  }
-  if (fCutTPCCrossedRows) {
-    fHists->FillConfig(11, 1);
-  } else {
-    fHists->FillConfig(11, 0);
-  }
-  if (fCutPID) {
-    fHists->FillConfig(12, fPIDPTPCThreshold);
-    fHists->FillConfig(13, fNSigValue);
-    if (fRejectPions) {
-      fHists->FillConfig(14, 1);
+    if (fCheckFilterBit) {
+      fHists->FillConfig(6, fFilterBit);
     } else {
+      fHists->FillConfig(6, -1);
+    }
+
+    if (fMCData) {
+      fHists->FillConfig(7, 1);
+    }
+    if (fCutDCAToVtxXY) {
+      fHists->FillConfig(8, fDCAToVertexXY);
+    }
+    if (fCutDCAToVtxZ) {
+      fHists->FillConfig(9, fDCAToVertexZ);
+    }
+    if (fCutSharedCls) {
+      fHists->FillConfig(10, 1);
+    }
+    if (fCutTPCCrossedRows) {
+      fHists->FillConfig(11, 1);
+    } else {
+      fHists->FillConfig(11, 0);
+    }
+    if (fCutPID) {
+      fHists->FillConfig(12, fPIDPTPCThreshold);
+      fHists->FillConfig(13, fNSigValue);
+      if (fRejectPions) {
+        fHists->FillConfig(14, 1);
+      } else {
+        fHists->FillConfig(14, 0);
+      }
+      if (fCutHighPtSig) {
+        fHists->FillConfig(15, 1);
+      } else {
+        fHists->FillConfig(15,0);
+      }
+    } else {
+      fHists->FillConfig(12, 0);
+      fHists->FillConfig(13, 0);
       fHists->FillConfig(14, 0);
+      fHists->FillConfig(15, 0);
     }
-    if (fCutHighPtSig) {
-      fHists->FillConfig(15, 1);
-    } else {
-      fHists->FillConfig(15,0);
+    if (fCheckPileUpITS) {
+      fHists->FillConfig(16,1);
     }
-  } else {
-    fHists->FillConfig(12, 0);
-    fHists->FillConfig(13, 0);
-    fHists->FillConfig(14, 0);
-    fHists->FillConfig(15, 0);
-  }
-  if (fCheckPileUpITS) {
-    fHists->FillConfig(16,1);
-  }
-  if (fCheckPileUpTOF) {
-    fHists->FillConfig(17,1);
-  }
-  if (fCheckPileUp) {
-    fHists->FillConfig(18,1);
-  }
-  if (fCheckTPCRefit) {
-    fHists->FillConfig(19,1);
+    if (fCheckPileUpTOF) {
+      fHists->FillConfig(17,1);
+    }
+    if (fCheckPileUp) {
+      fHists->FillConfig(18,1);
+    }
+    if (fCheckTPCRefit) {
+      fHists->FillConfig(19,1);
+    }
   }
 }
 

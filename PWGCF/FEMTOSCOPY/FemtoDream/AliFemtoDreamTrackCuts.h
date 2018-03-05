@@ -69,7 +69,7 @@ class AliFemtoDreamTrackCuts {
   void BookMC(AliFemtoDreamTrack *Track);
 //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
-  void Init();
+  void Init(bool MinimalBooking);
   TList *GetQAHists() {return fHists->GetHistList();};
   TList *GetMCQAHists() {return fMCHists->GetHistList();};
   TString ClassName() {return "AliFemtoDreamTrackCuts";};
@@ -84,6 +84,7 @@ class AliFemtoDreamTrackCuts {
   void FillMCContributions(AliFemtoDreamTrack *Track);
   AliFemtoDreamTrackMCHist *fMCHists; //!
   AliFemtoDreamTrackHist *fHists;     //!
+  bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
   bool fCombSigma;                    //

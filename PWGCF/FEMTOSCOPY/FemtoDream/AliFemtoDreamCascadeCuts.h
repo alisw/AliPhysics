@@ -62,7 +62,7 @@ class AliFemtoDreamCascadeCuts {
   void SetPDGCodev0(int PDG) {fPDGv0=PDG;};
   int GetPDGv0() {return fPDGv0;};
   TString ClassName()const{return "AliFemtoDreamCascadeCuts";};
-  void Init();
+  void Init(bool MinimalBooking);
   bool isSelected(AliFemtoDreamCascade *casc);
   void BookQA(AliFemtoDreamCascade *casc);
   void BookMCQA(AliFemtoDreamCascade *casc);
@@ -77,6 +77,7 @@ class AliFemtoDreamCascadeCuts {
   AliFemtoDreamTrackCuts *fBachCuts;
   TList *fHistList;
   TList *fMCHistList;
+  bool fMinimalBooking;
   bool fMCData;
   bool fContribSplitting;
   bool fcutXiMass;

@@ -5,6 +5,7 @@
  *      Author: bernhardhohlweger
  */
 #include <vector>
+#include "AliLog.h"
 #include "AliFemtoDreamAnalysis.h"
 #include "TClonesArray.h"
 #include <iostream>
@@ -24,7 +25,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fAntiv0Cuts()
 ,fCascCuts()
 ,fAntiCascCuts()
-,fPairCleaner(new AliFemtoDreamPairCleaner(4,4))
+,fPairCleaner()
 ,fTrackBufferSize(0)
 ,fGTI(0)
 ,fConfig(0)
@@ -45,7 +46,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
+void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,bool MinimalBooking) {
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -67,24 +68,37 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
   fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc->Setv0PDGCode(fCascCuts->GetPDGv0());
-
-  fEvtCuts->InitQA();
-  fTrackCuts->Init();
-  fAntiTrackCuts->Init();
-  fv0Cuts->Init();
-  fAntiv0Cuts->Init();
-  fCascCuts->Init();
-  fAntiCascCuts->Init();
+  std::cout<<"Init QA of Event the Cut Objects \n";
+  fEvtCuts->InitQA(MinimalBooking);
+  std::cout<<"Init QA of Track the Cut Objects \n";
+  fTrackCuts->Init(MinimalBooking);
+  std::cout<<"Init QA of AntiTrack the Cut Objects \n";
+  fAntiTrackCuts->Init(MinimalBooking);
+  std::cout<<"Init QA of V0 the Cut Objects \n";
+  fv0Cuts->Init(MinimalBooking);
+  std::cout<<"Init QA of Antiv0 the Cut Objects \n";
+  fAntiv0Cuts->Init(MinimalBooking);
+  std::cout<<"Init QA of Casc the Cut Objects \n";
+  fCascCuts->Init(MinimalBooking);
+  std::cout<<"Init QA of AntiCasc the Cut Objects \n";
+  fAntiCascCuts->Init(MinimalBooking);
+  std::cout<<"Init QA of GTI \n";
   fGTI=new AliAODTrack*[fTrackBufferSize];
-  fQA=new TList();
-  fQA->SetOwner();
-  fQA->SetName("QA");
-
-  fQA->Add(fPairCleaner->GetHistList());
+  std::cout<<"Init QA of Evt the Cut Objects \n";
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA);
-  fQA->Add(fEvent->GetEvtCutList());
+  std::cout<<"Init Pair Cleaner \n";
+  fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinimalBooking);
 
-  fPartColl=new AliFemtoDreamPartCollection(fConfig);
+  if (!MinimalBooking) {
+    fQA=new TList();
+    fQA->SetOwner();
+    fQA->SetName("QA");
+    fQA->Add(fPairCleaner->GetHistList());
+    if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+  }
+  std::cout<<"Init QA of Part Collection \n";
+  fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
+  std::cout<<"Init QA of all the Cut Objects \n";
   return;
 }
 
@@ -186,7 +200,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (!evt) {
     AliFatal("No Input Event");
   }
-
   fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) {
     return;

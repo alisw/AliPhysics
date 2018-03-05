@@ -3,7 +3,7 @@
 #include "TROOT.h"
 
 AliAnalysisTask* AddTaskFemtoDream(
-    bool isMC=false, TString CentEst="kInt7",bool notpp=true,
+    bool isMC=false,TString CentEst="kInt7",bool notpp=true,
     bool DCAPlots=false,bool CPAPlots=false,
     bool CombSigma=false,bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
@@ -254,7 +254,8 @@ AliAnalysisTask* AddTaskFemtoDream(
 	config->SetMaxKRel(kMax);
 	config->SetMixingDepth(10);
 
-	AliAnalysisTaskFemtoDream *task=new AliAnalysisTaskFemtoDream("FemtoDream",isMC);
+	AliAnalysisTaskFemtoDream *task=
+	    new AliAnalysisTaskFemtoDream("FemtoDream",isMC,false);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
 		task->SetMVPileUp(kTRUE);

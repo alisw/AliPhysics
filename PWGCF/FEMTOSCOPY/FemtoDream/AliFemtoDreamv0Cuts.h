@@ -59,7 +59,7 @@ class AliFemtoDreamv0Cuts {
   }
   void SetCutCPA(double cpa) {fMinCPA=cpa;fCutCPA=true;};
   void SetCutInvMass(double width){fInvMassCutWidth=width;fCutInvMass=true;};
-  void Init();
+  void Init(bool MinimalBooking);
   TList *GetQAHists() {return fHistList;};
 //  TList *GetQAHistsPosDaug() {return fPosCuts->GetQAHists();};
 //  TList *GetQAHistsNegDaug() {return fNegCuts->GetQAHists();};
@@ -86,6 +86,7 @@ class AliFemtoDreamv0Cuts {
   AliFemtoDreamTrackCuts *fPosCuts;   //
   AliFemtoDreamTrackCuts *fNegCuts;   //
   //These are all the cuts directly linked to the v0
+  bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fCPAPlots;                     //
   bool fContribSplitting;             //
