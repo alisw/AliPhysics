@@ -33,13 +33,14 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   /**
    * Wrapper to contain the properties for a jet to simplify filling the response matrix histogram
    */
-  struct AliRMJet {
+  struct ResponseMatrixFillWrapper {
     double fPt;                 //!<! Jet pt
     double fArea;               //!<! Jet area
     double fPhi;                //!<! jet phi
     double fRelativeEPAngle;    //!<! Angle relative to the event plane
     double fLeadingHadronPt;    //!<! Leading hadron pt
     double fDistance;           //!<! Distance to the matched jet
+    double fCentrality;         //!<! Centrality of the given jet (an event level property, but useful to here available here)
   };
 
   AliAnalysisTaskEmcalJetHPerformance();
@@ -71,14 +72,14 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t Run();
 
   // Configuration
-  void RetrieveTaskPropertiesFromYAMLConfig();
+  void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
 
   // Response matrix functions
   void SetupResponseMatrixHists();
   void CreateResponseMatrix();
   void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
-  AliRMJet CreateAliRMJet(AliEmcalJet * jet) const;
+  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file
@@ -97,9 +98,9 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // For whatever reason, it appears that CINT can't handle this definition
   #if !(defined(__CINT__) || defined(__MAKECINT__))
   // For some reason, root can't handle this typedef
-  //typedef double AliRMJet::*MP;
+  //typedef double ResponseMatrixFillWrapper::*MP;
   //std::map <std::string, std::pair<int, MP>> fResponseMatrixFillMap;   //!<!
-  std::map <std::string, std::pair<int, double AliRMJet::*>> fResponseMatrixFillMap;   //!<! Map from axis title to pair of (jet number, function to retrieve fill value)
+  std::map <std::string, std::pair<int, double ResponseMatrixFillWrapper::*>> fResponseMatrixFillMap;   //!<! Map from axis title to pair of (jet number, function to retrieve fill value)
   #endif
   bool fResponseFromThreeJetCollections; ///<  If true, the det level jets in collection 2 are only an intermediate step. They are used to get part level jets to match to hybrid jets
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level

@@ -99,7 +99,7 @@ AliAnalysisTaskEmcalJetHPerformance & AliAnalysisTaskEmcalJetHPerformance::opera
 /**
  * Retrieve task properties from the YAML configuration
  */
-void AliAnalysisTaskEmcalJetHPerformance::RetrieveTaskPropertiesFromYAMLConfig()
+void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Same ordering as in the constructor (for consistency)
   std::string baseName = "enable";
@@ -118,7 +118,14 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveTaskPropertiesFromYAMLConfig()
   }
 
   // Base class options
+  // Recycle unused embedded events
   fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
+  // Centrality
+  std::pair<double, double> centRange;
+  res = fYAMLConfig.GetProperty("centralityRange", centRange, false);
+  if (res) {
+    SetCentRange(centRange.first, centRange.second);
+  }
 }
 
 /**
@@ -127,7 +134,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveTaskPropertiesFromYAMLConfig()
 void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
 {
   std::string baseName = "jets";
-  std::vector <std::string> jetNames = {"hybridJets", "detLevelJets", "partLevelJets"};
+  std::vector <std::string> jetNames = {"hybridLevelJets", "detLevelJets", "partLevelJets"};
   for (const auto & jetName : jetNames) {
     // Retrieve the node just to see if it is exists. If so, then we can proceed
     YAML::Node node;
@@ -184,7 +191,7 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
 
   // Setup task based on the properties defined in the YAML config
   AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
-  RetrieveTaskPropertiesFromYAMLConfig();
+  RetrieveAndSetTaskPropertiesFromYAMLConfig();
   SetupJetContainersFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
@@ -257,7 +264,7 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
   fYAMLConfig.GetProperty({baseName, "axes"}, sparseAxes, true);
   for (auto axis : sparseAxes) {
     auto axisLimits = axis.second;
-    AliDebugStream(4) << "Creating axis " << axis.first << " with nBins " << axisLimits.at(0) << ", min: " << axisLimits.at(1) << ", max: " << axisLimits.at(2) << "\n";
+    AliDebugStream(3) << "Creating axis " << axis.first << " with nBins " << axisLimits.at(0) << ", min: " << axisLimits.at(1) << ", max: " << axisLimits.at(2) << "\n";
     binning.emplace_back(new TAxis(axisLimits.at(0), axisLimits.at(1), axisLimits.at(2)));
   }
 
@@ -277,18 +284,21 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
   {
     // pt
     // ex: p_{T,1}
-    fResponseMatrixFillMap.insert(std::make_pair(std::string("p_{T,") + std::to_string(iJet) + "}", std::make_pair(iJet, &AliRMJet::fPt)));
+    fResponseMatrixFillMap.insert(std::make_pair(std::string("p_{T,") + std::to_string(iJet) + "}", std::make_pair(iJet, &ResponseMatrixFillWrapper::fPt)));
     // Area
     // ex: A_{jet,1}
-    fResponseMatrixFillMap.insert(std::make_pair(std::string("A_{jet,") + std::to_string(iJet) + "}", std::make_pair(iJet, &AliRMJet::fArea)));
+    fResponseMatrixFillMap.insert(std::make_pair(std::string("A_{jet,") + std::to_string(iJet) + "}", std::make_pair(iJet, &ResponseMatrixFillWrapper::fArea)));
     // EP angle
     // ex: #theta_{jet,1}^{EP}
-    fResponseMatrixFillMap.insert(std::make_pair(std::string("#theta_{jet,") + std::to_string(iJet) + "}^{EP}", std::make_pair(iJet, &AliRMJet::fRelativeEPAngle)));
+    fResponseMatrixFillMap.insert(std::make_pair(std::string("#theta_{jet,") + std::to_string(iJet) + "}^{EP}", std::make_pair(iJet, &ResponseMatrixFillWrapper::fRelativeEPAngle)));
     // Leading hadron
     // ex: p_{T,particle,1}^{leading} (GeV/c)
-    fResponseMatrixFillMap.insert(std::make_pair(std::string("p_{T,particle,") + std::to_string(iJet) + "}^{leading} (GeV/c)", std::make_pair(iJet, &AliRMJet::fLeadingHadronPt)));
+    fResponseMatrixFillMap.insert(std::make_pair(std::string("p_{T,particle,") + std::to_string(iJet) + "}^{leading} (GeV/c)", std::make_pair(iJet, &ResponseMatrixFillWrapper::fLeadingHadronPt)));
   }
-  fResponseMatrixFillMap.insert(std::make_pair("distance", std::make_pair(1, &AliRMJet::fDistance)) );
+  // Distance from one jet to another
+  fResponseMatrixFillMap.insert(std::make_pair("distance", std::make_pair(1, &ResponseMatrixFillWrapper::fDistance)) );
+  // Centrality
+  fResponseMatrixFillMap.insert(std::make_pair("centrality", std::make_pair(1, &ResponseMatrixFillWrapper::fCentrality)) );
 
   // Shared momentum fraction
   name = "fHistFractionSharedPt";
@@ -322,7 +332,7 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
  */
 void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
 {
-  AliJetContainer * jetsHybrid = GetJetContainer("hybridJets");
+  AliJetContainer * jetsHybrid = GetJetContainer("hybridLevelJets");
   AliJetContainer * jetsDetLevel = GetJetContainer("detLevelJets");
   AliJetContainer * jetsPartLevel = GetJetContainer("partLevelJets");
   if (!jetsHybrid) {
@@ -398,13 +408,13 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
     AliErrorStream() << "Null jet passed to fill response matrix";
   }
 
-  AliDebugStream(3) << "About to create AliRMJets\n";
+  AliDebugStream(3) << "About to create ResponseMatrixFillWrappers\n";
   AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
   AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
   // Create map from jetNumber to jet and initialize the objects
-  std::map<unsigned int, AliRMJet> jetNumberToJet = {
-    std::make_pair(1, CreateAliRMJet(jet1)),
-    std::make_pair(2, CreateAliRMJet(jet2))
+  std::map<unsigned int, ResponseMatrixFillWrapper> jetNumberToJet = {
+    std::make_pair(1, CreateResponseMatrixFillWrapper(jet1)),
+    std::make_pair(2, CreateResponseMatrixFillWrapper(jet2))
   };
 
   // Fill histograms
@@ -420,10 +430,10 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
     // Retrieve pair of jet and pointer to extract the fill value
     auto jetPair = fResponseMatrixFillMap.find(title);
     if (jetPair != fResponseMatrixFillMap.end()) {
-      auto rmJet = jetNumberToJet.at(jetPair->second.first);
+      auto wrapper = jetNumberToJet.at(jetPair->second.first);
       auto member = jetPair->second.second;
-      AliDebugStream(4) << "Filling value " << rmJet.*member << " into axis " << title << "\n";
-      values.emplace_back(rmJet.*member);
+      AliDebugStream(4) << "Filling value " << wrapper.*member << " into axis " << title << "\n";
+      values.emplace_back(wrapper.*member);
     }
     else {
       AliWarningStream() << "Unable to fill dimension " << title << "!\n";
@@ -436,21 +446,22 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
 /**
  *
  */
-AliAnalysisTaskEmcalJetHPerformance::AliRMJet AliAnalysisTaskEmcalJetHPerformance::CreateAliRMJet(AliEmcalJet * jet) const
+AliAnalysisTaskEmcalJetHPerformance::ResponseMatrixFillWrapper AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const
 {
-  AliRMJet rmJet;
+  ResponseMatrixFillWrapper wrapper;
   if (!jet) {
     AliErrorStream() << "Must pass valid jet to create object.\n";
-    return rmJet;
+    return wrapper;
   }
-  rmJet.fPt = jet->Pt();
-  rmJet.fArea = jet->Area();
-  rmJet.fPhi = jet->Phi();
-  rmJet.fDistance = jet->ClosestJetDistance();
-  rmJet.fRelativeEPAngle = AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
-  rmJet.fLeadingHadronPt = AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(jet, fLeadingHadronBiasType);
+  wrapper.fPt = jet->Pt();
+  wrapper.fArea = jet->Area();
+  wrapper.fPhi = jet->Phi();
+  wrapper.fDistance = jet->ClosestJetDistance();
+  wrapper.fCentrality = fCent;
+  wrapper.fRelativeEPAngle = AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+  wrapper.fLeadingHadronPt = AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(jet, fLeadingHadronBiasType);
 
-  return rmJet;
+  return wrapper;
 }
 
 /**
