@@ -76,7 +76,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   AliFemtoDreamCascadeCuts *XiCuts=new AliFemtoDreamCascadeCuts();
   XiCuts->SetIsMonteCarlo(isMC);
   XiCuts->SetContributionSplitting(contribSplitting);
-  XiCuts->SetXiMassRange(1.31486,0.005);
+  XiCuts->SetXiMassRange(1.322,0.005);
   XiCuts->SetCutXiDaughterDCA(1.6);
   XiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
 
