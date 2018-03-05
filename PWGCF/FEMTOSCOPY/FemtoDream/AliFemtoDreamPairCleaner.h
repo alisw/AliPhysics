@@ -15,7 +15,7 @@ class AliFemtoDreamPairCleaner {
  public:
   AliFemtoDreamPairCleaner();
   AliFemtoDreamPairCleaner(
-      int nTrackDecayChecks, int nDecayDecayChecks);
+      int nTrackDecayChecks, int nDecayDecayChecks,bool MinimalBooking);
   virtual ~AliFemtoDreamPairCleaner();
   void CleanTrackAndDecay(std::vector<AliFemtoDreamBasePart> *Tracks,
                           std::vector<AliFemtoDreamBasePart> *Decay,
@@ -30,6 +30,7 @@ class AliFemtoDreamPairCleaner {
       {return fParticles;};
   void ResetArray();
  private:
+  bool fMinimalBooking;
   std::vector<std::vector<AliFemtoDreamBasePart>> fParticles;
   AliFemtoDreamPairCleanerHists *fHists;
   ClassDef(AliFemtoDreamPairCleaner,1)

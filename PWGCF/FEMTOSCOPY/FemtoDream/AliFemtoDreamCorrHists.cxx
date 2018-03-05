@@ -14,6 +14,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fResults(0)
 ,fPairs(0)
 ,fPairQA(0)
+,fMinimalBooking(false)
 ,fSameEventDist(0)
 ,fSameEventMultDist(0)
 ,fPairCounterSE(0)
@@ -24,16 +25,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 {
 }
 
-AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
+AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
+    AliFemtoDreamCollConfig *conf,bool MinimalBooking) {
+  fMinimalBooking=MinimalBooking;
 
   fResults=new TList();
   fResults->SetName("Results");
   fResults->SetOwner();
-
-  fQA=new TList();
-  fQA->SetName("PairQA");
-  fQA->SetOwner();
-
+  if (!fMinimalBooking) {
+    fQA=new TList();
+    fQA->SetName("PairQA");
+    fQA->SetOwner();
+  }
   fDoMultBinning=conf->GetDoMultBinning();
   int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
@@ -61,11 +64,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
   //in the AliFemtoDreamPartCollection::SetEvent Method, X2 to the second and
   //so on.
   fPairs=new TList*[nHists];
-  fPairQA=new TList*[nHists];
+  if (!fMinimalBooking) fPairQA=new TList*[nHists];
   fSameEventDist=new TH1F*[nHists];
-  fPairCounterSE=new TH2F*[nHists];
+  if (!fMinimalBooking) fPairCounterSE=new TH2F*[nHists];
   fMixedEventDist=new TH1F*[nHists];
-  fPairCounterME=new TH2F*[nHists];
+  if (!fMinimalBooking) fPairCounterME=new TH2F*[nHists];
   if (fDoMultBinning) {
     fSameEventMultDist=new TH2F*[nHists];
     fMixedEventMultDist=new TH2F*[nHists];
@@ -82,12 +85,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
       fPairs[Counter]->SetOwner();
       fResults->Add(fPairs[Counter]);
 
-      fPairQA[Counter]=new TList();
-      TString PairQAName=Form("QA_Particle%d_Particle%d",iPar1,iPar2);
-      fPairQA[Counter]->SetName(PairQAName.Data());
-      fPairQA[Counter]->SetOwner();
-      fQA->Add(fPairQA[Counter]);
-
       TString SameEventName=Form("SEDist_Particle%d_Particle%d",iPar1,iPar2);
       fSameEventDist[Counter]=new TH1F(SameEventName.Data(),
                                        SameEventName.Data(),
@@ -95,51 +92,58 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf) {
       fSameEventDist[Counter]->Sumw2();
       fPairs[Counter]->Add(fSameEventDist[Counter]);
 
-      TString PairCounterSEName=
-          Form("SEPairs_Particle%d_Particle%d",iPar1,iPar2);
-      fPairCounterSE[Counter]=new TH2F(
-          PairCounterSEName.Data(),PairCounterSEName.Data(),20,0,20,20,0,20);
-      fPairCounterSE[Counter]->Sumw2();
-      fPairCounterSE[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
-      fPairCounterSE[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
-      fPairQA[Counter]->Add(fPairCounterSE[Counter]);
-
       TString MixedEventName=Form("MEDist_Particle%d_Particle%d",iPar1,iPar2);
       fMixedEventDist[Counter]=new TH1F(MixedEventName.Data(),
                                         MixedEventName.Data(),
-                                       *itNBins,*itKMin,*itKMax);
+                                        *itNBins,*itKMin,*itKMax);
       fMixedEventDist[Counter]->Sumw2();
       fPairs[Counter]->Add(fMixedEventDist[Counter]);
-
-      TString PairCounterMEName=
-          Form("MEPairs_Particle%d_Particle%d",iPar1,iPar2);
-      fPairCounterME[Counter]=new TH2F(
-          PairCounterMEName.Data(),PairCounterMEName.Data(),20,0,20,20,0,20);
-      fPairCounterME[Counter]->Sumw2();
-      fPairCounterME[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
-      fPairCounterME[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
-      fPairQA[Counter]->Add(fPairCounterME[Counter]);
 
       if (fDoMultBinning) {
         TString SameMultEventName=
             Form("SEMultDist_Particle%d_Particle%d",iPar1,iPar2);
         fSameEventMultDist[Counter]=new TH2F(SameMultEventName.Data(),
-                                         SameMultEventName.Data(),
-                                         *itNBins,*itKMin,*itKMax,
-                                         multbins,1,multbins);
+                                             SameMultEventName.Data(),
+                                             *itNBins,*itKMin,*itKMax,
+                                             multbins,1,multbins+1);
         fSameEventMultDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventMultDist[Counter]);
 
         TString MixedMultEventName=
             Form("MEMultDist_Particle%d_Particle%d",iPar1,iPar2);
         fMixedEventMultDist[Counter]=new TH2F(MixedMultEventName.Data(),
-                                          MixedMultEventName.Data(),
-                                          *itNBins,*itKMin,*itKMax,
-                                          multbins,1,multbins);
+                                              MixedMultEventName.Data(),
+                                              *itNBins,*itKMin,*itKMax,
+                                              multbins,1,multbins+1);
         fMixedEventMultDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventMultDist[Counter]);
 
       }
+      if (!fMinimalBooking) {
+        fPairQA[Counter]=new TList();
+        TString PairQAName=Form("QA_Particle%d_Particle%d",iPar1,iPar2);
+        fPairQA[Counter]->SetName(PairQAName.Data());
+        fPairQA[Counter]->SetOwner();
+        fQA->Add(fPairQA[Counter]);
+        TString PairCounterSEName=
+            Form("SEPairs_Particle%d_Particle%d",iPar1,iPar2);
+        fPairCounterSE[Counter]=new TH2F(
+            PairCounterSEName.Data(),PairCounterSEName.Data(),20,0,20,20,0,20);
+        fPairCounterSE[Counter]->Sumw2();
+        fPairCounterSE[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
+        fPairCounterSE[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
+        fPairQA[Counter]->Add(fPairCounterSE[Counter]);
+
+        TString PairCounterMEName=
+            Form("MEPairs_Particle%d_Particle%d",iPar1,iPar2);
+        fPairCounterME[Counter]=new TH2F(
+            PairCounterMEName.Data(),PairCounterMEName.Data(),20,0,20,20,0,20);
+        fPairCounterME[Counter]->Sumw2();
+        fPairCounterME[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
+        fPairCounterME[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
+        fPairQA[Counter]->Add(fPairCounterME[Counter]);
+      }
+
       ++Counter;
       ++itNBins;
       ++itKMin;

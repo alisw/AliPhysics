@@ -12,6 +12,7 @@ ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 :fResults()
 ,fNSpecies(0)
+,fMinimalBooking(false)
 ,fZVtxMultBuffer()
 ,fValuesZVtxBins()
 ,fValuesMultBins()
@@ -19,9 +20,10 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 
 }
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
-    AliFemtoDreamCollConfig *conf)
-:fResults(new AliFemtoDreamCorrHists(conf))
+    AliFemtoDreamCollConfig *conf,bool MinimalBooking)
+:fResults(new AliFemtoDreamCorrHists(conf,MinimalBooking))
 ,fNSpecies(conf->GetNParticles())
+,fMinimalBooking(false)
 ,fZVtxMultBuffer(conf->GetNZVtxBins(),
                  std::vector<AliFemtoDreamZVtxMultContainer>(
                      conf->GetNMultBins(),

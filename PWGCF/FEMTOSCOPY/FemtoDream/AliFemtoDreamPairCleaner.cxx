@@ -9,14 +9,18 @@
 #include "AliFemtoDreamPairCleaner.h"
 ClassImp(AliFemtoDreamPairCleaner)
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
-:fHists(0)
+:fMinimalBooking(false)
+,fHists(0)
 {
 }
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
-    int nTrackDecayChecks, int nDecayDecayChecks)
+    int nTrackDecayChecks, int nDecayDecayChecks,bool MinimalBooking)
 {
-  fHists=new AliFemtoDreamPairCleanerHists(
-      nTrackDecayChecks,nDecayDecayChecks);
+  fMinimalBooking=MinimalBooking;
+  if (!fMinimalBooking) {
+    fHists=new AliFemtoDreamPairCleanerHists(
+        nTrackDecayChecks,nDecayDecayChecks);
+  }
 }
 
 AliFemtoDreamPairCleaner::~AliFemtoDreamPairCleaner() {
@@ -50,7 +54,7 @@ void AliFemtoDreamPairCleaner::CleanTrackAndDecay(
       }
     }
   }
-  fHists->FillDaughtersSharedTrack(histnumber,counter);
+  if (!fMinimalBooking) fHists->FillDaughtersSharedTrack(histnumber,counter);
 }
 void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
     std::vector<AliFemtoDreamBasePart> *Decay1,
@@ -83,7 +87,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
       continue;
     }
   }
-  fHists->FillDaughtersSharedDaughter(histnumber,counter);
+  if (!fMinimalBooking) fHists->FillDaughtersSharedDaughter(histnumber,counter);
 }
 
 void AliFemtoDreamPairCleaner::CleanDecay(
@@ -121,7 +125,7 @@ void AliFemtoDreamPairCleaner::CleanDecay(
       continue;
     }
   }
-  fHists->FillDaughtersSharedDaughter(histnumber,counter);
+  if (!fMinimalBooking) fHists->FillDaughtersSharedDaughter(histnumber,counter);
 }
 
 void AliFemtoDreamPairCleaner::StoreParticle(

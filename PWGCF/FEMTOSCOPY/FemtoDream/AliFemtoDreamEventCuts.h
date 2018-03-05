@@ -32,12 +32,13 @@ class AliFemtoDreamEventCuts {
   }
   //Everything else disabled if you use the following option:
   void UseDontWorryEvtCuts(bool apply) {fUseAliEvtCuts=apply;};
-  void InitQA();
+  void InitQA(bool MinimalBooking);
   TList *GetHistList() const {return fHist->GetHistList();};
  private:
   void BookQA(AliFemtoDreamEvent *evt);
   void BookCuts();
   AliFemtoDreamEventHist *fHist;  //!
+  bool fMinimalBooking;           //
   bool fCutMinContrib;            //
   int fMinContrib;                //
   bool fCutZVtx;                  //
