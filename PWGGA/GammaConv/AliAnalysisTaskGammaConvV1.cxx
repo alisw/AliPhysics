@@ -756,6 +756,17 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 10.0  +  1.0*(i-48);         // 1.0GeV                 25GeV
     }
 
+    nBinsClusterPt            = 148;
+    minClusterPt              = 0;
+    maxClusterPt              = 40;
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<123) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<148) arrClusPtBinning[i]      = 15.+1.0*(i-123);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
+
     //----------------------------------------------------------------------------------------------------------------
 
   } else {
