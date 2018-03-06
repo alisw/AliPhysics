@@ -87,6 +87,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , moveJet(1)
   , fDoMC(0)
   , fDoLog(0)
+  , fSide(0)
   , fRho(NULL)
   , fRhoM(NULL)
   , fHMG(NULL)
@@ -364,6 +365,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , moveJet(1)
   , fDoMC(0)
   , fDoLog(0)
+  , fSide(0)
   , fRho(NULL)
   , fRhoM(NULL)
   , fHMG(NULL)
@@ -631,6 +633,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , moveJet(ap.moveJet)
   , fDoMC(ap.fDoMC)
   , fDoLog(ap.fDoLog)
+  , fSide(ap.fSide)
   , fRho(ap.fRho)
   , fRhoM(ap.fRhoM)
   , fHMG(ap.fHMG)
@@ -2219,6 +2222,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     //if (TMath::Abs(jet->Eta()) > fJetEtaCut) {cout << "ijet: " << i << " Jet outside eta range, eta: " << jet->Eta() << " pT: " << jet->Pt() << endl; continue;}
     //if (TMath::Abs(jet->Eta()) > fJetEtaCut && i == 0) cout << "Leading jet skipped because outside eta range!, eta: " << jet->Eta() << endl;
     if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+    if(fSide != 0){
+      if(fSide == -1 && jet->Eta() > 0) continue; //fSide -1 means A side which is positive Eta
+      else if(jet->Eta() < 0) continue;
+    }
     //TODO Separate Eta cuts for charged and full jets
     //TODO Limit full jets to emcal acceptance Phi: from 1.855 to 2.685
     fhJetEtaPhi[iContainer]->Fill(jet->Eta(),jet->Phi());

@@ -129,6 +129,7 @@ class AliJJetJtAnalysis{
     void SetMoveJet(int move) { moveJet = move;}
     void SetMC(int mc) {fDoMC = mc;};
     void SetLog(bool doLog) {fDoLog = doLog;}
+    void SetSide(int side) {fSide = side;}
     void SetNumberOfJetFinders( int njfinder ) { nJetContainer = njfinder;}
     void SetnR(int nR) {fnR = nR;}
     void Setnkt(int nkt) {fnkt = nkt;}
@@ -195,6 +196,7 @@ class AliJJetJtAnalysis{
     int moveJet;
     int fDoMC;
     bool fDoLog;
+    int fSide; ///< Possible to use only one side for analysis, 0: both sides, -1: A side, +1: C side
     TVector *fRho; ///< Calculated rho for current event.
     TVector *fRhoM; ///< Calculated rho_m for current event.
     //Histograms
