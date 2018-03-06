@@ -97,7 +97,6 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   void ProtonSelector(AliAODEvent *aodEvent);
   void V0Selector(AliAODEvent *aodEvent);
   void XiSelector(AliAODEvent *aodEvent);
-  void FIFOShifter(Int_t zBin,Int_t MultBin);
   void TrackCleaner();
   void ParticlePairer(Int_t zBin,Int_t multBin);
   void GetV0Origin(AliAODv0 *v0,AliAODEvent *aodEvent);
@@ -191,8 +190,6 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   AliAODTrack     **fGTI;                  //! Array of pointers which stores global track infos
   const UShort_t  fTrackBuffSize;          //! Size fo the above arra
 
-  AliFemtoLambdaEventCollection2 ***fEC; //!
-  AliFemtoLambdaEvent *fEvt; //!
   AliFemtoLambdaParticle *fV0cand; //!
   AliFemtoLambdaParticle *fAntiV0cand; //!
   AliFemtoProtonParticle *fProtoncand; //!
@@ -249,8 +246,7 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   std::deque< std::vector< AliFemtoLambdaParticle > > fAntiLambdaEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoXiParticle > >     fXiEvtBuffer[kZVertexBins][kMultiplicityBins];
 
-
-  ClassDef(AliAnalysisTaskPLFemto,2)
+  ClassDef(AliAnalysisTaskPLFemto,3)
 };
 
 #endif
