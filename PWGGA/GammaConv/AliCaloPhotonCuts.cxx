@@ -5325,7 +5325,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
           } else if(fClusterType==2){
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.997*0.9965200155 ); // additional factors
             energy /= ( 0.9969 ); // additional factors
           }
@@ -5334,7 +5333,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9978241421, 0.2054669115, -3.7888984452, 1.0255088817, 0.3070452373, -2.9149185308) ; //with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.986673, -4.14594, -0.450765)* 0.9953727823);
           } else if(fClusterType==2){
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.993485*0.9971126333 );
           }
         } else if( fCurrentMC==kPPb5T16EPOS ) {
@@ -5348,7 +5346,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9806681039, 0.4840923907, -3.0169087842, 1.0436698408, 0.4584792411, -2.3634185342); // 2018 02 20
           } else if(fClusterType==2){
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.997*0.9965200155 ); // additional factors
           }
         } else fPeriodNameAvailable = kFALSE;
@@ -5364,7 +5361,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9795532189, 0.8578583955, -2.3447892540, 1.0165873637, 0.6999387334, -2.1324782465) ;//with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) * 1.0040232773) ;
           } else if(fClusterType==2) {
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
@@ -5372,21 +5368,18 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9746342307, 0.9576270870, -2.5098585110, 1.0165871862, 0.6999571530, -2.1324658480) ; //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.993562, -4.52817, -0.366368) ;
           } else if(fClusterType==2){
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DPOW(energy, 1.0154784875, -0.0161589457, -0.4999999976, 1.0086650887, -0.0010000001, -0.0800000139 ) * 0.9983468115 );
           }
        } else if( fCurrentMC==kPPb5T16EPOS ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9707112053, 1.4050445187, -2.0357906356, 1.0241095707, 0.9217457498, -1.9020815528) ;//2018 02 20
           } else if(fClusterType==2) {
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
        } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9658016089, 1.2050187956, -2.3839606887, 1.0241095707, 0.9217457498, -1.9020815528) ;//2018 02 20
           } else if(fClusterType==2) {
-            energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
         } else fPeriodNameAvailable = kFALSE;
