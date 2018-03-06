@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//nuovo
+//
 //////////////////////////////////////////////////////////////////////////
 /// This analysis task is taken and adapted from  
 /// Ramona.Lea@cern.ch
@@ -1217,8 +1217,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   Float_t nsigmaTOFs = 10.;
   Float_t nsigmaTPCs = 10.;
   
-  Float_t pullsTPC[5] = {0.};
-  Float_t pullsTOF[5] = {10.};
+  // Float_t pullsTPC[5] = {0.};
+  // Float_t pullsTOF[5] = {10.};
 
   Float_t probMis = 0.;
   Double32_t tTOF = 0.;
@@ -1240,7 +1240,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   Float_t sharedFractionTPCcl = 0.;
   AliPIDResponse::EDetPidStatus statusTOF;
-  AliPIDResponse::EDetPidStatus statusTPC;
+  //  AliPIDResponse::EDetPidStatus statusTPC;
  
   Double_t expectedTimes[AliPID::kSPECIES];
 
@@ -1255,7 +1255,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   int fCount = 0;
   int sCount = 0;
 
-  Float_t pMomentumTruth[3];
+  // Float_t pMomentumTruth[3];
   AliReconstructedFirst::MCFirstOrigin_t mcFirstOrigin = AliReconstructedFirst::kUnassigned;
   AliReconstructedSecond::MCSecondOrigin_t mcSecondOrigin = AliReconstructedSecond::kUnassigned;
   
@@ -1376,7 +1376,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     
     probMis = 10.;
  
-    statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,globaltrack);
+    //    statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,globaltrack);
     //    cout<<"statusTPC: "<<statusTPC <<" "<<AliPIDResponse::kDetPidOk<<endl;
     //  fHistTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
      
@@ -1404,12 +1404,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     nsigmaTPCf = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fFirstpart); 
     nsigmaTPCs = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fSecondpart); 
 
-    //pulls TPC
-    pullsTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kElectron)); 
-    pullsTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kPion)); 
-    pullsTPC[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kKaon)); 
-    pullsTPC[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kProton)); 
-    pullsTPC[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kDeuteron)); 
+    // //pulls TPC
+    // pullsTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kElectron)); 
+    // pullsTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kPion)); 
+    // pullsTPC[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kKaon)); 
+    // pullsTPC[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kProton)); 
+    // pullsTPC[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kDeuteron)); 
     
     //    nsigmaTPCele = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kElectron); 
     //Electron veto
@@ -1430,12 +1430,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       nsigmaTOFs = fPIDResponse->NumberOfSigmasTOF(globaltrack,  (AliPID::EParticleType)fSecondpart); 
       
 
-      //pulls TOF
-      pullsTOF[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kElectron)); 
-      pullsTOF[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kPion)); 
-      pullsTOF[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kKaon)); 
-      pullsTOF[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kProton)); 
-      pullsTOF[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kDeuteron)); 
+      // //pulls TOF
+      // pullsTOF[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kElectron)); 
+      // pullsTOF[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kPion)); 
+      // pullsTOF[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kKaon)); 
+      // pullsTOF[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kProton)); 
+      // pullsTOF[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(globaltrack, (AliPID::EParticleType)kDeuteron)); 
       //------------------------------
       
       isTOFPIDok = kTRUE;
@@ -1446,12 +1446,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     } else { 
       probMis = 1.; nsigmaTOFf = 10.;nsigmaTOFs = 10.; //cout<<"The corresponding global track has no tof pid!"<<endl;
   
-      //pulls TOF
-      pullsTOF[0] = 10.;
-      pullsTOF[1] = 10.;
-      pullsTOF[2] = 10.;
-      pullsTOF[3] = 10.;
-      pullsTOF[4] = 10.;
+      // //pulls TOF
+      // pullsTOF[0] = 10.;
+      // pullsTOF[1] = 10.;
+      // pullsTOF[2] = 10.;
+      // pullsTOF[3] = 10.;
+      // pullsTOF[4] = 10.;
     } 
 
 
@@ -1478,7 +1478,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     // HERE IS THE PID!
     //
     // 
-    AliAODMCParticle *tparticle;
+    AliAODMCParticle *tparticle = 0x0;
     
     if (TMath::Abs(nsigmaTPCf)< fnSigmaTPCPIDfirstParticle) {
       
@@ -2205,8 +2205,8 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
   double  ptP1 = -999.;
   double  ptP2 = -999.;
 
-  Short_t chargeP1 = -999.;
-  Short_t chargeP2 = -999.;
+  // Short_t chargeP1 = -999.;
+  // Short_t chargeP2 = -999.;
 
   bool isP1  = kFALSE;
   bool isaP1 = kFALSE;
@@ -2219,7 +2219,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
   double dphi  = -999.;
   double dphis = -999.;
   double deta  = -999.;
-  double detas = -999.;
+  //  double detas = -999.;
   double dtheta = -999.;
   
   bool isMC1 = kFALSE;
@@ -2240,7 +2240,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
  
   Int_t mcPDGMotherP1 = 0;
   Int_t mcPDGMotherP2 = 0;
-  Int_t mcMotherBin = 0;
+  //  Int_t mcMotherBin = 0;
  
   Int_t mcPDGGrandMother = 0;
   Int_t mcGrandMotherBin = 0;
@@ -2268,7 +2268,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
     DCAzP1          = fEvt->fReconstructedFirst[i].fDCAz;
     ptP1            = fEvt->fReconstructedFirst[i].fPt;
     if(ptP1 < fMinPtForPrim)continue;
-    chargeP1        = fEvt->fReconstructedFirst[i].fCharge;
+    //    chargeP1        = fEvt->fReconstructedFirst[i].fCharge;
     isMC1           = fEvt->fReconstructedFirst[i].isMCptc;
     mcMotherLabelP1 = fEvt->fReconstructedFirst[i].fMCmumIdx;
     typeP1          = fEvt->fReconstructedFirst[i].fMCcode;
@@ -2310,7 +2310,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
 	DCAzP2          = (fEvt+eventNumber)->fReconstructedSecond[j].sDCAz;
 	ptP2            = (fEvt+eventNumber)->fReconstructedSecond[j].sPt;
 	if(ptP2< fMinPtForSec)continue;
-	chargeP2        = (fEvt+eventNumber)->fReconstructedSecond[j].sCharge;
+	//chargeP2        = (fEvt+eventNumber)->fReconstructedSecond[j].sCharge;
 	isMC2           = (fEvt+eventNumber)->fReconstructedSecond[j].isMCptc;
 	mcMotherLabelP2 = (fEvt+eventNumber)->fReconstructedSecond[j].sMCmumIdx;
 	typeP2          = (fEvt+eventNumber)->fReconstructedSecond[j].sMCcode;
@@ -2550,230 +2550,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
 //----------------------------------------------------------------------------------------------
 //void AliAnalysisTaskKPFemto::DoPairshh (const Float_t lcentrality, int fieldsign) {
 void AliAnalysisTaskKPFemto::DoPairshh (const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
-  // this isnot working!!!!!
-  UInt_t dimsparse;
-  if(!fReadMCTruth) dimsparse=13;
-  else dimsparse=18;
-  Double_t xsparseSignal[dimsparse];
-  for(UInt_t counter = 0; counter < dimsparse ; counter++) xsparseSignal[counter]=-999;//Default position for THnSparse 
-  Double_t xsparseBkg[dimsparse];
-  for(UInt_t counter = 0; counter < dimsparse ; counter++) xsparseBkg[counter]=-999;//Default position for THnSparse 
-
-  //-----------
-  bool isP1  = kFALSE;
-  bool isaP1 = kFALSE;
-  bool isP2  = kFALSE;
-  bool isaP2 = kFALSE;
-
-  double DCAxyP1 = -999.;
-  double DCAzP1  = -999.;  
-  double DCAxyP2 = -999.; 
-  double DCAzP2  = -999.;  
-
-  double  ptP1 = -999.;
-  double  ptP2 = -999.;
-
-  Short_t chargeP1 = -999;
-  Short_t chargeP2 = -999;
-
-  double dphis  = -999.;
-  double deta   = -999.;
-  double dtheta = -999.;
-  //  double detas  = -999.;
-  
-  bool isMC1 = kFALSE;
-  bool isMC2 = kFALSE;
-
-  bool isMCvector = kFALSE;
-  bool sameMother = kFALSE;
- 
-  Int_t mcMotherLabelP1 = -999;
-  Int_t mcMotherLabelP2 = -999;
- 
-  Int_t typeP1 = -999;
-  Int_t typeP2 = -999;
- 
-  Int_t mcPDGMother = -999;
-  Int_t mcMotherBin = -999;
-
-  int evmultmixed = 0;
-  bool multmixedcounted = kFALSE;
-  double pairKstar = 0.;
-  double pairMass  = 0.;
-  double pairKt    = 0.;
-
-  int iunsw;
-  int junsw;
-  bool kswap=kFALSE;
-
-  for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
-
-    if (fEvt->fReconstructedFirst[i].doSkipOver) continue;
-
-    DCAxyP1  = fEvt->fReconstructedFirst[i].fDCAxy;
-    DCAzP1   = fEvt->fReconstructedFirst[i].fDCAz;
-    ptP1     = fEvt->fReconstructedFirst[i].fPt;
-    chargeP1 = fEvt->fReconstructedFirst[i].fCharge;
-    isMC1    = fEvt->fReconstructedFirst[i].isMCptc;
-    mcMotherLabelP1 =  fEvt->fReconstructedFirst[i].fMCmumIdx;
-    mcPDGMother = fEvt->fReconstructedFirst[i].fMCmumPDG;
-    isP1  = fEvt->fReconstructedFirst[i].isP;
-    isaP1 = fEvt->fReconstructedFirst[i].isaP;
-    typeP1 = fEvt->fReconstructedFirst[i].fMCcode;
-   
-    for (int eventNumber=0; eventNumber<fnEventsToMix+1; eventNumber++) { 
-      // For same event pairs
-      if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateFirst)!=0.) evmultmixed++; 
-
-      for (int j=0; j<(fEvt+eventNumber)->fNumberCandidateFirst; j++) {
-
-        if ((fEvt+eventNumber)->fReconstructedFirst[j].doSkipOver) continue;
-        //cout<<" event number "<<eventNumber<<endl;
-        if ( (eventNumber == 0) && (j<=i)) continue; 
-
-	DCAxyP2  = (fEvt+eventNumber)->fReconstructedFirst[i].fDCAxy;
-	DCAzP2   = (fEvt+eventNumber)->fReconstructedFirst[i].fDCAz;
-	ptP2     = (fEvt+eventNumber)->fReconstructedFirst[i].fPt;
-	chargeP2 = (fEvt+eventNumber)->fReconstructedFirst[i].fCharge;
-	isMC2    = (fEvt+eventNumber)->fReconstructedFirst[i].isMCptc;
-	mcMotherLabelP2 = (fEvt+eventNumber)->fReconstructedFirst[i].fMCmumIdx;
-	isP2     = (fEvt+eventNumber)->fReconstructedFirst[j].isP;
-        isaP2    = (fEvt+eventNumber)->fReconstructedFirst[j].isaP;
-	typeP2   = (fEvt+eventNumber)->fReconstructedSecond[i].sMCcode;
-   
-	if(isMC1 && isMC2) isMCvector = 1;
-	else isMCvector = 0;
-	
-	//	if(mcMotherLabelP1 == mcMotherLabelP2)sameMother = kTRUE;
-	//	else sameMother = kFALSE;
-	//if(sameMother){
-	if((fFirstpart == 3 && fSecondpart == 3)){
-	  if(mcPDGMother == 333 )  mcMotherBin = 1;  //phi 1020
-	  else mcMotherBin = 0;
-	  //	  hMotherID->Fill(mcMotherBin);
-	  //}
-	}
-
-
-        // Pair ramdomization 
-        if (eventNumber == 0 && gRandom->Rndm()>=0.5) { iunsw=i; junsw=j; i=junsw; j=iunsw; kswap=kTRUE; } // done even for different charge part (?) 
-        //Calculate k* for the pair
-        pairKstar = CalculateKstar(fEvt->fReconstructedFirst[i].fMomentum, (fEvt+eventNumber)->fReconstructedFirst[j].fMomentum, fPDGsecond,fPDGfirst);
-	//Invariant Mass of the pair
-	pairMass  = CalculateMass(fEvt->fReconstructedFirst[i].fMomentum, (fEvt+eventNumber)->fReconstructedFirst[j].fMomentum,fPDGfirst, fPDGfirst);
-
-	//Kt
-	pairKt = pow(fEvt->fReconstructedFirst[i].fMomentum[0] + (fEvt+eventNumber)->fReconstructedFirst[j].fMomentum[0],2.);
-	pairKt+= pow(fEvt->fReconstructedFirst[i].fMomentum[1] + (fEvt+eventNumber)->fReconstructedFirst[j].fMomentum[1],2.);
-	pairKt = sqrt(pairKt)/2.;
-
-        // Pair histogramming RAMONA
-	//        dphis = CalculateDphiSatR12m(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedFirst[j].fCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedFirst[j].fPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedFirst[j].fPhi, &dphis2);
-	
-	//dphis = CalculateDphiSatR12m(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedFirst[j].fCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedFirst[j].fPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedFirst[j].fPhi);
-
-        //if (eventNumber == 0) cout<<" Dphi with analytical method "<<dphisprop<<endl;
-        //deta = fEvt->fReconstructedFirst[i].fEta-(fEvt+eventNumber)->fReconstructedFirst[j].fEta;
-
-	dphis = CalculateDPhiStar(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedSecond[j].sCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedSecond[j].sPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedSecond[j].sPhi,fRadius); // 2 - 1
-	deta = CalculateDeltaEta(fEvt->fReconstructedFirst[i].fEta, (fEvt+eventNumber)->fReconstructedSecond[j].sEta);
-
-	// dphis = CalculateDphiSatR12m( (fEvt+eventNumber)->fReconstructedFirst[j].fShiftedGlobalPosition , fEvt->fReconstructedFirst[i].fShiftedGlobalPosition );
-	//	detas = fEvt->fReconstructedFirst[i].fEtaS-(fEvt+eventNumber)->fReconstructedFirst[j].fEtaS;
-
-      	if (fkApplyTtc) {
-
-	  if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue;  
-
-	}
-	
-
-        if (eventNumber==0) {//Same event pair histogramming
-	  // simplest pair cut // FIXME not needed maybe
-          if ((fEvt+eventNumber)->fReconstructedFirst[j].index == fEvt->fReconstructedFirst[i].index) { if (eventNumber==0) cout<<"In the same event the two particles have the same index!"<<endl; 
-	    continue;
-          }
-
-	  
-	  xsparseSignal[0]  = lcentrality;
-	  xsparseSignal[1]  = DCAxyP1;
-	  xsparseSignal[2]  = DCAzP1;  
-	  xsparseSignal[3]  = DCAxyP2; 
-	  xsparseSignal[4]  = DCAzP2;  
-	  xsparseSignal[5]  = pairKt;
-	  xsparseSignal[6]  = pairKstar;
-	  xsparseSignal[7]  = ptP1;
-	  xsparseSignal[8]  = ptP2;
-	  xsparseSignal[9]  = deta; 
-	  xsparseSignal[10] = dphis;
-	  xsparseSignal[11] = pairMass;
-	  xsparseSignal[12] = fSphericityvalue;
-
-	  if(fReadMCTruth == kTRUE){
-	    xsparseSignal[13] = isMCvector;
-	    xsparseSignal[14] = sameMother;
-	    xsparseSignal[15] = mcMotherBin;	    
-	    xsparseSignal[16] = typeP1 ;
-	    xsparseSignal[17] = typeP2 ;
-	  
-	  }
-
-	  /*	  if(isP1&&isP2)
-	    fHistSparseSignalP1P2->Fill(xsparseSignal);
-	  else if(isaP1&&isaP2)
-	    fHistSparseSignalAP1AP2->Fill(xsparseSignal); 
-	  else if(isP1&&isaP2 )
-	    fHistSparseSignalP1AP2->Fill(xsparseSignal); 
-	  else if(isaP1&&isP2)
-	    fHistSparseSignalAP1P2->Fill(xsparseSignal); 
-	  */
-
-        } else {//Mixed-event pair histogramming
-	  xsparseBkg[0]  = lcentrality;
-	  xsparseBkg[1]  = DCAxyP1;
-	  xsparseBkg[2]  = DCAzP1;  
-	  xsparseBkg[3]  = DCAxyP2; 
-	  xsparseBkg[4]  = DCAzP2;  
-	  xsparseBkg[5]  = pairKt;
-	  xsparseBkg[6]  = pairKstar;
-	  xsparseBkg[7]  = ptP1;
-	  xsparseBkg[8]  = ptP2;
-	  xsparseBkg[9]  = deta;
-	  xsparseBkg[10] = dphis;
-	  xsparseBkg[11] = pairMass;
-	  xsparseBkg[12] = fSphericityvalue;
-
-	  if(fReadMCTruth == kTRUE){
-	    xsparseBkg[13] = isMCvector;
-	    xsparseBkg[14] = sameMother;
-	    xsparseBkg[15] = mcMotherBin;
-	    xsparseBkg[16] = typeP1 ;
-	    xsparseBkg[17] = typeP2 ;
-	  }
-	  /*	  
-	  if(isP1&&isP2)
-	    fHistSparseBkgP1P2->Fill(xsparseBkg);
-	  else if(isaP1&&isaP2)
-	    fHistSparseBkgAP1AP2->Fill(xsparseBkg); 
-	  else if(isP1&&isaP2 )
-	    fHistSparseBkgP1AP2->Fill(xsparseBkg); 
-	  else if(isaP1&&isP2)
-	    fHistSparseBkgAP1P2->Fill(xsparseBkg); 
-	  */
-        }//mix
-        // Put back particle loop indeces
-        if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
-      } // second part
-
-    }//end event loop
-    
-    if (evmultmixed!=0) multmixedcounted = kTRUE;
-    
-  } // first part
-  
-  if  (multmixedcounted) fHistMultiplicityOfMixedEvent->Fill(evmultmixed);
-  
-  
+  return;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -2892,6 +2669,7 @@ double AliAnalysisTaskKPFemto::CalculateDphiSatR12m(Short_t chg1, Short_t chg2, 
   
   dps = TVector2::Phi_mpi_pi(dps);
   
+  return dps;
 
 }
 
@@ -3143,29 +2921,31 @@ bool AliAnalysisTaskKPFemto::IsPionNSigma(double mom, float nsigmaTPCPi, float n
 {
   //sligly changed w.r.t. the original
   
-  if(mom<0.65){   
-    //      if(nsigmaTOFPi<-999.)
-    if(nsigmaTOFPi==10)
-      {
-	//use TPC only
-	if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
-	else return false;
-      } 
- 
-    else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true; //TPC+TOF
-  }
-  //else if(nsigmaTOFPi<-10.) //p > 0.65 + no tof == kfalse
-  else if(mom>0.65 && nsigmaTOFPi>3) //p > 0.65 + no tof == kfalse
-    {
-      return false;
-    }
-  else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
-  else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  return false;
 
-  else 
-    return false;
+  // if(mom<0.65){   
+  //   //      if(nsigmaTOFPi<-999.)
+  //   if(nsigmaTOFPi==10)
+  //     {
+  // 	//use TPC only
+  // 	if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+  // 	else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+  // 	else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
+  // 	else return false;
+  //     } 
+ 
+  //   else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true; //TPC+TOF
+  // }
+  // //else if(nsigmaTOFPi<-10.) //p > 0.65 + no tof == kfalse
+  // else if(mom>0.65 && nsigmaTOFPi>3) //p > 0.65 + no tof == kfalse
+  //   {
+  //     return false;
+  //   }
+  // else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  // else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  
+  // else 
+  //   return false;
 }
 /*
 

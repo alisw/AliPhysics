@@ -3,12 +3,11 @@
 #include <iostream>
 
 #include <string>
-
+#include "TObject.h"
 #include "TH1.h"
-
 #include "TH2.h"
 
-// author: ramona.lea@cer.ch from 
+// author: ramona.lea@cern.ch from 
 // maria.nicassio@cern.ch (derived and adapted from D. Gangadharan PWGCF/FEMTOSCOPY/Chaoticity/AliChaoticityEventCollection
 //                                             and J. Salzwedel PWGCF/FEMTOSCOPY/V0LamAnalysis/AliAnalysisV0LamEventCollection)
 
@@ -18,137 +17,134 @@ class AliReconstructedFirst {
   
  public:
   AliReconstructedFirst();
+  virtual ~AliReconstructedFirst();
+  AliReconstructedFirst(const AliReconstructedFirst &obj);
+  AliReconstructedFirst & operator=(const AliReconstructedFirst &obj);
   
-  ~AliReconstructedFirst();
+  enum MCFirstOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
+  Double_t fMomentum[3]; // 3 reconstructed momentum
+  Double_t fMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
+  Double_t fPt;
+  Double_t fEta;
+  Double_t fTheta;
+  Double_t fPhi;
+  Double_t fRap;
+  Short_t  fCharge;
+  Double_t fDCAxy;
+  Double_t fDCAz;
+  Double_t nSigmaFirstTPC[5];
+  Double_t nSigmaFirstTOF[5];
+  Bool_t   isTOFmismatch;
+  Bool_t   isMCptc;
+  Int_t     fMCcode;
+  Int_t     fPDGcode;
+  Int_t     fMCmumIdx;
+  Int_t     fMCmumPDG;
+  Int_t     fMCgrandmumIdx;
+  Int_t     fMCgrandmumPDG;
+  Int_t     index;
+  MCFirstOrigin_t mcFirstOriginType;
+  Bool_t   doSkipOver;
+  Double_t iptoPV[2]; 
   
-  /* AliReconstructedFirst(const AliReconstructedFirst&); */
-  /* AliReconstructedFirst & operator=(const AliReconstructedFirst&); */
+  Double_t fShiftedGlobalPosition[3];
+  Double_t fEtaS;
+  Double_t fPhiS;
   
-   enum MCFirstOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
-   double fMomentum[3]; // 3 reconstructed momentum
-   double fMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
-   double fPt;
-   double fEta;
-   double fTheta;
-   double fPhi;
-   double fRap;
-   short  fCharge;
-   double fDCAxy;
-   double fDCAz;
-   double nSigmaFirstTPC[5];
-   double nSigmaFirstTOF[5];
-   bool   isTOFmismatch;
-   bool   isMCptc;
-   int    fMCcode;
-   int    fPDGcode;
-   int    fMCmumIdx;
-   int    fMCmumPDG;
-   int    fMCgrandmumIdx;
-   int    fMCgrandmumPDG;
-   int    index;
-   MCFirstOrigin_t mcFirstOriginType;
-   bool   doSkipOver;
-   double iptoPV[2]; 
-
-   Double_t fShiftedGlobalPosition[3];
-   Double_t fEtaS;
-   Double_t fPhiS;
-
-   bool   isP;
-   bool   isaP;
-
-   ClassDef(AliReconstructedFirst, 1);   
+  Bool_t   isP;
+  Bool_t   isaP;
+  
+  ClassDef(AliReconstructedFirst, 1);   
 
 };
 
 class AliReconstructedSecond {
 
-
-  public:
-   AliReconstructedSecond();
-
-   ~AliReconstructedSecond();
-
-  /* AliReconstructedSecond(const AliReconstructedSecond&); */
-  /* AliReconstructedSecond & operator=(const AliReconstructedSecond&); */
-
-   enum MCSecondOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
-   double sMomentum[3]; // 3 reconstructed momentum
-   double sMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
-   double sPt;
-   double sEta;
-   double sTheta;
-   double sPhi;
-   double sRap;
-   short  sCharge;
-   double sDCAxy;
-   double sDCAz;
-   double nSigmaSecondTPC[5];
-   double nSigmaSecondTOF[5];
-   bool   isTOFmismatch;
-   bool   isMCptc;
-   int    sMCcode;
-   int    sPDGcode;
-   int    sMCmumIdx;
-   int    sMCmumPDG;
-   int    sMCgrandmumIdx;
-   int    sMCgrandmumPDG;
-   int    index;
-   MCSecondOrigin_t mcSecondOriginType;
-   bool   doSkipOver;
-   double iptoPV[2]; 
-
-   Double_t sShiftedGlobalPosition[3];
-   Double_t sEtaS;
-   Double_t sPhiS;
-   bool   isP;
-   bool   isaP;
-   
-   ClassDef(AliReconstructedSecond, 1);   
-
+  
+ public:
+  AliReconstructedSecond();
+  virtual ~AliReconstructedSecond();
+  AliReconstructedSecond(const AliReconstructedSecond &obj);
+  AliReconstructedSecond & operator=(const AliReconstructedSecond &obj);
+  
+  enum MCSecondOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
+  Double_t sMomentum[3]; // 3 reconstructed momentum
+  Double_t sMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
+  Double_t sPt;
+  Double_t sEta;
+  Double_t sTheta;
+  Double_t sPhi;
+  Double_t sRap;
+  Short_t  sCharge;
+  Double_t sDCAxy;
+  Double_t sDCAz;
+  Double_t nSigmaSecondTPC[5];
+  Double_t nSigmaSecondTOF[5];
+  Bool_t   isTOFmismatch;
+  Bool_t   isMCptc;
+  Int_t     sMCcode;
+  Int_t     sPDGcode;
+  Int_t     sMCmumIdx;
+  Int_t     sMCmumPDG;
+  Int_t     sMCgrandmumIdx;
+  Int_t     sMCgrandmumPDG;
+  Int_t     index;
+  MCSecondOrigin_t mcSecondOriginType;
+  Bool_t   doSkipOver;
+  Double_t iptoPV[2]; 
+  
+  Double_t sShiftedGlobalPosition[3];
+  Double_t sEtaS;
+  Double_t sPhiS;
+  Bool_t   isP;
+  Bool_t   isaP;
+  
+  ClassDef(AliReconstructedSecond, 1);   
+  
 };
 
 class AliAnalysisKPEvent {
 
-   public:
+ public:
+  AliAnalysisKPEvent();
+  virtual ~AliAnalysisKPEvent();
+  AliAnalysisKPEvent (const AliAnalysisKPEvent &obj);
+  AliAnalysisKPEvent &operator=(const AliAnalysisKPEvent &obj);
 
-    int fNumberCandidateFirst;
-    int fNumberCandidateSecond; 
-    double fPrimaryVertex[3]; //Location of the primary vertex
-
-    AliReconstructedFirst *fReconstructedFirst;
-    AliReconstructedSecond *fReconstructedSecond;
-
-    ClassDef(AliAnalysisKPEvent, 1);
-
+  Int_t  fNumberCandidateFirst;
+  Int_t  fNumberCandidateSecond; 
+  Double_t fPrimaryVertex[3]; //Location of the primary vertex
+  
+  AliReconstructedFirst *fReconstructedFirst;
+  AliReconstructedSecond *fReconstructedSecond;
+  
+  ClassDef(AliAnalysisKPEvent, 1);
+  
 };
 
 
 
 class AliAnalysisKPEventCollection  {
 
-   public:
+ public:
+  
+  AliAnalysisKPEventCollection();
+  AliAnalysisKPEventCollection(Short_t eventBuffSize, Int_t  maxFirstMult, Int_t  maxSecondMult);
+  AliAnalysisKPEventCollection(const AliAnalysisKPEventCollection &obj);
+  AliAnalysisKPEventCollection & operator=(const AliAnalysisKPEventCollection &obj);
+  virtual  ~AliAnalysisKPEventCollection();
 
-    AliAnalysisKPEventCollection();
-
-    AliAnalysisKPEventCollection(short eventBuffSize, int maxFirstMult, int maxSecondMult);
-    /* AliAnalysisKPEventCollection(const AliAnalysisKPEventCollection&); */
-    /* AliAnalysisKPEventCollection & operator=(const AliAnalysisKPEventCollection&); */
-    
-    ~AliAnalysisKPEventCollection();
-
-    void FifoShift();
-
-    AliAnalysisKPEvent *fEvt;
-
-   private:
-
-    short fifo; //Size of the Event Storage buffer
-
-    void SetBuffSize(short eventBuffSize){fifo = eventBuffSize;}
-
-   ClassDef(AliAnalysisKPEventCollection, 1);
-
+  void FifoShift();
+  
+  AliAnalysisKPEvent *fEvt;
+  
+  // private:
+  
+  Short_t fifo; //Size of the Event Storage buffer
+  void SetBuffSize(Short_t eventBuffSize){fifo = eventBuffSize;}
+  
+  ClassDef(AliAnalysisKPEventCollection, 1);
+  
 };
 
 
