@@ -16,15 +16,15 @@ class AliFemtoDreamEventHist {
   AliFemtoDreamEventHist();
   virtual ~AliFemtoDreamEventHist();
   void FillEvtCounter(int iBin){fEvtCounter->Fill(iBin);};
-  void FillCuts(int iBin,double val){fCutConfig->Fill(iBin,val);};
-  void FillEvtNCont(int i, double val){fEvtNCont[i]->Fill(val);};
-  void FillEvtVtxX(int i, double val){fEvtVtxX[i]->Fill(val);};
-  void FillEvtVtxY(int i, double val){fEvtVtxY[i]->Fill(val);};
-  void FillEvtVtxZ(int i, double val){fEvtVtxZ[i]->Fill(val);};
-  void FillMultSPD(int i, double val){fMultDistSPD[i]->Fill(val);};
-  void FillMultV0A(int i, double val){fMultDistV0A[i]->Fill(val);};
-  void FillMultV0C(int i, double val){fMultDistV0C[i]->Fill(val);};
-  void FillMultRef08(int i, double val){fMultDistRef08[i]->Fill(val);};
+  void FillCuts(int iBin,float val){fCutConfig->Fill(iBin,val);};
+  void FillEvtNCont(int i, float val){fEvtNCont[i]->Fill(val);};
+  void FillEvtVtxX(int i, float val){fEvtVtxX[i]->Fill(val);};
+  void FillEvtVtxY(int i, float val){fEvtVtxY[i]->Fill(val);};
+  void FillEvtVtxZ(int i, float val){fEvtVtxZ[i]->Fill(val);};
+  void FillMultSPD(int i, float val){fMultDistSPD[i]->Fill(val);};
+  void FillMultV0A(int i, float val){fMultDistV0A[i]->Fill(val);};
+  void FillMultV0C(int i, float val){fMultDistV0C[i]->Fill(val);};
+  void FillMultRef08(int i, float val){fMultDistRef08[i]->Fill(val);};
   TList *GetHistList() {return fEventCutList;};
  private:
   TList *fEventCutList;     //!
@@ -39,7 +39,7 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
   TH1F *fMultDistRef08[2];  //!
-  ClassDef(AliFemtoDreamEventHist,1)
+  ClassDef(AliFemtoDreamEventHist,2)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

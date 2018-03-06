@@ -22,10 +22,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
 :fPartContainer(conf->GetNParticles(),
                 AliFemtoDreamPartContainer(conf->GetMixingDepth()))
 ,fPDGParticleSpecies(conf->GetPDGCodes())
-{
-  std::cout<<"Number of Particles: "<<conf->GetNParticles()<<
-      "MixingDepth: "<<conf->GetMixingDepth()<<std::endl;
-}
+{}
 
 AliFemtoDreamZVtxMultContainer::~AliFemtoDreamZVtxMultContainer() {
   // TODO Auto-generated destructor stub
@@ -59,7 +56,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamCorrHists *ResultsHist,int iMult)
 {
-  double RelativeK = 0;
+  float RelativeK = 0;
   int _intSpec1 = 0;
   int HistCounter=0;
   //First loop over all the different Species
@@ -102,7 +99,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamCorrHists *ResultsHist,int iMult)
 {
-  double RelativeK = 0;
+  float RelativeK = 0;
   int _intSpec1 = 0;
   int HistCounter=0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -130,6 +127,21 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             if (ResultsHist->GetDoMultBinning()) {
               ResultsHist->FillMixedEventMultDist(HistCounter,iMult+1,RelativeK);
             }
+            if (ResultsHist->GetObtainMomentumResolution()) {
+              //It is sufficient to do this in Mixed events, which allows
+              //to increase the statistics. The Resolution of the tracks and therefore
+              //of the pairs does not change event by event.
+              //Now we only want to use the momentum of particles we are after, hence
+              //we check the PDG Code!
+              if ((*itPDGPar1==TMath::Abs(itPart1->GetMCPDGCode()))&&
+                  ((*itPDGPar2==TMath::Abs(itPart2->GetMCPDGCode())))) {
+                float RelKTrue=
+                    RelativePairMomentum(itPart1->GetMCMomentum(),*itPDGPar1,
+                                         itPart2->GetMCMomentum(),*itPDGPar2);
+                ResultsHist->FillMomentumResolution(
+                    HistCounter,RelKTrue,RelativeK);
+              }
+            }
           }
         }
       }
@@ -141,7 +153,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     ++itPDGPar1;
   }
 }
-double AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentum,
+float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentum,
                                                             int PDGPart1,
                                                             TVector3 Part2Momentum,
                                                             int PDGPart2)
@@ -149,7 +161,7 @@ double AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Moment
     if(PDGPart1 == 0 || PDGPart2== 0){
       AliError("Invalid PDG Code");
     }
-  double results = 0.;
+  float results = 0.;
   TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
@@ -159,10 +171,10 @@ double AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Moment
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   trackSum = SPtrack + TPProng;
 
-  double beta = trackSum.Beta();
-  double betax = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
-  double betay = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
-  double betaz = beta*cos(trackSum.Theta());
+  float beta = trackSum.Beta();
+  float betax = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
+  float betay = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
+  float betaz = beta*cos(trackSum.Theta());
 
   SPtrackCMS = SPtrack;
   TPProngCMS = TPProng;

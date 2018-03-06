@@ -121,8 +121,8 @@ int AliFemtoDreamEvent::CalculateITSMultiplicity(AliAODEvent *evt) {
   int nTr=tracklets->GetNumberOfTracklets();
   int count=0;
   for(int iTr=0; iTr<nTr; iTr++){
-    double theta=tracklets->GetTheta(iTr);
-    double eta=-TMath::Log(TMath::Tan(theta/2.));
+    float theta=tracklets->GetTheta(iTr);
+    float eta=-TMath::Log(TMath::Tan(theta/2.));
     if(TMath::Abs(eta) < 0.8){
       count++;
     }

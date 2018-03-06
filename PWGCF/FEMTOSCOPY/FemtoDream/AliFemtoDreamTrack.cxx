@@ -149,7 +149,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
     this->fRatioCR=0.;
   } else {
     this->fRatioCR=
-        fTrack->GetTPCClusterInfo(2, 1)/double(fTrack->GetTPCNclsF());
+        fTrack->GetTPCClusterInfo(2, 1)/float(fTrack->GetTPCNclsF());
   }
   const TBits sharedMap=fTrack->GetTPCSharedMap();
   if ((sharedMap.CountBits()) >= 1) {

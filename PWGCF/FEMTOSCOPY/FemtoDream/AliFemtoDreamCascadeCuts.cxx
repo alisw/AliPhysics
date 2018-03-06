@@ -319,10 +319,10 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
 
 void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
   if (!fMinimalBooking) {
-    double pT=casc->GetPt();
+    float pT=casc->GetPt();
     //  if (casc->GetHasDaughters()) {
-    //    double etaNegDaug=casc->GetEta().at(1);
-    //    double etaPosDaug=casc->GetEta().at(2);
+    //    float etaNegDaug=casc->GetEta().at(1);
+    //    float etaPosDaug=casc->GetEta().at(2);
     //    if (casc->GetMCPDGCode()==fPDGv0) {
     //      if (fpTmin<pT&&pT<fpTmax) {
     //        if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {

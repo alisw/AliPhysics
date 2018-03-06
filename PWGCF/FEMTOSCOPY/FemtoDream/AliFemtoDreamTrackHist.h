@@ -20,33 +20,33 @@ class AliFemtoDreamTrackHist {
   AliFemtoDreamTrackHist();
   AliFemtoDreamTrackHist(bool DCADist,bool CombSig);
   virtual ~AliFemtoDreamTrackHist();
-  void FillConfig(int iBin, double val){fConfig->Fill(iBin, val);};
+  void FillConfig(int iBin, float val){fConfig->Fill(iBin, val);};
   void FillTrackCounter(int iBin){fCutCounter->Fill(iBin);};
-  void FillpTCut(int i, double pT){fpTDist[i]->Fill(pT);};
-  void FillpTPCCut(int i, double pTPC){fpTPCDist[i]->Fill(pTPC);};
-  void FilletaCut(int i, double eta){fetaDist[i]->Fill(eta);};
-  void FillphiCut(int i, double phi){fphiDist[i]->Fill(phi);};
-  void FillTPCclsCut(int i, double nCls){fTPCCls[i]->Fill(nCls);};
-  void FillDCAxyCut(int i, double pT, double dcaxy){
+  void FillpTCut(int i, float pT){fpTDist[i]->Fill(pT);};
+  void FillpTPCCut(int i, float pTPC){fpTPCDist[i]->Fill(pTPC);};
+  void FilletaCut(int i, float eta){fetaDist[i]->Fill(eta);};
+  void FillphiCut(int i, float phi){fphiDist[i]->Fill(phi);};
+  void FillTPCclsCut(int i, float nCls){fTPCCls[i]->Fill(nCls);};
+  void FillDCAxyCut(int i, float pT, float dcaxy){
     fDCAxy[i]->Fill(pT, dcaxy);};
-  void FillDCAzCut(int i, double pT, double dcaz){fDCAz[i]->Fill(pT, dcaz);};
+  void FillDCAzCut(int i, float pT, float dcaz){fDCAz[i]->Fill(pT, dcaz);};
   void FillTPCCrossedRowCut(int i, float Crossed){
     fTPCCrossedRows[i]->Fill(Crossed);
   };
   void FillTPCRatioCut(int i, float ratio){fTPCRatio[i]->Fill(ratio);};
-  void FillTPCClsS(int i, double TPCClsS){fTPCClsS[i]->Fill(TPCClsS);};
+  void FillTPCClsS(int i, float TPCClsS){fTPCClsS[i]->Fill(TPCClsS);};
   void FillHasSharedClsITS(int i,int layer,int yesno){
     fShrdClsITS[i]->Fill(layer,yesno);};
-  void FillTPCdedx(int i, double mom, double dedx){
+  void FillTPCdedx(int i, float mom, float dedx){
     fTPCdedx[i]->Fill(mom,dedx);
   };
-  void FillTOFbeta(int i, double mom, double beta){
+  void FillTOFbeta(int i, float mom, float beta){
     fTOFbeta[i]->Fill(mom,beta);
   };
-  void FillNSigTPC(int i, double mom, double nSigTPC){
+  void FillNSigTPC(int i, float mom, float nSigTPC){
     fNSigTPC[i]->Fill(mom, nSigTPC);
   };
-  void FillNSigTOF(int i, double mom, double nSigTOF){
+  void FillNSigTOF(int i, float mom, float nSigTOF){
     fNSigTOF[i]->Fill(mom, nSigTOF);
   };
   void FillTPCStatus(int i, AliPIDResponse::EDetPidStatus statusTPC){
@@ -55,9 +55,9 @@ class AliFemtoDreamTrackHist {
   void FillTOFStatus(int i, AliPIDResponse::EDetPidStatus statusTOF){
     fTOFStatus[i]->Fill(statusTOF);
   };
-  void FillNSigComb(double pT, double nSigTPC, double nSigTOF);
-  void FillDCAXYPtBins(double pT, double dcaxy);
-  void FillTPCClsCPileUp(int i,int iCrit,double TPCClsC){
+  void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
+  void FillDCAXYPtBins(float pT, float dcaxy);
+  void FillTPCClsCPileUp(int i,int iCrit,float TPCClsC){
     fTPCClsCPiluUp[i]->Fill(iCrit,TPCClsC);
   }
   void FillITSSharedPileUp(int i,int iCrit,int yesno){
@@ -91,7 +91,7 @@ class AliFemtoDreamTrackHist {
   TH3F *fNSigCom;           //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];//!
-  ClassDef(AliFemtoDreamTrackHist,1);
+  ClassDef(AliFemtoDreamTrackHist,2);
 };
 
 #endif /* ALIFEMTODREAMTRACKHIST_H_ */
