@@ -150,7 +150,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   return task;
 }
 
-AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreateCuts(Bool_t fieldOn, Bool_t hists)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   if(!esdTrackCuts) return 0;
