@@ -225,7 +225,7 @@ bool AliFemtoDreamv0Cuts::RejectAsKaon(AliFemtoDreamv0 *v0) {
   if (v0->GetCPA()<fMinCPA) {
     cpaPass=false;
   }
-  double massKaon=CalculateInvMass(v0,211,211);
+  float massKaon=CalculateInvMass(v0,211,211);
   if (cpaPass) {
     if (!fMinimalBooking) fHist->FillInvMassBefKaonRej(v0->Getv0Mass());
     if (!fMinimalBooking) fHist->FillInvMassKaon(massKaon);
@@ -246,7 +246,7 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
     cpaPass=false;
   }
   if (fCutInvMass) {
-    double massv0=TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+    float massv0=TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
     if ((v0->Getv0Mass()<massv0-fInvMassCutWidth)||
         (massv0+fInvMassCutWidth<v0->Getv0Mass())) {
       massPass=false;
@@ -338,10 +338,10 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
 
 void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
   if (!fMinimalBooking) {
-    double pT=v0->GetPt();
+    float pT=v0->GetPt();
     if (v0->GetHasDaughters()) {
-      double etaNegDaug=v0->GetEta().at(1);
-      double etaPosDaug=v0->GetEta().at(2);
+      float etaNegDaug=v0->GetEta().at(1);
+      float etaPosDaug=v0->GetEta().at(2);
       if (v0->GetMCPDGCode()==fPDGv0) {
         if (fpTmin<pT&&pT<fpTmax) {
           if (fPosCuts->GetEtaMin()<etaPosDaug&&etaPosDaug<fPosCuts->GetEtaMax()) {
@@ -459,25 +459,25 @@ void AliFemtoDreamv0Cuts::BookTrackCuts() {
   }
 }
 
-double AliFemtoDreamv0Cuts::CalculateInvMass(AliFemtoDreamv0 *v0,
+float AliFemtoDreamv0Cuts::CalculateInvMass(AliFemtoDreamv0 *v0,
                                              int PDGPosDaug,int PDGNegDaug) {
   Double_t invMass = 0;
-  double massDP=TDatabasePDG::Instance()->GetParticle(PDGPosDaug)->Mass();
-  double massDN=TDatabasePDG::Instance()->GetParticle(PDGNegDaug)->Mass();
+  float massDP=TDatabasePDG::Instance()->GetParticle(PDGPosDaug)->Mass();
+  float massDN=TDatabasePDG::Instance()->GetParticle(PDGNegDaug)->Mass();
 
-  double EDaugP=TMath::Sqrt(
+  float EDaugP=TMath::Sqrt(
       massDP*massDP +
       v0->GetPosDaughter()->GetMomentum().X()*v0->GetPosDaughter()->GetMomentum().X()+
       v0->GetPosDaughter()->GetMomentum().Y()*v0->GetPosDaughter()->GetMomentum().Y()+
       v0->GetPosDaughter()->GetMomentum().Z()*v0->GetPosDaughter()->GetMomentum().Z());
-  double EDaugN=TMath::Sqrt(
+  float EDaugN=TMath::Sqrt(
       massDN*massDN +
       v0->GetNegDaughter()->GetMomentum().X()*v0->GetNegDaughter()->GetMomentum().X()+
       v0->GetNegDaughter()->GetMomentum().Y()*v0->GetNegDaughter()->GetMomentum().Y()+
       v0->GetNegDaughter()->GetMomentum().Z()*v0->GetNegDaughter()->GetMomentum().Z());
 
-  double energysum=EDaugP+EDaugN;
-  double pSum2=
+  float energysum=EDaugP+EDaugN;
+  float pSum2=
       (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())*
       (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())+
 

@@ -98,7 +98,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
 
 bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
   bool pass=true;
-  std::vector<double> eta=Track->GetEta();
+  std::vector<float> eta=Track->GetEta();
   std::vector<int> charge=Track->GetCharge();
   if (fCheckFilterBit) {
     if (!Track->TestFilterBit(fFilterBit)) {
@@ -213,7 +213,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
     } else {
       if (!fMinimalBooking) fHists->FillTrackCounter(13);
       if (fRejectPions&&TOFisthere) {
-        double nSigTOF=(Track->GetnSigmaTOF((int)(AliPID::kPion)));
+        float nSigTOF=(Track->GetnSigmaTOF((int)(AliPID::kPion)));
         if (TMath::Abs(nSigTOF)<fNSigValue) {
           if (fParticleID==AliPID::kPion) {
             AliWarning("Sure you want to use this method? Propably want to set"
@@ -226,7 +226,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
         }
       }
       if (pass) {
-        double nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
+        float nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
         if (!(TMath::Abs(nSigTPC)<fNSigValue)) {
           pass=false;
         } else {
@@ -239,9 +239,9 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
       pass=false;
     } else {
       if (!fMinimalBooking) fHists->FillTrackCounter(16);
-      double nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
-      double nSigTOF=(Track->GetnSigmaTOF((int)(fParticleID)));
-      double nSigComb=TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
+      float nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
+      float nSigTOF=(Track->GetnSigmaTOF((int)(fParticleID)));
+      float nSigComb=TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
       if (!(nSigComb<fNSigValue)) {
         pass=false;
       } else {
@@ -265,7 +265,7 @@ bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   //This should just be for PID of high pT particles
   AliPID::EParticleType type[5]={AliPID::kElectron,AliPID::kMuon,AliPID::kPion,
       AliPID::kKaon,AliPID::kProton};
-  double nSigmaComb[5];
+  float nSigmaComb[5];
   //Form the combination:
   for (int i=0; i<5; ++i) {
     nSigmaComb[i]=TMath::Sqrt(pow((Track->GetnSigmaTPC(i)),2.)+
@@ -353,10 +353,10 @@ void AliFemtoDreamTrackCuts::Init(bool MinimalBooking) {
 
 void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
   if (!fMinimalBooking) {
-    std::vector<double> eta=Track->GetEta();
-    std::vector<double> phi=Track->GetPhi();
-    double pT = Track->GetPt();
-    double p = Track->GetMomTPC();
+    std::vector<float> eta=Track->GetEta();
+    std::vector<float> phi=Track->GetPhi();
+    float pT = Track->GetPt();
+    float p = Track->GetMomTPC();
     for (int i=0;i<2;++i) {
       if (i==0||(i==1&&Track->UseParticle())) {
         fHists->FilletaCut(i,eta.at(0));
@@ -451,7 +451,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
   if (!fMinimalBooking) {
     Int_t PDGcode[5] = {11,13,211,321,2212};
-    //this is not the correct way to do it, since there might be double counting
+    //this is not the correct way to do it, since there might be float counting
     if (fpTmin<Track->GetPt()&&Track->GetPt()<fpTmax) {
       if (fetamin<Track->GetEta().at(0)&&Track->GetEta().at(0)<fetamax) {
         if(!fcutCharge){
@@ -467,7 +467,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
       }
     }
     if (Track->UseParticle()) {
-      double pT = Track->GetPt();
+      float pT = Track->GetPt();
       int PDGcode[5] = {11,13,211,321,2212};
       //Fill Identified
       fMCHists->FillMCIdent(pT);
@@ -498,7 +498,7 @@ void AliFemtoDreamTrackCuts::FillMCContributions(
     AliFemtoDreamTrack *Track)
 {
   if (!fMinimalBooking) {
-    double pT=Track->GetPt();
+    float pT=Track->GetPt();
     AliFemtoDreamBasePart::PartOrigin org=Track->GetParticleOrigin();
     Int_t iFill = -1;
     switch(org) {
@@ -523,8 +523,8 @@ void AliFemtoDreamTrackCuts::FillMCContributions(
         break;
     }
     if (iFill >= 0 && iFill < 4) {
-      std::vector<double> eta=Track->GetEta();
-      std::vector<double> phi=Track->GetPhi();
+      std::vector<float> eta=Track->GetEta();
+      std::vector<float> phi=Track->GetPhi();
       fMCHists->FillMCpTPCCut(iFill,Track->GetMomTPC());
       fMCHists->FillMCetaCut(iFill,eta[0]);
       fMCHists->FillMCphiCut(iFill,phi[0]);

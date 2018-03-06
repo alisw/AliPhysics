@@ -20,7 +20,7 @@ class AliFemtoDreamEventCuts {
   void SetCutMinContrib(int nMinContrib) {
     fCutMinContrib=true;fMinContrib=nMinContrib;
   };
-  void SetZVtxPosition(double zVtxLow,double zVtxUp) {
+  void SetZVtxPosition(float zVtxLow,float zVtxUp) {
     fzVtxLow=zVtxLow;fzVtxUp=zVtxUp;fCutZVtx=true;
   };
   void SetMVPileUpRejection(bool apply){fUseMVPileUpRej=apply;};
@@ -42,8 +42,8 @@ class AliFemtoDreamEventCuts {
   bool fCutMinContrib;            //
   int fMinContrib;                //
   bool fCutZVtx;                  //
-  double fzVtxLow;                //
-  double fzVtxUp;                 //
+  float fzVtxLow;                //
+  float fzVtxUp;                 //
   bool fPileUpRejection;          //
   bool fUseMVPileUpRej;           // Which method of Pile Up Rej should be used
   bool fCleanEvtMult;             //

@@ -45,16 +45,16 @@ AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
 
 }
 
-void AliFemtoDreamCollConfig::SetZBins(std::vector<double> ZBins) {
+void AliFemtoDreamCollConfig::SetZBins(std::vector<float> ZBins) {
   //Make sure to set the entries in ascending order!
   //Todo: maybe build in a check for this
-  for (std::vector<double>::iterator it=ZBins.begin();it!=ZBins.end();++it) {
+  for (std::vector<float>::iterator it=ZBins.begin();it!=ZBins.end();++it) {
     fZVtxBins->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetZVtxBins() {
+std::vector<float> AliFemtoDreamCollConfig::GetZVtxBins() {
   //Make sure to set the entries in ascending order!
-  std::vector<double> ZBins;
+  std::vector<float> ZBins;
   float out=0;
   fZVtxBins->SetBranchAddress("zvtx",&out);
   for (int iBins=0;iBins<fZVtxBins->GetEntries();++iBins) {
@@ -139,15 +139,15 @@ std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
   }
   return NBinsHist;
 }
-void AliFemtoDreamCollConfig::SetMinKRel(std::vector<double> minKRel) {
+void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel) {
   //See SetNBinsHist
-  for (std::vector<double>::iterator it=minKRel.begin();it!=minKRel.end();++it)
+  for (std::vector<float>::iterator it=minKRel.begin();it!=minKRel.end();++it)
   {
     fMinK_rel->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetMinKRel() {
-  std::vector<double> MinKRel;
+std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
+  std::vector<float> MinKRel;
   float out=0;
   fMinK_rel->SetBranchAddress("minkRel",&out);
   for (int iBins=0;iBins<fMinK_rel->GetEntries();++iBins) {
@@ -156,15 +156,15 @@ std::vector<double> AliFemtoDreamCollConfig::GetMinKRel() {
   }
   return MinKRel;
 }
-void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<double> maxKRel) {
+void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<float> maxKRel) {
   //See SetNBinsHist
-  for (std::vector<double>::iterator it=maxKRel.begin();it!=maxKRel.end();++it)
+  for (std::vector<float>::iterator it=maxKRel.begin();it!=maxKRel.end();++it)
   {
     fMaxK_rel->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetMaxKRel() {
-  std::vector<double> MaxKRel;
+std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
+  std::vector<float> MaxKRel;
   float out=0;
   fMaxK_rel->SetBranchAddress("maxkRel",&out);
   for (int iBins=0;iBins<fMaxK_rel->GetEntries();++iBins) {

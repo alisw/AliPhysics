@@ -43,10 +43,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   const int nHists=conf->GetNParticleCombinations();
   std::vector<int> NBinsHist=conf->GetNBinsHist();
   std::vector<int>::iterator itNBins=NBinsHist.begin();
-  std::vector<double> kRelMin=conf->GetMinKRel();
-  std::vector<double>::iterator itKMin=kRelMin.begin();
-  std::vector<double> kRelMax=conf->GetMaxKRel();
-  std::vector<double>::iterator itKMax=kRelMax.begin();
+  std::vector<float> kRelMin=conf->GetMinKRel();
+  std::vector<float>::iterator itKMin=kRelMin.begin();
+  std::vector<float> kRelMax=conf->GetMaxKRel();
+  std::vector<float>::iterator itKMax=kRelMax.begin();
 
   if (nHists!=(int)NBinsHist.size() || nHists!=(int)kRelMin.size() ||
       nHists!=(int)kRelMax.size()) {

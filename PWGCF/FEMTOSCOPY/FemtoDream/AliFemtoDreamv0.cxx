@@ -131,9 +131,9 @@ void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt,AliAODv0 *v0) {
   this->SetEta(v0->Eta());
   this->SetPhi(v0->Phi());
   this->SetTheta(v0->Theta());
-  double xvP = evt->GetPrimaryVertex()->GetX();
-  double yvP = evt->GetPrimaryVertex()->GetY();
-  double zvP = evt->GetPrimaryVertex()->GetZ();
+  float xvP = evt->GetPrimaryVertex()->GetX();
+  float yvP = evt->GetPrimaryVertex()->GetY();
+  float zvP = evt->GetPrimaryVertex()->GetZ();
   double vecTarget[3]={xvP,yvP,zvP};
   v0->GetXYZ(fv0Vtx);
   this->fdcav0Daug=v0->DcaV0Daughters();
