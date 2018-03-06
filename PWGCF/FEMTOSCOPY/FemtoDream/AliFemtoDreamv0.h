@@ -54,7 +54,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float fdcaPrimNeg; // rphi impact params w.r.t. Primary Vtx [cm]
   float flenDecay;   // Decay Length
   float fTransRadius;// Decay Length in xy
-  ClassDef(AliFemtoDreamv0,1)
+  ClassDef(AliFemtoDreamv0,2)
 };
 
 #endif /* ALIFEMTODREAMV0_H_ */

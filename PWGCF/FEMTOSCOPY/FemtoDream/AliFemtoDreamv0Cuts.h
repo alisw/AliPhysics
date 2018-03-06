@@ -122,7 +122,7 @@ class AliFemtoDreamv0Cuts {
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-  ClassDef(AliFemtoDreamv0Cuts,1)
+  ClassDef(AliFemtoDreamv0Cuts,2)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

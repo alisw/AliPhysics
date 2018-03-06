@@ -37,7 +37,7 @@ class AliFemtoDreamPartCollection {
   std::vector<std::vector<AliFemtoDreamZVtxMultContainer>> fZVtxMultBuffer;
   std::vector<float> fValuesZVtxBins;
   std::vector<int> fValuesMultBins;
-  ClassDef(AliFemtoDreamPartCollection,1);
+  ClassDef(AliFemtoDreamPartCollection,2);
 };
 
 #endif /* ALIFEMTODREAMPARTCOLLECTION_H_ */

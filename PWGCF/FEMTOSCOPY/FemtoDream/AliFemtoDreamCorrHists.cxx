@@ -15,20 +15,20 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fPairs(0)
 ,fPairQA(0)
 ,fMinimalBooking(false)
+,fMomentumResolution(false)
 ,fSameEventDist(0)
 ,fSameEventMultDist(0)
 ,fPairCounterSE(0)
 ,fMixedEventDist(0)
 ,fMixedEventMultDist(0)
 ,fPairCounterME(0)
+,fMomResolution(0)
 ,fDoMultBinning(false)
 {
 }
 
 AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     AliFemtoDreamCollConfig *conf,bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
-
   fResults=new TList();
   fResults->SetName("Results");
   fResults->SetOwner();
@@ -37,6 +37,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fQA->SetName("PairQA");
     fQA->SetOwner();
   }
+  fMinimalBooking=MinimalBooking;
+  fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
   int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
@@ -63,12 +65,19 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   //X1 corresponds the first particle array in your vector that you hand over
   //in the AliFemtoDreamPartCollection::SetEvent Method, X2 to the second and
   //so on.
+  //in case we only book the most basic things we don't need this
+  if (!fMinimalBooking) {
+    fPairQA=new TList*[nHists];
+    fPairCounterSE=new TH2F*[nHists];
+    fPairCounterME=new TH2F*[nHists];
+    if (fMomentumResolution) {
+      fMomResolution=new TH2F*[nHists];
+    }
+  }
+  //we always want to do this, regardless of the booking type!
   fPairs=new TList*[nHists];
-  if (!fMinimalBooking) fPairQA=new TList*[nHists];
   fSameEventDist=new TH1F*[nHists];
-  if (!fMinimalBooking) fPairCounterSE=new TH2F*[nHists];
   fMixedEventDist=new TH1F*[nHists];
-  if (!fMinimalBooking) fPairCounterME=new TH2F*[nHists];
   if (fDoMultBinning) {
     fSameEventMultDist=new TH2F*[nHists];
     fMixedEventMultDist=new TH2F*[nHists];
@@ -142,6 +151,24 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fPairCounterME[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
         fPairCounterME[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
         fPairQA[Counter]->Add(fPairCounterME[Counter]);
+
+        if (fMomentumResolution) {
+          //take twice the number of bins we use for the CF to be sure, the range is
+          //hard coded. This assumed that the input is in GeV!
+//          *itNBins,*itKMin,*itKMax,
+          double dNBin=(*itKMax-*itKMin)/(double)(*itNBins);
+          dNBin/=2;
+          int nBims=(int)(1/dNBin);
+          TString MomResoName=
+              Form("MomentumResolution_Particle%d_Particle%d",iPar1,iPar2);
+          fMomResolution[Counter]=
+              new TH2F(MomResoName.Data(),MomResoName.Data(),nBims,0,1,
+                       nBims,0,1);
+          fMomResolution[Counter]->Sumw2();
+          fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
+          fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolution[Counter]);
+        }
       }
 
       ++Counter;

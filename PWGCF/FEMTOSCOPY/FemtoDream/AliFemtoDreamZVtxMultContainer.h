@@ -33,7 +33,7 @@ class AliFemtoDreamZVtxMultContainer {
                               TVector3 Part2Momentum,int PDGPart2);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
-  ClassDef(AliFemtoDreamZVtxMultContainer,1);
+  ClassDef(AliFemtoDreamZVtxMultContainer,2);
 };
 
 #endif /* ALIFEMTODREAMZVTXMULTCONTAINER_H_ */

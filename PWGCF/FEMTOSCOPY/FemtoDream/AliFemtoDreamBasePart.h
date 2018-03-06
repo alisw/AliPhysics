@@ -90,7 +90,7 @@ class AliFemtoDreamBasePart {
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
-  ClassDef(AliFemtoDreamBasePart,1);
+  ClassDef(AliFemtoDreamBasePart,2);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

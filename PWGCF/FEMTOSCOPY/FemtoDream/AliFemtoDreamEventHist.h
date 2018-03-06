@@ -39,7 +39,7 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
   TH1F *fMultDistRef08[2];  //!
-  ClassDef(AliFemtoDreamEventHist,1)
+  ClassDef(AliFemtoDreamEventHist,2)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

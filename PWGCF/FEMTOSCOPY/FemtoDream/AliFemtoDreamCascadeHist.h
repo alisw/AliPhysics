@@ -60,7 +60,7 @@ class AliFemtoDreamCascadeHist {
   TH1F *fMinDistVtxv0DaugPos[2];
   TH1F *fMinDistVtxv0DaugNeg[2];
   TH2F *fPodolandski[2];
-  ClassDef(AliFemtoDreamCascadeHist,1)
+  ClassDef(AliFemtoDreamCascadeHist,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADEHIST_H_ */

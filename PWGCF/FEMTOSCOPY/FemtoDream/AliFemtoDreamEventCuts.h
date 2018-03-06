@@ -53,7 +53,7 @@ class AliFemtoDreamEventCuts {
   bool fUseRef08Mult;             //
   //Use evt cuts tuned by expert(don't worry solution)
   bool fUseAliEvtCuts;            //
-  ClassDef(AliFemtoDreamEventCuts,1)
+  ClassDef(AliFemtoDreamEventCuts,2)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

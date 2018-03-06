@@ -119,7 +119,7 @@ class AliFemtoDreamTrackCuts {
   float fNSigValue;                  // defaults to 3
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;                  // Supress Pions at low pT with the TOF, if information is available
-  ClassDef(AliFemtoDreamTrackCuts,1);
+  ClassDef(AliFemtoDreamTrackCuts,2);
 };
 
 #endif /* ALIFEMTODREAMTRACKCUTS_H_ */

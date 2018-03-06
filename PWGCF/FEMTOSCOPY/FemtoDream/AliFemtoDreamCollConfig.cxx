@@ -9,7 +9,8 @@
 ClassImp(AliFemtoDreamCollConfig)
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 :TNamed()
-,fMultBinning(0)
+,fMultBinning(false)
+,fMomentumResolution(false)
 ,fZVtxBins(0)
 ,fMultBins(0)
 ,fPDGParticleSpecies(0)
@@ -24,7 +25,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
                                                  const char *title)
 :TNamed(name,title)
-,fMultBinning(0)
+,fMultBinning(false)
+,fMomentumResolution(false)
 ,fMixingDepth(0)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");

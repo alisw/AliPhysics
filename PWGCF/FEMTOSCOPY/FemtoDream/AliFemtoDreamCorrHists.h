@@ -20,6 +20,7 @@ class AliFemtoDreamCorrHists {
   AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,bool MinimalBooking);
   virtual ~AliFemtoDreamCorrHists();
   bool GetDoMultBinning(){return fDoMultBinning;};
+  bool GetObtainMomentumResolution() {return fMomentumResolution;};
   void FillSameEventDist(int i,float RelK){fSameEventDist[i]->Fill(RelK);};
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
@@ -34,6 +35,9 @@ class AliFemtoDreamCorrHists {
   void FillPartnersME(int hist,int nPart1,int nPart2){
     if (!fMinimalBooking)fPairCounterME[hist]->Fill(nPart1,nPart2);
   }
+  void FillMomentumResolution(int hist,float RelKTrue,float RelKReco) {
+    if (!fMinimalBooking)fMomResolution[hist]->Fill(RelKTrue,RelKReco);
+  }
   TList* GetHistList(){return fResults;};
   TList* GetQAHists(){return fQA;};
  private:
@@ -42,15 +46,17 @@ class AliFemtoDreamCorrHists {
   TList         **fPairs;
   TList         **fPairQA;
   bool          fMinimalBooking;
+  bool          fMomentumResolution;
   TH1F          **fSameEventDist;
   TH2F          **fSameEventMultDist;
   TH2F          **fPairCounterSE;
   TH1F          **fMixedEventDist;
   TH2F          **fMixedEventMultDist;
   TH2F          **fPairCounterME;
+  TH2F          **fMomResolution;
   bool          fDoMultBinning;
 
-  ClassDef(AliFemtoDreamCorrHists,1);
+  ClassDef(AliFemtoDreamCorrHists,2);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

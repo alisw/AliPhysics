@@ -101,7 +101,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCTOFbeta[4];            //!
   TH2F *fMCNSigTPC[4];            //!
   TH2F *fMCNSigTOF[4];            //!
-  ClassDef(AliFemtoDreamTrackMCHist,1);
+  ClassDef(AliFemtoDreamTrackMCHist,2);
 };
 
 #endif /* ALIFEMTODREAMTRACKMCHIST_H_ */

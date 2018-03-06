@@ -103,7 +103,7 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCSecondaryCPAPtBins;
   TH2F *fMCContCPAPtBins;
 
-  ClassDef(AliFemtoDreamv0MCHist,1)
+  ClassDef(AliFemtoDreamv0MCHist,2)
 };
 
 #endif /* ALIFEMTODREAMV0MCHIST_H_ */

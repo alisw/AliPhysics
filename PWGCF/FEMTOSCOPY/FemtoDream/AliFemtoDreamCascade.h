@@ -80,7 +80,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fv0Length;
   float fDCAv0Xi;
   int fv0PDG;
-  ClassDef(AliFemtoDreamCascade,1)
+  ClassDef(AliFemtoDreamCascade,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADE_H_ */

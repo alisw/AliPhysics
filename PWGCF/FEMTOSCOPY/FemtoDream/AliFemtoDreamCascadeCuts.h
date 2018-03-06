@@ -70,8 +70,8 @@ class AliFemtoDreamCascadeCuts {
   TList *GetQAHists() {return fHistList;};
   TList *GetMCQAHists() {return fMCHistList;};
  private:
-  AliFemtoDreamCascadeHist *fHist;
-  AliFemtoDreamv0MCHist *fMCHist;
+  AliFemtoDreamCascadeHist *fHist;            //!
+  AliFemtoDreamv0MCHist *fMCHist;             //!
   AliFemtoDreamTrackCuts *fNegCuts;
   AliFemtoDreamTrackCuts *fPosCuts;
   AliFemtoDreamTrackCuts *fBachCuts;
@@ -116,7 +116,7 @@ class AliFemtoDreamCascadeCuts {
   int fPDGPosDaug;
   int fPDGNegDaug;
   int fPDGBachDaug;
-  ClassDef(AliFemtoDreamCascadeCuts,1)
+  ClassDef(AliFemtoDreamCascadeCuts,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADECUTS_H_ */

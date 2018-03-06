@@ -18,6 +18,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   AliFemtoDreamCollConfig(const char *name, const char *title);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
+  void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -27,6 +28,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
 
   bool GetDoMultBinning() {return fMultBinning;};
+  bool GetDoMomResolution() {return fMomentumResolution;};
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins(){return (fZVtxBins->GetEntries()-1);};
   std::vector<int> GetMultBins();
@@ -40,6 +42,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   int GetMixingDepth(){return fMixingDepth;};
  private:
   bool fMultBinning;            //
+  bool fMomentumResolution;     //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
   TNtuple *fPDGParticleSpecies; //
@@ -47,7 +50,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMinK_rel;           //
   TNtuple *fMaxK_rel;           //
   int fMixingDepth;             //
-  ClassDef(AliFemtoDreamCollConfig,1);
+  ClassDef(AliFemtoDreamCollConfig,2);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

@@ -64,7 +64,7 @@ class AliFemtoDreamEvent {
   bool fHasVertex;            //!
   bool fHasMagField;          //!
   bool fisSelected;           //!
-  ClassDef(AliFemtoDreamEvent,1)
+  ClassDef(AliFemtoDreamEvent,2)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

@@ -77,7 +77,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliAODTrack *fGlobalTrack;
   float fnSigmaTPC[5];
   float fnSigmaTOF[5];
-  ClassDef(AliFemtoDreamTrack, 1)
+  ClassDef(AliFemtoDreamTrack,2)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */

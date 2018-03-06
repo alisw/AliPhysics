@@ -4,7 +4,7 @@
 
 AliAnalysisTask* AddTaskFemtoDream(
     bool isMC=false,TString CentEst="kInt7",bool notpp=true,
-    bool DCAPlots=false,bool CPAPlots=false,
+    bool DCAPlots=false,bool CPAPlots=false,bool MomReso=false,
     bool CombSigma=false,bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
@@ -247,6 +247,13 @@ AliAnalysisTask* AddTaskFemtoDream(
   }
 	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins);
+	if (MomReso) {
+	  if (isMC) {
+	    config->SetMomentumResolution(true);
+	  } else {
+	    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+	  }
+ 	}
 //	config->SetMultBins(MultBins);
 	config->SetPDGCodes(PDGParticles);
 	config->SetNBinsHist(NBins);

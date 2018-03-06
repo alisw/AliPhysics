@@ -67,7 +67,7 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
   TH2F *fCPAPtBins;
-  ClassDef(AliFemtoDreamv0Hist,1)
+  ClassDef(AliFemtoDreamv0Hist,2)
 };
 
 #endif /* ALIFEMTODREAMV0HIST_H_ */

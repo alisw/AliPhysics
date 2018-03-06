@@ -91,7 +91,7 @@ class AliFemtoDreamTrackHist {
   TH3F *fNSigCom;           //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];//!
-  ClassDef(AliFemtoDreamTrackHist,1);
+  ClassDef(AliFemtoDreamTrackHist,2);
 };
 
 #endif /* ALIFEMTODREAMTRACKHIST_H_ */

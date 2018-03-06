@@ -22,10 +22,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
 :fPartContainer(conf->GetNParticles(),
                 AliFemtoDreamPartContainer(conf->GetMixingDepth()))
 ,fPDGParticleSpecies(conf->GetPDGCodes())
-{
-  std::cout<<"Number of Particles: "<<conf->GetNParticles()<<
-      "MixingDepth: "<<conf->GetMixingDepth()<<std::endl;
-}
+{}
 
 AliFemtoDreamZVtxMultContainer::~AliFemtoDreamZVtxMultContainer() {
   // TODO Auto-generated destructor stub
@@ -129,6 +126,21 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             ResultsHist->FillMixedEventDist(HistCounter,RelativeK);
             if (ResultsHist->GetDoMultBinning()) {
               ResultsHist->FillMixedEventMultDist(HistCounter,iMult+1,RelativeK);
+            }
+            if (ResultsHist->GetObtainMomentumResolution()) {
+              //It is sufficient to do this in Mixed events, which allows
+              //to increase the statistics. The Resolution of the tracks and therefore
+              //of the pairs does not change event by event.
+              //Now we only want to use the momentum of particles we are after, hence
+              //we check the PDG Code!
+              if ((*itPDGPar1==TMath::Abs(itPart1->GetMCPDGCode()))&&
+                  ((*itPDGPar2==TMath::Abs(itPart2->GetMCPDGCode())))) {
+                float RelKTrue=
+                    RelativePairMomentum(itPart1->GetMCMomentum(),*itPDGPar1,
+                                         itPart2->GetMCMomentum(),*itPDGPar2);
+                ResultsHist->FillMomentumResolution(
+                    HistCounter,RelKTrue,RelativeK);
+              }
             }
           }
         }
