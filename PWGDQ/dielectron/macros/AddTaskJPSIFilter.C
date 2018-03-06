@@ -18,7 +18,8 @@ AliAnalysisTaskDielectronFilter* AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
-  AliDielectron *jpsi=ConfigJpsi2eeFilter(isAOD);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeFilter.C");
+  AliDielectron *jpsi = reinterpret_cast<AliDielectron *>(gInterpreter->ProcessLine(Form("ConfigJpsi2eeFilter(%d)", isAOD)));
   
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
