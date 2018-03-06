@@ -857,8 +857,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
   // PHOS clusters RUN2 config pp 5 TeV
   } else if (trainConfig == 383){ // PHOS clusters with larger acceptance
-    cuts.AddCut("00010113","2446600040013300000","0163103100000010");
-    cuts.AddCut("00062113","2446600040013300000","0163103100000010");
+    cuts.AddCut("00010113","2446600040013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","2446600040013300000","0163103100000010"); // PHI7
 
   // *********************************************************************************************************
   // 5 TeV  pp Run2 - EMC configurations
