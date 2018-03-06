@@ -1,8 +1,6 @@
-#ifndef AddTaskFemtoContributionSplitting_C
-#define AddTaskFemtoContributionSplitting_C
 #include "TROOT.h"
 
-AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
+AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 {
   bool isMC=true;
   bool DCAPlots=false;
@@ -438,4 +436,3 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 //  }
   return task;
 }
-#endif

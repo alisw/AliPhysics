@@ -1,8 +1,6 @@
-#ifndef ADDTASKFEMTODREAM_C
-#define ADDTASKFEMTODREAM_C
 #include "TROOT.h"
 
-AliAnalysisTask* AddTaskFemtoDream(
+AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,TString CentEst="kInt7",bool notpp=true,
     bool DCAPlots=false,bool CPAPlots=false,bool MomReso=false,
     bool CombSigma=false,bool ContributionSplitting=false,
@@ -262,7 +260,7 @@ AliAnalysisTask* AddTaskFemtoDream(
 	config->SetMixingDepth(10);
 
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDream",isMC,false);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
 		task->SetMVPileUp(kTRUE);
@@ -434,7 +432,6 @@ AliAnalysisTask* AddTaskFemtoDream(
 //	}
 	return task;
 }
-#endif
 
 
 //  if (ContributionSplitting) {

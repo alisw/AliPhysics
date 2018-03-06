@@ -1,8 +1,6 @@
-#ifndef ADDTASKFEMTODREAM_C
-#define ADDTASKFEMTODREAM_C
 #include "TROOT.h"
 #include <stdio.h>
-AliAnalysisTask* AddTaskFemtoDreamSysVar(
+AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool isMC=false, TString CentEst="kInt7",bool notpp=true,const char *suffix="")
 {
   //  TString suffix=Form("%s",swuffix);
@@ -549,5 +547,4 @@ AliAnalysisTask* AddTaskFemtoDreamSysVar(
 //  }
   return task;
 }
-#endif
 
