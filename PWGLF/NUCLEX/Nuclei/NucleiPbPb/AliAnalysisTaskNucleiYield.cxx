@@ -92,6 +92,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireTPCrefit{true}
    ,fRequireNoKinks{true}
    ,fRequireITSrecPoints{2u}
+   ,fRequireTPCrecPoints{0u}
    ,fRequireITSsignal{0u}
    ,fRequireSDDrecPoints{0u}
    ,fRequireSPDrecPoints{1u}
@@ -110,6 +111,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
+   ,fRequireTPCfoundFraction{0.}
    ,fEnableFlattening{false}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
@@ -429,6 +431,8 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return false;
   if (track->Chi2perNDF() > fRequireMaxChi2) return false;
+  if (track->GetTPCNcls() < fRequireTPCrecPoints) return false;
+  if (track->GetTPCFoundFraction() < fRequireTPCfoundFraction) return false;
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
   if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return false;

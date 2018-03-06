@@ -68,7 +68,9 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_XeXe(Bool_t isMC = kFALSE,
   };
   deu->SetDCABins(52,dcabins);
   deu->SetRequireMaxDCAxy(0.1);
-
+  deu->SetRequireTPCrecPoints(70);
+  deu->SetRequireTPCsignal(50);
+  deu->SetRequireTPCfoundFraction(0.8);
   mgr->AddTask(deu);
 
   TString output = "AnalysisResults.root";
