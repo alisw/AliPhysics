@@ -101,6 +101,7 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   void ParticlePairer(Int_t zBin,Int_t multBin);
   void GetV0Origin(AliAODv0 *v0,AliAODEvent *aodEvent);
   void GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *aodEvent,Int_t type);
+  void GetMomentumMatrix(const AliFemtoLambdaParticle &v01,const AliFemtoLambdaParticle &v02);
   void GetMomentumMatrix(const AliFemtoLambdaParticle &v0,const AliFemtoProtonParticle &proton);
   void GetMomentumMatrix(const AliFemtoProtonParticle &proton1,const AliFemtoProtonParticle &proton2);
   void GetMCMomentum(AliAODTrack *aodtrack,double *Protontruth,double *ProtontruthMother,double *ProtontruthMotherParton,int *PDGcodes,AliAODEvent *aodEvent, Int_t type);

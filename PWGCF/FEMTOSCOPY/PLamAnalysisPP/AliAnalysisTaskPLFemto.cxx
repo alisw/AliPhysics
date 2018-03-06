@@ -2362,6 +2362,8 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v01,cons
 
       fillthis = "fLambdaLambdaAvgSeparationPiPiME";
       if(!fIsLightweight) ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(avgSepPiPi);
+
+      if(fUseMCInfo) GetMomentumMatrix(v01, v02);
     }
   else if(REorME == 0 && inputPair == kAntiV0AntiV0)//real event
     {
@@ -2404,6 +2406,8 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v01,cons
 
       fillthis = "fAntiLambdaAntiLambdaAvgSeparationPiPiME";
       if(!fIsLightweight) ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(avgSepPiPi);
+
+      if(fUseMCInfo) GetMomentumMatrix(v01, v02);
     }
   else if(REorME == 0 && inputPair == kAntiV0V0)//real event
     {
@@ -3955,6 +3959,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     TH2F* fProtonThetaResoRecoRotated = new TH2F("fProtonThetaResoRecoRotated","Proton: true theta vs. reconstructed momentum pt",200,0,10,3000,-1,1);
     TH2F* fV0pRelKTrueReco = new TH2F("fV0pRelKTrueReco","V0p: true momentum vs. reconstructed momentum relK",600,0.,3.,600,0.,3.);
     TH2F* fV0pRelKTrueRecoRotated = new TH2F("fV0pRelKTrueRecoRotated","V0p: true momentum vs. reconstructed momentum relK",600,0.,3.,1000,-1.,1.);
+    TH2F* fV0V0RelKTrueReco = new TH2F("fV0V0RelKTrueReco","V0V0: true momentum vs. reconstructed momentum relK",600,0.,3.,600,0.,3.);
+    TH2F* fV0V0RelKTrueRecoRotated = new TH2F("fV0V0RelKTrueRecoRotated","V0p: true momentum vs. reconstructed momentum relK",600,0.,3.,1000,-1.,1.);
     TH2F* fPpRelKTrueReco = new TH2F("fPpRelKTrueReco","pp: true momentum vs. reconstructed momentum relK",750,0.,3.,750,0.,3.);
     TH2F* fPpRelKTrueRecoFB = new TH2F("fPpRelKTrueRecoFB","pp: true momentum vs. reconstructed momentum relK",1500,0.,3.,1500,0.,3.);
     TH2F* fPpRelKTrueRecoRotated = new TH2F("fPpRelKTrueRecoRotated","pp: true momentum vs. reconstructed momentum relK in rotated coordinate system",750,0.,3.,1000,-1.,1.);
@@ -3968,6 +3974,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     fOutputTP->Add(fProtonThetaResoRecoRotated);
     fOutputTP->Add(fV0pRelKTrueReco);
     fOutputTP->Add(fV0pRelKTrueRecoRotated);
+    fOutputTP->Add(fV0V0RelKTrueReco);
+    fOutputTP->Add(fV0V0RelKTrueRecoRotated);
     fOutputTP->Add(fPpRelKTrueReco);
     fOutputTP->Add(fPpRelKTrueRecoFB);
     fOutputTP->Add(fPpRelKTrueRecoRotated);
@@ -4623,6 +4631,34 @@ void AliAnalysisTaskPLFemto::GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *
     if(!fIsLightweight) ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(4);//from material
 	}
     }
+}
+//________________________________________________________________________
+void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoLambdaParticle &v01,const AliFemtoLambdaParticle &v02)
+{
+  //This function calculates the effect of the finite momentum resolution of ALICE for v0s
+
+  TLorentzVector trackV01,trackV01MC,trackV02,trackV02MC;
+
+  trackV01.SetXYZM(v01.fMomentum.X(),v01.fMomentum.Y(),v01.fMomentum.Z(),fCuts->GetHadronMasses(3122));
+  trackV01MC.SetXYZM(v01.fMomentum.X(),v01.fMomentum.Y(),v01.fMomentum.Z(),fCuts->GetHadronMasses(3122));
+
+  trackV02.SetXYZM(v02.fMomentumMC.X(),v02.fMomentumMC.Y(),v02.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
+  trackV02MC.SetXYZM(v02.fMomentumMC.X(),v02.fMomentumMC.Y(),v02.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
+
+  if(trackV01MC.X() == -9999. || trackV02MC.X() == -9999.) return;
+  if(trackV01MC.Y() == -9999. || trackV02MC.Y() == -9999.) return;
+  if(trackV01MC.Z() == -9999. || trackV02MC.Z() == -9999.) return;
+
+  Double_t relK = relKcalc(trackV01,trackV02);
+  Double_t relKMC = relKcalc(trackV01MC,trackV02MC);
+
+  TString fillthis = "fV0V0RelKTrueReco";
+  if(fUseMCInfo) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(relKMC,relK);
+
+  Double_t relKTruePrime = 1./TMath::Sqrt(2.)*(relKMC - relK);
+  Double_t relKRecoPrime = 1./TMath::Sqrt(2.)*(relKMC + relK);
+  fillthis = "fV0V0RelKTrueRecoRotated";
+  if(fUseMCInfo) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(relKRecoPrime,relKTruePrime);
 }
 //________________________________________________________________________
 void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoLambdaParticle &v0,const AliFemtoProtonParticle &proton)
