@@ -91,7 +91,17 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto():
   fAntiProtoncand(new AliFemtoProtonParticle[kProtonTrackLimit]),
   fXicand(new AliFemtoXiParticle[kXiTrackLimit]),
   fCuts(new AliFemtoCutValues(AliFemtoCutValues::kDefault)),
-  fAnaUtils(new AliAnalysisUtils())
+  fAnaUtils(new AliAnalysisUtils()),
+  fProtonTrackVector(),
+  fAntiProtonTrackVector(),
+  fLambdaTrackVector(),
+  fAntiLambdaTrackVector(),
+  fXiTrackVector(),
+  fProtonEvtBuffer(),
+  fAntiProtonEvtBuffer(),
+  fLambdaEvtBuffer(),
+  fAntiLambdaEvtBuffer(),
+  fXiEvtBuffer()
 {
   Info("AliAnalysisTaskPLFemto","Calling default Constructor");
   //
@@ -154,7 +164,17 @@ AliAnalysisTaskPLFemto::AliAnalysisTaskPLFemto(const Char_t* name,Bool_t OnlineC
   fAntiProtoncand(new AliFemtoProtonParticle[kProtonTrackLimit]),
   fXicand(new AliFemtoXiParticle[kXiTrackLimit]),
   fCuts(new AliFemtoCutValues(AliFemtoCutValues::kDefault)),
-  fAnaUtils(new AliAnalysisUtils())
+  fAnaUtils(new AliAnalysisUtils()),
+  fProtonTrackVector(),
+  fAntiProtonTrackVector(),
+  fLambdaTrackVector(),
+  fAntiLambdaTrackVector(),
+  fXiTrackVector(),
+  fProtonEvtBuffer(),
+  fAntiProtonEvtBuffer(),
+  fLambdaEvtBuffer(),
+  fAntiLambdaEvtBuffer(),
+  fXiEvtBuffer()
 {
   Info("AliAnalysisTaskPLFemto","Calling extended Constructor");
 
@@ -1465,6 +1485,7 @@ void AliAnalysisTaskPLFemto::BufferFiller(Int_t zBin,Int_t multBin,Int_t *Number
   fSEPairAnalysisDecider[kAntiProton] = kFALSE;
   fSEPairAnalysisDecider[kV0] = kFALSE;
   fSEPairAnalysisDecider[kAntiV0] = kFALSE;
+  fSEPairAnalysisDecider[kXi] = kFALSE;
 
   TString fillthis = "";
 
@@ -1597,11 +1618,21 @@ void AliAnalysisTaskPLFemto::BufferFiller(Int_t zBin,Int_t multBin,Int_t *Number
   for(int i=0;i<fXiCounter;i++)
     {
       if(fXicand[i].fXitag)
-	{
-	  (fEvt)->fXiParticle[tempXiCounter] = fXicand[i];
-	  tempXiCounter++;
-	}
+  {
+    (fEvt)->fXiParticle[tempXiCounter] = fXicand[i];
+    tempXiCounter++;
+    fXiTrackVector.push_back(fXicand[i]);
+  }
     }
+  //If it is not empty put it into Mixing Buffer:
+  if(fXiTrackVector.size()>0)
+    {
+      fSEPairAnalysisDecider[kXi] = kTRUE;
+      fXiEvtBuffer[zBin][multBin].push_front(fXiTrackVector);
+    }
+  //If Buffer is larger than mixing depth, kick out the last element:
+  if(fXiEvtBuffer[zBin][multBin].size() > kEventsToMix) fXiEvtBuffer[zBin][multBin].pop_back();
+  fXiTrackVector.clear();
 
   (fEvt)->fNumV0s = tempV0Counter;
   (fEvt)->fNumAntiV0s = tempAntiV0Counter;
@@ -1837,6 +1868,44 @@ void AliAnalysisTaskPLFemto::ParticlePairer(Int_t zBin,Int_t multBin)
 	}//event Loop
     }//V0 Loop
   */
+
+
+  //Loop for p-Xi
+  if(fSEPairAnalysisDecider[kXi])
+    {
+      //Check second option
+      for(unsigned int i=0; i<(fXiEvtBuffer[zBin][multBin].front()).size();i++)//get same event size
+  {
+    for(unsigned int evnum=0; evnum<fProtonEvtBuffer[zBin][multBin].size(); evnum++)
+      {
+        int startbin = 0;
+        if(evnum==0) startbin = i+1;
+        for(unsigned int j=startbin;j<(fProtonEvtBuffer[zBin][multBin].at(evnum)).size();j++)
+    {
+      PairAnalysis((fXiEvtBuffer[zBin][multBin].front()).at(i),(fProtonEvtBuffer[zBin][multBin].at(evnum)).at(j),evnum,kProtonXi);
+    }//V0A Loop
+      }//event Loop
+  }//V0B Loop
+    }
+
+  //Loop for Antip-Xi
+  if(fSEPairAnalysisDecider[kXi])
+    {
+      //Check second option
+      for(unsigned int i=0; i<(fXiEvtBuffer[zBin][multBin].front()).size();i++)//get same event size
+  {
+    for(unsigned int evnum=0; evnum<fAntiProtonEvtBuffer[zBin][multBin].size(); evnum++)
+      {
+        int startbin = 0;
+        if(evnum==0) startbin = i+1;
+        for(unsigned int j=startbin;j<(fAntiProtonEvtBuffer[zBin][multBin].at(evnum)).size();j++)
+    {
+      PairAnalysis((fXiEvtBuffer[zBin][multBin].front()).at(i),(fAntiProtonEvtBuffer[zBin][multBin].at(evnum)).at(j),evnum,kAntiProtonXi);
+    }//V0A Loop
+      }//event Loop
+  }//V0B Loop
+    }
+
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskPLFemto::PhiS(AliAODTrack *track,const Float_t bfield,const Float_t Radius,const Float_t DecVtx[2])

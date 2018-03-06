@@ -229,22 +229,26 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
     kProton,
     kAntiProton,
     kV0,
-    kAntiV0
+    kAntiV0,
+    kXi
   };
 
-  Bool_t fSEPairAnalysisDecider[4];
+  Bool_t fSEPairAnalysisDecider[5];
 
   //every particle has its own vector
   std::vector<AliFemtoProtonParticle> fProtonTrackVector;
   std::vector<AliFemtoProtonParticle> fAntiProtonTrackVector;
   std::vector<AliFemtoLambdaParticle> fLambdaTrackVector;
   std::vector<AliFemtoLambdaParticle> fAntiLambdaTrackVector;
+  std::vector<AliFemtoXiParticle>     fXiTrackVector;
 
   //every particle has also its own buffer
   std::deque< std::vector< AliFemtoProtonParticle > > fProtonEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoProtonParticle > > fAntiProtonEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoLambdaParticle > > fLambdaEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoLambdaParticle > > fAntiLambdaEvtBuffer[kZVertexBins][kMultiplicityBins];
+  std::deque< std::vector< AliFemtoXiParticle > >     fXiEvtBuffer[kZVertexBins][kMultiplicityBins];
+
 
   ClassDef(AliAnalysisTaskPLFemto,2)
 };
