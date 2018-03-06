@@ -732,7 +732,34 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<148) arrClusPtBinning[i]      = 15.+1.0*(i-123);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
+
+  //----------------------------------------------------------------------------------------------------------------
+
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV ){
+    binWidthPt  = 0.1;
+    nBinsPt     = 63;
+    minPt       = 0.0;
+    maxPt       = 25.0;
+    for(Int_t i=0; i<=nBinsPt;i++){
+      if(i<=30)           arrPtBinning[i]  = 0.0   + 0.10*i;              // 0.1GeV bin width until  3GeV
+      else if(i<=38)      arrPtBinning[i]  = 3.0   + 0.25*(i-30);         // 0.25GeV                 5GeV
+      else if(i<=48)      arrPtBinning[i]  = 5.0   + 0.50*(i-38);         // 0.5GeV                 10GeV
+      else /*i<=nBinsPt*/ arrPtBinning[i]  = 10.0  +  1.0*(i-48);         // 1.0GeV                 25GeV
+    }
+
+    nBinsQAPt = 63;
+    maxQAPt   = 25.0;
+    for(Int_t i=0; i<=nBinsQAPt;i++){
+      if(i<=30)           arrQAPtBinning[i]  = 0.0   + 0.10*i;              // 0.1GeV bin width until  3GeV
+      else if(i<=38)      arrQAPtBinning[i]  = 3.0   + 0.25*(i-30);         // 0.25GeV                 5GeV
+      else if(i<=48)      arrQAPtBinning[i]  = 5.0   + 0.50*(i-38);         // 0.5GeV                 10GeV
+      else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 10.0  +  1.0*(i-48);         // 1.0GeV                 25GeV
+    }
+
+    //----------------------------------------------------------------------------------------------------------------
+
   } else {
+
     for(Int_t i=0; i<nBinsPt+1;i++){
       arrPtBinning[i]         = ((maxPt-minPt)/nBinsPt)*i;
     }
