@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    Bool_t MCthere = kFALSE,                     // DATA
                                    //Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
-				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
+				   Bool_t kNPERef = kTRUE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
                                    Bool_t newCentralitySelection = kTRUE,       // kTRUE: new framework used; kFALSE: old framework used 
 				   Bool_t kNPERefTPConly = kFALSE,
@@ -41,6 +41,8 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                 ,kAssMinpT_ITS      = 16        // syst. on associated particle minimum pT
                 ,kMix1              = 17        // syst. on many parameters simultaneous variation (PID + track cuts) 
                 ,kMix2              = 18        // syst. on many parameters simultaneous variation (ass. track cuts) 
+                // ----- syst. weights ----- (mfaggin, 06 March 2018)
+                ,kWeightSyst        = 19        // syst. on weights used for the tagging efficiency
         };
 
   // Default settings (TOF-TPC PbPb)
@@ -99,6 +101,13 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 
     k16g1 = 60,         // 60: PbPb LHC16g1 minimum bias MC (mfaggin, 29/06/2017)
     k16g1_2 = 61         // 61: PbPb LHC16g1 minimum bias MC using charged pion data spectra (mfaggin, 26/07/2017)
+
+    // --- systematics on charged pion weights --- (mfaggin, 06-Mar-2018)
+    ,k16g1_2_default = 62       // 62: equal to 61, but necessary to evaluate upper limit-lower limit systematics (small differences introduced due to daata spectra fits)
+    ,k16g1_2_systUp  = 63       // 63: upper limit charged pion weights
+    ,k16g1_2_systLow = 64       // 64: lower limit charged pion weights
+
+    ,k16g1_3 = 65               // 65: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
   };
   //Int_t kWeightMC = k16g1;
   Int_t kWeightMC = k16g1_2;
@@ -846,8 +855,34 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 	        kassETAm, kassETAp, kassITS, 80, 80, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.20);
         break;
-   }
 
+        case kWeightSyst:
+                cout << endl << "##################################################################" << endl;
+                cout         << "###   running systematics on weights for tagging efficiency    ###" << endl;
+                cout         << "##################################################################" << endl;
+        // WITH WEIGHTS default ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_default);
+        // WITH WEIGHTS upper limit ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systUp);
+        // WITH WEIGHTS lower limit ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systLow);
+        // WITH WEIGHTS pi0  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_3);
+        break;
+
+   }
 
  }
 
@@ -1106,7 +1141,10 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   else		task->SetHasMCData(kFALSE);
 
   //if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
-  if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);//2;For default PbPb
+  if(useMC&&(beauty || (weightlevelback>=0))){
+        if(wei==65)     ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
+        else            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
+  }
 
   // ----- centrality selection -----
   task->SetCentralityCheck(newCentralitySelection,"V0M");
