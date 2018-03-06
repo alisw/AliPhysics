@@ -422,9 +422,9 @@ AliAnalysisTask* AddTaskFemtoDream(
 				Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
 		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
 	}
-	if (!mgr->InitAnalysis()) {
-		return nullptr;
-	}
+//	if (!mgr->InitAnalysis()) {
+//		return nullptr;
+//	}
 	return task;
 }
 #endif
