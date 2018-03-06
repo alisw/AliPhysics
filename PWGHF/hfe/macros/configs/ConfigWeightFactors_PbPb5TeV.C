@@ -194,8 +194,28 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "-------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;
         }
-        //65: pi0 weights (mfaggin, 06-Mar-2018)
+        //65: lower limit syst. charged pion weights (mfaggin, 06-Mar-2018)
         else if(collType == 65){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systTiltUpDown_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 TiltUpDown MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //66: lower limit syst. charged pion weights (mfaggin, 06-Mar-2018)
+        else if(collType == 66){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systTiltDownUp_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 TiltDownUp MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //67: pi0 weights (mfaggin, 06-Mar-2018)
+        else if(collType == 67){
           hRatio = (TH1F*)weightFile->Get(Form("hRatio_frompi0_%s",backNameMC[iSpecies]));
           cout << "\n-------------------------------------------------------------------------------------\n";
           cout << "-------------------------------------------------------------------------------------\n";
