@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    Bool_t MCthere = kFALSE,                     // DATA
                                    //Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
-				   Bool_t kNPERef = kTRUE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
+				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
                                    Bool_t newCentralitySelection = kTRUE,       // kTRUE: new framework used; kFALSE: old framework used 
 				   Bool_t kNPERefTPConly = kFALSE,
