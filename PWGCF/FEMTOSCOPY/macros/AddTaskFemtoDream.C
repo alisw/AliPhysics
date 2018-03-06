@@ -120,7 +120,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   PDGParticles.push_back(3312);
   PDGParticles.push_back(3312);
   //std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
-  std::vector<double> ZVtxBins;
+  std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
@@ -156,7 +156,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   NBins.push_back(150);
   NBins.push_back(150);
   //std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  std::vector<double> kMin;
+  std::vector<float> kMin;
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
@@ -179,7 +179,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   kMin.push_back(0.);
   kMin.push_back(0.);
   //std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
-  std::vector<double> kMax;
+  std::vector<float> kMax;
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
