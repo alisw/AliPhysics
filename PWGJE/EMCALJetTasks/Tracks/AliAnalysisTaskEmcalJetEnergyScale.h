@@ -87,9 +87,12 @@ private:
 #ifndef USECXX11HEADERS
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);
   AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &);
-#endif
 
   ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
+#else
+  ClassDefOverride(AliAnalysisTaskEmcalJetEnergyScale, 1);
+#endif
+
 };
 
 }
