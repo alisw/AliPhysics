@@ -95,12 +95,18 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
+
   if(fWritePairKinematics) KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
-  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[aAnalysisType],200,0.,20.);
 
-  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   if(fWritePairKinematics) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   else
@@ -177,6 +183,11 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
 
   if(fWritePairKinematics)
   {
@@ -185,7 +196,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   }
   else
   {
-    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
@@ -194,7 +205,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 
   if(fIsMCRun)
   {
-    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
     KStarModelCfs->SetRemoveMisidentified(fAnalysisParams.removeMisidentifiedMCParticles);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarModelCfs);
   }
