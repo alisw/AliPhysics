@@ -21,21 +21,37 @@ fDoAngles(doAngles)
     fDalitzPlot12_31 = new TH2D(Form("dalitz_12_31_%s",name),Form("dalitz_12_31_%s",name),nBins,min,max,nBins,min,max);
   }
   if(fDoAngles){
-    fAngle12 = new TH1D(Form("angles_12-3_%s",name),Form("angles_12-3_%s",name),200,-TMath::Pi(),TMath::Pi());
-    fAngle23 = new TH1D(Form("angles_23-1_%s",name),Form("angles_23-1_%s",name),200,-TMath::Pi(),TMath::Pi());
-    fAngle31 = new TH1D(Form("angles_31-2_%s",name),Form("angles_31-2_%s",name),200,-TMath::Pi(),TMath::Pi());
+    fAngle12 = new TH1D(Form("angles_12_%s",name),Form("angles_12_%s",name),200,-TMath::Pi(),TMath::Pi());
+    fAngle23 = new TH1D(Form("angles_23_%s",name),Form("angles_23_%s",name),200,-TMath::Pi(),TMath::Pi());
+    fAngle31 = new TH1D(Form("angles_31_%s",name),Form("angles_31_%s",name),200,-TMath::Pi(),TMath::Pi());
+    
+    fAngle1 = new TH1D(Form("angles_1_%s",name),Form("angles_1_%s",name),200,-TMath::Pi(),TMath::Pi());
+    fAngle2 = new TH1D(Form("angles_2_%s",name),Form("angles_2_%s",name),200,-TMath::Pi(),TMath::Pi());
+    fAngle3 = new TH1D(Form("angles_3_%s",name),Form("angles_3_%s",name),200,-TMath::Pi(),TMath::Pi());
     
     fCosAngle12 = new TH1D(Form("cos_angles_12-3_%s",name),Form("cos_angles_12-3_%s",name),200,-1,1);
     fCosAngle23 = new TH1D(Form("cos_angles_23-1_%s",name),Form("cos_angles_23-1_%s",name),200,-1,1);
     fCosAngle31 = new TH1D(Form("cos_angles_31-2_%s",name),Form("cos_angles_31-2_%s",name),200,-1,1);
     
+    fCosAngle1 = new TH1D(Form("cos_angles_1_%s",name),Form("cos_angles_1_%s",name),200,-1,1);
+    fCosAngle2 = new TH1D(Form("cos_angles_2_%s",name),Form("cos_angles_2_%s",name),200,-1,1);
+    fCosAngle3 = new TH1D(Form("cos_angles_3_%s",name),Form("cos_angles_3_%s",name),200,-1,1);
+    
     fAngle12->Sumw2();
     fAngle23->Sumw2();
     fAngle31->Sumw2();
     
+    fAngle1->Sumw2();
+    fAngle2->Sumw2();
+    fAngle3->Sumw2();
+    
     fCosAngle12->Sumw2();
     fCosAngle23->Sumw2();
     fCosAngle31->Sumw2();
+    
+    fCosAngle1->Sumw2();
+    fCosAngle2->Sumw2();
+    fCosAngle3->Sumw2();
   }
 }
 
@@ -49,9 +65,15 @@ AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
   if(fAngle12) delete fAngle12;
   if(fAngle23) delete fAngle23;
   if(fAngle31) delete fAngle31;
+  if(fAngle1) delete fAngle1;
+  if(fAngle2) delete fAngle2;
+  if(fAngle3) delete fAngle3;
   if(fCosAngle12) delete fCosAngle12;
   if(fCosAngle23) delete fCosAngle23;
   if(fCosAngle31) delete fCosAngle31;
+  if(fCosAngle1) delete fCosAngle1;
+  if(fCosAngle2) delete fCosAngle2;
+  if(fCosAngle3) delete fCosAngle3;
 }
 
 void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
@@ -68,23 +90,25 @@ void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)
   }
   if(fDoAngles){
     double angle = trio->GetTheta12();
-//    cout<<angle<<"\t"<<cos(angle)<<endl;
-    while(angle >  TMath::Pi()) angle -= TMath::Pi();
-    while(angle < -TMath::Pi()) angle += TMath::Pi();
     fAngle12->Fill(angle);
     fCosAngle12->Fill(cos(angle));
+    angle = trio->GetTheta3();
+    fAngle3->Fill(angle);
+    fCosAngle3->Fill(cos(angle));
     
     angle = trio->GetTheta23();
-    while(angle >  TMath::Pi()) angle -= TMath::Pi();
-    while(angle < -TMath::Pi()) angle += TMath::Pi();
     fAngle23->Fill(angle);
     fCosAngle23->Fill(cos(angle));
+    angle = trio->GetTheta1();
+    fAngle1->Fill(angle);
+    fCosAngle1->Fill(cos(angle));
     
     angle = trio->GetTheta31();
-    while(angle >  TMath::Pi()) angle -= TMath::Pi();
-    while(angle < -TMath::Pi()) angle += TMath::Pi();
     fAngle31->Fill(angle);
     fCosAngle31->Fill(cos(angle));
+    angle = trio->GetTheta2();
+    fAngle2->Fill(angle);
+    fCosAngle2->Fill(cos(angle));
   }
 }
 void AliFemtoTrioMinvFctn::AddMixedTrio(AliFemtoTrio *trio)
@@ -112,9 +136,15 @@ void AliFemtoTrioMinvFctn::Write()
     fAngle12->Write();
     fAngle23->Write();
     fAngle31->Write();
+    fAngle1->Write();
+    fAngle2->Write();
+    fAngle3->Write();
     fCosAngle12->Write();
     fCosAngle23->Write();
     fCosAngle31->Write();
+    fCosAngle1->Write();
+    fCosAngle2->Write();
+    fCosAngle3->Write();
   }
 }
 
@@ -136,9 +166,15 @@ TList* AliFemtoTrioMinvFctn::GetOutputList()
     outputList->Add(fAngle12);
     outputList->Add(fAngle23);
     outputList->Add(fAngle31);
+    outputList->Add(fAngle1);
+    outputList->Add(fAngle2);
+    outputList->Add(fAngle3);
     outputList->Add(fCosAngle12);
     outputList->Add(fCosAngle23);
     outputList->Add(fCosAngle31);
+    outputList->Add(fCosAngle1);
+    outputList->Add(fCosAngle2);
+    outputList->Add(fCosAngle3);
   }
   return outputList;
 }

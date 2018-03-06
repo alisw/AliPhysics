@@ -108,23 +108,10 @@ double AliFemtoTrio::GetTheta12()
   AliFemtoLorentzVector c = fTrack3->FourMomentum();
   
   AliFemtoLorentzVector r = a+b;
-  AliFemtoLorentzVector JeFrame = r+c;
+  AliFemtoLorentzVector je = r+c;
   
-  r.boost(JeFrame);
-  c.boost(JeFrame);
-  
-//  cout<<"r\tpx:"<<r.px()<<"\t"<<r.py()<<"\t"<<r.pz()<<"\te:"<<r.e()<<endl;
-//  cout<<"c\tpx:"<<c.px()<<"\t"<<c.py()<<"\t"<<c.pz()<<"\te:"<<c.e()<<endl;
-  
-  double modR = sqrt((r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
-  double modC = sqrt((c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
-  
-  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
-  
-  double cosTheta = (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
-//  cout<<"num:"<<cosTheta<<"\tden:"<<(modR*modC)<<endl;
-  cosTheta /= (modR*modC);
-  return acos(cosTheta);
+  je.boost(r);
+  return r.Theta()-je.Theta();
 }
 
 double AliFemtoTrio::GetTheta23()
@@ -134,19 +121,10 @@ double AliFemtoTrio::GetTheta23()
   AliFemtoLorentzVector c = fTrack1->FourMomentum();
   
   AliFemtoLorentzVector r = a+b;
-  AliFemtoLorentzVector JeFrame = r+c;
+  AliFemtoLorentzVector je = r+c;
   
-  r.boost(JeFrame);
-  c.boost(JeFrame);
-  
-  double modR = sqrt((r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
-  double modC = sqrt((c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
-  
-  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
-  
-  double cosTheta = (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
-  cosTheta /= (modR*modC);
-  return acos(cosTheta);
+  je.boost(r);
+  return r.Theta()-je.Theta();
 }
 
 double AliFemtoTrio::GetTheta31()
@@ -156,21 +134,48 @@ double AliFemtoTrio::GetTheta31()
   AliFemtoLorentzVector c = fTrack2->FourMomentum();
   
   AliFemtoLorentzVector r = a+b;
-  AliFemtoLorentzVector JeFrame = r+c;
+  AliFemtoLorentzVector je = r+c;
   
-  r.boost(JeFrame);
-  c.boost(JeFrame);
-  
-  double modR = sqrt((r.px()*r.px()+r.py()*r.py()+r.pz()*r.pz()));
-  double modC = sqrt((c.px()*c.px()+c.py()*c.py()+c.pz()*c.pz()));
-  
-  if(fabs(modR) < 0.0000001 || fabs(modC) < 0.0000001) return 0.0;
-  
-  double cosTheta = (r.px()*c.px()+r.py()*c.py()+r.pz()*c.pz());
-  cosTheta /= (modR*modC);
-  return acos(cosTheta);
+  je.boost(r);
+  return r.Theta()-je.Theta();
 }
 
+double AliFemtoTrio::GetTheta1()
+{
+  AliFemtoLorentzVector a = fTrack2->FourMomentum();
+  AliFemtoLorentzVector b = fTrack3->FourMomentum();
+  AliFemtoLorentzVector c = fTrack1->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
 
+double AliFemtoTrio::GetTheta2()
+{
+  AliFemtoLorentzVector a = fTrack3->FourMomentum();
+  AliFemtoLorentzVector b = fTrack1->FourMomentum();
+  AliFemtoLorentzVector c = fTrack2->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
 
+double AliFemtoTrio::GetTheta3()
+{
+  AliFemtoLorentzVector a = fTrack1->FourMomentum();
+  AliFemtoLorentzVector b = fTrack2->FourMomentum();
+  AliFemtoLorentzVector c = fTrack3->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
 

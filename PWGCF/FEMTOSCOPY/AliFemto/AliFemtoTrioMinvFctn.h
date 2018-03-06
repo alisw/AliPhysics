@@ -46,12 +46,22 @@ private:
   TH2D *fDalitzPlot12_23;        // Dalitz plot for pairs 12 and 23
   TH2D *fDalitzPlot23_31;        // Dalitz plot for pairs 23 and 31
   TH2D *fDalitzPlot12_31;        // Dalitz plot for pairs 12 and 31
-  TH1D *fAngle12;           // angle distribution between 12-particles plane and third particle
-  TH1D *fAngle23;           // angle distribution between 23-particles plane and third particle
-  TH1D *fAngle31;           // angle distribution between 31-particles plane and third particle
+  
+  TH1D *fAngle12;           // angle distribution between 12-particles plane and mother
+  TH1D *fAngle23;           // angle distribution between 23-particles plane and mother
+  TH1D *fAngle31;           // angle distribution between 31-particles plane and mother
+  
+  TH1D *fAngle1;           // angle distribution between 1 particle and mother
+  TH1D *fAngle2;           // angle distribution between 2 particle and mother
+  TH1D *fAngle3;           // angle distribution between 3 particle and mother
+  
   TH1D *fCosAngle12;        // angle distribution between 12-particles plane and third particle
   TH1D *fCosAngle23;        // angle distribution between 23-particles plane and third particle
   TH1D *fCosAngle31;        // angle distribution between 31-particles plane and third particle
+  
+  TH1D *fCosAngle1;        // angle distribution between 1 particle and mother
+  TH1D *fCosAngle2;        // angle distribution between 2 particle and mother
+  TH1D *fCosAngle3;        // angle distribution between 3 particle and mother
   
   bool fDoMinv;
   bool fDoDalitz;
