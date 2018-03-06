@@ -84,6 +84,9 @@ struct AnalysisParams
   double minMult, 
          maxMult;
 
+  bool binEventsInRP;  //bin events in reaction plane angle (in addition to vertex z-position and multiplicity)
+  int nBinsRP;
+
   AnalysisType analysisType;
   GeneralAnalysisType generalAnalysisType;
 
