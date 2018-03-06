@@ -4791,31 +4791,27 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         energy *= FunctionNL_kPi0MCv5(energy);
         if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
       } else if ( fClusterType == 2 ){
-        // NonLinearity correction from PHOS group, should only be used without non lin corr in MC for PHOS tender
-        if(isMC>0){
-          // for LHC10b-f
-          if( fCurrentMC==k14j4 ){
-            energy = FunctionNL_PHOS(energy, 1.008, 0.015, 0.4);
-          // for LHC13bc
-          } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
-            energy = FunctionNL_PHOS(energy, 1.0135, 0.018, 1.9);
-          // for run 2 without fine tuning
-          } else if(  // pp 5 TeV 2015
-                      fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 ||
-                      // PbPb 5 TeV 2015
-                      fCurrentMC == k16k3b ||
-                      // pPb 5 TeV 2016
-                      fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
-                      // pPb 8 TeV 2016
-                      fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
-                      // XeXe 5.44 TeV 2017
-                      fCurrentMC == kXeXe5T17HIJING
-                     ){
-            energy = FunctionNL_PHOSRun2(energy, -0.06, 0.7, 1.012);
-          } else {
-            energy = FunctionNL_PHOS(energy, 0, 0, 0);
+          // Nonlin from PHOS group only MC part
+          if(isMC == 0) {
+              if( fCurrentMC==k14j4 ){
+                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
+                  // for LHC13bc
+              } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
+                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
+              } else if(  // pp 5 TeV 2015
+                  fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 ||
+                  // PbPb 5 TeV 2015
+                  fCurrentMC == k16k3b ||
+                  // pPb 5 TeV 2016
+                  fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
+                  // pPb 8 TeV 2016
+                  fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
+                  // XeXe 5.44 TeV 2017
+                  fCurrentMC == kXeXe5T17HIJING
+              ){
+                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.012, -0.06, 0.7);
+              }
           }
-        }
       }
       break;
 
@@ -4824,26 +4820,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if (fClusterType == 1|| fClusterType == 3){
         if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
         else energy *= FunctionNL_kPi0MCv3(energy);
-      // Nonlin from PHOS group only MC part
-      } else if (fClusterType == 2 ){
-          if( fCurrentMC==k14j4 ){
-            energy = FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
-            // for LHC13bc
-          } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
-            energy = FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
-          } else if(  // pp 5 TeV 2015
-              fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 ||
-              // PbPb 5 TeV 2015
-              fCurrentMC == k16k3b ||
-              // pPb 5 TeV 2016
-              fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
-              // pPb 8 TeV 2016
-              fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
-              // XeXe 5.44 TeV 2017
-              fCurrentMC == kXeXe5T17HIJING
-          ){
-            energy = FunctionNL_PHOSOnlyMC(energy, -0.06, 0.7, 1.012);
-        }
       }
       break;
     // kPi0MCv3 for MC and kTestBeamv2 for data
@@ -5449,7 +5425,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if (fClusterType == 1 ){
             energy /= FunctionNL_kSDM(energy, 0.973646, -0.901289, -4.32682) ; // based on peripheral XeXe
           } else if (fClusterType == 2 ){
-            energy /= 0.9599764493; // based on peripheral XeXe
+            energy /= (0.9599764493*0.9873); // based on peripheral XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5467,7 +5443,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if (fClusterType == 1 ){
             energy /= 0.9737701536; // based on peripheral XeXe
           } else if (fClusterType == 2 ){
-            energy /= 0.9350697962; // based on semi-central XeXe
+            energy /= (0.9350697962*1.01); // based on semi-central XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5475,20 +5451,20 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
-// *************** 80 + x **** modified tender Settings 1 - PbPb
+    // *************** 80 + x **** modified tender Settings 1 - PbPb
 
-      // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
+    // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
     case 81:
       if(isMC>0){
         if( fCurrentMC== k15PbPb5TeV){
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.95597, -3.09059, -0.702889) ;
+            energy /= (FunctionNL_kSDM(energy, 0.95597, -3.09059, -0.702889)*1.008) ;
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
             energy /= (FunctionNL_DPOW(energy, 1.0547527663, -0.0927180446, -0.0800012482, 1.0254208020, -0.0345156682, -0.4999999199)); // based on peripheral XeXe
           } else if (fClusterType == 2 ){
-            energy /= 0.9764119296; // based on peripheral XeXe
+            energy /= (0.9764119296*0.9794); // based on peripheral XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5496,7 +5472,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
-      // NonLinearity LHC15o PbPb Calo  - only shifting MC
+    // NonLinearity LHC15o PbPb Calo  - only shifting MC
     case 82:
       if(isMC>0){
         if( fCurrentMC== k15PbPb5TeV){
@@ -5507,7 +5483,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if (fClusterType == 1 ){
             energy /= (FunctionNL_DPOW(energy, 1.1223479533, -0.1999999659, -0.1954398178, 1.0373041075, -0.0913333671, -0.5000000000)); // based on peripheral XeXe
           } else if (fClusterType == 2 ){
-            energy /= (FunctionNL_DExp(energy, 0.9840385879, 0.4801589926, -2.8482099501, 1.0214220397, 5.8987542970, -12.5701079799)) ; // based on  semi-central XeXe
+            energy /= (FunctionNL_DExp(energy, 0.9840385879, 0.4801589926, -2.8482099501, 1.0214220397, 5.8987542970, -12.5701079799)*1.0148) ; // based on  semi-central XeXe
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5659,26 +5635,8 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
 }
 
 //________________________________________________________________________
-Float_t AliCaloPhotonCuts::FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2){
-  if (p0 == 0 || p2 == 0){
-    return (0.0241+1.0504*e+0.000249*e*e) ;
-  } else {
-    return (0.0241+1.0504*e+0.000249*e*e)*p0*(1+p1/(1.+e*e/p2/p2)) ;
-  }
-}
-
-//________________________________________________________________________
-Float_t AliCaloPhotonCuts::FunctionNL_PHOSRun2(Float_t e, Float_t p0, Float_t p1, Float_t p2){
-  if (p0 == 0 || p2 == 0){
-    return (1.-0.08/(1.+e*e/0.055))*(0.03+6.65e-02*TMath::Sqrt(e)+e) ;
-  } else {
-    return (1.-0.08/(1.+e*e/0.055))*(0.03+6.65e-02*TMath::Sqrt(e)+e)*p0*(1+p1/(1.+e*e/p2/p2)) ;
-  }
-}
-
-//________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2){
-    return p0*(1+p1/(1.+e*e/p2/p2)) ;
+  return p0*(1+p1/(1.+e*e/p2/p2)) ;
 }
 
 
