@@ -4,7 +4,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 		  Int_t addD0MassLS=1,
 		  Int_t addDplus=1,
 		  Int_t addLSD0=0,
-		  //Int_t addCFD0=0,
+		  Int_t addCFD0=0,
 		  Int_t addPromptD0=1,
 		  Int_t addDs=0,
 		  Int_t addDStar=1,
@@ -32,6 +32,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   
   if(addQA) {
     taskName="AddTaskHFQA.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEHFQA *taskQAHF = AddTaskHFQA(AliAnalysisTaskSEHFQA::kD0toKpi,"",readMC,kTRUE);
     ntasks++;
   }
@@ -39,6 +40,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 
   if(addD0Mass || addD0MassLS) {
     taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     if(addD0Mass) {
       AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass(0,readMC);
       ntasks++;
@@ -51,6 +53,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 
   if(addDplus) {
     taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus(kFALSE,readMC);
     ntasks++;
   }  
@@ -61,22 +64,22 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   
   if(addLSD0 && readMC) {
     taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
     ntasks++;
   }
 
-  /* obsolete
   if(addCFD0 && readMC) {
     taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
-    //gROOT->LoadMacro(taskName.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
     ntasks++;
   }
-  */
-  
+
   if(addPromptD0) {
     taskName="AddTaskSECharmFraction.C"; 
     taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     Int_t switchMC[5]={0,0,0,0,0};
     Int_t ppPbPb=1;// 0 for pp, 1 for PbPb, used to siwtch on/off the removal of daughters from the primary vertex
     AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC,readMC,kTRUE,kFALSE,"D0toKpiCharmFractCuts.root","c",ppPbPb);
@@ -86,24 +89,28 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 
   if(addDs) {
     taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDs *dsTask = AddTaskDs(readMC);
     ntasks++;
   }  
 
   if(addDStar) {
     taskName="AddTaskDStarSpectra.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDStarSpectra *dstarTask = AddTaskDStarSpectra(readMC);
     ntasks++;
   }  
 
   if(addDStarJets) {
     taskName="AddTaskDStarJets.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDStarJets *dstarjetsTask = AddTaskDStarJets(readMC);
     ntasks++;
   }  
 
   if(addCFDStar && readMC) {
     taskName="AddTaskCFDStar.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
     AliCFTaskForDStarAnalysis *cfDstarTask = AddTaskCFDStar();
     ntasks++;
   }
