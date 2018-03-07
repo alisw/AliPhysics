@@ -68,13 +68,8 @@ public:
   );
 
 protected:
-#ifdef USECXX11HEADERS
-  void UserCreateOutputObjects() final;
-  Bool_t Run() final;
-#else
   virtual void UserCreateOutputObjects();
   virtual Bool_t Run(); 
-#endif
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
 
 private:
