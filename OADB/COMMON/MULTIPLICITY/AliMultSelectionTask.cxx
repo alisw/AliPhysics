@@ -2536,6 +2536,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lProductionName = "LHC17f";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
+    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lProductionName = "LHC17h";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lProductionName = "LHC17k";
@@ -2612,6 +2613,7 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lSystemType = "pp";
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lSystemType = "pp";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
+    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lSystemType = "pp";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lSystemType = "pp";
