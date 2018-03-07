@@ -67,18 +67,18 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
 {
   // Apply all cuts by default
   fEventValidators.push_back(EventValidation::kNoEventCut);
-  // fEventValidators.push_back(EventValidation::kIsAODEvent);
-  // fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
-  // fEventValidators.push_back(EventValidation::kHasFMD);
-  // fEventValidators.push_back(EventValidation::kHasEntriesFMD);
-  // fEventValidators.push_back(EventValidation::kHasEntriesV0);
-  // fEventValidators.push_back(EventValidation::kHasValidVertex);
-  // fEventValidators.push_back(EventValidation::kHasMultSelection);
-  // // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  // // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
-  // fEventValidators.push_back(EventValidation::kNotSPDPU);
-  // fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
-  // fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
+  fEventValidators.push_back(EventValidation::kIsAODEvent);
+  fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+  fEventValidators.push_back(EventValidation::kHasFMD);
+  fEventValidators.push_back(EventValidation::kHasEntriesFMD);
+  fEventValidators.push_back(EventValidation::kHasEntriesV0);
+  fEventValidators.push_back(EventValidation::kHasValidVertex);
+  fEventValidators.push_back(EventValidation::kHasMultSelection);
+  // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
+  // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+  fEventValidators.push_back(EventValidation::kNotSPDPU);
+  fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
+  fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
 
   // Default track cuts
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
@@ -602,7 +602,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() 
 }
 
 Bool_t AliAnalysisTaskValidation::UserNotify() {
-  return true;
+  // return true;
   // Turn off all branches
   this->fInputHandler->GetTree()->SetBranchStatus("*", false, 0);
   // Turn back on all branches which got dumped into the top-level.
