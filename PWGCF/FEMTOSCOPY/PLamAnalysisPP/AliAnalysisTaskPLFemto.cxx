@@ -2002,6 +2002,8 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
   //*******************************
   fEventNumber++;
 
+  if(!fIsLightweight) fCEvents->Fill(9);
+
   //FIFOShifter(zBin,MultBin);//Put the information into the FIFO
   ProtonSelector(aodEvent); //Select primary protons
   V0Selector(aodEvent); //Select V0s
@@ -2011,8 +2013,6 @@ void AliAnalysisTaskPLFemto::UserExec(Option_t *)
   if(fProtonCounter == 0 && fV0Counter == 0 && fAntiProtonCounter == 0 && fAntiV0Counter == 0 && fXiCounter == 0) return;
 
   //if(fProtonCounter == 0) return;
-
-
 
   //if(fProtonCounter>0 && fV0Counter>0) {fCEvents->Fill(8);}
   //if(fAntiProtonCounter>0 && fAntiV0Counter>0) {fCEvents->Fill(9);}
@@ -3209,8 +3209,11 @@ void AliAnalysisTaskPLFemto::UserCreateOutputObjects()
       fOutputAliEvent = new TList();
       fOutputAliEvent->SetOwner();
       fOutputAliEvent->SetName("listAliEventCuts");
-      fAliEventCuts.SetManualMode();
-      fAliEventCuts.fTriggerMask = fTrigger;
+      if(fTrigger != AliVEvent::kINT7) {
+        fAliEventCuts.SetManualMode();
+        fAliEventCuts.SetupRun2pp();
+        fAliEventCuts.fTriggerMask = fTrigger;
+      }
       if(!fIsLightweight) fAliEventCuts.AddQAplotsToList(fOutputAliEvent);
     }
 
