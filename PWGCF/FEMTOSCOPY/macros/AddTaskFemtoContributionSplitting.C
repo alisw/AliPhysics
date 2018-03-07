@@ -1,5 +1,5 @@
 #include "TROOT.h"
-
+#include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 {
   bool isMC=true;
@@ -26,6 +26,23 @@ AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
     printf("This task requires an input event handler!\n");
     return nullptr;
   }
+
+  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+    if (isMC) {
+      // IMPORTANT - SET WHEN USING DIFFERENT PASS
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+                  "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+                  "kTRUE, \"1\")"));
+    } else {
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro(
+                  "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+    }
+  }
+
   AliFemtoDreamEventCuts *evtCuts=
       AliFemtoDreamEventCuts::StandardCutsRun1();
   //Track Cuts
@@ -431,8 +448,8 @@ AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
     mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
   }
-//  if (!mgr->InitAnalysis()) {
-//    return nullptr;
-//  }
+  //  if (!mgr->InitAnalysis()) {
+  //    return nullptr;
+  //  }
   return task;
 }

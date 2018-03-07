@@ -1,15 +1,16 @@
 #include "TROOT.h"
-
+#include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(
-    bool isMC=false,TString CentEst="kInt7",bool notpp=true,
-    bool DCAPlots=false,bool CPAPlots=false,bool MomReso=false,
-    bool CombSigma=false,bool ContributionSplitting=false,
+    bool isMC=false,
+    TString CentEst="kInt7",
+    bool notpp=true,
+    bool DCAPlots=false,
+    bool CPAPlots=false,
+    bool MomReso=false,
+    bool CombSigma=false,
+    bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
-	gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
-	gROOT->ProcessLine(".include $ROOTSYS/include");
-
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -24,6 +25,24 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 		printf("This task requires an input event handler!\n");
 		return nullptr;
 	}
+
+	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+	  if (isMC) {
+	    // IMPORTANT - SET WHEN USING DIFFERENT PASS
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+	                "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+	                "kTRUE, \"1\")"));
+	  } else {
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro(
+	                "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+	  }
+	}
+
+
 	AliFemtoDreamEventCuts *evtCuts=
 			AliFemtoDreamEventCuts::StandardCutsRun2();
 	evtCuts->CleanUpMult(false,false,false,true);
