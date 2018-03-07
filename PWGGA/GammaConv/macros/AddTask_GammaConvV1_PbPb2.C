@@ -68,8 +68,10 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
-  TString cutnumberEvent = "10000003";
+  TString cutnumberPhoton   = "00000008400100001500000000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
+  TString cutnumberEvent    = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());

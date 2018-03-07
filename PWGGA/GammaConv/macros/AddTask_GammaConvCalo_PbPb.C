@@ -144,6 +144,8 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton   = "00000008400100001500000000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
   TString cutnumberEvent    = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
