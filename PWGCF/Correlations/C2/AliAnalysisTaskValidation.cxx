@@ -11,6 +11,7 @@
 #include "TClonesArray.h"
 
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliVVZERO.h"
 #include "AliMultSelection.h"
@@ -20,7 +21,6 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliInputEventHandler.h"
-
 
 #include "AliAnalysisC2Utils.h"
 #include "AliAnalysisTaskValidation.h"
@@ -33,6 +33,7 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation()
   : AliAnalysisTaskSE(),
     fIsValidEvent(false),
     fEventValidators(),
+    fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
     fQA_track_discard_flow(0),
@@ -51,6 +52,7 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
+    fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
     fQA_track_discard_flow(0),
@@ -65,18 +67,18 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
 {
   // Apply all cuts by default
   fEventValidators.push_back(EventValidation::kNoEventCut);
-  fEventValidators.push_back(EventValidation::kIsAODEvent);
-  fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
-  fEventValidators.push_back(EventValidation::kHasFMD);
-  fEventValidators.push_back(EventValidation::kHasEntriesFMD);
-  fEventValidators.push_back(EventValidation::kHasEntriesV0);
-  fEventValidators.push_back(EventValidation::kHasValidVertex);
-  fEventValidators.push_back(EventValidation::kHasMultSelection);
-  // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
-  fEventValidators.push_back(EventValidation::kNotSPDPU);
-  fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
-  fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
+  // fEventValidators.push_back(EventValidation::kIsAODEvent);
+  // fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+  // fEventValidators.push_back(EventValidation::kHasFMD);
+  // fEventValidators.push_back(EventValidation::kHasEntriesFMD);
+  // fEventValidators.push_back(EventValidation::kHasEntriesV0);
+  // fEventValidators.push_back(EventValidation::kHasValidVertex);
+  // fEventValidators.push_back(EventValidation::kHasMultSelection);
+  // // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
+  // // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+  // fEventValidators.push_back(EventValidation::kNotSPDPU);
+  // fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
+  // fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
 
   // Default track cuts
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
@@ -547,18 +549,61 @@ TClonesArray* AliAnalysisTaskValidation::GetAllCentralBarrelTracks() {
   return aodEvent->GetTracks();
 }
 
-TClonesArray* AliAnalysisTaskValidation::GetAllMCTruthTracks() {
+TClonesArray* AliAnalysisTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  // Yes, the following is realy "aodEvent" not mcEvent :P
-  return
-    dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+  auto aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
+  if (!aodEvent) {
+    AliFatal("No AOD event found");
+  }
+  auto tr_arr = dynamic_cast<TClonesArray*>
+    (aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+  if(!tr_arr){
+    AliFatal("No MC array found in AOD");
+  }
+  return tr_arr;
+}
+
+AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() {
+  AliAnalysisTaskValidation::Tracks ret_vector;
+  if (this->IsAODEvent()) {
+    auto mc_tracks = this->GetAllMCTruthTracksAsTClonesArray();
+    // Avoid reallocation of the vector in the loop
+    ret_vector.reserve(mc_tracks->GetEntriesFast());
+    TIter next_tr(mc_tracks);
+    AliAODMCParticle* mc_tr = 0;
+    auto weight = 1;
+    while ((mc_tr = static_cast<AliAODMCParticle*>(next_tr()))) {
+      if (!mc_tr->IsPrimary()) continue;
+      if (mc_tr->Charge() == 0) continue;
+      auto tr = AliAnalysisTaskValidation::Track(mc_tr->Eta(), mc_tr->Phi(), mc_tr->Pt(), weight);
+      ret_vector.push_back(tr);
+    }
+  } else { // ESD event
+    auto mcEvent = this->MCEvent();
+    if (!mcEvent) {
+      AliFatal("This is not a Monte Carlo event.");
+    }
+    Int_t ntracks = mcEvent->GetNumberOfTracks();
+    std::cout << "ntracks " << ntracks << std::endl;
+    auto valid = 0;
+    for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
+      auto mc_p = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
+      if (!mcEvent->Stack()->IsPhysicalPrimary(mc_p->GetLabel())) continue;
+      if (mc_p->Charge() == 0) continue;
+      auto weight = 1;
+      auto tr = AliAnalysisTaskValidation::Track(mc_p->Eta(), mc_p->Phi(), mc_p->Pt(), weight);
+      ret_vector.push_back(tr);
+      valid++;
+    }
+    std::cout << "processed " << valid << std::endl;
+  }
+  return ret_vector;
 }
 
 Bool_t AliAnalysisTaskValidation::UserNotify() {
+  return true;
   // Turn off all branches
-  // return true;
   this->fInputHandler->GetTree()->SetBranchStatus("*", false, 0);
   // Turn back on all branches which got dumped into the top-level.
   // These are ~250 branches - hurray!
@@ -618,432 +663,5 @@ Bool_t AliAnalysisTaskValidation::UserNotify() {
   this->fInputHandler->GetTree()->SetBranchStatus("tracks.fIsMuonGlobalTrack", true);
   this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMFTClusterPattern", true);
 
-
-  
-  // this->fInputHandler->GetTree()->SetBranchStatus("tracks.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("tracklets", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("emcalCells", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("phosCells", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("emcalTrigger", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("phosTrigger", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("dimuons.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("AliAODTZERO", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("AliAODVZERO", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("AliAODZDC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("AliAODAD", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("AliTOFHeader", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.*", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("Forward", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("ForwardEP", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("CentralClusters", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("MultSelection", true);
-  
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMagneticField", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMuonMagFieldScale", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fCentrality", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventplane", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventplaneMag", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventplaneQx", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventplaneQy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCN1Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCP1Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCN2Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCP2Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCEMEnergy[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNQTheta", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fQTheta", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerMaskNext50", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFiredTriggers", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRunNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMult", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMultPos", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMultNeg", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNMuons", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNDimuons", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNGlobalMuons", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNGlobalDimuons", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDAQAttributes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventType", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fOrbitNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPeriodNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBunchCrossNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMultComb05", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMultComb08", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRefMultComb10", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerCluster", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDiamondXY[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDiamondCovXY[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDiamondZ", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDiamondSig2Z", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fOfflineTrigger", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fESDFileName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEventNumberESDFile", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNumberESDTracks", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL0TriggerInputs", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1TriggerInputs", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL2TriggerInputs", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fITSClusters[6]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTPConlyRefMult", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fVZEROEqFactors[64]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0spread[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt2InteractionsMap.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt2InteractionsMap.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt2InteractionsMap.fNbits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt2InteractionsMap.fNbytes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt2InteractionsMap.fAllBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt1InteractionsMap.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt1InteractionsMap.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt1InteractionsMap.fNbits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt1InteractionsMap.fNbytes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIRInt1InteractionsMap.fAllBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fPosition[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fChi2perNDF", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fBCID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fType", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fNprong", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fNContributors", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fParent", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("vertices.fDaughters", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fSecondaryVtx", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fCharge", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fNProngs", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fNDCA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fNPID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fPx", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fPy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fPz", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fd0", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fDCA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fPID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fDcaV0ToPrimVertex", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("v0s.fOnFlyStatus", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fSecondaryVtx", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fCharge", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fNProngs", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fNDCA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fNPID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fPx", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fPy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fPz", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fd0", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDCA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fPID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDcaV0ToPrimVertex", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fOnFlyStatus", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDecayVertexXi", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fChargeXi", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDcaXiDaughters", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDcaXiToPrimVertex", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fDcaBachToPrimVertex", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fMomBachX", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fMomBachY", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("cascades.fMomBachZ", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNTracks", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTheta", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPhi", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDeltaPhi", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fLabels", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fLabelsL2", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFiredChips[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fITSClusters[6]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFastOrFiredChips.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFastOrFiredChips.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFastOrFiredChips.fNbits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFastOrFiredChips.fNbytes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fFastOrFiredChips.fAllBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fClusterFiredChips.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fClusterFiredChips.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fClusterFiredChips.fNbits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fClusterFiredChips.fNbytes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fClusterFiredChips.fAllBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fBackgEnergy[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fEffectiveArea[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fEffectiveAreaError[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fNeutralFraction", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fPtSubtracted[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fPtLeadingConstituent", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("jets.fTrigger", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNCells", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fHGLG", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fCellNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fAmplitude", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEFraction", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMCLabel", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fType", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNCells", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fHGLG", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fCellNumber", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fAmplitude", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fEFraction", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMCLabel", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fType", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fUniqueID", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fBits", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fEnergy", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fPosition[3]", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fChi2", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fPID[13]", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fID", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fNLabel", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fLabel", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fFilterMap", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fType", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fClusterMCEdepFraction", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fDistToBadChannel", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fDispersion", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fM20", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fM02", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fEmcCpvDistance", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fTrackDx", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fTrackDz", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fNExMax", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fTOF", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fCoreEnergy", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fTracksMatched", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fNCells", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fCellsAbsId", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fCellsAmpFraction", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("caloClusters.fCellsMCEdepFractionMap", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNEntries", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fCurrent", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fColumn", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRow", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fAmplitude", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNL0Times", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1TimeSum", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1Threshold[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1V0[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1FrameMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALThreshold[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1SubRegion", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALFrameMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMedian[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBitWord", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALV0[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fName", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTitle", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNEntries", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fCurrent", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fColumn", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fRow", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fAmplitude", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNL0Times", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1TimeSum", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1Threshold[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1V0[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1FrameMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALThreshold[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1SubRegion", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALFrameMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMedian[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBitWord", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fL1DCALV0[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fEnergy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fPosition[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fChi2", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fPID[13]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fNLabel", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fLabel", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fFilterMap", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fType", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fClusterMCEdepFraction", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fProdVertex", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("fmdClusters.fPrimTrack", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fUniqueID", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fBits", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fEnergy", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fPosition[3]", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fChi2", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fPID[13]", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fID", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fNLabel", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fLabel", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fFilterMap", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fType", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fClusterMCEdepFraction", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("pmdClusters.fAssocCluster", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fUniqueID", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fBits", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODtrkId", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODqn", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODcluIdx", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODtrkTheta", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODtrkPhi", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODsignal", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODocc", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODchi2", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODtrkX", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODtrkY", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODmipX", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODmipY", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHmpidAODpid[5]", true);
-  // // this->fInputHandler->GetTree()->SetBranchStatus("hmpidRings.fHMPIDmom[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("dimuons", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("dimuons.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("dimuons.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("dimuons.fMu[2]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0TOF[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileup", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fSattelite", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBackground", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0TOFbest[3]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0VertexRaw", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0zVertex", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0Amp[26]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileupBits.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileupBits.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileupBits.fNbits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileupBits.fNbytes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fPileupBits.fAllBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBtriggerV0A", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGtriggerV0A", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBtriggerV0C", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGtriggerV0C", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMultiplicity[64]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBFlag[64]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGFlag[64]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fV0ATime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fV0CTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fV0ADecision", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fV0CDecision", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerChargeA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerChargeC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsBB[64][21]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsBG[64][21]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZEM1Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZEM2Energy", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNCTowerEnergy[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNATowerEnergy[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPCTowerEnergy[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPATowerEnergy[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNCTowerEnergyLR[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNATowerEnergyLR[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPCTowerEnergyLR[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPATowerEnergyLR[5]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCParticipants", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCPartSideA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCPartSideC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fImpactParameter", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fImpactParamSideA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fImpactParamSideC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCTDCSum", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZDCTDCDifference", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNCTDC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNATDC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPCTDC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPATDC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNCTDCm[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZNATDCm[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPCTDCm[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fZPATDCm[4]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsZNAfired", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsZNCfired", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsZPAfired", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsZPCfired", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBtriggerADA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGtriggerADA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBtriggerADC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGtriggerADC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fMultiplicity[16]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBBFlag[16]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBGFlag[16]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fADATime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fADCTime", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fADADecision", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fADCDecision", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerChargeA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerChargeC", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTriggerBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsBB[16][21]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fIsBG[16][21]", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDefaultEventTimeValue", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fDefaultEventTimeRes", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNbins", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fTOFtimeResolution", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fT0spread", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNumberOfTOFclusters", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("fNumberOfTOFtrgPads", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fUniqueID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fBits", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fGlobalStack", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fPID", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fLayerMask", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fA", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fFlagsTiming", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fTracklets", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fTrackMatch", true);
-  // this->fInputHandler->GetTree()->SetBranchStatus("trdTracks.fLabel", true);
-
-  // this->fInputHandler->GetTree()->SetBranchStatus("*", true);
   return true;
 }

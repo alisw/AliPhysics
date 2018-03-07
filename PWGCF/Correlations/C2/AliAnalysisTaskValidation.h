@@ -83,6 +83,11 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   // Get central barrel tracks
   AliAnalysisTaskValidation::Tracks GetTracks();
 
+  // Get all MC truth track associated with this event. The filtering
+  // of these tracks is done in this function.
+  // This function is `Fatal` if no MC tracks are found
+  AliAnalysisTaskValidation::Tracks GetMCTruthTracks();
+
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
   Bool_t fIsValidEvent;
@@ -117,7 +122,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
 
   /// Get __ALL MC TRUTH TRACKS__.
   /// No checks are done on these tracks and they could be anywhere in the detector!
-  TClonesArray* GetAllMCTruthTracks();
+  TClonesArray* GetAllMCTruthTracksAsTClonesArray();
 
   /// Utils class used by some of the cuts
   AliAnalysisUtils fUtils;
