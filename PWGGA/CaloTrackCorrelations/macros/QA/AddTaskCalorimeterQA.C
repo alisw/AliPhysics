@@ -150,13 +150,17 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
 
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          bExotic,
-                          bNonLin,
-                          bEnCalib,
-                          bBadMap,
-                          bTiCalib);  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+
+  TString recouStr = Form("(reinterpret_cast<AliEMCALRecoUtils*>(%p))", recou);
+  
+  gInterpreter->ProcessLine(Form("ConfigureEMCALRecoUtils(%s, %d, %d, %d, %d, %d, %d)", recouStr.Data(),
+				 (Int_t)simulation,
+				 (Int_t)bExotic,
+				 (Int_t)bNonLin,
+				 (Int_t)bEnCalib,
+				 (Int_t)bBadMap,
+				 (Int_t)bTiCalib));  
   
   if(bBadMap) 
     cu->SwitchOnBadChannelsRemoval();
