@@ -1,17 +1,16 @@
-#ifndef ADDTASKFEMTODREAM_C
-#define ADDTASKFEMTODREAM_C
 #include "TROOT.h"
-
-AliAnalysisTask* AddTaskFemtoDream(
-    bool isMC=false,TString CentEst="kInt7",bool notpp=true,
-    bool DCAPlots=false,bool CPAPlots=false,bool MomReso=false,
-    bool CombSigma=false,bool ContributionSplitting=false,
+#include "TSystem.h"
+AliAnalysisTaskSE* AddTaskFemtoDream(
+    bool isMC=false,
+    TString CentEst="kInt7",
+    bool notpp=true,
+    bool DCAPlots=false,
+    bool CPAPlots=false,
+    bool MomReso=false,
+    bool CombSigma=false,
+    bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
-	gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
-	gROOT->ProcessLine(".include $ROOTSYS/include");
-
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -26,6 +25,24 @@ AliAnalysisTask* AddTaskFemtoDream(
 		printf("This task requires an input event handler!\n");
 		return nullptr;
 	}
+
+	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+	  if (isMC) {
+	    // IMPORTANT - SET WHEN USING DIFFERENT PASS
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+	                "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+	                "kTRUE, \"1\")"));
+	  } else {
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro(
+	                "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+	  }
+	}
+
+
 	AliFemtoDreamEventCuts *evtCuts=
 			AliFemtoDreamEventCuts::StandardCutsRun2();
 	evtCuts->CleanUpMult(false,false,false,true);
@@ -262,15 +279,19 @@ AliAnalysisTask* AddTaskFemtoDream(
 	config->SetMixingDepth(10);
 
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDream",isMC,false);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
+		std::cout << "Added kINT7 Trigger \n";
 		task->SetMVPileUp(kTRUE);
 	}else if(CentEst == "kMB"){
 		task->SelectCollisionCandidates(AliVEvent::kMB);
+		std::cout << "Added kMB Trigger \n";
 		task->SetMVPileUp(kFALSE);
 	} else if (CentEst == "kHM") {
 		task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+		std::cout << "Added kHighMultV0 Trigger \n";
+    task->SetMVPileUp(kFALSE);
 	}else{
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;
@@ -434,7 +455,6 @@ AliAnalysisTask* AddTaskFemtoDream(
 //	}
 	return task;
 }
-#endif
 
 
 //  if (ContributionSplitting) {

@@ -46,7 +46,8 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,bool MinimalBooking) {
+void AliFemtoDreamAnalysis::Init(
+    bool isMonteCarlo,bool MinimalBooking,UInt_t trigger) {
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -76,7 +77,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,bool MinimalBooking) {
   fCascCuts->Init(MinimalBooking);
   fAntiCascCuts->Init(MinimalBooking);
   fGTI=new AliAODTrack*[fTrackBufferSize];
-  fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA);
+  fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinimalBooking);
 
   if (!MinimalBooking) {

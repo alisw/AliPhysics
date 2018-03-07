@@ -15,7 +15,7 @@
 class AliFemtoDreamEvent {
  public:
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA);
+  AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA, UInt_t trigger);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
   TList *GetEvtCutList() const {return fEvtCutList;};
