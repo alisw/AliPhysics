@@ -70,8 +70,9 @@ public:
   void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
   void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
   void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm   = m;  this->fPileUpConstParm = c;}
-  void    SetTrackFilterBit(Int_t gf)                 {this->gFilterBit         = gf;}
-
+  void    SetTrackFilterBit(Int_t gf)                 {this->gFilterBit         =           gf;}
+  void    SetHBTcutParameter(Float_t hb)              {this->fHBTCutValue       =           hb;}
+  
 
 private:
 
@@ -139,6 +140,7 @@ private:
   Float_t           fPileUpSlopeParm;         //
   Float_t           fPileUpConstParm;         //
   Int_t                   gFilterBit;         //
+  Float_t               fHBTCutValue;         //
   Float_t               fRefMultCorr;         //!
   Float_t                fRefMultRaw;         //!
 
