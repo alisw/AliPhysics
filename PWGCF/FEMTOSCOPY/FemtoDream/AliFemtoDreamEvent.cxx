@@ -31,7 +31,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 
 }
 
-AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
+AliFemtoDreamEvent::AliFemtoDreamEvent(
+    bool mvPileUp,bool EvtCutQA, UInt_t trigger)
 :fUtils(new AliAnalysisUtils())
 ,fEvtCuts(new AliEventCuts())
 ,fxVtx(0)
@@ -55,6 +56,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
   } else {
     //Following the analysis in pp Run1 of O.Arnold
     fUtils->SetMinPlpContribSPD(3);
+  }
+
+  if(trigger != AliVEvent::kINT7) {
+    fEvtCuts->SetManualMode();
+    fEvtCuts->SetupRun2pp();
+    std::cout << "Setting up Track Cuts correspondingly for pp trigger: " <<
+        trigger << std::endl;
+    fEvtCuts->fTriggerMask = trigger;
   }
   if (EvtCutQA) {
     fEvtCutList=new TList();

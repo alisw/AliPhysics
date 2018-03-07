@@ -152,7 +152,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   } else {
     AliFatal("Event Collection Config missing");
   }
-  fAnalysis->Init(fIsMC,fMinimalBooking);
+  fAnalysis->Init(fIsMC,fMinimalBooking,GetCollisionCandidates());
   if (!fMinimalBooking) {
     if (fAnalysis->GetQAList()) {
       fQA=fAnalysis->GetQAList();
