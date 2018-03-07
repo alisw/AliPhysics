@@ -85,6 +85,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   gFilterBit(96),
+  fHBTCutValue(0.0),
   fRefMultCorr(0),
   fRefMultRaw(0),
   fHist_Event_count(NULL),
@@ -338,6 +339,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   gFilterBit(96),
+  fHBTCutValue(0.0),
   fRefMultCorr(0),
   fRefMultRaw(0),
   fHist_Event_count(NULL),
@@ -625,7 +627,9 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
  PostData(3,fListNUAHist);
 
  printf("\n ======================== Info::UserCreateOutPutObject Called ========================  \n");
- 
+ std::cout<<" sDataSet = "<<sDataSet.Data()<<" FB = "<<gFilterBit<<" PileUp C = "<<fPileUpConstParm<<" HBT cut = "<<fHBTCutValue<<"\n"<<std::endl;
+
+
 }
 
 AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
@@ -803,10 +807,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
  Double_t fMagField = aod->GetMagneticField();
+
  Int_t QAindex = -1;
+
  //Femto:
  Int_t bSign = (fMagField > 0) ? 1 : -1;
- Double_t fHBTCutValue = 0.02;
+
+ //Double_t fHBTCutValue = 0.02;
 
 
  if(fMagField<0)
@@ -1508,7 +1515,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 	   }
 	   //Float_t dPtDiff = fabs(dPt1-dPt2);
 	   if(dphistarminabs < fHBTCutValue && TMath::Abs(deltaEta) < fHBTCutValue) {
-	     //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<"  Eta1 "<<dEta1<<"  Eta2 "<<dEta2<<"\t"<<dChrg1<<" Ch2 "<<dChrg2<<"  phi1 = "<<phi1rad<<"  phi2 = "<<phi2rad<<" |dPt| = "<<dPtDiff<<endl;
+	     //cout<<"dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" fHBTCutValue = "<<fHBTCutValue<<endl;
 	     if(dChrg1==dChrg2) {
 	       fdPhiFemtoCut->Fill(3.5,1e-8);
 	     }
@@ -1534,7 +1541,12 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
-     if(dChrg1!=dChrg2){
+     if(dChrg1!=dChrg2) {
+       if(skipPairHBT > 0)
+          cout<<"All dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
+	
+       fdPhiFemtoCut->Fill(1.5,1e-8);
+       
        fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        //vs Refmult:
@@ -1571,8 +1583,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
          fHist_Corr3p_EtaDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        }
      }
-     else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0){
+     else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0) {
 
+       if(deltaEta < fHBTCutValue)
+          cout<<"++ dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
+	
+       fdPhiFemtoCut->Fill(3.5,1e-8);
+	       
        fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        //vs Refmult:
@@ -1605,7 +1622,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        }
      }
      else if(dChrg1<0 && dChrg2<0 && skipPairHBT==0){
-
+       
+       fdPhiFemtoCut->Fill(3.5,1e-8);
+       
        fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
        //vs Refmult:

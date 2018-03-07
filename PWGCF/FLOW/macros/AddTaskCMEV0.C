@@ -12,7 +12,8 @@ class AliAnalysisTaskCMEV0;
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
  Bool_t bV0MgainCorr= kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015_V0GainEq_RbyR_pPb_FAST.root", 
  Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
- Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", const char *suffix = "")
+ Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", Float_t hbtCut = 0.0,
+ const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -219,7 +220,11 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
   taskQC_prot->SetPileUpCutParam(fPileUpSlope,fPileUpConst);
   taskQC_prot->SetTrackFilterBit(gFilterBit);
+  taskQC_prot->SetHBTcutParameter(hbtCut);
 
+
+
+  
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
     TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
