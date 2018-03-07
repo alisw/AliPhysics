@@ -55,6 +55,7 @@ class AliESDCaloCluster;
 class AliVCaloCells;
 class AliAODMCParticle;
 class AliGenPythiaEventHeader;
+class AliGenDPMjetEventHeader;
 class AliAODMCHeader;
 // class AliEventPoolManager;
 
@@ -175,6 +176,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TClonesArray               * fNCluster;                       ///< Neutral clusters
   TClonesArray               * fAODMCParticles;                 ///<
   AliAODMCHeader             * fmcHeader;                       ///<
+  AliGenPythiaEventHeader    * fPythiaHeader_local;             ///< Pythia header for cocktail simulations
+  AliGenDPMjetEventHeader    * fDPMjetHeader;                   ///< DPMjet header for cocktail simulations
   TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
   TClonesArray               * fTracksAna;                      ///< Hybrid track array in
   AliStack                   * fStack;                          ///<
