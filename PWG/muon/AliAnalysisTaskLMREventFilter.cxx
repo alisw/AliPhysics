@@ -202,7 +202,6 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fOutputList->Add(fhBeamType);
 
   fhTriggers->GetXaxis()->SetBinLabel(1,fTriggerClasses[0]);
-  fhNMu->GetYaxis()->SetBinLabel(1,fTriggerClasses[0]);
 
   for (Int_t i=1;i<fNTrigClass;i++)
     {
