@@ -402,6 +402,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     task->SetMVPileUp(kFALSE);
   }else if (CentEst == "kHM") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    task->SetMVPileUp(kFALSE);
   }else{
     std::cout << "=====================================================================" << std::endl;
     std::cout << "=====================================================================" << std::endl;

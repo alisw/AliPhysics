@@ -282,12 +282,16 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
+		std::cout << "Added kINT7 Trigger \n";
 		task->SetMVPileUp(kTRUE);
 	}else if(CentEst == "kMB"){
 		task->SelectCollisionCandidates(AliVEvent::kMB);
+		std::cout << "Added kMB Trigger \n";
 		task->SetMVPileUp(kFALSE);
 	} else if (CentEst == "kHM") {
 		task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+		std::cout << "Added kHighMultV0 Trigger \n";
+    task->SetMVPileUp(kFALSE);
 	}else{
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;

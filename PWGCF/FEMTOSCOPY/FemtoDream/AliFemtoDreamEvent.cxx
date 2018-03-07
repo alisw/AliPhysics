@@ -58,13 +58,13 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
     fUtils->SetMinPlpContribSPD(3);
   }
 
-  if(trigger != AliVEvent::kINT7) {
-    fEvtCuts->SetManualMode();
-    fEvtCuts->SetupRun2pp();
-    std::cout << "Setting up Track Cuts correspondingly for pp trigger: " <<
-        trigger << std::endl;
-    fEvtCuts->fTriggerMask = trigger;
-  }
+//  if(trigger != AliVEvent::kINT7) {
+//    fEvtCuts->SetManualMode();
+//    fEvtCuts->SetupRun2pp();
+//    std::cout << "Setting up Track Cuts correspondingly for pp trigger: " <<
+//        trigger << std::endl;
+//    fEvtCuts->fTriggerMask = trigger;
+//  }
   if (EvtCutQA) {
     fEvtCutList=new TList();
     fEvtCutList->SetName("AliEventCuts");
