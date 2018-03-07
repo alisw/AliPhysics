@@ -1503,20 +1503,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
 
-    energy  = ph->Energy();
-    if(fUseCoreEnergy){
-      energy = (ph->GetMomV2())->Energy();
-    }
-
-    if(ph->IsTOFOK()){
-      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
-    }
-
     if(fIsPHOSTriggerAnalysis){
       if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+
+    energy  = ph->Energy();
+    if(fUseCoreEnergy){
+      energy = (ph->GetMomV2())->Energy();
+    }
 
     digMult = ph->GetNCells();
     tof     = ph->GetTime();//unit is second.
@@ -1537,6 +1533,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(module < 1 || module > 4){
       AliError(Form("Wrong module number %d",module));
       return;
+    }
+
+    if(ph->IsTOFOK()){
+      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
     }
 
     FillHistogramTH2(fOutputContainer,"hEnergyvsDistanceToBadChannel",energy,ph->DistToBadfp()); //in unit of cell with floating point
@@ -1748,8 +1748,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!CheckMinimumEnergy(ph2)) continue;
 
       if(fIsPHOSTriggerAnalysis){
-        if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
         if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
       }
 
       if(fForceActiveTRU 
@@ -1758,6 +1758,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
+
 
       p12  = *ph1 + *ph2;
       m12  = p12.M();
@@ -1787,16 +1788,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
 
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
         trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
 
-        //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-        //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-        //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
       }
 
       FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
@@ -1906,8 +1904,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!CheckMinimumEnergy(ph2)) continue;
 
         if(fIsPHOSTriggerAnalysis){
-          if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
           if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+          if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
         }
 
         if(fForceActiveTRU 
@@ -1941,16 +1939,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         weight = 1.;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-          if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
 
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
           trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
 
-          //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-          //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-          //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
         }
 
         if(fIsMC){
@@ -2676,8 +2671,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
 
       if( (dm == 0)
        && (dt == 0)
-       && (TMath::Abs(dx) < 3)
-       && (TMath::Abs(dz) < 3)
+       && (TMath::Abs(dx) < 4)
+       && (TMath::Abs(dz) < 4)
        ) continue;//reject cluster pair where they belong to same 4x4 region.
 
       AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
