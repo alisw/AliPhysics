@@ -76,7 +76,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
-  if(!fInputHandler->IsEventSelected() & AliVEvent::kINT7) return false;
+  if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
     auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
     AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
