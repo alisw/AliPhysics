@@ -299,7 +299,7 @@ AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
   }
   task->SetDebugLevel(0);
   task->SetEvtCutQA(true);
-  task->SetTrackBufferSize(2500);
+  task->SetTrackBufferSize(10000);
   task->SetEventCuts(evtCuts);
   task->SetTrackCuts(TrackCuts);
   task->SetAntiTrackCuts(AntiTrackCuts);

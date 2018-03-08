@@ -60,7 +60,9 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
       AliFatal("AliFemtoSPTrack::SetTrack No fGTI Set");
       fGlobalTrack=NULL;
     }else if(-trackID-1 >= fTrackBufferSize){
-      AliFatal("Buffer Size too small");
+//      AliFatal("Buffer Size too small");
+      this->fIsSet=false;
+      fIsReset=false;
       fGlobalTrack=NULL;
     }else if(!CheckGlobalTrack(trackID)){
       fGlobalTrack=NULL;
