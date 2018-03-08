@@ -72,6 +72,7 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
@@ -141,6 +142,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY macros DESTINATION PWGCF/EBYE)
 install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
 install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
+install(DIRECTORY NetLambda/macros DESTINATION PWGCF/EBYE/NetLambda)
 install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)
 install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
