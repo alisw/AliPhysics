@@ -14,6 +14,7 @@
 /// \author Lucile Ronflette <lucile.ronflette@cern.ch>, Subatech, Nantes
 /// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
 /// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+/// \author Erwann Masson <erwann.masson@cern.ch>, Subatech, Nantes
 /// \date Jun 26, 2014
 
 // ROOT System
