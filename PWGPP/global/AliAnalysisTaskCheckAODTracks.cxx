@@ -877,8 +877,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
     if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
     if(fRequireITSforV0dau & (1<<kBitRequireITSrefit)){
-      if(pTrack->GetStatus() & AliESDtrack::kITSrefit) continue;
-      if(nTrack->GetStatus() & AliESDtrack::kITSrefit) continue;
+      if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
+      if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
     }
     if(fRequireITSforV0dau & (1<<kBitRequireSPDany)){
       if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
