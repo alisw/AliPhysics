@@ -2169,6 +2169,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         AnTrk->fTOFExpSigma[ipart] = fTOFExpSigma[ipart];
       //
       AnTrk->fT0TrkTime = fT0TrkTime;
+      AnTrk->fT0TrkSigma = fT0TrkSigma;
       AnTrk->fTOFchan = fTOFchan;
       AnTrk->fEta = fEta;
       AnTrk->fPhi = fPhi;
@@ -2383,6 +2384,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar()
   fTOFImpactDZ = -999;
   fTOFImpactDX = -999;
   fT0TrkTime = -999;
+  fT0TrkSigma = -999;
   for (Int_t species = 0; species < kExpSpecies; species++) {
     fTOFExpSigma[species] = -999;
     fTOFExpTime[species] = -999;
