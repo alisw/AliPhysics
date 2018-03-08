@@ -23,5 +23,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180213: Moved all files to EOS.
 - 20180220: Update of EMCALBadChannels.root with LHC17o BC maps, see https://alice.its.cern.ch/jira/browse/EMCAL-60
 - 20180305: Update of EMCALBadChannels.root with LHC17m BC maps, see https://alice.its.cern.ch/jira/browse/EMCAL-105
+- 20180308: Update of EMCALBadChannels.root with LHC17ghjk BC maps, see https://alice.its.cern.ch/jira/browse/EMCAL-130 , https://alice.its.cern.ch/jira/browse/EMCAL-65 , https://alice.its.cern.ch/jira/browse/EMCAL-90 , https://alice.its.cern.ch/jira/browse/EMCAL-95
 
 */
