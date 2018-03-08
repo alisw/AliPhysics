@@ -1420,6 +1420,11 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
 
   if ( nCell < 1 ) return; 
 
+  // For histograms classified in 2 bin depending number of cells
+  Int_t nCellBin = 2;
+  if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
+  else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
+  
   //
   // Cluster location
   //
@@ -1501,51 +1506,23 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       }
     }
     
-    //if(fStudyShapeParam)
+    Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
+    Int_t sm = GetModuleNumberCellIndexes(absId,GetCalorimeter(), ieta, iphi, rcu);
+    
+    //////
+    // Cluster asymmetry in cell units
+    //////
+    if(fStudyShapeParam)
     {
-      //////
-      // Cluster asymmetry in cell units
-      //////
-      Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
-      Int_t sm = GetModuleNumberCellIndexes(absId,GetCalorimeter(), ieta, iphi, rcu);
-      
       if(dIphi < TMath::Abs(iphi-iphiMax)) dIphi = TMath::Abs(iphi-iphiMax);
       if(iphi-iphiMax < 0 && dIphiNeg > iphi-iphiMax) dIphiNeg = iphi-iphiMax;
       if(iphi-iphiMax > 0 && dIphiPos < iphi-iphiMax) dIphiPos = iphi-iphiMax;
       
-      if(smMax==sm)
-      {
-        if(dIeta < TMath::Abs(ieta-ietaMax)) dIeta = TMath::Abs(ieta-ietaMax);
-        if(ieta-ietaMax < 0 && dIetaNeg > ieta-ietaMax) dIetaNeg = ieta-ietaMax;
-        if(ieta-ietaMax > 0 && dIetaPos < ieta-ietaMax) dIetaPos = ieta-ietaMax;
-        
-        if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
-        {
-          Int_t nCellBin = 2;
-          if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
-          else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
-          if ( m02 > 0.1 && m02 < 0.3 )
-          {
-            fhColRowFromCellMaxLowM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
-            fhColRowFromCellMaxLowM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
-            
-            fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
-            fhColRowFromCellMaxEMaxSecDiffLowM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
-            fhColRowFromCellMaxECellClusterRatLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
-          }
-          else if (m02 > 0.5 && m02 < 2)
-          {
-            fhColRowFromCellMaxHighM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
-            fhColRowFromCellMaxHighM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
-            
-            fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
-            fhColRowFromCellMaxEMaxSecDiffHighM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
-            fhColRowFromCellMaxECellClusterRatHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
-          }
-        }        
-
-      }
-      else
+      if(dIeta < TMath::Abs(ieta-ietaMax)) dIeta = TMath::Abs(ieta-ietaMax);
+      if(ieta-ietaMax < 0 && dIetaNeg > ieta-ietaMax) dIetaNeg = ieta-ietaMax;
+      if(ieta-ietaMax > 0 && dIetaPos < ieta-ietaMax) dIetaPos = ieta-ietaMax;
+      
+      if ( smMax !=sm )
       {
         Int_t ietaShift    = ieta;
         Int_t ietaMaxShift = ietaMax;
@@ -1557,8 +1534,32 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         if(ietaShift-ietaMaxShift < 0 && dIetaNeg > ietaShift-ietaMaxShift) dIetaNeg = ietaShift-ietaMaxShift;
         if(ietaShift-ietaMaxShift > 0 && dIetaPos < ietaShift-ietaMaxShift) dIetaPos = ietaShift-ietaMaxShift;
       }
+    } // if(fStudyShapeParam)
+    
+    // cells in same SM as cell max and within an E range and neutral
+    if (smMax == sm && energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
+    {
+      if ( m02 > 0.1 && m02 < 0.3 )
+      {
+        fhColRowFromCellMaxLowM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
+        fhColRowFromCellMaxLowM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
+        
+        fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
+        fhColRowFromCellMaxEMaxSecDiffLowM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
+        fhColRowFromCellMaxECellClusterRatLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
+      }
+      else if (m02 > 0.5 && m02 < 2)
+      {
+        fhColRowFromCellMaxHighM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
+        fhColRowFromCellMaxHighM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
+        
+        fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
+        fhColRowFromCellMaxEMaxSecDiffHighM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
+        fhColRowFromCellMaxECellClusterRatHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
+      }
       
-    }
+    } // cells in sm SM as cell max and within an E range and neutral
+    
   } // Fill cell-cluster histogram loop
   
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
@@ -1567,9 +1568,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
     // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
-    Int_t nCellBin = 2;
-    if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
-    else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
     if ( m02 > 0.1 && m02 < 0.3 )
       fhColRowFromCellMaxECellClusterRatLowM02PerSM [smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
     else if (m02 > 0.5 && m02 < 2)
@@ -1714,8 +1712,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         fhSMMEtaPhi [matchedPID]->Fill(energy, smMax, sEtaPhi , GetEventWeight());
         fhSMMEtaPhiA[matchedPID]->Fill(energy, smMax, sEtaPhiA, GetEventWeight());
       }
-    }
-  }
+    } // EMCal
+  } // fStudyShapeParam
   
   //
   // Invariant mass for clusters looking like photons, depending number of cells
