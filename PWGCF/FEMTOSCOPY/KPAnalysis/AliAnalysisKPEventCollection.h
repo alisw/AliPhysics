@@ -18,8 +18,8 @@ class AliReconstructedFirst {
  public:
   AliReconstructedFirst();
   virtual ~AliReconstructedFirst();
-  AliReconstructedFirst(const AliReconstructedFirst &obj);
-  AliReconstructedFirst & operator=(const AliReconstructedFirst &obj);
+  /* AliReconstructedFirst(const AliReconstructedFirst &obj); */
+  /* AliReconstructedFirst & operator=(const AliReconstructedFirst &obj); */
   
   enum MCFirstOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t fMomentum[3]; // 3 reconstructed momentum
@@ -64,8 +64,8 @@ class AliReconstructedSecond {
  public:
   AliReconstructedSecond();
   virtual ~AliReconstructedSecond();
-  AliReconstructedSecond(const AliReconstructedSecond &obj);
-  AliReconstructedSecond & operator=(const AliReconstructedSecond &obj);
+  /* AliReconstructedSecond(const AliReconstructedSecond &obj); */
+  /* AliReconstructedSecond & operator=(const AliReconstructedSecond &obj); */
   
   enum MCSecondOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t sMomentum[3]; // 3 reconstructed momentum
