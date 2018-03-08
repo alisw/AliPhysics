@@ -4533,7 +4533,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
   }
 
   AliAODMCParticle *candidate, *particle, *candidateMother;
-  Int_t candidatePDG, candidatePhotonLabel, particleMotherStatus, candidateMotherPDG/*, candidateMotherStatus*/;
+  Int_t candidatePDG, candidatePhotonLabel, particleMotherLabel, candidateMotherLabel, candidateMotherPDG;
 
   for(iTrack = 0; iTrack < nTracks; iTrack ++){
     E_T = 0., candidatePhi = 0., candidateEta = 0.;
@@ -4546,8 +4546,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
     candidatePDG = candidate->GetPdgCode();
     if(candidatePDG != 22) continue;                    // Discard particles which are not photons
 
-    candidateMother    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidate->GetMother()));
-    candidateMotherPDG = TMath::Abs(candidateMother->GetPdgCode());
+    candidateMotherLabel = candidate->GetMother();
+    if(candidateMotherLabel > 0 && candidateMotherLabel < nTracks){
+      candidateMother    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidateMotherLabel));
+      candidateMotherPDG = TMath::Abs(candidateMother->GetPdgCode());
+    }
+    else
+      candidateMotherPDG = candidatePDG;
+
     if(candidateMotherPDG != 22) continue;              // Discard particles whose mother is not a photon
 
     if(fPythiaHeader_local->ProcessType() != 201 || fPythiaHeader_local->ProcessType() != 202) continue; // Discard particles which do not come from the direct photon processes
@@ -4613,10 +4619,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
       if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
 
-      particleMotherStatus = particle->GetMother();
-      if(particleMotherStatus < 0 || particleMotherStatus > nTracks) continue;
-      if(particleMotherStatus == candidatePhotonLabel)               continue;                                // Discard mother if it is the candidate photon
-      if(particle->E() < 0.3)                                        continue;                                // Discard particles with energy lower than minimal for clusters at reco level
+      particleMotherLabel = particle->GetMother();
+      if(particleMotherLabel < 0 || particleMotherLabel > nTracks) continue;
+      if(particleMotherLabel == candidatePhotonLabel)              continue;                                // Discard mother if it is the candidate photon
+      if(particle->E() < 0.3)                                      continue;                                // Discard particles with energy lower than minimal for clusters at reco level
 
       particlePhi = particle->Phi();
       particleEta = particle->Eta();
