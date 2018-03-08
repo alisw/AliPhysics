@@ -32,6 +32,9 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   void SetCentCut(Float_t cut){centcut = cut;};
   void SetPtMinLambda(Float_t pt){ptminlambda = pt;};
   void SetEtaCutLambda(Float_t eta){etacutlambda = eta;};
+  void SetCosPACut(Float_t cut){cospacut = cut;};
+  void SetMinimumRadius(Float_t cut){minradius = cut;};
+  void SetCrossedRowsCut(Float_t rows, Float_t ratio){ncrossedrows = rows; crossedrowsclustercut = ratio;};
   
   void SetIsMC(Bool_t val){fIsMC = val;};
   Bool_t GetIsMC(){return fIsMC;};
@@ -92,6 +95,10 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Float_t centcut;
   Float_t ptminlambda;
   Float_t etacutlambda;
+  Float_t cospacut;
+  Float_t minradius;
+  Float_t ncrossedrows;
+  Float_t crossedrowsclustercut;
 
   Float_t fCent;
   Float_t fNSpdTracklets;

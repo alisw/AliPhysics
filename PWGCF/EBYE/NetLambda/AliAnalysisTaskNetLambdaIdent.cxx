@@ -93,6 +93,10 @@ AliAnalysisTaskSE(name),
     centcut(80.),
     ptminlambda(0.5),
     etacutlambda(0.8),
+    cospacut(0.95),
+    minradius(5.),
+    ncrossedrows(70),
+    crossedrowsclustercut(0.8),
     fCent(-1),
     fNSpdTracklets(-1),
     fVtxZ(-20),
@@ -766,17 +770,17 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // put some basic cuts to reduce data volume here 
       if(!fIsAOD) // (esd only)
 	{
-	  if(cosPointingAngle < 0.95) continue; // looser cut than in AODs
-	  if(v0Radius < 5.) continue; // stricter cut than in AODs
+	  if(cosPointingAngle < cospacut) continue; // looser cut than in AODs
+	  if(v0Radius < minradius) continue; // stricter cut than in AODs
 	  if(dcaPosToVertex < 0.05) continue; // these cuts are the same as in AODs
 	  if(dcaNegToVertex < 0.05) continue;
 	  if(dcaDaughters > 1.5) continue;
 	  if(v0Radius > 200.) continue;
 	}
-      if(ncrossedrowsPos < 70) continue;
-      if(ncrossedrowsNeg < 70) continue;
-      if(ncrossedratioPos < 0.8) continue;
-      if(ncrossedratioNeg < 0.8) continue;
+      if(ncrossedrowsPos < ncrossedrows) continue;
+      if(ncrossedrowsNeg < ncrossedrows) continue;
+      if(ncrossedratioPos < crossedrowsclustercut) continue;
+      if(ncrossedratioNeg < crossedrowsclustercut) continue;
       
       AliLightV0* tempLightV0 = 0x0;
       // make tree      
@@ -803,7 +807,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	    {
 	      if(invMassLambda < 1.16 || invMassAntiLambda < 1.16)
 		{
-		  if(cosPointingAngle > 0.99 && (TMath::Abs(pnsigmapr) < 5 || TMath::Abs(nnsigmapr) < 5))
+		  if(TMath::Abs(pnsigmapr) < 5 || TMath::Abs(nnsigmapr) < 5)
 		  {
 		      tempLightV0 = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta,phi);
 		      tempLightV0->SetInvMassLambda(invMassLambda);
