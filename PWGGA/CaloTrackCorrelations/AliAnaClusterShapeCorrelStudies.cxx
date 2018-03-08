@@ -45,6 +45,7 @@ AliAnaCaloTrackCorrBaseClass(),
 fStudyShape(kFALSE),                   fStudyShapeParam(kFALSE),
 fStudyWeight(kFALSE),               
 fStudyTCardCorrelation(kFALSE),        fStudyExotic(kFALSE),
+fStudyInvMass(kFALSE),
 
 // Parameters and cuts
 fM02Min(0),                            fNCellMin(0),            
@@ -1129,7 +1130,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
   } //cell loop
   
   // Invariant mass for clusters looking like photons, depending number of cells
-  if(m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut)
+  if ( fStudyInvMass && m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut )
   {
     for(Int_t jclus = 0 ; jclus < fCaloClusList->GetEntriesFast() ; jclus++) 
     {
@@ -1735,7 +1736,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   //
   // Invariant mass for clusters looking like photons, depending number of cells
   //
-  if ( matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape &&
+  if ( fStudyInvMass &&
+       matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape &&
        m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut )
   {
     for(Int_t jclus = 0 ; jclus < fCaloClusList->GetEntriesFast() ; jclus++) 
@@ -3057,21 +3059,24 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
           fhECellWeightNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("Log. weight");
           outputContainer->Add(fhECellWeightNLM3TCardCorrelNCell[i][j][tm]); 
           
-          fhMassEClusTCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hMassEClusTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{M}_{#gamma #gamma} vs #it{E}_{cluster}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-          fhMassEClusTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhMassEClusTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
-          outputContainer->Add(fhMassEClusTCardCorrelNCell[i][j][tm]);         
-          
-          //          fhMassEPairTCardCorrelNCell[i][j][tm]  = new TH2F 
-          //          (Form("hMassEPairTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-          //           Form("#it{M}_{#gamma #gamma} vs #it{E}_{pair}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-          //           nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-          //          fhMassEPairTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{pair} (GeV)");
-          //          fhMassEPairTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
-          //          outputContainer->Add(fhMassEPairTCardCorrelNCell[i][j][tm]); 
+          if ( fStudyInvMass )
+          {
+            fhMassEClusTCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hMassEClusTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{M}_{#gamma #gamma} vs #it{E}_{cluster}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+            fhMassEClusTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhMassEClusTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
+            outputContainer->Add(fhMassEClusTCardCorrelNCell[i][j][tm]);         
+            
+            //          fhMassEPairTCardCorrelNCell[i][j][tm]  = new TH2F 
+            //          (Form("hMassEPairTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+            //           Form("#it{M}_{#gamma #gamma} vs #it{E}_{pair}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+            //           nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+            //          fhMassEPairTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{pair} (GeV)");
+            //          fhMassEPairTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
+            //          outputContainer->Add(fhMassEPairTCardCorrelNCell[i][j][tm]); 
+          }
           
           fhTimeDiffTCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hTimeDiffTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
@@ -3773,27 +3778,30 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     fhColRowM02NCellCut->SetZTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhColRowM02NCellCut) ;
 
-    fhInvMassNCellSM  = new TH3F 
-    ("hInvMassNCellSM",
-     Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
-          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number trig cluster",
-          fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
-     nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
-    fhInvMassNCellSM->SetZTitle("SM number");
-    fhInvMassNCellSM->SetYTitle("#it{n}_{cells}^{w>0.01}");
-    fhInvMassNCellSM->SetXTitle("#it{M}_{#gamma #gamma}");
-    outputContainer->Add(fhInvMassNCellSM);         
-    
-    fhInvMassNCellSMSame  = new TH3F 
-    ("hInvMassNCellSMSame",
-     Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
-          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number both cluster",
-          fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
-     nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
-    fhInvMassNCellSMSame->SetZTitle("SM number");
-    fhInvMassNCellSMSame->SetYTitle("#it{n}_{cells}^{w>0.01}");
-    fhInvMassNCellSMSame->SetXTitle("#it{M}_{#gamma #gamma}");
-    outputContainer->Add(fhInvMassNCellSMSame);       
+    if ( fStudyInvMass )
+    {
+      fhInvMassNCellSM  = new TH3F 
+      ("hInvMassNCellSM",
+       Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
+            "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number trig cluster",
+            fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
+       nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
+      fhInvMassNCellSM->SetZTitle("SM number");
+      fhInvMassNCellSM->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhInvMassNCellSM->SetXTitle("#it{M}_{#gamma #gamma}");
+      outputContainer->Add(fhInvMassNCellSM);         
+      
+      fhInvMassNCellSMSame  = new TH3F 
+      ("hInvMassNCellSMSame",
+       Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
+            "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number both cluster",
+            fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
+       nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
+      fhInvMassNCellSMSame->SetZTitle("SM number");
+      fhInvMassNCellSMSame->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhInvMassNCellSMSame->SetXTitle("#it{M}_{#gamma #gamma}");
+      outputContainer->Add(fhInvMassNCellSMSame);       
+    }
     
     //
         

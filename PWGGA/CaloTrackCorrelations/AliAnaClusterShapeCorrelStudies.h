@@ -129,6 +129,9 @@ public:
   void SwitchOnStudyTCardCorrelation()          { fStudyTCardCorrelation = kTRUE  ; }
   void SwitchOffStudyTCardCorrelation()         { fStudyTCardCorrelation = kFALSE ; }
 
+  void SwitchOnStudyInvariantMass()             { fStudyInvMass          = kTRUE  ; }
+  void SwitchOffStudyInvariantMass()            { fStudyInvMass          = kFALSE ; }
+ 
   void SwitchOnStudyExotic()                    { fStudyExotic           = kTRUE  ; }
   void SwitchOffStudyExotic()                   { fStudyExotic           = kFALSE ; }
   
@@ -147,6 +150,7 @@ public:
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, for TCard correl studies
 
+  Bool_t   fStudyInvMass;                       ///<  Fill invariant mass histograms
   //
   // Cuts
   //
