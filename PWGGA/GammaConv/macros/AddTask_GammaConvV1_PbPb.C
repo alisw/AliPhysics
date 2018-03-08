@@ -109,6 +109,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000070000000000500004000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
   TString cutnumberEvent = "10000003";
 
   Bool_t enableV0findingEffi = kFALSE;
