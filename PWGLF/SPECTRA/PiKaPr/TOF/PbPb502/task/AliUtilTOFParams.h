@@ -129,8 +129,10 @@ const TString DCAxystring = "DCA_{xy} (cm)";
 enum CollSys { kPbPb,
   kpp,
   kXeXe,
+  kpPb,
+  kPbp,
   kCollSysAll };
-const TString systemString[kCollSysAll] = { "PbPb", "pp", "XeXe" };
+const TString systemString[kCollSysAll] = { "PbPb", "pp", "XeXe", "pPb", "Pbp" };
 
 const Double_t CSPEED = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
 
