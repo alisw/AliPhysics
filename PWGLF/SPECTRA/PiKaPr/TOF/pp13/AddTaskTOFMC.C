@@ -53,7 +53,7 @@ AliAnalysisTaskTOFMC *AddTaskTOFMC(const char *PeriodName=NULL, Int_t nTPC_CR=70
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
   outputFileName += ":PWGLF_pp13VsMult";
-  TString OutputListname = Form("fOutputList_CR%i_Chi2TPCcluser%i_DCAz%i_DCAxy_%iSigma",nTPC_CR, Chi2_TPCcluser, DCAz, DCAxy);
+  TString OutputListname = Form("fOutputList_CR%i_Chi2TPCcluster%i_DCAz%i_DCAxy_%iSigma",nTPC_CR, Chi2_TPCcluser, DCAz, DCAxy);
 //  if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    
   Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );

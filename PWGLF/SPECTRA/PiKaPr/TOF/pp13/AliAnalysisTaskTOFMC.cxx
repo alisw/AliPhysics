@@ -358,11 +358,11 @@ fCorrRefMultVsV0M = new TH2F("fCorrRefMultVsV0M","Ref Mult vs V0M PC;V0M PC;Ref 
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionP);
 	fPtV0MDCAxyTOFMatPionP = new TH3F("fPtV0MDCAxyTOFMatPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionP);
-	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFPriPionM);
-	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionM);
-	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionM);
 
 
