@@ -75,11 +75,24 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  void SetRequireITSrefitForV0Daughters(Bool_t opt){
+    if(opt) fRequireITSforV0dau |= (1<<kBitRequireITSrefit);
+    else fRequireITSforV0dau &= ~(1<<kBitRequireITSrefit);
+  }
+  void SetRequireSPDanyForV0Daughters(Bool_t opt){
+    if(opt) fRequireITSforV0dau |= (1<<kBitRequireSPDany);
+    else fRequireITSforV0dau &= ~(1<<kBitRequireSPDany);
+  }
+  AliESDtrackCuts* GetTPCTrackCuts(){return fTrCutsTPC;}
+
   Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
+
+
 
  private:
 
   enum EVarsTree {kNumOfIntVar=12, kNumOfFloatVar=27};
+  enum EITSRequirements {kBitRequireITSrefit=0, kBitRequireSPDany=1};
   enum EFiltBits {kNumOfFilterBits=12};
 
   AliAnalysisTaskCheckAODTracks(const AliAnalysisTaskCheckAODTracks &source);
@@ -181,10 +194,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Double_t fMaxMult;           // upper limit of multiplicity plots
+  Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,12);
+  ClassDef(AliAnalysisTaskCheckAODTracks,13);
 };
 
 
