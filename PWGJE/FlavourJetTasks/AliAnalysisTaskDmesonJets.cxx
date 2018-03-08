@@ -15,6 +15,7 @@
 
 //C++
 #include <sstream>
+#include <array>
 
 // Root
 #include <TClonesArray.h>
@@ -1634,7 +1635,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   for (auto& def : fJetDefinitions) maxJetPt[&def] = 0;
   Double_t maxDPt = 0;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int, 3> nAccCharm = {0};
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
@@ -1667,7 +1668,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
     if (nMassHypo == 2) {
       nAccCharm[0]--;
       nAccCharm[1]--;
-      nAccCharm[2] += 2;
+      nAccCharm[2]++;
     }
     if (nMassHypo == 2) { // both mass hypothesis accepted
       fDmesonJets[(icharm+1)].fD0D0bar = kTRUE;
@@ -1855,7 +1856,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
   if (!fMCContainer->IsSpecialPDGFound()) return;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int,2> nAccCharm = {0};
 
   std::map<AliHFJetDefinition*, Double_t> maxJetPt;
   Double_t maxDPt = 0;
@@ -1978,13 +1979,12 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
   fHistManager->FillTH1(hname, "D", nAccCharm[0]);
   fHistManager->FillTH1(hname, "Anti-D", nAccCharm[1]);
-  fHistManager->FillTH1(hname, "Both", nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
-  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]);
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
-  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]); // same as the number of accepted D mesons, since no selection is performed
+  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]); // same as the number of accepted D mesons, since no selection is performed
 }
 
 /// Builds the tree where the output will be posted
