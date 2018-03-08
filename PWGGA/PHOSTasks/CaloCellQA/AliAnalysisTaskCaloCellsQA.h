@@ -27,7 +27,7 @@ public:
   };
 
   AliAnalysisTaskCaloCellsQA();
-  AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods = 10, Int_t det = kEMCAL, char *outfile = NULL);
+  AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods = 10, Int_t det = kEMCAL, const char *outfile = NULL);
   virtual ~AliAnalysisTaskCaloCellsQA();
 
   void   UserCreateOutputObjects();

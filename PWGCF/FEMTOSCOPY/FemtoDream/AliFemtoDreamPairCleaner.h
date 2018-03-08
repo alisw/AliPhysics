@@ -33,7 +33,7 @@ class AliFemtoDreamPairCleaner {
   bool fMinimalBooking;
   std::vector<std::vector<AliFemtoDreamBasePart>> fParticles;
   AliFemtoDreamPairCleanerHists *fHists;
-  ClassDef(AliFemtoDreamPairCleaner,1)
+  ClassDef(AliFemtoDreamPairCleaner,2)
 };
 
 #endif /* ALIFEMTODREAMPAIRCLEANER_H_ */

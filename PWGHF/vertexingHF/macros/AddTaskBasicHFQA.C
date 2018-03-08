@@ -65,7 +65,7 @@ AliAnalysisTaskSEHFQA* AddTaskBasicHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,
   taskQA->SetFillDistributionsForTrackEffChecks(kFALSE);
   mgr->AddTask(taskQA);
 
-  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",out8name="outputFlowObs",inname="input",suffix="",cutsobjname="",centr="";
+  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",out8name="outputFlowObs",inname="input",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
   inname+=suffix;

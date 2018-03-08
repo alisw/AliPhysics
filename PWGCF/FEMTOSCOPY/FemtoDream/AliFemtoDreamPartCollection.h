@@ -24,20 +24,20 @@ class AliFemtoDreamPartCollection {
       AliFemtoDreamCollConfig *conf,bool MinimalBooking);
   virtual ~AliFemtoDreamPartCollection();
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-                double ZVtx,double Mult);
+                float ZVtx,float Mult);
   void PrintEvent(int ZVtx,int Mult);
   TList* GetHistList(){return fResults->GetHistList();};
   TList* GetQAList(){return fResults->GetQAHists();};
   TString ClassName() {return "ParticleCollection";};
  private:
-  void FindBin(double ZVtxPos,double Multiplicity,int *returnBins);
+  void FindBin(float ZVtxPos,float Multiplicity,int *returnBins);
   AliFemtoDreamCorrHists *fResults;
   unsigned int fNSpecies;
   bool fMinimalBooking;
   std::vector<std::vector<AliFemtoDreamZVtxMultContainer>> fZVtxMultBuffer;
-  std::vector<double> fValuesZVtxBins;
+  std::vector<float> fValuesZVtxBins;
   std::vector<int> fValuesMultBins;
-  ClassDef(AliFemtoDreamPartCollection,1);
+  ClassDef(AliFemtoDreamPartCollection,2);
 };
 
 #endif /* ALIFEMTODREAMPARTCOLLECTION_H_ */

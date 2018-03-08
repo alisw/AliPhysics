@@ -38,6 +38,10 @@ public:
   double GetTheta23();
   double GetTheta31();
   
+  double GetTheta1();
+  double GetTheta2();
+  double GetTheta3();
+  
 private:
   AliFemtoParticle* fTrack1;  // first particle in the trio
   AliFemtoParticle* fTrack2;  // second particle in the trio

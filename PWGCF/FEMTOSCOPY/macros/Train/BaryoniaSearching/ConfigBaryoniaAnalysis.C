@@ -16,9 +16,9 @@ enum ESys  { kAPL, kPAL, kApXz, kPrAxz, kKKpi, kDplus, nSys };
 
 const char *sysNames[nSys]      = { "APL", "PAL", "ApXz", "PrAxz",  "D+" , "KKpi"};
 const bool runSys[nSys]         = {   1  ,   1  ,   0   ,    0   ,    1  ,   0   };
-const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.5  ,   1.5  ,   1.0 ,  1.0  }; // everything in GeV here
-const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,   2.8 ,  2.0  };
-const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 , 0.001 , 0.001 };
+const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.5  ,   1.5  ,   1.7 ,  1.0  }; // everything in GeV here
+const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,   1.9 ,  2.0  };
+const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 , 0.0001 , 0.001 };
 
 const double dalitzCutMass[nSys]= { 2.148, 2.148, 2.330 ,  2.330 ,1.86959,   0   };
 const double dalitzCutGamma[nSys]={ 0.134, 0.134, 0.100 ,  0.100 ,0.00063,   0   };
@@ -313,7 +313,7 @@ AliFemtoESDTrackCut* GetTrackCut(AliFemtoTrio::EPart particle)
   }
   
   if(particle == AliFemtoTrio::kKaonPlus || particle == AliFemtoTrio::kPionPlus){ particleCut->SetCharge( 1.0); }
-  else                                              { particleCut->SetCharge(-1.0); }
+  else                                                                          { particleCut->SetCharge(-1.0); }
   
   particleCut->SetPt(0.14,1.5);
   particleCut->SetEta(-0.8, 0.8);

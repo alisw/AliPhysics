@@ -60,6 +60,8 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
+fPythiaHeaderLocal(0),
+fDPMjetHeader(0),
 fPythiaVersion(""),
 fTracksAna(0),
 fStack(0),
@@ -262,6 +264,8 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
+fPythiaHeaderLocal(0),
+fDPMjetHeader(0),
 fPythiaVersion(""),
 fTracksAna(0),
 fStack(0),
@@ -1421,11 +1425,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     }
   }
 
-  Int_t index=0;
+  Int_t index = 0;
 
   if(fIsMC){
-    fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
-    fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+    fAODMCParticles = static_cast <TClonesArray*  >(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+    fmcHeader       = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
     if(!fIsMC)
       return kFALSE;
@@ -1440,14 +1444,23 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
     }
 
-    if(fMCtruth || (fmcHeader->GetEventType() == 14 || fmcHeader->GetEventType() == 29)){ // 14: qqbar to qgamma, 29: qg to qgamma
-      // if(fmcHeader->GetGeneratorName() == "???")      // fGenerator for Pythia6
-      // else if(fmcHeader->GetGeneratorName() == "???") // fGenerator for Pythia8
+    if(fPythiaVersion.Contains("8")){
 
-      if(fPythiaVersion.Contains("8"))
-      	AnalyzeMC_Pythia8();
-      else
-	AnalyzeMC();
+      // +++ ONLY USABLE WITH A COCKTAIL WHERE PYTHIA IS THE SECOND (1) GENERATOR (0 BEING THE FIRST ONE) +++ //
+      //
+      fPythiaHeaderLocal = dynamic_cast<AliGenPythiaEventHeader*>(fmcHeader->GetCocktailHeaders()->At(1));
+      //
+      // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+
+      // Pythia8 // 201 = qg to qgamma // 202 = qqbar to ggamma // 203 = gg to ggamma // 204 = qqbar to gammagamma // 205 = gg to gammagamma
+      if(fMCtruth || fPythiaHeaderLocal->ProcessType() == 201 || fPythiaHeaderLocal->ProcessType() == 202 || fPythiaHeaderLocal->ProcessType() == 203 || fPythiaHeaderLocal->ProcessType() == 204 || fPythiaHeaderLocal->ProcessType() == 205) AnalyzeMC_Pythia8();
+
+    }
+    else{
+
+      // Pythia6 // 14 = qqbar to ggamma // 29 = qg to qgamma
+      if(fMCtruth || fmcHeader->GetEventType() == 14 || fmcHeader->GetEventType() == 29) AnalyzeMC();
+
     }
   }
 
@@ -4519,19 +4532,31 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       nFinalStateParticles ++;
   }
 
-  AliAODMCParticle *candidate, *particle/*, *candidateMother*/;
-  Int_t candidatePDG, candidatePhotonLabel, particleMotherStatus/*, candidateMotherPDG, candidateMotherStatus*/;
+  AliAODMCParticle *candidate, *particle, *candidateMother;
+  Int_t candidatePDG, candidatePhotonLabel, particleMotherLabel, candidateMotherLabel, candidateMotherPDG;
 
   for(iTrack = 0; iTrack < nTracks; iTrack ++){
     E_T = 0., candidatePhi = 0., candidateEta = 0.;
 
     candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
-    if(candidate->MCStatusCode() != 1)  continue; // Discard non final-state particles
-    if(!candidate->IsPhysicalPrimary()) continue; // Discard non physical primary particles
+    if(candidate->MCStatusCode() != 1)  continue;       // Discard non final-state particles
+    if(!candidate->IsPhysicalPrimary()) continue;       // Discard non physical primary particles
 
     candidatePDG = candidate->GetPdgCode();
-    if(candidatePDG != 22) continue;              // Discard particles which are not photons
+    if(candidatePDG != 22) continue;                    // Discard particles which are not photons
+
+    candidateMotherLabel = candidate->GetMother();
+    if(candidateMotherLabel > 0 && candidateMotherLabel < nTracks){
+      candidateMother    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidateMotherLabel));
+      candidateMotherPDG = TMath::Abs(candidateMother->GetPdgCode());
+    }
+    else
+      candidateMotherPDG = candidatePDG;
+
+    if(candidateMotherPDG != 22) continue;              // Discard particles whose mother is not a photon
+
+    if(fPythiaHeaderLocal->ProcessType() != 201 || fPythiaHeaderLocal->ProcessType() != 202 || fPythiaHeaderLocal->ProcessType() != 203 || fPythiaHeaderLocal->ProcessType() != 204 || fPythiaHeaderLocal->ProcessType() != 205) continue;              // Discard particles which do not come from prompt photon processes
 
     candidateEta = candidate->Eta();
     candidatePhi = candidate->Phi();
@@ -4578,6 +4603,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
     radius = 0., particlePhi = 0., particleEta = 0., sumEiso = 0., sumUE = 0.;
 
+    // Isolation and UE measurement
     for(iTrack = 0; iTrack < nTracks; iTrack ++){
 
       if(iTrack == candidatePhotonLabel) continue; // Do not count the candidate photon as particle contributing to isolation/UE energy
@@ -4593,15 +4619,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
       if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
 
-      particleMotherStatus = particle->GetMother();
-      if(particleMotherStatus < 0 || particleMotherStatus > nTracks) continue;
-      if(particleMotherStatus == candidatePhotonLabel)               continue;                                // Discard mother if it is the candidate photon
-      if(particle->E() < 0.3)                                        continue;                                // Discard particles with energy lower than minimal for clusters at reco level
+      particleMotherLabel = particle->GetMother();
+      if(particleMotherLabel < 0 || particleMotherLabel > nTracks) continue;
+      if(particleMotherLabel == candidatePhotonLabel)              continue;                                // Discard mother if it is the candidate photon
+      if(particle->E() < 0.3)                                      continue;                                // Discard particles with energy lower than minimal for clusters at reco level
 
       particlePhi = particle->Phi();
       particleEta = particle->Eta();
-
-      // Isolation and UE measurement
 
       etaMax = fGeom->GetArm1EtaMax()-0.03;
       if(fPeriod != ""){

@@ -389,6 +389,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   // ... TPC and TOF
   UInt_t Maskin =
+    AliPIDResponse::kDetITS |
     AliPIDResponse::kDetTPC |
     AliPIDResponse::kDetTOF;
 
@@ -1171,6 +1172,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       trk->SetinVertex(vertex->UsesTrack(trkIndex));      
       
       // set PID information
+      // ... ITS
+      stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,tmptrk,AliPID::kSPECIES,probs);
+      trk->SetPIDITSStatus(stat);
+      trk->SetPIDITSSignal(tmptrk->GetITSsignal());
+      for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
+        stat = fPIDResponse->NumberOfSigmas(
+          AliPIDResponse::kITS,tmptrk,(AliPID::EParticleType)jj,nsig);
+        trk->SetPIDITSnSigma(jj,nsig);
+        trk->SetPIDITSProbability(jj,probs[jj]);
+      }
+      
       // ... TPC
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTPCStatus(stat);

@@ -15,16 +15,16 @@
 class AliFemtoDreamEvent {
  public:
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA);
+  AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA, UInt_t trigger);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
   TList *GetEvtCutList() const {return fEvtCutList;};
-  void SetXVertex(double xvtx){fxVtx=xvtx;};
-  double GetXVertex() const {return fxVtx;};
-  void SetYVertex(double yvtx){fyVtx=yvtx;};
-  double GetYVertex() const {return fyVtx;};
-  void SetZVertex(double zvtx){fzVtx=zvtx;};
-  double GetZVertex() const {return fzVtx;};
+  void SetXVertex(float xvtx){fxVtx=xvtx;};
+  float GetXVertex() const {return fxVtx;};
+  void SetYVertex(float yvtx){fyVtx=yvtx;};
+  float GetYVertex() const {return fyVtx;};
+  void SetZVertex(float zvtx){fzVtx=zvtx;};
+  float GetZVertex() const {return fzVtx;};
   void SetSPDMult(int spdMult){fSPDMult=spdMult;};
   int GetSPDMult() const {return fSPDMult;};
   void SetRefMult08(int refMult){fRefMult08=refMult;};
@@ -51,9 +51,9 @@ class AliFemtoDreamEvent {
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
   TList *fEvtCutList;         //!
-  double fxVtx;               //!
-  double fyVtx;               //!
-  double fzVtx;               //!
+  float fxVtx;               //!
+  float fyVtx;               //!
+  float fzVtx;               //!
   int fSPDMult;               //!
   int fRefMult08;             //!
   int fV0AMult;               //!
@@ -64,7 +64,7 @@ class AliFemtoDreamEvent {
   bool fHasVertex;            //!
   bool fHasMagField;          //!
   bool fisSelected;           //!
-  ClassDef(AliFemtoDreamEvent,1)
+  ClassDef(AliFemtoDreamEvent,2)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

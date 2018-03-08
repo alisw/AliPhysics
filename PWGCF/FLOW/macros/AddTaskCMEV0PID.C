@@ -3,7 +3,7 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0PID;
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", Float_t fSlope=3.45, Float_t fConst=100, Bool_t bUseMC=kFALSE,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", Float_t fSlope=3.45, Float_t fConst=100, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
@@ -60,7 +60,7 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     task_CME[i]->SetCentralityPercentileMax(fCentralityMax);
     task_CME[i]->SetPileUpCutParam(fSlope,fConst);
     task_CME[i]->SetCollisionSystem(sNuclei);
-
+    task_CME[i]->SetEventPlaneHarmonic(gPsiN);
 
     if(bUseMC) {
       task_CME[i]->SetFlagForMCcorrection(kTRUE);
@@ -69,7 +69,53 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     else{
       task_CME[i]->SetFlagForMCcorrection(kFALSE);
     }
+    //--------------------------
+    if(bUseNUA){      
+      TFile* fNUAFile = TFile::Open(sNUAFilePath,"READ");
+      if(!fNUAFile) {
+	printf("\n\n *** ERROR: NUA wgt file not found! \n  Please check name \n ***(EXIT now)*** \n\n");
+	exit(1);
+      }
+      else { 
+	TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+	if(fListNUA) {
+	  task_CME[i]->SetListForNUACorr(fListNUA);
+	}
+	else{
+	  printf("\n\n *** ERROR: NUA file Exist, But fList name is wrong!!\n please check name \n\n");
+	}
+      }
+    }
+    //----------------------------
+    if(bV0MCorr){
+      TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
+      if(!fV0MFile) {
+	printf("\n\n !!! ERROR: VOM Gain correction file not found! Please check path \n ***(EXIT now)*** \n\n");
+	exit(1);
+      } 
+      else{
+	TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+	if(fListV0MUse) {
+          task_CME[i]->SetFlagV0MGainCorr(kTRUE);
+          task_CME[i]->SetListForV0MCorr(fListV0MUse);
+	}
+        else{
+	  printf("\n\n !!!**** ERROR: TList for VOM Gain Correction found \n Please check name !!!\n\n");
+          task_CME[i]->SetListForV0MCorr(NULL);
+        }
+      }
+    }
 
+
+    
+    
+
+
+
+
+
+
+    
     mgr->AddTask(task_CME[i]);                        // connect the task to the analysis manager
     mgr->ConnectInput(task_CME[i], 0, cinput);        // give AOD event to my Task..!!
 

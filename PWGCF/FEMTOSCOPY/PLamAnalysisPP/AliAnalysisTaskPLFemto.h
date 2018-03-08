@@ -97,11 +97,11 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   void ProtonSelector(AliAODEvent *aodEvent);
   void V0Selector(AliAODEvent *aodEvent);
   void XiSelector(AliAODEvent *aodEvent);
-  void FIFOShifter(Int_t zBin,Int_t MultBin);
   void TrackCleaner();
   void ParticlePairer(Int_t zBin,Int_t multBin);
   void GetV0Origin(AliAODv0 *v0,AliAODEvent *aodEvent);
   void GetProtonOrigin(AliAODTrack *AODtrack,AliAODEvent *aodEvent,Int_t type);
+  void GetMomentumMatrix(const AliFemtoLambdaParticle &v01,const AliFemtoLambdaParticle &v02);
   void GetMomentumMatrix(const AliFemtoLambdaParticle &v0,const AliFemtoProtonParticle &proton);
   void GetMomentumMatrix(const AliFemtoProtonParticle &proton1,const AliFemtoProtonParticle &proton2);
   void GetMCMomentum(AliAODTrack *aodtrack,double *Protontruth,double *ProtontruthMother,double *ProtontruthMotherParton,int *PDGcodes,AliAODEvent *aodEvent, Int_t type);
@@ -191,8 +191,6 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
   AliAODTrack     **fGTI;                  //! Array of pointers which stores global track infos
   const UShort_t  fTrackBuffSize;          //! Size fo the above arra
 
-  AliFemtoLambdaEventCollection2 ***fEC; //!
-  AliFemtoLambdaEvent *fEvt; //!
   AliFemtoLambdaParticle *fV0cand; //!
   AliFemtoLambdaParticle *fAntiV0cand; //!
   AliFemtoProtonParticle *fProtoncand; //!
@@ -229,24 +227,27 @@ class AliAnalysisTaskPLFemto : public AliAnalysisTaskSE
     kProton,
     kAntiProton,
     kV0,
-    kAntiV0
+    kAntiV0,
+    kXi
   };
 
-  Bool_t fSEPairAnalysisDecider[4];
+  Bool_t fSEPairAnalysisDecider[5];
 
   //every particle has its own vector
   std::vector<AliFemtoProtonParticle> fProtonTrackVector;
   std::vector<AliFemtoProtonParticle> fAntiProtonTrackVector;
   std::vector<AliFemtoLambdaParticle> fLambdaTrackVector;
   std::vector<AliFemtoLambdaParticle> fAntiLambdaTrackVector;
+  std::vector<AliFemtoXiParticle>     fXiTrackVector;
 
   //every particle has also its own buffer
   std::deque< std::vector< AliFemtoProtonParticle > > fProtonEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoProtonParticle > > fAntiProtonEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoLambdaParticle > > fLambdaEvtBuffer[kZVertexBins][kMultiplicityBins];
   std::deque< std::vector< AliFemtoLambdaParticle > > fAntiLambdaEvtBuffer[kZVertexBins][kMultiplicityBins];
+  std::deque< std::vector< AliFemtoXiParticle > >     fXiEvtBuffer[kZVertexBins][kMultiplicityBins];
 
-  ClassDef(AliAnalysisTaskPLFemto,2)
+  ClassDef(AliAnalysisTaskPLFemto,3)
 };
 
 #endif

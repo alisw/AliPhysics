@@ -60,7 +60,9 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
       AliFatal("AliFemtoSPTrack::SetTrack No fGTI Set");
       fGlobalTrack=NULL;
     }else if(-trackID-1 >= fTrackBufferSize){
-      AliFatal("Buffer Size too small");
+//      AliFatal("Buffer Size too small");
+      this->fIsSet=false;
+      fIsReset=false;
       fGlobalTrack=NULL;
     }else if(!CheckGlobalTrack(trackID)){
       fGlobalTrack=NULL;
@@ -149,7 +151,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
     this->fRatioCR=0.;
   } else {
     this->fRatioCR=
-        fTrack->GetTPCClusterInfo(2, 1)/double(fTrack->GetTPCNclsF());
+        fTrack->GetTPCClusterInfo(2, 1)/float(fTrack->GetTPCNclsF());
   }
   const TBits sharedMap=fTrack->GetTPCSharedMap();
   if ((sharedMap.CountBits()) >= 1) {

@@ -1,17 +1,16 @@
-#ifndef ADDTASKFEMTODREAM_C
-#define ADDTASKFEMTODREAM_C
 #include "TROOT.h"
-
-AliAnalysisTask* AddTaskFemtoDream(
-    bool isMC=false,TString CentEst="kInt7",bool notpp=true,
-    bool DCAPlots=false,bool CPAPlots=false,
-    bool CombSigma=false,bool ContributionSplitting=false,
+#include "TSystem.h"
+AliAnalysisTaskSE* AddTaskFemtoDream(
+    bool isMC=false,
+    TString CentEst="kInt7",
+    bool notpp=true,
+    bool DCAPlots=false,
+    bool CPAPlots=false,
+    bool MomReso=false,
+    bool CombSigma=false,
+    bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
-	gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
-	gROOT->ProcessLine(".include $ROOTSYS/include");
-
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -26,6 +25,24 @@ AliAnalysisTask* AddTaskFemtoDream(
 		printf("This task requires an input event handler!\n");
 		return nullptr;
 	}
+
+	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+	  if (isMC) {
+	    // IMPORTANT - SET WHEN USING DIFFERENT PASS
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+	                "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+	                "kTRUE, \"1\")"));
+	  } else {
+	    AliAnalysisTaskPIDResponse *pidResponse =
+	        reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+	            gInterpreter->ExecuteMacro(
+	                "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+	  }
+	}
+
+
 	AliFemtoDreamEventCuts *evtCuts=
 			AliFemtoDreamEventCuts::StandardCutsRun2();
 	evtCuts->CleanUpMult(false,false,false,true);
@@ -120,7 +137,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   PDGParticles.push_back(3312);
   PDGParticles.push_back(3312);
   //std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
-  std::vector<double> ZVtxBins;
+  std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
@@ -156,7 +173,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   NBins.push_back(150);
   NBins.push_back(150);
   //std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  std::vector<double> kMin;
+  std::vector<float> kMin;
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
@@ -179,7 +196,7 @@ AliAnalysisTask* AddTaskFemtoDream(
   kMin.push_back(0.);
   kMin.push_back(0.);
   //std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
-  std::vector<double> kMax;
+  std::vector<float> kMax;
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
@@ -247,6 +264,13 @@ AliAnalysisTask* AddTaskFemtoDream(
   }
 	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins);
+	if (MomReso) {
+	  if (isMC) {
+	    config->SetMomentumResolution(true);
+	  } else {
+	    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+	  }
+ 	}
 //	config->SetMultBins(MultBins);
 	config->SetPDGCodes(PDGParticles);
 	config->SetNBinsHist(NBins);
@@ -255,15 +279,19 @@ AliAnalysisTask* AddTaskFemtoDream(
 	config->SetMixingDepth(10);
 
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDream",isMC,false);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
+		std::cout << "Added kINT7 Trigger \n";
 		task->SetMVPileUp(kTRUE);
 	}else if(CentEst == "kMB"){
 		task->SelectCollisionCandidates(AliVEvent::kMB);
+		std::cout << "Added kMB Trigger \n";
 		task->SetMVPileUp(kFALSE);
 	} else if (CentEst == "kHM") {
 		task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+		std::cout << "Added kHighMultV0 Trigger \n";
+    task->SetMVPileUp(kFALSE);
 	}else{
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;
@@ -273,7 +301,7 @@ AliAnalysisTask* AddTaskFemtoDream(
 	}
 	task->SetDebugLevel(0);
 	task->SetEvtCutQA(true);
-	task->SetTrackBufferSize(2500);
+	task->SetTrackBufferSize(10000);
 	task->SetEventCuts(evtCuts);
 	task->SetTrackCuts(TrackCuts);
 	task->SetAntiTrackCuts(AntiTrackCuts);
@@ -422,12 +450,11 @@ AliAnalysisTask* AddTaskFemtoDream(
 				Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
 		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
 	}
-	if (!mgr->InitAnalysis()) {
-		return nullptr;
-	}
+//	if (!mgr->InitAnalysis()) {
+//		return nullptr;
+//	}
 	return task;
 }
-#endif
 
 
 //  if (ContributionSplitting) {

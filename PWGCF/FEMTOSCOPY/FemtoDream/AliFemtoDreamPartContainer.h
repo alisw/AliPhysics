@@ -31,7 +31,7 @@ class AliFemtoDreamPartContainer {
  private:
   std::deque<std::vector<AliFemtoDreamBasePart>> fPartBuffer;
   unsigned int fMixingDepth;
-  ClassDef(AliFemtoDreamPartContainer,1);
+  ClassDef(AliFemtoDreamPartContainer,2);
 };
 
 #endif /* ALIFEMTODREAMPARTCONTAINER_H_ */

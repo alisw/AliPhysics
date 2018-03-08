@@ -40,8 +40,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
 }
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
   TString sName[2] = {"before", "after"};
-  double ptmin = 0;
-  double ptmax = 5;
+  float ptmin = 0;
+  float ptmax = 5;
   int ptBins = 100;
   int twoDBins = 400;
   fHistList = new TList();
@@ -307,11 +307,11 @@ AliFemtoDreamTrackHist::~AliFemtoDreamTrackHist() {
 }
 
 void AliFemtoDreamTrackHist::FillNSigComb(
-    double pT,double nSigTPC,double nSigTOF)
+    float pT,float nSigTPC,float nSigTOF)
 {
   fNSigCom->Fill(pT,nSigTPC,nSigTOF);
 }
 
-void AliFemtoDreamTrackHist::FillDCAXYPtBins(double pT,double dcaxy) {
+void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT,float dcaxy) {
   fDCAXYPtBins->Fill(pT,dcaxy);
 }

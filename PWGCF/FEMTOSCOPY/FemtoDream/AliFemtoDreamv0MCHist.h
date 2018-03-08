@@ -16,53 +16,53 @@ class AliFemtoDreamv0MCHist {
  public:
   AliFemtoDreamv0MCHist();
   AliFemtoDreamv0MCHist(
-      int MassNBins,double MassMin,double MassMax,bool contribSplitting,
+      int MassNBins,float MassMin,float MassMax,bool contribSplitting,
       bool CPADist);
   virtual ~AliFemtoDreamv0MCHist();
-  void FillMCCorr(double pT){fMCCorrPt->Fill(pT);};
-  void FillMCIdent(double pT){fMCIdentPt->Fill(pT);};
-  void FillMCGen(double pT){fMCGenPt->Fill(pT);};
-  void FillMCCont(double pT){fMCContPt->Fill(pT);};
-  void FillMCPrimary(double pT){fMCPrimaryPt->Fill(pT);};
-  void FillMCMaterial(double pT){fMCMaterialPt->Fill(pT);};
-  void FillMCFeeddown(double pT, double pdg){
+  void FillMCCorr(float pT){fMCCorrPt->Fill(pT);};
+  void FillMCIdent(float pT){fMCIdentPt->Fill(pT);};
+  void FillMCGen(float pT){fMCGenPt->Fill(pT);};
+  void FillMCCont(float pT){fMCContPt->Fill(pT);};
+  void FillMCPrimary(float pT){fMCPrimaryPt->Fill(pT);};
+  void FillMCMaterial(float pT){fMCMaterialPt->Fill(pT);};
+  void FillMCFeeddown(float pT, float pdg){
     fMCFeeddownWeakPt->Fill(pT, pdg);
   };
-  void FillMCpT(int i, double val){fMCpTDist[i]->Fill(val);};
-  void FillMCEta(int i, double val){fMCetaDist[i]->Fill(val);};
-  void FillMCPhi(int i, double val){fMCphiDist[i]->Fill(val);};
-  void FillMCDCAVtxX(int i, double pT, double val){
+  void FillMCpT(int i, float val){fMCpTDist[i]->Fill(val);};
+  void FillMCEta(int i, float val){fMCetaDist[i]->Fill(val);};
+  void FillMCPhi(int i, float val){fMCphiDist[i]->Fill(val);};
+  void FillMCDCAVtxX(int i, float pT, float val){
     fMCDecayVtxv0X[i]->Fill(pT, val);
   };
-  void FillMCDCAVtxY(int i, double pT, double val){
+  void FillMCDCAVtxY(int i, float pT, float val){
     fMCDecayVtxv0Y[i]->Fill(pT, val);};
-  void FillMCDCAVtxZ(int i, double pT, double val){
+  void FillMCDCAVtxZ(int i, float pT, float val){
     fMCDecayVtxv0Z[i]->Fill(pT, val);};
-  void FillMCTransverseRadius(int i, double pT, double val){
+  void FillMCTransverseRadius(int i, float pT, float val){
     fMCTransverseRadius[i]->Fill(pT, val);
   };
-  void FillMCDCAPosDaugPrimVtx(int i, double pT, double val){
+  void FillMCDCAPosDaugPrimVtx(int i, float pT, float val){
     fMCDCAPosDaugToPV[i]->Fill(pT, val);};
-  void FillMCDCANegDaugPrimVtx(int i, double pT, double val){
+  void FillMCDCANegDaugPrimVtx(int i, float pT, float val){
     fMCDCANegDaugToPV[i]->Fill(pT, val);};
-  void FillMCDCADaugVtx(int i, double pT, double val){
+  void FillMCDCADaugVtx(int i, float pT, float val){
     fMCDCADaugToVtx[i]->Fill(pT, val);};
-  void FillMCCosPoint(int i, double pT, double val){
+  void FillMCCosPoint(int i, float pT, float val){
     fMCCosPointing[i]->Fill(pT, val);};
-  void FillMCInvMass(int i, double massVal){
+  void FillMCInvMass(int i, float massVal){
     fMCInvMass[i]->Fill(massVal);};
   void FillMCCPAPtBins(
-      AliFemtoDreamBasePart::PartOrigin org, double pT,double cpa);
-  void FillMCBachDCAToPV(int i, double pT, double val){fMCBachDCAToPV[i]->Fill(pT,val);};
-  void FillMCv0DecayLength(int i, double pT, double val){fMCv0DecayLength[i]->Fill(pT,val);};
-  void FillMCv0CPA(int i, double pT, double val){fMCv0CPA[i]->Fill(pT,val);};
-  void FillMCXiDecayLength(int i, double pT, double val){fMCXiDecayLength[i]->Fill(pT,val);};
-  void FillMCOmegaDecayLength(int i, double pT, double val){fMCOmegaDecayLength[i]->Fill(pT,val);};
-  void FillMCXiRapidity(int i, double p, double val){fMCXiRapidity[i]->Fill(val,p);};
-  void FillMCOmegaRapidity(int i, double p, double val){fMCOmegaRapidity[i]->Fill(val,p);};
-  void FillMCPodolanski(int i, double pT, double alpha){fMCPodolanski[i]->Fill(alpha,pT);};
-  void FillMCXiInvMass(int i, double pT, double mass){fMCXiInvMass[i]->Fill(pT,mass);};
-  void FillMCOmegaInvMass(int i, double pT, double mass){fMCOmegaInvMass[i]->Fill(pT,mass);};
+      AliFemtoDreamBasePart::PartOrigin org, float pT,float cpa);
+  void FillMCBachDCAToPV(int i, float pT, float val){fMCBachDCAToPV[i]->Fill(pT,val);};
+  void FillMCv0DecayLength(int i, float pT, float val){fMCv0DecayLength[i]->Fill(pT,val);};
+  void FillMCv0CPA(int i, float pT, float val){fMCv0CPA[i]->Fill(pT,val);};
+  void FillMCXiDecayLength(int i, float pT, float val){fMCXiDecayLength[i]->Fill(pT,val);};
+  void FillMCOmegaDecayLength(int i, float pT, float val){fMCOmegaDecayLength[i]->Fill(pT,val);};
+  void FillMCXiRapidity(int i, float p, float val){fMCXiRapidity[i]->Fill(val,p);};
+  void FillMCOmegaRapidity(int i, float p, float val){fMCOmegaRapidity[i]->Fill(val,p);};
+  void FillMCPodolanski(int i, float pT, float alpha){fMCPodolanski[i]->Fill(alpha,pT);};
+  void FillMCXiInvMass(int i, float pT, float mass){fMCXiInvMass[i]->Fill(pT,mass);};
+  void FillMCOmegaInvMass(int i, float pT, float mass){fMCOmegaInvMass[i]->Fill(pT,mass);};
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
  private:
@@ -103,7 +103,7 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCSecondaryCPAPtBins;
   TH2F *fMCContCPAPtBins;
 
-  ClassDef(AliFemtoDreamv0MCHist,1)
+  ClassDef(AliFemtoDreamv0MCHist,2)
 };
 
 #endif /* ALIFEMTODREAMV0MCHIST_H_ */

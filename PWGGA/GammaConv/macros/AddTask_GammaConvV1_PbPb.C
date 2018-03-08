@@ -109,6 +109,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000070000000000500004000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
   TString cutnumberEvent = "10000003";
 
   Bool_t enableV0findingEffi = kFALSE;
@@ -2065,6 +2067,18 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // 20-40
     cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
     cuts.AddCut("14810113","00200009327000008250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 402){ // min pt elect 0.02
+    cuts.AddCut("10810113","00200089327000008250400000","0163103100000000"); // 0-80
+    cuts.AddCut("10210113","00200089327000008250400000","0163103100000000"); // 0-20
+    cuts.AddCut("12410113","00200089327000008250400000","0163103100000000"); // 20-40
+    cuts.AddCut("10410113","00200089327000008250400000","0163103100000000"); // 0-40
+    cuts.AddCut("14810113","00200089327000008250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 403){ // min pt elect 0
+    cuts.AddCut("10810113","00200079327000008250400000","0163103100000000"); // 0-80
+    cuts.AddCut("10210113","00200079327000008250400000","0163103100000000"); // 0-20
+    cuts.AddCut("12410113","00200079327000008250400000","0163103100000000"); // 20-40
+    cuts.AddCut("10410113","00200079327000008250400000","0163103100000000"); // 0-40
+    cuts.AddCut("14810113","00200079327000008250400000","0163103100000000"); // 40-80
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

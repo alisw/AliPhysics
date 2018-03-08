@@ -86,8 +86,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
                         TMath::Power((decayPosXi[1]-PrimVtx[1]),2)+
                         TMath::Power((decayPosXi[2]-PrimVtx[2]),2));
   fOmegaLength=fXiLength;
-  double XiPDGMass=1.321;
-  double OmegaPDGMass=1.672;
+  float XiPDGMass=1.321;
+  float OmegaPDGMass=1.672;
   if (this->GetMomentum().Mag()>0) {
     fXiLength=fXiLength*XiPDGMass/this->GetMomentum().Mag()>0;
     fOmegaLength=fOmegaLength*OmegaPDGMass/this->GetMomentum().Mag()>0;
@@ -146,7 +146,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fv0PosToPrimVtx=casc->DcaPosToPrimVertex();
   fv0NegToPrimVtx=casc->DcaNegToPrimVertex();
   fv0ToXiPointAngle=casc->CosPointingAngle(casc->GetDecayVertexXi());
-  double LamPDGMass=1.115683;
+  float LamPDGMass=1.115683;
   fv0Length=TMath::Sqrt(
       TMath::Power((decayPosV0[0]-decayPosXi[0]),2)+
       TMath::Power((decayPosV0[1]-decayPosXi[1]),2)+

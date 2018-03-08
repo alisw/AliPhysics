@@ -601,13 +601,20 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   
   ana->SwitchOnStudyClusterShape();
   
-  ana->SwitchOnStudyClusterShapeParam();
+  ana->SwitchOffStudyClusterShapeParam();
+  
+  ana->SwitchOffStudyMatchedPID() ;
   
   ana->SwitchOffStudyWeight();
   
+  ana->SetNCellBinLimits(-1); // no analysis on predefined bins in nCell
+  
   ana->SwitchOffStudyTCardCorrelation() ;
   ana->SwitchOffStudyExotic();
-    
+  ana->SwitchOffStudyInvariantMass();
+  ana->SwitchOffStudyColRowFromCellMax() ;
+  ana->SwitchOffStudyCellTime() ;
+  
   // PID cuts (Track-matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();

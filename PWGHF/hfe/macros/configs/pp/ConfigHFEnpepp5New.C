@@ -40,7 +40,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                                     Int_t HadronContFunc=0, Int_t PrimaryVertexTyp)
 {
 
-   Bool_t etacor = true;
+   Bool_t etacor = false;
    Bool_t MomCor = true;
 
    //***************************************//

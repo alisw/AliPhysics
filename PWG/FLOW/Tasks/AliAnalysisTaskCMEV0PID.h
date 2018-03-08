@@ -49,6 +49,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
     
   //User Defined Functions:
   void SetFilterBit(Int_t b)                 {this->fFilterBit = b;}
+  void SetEventPlaneHarmonic(Int_t pn)       {this->gPsiN     = pn;}
+
   void SetNSigmaCutTPC(Float_t b)            {this->fNSigmaCut = b;}
   void SetPtRangeMin(Float_t b)              {this->fMinPtCut  = b;}
   void SetPtRangeMax(Float_t b)              {this->fMaxPtCut  = b;}
@@ -59,11 +61,18 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetCentralityPercentileMin(Float_t b) {this->fCentralityPercentMin = b;}
   void SetCentralityPercentileMax(Float_t b) {this->fCentralityPercentMax = b;}
   void SetFBEfficiencyList(TList *flist)     {this->fListFBHijing  =  flist;}
-  void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
-  void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
-  void SetPileUpCutParam(Float_t m,Float_t c){this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetListForNUACorr(TList *fl)          {this->fListNUACorr   = fl;}
   
+  void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
+  void SetFlagV0MGainCorr(Bool_t b)          {this->bV0MGainCorr   = b;}
+
+  void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
+  void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
+  void SetListForNUACorr(TList *fln)         {this->fListNUACorr   = fln;}
+  void SetListForV0MCorr(TList *flv)         {this->fListV0MCorr   = flv;}
+
+  
+
+   
 
  protected:
 
@@ -80,10 +89,11 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TFile                 *mfileFBHijing;       //!
   TList                 *fListFBHijing;       //!
   TList                 *fListNUACorr;        //
-
+  TList                 *fListV0MCorr;        //
   //histograms:
   TH1F         *fHistTaskConfigParameters;   //! Task input parameters FB / cut values etc.
   TH1F                  *fHistPileUpCount;   //!
+  TH1F               *fHistMultSelPUCount;   //!
   TH2F                  *fHistEtaPtBefore;   //! Eta-Pt acceptance
   TH2F                   *fHistEtaPtAfter;   //! Eta-Pt acceptance
   TH2F        *fHistTPCvsGlobalMultBefore;   //!
@@ -110,8 +120,55 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH2F              *fHistRawVsCorrMultFB;   //!  
   TH2F                *hCentvsTPCmultCuts;   //! 
 
+  TH2F             *fHV0AEventPlaneVsCent;   //!
+  TH2F             *fHV0CEventPlaneVsCent;   //!
+  TH2F            *fHTPCAEventPlaneVsCent;   //!
+  TH2F            *fHTPCCEventPlaneVsCent;   //!
+  TH2F                    *fV0MultChVsRun;   //!   To fill VOM multiplicity 
+  
+  TH1F                   *fCentDistBefore;   //!   without PileUp cut
+  TH1F                    *fCentDistAfter;   //!   with PileUp cut
+  TH1D                      *fHCorrectV0M;   //!   To read Gain Correction file.
+  TH2D                   *fHAvgerageQnV0A;   //!   V0A Average <Qn>, n=2,3
+  TH2D                   *fHAvgerageQnV0C;   //!   V0C Average <Qn>, n=2,3
+
+  TProfile              *fV0AQ2xVsCentRun; //!
+  TProfile              *fV0AQ2yVsCentRun; //!
+  TProfile              *fV0CQ2xVsCentRun; //!
+  TProfile              *fV0CQ2yVsCentRun; //!
+  TProfile              *fV0AQ3xVsCentRun; //!
+  TProfile              *fV0AQ3yVsCentRun; //!
+  TProfile              *fV0CQ3xVsCentRun; //!
+  TProfile              *fV0CQ3yVsCentRun; //!
+
+
+  TProfile              *fTPCAQ2xVsCentRun; //!
+  TProfile              *fTPCAQ2yVsCentRun; //!
+  TProfile              *fTPCCQ2xVsCentRun; //!
+  TProfile              *fTPCCQ2yVsCentRun; //!
+  TProfile              *fTPCAQ3xVsCentRun; //!
+  TProfile              *fTPCAQ3yVsCentRun; //!
+  TProfile              *fTPCCQ3xVsCentRun; //!
+  TProfile              *fTPCCQ3yVsCentRun; //!
+  TProfile              *fTPCAQ4xVsCentRun; //!
+  TProfile              *fTPCAQ4yVsCentRun; //!
+  TProfile              *fTPCCQ4xVsCentRun; //!
+  TProfile              *fTPCCQ4yVsCentRun; //!
+
+
+
+
+
+
+
+
+
+
+  
   Int_t            fSkipOutlierCut;  //!
   Int_t                 fFilterBit;  //
+  Int_t                      gPsiN;  //
+  Int_t                 fOldRunNum;  //
   Float_t               fNSigmaCut;  //
   Float_t                fMinPtCut;  //
   Float_t                fMaxPtCut;  //
@@ -122,6 +179,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Float_t         fPileUpSlopeParm;  //
   Float_t         fPileUpConstParm;  //
   Bool_t              bApplyMCcorr;  //
+  Bool_t              bV0MGainCorr;  //
   TString            sPathOfMCFile;  //
   TString                sNucleiTP;  //
  
@@ -139,6 +197,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH3F     *fHistTPCTOFnSigmavsPtAfter[3];   //!
   TH2F       *fHistTPCdEdxvsPtPIDAfter[3];   //!
 
+
+  
   TH3D                *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
   TH3D                *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
 
@@ -148,7 +208,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile     *fHist_Corr3p_EP_Norm_PN[2][3];  //! 
   TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
-  TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
+  TProfile     *fHist_Reso2n_EP_Norm_Det[2][4]; //! 
 
   //CME(EP) vs Refmult:
   //TProfile     *fHist_Corr3p_EP_Refm_PN[2][3];  //! 
@@ -173,6 +233,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   //for NUA and gain corrections:
   void  GetNUACorrectionHist(Int_t run);
+  void  GetV0MCorrectionHist(Int_t run);
 
 
   
@@ -187,7 +248,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   
   AliAnalysisTaskCMEV0PID(const AliAnalysisTaskCMEV0PID &other);
-  AliAnalysisTaskCMEV0PID& operator=(const AliAnalysisTaskCMEV0PID &other);    
+  AliAnalysisTaskCMEV0PID &operator=(const AliAnalysisTaskCMEV0PID &other);    
   ClassDef(AliAnalysisTaskCMEV0PID,1) 
 
 };

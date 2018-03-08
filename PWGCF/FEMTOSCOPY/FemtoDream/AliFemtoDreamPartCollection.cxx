@@ -38,7 +38,7 @@ AliFemtoDreamPartCollection::~AliFemtoDreamPartCollection() {
 
 void AliFemtoDreamPartCollection::SetEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    double ZVtx,double Mult)
+    float ZVtx,float Mult)
 {
   if (Particles.size()!=fNSpecies) {
     TString fatalOut=
@@ -74,7 +74,7 @@ void AliFemtoDreamPartCollection::PrintEvent(int ZVtx,int Mult) {
   return;
 }
 
-void AliFemtoDreamPartCollection::FindBin(double ZVtxPos,double Multiplicity,
+void AliFemtoDreamPartCollection::FindBin(float ZVtxPos,float Multiplicity,
                                           int *returnBins) {
   returnBins[0]=-99;
   returnBins[1]=-99;

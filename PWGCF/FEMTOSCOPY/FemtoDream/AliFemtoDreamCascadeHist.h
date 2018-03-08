@@ -16,27 +16,27 @@
 class AliFemtoDreamCascadeHist {
  public:
   AliFemtoDreamCascadeHist();
-  AliFemtoDreamCascadeHist(double mass);
+  AliFemtoDreamCascadeHist(float mass);
   virtual ~AliFemtoDreamCascadeHist();
   void FillCutCounter(int bin) {fCutCounter->Fill(bin);};
-  void FillConfig(int iBin,double val){fConfig->Fill(iBin,val);};
-  void FillInvMassXi(int iBin,double mass){fInvMass[iBin]->Fill(mass);};
-  void FillInvMassPtXi(double Pt,double mass){fInvMassPtXi->Fill(Pt,mass);};
-  void FillInvMassPtv0(double Pt,double mass){fInvMassPtv0->Fill(Pt,mass);};
-  void FillInvMassLambda(int iBin,double mass){fInvMassv0[iBin]->Fill(mass);};
-  void FillXiPt(int iBin,double pT){fXiPt[iBin]->Fill(pT);};
-  void FillMomRapXi(int iBin,double rap,double pT){fP_Y_Xi[iBin]->Fill(rap,pT);};
-  void FillDCAXiDaug(int iBin,double DCA){fDCAXiDaug[iBin]->Fill(DCA);};
-  void FillMinDistPrimVtxBach(int iBin,double dist){fMinDistVtxBach[iBin]->Fill(dist);};
-  void FillCPAXi(int iBin,double cpa){fCPAXi[iBin]->Fill(cpa);};
-  void FillTransverseRadiusXi(int iBin,double rad){fTransRadiusXi[iBin]->Fill(rad);};
-  void FillMaxDCAv0Daug(int iBin,double dca){fv0MaxDCADaug[iBin]->Fill(dca);};
-  void FillCPAv0(int iBin,double cpa){fCPAv0[iBin]->Fill(cpa);};
-  void FillTransverseRadiusv0(int iBin,double rad){fTransRadiusv0[iBin]->Fill(rad);};
-  void FillMinDistPrimVtxv0(int iBin,double dist){fMinDistVtxv0[iBin]->Fill(dist);};
-  void FillMinDistPrimVtxv0DaugPos(int iBin,double dist){fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
-  void FillMinDistPrimVtxv0DaugNeg(int iBin,double dist){fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
-  void FillPodolandski(int iBin,double alpha,double qt){fPodolandski[iBin]->Fill(alpha,qt);};
+  void FillConfig(int iBin,float val){fConfig->Fill(iBin,val);};
+  void FillInvMassXi(int iBin,float mass){fInvMass[iBin]->Fill(mass);};
+  void FillInvMassPtXi(float Pt,float mass){fInvMassPtXi->Fill(Pt,mass);};
+  void FillInvMassPtv0(float Pt,float mass){fInvMassPtv0->Fill(Pt,mass);};
+  void FillInvMassLambda(int iBin,float mass){fInvMassv0[iBin]->Fill(mass);};
+  void FillXiPt(int iBin,float pT){fXiPt[iBin]->Fill(pT);};
+  void FillMomRapXi(int iBin,float rap,float pT){fP_Y_Xi[iBin]->Fill(rap,pT);};
+  void FillDCAXiDaug(int iBin,float DCA){fDCAXiDaug[iBin]->Fill(DCA);};
+  void FillMinDistPrimVtxBach(int iBin,float dist){fMinDistVtxBach[iBin]->Fill(dist);};
+  void FillCPAXi(int iBin,float cpa){fCPAXi[iBin]->Fill(cpa);};
+  void FillTransverseRadiusXi(int iBin,float rad){fTransRadiusXi[iBin]->Fill(rad);};
+  void FillMaxDCAv0Daug(int iBin,float dca){fv0MaxDCADaug[iBin]->Fill(dca);};
+  void FillCPAv0(int iBin,float cpa){fCPAv0[iBin]->Fill(cpa);};
+  void FillTransverseRadiusv0(int iBin,float rad){fTransRadiusv0[iBin]->Fill(rad);};
+  void FillMinDistPrimVtxv0(int iBin,float dist){fMinDistVtxv0[iBin]->Fill(dist);};
+  void FillMinDistPrimVtxv0DaugPos(int iBin,float dist){fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
+  void FillMinDistPrimVtxv0DaugNeg(int iBin,float dist){fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
+  void FillPodolandski(int iBin,float alpha,float qt){fPodolandski[iBin]->Fill(alpha,qt);};
   TList *GetHistList() {return fHistList;};
   private:
   TList *fHistList;
@@ -60,7 +60,7 @@ class AliFemtoDreamCascadeHist {
   TH1F *fMinDistVtxv0DaugPos[2];
   TH1F *fMinDistVtxv0DaugNeg[2];
   TH2F *fPodolandski[2];
-  ClassDef(AliFemtoDreamCascadeHist,1)
+  ClassDef(AliFemtoDreamCascadeHist,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADEHIST_H_ */

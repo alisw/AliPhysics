@@ -15,6 +15,7 @@
 
 //C++
 #include <sstream>
+#include <array>
 
 // Root
 #include <TClonesArray.h>
@@ -1634,7 +1635,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   for (auto& def : fJetDefinitions) maxJetPt[&def] = 0;
   Double_t maxDPt = 0;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int, 3> nAccCharm = {0};
+  std::array<std::array<int, 3>, 5> nAccCharmPt = {{{0}}};
+
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
@@ -1662,14 +1665,25 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
         fDmesonJets[(icharm+1)*(1-(im*2))] = DmesonJet;
         nMassHypo++;
         nAccCharm[im]++;
+
+        for (int i = 0; i < nAccCharmPt.size(); i++) {
+          if (charmCand->Pt() < i) break;
+          nAccCharmPt[i][im]++;
+        }
       }
     }
-    if (nMassHypo == 2) {
+    if (nMassHypo == 2) { // both mass hypothesis accepted
       nAccCharm[0]--;
       nAccCharm[1]--;
-      nAccCharm[2] += 2;
-    }
-    if (nMassHypo == 2) { // both mass hypothesis accepted
+      nAccCharm[2]++;
+
+      for (int i = 0; i < nAccCharmPt.size(); i++) {
+        if (charmCand->Pt() < i) break;
+        nAccCharmPt[i][0]--;
+        nAccCharmPt[i][1]--;
+        nAccCharmPt[i][2]++;
+      }
+
       fDmesonJets[(icharm+1)].fD0D0bar = kTRUE;
       fDmesonJets[-(icharm+1)].fD0D0bar = kTRUE;
     }
@@ -1719,6 +1733,16 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
   fHistManager->FillTH2(hname, ntracks, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+
+  for (int i = 0; i < nAccCharmPt.size(); i++) {
+    hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, "D", nAccCharmPt[i][0]);
+    fHistManager->FillTH1(hname, "Anti-D", nAccCharmPt[i][1]);
+    fHistManager->FillTH1(hname, "Both", nAccCharmPt[i][2]);
+
+    hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, nAccCharmPt[i][0]+nAccCharmPt[i][1]+nAccCharmPt[i][2]);
+  }
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
   fHistManager->FillTH1(hname, nD);
@@ -1855,7 +1879,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
   if (!fMCContainer->IsSpecialPDGFound()) return;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int,2> nAccCharm = {0};
+  std::array<std::array<int, 2>, 5> nAccCharmPt = {{{0}}};
 
   std::map<AliHFJetDefinition*, Double_t> maxJetPt;
   Double_t maxDPt = 0;
@@ -1926,11 +1951,18 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
             (*dMesonJetIt).second.fAncestor = FindParticleOrigin(part, fMCContainer->GetArray(), kFindFirst);
 
+            Int_t im = -1;
             if (part->PdgCode() > 0) {  // D0
-              nAccCharm[0]++;
+              im = 0;
             }
             else { // D0bar
-              nAccCharm[1]++;
+              im = 1;
+            }
+
+            nAccCharm[im]++;
+            for (int i = 0; i < nAccCharmPt.size(); i++) {
+              if (part->Pt() < i) break;
+              nAccCharmPt[i][im]++;
             }
           }
 
@@ -1978,13 +2010,21 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
   fHistManager->FillTH1(hname, "D", nAccCharm[0]);
   fHistManager->FillTH1(hname, "Anti-D", nAccCharm[1]);
-  fHistManager->FillTH1(hname, "Both", nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
-  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]);
+
+  for (int i = 0; i < nAccCharmPt.size(); i++) {
+    hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, "D", nAccCharmPt[i][0]);
+    fHistManager->FillTH1(hname, "Anti-D", nAccCharmPt[i][1]);
+
+    hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, nAccCharmPt[i][0]+nAccCharmPt[i][1]);
+  }
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
-  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]); // same as the number of accepted D mesons, since no selection is performed
+  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]); // same as the number of accepted D mesons, since no selection is performed
 }
 
 /// Builds the tree where the output will be posted
@@ -2765,6 +2805,16 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     hname = TString::Format("%s/fHistNTotAcceptedDmesons", param.GetName());
     htitle = hname + ";;#it{N}_{D}";
     h = fHistManager.CreateTH1(hname, htitle, 3, 0, 3);
+
+    for (int i = 0 ; i < 5; i++) {
+      hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", param.GetName(), i);
+      htitle = hname + ";#it{N}_{D};events";
+      h = fHistManager.CreateTH1(hname, htitle, 21, -0.5, 20.5);
+
+      hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", param.GetName(), i);
+      htitle = hname + ";;#it{N}_{D}";
+      h = fHistManager.CreateTH1(hname, htitle, 3, 0, 3);
+    }
 
     hname = TString::Format("%s/fHistNDmesons", param.GetName());
     htitle = hname + ";#it{N}_{D};events";

@@ -14,6 +14,7 @@
 /// \author Lucile Ronflette <lucile.ronflette@cern.ch>, Subatech, Nantes
 /// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
 /// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+/// \author Erwann Masson <erwann.masson@cern.ch>, Subatech, Nantes
 /// \date Jun 26, 2014
 
 // ROOT System
@@ -55,6 +56,7 @@ class AliESDCaloCluster;
 class AliVCaloCells;
 class AliAODMCParticle;
 class AliGenPythiaEventHeader;
+class AliGenDPMjetEventHeader;
 class AliAODMCHeader;
 // class AliEventPoolManager;
 
@@ -175,6 +177,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TClonesArray               * fNCluster;                       ///< Neutral clusters
   TClonesArray               * fAODMCParticles;                 ///<
   AliAODMCHeader             * fmcHeader;                       ///<
+  AliGenPythiaEventHeader    * fPythiaHeaderLocal;              ///< Pythia header for cocktail simulations
+  AliGenDPMjetEventHeader    * fDPMjetHeader;                   ///< DPMjet header for cocktail simulations
   TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
   TClonesArray               * fTracksAna;                      ///< Hybrid track array in
   AliStack                   * fStack;                          ///<

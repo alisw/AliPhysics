@@ -35,7 +35,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
     fPodolandski[i]=0;
   }
 }
-AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
+AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass) {
   fHistList=new TList();
   fHistList->SetName("Cascade");
   fHistList->SetOwner();

@@ -31,7 +31,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 
 }
 
-AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
+AliFemtoDreamEvent::AliFemtoDreamEvent(
+    bool mvPileUp,bool EvtCutQA, UInt_t trigger)
 :fUtils(new AliAnalysisUtils())
 ,fEvtCuts(new AliEventCuts())
 ,fxVtx(0)
@@ -56,6 +57,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
     //Following the analysis in pp Run1 of O.Arnold
     fUtils->SetMinPlpContribSPD(3);
   }
+
+//  if(trigger != AliVEvent::kINT7) {
+//    fEvtCuts->SetManualMode();
+//    fEvtCuts->SetupRun2pp();
+//    std::cout << "Setting up Track Cuts correspondingly for pp trigger: " <<
+//        trigger << std::endl;
+//    fEvtCuts->fTriggerMask = trigger;
+//  }
   if (EvtCutQA) {
     fEvtCutList=new TList();
     fEvtCutList->SetName("AliEventCuts");
@@ -121,8 +130,8 @@ int AliFemtoDreamEvent::CalculateITSMultiplicity(AliAODEvent *evt) {
   int nTr=tracklets->GetNumberOfTracklets();
   int count=0;
   for(int iTr=0; iTr<nTr; iTr++){
-    double theta=tracklets->GetTheta(iTr);
-    double eta=-TMath::Log(TMath::Tan(theta/2.));
+    float theta=tracklets->GetTheta(iTr);
+    float eta=-TMath::Log(TMath::Tan(theta/2.));
     if(TMath::Abs(eta) < 0.8){
       count++;
     }

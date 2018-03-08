@@ -1,8 +1,6 @@
-#ifndef AddTaskFemtoContributionSplitting_C
-#define AddTaskFemtoContributionSplitting_C
 #include "TROOT.h"
-
-AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
+#include "TSystem.h"
+AliAnalysisTaskSE* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
 {
   bool isMC=true;
   bool DCAPlots=false;
@@ -28,6 +26,23 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
     printf("This task requires an input event handler!\n");
     return nullptr;
   }
+
+  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+    if (isMC) {
+      // IMPORTANT - SET WHEN USING DIFFERENT PASS
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+                  "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+                  "kTRUE, \"1\")"));
+    } else {
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro(
+                  "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+    }
+  }
+
   AliFemtoDreamEventCuts *evtCuts=
       AliFemtoDreamEventCuts::StandardCutsRun1();
   //Track Cuts
@@ -160,7 +175,7 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
   PDGParticles.push_back(3312);
   PDGParticles.push_back(3312);
   //std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
-  std::vector<double> ZVtxBins;
+  std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
@@ -196,7 +211,7 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
   NBins.push_back(150);
   NBins.push_back(150);
   //std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  std::vector<double> kMin;
+  std::vector<float> kMin;
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
@@ -219,7 +234,7 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
   kMin.push_back(0.);
   kMin.push_back(0.);
   //std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
-  std::vector<double> kMax;
+  std::vector<float> kMax;
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
@@ -284,7 +299,7 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
   }
   task->SetDebugLevel(0);
   task->SetEvtCutQA(true);
-  task->SetTrackBufferSize(2500);
+  task->SetTrackBufferSize(10000);
   task->SetEventCuts(evtCuts);
   task->SetTrackCuts(TrackCuts);
   task->SetAntiTrackCuts(AntiTrackCuts);
@@ -433,9 +448,8 @@ AliAnalysisTask* AddTaskFemtoContributionSplitting(TString CentEst="kInt7")
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
     mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
   }
-  if (!mgr->InitAnalysis()) {
-    return nullptr;
-  }
+  //  if (!mgr->InitAnalysis()) {
+  //    return nullptr;
+  //  }
   return task;
 }
-#endif

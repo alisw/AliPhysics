@@ -17,49 +17,44 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
 
-  Float_t maxCentrality = 100;
-
   const Int_t nMultSteps = 3;
   Int_t multSteps[] = {100, 0, 0};
   Int_t multBinWidth[] = {1,1,1};
 
   Int_t nBinsCent = 1;
   Double_t centBinEdgesDummy[2] = {0., 100.};
-  Double_t centBinEdgesUsed[8] = {0., 5., 10., 20., 40., 60., 80., 100.};
+  Double_t centBinEdgesUsed[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
   Double_t* centBinEdges = centBinEdgesDummy;
 
 
   if(controlstring.Contains("pp")){
-    includeCrosscheckHistos = kTRUE;
+    if(controlstring.Contains("performanceHistos")) includeCrosscheckHistos = kTRUE;
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
   if(controlstring.Contains("XeXe"))  {
     colsys = "XeXe";
-    maxCentrality = 80;
-//    multSteps[0] = 200;  multBinWidth[0] = 15;
-    multSteps[0] = 3000;  multBinWidth[0] = 1;
+    multSteps[0] = 3500;  multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
-    nBinsCent = 7;
+    nBinsCent = 8;
     centBinEdges = centBinEdgesUsed;
   }
   if(controlstring.Contains("pPb"))  {
     colsys = "pPb";
-    multSteps[0] = 200;   multBinWidth[0] = 1;
+    multSteps[0] = 300;   multBinWidth[0] = 1;
     multSteps[1] = 0;     multBinWidth[1] = 1;
     multSteps[2] = 0;     multBinWidth[2] = 1;
     is2013pA = kTRUE;
   }
   if(controlstring.Contains("PbPb")) {
-    maxCentrality = 80;
     isPbPbAnalysis = kTRUE;
     is2015Data = kTRUE;
     colsys = "PbPb";
     multSteps[0] = 4500;   multBinWidth[0] = 1;
     multSteps[1] = 0;    multBinWidth[1] = 1;
     multSteps[2] = 0;    multBinWidth[2] = 1;
-    nBinsCent = 7;
+    nBinsCent = 8;
     centBinEdges = centBinEdgesUsed;
   }
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
@@ -120,8 +115,6 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     task->SetBinsCent(nBinsCent, centBinEdges);
 
     // nominal cut-setting:
-    task->SetMaxCentrality(maxCentrality);
-
     task->SetMinEta(-etaCut);
     task->SetMaxEta(etaCut);
     task->SetMinPt(0.15);

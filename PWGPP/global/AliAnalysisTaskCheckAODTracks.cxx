@@ -87,6 +87,9 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistTPCchi2PerClusPhiPtTPCsel{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselITSref{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselSPDany{nullptr},
+  fHistSig1ptCovMatPhiPtTPCsel{nullptr},
+  fHistSig1ptCovMatPhiPtTPCselITSref{nullptr},
+  fHistSig1ptCovMatPhiPtTPCselSPDany{nullptr},
   fHistImpParXYPtMulPionTPCselSPDany{nullptr},
   fHistImpParXYPtMulKaonTPCselSPDany{nullptr},
   fHistImpParXYPtMulProtonTPCselSPDany{nullptr},
@@ -121,6 +124,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinPt(0.),
   fMaxPt(25.),
   fMaxMult(500.),
+  fRequireITSforV0dau(0),
   fReadMC{kFALSE},
   fUseMCId{kFALSE}
 {
@@ -151,6 +155,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistTPCCrowOverFindPtFiltBit[jb]=0x0;
     fHistTPCChi2clusPtFiltBit[jb]=0x0;
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
+    fHistSig1ptCovMatPtFiltBit[jb]=0x0;
   }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -197,6 +202,9 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistTPCchi2PerClusPhiPtTPCsel;
     delete fHistTPCchi2PerClusPhiPtTPCselITSref;
     delete fHistTPCchi2PerClusPhiPtTPCselSPDany;
+    delete fHistSig1ptCovMatPhiPtTPCsel;
+    delete fHistSig1ptCovMatPhiPtTPCselITSref;
+    delete fHistSig1ptCovMatPhiPtTPCselSPDany;
     delete fHistImpParXYPtMulPionTPCselSPDany;
     delete fHistImpParXYPtMulKaonTPCselSPDany;
     delete fHistImpParXYPtMulProtonTPCselSPDany;
@@ -231,6 +239,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
       delete fHistTPCCrowOverFindPtFiltBit[jb];      
       delete fHistTPCChi2clusPtFiltBit[jb];
       delete fHistChi2TPCConstrVsGlobPtFiltBit[jb];
+      delete fHistSig1ptCovMatPtFiltBit[jb];
     }
     delete fTrackTree;
   }
@@ -394,6 +403,13 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselITSref);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselSPDany);
   
+  fHistSig1ptCovMatPhiPtTPCsel = new TH3F("hSig1ptCovMatPhiPtTPCsel"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistSig1ptCovMatPhiPtTPCselITSref = new TH3F("hSig1ptCovMatPhiPtTPCselITSref"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistSig1ptCovMatPhiPtTPCselSPDany = new TH3F("hSig1ptCovMatPhiPtTPCselSPDany"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCsel);
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCselITSref);
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCselSPDany);
+
   const Int_t nPtBins4ip=90;
   Double_t ptBins4ip[nPtBins4ip+1];
   for(Int_t jjj=0; jjj<=50; jjj++) ptBins4ip[jjj]=0.020*jjj;
@@ -428,6 +444,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fHistTPCCrowOverFindPtFiltBit[jb] = new TH2F(Form("hTPCCrowOverFindPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; nTPCCrossedRows / nTPCFindableClusters",50,0.,10.,100,0.,2.);    
     fHistTPCChi2clusPtFiltBit[jb] = new TH2F(Form("hTPCChi2clusPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",50,0.,10.,160,0.,8.);
     fHistChi2TPCConstrVsGlobPtFiltBit[jb] = new TH2F(Form("hChi2TPCConstrVsGlobPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; golden #chi^{2}",50,0.,10.,160,0.,40.);
+    fHistSig1ptCovMatPtFiltBit[jb] = new TH2F(Form("hSig1ptCovMatPtFiltBit%d",jb)," ;  p_{T} (GeV/c) ; p_{T}*#sigma(1/p_{T})",50,0.,10.,100, 0, 0.3);
     fOutput->Add(fHistEtaPhiPtFiltBit[jb]);
     fOutput->Add(fHistImpParXYPtMulFiltBit[jb]);
     fOutput->Add(fHistITScluPtFiltBit[jb]);
@@ -437,6 +454,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistTPCChi2clusPtFiltBit[jb]);
     fOutput->Add(fHistChi2TPCConstrVsGlobPtFiltBit[jb]);
     fOutput->Add(fHistTPCCrowOverFindPtFiltBit[jb]);
+    fOutput->Add(fHistSig1ptCovMatPtFiltBit[jb]);
   }
 
   fHistPtResidVsPtTPCselAll = new TH2F("hPtResidVsPtTPCselAll","; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
@@ -666,6 +684,10 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if (track->GetTPCNclsF()>0) {
       ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
     }
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(track);
+    Double_t curvrelerr = TMath::Sqrt(etp.GetSigma1Pt2())/etp.OneOverPt();
+
     Int_t tofBC=track->GetTOFBunchCrossing(magField);
     fTreeVarFloat[10]=impactXY;
     fTreeVarFloat[11]=impactZ;
@@ -755,6 +777,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 	fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
 	fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
 	fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
+	fHistSig1ptCovMatPtFiltBit[jb]->Fill(pttrack,curvrelerr);
       }
     }
 
@@ -790,9 +813,14 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
 
     fHistTPCchi2PerClusPhiPtTPCsel->Fill(chi2clus,pttrack,phitrack);
+    fHistSig1ptCovMatPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
     if(itsRefit){
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
-      if(spdAny) fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
+      fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
+      if(spdAny){
+	fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
+	fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
+      }
     }
 
     bool pid[AliPID::kSPECIESC] = {false};
@@ -875,6 +903,14 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
     if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
+    if(fRequireITSforV0dau & (1<<kBitRequireITSrefit)){
+      if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
+      if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
+    }
+    if(fRequireITSforV0dau & (1<<kBitRequireSPDany)){
+      if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
+      if(!nTrack->HasPointOnITSLayer(0) && !nTrack->HasPointOnITSLayer(1)) continue;
+    }
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
@@ -938,6 +974,7 @@ Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTra
   esdTrack.SetTPCSharedMap(aTrack->GetTPCSharedMap());
   esdTrack.SetTPCPointsF(aTrack->GetTPCNclsF());
   esdTrack.SetTPCNcls(aTrack->GetTPCNcls());
+  esdTrack.SetITSchi2(aTrack->GetITSchi2());
   Int_t nTPCclus=aTrack->GetNcls(1);
   Double_t chi2ndf=aTrack->Chi2perNDF();
   Double_t chi2tpc=999.;

@@ -35,8 +35,8 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
   }
 }
 
-AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,double MassMin,
-                                         double MassMax,bool CPAPlots) {
+AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,float MassMin,
+                                         float MassMax,bool CPAPlots) {
   TString sName[2]={"before","after"};
 
   fHistList=new TList();

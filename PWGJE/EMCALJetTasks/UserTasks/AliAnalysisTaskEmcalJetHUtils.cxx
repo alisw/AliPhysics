@@ -42,17 +42,10 @@ double AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(AliEmcalJet * jet, AliA
   double maxClusterPt = 0;
 
   if (leadingHadronType == kCharged || leadingHadronType == kBoth) {
-    auto particleConstituents = jet->GetParticleConstituents();
-    for (auto particle : particleConstituents) {
-      if (particle.Pt() > maxTrackPt) {
-        maxTrackPt  = particle.Pt();
-      }
-    }
-    // Swtich to this method once it is fixed in AliEmcalJet
-    /*auto particle = jet->GetLeadingParticleConstituent();
+    auto particle = jet->GetLeadingParticleConstituent();
     if (particle) {
       maxTrackPt = particle->Pt();
-    }*/
+    }
   }
   if (leadingHadronType == kNeutral || leadingHadronType == kBoth) {
     // NOTE: We don't want to use jet->MaxNeutralPt() because this uses energy
@@ -60,22 +53,12 @@ double AliAnalysisTaskEmcalJetHUtils::GetLeadingHadronPt(AliEmcalJet * jet, AliA
     //       strictly wrong, it can be rather misleading to have a leading neutral
     //       particle value when we are really interested in the cluster pt that is
     //       only meaningful at detector level.
-    auto clusterConstituents = jet->GetClusterConstituents();
-    for (auto cluster : clusterConstituents) {
-      AliDebugGeneralStream("AliAnalysisTaskEmcalJetHUtils", 4) << "global index " << cluster.GetGlobalIndex() << ", E(): " << cluster.E() << ", pt(): " << cluster.Pt() << "\n";
-      if (cluster.Pt() > maxClusterPt) {
-        maxClusterPt = cluster.Pt();
-      }
-    }
-    AliDebugGeneralStream("AliAnalysisTaskEmcalJetHUtils", 4) << "N clusters: " << clusterConstituents.size() << ", Max cluster pt: " << maxClusterPt << "\n";
-
-    // Swtich to this method once it is fixed in AliEmcalJet
-    /*auto cluster = jet->GetLeadingClusterConstituent();
+    auto cluster = jet->GetLeadingClusterConstituent();
     if (cluster) {
       // Uses the energy definition that was used when the constituent was created
       // to calculate the Pt(). Usually, this would be the hadronic corrected energy
       maxClusterPt = cluster->Pt();
-    }*/
+    }
   }
 
   // The max value will be 0 unless it was filled. Thus, it will only be greater if

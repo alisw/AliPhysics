@@ -6,7 +6,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
                     Bool_t isMC                 = kFALSE,
                     Int_t forceBadChannelMap    = 0, //0: no forced map, 1: forced OADB map, 2: forced single map file
                     TString specificBCMap       = "",
-                    Bool_t useStandardPHOSNL    = kTRUE
+                    TString nonLinName          = "Default"                     // "Default", "Run2", "MC", "NoCorrection"
 )
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
@@ -23,17 +23,12 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
     return NULL;
   }
 
-//  // input must be AOD
-//  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-//  if( "AOD" != inputDataType )
-//    ::Error("AddAODPHOSTender", Form("AOD input data required, input data is of type: %s", inputDataType.Data()));
-
   // create and add task
   AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask(taskName) ;
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
   PHOSSupply->SetReconstructionPass(pass) ;
-  if(!useStandardPHOSNL)
-    PHOSSupply->SetNonlinearityVersion("NoCorrection") ;
+  PHOSSupply->SetNonlinearityVersion(nonLinName) ;
+
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;

@@ -39,17 +39,17 @@ AliAnalysisTaskSE* AddTaskZDCQA()
    AliAnalysisTaskSE *task;
    if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
-      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApp.C");
-      task = AddTaskZDCQApp();
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApp.C");
+     task = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ProcessLine("AddTaskZDCQApp();"));
    }
    else if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
      ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApA.C");
-      task = AddTaskZDCQApA();
+     task = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ProcessLine("AddTaskZDCQApA();"));
    }
    else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
-      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQAPbPb.C");
-      task = AddTaskZDCQAPbPb();
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQAPbPb.C");
+     task = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ProcessLine("AddTaskZDCQAPbPb();"));
    }
 
    return task;
