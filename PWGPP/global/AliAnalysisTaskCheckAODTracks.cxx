@@ -121,6 +121,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinPt(0.),
   fMaxPt(25.),
   fMaxMult(500.),
+  fRequireITSforV0dau(0),
   fReadMC{kFALSE},
   fUseMCId{kFALSE}
 {
@@ -875,6 +876,14 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
     if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
+    if(fRequireITSforV0dau & (1<<kBitRequireITSrefit)){
+      if(pTrack->GetStatus() & AliESDtrack::kITSrefit) continue;
+      if(nTrack->GetStatus() & AliESDtrack::kITSrefit) continue;
+    }
+    if(fRequireITSforV0dau & (1<<kBitRequireSPDany)){
+      if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
+      if(!nTrack->HasPointOnITSLayer(0) && !nTrack->HasPointOnITSLayer(1)) continue;
+    }
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
@@ -938,6 +947,7 @@ Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTra
   esdTrack.SetTPCSharedMap(aTrack->GetTPCSharedMap());
   esdTrack.SetTPCPointsF(aTrack->GetTPCNclsF());
   esdTrack.SetTPCNcls(aTrack->GetTPCNcls());
+  esdTrack.SetITSchi2(aTrack->GetITSchi2());
   Int_t nTPCclus=aTrack->GetNcls(1);
   Double_t chi2ndf=aTrack->Chi2perNDF();
   Double_t chi2tpc=999.;
