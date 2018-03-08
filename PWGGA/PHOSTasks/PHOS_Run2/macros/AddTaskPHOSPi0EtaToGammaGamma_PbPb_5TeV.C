@@ -176,8 +176,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   }
 
   if(isMC){
-
-
     //for pi0
     const Int_t Ncen_Pi0 = 11;
     const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
@@ -196,7 +194,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_Pi0->Add(f1weightPi0[icen]);
     }
 
-    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+    //task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
 
     //for K0S
     const Int_t Ncen_K0S = 7;
@@ -237,7 +235,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_L0->Add(f1weightL0[icen]);
     }
 
-    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
+    //task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
 
   }
 
