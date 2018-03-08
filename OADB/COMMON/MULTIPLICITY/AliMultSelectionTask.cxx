@@ -1913,6 +1913,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     //For now: very trivial way of storing event type
     TString lHistTitle = Form("Event type: %s",lEventType.Data());
+    lHistTitle.Append(Form(", Production name: %s",lProductionName.Data()));
  
     AliWarning("==================================================");
     AliWarning(Form(" Event type: %s",lEventType.Data()));
@@ -1928,6 +1929,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("This is uncalibrated data, will generate empty OADB!");
         AliWarning("This means kNoCalib (=199) will be returned everywhere.");
         CreateEmptyOADB();
+        //Set histo title for posterity
+        lHistTitle.Append(", OADB: uncalibrated data");
+        fHistEventCounter->SetTitle(lHistTitle.Data());
         return -1;
     }
     
@@ -2022,6 +2026,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             AliWarning("======================================================================");
             //Create an empty OADB for us, please !
             CreateEmptyOADB();
+            //Set histo title for posterity
+            lHistTitle.Append(", No appropriate calibration found");
+            fHistEventCounter->SetTitle(lHistTitle.Data());
             return -1;
         }
     }
@@ -2095,6 +2102,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 AliWarning("======================================================================");
                 //Create an empty OADB for us, please !
                 CreateEmptyOADB();
+                //Set histo title for posterity
+                fHistEventCounter->SetTitle(lHistTitle.Data());
                 return -1;
             }
         }
@@ -2147,7 +2156,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("Weird! No AliMultSelectionCuts found...");
     }
     
-    //Set histo name for posterity
+    //Set histo title for posterity
     fHistEventCounter->SetTitle(lHistTitle.Data());
     return 0;
 }
