@@ -147,6 +147,9 @@ public:
   void SwitchOnStudyColRowFromCellMax()         { fStudyColRowFromCellMax = kTRUE  ; }
   void SwitchOffStudyColRowFromCellMax()        { fStudyColRowFromCellMax = kFALSE ; }
   
+  void SwitchOnStudyCellTime()                  { fStudyTimeCellHisto    = kTRUE  ; }
+  void SwitchOffStudyCellTime()                 { fStudyTimeCellHisto    = kFALSE ; }
+  
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
  private:
@@ -167,6 +170,9 @@ public:
   Bool_t   fStudyColRowFromCellMax;             ///<  Study activity around cell max
 
   Bool_t   fStudyInvMass;                       ///<  Fill invariant mass histograms
+  
+  Bool_t   fStudyTimeCellHisto;                 ///<  Fill time cell histograms
+  
   //
   // Cuts
   //
@@ -528,10 +534,10 @@ public:
   TH3F *   fhNCellsPerClusterM02NLMPerSM  [20];   //!<! m02 vs NLM vs n cells 
   TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
   TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
-  TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
+//TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
 
   TH3F *   fhEMaxCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E max cell / E cluster
-  TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
+//TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
 
   TH3F *   fhEMaxESecCellNCellLowM02PerSM [20];   //!<! E cell max vs E cell secondary vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3 per SM number
   TH3F *   fhEMaxECrossNCellLowM02PerSM   [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number
