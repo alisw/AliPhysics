@@ -29,14 +29,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 
 AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     AliFemtoDreamCollConfig *conf,bool MinimalBooking) {
-  fResults=new TList();
-  fResults->SetName("Results");
-  fResults->SetOwner();
-  if (!fMinimalBooking) {
-    fQA=new TList();
-    fQA->SetName("PairQA");
-    fQA->SetOwner();
-  }
   fMinimalBooking=MinimalBooking;
   fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
@@ -53,7 +45,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   if (nHists!=(int)NBinsHist.size() || nHists!=(int)kRelMin.size() ||
       nHists!=(int)kRelMax.size()) {
     //Todo: Replace by AliFatal!
-    std::cout<<"something went horribly wrong!"<<std::endl;
+    std::cout<<"Initialzing the bin sizes, something went horribly wrong!"<<std::endl;
   }
   //The way the histograms are assigned later is going to be for example for
   //4 different particle species X1,X2,X3,X4:
@@ -66,13 +58,27 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   //in the AliFemtoDreamPartCollection::SetEvent Method, X2 to the second and
   //so on.
   //in case we only book the most basic things we don't need this
+  fResults=new TList();
+  fResults->SetName("Results");
+  fResults->SetOwner();
+
   if (!fMinimalBooking) {
+    fQA=new TList();
+    fQA->SetName("PairQA");
+    fQA->SetOwner();
+
     fPairQA=new TList*[nHists];
     fPairCounterSE=new TH2F*[nHists];
     fPairCounterME=new TH2F*[nHists];
     if (fMomentumResolution) {
       fMomResolution=new TH2F*[nHists];
     }
+  } else {
+    fQA=0;
+    fPairQA=0;
+    fPairCounterSE=0;
+    fPairCounterME=0;
+    fMomResolution=0;
   }
   //we always want to do this, regardless of the booking type!
   fPairs=new TList*[nHists];
