@@ -435,7 +435,7 @@ void AliTPCDcalibRes::FitDrift()
     //fHVDTimeInt->Fill(sdrift, fDTV.ylab*sdrift/kZLim[fDTV.side<0], sdz); // old way
   }
   float zlim = (kZLim[0]+kZLim[1])/2.f;
-  TF2* ftd = new TF2("ftd",Form("[0]*sign(x)+[1]+([2]*y/%.2f+[3])*x",zlim),-250,250,-250,250);
+  TF2* ftd = new TF2("ftd",Form("[0]*(x>0 ? 1 : -1)+[1]+([2]*y/%.2f+[3])*x",zlim),-250,250,-250,250);
   //TF2* ftd = new TF2("ftd","[0]+[1]*sign(x)+[2]*sign(x)*y + [3]*sign(x)*x",-250,250,-250,250); // old fun
   ftd->SetParameters(res[0],0.,0.,res[1]); // initial values from unbinned fit
   AliInfoF("Fitting time-integrated vdrift params by %s",ftd->GetTitle());
@@ -473,6 +473,9 @@ void AliTPCDcalibRes::FitDrift()
   //
   // extract values
   TF1* gs = new TF1("gs","gaus",-kMaxTCorr,kMaxTCorr);
+  gs->SetParameters(fHVDTimeCorr->ProjectionY()->GetMaximum(),
+		    fHVDTimeCorr->ProjectionY()->GetMean(),
+		    fHVDTimeCorr->ProjectionY()->GetRMS());
   TObjArray arrH;
   arrH.SetOwner(kTRUE);
   fHVDTimeCorr->FitSlicesY(gs,0,-1,0,"QNR",&arrH);
