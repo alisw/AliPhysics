@@ -4643,9 +4643,9 @@ void AliAnalysisTaskPLFemto::GetMomentumMatrix(const AliFemtoLambdaParticle &v01
   TLorentzVector trackV01,trackV01MC,trackV02,trackV02MC;
 
   trackV01.SetXYZM(v01.fMomentum.X(),v01.fMomentum.Y(),v01.fMomentum.Z(),fCuts->GetHadronMasses(3122));
-  trackV01MC.SetXYZM(v01.fMomentum.X(),v01.fMomentum.Y(),v01.fMomentum.Z(),fCuts->GetHadronMasses(3122));
+  trackV01MC.SetXYZM(v01.fMomentumMC.X(),v01.fMomentumMC.Y(),v01.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
 
-  trackV02.SetXYZM(v02.fMomentumMC.X(),v02.fMomentumMC.Y(),v02.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
+  trackV02.SetXYZM(v02.fMomentum.X(),v02.fMomentum.Y(),v02.fMomentum.Z(),fCuts->GetHadronMasses(3122));
   trackV02MC.SetXYZM(v02.fMomentumMC.X(),v02.fMomentumMC.Y(),v02.fMomentumMC.Z(),fCuts->GetHadronMasses(3122));
 
   if(trackV01MC.X() == -9999. || trackV02MC.X() == -9999.) return;
