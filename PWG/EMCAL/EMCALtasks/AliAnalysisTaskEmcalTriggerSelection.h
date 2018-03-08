@@ -163,7 +163,7 @@ public:
   virtual ~AliAnalysisTaskEmcalTriggerSelection() {}
 
   /**
-   * Add trigger selection to the trigger selection task
+   * @brief Add trigger selection to the trigger selection task
    * 
    * This function is used to configure the trigger maker manually
    * by providing trigger selection objects configured by hand.
