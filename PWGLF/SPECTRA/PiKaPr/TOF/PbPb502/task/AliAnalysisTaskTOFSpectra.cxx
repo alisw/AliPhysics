@@ -66,7 +66,7 @@
 ClassImp(AliAnalysisTaskTOFSpectra);
 
 //________________________________________________________________________
-AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, CollSys collsys, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, const Int_t collsys, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
     : AliAnalysisTaskSE(taskname)
     // Soft configuration flags
     , fBuilTPCTOF(kFALSE)
@@ -102,7 +102,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Col
     , fAnTOFevent()
     , fTreeTrackMC(0x0)
     //Task configuration flags
-    , fCollSysMode(collsys)
+    , fCollSysMode(static_cast<CollSys>(collsys))
     , fMCmode(mc)
     , fTreemode(tree)
     , fChannelmode(chan)
@@ -269,6 +269,8 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Col
 
   //Perform some tests
   //   TestDCAXYBinning();
+  if (collsys < 0 || collsys > kCollSysAll)
+    AliFatal("Wrong initialization index for collision system");
 
   //Initialize all the variables
   Init();

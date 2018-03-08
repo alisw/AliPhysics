@@ -7,7 +7,7 @@
 #include <iostream>
 #endif
 
-AliAnalysisTaskTOFSpectra* AddTaskTOFSpectra(const Bool_t optTree = kTRUE, const Bool_t readMC = kFALSE, const CollSys system = kPbPb, const Bool_t ChannelMismatch = kTRUE, const Bool_t CutVariation = kFALSE, const Int_t SimpleCutMode = -1, const TString prefix = "", const TString tname = "TOFSpectra", const Bool_t stdoutput = kFALSE)
+AliAnalysisTaskTOFSpectra* AddTaskTOFSpectra(const Bool_t optTree = kTRUE, const Bool_t readMC = kFALSE, const Int_t system = 0 /*kPbPb*/, const Bool_t ChannelMismatch = kTRUE, const Bool_t CutVariation = kFALSE, const Int_t SimpleCutMode = -1, const TString prefix = "", const TString tname = "TOFSpectra", const Bool_t stdoutput = kFALSE)
 {
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // Get the pointer to the existing analysis manager via the static access method.

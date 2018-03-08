@@ -64,7 +64,7 @@ using namespace AliUtilTOFParams;
 class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   public:
   //Constructors and destructor
-  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", CollSys collsys = AliUtilTOFParams::kPbPb, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
+  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", const Int_t collsys = AliUtilTOFParams::kPbPb, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
   virtual ~AliAnalysisTaskTOFSpectra();
 
   //////////////////////////////
