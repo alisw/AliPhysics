@@ -76,7 +76,6 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.85),
   fCutGeoNcrNclFractionNcl(0.7),
-  fMaxCentrality(100),
   //Arrays for Binning
   fBinsMult(0),
   fBinsCent(0),
@@ -133,13 +132,12 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
 
   // Control histogram to check the effect of event cuts
-  fEventCount = new TH1F("fEventCount","Number of events after cuts",5,0.5,5.5);
+  fEventCount = new TH1F("fEventCount","Number of events after cuts",4,0.5,4.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
   fEventCount->GetXaxis()->SetBinLabel(1, "all");
   fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
   fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pileup");
-  fEventCount->GetXaxis()->SetBinLabel(4, "accepted Centraliy");
-  fEventCount->GetXaxis()->SetBinLabel(5, "without #it{N}_{ch} overflow");
+  fEventCount->GetXaxis()->SetBinLabel(4, "without #it{N}_{ch} overflow");
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -262,15 +260,17 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
 
     // MC truth pt vs. Nch (reference for closure test)
-    Int_t nBinsMultPt[2]={fBinsMult->GetSize()-1,fBinsPt->GetSize()-1};
-    Double_t minMultPt[2]={fBinsMult->GetAt(0),fBinsPt->GetAt(0)};
-    Double_t maxMultPt[2]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1)};
+    Int_t nBinsMultPt[3]={fBinsMult->GetSize()-1,fBinsPt->GetSize()-1, fBinsCent->GetSize()-1};
+    Double_t minMultPt[3]={fBinsMult->GetAt(0),fBinsPt->GetAt(0), fBinsCent->GetAt(0)};
+    Double_t maxMultPt[3]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsCent->GetAt(fBinsCent->GetSize()-1)};
 
-    fHistMCMultPtGenerated = new THnF("fHistMCMultPtGenerated","Histogram for generator comparison and closure test",2,nBinsMultPt, minMultPt, maxMultPt);
+    fHistMCMultPtGenerated = new THnF("fHistMCMultPtGenerated","Histogram for generator comparison and closure test",3,nBinsMultPt, minMultPt, maxMultPt);
     fHistMCMultPtGenerated->SetBinEdges(0,fBinsMult->GetArray());
     fHistMCMultPtGenerated->SetBinEdges(1,fBinsPt->GetArray());
+    fHistMCMultPtGenerated->SetBinEdges(2,fBinsCent->GetArray());
     fHistMCMultPtGenerated->GetAxis(0)->SetTitle("#it{N}_{ch}");
     fHistMCMultPtGenerated->GetAxis(1)->SetTitle("#it{p}_{T}^{MC}");
+    fHistMCMultPtGenerated->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCMultPtGenerated->Sumw2();
 
 
@@ -396,9 +396,6 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   Double_t centrality = 50;
   if((fBinsCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
-  if(centrality >= fMaxCentrality) return;
-
-  fEventCount->Fill(4); // Events after Centrality cut
 
   /// ------------------ Count Multiplicities --------------------------------------
 
@@ -428,7 +425,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     fHistMCResponseMat->Fill(responseMatrixTuple);
 
     if(multGenPart >= fBinsMult->GetAt(fBinsMult->GetSize()-1)) return;
-    fEventCount->Fill(5); // Events after excluding Nch overflow
+    fEventCount->Fill(4); // Events after excluding Nch overflow
   }
 
   /// ------------------ Event Histogram ---------------------------------------
@@ -515,7 +512,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
       	// Reference histogram for MC closure test and generator comparison
-    	  Double_t mcMultPtGenerated[2] = {multGenPart, mcGenParticle->Pt()};
+    	  Double_t mcMultPtGenerated[3] = {multGenPart, mcGenParticle->Pt(), centrality};
     	  fHistMCMultPtGenerated->Fill(mcMultPtGenerated);
 
         if(fIncludeCrosscheckHistos){
