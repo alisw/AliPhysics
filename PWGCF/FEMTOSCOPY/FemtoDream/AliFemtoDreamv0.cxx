@@ -66,7 +66,9 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
 
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
   if (v0->GetPosID()>=fTrackBufferSize||v0->GetNegID()>=fTrackBufferSize) {
-    AliFatal("fGTI too small");
+    std::cout<<"fGTI too small, no Global Tracks to work with, PosID:  "
+        << v0->GetPosID() << " and NegID: " << v0->GetNegID() << std::endl;
+    this->fHasDaughter=false;
   } else {
     fpDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
     fnDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
