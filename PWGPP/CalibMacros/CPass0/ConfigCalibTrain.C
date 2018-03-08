@@ -45,7 +45,10 @@ void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
   if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF HMPID") ) {
     printf("Problem with align objects\n"); 
   }
-  if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
-    localOCDBaccessConfig();
-  }    
+
+   if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
+     gROOT->LoadMacro("localOCDBaccessConfig.C");
+    gInterpreter->ProcessLine("localOCDBaccessConfig();");
+   }
+   
 }
