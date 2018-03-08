@@ -141,6 +141,9 @@ public:
   void SwitchOnStudyExotic()                    { fStudyExotic           = kTRUE  ; }
   void SwitchOffStudyExotic()                   { fStudyExotic           = kFALSE ; }
   
+  void SwitchOnStudyMatchedPID()                { fNMatchPIDCases        = 3      ; }
+  void SwitchOffStudyMatchedPID()               { fNMatchPIDCases        = 1      ; }  
+  
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
  private:
@@ -177,6 +180,7 @@ public:
   Int_t    fNCellsBins ;                        ///<  Total number of number of cells bins
   Int_t    fNCellsBinsLimits[5];                ///<  Limits to select clusters within a number of cells  range         
   
+  Int_t    fNMatchPIDCases;                     ///<  Number of track matched PIDs to study, usually only interested in neutral
   Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
   Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
   Int_t    fdEdXMinHad;                         ///<  dEdX min cut for hadrons

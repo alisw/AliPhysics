@@ -53,6 +53,7 @@ fMinDistToBad(0),                      fNEBinCuts(0),
 fEMinShape(0),                         fEMaxShape(100),
 fNCellMinShape(-1),                    fNCellsBins(3),
 
+fNMatchPIDCases(1),
 fdEdXMinEle(0),                        fdEdXMaxEle(0),
 fdEdXMinHad(0),                        fdEdXMaxHad(0),
 
@@ -1841,7 +1842,7 @@ void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID
   // Init at least once
   if(fdEdXMinEle == 0 || fdEdXMaxEle == 0 || fdEdXMinHad == 0 || fdEdXMaxHad == 0) 
     InitdEdXParameters();
-  
+
   if      ( dedx >= fdEdXMinEle && dedx < fdEdXMaxEle ) matchedPID = 1; 
   else if ( dedx >= fdEdXMinHad && dedx < fdEdXMaxHad ) matchedPID = 2;  
   else                                                  matchedPID =-1;
@@ -1962,9 +1963,15 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     //
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
  
-    Int_t matchedPID = 0;
-    if ( matched && fStudyShape ) 
+    Int_t matchedPID = -1;
+    if ( !matched ) 
+    {
+      matchedPID = 0;
+    }
+    else if ( fStudyShape && fNMatchPIDCases > 1 ) 
+    {
       ClusterMatchedToTrackPID(clus, matchedPID);
+    }
     
     // Get amp and time of max cell, recalibrate and calculate things
     //
@@ -4105,7 +4112,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   
     } // SM
     
-    for(Int_t imatch = 0; imatch < 3; imatch++)
+    for(Int_t imatch = 0; imatch < fNMatchPIDCases; imatch++)
     {      
       if ( fStudyShapeParam )
       {
