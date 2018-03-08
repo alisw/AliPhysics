@@ -40,6 +40,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 TString       periodNameV0Reader            = "",
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
                                 Bool_t        processAODcheckForV0s         = kFALSE,                           // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+                                Bool_t        enableUseTHnSparse            = kTRUE,
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -368,6 +369,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(kTRUE);
+  task->SetDoTHnSparse(enableUseTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
