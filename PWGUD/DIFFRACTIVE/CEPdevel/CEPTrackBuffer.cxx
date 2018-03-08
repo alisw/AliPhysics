@@ -67,6 +67,14 @@ void CEPTrackBuffer::Reset()
   // PID information
   fPID = CEPTrackBuffer::kdumval;
   
+  // ... from ITS
+  fPIDITSStatus = CEPTrackBuffer::kdumval;
+  fPIDITSSignal = CEPTrackBuffer::kdumval;
+  for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
+    fPIDITSnSigma[ii]     = CEPTrackBuffer::kdumval;
+    fPIDITSnSigmaProb[ii] = CEPTrackBuffer::kdumval;
+  }
+  
   // ... from TPC
   fPIDTPCStatus = CEPTrackBuffer::kdumval;
   fPIDTPCSignal = CEPTrackBuffer::kdumval;
@@ -93,6 +101,33 @@ void CEPTrackBuffer::Reset()
   fMCPID      = CEPTrackBuffer::kdumval;
   fMCMass     = CEPTrackBuffer::kdumval;
   fMCMomentum = TVector3(0,0,0);
+
+}
+
+// ----------------------------------------------------------------------------
+void CEPTrackBuffer::SetPIDITSnSigma(Int_t part, Float_t nsig)
+{
+  
+  if (part < AliPID::kSPECIES) {
+    fPIDITSnSigma[part] = nsig;
+  } else {
+    printf("Wrong particle index! %i is larger than allowed (%i)\n",
+      part,AliPID::kSPECIES-1);
+  }
+
+}
+
+// ----------------------------------------------------------------------------
+void CEPTrackBuffer::CEPTrackBuffer::SetPIDITSProbability(Int_t part, Float_t prob)
+{
+
+  if (part < AliPID::kSPECIES) {
+    fPIDITSnSigmaProb[part] = prob;
+  } else {
+    printf("Wrong particle index! %i is larger than allowed (%i)\n",
+      part,AliPID::kSPECIES-1);
+  }
+
 
 }
 
