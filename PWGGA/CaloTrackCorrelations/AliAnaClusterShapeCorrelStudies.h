@@ -144,6 +144,9 @@ public:
   void SwitchOnStudyMatchedPID()                { fNMatchPIDCases        = 3      ; }
   void SwitchOffStudyMatchedPID()               { fNMatchPIDCases        = 1      ; }  
   
+  void SwitchOnStudyColRowFromCellMax()         { fStudyColRowFromCellMax = kTRUE  ; }
+  void SwitchOffStudyColRowFromCellMax()        { fStudyColRowFromCellMax = kFALSE ; }
+  
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
  private:
@@ -152,12 +155,16 @@ public:
   // Switches
   //
   Bool_t   fStudyShape;                         ///<  Study shower shape of clusters and other param on TH3
+  
   Bool_t   fStudyShapeParam;                    ///<  Study not only M02 but other kind of shape param
 
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
  
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
+  
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, for TCard correl studies
+  
+  Bool_t   fStudyColRowFromCellMax;             ///<  Study activity around cell max
 
   Bool_t   fStudyInvMass;                       ///<  Fill invariant mass histograms
   //
