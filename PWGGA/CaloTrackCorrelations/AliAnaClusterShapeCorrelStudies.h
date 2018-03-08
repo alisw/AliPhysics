@@ -76,6 +76,12 @@ public:
   Float_t      GetM02Min()               const  { return fM02Min   ; }
   void         SetM02Min(Float_t m02)           { fM02Min = m02    ; }
 
+  void         SetM02LowBin(Float_t min, Float_t max)           
+                                                { fM02LowBin[0] = min  ;  fM02LowBin[1]  = max ; }
+
+  void         SetM02HighBin(Float_t min, Float_t max)           
+                                                { fM02HighBin[0] = min ;  fM02HighBin[1] = max ; }
+  
   Float_t      GetDistToBadMin()         const  { return fMinDistToBad ; }
   void         SetDistToBadMin(Float_t di)      { fMinDistToBad = di   ; }
 
@@ -161,6 +167,9 @@ public:
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut for fStudyTCardCorrelation
   Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts for fStudyTCardCorrelation
   
+  Float_t  fM02LowBin [2];                      ///<  Min and max value of shower shape in photon region
+  Float_t  fM02HighBin[2];                      ///<  Min and max value of shower shape in non photon region
+
   Float_t  fEMinShape;                          ///<  Minimum cluster energy for some fStudyShape histograms           
   Float_t  fEMaxShape;                          ///<  Maximum cluster energy for some fStudyShape histograms           
   Int_t    fNCellMinShape;                      ///<  Minumum cluster number of cells for some fStudyShape histograms        
