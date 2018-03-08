@@ -55,7 +55,7 @@ class AliStack : public TVirtualMCStack
 
     void   ConnectTree(TTree* tree);
     Bool_t GetEvent();
-    Bool_t PurifyKine();
+    Bool_t PurifyKine(Float_t rmax = -1., Float_t zmax = -1.);
     Bool_t ReorderKine();
     void   FinishEvent();
     void   FlagTrack(Int_t track);
@@ -98,7 +98,7 @@ class AliStack : public TVirtualMCStack
     void  ResetArrays(Int_t size);
     TParticle* GetParticleMapEntry(Int_t id) const;
     TParticle* GetNextParticle();
-    Bool_t KeepPhysics(const TParticle* part);
+    Bool_t KeepPhysics(const TParticle* part, Float_t rmax = -1, Float_t zmax = -1.);
     Bool_t IsStable(Int_t pdg) const;
   private:
     void Copy(TObject &st) const;
