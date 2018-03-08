@@ -114,7 +114,11 @@ public:
   /**
    * @brief Main constructor
    *
-   * Called by the user
+   * Called by the user. The name of the trigger decision container
+   * is used in user analyses for the query of the container from
+   * the event.
+   * 
+   * @param[in] name Name of the trigger decision container
    */
   AliEmcalTriggerDecisionContainer(const char *name);
 
@@ -125,6 +129,9 @@ public:
 
   /**
    * @brief Clear container with trigger decisions
+   * 
+   * Removing all trigger decision objects from the container. The container
+   * will be empty at this point.
    */
   void Reset();
 
@@ -153,8 +160,10 @@ public:
    * 
    * Objects of type PWG::EMCAL::AliEmcalTriggerDecision contain additional information
    * beside the event selection status
+   * 
    * - Main patch (highest-energetic patch)
    * - All patches firing the trigger condition
+   * 
    * The name of the trigger decision object must be a valid trigger class name according
    * to the EMCAL convention, where the trigger class is supported for the dataset to
    * be analyzed.
@@ -169,8 +178,10 @@ public:
    * 
    * Objects of type PWG::EMCAL::AliEmcalTriggerDecision contain additional information
    * beside the event selection status
+   * 
    * - Main patch (highest-energetic patch)
    * - All patches firing the trigger condition
+   * 
    * The list concerns the trigger decision objects for all Level1 triggers supported in
    * the dataset, no matter whether the trigger was fired or not. For a specific dataset 
    * the trigger decision object can be found in the output list by the name of the trigger
