@@ -79,5 +79,7 @@
 #pragma link C++ class AliAnalysisFBMultFluct+;
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
+#pragma link C++ class AliLightV0+;
+#pragma link C++ class AliLightGenV0+;
 
 #endif
