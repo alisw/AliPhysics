@@ -588,7 +588,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   fAcceptV0->Clear();
 
   Int_t nV0 = 0;
-  TObjArray *v0array = 0x0;
+  //TObjArray *v0array = 0x0;
   if(fIsAOD) nV0 = fAOD->GetNumberOfV0s(); // aod
   else nV0 = fESD->GetNumberOfV0s(); // esd
   
@@ -612,7 +612,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
       Float_t invMassLambda = -999, invMassAntiLambda = -999, invMassK0S = -999;
       Float_t alpha = -999, ptarm = -999;
-      Float_t pt = -999, phi = -999, eta = -999, abseta = -999, pmom = -999;
+      Float_t pt = -999, phi = -999, eta = -999, pmom = -999;
       Float_t ppt = -999, pphi = -999, peta = -999, pnsigmapr = -999;
       Float_t npt = -999, nphi = -999, neta = -999, nnsigmapr = -999;
       Bool_t swapflag = kFALSE, ontheflystat = kFALSE;
