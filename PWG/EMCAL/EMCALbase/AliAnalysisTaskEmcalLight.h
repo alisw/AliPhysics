@@ -24,6 +24,8 @@ class AliAODTrack;
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
+#include <iostream>
 
 #include "Rtypes.h"
 
@@ -194,8 +196,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   static Byte_t               GetTrackType(const AliVTrack *t);
   static Byte_t               GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2);
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
-  static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
-  static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
+  static std::vector<double>  GenerateFixedBinArray(int n, double min, double max, bool last = true);
+  static void                 GenerateFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last = true);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
   static EBeamType_t          BeamTypeFromRunNumber(Int_t runnumber);
@@ -299,63 +301,5 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   ClassDef(AliAnalysisTaskEmcalLight, 4);
   /// \endcond
 };
-
-/**
- * Calculate Delta Phi.
- * @param[in] phia \f$ \phi \f$ of the first particle
- * @param[in] phib \f$ \phi \f$ of the second particle
- * @param[in] rangeMin Minimum \f$ \phi \f$ range
- * @param[in] rangeMax Maximum \f$ \phi \f$ range
- * @return Difference in \f$ \phi \f$
- */
-inline Double_t AliAnalysisTaskEmcalLight::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax)
-{
-  Double_t dphi = -999;
-  const Double_t tpi = TMath::TwoPi();
-
-  if (phia < 0)         phia += tpi;
-  else if (phia > tpi) phia -= tpi;
-  if (phib < 0)         phib += tpi;
-  else if (phib > tpi) phib -= tpi;
-  dphi = phib - phia;
-  if (dphi < rangeMin)      dphi += tpi;
-  else if (dphi > rangeMax) dphi -= tpi;
-
-  return dphi;
-}
-
-/**
- * Generate array with fixed binning within min and max with n bins. The parameter array
- * will contain the bin edges set by this function. Attention, the array needs to be
- * provided from outside with a size of n+1
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @param[out] array Array containing the bin edges
- */
-inline void AliAnalysisTaskEmcalLight::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array)
-{
-  Double_t binWidth = (max-min)/n;
-  array[0] = min;
-  for (Int_t i = 1; i <= n; i++) {
-    array[i] = array[i-1]+binWidth;
-  }
-}
-
-/**
- * Generate array with fixed binning within min and max with n bins. The array containing the bin
- * edges set will be created by this function. Attention, this function does not take care about
- * memory it allocates - the array needs to be deleted outside of this function
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @return Array containing the bin edges created bu this function
- */
-inline Double_t* AliAnalysisTaskEmcalLight::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max)
-{
-  Double_t *array = new Double_t[n+1];
-  GenerateFixedBinArray(n, min, max, array);
-  return array;
-}
 
 #endif
