@@ -300,7 +300,7 @@ TParticle*  AliStack::PopPrimaryForTracking(Int_t i)
 }      
 
 //_____________________________________________________________________________
-Bool_t AliStack::PurifyKine()
+Bool_t AliStack::PurifyKine(Float_t rmax, Float_t zmax)
 {
   //
   // Compress kinematic tree keeping only flagged particles
@@ -324,7 +324,7 @@ Bool_t AliStack::PurifyKine()
 	  if((part=GetParticleMapEntry(i))) {
 //
 //        Check of this track should be kept for physics reasons 
-	      if (KeepPhysics(part)) KeepTrack(i);
+	    if (KeepPhysics(part, rmax, zmax)) KeepTrack(i);
 //
 	      part->ResetBit(kDaughtersBit);
 	      part->SetFirstDaughter(-1);
@@ -495,7 +495,7 @@ Bool_t AliStack::ReorderKine()
   return kTRUE;
 }
 
-Bool_t AliStack::KeepPhysics(const TParticle* part)
+Bool_t AliStack::KeepPhysics(const TParticle* part, Float_t rmax, Float_t zmax)
 {
     //
     // Some particles have to kept on the stack for reasons motivated
@@ -503,8 +503,17 @@ Bool_t AliStack::KeepPhysics(const TParticle* part)
     //
     Bool_t keep = kFALSE;
 
+
+
     Int_t parent = part->GetFirstMother();
     if (parent >= 0 && parent <= fHgwmk) {
+      // Keep 1st generation secondaries in a pre-defined r-z range
+      Float_t vx = part->Vx();
+      Float_t vy = part->Vy();
+      Float_t vz = part->Vz();
+      Float_t r  = TMath::Sqrt(vx * vx + vy * vy);
+      if (r < rmax && TMath::Abs(vz) < zmax) return kTRUE;
+      //
       TParticle* father = GetParticleMapEntry(parent);
     //
     // Keep first-generation daughter from primaries with heavy flavor 

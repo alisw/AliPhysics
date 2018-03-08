@@ -73,7 +73,8 @@ public:
        {fTrRmax=rmax; fTrZmax=zmax;}
    virtual  void  DecayLimits( Float_t rmin = -1., Float_t rmax = -1., Int_t pdg = 0)
        {fRDecayMin = rmin; fRDecayMax = rmax; fDecayPdg = pdg;}
-   
+   virtual  void  PurifyLimits( Float_t rmax=-1., Float_t zmax=-1.)
+       {fPuRmax = rmax; fPuZmax = zmax;}
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
    //PH
@@ -142,6 +143,8 @@ public:
    TArrayF        fSum2Energy;        //! Energy squared per event in each volume
    Float_t        fTrRmax;            //  Maximum radius for tracking
    Float_t        fTrZmax;            //  Maximu z for tracking
+   Float_t        fPuRmax;            //  Maximum radius for purify disabled
+   Float_t        fPuZmax;            //  Maximu z for purify disabled
    Float_t        fRDecayMax;         //  Maximum radius for decay
    Float_t        fRDecayMin;         //  Minimum radius for decay
    Int_t          fDecayPdg;          //  PDG code of particle with forced decay length

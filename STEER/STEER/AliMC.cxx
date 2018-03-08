@@ -75,6 +75,8 @@ AliMC::AliMC() :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
+  fPuRmax(-1.),
+  fPuZmax(-1.),
   fRDecayMax(1.e10),
   fRDecayMin(-1.),
   fDecayPdg(0),
@@ -107,6 +109,8 @@ AliMC::AliMC(const char *name, const char *title) :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
+  fPuRmax(-1.),
+  fPuZmax(-1.),
   fRDecayMax(1.e10),
   fRDecayMin(-1.),
   fDecayPdg(0),
@@ -1407,7 +1411,7 @@ void AliMC::FinishPrimary()
       if (runloader->Stack()->ReorderKine()) RemapHits();
   }
 #endif
-  if (runloader->Stack()->PurifyKine()) RemapHits();
+  if (runloader->Stack()->PurifyKine(fPuRmax, fPuZmax)) RemapHits();
 
   TIter next(gAlice->Modules());
   AliModule *detector;
