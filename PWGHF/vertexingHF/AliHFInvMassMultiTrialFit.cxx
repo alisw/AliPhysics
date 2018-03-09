@@ -122,6 +122,49 @@ AliHFInvMassMultiTrialFit::~AliHFInvMassMultiTrialFit(){
   if(fhTemplRefl) delete fhTemplRefl;
   if(fhTemplSign) delete fhTemplSign;
   for (auto fitter : fMassFitters) delete fitter;
+  delete fHistoRawYieldDistAll;
+  delete fHistoRawYieldTrialAll;
+  delete fHistoSigmaTrialAll;
+  delete fHistoMeanTrialAll;
+  delete fHistoChi2TrialAll;
+  delete fHistoSignifTrialAll;
+  delete fHistoBkgTrialAll;
+  delete fHistoBkgInBinEdgesTrialAll;
+  delete fHistoRawYieldDistBinC0All;
+  delete fHistoRawYieldTrialBinC0All;
+  delete fHistoRawYieldDistBinC1All;
+  delete fHistoRawYieldTrialBinC1All;
+  for(Int_t ib=0; ib<kNBkgFuncCases; ib++){
+    for(Int_t igs=0; igs<kNFitConfCases; igs++){
+      Int_t theCase=igs*kNBkgFuncCases+ib;
+      delete fHistoRawYieldDist[theCase];
+      delete fHistoRawYieldDistBinC0[theCase];
+      delete fHistoRawYieldDistBinC1[theCase];
+      delete fHistoRawYieldTrial[theCase];
+      delete fHistoRawYieldTrialBinC0[theCase];
+      delete fHistoRawYieldTrialBinC1[theCase];
+      delete fHistoSigmaTrial[theCase];
+      delete fHistoMeanTrial[theCase];
+      delete fHistoChi2Trial[theCase];
+      delete fHistoSignifTrial[theCase];
+      if(fHistoBkgTrial) delete fHistoBkgTrial[theCase];
+      if(fHistoBkgInBinEdgesTrial) delete fHistoBkgInBinEdgesTrial[theCase];
+    }
+  }
+  delete [] fHistoRawYieldDist;
+  delete [] fHistoRawYieldDistBinC0;
+  delete [] fHistoRawYieldDistBinC1;
+  delete [] fHistoRawYieldTrial;
+  delete [] fHistoRawYieldTrialBinC0;
+  delete [] fHistoRawYieldTrialBinC1;
+  delete [] fHistoSigmaTrial;
+  delete [] fHistoMeanTrial;
+  delete [] fHistoChi2Trial;
+  delete [] fHistoSignifTrial;
+  delete [] fHistoBkgTrial;
+  delete [] fHistoBkgInBinEdgesTrial;
+
+  delete fNtupleMultiTrials;
 }
 
 //________________________________________________________________________

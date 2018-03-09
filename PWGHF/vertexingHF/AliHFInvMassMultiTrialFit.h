@@ -56,6 +56,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
     min = fMinYieldGlob;
     max = fMaxYieldGlob;
   }
+  TNtuple* GetNtupleMultiTrials(){return fNtupleMultiTrials;}
 
   void SetMass(Double_t mass){fMassD=mass;}
   void SetSigmaGaussMC(Double_t sig){fSigmaGausMC=sig;}
