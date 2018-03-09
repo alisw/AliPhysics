@@ -3,7 +3,7 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0PID;
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", Float_t fSlope=3.45, Float_t fConst=100, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Float_t fSlope=3.45, Float_t fConst=100, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
@@ -33,7 +33,6 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
   Double_t nSigmaCuts[5]  = {2.0, 2.5, 3.0};
 
 
-
   AliAnalysisTaskCMEV0PID *task_CME[5];
   AliAnalysisDataContainer *coutputCont1[5];
 
@@ -49,7 +48,13 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     TaskCMEV0PID.Form("TaskCMEV0PID_Cent_%d_%d_%s_%2.1f", gCentMin, gCentMax, suffix, nSigmaCuts[i]);
     //cout<<"Add taskname = "<<TaskCMEV0PID.Data()<<endl;
     task_CME[i] = new AliAnalysisTaskCMEV0PID(TaskCMEV0PID);
-    task_CME[i]->SelectCollisionCandidates(AliVEvent::kINT7);
+
+    task_CME[i]->SelectCollisionCandidates(AliVEvent::kINT7); //default if kINT7
+
+    if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){
+      task_CME[i]->SelectCollisionCandidates(AliVEvent::kMB);
+    }
+
     task_CME[i]->SetFilterBit(gFilterBit);
     task_CME[i]->SetNSigmaCutTPC(nSigmaCuts[i]);
     task_CME[i]->SetPtRangeMin(fPtMin);
@@ -61,6 +66,12 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
     task_CME[i]->SetPileUpCutParam(fSlope,fConst);
     task_CME[i]->SetCollisionSystem(sNuclei);
     task_CME[i]->SetEventPlaneHarmonic(gPsiN);
+    task_CME[i]->SetFlagSkipPileUpCuts(bSkipPileUp);
+
+    if(bFillNUAPID){
+      task_CME[i]->SetFlagFillNUAforPID(kTRUE);
+    }
+
 
     if(bUseMC) {
       task_CME[i]->SetFlagForMCcorrection(kTRUE);
