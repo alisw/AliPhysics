@@ -790,7 +790,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    if(sDataSet=="2015" || sDataSet=="2015HI"){
      OpenInfoCalbration(runNumber, psiN);
    }
-   if(bApplyV0MCorr){
+   if(bApplyV0MCorr) {
      GetV0MCorrectionHist(runNumber);
    }
    if(bApplyNUACorr){
@@ -1078,6 +1078,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t Psi2V0A = 1./psiN*TMath::ATan2(QyanCor,QxanCor);
  if(Psi2V0A<0.) Psi2V0A += 2*pi/psiN;
 
+ 
  /*
  fV0AQ2xVsCentRun->Fill(centrCL1,runindex,QycnCor); // For V0-Q Recenter QA.
  fV0AQ2yVsCentRun->Fill(centrCL1,runindex,QyanCor); 
@@ -1542,8 +1543,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
      if(dChrg1!=dChrg2) {
-       if(skipPairHBT > 0)
-          cout<<"All dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
+       //if(skipPairHBT > 0)
+       //cout<<"All dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
 	
        fdPhiFemtoCut->Fill(1.5,1e-8);
        
@@ -1585,8 +1586,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
      else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0) {
 
-       if(deltaEta < fHBTCutValue)
-          cout<<"++ dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
+       //if(deltaEta < fHBTCutValue)
+       //cout<<"++ dEta "<<deltaEta<<"  dphi "<<deltaPhi<<" ch1 = "<<dChrg1<<" ch2 = "<<dChrg2<<" skipPairHBT = "<<skipPairHBT<<endl;
 	
        fdPhiFemtoCut->Fill(3.5,1e-8);
 	       
@@ -1682,20 +1683,18 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t Psi2TPC = 0;
 
  if(psiN<=2){
+   Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
+   if(Psi2TPC < 0.) Psi2TPC += TMath::Pi();
 
- Psi2TPC = 1./2*(TMath::ATan2(QTPCIm,QTPCRe));
- if(Psi2TPC < 0.) Psi2TPC += TMath::Pi();
-
- fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
- fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+   fTPCQ2xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+   fTPCQ2yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC)); 
  }
  else if(psiN>=3){
+   Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm3,QTPCRe3));
+   if(Psi2TPC < 0.) Psi2TPC += 2./psiN*TMath::Pi();
 
- Psi2TPC = 1./3*(TMath::ATan2(QTPCIm3,QTPCRe3));
- if(Psi2TPC < 0.) Psi2TPC += 2./3*TMath::Pi();
-
- fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
- fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+   fTPCQ3xVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+   fTPCQ3yVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));
  }
 
 
@@ -2664,7 +2663,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
  Double_t centrCL0=300;
  Double_t centrTRK=300;
 
- if(sDataSet=="2010"||sDataSet=="2011"){
+ if(sDataSet=="2010"||sDataSet=="2011") {
    centrV0M = ((AliVAODHeader*)faod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
    centrCL1 = ((AliVAODHeader*)faod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
    centrCL0 = ((AliVAODHeader*)faod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
@@ -2680,12 +2679,14 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
    centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
    centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
    centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
- }// 2015
+ }// 2015,pPb
 
 
  if(fRejectPileUp && InputEvent()) {
+
   //if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-    if(sDataSet!="2015" && sDataSet!="2015LI") {
+
+    if(sDataSet!="2015" && sDataSet!="2015LI" && sDataSet!="2015pPb" && sDataSet!="pPb") {
       if(PileUpMultiVertex(faod)) {
          fPileUpCount->Fill(0.5);
          BisPileup=kTRUE;
@@ -2734,7 +2735,8 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
       }
     } ////------ dataset 2010,2011 pile up ---------
 
-    else { //------------ pileup for 2015 HI, LI data ----------------- 
+    else { //------------ pileup for 2015HI,LI, 2016,pPb data ----------------- 
+
       if(!fMultSelection->GetThisEventIsNotPileup())
          fPileUpMultSelCount->Fill(0.5);
       if(!fMultSelection->GetThisEventIsNotPileupMV())
@@ -2931,6 +2933,9 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
  
       Double_t multESDTPCDif  = multEsdn  - fPileUpSlopeParm*multTPCn;
       Double_t multTPCGlobDif = multTPCFE - fPileUpSlopeParm*multGlobal;
+
+
+      //cout<<" multTPC = "<<multTPCn<<"\tESD = "<<multEsdn<<"\tMultRaw = "<<fRefMultRaw<<"\tMultCorr="<<fRefMultCorr<<endl;
 
       fTPCvsITSfb96->Fill(multITSfb96,multTPC);     //multITSfb96 = FB 96, multTPC = FB 128
       fTPCvsITSfb32->Fill(multITSfb32,multTPC);     //multITSfb32 = FB 32
@@ -3196,7 +3201,11 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     }
   }
 
+  Int_t gMaxRefMult = 4000;
 
+  if(sDataSet=="2015pPb" || sDataSet=="pPb"){
+    gMaxRefMult = 800;
+  }
 
   //----- CME EP method histograms ---------
   for(int i=0;i<2;i++){
@@ -3223,23 +3232,29 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     //Same obsevables in Refmult bins:
     for(int j=0;j<3;j++){
      //Detector: 0 = V0A, 1 = V0C, 3 = Q-cumulant
-      fHist_Corr3p_EP_Refm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_PosNeg_Mag%d_Det%d",i,j+1),"opposit charge correlator",400,0,4000,"");
+      fHist_Corr3p_EP_Refm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_PosNeg_Mag%d_Det%d",i,j+1),"opposit charge correlator",800,0,gMaxRefMult,"");
       fHist_Corr3p_EP_Refm_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EP_Refm_PN[i][j]);
-      fHist_Corr3p_EP_Refm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_PosPos_Mag%d_Det%d",i,j+1),"pos-pos charge correlator",400,0,4000,"");
+      fHist_Corr3p_EP_Refm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_PosPos_Mag%d_Det%d",i,j+1),"pos-pos charge correlator",800,0,gMaxRefMult,"");
       fHist_Corr3p_EP_Refm_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EP_Refm_PP[i][j]);
-      fHist_Corr3p_EP_Refm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_NegNeg_Mag%d_Det%d",i,j+1),"neg-neg charge correlator",400,0,4000,"");
+      fHist_Corr3p_EP_Refm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Refm_NegNeg_Mag%d_Det%d",i,j+1),"neg-neg charge correlator",800,0,gMaxRefMult,"");
       fHist_Corr3p_EP_Refm_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EP_Refm_NN[i][j]);
     }
     for(int j=0;j<3;j++){
     //Det: 0 = v0c-v0a, 1 = v0a-TPC, 2 = v0c-TPC, 
-      fHist_Reso2n_EP_Refm_Det[i][j]  = new TProfile(Form("fHist_Reso2n_EP_Refm_Mag%d_DetComb%d",i,j+1),"Event plane Resolution",400,0,4000,"");
+      fHist_Reso2n_EP_Refm_Det[i][j]  = new TProfile(Form("fHist_Reso2n_EP_Refm_Mag%d_DetComb%d",i,j+1),"Event plane Resolution",800,0,gMaxRefMult,"");
       fHist_Reso2n_EP_Refm_Det[i][j]->Sumw2();
       fListHistos->Add(fHist_Reso2n_EP_Refm_Det[i][j]);
     }
   }
+
+
+
+
+
+
 
   //two particle correlators:
   for(int i=0;i<2;i++){
@@ -3251,11 +3266,11 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     fListHistos->Add(fHist_Corr2p_EP_Norm_NN[i]);
   }
   for(int i=0;i<2;i++){
-    fHist_Corr2p_EP_Refm_PN[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_PN_Mag%d",i),"<cos(n(phiA-phiB))>",400,0,4000,4,0,4,"");
+    fHist_Corr2p_EP_Refm_PN[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_PN_Mag%d",i),"<cos(n(phiA-phiB))>",800,0,gMaxRefMult,4,0,4,"");
     fListHistos->Add(fHist_Corr2p_EP_Refm_PN[i]);
-    fHist_Corr2p_EP_Refm_PP[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_PP_Mag%d",i),"<cos(n(phiA-phiB))>",400,0,4000,4,0,4,"");
+    fHist_Corr2p_EP_Refm_PP[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_PP_Mag%d",i),"<cos(n(phiA-phiB))>",800,0,gMaxRefMult,4,0,4,"");
     fListHistos->Add(fHist_Corr2p_EP_Refm_PP[i]);
-    fHist_Corr2p_EP_Refm_NN[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_NN_Mag%d",i),"<cos(n(phiA-phiB))>",400,0,4000,4,0,4,"");
+    fHist_Corr2p_EP_Refm_NN[i] = new TProfile2D(Form("fHist_Corr2p_EP_Refm_NN_Mag%d",i),"<cos(n(phiA-phiB))>",800,0,gMaxRefMult,4,0,4,"");
     fListHistos->Add(fHist_Corr2p_EP_Refm_NN[i]);
   }
 
@@ -3467,27 +3482,27 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fListCalibs->Add(fCentCL1vsVzRun);
 
 
-  fRefMultCorrvsRaw = new TH2F("fRefMultCorrvsRaw",Form("Raw vs Corr Mult (FB %d)",gFilterBit),3000,0,3000,4000,0,4000);
+  fRefMultCorrvsRaw = new TH2F("fRefMultCorrvsRaw",Form("Raw vs Corr Mult (FB %d)",gFilterBit),gMaxRefMult,0,gMaxRefMult,gMaxRefMult,0,gMaxRefMult);
   fListCalibs->Add(fRefMultCorrvsRaw);
 
 
 
-  fTPCvsGlobalTrk = new TH2F("fTPCvsGlobalTrk","ESDTrk vs TPC(FB128)",500,0,5000,500,0,5000);
+  fTPCvsGlobalTrk = new TH2F("fTPCvsGlobalTrk","ESDTrk vs TPC(FB128)",400,0,gMaxRefMult,400,0,gMaxRefMult);
   fListCalibs->Add(fTPCvsGlobalTrk);
 
-  fTPCuncutvsGlobal = new TH2F("fTPCuncutvsGlobal","ESDTrk vs ITS(FB96) ",500,0,5000,500,0,5000);
+  fTPCuncutvsGlobal = new TH2F("fTPCuncutvsGlobal","ESDTrk vs ITS(FB96) ",400,0,gMaxRefMult,400,0,gMaxRefMult);
   fListCalibs->Add(fTPCuncutvsGlobal);
 
-  fTPCvsITSfb96 = new TH2F("fTPCvsITSfb96","FB96 vs TPC(FB128)",500,0,5000,500,0,5000);
+  fTPCvsITSfb96 = new TH2F("fTPCvsITSfb96","FB96 vs TPC(FB128)",400,0,gMaxRefMult,400,0,gMaxRefMult);
   fListCalibs->Add(fTPCvsITSfb96);
 
-  fTPCvsITSfb32 = new TH2F("fTPCvsITSfb32","FB32 vs TPC(FB128)",500,0,5000,500,0,5000);
+  fTPCvsITSfb32 = new TH2F("fTPCvsITSfb32","FB32 vs TPC(FB128)",400,0,gMaxRefMult,400,0,gMaxRefMult);
   fListCalibs->Add(fTPCvsITSfb32);
 
-  fTPCFEvsITSfb96 = new TH2F("fTPCFEvsITSfb96","FB96 vs TPC(FB1)",500,0,5000,500,0,5000);
+  fTPCFEvsITSfb96 = new TH2F("fTPCFEvsITSfb96","FB96 vs TPC(FB1)",400,0,gMaxRefMult,400,0,gMaxRefMult);
   fListCalibs->Add(fTPCFEvsITSfb96);
 
-  fGlobalTracks  = new TH1F("fGlobalTracks","Global Multiplilcity",5000,0,5000);
+  fGlobalTracks  = new TH1F("fGlobalTracks","Global Multiplilcity",gMaxRefMult,0,gMaxRefMult);
   fListCalibs->Add(fGlobalTracks);
 
 
