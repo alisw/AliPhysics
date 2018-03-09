@@ -423,6 +423,7 @@ void AliGenHijing::Generate()
 	  if (pSelected[i]) {
 	      kf   = iparticle->GetPdgCode();
 	      ks   = iparticle->GetStatusCode();
+	      ksp  = iparticle->GetUniqueID();
 	      p[0] = iparticle->Px();
 	      p[1] = iparticle->Py();
 	      p[2] = iparticle->Pz() * sign;
