@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2017, Int_t firstRun=256400,
+void PlotDriftSpeedSDDVsTime(Int_t year=2018, Int_t firstRun=282970,
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -155,8 +155,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2017, Int_t firstRun=256400,
   else if(year==2014) timeZero=1388530800;
   else if(year==2015) timeZero=1420128000;
   else if(year==2016) timeZero=1451606400;
-  else timeZero=1483228800;
-
+  else if(year==2017) timeZero=1483228800;
+  else timeZero=1514764800;
   Double_t mintimeday=999999999;
   Double_t maxtimeday=0;
   Double_t minrunnum=999999999;
