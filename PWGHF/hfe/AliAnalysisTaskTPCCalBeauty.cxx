@@ -604,8 +604,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     Double_t xmaxTemp[5] = {30.,0.2,19.5,2.5,50.};
     fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
     fOutputList->Add(fSprsTemplatesWeight);
+    fSprsTemplatesWeight->Sumw2();
     fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
     fOutputList->Add(fSprsTemplatesNoWeight);
+    fSprsTemplatesNoWeight->Sumw2();
     
     fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fDTemplateWeight);
