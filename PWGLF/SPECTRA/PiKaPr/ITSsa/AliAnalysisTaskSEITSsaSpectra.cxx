@@ -427,7 +427,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       int index = i_spc * kNchg + i_chg;
 
       const int nDEDXbins = 1000;
-      float dedxBins[nDEDXbins+1];
+      float dedxBins[nDEDXbins + 1];
       SetBins(nDEDXbins, 0., 1000., dedxBins);
       hist_name = Form("fHistNSigmaSep%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
       fHistNSigmaSep[index] = new TH2F(hist_name.data(), hist_name.data(), hnbins, hxbins, 1000, -10., 10.);
@@ -466,7 +466,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         double minBin[nDims] = { 0., 0., 0., -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
         double maxBin[nDims] = { 1., 1., 1., 2.5, 1.5 };          // Dummy limits for cent, recPt, genPt
         fHistRecoMC[index] =
-          new THnSparseF(hist_name.data(), ";;Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c})", nDims,
+          new THnSparseF(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c});", nDims,
                          nBins, minBin, maxBin);
         fHistRecoMC[index]->GetAxis(0)->Set(nCentBins, centBins); // Real limits for cent
         fHistRecoMC[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
@@ -1003,11 +1003,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
       if (lIsGoodTrack)
         fHistReco[lPidIndex]->Fill(fEvtMult, trkPt);
-        fHistSepPowerReco[lPidIndex]->Fill(trkPt,dEdx);
+      fHistSepPowerReco[lPidIndex]->Fill(trkPt, dEdx);
       // Filling Histos for Reco Efficiency
       // information from the MC kinematics (truth PID)
       if (fIsMC && lIsGoodPart) {
-        fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt,dEdx);
+        fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
         if (lMCevent->IsPhysicalPrimary(lMCtrk))
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
         else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))
@@ -1018,7 +1018,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 3);
           AliWarning("Weird particle physics");
         }
-
       }
 
       int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
@@ -1173,7 +1172,7 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
 
   if (fExtEventCuts) {
     if (fEventCuts.AcceptEvent(fESD)) {
-      evtSel = kHasGoodVtxZ;
+      evtSel = kNEvtCuts;
       return kTRUE;
     }
     AliDebug(3, "Event dont accepted by AliEventCuts");
@@ -1286,6 +1285,7 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
     }
     evtSel = kHasGoodVtxZ;
   }
+  evtSel = kNEvtCuts;
   return kTRUE;
 }
 
@@ -1354,10 +1354,14 @@ bool AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
     AliWarning(". Skipping multiplicity selection");
     fMultMethod = 0;
   }
-  if (!fMultMethod)
+  if (fExtEventCuts) {
+    if (fEventCuts.fCentralityFramework)
+      fEvtMult = fEventCuts.GetCentrality();
+    else
+      return kTRUE; // skip multiplicity check
+  } else if (!fMultMethod)
     return kTRUE; // skip multiplicity check
-
-  if (fMultMethod == 1) { // New multiplicity/centrality class framework
+  else if (fMultMethod == 1) { // New multiplicity/centrality class framework
     AliMultSelection *fMultSel = (AliMultSelection *)fESD->FindListObject("MultSelection");
     if (!fMultSel) {
       // If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before
