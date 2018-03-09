@@ -127,6 +127,7 @@ AliAnalysisTaskSE *AddTaskPLFemtoRun2(Int_t system=0/*0=pp,1=PbPb*/,
 
   // Create and connect containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();
+  if(trigger == "kHighMultV0") suffix += "_HM";
   outputfile += ":PWGCF_PLFemto_";
   outputfile += suffix;
 
