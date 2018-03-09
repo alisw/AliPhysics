@@ -5449,7 +5449,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
     case 81:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (FunctionNL_kSDM(energy, 0.95597, -3.09059, -0.702889)*1.008) ;
           }
@@ -5468,7 +5468,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     // NonLinearity LHC15o PbPb Calo  - only shifting MC
     case 82:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.095, -0.175739, 0.00776757) ;
           }
@@ -5486,7 +5486,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC - MB
     case 83:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.955001) ;
             energy /= FunctionNL_DExp(energy, 1.0380275426, 0.7534354400, -2.2110408210, 1.0408879042, 0.4399353376, -2.9554918759) ;
@@ -5499,7 +5499,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC - 0-10%
     case 84:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.954566) ;
             energy /= FunctionNL_DExp(energy, 1.0548582854, 1.5096237243, -1.6079078305, 1.0538380642, 124049.7, -38409.5) ;
@@ -5512,7 +5512,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC - 10-20%
     case 85:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.9365) ;
             energy /= FunctionNL_DExp(energy, 1.0380275426, 0.7534354400, -2.2110408210, 1.0408879042, 0.4399353376, -2.9554918759) ;
@@ -5525,7 +5525,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC - 20-50%
     case 86:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.948553) ;
           }
@@ -5537,7 +5537,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC - 50-90%
     case 87:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.95306) ;
           }
@@ -5552,7 +5552,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
     case 91:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 1.0026971373, -0.0320283624, -0.4999999953, 1.0750656618, -0.0855019990, -0.4571523301);
           }
@@ -5565,7 +5565,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       // NonLinearity LHC15o PbPb Calo  - only shifting MC
     case 92:
       if(isMC>0){
-        if( fCurrentMC== k15PbPb5TeV){
+        if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 1.0541217488, -0.1111428177, -0.4999999983, 1.0782958817, -0.0706389211, -0.4999999959);
           }
