@@ -27,7 +27,11 @@ AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbe
 // Set the file pattern. This example uses ptHardBin 4 of LHC12a15e_fix.
 // The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
 // See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
-embeddingHelper->SetFilePattern("/alice/sim/2012/LHC12a15e_fix/169838/%d/AOD149");
+// For the grid. Include "alien://" and don't use this locally!! It will be very slow and cause strain on the grid!
+embeddingHelper->SetFilePattern("alien:///alice/sim/2012/LHC12a15e_fix/169838/%d/AOD149");
+// For local use. File should be formatted the same as the normal list of input files (one filename per line).
+// Again, don't use AliEn locally!! It will be very slow and cause strain on the grid!
+embeddingHelper->SetFileListFilename("aodFilesEmbedData.txt");
 // If the embedded file is an ESD, then set:
 embeddingHelper->SetESD();
 // Add additional configure as desired.
@@ -72,7 +76,7 @@ With these basics in mind, there are a few main topics to discuss:
 - [Recording embedded event properties](\ref emcEmbeddingQA)
 - [Configuring embedding via YAML](\ref emcEmbeddingYamlConfig)
 - [Embedding on LEGO trains](\ref emcEmbeddingLegoTrain)
-- [Optimzation of event selection and Computing](\ref emcEmbeddingEventSelection)
+- [Optimzation of event selection and computing](\ref emcEmbeddingEventSelection)
 - [Notes on jet finding](\ref emcEmbeddingJetFinding)
 
 # Charged input objects (charged tracks)            {#emcEmbeddingChargedInputObjects}
