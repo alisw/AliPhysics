@@ -64,6 +64,10 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   
   void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
   void SetFlagV0MGainCorr(Bool_t b)          {this->bV0MGainCorr   = b;}
+  void SetFlagSkipPileUpCuts(Bool_t b)       {this->bSkipPileUpCut = b;}
+  void SetFlagFillNUAforPID(Bool_t b)        {this->bFillNUAHistPID = b;}
+
+
 
   void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
   void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
@@ -164,8 +168,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  
-  Int_t            fSkipOutlierCut;  //!
+
   Int_t                 fFilterBit;  //
   Int_t                      gPsiN;  //
   Int_t                 fOldRunNum;  //
@@ -178,8 +181,12 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Float_t    fCentralityPercentMax;  //
   Float_t         fPileUpSlopeParm;  //
   Float_t         fPileUpConstParm;  //
+
   Bool_t              bApplyMCcorr;  //
   Bool_t              bV0MGainCorr;  //
+  Bool_t            bSkipPileUpCut;  //
+  Bool_t           bFillNUAHistPID;  //
+
   TString            sPathOfMCFile;  //
   TString                sNucleiTP;  //
  
@@ -219,8 +226,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
   // NUA histograms:
-  TH3F        *fHist3DEtaPhiVz_Pos_Run[3][5];  //! 3 particle 5 centrality bin 
-  TH3F        *fHist3DEtaPhiVz_Neg_Run[3][5];  //! 3 particle 5 centrality bin 
+  TH3F        *fHist3DEtaPhiVz_Pos_Run[4][5];  //! 4 particle 5 centrality bin 
+  TH3F        *fHist3DEtaPhiVz_Neg_Run[4][5];  //! 4 particle 5 centrality bin 
 
 
 
