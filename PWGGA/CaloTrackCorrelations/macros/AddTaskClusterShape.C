@@ -598,8 +598,10 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   if(simulation) ana->SetConstantTimeShift(615);
   
   ana->SwitchOffFiducialCut();
-  
+    
   ana->SwitchOnStudyClusterShape();
+  
+  ana->SwitchOnStudyEMCalModuleCells();
   
   ana->SwitchOffStudyClusterShapeParam();
   
