@@ -149,6 +149,9 @@ public:
   
   void SwitchOnStudyCellTime()                  { fStudyTimeCellHisto    = kTRUE  ; }
   void SwitchOffStudyCellTime()                 { fStudyTimeCellHisto    = kFALSE ; }
+ 
+  void SwitchOnStudyEMCalModuleCells()          { fStudyModuleCells      = kTRUE  ; }
+  void SwitchOffStudyEMCalModuleCells()         { fStudyModuleCells      = kFALSE ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
@@ -172,6 +175,8 @@ public:
   Bool_t   fStudyInvMass;                       ///<  Fill invariant mass histograms
   
   Bool_t   fStudyTimeCellHisto;                 ///<  Fill time cell histograms
+  
+  Bool_t   fStudyModuleCells;                   ///<  Fill EMCal module cell histograms
   
   //
   // Cuts
@@ -560,6 +565,39 @@ public:
   TH2F *   fhColRowFromCellMaxLowM02         [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per odd/pair column
   TH2F *   fhColRowFromCellMaxHighM02        [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per odd/pair column
  
+  // EMCal module studies
+  //
+  TH3F *   fhSMNCellModuleMax;                  //!<! Number of cells in cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMNCellModuleOut;                  //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMECellModuleMax;                  //!<! Total energy of cells in cell maximum module , per SM, per cluster E
+  TH3F *   fhSMECellModuleOut;                  //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E
+  
+  TH3F *   fhSMNCellModuleMaxOutRat;            //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxRat ;              //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxOutRat;            //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E
+
+  TH3F *   fhSMNCellModuleMaxLowM02;            //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMNCellModuleOutLowM02;            //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxLowM02;            //!<! Total energy of cells in cell maximum module , per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleOutLowM02;            //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  
+  TH3F *   fhSMNCellModuleMaxOutRatLowM02;      //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxRatLowM02 ;        //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxOutRatLowM02;      //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
+
+  TH3F *   fhSMNCellModuleMaxHighM02;           //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMNCellModuleOutHighM02;           //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxHighM02;           //!<! Total energy of cells in cell maximum module , per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleOutHighM02;           //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  
+  TH3F *   fhSMNCellModuleMaxOutRatHighM02;     //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxRatHighM02 ;       //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxOutRatHighM02;     //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
+ 
+  TH3F *   fhSMEMaxEClusterRat;                 //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape
+  TH3F *   fhSMEMaxEClusterRatLowM02;           //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, photon shape
+  TH3F *   fhSMEMaxEClusterRatHighM02;          //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, non photon shape
+
   // Weight studies
   //
   
@@ -587,7 +625,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,6) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,7) ;
   /// \endcond
 
 } ;
