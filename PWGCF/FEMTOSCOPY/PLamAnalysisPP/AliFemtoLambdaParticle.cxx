@@ -32,8 +32,10 @@ AliFemtoLambdaParticle::AliFemtoLambdaParticle() :
   fMomentumPosDaughter(),
   fMomentumNegDaughter(),
   fPhiPosdaughter(0),
+  fPhiStarPosdaughter(),
   fEtaPosdaughter(0),
   fPhiNegdaughter(0),
+  fPhiStarNegdaughter(),
   fEtaNegdaughter(0),
   fReal(kFALSE)
 {
@@ -89,6 +91,8 @@ AliFemtoLambdaParticle &AliFemtoLambdaParticle::operator=(const AliFemtoLambdaPa
 
   for(int i=0;i<9;i++)
    {
+     fPhiStarPosdaughter[i] = obj.fPhiStarPosdaughter[i];
+     fPhiStarNegdaughter[i] = obj.fPhiStarNegdaughter[i];
      fPositionPosTPC[i] = obj.fPositionPosTPC[i];
      fPositionNegTPC[i] = obj.fPositionNegTPC[i];
    }

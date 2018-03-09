@@ -2155,6 +2155,22 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v0,const
 	  ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(pairMT);
 	}
 
+      //check for splitting/merging in angle space
+      for(int radius=0; radius<9; radius++) {
+        Double_t deltaEtaPos = proton.fEta - v0.fEtaPosdaughter;
+        Double_t deltaPhistarPos = proton.fPhistar[radius] - v0.fPhiStarPosdaughter[radius];
+        Double_t deltaEtaNeg = proton.fEta - v0.fEtaNegdaughter;
+        Double_t deltaPhistarNeg = proton.fPhistar[radius] - v0.fPhiStarNegdaughter[radius];
+
+        fillthis = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProton";
+        fillthis += radius;
+        if(!fIsLightweight) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEtaPos),TMath::Abs(deltaPhistarPos));
+
+        fillthis = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPion";
+        fillthis += radius;
+        if(!fIsLightweight) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEtaNeg),TMath::Abs(deltaPhistarNeg));
+      }
+
       fillthis = "fProtonLambdaAvgSeparationPP";
       if(!fIsLightweight) ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(avgSepPos);
 
@@ -2179,6 +2195,21 @@ void AliAnalysisTaskPLFemto::PairAnalysis(const AliFemtoLambdaParticle &v0,const
       fillthis = "fProtonLambdaAvgSeparationPPiME";
       if(!fIsLightweight) ((TH1F*)(fOutputTP->FindObject(fillthis)))->Fill(avgSepNeg);
 
+      //check for splitting/merging in angle space
+      for(int radius=0; radius<9; radius++) {
+        Double_t deltaEtaPos = proton.fEta - v0.fEtaPosdaughter;
+        Double_t deltaPhistarPos = proton.fPhistar[radius] - v0.fPhiStarPosdaughter[radius];
+        Double_t deltaEtaNeg = proton.fEta - v0.fEtaNegdaughter;
+        Double_t deltaPhistarNeg = proton.fPhistar[radius] - v0.fPhiStarNegdaughter[radius];
+
+        fillthis = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughProtonME";
+        fillthis += radius;
+        if(!fIsLightweight) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEtaPos),TMath::Abs(deltaPhistarPos));
+
+        fillthis = "fDeltaEtaDeltaPhiTPCradLpPrimProtonDaughPionME";
+        fillthis += radius;
+        if(!fIsLightweight) ((TH2F*)(fOutputTP->FindObject(fillthis)))->Fill(TMath::Abs(deltaEtaNeg),TMath::Abs(deltaPhistarNeg));
+      }
 
       if(fUseMCInfo) GetMomentumMatrix(v0,proton);//determines the amount of momentum resolution (from mixed event to enlarge statistics)
     }
@@ -3070,11 +3101,13 @@ inline void AliAnalysisTaskPLFemto::FillV0Selection(AliAODv0 *v0,AliAODEvent* ao
 	  fV0cand[fV0Counter].fDaughterID2 = nTrack->GetID();
 	  fV0cand[fV0Counter].fMomentumPosDaughter.SetXYZ(pTrack->Px(),pTrack->Py(),pTrack->Pz());
 	  fV0cand[fV0Counter].fMomentumNegDaughter.SetXYZ(nTrack->Px(),nTrack->Py(),nTrack->Pz());
-	  //GetGlobalPositionAtGlobalRadiiThroughTPC(pTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fPositionPosTPC,fPrimVertex);
-	  //GetGlobalPositionAtGlobalRadiiThroughTPC(nTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fPositionNegTPC,fPrimVertex);
+    //GetGlobalPositionAtGlobalRadiiThroughTPC(pTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fPositionPosTPC,fPrimVertex);
+    //GetGlobalPositionAtGlobalRadiiThroughTPC(nTrack,aodEvent->GetMagneticField(),fV0cand[fV0Counter].fPositionNegTPC,fPrimVertex);
 
 	  for(int radius=0;radius<9;radius++)
-	    {
+      {
+        fV0cand[fV0Counter].fPhiStarPosdaughter[radius] = PhiS(pTrack,aodEvent->GetMagneticField(),fTPCradii[radius]);
+        fV0cand[fV0Counter].fPhiStarNegdaughter[radius] = PhiS(nTrack,aodEvent->GetMagneticField(),fTPCradii[radius]);
 	      fV0cand[fV0Counter].fPositionPosTPC[radius] = GetGlobalPositionAtGlobalRadiiThroughTPC(pTrack,aodEvent->GetMagneticField(),fTPCradii[radius],fPrimVertex);
 	      fV0cand[fV0Counter].fPositionNegTPC[radius] = GetGlobalPositionAtGlobalRadiiThroughTPC(nTrack,aodEvent->GetMagneticField(),fTPCradii[radius],fPrimVertex);
 	    }
