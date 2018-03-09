@@ -1,7 +1,10 @@
 #ifndef ALIEMCALTRACKINGQATASK_H
 #define ALIEMCALTRACKINGQATASK_H
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 #include <tuple>
+#endif
+
 #include <vector>
 
 #include "AliAnalysisTaskEmcalLight.h"
@@ -44,8 +47,9 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   void                   FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable);
   void                   FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
                                                        Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
-
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   THnSparse* GenerateTHnSparse(const char* name, const std::vector<std::tuple<std::string, std::vector<Double_t>::iterator, std::vector<Double_t>::iterator>>& axis);
+#endif
 
   // Task configuration
   Bool_t                  fDoSigma1OverPt        ; ///<  add sigma(1/pt), if false add sigma(pt)/pt instead
