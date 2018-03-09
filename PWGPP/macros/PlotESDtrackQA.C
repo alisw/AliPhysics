@@ -804,9 +804,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
 
-  TH3F* hptresTPC3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCsel");
-  TH3F* hptresITS3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselITSref");
-  TH3F* hptresSPD3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselSPDany");
+  TH3F* hptresTPC3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCsel");
+  if(!hptresTPC3d) hptresTPC3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCsel"); // old name
+  TH3F* hptresITS3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselITSref");
+  if(!hptresITS3d) hptresITS3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselITSref");
+  TH3F* hptresSPD3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselSPDany");
+  if(!hptresSPD3d) hptresSPD3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselSPDany");
   TH2D* hptresTPC=(TH2D*)hptresTPC3d->Project3D("xy");
   TH2D* hptresITS=(TH2D*)hptresITS3d->Project3D("xy");
   TH2D* hptresSPD=(TH2D*)hptresSPD3d->Project3D("xy");
