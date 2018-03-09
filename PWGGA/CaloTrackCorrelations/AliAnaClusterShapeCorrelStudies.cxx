@@ -86,6 +86,24 @@ fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
 fhInvMassNCellSM(0),                   fhInvMassNCellSMSame(0),
 fhColRowM02(0),                        fhColRowM02NCellCut(0),
 fhEMaxCellTimeM02SM(0),                fhEMaxCellTimeNCellSM(0),               fhESecCellTimeNCellSM(0),
+// Module
+fhSMNCellModuleMax(0),                 fhSMNCellModuleOut(0),
+fhSMECellModuleMax(0),                 fhSMECellModuleOut(0),
+fhSMNCellModuleMaxOutRat(0),
+fhSMECellModuleMaxRat(0),              fhSMECellModuleMaxOutRat(0),
+
+fhSMNCellModuleMaxLowM02(0),           fhSMNCellModuleOutLowM02(0),
+fhSMECellModuleMaxLowM02(0),           fhSMECellModuleOutLowM02(0),
+fhSMNCellModuleMaxOutRatLowM02(0),
+fhSMECellModuleMaxRatLowM02(0),        fhSMECellModuleMaxOutRatLowM02(0),
+
+fhSMNCellModuleMaxHighM02(0),          fhSMNCellModuleOutHighM02(0),
+fhSMECellModuleMaxHighM02(0),          fhSMECellModuleOutHighM02(0),
+fhSMNCellModuleMaxOutRatHighM02(0),
+fhSMECellModuleMaxRatHighM02(0),       fhSMECellModuleMaxOutRatHighM02(0),
+
+fhSMEMaxEClusterRat(0), 
+fhSMEMaxEClusterRatLowM02(0),          fhSMEMaxEClusterRatHighM02(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
@@ -1458,6 +1476,10 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Int_t smMax = GetModuleNumberCellIndexesAbsCaloMap(absIdMax, GetCalorimeter(), 
                                                      ietaMax, iphiMax, rcuMax, icolAbs, irowAbs);
 
+  Int_t iTowerMax = -1, iIphiMax = -1, iIetaMax = -1;
+  if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
+    GetEMCALGeometry()->GetCellIndex(absIdMax,smMax,iTowerMax,iIphiMax,iIetaMax);
+  
   if ( matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape )
   {
     fhColRowM02->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
@@ -1478,6 +1500,10 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
 
   // Loop on cells in cluster to get cell cluster asymmetry and 
   // other correlation parameters
+  Int_t   nPerModule     = 0;
+  Int_t   nPerModuleOut  = 0;
+  Float_t ePerModule     = 0.;
+  Float_t ePerModuleOut  = 0.;
   for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
   {  
     Int_t   absId = clus ->GetCellsAbsId()[ipos];
@@ -1487,9 +1513,37 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     
     if( absId == absIdMax || eCell < 0.01 ) continue;
     
-    Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+    Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
+    Int_t sm = GetModuleNumberCellIndexes(absId,GetCalorimeter(), ieta, iphi, rcu);
     
-    if( weight < 0.01 ) continue;
+    // Module vs cell max
+    //
+    if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
+    {
+      Int_t iTower = -1, iIphi = -1, iIeta = -1;
+      GetEMCALGeometry()->GetCellIndex(absId,sm,iTower,iIphi,iIeta);
+      
+      //printf("Max: SM %d Tower %d, absId %d, amp %2.2f\n",smMax,iTowerMax,absIdMax,eCellMax);
+      
+      if ( iTowerMax == iTower )
+      {
+        //printf("Secondary: Tower %d, absId %d, amp %2.2f\n",iTower,absId,eCell);
+        nPerModule++;
+        ePerModule+=eCell;
+      } 
+      else 
+      {
+        //printf("Secondary: Tower %d, absId %d, amp %2.2f\n",iTower,absId,eCell);
+        nPerModuleOut++;
+        ePerModuleOut+=eCell;
+      }
+    }
+
+    // Select only cells with weight
+    //
+    Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+
+    if ( weight < 0.01 ) continue;
 
     Float_t fracCell = eCell/eCellMax;            
     fhClusterMaxCellCloseCellRatioM02->Fill(energy, fracCell, m02, GetEventWeight());
@@ -1534,9 +1588,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         fhEMaxECrossNCellHighM02PerSM  [smMax]->Fill(eCellMax, eCrossFrac, nCell, GetEventWeight());
       }
     }
-    
-    Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
-    Int_t sm = GetModuleNumberCellIndexes(absId,GetCalorimeter(), ieta, iphi, rcu);
     
     //////
     // Cluster asymmetry in cell units
@@ -1598,6 +1649,49 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     
   } // Fill cell-cluster histogram loop
   
+  if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
+  {
+    fhSMNCellModuleMax->Fill(energy, smMax, nPerModule   );
+    fhSMNCellModuleOut->Fill(energy, smMax, nPerModuleOut);
+    fhSMECellModuleMax->Fill(energy, smMax, ePerModule   );
+    fhSMECellModuleOut->Fill(energy, smMax, ePerModuleOut);
+    
+    fhSMNCellModuleMaxOutRat->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
+    fhSMECellModuleMaxRat   ->Fill(energy, smMax, ePerModule   /eCellMax);
+    fhSMECellModuleMaxOutRat->Fill(energy, smMax, ePerModuleOut/eCellMax);
+    
+    if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
+    {
+      fhSMNCellModuleMaxLowM02->Fill(energy, smMax, nPerModule   );
+      fhSMNCellModuleOutLowM02->Fill(energy, smMax, nPerModuleOut);
+      fhSMECellModuleMaxLowM02->Fill(energy, smMax, ePerModule   );
+      fhSMECellModuleOutLowM02->Fill(energy, smMax, ePerModuleOut);
+      
+      fhSMNCellModuleMaxOutRatLowM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
+      fhSMECellModuleMaxRatLowM02   ->Fill(energy, smMax, ePerModule   /eCellMax);
+      fhSMECellModuleMaxOutRatLowM02->Fill(energy, smMax, ePerModuleOut/eCellMax);    
+      
+//      if(energy > 8) printf("SM %d, E %2.2f, E max %2.2f;\n"
+//                            " \t nMod %d, nModOut %d, nMod/nModOut %2.2f;\n"
+//                            " \t eMod %2.2f, eModOut %2.2f, eMod/eMax %2.2f, eModOut/eMax %2.2f\n",
+//                            smMax,energy,eCellMax,
+//                            nPerModule,nPerModuleOut,nPerModuleOut/(nPerModule+1.),
+//                            ePerModule,ePerModuleOut,ePerModule/eCellMax,ePerModuleOut/eCellMax);
+    }
+    else if ( m02 > fM02HighBin[0] && m02 <= fM02HighBin[1] )
+    {
+      fhSMNCellModuleMaxHighM02->Fill(energy, smMax, nPerModule   );
+      fhSMNCellModuleOutHighM02->Fill(energy, smMax, nPerModuleOut);
+      fhSMECellModuleMaxHighM02->Fill(energy, smMax, ePerModule   );
+      fhSMECellModuleOutHighM02->Fill(energy, smMax, ePerModuleOut);
+      
+      fhSMNCellModuleMaxOutRatHighM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
+      fhSMECellModuleMaxRatHighM02   ->Fill(energy, smMax, ePerModule   /eCellMax);
+      fhSMECellModuleMaxOutRatHighM02->Fill(energy, smMax, ePerModuleOut/eCellMax);
+    }
+    
+  }  
+  
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
   {
     fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
@@ -1634,12 +1728,18 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
-  
-  if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
-    fhSMM20LowM02NoCut [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
-  else if ( m02 > fM02HighBin[0] && m02 <= fM02HighBin[1] )
-    fhSMM20HighM02NoCut[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+  fhSMEMaxEClusterRat                ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
 
+  if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
+  {
+    fhSMM20LowM02NoCut [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+    fhSMEMaxEClusterRatLowM02      ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
+  }
+    else if ( m02 > fM02HighBin[0] && m02 <= fM02HighBin[1] )
+    {
+      fhSMM20HighM02NoCut[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+      fhSMEMaxEClusterRatHighM02     ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
+    }
   
   if ( energy > fEMinShape && energy < fEMaxShape ) 
   {
@@ -4575,6 +4675,238 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhClusterMaxCellECrossM02->SetZTitle("#sigma^{2}_{long}");
       outputContainer->Add(fhClusterMaxCellECrossM02);
     }
+  }
+  
+  fhSMEMaxEClusterRat  = new TH3F 
+  ("hSMEMaxEClusterRat","#it{E} vs SM number vs #it{E}_{cell}^{max}/#it{E}_{cluster}",
+   nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,1); 
+  fhSMEMaxEClusterRat->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhSMEMaxEClusterRat->SetYTitle("SM number");
+  fhSMEMaxEClusterRat->SetZTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+  outputContainer->Add(fhSMEMaxEClusterRat); 
+  
+  fhSMEMaxEClusterRatLowM02  = new TH3F 
+  ("hSMEMaxEClusterRatLowM02",
+   Form("#it{E} vs SM number vs #it{E} vs SM number vs #it{E}_{cell}^{max}/#it{E}_{cluster}, for %2.2f<#sigma^{2}_{long}<%2.2f",
+        fM02LowBin[0],fM02LowBin[1]),
+   nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,1); 
+  fhSMEMaxEClusterRatLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhSMEMaxEClusterRatLowM02->SetYTitle("SM number");
+  fhSMEMaxEClusterRatLowM02->SetZTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+  outputContainer->Add(fhSMEMaxEClusterRatLowM02); 
+ 
+  fhSMEMaxEClusterRatHighM02  = new TH3F 
+  ("hSMEMaxEClusterRatHighM02",
+   Form("#it{E} vs SM number vs #it{E} vs SM number vs #it{E}_{cell}^{max}/#it{E}_{cluster}, for %2.2f<#sigma^{2}_{long}<%2.2f",
+        fM02HighBin[0],fM02HighBin[1]),
+   nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,1); 
+  fhSMEMaxEClusterRatHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhSMEMaxEClusterRatHighM02->SetYTitle("SM number");
+  fhSMEMaxEClusterRatHighM02->SetZTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+  outputContainer->Add(fhSMEMaxEClusterRatHighM02); 
+  
+  if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
+  {
+    fhSMNCellModuleMax  = new TH3F 
+    ("hSMNCellModuleMax","#it{E} vs SM number vs n Cells in module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 4,-0.5,3.5); 
+    fhSMNCellModuleMax->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMax->SetYTitle("SM number");
+    fhSMNCellModuleMax->SetZTitle("#it{n}_{cell}^{in module max}-1");
+    outputContainer->Add(fhSMNCellModuleMax); 
+    
+    fhSMNCellModuleOut  = new TH3F 
+    ("hSMNCellModuleOut","#it{E} vs SM number vs n Cells out of module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 15,-0.5,14.5); 
+    fhSMNCellModuleOut->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleOut->SetYTitle("SM number");
+    fhSMNCellModuleOut->SetZTitle("#it{n}_{cell}^{out module max}");
+    outputContainer->Add(fhSMNCellModuleOut);     
+    
+    fhSMECellModuleMax  = new TH3F 
+    ("hSMECellModuleMax","#it{E}^{cluster} vs SM number vs #Sigma #it{E} of cells in module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleMax->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMax->SetYTitle("SM number");
+    fhSMECellModuleMax->SetZTitle("#Sigma #it{E}_{cell}^{in module max}-#it{E}^{max}_{cell}");
+    outputContainer->Add(fhSMECellModuleMax); 
+    
+    fhSMECellModuleOut  = new TH3F 
+    ("hSMECellModuleOut","#it{E} vs SM number vs #Sigma #it{E} of cells out of module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleOut->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleOut->SetYTitle("SM number");
+    fhSMECellModuleOut->SetZTitle("#Sigma #it{E}_{cell}^{out module max}");
+    outputContainer->Add(fhSMECellModuleOut); 
+    
+    fhSMNCellModuleMaxOutRat  = new TH3F 
+    ("hSMNCellModuleMaxOutRat","#it{E} vs SM number vs Ratio n Cells out/in module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,10); 
+    fhSMNCellModuleMaxOutRat->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMaxOutRat->SetYTitle("SM number");
+    fhSMNCellModuleMaxOutRat->SetZTitle("#it{n}_{cell}^{out module max}/#it{n}_{cell}^{in module max}");
+    outputContainer->Add(fhSMNCellModuleMaxOutRat); 
+    
+    fhSMECellModuleMaxRat  = new TH3F 
+    ("hSMECellModuleMaxRat","#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} in module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxRat->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxRat->SetYTitle("SM number");
+    fhSMECellModuleMaxRat->SetZTitle("#Sigma #it{E}_{cell}^{in module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxRat); 
+    
+    fhSMECellModuleMaxOutRat  = new TH3F 
+    ("hSMECellModuleMaxOutRat","#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} out of module with cell E max",
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxOutRat->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxOutRat->SetYTitle("SM number");
+    fhSMECellModuleMaxOutRat->SetZTitle("#Sigma #it{E}_{cell}^{out module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxOutRat); 
+    
+    // Photon shape
+    
+    fhSMNCellModuleMaxLowM02  = new TH3F 
+    ("hSMNCellModuleMaxLowM02",
+     Form("#it{E} vs SM number vs n Cells in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 4,-0.5,3.5); 
+    fhSMNCellModuleMaxLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMaxLowM02->SetYTitle("SM number");
+    fhSMNCellModuleMaxLowM02->SetZTitle("#it{n}_{cell}^{in module max}-1");
+    outputContainer->Add(fhSMNCellModuleMaxLowM02); 
+    
+    fhSMNCellModuleOutLowM02  = new TH3F 
+    ("hSMNCellModuleOutLowM02",
+     Form("#it{E} vs SM number vs n Cells out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 15,-0.5,14.5); 
+    fhSMNCellModuleOutLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleOutLowM02->SetYTitle("SM number");
+    fhSMNCellModuleOutLowM02->SetZTitle("#it{n}_{cell}^{out module max}");
+    outputContainer->Add(fhSMNCellModuleOutLowM02);     
+    
+    fhSMECellModuleMaxLowM02  = new TH3F 
+    ("hSMECellModuleMaxLowM02",
+     Form("#it{E}^{cluster} vs SM number vs #Sigma #it{E} of cells in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleMaxLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxLowM02->SetYTitle("SM number");
+    fhSMECellModuleMaxLowM02->SetZTitle("#Sigma #it{E}_{cell}^{in module max}-#it{E}^{max}_{cell}");
+    outputContainer->Add(fhSMECellModuleMaxLowM02); 
+    
+    fhSMECellModuleOutLowM02  = new TH3F 
+    ("hSMECellModuleOutLowM02",
+     Form("#it{E} vs SM number vs #Sigma #it{E} of cells out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleOutLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleOutLowM02->SetYTitle("SM number");
+    fhSMECellModuleOutLowM02->SetZTitle("#Sigma #it{E}_{cell}^{out module max}");
+    outputContainer->Add(fhSMECellModuleOutLowM02); 
+    
+    fhSMNCellModuleMaxOutRatLowM02  = new TH3F 
+    ("hSMNCellModuleMaxOutRatLowM02",
+     Form("#it{E} vs SM number vs Ratio n Cells out/in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,10); 
+    fhSMNCellModuleMaxOutRatLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMaxOutRatLowM02->SetYTitle("SM number");
+    fhSMNCellModuleMaxOutRatLowM02->SetZTitle("#it{n}_{cell}^{out module max}/#it{n}_{cell}^{in module max}");
+    outputContainer->Add(fhSMNCellModuleMaxOutRatLowM02); 
+    
+    fhSMECellModuleMaxRatLowM02  = new TH3F 
+    ("hSMECellModuleMaxRatLowM02",
+     Form("#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxRatLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxRatLowM02->SetYTitle("SM number");
+    fhSMECellModuleMaxRatLowM02->SetZTitle("#Sigma #it{E}_{cell}^{in module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxRatLowM02); 
+    
+    fhSMECellModuleMaxOutRatLowM02  = new TH3F 
+    ("hSMECellModuleMaxOutRatLowM02",
+     Form("#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02LowBin[0],fM02LowBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxOutRatLowM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxOutRatLowM02->SetYTitle("SM number");
+    fhSMECellModuleMaxOutRatLowM02->SetZTitle("#Sigma #it{E}_{cell}^{out module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxOutRatLowM02); 
+    
+    
+    // Not Photon shape
+    
+    fhSMNCellModuleMaxHighM02  = new TH3F 
+    ("hSMNCellModuleMaxHighM02",
+     Form("#it{E} vs SM number vs n Cells in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 4,-0.5,3.5); 
+    fhSMNCellModuleMaxHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMaxHighM02->SetYTitle("SM number");
+    fhSMNCellModuleMaxHighM02->SetZTitle("#it{n}_{cell}^{in module max}-1");
+    outputContainer->Add(fhSMNCellModuleMaxHighM02); 
+    
+    fhSMNCellModuleOutHighM02  = new TH3F 
+    ("hSMNCellModuleOutHighM02",
+     Form("#it{E} vs SM number vs n Cells out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 15,-0.5,14.5); 
+    fhSMNCellModuleOutHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleOutHighM02->SetYTitle("SM number");
+    fhSMNCellModuleOutHighM02->SetZTitle("#it{n}_{cell}^{out module max}");
+    outputContainer->Add(fhSMNCellModuleOutHighM02);     
+    
+    fhSMECellModuleMaxHighM02  = new TH3F 
+    ("hSMECellModuleMaxHighM02",
+     Form("#it{E}^{cluster} vs SM number vs #Sigma #it{E} of cells in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleMaxHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxHighM02->SetYTitle("SM number");
+    fhSMECellModuleMaxHighM02->SetZTitle("#Sigma #it{E}_{cell}^{in module max}-#it{E}^{max}_{cell}");
+    outputContainer->Add(fhSMECellModuleMaxHighM02); 
+    
+    fhSMECellModuleOutHighM02  = new TH3F 
+    ("hSMECellModuleOutHighM02",
+     Form("#it{E} vs SM number vs #Sigma #it{E} of cells out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,30); 
+    fhSMECellModuleOutHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleOutHighM02->SetYTitle("SM number");
+    fhSMECellModuleOutHighM02->SetZTitle("#Sigma #it{E}_{cell}^{out module max}");
+    outputContainer->Add(fhSMECellModuleOutHighM02); 
+    
+    fhSMNCellModuleMaxOutRatHighM02  = new TH3F 
+    ("hSMNCellModuleMaxOutRatHighM02",
+     Form("#it{E} vs SM number vs Ratio n Cells out/in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 200,0,10); 
+    fhSMNCellModuleMaxOutRatHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMNCellModuleMaxOutRatHighM02->SetYTitle("SM number");
+    fhSMNCellModuleMaxOutRatHighM02->SetZTitle("#it{n}_{cell}^{out module max}/#it{n}_{cell}^{in module max}");
+    outputContainer->Add(fhSMNCellModuleMaxOutRatHighM02); 
+    
+    fhSMECellModuleMaxRatHighM02  = new TH3F 
+    ("hSMECellModuleMaxRatHighM02",
+     Form("#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} in module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxRatHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxRatHighM02->SetYTitle("SM number");
+    fhSMECellModuleMaxRatHighM02->SetZTitle("#Sigma #it{E}_{cell}^{in module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxRatHighM02); 
+    
+    fhSMECellModuleMaxOutRatHighM02  = new TH3F 
+    ("hSMECellModuleMaxOutRatHighM02",
+     Form("#it{E} vs SM number vs Ratio #Sigma #it{E}_{cell} out of module with cell E max, for %2.2f<#sigma^{2}_{long}<%2.2f",
+          fM02HighBin[0],fM02HighBin[1]),
+     nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 150,0,3); 
+    fhSMECellModuleMaxOutRatHighM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhSMECellModuleMaxOutRatHighM02->SetYTitle("SM number");
+    fhSMECellModuleMaxOutRatHighM02->SetZTitle("#Sigma #it{E}_{cell}^{out module max}/#it{E}_{cell}^{max}");
+    outputContainer->Add(fhSMECellModuleMaxOutRatHighM02); 
   }
   
   if(fStudyWeight)
