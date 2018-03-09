@@ -333,10 +333,15 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
 
+  RDHFLctoV0An->SetGetNTPCSigmaCutForPreselection(3);
+  const Int_t nBachelorPbins=2;
   if (RDHFLctoV0An->GetPidSelectionFlag()==9) {
-    Float_t minCombProb[nptbins];
-    for (Int_t iBin=0; iBin<nptbins; iBin++) minCombProb[iBin]=0.;
-    RDHFLctoV0An->SetMinCombinedProbability(nptbins,minCombProb);
+    Float_t minCombProb[nBachelorPbins];
+    for (Int_t iBin=0; iBin<nBachelorPbins; iBin++) minCombProb[iBin]=0.;
+    RDHFLctoV0An->SetMinCombinedProbability(nBachelorPbins,minCombProb);
+    Float_t bachelorPlimits[nBachelorPbins+];
+    for (Int_t iBin=0; iBin<nBachelorPbins; iBin++) bachelorPlimits[iBin]=0.;
+    SetBachelorPLimitsForPID(nBachelorPbins,bachelorPlimits);
   }
 
   //pid settings
