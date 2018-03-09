@@ -461,10 +461,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fOutput->Add(fHistMCPartGoodGenVtxZ[index]);
 
         hist_name = Form("fHistRecoMC%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-        const UInt_t nDims = 5;                                   // cent, recPt, genPt, truePID, IsPrim
-        int nBins[nDims] = { nCentBins, nPtBins, nPtBins, 4, 2 }; //
-        double minBin[nDims] = { 0., 0., 0., -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
-        double maxBin[nDims] = { 1., 1., 1., 2.5, 1.5 };          // Dummy limits for cent, recPt, genPt
+        const UInt_t nDims = 6;                                   // cent, recPt, genPt, truePID, IsPrim
+        int nBins[nDims] = { nCentBins, nPtBins, nPtBins, 1000, 4, 2 }; //
+        double minBin[nDims] = { 0., 0., 0.,-200, -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
+        double maxBin[nDims] = { 1., 1., 1., 200,  2.5, 1.5 };          // Dummy limits for cent, recPt, genPt
         fHistRecoMC[index] =
           new THnSparseF(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c});", nDims,
                          nBins, minBin, maxBin);
@@ -1022,7 +1022,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
       int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
       if (fIsMC && lIsGoodTrack) {
-        double tmp_vect[5] = { fEvtMult, trkPt, lMCpt, static_cast<double>(binPart),
+        double invPtDifference = 1./trkPt - 1./lMCpt;
+        double tmp_vect[6] = { fEvtMult, trkPt, lMCpt, invPtDifference, static_cast<double>(binPart),
                                (lMCevent->IsPhysicalPrimary(lMCtrk)) ? 0. : 1. };
         fHistRecoMC[lPidIndex]->Fill(tmp_vect);
       } // end y
