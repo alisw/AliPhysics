@@ -124,8 +124,8 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
 
-  hEventStatistics = new TH1I("hEventStatistics","",10,0,10);
-  hEventStatistics->SetBit(TH1::kCanRebin);
+  hEventStatistics = new TH1I("hEventStatistics","",20,0,20);
+  //hEventStatistics->SetBit(TH1::kCanRebin);
   fListOfHistos->Add(hEventStatistics);
   
   // single-track QA plots
