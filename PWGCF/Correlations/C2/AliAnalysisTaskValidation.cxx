@@ -74,8 +74,9 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
   fEventValidators.push_back(EventValidation::kHasEntriesV0);
   fEventValidators.push_back(EventValidation::kHasValidVertex);
   fEventValidators.push_back(EventValidation::kHasMultSelection);
+  // This one kills another 60% of the events in LHC15o HIR :/
   // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+  fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
   fEventValidators.push_back(EventValidation::kNotSPDPU);
   fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
   fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
@@ -498,8 +499,12 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracklets() cons
     if (TMath::Abs(dphi) * 1000 > 5) {
       continue;
     }
-    auto phi   = mult->GetPhi(i);
     auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
+    // Drop everything outside of -1.7 < eta 1.7 to avoid overlas with the FMD
+    if (eta < -1.7 || eta > 1.7) {
+      continue;
+    }
+    auto phi   = mult->GetPhi(i);
     ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, dummy_pt, 1));
   }
   return ret_vector;
