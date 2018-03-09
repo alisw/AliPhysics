@@ -39,6 +39,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TEfficiency *eff_MaxiPadLTM_1Trk_All;	//!
   TEfficiency *eff_MaxiPadLTM_1Trk_Mu;	//!
   TEfficiency *eff_MaxiPadLTM_1Trk_El;	//!
+  TEfficiency *eff_AverageTracklets;	//!
   TH2F *hTrackDistributionLTM;		//!
   TH2F *hTrackDistribution_Mu;		//!
   TH2F *hTrackDistribution_El;		//!
