@@ -31,6 +31,7 @@
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
 #include <TString.h>
+#include <vector>
 
 class TClonesArray;
 
@@ -185,28 +186,18 @@ protected:
    * @param[in] o Patch o check
    * @param[out] boundaries Patch boundaries [etamin, phimin, etamax, phimax]
    */
-  void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
+  void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, TList *triggerpatches);
-
-  /**
-   * Find all patches in an event which could have fired the trigger
-   * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
-   * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
-   * @param[in] triggerclass EMCAL trigger class firing
-   * @param[in] fTriggerPatches Trigger patches found in the event
-   * @return List of patches which could have fired the trigger
-   */
-  void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;
+  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
    * @param[in] etaclust \f$ \eta \f$ of the cluster at center
    * @param[in] phiclust \f$ \phi \f$ of the cluster at center
    * @param[in] fTriggerPatches List of trigger patches which have fired the trigger
-   * @return[in] True if the cluster can be correlated to a triggerpatch fired the trigger, false otherwise
+   * @return[in] List with all patches with geometric overlap with the cluster
    */
-  Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
+  std::vector<AliEMCALTriggerPatchInfo *> CorrelateToTrigger(Double_t etaclust, Double_t phiclust, const TList &triggerpatches) const;
 
 
   AliCutValueRange<double>            fCentralityRange;           ///< Selected centrality range
