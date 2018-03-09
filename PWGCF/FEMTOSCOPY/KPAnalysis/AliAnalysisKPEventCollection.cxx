@@ -48,67 +48,66 @@ AliReconstructedFirst::AliReconstructedFirst() :
 
   // default constructor constructor
 }
-//_____________________________________________________________________________
-AliReconstructedFirst::AliReconstructedFirst(const AliReconstructedFirst &obj) :
-  fPt(obj.fPt),
-  fEta(obj.fEta),
-  fTheta(obj.fTheta),
-  fPhi(obj.fPhi),
-  fRap(obj.fRap),
-  fCharge(obj.fCharge),
-  fDCAxy(obj.fDCAxy),
-  fDCAz(obj.fDCAz),
-  isTOFmismatch(obj.isTOFmismatch),
-  isMCptc(obj.isMCptc),
-  fMCcode(obj.fMCcode),
-  fPDGcode(obj.fPDGcode),
-  fMCmumIdx(obj.fMCmumIdx),
-  fMCmumPDG(obj.fMCmumPDG),
-  fMCgrandmumIdx(obj.fMCgrandmumIdx),
-  fMCgrandmumPDG(obj.fMCgrandmumPDG),
-  index(obj.index),
-  mcFirstOriginType(kUnassigned),
-  doSkipOver(obj.doSkipOver),
-  fEtaS(obj.fEtaS),
-  fPhiS(obj.fPhiS),
-  isP(obj.isP),
-  isaP(obj.isaP)
-{
-  // copy constructor
-}
-//_____________________________________________________________________________
-AliReconstructedFirst &AliReconstructedFirst::operator=(const AliReconstructedFirst &obj)
-{
-  //Assignment operator
-  if(this == &obj) return *this;
-  
-  fPt            = obj.fPt;
-  fEta           = obj.fEta;
-  fTheta         = obj.fTheta;
-  fPhi           = obj.fPhi;
-  fRap           = obj.fRap;
-  fCharge        = obj.fCharge;
-  fDCAxy         = obj.fDCAxy;
-  fDCAz          = obj.fDCAz;
-  isTOFmismatch  = obj.isTOFmismatch;
-  isMCptc        = obj.isMCptc;
-  fMCcode        = obj.fMCcode;
-  fPDGcode       = obj.fPDGcode;
-  fMCmumIdx      = obj.fMCmumIdx;
-  fMCmumPDG      = obj.fMCmumPDG;
-  fMCgrandmumIdx = obj.fMCgrandmumIdx;
-  fMCgrandmumPDG = obj.fMCgrandmumPDG;
-  index          = obj.index;
-  mcFirstOriginType = kUnassigned;
-  doSkipOver     = obj.doSkipOver;
-  fEtaS          = obj.fEtaS;
-  fPhiS          = obj.fPhiS;
-  isP            = obj.isP;
-  isaP           = obj.isaP;
+// //_____________________________________________________________________________
+// AliReconstructedFirst::AliReconstructedFirst(const AliReconstructedFirst &obj) :
+//   fPt(0),
+//   fEta(0),
+//   fTheta(0),
+//   fPhi(0),
+//   fRap(0),
+//   fCharge(0),
+//   fDCAxy(0),
+//   fDCAz(0),
+//   isTOFmismatch(kFALSE),
+//   isMCptc(kFALSE),
+//   fMCcode(0),
+//   fPDGcode(0),
+//   fMCmumIdx(0),
+//   fMCmumPDG(0),
+//   fMCgrandmumIdx(0),
+//   fMCgrandmumPDG(0),
+//   index(0),
+//   mcFirstOriginType(kUnassigned),
+//   doSkipOver(kFALSE),
+//   fEtaS(0),
+//   fPhiS(0),
+//   isP(0),
+//   isaP(0)
+// {
+//   // copy constructor
+// }
+// //_____________________________________________________________________________
+// AliReconstructedFirst &AliReconstructedFirst::operator=(const AliReconstructedFirst &obj)
+// {
+//   //Assignment operator
+//   if(this == &obj) return *this;
+//   fPt            = obj.fPt;
+//   fEta           = obj.fEta;
+//   fTheta         = obj.fTheta;
+//   fPhi           = obj.fPhi;
+//   fRap           = obj.fRap;
+//   fCharge        = obj.fCharge;
+//   fDCAxy         = obj.fDCAxy;
+//   fDCAz          = obj.fDCAz;
+//   isTOFmismatch  = obj.isTOFmismatch;
+//   isMCptc        = obj.isMCptc;
+//   fMCcode        = obj.fMCcode;
+//   fPDGcode       = obj.fPDGcode;
+//   fMCmumIdx      = obj.fMCmumIdx;
+//   fMCmumPDG      = obj.fMCmumPDG;
+//   fMCgrandmumIdx = obj.fMCgrandmumIdx;
+//   fMCgrandmumPDG = obj.fMCgrandmumPDG;
+//   index          = obj.index;
+//   mcFirstOriginType = obj.mcFirstOriginType;
+//   doSkipOver     = obj.doSkipOver;
+//   fEtaS          = obj.fEtaS;
+//   fPhiS          = obj.fPhiS;
+//   isP            = obj.isP;
+//   isaP           = obj.isaP;
 
-  return (*this);
+//   return (*this);
 
-}
+// }
 
 //_____________________________________________________________________________
 
@@ -155,67 +154,66 @@ AliReconstructedSecond::AliReconstructedSecond() :
   // Default constructor
 
 }
-//_____________________________________________________________________________
-AliReconstructedSecond::AliReconstructedSecond(const AliReconstructedSecond &obj) :
-  sPt(obj.sPt),
-  sEta(obj.sEta),
-  sTheta(obj.sTheta),
-  sPhi(obj.sPhi),
-  sRap(obj.sRap),
-  sCharge(obj.sCharge),
-  sDCAxy(obj.sDCAxy),
-  sDCAz(obj.sDCAz),
-  isTOFmismatch(obj.isTOFmismatch),
-  isMCptc(obj.isMCptc),
-  sMCcode(obj.sMCcode),
-  sPDGcode(obj.sPDGcode),
-  sMCmumIdx(obj.sMCmumIdx),
-  sMCmumPDG(obj.sMCmumPDG),
-  sMCgrandmumIdx(obj.sMCgrandmumIdx),
-  sMCgrandmumPDG(obj.sMCgrandmumPDG),
-  index(obj.index),
-  mcSecondOriginType(kUnassigned),
-  doSkipOver(obj.doSkipOver),
-  sEtaS(obj.sEtaS),
-  sPhiS(obj.sPhiS),
-  isP(obj.isP),
-  isaP(obj.isaP)
-{
-  // copy constructor
-}
-//_____________________________________________________________________________
-AliReconstructedSecond &AliReconstructedSecond::operator=(const AliReconstructedSecond &obj)
-{
-  //Assignment operator
-  if(this == &obj) return *this;
-  
-  sPt            = obj.sPt;
-  sEta           = obj.sEta;
-  sTheta         = obj.sTheta;
-  sPhi           = obj.sPhi;
-  sRap           = obj.sRap;
-  sCharge        = obj.sCharge;
-  sDCAxy         = obj.sDCAxy;
-  sDCAz          = obj.sDCAz;
-  isTOFmismatch  = obj.isTOFmismatch;
-  isMCptc        = obj.isMCptc;
-  sMCcode        = obj.sMCcode;
-  sPDGcode       = obj.sPDGcode;
-  sMCmumIdx      = obj.sMCmumIdx;
-  sMCmumPDG      = obj.sMCmumPDG;
-  sMCgrandmumIdx = obj.sMCgrandmumIdx;
-  sMCgrandmumPDG = obj.sMCgrandmumPDG;
-  index          = obj.index;
-  mcSecondOriginType = kUnassigned;
-  doSkipOver     = obj.doSkipOver;
-  sEtaS          = obj.sEtaS;
-  sPhiS          = obj.sPhiS;
-  isP            = obj.isP;
-  isaP           = obj.isaP;
+// //_____________________________________________________________________________
+// AliReconstructedSecond::AliReconstructedSecond(const AliReconstructedSecond &obj) :
+//   sPt(0),
+//   sEta(0),
+//   sTheta(0),
+//   sPhi(0),
+//   sRap(0),
+//   sCharge(0),
+//   sDCAxy(0),
+//   sDCAz(0),
+//   isTOFmismatch(kFALSE),
+//   isMCptc(kFALSE),
+//   sMCcode(0),
+//   sPDGcode(0),
+//   sMCmumIdx(0),
+//   sMCmumPDG(0),
+//   sMCgrandmumIdx(0),
+//   sMCgrandmumPDG(0),
+//   index(0),
+//   mcSecondOriginType(kUnassigned),
+//   doSkipOver(kFALSE),
+//   sEtaS(0),
+//   sPhiS(0),
+//   isP(0),
+//   isaP(0)
+// {
+//   // copy constructor
+// }
+// //_____________________________________________________________________________
+// AliReconstructedSecond &AliReconstructedSecond::operator=(const AliReconstructedSecond &obj)
+// {
+//   //Assignment operator
+//   if(this == &obj) return *this;
+//   sPt            = obj.sPt;
+//   sEta           = obj.sEta;
+//   sTheta         = obj.sTheta;
+//   sPhi           = obj.sPhi;
+//   sRap           = obj.sRap;
+//   sCharge        = obj.sCharge;
+//   sDCAxy         = obj.sDCAxy;
+//   sDCAz          = obj.sDCAz;
+//   isTOFmismatch  = obj.isTOFmismatch;
+//   isMCptc        = obj.isMCptc;
+//   sMCcode        = obj.sMCcode;
+//   sPDGcode       = obj.sPDGcode;
+//   sMCmumIdx      = obj.sMCmumIdx;
+//   sMCmumPDG      = obj.sMCmumPDG;
+//   sMCgrandmumIdx = obj.sMCgrandmumIdx;
+//   sMCgrandmumPDG = obj.sMCgrandmumPDG;
+//   index          = obj.index;
+//   mcSecondOriginType = obj.mcSecondOriginType;
+//   doSkipOver     = obj.doSkipOver;
+//   sEtaS          = obj.sEtaS;
+//   sPhiS          = obj.sPhiS;
+//   isP            = obj.isP;
+//   isaP           = obj.isaP;
 
-  return (*this);
+//   return (*this);
 
-}
+// }
 
 //_____________________________________________________________________________
 
