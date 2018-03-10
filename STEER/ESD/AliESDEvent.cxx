@@ -962,9 +962,10 @@ int AliESDEvent::CleanV0s(const AliGRPRecoParam *grpRecoParam)
   for (int iv=GetNumberOfV0s();iv--;) {
     const AliESDv0 *v0 = GetV0(iv);
     int badV0 = 0;
-    if (v0->GetUsedByCascade()) continue; // don't touch V0s used for cascades
     //
+    Bool_t used = v0->GetUsedByCascade();
     if (v0->GetOnFlyStatus()) {
+      if (used) continue;
       if (TMath::Abs(v0->Eta())>etaMax) badV0 = 1;
       else if (nhypsel) {
 	Bool_t reject = kTRUE;
@@ -981,7 +982,8 @@ int AliESDEvent::CleanV0s(const AliGRPRecoParam *grpRecoParam)
       }
     } // end of online V0 check
     else {
-      if ( TMath::Abs(v0->Eta())>etaMax) badV0 = 1; // offline V0s have passed mass hypothesis check already at V0-vertexer level      
+      // offline V0s have passed mass hypothesis check already at V0-vertexer level
+      if ( TMath::Abs(v0->Eta())>etaMax && !used) badV0 = 1; 
       else if (cleanProngs) { // empty redundand prongs info
 	AliExternalTrackParam *parP=(AliExternalTrackParam*)v0->GetParamP();
 	AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
@@ -2825,7 +2827,7 @@ void AliESDEvent::RestoreOfflineV0Prongs()
     AliExternalTrackParam *parP = (AliExternalTrackParam*) v0->GetParamP();
     AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
     // if at least 1 v0 was not filled by 0s, this is true for all
-    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) break; 
+    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) break;
     double xP = parP->GetX(), xN = parN->GetX(); // Only X info is valid
     *parP = *GetTrack(v0->GetPindex());
     *parN = *GetTrack(v0->GetNindex());

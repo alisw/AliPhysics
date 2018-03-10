@@ -616,207 +616,218 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
   static TArrayI supKinks; // list of kinks to suppress
   int nSupKink = 0;
   supKinks.Set(fEvent->GetNumberOfKinks());
-    // write tracks to the event
-    // store index of the track
-    Int_t nseed=arr->GetEntriesFast();
-    //FindKinks(arr,fEvent);
-    for (Int_t i=0; i<nseed; i++) {
-      AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
-      if (!pt) continue; 
-      pt->UpdatePoints();
+  // write tracks to the event
+  // store index of the track
+  Int_t nseed=arr->GetEntriesFast();
+  //FindKinks(arr,fEvent);
+  for (Int_t i=0; i<nseed; i++) {
+    AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
+    if (!pt) continue; 
+    pt->UpdatePoints();
 
-      AddSystCovariance(pt); // correct covariance matrix for clusters syst. error
+    AddSystCovariance(pt); // correct covariance matrix for clusters syst. error
 
-      AddCovariance(pt);
-      if (AliTPCReconstructor::StreamLevel()&kStreamFillESD) {
-	(*fDebugStreamer)<<"FillESD"<<  // flag: stream track information in FillESD function (after track Iteration 0)
-	  "Tr0.="<<pt<<
-	  "\n";       
-      }
-      //      pt->PropagateTo(fkParam->GetInnerRadiusLow());
-      int knkIndex = pt->GetKinkIndex(0);
-      if (knkIndex<=0){  //don't propagate daughter tracks 
-	pt->PropagateTo(fkParam->GetInnerRadiusLow());
-	pt->SetRow(0); // RS: memorise row
-      }
+    AddCovariance(pt);
+    if (AliTPCReconstructor::StreamLevel()&kStreamFillESD) {
+      (*fDebugStreamer)<<"FillESD"<<  // flag: stream track information in FillESD function (after track Iteration 0)
+	"Tr0.="<<pt<<
+	"\n";       
+    }
+    //      pt->PropagateTo(fkParam->GetInnerRadiusLow());
+    int knkIndex = pt->GetKinkIndex(0);
+    if (knkIndex<=0){  //don't propagate daughter tracks 
+      pt->PropagateTo(fkParam->GetInnerRadiusLow());
+      pt->SetRow(0); // RS: memorise row
+    }
       
-      if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
-	iotrack.~AliESDtrack();
-	new(&iotrack) AliESDtrack;
-	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
-        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
-	iotrack.SetTPCPoints(pt->GetPoints());
-	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
-	iotrack.SetV0Indexes(pt->GetV0Indexes());
-	//	iotrack.SetTPCpid(pt->fTPCr);
-	//iotrack.SetTPCindex(i); 
-	MakeESDBitmaps(pt, &iotrack);
-	fEvent->AddTrack(&iotrack);
-	continue;
-      }
+    if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
+      iotrack.~AliESDtrack();
+      new(&iotrack) AliESDtrack;
+      iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+      iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+      iotrack.SetTPCPoints(pt->GetPoints());
+      iotrack.SetKinkIndexes(pt->GetKinkIndexes());
+      iotrack.SetV0Indexes(pt->GetV0Indexes());
+      //	iotrack.SetTPCpid(pt->fTPCr);
+      //iotrack.SetTPCindex(i); 
+      MakeESDBitmaps(pt, &iotrack);
+      fEvent->AddTrack(&iotrack);
+      continue;
+    }
        
-      if ( (pt->GetNumberOfClusters()>70)&& (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.55) {
-	iotrack.~AliESDtrack();
-	new(&iotrack) AliESDtrack;
-	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
-        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
-	iotrack.SetTPCPoints(pt->GetPoints());
-	//iotrack.SetTPCindex(i);
-	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
-	iotrack.SetV0Indexes(pt->GetV0Indexes());
-	MakeESDBitmaps(pt, &iotrack);
-	//	iotrack.SetTPCpid(pt->fTPCr);
-	fEvent->AddTrack(&iotrack);
-	continue;
-      } 
-      //
-      // short tracks  - maybe decays
+    if ( (pt->GetNumberOfClusters()>70)&& (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.55) {
+      iotrack.~AliESDtrack();
+      new(&iotrack) AliESDtrack;
+      iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+      iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+      iotrack.SetTPCPoints(pt->GetPoints());
+      //iotrack.SetTPCindex(i);
+      iotrack.SetKinkIndexes(pt->GetKinkIndexes());
+      iotrack.SetV0Indexes(pt->GetV0Indexes());
+      MakeESDBitmaps(pt, &iotrack);
+      //	iotrack.SetTPCpid(pt->fTPCr);
+      fEvent->AddTrack(&iotrack);
+      continue;
+    } 
+    //
+    // short tracks  - maybe decays
 
-      //RS Seeds don't keep their cluster pointers, cache cluster usage stat. for fast evaluation
-      // FillSeedClusterStatCache(pt); // RS use this slow method only if info on shared statistics is needed
+    //RS Seeds don't keep their cluster pointers, cache cluster usage stat. for fast evaluation
+    // FillSeedClusterStatCache(pt); // RS use this slow method only if info on shared statistics is needed
 
-      if ( knkIndex || // RS don't reject track belonging to kinks
-	   ((pt->GetNumberOfClusters()>30) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.70)) {
-	Int_t found,foundable; //,shared;
-	//GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
-	//pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
-	pt->GetClusterStatistic(0,60,found, foundable);
-	if ( knkIndex || ((found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2)) ) {
-	  iotrack.~AliESDtrack();
-	  new(&iotrack) AliESDtrack;
-	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
-	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
-	  //iotrack.SetTPCindex(i);
-	  iotrack.SetTPCPoints(pt->GetPoints());
-	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
-	  iotrack.SetV0Indexes(pt->GetV0Indexes());
-	  MakeESDBitmaps(pt, &iotrack);
-	  //iotrack.SetTPCpid(pt->fTPCr);
-	  fEvent->AddTrack(&iotrack);
-	  continue;
-	}
-      }       
-      
-      if ( (pt->GetNumberOfClusters()>20) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.8) {
-	Int_t found,foundable;//,shared;
-	//RS GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
-	//pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
-	pt->GetClusterStatistic(0,60,found,foundable);
-	if (found<20 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
-	//
+    if ( knkIndex || // RS don't reject track belonging to kinks
+	 ((pt->GetNumberOfClusters()>30) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.70)) {
+      Int_t found,foundable; //,shared;
+      //GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
+      //pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
+      pt->GetClusterStatistic(0,60,found, foundable);
+      if ( knkIndex || ((found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2)) ) {
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
-        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+	iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+	//iotrack.SetTPCindex(i);
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
 	MakeESDBitmaps(pt, &iotrack);
 	//iotrack.SetTPCpid(pt->fTPCr);
-	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
 	continue;
-      }   
-      // short tracks  - secondaties
-      //
-      if ( (pt->GetNumberOfClusters()>30) ) {
-	Int_t found,foundable;//,shared;
-	//GetCachedSeedClusterStatistic(128,158,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
-	//pt->GetClusterStatistic(128,158,found, foundable,shared,kFALSE);  //RS: avoid this method: seed does not keep clusters
-	pt->GetClusterStatistic(128,158,found, foundable);
-	if ( (found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2) &&float(found)/float(foundable)>0.8){
-	  iotrack.~AliESDtrack();
-	  new(&iotrack) AliESDtrack;
-	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
-	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
-	  iotrack.SetTPCPoints(pt->GetPoints());
-	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
-	  iotrack.SetV0Indexes(pt->GetV0Indexes());
-	  MakeESDBitmaps(pt, &iotrack);
-	  //iotrack.SetTPCpid(pt->fTPCr);	
-	  //iotrack.SetTPCindex(i);
-	  fEvent->AddTrack(&iotrack);
-	  continue;
-	}
-      }       
+      }
+    }       
       
-      if ( (pt->GetNumberOfClusters()>15)) {
-	Int_t found,foundable,shared;
-	//GetCachedSeedClusterStatistic(138,158,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
-	//RS pt->GetClusterStatistic(138,158,found, foundable,shared,kFALSE);  //RS: avoid this method: seed does not keep clusters
-	pt->GetClusterStatistic(138,158,found, foundable);
-	if (found<15 || foundable<=0 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2
-	    || float(found)/float(foundable)<0.8) continue;
-	//
+    if ( (pt->GetNumberOfClusters()>20) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.8) {
+      Int_t found,foundable;//,shared;
+      //RS GetCachedSeedClusterStatistic(0,60,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
+      //pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE); //RS: avoid this method: seed does not keep clusters
+      pt->GetClusterStatistic(0,60,found,foundable);
+      if (found<20 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
+      //
+      iotrack.~AliESDtrack();
+      new(&iotrack) AliESDtrack;
+      iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+      iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+      iotrack.SetTPCPoints(pt->GetPoints());
+      iotrack.SetKinkIndexes(pt->GetKinkIndexes());
+      iotrack.SetV0Indexes(pt->GetV0Indexes());
+      MakeESDBitmaps(pt, &iotrack);
+      //iotrack.SetTPCpid(pt->fTPCr);
+      //iotrack.SetTPCindex(i);
+      fEvent->AddTrack(&iotrack);
+      continue;
+    }   
+    // short tracks  - secondaties
+    //
+    if ( (pt->GetNumberOfClusters()>30) ) {
+      Int_t found,foundable;//,shared;
+      //GetCachedSeedClusterStatistic(128,158,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
+      //pt->GetClusterStatistic(128,158,found, foundable,shared,kFALSE);  //RS: avoid this method: seed does not keep clusters
+      pt->GetClusterStatistic(128,158,found, foundable);
+      if ( (found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2) &&float(found)/float(foundable)>0.8){
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
-        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+	iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
 	MakeESDBitmaps(pt, &iotrack);
-	//	iotrack.SetTPCpid(pt->fTPCr);
+	//iotrack.SetTPCpid(pt->fTPCr);	
 	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
 	continue;
-      }      
-    }
-    // >> account for suppressed tracks in the kink indices (RS)
-    Bool_t accKM[fEvent->GetNumberOfKinks()] = {kFALSE}, accKD[fEvent->GetNumberOfKinks()] = {kFALSE};
-    int nESDtracks = fEvent->GetNumberOfTracks();
-    for (int it=nESDtracks;it--;) {
-      AliESDtrack* esdTr = fEvent->GetTrack(it);
-      if (!esdTr || !esdTr->GetKinkIndex(0)) continue;
-      for (int ik=0;ik<3;ik++) {
-	int knkId=0;
-	if (!(knkId=esdTr->GetKinkIndex(ik))) break; // no more kinks for this track
-	int kinkID =  TMath::Abs(knkId)-1;
-	AliESDkink* kink = fEvent->GetKink(kinkID);
-	if (!kink) {
-	  AliError(Form("ESDTrack%d refers to non-existing kink %d",it,TMath::Abs(knkId)-1));
-	  continue;
-	}
-	if (knkId<0) { // update track index of the kink: mother at 0, daughter at 1
-	  kink->SetIndex(it, 0); 
-	  accKM[kinkID] = kTRUE;
-	}
-	else {
-	  kink->SetIndex(it, 1); 
-	  accKD[kinkID] = kTRUE;
-	}
+      }
+    }       
+      
+    if ( (pt->GetNumberOfClusters()>15)) {
+      Int_t found,foundable,shared;
+      //GetCachedSeedClusterStatistic(138,158,found, foundable,shared,kFALSE); // RS make sure FillSeedClusterStatCache is called
+      //RS pt->GetClusterStatistic(138,158,found, foundable,shared,kFALSE);  //RS: avoid this method: seed does not keep clusters
+      pt->GetClusterStatistic(138,158,found, foundable);
+      if (found<15 || foundable<=0 || pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2
+	  || float(found)/float(foundable)<0.8) continue;
+      //
+      iotrack.~AliESDtrack();
+      new(&iotrack) AliESDtrack;
+      iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+      iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
+      iotrack.SetTPCPoints(pt->GetPoints());
+      iotrack.SetKinkIndexes(pt->GetKinkIndexes());
+      iotrack.SetV0Indexes(pt->GetV0Indexes());
+      MakeESDBitmaps(pt, &iotrack);
+      //	iotrack.SetTPCpid(pt->fTPCr);
+      //iotrack.SetTPCindex(i);
+      fEvent->AddTrack(&iotrack);
+      continue;
+    }      
+  }
+  // >> account for suppressed tracks in the kink indices (RS)
+  FixKinkIndices();
+  AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
+  
+}
+
+//_____________________________________________________________________________________
+void AliTPCtracker::FixKinkIndices()
+{
+  // >> account for suppressed tracks in the kink indices (RS)
+  int nKinks = fEvent->GetNumberOfKinks();
+  if (!nKinks) return;
+  char accKMD[nKinks];
+  memset(accKMD,0,nKinks*sizeof(char)); // bit0: mother ok, bit1: daughter ok
+  int nESDtracks = fEvent->GetNumberOfTracks();
+  for (int it=nESDtracks;it--;) {
+    AliESDtrack* esdTr = fEvent->GetTrack(it);
+    if (!esdTr || !esdTr->GetKinkIndex(0)) continue;
+    for (int ik=0;ik<3;ik++) {
+      int knkId=0;
+      if (!(knkId=esdTr->GetKinkIndex(ik))) break; // no more kinks for this track
+      int kinkID =  TMath::Abs(knkId)-1;
+      AliESDkink* kink = fEvent->GetKink(kinkID);
+      if (!kink) {
+	AliError(Form("ESDTrack%d refers to non-existing kink %d",it,TMath::Abs(knkId)-1));
+	continue;
+      }
+      if (knkId<0) { // update track index of the kink: mother at 0, daughter at 1
+	kink->SetIndex(it, 0); 
+	accKMD[kinkID] |= 0x2;
+      }
+      else {
+	kink->SetIndex(it, 1); 
+	accKMD[kinkID] |= 0x1;
       }
     }
-    // make sure all kinks accounted, remove those which have just one track in the ESD
-    int nremKinks = 0;
-    for (int ik=0;ik<fEvent->GetNumberOfKinks();ik++) {
-      if ( accKM[ik] && accKD[ik] ) continue; // both tracks are in ESD
+  }
+  // make sure all kinks accounted, remove those which have just one track in the ESD
+  int nremKinks = 0;
+  for (int ik=0;ik<nKinks;ik++) {
+    if ( accKMD[ik]==0x3 ) continue; // both tracks are in ESD
+    AliESDkink* knk = fEvent->GetKink(ik);
+    int idxOK = (accKMD[ik]&0x1) ? 0 : ((accKMD[ik]&0x2) ? 1 : -1);
+    if (idxOK != -1) { 
+      // suppress reference from survived track to the kink to be suppressed
+      AliESDtrack* trSurv = fEvent->GetTrack( knk->GetIndex( idxOK ) );
+      int idx[3] = {0,0,0};
+      int kid = 0, nidx=0;
+      for (int ii=0;ii<3;ii++) {
+	if ( !(kid=trSurv->GetKinkIndex(ii)) ) break;
+	if (TMath::Abs(kid)-1 == ik) continue;
+	idx[nidx++] = kid;
+      }
+      trSurv->SetKinkIndexes(idx);
+    }
+    knk->SetIndex(-1,0);
+    knk->SetIndex(-1,1);
+    nremKinks++;
+  }
+  if (nremKinks) {
+    for (int ik=fEvent->GetNumberOfKinks();ik--;) {
       AliESDkink* knk = fEvent->GetKink(ik);
-      int idxOK = accKM[ik] ? 0 : (accKD[ik] ? 1 : -1);
-      if (idxOK != -1) { 
-	// suppress reference from survived track to the kink to be suppressed
-	AliESDtrack* trSurv = fEvent->GetTrack( knk->GetIndex( idxOK ) );
-	int idx[3] = {0,0,0};
-	int kid = 0, nidx=0;
-	for (int ii=0;ii<3;ii++) {
-	  if ( !(kid=trSurv->GetKinkIndex(ii)) ) break;
-	  if (TMath::Abs(kid)-1 == ik) continue;
-	  idx[nidx++] = kid;
-	}
-	trSurv->SetKinkIndexes(idx);
-      }
-      knk->SetIndex(-1,0);
-      knk->SetIndex(-1,1);
-      nremKinks++;
+      if (knk->GetIndex(0)<0) fEvent->RemoveKink(ik);
     }
-    if (nremKinks) {
-      for (int ik=fEvent->GetNumberOfKinks();ik--;) {
-	AliESDkink* knk = fEvent->GetKink(ik);
-	if (knk->GetIndex(0)<0) fEvent->RemoveKink(ik);
-      }
-    }
-    // << account for suppressed tracks in the kink indices (RS)  
-    AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
+    AliInfoF("Removed %d orhaned kinks",nremKinks);
+  }
   
 }
 
