@@ -17,6 +17,8 @@ extern void InitQA();
 extern void RunQA();
 extern int DrawQAHistograms();
 extern void SetMCTrackRange(int min, int max);
+extern bool SuppressTrack(int iTrack);
+extern bool SuppressHit(int iHit);
 
 //QA - Event Generator
 extern void InitEventGenerator();

@@ -481,7 +481,6 @@ int AliHLTTPCClusterStatComponent::DoEvent(const AliHLTComponentEventData &evtDa
 	    return -1;
 	  }
 	  prop.SetPolynomialField( &field );
-	  prop.SetContinuousTracking( kFALSE );
 	  for (unsigned i = 0; i < tracks->fCount; i++)
 		{
 			const AliHLTExternalTrackParam *track = reinterpret_cast<const AliHLTExternalTrackParam *>(pCurrent);
@@ -633,7 +632,7 @@ int AliHLTTPCClusterStatComponent::DoEvent(const AliHLTComponentEventData &evtDa
 
 				if (ip != 0)
 				{				       
-				  prop.Update(xyz[1], xyz[2], rowType, *fSliceParam, 0, false );
+				  prop.Update(xyz[1], xyz[2], rowType, *fSliceParam, 0, false, false );
 				}
 			}
 			if (hitsUsed)

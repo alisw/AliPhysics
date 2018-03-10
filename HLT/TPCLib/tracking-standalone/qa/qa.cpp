@@ -64,7 +64,6 @@ static TCanvas *cpull[7];
 static TPad* ppull[7][5];
 static TLegend* legendpull[6];
 
-
 static TH1F* clusters[11]; //attached, fakeAttached, tracks, all, attachedRel, fakeAttachedRel, treaksRel, attachedInt, fakeAttachedInt, treaksInt, AllInt
 static TCanvas* cclust[3];
 static TPad* pclust[3];
@@ -79,6 +78,12 @@ TH1F* ncl;
 TCanvas* cncl;
 TPad* pncl;
 TLegend* legendncl;
+
+int nEvents = 0;
+std::vector<std::vector<int>> mcEffBuffer;
+std::vector<std::vector<int>> mcLabelBuffer;
+std::vector<std::vector<bool>> goodTracks;
+std::vector<std::vector<bool>> goodHits;
 
 #define DEBUG 0
 #define TIMING 0
@@ -98,6 +103,8 @@ bool MCComp(const AliHLTTPCClusterMCWeight& a, const AliHLTTPCClusterMCWeight& b
 #define MIN_WEIGHT_CLS 40 // SG!!! 40
 
 #define FINDABLE_WEIGHT_CLS 70
+
+#define MC_LABEL_INVALID -1e9
 
 static const int ColorCount = 12;
 static Color_t colorNums[ColorCount];
@@ -193,6 +200,16 @@ void SetMCTrackRange(int min, int max)
 {
 	mcTrackMin = min;
 	mcTrackMax = max;
+}
+
+bool SuppressTrack(int iTrack)
+{
+	return (configStandalone.configQA.matchMCLabels.size() && !goodTracks[nEvents][iTrack]);
+}
+
+bool SuppressHit(int iHit)
+{
+	return (configStandalone.configQA.matchMCLabels.size() && !goodHits[nEvents - 1][iHit]);
 }
 
 void InitQA()
@@ -329,6 +346,55 @@ void InitQA()
 	}
 	
 	mkdir("plots", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	
+	if (config.matchMCLabels.size())
+	{
+		unsigned int nFiles = config.matchMCLabels.size();
+		std::vector<TFile*> files(nFiles);
+		std::vector<std::vector<std::vector<int>>*> labelsBuffer(nFiles);
+		std::vector<std::vector<std::vector<int>>*> effBuffer(nFiles);
+		for (unsigned int i = 0;i < nFiles;i++)
+		{
+			files[i] = new TFile(config.matchMCLabels[i]);
+			labelsBuffer[i] = (std::vector<std::vector<int>>*) files[i]->Get("mcLabelBuffer");
+			effBuffer[i] = (std::vector<std::vector<int>>*) files[i]->Get("mcEffBuffer");
+			if (labelsBuffer[i] == nullptr || effBuffer[i] == nullptr)
+			{
+				printf("Error opening / reading from labels file %d/%s: 0x%p 0x%p\n", i, config.matchMCLabels[i], labelsBuffer[i], effBuffer[i]);
+				exit(1);
+			}
+		}
+		
+		goodTracks.resize(labelsBuffer[0]->size());
+		goodHits.resize(labelsBuffer[0]->size());
+		for (unsigned int iEvent = 0;iEvent < labelsBuffer[0]->size();iEvent++)
+		{
+			std::vector<bool> labelsOK((*effBuffer[0])[iEvent].size());
+			for (unsigned int k = 0;k < (*effBuffer[0])[iEvent].size();k++)
+			{
+				labelsOK[k] = false;
+				for (unsigned int l = 0;l < nFiles;l++)
+				{
+					if ((*effBuffer[0])[iEvent][k] != (*effBuffer[l])[iEvent][k])
+					{
+						labelsOK[k] = true;
+						break;
+					}
+				}
+			}
+			goodTracks[iEvent].resize((*labelsBuffer[0])[iEvent].size());
+			for (unsigned int k = 0;k < (*labelsBuffer[0])[iEvent].size();k++)
+			{
+				if ((*labelsBuffer[0])[iEvent][k] == MC_LABEL_INVALID) continue;
+				goodTracks[iEvent][k] = labelsOK[abs((*labelsBuffer[0])[iEvent][k])];
+			}
+		}
+		
+		for (unsigned int i = 0;i < nFiles;i++)
+		{
+			delete files[i];
+		}
+	}
 }
 
 void RunQA()
@@ -349,7 +415,18 @@ void RunQA()
 	totalFakes = 0;
 	structConfigQA& config = configStandalone.configQA;	
 	HighResTimer timer;
-
+	
+	nEvents++;
+	if (config.writeMCLabels)
+	{
+		mcEffBuffer.resize(nEvents);
+		mcLabelBuffer.resize(nEvents);
+		mcEffBuffer[nEvents - 1].resize(hlt.GetNMCInfo());
+		mcLabelBuffer[nEvents - 1].resize(merger.NOutputTracks());
+	}
+	std::vector<int> &effBuffer = mcEffBuffer[nEvents - 1];
+	std::vector<int> &labelBuffer = mcLabelBuffer[nEvents - 1];
+	
 	if (hlt.GetNMCInfo() && hlt.GetNMCLabels())
 	{
 		//Assign Track MC Labels
@@ -384,7 +461,7 @@ void RunQA()
 			if (ompError) continue;
 			if (labels.size() == 0)
 			{
-				trackMCLabels[i] = -1e9;
+				trackMCLabels[i] = MC_LABEL_INVALID;
 				totalFakes++;
 				continue;
 			}
@@ -459,6 +536,38 @@ void RunQA()
 				}
 			}
 		}
+		if (config.matchMCLabels.size())
+		{
+			goodHits[nEvents-1].resize(hlt.GetNMCLabels());
+			std::vector<bool> allowMCLabels(hlt.GetNMCInfo());
+			for (int k = 0;k < hlt.GetNMCInfo();k++) allowMCLabels[k] = false;
+			for (int i = 0;i < merger.NOutputTracks();i++)
+			{
+				if (!goodTracks[nEvents-1][i]) continue;
+				if (config.matchDisplayMinPt > 0)
+				{
+					if (trackMCLabels[i] == MC_LABEL_INVALID) continue;
+					const AliHLTTPCCAMCInfo& info = hlt.GetMCInfo()[abs(trackMCLabels[i])];
+					if (info.fPx * info.fPx + info.fPy * info.fPy < config.matchDisplayMinPt * config.matchDisplayMinPt) continue;
+				}
+
+				const AliHLTTPCGMMergedTrack &track = merger.OutputTracks()[i];
+				for (int j = 0;j < track.NClusters();j++)
+				{
+					int hitId = merger.Clusters()[track.FirstClusterRef() + j].fId;
+					int mcID = hlt.GetMCLabels()[hitId].fClusterID[0].fMCID;
+					if (mcID >= 0) allowMCLabels[mcID] = true;
+				}
+			}
+			for (int i = 0;i < hlt.GetNMCLabels();i++)
+			{
+				for (int j = 0;j < 3;j++)
+				{
+					int mcID = hlt.GetMCLabels()[i].fClusterID[j].fMCID;
+					if (mcID >= 0 && allowMCLabels[mcID]) goodHits[nEvents-1][i] = true;
+				}
+			}
+		}
 		
 		if (TIMING) printf("QA Time: Assign Track Labels:\t\t%6.0f us\n", timer.GetCurrentElapsedTime() * 1e6);
 		timer.ResetStart();
@@ -495,6 +604,7 @@ void RunQA()
 				mc2.theta = info.fPz == 0 ? (kPi / 2) : (std::acos(info.fPz / std::sqrt(p)));
 				mc2.eta = -std::log(std::tan(0.5 * mc2.theta));
 			}
+			if (config.writeMCLabels) effBuffer[i] = recTracks[i] * 1000 + fakeTracks[i];
 		}
 		
 		//Compute MC Track Parameters for MC Tracks
@@ -563,11 +673,11 @@ void RunQA()
 		prop.SetMaxSinPhi( .999 );
 		prop.SetMaterial( kRadLen, kRho );
 		prop.SetPolynomialField( merger.pField() );		
-		prop.SetContinuousTracking( kFALSE );
 		prop.SetToyMCEventsFlag( merger.SliceParam().ToyMCEventsFlag());
 
 		for (int i = 0; i < merger.NOutputTracks(); i++)
 		{
+			if (config.writeMCLabels) labelBuffer[i] = trackMCLabels[i];
 			if (trackMCLabels[i] < 0) continue;
 			const AliHLTTPCCAMCInfo& mc1 = hlt.GetMCInfo()[trackMCLabels[i]];
 			const additionalMCParameters& mc2 = mcParam[trackMCLabels[i]];
@@ -779,7 +889,17 @@ void GetName(char* fname, int k)
 {
 	const structConfigQA& config = configStandalone.configQA;
 	const int nNewInput = config.inputHistogramsOnly ? 0 : 1;
-	if (k || config.inputHistogramsOnly || config.name) sprintf(fname, "%s - ", config.inputHistogramsOnly || k ? (config.compareInputNames.size() > (unsigned) (k - nNewInput) ? config.compareInputNames[k - nNewInput] : config.compareInputs[k - nNewInput]) : config.name);
+	if (k || config.inputHistogramsOnly || config.name)
+	{
+		if (!(config.inputHistogramsOnly || k)) sprintf(fname, "%s - ", config.name);
+		else if (config.compareInputNames.size() > (unsigned) (k - nNewInput)) sprintf(fname, "%s - ", config.compareInputNames[k - nNewInput]);
+		else
+		{
+			strcpy(fname, config.compareInputs[k - nNewInput]);
+			if (strlen(fname) > 5 && strcmp(fname + strlen(fname) - 5, ".root") == 0) fname[strlen(fname) - 5] = 0;
+			strcat(fname, " - ");
+		}
+	}
 	else fname[0] = 0;
 }
 
@@ -1005,6 +1125,7 @@ int DrawQAHistograms()
 						int bin0 = std::max(bin - integ, 0);
 						int bin1 = std::min(bin + integ, nBins);
 						TH1D* proj = src->ProjectionX("proj", bin0, bin1);
+						proj->ClearUnderflowAndOverflow();
 						if (proj->GetEntries())
 						{
 							unsigned int rebin = 1;
@@ -1370,6 +1491,17 @@ int DrawQAHistograms()
 		legendncl->Draw();
 		cncl->cd();
 		cncl->Print("plots/nClusters.pdf");
+	}
+	
+	if (tout && !config.inputHistogramsOnly && config.writeMCLabels)
+	{
+		gInterpreter->GenerateDictionary("vector<vector<int>>","");
+		tout->WriteObject(&mcEffBuffer, "mcEffBuffer");
+		tout->WriteObject(&mcLabelBuffer, "mcLabelBuffer");
+		unlink("AutoDict_vector_vector_int__.cxx");
+		unlink("AutoDict_vector_vector_int___cxx_ACLiC_dict_rdict.pcm");
+		unlink("AutoDict_vector_vector_int___cxx.d");
+		unlink("AutoDict_vector_vector_int___cxx.so");
 	}
 
 	if (tout)
