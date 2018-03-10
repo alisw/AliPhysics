@@ -11,8 +11,8 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
     // AOD handler
-    AliAODInputHandler *aodHandler = new AliAODInputHandler();
-    mgr->SetInputEventHandler(aodHandler);
+    //AliAODInputHandler *aodHandler = new AliAODInputHandler();
+    //mgr->SetInputEventHandler(aodHandler);
 
     //================================================
     // TASKS
@@ -52,7 +52,6 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
 
     AliJFilter *jfilter = jctask->GetFilter();
     jfilter->SetAliJRunHeader( hdr );
-    jfilter->SetClusterThreshold( 0 );
     jfilter->SetTrackThreshold( 0 );
 
     //==event selection
@@ -62,12 +61,9 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
 
     //==== Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodoutHandler);
 
 // Connect input/output
-	mgr->ConnectInput(jctask, 0, cinput);
+    mgr->ConnectInput(jctask, 0, cinput);
 
 	return jctask;
 }

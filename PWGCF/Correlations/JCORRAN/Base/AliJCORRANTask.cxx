@@ -18,7 +18,7 @@
 // author: R.Diaz, J. Rak,  D.J. Kim
 // ALICE Group University of Jyvaskyla 
 // Finland 
-// Fill the analysis containers for ESD or AOD
+// Fill the analysis containers for AOD
 // Adapted for AliAnalysisTaskSE and AOD objects  
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,8 +36,6 @@
 
 #include "AliJTrack.h"
 #include "AliJMCTrack.h"
-#include "AliJPhoton.h"
-//#include "AliJCaloCell.h"
 #include "AliJEventHeader.h"
 #include "AliJRunHeader.h"
 
@@ -111,13 +109,6 @@ void AliJCORRANTask::UserCreateOutputObjects()
   //=== create the jcorran outputs objects
   if(fDebug > 1) printf("AliJCORRANTask::UserCreateOutPutData() \n");
   
-  //=== Get AnalysisManager
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if(!man->GetOutputEventHandler()) {
-    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-    return;
-  }
-
    // run the filter class
    fFilter->SetMyTask( this );
    fFilter->SetAliJRunHeader( fAliJRunHeader );
