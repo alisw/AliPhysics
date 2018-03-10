@@ -19,12 +19,12 @@ AliAnalysisTaskPHOSTriggerQA* AddTaskPHOSTriggerQA(TString fname="PHOSTriggerQA.
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   // container output into particular file
-  if (fname && contname)
+  if (fname.Length() != 0 && contname.Length() != 0)
     mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),TList::Class(), AliAnalysisManager::kOutputContainer, fname.Data()));
   
   // container output into common file
-  if (!fname) {
-    if (!contname) contname = "PHOSTriggerQAResults";
+  if (fname.Length() == 0) {
+    if (contname.Length() == 0) contname = "PHOSTriggerQAResults";
     mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));      
   }
   
