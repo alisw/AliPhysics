@@ -733,16 +733,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-    nBinsPt                   = 251;
+    nBinsPt                   = 261;
     minPt                     = 0;
     maxPt                     = 100;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 1.*i;
-      else if(i<41) arrPtBinning[i]           = 1.+0.05*(i-1);
-      else if(i<111) arrPtBinning[i]          = 3.+0.1*(i-41);
-      else if(i<151) arrPtBinning[i]          = 10.+0.25*(i-111);
-      else if(i<191) arrPtBinning[i]          = 20.+0.5*(i-151);
-      else if(i<251) arrPtBinning[i]          = 40.+1.0*(i-191);
+      if (i < 1) arrPtBinning[i]              = 0.5*i;
+      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
+      else if(i<121) arrPtBinning[i]          = 3.+0.1*(i-51);
+      else if(i<161) arrPtBinning[i]          = 10.+0.25*(i-121);
+      else if(i<201) arrPtBinning[i]          = 20.+0.5*(i-161);
+      else if(i<261) arrPtBinning[i]          = 40.+1.0*(i-201);
       else  arrPtBinning[i]                   = maxPt;
     }
     nBinsQAPt                 = 270;
@@ -771,15 +771,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV   ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV   ){
-    nBinsPt                   = 191;
+    nBinsPt                   = 201;
     minPt                     = 0;
     maxPt                     = 60;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 1.*i;
-      else if(i<41) arrPtBinning[i]           = 1.+0.05*(i-1);
-      else if(i<111) arrPtBinning[i]          = 3.+0.1*(i-41);
-      else if(i<151) arrPtBinning[i]          = 10.+0.25*(i-111);
-      else if(i<191) arrPtBinning[i]          = 20.+1.0*(i-151);
+      if (i < 1) arrPtBinning[i]              = 0.5*i;
+      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
+      else if(i<121) arrPtBinning[i]          = 3.+0.1*(i-51);
+      else if(i<161) arrPtBinning[i]          = 10.+0.25*(i-121);
+      else if(i<201) arrPtBinning[i]          = 20.+1.0*(i-161);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 210;
@@ -809,10 +809,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     minPt                     = 0;
     maxPt                     = 20;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 1*i;
-      else if(i<51) arrPtBinning[i]           = 1+0.1*(i-1);
-      else if(i<75) arrPtBinning[i]           = 6.+0.25*(i-51);
-      else if(i<83) arrPtBinning[i]           = 12.+1.0*(i-75);
+      if (i < 1) arrPtBinning[i]              = 0.5*i;
+      else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
+      else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
+      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
@@ -838,10 +838,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     minPt                     = 0;
     maxPt                     = 20;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 1*i;
-      else if(i<51) arrPtBinning[i]           = 1+0.1*(i-1);
-      else if(i<75) arrPtBinning[i]           = 6.+0.25*(i-51);
-      else if(i<83) arrPtBinning[i]           = 12.+1.0*(i-75);
+      if (i < 1) arrPtBinning[i]              = 0.5*i;
+      else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
+      else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
+      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
