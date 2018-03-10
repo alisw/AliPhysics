@@ -917,15 +917,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV      ){
-    nBinsPt                   = 201;
+    nBinsPt                   = 205;
     minPt                     = 0;
     maxPt                     = 60;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
-      else if(i<121) arrPtBinning[i]          = 3.+0.1*(i-51);
-      else if(i<161) arrPtBinning[i]          = 10.+0.25*(i-121);
-      else if(i<201) arrPtBinning[i]          = 20.+1.0*(i-161);
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
+      else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
+      else if(i<165) arrPtBinning[i]          = 10.+0.25*(i-125);
+      else if(i<205) arrPtBinning[i]          = 20.+1.0*(i-165);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 210;
@@ -954,16 +954,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-    nBinsPt                   = 281;
+    nBinsPt                   = 285;
     minPt                     = 0;
     maxPt                     = 100;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
-      else if(i<121) arrPtBinning[i]          = 3.+0.1*(i-51);
-      else if(i<181) arrPtBinning[i]          = 10.+0.25*(i-121);
-      else if(i<231) arrPtBinning[i]          = 25.+0.5*(i-181);
-      else if(i<281) arrPtBinning[i]          = 50.+1.0*(i-231);
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
+      else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
+      else if(i<185) arrPtBinning[i]          = 10.+0.25*(i-125);
+      else if(i<235) arrPtBinning[i]          = 25.+0.5*(i-185);
+      else if(i<285) arrPtBinning[i]          = 50.+1.0*(i-235);
       else  arrPtBinning[i]                   = maxPt;
     }
     nBinsQAPt                 = 270;
@@ -990,14 +990,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kXeXe5440GeV  ){
-    nBinsPt                   = 88;
+    nBinsPt                   = 90;
     minPt                     = 0;
     maxPt                     = 20;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
-      else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
-      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<58) arrPtBinning[i]           = 0.3+0.1*(i-1);
+      else if(i<82) arrPtBinning[i]           = 6.+0.25*(i-58);
+      else if(i<90) arrPtBinning[i]           = 12.+1.0*(i-82);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
@@ -1019,14 +1019,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV  ){
-    nBinsPt                   = 88;
+    nBinsPt                   = 90;
     minPt                     = 0;
     maxPt                     = 20;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
-      else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
-      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<58) arrPtBinning[i]           = 0.3+0.1*(i-1);
+      else if(i<82) arrPtBinning[i]           = 6.+0.25*(i-58);
+      else if(i<90) arrPtBinning[i]           = 12.+1.0*(i-82);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
