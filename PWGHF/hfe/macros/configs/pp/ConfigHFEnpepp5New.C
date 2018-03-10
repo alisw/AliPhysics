@@ -153,7 +153,10 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          kHadronTPC025 = 6,
          kHadronTPCMinus025 = 7,
          kHadronTPCMinus075 = 8,
-         kHadronTPCMinus13 = 9
+         kHadronTPCMinus13 = 9,
+         kHadronTPCUp10 = 10,
+         kHadronTPCUp15 = 11,
+         kHadronTPCUp20 = 12
       };
 
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
@@ -165,13 +168,13 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          switch (HadronContFunc) {
             default:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0, 6.75848e+00);
-               hBackground->SetParameter(1, 1.05615e+01);
-               hBackground->SetParameter(2, 2.63549e+00);
+               hBackground->SetParameter(0, 3.03382e+00 );
+               hBackground->SetParameter(1, 9.63780e+00);
+               hBackground->SetParameter(2, 2.35773e+00);
 
-               hBackground->SetParameter(3, 2.75108e-02);
-               hBackground->SetParameter(4, 8.72377e-01);
-               hBackground->SetParameter(5, 3.10386e-02);
+               hBackground->SetParameter(3, 2.18302e-02);
+               hBackground->SetParameter(4, 8.72968e-01);
+               hBackground->SetParameter(5, 2.88664e-02);
                break;
          }
       }else{
@@ -179,110 +182,140 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          switch (HadronContFunc) {
             case kHadronDown:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0, 5.21901e+00);
-               hBackground->SetParameter(1, 1.00414e+01);
-               hBackground->SetParameter(2, 2.45852e+00);
+               hBackground->SetParameter(0, 2.66277e+00);
+               hBackground->SetParameter(1, 9.45791e+00);
+               hBackground->SetParameter(2, 2.27611e+00 );
 
-               hBackground->SetParameter(3, 2.73449e-02);
-               hBackground->SetParameter(4, 8.72482e-01);
-               hBackground->SetParameter(5, 3.04643e-02);
+               hBackground->SetParameter(3, 2.17965e-02);
+               hBackground->SetParameter(4, 8.73166e-01);
+               hBackground->SetParameter(5, 2.82122e-02);
                break;
             case kHadronUp:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0, 7.85999e+00);
-               hBackground->SetParameter(1, 1.08154e+01);
-               hBackground->SetParameter(2, 2.72897e+00);
+               hBackground->SetParameter(0, 3.30653e+00);
+               hBackground->SetParameter(1, 9.69752e+00);
+               hBackground->SetParameter(2, 2.39634e+00);
 
-               hBackground->SetParameter(3, 2.77234e-02);
-               hBackground->SetParameter(4, 8.72315e-01);
-               hBackground->SetParameter(5, 3.15486e-02);
+               hBackground->SetParameter(3, 2.19235e-02);
+               hBackground->SetParameter(4, 8.72840e-01);
+               hBackground->SetParameter(5, 2.94373e-02);
                break;
             case kHadronError:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3]) + [4] * TMath::Gaus(x, [5], [6])",0. ,60.);
-               hBackground->SetParameter(0, 4.99954e-01);
-               hBackground->SetParameter(1, 4.99971e-01);
-               hBackground->SetParameter(2, 6.03218e-01);
-               hBackground->SetParameter(3, -3.48176e+00);
+               hBackground->SetParameter(0, 4.90758e-01);
+               hBackground->SetParameter(1, 4.90760e-01);
+               hBackground->SetParameter(2, 5.99477e-01);
+               hBackground->SetParameter(3, -3.63468e+00);
 
-               hBackground->SetParameter(4, 2.75397e-02);
-               hBackground->SetParameter(5, 8.72389e-01);
-               hBackground->SetParameter(6, 3.09841e-02);
+               hBackground->SetParameter(4, 2.18523e-02);
+               hBackground->SetParameter(5, 8.72988e-01);
+               hBackground->SetParameter(6, 2.88246e-02);
                break;
             case kHadronTPC025:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,4.15174e+02);
-               hBackground->SetParameter(1,2.72143e+01);
-               hBackground->SetParameter(2,6.51237e+00);
+               hBackground->SetParameter(0,3.90218e+03);
+               hBackground->SetParameter(1,3.84285e+01);
+               hBackground->SetParameter(2,9.11622e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,2.43621e-02);
-               hBackground->SetParameter(4,8.69103e-01);
-               hBackground->SetParameter(5,3.48518e-02);
+               hBackground->SetParameter(3,3.77083e-02);
+               hBackground->SetParameter(4,8.71585e-01);
+               hBackground->SetParameter(5,2.89435e-02);
                break;
             case kHadronTPC0:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,1.10227e+01);
-               hBackground->SetParameter(1,1.71063e+01);
-               hBackground->SetParameter(2,4.19606e+00);
+               hBackground->SetParameter(0,4.44955e+01);
+               hBackground->SetParameter(1,2.30562e+01);
+               hBackground->SetParameter(2,5.66418e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,2.05323e-02);
-               hBackground->SetParameter(4,8.69626e-01 );
-               hBackground->SetParameter(5,3.48474e-02 );
+               hBackground->SetParameter(3,3.20295e-02);
+               hBackground->SetParameter(4,8.71979e-01);
+               hBackground->SetParameter(5,2.88944e-02);
                break;
             case kHadronTPCMinus025:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,4.90030e+00);
-               hBackground->SetParameter(1,1.38406e+01);
-               hBackground->SetParameter(2,3.40256e+00);
+               hBackground->SetParameter(0,1.30727e+00);
+               hBackground->SetParameter(1,1.29364e+01);
+               hBackground->SetParameter(2,3.21639e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,1.78808e-02);
-               hBackground->SetParameter(4,8.70064e-01);
-               hBackground->SetParameter(5,3.48471e-02);
+               hBackground->SetParameter(3,2.06710e-02);
+               hBackground->SetParameter(4,8.75536e-01);
+               hBackground->SetParameter(5,3.92824e-02);
                break;
             case kHadronTPCMinus05:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,4.99066e+00);
-               hBackground->SetParameter(1,1.24655e+01);
-               hBackground->SetParameter(2,3.07237e+00);
+               hBackground->SetParameter(0,1.54134e+00);
+               hBackground->SetParameter(1,1.15392e+01);
+               hBackground->SetParameter(2,2.85580e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,1.60480e-02);
-               hBackground->SetParameter(4,8.70417e-01);
-               hBackground->SetParameter(5,3.48478e-02);
+               hBackground->SetParameter(3,2.51913e-02);
+               hBackground->SetParameter(4,8.72570e-01);
+               hBackground->SetParameter(5,2.88833e-02);
                break;
             case kHadronTPCMinus075:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,5.95574e+00);
-               hBackground->SetParameter(1,1.14992e+01);
-               hBackground->SetParameter(2,2.84904e+00);
+               hBackground->SetParameter(0,2.30571e+00);
+               hBackground->SetParameter(1,1.07039e+01);
+               hBackground->SetParameter(2,2.64137e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,1.47756e-02);
-               hBackground->SetParameter(4,8.70712e-01);
-               hBackground->SetParameter(5,3.48949e-02);
+               hBackground->SetParameter(3,2.32047e-02);
+               hBackground->SetParameter(4,8.72793e-01);
+               hBackground->SetParameter(5,2.88682e-02);
                break;
             case kHadronTPCMinus13:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,6.00345e+00);
-               hBackground->SetParameter(1,8.94393e+00);
-               hBackground->SetParameter(2,2.24553e+00);
+               hBackground->SetParameter(0,6.35957e+00);
+               hBackground->SetParameter(1,9.73830e+00);
+               hBackground->SetParameter(2,2.44789e+00);
 
                //remaining Kaon crossing
-               hBackground->SetParameter(3,1.32202e-02);
-               hBackground->SetParameter(4,8.71015e-01);
-               hBackground->SetParameter(5,3.51323e-02);
+               hBackground->SetParameter(3,2.08335e-02);
+               hBackground->SetParameter(4,8.73207e-01);
+               hBackground->SetParameter(5,2.87383e-02);
+               break;
+            case kHadronTPCUp10:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,3.20817e+00)
+               hBackground->SetParameter(1,9.45021e+00);
+               hBackground->SetParameter(2,2.31350e+00);
+
+               hBackground->SetParameter(3,9.74907e-03);
+               hBackground->SetParameter(4,8.79385e-01);
+               hBackground->SetParameter(5,2.52618e-02);
+               break;
+            case kHadronTPCUp15:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,3.07381e+00)
+               hBackground->SetParameter(1,9.57613e+00);
+               hBackground->SetParameter(2,2.34503e+00);
+
+               hBackground->SetParameter(3,2.07979e-02);
+               hBackground->SetParameter(4,8.87180e-01);
+               hBackground->SetParameter(5,1.50649e-02);
+               break;
+            case kHadronTPCUp20:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,3.02091e+00)
+               hBackground->SetParameter(1,9.60985e+00);
+               hBackground->SetParameter(2,2.35163e+00);
+
+               hBackground->SetParameter(3,1.50562e-02);
+               hBackground->SetParameter(4,8.76299e-01);
+               hBackground->SetParameter(5,2.67965e-02);
                break;
             default:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0, 6.75848e+00);
-               hBackground->SetParameter(1, 1.05615e+01);
-               hBackground->SetParameter(2, 2.63549e+00);
+               hBackground->SetParameter(0, 3.03382e+00 );
+               hBackground->SetParameter(1, 9.63780e+00);
+               hBackground->SetParameter(2, 2.35773e+00);
 
-               hBackground->SetParameter(3, 2.75108e-02);
-               hBackground->SetParameter(4, 8.72377e-01);
-               hBackground->SetParameter(5, 3.10386e-02);
+               hBackground->SetParameter(3, 2.18302e-02);
+               hBackground->SetParameter(4, 8.72968e-01);
+               hBackground->SetParameter(5, 2.88664e-02);
                break;
          }
       }
