@@ -50,7 +50,7 @@ private:
   AliAnalysisTaskCaloCellsQA(const AliAnalysisTaskCaloCellsQA &);
   AliAnalysisTaskCaloCellsQA & operator = (const AliAnalysisTaskCaloCellsQA &);
 
-private:
+protected:
   Bool_t           fkAvoidPileup;     // flag not to process pileup events
   AliCaloCellsQA*  fCellsQA;          // analysis instance
   TString          fOutfile;          // output file name
