@@ -49,6 +49,7 @@
 
 #include "AliYAMLConfiguration.h"
 #include "AliEmcalList.h"
+#include "AliEmcalContainerUtils.h"
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
@@ -297,7 +298,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
 {
   // Following the variable blocks defined in the header
   // Embedded event properties
-  bool res = fYAMLConfig.GetProperty("embeddedEventTriggerMask", fTriggerMask, false);
+  std::vector<std::string> physicsSelection;
+  bool res = fYAMLConfig.GetProperty("embeddedEventPhysicsSelection", physicsSelection, false);
+  if (res) {
+    fTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+  }
   res = fYAMLConfig.GetProperty("enableMCOutlierRejection", fMCRejectOutliers, false);
   res = fYAMLConfig.GetProperty("ptHardJetPtRejectionFactor", fPtHardJetPtRejectionFactor, false);
   res = fYAMLConfig.GetProperty("embeddedEventZVertexCut", fZVertexCut, false);
@@ -338,6 +343,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
       fCentMin = centralityRange.at(0);
       fCentMax = centralityRange.at(1);
     }
+  }
+  // Physics selection
+  res = fYAMLConfig.GetProperty({baseName, "physicsSelection"}, physicsSelection, false);
+  if (res) {
+    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
   }
 
   // Auto configure pt hard properties
