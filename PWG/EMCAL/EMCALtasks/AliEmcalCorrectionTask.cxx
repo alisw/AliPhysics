@@ -894,7 +894,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
     /*result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainre::fgkClusterEnergyTypeMap.at(tempString);
+      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
       clusterContainer->SetDefaultClusterEnergy(clusterEnergyType);
     }*/
