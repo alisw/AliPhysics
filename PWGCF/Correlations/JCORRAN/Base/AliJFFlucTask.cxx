@@ -225,8 +225,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			}
 		}
 		if( fEvtNum == 1 ){
-			int runN = 1234;
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
+			fFFlucAna->GetAliJEfficiency()->SetRunNumber (1234);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
 		ReadKineTracks( mcEvent, fInputList, fCent ) ; // read tracklist
@@ -250,9 +249,9 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fCent = ReadCentrality(currentEvent,fCentDetName);
 		//fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ;
 		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
+		fRunNum = currentEvent->GetRunNumber();
 		if( fEvtNum == 1 ){
-			int runN = currentEvent->GetRunNumber();
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
+			fFFlucAna->GetAliJEfficiency()->SetRunNumber(fRunNum);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
 
@@ -438,13 +437,11 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	if(flags & FLUC_KINEONLY)
 		return kTRUE;
 
-	int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
-	if(frunNumber < 0)
-		cout << "ERROR: unknown run number" << endl;
+	//int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
 	AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
-	fRunTable->SetRunNumber( frunNumber );
+	fRunTable->SetRunNumber(fRunNum);
 
-	int fperiod = fRunTable->GetRunNumberToPeriod(frunNumber);
+	int fperiod = fRunTable->GetRunNumberToPeriod(fRunNum);
 	if(fperiod == AliJRunTable::kLHC15o){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();

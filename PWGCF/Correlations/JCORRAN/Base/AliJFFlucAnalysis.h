@@ -32,8 +32,10 @@ public:
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t *);
 
-	void SetInputList( TClonesArray *inputarray){fInputList = inputarray;}
+	void SetInputList(TClonesArray *inputarray){fInputList = inputarray;}
+	TClonesArray * GetInputList() const{return fInputList;}
 	void SetEventCentrality( float cent ){fCent = cent;}
+	float GetEventCentrality() const{return fCent;}
 	void SetEventImpactParameter( float ip ){ fImpactParameter = ip; }
 	void SetEventVertex( double *vtx ){ fVertex = vtx; }
 	//void SetIsPhiModule( Bool_t isphi ){//{ IsPhiModule = isphi ; }
@@ -65,7 +67,7 @@ public:
 	void Fill_QA_plot(double eta1, double eta2 );
 
 	double Get_ScaledMoments( int k, int harmonics);
-	AliJEfficiency* GetAliJEfficiency() { return fEfficiency; }
+	AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
 
 	// new function for QC method //
 	void CalculateQvectorsQC();
