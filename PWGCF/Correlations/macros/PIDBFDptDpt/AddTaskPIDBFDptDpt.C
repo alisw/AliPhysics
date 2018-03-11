@@ -1,5 +1,5 @@
 //  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
-//  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
+//  Author: Jinjin(Au-Au) Pan & Claude Pruneau, Wayne State University
 //
 //   PbPb               10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
 //   PbPb_2015_kTRUE    15:     centralityMethod = 4 (V0),        trigger = kTRUE (AliVEvent::kINT7).
@@ -51,6 +51,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
  double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
  double ptCUTupperMax           =  2.0, // pt range upper limit cut
+ double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
  Bool_t NoResonances            = kTRUE, // only for MCAOD
@@ -72,7 +73,6 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   bool    useEventPlane         = 0;   // 0: No      1: Yes
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
-  double ptMax                  =  3.0; // pt range upper limit for histos; NOT pt cut!!!
   bool Use_AliHelperPID         =  0;   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
