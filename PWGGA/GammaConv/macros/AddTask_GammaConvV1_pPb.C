@@ -130,7 +130,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   }
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
-  
+
   cout << endl << endl;
   cout << "************************************************************************" << endl;
   cout << "************************************************************************" << endl;
