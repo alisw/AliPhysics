@@ -107,7 +107,7 @@ void AliAnalysisTaskEmcalTriggerSelection::MakeQA(const AliEmcalTriggerDecisionC
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
-  if(Is2012PP(period)) ConfigurePP2016();
+  if(Is2012PP(period)) ConfigurePP2012();
   if(Is2016PP(period)) ConfigurePP2016();
   if(Is2012MCPP(period)) ConfigureMCPP2012();
   if(Is2016MCPP(period)) ConfigureMCPP2016();
@@ -134,7 +134,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016PP(const char *dataset) const
       if(subperiod > 'g' && subperiod < 'q') return true;
     }
     if(datasetstring.Contains("lhc17")) {
-      if((subperiod > 'c' && subperiod < 'n') || (subperiod == 'o') | (subperiod < 'r')) return true;
+      if((subperiod > 'c' && subperiod < 'n') || (subperiod == 'o') || (subperiod < 'r')) return true;
     }
     if(datasetstring.Contains("lhc18")) {
       // 2018 runs will follow when taken

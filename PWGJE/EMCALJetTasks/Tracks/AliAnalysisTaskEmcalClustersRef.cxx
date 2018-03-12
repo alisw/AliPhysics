@@ -198,14 +198,22 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   int energycomp = -1;
   // get fired trigger patches from the trigger selection task
   if(auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"))){
+    /*
+    for(auto t : *(trgsel->GetListOfTriggerDecisions())){
+      auto dec  = static_cast<PWG::EMCAL::AliEmcalTriggerDecision *>(t);
+      std::cout << "Found trigger decision " << dec->GetName() << std::endl;
+    }
+    */
     for(auto t : l1triggers){
       auto decision = trgsel->FindTriggerDecision(t.Data());
-      patchhandlers[t] = decision->GetAcceptedPatches();
-      if(energycomp < 0) {
-        switch(decision->GetSelectionCuts()->GetSelectionMethod()){
-          case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kADC: energycomp = 0; break;
-          case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOffline: energycomp = 1; break;
-          case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared: energycomp = 2; break;
+      if(decision){
+        patchhandlers[t] = decision->GetAcceptedPatches();
+        if(energycomp < 0) {
+          switch(decision->GetSelectionCuts()->GetSelectionMethod()){
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kADC: energycomp = 0; break;
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOffline: energycomp = 1; break;
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared: energycomp = 2; break;
+          }
         }
       }
     }
