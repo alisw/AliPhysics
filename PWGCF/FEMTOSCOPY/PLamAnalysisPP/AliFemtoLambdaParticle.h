@@ -49,8 +49,10 @@ class AliFemtoLambdaParticle // Reconstructed Lambdas parameters needed for corr
   TVector3 fMomentumPosDaughter;//momentum of positive daughter particle
   TVector3 fMomentumNegDaughter;//momentum of negative daughter particle
   float fPhiPosdaughter;
+  float fPhiStarPosdaughter[9];
   float fEtaPosdaughter;
   float fPhiNegdaughter;
+  float fPhiStarNegdaughter[9];
   float fEtaNegdaughter;
   //double fPosDaughPosTPC[9][3];
   //double fNegDaughPosTPC[9][3];
