@@ -2184,9 +2184,9 @@ void InvMass(Int_t icalo, TString particle, TString fileName)
     gRatMass[1]->SetMaximum(1.05);
     gRatMass[1]->Draw("AP");
     
-    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    for(Int_t iprod = 1; iprod <  nProd; iprod++)
     {
-      gMass [iprod]->Draw("P");
+      gRatMass [iprod]->Draw("P");
     }
     
       
@@ -2221,9 +2221,9 @@ void InvMass(Int_t icalo, TString particle, TString fileName)
     gRatWidth[1]->SetMaximum(1.1);
     gRatWidth[1]->Draw("AP");
     
-    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    for(Int_t iprod = 1; iprod <  nProd; iprod++)
     {
-      gWidth [iprod]->Draw("P");
+      gRatWidth [iprod]->Draw("P");
     }
     
     
@@ -2258,9 +2258,9 @@ void InvMass(Int_t icalo, TString particle, TString fileName)
     gRatPt[1]->SetMaximum(1.3);
     gRatPt[1]->Draw("AP");
     
-    for(Int_t iprod = 1; iprod <  nProd-1; iprod++)
+    for(Int_t iprod = 1; iprod <  nProd; iprod++)
     {
-      gPt [iprod]->Draw("P");
+      gRatPt [iprod]->Draw("P");
     }
     
     
