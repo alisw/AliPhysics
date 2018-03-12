@@ -919,8 +919,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     
                     fSprsTemplatesNoWeight->Fill(tempValue);
                     
-                    //Added Lambda_c (fpidSort==17) to the weighting
-                    if (fpidSort==2||fpidSort==11||fpidSort==12||fpidSort==14||fpidSort==15||fpidSort==16||fpidSort==17) {
+                    //Took out Lambda_c (fpidSort==17) to the weighting
+                    if (fpidSort==2||fpidSort==11||fpidSort==12||fpidSort==14||fpidSort==15||fpidSort==16) {
                         if (momPt>1 && momPt<50.) {
                             dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
                             fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
