@@ -136,6 +136,7 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fFilterBit(1),
   gPsiN(2),
   fOldRunNum(111),
+  fEventCount(0),
   fNSigmaCut(2),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
@@ -166,14 +167,35 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
     fHCorrectNUApos[i] = NULL;
     fHCorrectNUAneg[i] = NULL;
   }
+  for(int i=0;i<5;i++){  // for PID 
+    fHCorrectNUAposPion[i] = NULL;
+    fHCorrectNUAnegPion[i] = NULL;
+    fHCorrectNUAposKaon[i] = NULL;
+    fHCorrectNUAnegKaon[i] = NULL;
+    fHCorrectNUAposProton[i] = NULL;
+    fHCorrectNUAnegProton[i] = NULL;
+  }
+
   for(int i=0;i<2;i++){
-    for(int j=0;j<3;j++){
+    for(int j=0;j<4;j++){
       fHist_Corr3p_EP_Norm_PN[i][j]  =  NULL;
       fHist_Corr3p_EP_Norm_PP[i][j]  =  NULL;
       fHist_Corr3p_EP_Norm_NN[i][j]  =  NULL;
     }
     for(int j=0;j<4;j++) {
       fHist_Reso2n_EP_Norm_Det[i][j] =  NULL;
+    }
+    //PID:
+    for(int j=0;j<4;j++){
+      fHist_Corr3p_Pion_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Pion_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Pion_EP_Norm_NN[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_NN[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_NN[i][j]  =  NULL;
     }
   }
   for(int i=0;i<4;i++){
@@ -260,6 +282,7 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
   fFilterBit(1),
   gPsiN(2),
   fOldRunNum(111),
+  fEventCount(0),
   fNSigmaCut(2),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
@@ -290,14 +313,35 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
     fHCorrectNUApos[i] = NULL;
     fHCorrectNUAneg[i] = NULL;
   }
+  for(int i=0;i<5;i++){  // for PID 
+    fHCorrectNUAposPion[i] = NULL;
+    fHCorrectNUAnegPion[i] = NULL;
+    fHCorrectNUAposKaon[i] = NULL;
+    fHCorrectNUAnegKaon[i] = NULL;
+    fHCorrectNUAposProton[i] = NULL;
+    fHCorrectNUAnegProton[i] = NULL;
+  }
+
   for(int i=0;i<2;i++){
-    for(int j=0;j<3;j++){
+    for(int j=0;j<4;j++){
       fHist_Corr3p_EP_Norm_PN[i][j]  =  NULL;
       fHist_Corr3p_EP_Norm_PP[i][j]  =  NULL;
       fHist_Corr3p_EP_Norm_NN[i][j]  =  NULL;
     }
     for(int j=0;j<4;j++) {
       fHist_Reso2n_EP_Norm_Det[i][j] =  NULL;
+    }
+    //PID:
+    for(int j=0;j<4;j++){
+      fHist_Corr3p_Pion_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Pion_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Pion_EP_Norm_NN[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Kaon_EP_Norm_NN[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_PN[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_PP[i][j]  =  NULL;
+      fHist_Corr3p_Proton_EP_Norm_NN[i][j]  =  NULL;
     }
   }
   for(int i=0;i<4;i++){
@@ -317,9 +361,15 @@ AliAnalysisTaskCMEV0PID::~AliAnalysisTaskCMEV0PID()
   //Destructor
   //if(fPIDResponse)   delete fPIDResponse;
   //if(fMultSelection) delete fMultSelection;
+
   if(fListHist){
     delete fListHist;
   }  
+
+  if(fHCorrectV0M)    delete fHCorrectV0M;
+  if(fHAvgerageQnV0A) delete fHAvgerageQnV0A;
+  if(fHAvgerageQnV0C) delete fHAvgerageQnV0C;
+
   if(mfileFBHijing->IsOpen()){
      mfileFBHijing->Close();
      if(fListFBHijing) delete fListFBHijing;
@@ -332,9 +382,18 @@ AliAnalysisTaskCMEV0PID::~AliAnalysisTaskCMEV0PID()
     if(fHCorrectNUApos[i]) delete fHCorrectNUApos[i];
     if(fHCorrectNUAneg[i]) delete fHCorrectNUAneg[i];
   }
-  if(fAnalysisUtil){
-    delete fAnalysisUtil; // its 'new' !!
+  for(int i=0;i<5;i++){  // for PID 
+    if(fHCorrectNUAposPion[i])   delete fHCorrectNUAposPion[i];
+    if(fHCorrectNUAnegPion[i])   delete fHCorrectNUAnegPion[i];
+    if(fHCorrectNUAposKaon[i])   delete fHCorrectNUAposKaon[i];
+    if(fHCorrectNUAnegKaon[i])   delete fHCorrectNUAnegKaon[i];
+    if(fHCorrectNUAposProton[i]) delete fHCorrectNUAposProton[i];
+    if(fHCorrectNUAnegProton[i]) delete fHCorrectNUAnegProton[i];
   }
+
+
+  if(fAnalysisUtil)  delete fAnalysisUtil; // its 'new' !!
+  
 }//---------------- sanity ------------------------
 
 
@@ -497,19 +556,20 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
 
-  Double_t centRange[11]    = {0,5,10,20,30,40,50,60,70,80,90};
+  Double_t centRange[11]   = {0,5,10,20,30,40,50,60,70,80,90};
+  char const *gDetForEP[4] = {"V0A","V0C","TPC-A","TPC-C"};
 
  //------------------- CME 3p correlator Charged hadrons (EP method) ------------------
   for(int i=0;i<2;i++){
-    for(int j=0;j<3;j++){
-     //Detector: 0 = V0A, 1 = V0C, 3 = Q-cumulant
-      fHist_Corr3p_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),"opposit charge correlator",10,centRange,"");
+    for(int j=0;j<4;j++){
+     //Detector: 0 = V0A, 1 = V0C, 3 = TPCA, 4 = TPCC 
+      fHist_Corr3p_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
       //fHist_Corr3p_EP_Norm_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_PN[i][j]);
-      fHist_Corr3p_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),"pos-pos charge correlator",10,centRange,"");
+      fHist_Corr3p_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
       //fHist_Corr3p_EP_Norm_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_PP[i][j]);
-      fHist_Corr3p_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),"neg-neg charge correlator",10,centRange,"");
+      fHist_Corr3p_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %s",gDetForEP[j]),10,centRange,"");
       //fHist_Corr3p_EP_Norm_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_NN[i][j]);
     }
@@ -520,18 +580,54 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
       //fHist_Reso2n_EP_Norm_Det[i][j]->Sumw2();
       fListHist->Add(fHist_Reso2n_EP_Norm_Det[i][j]);
     }
-  }
+    //----------- PID -------------------
+    for(int j=0;j<4;j++){       //Detector: 0 = V0A, 1 = V0C, 3 = TPCA, 4 = TPCC 
+      //----------> Pion:
+      fHist_Corr3p_Pion_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Pion_EP_Norm_PN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Pion_EP_Norm_PN[i][j]);
+      fHist_Corr3p_Pion_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Pion_EP_Norm_PP[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Pion_EP_Norm_PP[i][j]);
+      fHist_Corr3p_Pion_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Pion_EP_Norm_NN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Pion_EP_Norm_NN[i][j]);
+      //----------> Kaon:
+      fHist_Corr3p_Kaon_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Kaon_EP_Norm_PN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_PN[i][j]);
+      fHist_Corr3p_Kaon_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Kaon_EP_Norm_PP[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_PP[i][j]);
+      fHist_Corr3p_Kaon_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Kaon_EP_Norm_NN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_NN[i][j]);
+      //----------> Proton:
+      fHist_Corr3p_Proton_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Proton_EP_Norm_PN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Proton_EP_Norm_PN[i][j]);
+      fHist_Corr3p_Proton_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Proton_EP_Norm_PP[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Proton_EP_Norm_PP[i][j]);
+      fHist_Corr3p_Proton_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %s",gDetForEP[j]),10,centRange,"");
+      //fHist_Corr3p_Proton_EP_Norm_NN[i][j]->Sumw2();
+      fListHist->Add(fHist_Corr3p_Proton_EP_Norm_NN[i][j]);
+    }//Det loop
+  }//magfield loop
 
-  fHV0AEventPlaneVsCent = new TH2F("fHV0AEventPlaneVsCent",Form("Psi %d from V0A",gPsiN), 10,centRange,50,0,3.1415);
+
+  Double_t truncPi = 3.1416;
+
+  fHV0AEventPlaneVsCent = new TH2F("fHV0AEventPlaneVsCent",Form("Psi %d from V0A", gPsiN), 10,centRange,50,-0.0,truncPi);
   fListHist->Add(fHV0AEventPlaneVsCent);
   
-  fHV0CEventPlaneVsCent = new TH2F("fHV0CEventPlaneVsCent",Form("Psi %d from V0C",gPsiN), 10,centRange,50,0,3.1415);
+  fHV0CEventPlaneVsCent = new TH2F("fHV0CEventPlaneVsCent",Form("Psi %d from V0C", gPsiN), 10,centRange,50,-0.0,truncPi);
   fListHist->Add(fHV0CEventPlaneVsCent);
 
-  fHTPCAEventPlaneVsCent = new TH2F("fHTPCAEventPlaneVsCent",Form("Psi %d from V0A",gPsiN), 10,centRange,50,0,3.1415);
+  fHTPCAEventPlaneVsCent = new TH2F("fHTPCAEventPlaneVsCent",Form("Psi %d from V0A",gPsiN),10,centRange,50,-0.0,truncPi);
   fListHist->Add(fHTPCAEventPlaneVsCent);
 
-  fHTPCCEventPlaneVsCent = new TH2F("fHTPCCEventPlaneVsCent",Form("Psi %d from V0A",gPsiN), 10,centRange,50,0,3.1415);
+  fHTPCCEventPlaneVsCent = new TH2F("fHTPCCEventPlaneVsCent",Form("Psi %d from V0A",gPsiN),10,centRange,50,-0.0,truncPi);
   fListHist->Add(fHTPCCEventPlaneVsCent);
   //-------------------------------------------------------------------------------
 
@@ -643,9 +739,21 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
 
+
+
+
+
+
+
+
+
+
+
 //______________________________________________________________________
 void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   //printf("info: UserExec is called.... 1  \n");
+
+  //if(fEventCount==1200) return;
 
   Float_t stepCount = 0.5;
 
@@ -1238,6 +1346,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) ); //+ TMath::Pi() );
   if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
 
+  //fHV0CEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNV0C-PsiNV0A));
   fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
   fHV0AEventPlaneVsCent->Fill(EvtCent,PsiNV0A);
   //-------------------------------------------------------------
@@ -1260,8 +1369,15 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1] )) ; // positive eta
   if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
 
+  //fHTPCAEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCA-PsiNTPCC));
+  //fHTPCCEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCC-PsiNV0C));
+
   fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
   fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
+
+  fEventCount++;
+
+
 
   PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3] )) ; // FUll TPC eta 
   if(PsiNTPCF<0.) PsiNTPCF += 2*TMath::Pi()/gPsiN;
@@ -1315,9 +1431,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
   Double_t dPhi1,dPhi2,dPt1,dPt2,dEta1,dEta2;
   Double_t ptw1, ptw2, w1NUA, w2NUA;
-  Double_t nSigTOFpion, nSigTPCpion;
-  Double_t nSigTOFkaon, nSigTPCkaon;
-  Double_t nSigTOFproton, nSigTPCproton;
+  Double_t nSigTOFpion,  nSigTPCpion;
+  Double_t nSigTOFkaon,  nSigTPCkaon;
+  Double_t nSigTOFproton,nSigTPCproton;
+  Double_t nSigTOFpion2,  nSigTPCpion2;
+  Double_t nSigTOFkaon2,  nSigTPCkaon2;
+  Double_t nSigTOFproton2,nSigTPCproton2;
+
   Double_t c = TMath::C()*1.E-9;// velocity of light m/ns 
   Double_t  dcaXY, dcaZ, WgtEP ;
   Double_t  probMis; 
@@ -1326,6 +1446,31 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Int_t n=1,m=1;
   Int_t p=n+m;
   Int_t skipPairHBT = 0;
+
+
+
+
+
+
+  Double_t ptwPion1,ptwKaon1,ptwProton1; 
+  Double_t ptwPion2,ptwKaon2,ptwProton2;
+  Double_t wNUAPion1,wNUAKaon1,wNUAProton1;
+  Double_t wNUAPion2,wNUAKaon2,wNUAProton2;
+
+  Double_t    WgtEPPion = 1.0;
+  Double_t    WgtEPKaon = 1.0;
+  Double_t    WgtEPProton = 1.0;
+
+
+  Bool_t isPion1 = kFALSE;
+  Bool_t isKaon1  = kFALSE;
+  Bool_t isProton1 = kFALSE;
+  Bool_t isPion2 = kFALSE;
+  Bool_t isKaon2  = kFALSE;
+  Bool_t isProton2 = kFALSE;
+
+
+
 
 
 
@@ -1409,8 +1554,136 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     sumQyTPCneg = sumTPCQn2y[0];
     sumQxTPCpos = sumTPCQn2x[1];
     sumQyTPCpos = sumTPCQn2y[1];
+
+
+
+
+    
+    //--------------------- PID signals 1st track-------------------------
+    nSigTOFpion   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+    nSigTOFkaon   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+    nSigTOFproton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+    nSigTPCpion   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+    nSigTPCkaon   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+    nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+
+    isPion1 = kFALSE;
+    isKaon1  = kFALSE;
+    isProton1 = kFALSE;
+
+    //------> Pion
+    if(dPt1<0.6 && TMath::Abs(nSigTPCpion)<=2.5){
+      isPion1 = kTRUE;
+    }
+    else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=2.5 && TMath::Abs(nSigTOFpion)<=2.0 ){
+      isPion1 = kTRUE;
+    }
+    //------> Kaon
+    if(dPt1<0.6 && TMath::Abs(nSigTPCkaon)<=2.5){
+      isKaon1 = kTRUE;
+    }
+    else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=2.5 && TMath::Abs(nSigTOFkaon)<=2.0){
+      isKaon1 = kTRUE;
+    }
+    //------> Proton 
+    if(dPt1<0.8 && TMath::Abs(nSigTPCproton)<=2.5){
+      isProton1 = kTRUE;
+    }
+    else if(dPt1>=0.8 && dPt1<=3.5 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){
+      isProton1 = kTRUE;
+    }
+
+    //-----------------------------------------------------------------
+
+
+    //=================  MC wgt and NUA wgt for PID =================
+    ptwPion1 = 1.0;
+    ptwKaon1  = 1.0;
+    ptwProton1 = 1.0;
+    wNUAPion1 = 1.0;
+    wNUAKaon1  = 1.0;
+    wNUAProton1 = 1.0;
+
+    //------ get MC weight and NUA for Pion track1 --------------
+    if(isPion1){
+      if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Pion Efficiency file when available.
+	ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt1);
+	ptwPion1 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+      }
+      else{ ptwPion1 = 1.0; }
+
+      if(dChrg1>0){
+	if(fHCorrectNUAposPion[cForNUA]){
+	  iBinNUA   = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAPion1 = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
+	}
+	else{ wNUAPion1 = 1.0; }
+      }
+      else{
+	if(fHCorrectNUAnegPion[cForNUA]){
+	  iBinNUA   = fHCorrectNUAnegPion[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAPion1 = fHCorrectNUAnegPion[cForNUA]->GetBinContent(iBinNUA);  
+	}
+	else{ wNUAPion1 = 1.0; }
+      }
+    }
+
+
+    //------ get MC weight and NUA for Kaon track1 --------------
+    if(isKaon1){
+      if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Kaon Efficiency file when available.
+	ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt1);
+	ptwKaon1 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+      }
+      else{ ptwKaon1 = 1.0; }
+
+      if(dChrg1>0){
+	if(fHCorrectNUAposKaon[cForNUA]){
+	  iBinNUA   = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAKaon1 = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
+	}
+	else{ wNUAKaon1 = 1.0; }
+      }
+      else{
+	if(fHCorrectNUAnegKaon[cForNUA]){
+	  iBinNUA   = fHCorrectNUAnegKaon[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAKaon1 = fHCorrectNUAnegKaon[cForNUA]->GetBinContent(iBinNUA);  
+	}
+	else{ wNUAKaon1 = 1.0; }
+      }
+    }
+    //------ get MC weight and NUA for Proton track1 --------------
+    if(isProton1){
+      if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
+	ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt1);
+	ptwProton1 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+      }
+      else{ ptwProton1 = 1.0; }
+
+      if(dChrg1>0){
+	if(fHCorrectNUAposProton[cForNUA]){
+	  iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAProton1 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
+	}
+	else{ wNUAProton1 = 1.0; }
+      }
+      else{
+	if(fHCorrectNUAnegProton[cForNUA]){
+	  iBinNUA   = fHCorrectNUAnegProton[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
+	  wNUAProton1 = fHCorrectNUAnegProton[cForNUA]->GetBinContent(iBinNUA);  
+	}
+	else{ wNUAProton1 = 1.0; }
+      }
+    }
+    //=========================== X ===============================
+
+
+
       
-    //------ get MC weight and NUA for track 1--------------
+    //------ get MC weight and NUA for Charged  track 1--------------
+    ptw1  = 1.0;
+
     if(fFB_Efficiency_Cent[cent10bin]){
       ptBin = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt1);
       ptw1  = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
@@ -1433,7 +1706,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       else{ w1NUA = 1.0; }
     }
 
-    //Remove track 1 from EP calculation 
+
+
+    //-------- Remove track 1 from EP calculation ----------
     if(dEta1 < -0.05){
       sumQxTPCneg -= w1NUA*TMath::Cos(gPsiN*dPhi1);
       sumQyTPCneg -= w1NUA*TMath::Sin(gPsiN*dPhi1); // [0] = eta <-0.05
@@ -1442,15 +1717,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       sumQxTPCpos -= w1NUA*TMath::Cos(gPsiN*dPhi1);
       sumQyTPCpos -= w1NUA*TMath::Sin(gPsiN*dPhi1); // [1] = eta > 0.05
     }
+    //-----------------------------------------------------
 
 
 
-    //cout<<"info:  trk = "<<itrack<<" ptw "<<ptw1<<"\t w1NUA = "<<w1NUA<<endl;	  
-    
 
-
-    
-    //-----------------------------------------------------------
 
 
    
@@ -1474,18 +1745,148 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       if(dEta2 <fMinEtaCut || dEta2 > fMaxEtaCut)    continue;
       if(!(track2->TestFilterBit(fFilterBit)))       continue;
       //-----------------------------------------------------
-
-
-
-      
-      sumQxTPCneg2 = sumQxTPCneg; //second copy to remove 2nd track from EP
-      sumQyTPCneg2 = sumQyTPCneg;
-      sumQxTPCpos2 = sumQxTPCpos;
-      sumQyTPCpos2 = sumQyTPCpos;
 			  
       //cout<<"info: passes 1 ";
+
+
+      //--------------------- PID signals 2nd track-------------------------
+      nSigTOFpion2   = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kPion);
+      nSigTOFkaon2   = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kKaon);
+      nSigTOFproton2 = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kProton);
+
+      nSigTPCpion2   = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kPion);
+      nSigTPCkaon2   = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kKaon);
+      nSigTPCproton2 = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kProton);
+
+      isPion2 = kFALSE;
+      isKaon2  = kFALSE;
+      isProton2 = kFALSE;
+
+      //------> Pion 2
+      if(dPt2<0.6 && TMath::Abs(nSigTPCpion2)<=2.5){
+	isPion2 = kTRUE;
+      }
+      else if(dPt2>=0.6 && dPt2<=2.0 && TMath::Abs(nSigTPCpion2)<=2.5 && TMath::Abs(nSigTOFpion2)<=2.0 ){
+	isPion2 = kTRUE;
+      }
+      //------> Kaon 2
+      if(dPt2<0.6 && TMath::Abs(nSigTPCkaon2)<=2.5){
+	isKaon2 = kTRUE;
+      }
+      else if(dPt2>=0.6 && dPt2<=2.0 && TMath::Abs(nSigTPCkaon2)<=2.5 && TMath::Abs(nSigTOFkaon2)<=2.0){
+	isKaon2 = kTRUE;
+      }
+      //------> Proton 2
+      if(dPt2<0.8 && TMath::Abs(nSigTPCproton2)<=2.5){
+	isProton2 = kTRUE;
+      }
+      else if(dPt2>=0.8 && dPt2<=3.5 && TMath::Abs(nSigTPCproton2)<=2.5 && TMath::Abs(nSigTOFproton2)<=2.5){
+	isProton2 = kTRUE;
+      }
+      //----------------------------------------------------------------
+
+
  
-      //------ get MC weight and NUA for track 2--------------
+
+
+      //=================  MC wgt and NUA wgt for PID =================
+      WgtEPPion = 1.0;
+      WgtEPKaon = 1.0;
+      WgtEPProton = 1.0;
+
+      ptwPion2 = 1.0;
+      ptwKaon2  = 1.0;
+      ptwProton2 = 1.0;
+      wNUAPion2 = 1.0;
+      wNUAKaon2  = 1.0;
+      wNUAProton2 = 1.0;
+
+      //------ get MC weight and NUA for Pion track2 --------------
+      if(isPion2){
+	if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Pion Efficiency file when available.
+	  ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt2);
+	  ptwPion2 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+	}
+	else{ ptwPion2 = 1.0; }
+
+	if(dChrg2>0){
+	  if(fHCorrectNUAposPion[cForNUA]){
+	    iBinNUA   = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAPion2 = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
+	  }
+	  else{ wNUAPion2 = 1.0; }
+	}
+	else{
+	  if(fHCorrectNUAnegPion[cForNUA]){
+	    iBinNUA   = fHCorrectNUAnegPion[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAPion2 = fHCorrectNUAnegPion[cForNUA]->GetBinContent(iBinNUA);  
+	  }
+	  else{ wNUAPion2 = 1.0; }
+	}
+
+	WgtEPPion = ptwPion1*ptwPion2*wNUAPion1*wNUAPion2;
+      }
+
+      //------ get MC weight and NUA for Kaon track2 --------------
+      if(isKaon2){
+	if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Kaon Efficiency file when available.
+	  ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt2);
+	  ptwKaon2 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+	}
+	else{ ptwKaon2 = 1.0; }
+
+	if(dChrg2>0){
+	  if(fHCorrectNUAposKaon[cForNUA]){
+	    iBinNUA   = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAKaon2 = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
+	  }
+	  else{ wNUAKaon2 = 1.0; }
+	}
+	else{
+	  if(fHCorrectNUAnegKaon[cForNUA]){
+	    iBinNUA   = fHCorrectNUAnegKaon[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAKaon2 = fHCorrectNUAnegKaon[cForNUA]->GetBinContent(iBinNUA);  
+	  }
+	  else{ wNUAKaon2 = 1.0; }
+	}
+
+	WgtEPKaon = ptwKaon1*ptwKaon2*wNUAKaon1*wNUAKaon2;
+      }
+      //------ get MC weight and NUA for Proton track2 --------------
+      if(isProton2){
+	if(fFB_Efficiency_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
+	  ptBin    = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt2);
+	  ptwProton2 = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
+	}
+	else{ ptwProton2 = 1.0; }
+
+	if(dChrg2>0){
+	  if(fHCorrectNUAposProton[cForNUA]){
+	    iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAProton2 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
+	  }
+	  else{ wNUAProton2 = 1.0; }
+	}
+	else{
+	  if(fHCorrectNUAnegProton[cForNUA]){
+	    iBinNUA   = fHCorrectNUAnegProton[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
+	    wNUAProton2 = fHCorrectNUAnegProton[cForNUA]->GetBinContent(iBinNUA);  
+	  }
+	  else{ wNUAProton2 = 1.0; }
+	}
+
+	WgtEPProton = ptwProton1*ptwProton2*wNUAProton1*wNUAProton2;
+      }
+      //========================== X ================================
+
+
+
+
+ 
+      //------ get MC weight and NUA (Charged) for track 2--------------
+      WgtEP = 1.0;
+      ptw2  = 1.0;
+
       if(fFB_Efficiency_Cent[cent10bin]){
 	ptBin = fFB_Efficiency_Cent[cent10bin]->FindBin(dPt2);
 	ptw2  = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBin);
@@ -1507,7 +1908,14 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	else{ w2NUA = 1.0; }
       }
 
-      //---------- Remove track2 from EP calculation -------------
+      //---------- Remove track2 from EP calculation ---------
+      sumQxTPCneg2 = sumQxTPCneg; //second copy to remove 2nd track from EP
+      sumQyTPCneg2 = sumQyTPCneg;
+      sumQxTPCpos2 = sumQxTPCpos;
+      sumQyTPCpos2 = sumQyTPCpos;
+      //------------------------------------------------------
+
+
       if(dEta2 < -0.05){
 	sumQxTPCneg2 -= w2NUA*TMath::Cos(gPsiN*dPhi2);
 	sumQyTPCneg2 -= w2NUA*TMath::Sin(gPsiN*dPhi2); // [0] = eta <-0.05
@@ -1518,8 +1926,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       }
 
       // track by track EP:
-      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) + TMath::Pi() );
-      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) + TMath::Pi() );
+      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) );
+      if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+
+      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) );
+      if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
 
 
       // combined weight for EP:
@@ -1529,25 +1940,95 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
       //cout<<", passes 2 ";
     
-
-      
-      
-      
       if(dChrg1!=dChrg2) {
-	fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A),WgtEP);
-	fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C),WgtEP);
-	fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);	
+	fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
+	fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
+	fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);
+	fHist_Corr3p_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP);	
+
+	//-------------> PID CME ---------------
+	//Pion:
+	if(isPion1 && isPion2){
+	  fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPPion);	
+	}
+	//Kaon:
+	if(isKaon1 && isKaon2){
+	  fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPKaon);	
+	}
+	//Proton:
+	if(isProton1 && isProton2){
+	  fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPProton);	
+	}
+	//------------------------------------
       }
       else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0) {
-	fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A),WgtEP);
-	fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C),WgtEP);
+	fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
+	fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
 	fHist_Corr3p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);	
+	fHist_Corr3p_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP);	
+
+	//-------------> PID CME ---------------
+	//Pion:
+	if(isPion1 && isPion2){
+	  fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPPion);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPPion);	
+	}
+	//Kaon:
+	if(isKaon1 && isKaon2){
+	  fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPKaon);	
+	}
+	//Proton:
+	if(isProton1 && isProton2){
+	  fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPProton);
+	  fHist_Corr3p_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPProton);	
+	}
+	//------------------------------------
       }
 
       else if(dChrg1<0 && dChrg2<0 && skipPairHBT==0){
-	fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A),WgtEP);
-	fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C),WgtEP);
+	fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
+	fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
 	fHist_Corr3p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);	
+	fHist_Corr3p_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP);	
+	//-------------> PID CME ---------------
+	//Pion:
+	if(isPion1 && isPion2){
+	  fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPPion);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPPion);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPPion);	
+	}
+	//Kaon:
+	if(isKaon1 && isKaon2){
+	  fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPKaon);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPKaon);	
+	}
+	//Proton:
+	if(isProton1 && isProton2){
+	  fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEPProton);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEPProton);
+	  fHist_Corr3p_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEPProton);	
+	}
+	//------------------------------------
       } 
 
       //cout<<", passes 3 WgtEP = "<<WgtEP<<endl; 
@@ -1556,7 +2037,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
- 
+
+
+
+
+
     //============ PID business starts here =============
     
     fHistEtaPtAfter->Fill(eta,pT);
@@ -1566,9 +2051,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       fHistTOFBetavsPAfter->Fill(mom*charge,beta);
     }
 
-    nSigTOFpion=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-    nSigTOFkaon=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
-    nSigTOFproton=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+    //nSigTOFpion=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+    //nSigTOFkaon=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+    //nSigTOFproton=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
 
     fHistTOFMatchCount->Fill(TOFmatch+2,nSigTOFpion);
     fHistTOFMatchCount->Fill(TOFmatch+4,nSigTOFkaon);
@@ -1580,9 +2065,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       nSigTOFproton = -9.99;
     }
 
-    nSigTPCpion   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-    nSigTPCkaon   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
-    nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    //nSigTPCpion   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+    //nSigTPCkaon   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+    //nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 
     //0=pi, 1=K, 2=Proton
     fHistTPCTOFnSigmavsPtAfter[0]->Fill(pT,nSigTPCpion,nSigTOFpion);
@@ -1622,26 +2107,25 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-    // nSigmaTOF distribution for circular cut
-    /*
-    if(TMath::Sqrt(nSigTPCpion*nSigTPCpion+nSigTOFpion*nSigTOFpion)<=fNSigmaCut){
-      fHistTOFnSigmavsPtAfter[0]->Fill(pT*charge,nSigTOFpion);
-      if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[0]->Fill(pT*charge);
-      }
-    }
-    if(TMath::Sqrt(nSigTPCkaon*nSigTPCkaon+nSigTOFkaon*nSigTOFkaon)<=fNSigmaCut){
-      fHistTOFnSigmavsPtAfter[1]->Fill(pT*charge,nSigTOFkaon);
-      if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[1]->Fill(pT*charge);
-      }
-    }
-    if(TMath::Sqrt(nSigTPCproton*nSigTPCproton+nSigTOFproton*nSigTOFproton)<=fNSigmaCut){
-      fHistTOFnSigmavsPtAfter[2]->Fill(pT*charge,nSigTOFproton);
-      if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[2]->Fill(pT*charge);
-      }
-    } */
+    //========> nSigmaTOF distribution for circular cut <===============
+    //if(TMath::Sqrt(nSigTPCpion*nSigTPCpion+nSigTOFpion*nSigTOFpion)<=fNSigmaCut){
+      //fHistTOFnSigmavsPtAfter[0]->Fill(pT*charge,nSigTOFpion);
+      //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
+        //fHistPtwithTOFSignal[0]->Fill(pT*charge);
+      //}
+    //}
+    //if(TMath::Sqrt(nSigTPCkaon*nSigTPCkaon+nSigTOFkaon*nSigTOFkaon)<=fNSigmaCut){
+      //fHistTOFnSigmavsPtAfter[1]->Fill(pT*charge,nSigTOFkaon);
+      //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
+        //fHistPtwithTOFSignal[1]->Fill(pT*charge);
+      //}
+    //}
+    //if(TMath::Sqrt(nSigTPCproton*nSigTPCproton+nSigTOFproton*nSigTOFproton)<=fNSigmaCut){
+      //fHistTOFnSigmavsPtAfter[2]->Fill(pT*charge,nSigTOFproton);
+      //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
+        //fHistPtwithTOFSignal[2]->Fill(pT*charge);
+      //}
+    //} 
 
 
     
@@ -1660,6 +2144,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     }
 
 
+ 
 
 
 
@@ -2072,7 +2557,7 @@ void AliAnalysisTaskCMEV0PID::SetupEventAndTaskConfigInfo(){
 
 void AliAnalysisTaskCMEV0PID::GetV0MCorrectionHist(Int_t run)
 {
-  cout<<"\n======== Info:: Setting up V0 gain correction for run "<<run<<"============"<<endl;
+  cout<<"=========== Info:: Setting up V0 gain correction for run "<<run<<"============"<<endl;
   if(fListV0MCorr){
     fHCorrectV0M    = (TH1D *) fListV0MCorr->FindObject(Form("fHistV0Gain_Run%d",run));
     fHAvgerageQnV0A = (TH2D *) fListV0MCorr->FindObject(Form("fHistAvgQnV0A_Run%d",run));
@@ -2103,14 +2588,15 @@ void AliAnalysisTaskCMEV0PID::GetV0MCorrectionHist(Int_t run)
 
 void AliAnalysisTaskCMEV0PID::GetNUACorrectionHist(Int_t run)
 {
+  cout<<"=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;
   if(fListNUACorr){
     for(int i=0;i<5;i++){
-      fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run));
+      fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run)); // <= !!! ********** change Name 
       fHCorrectNUAneg[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",i,run));
     }
   }
   else {
-    printf("\n\n ******** could not open NUA Histograms for run %d, Use Wgt = 1.0 *********\n\n",run);
+    printf("\n ******** Warning: No NUA Correction for Charge Particle in run %d, Use Wgt = 1.0 ********* \n",run);
     for(int i=0;i<5;i++){
       fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
       fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
@@ -2119,5 +2605,40 @@ void AliAnalysisTaskCMEV0PID::GetNUACorrectionHist(Int_t run)
       //exit(1);
     }
   }
+
+  //===================   PID:  ==========================
+  if(fListNUACorr){
+    for(int i=0;i<5;i++){
+      fHCorrectNUAposPion[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Pos_Cent%d_Run%d",i,run)); //
+      fHCorrectNUAnegPion[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Neg_Cent%d_Run%d",i,run));
+
+      fHCorrectNUAposKaon[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Pos_Cent%d_Run%d",i,run)); //
+      fHCorrectNUAnegKaon[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Neg_Cent%d_Run%d",i,run));
+
+      fHCorrectNUAposProton[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Pos_Cent%d_Run%d",i,run)); 
+      fHCorrectNUAnegProton[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Neg_Cent%d_Run%d",i,run));
+    }
+  }
+  else {
+    printf("\n ******** Warning: No NUA Correction for PID for run %d, Use Wgt = 1.0 ********* \n",run);
+    for(int i=0;i<5;i++){
+      fHCorrectNUAposPion[i] = new TH3D(Form("fHCorrectNUAPionpos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposPion[i] = new TH3D(Form("fHCorrectNUAPionneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposPion[i]->SetBinContent(1,1,1,1.0);
+      fHCorrectNUAposPion[i]->SetBinContent(1,1,1,1.0);
+
+      fHCorrectNUAposKaon[i] = new TH3D(Form("fHCorrectNUAKaonpos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposKaon[i] = new TH3D(Form("fHCorrectNUAKaonneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposKaon[i]->SetBinContent(1,1,1,1.0);
+      fHCorrectNUAposKaon[i]->SetBinContent(1,1,1,1.0);
+
+      fHCorrectNUAposProton[i] = new TH3D(Form("fHCorrectNUAProtonpos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposProton[i] = new TH3D(Form("fHCorrectNUAProtonneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+      fHCorrectNUAposProton[i]->SetBinContent(1,1,1,1.0);
+      fHCorrectNUAposProton[i]->SetBinContent(1,1,1,1.0);
+      //exit(1);
+    }
+  }
+
 }
 
