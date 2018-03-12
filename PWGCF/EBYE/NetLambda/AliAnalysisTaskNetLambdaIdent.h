@@ -91,6 +91,11 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   TH3F* hXiZero;
   TH3F* hXiZeroAnti;
 
+  TH2F* hPtResLambda;
+  TH2F* hPtResAntiLambda;
+  TH2F* hPtResLambdaPrim;
+  TH2F* hPtResAntiLambdaPrim;
+
   // kinematic cuts
   Float_t centcut;
   Float_t ptminlambda;
@@ -121,7 +126,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,1);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,2);
 };
 
 //_____________________________________________________________________________
