@@ -118,10 +118,12 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
     if (fnDaug->IsSet()) {
       this->SetMCTheta(fnDaug->GetMCTheta().at(0));
       this->SetMCPhi(fnDaug->GetMCPhi().at(0));
+      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
     if (fpDaug->IsSet()) {
       this->SetMCTheta(fpDaug->GetMCTheta().at(0));
       this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
   }
 }
@@ -215,6 +217,7 @@ void AliFemtoDreamv0::Reset() {
     fTheta.clear();
     fMCTheta.clear();
     fPhi.clear();
+    fPhiAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

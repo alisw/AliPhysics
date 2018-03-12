@@ -60,7 +60,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
   int _intSpec1 = 0;
   int HistCounter=0;
   //First loop over all the different Species
- auto itPDGPar1 = fPDGParticleSpecies.begin();
+  auto itPDGPar1 = fPDGParticleSpecies.begin();
   for (auto itSpec1=Particles.begin();itSpec1!=Particles.end();++itSpec1) {
     auto itPDGPar2 = fPDGParticleSpecies.begin();
     itPDGPar2+=itSpec1-Particles.begin();
@@ -82,6 +82,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           ResultsHist->FillSameEventDist(HistCounter,RelativeK);
           if (ResultsHist->GetDoMultBinning()) {
             ResultsHist->FillSameEventMultDist(HistCounter,iMult+1,RelativeK);
+          }
+          if (ResultsHist->GetEtaPhiPlots()) {
+            DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
           ++itPart2;
         }
@@ -142,6 +145,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                     HistCounter,RelKTrue,RelativeK);
               }
             }
+            if (ResultsHist->GetEtaPhiPlots()) {
+              DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),false,ResultsHist);
+            }
           }
         }
       }
@@ -154,13 +160,13 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
   }
 }
 float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentum,
-                                                            int PDGPart1,
-                                                            TVector3 Part2Momentum,
-                                                            int PDGPart2)
+                                                           int PDGPart1,
+                                                           TVector3 Part2Momentum,
+                                                           int PDGPart2)
 {
-    if(PDGPart1 == 0 || PDGPart2== 0){
-      AliError("Invalid PDG Code");
-    }
+  if(PDGPart1 == 0 || PDGPart2== 0){
+    AliError("Invalid PDG Code");
+  }
   float results = 0.;
   TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
@@ -187,4 +193,35 @@ float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentu
   trackRelK = SPtrackCMS - TPProngCMS;
   results = 0.5*trackRelK.P();
   return results;
+}
+
+void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
+    int Hist,AliFemtoDreamBasePart *part1, AliFemtoDreamBasePart *part2,
+    bool SEorME, AliFemtoDreamCorrHists *ResultsHist) {
+  //used to check for track splitting/merging
+  //this function only produces meaningful results for track with x Daughter
+  //looking at this quantity makes only sense anyways for Track - Track not
+  //for v0 - v0 ...
+  float eta1=part1->GetEta().at(0);
+  std::vector<float> Phirad1=part1->GetPhiAtRaidius().at(0);
+
+  std::vector<float> eta2=part2->GetEta();
+  for (int iDaug=0;iDaug<part2->GetPhiAtRaidius().size();++iDaug) {
+    std::vector<float> phiAtRad2=part2->GetPhiAtRaidius().at(iDaug);
+    float etaPar2;
+    if (part2->GetPhiAtRaidius().size()==1) {
+      etaPar2=eta2.at(0);
+    } else {
+      etaPar2=eta2.at(iDaug+1);
+    }
+    float deta=TMath::Abs(eta1-etaPar2);
+    for (int iRad=0;iRad<9;++iRad) {
+      float dphi=TMath::Abs(Phirad1.at(iRad)-phiAtRad2.at(iRad));
+      if (SEorME) {
+        ResultsHist->FillEtaPhiAtRadiiSE(Hist,iDaug,iRad,dphi,deta);
+      } else {
+        ResultsHist->FillEtaPhiAtRadiiME(Hist,iDaug,iRad,dphi,deta);
+      }
+    }
+  }
 }

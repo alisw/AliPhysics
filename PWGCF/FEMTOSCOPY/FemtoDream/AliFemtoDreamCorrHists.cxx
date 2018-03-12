@@ -16,6 +16,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fPairQA(0)
 ,fMinimalBooking(false)
 ,fMomentumResolution(false)
+,fPhiEtaPlots(false)
 ,fSameEventDist(0)
 ,fSameEventMultDist(0)
 ,fPairCounterSE(0)
@@ -23,6 +24,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fMixedEventMultDist(0)
 ,fPairCounterME(0)
 ,fMomResolution(0)
+,fRadiiEtaPhiSE(0)
+,fRadiiEtaPhiME(0)
 ,fDoMultBinning(false)
 {
 }
@@ -32,6 +35,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   fMinimalBooking=MinimalBooking;
   fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
+  fPhiEtaPlots=conf->GetDoPhiEtaBinning();
   int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
   const int nHists=conf->GetNParticleCombinations();
@@ -72,6 +76,15 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fPairCounterME=new TH2F*[nHists];
     if (fMomentumResolution) {
       fMomResolution=new TH2F*[nHists];
+    } else {
+      fMomResolution = 0;
+    }
+    if (fPhiEtaPlots) {
+      fRadiiEtaPhiSE=new TH2F***[nHists];
+      fRadiiEtaPhiME=new TH2F***[nHists];
+    } else {
+      fRadiiEtaPhiSE=0;
+      fRadiiEtaPhiME=0;
     }
   } else {
     fQA=0;
@@ -79,6 +92,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fPairCounterSE=0;
     fPairCounterME=0;
     fMomResolution=0;
+    fMomResolution = 0;
+    fRadiiEtaPhiSE=0;
+    fRadiiEtaPhiME=0;
   }
   //we always want to do this, regardless of the booking type!
   fPairs=new TList*[nHists];
@@ -161,7 +177,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         if (fMomentumResolution) {
           //take twice the number of bins we use for the CF to be sure, the range is
           //hard coded. This assumed that the input is in GeV!
-//          *itNBins,*itKMin,*itKMax,
+          //          *itNBins,*itKMin,*itKMax,
           double dNBin=(*itKMax-*itKMin)/(double)(*itNBins);
           dNBin/=2;
           int nBims=(int)(1/dNBin);
@@ -174,6 +190,29 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolution[Counter]);
+        }
+        if (fPhiEtaPlots) {
+          fRadiiEtaPhiSE[Counter]=new TH2F**[3];
+          fRadiiEtaPhiME[Counter]=new TH2F**[3];
+          for (int iDaug=0;iDaug<3;++iDaug) {
+          const int nRad=conf->GetNRadii();
+          fRadiiEtaPhiSE[Counter][iDaug]=new TH2F*[nRad];
+          fRadiiEtaPhiME[Counter][iDaug]=new TH2F*[nRad];
+            for (int iRad=0;iRad<nRad;++iRad) {
+              TString RadNameSE=Form("SERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
+              TString RadNameME=Form("MERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
+              fRadiiEtaPhiSE[Counter][iDaug][iRad]=
+                  new TH2F(RadNameSE.Data(),RadNameSE.Data(),400,0,4,400,0,1);
+              fRadiiEtaPhiSE[Counter][iDaug][iRad]->GetXaxis()->SetTitle("#Delta#eta");
+              fRadiiEtaPhiSE[Counter][iDaug][iRad]->GetYaxis()->SetTitle("#Delta#phi");
+              fPairQA[Counter]->Add(fRadiiEtaPhiSE[Counter][iDaug][iRad]);
+              fRadiiEtaPhiME[Counter][iDaug][iRad]=
+                  new TH2F(RadNameME.Data(),RadNameME.Data(),400,0,4,400,0,1);
+              fRadiiEtaPhiME[Counter][iDaug][iRad]->GetXaxis()->SetTitle("#Delta#eta");
+              fRadiiEtaPhiME[Counter][iDaug][iRad]->GetYaxis()->SetTitle("#Delta#phi");
+              fPairQA[Counter]->Add(fRadiiEtaPhiME[Counter][iDaug][iRad]);
+            }
+          }
         }
       }
 

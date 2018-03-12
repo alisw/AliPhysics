@@ -19,6 +19,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
   void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
+  void SetPhiEtaBinnign(bool doIt){
+    fPhiEtaBinning=doIt;fNumberRadii=9;
+  };
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -29,6 +32,8 @@ class AliFemtoDreamCollConfig : public TNamed {
 
   bool GetDoMultBinning() {return fMultBinning;};
   bool GetDoMomResolution() {return fMomentumResolution;};
+  bool GetDoPhiEtaBinning() {return fPhiEtaBinning;};
+  int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins(){return (fZVtxBins->GetEntries()-1);};
   std::vector<int> GetMultBins();
@@ -43,6 +48,8 @@ class AliFemtoDreamCollConfig : public TNamed {
  private:
   bool fMultBinning;            //
   bool fMomentumResolution;     //
+  bool fPhiEtaBinning;          //
+  int fNumberRadii;             //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
   TNtuple *fPDGParticleSpecies; //

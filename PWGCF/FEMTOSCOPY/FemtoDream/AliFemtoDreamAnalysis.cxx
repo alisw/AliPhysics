@@ -252,7 +252,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiXiDecays.push_back(*fFemtoCasc);
     }
   }
-
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Particles,&Decays,0);
   fPairCleaner->CleanTrackAndDecay(&Particles,&XiDecays,2);
