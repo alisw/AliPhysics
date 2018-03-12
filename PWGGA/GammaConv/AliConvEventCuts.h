@@ -262,6 +262,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
+        kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
         //13 TeV LHC2017
         kLHC17k1,               //!LHC17g added dielectrons from HF
         kLHC17k4,               //!LHC17i
