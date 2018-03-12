@@ -26,6 +26,9 @@ class AliFemtoDreamZVtxMultContainer {
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamCorrHists *ResultsHist,int iMult);
+  void DeltaEtaDeltaPhi(
+      int Hist,AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2,
+      bool SEorME, AliFemtoDreamCorrHists *ResultsHist);
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles);
   TString ClassName() {return "zVtxMult Container";};
  private:

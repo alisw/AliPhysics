@@ -50,6 +50,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetBeta(AliAODTrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
   void SetTrackingInformation();
+  void SetPhiAtRadii();
   void SetPIDInformation();
   void SetMCInformation();
   AliPIDResponse *fPIDResponse;

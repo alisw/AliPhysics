@@ -495,6 +495,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   //      AliAnalysisManager::kOutputContainer,
   //      Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
   //  mgr->ConnectOutput(task, 8, coutputAntiCascadeCuts);
+  TString addon="";
+  if (CentEst=="kInt7") {
+    addon+="MB";
+  } else if (CentEst=="kHM") {
+    addon+="HM";
+  }
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("Results_%s",suffix.Data());

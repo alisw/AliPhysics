@@ -42,6 +42,8 @@ class AliFemtoDreamBasePart {
   std::vector<float>  GetMCTheta()  const {return fMCTheta;};
   void SetPhi(float phi){fPhi.push_back(phi);};
   std::vector<float>  GetPhi()  const {return fPhi;};
+  void SetPhiAtRadius(std::vector<float> phiAtRad) {fPhiAtRadius.push_back(phiAtRad);};
+  std::vector<std::vector<float>> GetPhiAtRaidius() {return fPhiAtRadius;};
   void SetMCPhi(float phi){fMCPhi.push_back(phi);};
   std::vector<float>  GetMCPhi()  const {return fMCPhi;};
   void SetIDTracks(int idTracks) {fIDTracks.push_back(idTracks);};
@@ -77,6 +79,7 @@ class AliFemtoDreamBasePart {
   std::vector<float> fTheta;
   std::vector<float> fMCTheta;
   std::vector<float> fPhi;
+  std::vector<std::vector<float>> fPhiAtRadius;
   std::vector<float> fMCPhi;
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;

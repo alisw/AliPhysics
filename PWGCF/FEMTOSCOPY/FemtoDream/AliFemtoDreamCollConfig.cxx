@@ -11,6 +11,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 :TNamed()
 ,fMultBinning(false)
 ,fMomentumResolution(false)
+,fPhiEtaBinning(false)
+,fNumberRadii(0)
 ,fZVtxBins(0)
 ,fMultBins(0)
 ,fPDGParticleSpecies(0)
@@ -27,6 +29,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 :TNamed(name,title)
 ,fMultBinning(false)
 ,fMomentumResolution(false)
+,fPhiEtaBinning(false)
+,fNumberRadii(0)
 ,fMixingDepth(0)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");

@@ -21,6 +21,7 @@ class AliFemtoDreamCorrHists {
   virtual ~AliFemtoDreamCorrHists();
   bool GetDoMultBinning(){return fDoMultBinning;};
   bool GetObtainMomentumResolution() {return fMomentumResolution;};
+  bool GetEtaPhiPlots() {return fPhiEtaPlots;};
   void FillSameEventDist(int i,float RelK){fSameEventDist[i]->Fill(RelK);};
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
@@ -38,6 +39,12 @@ class AliFemtoDreamCorrHists {
   void FillMomentumResolution(int hist,float RelKTrue,float RelKReco) {
     if (!fMinimalBooking)fMomResolution[hist]->Fill(RelKTrue,RelKReco);
   }
+  void FillEtaPhiAtRadiiSE(int hist,int iDaug,int iRad,float dPhi,float dEta){
+    if (!fMinimalBooking&&fPhiEtaPlots)fRadiiEtaPhiSE[hist][iDaug][iRad]->Fill(dEta,dPhi);
+  }
+  void FillEtaPhiAtRadiiME(int hist,int iDaug,int iRad,float dPhi,float dEta){
+    if (!fMinimalBooking&&fPhiEtaPlots)fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta,dPhi);
+  }
   TList* GetHistList(){return fResults;};
   TList* GetQAHists(){return fQA;};
  private:
@@ -47,6 +54,7 @@ class AliFemtoDreamCorrHists {
   TList         **fPairQA;
   bool          fMinimalBooking;
   bool          fMomentumResolution;
+  bool          fPhiEtaPlots;
   TH1F          **fSameEventDist;
   TH2F          **fSameEventMultDist;
   TH2F          **fPairCounterSE;
@@ -54,6 +62,8 @@ class AliFemtoDreamCorrHists {
   TH2F          **fMixedEventMultDist;
   TH2F          **fPairCounterME;
   TH2F          **fMomResolution;
+  TH2F          ****fRadiiEtaPhiSE;
+  TH2F          ****fRadiiEtaPhiME;
   bool          fDoMultBinning;
 
   ClassDef(AliFemtoDreamCorrHists,2);
