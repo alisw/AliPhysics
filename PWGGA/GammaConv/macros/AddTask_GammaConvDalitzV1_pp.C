@@ -199,7 +199,15 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   } else if (trainConfig == 104) {  // to be used with MBW
 	cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20475400253202321710");
 	cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20475400253202301710");
-  } else if (trainConfig == 202) {
+  } else if (trainConfig == 105) {  // nominal B
+        cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "10477400233202321710"); //kpiMinMomdedxSigmaTPCCut = 0.3, 
+        cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "10478400233202321710"); //kpiMinMomdedxSigmaTPCCut = 0.25, 
+        cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "10477400233202321510"); // massCut < 0.35 GeV/c^2
+        cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "10477400233202321910"); // if pT < 1 GeV  massCut < 0.25 GeV/c^2 if pT > 1 GeV massCut < 0.35 GeV/c^2
+  } else if (trainConfig == 106) {  // low B 
+        cuts.AddCut("00010113", "00200089266300008854404000", "0263103100900000", "10477400233202301710"); //prim electron Pt > 0.075 GeV & sec. electrons pt > 0.02 GeV
+        cuts.AddCut("00010113", "00200089266300008854404000", "0263103100900000", "10477400233202361710"); //prim electron Pt > 0.05 GeV & sec. electrons pt > 0.02 GeV
+  }  else if (trainConfig == 202) {
 	cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253202221710");
 	cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "10475400253202221710");
 	cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "30475400253202221710");
@@ -208,8 +216,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253202121710");
 	cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253202321710");
 
-
- } else {
+  } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
