@@ -274,7 +274,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
  	}
 	if (etaPhiPlots) {
 	  if (isMC) {
-	    config->SetPhiEtaBinnign(true,9);
+	    config->SetPhiEtaBinnign(true);
 	  } else {
 	    std::cout << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
 	  }

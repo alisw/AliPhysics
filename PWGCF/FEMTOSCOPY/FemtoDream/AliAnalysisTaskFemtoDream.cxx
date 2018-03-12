@@ -264,6 +264,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
 
 void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
   AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);
+
   if (!Event) {
     AliFatal("No Input Event");
   } else {

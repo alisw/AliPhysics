@@ -19,8 +19,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
   void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
-  void SetPhiEtaBinnign(bool doIt,int NRadii){
-    fPhiEtaBinning=doIt;fNumberRadii=NRadii;
+  void SetPhiEtaBinnign(bool doIt){
+    fPhiEtaBinning=doIt;fNumberRadii=9;
   };
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);

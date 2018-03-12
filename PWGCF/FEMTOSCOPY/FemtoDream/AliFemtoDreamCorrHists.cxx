@@ -198,14 +198,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           const int nRad=conf->GetNRadii();
           fRadiiEtaPhiSE[Counter][iDaug]=new TH2F*[nRad];
           fRadiiEtaPhiME[Counter][iDaug]=new TH2F*[nRad];
-            for (int iRad=0;iRad<conf->GetNRadii();++iRad) {
+            for (int iRad=0;iRad<nRad;++iRad) {
               TString RadNameSE=Form("SERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
               TString RadNameME=Form("MERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
               fRadiiEtaPhiSE[Counter][iDaug][iRad]=
                   new TH2F(RadNameSE.Data(),RadNameSE.Data(),400,0,4,400,0,1);
+              fRadiiEtaPhiSE[Counter][iDaug][iRad]->GetXaxis()->SetTitle("#Delta#eta");
+              fRadiiEtaPhiSE[Counter][iDaug][iRad]->GetYaxis()->SetTitle("#Delta#phi");
               fPairQA[Counter]->Add(fRadiiEtaPhiSE[Counter][iDaug][iRad]);
               fRadiiEtaPhiME[Counter][iDaug][iRad]=
                   new TH2F(RadNameME.Data(),RadNameME.Data(),400,0,4,400,0,1);
+              fRadiiEtaPhiME[Counter][iDaug][iRad]->GetXaxis()->SetTitle("#Delta#eta");
+              fRadiiEtaPhiME[Counter][iDaug][iRad]->GetYaxis()->SetTitle("#Delta#phi");
               fPairQA[Counter]->Add(fRadiiEtaPhiME[Counter][iDaug][iRad]);
             }
           }

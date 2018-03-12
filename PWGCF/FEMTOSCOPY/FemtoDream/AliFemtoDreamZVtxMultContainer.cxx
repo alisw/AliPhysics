@@ -84,7 +84,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             ResultsHist->FillSameEventMultDist(HistCounter,iMult+1,RelativeK);
           }
           if (ResultsHist->GetEtaPhiPlots()) {
-            DeltaEtaDeltaPhi(HistCounter,*itPart1,*itPart2,true,ResultsHist);
+            DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
           ++itPart2;
         }
@@ -146,7 +146,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
               }
             }
             if (ResultsHist->GetEtaPhiPlots()) {
-              DeltaEtaDeltaPhi(HistCounter,*itPart1,*itPart2,false,ResultsHist);
+              DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),false,ResultsHist);
             }
           }
         }
@@ -196,22 +196,27 @@ float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentu
 }
 
 void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
-    int Hist,AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2,
+    int Hist,AliFemtoDreamBasePart *part1, AliFemtoDreamBasePart *part2,
     bool SEorME, AliFemtoDreamCorrHists *ResultsHist) {
   //used to check for track splitting/merging
-  //this function only produces meaningful results for track with x looking at this quantity
-  //makes only sense anyways for Track - Track not for v0 - v0 ...
-  float eta1=part1.GetEta().at(0);
-  std::vector<float> Phirad1=part1.GetPhiAtRaidius().at(0);
-  std::vector<float> eta2=part2.GetEta();
-  std::vector<std::vector<float>> Phirad2=part1.GetPhiAtRaidius();
+  //this function only produces meaningful results for track with x Daughter
+  //looking at this quantity makes only sense anyways for Track - Track not
+  //for v0 - v0 ...
+  float eta1=part1->GetEta().at(0);
+  std::vector<float> Phirad1=part1->GetPhiAtRaidius().at(0);
 
-
-  for (int iDaug=0;iDaug<Phirad2.size();++iDaug) {
-    float deta=TMath::Abs(eta1-eta2.at(iDaug));
-    std::vector<float> PhiDaug=Phirad2.at(iDaug);
-    for (int iRad=0;iRad<PhiDaug.size();++iRad) {
-      float dphi=TMath::Abs(Phirad1.at(iRad)-PhiDaug.at(iRad));
+  std::vector<float> eta2=part2->GetEta();
+  for (int iDaug=0;iDaug<part2->GetPhiAtRaidius().size();++iDaug) {
+    std::vector<float> phiAtRad2=part2->GetPhiAtRaidius().at(iDaug);
+    float etaPar2;
+    if (part2->GetPhiAtRaidius().size()==1) {
+      etaPar2=eta2.at(0);
+    } else {
+      etaPar2=eta2.at(iDaug+1);
+    }
+    float deta=TMath::Abs(eta1-etaPar2);
+    for (int iRad=0;iRad<9;++iRad) {
+      float dphi=TMath::Abs(Phirad1.at(iRad)-phiAtRad2.at(iRad));
       if (SEorME) {
         ResultsHist->FillEtaPhiAtRadiiSE(Hist,iDaug,iRad,dphi,deta);
       } else {
