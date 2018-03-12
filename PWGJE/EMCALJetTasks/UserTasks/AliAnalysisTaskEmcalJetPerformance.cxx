@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
-  fMaxPt(200),
+  fMaxPt(250),
   fNEtaBins(40),
   fNPhiBins(200),
   fNCentHistBins(0),
@@ -116,7 +116,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
-  fMaxPt(200),
+  fMaxPt(250),
   fNEtaBins(40),
   fNPhiBins(200),
   fNCentHistBins(0),
@@ -311,7 +311,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     // A vs. pT
     histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 50, 0, 0.5);
     
     // (Centrality, pT, z-leading (charged))
     nbinsx = 20; minx = 0; maxx = 100;
@@ -807,7 +807,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
     // A vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 50, 0, 0.5);
     
     // (Centrality, pT, z-leading (charged))
     nbinsx = 20; minx = 0; maxx = 100;
@@ -889,7 +889,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   
   // NEF of det-level matched jets, (centrality, pT-truth, NEF)
   nbinsx = 20; minx = 0; maxx = 100;
-  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsy = fMaxPt; miny = 0; maxy = fMaxPt;
   nbinsz = 50; minz = 0; maxz = 1.;
   
   histname = "MatchedJetHistograms/hNEFVsPt";
