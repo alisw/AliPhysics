@@ -179,23 +179,23 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
          if(fPairMode==2 && p1->Mother()>=0 && p1->Mother()==p2->Mother()) continue;// use only false pairs (MC)
 
          r = event->AddParticle();
-	     r->Clear();
-	     r->Index() = -2;
-	     r->Charge() = '0';
-	     r->SetCutBit(fCutIDrsn);
+         r->Clear();
+         r->Index() = -2;
+         r->Charge() = '0';
+         r->SetCutBit(fCutIDrsn);
 
-	     if(p1->Charge()=='+' && p2->Charge()=='-'){
-	        r->IndexV0Pos() = p1->Index();
+         if(p1->Charge()=='+' && p2->Charge()=='-'){
+            r->IndexV0Pos() = p1->Index();
             r->IndexV0Neg() = p2->Index();
          }else{
-	        r->IndexV0Pos() = p2->Index();
+            r->IndexV0Pos() = p2->Index();
             r->IndexV0Neg() = p1->Index();
          }
 
          r->PrecX() = fPair.Sum(0).X();
-	     r->PrecY() = fPair.Sum(0).Y();
-	     r->PrecZ() = fPair.Sum(0).Z();
-	     r->StoredMass(0) = fPair.InvMass(0);
+         r->PrecY() = fPair.Sum(0).Y();
+         r->PrecZ() = fPair.Sum(0).Z();
+         r->StoredMass(0) = fPair.InvMass(0);
 
          if(p1->Mother()>=0 && p1->Mother()==p2->Mother()){
             r->Index() = p1->Mother();
@@ -208,9 +208,9 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
             r->PsimY() = fPair.Sum(1).Y();
             r->PsimZ() = fPair.Sum(1).Z();
          }
-	     r->StoredMass(1) = fPair.InvMass(1);
+         r->StoredMass(1) = fPair.InvMass(1);
 
-	     r->PmotherX() = r->PmotherY() = r->PmotherZ() = 0.0;// filled later
+         r->PmotherX() = r->PmotherY() = r->PmotherZ() = 0.0;// filled later
 
          nadded++;
       } // end internal loop
