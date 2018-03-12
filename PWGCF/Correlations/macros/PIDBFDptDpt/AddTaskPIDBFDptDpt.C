@@ -226,6 +226,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       minCentrality[5] = 40.;     maxCentrality[5]  = 50.;
       minCentrality[6] = 50.;     maxCentrality[6]  = 60.;
       minCentrality[7] = 60.;     maxCentrality[7]  = 90.; }
+  else if ( CentralityGroup == 27 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+      minCentrality[5] = 50.;     maxCentrality[5]  = 90.; }
   else    return 0;
   
   double dedxMin                =  0.0;
