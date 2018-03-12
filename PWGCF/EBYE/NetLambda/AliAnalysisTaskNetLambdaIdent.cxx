@@ -90,6 +90,10 @@ AliAnalysisTaskSE(name),
     hXiMinus(0x0),
     hXiZero(0x0),
     hXiZeroAnti(0x0),
+    hPtResLambda(0x0),
+    hPtResAntiLambda(0x0),
+    hPtResLambdaPrim(0x0),
+    hPtResAntiLambdaPrim(0x0),
     centcut(80.),
     ptminlambda(0.5),
     etacutlambda(0.8),
@@ -199,6 +203,15 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   fListOfHistos->Add(hXiZero);
   hXiZeroAnti = new TH3F("hXiZeroAnti","anti-Xi0 vs pt, eta, centrality",100,0,20,20,-1,1,80,0,80);
   fListOfHistos->Add(hXiZeroAnti);
+
+  hPtResLambda = new TH2F("hPtResLambda","#Lambda pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
+  fListOfHistos->Add(hPtResLambda);
+  hPtResAntiLambda = new TH2F("hPtResAntiLambda","#bar{#Lambda} pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
+  fListOfHistos->Add(hPtResAntiLambda);
+  hPtResLambdaPrim = new TH2F("hPtResLambdaPrim","primary #Lambda pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
+  fListOfHistos->Add(hPtResLambdaPrim);
+  hPtResAntiLambdaPrim = new TH2F("hPtResAntiLambdaPrim","primary #bar{#Lambda} pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
+  fListOfHistos->Add(hPtResAntiLambdaPrim);
   
   fEventCuts.AddQAplotsToList(fListOfHistos);  
   
@@ -937,7 +950,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 				  if(gmpid == 3322 || gmpid == -3322) // xi0
 				    {
 				      cascpt = -1.*esdGrandmother->Pt();
-				      casceta = -1.*esdGrandmother->Eta();
+				      casceta = esdGrandmother->Eta();
 				    }
 				  if(gmpid == 3312 || gmpid == -3312) // xi+, xi-
 				    {
@@ -987,6 +1000,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  Int_t mcstatus = 1;
       
 	  if(TMath::Abs(meta) > etacutlambda) mcstatus += 10; //mcstatus > 10 means it falls outside acceptance
+
+	  if(mpid == 3122) hPtResLambda->Fill(mpt,pt);
+	  if(mpid == -3122) hPtResAntiLambda->Fill(mpt,pt);
+	  if(mpid == 3122 && isPrim) hPtResLambdaPrim->Fill(mpt,pt);
+	  if(mpid == -3122 && isPrim) hPtResAntiLambdaPrim->Fill(mpt,pt);
 	  
 	  if(isSecFromMaterial)
 	    {
