@@ -81,6 +81,10 @@
 #pragma link C++ class AliCaloCellsQA+;
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
 
+// CaloCellPhysQA
+#pragma link C++ class AliCaloCellsPhysQA+;
+#pragma link C++ class AliAnalysisTaskCaloCellsPhysQA+;
+
 // Omega3pi
 #pragma link C++ class AliAnalysisTaskOmegaPi0PiPi+;
 
