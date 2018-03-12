@@ -24,7 +24,7 @@
 #include "AliRsnCutPrimaryVertex.h"
 #include "AliRsnMiniResonanceFinder.h"
 
-#include "AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"//needed?
 
 class TList;
 
@@ -90,8 +90,9 @@ public:
    AliRsnMiniOutput   *CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src);
    AliRsnMiniOutput   *CreateOutput(const char *name, const char *outType, const char *compType);
 
-   void                SetResonanceFinder(AliRsnMiniResonanceFinder* f) { fResonanceFinder = f; }
-   AliRsnMiniResonanceFinder* GetResonanceFinder() { return fResonanceFinder;}
+   Int_t               SetResonanceFinder(AliRsnMiniResonanceFinder* f, Int_t j = -1);
+   AliRsnMiniResonanceFinder* GetResonanceFinder(UShort_t j = 0) {return ((j==0) ? fResonanceFinder[0] : fResonanceFinder[1]);}
+   Int_t               GetNResonanceFinders() {return ((Int_t) fNResonanceFinders);}
 
 private:
 
@@ -165,9 +166,10 @@ private:
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
    Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
 
-   AliRsnMiniResonanceFinder* fResonanceFinder; // pointer to AliRsnMiniResonanceFinder object
+   UShort_t              fNResonanceFinders; // number of AliRsnMiniResonanceFinder objects
+   AliRsnMiniResonanceFinder* fResonanceFinder[2]; // pointers to AliRsnMiniResonanceFinder objects
 
-   ClassDef(AliRsnMiniAnalysisTask, 15);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 16);   // AliRsnMiniAnalysisTask
 };
 
 

@@ -145,7 +145,7 @@ private:
    AliVParticle  *fRefMC;       // reference to corresponding MC particle
    AliRsnEvent   *fOwnerEvent;  // pointer to owner event
 
-   ClassDef(AliRsnDaughter, 13)
+   ClassDef(AliRsnDaughter, 14)
 };
 
 //__________________________________________________________________________________________________

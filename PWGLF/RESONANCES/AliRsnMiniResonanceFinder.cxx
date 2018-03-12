@@ -23,9 +23,11 @@ ClassImp(AliRsnMiniResonanceFinder)
 AliRsnMiniResonanceFinder::AliRsnMiniResonanceFinder(const char *name) :
    TNamed(name, ""),
    fCutIDrsn(0),
-   fMotherMass(0.0),
+   fResMass(0.0),
+   fResPDG(0),
    fPairCuts(0x0),
    fPair(),
+   fSelRes(0),
    fSel1(0),
    fSel2(0),
    fPairMode(0),
@@ -44,9 +46,11 @@ AliRsnMiniResonanceFinder::AliRsnMiniResonanceFinder(const char *name) :
 AliRsnMiniResonanceFinder::AliRsnMiniResonanceFinder(const AliRsnMiniResonanceFinder& copy) :
    TNamed(copy),
    fCutIDrsn(copy.fCutIDrsn),
-   fMotherMass(copy.fMotherMass),
+   fResMass(copy.fResMass),
+   fResPDG(copy.fResPDG),
    fPairCuts(copy.fPairCuts),
    fPair(),
+   fSelRes(0),
    fSel1(0),
    fSel2(0),
    fPairMode(copy.fPairMode),
@@ -73,7 +77,8 @@ AliRsnMiniResonanceFinder &AliRsnMiniResonanceFinder::operator=(const AliRsnMini
    if (this == &copy)
       return *this;
    fCutIDrsn = copy.fCutIDrsn;
-   fMotherMass = copy.fMotherMass;
+   fResMass = copy.fResMass;
+   fResPDG = copy.fResPDG;
    fPairCuts = copy.fPairCuts;
    fPairMode = copy.fPairMode;
    fEvent = copy.fEvent;
@@ -85,6 +90,7 @@ AliRsnMiniResonanceFinder &AliRsnMiniResonanceFinder::operator=(const AliRsnMini
       fCharge[i] = copy.fCharge[i];
    }
 
+   fSelRes.Set(0);
    fSel1.Set(0);
    fSel2.Set(0);
 
@@ -101,6 +107,7 @@ AliRsnMiniResonanceFinder::~AliRsnMiniResonanceFinder()
   return;
 }
 
+/*
 //__________________________________________________________________________________________________
 Int_t AliRsnMiniResonanceFinder::ConnectTo(AliRsnMiniAnalysisTask* task)
 {
@@ -112,6 +119,7 @@ Int_t AliRsnMiniResonanceFinder::ConnectTo(AliRsnMiniAnalysisTask* task)
   fCutIDrsn = task->GetNumberOfTrackCuts();
   return fCutIDrsn;// plug this value into AliRsnMiniOutput objects
 }
+ */
 
 //__________________________________________________________________________________________________
 Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
@@ -124,7 +132,7 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
 
    // loop variables
    Int_t i1, i2, start, nadded = 0;
-   AliRsnMiniParticle *mother, *p1, *p2;
+   AliRsnMiniParticle *r, *p1, *p2;
 
    // it is necessary to know if criteria for the two daughters are the same
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
@@ -161,54 +169,165 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
             continue;
          }
          // sum momenta
-         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fResMass);
 
          // check pair against cuts
-         if (fPairCuts) {
-	   if (!fPairCuts->IsSelected(&fPair)) continue;
-         }
+         if (fPairCuts && !fPairCuts->IsSelected(&fPair)) continue;
          // package the pair as a mini particle
 
-	 if(fPairMode==1 && (p1->Mother()<0 || p1->Mother()!=p2->Mother())) continue;// use only true pairs (MC)
-	 if(fPairMode==2 &&  p1->Mother()>=0 && p1->Mother()==p2->Mother()) continue;// use only false pairs (MC)
+         if(fPairMode==1 && (p1->Mother()<0 || p1->Mother()!=p2->Mother() || !AliRsnDaughter::IsEquivalentPDGCode(p1->MotherPDG(),GetResonancePDG()) ) ) continue;// use only true pairs (MC)
+         if(fPairMode==2 && p1->Mother()>=0 && p1->Mother()==p2->Mother()) continue;// use only false pairs (MC)
 
-         mother = event->AddParticle();
-	 mother->Clear();
-	 mother->Index() = -2;
-	 mother->Charge() = '0';
-	 mother->SetCutBit(fCutIDrsn);
+         r = event->AddParticle();
+	     r->Clear();
+	     r->Index() = -2;
+	     r->Charge() = '0';
+	     r->SetCutBit(fCutIDrsn);
 
-	 if(p1->Charge()=='+' && p2->Charge()=='-'){
-	   mother->IndexV0Pos() = p1->Index();
-	   mother->IndexV0Neg() = p2->Index();
-	 }else{
-	   mother->IndexV0Pos() = p2->Index();
-	   mother->IndexV0Neg() = p1->Index();
-	 }
-
-	 mother->PrecX() = fPair.Sum(0).X();
-	 mother->PrecY() = fPair.Sum(0).Y();
-	 mother->PrecZ() = fPair.Sum(0).Z();
-	 mother->SetMass(fPair.InvMass(0),0);
-          
-         if(p1->Mother()>=0 && p1->Mother()==p2->Mother()){
-            mother->PsimX() = p1->PmotherX();
-            mother->PsimY() = p1->PmotherY();
-            mother->PsimZ() = p1->PmotherZ();
-            mother->PDG() = p1->MotherPDG();
+	     if(p1->Charge()=='+' && p2->Charge()=='-'){
+	        r->IndexV0Pos() = p1->Index();
+            r->IndexV0Neg() = p2->Index();
          }else{
-            mother->PsimX() = fPair.Sum(1).X();
-            mother->PsimY() = fPair.Sum(1).Y();
-            mother->PsimZ() = fPair.Sum(1).Z();
+	        r->IndexV0Pos() = p2->Index();
+            r->IndexV0Neg() = p1->Index();
          }
-	 mother->SetMass(fPair.InvMass(1),1);
 
-	 mother->PmotherX()=mother->PmotherY()=mother->PmotherZ()=-1.0;
+         r->PrecX() = fPair.Sum(0).X();
+	     r->PrecY() = fPair.Sum(0).Y();
+	     r->PrecZ() = fPair.Sum(0).Z();
+	     r->StoredMass(0) = fPair.InvMass(0);
+
+         if(p1->Mother()>=0 && p1->Mother()==p2->Mother()){
+            r->Index() = p1->Mother();
+            r->PsimX() = p1->PmotherX();
+            r->PsimY() = p1->PmotherY();
+            r->PsimZ() = p1->PmotherZ();
+            r->PDG() = p1->MotherPDG();
+         }else{
+            r->PsimX() = fPair.Sum(1).X();
+            r->PsimY() = fPair.Sum(1).Y();
+            r->PsimZ() = fPair.Sum(1).Z();
+         }
+	     r->StoredMass(1) = fPair.InvMass(1);
+
+	     r->PmotherX() = r->PmotherY() = r->PmotherZ() = 0.0;// filled later
 
          nadded++;
       } // end internal loop
    } // end external loop
 
+   event->CountParticles(fSelRes, '0', fCutIDrsn);
+
    AliDebugClass(1, Form("Pairs added in total = %4d", nadded));
    return nadded;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniResonanceFinder::FillMother(AliMCEvent* event, AliRsnMiniEvent* mini)
+{
+//
+// Loops over MC tracks to find matches to resonances that have been reconatructed and selected.
+// Adds information about their mothers to the mini event.
+// ESD version
+
+   if (!event) {
+      AliError("Missing AliMCEvent");
+      return;
+   }
+
+   if (!mini) {
+      AliError("Missing AliRsnMiniEvent");
+      return;
+   }
+
+   AliMCParticle *p,*mother;
+   AliRsnMiniParticle* r;
+   Int_t j,k,imother, npart = event->GetNumberOfTracks();
+
+   for (j=0; j<npart; j++) {
+      p = (AliMCParticle*) event->GetTrack(j);
+      if (!p) continue;
+      if (!AliRsnDaughter::IsEquivalentPDGCode(p->Particle()->GetPdgCode() , GetResonancePDG())) continue;
+
+      r = 0;
+      imother = -2;
+      mother = 0;
+
+      for (k=0; k<fSelRes.GetSize(); k++){
+         r = mini->GetParticle(fSelRes[k]);
+         if(!r || r->Index()!=j) continue;
+
+         imother=p->GetMother();
+         if(imother<0) continue;
+         mother = dynamic_cast<AliMCParticle*>(event->GetTrack(imother));
+         if(!mother){
+            AliError("Failed casting the mother particle!");
+            continue;
+         }
+
+         r->Mother() = imother;
+         r->PmotherX() = mother->Px();
+         r->PmotherY() = mother->Py();
+         r->PmotherZ() = mother->Pz();
+         r->MotherPDG() = mother->PdgCode();
+         break;
+      }
+   }
+    
+   return;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniResonanceFinder::FillMother(TClonesArray* event, AliRsnMiniEvent* mini)
+{
+//
+// Loops over MC tracks to find matches to resonances that have been reconatructed and selected.
+// Adds information about their mothers to the mini event.
+// AOD version
+
+   if (!event) {
+      AliError("Missing AOD Event");
+      return;
+   }
+
+   if (!mini) {
+      AliError("Missing AliRsnMiniEvent");
+      return;
+   }
+
+   AliAODMCParticle *p,*mother;
+   AliRsnMiniParticle* r;
+   Int_t j,k,imother, npart = event->GetEntries();
+
+   for (j=0; j<npart; j++) {
+      p = (AliAODMCParticle*) event->At(j);
+      if (!p) continue;
+      if (!AliRsnDaughter::IsEquivalentPDGCode(p->GetPdgCode() , GetResonancePDG())) continue;
+
+      r = 0;
+      imother = -2;
+      mother = 0;
+
+      for (k=0; k<fSelRes.GetSize(); k++){
+         r = mini->GetParticle(fSelRes[k]);
+         if(!r || r->Index()!=j) continue;
+
+         imother=p->GetMother();
+         if(imother<0) continue;
+         mother = dynamic_cast<AliAODMCParticle*>(event->At(imother));
+         if(!mother){
+            AliError("Failed casting the mother particle!");
+            continue;
+         }
+            
+         r->Mother() = imother;
+         r->PmotherX() = mother->Px();
+         r->PmotherY() = mother->Py();
+         r->PmotherZ() = mother->Pz();
+         r->MotherPDG() = mother->PdgCode();
+         break;
+      }
+   }
+    
+   return;
 }

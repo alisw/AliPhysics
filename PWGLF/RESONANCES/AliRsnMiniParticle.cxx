@@ -208,36 +208,12 @@ Double_t AliRsnMiniParticle::Mass()
 }
 
 //__________________________________________________________________________________________________
-Double_t AliRsnMiniParticle::Mass(Bool_t mc)
-{
-   //
-   // return mass of particle
-   //
-
-   if(!mc && fMass[0]>=0.0) return fMass[0];// reconstructed
-   if( mc && fMass[1]>=0.0) return fMass[1];// simulated
-   return Mass();// PDG
-}
-
-//__________________________________________________________________________________________________
-void AliRsnMiniParticle::SetMass(Double_t mass, Bool_t mc)
-{
-   //
-   // set mass
-   //
-
-  if(!mc) fMass[0] = mass;
-  else fMass[1] = mass;
-  return;
-}
-
-//__________________________________________________________________________________________________
 void AliRsnMiniParticle::Set4Vector(TLorentzVector &v, Float_t mass, Bool_t mc)
 {
    //
    // return 4 vector of particle
    //
 
-   if (mass<=0.0) mass = Mass(mc);
+   if (mass<0.0) mass = Mass();
    v.SetXYZM(Px(mc), Py(mc), Pz(mc), mass);
 }

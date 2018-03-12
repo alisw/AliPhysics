@@ -40,7 +40,8 @@ public:
    Float_t       &Pz(Bool_t mc)              {return (mc ? fPsim[2] : fPrec[2]);}
    Long_t        &PDG()                      {return fPDG;}
    Long_t        PDGAbs()                    {return TMath::Abs(fPDG);}
-   Double_t      Mass();
+   Double_t      Mass();                     // returns PDG mass
+   Double_t      &StoredMass(Bool_t mc)      {return (mc ? fMass[0] : fMass[1]);} // store mass for resonances
    Int_t         &Mother()                   {return fMother;}
    Long_t        &MotherPDG()                {return fMotherPDG;}
    Bool_t        &IsFromB()                  {return fIsFromB;}
@@ -75,7 +76,7 @@ private:
    Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
 
-   ClassDef(AliRsnMiniParticle, 8)
+   ClassDef(AliRsnMiniParticle, 9)
 };
 
 #endif
