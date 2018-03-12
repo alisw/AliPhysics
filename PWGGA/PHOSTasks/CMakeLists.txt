@@ -21,6 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA/phys/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
@@ -63,6 +64,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
     CaloCellQA/AliCaloCellsQA.cxx
+    CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
+    CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
@@ -210,6 +213,7 @@ install(FILES PHOS_PbPb/AddTaskPHOSEtaPhiMult.C DESTINATION PWGGA/PHOSTasks/PHOS
 install(DIRECTORY PHOSCalib/macros          DESTINATION  PWGGA/PHOSTasks/PHOSCalib)
 install(DIRECTORY UserTasks/macros          DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros         DESTINATION PWGGA/PHOSTasks/CaloCellQA)
+install(DIRECTORY CaloCellQA/phys/macros    DESTINATION PWGGA/PHOSTasks/CaloCellQA/phys)
 install(DIRECTORY PHOS_PbPbQA/macros        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros     DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb                  DESTINATION PWGGA/PHOSTasks)
