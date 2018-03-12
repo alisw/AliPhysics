@@ -2,8 +2,8 @@
 Implementations of template for QA via css convention.
 Style created for this example:
 todo: add link on some test function
+todo: add nice fitter | priority: high @Boris
 fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPtTgl(0,100,0:80:20:20,0,10)(0)(gaus)(div=0,,class=Mass,dOption=E)[0].calss(Mass)" mb problem in class=Mass
-todo: if we want to draw histograms on the one pad we can use only arrays of ranges, in the rest cases redrawing
 {
     TFile::SetCacheFileDir(".");
     TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/alice/data/2015/LHC15o/pass1/LHC15o.pass1.B1.Bin0/performanceHisto.root","CACHEREAD");
@@ -16,16 +16,16 @@ todo: if we want to draw histograms on the one pad we can use only arrays of ran
     }
     AliDrawStyle::SetDefaults();
     AliDrawStyle::ApplyStyle("figTemplate");
-    AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplate.css"));
+    AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot-SRC/STAT/test/figTemplate.css"));
     //
     // Use Canvas41 default layout
     TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-    AliPainter::DivideTPad(canvasQA, "<horizontal>[1b,1t,1,1]", "Canvas41");
+    AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41",canvasQA);
     canvasQA->cd(1);
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(div=1,class=Mass,dOption=E)", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplate");
 
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
@@ -33,108 +33,105 @@ todo: if we want to draw histograms on the one pad we can use only arrays of ran
     canvasQA1->cd(1);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E, x=[0,10000])", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplate");
-
 }
-
 */
 
-
 TH1*  {
-    title_font:63;
-    label_font:63;
-    marker_size: 1;
-    line_width: 0.5;
-    line_style: 7;
-    title_size: 20;
-    label_size: 20;
-    marker_style: 20,21,24,27;
-    marker_color: 14,2,4,8;
-    line_color: 14,1,4,8;
-    axis_color: 1,1,1,1;
-    title_offset:3.0;
+    title-font:63;
+    label-font:63;
+    marker-size: 1;
+    line-width: 0.5;
+    line-style: 7;
+    title-size: 20;
+    label-size: 20;
+    marker-style: 20,21,24,27;
+    marker-color: 14,2,4,8;
+    line-color: 14,1,4,8;
+    axis-color: 1,1,1,1;
+    title-offset:3.0;
 }
 
 .PtAll  {
-    marker_style: 20;
-    marker_color: 14;
-    line_color: 14;
-    label_size: 20;
+    marker-style: 20;
+    marker-color: 14;
+    line-color: 14;
+    label-size: 20;
 }
 
 .PtIts  {
-    marker_style: 21;
-    marker_color: 2;
-    line_color: 2;
-    label_size: 20;
+    marker-style: 21;
+    marker-color: 2;
+    line-color: 2;
+    label-size: 20;
 }
 
 .Tgl    {
-    marker_style: 24;
-    marker_color: 4;
-    line_color: 4;
-    label_size: 20;
+    marker-style: 24;
+    marker-color: 4;
+    line-color: 4;
+    label-size: 20;
 }
 
 .Mass {
-    marker_style: 20,21,24,27;
-    marker_color: 14,2,4,8;
-    line_color: 14,1,4,8;
-    axis_color: 1,1,1,1;
-    label_size: 20;
+    marker-style: 20,21,24,27;
+    marker-color: 14,2,4,8;
+    line-color: 14,1,4,8;
+    axis-color: 1,1,1,1;
+    label-size: 20;
 }
 
 TPad {
-   gridX:       0;
-   gridY:       0;
-   fill_color:  10,10,10,10;
-   tickX:       1,1,1,1;
-   tickY:       1,1,1,1;
-   logY:        0,0,0,1;
-   border_mode: 0,0,0,0;
-   bottom_margin:0.15;
+    gridX:         0;
+    gridY:         0;
+    fill-color:    10,10,10,10;
+    tickX:         1,1,1,1;
+    tickY:         1,1,1,1;
+    logY:          0,0,0,1;
+    border-mode:   0,0,0,0;
+    margin-bottom: 0.15;
 }
 
 .Canvas41 {     /*default canvas layout for  4x1 pad canvas*/
-    height:     1200;  /*to fix - read pixel as a size to be like CSS*/
-    width:      800;
-    gridX:       1;
-   gridY:       1;
-   fill_color:  10,10,10,10;
-   tickX:       1,1,1,1;
-   tickY:       1,1,1,1;
-   logY:        0,0,0,1;
-   border_mode: 0,0,0,0;
-    bottom_margin:0.15;
-    right_margin:0.05;
-    /* legend_format: <name> <range=%f>*/
+    height:        1200;  /*to fix - read pixel as a size to be like CSS*/
+    width:         800;
+    gridX:         1;
+    gridY:         1;
+    fill-color:    10,10,10,10;
+    tickX:         1,1,1,1;
+    tickY:         1,1,1,1;
+    logY:          0,0,0,1;
+    border-mode:   0,0,0,0;
+    margin-bottom: 0.15;
+    margin-right:  0.05;
+    /* legend-format: <name> <range=%f>*/
 }
 
 .Canvas22 {     /*default canvas layout for  2x2 pad canvas*/
-    height:     1200;  /*to fix - read pixeal as a size to be like CSS*/
-    width:      800;
-    gridX:       1;
-   gridY:       1;
-   fill_color:  10,10,10,10;
-   tickX:       1,1,1,1;
-   tickY:       1,1,1,1;
-   logY:        0,0,0,1;
-   border_mode: 0,0,0,0;
-    bottom_margin:0.15;
-    /* legend_format: <name> <range=%f>*/
+    height:        1200;  /*to fix - read pixeal as a size to be like CSS*/
+    width:         800;
+    gridX:         1;
+    gridY:         1;
+    fill-color:    10,10,10,10;
+    tickX:         1,1,1,1;
+    tickY:         1,1,1,1;
+    logY:          0,0,0,1;
+    border-mode:   0,0,0,0;
+    margin-bottom: 0.15;
+    /* legend-format: <name> <range=%f>*/
 }
 
 .Canvas1 { /*default canvas layout for  1 pad canvas*/
-    height:     500;
-    width:      700;
-    gridX:       0;
-   gridY:       0;
-   fill_color:  10,10,10,10;
-   tickX:       1,1,1,1;
-   tickY:       1,1,1,1;
-   logY:        0,0,0,1;
-   border_mode: 0,0,0,0;
-    bottom_margin: 0.15;
-    right_margin: 0.05;
-    top_margin: 0.1;
-    /* legend_format: <name> <range=%f>*/
+    height:        500;
+    width:         700;
+    gridX:         0;
+    gridY:         0;
+    fill-color:    10,10,10,10;
+    tickX:         1,1,1,1;
+    tickY:         1,1,1,1;
+    logY:          0,0,0,1;
+    border-mode:   0,0,0,0;
+    margin-bottom: 0.15;
+    margin-right:  0.05;
+    margin-top:    0.1;
+    /* legend-format: <name> <range=%f>*/
 }
