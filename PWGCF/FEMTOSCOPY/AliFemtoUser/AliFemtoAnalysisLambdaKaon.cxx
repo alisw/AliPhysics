@@ -167,7 +167,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
     fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(
       fAnalysisParams.nBinsVertex, fAnalysisParams.minVertex, fAnalysisParams.maxVertex,
       fAnalysisParams.nBinsMult, fAnalysisParams.minMult, fAnalysisParams.maxMult, 
-      fAnalysisParams.nBinsRP, 0., TMath::Pi());
+      fAnalysisParams.nBinsRP, -1.*TMath::PiOver2(), TMath::PiOver2());
   }
 
 
