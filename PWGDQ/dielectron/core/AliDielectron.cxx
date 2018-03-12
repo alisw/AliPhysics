@@ -895,286 +895,287 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   // remove contribution of all tracks to the Q-vector that are in invariant mass window
   //
 
-  AliEventplane *evplane = const_cast<AliVEvent *>(ev)->GetEventplane();
-  if(!evplane) { // nanoAODs , here we do NOT have sub event reaction planes
-    //  if(1) {
-    // get the EPselectionTask for recalculation of weighting factors
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliEPSelectionTask *eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
-    if(!eptask) return;
-
-    // get recentering values for Qx and Qy (only rms is needed for correction)
-    // Double_t mean[2]={0.,0.}
-    // eptask->Recenter(0, mean);
-    Double_t rms[2] ={1.,1.};
-    eptask->Recenter(1, rms);
-
-
-    // track mapping
-    TMap mapRemovedTracks;
-
-
-    Double_t cQX=0., cQY=0.;
-    // apply cuts to the tracks, e.g. etagap
-    if(fEventPlanePreFilter.GetCuts()->GetEntries()) {
-      UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
-      Int_t ntracks=ev->GetNumberOfTracks();
-      for (Int_t itrack=0; itrack<ntracks; ++itrack){
-        AliVParticle *particle=ev->GetTrack(itrack);
-        AliVTrack *track= static_cast<AliVTrack*>(particle);
-        if (!track) continue;
-        //event plane cuts
-        UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
-        //apply cut
-        if (cutMask==selectedMask) continue;
-
-        mapRemovedTracks.Add(track,track);
-        cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-        cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
-      }
-    }
-
-    // POI (particle of interest) rejection
-    Int_t pairIndex=GetPairIndex(arr1,arr2);
-
-    Int_t ntrack1=arrTracks1.GetEntriesFast();
-    Int_t ntrack2=arrTracks2.GetEntriesFast();
-    AliDielectronPair candidate;
-    candidate.SetKFUsage(fUseKF);
-
-    UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
-    for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
-      Int_t end=ntrack2;
-      if (arr1==arr2) end=itrack1;
-      Bool_t accepted=kFALSE;
-      for (Int_t itrack2=0; itrack2<end; ++itrack2){
-        TObject *track1=arrTracks1.UncheckedAt(itrack1);
-        TObject *track2=arrTracks2.UncheckedAt(itrack2);
-        if (!track1 || !track2) continue;
-        //create the pair
-        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-                            static_cast<AliVTrack*>(track2), fPdgLeg2);
-        candidate.SetType(pairIndex);
-        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
-
-        //event plane pair cuts
-        UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
-        //apply cut
-        if (cutMask==selectedMask) continue;
-
-        accepted=kTRUE;
-        //remove the tracks from the Track arrays
-        arrTracks2.AddAt(0x0,itrack2);
-      }
-      if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
-    }
-    //compress the track arrays
-    arrTracks1.Compress();
-    arrTracks2.Compress();
-
-    //Modify the components: subtract the tracks
-    ntrack1=arrTracks1.GetEntriesFast();
-    ntrack2=arrTracks2.GetEntriesFast();
-    // remove leg1 contribution
-    for (Int_t itrack=0; itrack<ntrack1; ++itrack){
-      AliVTrack *track= static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack));
-      if (!track) continue;
-      // track contribution was already removed
-      if (mapRemovedTracks.FindObject(track)) continue;
-      else mapRemovedTracks.Add(track,track);
-
-      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
-    }
-    // remove leg2 contribution
-    for (Int_t itrack=0; itrack<ntrack2; ++itrack){
-      AliVTrack *track= static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack));
-      if (!track) continue;
-      // track contribution was already removed
-      if (mapRemovedTracks.FindObject(track)) continue;
-      else mapRemovedTracks.Add(track,track);
-
-      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
-    }
-
-    // build a corrected alieventplane using the values from the var manager
-    // these uncorrected values are filled using the stored magnitude and angle  in the header
-    TVector2 qcorr;
-    qcorr.Set(AliDielectronVarManager::GetValue(AliDielectronVarManager::kTPCxH2uc)-cQX,
-	      AliDielectronVarManager::GetValue(AliDielectronVarManager::kTPCyH2uc)-cQY);
-    // fill alieventplane
-    AliEventplane cevplane;
-    cevplane.SetQVector(&qcorr);
-    AliDielectronVarManager::SetTPCEventPlane(&cevplane);
-    cevplane.SetQVector(0);
-    return;
-  } //end: nanoAODs
-  else
-    {
-    // this is done in case of ESDs or AODs
-    Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-    // copy event plane object
-    AliEventplane cevplane(*evplane);
-    //    Int_t nMaxID=cevplane->GetQContributionXArray()->GetSize();
-
-    TVector2 *qcorr  = cevplane.GetQVector();
-    if(!qcorr) return;
-    TVector2 *qcsub1 = 0x0;
-    TVector2 *qcsub2 = 0x0;
-
-    // eta gap ?
-    Bool_t etagap = kFALSE;
-    for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-      TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-      if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
-    }
-
-    // subevent configuration for eta gap or LS (default is rndm)
-    if(fLikeSignSubEvents && etagap) {
-      // start with the full Qvector/event in both sub events
-      qcsub1 = new TVector2(*qcorr);
-      qcsub2 = new TVector2(*qcorr);
-      cevplane.SetQsub(qcsub1,qcsub2);
-
-      Int_t ntracks=ev->GetNumberOfTracks();
-      // track removals
-      for (Int_t itrack=0; itrack<ntracks; ++itrack){
-        AliVParticle *particle=ev->GetTrack(itrack);
-        AliVTrack *track= static_cast<AliVTrack*>(particle);
-        if (!track) continue;
-        if (track->GetID()>=0 && !isESD) continue;
-        Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
-
-        // set contributions to zero
-        // charge sub1+ sub2-
-        if(fLikeSignSubEvents) {
-          Short_t charge=track->Charge();
-          if (charge<0) {
-            cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-            cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-          }
-          if (charge>0) {
-            cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-            cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-          }
-        }
-        // eta sub1+ sub2-
-        if(etagap) {
-          Double_t eta=track->Eta();
-          if (eta<0.0) {
-            cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-            cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-          }
-          if (eta>0.0) {
-            cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-            cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-          }
-        }
-      } // end: loop over tracks
-    } // end: sub event configuration
-
-    // apply cuts, e.g. etagap
-    if(fEventPlanePreFilter.GetCuts()->GetEntries()) {
-      UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
-      Int_t ntracks=ev->GetNumberOfTracks();
-      for (Int_t itrack=0; itrack<ntracks; ++itrack){
-        AliVParticle *particle=ev->GetTrack(itrack);
-        AliVTrack *track= static_cast<AliVTrack*>(particle);
-        if (!track) continue;
-        if (track->GetID()>=0 && !isESD) continue;
-        Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
-
-        //event plane cuts
-        UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
-        //apply cut
-        if (cutMask==selectedMask) continue;
-
-        // set contributions to zero
-        cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
-        cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
-        cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-        cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-        cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-        cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-      }
-    } // end: track cuts
-
-    // POI (particle of interest) rejection
-    Int_t pairIndex=GetPairIndex(arr1,arr2);
-    Int_t ntrack1=arrTracks1.GetEntriesFast();
-    Int_t ntrack2=arrTracks2.GetEntriesFast();
-    AliDielectronPair candidate;
-    candidate.SetKFUsage(fUseKF);
-
-    UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
-    for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
-      Int_t end=ntrack2;
-      if (arr1==arr2) end=itrack1;
-      Bool_t accepted=kFALSE;
-      for (Int_t itrack2=0; itrack2<end; ++itrack2){
-        TObject *track1=arrTracks1.UncheckedAt(itrack1);
-        TObject *track2=arrTracks2.UncheckedAt(itrack2);
-        if (!track1 || !track2) continue;
-        //create the pair
-        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-                            static_cast<AliVTrack*>(track2), fPdgLeg2);
-
-        candidate.SetType(pairIndex);
-        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
-
-        //event plane cuts
-        UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
-        //apply cut
-        if (cutMask==selectedMask) continue;
-
-        accepted=kTRUE;
-        //remove the tracks from the Track arrays
-        arrTracks2.AddAt(0x0,itrack2);
-      }
-      if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
-    }
-    //compress the track arrays
-    arrTracks1.Compress();
-    arrTracks2.Compress();
-
-    //Modify the components: subtract the tracks
-    ntrack1=arrTracks1.GetEntriesFast();
-    ntrack2=arrTracks2.GetEntriesFast();
-    // remove leg1 contribution
-    for (Int_t itrack=0; itrack<ntrack1; ++itrack){
-      AliVTrack *track= static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack));
-      if (!track) continue;
-      if (track->GetID()>=0 && !isESD) continue;
-      Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
-      // set contributions to zero
-      cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-    }
-    // remove leg2 contribution
-    for (Int_t itrack=0; itrack<ntrack2; ++itrack){
-      AliVTrack *track= static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack));
-      if (!track) continue;
-      if (track->GetID()>=0 && !isESD) continue;
-      Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
-      // set contributions to zero
-      cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-      cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-    }
-
-    // set corrected AliEventplane and fill variables with corrected values
-    AliDielectronVarManager::SetTPCEventPlane(&cevplane);
-    delete qcsub1;
-    delete qcsub2;
-  } // end: ESD or AOD case
+  // Run1 eventplane correction obsolete for run2 (due to qn framework) variables commented out in VarManager for memory savior, therefore also this function is commented out 20180312 PD
+  // AliEventplane *evplane = const_cast<AliVEvent *>(ev)->GetEventplane();
+  // if(!evplane) { // nanoAODs , here we do NOT have sub event reaction planes
+  //   //  if(1) {
+  //   // get the EPselectionTask for recalculation of weighting factors
+  //   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  //   AliEPSelectionTask *eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
+  //   if(!eptask) return;
+  //
+  //   // get recentering values for Qx and Qy (only rms is needed for correction)
+  //   // Double_t mean[2]={0.,0.}
+  //   // eptask->Recenter(0, mean);
+  //   Double_t rms[2] ={1.,1.};
+  //   eptask->Recenter(1, rms);
+  //
+  //
+  //   // track mapping
+  //   TMap mapRemovedTracks;
+  //
+  //
+  //   Double_t cQX=0., cQY=0.;
+  //   // apply cuts to the tracks, e.g. etagap
+  //   if(fEventPlanePreFilter.GetCuts()->GetEntries()) {
+  //     UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
+  //     Int_t ntracks=ev->GetNumberOfTracks();
+  //     for (Int_t itrack=0; itrack<ntracks; ++itrack){
+  //       AliVParticle *particle=ev->GetTrack(itrack);
+  //       AliVTrack *track= static_cast<AliVTrack*>(particle);
+  //       if (!track) continue;
+  //       //event plane cuts
+  //       UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
+  //       //apply cut
+  //       if (cutMask==selectedMask) continue;
+  //
+  //       mapRemovedTracks.Add(track,track);
+  //       cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+  //       cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+  //     }
+  //   }
+  //
+  //   // POI (particle of interest) rejection
+  //   Int_t pairIndex=GetPairIndex(arr1,arr2);
+  //
+  //   Int_t ntrack1=arrTracks1.GetEntriesFast();
+  //   Int_t ntrack2=arrTracks2.GetEntriesFast();
+  //   AliDielectronPair candidate;
+  //   candidate.SetKFUsage(fUseKF);
+  //
+  //   UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
+  //   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
+  //     Int_t end=ntrack2;
+  //     if (arr1==arr2) end=itrack1;
+  //     Bool_t accepted=kFALSE;
+  //     for (Int_t itrack2=0; itrack2<end; ++itrack2){
+  //       TObject *track1=arrTracks1.UncheckedAt(itrack1);
+  //       TObject *track2=arrTracks2.UncheckedAt(itrack2);
+  //       if (!track1 || !track2) continue;
+  //       //create the pair
+  //       candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+  //                           static_cast<AliVTrack*>(track2), fPdgLeg2);
+  //       candidate.SetType(pairIndex);
+  //       candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+  //
+  //       //event plane pair cuts
+  //       UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
+  //       //apply cut
+  //       if (cutMask==selectedMask) continue;
+  //
+  //       accepted=kTRUE;
+  //       //remove the tracks from the Track arrays
+  //       arrTracks2.AddAt(0x0,itrack2);
+  //     }
+  //     if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
+  //   }
+  //   //compress the track arrays
+  //   arrTracks1.Compress();
+  //   arrTracks2.Compress();
+  //
+  //   //Modify the components: subtract the tracks
+  //   ntrack1=arrTracks1.GetEntriesFast();
+  //   ntrack2=arrTracks2.GetEntriesFast();
+  //   // remove leg1 contribution
+  //   for (Int_t itrack=0; itrack<ntrack1; ++itrack){
+  //     AliVTrack *track= static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack));
+  //     if (!track) continue;
+  //     // track contribution was already removed
+  //     if (mapRemovedTracks.FindObject(track)) continue;
+  //     else mapRemovedTracks.Add(track,track);
+  //
+  //     cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+  //     cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+  //   }
+  //   // remove leg2 contribution
+  //   for (Int_t itrack=0; itrack<ntrack2; ++itrack){
+  //     AliVTrack *track= static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack));
+  //     if (!track) continue;
+  //     // track contribution was already removed
+  //     if (mapRemovedTracks.FindObject(track)) continue;
+  //     else mapRemovedTracks.Add(track,track);
+  //
+  //     cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+  //     cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+  //   }
+  //
+  //   // build a corrected alieventplane using the values from the var manager
+  //   // these uncorrected values are filled using the stored magnitude and angle  in the header
+  //   TVector2 qcorr;
+  //   qcorr.Set(AliDielectronVarManager::GetValue(AliDielectronVarManager::kTPCxH2uc)-cQX,
+	//       AliDielectronVarManager::GetValue(AliDielectronVarManager::kTPCyH2uc)-cQY);
+  //   // fill alieventplane
+  //   AliEventplane cevplane;
+  //   cevplane.SetQVector(&qcorr);
+  //   AliDielectronVarManager::SetTPCEventPlane(&cevplane);
+  //   cevplane.SetQVector(0);
+  //   return;
+  // } //end: nanoAODs
+  // else
+  //   {
+  //   // this is done in case of ESDs or AODs
+  //   Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
+  //   // copy event plane object
+  //   AliEventplane cevplane(*evplane);
+  //   //    Int_t nMaxID=cevplane->GetQContributionXArray()->GetSize();
+  //
+  //   TVector2 *qcorr  = cevplane.GetQVector();
+  //   if(!qcorr) return;
+  //   TVector2 *qcsub1 = 0x0;
+  //   TVector2 *qcsub2 = 0x0;
+  //
+  //   // eta gap ?
+  //   Bool_t etagap = kFALSE;
+  //   for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
+  //     TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
+  //     if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
+  //   }
+  //
+  //   // subevent configuration for eta gap or LS (default is rndm)
+  //   if(fLikeSignSubEvents && etagap) {
+  //     // start with the full Qvector/event in both sub events
+  //     qcsub1 = new TVector2(*qcorr);
+  //     qcsub2 = new TVector2(*qcorr);
+  //     cevplane.SetQsub(qcsub1,qcsub2);
+  //
+  //     Int_t ntracks=ev->GetNumberOfTracks();
+  //     // track removals
+  //     for (Int_t itrack=0; itrack<ntracks; ++itrack){
+  //       AliVParticle *particle=ev->GetTrack(itrack);
+  //       AliVTrack *track= static_cast<AliVTrack*>(particle);
+  //       if (!track) continue;
+  //       if (track->GetID()>=0 && !isESD) continue;
+  //       Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+  //
+  //       // set contributions to zero
+  //       // charge sub1+ sub2-
+  //       if(fLikeSignSubEvents) {
+  //         Short_t charge=track->Charge();
+  //         if (charge<0) {
+  //           cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+  //           cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+  //         }
+  //         if (charge>0) {
+  //           cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+  //           cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+  //         }
+  //       }
+  //       // eta sub1+ sub2-
+  //       if(etagap) {
+  //         Double_t eta=track->Eta();
+  //         if (eta<0.0) {
+  //           cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+  //           cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+  //         }
+  //         if (eta>0.0) {
+  //           cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+  //           cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+  //         }
+  //       }
+  //     } // end: loop over tracks
+  //   } // end: sub event configuration
+  //
+  //   // apply cuts, e.g. etagap
+  //   if(fEventPlanePreFilter.GetCuts()->GetEntries()) {
+  //     UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
+  //     Int_t ntracks=ev->GetNumberOfTracks();
+  //     for (Int_t itrack=0; itrack<ntracks; ++itrack){
+  //       AliVParticle *particle=ev->GetTrack(itrack);
+  //       AliVTrack *track= static_cast<AliVTrack*>(particle);
+  //       if (!track) continue;
+  //       if (track->GetID()>=0 && !isESD) continue;
+  //       Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+  //
+  //       //event plane cuts
+  //       UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
+  //       //apply cut
+  //       if (cutMask==selectedMask) continue;
+  //
+  //       // set contributions to zero
+  //       cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
+  //       cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
+  //       cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+  //       cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+  //       cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+  //       cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+  //     }
+  //   } // end: track cuts
+  //
+  //   // POI (particle of interest) rejection
+  //   Int_t pairIndex=GetPairIndex(arr1,arr2);
+  //   Int_t ntrack1=arrTracks1.GetEntriesFast();
+  //   Int_t ntrack2=arrTracks2.GetEntriesFast();
+  //   AliDielectronPair candidate;
+  //   candidate.SetKFUsage(fUseKF);
+  //
+  //   UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
+  //   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
+  //     Int_t end=ntrack2;
+  //     if (arr1==arr2) end=itrack1;
+  //     Bool_t accepted=kFALSE;
+  //     for (Int_t itrack2=0; itrack2<end; ++itrack2){
+  //       TObject *track1=arrTracks1.UncheckedAt(itrack1);
+  //       TObject *track2=arrTracks2.UncheckedAt(itrack2);
+  //       if (!track1 || !track2) continue;
+  //       //create the pair
+  //       candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+  //                           static_cast<AliVTrack*>(track2), fPdgLeg2);
+  //
+  //       candidate.SetType(pairIndex);
+  //       candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+  //
+  //       //event plane cuts
+  //       UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
+  //       //apply cut
+  //       if (cutMask==selectedMask) continue;
+  //
+  //       accepted=kTRUE;
+  //       //remove the tracks from the Track arrays
+  //       arrTracks2.AddAt(0x0,itrack2);
+  //     }
+  //     if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
+  //   }
+  //   //compress the track arrays
+  //   arrTracks1.Compress();
+  //   arrTracks2.Compress();
+  //
+  //   //Modify the components: subtract the tracks
+  //   ntrack1=arrTracks1.GetEntriesFast();
+  //   ntrack2=arrTracks2.GetEntriesFast();
+  //   // remove leg1 contribution
+  //   for (Int_t itrack=0; itrack<ntrack1; ++itrack){
+  //     AliVTrack *track= static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack));
+  //     if (!track) continue;
+  //     if (track->GetID()>=0 && !isESD) continue;
+  //     Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+  //     // set contributions to zero
+  //     cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+  //   }
+  //   // remove leg2 contribution
+  //   for (Int_t itrack=0; itrack<ntrack2; ++itrack){
+  //     AliVTrack *track= static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack));
+  //     if (!track) continue;
+  //     if (track->GetID()>=0 && !isESD) continue;
+  //     Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+  //     // set contributions to zero
+  //     cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+  //     cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+  //   }
+  //
+  //   // set corrected AliEventplane and fill variables with corrected values
+  //   AliDielectronVarManager::SetTPCEventPlane(&cevplane);
+  //   delete qcsub1;
+  //   delete qcsub2;
+  // } // end: ESD or AOD case
 
 }
 
