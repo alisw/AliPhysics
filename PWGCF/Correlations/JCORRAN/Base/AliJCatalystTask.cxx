@@ -267,6 +267,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - charge
 				}
+			        if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
 				Int_t label = track->GetLabel();
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel( label );
@@ -519,6 +520,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 				if(fPcharge == -1 && ch > 0)
 					continue; // -1 for - particle
 			}
+			if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
 			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 			itrack->SetLabel( label );
