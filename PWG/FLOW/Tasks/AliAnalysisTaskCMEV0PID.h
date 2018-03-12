@@ -172,6 +172,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Int_t                 fFilterBit;  //
   Int_t                      gPsiN;  //
   Int_t                 fOldRunNum;  //
+  Int_t                fEventCount;  //!
   Float_t               fNSigmaCut;  //
   Float_t                fMinPtCut;  //
   Float_t                fMaxPtCut;  //
@@ -193,7 +194,21 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  TH1F    *fHistEventCount;   //!    last in the list
+
+
+
+  TH1F            *fHistEventCount;   //!    last in the list
+
+
+
+
+
+
+
+
+
+
+
 
   //-------- Arrays ----------
   TH1F           *fHistPtwithTPCNsigma[3];   //!
@@ -209,19 +224,39 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH3D                *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
   TH3D                *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
 
+  TH3D                *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
+  TH3D                *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
+
+  TH3D                *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3D                *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
+
+  TH3D                *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
+  TH3D                *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
 
 
-  //CME Using Event plane method:
-  TProfile     *fHist_Corr3p_EP_Norm_PN[2][3];  //! 
-  TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
-  TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
+
+  //CME Using Event plane method: Charge
+  TProfile     *fHist_Corr3p_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_EP_Norm_NN[2][4];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][4]; //! 
 
-  //CME(EP) vs Refmult:
-  //TProfile     *fHist_Corr3p_EP_Refm_PN[2][3];  //! 
-  //TProfile     *fHist_Corr3p_EP_Refm_PP[2][3];  //!
-  //TProfile     *fHist_Corr3p_EP_Refm_NN[2][3];  //!
-  //TProfile     *fHist_Reso2n_EP_Refm_Det[2][3]; //! 
+  //CME Using Event plane method: Pion
+  TProfile     *fHist_Corr3p_Pion_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Pion_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Pion_EP_Norm_NN[2][4];  //!
+
+  //CME Using Event plane method: Kaon
+  TProfile     *fHist_Corr3p_Kaon_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Kaon_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Kaon_EP_Norm_NN[2][4];  //!
+
+  //CME Using Event plane method: Proton
+  TProfile     *fHist_Corr3p_Proton_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Proton_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Proton_EP_Norm_NN[2][4];  //!
+
+
 
 
 
@@ -256,7 +291,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   
   AliAnalysisTaskCMEV0PID(const AliAnalysisTaskCMEV0PID &other);
   AliAnalysisTaskCMEV0PID &operator=(const AliAnalysisTaskCMEV0PID &other);    
-  ClassDef(AliAnalysisTaskCMEV0PID,1) 
+  ClassDef(AliAnalysisTaskCMEV0PID, 1) 
 
 };
 
