@@ -1000,11 +1000,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  Int_t mcstatus = 1;
       
 	  if(TMath::Abs(meta) > etacutlambda) mcstatus += 10; //mcstatus > 10 means it falls outside acceptance
-
-	  if(mpid == 3122) hPtResLambda->Fill(mpt,pt);
-	  if(mpid == -3122) hPtResAntiLambda->Fill(mpt,pt);
-	  if(mpid == 3122 && isPrim) hPtResLambdaPrim->Fill(mpt,pt);
-	  if(mpid == -3122 && isPrim) hPtResAntiLambdaPrim->Fill(mpt,pt);
 	  
 	  if(isSecFromMaterial)
 	    {
@@ -1031,10 +1026,14 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	    {
 	      if(tempLightV0) tempLightV0->SetMcStatus(mcstatus); 
 	    }
+
+	  if(tempLightV0) tempLightV0->SetGenPtEta(mpt,meta);
 	  
 	  if(mpid == 3122)
 	    {
 	      if(tempLightV0) tempLightV0->SetMcStatus(mcstatus);
+	      hPtResLambda->Fill(mpt,pt);
+	      if(isPrim) hPtResLambdaPrim->Fill(mpt,pt);
 	      if(TMath::Abs(meta) <= etacutlambda)
 		{
 		  hLambdaPtReco->Fill(mpt);
@@ -1044,6 +1043,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  else if(mpid == -3122)
 	    {
 	      if(tempLightV0) tempLightV0->SetMcStatus(-1*mcstatus); // mcstatus < 0 means antilambda
+	      hPtResAntiLambda->Fill(mpt,pt);
+	      if(isPrim) hPtResAntiLambdaPrim->Fill(mpt,pt);
 	      if(TMath::Abs(meta) <= etacutlambda)
 		{
 		  hAntiLambdaPtReco->Fill(mpt);
