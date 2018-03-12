@@ -168,12 +168,11 @@ AliXiStarPbPbEventCollection::AliXiStarPbPbEventCollection(short a):
   // main constructor
   SetBuffSize(a);
   
-  int nStruct = 1000;
   fEvtStr = new AliXiStarPbPbEventStruct[fFIFO];  //allocate pointer array
   for(Int_t ii = 0; ii < fFIFO; ii++){   //Initialize to NULL
     (fEvtStr + ii)->fTracks = NULL;
     (fEvtStr + ii)->fNTracks = 0;
-    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[nStruct];
+    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[300];
   }
   
 }

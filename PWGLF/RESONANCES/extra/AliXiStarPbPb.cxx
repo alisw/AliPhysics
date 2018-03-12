@@ -51,6 +51,11 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliCentrality.h"
+
+#include "AliVertex.h"
+#include "AliMultSelection.h"
+
+
 #include "AliESDcascade.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
@@ -69,9 +74,6 @@ ClassImp(AliXiStarPbPb)
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb():
 AliAnalysisTaskSE(),
-fESDTrack4(0x0),
-fXiTrack(0x0),
-fCutList(0),
 fname(0),
 fESD(0x0),
 fOutputList(0x0),
@@ -93,7 +95,10 @@ fTrueMassPr(0),
 fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
-fTrueMassXi(0)
+fTrueMassXi(0),
+fESDTrack4(0x0),
+fXiTrack(0x0),
+fCutList(0)
 
 {
     // Default Constructor
@@ -128,16 +133,10 @@ fTrueMassXi(0)
         
     }
     
-    {
-    // ROOT IO constructor, don't allocate memory here!
-    }
 }
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption)
 : AliAnalysisTaskSE(name),
-fESDTrack4(0x0),
-fXiTrack(0x0),
-fCutList(CutListOption),
 fname(name),
 fESD(0x0),
 fOutputList(0x0),
@@ -159,7 +158,10 @@ fTrueMassPr(0),
 fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
-fTrueMassXi(0)
+fTrueMassXi(0),
+fESDTrack4(0x0),
+fXiTrack(0x0),
+fCutList(CutListOption)
 
 
 
@@ -228,9 +230,6 @@ fTrueMassXi(0)
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb(const AliXiStarPbPb &obj)
 : AliAnalysisTaskSE(obj.fname),
-fESDTrack4(obj.fESDTrack4),
-fXiTrack(obj.fXiTrack),
-fCutList(obj.fCutList),
 fname(obj.fname),
 fESD(obj.fESD),
 fOutputList(obj.fOutputList),
@@ -253,7 +252,10 @@ fTrueMassPr(obj.fTrueMassPr),
 fTrueMassPi(obj.fTrueMassPi),
 fTrueMassK(obj.fTrueMassK),
 fTrueMassLam(obj.fTrueMassLam),
-fTrueMassXi(obj.fTrueMassXi)
+fTrueMassXi(obj.fTrueMassXi),
+fESDTrack4(obj.fESDTrack4),
+fXiTrack(obj.fXiTrack),
+fCutList(obj.fCutList)
 
 {
     // Copy constructor
@@ -335,7 +337,7 @@ AliXiStarPbPb::~AliXiStarPbPb()
     if(fTempStruct) delete fTempStruct;
     if(fESDTrack4) delete fESDTrack4;
     if(fXiTrack) delete fXiTrack;
-    if(fCentralityEstimator) delete fCentralityEstimator;//add
+    if(fCentralityEstimator) delete fCentralityEstimator;
     
     
     for (Int_t cv=0; cv<kNCutVariations; cv++){
