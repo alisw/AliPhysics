@@ -451,6 +451,9 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   /* IMPLEMENT INEL > 0 */
 
   Float_t totalNch = 0;
+  Float_t totalNchV0 = 0;
+  Float_t totalNch05 = 0;
+  Float_t totalNch2 = 0;
   Float_t totalNtr = 0; // FIXME: Why is this a float?
   if (fUseMC) {
     for (Int_t i = 0; i < fStack->GetNtrack(); i++) {
@@ -464,6 +467,15 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
       if (TMath::Abs(particle->Eta()) < 1.)
         //printf(" eta =  %f \n", particle->Eta());
         totalNch++;
+        if (TMath::Abs(particle->Eta()) < 2.0) {
+          totalNch2++;
+        }
+         if (TMath::Abs(particle->Eta()) < 0.5) {
+           totalNch05++;
+         }
+         else if ((particle->Eta() > 2.8 &&  particle->Eta() < 5.1) || (particle->Eta() > -3.7  &&  particle->Eta() < -1.7) ) {
+           totalNchV0++;
+         }
     }
     if (totalNch < 1) return;
   }
@@ -774,15 +786,21 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     if(isTrgOk)((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, ntrLocal);
     // This matrix corrects only for the tracklet reco efficiency
     if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, ntrLocal);
+
+    ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixV0+fCurrCentBin))->Fill(totalNch05, totalNchV0);
+    ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixV02+fCurrCentBin))->Fill(totalNchV0, multV0);
+    ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixV03+fCurrCentBin))->Fill(totalNch2, totalNchV0);
+
+
   }
-  Float_t totalNtr2 = 0.0;
-  if (fUseMC && fVtxOK && fIsSelected) {
-    for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
-      if (TMath::Abs(mult->GetEta(i)) < 1.) {
-        totalNtr2++;
-      }
-    }
-  }
+  // Float_t totalNtr2 = 0.0;
+  // if (fUseMC && fVtxOK && fIsSelected) {
+  //   for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
+  //     if (TMath::Abs(mult->GetEta(i)) < 1.) {
+  //       totalNtr2++;
+  //     }
+  //   }
+  // }
 
 
 
@@ -1205,6 +1223,40 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
     hcorr5->GetXaxis()->SetTitle("n_{ch}");
     hcorr5->GetYaxis()->SetTitle("n_{tracklets}");
     AddHisto(histos,hcorr5,kHCorrMatrixSel2+ib3);
+    //
+  }
+
+  char mybuffn4[100],mybufft4[500];
+  for (int ib4=0;ib4<fNCentBins;ib4++) {
+    sprintf(mybuffn4,"b%d_corrMatrixV0",ib4);
+    sprintf(mybufft4,"bin%d Correlation Matrix V0M ",ib4);
+    TH2F* hcorr6 = new  TH2F(mybuffn4,mybufft4, kMaxMlt, 0, kMaxMlt, kMaxMlt+300, 0, kMaxMlt+300);
+    hcorr6->GetXaxis()->SetTitle("N_{ch}^{true}(|#eta| < 0.5)");
+    hcorr6->GetYaxis()->SetTitle("N_{ch}^{true}(V0M)");
+    AddHisto(histos,hcorr6,kHCorrMatrixV0+ib4);
+    //
+  }
+
+  char mybuffn5[100],mybufft5[500];
+  for (int ib5=0;ib5<fNCentBins;ib5++) {
+    sprintf(mybuffn5,"b%d_corrMatrixV02",ib5);
+    sprintf(mybufft5,"bin%d Correlation Matrix V0M detector ",ib5);
+    TH2F* hcorr7 = new  TH2F(mybuffn5,mybufft5, kMaxMlt, 0, kMaxMlt, kMaxMlt+300, 0, kMaxMlt+300);
+    hcorr7->GetXaxis()->SetTitle("N_{ch}^{true}(V0M)");
+    hcorr7->GetYaxis()->SetTitle("N_{ch}^{det}(V0M)");
+    AddHisto(histos,hcorr7,kHCorrMatrixV02+ib5);
+    //
+  }
+
+
+  char mybuffn6[100],mybufft6[500];
+  for (int ib6=0;ib6<fNCentBins;ib6++) {
+    sprintf(mybuffn6,"b%d_corrMatrixV03",ib6);
+    sprintf(mybufft6,"bin%d Correlation Matrix V0M detector Vs Central ",ib6);
+    TH2F* hcorr8 = new  TH2F(mybuffn6,mybufft6, kMaxMlt, 0, kMaxMlt, kMaxMlt+300, 0, kMaxMlt+300);
+    hcorr8->GetXaxis()->SetTitle("N_{ch}^{true}(V0M)");
+    hcorr8->GetYaxis()->SetTitle("N_{ch}^{det}(V0M)");
+    AddHisto(histos,hcorr8,kHCorrMatrixV03+ib6);
     //
   }
 

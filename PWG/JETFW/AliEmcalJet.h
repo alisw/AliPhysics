@@ -236,7 +236,7 @@ class AliEmcalJet : public AliVParticle
 
   /**
    * @brief Checks whether a given particle is a jet constituent
-   * @param[in] Particle trajectory to check
+   * @param[in] part Particle to check
    * @return True if the particle is a jet constituent, false otherwise
    */
   bool HasParticleConstituent(const AliVParticle *const part) const;

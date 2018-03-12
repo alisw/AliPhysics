@@ -36,6 +36,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
@@ -141,6 +143,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
     TString                             fV0ReaderName;
+    TString                             fCorrTaskSetting;       // Correction Task Special Name
     AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           // BG handler for Conversion (possibility to mix with respect to RP)
     AliGammaConversionAODBGHandler**    fBGClusHandler;         // BG handler for Cluster
@@ -172,13 +175,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
-    TH1F**                  fHistoConvGammaR;                   //! histogram conversion photon R
-    TH1F**                  fHistoConvGammaEta;                 //! histogram conversion photon Eta
     TTree**                 fTreeConvGammaPtDcazCat;            //! tree with dca for conversions
-    Float_t                 fPtGamma;                           //! pt of conversion for tree
-    Float_t                 fDCAzPhoton;                        //! dcaz of conversion for tree
-    Float_t                 fRConvPhoton;                       //! R of conversion for tree
-    Float_t                 fEtaPhoton;                         //! eta of conversion for tree
+    UShort_t                fPtGamma;                           //! pt of conversion for tree
+    Short_t                 fDCAzPhoton;                        //! dcaz of conversion for tree
     UChar_t                 fCharCatPhoton;                     //! category of conversion for tree
     UChar_t                 fCharPhotonMCInfo;                  //! MC info of conversion for tree
                       // 0: garbage,
@@ -257,8 +256,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCDecayGammaSigmaPt;          //! array of histos with decay gamma from Sigma0, pT
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
     TH2F**                  fHistoMCSecondaryConvGammaPt;       //! array of histos wiht secondary converted gamma, pt
-    TH1F**                  fHistoMCConvGammaR;                 //! array of histos with converted gamma, R
-    TH1F**                  fHistoMCConvGammaEta;               //! array of histos with converted gamma, Eta
 
     //histograms for pure MC quantities for mesaon analysis
     TH1F**                  fHistoMCPi0Pt;                      //! array of histos with weighted pi0, pT
@@ -352,7 +349,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // MC validated reconstructed quantities photons
     TH1F**                  fHistoTrueConvGammaPt;                              //! array of histos with validated conversion photon, pt
-    TH1F**                  fHistoTrueConvGammaEta;                             //! array of histos with validated conversion photon, eta
     TH2F**                  fHistoCombinatorialPt;                              //! array of histos with combinatorial BG, pt, source
     TH1F**                  fHistoTruePrimaryConvGammaPt;                       //! array of histos with validated primary
     TH2F**                  fHistoTruePrimaryConvGammaESDPtMCPt;                //! array of histos with validated primary conversion photon, rec pt, mc pt conversion photon, pt
@@ -481,7 +477,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 41);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 45);
 };
 
 #endif

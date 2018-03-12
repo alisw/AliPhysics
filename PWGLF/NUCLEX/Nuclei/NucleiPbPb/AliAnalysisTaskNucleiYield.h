@@ -53,6 +53,8 @@ public:
   void SetRequireTPCrefit (bool refit = true) { fRequireTPCrefit = refit; }
   void SetRequireNoKinks (bool nokinks = true) { fRequireNoKinks = nokinks; }
   void SetRequireITSrecPoints (int rec = 4) { fRequireITSrecPoints = rec; }
+  void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
+  void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
   void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
@@ -84,7 +86,7 @@ public:
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
 
-  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD);
+  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
@@ -136,6 +138,7 @@ private:
   Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
   Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
   UShort_t              fRequireITSrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
+  UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
   UShort_t              fRequireSDDrecPoints;   ///<  Cut on tracks: minimum number of required SDD recpoints
   UShort_t              fRequireSPDrecPoints;   ///<  Cut on tracks: minimum number of required SPD recpoints
@@ -154,6 +157,7 @@ private:
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
+  Float_t               fRequireTPCfoundFraction; ///< Found over findable clusters
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
@@ -179,6 +183,8 @@ private:
   // Data histograms
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
 

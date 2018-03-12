@@ -27,6 +27,7 @@ AliSignalMC::AliSignalMC(Int_t nProngs /*=1*/, Int_t nGenerations /*=kNMaxGenera
   fExcludePDG(),
   fSourceBits(),
   fExcludeSource(),
+  fUseANDonSourceBitMap(),
   fCommonAncestorIdx(0)
 {
    if(nProngs<1 || nProngs>kNMaxProngs) {
@@ -50,9 +51,10 @@ AliSignalMC::AliSignalMC(Int_t nProngs /*=1*/, Int_t nGenerations /*=kNMaxGenera
       for(UInt_t g=0;g<fNGenerations;++g) {
          fPDGcodes[p][g] = kPDGnotAssigned;
          fCheckBothCharges[p][g] = kFALSE;
-         fExcludePDG[p][g] = kFALSE;
+         fExcludePDG[p][g] = 0;
          fSourceBits[p][g] = 0;
-         fExcludeSource[p][g] = kFALSE;
+         fExcludeSource[p][g] = 0;
+         fUseANDonSourceBitMap[p][g] = kTRUE;
       }
    }
 }
@@ -68,6 +70,7 @@ fCheckBothCharges(),
 fExcludePDG(),
 fSourceBits(),
 fExcludeSource(),
+fUseANDonSourceBitMap(),
 fCommonAncestorIdx(0)
 {
    if(nProngs<1 || nProngs>kNMaxProngs) {
@@ -93,7 +96,8 @@ fCommonAncestorIdx(0)
          fCheckBothCharges[p][g] = kFALSE;
          fExcludePDG[p][g] = kFALSE;
          fSourceBits[p][g] = 0;
-         fExcludeSource[p][g] = kFALSE;
+         fExcludeSource[p][g] = 0;
+         fUseANDonSourceBitMap[p][g] = kTRUE;
       }
    }
 }
@@ -108,6 +112,7 @@ fCheckBothCharges(),
 fExcludePDG(),
 fSourceBits(),
 fExcludeSource(),
+fUseANDonSourceBitMap(),
 fCommonAncestorIdx(c.GetCommonAncestorIdx())
 {
    //
@@ -120,6 +125,7 @@ fCommonAncestorIdx(c.GetCommonAncestorIdx())
          fExcludePDG[iprong][igen] = c.GetPDGExclude(iprong, igen);
          fSourceBits[iprong][igen] = c.GetSources(iprong,igen);
          fExcludeSource[iprong][igen] = c.GetSourcesExclude(iprong, igen);
+         fUseANDonSourceBitMap[iprong][igen] = c.GetUseANDonSourceBits(iprong, igen);
       }
    }
 }
@@ -142,7 +148,7 @@ void AliSignalMC::SetCommonAncestorIdx(UInt_t idx) {
 
 //________________________________________________________________________________________________________________
 void AliSignalMC::SetProngHistory(UInt_t prong, UInt_t pdgCodes[], Bool_t checkBothCharges[], UInt_t sourceBits[], 
-                                  Bool_t excludePDG[] /* = 0x0*/, Bool_t excludeSources[] /* = 0x0*/) {
+                                  Bool_t excludePDG[] /* = 0x0*/, UInt_t excludeSources[] /* = 0x0*/, Bool_t useANDonSourceBits[] /*=0x0*/) {
    //
    // set the entire prong history
    //
@@ -159,6 +165,8 @@ void AliSignalMC::SetProngHistory(UInt_t prong, UInt_t pdgCodes[], Bool_t checkB
          fExcludePDG[prong][i] = excludePDG[i];
       if(excludeSources)
          fExcludeSource[prong][i] = excludeSources[i];
+      if(useANDonSourceBits)
+         fUseANDonSourceBitMap[prong][i] = useANDonSourceBits[i];
    }
 }
 
@@ -175,7 +183,7 @@ void AliSignalMC::SetPDGcode(UInt_t prong, UInt_t generation, Int_t pdgCode, Boo
 }
 
 //________________________________________________________________________________________________________________
-void AliSignalMC::SetSources(UInt_t prong, UInt_t generation, UInt_t bits, Bool_t exclude /*=kFALSE*/) {
+void AliSignalMC::SetSources(UInt_t prong, UInt_t generation, UInt_t bits, UInt_t exclude /*=0*/, Bool_t useANDonSourceBits /*=kTRUE*/) {
    //
    // set the entire sources bit map for a prong at a given generation
    //
@@ -183,6 +191,7 @@ void AliSignalMC::SetSources(UInt_t prong, UInt_t generation, UInt_t bits, Bool_
    if(generation<0 || generation>=fNGenerations) return;
    fSourceBits[prong][generation] = bits;
    fExcludeSource[prong][generation] = exclude;
+   fUseANDonSourceBitMap[prong][generation] = useANDonSourceBits;
 }
 
 //________________________________________________________________________________________________________________
@@ -196,7 +205,17 @@ void AliSignalMC::SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit
    fSourceBits[prong][generation] |= (UInt_t(1)<<sourceBit);
    // NOTE: The exclude factor is set here via the inidividual source bit, but actually overrides the flag for all sources (in case multiple sources have been defined)
    // TODO: implement a bit map corresponding to each source, to hold an exclude flag for each source
-   fExcludeSource[prong][generation] = exclude;
+   if(exclude) fExcludeSource[prong][generation] |= (UInt_t(1)<<sourceBit);
+}
+
+//________________________________________________________________________________________________________________
+void AliSignalMC::SetUseANDonSourceBits(UInt_t prong, UInt_t generation, Bool_t option /*=kTRUE*/) {
+   //
+   // set the option to be used when evaluating the source bits
+   //
+   if(prong<0 || prong>=fNProngs) return;
+   if(generation<0 || generation>=fNGenerations) return;
+   fUseANDonSourceBitMap[prong][generation] = option;
 }
 
 //________________________________________________________________________________________________________________

@@ -60,11 +60,16 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
+  void CreateCutVarsAndEffSparses();
+  void CreateImpactParameterSparses();
+  void CreateIPSparse();
+  Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
   
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC16i2abc();
   void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
   void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();
+  void SetPtWeightsFromFONLL13overLHC17c3a12();
 
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
@@ -87,8 +92,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
-    
-  enum {kMaxPtBins=20,knVarForSparse=14,knVarForSparseAcc=3,knVarForSparseIP=6};
+
+  enum {kMaxPtBins=24,knVarForSparse=15,knVarForSparseAcc=3,knVarForSparseIP=6,kVarForImpPar=3};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -195,13 +200,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[3]: Selected FD Ds
   THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
   THnSparseF *fImpParSparse;       ///!<!THnSparse for imp. par. on data
-  THnSparseF *fImpParSparseMC;     ///!<!THnSparse for imp. par. on MC
+  THnSparseF *fImpParSparseMC[4];     ///!<!THnSparse for imp. par. on MC
    
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,26);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,27);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

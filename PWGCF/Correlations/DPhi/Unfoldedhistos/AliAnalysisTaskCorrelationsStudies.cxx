@@ -34,6 +34,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TH3I.h"
 #include "TProfile3D.h"
 #include "TCanvas.h"
 #include "TList.h"
@@ -79,6 +80,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -144,6 +146,8 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fhPt3DB(NULL),
     fhPt3DA(NULL),
     fhTruePt3D(NULL),
+    fh3Dn1B(NULL),
+    fh3Dn1A(NULL),
     fhLambdaVsMultiplicity(NULL),
     fhAcceptedVsMultiplicity(NULL),
     fhTrueLambdaVsPrimaries(NULL),
@@ -170,6 +174,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fTrackSelectionString(""),
     fEventCuts(NULL),
     fTrackSelectionCuts(NULL),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
     fEnforceEfficiencyProfile(kFALSE),
     fOnTrueEfficiencyProfile(kNoEfficiencyOnTrue),
     fCorrectOnTrueEfficiency(kFALSE),
@@ -235,6 +240,8 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fhPt3DB(NULL),
     fhPt3DA(NULL),
     fhTruePt3D(NULL),
+    fh3Dn1B(NULL),
+    fh3Dn1A(NULL),
     fhLambdaVsMultiplicity(NULL),
     fhAcceptedVsMultiplicity(NULL),
     fhTrueLambdaVsPrimaries(NULL),
@@ -884,7 +891,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
   }
 
   TObjArray *tokens = sztmp.Tokenize(",");
-  if ((tokens->GetEntries() == 3) || (tokens->GetEntries() == 4)) {
+  if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
       fProcessCorrelations.SetSameSign(kTRUE);
@@ -982,24 +989,33 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
       return kFALSE;
     }
 
+    /* resonace rejection configuration */
+    if (((TObjString*) tokens->At(2))->String().Contains("resonances:")) {
+      fProcessCorrelations.ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
+    }
+    else {
+      AliFatal("Resonance string not properly configured.ABORTING!!!");
+      return kFALSE;
+    }
+
     /* use weights or efficiency corrections or both */
-    if (((TObjString*) tokens->At(2))->String().EqualTo("weights") ||
-        ((TObjString*) tokens->At(2))->String().EqualTo("effcorr") ||
-        ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ||
-        ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff") ) {
+    if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
+        ((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
+        ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
+        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
       /* we will use weights or efficiency corrections so the weights filename has to be there */
-      if (tokens->GetEntries() == 4) {
+      if (tokens->GetEntries() == 5) {
         /* get the weights histos */
         TFile *weights;
         Char_t localbuffer[2048];
 
         TGrid::Connect("alien:");
-        weights = TFile::Open(((TObjString*) tokens->At(3))->String(),"OLD");
+        weights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
         if (weights != NULL && weights->IsOpen()) {
           /* the weights correction */
-          if (((TObjString*) tokens->At(2))->String().EqualTo("weights") ||
-              ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ||
-              ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff")) {
+          if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
+              ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
+              ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff")) {
             sprintf(localbuffer,"%s%s", pattern,szTrack1.Data());
             fhWeightsTrack_1 = (TH3F*) weights->Get(localbuffer);
             sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
@@ -1017,8 +1033,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
-          if (((TObjString*) tokens->At(2))->String().EqualTo("effcorr") ||
-              ((TObjString*) tokens->At(2))->String().EqualTo("weightseffcorr") ) {
+          if (((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
+              ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ) {
             /* the efficiency correction */
             sprintf(localbuffer,"%seff_%s", pattern,szTrack1.Data());
             fhEffCorrTrack_1 = (TH1F*) weights->Get(localbuffer);
@@ -1036,8 +1052,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
-          if (((TObjString*) tokens->At(2))->String().EqualTo("pairseff") ||
-              ((TObjString*) tokens->At(2))->String().EqualTo("weightspairseff") ) {
+          if (((TObjString*) tokens->At(3))->String().EqualTo("pairseff") ||
+              ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
             /* the pairs efficiencies */
             sprintf(localbuffer,"%spairseff_PP", pattern);
             fhPairEfficiency_PP = (THn*) weights->Get(localbuffer);
@@ -1072,24 +1088,24 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
         return kFALSE;
       }
     }
-    else if (((TObjString*) tokens->At(2))->String().BeginsWith("simulate")) {
+    else if (((TObjString*) tokens->At(3))->String().BeginsWith("simulate")) {
       /* get the number of events to generate per real event */
       Int_t nSimEventsPerEvent;
-      if (((TObjString*) tokens->At(2))->String().EqualTo("simulate"))
+      if (((TObjString*) tokens->At(3))->String().EqualTo("simulate"))
         nSimEventsPerEvent = 1;
       else
-        sscanf(((TObjString*) tokens->At(2))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
+        sscanf(((TObjString*) tokens->At(3))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
 
       fProcessCorrelations.SetUseSimulation(kTRUE);
       fProcessCorrelations.SetSimEventsPerEvent(nSimEventsPerEvent);
       /* we will use particle profiles so the particle profiles filename has to be there */
-      if (tokens->GetEntries() == 4) {
+      if (tokens->GetEntries() == 5) {
         /* get the weights histos */
         TFile *trkprofiles;
         Char_t localbuffer[2048];
 
         TGrid::Connect("alien:");
-        trkprofiles = TFile::Open(((TObjString*) tokens->At(3))->String(),"OLD");
+        trkprofiles = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
         if (trkprofiles != NULL && trkprofiles->IsOpen()) {
           /* get the positive tracks density function */
           fPositiveTrackPdf = new TObjArray(64); fPositiveTrackPdf->SetOwner(kTRUE);
@@ -1137,12 +1153,12 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
         return kFALSE;
       }
     }
-    else if (((TObjString*) tokens->At(2))->String().EqualTo("effcorrtrue")) {
+    else if (((TObjString*) tokens->At(3))->String().EqualTo("effcorrtrue")) {
       fCorrectOnTrueEfficiency = kTRUE;
       fProcessCorrelations.SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
-    else if (((TObjString*) tokens->At(2))->String().EqualTo("noweights")) {
+    else if (((TObjString*) tokens->At(3))->String().EqualTo("noweights")) {
       fProcessCorrelations.SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
@@ -1280,6 +1296,9 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fhPt3DB = new TProfile3D(Form("fhPt3DB_%s",fTaskConfigurationString.Data()),"p_{T} vs #eta, #phi and vtx_{z} before;#eta;#phi;vtx_{z}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),zvtxbins,zvtxlow,zvtxup);
   fhPt3DA = new TProfile3D(Form("fhPt3DA_%s",fTaskConfigurationString.Data()),"p_{T} vs #eta, #phi and vtx_{z};#eta;#phi;vtx_{z}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),zvtxbins,zvtxlow,zvtxup);
 
+  fh3Dn1B = new TH3I(Form("fh3Dn1B_%s",fTaskConfigurationString.Data()),"n_{1} vs #eta, #phi and p_{T} before;#eta;#varphi;p_{T}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),ptbins,ptlow,ptup);
+  fh3Dn1A = new TH3I(Form("fh3Dn1A_%s",fTaskConfigurationString.Data()),"n_{1} vs #eta, #phi and p_{T};#eta;#varphi;p_{T}",etabins,etalow,etaup,phibins,0.0,2*TMath::Pi(),ptbins,ptlow,ptup);
+
   /* the tracking of the event multiplicity distribution for evaluating the lambda angle */
   Int_t mBins[2] = {4000,4000};
   Double_t mLow[2] = {0.0,0.0};
@@ -1309,6 +1328,8 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fOutput->Add(fhPtVsEtaA);
   fOutput->Add(fhPt3DB);
   fOutput->Add(fhPt3DA);
+  fOutput->Add(fh3Dn1B);
+  fOutput->Add(fh3Dn1A);
   fOutput->Add(fhAcceptedVsMultiplicity);
   fOutput->Add(fhLambdaVsMultiplicity);
 
@@ -1345,6 +1366,10 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
   AliCSAnalysisCutsBase::NotifyRunGlobal();
   fEventCuts->NotifyRun();
   fTrackSelectionCuts->NotifyRun();
+
+  /* checks the change in the analysis period */
+  if (AliCSAnalysisCutsBase::GetGlobalPeriod() == fDataPeriod) return;
+  fDataPeriod = AliCSAnalysisCutsBase::GetGlobalPeriod();
 
   /* now we create additional MC histograms if applicable */
   if (AliCSAnalysisCutsBase::IsMC()) {
@@ -1595,6 +1620,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
       fhEtaVsPhiB->Fill(vtrack->Phi()*180.0/TMath::Pi(),vtrack->Eta());
       fhPtVsEtaB->Fill(vtrack->Eta(),vtrack->Pt());
       fhPt3DB->Fill(vtrack->Eta(),vtrack->Phi(),vertexz,vtrack->Pt());
+      fh3Dn1B->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
     }
 
     if (bTrackAccepted) {
@@ -1629,6 +1655,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
         fhEtaVsPhiA->Fill(vtrack->Phi()*180.0/TMath::Pi(),vtrack->Eta());
         fhPtVsEtaA->Fill(vtrack->Eta(),vtrack->Pt());
         fhPt3DA->Fill(vtrack->Eta(),vtrack->Phi(),vertexz,vtrack->Pt());
+        fh3Dn1A->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
         fhLambdaVsMultiplicity->Fill(ntracks,TMath::PiOver2() - vtrack->Theta());
 
         /* fill the constrained vs not constrained histograms */

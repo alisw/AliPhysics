@@ -38,26 +38,24 @@ public:
    Float_t       &Px(Bool_t mc)              {return (mc ? fPsim[0] : fPrec[0]);}
    Float_t       &Py(Bool_t mc)              {return (mc ? fPsim[1] : fPrec[1]);}
    Float_t       &Pz(Bool_t mc)              {return (mc ? fPsim[2] : fPrec[2]);}
-   Short_t       &PDG()                      {return fPDG;}
-   Short_t        PDGAbs()                   {return TMath::Abs(fPDG);}
-   Double_t       Mass();                    // returns PDG mass
-   Double_t       Mass(Bool_t mc);           // returns reconstructed or simulated mass if available, otherwise PDG mass
-   void           SetMass(Double_t mass, Bool_t mc); // store mass
+   Long_t        &PDG()                      {return fPDG;}
+   Long_t        PDGAbs()                    {return TMath::Abs(fPDG);}
+   Double_t      Mass();
    Int_t         &Mother()                   {return fMother;}
-   Short_t       &MotherPDG()                {return fMotherPDG;}
+   Long_t        &MotherPDG()                {return fMotherPDG;}
    Bool_t        &IsFromB()                  {return fIsFromB;}
    Bool_t        &IsQuarkFound()             {return fIsQuarkFound;}
    UShort_t      &CutBits()                  {return fCutBits;}
-   Double_t       DCA()                      {return fDCA;}
-   Short_t        NTotSisters()              {return fNTotSisters;}
-   Bool_t         HasCutBit(Int_t i)         {UShort_t bit = 1 << i; return ((fCutBits & bit) != 0);}
-   void           SetCutBit(Int_t i)         {UShort_t bit = 1 << i; fCutBits |=   bit;}
-   void           ClearCutBit(Int_t i)       {UShort_t bit = 1 << i; fCutBits &= (~bit);}
+   Double_t      DCA()                      {return fDCA;}
+   Short_t       NTotSisters()              {return fNTotSisters;}
+   Bool_t        HasCutBit(Int_t i)         {UShort_t bit = 1 << i; return ((fCutBits & bit) != 0);}
+   void          SetCutBit(Int_t i)         {UShort_t bit = 1 << i; fCutBits |=   bit;}
+   void          ClearCutBit(Int_t i)       {UShort_t bit = 1 << i; fCutBits &= (~bit);}
 
-   void           Clear(Option_t *opt="");
+   void          Clear(Option_t *opt="");
 
-   void           Set4Vector(TLorentzVector &v, Float_t mass=-1.0, Bool_t mc=kFALSE);
-   void           CopyDaughter(AliRsnDaughter *daughter);
+   void          Set4Vector(TLorentzVector &v, Float_t mass=-1.0, Bool_t mc=kFALSE);
+   void          CopyDaughter(AliRsnDaughter *daughter);
 
 private:
 
@@ -68,16 +66,16 @@ private:
    Float_t   fPrec[3];      // reconstructed momentum of the track
    Double_t  fMass[2];      // reconstructed [0] and simulated [1] mass, only used for resonances
    Float_t   fPmother[3];   // MC momentum of the track's mother
-   Short_t   fPDG;          // particle PDG code
+   Long_t    fPDG;          // particle PDG code
    Int_t     fMother;       // index of mother in its container
-   Short_t   fMotherPDG;    // PDG code of mother
+   Long_t    fMotherPDG;    // PDG code of mother
    Double_t  fDCA;          // DCA of the particle
    Short_t   fNTotSisters;  // number of  daughters of the particle
    Bool_t    fIsFromB;	    // is the particle from B meson flag	
    Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
 
-   ClassDef(AliRsnMiniParticle,7)
+   ClassDef(AliRsnMiniParticle, 8)
 };
 
 #endif

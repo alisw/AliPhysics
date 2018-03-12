@@ -86,17 +86,38 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
 
   //Common path for macro output
   const TString outpath = Form("./Spectra/%s/Yields/%s%s/", systemString[optpp].Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data());
-
-  TFile *fout = 0x0;
-  if(save)
-    fout = GetFile(Form("%sYield%s%s_%s_%s%s%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), fitmodes[fitmode].Data(), MultBinString[iMult].Data(), (prefix.IsNull() || prefix.BeginsWith('_')) ? "" : "_", prefix.Data()), "RECREATE");
-
-  TFile *foutfits = 0x0;
-  if(save && !fitprefix.EqualTo("")){
-    foutfits = GetFile(Form("%sFits/Fits%s%s_%s_%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), fitprefix.Data()), "RECREATE");
+  TString fname = "Yield";
+  TString identifier = pCharge[iCharge];
+  identifier.Append(pSpecies[iSpecies]);
+  identifier.Append("_");
+  identifier.Append(fitmodes[fitmode]);
+  identifier.Append("_");
+  identifier.Append(MultBinString[iMult]);
+  if (!prefix.IsNull() && !prefix.BeginsWith('_'))
+    identifier.Append("_");
+  //
+  identifier.Append(prefix);
+  //
+  fname.Append(identifier);
+  fname.Append(".root");
+  fname.Prepend(outpath);
+  //
+  TFile* fout = nullptr;
+  if (save) {
+    fout = GetFile(fname, "RECREATE");
+    Infomsg("PrepareRawSpectra", Form("Saving output to file %s", fout->GetName()));
+  } else
+    Infomsg("PrepareRawSpectra", Form("NOT Saving output. Would like to save it in %s", fname.Data()));
+  //
+  TFile* foutfits = nullptr;
+  if (save && !fitprefix.EqualTo("")) {
+    foutfits = GetFile(Form("%sFits/Fits%s_%s.root", outpath.Data(), identifier.Data(), fitprefix.Data()), "RECREATE");
+    Infomsg("PrepareRawSpectra", Form("Saving fit results to file %s", foutfits->GetName()));
   }
-  if(fout) fout->cd();
-
+  //
+  if (fout)
+    fout->cd();
+  //
   TList *lHistograms = new TList();
   lHistograms->SetOwner();
 
@@ -106,46 +127,48 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   //
   //Define all needed histograms
   //
-  TH1D * hNEvt, *hEvtMult, *hEvtMultAftEvSel;
+  TH1D* hNEvt = nullptr;
+  TH1D* hEvtMult = nullptr;
+  TH1D* hEvtMultAftEvSel = nullptr;
 
-  TH1F * fEntries;
-  TH1F * hTOF[kPtBins];
-  TH1F * hTOFMismatch[kPtBins];
-  TH1F * hTOFExpected[kPtBins][kExpSpecies];
+  TH1F* fEntries = nullptr;
+  TH1F* hTOF[kPtBins] = { nullptr };
+  TH1F* hTOFMismatch[kPtBins] = { nullptr };
+  TH1F* hTOFExpected[kPtBins][kExpSpecies];
 
-  TH1F * hTOFSigma[kPtBins];
-  TH1F * hTOFMismatchSigma[kPtBins] = {0x0};
-  TH1F * hTOFSigmaExpected[kPtBins][kExpSpecies];
+  TH1F* hTOFSigma[kPtBins] = { nullptr };
+  TH1F* hTOFMismatchSigma[kPtBins] = { nullptr };
+  TH1F* hTOFSigmaExpected[kPtBins][kExpSpecies];
 
   //Fitted results
-  TH1F * hFitted[kPtBins];
-  TH1F * hMismatchFitted[kPtBins];
-  TH1F * hExpectedFitted[kPtBins][kExpSpecies];
+  TH1F* hFitted[kPtBins] = { nullptr };
+  TH1F* hMismatchFitted[kPtBins] = { nullptr };
+  TH1F* hExpectedFitted[kPtBins][kExpSpecies];
 
   //Ratio to fitted
-  TH1F * hRatioToFitted[kPtBins];
+  TH1F* hRatioToFitted[kPtBins] = { nullptr };
 
   //Total yield
-  TH1F *hYield;
+  TH1F* hYield = nullptr;
 
   //Total yield residual in the +- 3 sigma range
-  TH1F *hYieldResidual;
+  TH1F* hYieldResidual = nullptr;
 
   //Total background
-  TH1F *hBackground[kExpSpecies+1];
-  TH1F *hBackgroundOverlap[kExpSpecies+1];
+  TH1F* hBackground[kExpSpecies + 1] = { nullptr };
+  TH1F* hBackgroundOverlap[kExpSpecies + 1] = { nullptr };
 
-  TH2F * hTOFPt;
-  TH2F * hTOFPtMismatch;
-  TH2F * hTOFPtSignal[kExpSpecies];
-  TH2F * hTOFPtFittedMismatch;
-  TH2F * hTOFPtFittedSignal[kExpSpecies];
-  TH2F * hTOFPtFitted;
+  TH2F* hTOFPt = nullptr;
+  TH2F* hTOFPtMismatch = nullptr;
+  TH2F* hTOFPtSignal[kExpSpecies] = { nullptr };
+  TH2F* hTOFPtFittedMismatch = nullptr;
+  TH2F* hTOFPtFittedSignal[kExpSpecies] = { nullptr };
+  TH2F* hTOFPtFitted = nullptr;
 
   //Functions
-  TF1 *fTOFsignal[kExpSpecies];
-  TF1 *fTOFsignalSum = 0x0;
-  TF1 *fTOFbackground = 0x0;
+  TF1* fTOFsignal[kExpSpecies] = { nullptr };
+  TF1* fTOFsignalSum = nullptr;
+  TF1* fTOFbackground = nullptr;
   //
   //Track information
   //
@@ -416,14 +439,18 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     const Bool_t setstart = optpp ? kTRUE : kTRUE;//Gets the first bin above zero as a fitrange
     const Bool_t setstop = optpp ? kFALSE : (iMult < 3 || iMult == nMultBin -1) ? kFALSE : kTRUE;//Gets the last bin above zero as a fitrange
     //RooFit pt ranges
-    const Int_t MinPtRoofit[nSpecies] = {10, 10, 12, 26};
-    const Int_t MaxPtRoofit[nSpecies] = {38, 38, 43, 59};
+    const Int_t MinPtRoofit_PbPb[nSpecies] = {10, 10, 12, 26};
+    const Int_t MaxPtRoofit_PbPb[nSpecies] = {38, 38, 43, 59};
+    const Int_t MinPtRoofit_pp[nSpecies] = {10, 10, 16, 26};
+    const Int_t MaxPtRoofit_pp[nSpecies] = {43, 43, 43, 59};
+    const Int_t* MinPtRoofit = optpp ? MinPtRoofit_pp : MinPtRoofit_PbPb;
+    const Int_t* MaxPtRoofit = optpp ? MaxPtRoofit_pp : MaxPtRoofit_PbPb;
     //Functions pt ranges
     const Int_t MinPtFunctions[nSpecies] = {10, 12, 21, 26};
     const Int_t MaxPtFunctions[nSpecies] = {37, 40, 40, 59};
 
     Double_t range[2] = {fitsigma ? -300. : -10000., fitsigma ? 300. : 10000.};//Integration range to extract yields only if using TFF
-    Double_t fitrange[2] = {fitsigma ? -300. : -3000., fitsigma ? 300. : 6000.};//Fitrange
+    Double_t fitrange[2] = {fitsigma ? -300. : -3000., fitsigma ? 300. : 6000.};//Fit range
     const Int_t rebin = (fitmode == 3) ? -2 : -2;
     const Bool_t setzeroerrors = kFALSE;
     const Bool_t useMismatch = optpp ? kTRUE : kTRUE;

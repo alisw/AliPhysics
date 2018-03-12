@@ -5,7 +5,7 @@
 
 */
 
-AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc)
+AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, Float_t minc, Float_t maxc)
 {
    
   // Creates a pid task and adds it to the analysis manager
@@ -121,8 +121,10 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetMinPt(0.0); 
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt); 
+    // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB); 
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
     //Set Filtesr
@@ -145,14 +147,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // the manager as below
   //=======================================================================
   
-  //before 22 aug 2015
-  // Char_t outFileName[256]={0};
-  // sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
-  // cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
-  
-  //suggestion by Ramona:  
-  //        TString outputFileName = AliAnalysisManager::GetCommonFileName();    
-  TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
+    TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
  
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
@@ -178,9 +173,11 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    // //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
@@ -237,15 +234,17 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt);
-    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    // taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    // //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    // taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
+    taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
     taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
     //V0's cuts
-    taskHighPtDeDx->SetMassCut(0.1);         // def: 0.03
+    taskHighPtDeDx->SetMassCut(0.1);       
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kTRUE);     // def: kFALSE
 

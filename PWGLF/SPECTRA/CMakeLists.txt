@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
   ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
@@ -68,6 +69,7 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
+  PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
   PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
@@ -199,6 +201,7 @@ install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
+install(FILES PiKaPr/TOF/pp13/AddTaskTOFMC.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)

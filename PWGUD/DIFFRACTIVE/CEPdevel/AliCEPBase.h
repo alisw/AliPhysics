@@ -66,7 +66,7 @@ class AliCEPBase : public TObject {
 
     // type of vertex
     kVtxUnknown         = 0,
-    kVtxSPD             = BIT(0),  // from ITS
+    kVtxSPD             = BIT(0),  // from SPD tracklets
     kVtxTracks          = BIT(1),  // from tracks
     kVtxErrRes          = BIT(2),  // z-resolution of SPD vertex is out-of-bounds
     kVtxErrDif          = BIT(3),  // difference in z between SPD and track
@@ -149,7 +149,8 @@ class AliCEPBase : public TObject {
     kBitV0Study               = BIT(10), // V0 study
     kBitFMDStudy              = BIT(11), // FMD study
     kBitEMCStudy              = BIT(12), // EMC study
-		kBitConfigurationVersion  = BIT(13)  // always set, last bit
+		kBitRawBuffer             = BIT(13), // save a CEPRawEventBuffer
+		kBitConfigurationVersion  = BIT(14)  // always set, last bit
 	
   };
 

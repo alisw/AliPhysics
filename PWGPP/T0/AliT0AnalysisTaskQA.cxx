@@ -256,11 +256,11 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
           if((timeV0A+timeV0C)>11.5 && (timeV0A+timeV0C)<17.5 && (timeV0A-timeV0C)>5.5 && (timeV0A-timeV0C)<11.5)
           {
 	    fTriggerCounter->Fill("V0_Time",1);
-	    if(triggerName.Contains("CINT7-B"))
+	    if(triggerName.Contains("CINT7-B-NOPF-CENT"))
 		fTriggerCounter->Fill("CINT7-B",1);
-	    if(triggerName.Contains("CADAND-B"))
+	    if(triggerName.Contains("CADAND-B-NOPF-CENT"))
 	      fTriggerCounter->Fill("CADAND-B",1);
-	    if(triggerName.Contains("C0TVX-B"))
+	    if(triggerName.Contains("C0TVX-B-NOPF-CENT"))
 	      fTriggerCounter->Fill("C0TVX-B",1);
 	    
           }

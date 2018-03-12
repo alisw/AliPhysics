@@ -33,7 +33,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
     TString lC3 = "cListCascade";
     TString lC4 = "cTreeEvent";
     TString lC5 = "cTreeV0";
-    TString lC6 = "cTreeV0";
+    TString lC6 = "cTreeCascade";
     
     lC1 += lExtraOutputName.Data();
     lC2 += lExtraOutputName.Data();

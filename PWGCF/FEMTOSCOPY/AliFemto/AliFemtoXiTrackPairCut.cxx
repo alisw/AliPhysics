@@ -139,19 +139,18 @@ AliFemtoString AliFemtoXiTrackPairCut::Report()
 TList *AliFemtoXiTrackPairCut::ListSettings()
 {
   // return a list of settings in a writable form
-  TList *tListSetttings = new TList();
+  TList *tListSettings = new TList();
 
-  // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoXiTrackPairCut.%s=%f",
-             ptrnI[] = "AliFemtoXiTrackPairCut.%s=%d",
-             ptrnL[] = "AliFemtoXiTrackPairCut.%s=%ld";
+  const TString prefix = "AliFemtoXiTrackPairCut.";
 
+  tListSettings->AddVector(
+    new TObjString(TString::Format(prefix + "datatype=%f", fDataType)),
+    new TObjString(TString::Format(prefix + "pairs_passed=%ld", fNPairsPassed)),
+    new TObjString(TString::Format(prefix + "pairs_failed=%ld", fNPairsFailed)),
+    nullptr
+  );
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
-
-  return tListSetttings;
+  return tListSettings;
 }
 
 

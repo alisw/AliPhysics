@@ -125,7 +125,14 @@ const TString HIcollenergystring = "#sqrt{#it{s}_{NN}}";
 const TString fitmodes[kFModes] = { "TFF", "RooFit", "CD", "Functions" };
 const TString DCAxystring = "DCA_{xy} (cm)";
 
-const TString systemString[2] = { "PbPb", "pp" };
+//Indexes for the event collision type
+enum CollSys { kPbPb,
+  kpp,
+  kXeXe,
+  kpPb,
+  kPbp,
+  kCollSysAll };
+const TString systemString[kCollSysAll] = { "PbPb", "pp", "XeXe", "pPb", "Pbp" };
 
 const Double_t CSPEED = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
 

@@ -20,7 +20,7 @@
 
 class AliFemtoModelCorrFctnDEtaDPhiWithWeights : public AliFemtoModelCorrFctn {
 public:
-  AliFemtoModelCorrFctnDEtaDPhiWithWeights(char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoModelCorrFctnDEtaDPhiWithWeights(const char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins, const int& aEtaBins);
   AliFemtoModelCorrFctnDEtaDPhiWithWeights(const AliFemtoModelCorrFctnDEtaDPhiWithWeights& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnDEtaDPhiWithWeights();
 
@@ -37,12 +37,12 @@ public:
 private:
   TH2D *filterHist1; //filter hisotgram used for the first particle
   TH2D *filterHist2; //filter hisotgram used for the second particle
-  
+
   TH2D *fDPhiDEtaNumeratorTrue;      // Numerator of dEta dPhi true function
   TH2D *fDPhiDEtaNumeratorFake;      // Numerator of dEta dPhi fake function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
-  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function 
+  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function
   TH2D *fDPhiDEtaColDenominator;     // Denominator of colinear dEta dPhi function
 
   TH1D *fDPhiNumeratorTrue;          // Numerator of dPhi true correlation

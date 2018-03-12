@@ -11,6 +11,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include <AliPID.h>
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h" 
@@ -104,9 +105,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
-    fHistSurvived8EtaPtPhiPlus(0)
-  
-{   
+    fHistSurvived8EtaPtPhiPlus(0),
+    fUsePID(kFALSE),
+    fpartOfInterest(AliPID::kPion),
+    fPDGCodeWanted(0){   
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -159,6 +161,12 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
   Double_t nArrayDEta[17]={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6}; 
   //====================================================//
 
+  if (fUsePID){
+    fPDGCodeWanted = AliPID::ParticleCode(fpartOfInterest);
+    Printf("******************** fPDGCodeWanted =%d ******************", fPDGCodeWanted);
+  }
+  
+  //====================================================//
   //AOD analysis
   fHistCentrality = new TH1F("fHistCentrality",";Centrality bin;Events",
 			     1001,-0.5,100.5);
@@ -401,7 +409,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     
     if(fUseCentrality){
       if (fAOD->GetRunNumber()<244824) {
-      
+	
 	AliCentrality *centrality = headerAOD->GetCentralityP();
 	nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
 	
@@ -417,15 +425,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	  AliWarning("AliMultSelection object not found!");
 	}
 	else nCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
-	
+
+	if ((nCentrality < fCentralityPercentileMin) || (nCentrality >= fCentralityPercentileMax)) return;
       }
       
     fHistEventStats->Fill(2); //triggered + centrality
     fHistCentrality->Fill(nCentrality);
     }
-    
-    
-  
+      
     //Printf("Centrality selection: %lf - %lf",fCentralityPercentileMin,fCentralityPercentileMax);
     
     const AliAODVertex *vertex = fAOD->GetPrimaryVertex(); 
@@ -520,12 +527,19 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  }
 		}
 	      // ==============================================================================================
-	      
-	      if (AODmcTrack->IsPhysicalPrimary()) {
-		if(gAODmcCharge > 0){
-		  fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+
+
+		
+		if (fUsePID){
+		  Int_t pdgcode = AODmcTrack->GetPdgCode();
+		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
 		}
-		if(gAODmcCharge < 0){
+		
+		if (AODmcTrack->IsPhysicalPrimary()) {
+		  if(gAODmcCharge > 0){
+		    fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		  }
+		  if(gAODmcCharge < 0){
 		    fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		}
@@ -568,9 +582,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    
 		  }  
 		}
+
+		if (fUsePID){
+		  Int_t pdgcode = mcTrack->GetPdgCode();
+		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
+		}
 		
 		Short_t gMCCharge = mcTrack->Charge();
-		Double_t phiRad = mcTrack->Phi(); 
+		Double_t phiRad = mcTrack->Phi();
 		
 		if(gMCCharge > 0)
 		  fHistGeneratedEtaPtPhiPlus->Fill(mcTrack->Eta(),
@@ -635,6 +654,17 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  if (mcLabel != TMath::Abs(label)) continue;
 		  if(mcLabel != label) continue;		    
 		  // if(label > trackAOD->GetLabel()) continue; // MODIFIED 11.01.2017 (take all labels for efficiency)
+		  
+		  if(fUsePID){
+		    AliAODMCParticle *mcTracMatchedWithReco = (AliAODMCParticle*) mcEvent->GetTrack(label); 
+		    if (!mcTracMatchedWithReco) {
+		      AliError(Form("ERROR: Could not receive track %d (match reco - gen)", label));
+		      continue;
+		    }
+		    
+		    Int_t pdgcode = mcTracMatchedWithReco->GetPdgCode();
+		    if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
+		  }
 		  
 		  //acceptance
 		  if(TMath::Abs(trackAOD->Eta()) > fMaxEta) 

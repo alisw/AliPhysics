@@ -63,7 +63,7 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[]);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult);
     void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
@@ -73,12 +73,13 @@ public:
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt);
     void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[]);
 
-    void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
+    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
 
     //********************MC
-    void MCEfficiencyCorrections(const AliVVertex * RecVertex);
-
+    void  MCEfficiencyCorrections(const AliVVertex * RecVertex);
+    Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
     Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[]);
@@ -107,11 +108,19 @@ public:
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
 
+    void SetOnlyEfficiency() {
+      fTRDQA = kFALSE;
+      fCorrHadron = kFALSE;
+      fCorrLParticle = kFALSE;
+      fMixedEvent = kFALSE;
+      fMCTrueCorrelation = kFALSE;
+    }
+
+    
+
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
-
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
-
 
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
@@ -120,7 +129,7 @@ public:
 
     void SetPhotElecPtCut (Double_t AssPtCut) {fPhotElecPtCut = AssPtCut;};
     void SetPhotElecTPCnCut (Int_t AssTPCnCut) {fPhotElecTPCnCut = AssTPCnCut;};
-   void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
+    void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
 
     void SetHTPCnCut(Int_t HTPCnCut) {fHTPCnCut = HTPCnCut;}
     void SetHITSrefitCut(Bool_t HITSrefitCut) {fHITSrefitCut = HITSrefitCut;};   
@@ -134,9 +143,31 @@ public:
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
 
   
-    void SetHadronCorrelation(Bool_t CorrHadron) {fCorrHadron = CorrHadron;};
-    void SetLPCorrelation(Bool_t CorrLP) {fCorrLParticle = CorrLP;};
-    
+    void SetHadronCorrelation(Bool_t CorrHadron) {
+      fCorrHadron = CorrHadron;
+      if (CorrHadron) {
+	fTagEff=kFALSE;
+	fRecEff=kFALSE;
+	fHadCont=kFALSE;
+      }
+    };
+    void SetLPCorrelation(Bool_t CorrLP) {
+      fCorrLParticle = CorrLP;
+      if (CorrLP) {
+	fTagEff=kFALSE;
+	fRecEff=kFALSE;
+	fHadCont=kFALSE;
+      }
+    };
+    void SetMCTruthCorrelation(Bool_t MCTruthCorr) {
+      fMCTrueCorrelation = MCTruthCorr;
+      if (MCTruthCorr) {
+	fTagEff=kTRUE;
+	fRecEff=kTRUE;
+	fHadCont=kTRUE;
+      }
+    };
+
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
@@ -144,7 +175,7 @@ public:
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
-    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -207,11 +238,15 @@ public:
   
     // ******* Switch for analysis modes
     Bool_t                fTRDQA;                   // TRDQA
+    Bool_t                fMCTrueCorrelation;       //
     Bool_t                fCorrHadron;              // Choose Hadron-HFE Correl
     Bool_t                fCorrLParticle;           // Choose LP-HFE Correl
     Bool_t                fMixedEvent;              // Fill Mixed Event for the cases chosen above
-    Bool_t                fLParticle;               //! Is LP found?
-
+    Bool_t                fPionEtaProduction;       //
+    Bool_t                fRecEff;                  //
+    Bool_t                fTagEff;                  //
+    Bool_t                fHadCont;                 //
+    Bool_t                fLParticle;               // Is LP found?
 
     AliESDEvent           *fESD;                    //! ESD object
     AliESDtrackCuts       *fesdTrackCuts;           //!
@@ -222,6 +257,7 @@ public:
     AliCentrality         *fCentrality;             //! Centrality
 
     AliEventPoolManager   *fPoolMgr;                //! event pool manager
+    TH3F                  *fPoolIsFilled;           //! check if pool is filled
     
     AliMCEvent            *fMC;                     //! MC object
     AliStack              *fStack;                  //! stack
@@ -248,6 +284,7 @@ public:
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
     THnSparse             *fMultiplicity;	    //! multiplicity distribution
+    TH3F                  *fSPDMultiplicity;        //!
     Int_t                 *fRunList;                //!
 
     TH2F                  *fElectronTrackCuts;      //! 
@@ -292,7 +329,16 @@ public:
     TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
     TH2F                  *fCheckLSULS;             //! check no of LS/ULS partner per electron
     TH3F                  *fTagEtaPhiPt;            //!
-    TH3F                  *fNonTagEtaPhiPt;         //@
+    TH3F                  *fTagEtaZvtxPt;            //!
+    TH3F                  *fTagEtaPhiPtwW;           //!
+    TH3F                  *fTagEtaZvtxPtwW;           //!
+    TH3F                  *fNonTagEtaPhiPt;         //!
+    TH3F                  *fNonTagEtaZvtxPt;         //!
+    TH3F                  *fNonTagEtaPhiPtwW;       //!
+    TH3F                  *fNonTagEtaZvtxPtwW;        //!
+
+
+
     THnSparse             *fTagMotherPt;              //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
@@ -306,7 +352,7 @@ public:
     TH1F                  fCorrectPiontoData;      
     TH1F                  fCorrectEtatoData;       
     TH3F                  fHadRecEff;
-    TH3F                  fEleRecEff;
+    TH2F                  fEleRecEff;
 
     Int_t                 fAssPtHad_Nbins;
     TArrayF               fAssPtHad_Xmin;
@@ -338,6 +384,9 @@ public:
     TH2F                  *fElecHadTriggerULS;         //!
     TH2F                  *fElecHadTriggerLSNoP;         //!
     TH2F                  *fElecHadTriggerULSNoP;         //!
+    TH2F                  *fElecHadTriggerLSNoPCorr;         //!
+    TH2F                  *fElecHadTriggerULSNoPCorr;         //!
+
     TH2F                  *fHadContTrigger;         //!
     TH2F                  *fHadElecTrigger;         //!
     TH2F                  *fNonElecHadTrigger;      //!
@@ -345,7 +394,9 @@ public:
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-    THnSparse             *fMCElecHaHadron;        //!
+    THnSparse             *fSignalElecHa;           //!
+    THnSparse             *fBackgroundElecHa;       //!
+    THnSparse             *fMCElecHaHadron;         //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
@@ -402,10 +453,12 @@ public:
     THnSparse             *fMCHadPtEtaPhiVtx;        //!
     THnSparse             *fRecHadMCPtEtaPhiVtx;     //!
     THnSparse             *fRecHadPtEtaPhiVtx;       //!
+    THnSparse             *fRecHadPtEtaPhiVtxwW;       //!
 
     TH2F                  *fCheckMCPtvsRecPtEle;     //!
     THnSparse             *fMCElecPtEtaPhiVtx;       //!
     THnSparse             *fRecElecPtEtaPhiVtx;      //!
+    THnSparse             *fRecElecPtEtaPhiVtxwW;    //!
     THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
     TH1F                  *fMCElecPDG;               //!
     THnSparse             *fMCElecPtEtaPhiStrictVtx; //!
@@ -415,6 +468,29 @@ public:
     THnSparse             *fMCPiPlusProd;            //!
     THnSparse             *fMCPiPlusProdV2;          //!
     THnSparse             *fMCLeadingParticle;       //!
+
+    AliEventPoolManager   *fMCTruePoolMgr;           //! event pool manager
+    THnSparse             *fTrueMCHadronEventCuts;   //!
+    THnSparse             *fTrueMCHadronEventCutsZvtx; //!
+    THnSparse             *fTrueMCHadronEventCutsZvtxMEv; //!
+    THnSparse             *fTrueMCHadron;            //!
+    TH3F                  *fTrueMCElecHaTriggerEventCuts; //!
+    TH3F                  *fTrueMCElecHaTrigger; //!
+    THnSparse             *fTrueMCLPEventCuts;   //!
+    THnSparse             *fTrueMCLPEventCutsZvtx; //!
+    THnSparse             *fTrueMCLPEventCutsZvtxMEv; //!
+    THnSparse             *fTrueMCLP;   //!
+    TH3F                  *fTrueMCElecLPTriggerEventCuts; //!
+    TH3F                  *fTrueMCElecLPTrigger; //!
+    TH2F                  *fTrueElectronEta; //!
+    TH2F                  *fRecElectronEta; //!
+    TH2F                  *fTrueLPinAcceptanceEta; //!
+    TH2F                  *fTrueLPEta; //!
+    TH2F                  *fRecLPEta; //!
+    TH2F                  *fTrueHadronEta; //!
+    TH2F                  *fRecHadronEta; //!
+    TH3F                  *fCompareLP; //!
+
 
     AliESDv0KineCuts *fV0cutsESD;        //! ESD V0 cuts
     AliAODv0KineCuts *fV0cuts;           //! AOD V0 cuts
@@ -553,7 +629,7 @@ class AliBasicParticleHaHFE : public AliVParticle
   Bool_t  fIsHadron;       // only for MC
   Int_t   fLabel;
 
-  ClassDef(AliBasicParticleHaHFE, 3); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  ClassDef(AliBasicParticleHaHFE, 4); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 

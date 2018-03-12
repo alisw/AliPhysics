@@ -76,6 +76,12 @@ public:
   Float_t      GetM02Min()               const  { return fM02Min   ; }
   void         SetM02Min(Float_t m02)           { fM02Min = m02    ; }
 
+  void         SetM02LowBin(Float_t min, Float_t max)           
+                                                { fM02LowBin[0] = min  ;  fM02LowBin[1]  = max ; }
+
+  void         SetM02HighBin(Float_t min, Float_t max)           
+                                                { fM02HighBin[0] = min ;  fM02HighBin[1] = max ; }
+  
   Float_t      GetDistToBadMin()         const  { return fMinDistToBad ; }
   void         SetDistToBadMin(Float_t di)      { fMinDistToBad = di   ; }
 
@@ -112,6 +118,9 @@ public:
   Int_t        GetNCellMinShape()        const  { return fNCellMinShape   ; }
   void         SetNCellMinShape(Int_t nc)       { fNCellMinShape = nc     ; }
   
+  void         SetNCellBinLimits(Int_t nb)      { fNCellsBins = nb        ; }
+  void         SetNCellBinLimitAt(Int_t i, Float_t va) { if(i < 5) fNCellsBinsLimits[i] = va ; }
+  
   // Analysis switchs
   
   void SwitchOnStudyClusterShape()              { fStudyShape            = kTRUE  ; }
@@ -126,8 +135,23 @@ public:
   void SwitchOnStudyTCardCorrelation()          { fStudyTCardCorrelation = kTRUE  ; }
   void SwitchOffStudyTCardCorrelation()         { fStudyTCardCorrelation = kFALSE ; }
 
+  void SwitchOnStudyInvariantMass()             { fStudyInvMass          = kTRUE  ; }
+  void SwitchOffStudyInvariantMass()            { fStudyInvMass          = kFALSE ; }
+ 
   void SwitchOnStudyExotic()                    { fStudyExotic           = kTRUE  ; }
   void SwitchOffStudyExotic()                   { fStudyExotic           = kFALSE ; }
+  
+  void SwitchOnStudyMatchedPID()                { fNMatchPIDCases        = 3      ; }
+  void SwitchOffStudyMatchedPID()               { fNMatchPIDCases        = 1      ; }  
+  
+  void SwitchOnStudyColRowFromCellMax()         { fStudyColRowFromCellMax = kTRUE  ; }
+  void SwitchOffStudyColRowFromCellMax()        { fStudyColRowFromCellMax = kFALSE ; }
+  
+  void SwitchOnStudyCellTime()                  { fStudyTimeCellHisto    = kTRUE  ; }
+  void SwitchOffStudyCellTime()                 { fStudyTimeCellHisto    = kFALSE ; }
+ 
+  void SwitchOnStudyEMCalModuleCells()          { fStudyModuleCells      = kTRUE  ; }
+  void SwitchOffStudyEMCalModuleCells()         { fStudyModuleCells      = kFALSE ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
@@ -137,13 +161,23 @@ public:
   // Switches
   //
   Bool_t   fStudyShape;                         ///<  Study shower shape of clusters and other param on TH3
+  
   Bool_t   fStudyShapeParam;                    ///<  Study not only M02 but other kind of shape param
 
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
  
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
+  
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, for TCard correl studies
+  
+  Bool_t   fStudyColRowFromCellMax;             ///<  Study activity around cell max
 
+  Bool_t   fStudyInvMass;                       ///<  Fill invariant mass histograms
+  
+  Bool_t   fStudyTimeCellHisto;                 ///<  Fill time cell histograms
+  
+  Bool_t   fStudyModuleCells;                   ///<  Fill EMCal module cell histograms
+  
   //
   // Cuts
   //
@@ -154,10 +188,17 @@ public:
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut for fStudyTCardCorrelation
   Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts for fStudyTCardCorrelation
   
+  Float_t  fM02LowBin [2];                      ///<  Min and max value of shower shape in photon region
+  Float_t  fM02HighBin[2];                      ///<  Min and max value of shower shape in non photon region
+
   Float_t  fEMinShape;                          ///<  Minimum cluster energy for some fStudyShape histograms           
   Float_t  fEMaxShape;                          ///<  Maximum cluster energy for some fStudyShape histograms           
-  Int_t    fNCellMinShape;                      ///<  Minumum cluster number of cells for some fStudyShape histograms           
+  Int_t    fNCellMinShape;                      ///<  Minumum cluster number of cells for some fStudyShape histograms        
   
+  Int_t    fNCellsBins ;                        ///<  Total number of number of cells bins
+  Int_t    fNCellsBinsLimits[5];                ///<  Limits to select clusters within a number of cells  range         
+  
+  Int_t    fNMatchPIDCases;                     ///<  Number of track matched PIDs to study, usually only interested in neutral
   Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
   Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
   Int_t    fdEdXMinHad;                         ///<  dEdX min cut for hadrons
@@ -498,10 +539,10 @@ public:
   TH3F *   fhNCellsPerClusterM02NLMPerSM  [20];   //!<! m02 vs NLM vs n cells 
   TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
   TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
-  TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
+//TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
 
   TH3F *   fhEMaxCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E max cell / E cluster
-  TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
+//TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
 
   TH3F *   fhEMaxESecCellNCellLowM02PerSM [20];   //!<! E cell max vs E cell secondary vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3 per SM number
   TH3F *   fhEMaxECrossNCellLowM02PerSM   [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number
@@ -512,18 +553,60 @@ public:
   TH3F *   fhColRowFromCellMaxLowM02PerSM [20][2];//!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
   TH3F *   fhColRowFromCellMaxHighM02PerSM[20][2];//!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
 
-  TH3F *   fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
-  TH3F *   fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
 
-  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max / e max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
-  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max /  e max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max / e max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max /  e max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
 
-  TH3F *   fhColRowFromCellMaxECellClusterRatLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
-  TH3F *   fhColRowFromCellMaxECellClusterRatHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxECellClusterRatLowM02PerSM [20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxECellClusterRatHighM02PerSM[20][2][4];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
 
   TH2F *   fhColRowFromCellMaxLowM02         [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per odd/pair column
   TH2F *   fhColRowFromCellMaxHighM02        [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per odd/pair column
  
+  // EMCal module studies
+  //
+  TH3F *   fhSMNCellModuleMax;                  //!<! Number of cells in cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMNCellModuleOut;                  //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMECellModuleMax;                  //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxTot;               //!<! Total energy of cells in cell maximum module, per SM, per cluster E
+  TH3F *   fhSMECellModuleOut;                  //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E
+  
+  TH3F *   fhSMNCellModuleMaxOutRat;            //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxRat ;              //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxTotRat ;           //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxTotRatClus ;       //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E
+  TH3F *   fhSMECellModuleMaxOutRat;            //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E
+
+  TH3F *   fhSMNCellModuleMaxLowM02;            //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMNCellModuleOutLowM02;            //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxLowM02;            //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxTotLowM02;         //!<! Total energy of cells in cell maximum module, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleOutLowM02;            //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  
+  TH3F *   fhSMNCellModuleMaxOutRatLowM02;      //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxRatLowM02 ;        //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxTotRatLowM02 ;     //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxTotRatClusLowM02 ; //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleMaxOutRatLowM02;      //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
+
+  TH3F *   fhSMNCellModuleMaxHighM02;           //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, non photon shape
+  TH3F *   fhSMNCellModuleOutHighM02;           //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxHighM02;           //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxTotHighM02;        //!<! Total energy of cells in cell maximum module, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleOutHighM02;           //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, non photon shape
+  
+  TH3F *   fhSMNCellModuleMaxOutRatHighM02;     //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxRatHighM02 ;       //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxTotRatHighM02 ;    //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxTotRatClusHighM02; //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleMaxOutRatHighM02;     //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
+ 
+  TH3F *   fhSMEMaxEClusterRat;                 //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape
+  TH3F *   fhSMEMaxEClusterRatLowM02;           //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, photon shape
+  TH3F *   fhSMEMaxEClusterRatHighM02;          //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, non photon shape
+  
   // Weight studies
   //
   
@@ -551,7 +634,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,5) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,7) ;
   /// \endcond
 
 } ;

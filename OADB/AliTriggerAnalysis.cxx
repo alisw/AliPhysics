@@ -805,19 +805,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHist
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
   // usage of uncorrected timings is deprecated
-  // TODO: implement selection on AOD in MC
-  if(fMC) {
-    if (event->GetDataLayoutType()==AliVEvent::kESD) {
-      const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
-      AliESDZDC *esdZDC = esd->GetESDZDC();
-      UInt_t esdFlag = esdZDC->GetESDQuality();
-      Bool_t znaFired = (esdFlag & 0x01) == 0x01;
-      Bool_t zncFired = (esdFlag & 0x10) == 0x10;
-      return znaFired | zncFired;
-    } else {
-      return kTRUE;
-    }
-  }
+  if(fMC) return kTRUE;
   
   Float_t zna[4]={0};
   Float_t znc[4]={0};

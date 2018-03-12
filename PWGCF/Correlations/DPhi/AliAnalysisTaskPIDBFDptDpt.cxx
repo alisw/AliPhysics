@@ -1168,6 +1168,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     }
   else
     {
+      name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
       name = n1Name+part_1_Name+vsEtaPhi;       _n1_1_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
       name = s1ptName+part_1_Name+vsEtaPhi;     _s1pt_1_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
       name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
@@ -1228,6 +1230,8 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
     {
       if (_sameFilter)
         {
+    fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+    fillHistoWithArray(_n1_2_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_s1pt_1_vsEtaVsPhi,      __s1pt_1_vsEtaPhi,  _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_n1_2_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
@@ -1235,6 +1239,8 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
         }
       else
         {
+    fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+    fillHistoWithArray(_n1_2_vsPt,              __n1_2_vsPt,        _nBins_pt_2);
 	  fillHistoWithArray(_n1_1_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_s1pt_1_vsEtaVsPhi,      __s1pt_1_vsEtaPhi,  _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_n1_2_vsEtaVsPhi,        __n1_2_vsEtaPhi,    _nBins_eta_2,   _nBins_phi_2);
@@ -1625,7 +1631,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      //cout << "step 2 Au-Au: arr: " << arr->GetEntriesFast() << endl;
 		      AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
 		      //cout << "step 3 Au-Au: particle ID: " << particle -> GetPdgCode() << endl;
-		      if ( TMath::Abs(particle->GetPdgCode()) != 211 ) continue;
+		      if( particleSpecies == 0 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                      else if( particleSpecies == 1 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                      else if( particleSpecies == 2 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
 		      //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
 		    }
 		
@@ -1748,6 +1759,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
 		      _charge_1[k1]               = charge;
@@ -1815,6 +1827,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;
@@ -2022,6 +2035,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
 		      _charge_1[k1]               = charge;
@@ -2089,6 +2103,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;

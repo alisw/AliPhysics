@@ -16,9 +16,9 @@ class AliFemtoBasicEventCut : public AliFemtoEventCut {
 public:
 
   AliFemtoBasicEventCut(); ///< Default Constructor
-  AliFemtoBasicEventCut(AliFemtoBasicEventCut& c);  ///< Copy Constructor
+  AliFemtoBasicEventCut(const AliFemtoBasicEventCut& c);  ///< Copy Constructor
   virtual ~AliFemtoBasicEventCut(); ///< Destructor
-  AliFemtoBasicEventCut& operator=(AliFemtoBasicEventCut& c);  ///< Assignment Operator
+  AliFemtoBasicEventCut& operator=(const AliFemtoBasicEventCut& c);  ///< Assignment Operator
 
   void SetEventMult(const int& lo,const int& hi);     ///< Set min and max acceptable event multiplicity
   void SetVertZPos(const float& lo, const float& hi); ///< Set min and max acceptable vertex z-coordinate
@@ -36,7 +36,7 @@ public:
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoBasicEventCut* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
 private:   // here are the quantities I want to cut on...
 
@@ -89,13 +89,13 @@ inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig)
   fSelectTrigger = trig;
 }
 
-inline AliFemtoBasicEventCut* AliFemtoBasicEventCut::Clone()
+inline AliFemtoEventCut* AliFemtoBasicEventCut::Clone() const
 {
   AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this);
   return c;
 }
 
-inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c):
+inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(const AliFemtoBasicEventCut& c):
   AliFemtoEventCut(c),
   fAcceptBadVertex(c.fAcceptBadVertex),
   fNEventsPassed(0),
@@ -111,7 +111,7 @@ inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c):
   fPsiEP[1] = c.fPsiEP[1];
 }
 
-inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c)
+inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(const AliFemtoBasicEventCut& c)
 {
   if (this != &c) {
     AliFemtoEventCut::operator=(c);

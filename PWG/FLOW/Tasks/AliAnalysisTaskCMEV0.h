@@ -15,6 +15,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TH2F.h"
 #include "TProfile2D.h"
 #include "TProfile.h"
 #include "TString.h"
@@ -28,6 +29,7 @@ class AliVVertex;
 class AliFlowEventSimple;
 class AliMultSelection;
 class AliAnalysisUtils;
+class AliPIDResponse;    
 class TList;
 
 class AliAnalysisTaskCMEV0 : public AliAnalysisTaskSE {
@@ -67,8 +69,10 @@ public:
   void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
   void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
   void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
-
-
+  void    SetPileUpCutParam(Float_t m,Float_t c)      {this->fPileUpSlopeParm   = m;  this->fPileUpConstParm = c;}
+  void    SetTrackFilterBit(Int_t gf)                 {this->gFilterBit         =           gf;}
+  void    SetHBTcutParameter(Float_t hb)              {this->fHBTCutValue       =           hb;}
+  
 
 private:
 
@@ -88,6 +92,8 @@ private:
 
   void InitializeRunArray(TString sPeriod);
   Int_t GetCurrentRunIndex(Int_t  run);
+  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+
 
 
   AliFlowEventSimple*         fEvent;         //! input event
@@ -96,6 +102,7 @@ private:
 
   TList*                 fListHistos;         //! collection of output
   TList*                 fListCalibs;         //! collection of Calib Histos
+  TList*                fListNUAHist;         //! collection of NUA Histograms
 
   TList*               fListFBHijing;         // Hijing Efficiency list
   TList*                fListNUACorr;         // NUA Correction List
@@ -130,6 +137,13 @@ private:
   Int_t                   fHarmonicN;         //   Harmonic n
   Int_t                   fHarmonicM;         //   Harmonic m
   Int_t                 fHarmonicPsi;         //   Harmonic psi
+  Float_t           fPileUpSlopeParm;         //
+  Float_t           fPileUpConstParm;         //
+  Int_t                   gFilterBit;         //
+  Float_t               fHBTCutValue;         //
+  Float_t               fRefMultCorr;         //!
+  Float_t                fRefMultRaw;         //!
+
 
   TH1F            *fHist_Event_count;         //!  event count with different cuts
   TH1F          *fPileUpMultSelCount;         //!
@@ -192,12 +206,20 @@ private:
 
   TH2D          *fHCorrectZDNP; //!
 
-  TProfile2D  *fV0AQnxVsCentRun; //!
-  TProfile2D  *fV0AQnyVsCentRun; //!
-  TProfile2D  *fV0CQnxVsCentRun; //!
-  TProfile2D  *fV0CQnyVsCentRun; //!
-  TProfile2D  *fTPCQnxVsCentRun; //!
-  TProfile2D  *fTPCQnyVsCentRun; //!
+  TProfile2D  *fV0AQ2xVsCentRun; //!
+  TProfile2D  *fV0AQ2yVsCentRun; //!
+  TProfile2D  *fV0CQ2xVsCentRun; //!
+  TProfile2D  *fV0CQ2yVsCentRun; //!
+
+  TProfile2D  *fV0AQ3xVsCentRun; //!
+  TProfile2D  *fV0AQ3yVsCentRun; //!
+  TProfile2D  *fV0CQ3xVsCentRun; //!
+  TProfile2D  *fV0CQ3yVsCentRun; //!
+
+  TProfile2D  *fTPCQ2xVsCentRun; //!
+  TProfile2D  *fTPCQ2yVsCentRun; //!
+  TProfile2D  *fTPCQ3xVsCentRun; //!
+  TProfile2D  *fTPCQ3yVsCentRun; //!
 
   TList           *mListNUAPos; //!
   TList           *mListNUANeg; //!
@@ -226,11 +248,24 @@ private:
 
   TH2F            *fCentDistvsRun; //! 
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
+  TH2D           *fHAvgerageQnV0A; //!   V0A Average <Qn>, n=2,3
+  TH2D           *fHAvgerageQnV0C; //!   V0C Average <Qn>, n=2,3
+
+
 
   TProfile2D     *fCentV0MvsVzRun; //!
-  TProfile2D     *fCentCL1vsVzRun; //!
+  TProfile2D      *fCent3pvsVzRun; //!
 
-
+  TH2F         *fRefMultCorrvsRaw; //!
+  TH2F           *fTPCvsGlobalTrk; //!
+  TH2F         *fTPCuncutvsGlobal; //!
+  TH1F             *fGlobalTracks; //!
+  TH2F             *fTPCvsITSfb96; //!
+  TH2F             *fTPCvsITSfb32; //!
+  TH2F           *fTPCFEvsITSfb96; //!
+  TH3F           *fCentCL1vsVzRun; //!
+  TH1F             *fdPhiFemtoCut; //!
+  TH1F            *fVzDistribuion; //!
   //TRandom3                fRand; //!
 
 
@@ -245,14 +280,15 @@ private:
 
 
 
-
   //  [ Arrays of Histrograms here: ]
-  TH3D        *fHCorrectNUApos[4]; //! 4 centrality bin
-  TH3D        *fHCorrectNUAneg[4]; //! 4 centrality bin
 
 
-  TH3F         *fHist3DEtaPhiVz_Pos_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
-  TH3F         *fHist3DEtaPhiVz_Neg_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
+  TH3D        *fHCorrectNUApos[5]; //! 5 centrality bin
+  TH3D        *fHCorrectNUAneg[5]; //! 5 centrality bin
+
+
+  TH3F         *fHist3DEtaPhiVz_Pos_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
+  TH3F         *fHist3DEtaPhiVz_Neg_Run[5][90];  //! 5 centrality bin 90 Bins for Run. NUA
 
   TH1D         *fFB_Efficiency_Cent[10];  //!
 
@@ -271,6 +307,14 @@ private:
   TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
+
+  //CME(EP) vs Refmult:
+  TProfile     *fHist_Corr3p_EP_Refm_PN[2][3];  //! 
+  TProfile     *fHist_Corr3p_EP_Refm_PP[2][3];  //!
+  TProfile     *fHist_Corr3p_EP_Refm_NN[2][3];  //!
+  TProfile     *fHist_Reso2n_EP_Refm_Det[2][3]; //! 
+
+
 
   TProfile2D      *fHist_Corr3p_vsRun_EP_PN[2];  // 0=V0A,1=V0C
   TProfile2D      *fHist_Corr3p_vsRun_EP_PP[2];  //
@@ -353,10 +397,16 @@ private:
   TProfile2D   *fHist_NonIso_SP_NN_Mag1[2];  //!
 
 
-  //2particle correlation:
+  //2particle correlation vs Cent:
   TProfile2D  *fHist_Corr2p_EP_Norm_PN[2];  //!  Two magnetic fields
   TProfile2D  *fHist_Corr2p_EP_Norm_PP[2];  //! 
   TProfile2D  *fHist_Corr2p_EP_Norm_NN[2];  //! 
+
+  //2particle correlation vs Refm:
+  TProfile2D  *fHist_Corr2p_EP_Refm_PN[2];  //!  Two magnetic fields
+  TProfile2D  *fHist_Corr2p_EP_Refm_PP[2];  //! 
+  TProfile2D  *fHist_Corr2p_EP_Refm_NN[2];  //! 
+
 
 
 

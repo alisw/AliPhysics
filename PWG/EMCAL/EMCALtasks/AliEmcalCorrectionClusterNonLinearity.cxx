@@ -59,8 +59,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
-
   std::string nonLinFunctStr = "";
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
@@ -89,11 +87,11 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
   if (fCreateHisto){
     fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyDistBefore);
-    fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+    fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistBefore);
     fEnergyDistAfter = new TH1F("hEnergyDistAfter","hEnergyDistAfter;E_{clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyDistAfter);
-    fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+    fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistAfter);
     
     // Take ownership of output list

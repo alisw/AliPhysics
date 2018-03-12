@@ -145,6 +145,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhTrackPhi(0x0),
+  fhTrackPhi_Cut(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -300,6 +302,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhTrackPhi(0x0),
+  fhTrackPhi_Cut(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -507,7 +511,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );   
     fOutput->Add(fhJetPt);
     //fhJetPhi= new TH1F("fhJetPhi", "Jet Phi", Phi_Bins, Phi_Low, Phi_Up);
-    fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    // fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",780 , -7, 7);
     fOutput->Add(fhJetPhi);
     fhJetEta= new TH1F("fhJetEta", "Jet Eta", Eta_Bins, Eta_Low, Eta_Up);
     fOutput->Add(fhJetEta);
@@ -531,6 +536,10 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJetCounter);
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
     fOutput->Add(fhEventCounter);
+    fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi);
+    fhTrackPhi_Cut= new TH1F("fhTrackPhi_Cut", "fhTrackPhi_Cut",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi_Cut);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
     fhSubJettiness1_FJ_KT= new TH1D("fhSubJettiness1_FJ_KT","fhSubJettiness1_FJ_KT",400,-2,2);
@@ -721,6 +730,10 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter_1);
     fhEventCounter_2= new TH1F("fhEventCounter_2", "Event Counter Particle Level", 15,0.5,15.5);
     fOutput->Add(fhEventCounter_2);
+    fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi);
+    fhTrackPhi_Cut= new TH1F("fhTrackPhi_Cut", "fhTrackPhi_Cut",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi_Cut);
   }
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
@@ -767,6 +780,57 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
+
+  ////Filling Track Phi
+  AliTrackContainer *PartCont_Particles = NULL;
+  AliParticleContainer *PartContMC_Particles = NULL;
+  
+  if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC_Particles = GetParticleContainer(1);
+    else PartCont_Particles = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC_Particles = GetParticleContainer(0);
+    else PartCont_Particles = GetTrackContainer(0);
+  }
+  
+  TClonesArray *TracksArray_Particles = NULL;
+  TClonesArray *TracksArrayMC_Particles = NULL;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly && PartContMC_Particles) TracksArrayMC_Particles = PartContMC_Particles->GetArray();
+  else if(PartCont_Particles) TracksArray_Particles = PartCont_Particles->GetArray();
+
+  AliAODTrack *Track_Particles = 0x0;
+  Int_t NTracks_Particles=0;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly && TracksArrayMC_Particles) NTracks_Particles = TracksArrayMC_Particles->GetEntriesFast();
+  else if(TracksArray_Particles) NTracks_Particles = TracksArray_Particles->GetEntriesFast();
+
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    if (PartContMC_Particles && TracksArrayMC_Particles){
+      for(Int_t i=0; i < NTracks_Particles; i++){
+	if((Track_Particles = static_cast<AliAODTrack*>(PartContMC_Particles->GetAcceptParticle(i)))){
+	  if (!Track_Particles) continue;
+	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
+	  if (Track_Particles->Pt()<0.15) continue;
+	  fhTrackPhi->Fill(Track_Particles->Phi());
+	  if (Track_Particles->Pt()>=4.0) fhTrackPhi_Cut->Fill(Track_Particles->Phi());
+	}
+      }
+    }
+  }
+  else{
+    if (PartCont_Particles && TracksArray_Particles){
+      for(Int_t i=0; i < NTracks_Particles; i++){
+	if((Track_Particles = static_cast<AliAODTrack*>(PartCont_Particles->GetAcceptTrack(i)))){
+	  if (!Track_Particles) continue;
+	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
+	  if (Track_Particles->Pt()<0.15) continue;
+	  fhTrackPhi->Fill(Track_Particles->Phi());
+	  if (Track_Particles->Pt()>=4.0) fhTrackPhi_Cut->Fill(Track_Particles->Phi());
+	}
+      }
+    }
+  }
+  ////
 
   AliAODTrack *TriggerHadron = 0x0;
   if (fJetSelection == kRecoil) {
@@ -1145,8 +1209,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  JetCounter++;
 	  fhJetPt->Fill(Jet1->Pt());    
 	  JetPhi=Jet1->Phi();
-	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
-	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+	  //if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+	  //else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
 	  fhJetMass->Fill(Jet1->M());
@@ -1655,7 +1719,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Option==9 Subjet1 Leading track Pt
 
   
-  
+  Algorithm=fReclusteringAlgorithm;
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
@@ -1697,20 +1761,20 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_akt02();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_akt02();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==6) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_onepassca();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==6) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_onepassca();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==1) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_casd();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_casd();
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==6) && (Beta==1.0) && (Option==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_onepassca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_onepassca();
     } 
     else{
-      Algorithm=fReclusteringAlgorithm;
+      //Algorithm=fReclusteringAlgorithm;
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder JetFinder("Nsubjettiness");
       JetFinder.SetJetMaxEta(0.9-fJetRadius);

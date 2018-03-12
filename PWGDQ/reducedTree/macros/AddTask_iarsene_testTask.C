@@ -48,7 +48,7 @@ AliAnalysisTask* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=
        mgr->ConnectInput(task, 0, cReducedEvent);
   
      AliAnalysisDataContainer *cOutputHist = mgr->CreateContainer("testHistos", THashList::Class(),
-                                                                  AliAnalysisManager::kOutputContainer, "dstAnalysisHistograms.root");
+                                                                  AliAnalysisManager::kOutputContainer, "AnalysisHistograms_testTask.root");
      mgr->ConnectOutput(task, 1, cOutputHist );
   }
   
@@ -97,9 +97,12 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   // add pure MC filter names
   if(processor->ProcessMC()) {
      processor->AddMCBitNames("JpsiInclusive;JpsiFromB;JpsiNotFromB;");
-     processor->AddMCBitNames("JpsiInclusiveRadiative;JpsiInclusiveNonRadiative;JpsiFromBRadiative;JpsiFromBNonRadiative;");
+     processor->AddMCBitNames("JpsiInclusiveRadiative;JpsiInclusiveNonRadiative;");
+     processor->AddMCBitNames("electronFromJpsi;photonFromJpsiDecay;");
   }
-  processor->SetTrackFilterBitNames("JpsiElectrons;AssocHadr;AssocHadr_noITS;AssocHadr_Pion;AssocHadr_Kaon;AssocHadr_Proton;");
+  processor->AddTrackFilterBitNames("basicCuts;spdAny;spdFirst;tpc100;tpc120;tpcChi2_3;itsChi2_10;");
+  processor->AddTrackFilterBitNames("eleInclusion_35;eleInclusion_30;protRej_30;protRej_35;protRej_40;");
+  processor->AddTrackFilterBitNames("pionRej_30;pionRej_35;pionRej_40;basicCutRandom;");
   
   SetupHistogramManager(processor, processor->GetHistogramManager(), prod);
 }
@@ -130,11 +133,14 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
   histClasses += "Event_NoCuts;";        //ok
   histClasses += "Event_AfterCuts;";     //ok
   histClasses += "EvtTags;L0TriggerInput;L1TriggerInput;L2TriggerInput;";   //ok
+  histClasses += "L0InputCorrelation;L1InputCorrelation;L2InputCorrelation;";
   histClasses += "OnlineTriggers_vs_L0TrigInputs;OnlineTriggers_vs_L1TrigInputs;OnlineTriggers_vs_L2TrigInputs;";  //ok
   histClasses += "ITSclusterMap;TPCclusterMap;";   //ok
   histClasses += "CaloClusters;";   //ok
   histClasses += "OnlineTriggers_NoCuts;";  //ok
   histClasses += "OnlineTriggers_AfterCuts;";    //ok
+  histClasses += "TriggerCorrelation_NoCuts;";
+  histClasses += "TriggerCorrelation_AfterCuts;";
   histClasses += "TrackQA_GammaLeg;";         //ok
   histClasses += "TrackQA_PureGammaLeg;";
   histClasses += "TrackQA_K0sLeg;";
@@ -153,6 +159,7 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
   for(Int_t iflag = 0; iflag<trkBitNamesArr->GetEntries(); ++iflag)
      histClasses += Form("TrackQA_%s;", trkBitNamesArr->At(iflag)->GetName());
   histClasses += "TrackingFlags;TrackQualityFlags;PairQualityFlags_Offline;PairQualityFlags_OnTheFly;";   //ok
+  histClasses += "CorrelationQualityFlagsTracks;CorrelationQualityFlagsPairs_Offline;CorrelationQualityFlagsPairs_OnTheFly;";
   histClasses += "TrackQualityFlags_GammaLeg;TrackQualityFlags_K0sLeg;";
   histClasses += "PairQA_OfflineGamma;";           // ok
   histClasses += "PairQA_OfflinePureGamma;";
@@ -173,7 +180,7 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
   histClasses += "PairQA_Jpsi2EE_PP;PairQA_Jpsi2EE_PM;PairQA_Jpsi2EE_MM;";  
   histClasses += "PairQA_ADzeroToKplusPiminus_PP;PairQA_ADzeroToKplusPiminus_PM;PairQA_ADzeroToKplusPiminus_MM;";
   if(testTask->ProcessMC()) {
-    histClasses += "PureMCflags;";
+    histClasses += "PureMCflags;CorrelationMCflags;";
     //"PureMCflags;PureMCqa_Signal1;PureMCqa_Signal2;PureMCqa_Signal3;PureMCqa_Signal4;PureMCqa_Signal5;PureMCqa_Signal6;PureMCqa_Signal7;";
     TObjArray* arrNames = testTask->GetMCBitNames().Tokenize(";"); 
     for(Int_t iflag=0; iflag<arrNames->GetEntries(); ++iflag) 
@@ -345,6 +352,15 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
 	           32, -0.5, 31.5, AliReducedVarManager::kL0TriggerInput, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data());
       continue;
     }
+    if(classStr.Contains("L0InputCorrelation")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       TString trigInputs = "";
+       for(Int_t i=0; i<32; ++i) {trigInputs += Form("L0 Input %d", i); trigInputs+=";";}
+       man->AddHistogram(classStr.Data(), "L0InputCorrelation", "L0 trigger inputs correlation", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kL0TriggerInput, 32, -0.5, 31.5, AliReducedVarManager::kL0TriggerInput2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data(), trigInputs.Data());
+       continue;
+    }
     if(classStr.Contains("L1TriggerInput")) {
       man->AddHistClass(classStr.Data());
       cout << classStr.Data() << endl;
@@ -353,6 +369,15 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
       man->AddHistogram(classStr.Data(), "L1TriggerInputs", "L1 trigger inputs", kFALSE,
 	           32, -0.5, 31.5, AliReducedVarManager::kL1TriggerInput, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data());
       continue;
+    }
+    if(classStr.Contains("L1InputCorrelation")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       TString trigInputs = "";
+       for(Int_t i=0; i<32; ++i) {trigInputs += Form("L1 Input %d", i); trigInputs+=";";}
+       man->AddHistogram(classStr.Data(), "L1InputCorrelation", "L1 trigger inputs correlation", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kL1TriggerInput, 32, -0.5, 31.5, AliReducedVarManager::kL1TriggerInput2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data(), trigInputs.Data());
+       continue;
     }
     if(classStr.Contains("L2TriggerInput")) {
       man->AddHistClass(classStr.Data());
@@ -363,6 +388,15 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
 	           16, -0.5, 15.5, AliReducedVarManager::kL2TriggerInput, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data());
       continue;
     }
+    if(classStr.Contains("L2InputCorrelation")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       TString trigInputs = "";
+       for(Int_t i=0; i<32; ++i) {trigInputs += Form("L2 Input %d", i); trigInputs+=";";}
+       man->AddHistogram(classStr.Data(), "L2InputCorrelation", "L2 trigger inputs correlation", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kL2TriggerInput, 32, -0.5, 31.5, AliReducedVarManager::kL2TriggerInput2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trigInputs.Data(), trigInputs.Data());
+       continue;
+    }
     
     // Offline trigger histograms
     if(classStr.Contains("OnlineTriggers")) {
@@ -372,13 +406,24 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
       for(Int_t i=0; i<64; ++i) {triggerNames += AliReducedVarManager::fgkOfflineTriggerNames[i]; triggerNames+=";";}
       
       man->AddHistogram(classStr.Data(), "Triggers", "", kFALSE,
-	           64, -0.5, 63.5, AliReducedVarManager::kOnlineTrigger, 2, -0.5, 1.5, AliReducedVarManager::kOnlineTriggerFired, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data(), "off;on");
-      man->AddHistogram(classStr.Data(), "Triggers2", "", kFALSE,
-	           64, -0.5, 63.5, AliReducedVarManager::kOnlineTriggerFired2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data());
-      man->AddHistogram(classStr.Data(), "CentVZERO_Triggers2", "", kFALSE,
-	           64, -0.5, 63.5, AliReducedVarManager::kOnlineTriggerFired2, 20, 0.0, 100.0, AliReducedVarManager::kCentVZERO, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data());
+	           64, -0.5, 63.5, AliReducedVarManager::kOnlineTriggerFired, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data());
+      man->AddHistogram(classStr.Data(), "CentVZERO_Triggers", "", kFALSE,
+	           64, -0.5, 63.5, AliReducedVarManager::kOnlineTriggerFired, 20, 0.0, 100.0, AliReducedVarManager::kCentVZERO, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data());
       continue;
     }
+    
+    if(classStr.Contains("TriggerCorrelation")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       TString triggerNames = "";
+       for(Int_t i=0; i<64; ++i) {triggerNames += AliReducedVarManager::fgkOfflineTriggerNames[i]; triggerNames+=";";}
+       
+       man->AddHistogram(classStr.Data(), "TriggerCorrelation", "", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kOnlineTriggerFired, 32, -0.5, 31.5, AliReducedVarManager::kOnlineTriggerFired2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, triggerNames.Data(), triggerNames.Data());
+       continue;
+    }
+    
+    
     
     if(classStr.Contains("OnlineTriggers_vs_L0TrigInputs")) {
       man->AddHistClass(classStr.Data());
@@ -479,8 +524,8 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
     trackQualityFlagNames += "pure #gamma;pure K^{0}_{S};pure #Lambda;pure #bar{#Lambda};-kink0;-kink1;-kink2;";
     //trackQualityFlagNames += "bayes e>0.5;bayes #pi>0.5;bayes K>0.5;bayes p>0.5;bayes>0.7;bayes>0.8;bayes>0.9";
     trackQualityFlagNames += "AOD filter bit 0; AOD filter bit 1; AOD filter bit 2; AOD filter bit 3; AOD filter bit 4;";
-    trackQualityFlagNames += "AOD filter bit 5; AOD filter bit 6; AOD filter bit 7; AOD filter bit 8; AOD filter bit 9; ; TRD match";
-      
+    trackQualityFlagNames += "AOD filter bit 5; AOD filter bit 6; AOD filter bit 7; AOD filter bit 8; AOD filter bit 9; ; TRD match; ; ; ; ; ;";
+    trackQualityFlagNames += trkBitNames.Data();
     
     if(classStr.Contains("TrackingFlags")) {
       man->AddHistClass(classStr.Data());
@@ -500,9 +545,17 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
       continue;
     }
     
-    TString mcFlagNames = "";
-    for(Int_t i=0;i<32;++i)
-      mcFlagNames += Form("Signal %d;", i);   
+    if(classStr.Contains("CorrelationQualityFlagsTracks")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       man->AddHistogram(classStr.Data(), "CorrelationTrackQualityFlags", "Track quality flags correlation;;", kFALSE,
+                         64, -0.5, 63.5, AliReducedVarManager::kTrackQualityFlag, 64, -0.5, 63.5, AliReducedVarManager::kTrackQualityFlag2, 
+                         0, 0.0, 0.0, AliReducedVarManager::kNothing, trackQualityFlagNames.Data(), trackQualityFlagNames.Data());
+       continue;
+    }
+    
+    
+    TString mcFlagNames = testTask->GetMCBitNames();
       
     if(classStr.Contains("PureMCflags")) {
        man->AddHistClass(classStr.Data());
@@ -510,6 +563,14 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
        man->AddHistogram(classStr.Data(), "MCFlags", "MC flags;;", kFALSE,
                          32, -0.5, 31.5, AliReducedVarManager::kTrackMCFlag, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 
                          0, 0.0, 0.0, AliReducedVarManager::kNothing, mcFlagNames.Data());
+       continue;
+    }
+    if(classStr.Contains("CorrelationMCflags")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       man->AddHistogram(classStr.Data(), "CorrelationMCFlags", "MC flags correlation;;", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kTrackMCFlag, 32, -0.5, 31.5, AliReducedVarManager::kTrackMCFlag2, 
+                         0, 0.0, 0.0, AliReducedVarManager::kNothing, mcFlagNames.Data(), mcFlagNames.Data());
        continue;
     }
     
@@ -647,6 +708,14 @@ void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man
       man->AddHistogram(classStr.Data(), "PairQualityFlags", "Pair quality flags;;", kFALSE,
 	                32, -0.5, 31.5, AliReducedVarManager::kPairQualityFlag, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, pairQualityFlagNames.Data());
       continue;
+    }
+    if(classStr.Contains("CorrelationQualityFlagsPairs")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       TString pairQualityFlagNames = " ;K^{0}_{S}#rightarrow#pi^{+}#pi^{-};#Lambda#rightarrow p#pi^{-};#bar{#Lambda}#rightarrow #bar{p}#pi^{+};#gamma#rightarrow e^{+}e^{-};";
+       man->AddHistogram(classStr.Data(), "CorrelationPairQualityFlags", "Correlation on pair quality flags;;", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kPairQualityFlag, 32, -0.5, 31.5, AliReducedVarManager::kPairQualityFlag2, 0, 0.0, 0.0, AliReducedVarManager::kNothing, pairQualityFlagNames.Data(), pairQualityFlagNames.Data());
+       continue;
     }
     
     Double_t massBinWidth = 0.001;     // *GeV/c^2

@@ -183,6 +183,8 @@ fHistRawNitsPhi(0),
 fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
 fMCneutral(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -315,6 +317,8 @@ fHistRawNitsPhi(0),
 fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
 fMCneutral(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -514,6 +518,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fEMCTrkMatch = new TH2F("fEMCTrkMatch","Distance of EMCAL cluster to its closest track;#phi;z",100,-0.3,0.3,100,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch);
+    
+    fEMCTrkMatch_Phi = new TH2F("fEMCTrkMatch_Phi","Distance of EMCAL cluster to its closest track in #Delta#phi vs p_{T};p_{T};#Delta#phi",500,0,50.0,100,-0.3,0.3);
+    fOutputList->Add(fEMCTrkMatch_Phi);
+    
+    fEMCTrkMatch_Eta = new TH2F("fEMCTrkMatch_Eta","Distance of EMCAL cluster to its closest track in #Delta#eta vs p_{T};p_{T};#Delta#eta",500,0,50.0,100,-0.3,0.3);
+    fOutputList->Add(fEMCTrkMatch_Eta);
     
     fEMCTrkPt = new TH1F("fEMCTrkPt","p_{T} distribution of tracks with EMCAL cluster;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fEMCTrkPt);
@@ -1169,6 +1179,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
             
             if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
             

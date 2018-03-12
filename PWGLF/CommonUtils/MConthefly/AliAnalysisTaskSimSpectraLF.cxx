@@ -128,7 +128,7 @@ void AliAnalysisTaskSimSpectraLF::UserCreateOutputObjects(){
   fListOfObjects = new TList();
   fListOfObjects->SetOwner(kTRUE);
 
-  TString pidNames[9] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar" };
+  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Sigma0", "Phi", "KStar" };
 
   // ### Create histograms
   fHistEvt = new TH1I("fHistEvt","fHistEvt",5,0,5) ;
@@ -157,13 +157,13 @@ void AliAnalysisTaskSimSpectraLF::UserCreateOutputObjects(){
   InitHisto<TH1F>("fHistEta","Eta Distr.", 200, -1., 1., "#eta", "N_{part}");
   InitHisto<TH1F>("fHistY", "Y Distr.", 200, -1., 1., "#it{y}", "N_{part}");
   
-  for(Int_t i=0; i<9; i++)
+  for(Int_t i=0; i<10; i++)
     InitHisto<TH1F>(Form("fHistPt_%s",pidNames[i].Data()), "Generated #it{p}_{T} distribution",400,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
 
 
-  Int_t    fBins[2] = {  9  , 400  };
+  Int_t    fBins[2] = {  10  , 400  };
   Double_t  fMin[2] = {  0. ,   0. };
-  Double_t  fMax[2] = {  9. ,  20. };
+  Double_t  fMax[2] = {  10. ,  20. };
   
   THnSparseD *fHistQAPart   = new THnSparseD("fHistNParticle",  "LF particles",  2, fBins, fMin, fMax); 
   fHistQAPart->Sumw2();
@@ -174,8 +174,9 @@ void AliAnalysisTaskSimSpectraLF::UserCreateOutputObjects(){
   fHistQAPart->GetAxis(0)->SetBinLabel( 5, "Lambda"	);
   fHistQAPart->GetAxis(0)->SetBinLabel( 6, "Xi"		);
   fHistQAPart->GetAxis(0)->SetBinLabel( 7, "Omega"	);
-  fHistQAPart->GetAxis(0)->SetBinLabel( 8 ,"Phi"	);
-  fHistQAPart->GetAxis(0)->SetBinLabel( 9, "Kstar"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 8, "Sigma0"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 9 ,"Phi"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 10, "Kstar"	);
   fHistQAPart->GetAxis(1)->SetTitle("pt");
   fListOfObjects->Add(fHistQAPart);  
   
@@ -383,14 +384,14 @@ void AliAnalysisTaskSimSpectraLF::EventSel(TObject* obj){
 
 void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 
-  TString pidNames[9] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar" };
+  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Sigma0", "Phi", "KStar" };
 
   if ( !obj ) return;
 
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(obj);
   if ( !event ) return;
     
-  Bool_t isPrimary[9] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE };
+  Bool_t isPrimary[10] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE };
 
   Short_t pidCodeMC = 0;
   Double_t myY = 0.;
@@ -422,7 +423,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
     
     isPhysPrim = event->IsPhysicalPrimary(ipart);
 
-    if ( pPDG==211 || pPDG==321 || pPDG==2212 || pPDG==310 || pPDG==3122 || pPDG==3312 || pPDG==3334 || pPDG==333 || pPDG==313 )
+    if ( pPDG==211 || pPDG==321 || pPDG==2212 || pPDG==310 || pPDG==3122 || pPDG==3312 || pPDG==3334 || pPDG==3212 || pPDG==333 || pPDG==313 )
     {
       if( isPhysPrim )
       {
@@ -433,10 +434,11 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 	if (pPDG==3122)	MCPartSel[0]	= 4.5;	//	Lambda
 	if (pPDG==3312) MCPartSel[0]	= 5.5;	//	Xi -
 	if (pPDG==3334) MCPartSel[0]	= 6.5;	//	Omega -
+	if (pPDG==3212) MCPartSel[0]	= 7.5;	//	Sigma 0
       }
       else{
-	if (pPDG==333)	MCPartSel[0]	= 7.5;	//	Phi(1020)
-	if (pPDG==313)	MCPartSel[0]	= 8.5;	//	K*(892)
+	if (pPDG==333)	MCPartSel[0]	= 8.5;	//	Phi(1020)
+	if (pPDG==313)	MCPartSel[0]	= 9.5;	//	K*(892)
       }
     }
 
@@ -447,7 +449,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
     pidCodeMC = GetPidCode(pPDG);
     
     Bool_t isSelectedPart = kTRUE;
-    for(Int_t i=0; i<9; i++) 
+    for(Int_t i=0; i<10; i++) 
       if( pidCodeMC == i ) 
 	isSelectedPart = kFALSE;
     if ( isSelectedPart ) continue;
@@ -455,7 +457,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
     myY = myRap(mcPart->E(),mcPart->Pz());
     ipt = mcPart->Pt();
     
-    for(Int_t i=0; i<9; i++)
+    for(Int_t i=0; i<10; i++)
     {
       if( pidCodeMC == i && TMath::Abs(myY) < fY)
       {
@@ -527,6 +529,9 @@ Short_t AliAnalysisTaskSimSpectraLF::GetPidCode(Int_t pdgCode) const  {
     break;
     case 313:
       pidCode = 8; // K*(892)0
+    break;
+    case 3212:
+      pidCode = 9; // Sigma 0
     break;
     default:
       pidCode = 999;  // something else

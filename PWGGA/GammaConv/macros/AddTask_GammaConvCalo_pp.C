@@ -89,6 +89,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
   Bool_t doTreeClusterShowerShape = kFALSE; // enable tree for meson cand EMCal shower shape studies
   TH1S* histoAcc = 0x0;                     // histo for modified acceptance
+  TString corrTaskSetting = "";             // sets which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvCalo_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -113,6 +114,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaConvCalo_pp will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
@@ -121,7 +126,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaConvCalo_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
-
+  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   Int_t isHeavyIon = 0;
 
   // ================== GetAnalysisManager ===============================
@@ -161,11 +166,6 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
     if(trainConfig < 31 || (trainConfig>=100 && trainConfig<200)) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
-
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -195,7 +195,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -920,6 +920,11 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00062113","00200009327000008250400000","2444400040013300000","0163103100000010"); // QA, 100ns timing
     cuts.AddCut("00062113","00200009327000008250400000","2444400043013300000","0163103100000010"); // QA, 100ns timing, TM on with default EMC params
 
+  // 5 TeV run 2 PCM-PHOS setup
+  } else if (trainConfig == 383){ // QA
+    cuts.AddCut("00010113","00200009327000008250400000","2446600040013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","00200009327000008250400000","2446600040013300000","0163103100000010"); // PHI7
+
   //*************************************************************************************************
   // 5 TeV EMC setup
   //*************************************************************************************************
@@ -1002,7 +1007,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200008327000008250400000","1111127067032230000","0163103100000010"); // min TPC cl > 0.35
     cuts.AddCut("00010113","00200009327000008250400000","1111127067032230000","0163106100000010"); // alpha < 0.8
     cuts.AddCut("00010113","00200009327000008250400000","1111127067032230000","0163105100000010"); // alpha < 0.75
-  
+
   } else if (trainConfig == 460){ // EMC min E variations
     cuts.AddCut("00010113","00200009327000008250400000","1111127067022230000","0163103100000010"); //0.6 GeV/c
     cuts.AddCut("00010113","00200009327000008250400000","1111127067042230000","0163103100000010"); //0.8 GeV/c
@@ -1030,21 +1035,20 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250400000","1111127077032230000","0163103100000010"); // time
     cuts.AddCut("00010113","00200009327000008250400000","1111127087032230000","0163103100000010"); // time
     cuts.AddCut("00010113","00200009327000008250400000","1111127097032230000","0163103100000010"); // time
-    
+
   //*************************************************************************************************
   // 13 TeV EMC setup
   //*************************************************************************************************
   } else if (trainConfig == 500){ // EMCAL clusters
     cuts.AddCut("00010113","00200009327000008250400000","1111100017032220000","0163103100000010"); // 1000ns timing cut, no NL INT7
+    cuts.AddCut("00010113","00200009327000008250400000","1111100067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
   } else if (trainConfig == 501){ // EMCAL clusters
-    cuts.AddCut("00010113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL INT7
     cuts.AddCut("00052113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EMC7
     cuts.AddCut("00085113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG2
     cuts.AddCut("00083113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG1
     cuts.AddCut("00074113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL V0HM
     cuts.AddCut("00076113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL V0HM + SPD1
   } else if (trainConfig == 502){ // EMCAL clusters
-    cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
     cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EMC7
     cuts.AddCut("00085113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG2
     cuts.AddCut("00083113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG1
@@ -1055,7 +1059,20 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   // pp 13 TeV DMC setup
   //*****************************************************************************************************
   } else if (trainConfig==510){ //DCAL clusters
-    cuts.AddCut("00010113","00200009327000008250400000","3885500081041220000","01631031000000d0");
+    cuts.AddCut("00010113","00200009327000008250400000","3885500017032220000","01631031000000d0");
+    cuts.AddCut("00010113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
+  } else if (trainConfig == 511){ // DCAL clusters
+    cuts.AddCut("00055113","00200009327000008250400000","3885500017032220000","0163103100000010"); // 1000ns timing cut, no NL DMC7
+    cuts.AddCut("00089113","00200009327000008250400000","3885500017032220000","0163103100000010"); // 1000ns timing cut, no NL DG2
+    cuts.AddCut("0008b113","00200009327000008250400000","3885500017032220000","0163103100000010"); // 1000ns timing cut, no NL DG1
+    cuts.AddCut("00074113","00200009327000008250400000","3885500017032220000","0163103100000010"); // 1000ns timing cut, no NL V0HM
+    cuts.AddCut("00076113","00200009327000008250400000","3885500017032220000","0163103100000010"); // 1000ns timing cut, no NL V0HM + SPD1
+  } else if (trainConfig == 512){ // DCAL clusters
+    cuts.AddCut("00055113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL DMC7
+    cuts.AddCut("00089113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL DG2
+    cuts.AddCut("0008b113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL DG1
+    cuts.AddCut("00074113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL V0HM
+    cuts.AddCut("00076113","00200009327000008250400000","3885500067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL V0HM + SPD1
 
   //*****************************************************************************************************
   // pp 5 TeV DMC setup
@@ -1064,7 +1081,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250400000","3885500081041220000","0163103100000010"); //
     cuts.AddCut("00010113","00200009327000008250400000","3885500011041220000","0163103100000010"); //
   } else if (trainConfig == 601){ // PCM-DCAL NonLinVariations
-    cuts.AddCut("00010113","00200009327000008250400000","388550 0081041220000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","3885500081041220000","0163103100000010"); //
     cuts.AddCut("00010113","00200009327000008250400000","3885511081041220000","0163103100000010"); //
     cuts.AddCut("00010113","00200009327000008250400000","3885512081041220000","0163103100000010"); //
     cuts.AddCut("00010113","00200009327000008250400000","3885521081041220000","0163103100000010"); //
@@ -1295,6 +1312,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -1342,6 +1360,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     if (runLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -1359,6 +1378,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if (runLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -1382,6 +1402,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetDoMesonAnalysis(kTRUE);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
@@ -1393,8 +1414,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvCalo_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvCalo_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvCalo_%i",trainConfig) : Form("GammaConvCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

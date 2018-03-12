@@ -63,6 +63,8 @@ public:
  
     void SetEPana(Int_t EPana){fEPana = EPana;};
     
+    void SetEpCorr(Int_t Corr){iCorr = Corr;};
+
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight, Double_t dcaxy);
@@ -128,6 +130,7 @@ private:
     Int_t fetarange;  
     Bool_t fEnablePileupRejVZEROTPCout;   
     Int_t fEPana;  
+    Int_t iCorr;  
 
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
@@ -225,6 +228,11 @@ private:
     TH2D        *fHistDCAdeEnhance_D;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_Ds;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance_Lc;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D0_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_D_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Ds_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w;//!ele cand SPD or
+    TH2D        *fHistDCAdeEnhance_Lc_w2;//!ele cand SPD or
     TH2D        *fHistDCAdePureMC;//!ele cand SPD or
     TH2D        *fHistDCAbePureMC;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
@@ -256,7 +264,15 @@ private:
     TH2D        *fTPCcls;
     TH1F        *fdPhiEP0;
     TH1F        *fdPhiEP1;
+    TH2D        *fHistMcD0;
+    TH2D        *fHistMcD;
+    TH2D        *fHistMcDs;
+    TH2D        *fHistMcLc;
     TF1         *Eop010Corr;
+    TF1         *Eop010Corr_data0;
+    TF1         *Eop010Corr_mc0;
+    TF1         *Eop010Corr_data1;
+    TF1         *Eop010Corr_mc1;
 
     AliHFEcuts  *fhfeCuts;
 

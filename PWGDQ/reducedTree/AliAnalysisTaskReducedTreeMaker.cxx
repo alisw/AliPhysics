@@ -126,6 +126,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
+  fTRDtrglayerMaskEl(0x1),
   fEventFilter(0x0),
   fTrackFilter(),
   fFlowTrackFilter(0x0),
@@ -196,6 +197,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
+  fTRDtrglayerMaskEl(0x1),
   fEventFilter(0x0),
   fTrackFilter(),
   fFlowTrackFilter(0x0),
@@ -895,6 +897,13 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fL0TriggerInputs = esdEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = esdEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = esdEvent->GetHeader()->GetL2TriggerInputs();
+
+    TString trgClasses = esdEvent->GetFiredTriggerClasses();
+    if((trgClasses.Contains("HQU")) && (trgClasses.Contains("HSE"))) eventInfo->fTRDfired = 3;
+    else {
+	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
+	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
+    }
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
     eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
@@ -938,6 +947,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fL0TriggerInputs = aodEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = aodEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = aodEvent->GetHeader()->GetL2TriggerInputs();
+
+    TString trgClasses = aodEvent->GetFiredTriggerClasses();
+    eventInfo->fTRDfired = 0;
+    if((trgClasses.Contains("HQU")) && (trgClasses.Contains("HSE"))) eventInfo->fTRDfired = 3;
+    else {
+	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
+	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
+    }
     eventInfo->fTimeStamp     = aodEvent->GetTimeStamp();
     eventInfo->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
     eventInfo->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();
@@ -1198,31 +1215,51 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, I
    Int_t currentGenerationLabel = ipart;
    for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
       if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
+      if(!currentGenerationParticle) return kFALSE;   // if there are sources requested, but MC history finished, evaluate to FALSE
+      
       // check all implemented sources
-      Bool_t decision = kTRUE;
-      if(currentGenerationParticle) {
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary) && !event->IsPhysicalPrimary(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent) && !event->IsFromBGEvent(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay) && !event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial) && !event->IsSecondaryFromMaterial(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent) && !event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
-            decision = kFALSE;
-         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay) && !(currentGenerationParticle->GetNDaughters()>2)) 
-            decision = kFALSE;
-         
-         if(!decision && !mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
-         if(decision && mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
+      UInt_t decision = 0;
+      // use logical XOR between the presence of a given source and the exclude flag
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kPhysicalPrimary) != event->IsPhysicalPrimary(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kPhysicalPrimary);
       }
-      else {
-         // In the case there is no current particle (MC history finished), check whether there is a source request.
-         // If no request, the MC test can still pass
-         if(mcSignal->GetSources(0,ig))
-            return kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromBGEvent) != event->IsFromBGEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromBGEvent);
       }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromWeakDecay) != event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromWeakDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromMaterial) != event->IsSecondaryFromMaterial(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromMaterial);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromSubsidiaryEvent) != event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFromSubsidiaryEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kRadiativeDecay) != (currentGenerationParticle->GetNDaughters()>2)) 
+            decision |= (UInt_t(1) << AliSignalMC::kRadiativeDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstInStack) != (ipart==0)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondInStack) != (ipart==1)) 
+            decision |= (UInt_t(1) << AliSignalMC::kSecondInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstTenInStack)) { 
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstTenInStack) != (ipart<10)) 
+            decision |= (UInt_t(1) << AliSignalMC::kFirstTenInStack);
+      }
+      
+      if(!decision) return kFALSE;
+      decision &= mcSignal->GetSources(0,ig);
+      if(mcSignal->GetUseANDonSourceBits(0,ig) && (decision != mcSignal->GetSources(0,ig))) return kFALSE;  // not all req sources are fullfilled
       
       // get the next generation
       currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
@@ -1242,7 +1279,6 @@ UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
    if(!nMCsignals) return 0;
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
-   AliVParticle* particle = event->GetTrack(iparticle);
    
    UInt_t mcSignalsMap = 0;
    for(Int_t isig=0; isig<nMCsignals; ++isig) {
@@ -1286,10 +1322,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    
    // We loop over all particles in the MC event
    for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
-      //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
-      if(!(particle->PdgCode()==443 || (TMath::Abs(particle->PdgCode())>500 && TMath::Abs(particle->PdgCode())<600))) continue;
+      
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
       
@@ -1324,6 +1359,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
          reducedParticle=new(tracks[currentTrackIdx]) AliReducedTrackInfo();
       
       reducedParticle->fMCFlags = mcSignalsMap;
+      reducedParticle->fIsMCTruth = kTRUE;
       reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
       reducedParticle->Charge(particle->Charge());
    
@@ -1427,6 +1463,11 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         
   // check for tracks matched in TRD 
   Int_t trackIdsTRD[20000]={0};
+  Int_t trackTRDGTUtracklets[20000]={0};
+  Int_t trackTRDGTUlayermask[20000]={0};
+  Double_t trackTRDGTUpt[20000]={0};
+  Float_t trackTRDGTUsagitta[20000]={2};
+  Int_t trackTRDGTUPID[20000]={0};
   Int_t nTracksTRD = 0;
   if(fFillTRDMatchedTracks) {
     for(Int_t itrackTRD=0; itrackTRD<event->GetNumberOfTrdTracks(); ++itrackTRD) {
@@ -1448,8 +1489,16 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            }
          }
          if(!found) {
-           trackIdsTRD[nTracksTRD] = trackID;
-           nTracksTRD++;
+	     trackIdsTRD[nTracksTRD] = trackID;
+	     trackTRDGTUtracklets[nTracksTRD] = trdTrack->GetNTracklets();
+	     if ((trdTrack->GetLayerMask() & fTRDtrglayerMaskEl) != fTRDtrglayerMaskEl) trackTRDGTUlayermask[nTracksTRD] = 0;
+	     else trackTRDGTUlayermask[nTracksTRD] = 1;
+	     trackTRDGTUpt[nTracksTRD] =  trdTrack->Pt();
+	     Int_t b = trdTrack->GetB();
+	     Int_t c = trdTrack->GetC();
+	     trackTRDGTUsagitta[nTracksTRD] = GetInvPtDevFromBC(b,c);
+	     trackTRDGTUPID[nTracksTRD] = trdTrack->GetPID();
+	     nTracksTRD++;
          }
        }
        if(isAOD) {
@@ -1470,8 +1519,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
              }
           }
           if(!found) {
-             trackIdsTRD[nTracksTRD] = trackID;
-             nTracksTRD++;
+	      trackIdsTRD[nTracksTRD] = trackID;
+	      trackTRDGTUtracklets[nTracksTRD] = trdTrack->GetNTracklets();
+	      if ((trdTrack->GetLayerMask() & fTRDtrglayerMaskEl) != fTRDtrglayerMaskEl) trackTRDGTUlayermask[nTracksTRD] = 0;
+	      else trackTRDGTUlayermask[nTracksTRD] = 1;
+	      trackTRDGTUpt[nTracksTRD] =  trdTrack->Pt();
+	      trackTRDGTUPID[nTracksTRD] = trdTrack->GetPID();
+	      nTracksTRD++;
           }
        }
     }  // end loop over TRD tracks
@@ -1519,11 +1573,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     
     // check whether this track is matched in TRD
     Bool_t matchedInTRD = kFALSE;
+    Int_t indexmatchedtrackinTRD=-1;
     if(fFillTRDMatchedTracks) {
       for(Int_t kk=0; kk<nTracksTRD; ++kk) {
         if(trackId==trackIdsTRD[kk]) {
-           matchedInTRD = kTRUE;
-           break;
+	    matchedInTRD = kTRUE;
+	    indexmatchedtrackinTRD = kk;
+	    break;
         }   
       }
     }
@@ -1638,6 +1694,12 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
    
     // If we want to write only AliReducedBaseTrack objects, then we stop here
     if (fSelectedTrackIsBaseTrack) {
+       if(fFillMCInfo && hasMC) {
+          AliVParticle* mcTruth = AliDielectronMC::Instance()->GetMCTrack(particle);
+          if(mcTruth)
+             reducedParticle->fMCFlags = MatchMCsignals(mcTruth->GetLabel());    // check which MC signals match this particle
+       }
+       
       fReducedEvent->fNtracks[1] += 1;
       continue;
     }
@@ -1734,7 +1796,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       pidResponse->ComputeTRDProbability(esdTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ2D);
       trackInfo->fTRDpidLQ2D[0]    = trdProbab[AliPID::kElectron];
       trackInfo->fTRDpidLQ2D[1]    = trdProbab[AliPID::kPion];
-                
+
+      if(fFillTRDMatchedTracks && (indexmatchedtrackinTRD!=-1)) {
+	  const Int_t indexTRD         = indexmatchedtrackinTRD;
+	  trackInfo->fTRDGTUtracklets  = trackTRDGTUtracklets[indexTRD];
+	  trackInfo->fTRDGTUlayermask  = trackTRDGTUlayermask[indexTRD];
+	  trackInfo->fTRDGTUpt         = trackTRDGTUpt[indexTRD];
+	  trackInfo->fTRDGTUsagitta    = trackTRDGTUsagitta[indexTRD];
+	  trackInfo->fTRDGTUPID        = trackTRDGTUPID[indexTRD];
+      }
+
+
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       
@@ -1755,6 +1827,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
+           trackInfo->fMCFlags = MatchMCsignals(truthParticle->GetLabel());    // check which MC signals match this particle and fill the bit map
+                      
            trackInfo->fMCMom[0] = truthParticle->Px();
            trackInfo->fMCMom[1] = truthParticle->Py();
            trackInfo->fMCMom[2] = truthParticle->Pz();
@@ -1851,6 +1925,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
+            trackInfo->fMCFlags = MatchMCsignals(aodTrack->GetLabel());    // check which MC signals match this particle and fill the bit map
+            
             trackInfo->fMCMom[0] = truthParticle->Px();
             trackInfo->fMCMom[1] = truthParticle->Py();
             trackInfo->fMCMom[2] = truthParticle->Pz();
@@ -2163,6 +2239,20 @@ Int_t AliAnalysisTaskReducedTreeMaker::GetSPDTrackletMultiplicity(AliVEvent* eve
   } else return -1;
   
   return nAcc;
+}
+
+//______________________________________________________
+Float_t AliAnalysisTaskReducedTreeMaker::GetInvPtDevFromBC(Int_t b, Int_t c)
+{
+  //
+  //returns d(1/Pt) in c/GeV
+  //in case of no gtu simulation -> return maximum 0.5
+  //
+  if(b==0 && c==0) return 0.5;
+  Int_t tmp = (((b & 0xfff) << 12) ^ 0x800000) - 0x800000;
+  tmp += (c & 0xfff);
+  Float_t invPtDev = tmp * 0.000001;
+  return invPtDev;
 }
 
 

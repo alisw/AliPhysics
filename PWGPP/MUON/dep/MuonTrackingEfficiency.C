@@ -51,6 +51,10 @@ Double_t centMin = -999.;
 Double_t centMax = 999.;
 Double_t ptMin = 0.;
 Double_t ptMax = -1.;
+Double_t yMin = -99.;
+Double_t yMax = 99.;
+Double_t phiMin = -99.;
+Double_t phiMax = 99.;
 Int_t charge = 0; // 0 selects + and -, -1 and +1 selects - or + muons respectively
 
 Bool_t moreTrackCandidates = kFALSE;
@@ -1862,11 +1866,25 @@ void LoadRunWeights(TString fileName)
 //---------------------------------------------------------------------------
 void SetCentPtCh(THnSparse& SparseData)
 {
-  /// Sets the centrality and pT range and the charge for integration
-  /// If maxPt = -1, it sets maxPt as the maximum Pt value on the THnSparse
+  /// Sets the centrality, pT and y range and the charge for integration
+  /// If ptMax < 0, it sets ptMax as the maximum pT value on the THnSparse
+  /// If yMin < -4, it sets yMin as the minimum y value on the THnSparse
+  /// If yMax > -2.5, it sets yMax as the maximum y value on the THnSparse
+  /// If phiMin < 0, it sets phiMin as the minimum phi value on the THnSparse
+  /// If phiMax > 2π, it sets phiMax as the maximum phi value on the THnSparse
   
   if (ptMax >= 0 && ptMax < ptMin) {
-    printf("Wrong Pt range, ptMax must be higher than ptMin\n");
+    printf("Wrong pT range, ptMax must be higher than ptMin\n");
+    exit(-1);
+  }
+  
+  if (yMin > -2.5 || yMax < -4. || yMax < yMin) {
+    printf("Wrong y range\n");
+    exit(-1);
+  }
+  
+  if (phiMin > TMath::TwoPi() || phiMax < 0. || phiMax < phiMin) {
+    printf("Wrong phi range\n");
     exit(-1);
   }
   
@@ -1884,10 +1902,25 @@ void SetCentPtCh(THnSparse& SparseData)
   SparseData.GetAxis(1)->SetRange(lowBin, upBin);
   
   // set the pt range for integration
-  lowBin = SparseData.GetAxis(2)->FindBin(ptMin);
-  if (ptMax == -1) { upBin = SparseData.GetAxis(2)->GetNbins()+1; }
-  else { upBin = SparseData.GetAxis(2)->FindBin(ptMax);}
+  if (ptMin < 0.) lowBin = 0;
+  else lowBin = SparseData.GetAxis(2)->FindBin(ptMin);
+  if (ptMax < 0.) upBin = SparseData.GetAxis(2)->GetNbins()+1;
+  else upBin = SparseData.GetAxis(2)->FindBin(ptMax);
   SparseData.GetAxis(2)->SetRange(lowBin, upBin);
+  
+  // set the y range for integration
+  if (yMin < -4.) lowBin = 0;
+  else lowBin = SparseData.GetAxis(3)->FindBin(yMin);
+  if (yMax > -2.5) upBin = SparseData.GetAxis(3)->GetNbins()+1;
+  else upBin = SparseData.GetAxis(3)->FindBin(yMax);
+  SparseData.GetAxis(3)->SetRange(lowBin, upBin);
+  
+  // set the phi range for integration
+  if (phiMin < 0.) lowBin = 0;
+  else lowBin = SparseData.GetAxis(4)->FindBin(phiMin);
+  if (phiMax > TMath::TwoPi()) upBin = SparseData.GetAxis(4)->GetNbins()+1;
+  else upBin = SparseData.GetAxis(4)->FindBin(phiMax);
+  SparseData.GetAxis(4)->SetRange(lowBin, upBin);
   
   // set the charge range
   if (charge != 0) {

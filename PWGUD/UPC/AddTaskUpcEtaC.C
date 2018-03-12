@@ -38,6 +38,7 @@ AliAnalysisTaskUpcEtaC *AddTaskUpcEtaC(Bool_t runTree = kTRUE,Bool_t runHist = k
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("ListHistKstar", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("ListHist2Rho4Pion", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("ListHistK0s3PiPi4K", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("ListHistZDC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
@@ -48,6 +49,7 @@ AliAnalysisTaskUpcEtaC *AddTaskUpcEtaC(Bool_t runTree = kTRUE,Bool_t runHist = k
   mgr->ConnectOutput(task, 5, coutput5);
   mgr->ConnectOutput(task, 6, coutput6);
   mgr->ConnectOutput(task, 7, coutput7);
+  mgr->ConnectOutput(task, 8, coutput8);
 
 return task;
 }

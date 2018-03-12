@@ -57,8 +57,12 @@ fV0Type(0),
 fHighPtCut(2.5),
 fLowPtCut(1.0),
 fExcludedCut(-1),
-fMinCombinedProbability(0),
-fBzkG(0)
+fMinCombProbVsLcPt(0x0),
+fBzkG(0),
+fNBachelorPBins(1),
+fMinCombProb(0x0),
+fBachelorPLimitsForPID(0x0),
+fNTPCSigmaCutForPreselection(999.)
 {
   //
   // Default Constructor
@@ -139,6 +143,12 @@ fBzkG(0)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
+  Float_t minProb[1]={0.};
+  SetMinCombinedProbability(1,minProb);
+
+  Float_t bachelorPlimits[1]={0};
+  SetBachelorPLimitsForPID(1,bachelorPlimits);
+
   /*
     switch (v0channel) {
     case 0:
@@ -163,8 +173,9 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fHighPtCut(source.fHighPtCut),
   fLowPtCut(source.fLowPtCut),
   fExcludedCut(source.fExcludedCut),
-  fMinCombinedProbability(0),
-  fBzkG(source.fBzkG)
+  fBzkG(source.fBzkG),
+  fNBachelorPBins(source.fNBachelorPBins),
+  fNTPCSigmaCutForPreselection(source.fNTPCSigmaCutForPreselection)
 {
   //
   // Copy constructor
@@ -173,7 +184,17 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   if (source.fV0daughtersCuts) AddTrackCutsV0daughters(source.fV0daughtersCuts);
   else fV0daughtersCuts = new AliESDtrackCuts();
 
-  if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
+  if (fnPtBins>0) {
+    fMinCombProbVsLcPt=new Float_t[fnPtBins];
+  }    
+  if(fNBachelorPBins > 0){
+    fMinCombProb=new Float_t[fNBachelorPBins];
+    fBachelorPLimitsForPID=new Float_t[fNBachelorPBins];
+    SetMinCombinedProbability(source.fNBachelorPBins,source.fMinCombProb);
+    SetBachelorPLimitsForPID(source.fNBachelorPBins,source.fBachelorPLimitsForPID);
+    //memcpy(fMinCombProb,source.fMinCombProb,source.fNBachelorPBins*sizeof(Float_t));
+    //memcpy(fBachelorPLimitsForPID,source.fBachelorPLimitsForPID,(source.fNBachelorPBins)*sizeof(Float_t));
+  }
 
 }
 //--------------------------------------------------------------------------
@@ -183,22 +204,45 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
   // assignment operator
   //
 
-  if (this != &source) {
+  if(&source == this) return *this;
 
-    AliRDHFCuts::operator=(source);
-    fPidSelectionFlag = source.fPidSelectionFlag;
+  AliRDHFCuts::operator=(source);
+  fPidSelectionFlag = source.fPidSelectionFlag;
 
-    delete fV0daughtersCuts;
-    fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
+  delete fV0daughtersCuts;
+  fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
 
-    fV0Type  = source.fV0Type;
+  fV0Type  = source.fV0Type;
 
-    fHighPtCut = source.fHighPtCut;
-    fLowPtCut = source.fLowPtCut;
+  fHighPtCut = source.fHighPtCut;
+  fLowPtCut = source.fLowPtCut;
 
-    if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
-    fBzkG = source.fBzkG;
-  }
+  delete [] fMinCombProbVsLcPt;
+  fMinCombProbVsLcPt=new Float_t[fnPtBins];
+  //for (Int_t ii=0; ii<fnPtBins; ii++)
+  //fMinCombProbVsLcPt[ii]=source.fMinCombProbVsLcPt[ii];
+
+  fBzkG = source.fBzkG;
+
+  fNBachelorPBins = source.fNBachelorPBins;
+
+  delete [] fMinCombProb;
+  delete [] fBachelorPLimitsForPID;
+
+  fMinCombProb=new Float_t[fNBachelorPBins];
+  //for (Int_t ii=0; ii<fNBachelorPBins; ii++)
+  //fMinCombProb[ii]=source.fMinCombProb[ii];
+
+  fBachelorPLimitsForPID=new Float_t[fNBachelorPBins];
+  //for (Int_t ii=0; ii<fNBachelorPBins; ii++)
+  //fBachelorPLimitsForPID=source.fBachelorPLimitsForPID[ii];
+
+  SetMinCombinedProbability(source.fNBachelorPBins,source.fMinCombProb);
+  SetBachelorPLimitsForPID(source.fNBachelorPBins,source.fBachelorPLimitsForPID);
+  //memcpy(fMinCombProb,source.fMinCombProb,source.fNBachelorPBins*sizeof(Float_t));
+  //memcpy(fBachelorPLimitsForPID,source.fBachelorPLimitsForPID,source.fNBachelorPBins*sizeof(Float_t));
+
+  fNTPCSigmaCutForPreselection=source.fNTPCSigmaCutForPreselection;
 
   return *this;
 }
@@ -215,10 +259,14 @@ AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
     fV0daughtersCuts=0;
   }
 
-  if(fMinCombinedProbability) {
-    delete [] fMinCombinedProbability;
-    fMinCombinedProbability=0;
-  }
+  if (fMinCombProbVsLcPt)
+    delete [] fMinCombProbVsLcPt;
+
+  if (fMinCombProb)
+    delete [] fMinCombProb;
+
+  if (fBachelorPLimitsForPID)
+    delete [] fBachelorPLimitsForPID;
 
 }
 
@@ -784,16 +832,14 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
   Bool_t okLcLambdaPi = kTRUE; // Lambda case
 
-  Double_t ptCand = objD->Pt();
-  Int_t candPtBin = PtBin(ptCand);
-  CheckPID(candPtBin,bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
+  CheckPID(bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
 
   Int_t returnvalue = okLcK0Sp+2*okLcLambdaBarPi+4*okLcLambdaPi;
 
   return returnvalue;
 }
 //-----------------------
-void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
+void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
 				 AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 				 Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4) {
   // identification strategy
@@ -1051,10 +1097,23 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
 	fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
       }
       
-      isBachelorID1=(probProton>fMinCombinedProbability[candPtBin]); // K0S case
-      
-      isBachelorID2=(probPion>fMinCombinedProbability[candPtBin]); // LambdaBar case
-      
+      Double_t pBachelor = bachelor->P();
+      Int_t bachelorPBin = GetBachelorPBin(pBachelor);
+      if (bachelorPBin==-1) {
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+	isBachelorID1=TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection; // K0S case
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+	isBachelorID2=TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection; // LambdaBar case
+      } else {
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+	isBachelorID1=(TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection && probProton>fMinCombProb[bachelorPBin]); // K0S case
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+	isBachelorID2=(TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection && probPion>fMinCombProb[bachelorPBin]); // LambdaBar case
+      }
       isBachelorID4 = isBachelorID2; // Lambda case
     }
     break;
@@ -1576,12 +1635,20 @@ void AliRDHFCutsLctoV0::PrintAll() const {
   }
 
   if (fPidSelectionFlag==9) {
-      for(Int_t ib=0;ib<fnPtBins;ib++){
-	cout<<"fMinCombinedProbability["<<ib<<"] = "<<fMinCombinedProbability[ib]<<"\t";
-      } 
-      cout<<endl;
-      cout << " GetCombDetectors() = " << GetPidHF()->GetCombDetectors() << endl;
+
+    cout << " fNBachelorPBins = " << fNBachelorPBins << endl;
+
+    for(Int_t ib=0;ib<fNBachelorPBins-1;ib++){
+      cout<<"fMinCombProb["<<ib<<"] = "<<fMinCombProb[ib]<<"\t"
+	  <<"(" << fBachelorPLimitsForPID[ib] << "<= p < "<< fBachelorPLimitsForPID[ib+1]<< ")\n";
+    }
+    cout<<"fMinCombProb["<<fNBachelorPBins-1<<"] = "<<fMinCombProb[fNBachelorPBins-1]<<"\t"
+	  <<"(p>= " << fBachelorPLimitsForPID[fNBachelorPBins-1] << ")\n";
+    cout<<endl;
+    cout << " GetCombDetectors() = " << GetPidHF()->GetCombDetectors() << endl;
   }
+
+  cout << " fNTPCSigmaCutForPreselection = " << fNTPCSigmaCutForPreselection << endl;
 
   if (fTrackCuts) {
     Float_t eta1=0, eta2=0; fTrackCuts->GetEtaRange(eta1,eta2);
@@ -1737,19 +1804,37 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliA
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPtBins,Float_t *minProb) {
+void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPBins,Float_t *minProb) {
   //
   // store the combined probability cuts
   //
-  if(nPtBins!=fnPtBins) {
-    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
-    AliFatal("exiting");
+
+  //if (fNBachelorPBins<=0)
+  fNBachelorPBins=nPBins;
+
+  if (fMinCombProb) delete [] fMinCombProb;
+  fMinCombProb = new Float_t[fNBachelorPBins];
+
+  for(Int_t ib=0; ib<fNBachelorPBins; ib++) {
+    fMinCombProb[ib] = minProb[ib];
   }
+  return;
+}
 
-  if(!fMinCombinedProbability) fMinCombinedProbability = new Float_t[fnPtBins];
+//---------------------------------------------------------------------------
+void AliRDHFCutsLctoV0::SetBachelorPLimitsForPID(Int_t nPBins,Float_t *pLimits) {
+  //
+  // store the bachelor p bin limits for combined probability cuts
+  //
 
-  for(Int_t ib=0; ib<fnPtBins; ib++) {
-    fMinCombinedProbability[ib] = minProb[ib];
+  //if (fNBachelorPBins<=0) 
+  fNBachelorPBins=nPBins;
+
+  if (fBachelorPLimitsForPID) delete [] fBachelorPLimitsForPID;
+  fBachelorPLimitsForPID = new Float_t[fNBachelorPBins];
+
+  for(Int_t ib=0; ib<fNBachelorPBins; ib++) {
+    fBachelorPLimitsForPID[ib] = pLimits[ib];
   }
   return;
 }
@@ -1962,7 +2047,7 @@ Bool_t AliRDHFCutsLctoV0::ApplySingleProtonCuts(AliAODTrack *bachelorTrack, AliA
   Bool_t okLcK0Sp = kTRUE; // K0S case
   Bool_t dummy1 = kTRUE;
   Bool_t dummy2 = kTRUE;
-  CheckPID(0,bachelorTrack,0,0,okLcK0Sp,dummy1,dummy2);//use the PID for the first bin. only option 9 is the candidate pT depedent, so probably OK, need to update if needed
+  CheckPID(bachelorTrack,0,0,okLcK0Sp,dummy1,dummy2);//use the PID for the first bin. only option 9 is the candidate pT depedent, so probably OK, need to update if needed
 
   return okLcK0Sp;
 }
@@ -2170,4 +2255,18 @@ Bool_t AliRDHFCutsLctoV0::ApplyCandidateCuts(AliAODRecoDecayHF *obj, AliAODEvent
   }
 
   return kTRUE;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctoV0::GetBachelorPBin(Double_t bachelorP) const {
+  //
+  //give the bachelor p bin.
+  //
+  Int_t pBin=-1;
+  for (Int_t i=0;i<fNBachelorPBins+1;i++){
+    if(bachelorP<fBachelorPLimitsForPID[i+1]) {
+      pBin=i;
+      break;
+    }
+  }
+  return pBin;
 }

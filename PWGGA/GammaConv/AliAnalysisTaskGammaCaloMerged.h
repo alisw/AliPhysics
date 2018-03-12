@@ -35,7 +35,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
                                                             return                                                                                        ;
                                                           }
     void SetIsHeavyIon(Int_t flag)                        { fIsHeavyIon                 = flag                                                            ; }
-
+    
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting)        { fCorrTaskSetting = setting                                                                    ; }
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
 
@@ -105,6 +107,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
+    TString                 fCorrTaskSetting;
     Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliVEvent*              fInputEvent;                                        // current event
     AliMCEvent*             fMCEvent;                                           // corresponding MC event
@@ -211,6 +214,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusBGPtvsSource;                         //!
     TH2F**                  fHistoTrueClusGammaPtvsSource;                      //!
     TH2F**                  fHistoTrueClusElectronPtvsSource;                   //!
+//    TH2F**                  fHistoTrueClusElectronPtvsMotherID;                 //!
+//    TH2F**                  fHistoTrueClusElectronPtvsTopMotherID;              //!
+//    TH2F**                  fHistoTrueClusElectronPtvsConvPhotonTopMotherID;    //!
     TH1F**                  fHistoTrueMergedMissedPDG;                          //!
 
     // MC validated reconstructed quantities mesons
@@ -274,7 +280,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 25);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 27);
 };
 
 #endif

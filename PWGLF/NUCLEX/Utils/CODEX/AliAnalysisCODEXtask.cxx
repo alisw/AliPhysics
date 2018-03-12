@@ -32,6 +32,7 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
   mEventCuts{},
   mPtCut{0.1},
   mPOI{255},
+  mEventPOI{},
   mNsigmaTPCselectionPOI{5.},
   mNsigmaTOFselectionPOI{10.},
   mStartingPtTOFselection{1.e4},
@@ -152,6 +153,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kInelGt0;
   }
 
+  bool EventWithPOI = !bool(mEventPOI);
+
   mTracks.clear();
   Track t;
   for (int iEv = 0;iEv < event->GetNumberOfTracks(); ++iEv) {
@@ -167,8 +170,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     bool reject = !mMCtrue; /// In the MC the cut on the TPC pid is replaced by a cut on the true MC particle
     for (int iS = 0; iS < 8; ++iS) {
       sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
-      if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI && (mPOI & BIT(iS))) {
-        reject = false;
+      if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI) {
+        reject = !bool(mPOI & BIT(iS));
+        EventWithPOI = bool(mEventPOI & BIT(iS)) || EventWithPOI;
       }
     }
     if (reject) continue;
@@ -176,8 +180,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     reject = track->Pt() >= mStartingPtTOFselection;
     for (int iS = 0; iS < 8; ++iS) {
       double sigTOF = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTOF,track,particle_species[iS]);
-      if (std::abs(sigTOF) < mNsigmaTOFselectionPOI && (mPOI & BIT(iS))) {
-        reject = false;
+      if (std::abs(sigTOF) < mNsigmaTOFselectionPOI) {
+        reject = !bool(mPOI & BIT(iS));
+        EventWithPOI = bool(mEventPOI & BIT(iS)) || EventWithPOI;
       }
     }
     if (reject) continue;
@@ -334,7 +339,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       mTracks.push_back(t);
     }
   }
-  if (!(mSkipEmptyEvents && mTracks.empty())) {
+  if (!(mSkipEmptyEvents && mTracks.empty()) && EventWithPOI) {
     mTree->Fill();
   }
   PostData(1,mTree);

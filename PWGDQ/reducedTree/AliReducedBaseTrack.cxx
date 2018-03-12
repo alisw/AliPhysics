@@ -19,7 +19,8 @@ AliReducedBaseTrack::AliReducedBaseTrack() :
   fCharge(0),
   fFlags(0),
   fQualityFlags(0),
-  fMCFlags(0)
+  fMCFlags(0),
+  fIsMCTruth(kFALSE)
 {
   //
   // Constructor
@@ -35,7 +36,8 @@ AliReducedBaseTrack::AliReducedBaseTrack(const AliReducedBaseTrack &c) :
   fCharge(c.Charge()),
   fFlags(c.GetFlags()),
   fQualityFlags(c.GetQualityFlags()),
-  fMCFlags(c.GetMCFlags())
+  fMCFlags(c.GetMCFlags()),
+  fIsMCTruth(c.IsMCTruth())
 {
   //
   // Copy constructor
@@ -50,4 +52,28 @@ AliReducedBaseTrack::~AliReducedBaseTrack()
   //
   // De-Constructor
   //
+}
+
+//_______________________________________________________________________________
+UInt_t AliReducedBaseTrack::GetFirstHalfOfQualityFlags() const {
+   //
+   // Get the first half of the fQualityFlags (bits 0->31)
+   //
+   UInt_t map = 0;
+   for(UShort_t i=0; i<32; ++i) 
+      if(TestQualityFlag(i)) 
+         map |= (UInt_t(1)<<i);
+   return map;   
+}
+
+//_______________________________________________________________________________
+UInt_t AliReducedBaseTrack::GetSecondHalfOfQualityFlags() const {
+   //
+   // Get the second half of the fQualityFlags (bits 32->63)
+   //
+   UInt_t map = 0;
+   for(UShort_t i=0; i<32; ++i) 
+      if(TestQualityFlag(i+32)) 
+         map |= (UInt_t(1)<<i);
+      return map;   
 }

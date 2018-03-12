@@ -49,6 +49,8 @@ public:
   //If you want to override automatic choise of bad maps and calibration
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
+  void ForceUsingDummyRunNumber(Int_t dummy){fDRN = dummy;}
+
   void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
   void ApplyZeroSuppression(Double_t zsCut=0.020){fApplyZS=kTRUE; fZScut=zsCut;} //Apply Zero Suppression cut (in GeV)
   
@@ -104,8 +106,9 @@ private:
 
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
+  Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 7); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
 };
 
 

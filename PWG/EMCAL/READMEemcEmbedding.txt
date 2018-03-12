@@ -27,7 +27,11 @@ AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbe
 // Set the file pattern. This example uses ptHardBin 4 of LHC12a15e_fix.
 // The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
 // See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
-embeddingHelper->SetFilePattern("/alice/sim/2012/LHC12a15e_fix/169838/%d/AOD149");
+// For the grid. Include "alien://" and don't use this locally!! It will be very slow and cause strain on the grid!
+embeddingHelper->SetFilePattern("alien:///alice/sim/2012/LHC12a15e_fix/169838/%d/AOD149");
+// For local use. File should be formatted the same as the normal list of input files (one filename per line).
+// Again, don't use AliEn locally!! It will be very slow and cause strain on the grid!
+embeddingHelper->SetFileListFilename("aodFilesEmbedData.txt");
 // If the embedded file is an ESD, then set:
 embeddingHelper->SetESD();
 // Add additional configure as desired.
@@ -64,12 +68,18 @@ trackCont->SetIsEmbedding(kTRUE);
 Although there are some details to understand, that's roughly all there is to it from the user perspective - it
 should just work! (Recall again that AliEmcalContainers are __not__ required, although they substantially simplify
 the user experience - see [below](\ref emcEmbeddingAdvancedTopics) for more information if you don't want to use them.)
+For an example of a full run macro, see runEmbeddingAnalysis.C (located in
+`$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/runEmbeddingAnalysis.C`).
 
 With these basics in mind, there are a few main topics to discuss:
 - [Embedding charged input objects (charged tracks)](\ref emcEmbeddingChargedInputObjects)
 - [Embedding full (charged + neutral) input objects (cells, clusters, and tracks)](\ref emcEmbeddingFullInputObjects)
-- [Recording Embedded Event properties](\ref emcEmbeddingQA)
 - [Supporting multiple EMCal containers](\ref emcEmbeddingMultipleContainerSupport)
+- [Recording embedded event properties](\ref emcEmbeddingQA)
+- [Configuring embedding via YAML](\ref emcEmbeddingYamlConfig)
+- [Embedding on LEGO trains](\ref emcEmbeddingLegoTrain)
+- [Optimzation of event selection and computing](\ref emcEmbeddingEventSelection)
+- [Notes on jet finding](\ref emcEmbeddingJetFinding)
 
 # Charged input objects (charged tracks)            {#emcEmbeddingChargedInputObjects}
 
@@ -329,15 +339,65 @@ in your tasks output.
 Note that for compatibility reasons, AliAnalysisTaskEmcal::IsPythia() should be set to __false__ if you task
 inherits from that class. Otherwise, histogram names will conflict.
 
+# Configuring the embedding helper with YAML                                {#emcEmbeddingYamlConfig}
+
+All of options of the embedding helper can be configured via %YAML. It is handled via AliYAMLConfiguration, the same
+class as used in the EMCal Correction Framework. The one exception is for providing a run list - such a setting is
+_only_ available through the %YAML config. To set options through the %YAML config, simply add the options to a %YAML
+configuration file and pass that file to the embedding helper. For a nearly extensive list of available options, see
+`RetrieveTaskPropertiesFromYAMLConfig()`. Note that this is different from the EMCal Correction Task, as there is no
+definitive "default" configuration where every option is defined.  Also note that any values set in the %YAML will
+**overwrite** values set in add task!
+
+## Specifying a run list
+
+As noted above, the user can only specify an embedded run list via the %YAML configuration. The list should be
+specified under "runlist", and the values should be a %YAML sequence. Sequence values can be specified as the
+following:
+
+~~~
+runlist: [1, 2, 3]
+# Or
+runlist:
+- 1
+- 2
+- 3
+~~~
+
 # Embedding on LEGO trains                                                  {#emcEmbeddingLegoTrain}
 
 Embedding can be used as expected on the LEGO train. If available, it is best to use centralized wagons, while
-changing the configuration for your particular dataset. The main difficulty with the LEGO train is that a new train
-must be configured for each pt hard bin. Previously, that meant that a variable must be changed every time, which can
+changing the configuration for your particular dataset. For more, see the following sections.
+
+## Configuring the LEGO Train Wagon                                         {#emcEmbeddingLEGOTrainWagon}
+
+There are some special procedures for the LEGO train. There will be a centralized EMCal Embedding Helper wagon which
+contains standard settings such as physics selection, etc. Then the user will create a wagon which calls
+`PWG/EMCAL/macros/ConfigureEmcalEmbeddingHelperOnLEGOTrain()`. This will return an EMCal Embedding Helper
+for you to configure with your particular settings (and potentially %YAML configuration file) and then initialize.
+It should looks something like the following:
+
+~~~{.cxx}
+// Set your user configuration
+__R_ADDTASK__->SetRandomFileAccess(kTRUE);
+// ...
+// It is extremely important to pass "true" to Initialize().
+__R_ADDTASK__->Initialize(true);
+~~~
+
+Note that your configuration wagon should depend on the centralized embedding helper wagon, but your tasks
+(such as corrections, user tasks, etc) should depend **only** on the centralized embedding helper wagon.
+They should not depend on your configuration wagon!
+
+## Auto configuration of pt hard bins                                       {#emcEmbeddingAutoConfigurePtHard}
+
+The main difficulty with the LEGO train is that a new train must be configured for each pt hard bin.
+Previously, that meant that a variable must be changed every time, which can
 be a rather error prone process. Now, the embedding helper can handle this configuration automatically.
 
 The relevant functions are in the function group "pT hard bin auto configuration". Once enabled, the user must set
-the proper paths to determine where to locate a scratch file, as well as how the particular set of trains will be identified. See the example below for an illustrative example:
+the proper paths to determine where to locate a scratch file, as well as how the particular set of trains will be
+identified. See the example below for an illustrative example:
 
 ~~~{.cxx}
 // Configure the embedding helper as usual
@@ -345,6 +405,7 @@ the proper paths to determine where to locate a scratch file, as well as how the
 // Enable pt hard bin auto configuration
 embeddingHelper->SetAutoConfigurePtHardBins();
 // Tells it the base path of where to write the auto configuration file.
+// It may be simpler and better to put this file on the test train machine instead.
 embeddingHelper->SetAutoConfigureBasePath("/alice/cern.ch/user/a/alitrain/");
 // Identifies the type of train this train is running on.
 embeddingHelper->SetAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/");
@@ -356,11 +417,59 @@ embeddingHelper->SetAutoConfigureIdentifier("myEmbedding");
 embeddingHelper->SetNPtHardBins(11);
 ~~~
 
-Now just request the trains. Each one can be started with the desired settings, and they will automatically coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables for each pt hard bin!
+Now just request the trains. Each one can be started with the desired settings, and they will automatically
+coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables
+for each pt hard bin! Note that there can be a race condition based on how quickly the test trains are started, so
+it is best to check the yaml pt hard map to ensure that one pt hard bin has successfully assigned to each train.
 
-With the above settings
+# Optimization of Event Selection and Computing                                 {#emcEmbeddingEventSelection}
 
-# Note on jets and jet finding
+It is important to take care when applying event selection during embedding. For example, if the embedding helper
+is run with `AliVEvent::kAny`, but your task is run with `AliVEvent::kAnyINT`, some good embedded events will be
+missed because the physics selection of your task is more restrictive. There are two parts to solution to this issue.
+First, it is best to have the same collision candidates for the embedding helper and all other tasks.
+
+While this is a good start, it is not sufficient in all cases, such as selecting on centrality. To address this
+issue, the embedding helper allows for more complicated internal event selection via AliEventCuts (disabled by default).
+When enabled, The cuts can be configured through the %YAML configuration for standard options such as centrality and
+z vertex, while more complicated manual configurations can be achieved by retrieving and configuring the members
+of the event cuts object. When an internal event is selected, `EmbeddedEventUsed()` will be true, allowing other tasks
+to only process events when this is the case. In doing so, the event selection that is applied in the embedding helper
+is effectively applied to all other tasks. Thus, be certain that any other event selection that you apply to other tasks
+is less restrictive than that in the embedding helper to ensure that no good embedded events are lost.
+
+To configure this mode, internal event selection must be enabled in the embedding helper via
+`SetUseManualInternalEventCuts(true)`, and then selection on the outcome from the embedding helper must be enabled
+in other tasks. In the case of the EMCal Correction Task, this option can be enabled in the %YAML configuration.
+In the case of tasks derived from AliAnalysisTaskEmcal, set the option `task->SetRecycleUnusedEmbeddedEventsMode(true)`.
+If your task does not inherit from AliAnalysisTaskEmcal, it should check `EmbeddedEventUsed()` each event and then
+react as appropriate.
+
+## Configuring internal event selection (centrality, etc)
+
+Internal event selection is performed via AliEventCuts. By default, AliEventCuts will use an automatic setup based on
+run number. Piratically speaking, if you would like to modify any of these settings, you will need to setup (often by
+calling `%Setup{Period}()` for the event cuts object) and then configure it via manual cuts mode. Centrality is the one
+notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
+centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
+a centrality range is set in AliEventCuts (for example, through the automatic setup), that range must be wider than or
+equal to the range in the embedding helper for the embedding helper setting to be meaningful.
+
+Alternatively, the user may use manual cuts in AliEventCuts, configure it for a particular period, and then set the
+centrality range in AliEventCuts and disregard the centrality selection capabilities in the embedding helper. In code,
+it would look something like (for embedding `LHC11h`):
+
+~~~{.cxx}
+embeddingHelper->SetUseManualInternalEventCuts(true);
+auto eventCuts = embeddingHelper->GetInternalEventCuts();
+eventCuts->SetupLHC11h();
+// Use 0-10%
+eventCuts->SetCentralityRange(0, 10);
+~~~
+
+Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
+
+# Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
 
 When handling jet finding, a bit more care needs to be applied, especially if apply an artificial tracking
 efficiency. This is due to the fact that the jet finder keeps track of constituents by index, which can cause

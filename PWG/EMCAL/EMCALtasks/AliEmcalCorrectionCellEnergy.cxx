@@ -7,6 +7,7 @@
 #include "AliOADBContainer.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODEvent.h"
+#include "AliDataFile.h"
 
 #include "AliEmcalCorrectionCellEnergy.h"
 
@@ -46,8 +47,6 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   
   AliWarning("Init EMCAL cell recalibration");
   
-  GetProperty("createHistos", fCreateHisto);
-
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
   
   if (!fRecoUtils)
@@ -66,9 +65,9 @@ void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",1000,0,10);
     fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",1000,0,10);
     fOutput->Add(fCellEnergyDistAfter);
   }
 }
@@ -154,18 +153,18 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
-    AliInfo("Loading Recalib OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    TFile *fRecalib= new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root","read");
+    TFile *fRecalib= new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read");
     if (!fRecalib || fRecalib->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root was not found");
+      AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
       return 0;
     }
     
     if (fRecalib) delete fRecalib;
     
-    contRF->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");
+    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
   }
   
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
@@ -249,18 +248,18 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
-    AliInfo("Loading Recalib OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    TFile *fRunDepRecalib= new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root","read");
+    TFile *fRunDepRecalib= new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"read");
     if (!fRunDepRecalib || fRunDepRecalib->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
+      AliFatal("OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
       return 0;
     }
     
     if (fRunDepRecalib) delete fRunDepRecalib;
     
-    contRF->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root","AliEMCALRunDepTempCalibCorrections");
+    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
   }
   
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);

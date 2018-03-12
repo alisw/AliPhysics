@@ -416,6 +416,9 @@ private:
     Int_t fTreeVariablePIDNegative;
     Float_t fTreeVariablePtMC;
     Float_t fTreeVariableRapMC;
+    //TOF info
+    Float_t fTreeVariableNegTOFSignal; //!
+    Float_t fTreeVariablePosTOFSignal; //!
     //Uncertainties
     Float_t fTreeVariablePosAlpha;
     Float_t fTreeVariablePosSigmaY2;
@@ -499,11 +502,17 @@ private:
     Int_t fTreeCascVarPIDPositive;
     Int_t fTreeCascVarPIDNegative;
     Int_t fTreeCascVarPIDBachelor;
+
     //Set tree variables
     Int_t fTreeCascVarPID;
     Float_t fTreeCascVarPtMC;
     Float_t fTreeCascVarRapMC;
     
+    //TOF info
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
+
     //Super-control vars
     Float_t fTreeCascVarPosDistanceToTrueDecayPt;
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;

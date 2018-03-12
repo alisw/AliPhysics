@@ -27,7 +27,8 @@ class AliAnalysisUtils;
 #include "AliPIDCombined.h"
  
 //================================correction
-#define kCENTRALITY 101  
+#define kCENTRALITY 101
+#define kNBRUN 100
 //const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
 //const TString centralityArrayForPbPb_string[kCENTRALITY] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 //================================correction
@@ -35,6 +36,7 @@ class AliAnalysisUtils;
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
   enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
+  enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
   virtual ~AliAnalysisTaskBFPsi(); 
@@ -45,12 +47,38 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   //========================correction
-  virtual void   SetInputCorrection(TString filename, 
+
+  void SetCorrectionProcedure(AliAnalysisTaskBFPsi::eCorrProcedure corrProc) {fCorrProcedure = corrProc;}
+  
+  virtual void SetInputCorrection(TString filename, 
 				    Int_t nCentralityBins, 
 				    Double_t *centralityArrayForCorrections);
   //========================correction
   // void SetDebugLevel() {fDebugLevel = kTRUE;} //hides overloaded virtual function
 
+  //======== New methods for data driven NUA(eta, phi, vz) run-by-run, NUE (pT, cont) from MC per centrality bins 
+
+  void SetInputListForNUACorr(TString fileNUA);
+  void SetInputListForNUECorr(TString fileNUE);
+ 
+  Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
+  Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);
+
+  Int_t GetIndexRun(Int_t runNb);
+  Int_t GetIndexCentrality(Double_t gCentrality);
+  
+  void SetCentralityArrayBins(Int_t nCentralityBins, Double_t *centralityArrayForCorrections){
+    fCentralityArrayBinsForCorrections = nCentralityBins;
+    for (Int_t i=0; i<=nCentralityBins; i++)
+      fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
+  }
+
+  void SetArrayRuns(Int_t nRuns, Int_t *runsArrayForCorrections){
+    fTotalNbRun = nRuns;
+    for (Int_t i=0; i<=nRuns; i++)
+      fRunNb[i] = runsArrayForCorrections[i];
+  }
+ 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
     }
@@ -180,8 +208,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetUseAdditionalVtxCuts(Bool_t useAdditionalVtxCuts) {
     fUseAdditionalVtxCuts=useAdditionalVtxCuts;}
 
-  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
-    fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
+  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts, Float_t slope=3.38, Float_t offset=15000) {
+    fUseOutOfBunchPileUpCutsLHC15o = useOutOfBunchPileUpCuts;
+    fPileupLHC15oSlope = slope;
+    fPileupLHC15oOffset = offset;
+  }
   
   void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
     fDetailedTracksQA=useDetailedTracksQA;}
@@ -252,7 +283,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 					      Double_t gCentrality);
   //===============================correction
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity, Int_t &nAcceptedTracksAboveHighPtThreshold);
-  TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
+  TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality, AliVEvent *event);
 
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
   Double_t GetEqualizationFactor(Int_t run, const char *side);
@@ -278,6 +309,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListBFM; //fList object
   TList *fHistListPIDQA;  //! list of histograms
 
+  TList *fListNUA;  //fList of TH3F for NUA run-by-run corrections
+  TList *fListNUE;   //fList of TH1F for NUE run-by-run corrections
+
+  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure; 
+
+  //defualt kFALSE to be switch on for old correction method
+  
   TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
   TH2F *fHistCentStatsUsed; //centrality stats USED
@@ -300,13 +338,21 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistDCA;//DCA  (QA histogram)
   TH2F *fHistChi2;//track chi2 (QA histogram)
   TH2F *fHistPt;//transverse momentum (QA histogram)
+  TH2F *fHistPtCorr;//transverse momentum after Corrrection (QA histogram)
   TH2F *fHistEta;//pseudorapidity (QA histogram)
+  TH2F *fHistEtaCorr;//pseudorapidity after correction (QA histogram)
   TH2F *fHistRapidity;//rapidity (QA histogram)
+  TH2F *fHistRapidityCorr;//rapidity after correction (QA histogram)
   TH2F *fHistPhi;//phi (QA histogram)
-  TH3F *fHistEtaVzPos;//eta vs Vz pos particles (QA histogram) 
+  TH2F *fHistPhiCorr;//phi after correction (QA histogram)
+  TH3F *fHistEtaVzPos;//eta vs Vz pos particles (QA histogram)
+  TH3F *fHistEtaVzPosCorr;//eta vs Vz pos particles after correction(QA histogram) 
   TH3F *fHistEtaVzNeg;//eta vs Vz neg particles (QA histogram)
-  TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 
+  TH3F *fHistEtaVzNegCorr;//eta vs Vz neg particles (QA histogram)
+  TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram)
+  TH3F *fHistEtaPhiPosCorr;//eta-phi pos particles after corrections  (QA histogram) 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
+  TH3F *fHistEtaPhiNegCorr;//eta-phi neg particles after corrections (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -353,6 +399,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
+
+  TH3F *fHistNUACorrPlus[kNBRUN]; //====correction
+  TH3F *fHistNUACorrMinus[kNBRUN]; //===correction
+
+  Int_t fRunNb[kNBRUN]; //====correction
+  Int_t fTotalNbRun; //total number of runs used in the analysis
+
+  TH1F *fHistpTCorrPlus[kCENTRALITY]; //====correction
+  TH1F *fHistpTCorrMinus[kCENTRALITY]; //===correction
+  
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
 
@@ -409,6 +465,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
 
+  Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
+  Float_t fPileupLHC15oOffset;
+
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
@@ -462,13 +521,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
 
+  TH2F *fHistGlobalvsESDBeforePileUpCuts; //histos to monitor Out of bunch pile up selection
+  TH2F *fHistGlobalvsESDAfterPileUpCuts;
+
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 11); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 13); // example of analysis
 };
 
 

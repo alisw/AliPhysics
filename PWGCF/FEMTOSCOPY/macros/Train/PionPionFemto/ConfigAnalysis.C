@@ -236,10 +236,8 @@ ConfigAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        // TString cf_title = TString("_qinv_") + pair_type_str;
         TString cf_title("_qinv");
-        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         analysis->AddCorrFctn(cf);
       }
 
@@ -284,7 +282,7 @@ ConfigAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_qinv_cf) {
-        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {

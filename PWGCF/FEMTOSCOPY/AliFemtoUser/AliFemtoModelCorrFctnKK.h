@@ -48,7 +48,7 @@ public:
   virtual TList* GetOutputList();
   virtual void Write();
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
   
   //void SetFillkT(bool fillkT){fFillkT = fillkT;} //i do not need this
    

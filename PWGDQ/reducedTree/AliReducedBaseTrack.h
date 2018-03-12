@@ -36,10 +36,12 @@ class AliReducedBaseTrack : public TObject {
     Bool_t IsCartesian() const {return fIsCartesian;}           
     
     ULong_t GetQualityFlags()             const {return fQualityFlags;}
+    UInt_t  GetFirstHalfOfQualityFlags() const;
+    UInt_t  GetSecondHalfOfQualityFlags() const;
     Bool_t UsedForQvector()               const {return fQualityFlags&(UShort_t(1)<<0);}
     Bool_t TestQualityFlag(UShort_t iflag)  const {return ((iflag<(8*sizeof(ULong_t))) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
-    Bool_t IsMCTruth()                        const {return fQualityFlags&(ULong_t(1)<<63);}
-    Bool_t HasMCTruthInfo()               const {return fQualityFlags&(ULong_t(1)<<22);}
+    Bool_t IsMCTruth()                        const {return (fIsMCTruth ? kTRUE : kFALSE);}
+    //Bool_t HasMCTruthInfo()               const {return (fMCFlags ? kTRUE : kFALSE);}
     Bool_t IsTRDmatch()                     const {return fQualityFlags&(ULong_t(1)<<26);}
     Bool_t IsGammaLeg()                   const {return fQualityFlags&(ULong_t(1)<<1);}
     Bool_t IsPureGammaLeg()            const {return fQualityFlags&(ULong_t(1)<<8);}
@@ -55,7 +57,7 @@ class AliReducedBaseTrack : public TObject {
     
     UInt_t GetMCFlags()                      const {return fMCFlags;}
     Bool_t TestMCFlag(UShort_t iflag) const {return ((iflag<(8*sizeof(UInt_t))) ? fMCFlags & (UInt_t(1)<<iflag) : kFALSE);}
-    Bool_t IsMCKineParticle()              const {return (fMCFlags ? kTRUE : kFALSE);}
+    Bool_t IsMCKineParticle()              const {return (fIsMCTruth ? kTRUE : kFALSE);}
     
     // setters
     void   Px(Float_t px) {fP[0] = px; fIsCartesian=kTRUE;}
@@ -76,7 +78,8 @@ class AliReducedBaseTrack : public TObject {
     void    SetMCFlags(UInt_t flags) {fMCFlags = flags;}
     Bool_t SetMCFlag(UShort_t iflag) {if(iflag>=8*sizeof(UInt_t)) return kFALSE; fMCFlags |= (UInt_t(1)<<iflag); return kTRUE;}
     Bool_t UnsetMCFlag(UShort_t iflag) {if(iflag>=8*sizeof(UInt_t)) return kFALSE; if(TestMCFlag(iflag)) fMCFlags ^= (UInt_t(1)<<iflag); return kTRUE;}
-        
+    void SetIsMCTruth(Bool_t flag=kTRUE) {fIsMCTruth = flag;}
+   
   protected:
     UShort_t fTrackId;            // track id 
     Float_t fP[3];         // 3-momentum vector
@@ -108,10 +111,11 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT3 toggled for pure V0 anti-Lambda candidates
                                                    // BIT4 toggled for pure V0 photon candidates
     UInt_t fMCFlags;                     // flags used to encode Monte-Carlo information
+    Bool_t fIsMCTruth;                  // TRUE: if the particle is pure MC track; FALSE: if the particle is a reconstructed track
         
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
     
-    ClassDef(AliReducedBaseTrack, 4)
+    ClassDef(AliReducedBaseTrack, 5)
 };
 
 //_______________________________________________________________________________

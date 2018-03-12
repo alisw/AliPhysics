@@ -683,6 +683,7 @@ void AliCSEventCuts::PrintTrigger(UInt_t &printed, UInt_t trigger, const char *n
 ///    |  AliCSEventCuts::kpp  | **p-p** system |
 ///    |  AliCSEventCuts::kpPb | **p-Pb** system |
 ///    |  AliCSEventCuts::kPbPb  | **Pb-Pb** system |
+///    |  AliCSEventCuts::kXeXe  | **Xe-Xe** system |
 /// \return kTRUE if a proper and supported system
 Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
   switch(system){
@@ -697,6 +698,9 @@ Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
     break;
   case kPbPb:
     fSystem = kPbPb;
+    break;
+  case kXeXe:
+    fSystem = kXeXe;
     break;
   default:
     AliError(Form("SetSystemType not defined %d",Int_t(system)));
@@ -735,6 +739,10 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15oHIR:
     system = kPbPb;
     AliInfo("SYSTEM: Pb-Pb");
+    break;
+  case kLHC17n:
+    system = kXeXe;
+    AliInfo("SYSTEM: Xe-Xe");
     break;
   default:
     system = kNoSystem;
@@ -918,6 +926,7 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   switch (GetGlobalAnchorPeriod()) {
   case kLHC15oLIR:
   case kLHC15oHIR:
+  case kLHC17n:
     AliInfo("Using NEW mulitplicity framework");
     return kTRUE;
   default:
@@ -1242,6 +1251,7 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC15oHIR:
     case kLHC16k:
     case kLHC16l:
+    case kLHC17n:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
       break;
@@ -1323,11 +1333,11 @@ Bool_t AliCSEventCuts::SetRemovePileUp(Int_t pupcode)
 ///    |  1 | \f$ |z_{vtx}|\f$ < 12.0 cm |                                                                                     |
 ///    |  2 | \f$ |z_{vtx}|\f$ < 10.0 cm |                                                                                     |
 ///    |  3 | \f$ |z_{vtx}|\f$ < 7.0 cm  |                                                                                     |
-///    |  4 | \f$ |z_{vtx}|\f$ < 5.0 cm  |                                                                                     |
+///    |  4 | \f$ |z_{vtx}|\f$ < 3.0 cm  |                                                                                     |
 ///    |  5 | \f$ |z_{vtx}|\f$ < 12.0 cm | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 ///    |  6 | \f$ |z_{vtx}|\f$ < 10.0 cm | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 ///    |  7 | \f$ |z_{vtx}|\f$ < 7.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
-///    |  8 | \f$ |z_{vtx}|\f$ < 5.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
+///    |  8 | \f$ |z_{vtx}|\f$ < 3.0 cm  | distance between SPD and tracks vertex less than 0.5 (PbPb 2011) or 0.2 cm (PbPb 2015) |
 /// \return kTRUE for proper and supported vertex cuts
 
 Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
@@ -1351,7 +1361,7 @@ Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
     break;
   case 4:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
-    fMaxVertexZ     = 5.;
+    fMaxVertexZ     = 3.;
     break;
   case 5:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
@@ -1370,7 +1380,7 @@ Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
     break;
   case 8:
     fCutsEnabledMask.SetBitNumber(kVertexCut);
-    fMaxVertexZ     = 5.;
+    fMaxVertexZ     = 3.;
     fUseSPDTracksVtxDist = kTRUE;
     break;
   default:
@@ -1614,6 +1624,9 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC15oHIR:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-2500+5.0*x");
       break;
+    case kLHC17n:
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-900+6.0*x");
+      break;
     default:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+2.8*x");
       break;
@@ -1826,6 +1839,12 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     basename = "2011";
     system = "Pb-Pb";
     period = "2015o";
+    break;
+  case kLHC17n:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "Xe-Xe";
+    period = "2017n";
     break;
   default:
     fESDFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();

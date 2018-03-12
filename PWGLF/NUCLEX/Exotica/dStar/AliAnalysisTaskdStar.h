@@ -16,8 +16,10 @@
 #include <Rtypes.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
 #include "AliPID.h"
+
 #include <TMath.h>
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
@@ -34,7 +36,7 @@ class TList;
 const unsigned char c = 0x1;   // on if charge is +1
 const unsigned char p = 0x2;   // on if is Physical Primary
 const unsigned char s = 0x4;   // on if is Seconbdary from Material
-// const unsigned char secondarywd = 0x8;   // on if is Secondary from Weak Decay
+const unsigned char t = 0x8;   // on if has TOF
 
 struct mother_struct{
   int id;
@@ -87,7 +89,8 @@ private:
   TH2F                 *fMCDalitzPlot;              //!<!
 
   TTree                *fTree;                      //!<!
-  TTree                *fMCTree;                    //!<!
+
+  Short_t               fZvtx;                      //<
 
   vector<daughter_struct>   fDeuteronVector;        //<
   vector<daughter_struct>   fPiPlusVector;          //<

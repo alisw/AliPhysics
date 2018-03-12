@@ -194,6 +194,8 @@ fTreeVariablePIDPositive(0),
 fTreeVariablePIDNegative(0),
 fTreeVariablePtMC(0),
 fTreeVariableRapMC(0),
+fTreeVariableNegTOFSignal(99999), 
+fTreeVariablePosTOFSignal(99999),
 fTreeVariablePosAlpha(0),
 fTreeVariablePosSigmaY2(0),
 fTreeVariablePosSigmaZ2(0),
@@ -269,6 +271,10 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
+
+fTreeCascVarNegTOFSignal(99999),
+fTreeCascVarPosTOFSignal(99999),
+fTreeCascVarBachTOFSignal(99999),
 
 fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
@@ -417,6 +423,8 @@ fTreeVariablePIDPositive(0),
 fTreeVariablePIDNegative(0),
 fTreeVariablePtMC(0),
 fTreeVariableRapMC(0),
+fTreeVariableNegTOFSignal(99999), 
+fTreeVariablePosTOFSignal(99999),
 fTreeVariablePosAlpha(0),
 fTreeVariablePosSigmaY2(0),
 fTreeVariablePosSigmaZ2(0),
@@ -486,6 +494,10 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
+
+fTreeCascVarNegTOFSignal(99999),
+fTreeCascVarPosTOFSignal(99999),
+fTreeCascVarBachTOFSignal(99999),
 
 fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
@@ -698,6 +710,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
     fTreeV0->Branch("fTreeVariablePtMC",&fTreeVariablePtMC,"fTreeVariablePtMC/F");
     fTreeV0->Branch("fTreeVariableRapMC",&fTreeVariableRapMC,"fTreeVariableRapMC/F");
+    fTreeV0->Branch("fTreeVariableNegTOFSignal",&fTreeVariableNegTOFSignal,"fTreeVariableNegTOFSignal/F");
+    fTreeV0->Branch("fTreeVariablePosTOFSignal",&fTreeVariablePosTOFSignal,"fTreeVariablePosTOFSignal/F");
     
     //Uncertainties
     fTreeV0->Branch("fTreeVariablePosAlpha",&fTreeVariablePosAlpha,"fTreeVariablePosAlpha/F");
@@ -789,6 +803,11 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
     fTreeCascade->Branch("fTreeCascVarPtMC",&fTreeCascVarPtMC,"fTreeCascVarPtMC/F");
     fTreeCascade->Branch("fTreeCascVarRapMC",&fTreeCascVarRapMC,"fTreeCascVarRapMC/F");
+
+    //TOF SIGNAL
+    fTreeCascade->Branch("fTreeCascVarNegTOFSignal",&fTreeCascVarNegTOFSignal,"fTreeCascVarNegTOFSignal/F");
+    fTreeCascade->Branch("fTreeCascVarPosTOFSignal",&fTreeCascVarPosTOFSignal,"fTreeCascVarPosTOFSignal/F");
+    fTreeCascade->Branch("fTreeCascVarBachTOFSignal",&fTreeCascVarBachTOFSignal,"fTreeCascVarBachTOFSignal/F");
     
     fTreeCascade->Branch("fTreeCascVarPosDistanceToTrueDecayPt",&fTreeCascVarPosDistanceToTrueDecayPt,"fTreeCascVarPosDistanceToTrueDecayPt/F");
     fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
@@ -1422,6 +1441,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Get Cosine of pointing angle
         Float_t cpa=vertex.GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
         fTreeVariableV0CosineOfPointingAngle = cpa;
+
+        //Get TOF signal
+        fTreeVariableNegTOFSignal = esdTrackNeg->GetTOFsignal() * 1.e-3; // in ns
+        fTreeVariablePosTOFSignal = esdTrackPos->GetTOFsignal() * 1.e-3; // in ns
         
         //Final step: get estimated masses under different mass hypotheses
         vertex.ChangeMassHypothesis(310);
@@ -1721,6 +1744,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //DCA to PV
         fTreeCascVarDCAV0ToPrimVtx = vertex.GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
         fTreeCascVarDCAxyV0ToPrimVtx = vertex.GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1]);
+
+        //Get TOF signal
+        fTreeCascVarBachTOFSignal = esdTrackBach->GetTOFsignal() * 1.e-3; // in ns
+        fTreeCascVarNegTOFSignal  = esdTrackNeg->GetTOFsignal() * 1.e-3; // in ns
+        fTreeCascVarPosTOFSignal  = esdTrackPos->GetTOFsignal() * 1.e-3; // in ns
         
         //Final step: get estimated masses under different mass hypotheses
         vertex.ChangeMassHypothesis(3122);

@@ -234,6 +234,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
+  
+  std::vector<Int_t> ITS1S;
+  std::vector<Int_t> ITS2S;
+  std::vector<Int_t> ITS3S;
+  std::vector<Int_t> ITS4S;
+  std::vector<Int_t> ITS5S;
+  std::vector<Int_t> ITS6S;
+  
   std::vector<Double_t> chi2ITS;
 //  std::vector<Double_t> chi2TPC;
   std::vector<Double_t> chi2GlobalPerNDF;

@@ -6,15 +6,16 @@
 #include <TFile.h>
 #include <TH1.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEvent.h>
+#include <AliEMCALRecoUtils.h>
+#include <AliOADBContainer.h>
 #include "AliEmcalList.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
-#include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);
@@ -115,6 +116,9 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
       fFilepass = "pass1";
     }
   }
+
+  // Handle create histos, as this is universal for every component
+  GetProperty("createHistos", fCreateHisto);
 
   return kTRUE;
 }
@@ -338,16 +342,16 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
+    TFile *fbad=new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }
     
     if (fbad) delete fbad;
     
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels");
+    contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels");
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);

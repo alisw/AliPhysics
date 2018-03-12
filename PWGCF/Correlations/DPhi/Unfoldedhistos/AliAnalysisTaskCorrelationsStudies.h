@@ -16,6 +16,7 @@ class TF1;
 class TH1F;
 class TH2F;
 class TH3F;
+class TH3I;
 class THn;
 class TProfile3D;
 class TObjArray;
@@ -109,6 +110,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliCSEventCuts             *fEventCuts;                   ///< the event cuts
     AliCSTrackSelection        *fTrackSelectionCuts;          ///< track cuts to select tracks
 
+    AliCSAnalysisCutsBase::ProdPeriods      fDataPeriod;      ///< the current data period under analysis
+
     Bool_t                      fEnforceEfficiencyProfile;    ///< enforce the efficiency profile, only valid for MC analysis
     onTrueEfficiencyOptions     fOnTrueEfficiencyProfile;     ///< enforce efficiency on true data, only valid for MC analysis
     Bool_t                      fCorrectOnTrueEfficiency;     ///< use the efficiency profile on true data for efficiency correction on true
@@ -175,6 +178,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     TProfile3D                 *fhPt3DB;                      ///< \f$ \Sigma p_{T} \f$ vs  \f$ \eta \f$, \f$ \phi \f$ and \f$ vtx_{z} \f$ before any cut
     TProfile3D                 *fhPt3DA;                      ///< \f$ \Sigma p_{T} \f$ vs  \f$ \eta \f$, \f$ \phi \f$ and \f$ vtx_{z} \f$ after all cuts
     TProfile3D                 *fhTruePt3D;                   ///< True \f$ \Sigma p_{T} \f$ vs  \f$ \eta \f$, \f$ \phi \f$ and \f$ vtx_{z} \f$
+    TH3I                       *fh3Dn1B;                      ///< track density vs \f$ \eta \f$, \f$ \phi \f$ and \f$ p_{T} \f$ before any cut
+    TH3I                       *fh3Dn1A;                      ///< track density vs \f$ \eta \f$, \f$ \phi \f$ and \f$ p_{T} \f$ after all cuts
     TH2I                       *fhLambdaVsMultiplicity;       ///< track lambda angle vs event multiplicity
     THnSparseI                 *fhAcceptedVsMultiplicity;     ///< number of accepted tracks vs event multiplicity (rec tracks)
     TH2I                       *fhTrueLambdaVsPrimaries;      ///< True track lambda angle vs primary tracks
@@ -196,7 +201,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 3);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 4);
     /// \endcond
 };
 

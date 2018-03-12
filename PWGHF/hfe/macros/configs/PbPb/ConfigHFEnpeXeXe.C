@@ -26,31 +26,32 @@ TF1* GetEtaCorrection(){
 }
 
 // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added
-Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double TOFs, double ITSs){
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions/*, double sigma, double TOFs, double ITSs*/){
     //TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version
     TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version
     gROOT->cd();
     //int isig = static_cast<int>(sigma * 100.);  // original
-    int isig      = static_cast<int>(sigma * 1000.);
-    int nTOFsigma = static_cast<int>(TOFs*10);
-    int nITSsigma = static_cast<int>(ITSs*10);
+//    int isig      = static_cast<int>(sigma * 1000.);
+//    int nTOFsigma = static_cast<int>(TOFs*10);
+//    int nITSsigma = static_cast<int>(ITSs*10);
     
     printf("File opened: %s\n", in->GetName());
-    printf("Getting hadron background for the sigma cut: %d\n", isig);
-    printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
-    printf("Getting hadron background for ITS sigma (INTEGER*10): %d\n", nITSsigma);
+    printf("Getting hadron background: %s\n", in->GetName());
+//    printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
+//    printf("Getting hadron background for ITS sigma (INTEGER*10): %d\n", nITSsigma);
     bool status = kTRUE;
     
     for(int icent = 0; icent < 12; icent++){
         //functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));        // original
-        if(isig<0)  // --- case of negative low TPC cut ---
-        {
-            int isigSignSwitched = 0-isig;  // sign switched
-            //cout << " *** isig<0 *** " << endl;
-            functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITS%d_TOF%d_m%d_%d", nITSsigma, nTOFsigma, isigSignSwitched, icent)));
-            //printf("function[%d] name = hback_ITS%d_TOF%d_m%d_%d\n",icent, nITSsigma, nTOFsigma, isigSignSwitched, icent);
-        }
-        else       functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITS%d_TOF%d_%d_%d", nITSsigma, nTOFsigma, isig, icent)));
+//        if(isig<0)  // --- case of negative low TPC cut ---
+//        {
+//            int isigSignSwitched = 0-isig;  // sign switched
+//            //cout << " *** isig<0 *** " << endl;
+//            functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITS%d_TOF%d_m%d_%d", nITSsigma, nTOFsigma, isigSignSwitched, icent)));
+//            //printf("function[%d] name = hback_ITS%d_TOF%d_m%d_%d\n",icent, nITSsigma, nTOFsigma, isigSignSwitched, icent);
+//        }
+        //else
+        functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d", icent)));
         if(functions[icent]) printf("Config for centrality class %d found - function name: %s\n", icent, functions[icent]->GetName());
         else{
             printf("Config for the centrality class %d not found\n", icent);
@@ -290,7 +291,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     if(!useMC){
         Bool_t status = kTRUE;
         TF1 *hBackground[12];                                                                                // TOF sigma and ITS sigma added
-        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsmax);
+        status = ReadContaminationFunctions("hadronContamination_XeXe.root", hBackground/*, tpcdEdxcutlow[0], TOFs, ITSsmax*/);
  
         for(Int_t a=0;a<12;a++) {
             //printf("back %f \n",hBackground[a]);

@@ -3,6 +3,7 @@
 
 // --- Custom libraries ---
 #include "AliPP13ClusterCuts.h"
+#include "AliPP13SelectionWeights.h"
 
 
 // --- ROOT system ---
@@ -56,14 +57,18 @@ public:
 		TNamed(),
 		fListOfHistos(0),
 		fCuts(),
+		fWeights(),
 		fEventCounter(0)
 	{}
 
-	AliPP13PhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
+	AliPP13PhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
+			AliPP13SelectionWeights * sw):
 		TNamed(name, title),
 		fListOfHistos(0),
 		fCuts(cuts),
+		fWeights(dynamic_cast<AliPP13SelectionWeights *>(sw->Clone())),
 		fEventCounter(0)
+
 	{}
 
 	virtual ~AliPP13PhotonSelection();
@@ -108,6 +113,7 @@ protected:
 	TList  * fListOfHistos;  //! list of histograms
 	AliPP13ClusterCuts fCuts;
 
+	AliPP13SelectionWeights * fWeights;
 	TH1 * fEventCounter;  //!
 private:
 	ClassDef(AliPP13PhotonSelection, 2)

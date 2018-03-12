@@ -507,6 +507,30 @@ struct ParseError : public std::runtime_error {
 
 #undef DEFINE_PARSING_ERROR
 
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const char *src)
+{
+  std::string s(src);
+  return AliFemtoConfigObject::Parse(s);
+}
+
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TString &src)
+{
+  std::string s(src.Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+/// Create object by parsing TString
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TObjString &src)
+{
+  std::string s(src.GetString().Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+
+
 // public parsing method - This should handle all user-facing parsing errors
 AliFemtoConfigObject
 AliFemtoConfigObject::Parse(const std::string &src)
@@ -543,6 +567,16 @@ AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const std::strin
   if (obj.is_map()) {
     auto d = Parse(defaults);
     obj.SetDefault(d);
+  }
+  return obj;
+}
+
+AliFemtoConfigObject
+AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const AliFemtoConfigObject &defaults)
+{
+  AliFemtoConfigObject obj = Parse(src);
+  if (obj.is_map()) {
+    obj.SetDefault(defaults);
   }
   return obj;
 }
@@ -587,7 +621,7 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
 
     // NAME_PATTERN = "[A-Za-z_]+[A-Za-z_0-9]*",
 
-#define IDENT_PATTERN "[a-zA-Z_]+[a-zA-Z0-9_]*"
+#define IDENT_PATTERN "[a-zA-Z_]+(\\-?[a-zA-Z0-9_]+)*"
 #define KEY_PATTERN IDENT_PATTERN "(?:\\." IDENT_PATTERN "|/" IDENT_PATTERN ")*"
 
     // IDENT_PATTERN = "[a-zA-Z_]+[a-zA-Z0-9_]*(?:\\.[a-zA-Z_]+[a-zA-Z0-9_]*)*",
@@ -737,56 +771,54 @@ AliFemtoConfigObject::ParseMap(StringIter_t& it, const StringIter_t stop)
   it = match[0].second;
 
   // loop until we match right bracket }
-  for (; !std::regex_search(it, stop, match, RBRK_RX); ) {
-      // load key
-      if (!std::regex_search(it, stop, match, KEY_RX)) {
-        // throw std::runtime_error("Expected a Key or '}", it);
-      }
+  while (!std::regex_search(it, stop, match, RBRK_RX)) {
+    // load key into match[0]
+    if (!std::regex_search(it, stop, match, KEY_RX)) {
+      throw UnexpectedCharacter(START, "Map", "Expected beginning of key or '}' char");
+    }
 
-      std::string key = match.str();
+    auto keys = parse_map_key_unchecked(match[0].first, match[0].second);
+
+    if (!std::regex_search(match[0].second, stop, match, COLON_RX)) {
+      throw UnexpectedCharacter(START, "Map", "Expected colon ':' after key " + match[0].str());
+    }
+    // 'it' now should point to beginning of value
+    it = match[0].second;
+    AliFemtoConfigObject value = Parse(it, stop);
+
+    if (std::regex_search(it, stop, match, COMMA_RX)) {
       it = match[0].second;
+    } else if (!std::regex_search(it, stop, match, RBRK_RX)) {
+      throw UnexpectedCharacter(START, "Map", "Expected closing brace '}'");
+    }
 
-      auto keys = parse_map_key_unchecked(match[0].first, match[0].second);
+    // push key-value pairs into back
+    if (keys.size() > 1) {
+      auto key_it = keys.rbegin(),
+           key_it_stop = keys.rend();
 
-      if (!std::regex_search(match[0].second, stop, match, COLON_RX)) {
-          // throw std::runtime_error("Expected colon after key");
-          throw UnexpectedCharacter(START, "Map", "colon after key");
+      AliFemtoConfigObject::MapValue_t tmp_map;
+
+      // loop until last one
+      for (; std::next(key_it) != key_it_stop; ++key_it) {
+        tmp_map.emplace(*key_it, std::move(value)); // value should now be empty
+        value = std::move(tmp_map); // tmp_map should now be empty - value is new map object
       }
-      it = match[0].second;
-      AliFemtoConfigObject value = Parse(it, stop);
+    }
 
-      if (std::regex_search(it, stop, match, COMMA_RX)) {
-          it = match[0].second;
-      } else if (!std::regex_search(it, stop, match, RBRK_RX)) {
-        std::cerr << " --- Error: " << *it << "\n";
-          throw std::runtime_error("Expected '}'");
-      }
-
-      // push key-value pairs into back
-      if (keys.size() > 1) {
-        auto key_it = keys.rbegin(),
-             key_it_stop = keys.rend();
-
-        AliFemtoConfigObject::MapValue_t tmp_map;
-
-        // loop until last one
-        for (; std::next(key_it) != key_it_stop; ++key_it) {
-            tmp_map.emplace(*key_it, std::move(value)); // value should now be empty
-            value = std::move(tmp_map); // tmp_map should now be empty - value is new map object
-        }
-      }
-
-      result_map.emplace(keys.front(), std::move(value));
+    result_map.emplace(keys.front(), std::move(value));
   }
 
   it = match[0].second;
   return AliFemtoConfigObject(std::move(result_map));
 }
 
-template <typename List_t>
-void
-parse_matched_rangelist(const std::smatch& m, List_t& result)
+AliFemtoConfigObject
+match_to_rangelist(const std::smatch& m)
 {
+  AliFemtoConfigObject::RangeListValue_t result;
+  using Float_t = AliFemtoConfigObject::RangeListValue_t::value_type::first_type;
+
   const std::regex comma_re(COMMA_PAT),
                    colon_re(COLON_PAT);
 
@@ -797,15 +829,24 @@ parse_matched_rangelist(const std::smatch& m, List_t& result)
 
     std::sregex_token_iterator num(group->first, group->second, colon_re, -1);
 
-    typename List_t::value_type::first_type first = std::stod(*num++),
-                                            second;
+    Float_t first = std::stod(*num++);
 
     for (num++; num != stop; ++num) {
-      second = std::stod(*num);
+      Float_t second = std::stod(*num);
       result.emplace_back(first, second);
       first = second;
     }
   }
+
+  return AliFemtoConfigObject(result);
+}
+
+AliFemtoConfigObject
+match_to_range(const std::smatch &match)
+{
+  AliFemtoConfigObject::FloatValue_t range_start = std::stod(match[1].str()),
+                                      range_stop = std::stod(match[2].str());
+  return AliFemtoConfigObject(range_start, range_stop);
 }
 
 AliFemtoConfigObject
@@ -825,10 +866,8 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
   }
 
   else if (std::regex_search(it, stop, match, RANGE_RX)) {
-    FloatValue_t start = std::stod(match[1].str()),
-                  stop = std::stod(match[2].str());
     it = match[0].second;
-    return AliFemtoConfigObject(start, stop);
+    return match_to_range(match);
   }
 
   else if (std::regex_search(it, stop, match, BOOL_RX)) {
@@ -837,7 +876,6 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
   }
 
   else if (std::regex_search(it, stop, match, FLT_RX)) {
-    // std::cout << " Matched float " << match.str() << "\n";
     it = match[0].second;
     return AliFemtoConfigObject(std::stod(match.str()));
   }
@@ -852,6 +890,11 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
     return AliFemtoConfigObject(std::string(match[0].first + 1, it - 1));
   }
 
+  else if (std::regex_search(it, stop, match, RANGELIST_RX)) {
+    it = match[0].second;
+    return match_to_rangelist(match);
+  }
+
   else if (*it == '{') {
     return ParseMap(it, stop);
   }
@@ -860,47 +903,53 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
     return ParseArray(it, stop);
   }
 
-  else if (*it == '(' && std::regex_search(it, stop, match, RANGELIST_RX)) {
-    // std::cout << " Matching range-list " << match.str() << "\n";
-
-    RangeListValue_t ranges;
-    parse_matched_rangelist(match, ranges);
-
-    it = match[0].second;
-    return AliFemtoConfigObject(std::move(ranges));
-  }
-
   throw UnexpectedLeadingChar(it, "undetermined-type", "");
-  // std::runtime_error(std::string("Unknown character '") + *it + "'");
 }
 
 namespace std {
   template<>
   struct hash<AliFemtoConfigObject> {
     using Range_t = AliFemtoConfigObject::RangeValue_t;
+    using RangeListValue_t = AliFemtoConfigObject::RangeListValue_t;
+    using ArrayValue_t = AliFemtoConfigObject::ArrayValue_t;
+    using MapValue_t = AliFemtoConfigObject::MapValue_t;
 
     ULong_t operator()(Range_t const& pair) const {
       return std::hash<Range_t::first_type>{}(pair.first)
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
-    ULong_t operator()(AliFemtoConfigObject::ArrayValue_t const& array) const {
-      using Item_t = AliFemtoConfigObject::ArrayValue_t::value_type;
+    ULong_t operator()(ArrayValue_t const& array) const {
+      using Item_t = ArrayValue_t::value_type;
 
       return std::accumulate(
-        array.cbegin(), array.cend(), 0,
-        [] (ULong_t hash, const Item_t &obj) { return obj.Hash() ^ (hash << 1); });
+        array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
+        [] (ULong_t hash, const Item_t &obj) {
+          return obj.Hash() ^ (hash << 1); });
     }
 
-    ULong_t operator()(AliFemtoConfigObject::RangeListValue_t const& list) const {
-      using Item_t = AliFemtoConfigObject::RangeListValue_t::value_type;
+    ULong_t operator()(RangeListValue_t const& list) const {
+      using Item_t = RangeListValue_t::value_type;
 
       return std::accumulate(
-        list.cbegin(), list.cend(), 0,
-        [&] (ULong_t a, const Item_t &pair) {
-          return operator()(pair) ^ (a << 1); });
+        list.cbegin(), list.cend(), AliFemtoConfigObject::EMPTY_RANGELIST_HASH,
+        [] (ULong_t hash, const Item_t &pair) {
+          return std::hash<AliFemtoConfigObject>{}(pair) ^ (hash << 1); });
     }
+
+    ULong_t operator()(MapValue_t const& map) const {
+      using Item_t = MapValue_t::value_type;
+
+      return std::accumulate(
+        map.cbegin(), map.cend(), AliFemtoConfigObject::EMPTY_MAP_HASH,
+        [] (ULong_t hash, const Item_t &pair) {
+          return hash
+                 ^ (std::hash<AliFemtoConfigObject::Key_t>{}(pair.first) << 1)
+                 ^ (pair.second.Hash() << 2); });
+    }
+
   };
+
 }
 
 
@@ -919,16 +968,8 @@ AliFemtoConfigObject::Hash() const
     case kSTRING: return result ^ std::hash<StringValue_t>{}(fValueString);
     case kRANGE: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRange);
     case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
-
-    case kARRAY:
-
-    case kMAP:
-      return std::accumulate(
-        fValueMap.cbegin(), fValueMap.cend(), result,
-        [] (ULong_t hash, const MapValue_t::value_type &pair) {
-          return hash
-                 ^ (std::hash<Key_t>{}(pair.first) << 1)
-                 ^ (pair.second.Hash() << 2); });
+    case kARRAY: return result ^ std::hash<AliFemtoConfigObject>{}(fValueArray);
+    case kMAP: return result ^ std::hash<AliFemtoConfigObject>{}(fValueMap);
   }
 
   return 0;
@@ -1062,4 +1103,3 @@ AliFemtoConfigObject::WithoutKeys(const std::vector<Key_t> &keys) const
   }
   return result;
 }
-

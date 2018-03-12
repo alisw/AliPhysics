@@ -167,6 +167,25 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistYtpcVsContrib);
   fOutput->Add(fHistZtpcVsContrib);
 
+  fHistXspdVsMult=new TH2F("hXspdVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistYspdVsMult=new TH2F("hYspdVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistZspdVsMult=new TH2F("hZspdVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
+  fHistXtrkVsMult=new TH2F("hXtrkVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistYtrkVsMult=new TH2F("hYtrkVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistZtrkVsMult=new TH2F("hZtrkVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
+  fHistXtpcVsMult=new TH2F("hXtpcVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistYtpcVsMult=new TH2F("hYtpcVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistZtpcVsMult=new TH2F("hZtpcVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
+  fOutput->Add(fHistXspdVsMult);
+  fOutput->Add(fHistYspdVsMult);
+  fOutput->Add(fHistZspdVsMult);
+  fOutput->Add(fHistXtrkVsMult);
+  fOutput->Add(fHistYtrkVsMult);
+  fOutput->Add(fHistZtrkVsMult);
+  fOutput->Add(fHistXtpcVsMult);
+  fOutput->Add(fHistYtpcVsMult);
+  fOutput->Add(fHistZtpcVsMult);
+
   fHistoNOfPileupVertSPD = new TH1F("hNOfPileupVertSPD","",11,-0.5,10.5);
   fHistoNOfSelPileupVertSPD = new TH1F("hNOfSelPileupVertSPD","",11,-0.5,10.5);
   fHistoNOfPileupVertMV = new TH1F("hNOfPileupVertMV","",11,-0.5,10.5);
@@ -245,6 +264,10 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
   fHistPrimVtxType->Fill(val);
 
+  Int_t ntracklets = 0;
+  AliAODTracklets *mult=aod->GetTracklets();
+  if(mult) ntracklets=mult->GetNumberOfTracklets();
+
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
   Int_t ct=0;
   Float_t zt=-999.;
@@ -256,6 +279,9 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     fHistXtrkVsContrib->Fill(ct,xt);
     fHistYtrkVsContrib->Fill(ct,yt);
     fHistZtrkVsContrib->Fill(ct,zt);
+    fHistXtrkVsMult->Fill(ntracklets,xt);
+    fHistYtrkVsMult->Fill(ntracklets,yt);
+    fHistZtrkVsMult->Fill(ntracklets,zt);
   }
   Int_t cs=0;
   Float_t zs=-999.;
@@ -267,6 +293,9 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     fHistXspdVsContrib->Fill(cs,xs);
     fHistYspdVsContrib->Fill(cs,ys);
     fHistZspdVsContrib->Fill(cs,zs);
+    fHistXspdVsMult->Fill(ntracklets,xs);
+    fHistYspdVsMult->Fill(ntracklets,ys);
+    fHistZspdVsMult->Fill(ntracklets,zs);
   }
   if(vtTPC){
     Float_t xtpc=vtTPC->GetX();
@@ -276,6 +305,9 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     fHistXtpcVsContrib->Fill(ctpc,xtpc);
     fHistYtpcVsContrib->Fill(ctpc,ytpc);
     fHistZtpcVsContrib->Fill(ctpc,ztpc);
+    fHistXtpcVsMult->Fill(ntracklets,xtpc);
+    fHistYtpcVsMult->Fill(ntracklets,ytpc);
+    fHistZtpcVsMult->Fill(ntracklets,ztpc);
   }
 
   Int_t nPileupVertSPD=aod->GetNumberOfPileupVerticesSPD();

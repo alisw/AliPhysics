@@ -112,6 +112,8 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	Int_t nlines = 0 ;
 	Int_t RunId[500] ;
 	std::vector<Int_t> RunIdVec;
+	std::vector<Int_t> badRunIdVec;   //..Filled with runs were the automatic bad cell evaluation failed
+
 	while (1)
 	{
 		ncols = fscanf(pFile,"  %d ",&q);
@@ -132,7 +134,6 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	if(runsUsed>0 && runsUsed<intRun)intRun = runsUsed; //for test purposes
 	const Int_t nRun = intRun;
 	Int_t nRunsUsed = nRun;
-	gSystem->mkdir(TString::Format("%s/RunByRunSummary%i/", analysisOutput.Data(),nRunsUsed));
 	//ELI for Martin Int_t totalperCv = 4;
 	Int_t totalperCv = 16;
 	Int_t nPad = TMath::Sqrt(totalperCv);
@@ -269,6 +270,32 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 		{
 			cout<<"Couldn't open/find .root file: "<<badChannelOutput<<endl;
 			cout<<endl;
+			cout<<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"<<endl;
+			badRunIdVec.push_back(RunIdVec.at(i));
+			usedRuns++; //..to not overwrite that run number place with other results
+			continue;
+		}
+		if(f->TestBit(TFile::kRecovered))
+		{
+			cout<<"File had to be recovered (probably damaged): "<<badChannelOutput<<endl;
+			cout<<endl;
+			cout<<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"<<endl;
+			//..since there is no material that can be retrieved get the previous histograms
+			//..and clear them
+			ampID[usedRuns]        = (TH2F*)ampID[usedRuns-1]->Clone("hCellAmplitudeCopy");
+			ampID[usedRuns]->Clear();
+			ampIDCl[usedRuns]      = (TH2F*)ampID[usedRuns]->Clone(Form("hCellAmplitudeClRun%i",usedRuns));
+			ampIDCl[usedRuns]->Clear();
+			ampIDCl3Block[usedRuns]= (TH2F*)ampID[usedRuns]->Clone(Form("hCellAmplitudeCl3RunBlock%i",usedRuns));
+			ampIDCl3Block[usedRuns]->Clear();
+			ampIDCl1Block[usedRuns]= (TH2F*)ampID[usedRuns]->Clone(Form("hCellAmplitudeCl1RunBlock%i",usedRuns));
+			ampIDCl1Block[usedRuns]->Clear();
+			ampIDDelete[usedRuns]  = (TH2F*)ampID[usedRuns]->Clone(Form("hCellAmplitudeTest%i",usedRuns));
+			ampIDDelete[usedRuns]->Clear();
+			hCellGoodMean[usedRuns]= (TH1D*)hCellGoodMean[usedRuns-1]->Clone("hgoodMeanCopy");
+			hCellGoodMean[usedRuns]->Clear();
+			badRunIdVec.push_back(RunIdVec.at(i));
+			usedRuns++; //..to not overwrite that run number place with other results
 			continue;
 		}
 
@@ -276,6 +303,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 		//..runs with a certain number of events
 		hNEvent[usedRuns]      = (TH1D*)f->Get("hNEvents");
 		cout<<hNEvent[usedRuns]->Integral()<<" evt."<<endl;
+		cout<<"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"<<endl;
 //		if(hNEvent[usedRuns]->Integral()>1000000)continue;
 
 		TH2F *goodCells        = (TH2F*)f->Get("2DChannelMap_Flag0");
@@ -331,17 +359,30 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 		{
 			Int_t flag =  hCellFlag->GetBinContent(icell+1);
 			//..dead
-			if(flag == 1) hFlagvsRun[0]->Fill(icell, usedRuns, 1);
+			if(flag == 1) hFlagvsRun[0]->Fill(icell+1, usedRuns, 1);
 			//..bad or warm
-			if(flag>1)    hFlagvsRun[1]->Fill(icell, usedRuns, 1); //fill, use the x, y values
+			if(flag>1)    hFlagvsRun[1]->Fill(icell+1, usedRuns, 1); //fill, use the x, y values
 			//..dead+bad
 			if(flag>0)
 			{
-				hFlagvsRun[2]->Fill(icell, usedRuns, 1);
+				hFlagvsRun[2]->Fill(icell+1, usedRuns, 1);
 				percBad++;
 			}
 		}
-		if(1.0*percBad/noOfCells>0.3)cout<<"Problem in this run detected. Large number of bad+dead cells (>30%) - please double check!"<<endl;
+
+		if(1.0*percBad/noOfCells>0.3)
+		{
+			cout<<"Problem in run "<<RunIdVec.at(i)<<" detected. Large number of bad+dead cells (>30%) - please double check!"<<endl;
+			cout<<"All entries of run: "<<RunIdVec.at(i)<<"/"<<usedRuns<<"(bin "<<usedRuns+1<<") will be set to 0"<<endl;
+			badRunIdVec.push_back(RunIdVec.at(i));
+			//..clear the hFlagvsRun histos for this bad run and overwrite it in next iteration
+			for(Int_t icell = 0; icell < noOfCells; icell++)
+			{
+				hFlagvsRun[0]->SetBinContent(icell+1, usedRuns+1, 0);
+				hFlagvsRun[1]->SetBinContent(icell+1, usedRuns+1, 0);
+				hFlagvsRun[2]->SetBinContent(icell+1, usedRuns+1, 0);
+			}
+		}
 
 		if(!hFlagNew)
 		{
@@ -538,6 +579,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	//..90% of the space is filled by empty good cells
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	TH2F* CompressedAll = CompressHistogram(hFlagvsRun[2],noOfCells , nBadCells,RunIdVec);
+	CompressedAll->SetName(Form("%s_V1",CompressedAll->GetName()));
 	cFlagSumCompAllI->cd()->SetLeftMargin(0.05);
 	cFlagSumCompAllI->cd()->SetRightMargin(0.05);
 	cFlagSumCompAllI->cd()->SetBottomMargin(0.05);
@@ -554,6 +596,9 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	CompressedAll->GetXaxis()->SetRangeUser(nBadCells/2,nBadCells+2);
 	CompressedAll->DrawCopy("BOX");
 
+
+
+	//cFlagSumCompAllII->WaitPrimitive();
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..................................................................
 	// Find cells that are bad in a low fraction of runs
@@ -594,11 +639,19 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 					hFlagvsRun[2]->SetBinContent(ic+1,j+1,1);
 				}
 			}
+			//..If a cell is bad in <20% of the runs then set it OK completley
+			if(fracRun<percbad)
+			{
+				for(Int_t j = 0 ; j < nRunsUsed; j++)
+				{
+					hFlagvsRun[2]->SetBinContent(ic+1,j+1,0);
+				}
+			}
 			//..If a cell is bad in a low fraction of runs double check it
 			if(fracRun<percbad)
 			{
-				cout<<ic<<", "<<flush;
-				cellVector.push_back(ic);
+				//..ELI for the moment - cout<<ic<<", "<<flush;
+				//..ELI for the moment - cellVector.push_back(ic);
 			}
 		}
 	}
@@ -608,9 +661,9 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	// Plot cells with low fraction if bad runs
 	// Double checks if they are really bad and re-includes them
 	//..................................................................
+	gSystem->mkdir(TString::Format("%s/RunByRunSummary%i/", analysisOutput.Data(),nRunsUsed));
 	TString pdfName  = Form("%s/RunByRunSummary%i/%s_LowFractionCells",analysisOutput.Data(),nRunsUsed,listName.Data());
 	PlotLowFractionCells(pdfName,cellVector,hFlagvsRun,nRunsUsed,ampID,hCellGoodMean);
-
 	//..................................................................
 	// Draw masked cell amplitude by masking cells that were identified bad or dead in a certain runblock
 	//..................................................................
@@ -724,36 +777,34 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	projSumC3BlocksD->DrawCopy("hist same");
 	*/
 	TLegend *legSum = new TLegend(0.35,0.70,0.55,0.85);
-	legSum->AddEntry(projSum,"Original engery distr.","l");
-	legSum->AddEntry(projSumC,"Cells masked in each run","l");
-	legSum->AddEntry(projSumC3Blocks,"Cells reincluded and masked in 3 blocks","l");
-	legSum->AddEntry(projSumC1Block,"1 Block","l");
+	legSum->AddEntry((TH1D*)projSum->Clone("A1"),"Original engery distr.","l");
+	legSum->AddEntry((TH1D*)projSumC->Clone("A2"),"Cells masked in each run","l");
+	legSum->AddEntry((TH1D*)projSumC3Blocks->Clone("A3"),"Cells reincluded and masked in 3 blocks","l");
+	legSum->AddEntry((TH1D*)projSumC1Block->Clone("A4"),"1 Block","l");
 	legSum->SetBorderSize(0);
 	legSum->SetTextSize(0.03);
 	legSum->Draw("same");
 
 	cAmpSum->cd(2);
+	TLegend *legRatio = new TLegend(0.25,0.30,0.4,0.45);
+
 	projSumC3Blocks->Divide(projSumC);
 	SetHisto(projSumC3Blocks,"","block masked/single masked",0);
 	projSumC3Blocks->SetLineColor(30);
 	projSumC3Blocks->DrawCopy("hist");
+	legRatio->AddEntry((TH1D*)projSumC1Block->Clone("A"),"re-incl & masked as one big block","l");
 	projSumC1Block->SetLineColor(4);
 	projSumC1Block->Divide(projSumC);
 	projSumC1Block->DrawCopy("same");
-
+	legRatio->AddEntry((TH1D*)projSumC3Blocks->Clone("B"),"re-incl & masked in three blocks","l");
 	projSumC1Block->SetLineStyle(3);
 	projSumC1Block->SetLineColor(6);
 	projSumC1Block->Divide(projSumC3Blocks);
 	projSumC1Block->DrawCopy("same");
-
-	TLegend *legRatio = new TLegend(0.25,0.30,0.4,0.45);
-	legRatio->AddEntry(projSumC1Block,"re-incl & masked as one big block","l");
-	legRatio->AddEntry(projSumC3Blocks,"re-incl & masked in three blocks","l");
-	legRatio->AddEntry(projSumC1Block,"ratio 1Block/3Blocks","l");
+	legRatio->AddEntry((TH1D*)projSumC1Block->Clone("C"),"ratio 1Block/3Blocks","l");
 	legRatio->SetBorderSize(0);
 	legRatio->SetTextSize(0.03);
 	legRatio->Draw("same");
-
 	//..................................................................
 	// Draw the Amp vs E histogram and the ratio to the masked 2D one
 	//..................................................................
@@ -835,7 +886,6 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	Sum2D3BlockMaskD->SetTitle("Amplitude Vs. run / av. amp. vs. run");
 	Sum2D3BlockMaskD->DrawCopy("colz");
 	textD->Draw();
-
 	//..................................................................
 	//..Plot the cleaned up histogram again
 	//..................................................................
@@ -867,14 +917,13 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 
 	legSum0->AddEntry(badCellsVsRunC,"Bad cells cleaned","l");
 	legSum0->Draw("same");
-
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..compress the histogram for visibility since
 	//..90% of the space is filled by empty good cells
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	cout<<endl;
 	TH2F* CompressedClean = CompressHistogram(hFlagvsRun[2],noOfCells , nBadCells,RunIdVec);
-
+	//CompressedClean->SetName(Form("%s_Cleaned",CompressedClean->GetName()));
 	cFlagSumCompCleanI->cd()->SetLeftMargin(0.065);
 	cFlagSumCompCleanI->cd()->SetRightMargin(0.02);
 	cFlagSumCompCleanI->cd()->SetBottomMargin(0.05);
@@ -926,7 +975,6 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
     cFlagNew->cd(2);
 	SetHisto(hFlagNewClean,"","",0);
 	hFlagNewClean->Draw("colz");
-
 	//..................................................................
 	// Print out an overview of this run-by-run analysis
 	//..................................................................
@@ -947,14 +995,24 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
     if(cellVector.size()!=0)cout<<"o These are: "<<100*(nBadCells-bcBolckSum)/cellVector.size()<<"% of low frac cells"<<endl;
     cout<<"...................................."<<endl;
 
-	//_______________________________________________________________________
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+    if(badRunIdVec.size()>0)
+    {
+    		cout<<"There were bad runs detected that could not be used:"<<endl;
+    		for(Int_t badRun=0; badRun<(Int_t)badRunIdVec.size(); badRun++)
+    		{
+    		cout<<badRunIdVec.at(badRun)<<", "<<flush;
+    		}
+    	}
+    cout<<endl;
+    cout<<"...................................."<<endl;
+
+    //_______________________________________________________________________
+    //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . Save histograms to file
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//_______________________________________________________________________
 	TString fileName       = Form("%s/RunByRunSummary%i/%s_Results.root",analysisOutput.Data(),nRunsUsed,listName.Data());
 	TFile* rootFile        = new TFile(fileName,"recreate");
-
 	for(Int_t ic = 0; ic<nCv; ic++)
 	{
 		rootFile->WriteObject(cBad [ic],cBad [ic]->GetName());
@@ -962,6 +1020,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 		rootFile->WriteObject(cDead[ic],cDead[ic]->GetName());
 		rootFile->WriteObject(cAmp [ic],cAmp [ic]->GetName());
 	}
+
 	rootFile->WriteObject(cellSummaryCan,cellSummaryCan->GetName());
 	rootFile->WriteObject(cAmpSum,cAmpSum->GetName());
 	rootFile->WriteObject(cFlagDeadBadI,cFlagDeadBadI->GetName());
@@ -1355,7 +1414,7 @@ void GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t N
 	cout<<"Run: "<<splitRun1w+1<<"-"<<splitRun2w<<endl;
 	if(noOfSplits>2)cout<<"Run: "<<splitRun2w+1<<"-"<<splitRun3w<<endl;
 	if(noOfSplits>3)cout<<"Run: "<<splitRun3w+1<<"-"<<Nruns<<endl;
-	cout<<"Number of bad Bad cells*events ="<<totalCellsBadEvt<<endl;
+	cout<<"Number of Bad cells*events ="<<totalCellsBadEvt<<endl;
 	cout<<"Number of effective Bad cells ="<<totalCellsBadEvt/hEventsPerRun->Integral(0,Nruns)<<endl;
 
 	cout<<" events block1 : "<<hEventsPerRun->Integral(0,splitRun1)<<endl;
@@ -1919,7 +1978,7 @@ void BuildMaxMinHisto(TH1D* inHisto, TH1D* minHist,TH1D* maxHist)
 	Double_t ref;
 	Double_t min;
 	Double_t max;
-	for(Int_t bin=0;bin<50;bin++)
+	for(Int_t bin=1;bin<50;bin++)
 	{
 		ref = inHisto->GetBinContent(bin);
 	    max = maxHist->GetBinContent(bin);
@@ -2283,7 +2342,7 @@ TH2F* CompressHistogram(TH2 *Histo,Int_t totalCells, Int_t badCells,std::vector<
 	TH2F* cpmpressed = new TH2F(Form("%s_Comp",Histo->GetName()),Form("%s_Comp",Histo->GetName()),badCells+2, 0,badCells+2,runIdVec.size(),0,runIdVec.size());
 
 	Histo->GetXaxis()->UnZoom();
-	TH1D *htmpCell = Histo->ProjectionX(TString::Format("%s_proj",Histo->GetName()),0,runIdVec.size());
+	TH1D *htmpCell = Histo->ProjectionX(TString::Format("%s_proj",cpmpressed->GetName()),0,runIdVec.size());
 	Int_t sumRun=0,newHistoBin=0;
 	for(Int_t icell = 0; icell < totalCells ; icell++)
 	{

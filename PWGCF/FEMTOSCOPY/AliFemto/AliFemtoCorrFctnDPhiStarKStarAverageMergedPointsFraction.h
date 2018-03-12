@@ -23,7 +23,7 @@
 class AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction : public AliFemtoCorrFctn {
 public:
 
-  AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp);
+  AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(const char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp);
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(const AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction& aCorrFctn);
   virtual ~AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction();
 
@@ -45,8 +45,10 @@ public:
   void SetDEtaMax(double deta);
   void SetMagneticFieldSign(int magsign);
 
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(*this); }
+
 private:
-  
+
   TH2D *fDPhiStarKStarMergedNumerator;              // Numerator of dPhi* k* function for "merged" fraction of points
   TH2D *fDPhiStarKStarTotalNumerator;               // Numerator of dPhi* k* function for all points
   TH2D *fDPhiStarKStarMergedDenominator;            // Denominator of dPhi* k* function for "merged" fraction of points
@@ -63,7 +65,7 @@ private:
 
   Double_t fRadiusMin;              // Minimum radius at which the pair separation is calculated [m]
   Double_t fRadiusMax;              // Maximum radius at which the pair separation is calculated [m]
-  
+
   Int_t fMagSign;                    // Magnetic field sign
 
 #ifdef __ROOT__

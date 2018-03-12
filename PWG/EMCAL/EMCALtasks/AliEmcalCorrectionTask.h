@@ -23,7 +23,7 @@ class AliVEvent;
  * @brief Steering task for the EMCal correction framework
  *
  * This class is the steering class for the cell and cluster level corrections
- * for the EMCal. A YAML configuration file is utilized to determine which
+ * for the EMCal. A %YAML configuration file is utilized to determine which
  * corrections should be run and how they should be configured. The corrections
  * are initialized by calling their Initialize() function. Similar to
  * AliAnalysisTaskEmcal, the relevant event information is loaded, and then
@@ -32,7 +32,7 @@ class AliVEvent;
  * In general, this steering class handles all of the configuration of the
  * corrections, including passing the relevant EMCal containers and event objects.
  *
- * Note: YAML does not play nicely with CINT and dictionary generation, so it is
+ * Note: %YAML does not play nicely with CINT and dictionary generation, so it is
  * hidden using conditional inclusion.
  *
  * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
@@ -53,12 +53,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
     kpA       = 2  //!<! Proton-Nucleus
   };
 
-  /// Relates string to the cluster energy enumeration for YAML configuration
-  static const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
-
-  /// Relates string to the track filter enumeration for YAML configuration
-  static const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
-
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
   // Implemented using copy-and-swap mechanism
@@ -69,17 +63,19 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   virtual ~AliEmcalCorrectionTask();
 
   /**
-   * Initializes the Correction Task by initializing the YAML configuration and selected correction components,
+   * Initializes the Correction Task by initializing the %YAML configuration and selected correction components,
    * including setting up the input objects (cells, clusters, and tracks).
    *
    * This function is the main function for initialization and should be called from a run macro!
    * Once called, most of the configuration of the correction task and the correction components is locked in,
-   * so be certain to change any additional configuration before that!
+   * so be certain to change any additional configuration options before calling this function!
+   *
+   * @param[in] removeDummyTask If true, the dummy task created with the configure function is removed.
    */
   void Initialize(bool removeDummyTask = false);
 
   /** @{
-   * @name Functions related to the YAML configuration files.
+   * @name Functions related to the %YAML configuration files.
    */
   /// Set the path to the user configuration filename
   void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
@@ -91,7 +87,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool WriteConfigurationFile(std::string filename, bool userConfig = false) const;
   // Compare configurations
   bool CompareToStoredConfiguration(std::string filename, bool userConfig = false);
-  /// Retrieve the YAML configurations for direct access
+  /// Retrieve the %YAML configurations for direct access
   PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
   /** @} */
 
@@ -115,7 +111,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    *
    * \return std::vector of the correction components. Using this vector, the components and their settings
    * can be modified as desired. However, keep in mind that whatever changes are made here will _NOT_ be
-   * reflected in the stored YAML configuration.
+   * reflected in the stored %YAML configuration.
    */
   const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
   AliEmcalCorrectionComponent * GetCorrectionComponent(const std::string & name) const;
@@ -155,7 +151,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    * EMCal Correction Task AddTask. Should be used by most users, except for those on the LEGO train
    * (see below).
    *
-   * @param[in] suffix Suffix string used to select components in a YAML configuration
+   * @param[in] suffix Suffix string used to select components in a %YAML configuration
    *
    * @return A new EMCal Correction Task added to the analysis manager and ready to configure.
    */
@@ -180,7 +176,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
   // Container utilities
   void CheckForContainerArray(AliEmcalContainer * cont, AliEmcalContainerUtils::InputObject_t objectType);
-  // YAML configuration utilities
+  // %YAML configuration utilities
   std::string GetInputFieldNameFromInputObjectType(AliEmcalContainerUtils::InputObject_t inputObjectType);
   bool CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents);
   // General utilities
@@ -206,7 +202,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void CreateInputObjects(AliEmcalContainerUtils::InputObject_t inputObjectType);
   void AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists = false);
   
-  // Hidden from CINT since it cannot handle YAML objects well
+  // Hidden from CINT since it cannot handle %YAML objects well
   // Input objects 
   void SetupContainersFromInputNodes(AliEmcalContainerUtils::InputObject_t inputObjectType, std::set <std::string> & requestedContainers);
   // Cells
@@ -216,22 +212,23 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliEmcalContainer * AddContainer(const AliEmcalContainerUtils::InputObject_t contType, const std::string containerName);
 
   // Utilities
-  // YAML node dependent initialization utlitiles
+  // %YAML node dependent initialization utlitiles
   void GetPropertyNamesFromNode(const std::string configurationName, const std::string componentName, std::set <std::string> & propertyNames, const bool nodeRequired);
 
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;            ///< Handles configuration from YAML.
 
   std::string                 fSuffix;                     ///< Suffix of the Correction Task (used to select specialized components)
 
-  std::string                 fUserConfigurationFilename;  //!<! User YAML configruation filename
-  std::string                 fDefaultConfigurationFilename; //!<! Default YAML configuration filename
+  std::string                 fUserConfigurationFilename;  //!<! User %YAML configruation filename
+  std::string                 fDefaultConfigurationFilename; //!<! Default %YAML configuration filename
 
   std::vector <std::string>   fOrderedComponentsToExecute; ///< Ordered set of components to execute
   std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; ///< Contains the correction components
-  bool                        fConfigurationInitialized;   ///< True if the YAML configuration files are initialized
+  bool                        fConfigurationInitialized;   ///< True if the %YAML configuration files are initialized
 
   bool                        fIsEsd;                      ///< File type
   bool                        fEventInitialized;           ///< If the event is initialized properly
+  bool                        fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Double_t                    fCent;                       //!<! Event centrality
   Int_t                       fCentBin;                    //!<! Event centrality bin
   Double_t                    fMinCent;                    ///< min centrality for event selection
@@ -253,7 +250,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 4); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
   /// \endcond
 };
 

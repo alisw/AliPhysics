@@ -28,6 +28,7 @@
 #include "AliAODHandler.h"
 #include "AliParticleContainer.h"
 #include "AliAnalysisManager.h"
+#include "AliJHistManager.h"
 #include "AliLog.h"
 #include "AliJMCTrack.h"
 #include "AliJJetJtTask.h" 
@@ -37,26 +38,27 @@
 
 //______________________________________________________________________________
 AliJJetJtTask::AliJJetJtTask() :   
-    AliAnalysisTaskSE("AliJJetJtTaskTask"),
-	fJetTask(NULL),
-	fMCJetTask(NULL),
-	fJetTaskName(""),
-	fMCJetTaskName(""),
+  AliAnalysisTaskSE("AliJJetJtTaskTask"),
+  fJetTask(NULL),
+  fMCJetTask(NULL),
+  fJetTaskName(""),
+  fMCJetTaskName(""),
   fJJetJtAnalysis(0x0),
-  fJMCTracks(NULL),
   fOutput(NULL),
   fCard(NULL),
   fFirstEvent(kTRUE),
   cBin(-1),
   zBin(-1),
+  fDoMC(0),
+  fSide(0),
+  fDoLog(0),
   NRandom(1),
   moveJet(0),
-  fDoMC(0),
   zVert(-999),
-  fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
-  fEventHist(NULL)
+  fJMCTracks(NULL),
+  fEventHist()
 
 {
   DefineOutput (1, TDirectory::Class());
@@ -70,20 +72,21 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fJetTaskName(""),
   fMCJetTaskName(""),
   fJJetJtAnalysis(0x0),
-  fJMCTracks(NULL),
   fOutput(NULL),
   fCard(NULL),
   fFirstEvent(kTRUE),
   cBin(-1),
   zBin(-1),
+  fDoMC(0),
+  fSide(0),
+  fDoLog(0),
   NRandom(1),
   moveJet(0),
-  fDoMC(0),
   zVert(-999),
-  fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
-  fEventHist(NULL)
+  fJMCTracks(NULL),
+  fEventHist()
 {
   // Constructor
   AliInfo("---- AliJJetJtTask Constructor ----");
@@ -96,21 +99,20 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
 AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   AliAnalysisTaskSE(ap.GetName()), 
   fJetTask(ap.fJetTask),
-  fMCJetTask(ap.fMCJetTask),
   fJetTaskName(ap.fJetTaskName),
+  fMCJetTask(ap.fMCJetTask),
   fMCJetTaskName(ap.fMCJetTaskName),
   fJJetJtAnalysis( ap.fJJetJtAnalysis ),
-  fJMCTracks(ap.fJMCTracks),
   fOutput( ap.fOutput ),
   fCard(ap.fCard),
   fFirstEvent(ap.fFirstEvent),
   cBin(ap.cBin),
   zBin(ap.zBin),
+  fSide(ap.fSide),
   NRandom(ap.NRandom),
   moveJet(ap.moveJet),
-  fDoMC(ap.fDoMC),
   zVert(ap.zVert),
-  fDoLog(ap.fDoLog),
+  fJMCTracks(ap.fJMCTracks),
   fAnaUtils(ap.fAnaUtils),
   fRunTable(ap.fRunTable),
   fEventHist(ap.fEventHist)
@@ -174,10 +176,13 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->SetMC(fDoMC);
   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
+  fJJetJtAnalysis->SetSide(fSide);
+  fJJetJtAnalysis->SetnR(fJetTask->GetnR());
+  fJJetJtAnalysis->Setnkt(fJetTask->Getnkt());
   fJJetJtAnalysis->UserCreateOutputObjects();
 
   fCard->WriteCard(gDirectory);
-  fEventHist = new TH1D("EventHist","event numbers",10,0,10);
+  fEventHist << TH1D("EventHist","event numbers",10,0,10) << "END";
 
 
 
@@ -334,6 +339,7 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
     fEventHist->Fill( 0 );
 
     Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+    // Make sure if V0OR or whayt
 
     if( triggerkMB ){
       triggeredEventMB = kTRUE;  //event triggered as minimum bias

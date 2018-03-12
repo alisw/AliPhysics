@@ -1228,7 +1228,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
          //get mother pdg code
-         if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
+         if (!AliRsnDaughter::IsEquivalentPDGCode(part->Particle()->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue; 
 	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
@@ -1237,11 +1237,13 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
          daughter2 = (AliMCParticle *)fMCEvent->GetTrack(label2);
          okMatch = kFALSE;
-         if (TMath::Abs(daughter1->Particle()->GetPdgCode()) == def->GetPDG(0) && TMath::Abs(daughter2->Particle()->GetPdgCode()) == def->GetPDG(1)) {
+         if (AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter1->Particle()->GetPdgCode()) , def->GetPDG(0))
+	     && AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter2->Particle()->GetPdgCode()) , def->GetPDG(1))) {
             okMatch = kTRUE;
             p1.SetXYZM(daughter1->Px(), daughter1->Py(), daughter1->Pz(), def->GetMass(0));
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(1));
-         } else if (TMath::Abs(daughter1->Particle()->GetPdgCode()) == def->GetPDG(1) && TMath::Abs(daughter2->Particle()->GetPdgCode()) == def->GetPDG(0)) {
+         } else if (AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter1->Particle()->GetPdgCode()) , def->GetPDG(1))
+		    && AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter2->Particle()->GetPdgCode()) , def->GetPDG(0))) {
             okMatch = kTRUE;
             p1.SetXYZM(daughter1->Px(), daughter1->Py(), daughter1->Pz(), def->GetMass(1));
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
@@ -1339,7 +1341,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
-         if (part->GetPdgCode() != def->GetMotherPDG()) continue;
+         if (!AliRsnDaughter::IsEquivalentPDGCode(part->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
@@ -1348,11 +1350,13 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
          daughter1 = (AliAODMCParticle *)list->At(label1);
          daughter2 = (AliAODMCParticle *)list->At(label2);
          okMatch = kFALSE;
-         if (TMath::Abs(daughter1->GetPdgCode()) == def->GetPDG(0) && TMath::Abs(daughter2->GetPdgCode()) == def->GetPDG(1)) {
+         if (AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter1->GetPdgCode()) , def->GetPDG(0))
+	     && AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter2->GetPdgCode()) , def->GetPDG(1))) {
             okMatch = kTRUE;
             p1.SetXYZM(daughter1->Px(), daughter1->Py(), daughter1->Pz(), def->GetMass(0));
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(1));
-         } else if (TMath::Abs(daughter1->GetPdgCode()) == def->GetPDG(1) && TMath::Abs(daughter2->GetPdgCode()) == def->GetPDG(0)) {
+         } else if (AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter1->GetPdgCode()) , def->GetPDG(1))
+		    && AliRsnDaughter::IsEquivalentPDGCode(TMath::Abs(daughter2->GetPdgCode()) , def->GetPDG(0))) {
             okMatch = kTRUE;
             p1.SetXYZM(daughter1->Px(), daughter1->Py(), daughter1->Pz(), def->GetMass(1));
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));

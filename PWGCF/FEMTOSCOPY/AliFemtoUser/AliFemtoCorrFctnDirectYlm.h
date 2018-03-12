@@ -59,13 +59,15 @@ class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
   void SetUseLCMS(int aUseLCMS);
   int  GetUseLCMS();
 
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDirectYlm(*this); }
+
  private:
   double ClebschGordan(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm);
   double DeltaJ(double aJot1, double aJot2, double aJot);
   double WignerSymbol(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm);
-  
-  void GetMtilde(complex<double>* aMat, double *aMTilde); 
-  
+
+  void GetMtilde(complex<double>* aMat, double *aMTilde);
+
   int  GetMaxJM() const;
   void GetElEmForIndex(int aIndex, double *aEl, double *aEm) const;
   void GetElEmForIndex(int aIndex, int *aEl, int *aEm) const;
@@ -81,7 +83,7 @@ class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
 
   TH1D **fnumsreal;            // Real parts of Ylm components of the numerator
   TH1D **fnumsimag;            // Imaginary parts of Ylm components of the numerator
-  TH1D **fdensreal;            // Real parts of Ylm components of the denominator	    
+  TH1D **fdensreal;            // Real parts of Ylm components of the denominator
   TH1D **fdensimag;            // Imaginary parts of Ylm components of the denominator
 
   TH1D *fbinctn;               // Bin occupation for the numerator
@@ -110,6 +112,7 @@ class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
 
   int    fUseLCMS;             // 0 - Use PRF, 1 - Use LCMS
 };
+
 
 #endif
 

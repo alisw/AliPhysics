@@ -40,6 +40,7 @@ set(SRCS
       AliMixingHandler.cxx
       AliReducedAnalysisFilterTrees.cxx
       AliReducedAnalysisJpsi2ee.cxx
+      AliReducedAnalysisJpsi2eeCorrelations.cxx
       AliReducedAnalysisJpsi2eeMult.cxx
       AliReducedAnalysisTaskSE.cxx
       AliReducedAnalysisTest.cxx
@@ -47,6 +48,7 @@ set(SRCS
       AliReducedBaseTrackCut.cxx
       AliReducedBaseTrack.cxx
       AliReducedCaloClusterInfo.cxx
+      AliReducedCompositeCut.cxx
       AliReducedEventCut.cxx
       AliReducedEventInfo.cxx
       AliReducedEventInputHandler.cxx

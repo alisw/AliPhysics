@@ -58,7 +58,7 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
   "NumberOfBGEvents", //2
   "DegreesForRotationMethod", //3
   "RapidityMesonCut", //4
-  "RCut", //5
+  "PtCut", //5
   "AlphaMesonCut", //6
   "SelectionWindow", //7
   "SharedElectronCuts", //8
@@ -81,7 +81,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fCaloPhotonCuts(NULL),
   fMesonKind(0),
   fIsMergedClusterCut(0),
-  fMaxR(200),
+  fMaxR(180),
+  fMinPt(0.),
+  fDoMinPtCut(kFALSE),
   fEnableMassCut(kFALSE),
   fSelectionLow(0.08),
   fSelectionHigh(0.145),
@@ -169,6 +171,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fMaxR(ref.fMaxR),
+  fMinPt(ref.fMinPt),
+  fDoMinPtCut(ref.fDoMinPtCut),
   fEnableMassCut(ref.fEnableMassCut),
   fSelectionLow(ref.fSelectionLow),
   fSelectionHigh(ref.fSelectionHigh),
@@ -296,7 +300,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 
   // Meson Cuts
   if (fIsMergedClusterCut == 1){
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",8,-0.5,7.5, 500, 0, 100);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",9,-0.5,8.5, 500, 0, 100);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -304,10 +308,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(5,"opening angle");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"pT min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"out");
     fHistograms->Add(fHistoMesonCuts);
   } else if (fIsMergedClusterCut == 2){
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",8,-0.5,7.5, 250, 0, 50);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",9,-0.5,8.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -315,10 +320,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(5,"opening angle");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"pT min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",8,-0.5,7.5, 250, 0, 50);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",9,-0.5,8.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -326,10 +332,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"opening angle");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"alpha min");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"out");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"pT min");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   } else {
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",11,-0.5,10.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -339,10 +346,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"dca gamma gamma");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"dca R prim Vtx");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"dca Z prim Vtx");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"pT min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(11,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",11,-0.5,10.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -352,7 +360,8 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"dca gamma gamma");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"dca R prim Vtx");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"dca Z prim Vtx");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"out");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"pT min");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(11,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   }  
   
@@ -410,6 +419,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent
     // Rapidity Cut
     if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
+    // min Pt Cut
+    if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
     // Select only -> 2y decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
 
@@ -448,6 +460,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 
     // Rapidity Cut
     if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+    // min Pt Cut
+    if(fDoMinPtCut && (MCMother->Pt() < fMinPt)) return kFALSE;
 
     // Select only -> 2y decay channel
     if(MCMother->GetNDaughters()!=2)return kFALSE;
@@ -489,6 +504,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliM
 
   // Rapidity Cut
   if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -546,6 +564,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   // Rapidity Cut
   if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
 
@@ -602,6 +623,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   // Rapidity Cut
   if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
 
@@ -657,6 +681,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   // Rapidity Cut
   if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
 
@@ -708,6 +735,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
 
   // Rapidity Cut
   if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
 
   if(fMCMother->GetNDaughters()!=2) return kFALSE;
 
@@ -769,6 +799,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
 
     // Rapidity Cut
     if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+    // min Pt Cut
+    if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -953,6 +986,15 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if (fHistoDCAZMesonPrimVtxAfter)fHistoDCAZMesonPrimVtxAfter->Fill(pi0->M(),pi0->GetDCAZMotherPrimVtx());
   } 
   
+  //PtCut
+  if(fDoMinPtCut){
+      if(pi0->Pt()< fMinPt){
+          if(hist)hist->Fill(cutIndex, pi0->Pt());
+          return kFALSE;
+      }
+  }
+  cutIndex++;
+
   if(hist)hist->Fill(cutIndex, pi0->Pt());
   return kTRUE;
 }
@@ -1043,9 +1085,9 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         return kTRUE;
       } else return kFALSE;
     }   
-  case kRCut:
-    if( SetRCut(value)) {
-      fCuts[kRCut] = value;
+  case kPtCut:
+    if( SetMinPtCut(value)) {
+      fCuts[kPtCut] = value;
       UpdateCutString();
       return kTRUE;
     } else return kFALSE;
@@ -1172,6 +1214,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   } else {
     printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
   }
+  if(fDoMinPtCut) printf("\t pT_{min} > %3.4f\n", fMinPt);
   if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.4f\n", fMinOpanCutMeson);
   else printf("\t Min theta_{open} pT-dep cut active\n");
   if (!fMaxOpanPtDepCut) printf("\t %3.4f < theta_{open}\n", fMaxOpanCutMeson);
@@ -1213,33 +1256,39 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::SetRCut(Int_t rCut){
-  // Set Cut
-  switch(rCut){
-  case 0:
-    fMaxR = 180.;
+Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
+  // Set Cut on min pT of meson
+  switch(PtCut){
+  case 0: // no cut on pT
+    fMinPt = 0.;
+    fDoMinPtCut = kFALSE;
     break;
   case 1:
-    fMaxR = 180.;
+    fMinPt = 0.4;
+    fDoMinPtCut = kTRUE;
     break;
   case 2:
-    fMaxR = 180.;
+    fMinPt = 0.7;
+    fDoMinPtCut = kTRUE;
     break;
   case 3:
-    fMaxR = 70.;
+    fMinPt = 0.9;
+    fDoMinPtCut = kTRUE;
     break;
   case 4:
-    fMaxR = 70.;
+    fMinPt = 1.0;
+    fDoMinPtCut = kTRUE;
     break;
   case 5:
-    fMaxR = 180.;
+    fMinPt = 1.2;
+    fDoMinPtCut = kTRUE;
     break;
-    // High purity cuts for PbPb
-  case 9:
-    fMaxR = 180.;
+  case 6:
+    fMinPt = 1.5;
+    fDoMinPtCut = kTRUE;
     break;
   default:
-    cout<<"Warning: rCut not defined"<<rCut<<endl;
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
   }
   return kTRUE;

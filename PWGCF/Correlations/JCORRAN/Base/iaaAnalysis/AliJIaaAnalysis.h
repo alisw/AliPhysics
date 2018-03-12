@@ -53,8 +53,6 @@ public:
 	void SetInputFile( char *f ) { finputFile = f; } // Setter for Data Manager configuration file
 
 	void SetTrackList( TClonesArray *a ) { fdmg->SetTrackList( a ); } // Setter for Data Manager track list
-	void SetPhotonList( TClonesArray *a ) { fdmg->SetPhotonList( a ); } // Setter for Data Manager photon list
-	void SetCaloCellList( TClonesArray *a ) { fdmg->SetCaloCellList( a ); } // Setter for Calo Cell track list
 	void SetMCTrackList( TClonesArray *a ) { fdmg->SetMCTrackList( a ); } // Setter for Data Manager MC track list
 	void SetHeaderList( TClonesArray *a ) { fdmg->SetHeaderList( a ); } // Setter for Data Manager header list
 	void SetRunHeader( AliJRunHeader *a ) { frunHeader = a; } // Setter for run header
@@ -80,9 +78,7 @@ private:
 	AliJIaaCorrelations *fcorrelations; //! Correlation analysis details
 	AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
 	AliJEventPool *fassocPool; //! Pool of associated particles for event mixing
-	TClonesArray *fphotonList; //! List of photons for photon analysis
 	TClonesArray *fchargedHadronList; //! List of charged particles for correlation analysis
-	TClonesArray *fpizeroList; //! List of pi zeros for pi zero analysis
 	TClonesArray *ftriggList; //! List of trigger particles
 	TClonesArray *fassocList; //! List of associated particles
 	TClonesArray *finputList; //! List of particles currently used as input

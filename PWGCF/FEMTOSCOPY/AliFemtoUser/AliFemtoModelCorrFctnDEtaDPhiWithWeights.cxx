@@ -14,7 +14,7 @@
 #include <TMath.h>
 #include <stdexcept>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 #endif
 
@@ -30,8 +30,10 @@ ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 //
 
 //____________________________
-AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeights(char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeights(const char* title,  TH2D* filter1,  TH2D* filter2, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoModelCorrFctn(),
+  filterHist1(filter1),
+  filterHist2(filter2),
   fDPhiDEtaNumeratorTrue(0),
   fDPhiDEtaNumeratorFake(0),
   fDPhiDEtaDenominator(0),
@@ -46,9 +48,7 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0),
-  filterHist1(filter1),
-  filterHist2(filter2)
+  fDCosPtDenominator(0)
 {
   // set up numerator
   char tTitNumDT[101] = "NumDPhiDEtaTrue";
@@ -119,7 +119,7 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
   char tTitDenDCosPt[101] = "DenDCosPt";
   strncat(tTitDenDCosPt,title, 100);
   fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
-  
+
   // to enable error bar calculation...
   fDPhiDEtaNumeratorTrue->Sumw2();
   fDPhiDEtaNumeratorFake->Sumw2();
@@ -141,6 +141,8 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
 //____________________________
 AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeights(const AliFemtoModelCorrFctnDEtaDPhiWithWeights& aCorrFctn) :
   AliFemtoModelCorrFctn(),
+  filterHist1(0),
+  filterHist2(0),
   fDPhiDEtaNumeratorTrue(0),
   fDPhiDEtaNumeratorFake(0),
   fDPhiDEtaDenominator(0),
@@ -155,9 +157,7 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0),
-  filterHist1(0),
-  filterHist2(0)
+  fDCosPtDenominator(0)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumeratorTrue)

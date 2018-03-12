@@ -6,8 +6,8 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Heavy-flavour electron analysis in pp collisions     //
-//      (and also Pb-Pb)             								  //
+//      Task for Beauty analysis in Pb-Pb collisions   				  //
+//      															  //
 //																	  //
 //		v1.0														  //
 //                                                                    //
@@ -55,7 +55,7 @@ public:
     
     enum HijingOr {kHijing,kPhytia,kpi0,keta};
     enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};
-    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm};
+    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kKaonFromNonHF, kBeauty, kCharm, kKaonFromHF};
 
     AliAnalysisHFETPCTOFBeauty();
     AliAnalysisHFETPCTOFBeauty(const char *name);
@@ -72,23 +72,7 @@ public:
     void SetMCanalysis() {fIsMC = kTRUE;};
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
     void SetPPanalysis(Bool_t IsPP) {fIsPP = IsPP;};
-    
-    //Setter for the Hadron contamination function
-    void SetHadronFunction(TF1* HadronF) {fHadrons = HadronF;};
-    
-    //Setter for the pi0 weight
-    void SetPi0Weight(TF1* Pi0F) {fPi0w = Pi0F;};
-    void SetPi0Weight2(TF1* Pi0F2) {fPi0w2 = Pi0F2;};
-    void SetPi0Weight3(TF1* Pi0F3) {fPi0w3 = Pi0F3;};
-    
-    //Setter for the eta weight
-    void SetEtaWeight(TF1* EtaF) {fEtaw = EtaF;};
-    void SetEtaWeight2(TF1* EtaF2) {fEtaw2 = EtaF2;};
-    void SetEtaWeight3(TF1* EtaF3) {fEtaw3 = EtaF3;};
-    
-    //Setter for the Partner cuts
-    void SetPartnerCuts(Float_t Mass, Float_t MinPt, Float_t TpcNclus);
-    
+       
     //Setter for the PID cuts (TPC and TOF)
     void SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut);
     
@@ -128,7 +112,8 @@ private:
     //Correlation cuts between TPC and SPD vertexes
     Bool_t PassCorrCuts(AliAODEvent *fAOD);
     
-    
+    //Function that gives DCA resolution in MC
+    Float_t GetDCAResolMC(Float_t x);
     
     // ------------------------------------------
     
@@ -155,27 +140,11 @@ private:
     
     //General variables
     AliESDEvent 			*fESD;
-    AliAODEvent 		   	*fAOD;				/// new
-    AliVEvent 		      	*fVevent;			/// new
+    AliAODEvent 		   	*fAOD;				
+    AliVEvent 		      	*fVevent;			
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
     AliSelectNonHFE 		*fNonHFE;
-    
-    Bool_t				fMassCutFlag;
-    Bool_t				fAngleCutFlag;
-    Bool_t				fChi2CutFlag;
-    Bool_t				fDCAcutFlag;
-    
-    Double_t		    	fMassCut;
-    Double_t			    fAngleCut;
-    Double_t			    fChi2Cut;
-    Double_t			    fDCAcut;
-    
-    Double_t			    fPtMinAsso;
-    Int_t			        fTpcNclsAsso;
-    
-    AliESDtrackCuts         *fPartnerCuts;
-    
     
     
     //For the case of AOD analysis
@@ -184,11 +153,7 @@ private:
     
     //Vertex selection
     Float_t					fZvtx;
-    
-    //EMCal
-    //AliESDCaloCluster 		*fClus;
-    AliVCluster				*fClus;
-    
+  
     
     //Histograms for the analysis
     TH1F				*fVertex1;//!
@@ -199,6 +164,7 @@ private:
     TH1F				*fNevent_corrcut;//!
     TH1F				*fNevent_no_vertex; //!
     TH1F				*fNevent_no_vertex_2; //!
+    TH1F				*fNeventAnalized;//!
     TH1F				*fCent;	//!
     TH1F				*fCent2;	//!
     TH2F				*fTPC_p1;//!
@@ -240,16 +206,36 @@ private:
     TH2F                *fTPCnsigma_pt_after_tof_its;//!
     TH1F                *fPtElec;//!
     TH1F                *fPElec;//!
+    TH1F                *hPtD0;//!
+    TH1F                *hPtLambdaC;//!
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F                *fDCAxy_pt_had_ResCorr;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
-    TH1F                *hCharmMotherPt;//!
+    TH1F                *hCharmMotherPt;//! pt of mothers of eletrons from mesons D
+    TH1F                *hCharmMotherPt_corr;//! pt of mothers of eletrons from mesons D corrected statistically
+    TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
+	TH1F                *hCharmMotherPt_corr3;
+	TH1F                *hCharmMotherPt_corr4;
+	
 	TH1F                *hBeautyMotherPt;//!
+	TH1F				*fPtBeautyGenerated;
+	TH1F				*fPtBeautyReconstructedTracks;
+	TH1F				*fPtBeautyReconstructedTracksPID;
+	TH1F				*fPtBeautyReconstructedTracksPIDTPC;
+	TH1F				*fPtBeautyReconstructedTracksPIDTOF;
+	TH1F				*fResGausCorr; //! DCA resolution correction (the gaussian that is convoluted)
     
+    TH2F				*hCharmMotherPt_vsElecPt;
+    TH2F				*hElecPt_vsCharmMotherPt;
+    
+    TH2F				*hCharmMotherPt_vsElecPt_corr;
+    TH2F				*hElecPt_vsCharmMotherPt_corr;
     
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
@@ -274,16 +260,6 @@ private:
     AliAODMCParticle 	*fMCparticleGGGMother;
     AliMCEventHandler	*fEventHandler;
     AliMCEvent			*fMCevent;
-    TF1 				*fHadrons;
-    TF1					*fPi0w;
-    TF1					*fPi0w2;
-    TF1					*fPi0w3;
-    TF1					*fEtaw;
-    TF1					*fEtaw2;
-    TF1					*fEtaw3;
-    Float_t				fMass;
-    Float_t				fMinPt;
-    Float_t				fTpcNclusAsso;
     Float_t				ftpcPIDmincut;
     Float_t				ftpcPIDmaxcut;
     Float_t				ftofPIDmincut;
@@ -296,7 +272,7 @@ private:
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
     
-    THnSparseF           *fPi0EtaSpectra;//! QA for weights for tagging efficiency    
+ 
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
     //______________________________________________________________________

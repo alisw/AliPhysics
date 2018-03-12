@@ -5,6 +5,10 @@
 #include "AliFemtoAnalysisLambdaKaon.h"
 #include "TObjArray.h"
 #include "AliESDtrack.h"
+
+#include "AliFemtoPicoEventCollectionVector.h"
+#include "AliFemtoPicoEventCollectionVectorHideAway.h"
+
 #ifdef __ROOT__
 ClassImp(AliFemtoAnalysisLambdaKaon)
 #endif
@@ -61,6 +65,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fAnalysisParams.minMult = minMult;
   fAnalysisParams.maxMult = maxMult;
 
+  fAnalysisParams.binEventsInRP = false;
+  fAnalysisParams.nBinsRP = -1;
+
   fAnalysisParams.analysisType = aAnalysisType;
 
   fAnalysisParams.isMCRun = aIsMCRun;
@@ -88,12 +95,18 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
+
   if(fWritePairKinematics) KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
-  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[aAnalysisType],200,0.,20.);
 
-  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   if(fWritePairKinematics) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   else
@@ -143,6 +156,20 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   SetEnablePairMonitors(aAnParams.isMCRun);
   SetMultHist(fAnalysisTags[fAnalysisType]);
 
+  if(fAnalysisParams.binEventsInRP && fAnalysisParams.nBinsRP>0)
+  {
+    if(fMixingBuffer) 
+    {
+      delete fMixingBuffer;
+      fMixingBuffer = NULL;
+    }
+    if(fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(
+      fAnalysisParams.nBinsVertex, fAnalysisParams.minVertex, fAnalysisParams.maxVertex,
+      fAnalysisParams.nBinsMult, fAnalysisParams.minMult, fAnalysisParams.maxMult, 
+      fAnalysisParams.nBinsRP, 0., TMath::Pi());
+  }
+
 
   fMinCent = aAnParams.minMult/10.;
   fMaxCent = aAnParams.maxMult/10.;
@@ -156,6 +183,11 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
 
   if(fWritePairKinematics)
   {
@@ -164,7 +196,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   }
   else
   {
-    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
@@ -173,7 +205,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 
   if(fIsMCRun)
   {
-    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
     KStarModelCfs->SetRemoveMisidentified(fAnalysisParams.removeMisidentifiedMCParticles);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarModelCfs);
   }
@@ -399,7 +431,33 @@ void AliFemtoAnalysisLambdaKaon::ProcessEvent(const AliFemtoEvent* hbtEvent)
 {
   double multiplicity = hbtEvent->UncorrectedNumberOfPrimaries();
   if(fBuildMultHist) fMultHist->Fill(multiplicity);
-  AliFemtoVertexMultAnalysis::ProcessEvent(hbtEvent);
+
+  if(fAnalysisParams.binEventsInRP && fAnalysisParams.nBinsRP>0)
+  {
+    const double vertexZ = hbtEvent->PrimVertPos().z(),
+                 mult = hbtEvent->UncorrectedNumberOfPrimaries(),
+                 tCurrentRP = hbtEvent->ReactionPlaneAngle();
+
+    fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,tCurrentRP);
+
+    if (!fMixingBuffer)
+    {
+      if (vertexZ < fVertexZ[0]) fUnderFlowVertexZ++;
+      else if (vertexZ > fVertexZ[1]) fOverFlowVertexZ++;
+
+      if (mult < fMult[0]) fUnderFlowMult++;
+      else if (mult > fMult[1]) fOverFlowMult++;
+
+      return;
+    }
+
+    // now that fMixingBuffer has been set - call superclass ProcessEvent()
+    AliFemtoSimpleAnalysis::ProcessEvent(hbtEvent);
+
+    // NULL out the mixing buffer after event processed
+    fMixingBuffer = NULL;
+  }
+  else AliFemtoVertexMultAnalysis::ProcessEvent(hbtEvent);
 }
 
 //____________________________
@@ -957,6 +1015,7 @@ AliFemtoESDTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateESDCut(ESDCut
   if(aCutParams.useCustomMisID) AddCustomESDRejectionFilters(aCutParams.particlePDGType,tESDCut);
 
   tESDCut->SetUseCustomElectronRejection(aCutParams.useCustomElectronRejection);
+  tESDCut->SetUseIsProbableElectronMethod(aCutParams.useIsProbableElectronMethod);
 
   return tESDCut;
 }
@@ -1451,7 +1510,7 @@ AliFemtoV0PurityBgdEstimator* AliFemtoAnalysisLambdaKaon::CreateV0PurityBgdEstim
   TString tName = "V0PurityBgdEstimator_";
   V0CutParams tV0CutParams;
   unsigned int tNbins = 100;
-  double tMinvMin, tMinvMax;
+  double tMinvMin=0., tMinvMax=0.;
 
   switch(fAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kProtPiM:
@@ -1703,6 +1762,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.nBinsMult = 20;
   tReturnParams.minMult = 0.;
   tReturnParams.maxMult = 1000.;
+
+  tReturnParams.binEventsInRP = false;
+  tReturnParams.nBinsRP = -1;
 
   tReturnParams.analysisType = AliFemtoAnalysisLambdaKaon::kLamK0;
   tReturnParams.generalAnalysisType = AliFemtoAnalysisLambdaKaon::kV0V0;
@@ -1970,6 +2032,7 @@ AliFemtoAnalysisLambdaKaon::DefaultKchCutParams(int aCharge)
   tReturnParams.useCustomMisID = true;
   tReturnParams.useElectronRejection = true;
   tReturnParams.useCustomElectronRejection = true;
+  tReturnParams.useIsProbableElectronMethod = true;
   tReturnParams.usePionRejection = true;
 
   return tReturnParams;
@@ -2017,6 +2080,7 @@ AliFemtoAnalysisLambdaKaon::DefaultPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2254,6 +2318,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2315,6 +2380,7 @@ AliFemtoAnalysisLambdaKaon::K0ShortPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2380,6 +2446,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityProtonCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;

@@ -65,6 +65,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void SetEtaCorrection(const TF1 *const param) { fkEtaCorrection = param; }
     void SetCentralityCorrection(const TF1 *const param){ fkCentralityCorrection = param; }
     void SetEtaCorrections(const TF1 *const mean, const TF1 *const wdth) { fkEtaMeanCorrection = mean; fkEtaWidthCorrection = wdth; }
+   void SetMomentumCorrections(const TF1 *const mean, const TF1 *const wdth) { fkPMeanCorrection = mean; fkPWidthCorrection = wdth; }
     void SetCentralityCorrections(const TF1 *const mean, const TF1 *const wdth) { fkCentralityMeanCorrection = mean; fkCentralityWidthCorrection = wdth; }
     void SetJpsiCorrections(const TH2D *const mean, const TH2D *const wdth) { fkCentralityEtaCorrectionMeanJpsi = mean; fkCentralityEtaCorrectionWidthJpsi = wdth; }
     void UsedEdx() { fUsedEdx = kTRUE; }
@@ -76,7 +77,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
     void ApplyCentralityCorrection(AliVTrack *track, Double_t centralityEstimator, AliHFEpidObject::AnalysisType_t anatype) const;
-    Double_t GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const;
+    Double_t GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma, Double_t mom = 0) const;
     Double_t GetCorrectedTPCnSigmaJpsi(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const;
     void UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
 
@@ -99,6 +100,8 @@ class AliHFEpidTPC : public AliHFEpidBase{
     const TF1 *fkCentralityCorrection;                      // Correction for the centrality dependence
     const TF1 *fkEtaMeanCorrection;                         // Correct eta dependence of the mean of the TPC n sigma
     const TF1 *fkEtaWidthCorrection;                        // Correct eta dependence of the width of the TPC n sigma
+   const TF1 *fkPMeanCorrection;                         // Correct momentum dependence of the mean of the TPC n sigma
+   const TF1 *fkPWidthCorrection;                        // Correct momentum dependence of the width of the TPC n sigma
     const TF1 *fkCentralityMeanCorrection;                  // Correct centrality dependence of the mean of the TPC n sigma
     const TF1 *fkCentralityWidthCorrection;                 // Correct centrality dependence of the width of the TPC n sigma
     const TH2D *fkCentralityEtaCorrectionMeanJpsi;          // Correction from J/psi group for the mean

@@ -20,8 +20,9 @@ Bool_t ConfigKStarPP5TeV(
 			Int_t                  Strcut = 2011,
 			Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 			AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
-			Float_t                nsigmaPi = 2.0,
-			Float_t                nsigmaK  = 2.0,
+			Float_t                nsigmaPi  = 2.0,
+			Float_t                nsigmaK   = 2.0,
+			Float_t                nsigmaTOF = 3.0,
 			Bool_t                 enableMonitor = kTRUE
 			  )
 {
@@ -42,8 +43,8 @@ Bool_t ConfigKStarPP5TeV(
   if(!trkQualityCut) return kFALSE;
 
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
-    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK);
+    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi, nsigmaTOF);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK, nsigmaTOF);
   }
   else{
     printf("Doughter Track cuts has been selected =================\n");

@@ -46,7 +46,7 @@ AliFemtoCorrFctn(),
         fkTdists[i] = new TH1D(Form("fkTdists[%i]",i),Form("fkTdists[%i]",i),100,0.0,5.0);
         fkTdists[i]->Sumw2();
     }
-    
+
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -96,7 +96,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
         fkTdists[i] = new TH1D(Form("fkTdists[%i]_%s",i,title),Form("fkTdists[%i]_%s",i,title),100,0.0,5.0);
         fkTdists[i]->Sumw2();
     }
-    
+
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -142,7 +142,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
         if(aCorrFctn.fkTdists[i])
             fkTdists[i] = aCorrFctn.fkTdists[i];
     }
-    
+
   fManager = aCorrFctn.fManager;
 }
 //_______________________
@@ -158,7 +158,7 @@ AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
   if (fDenominatorIdeal) delete fDenominatorIdeal;
 
   if (fQgenQrec) delete fQgenQrec;
-    
+
     for(int i=0;i<fNbbPairs;i++){
         if(fkTdists[i]) delete fkTdists[i];
     }
@@ -196,7 +196,7 @@ AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrF
         fkTdists[i] = (aCorrFctn.fkTdists[i])
         ? new TH1D(*aCorrFctn.fkTdists[i])
         : nullptr;
-  
+
     }
   delete fNumeratorTrueIdeal;
   fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
@@ -237,20 +237,22 @@ AliFemtoString AliFemtoModelCorrFctn::Report()
 //_______________________
 void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 {
-  if (fPairCut)
-    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
+
   if(!fKaonPDG) {
     // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
     Double_t weight = fManager->GetWeight(aPair);
     //cout<<" wight "<< weight<<endl;
     //cout<<"Qinv"<<aPair->QInv()<<endl;
-    
+
     fNumeratorTrue->Fill(aPair->QInv(), weight);
-    
+
     Double_t tQinvTrue = GetQinvTrue(aPair);
-    
+
     fNumeratorTrueIdeal->Fill(tQinvTrue, weight);
-    
+
     //cout<<"Qinv true"<<tQinvTrue<<endl;
   }
   //Special MC analysis for K selected by PDG code -->
@@ -264,22 +266,24 @@ void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 //_______________________
 void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 {
-  if (fPairCut)
-    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
+
   if(!fKaonPDG) {
     Double_t weight = fManager->GetWeight(aPair);
     fNumeratorFake->Fill(aPair->QInv(), weight);
     fDenominator->Fill(aPair->QInv(), 1.0);
-    
+
     Double_t tQinvTrue = GetQinvTrue(aPair);
-    
+
     fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
     fDenominatorIdeal->Fill(tQinvTrue, 1.0);
-    
+
       if(fFillkT)
       {
           int pairNumber = GetPairNumber(aPair);
-          
+
           if(pairNumber >= 0){
               if(fkTdists[pairNumber]){
                   fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
@@ -311,20 +315,20 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
-      
+
       AliFemtoParticle *first = (AliFemtoParticle*)aPair->Track1();
       AliFemtoParticle *second = (AliFemtoParticle*)aPair->Track2();
-      
+
       if(!first || !second) return -1;
-      
+
       AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
       AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
-      
+
       if(!inf1 || !inf2){
 //          cout<<"no hidden info"<<endl;
           return -1;
       }
-      
+
       AliFemtoLorentzVector fm1;
       AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
       fm1.SetVect(*temp);
@@ -332,18 +336,18 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
       Double_t am2 = inf2->GetMass();
       double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
       fm1.SetE(ener);
-      
+
       AliFemtoLorentzVector fm2;
       AliFemtoThreeVector* temp2 =  inf2->GetTrueMomentum();
       fm2.SetVect(*temp2);
       ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
       fm2.SetE(ener);
-      
+
       //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
-      
+
       AliFemtoLorentzVector tQinvTrueVec = (fm1-fm2);
       Double_t tQinvTrue = -1.* tQinvTrueVec.m();
-      
+
       return tQinvTrue;
   }
   //Special MC analysis for K selected by PDG code -->
@@ -356,13 +360,13 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
   fm1.SetVect(*temp);
   Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
   Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
- 
+
   am1=0.493677;
   am2=0.493677;
- 
+
   //Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
   //Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
- 
+
   double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
   fm1.SetE(ener);
 
@@ -372,10 +376,10 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
   ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
   fm2.SetE(ener);
 
- 
+
   AliFemtoLorentzVector tQinvTrueVec = (fm1-fm2);
   Double_t tQinvTrue = -1.* tQinvTrueVec.m();
-  
+
  // if(tQinvTrue<0 && am1!=0 && am2!=0)std::cout<<" CFModel Qinv mass1 mass2 "<<aPair->QInv()<<" Qinv_true "<<tQinvTrue<<" "<<am1<<" "<<am2<<" pdg1 "<<pdg1<<" pdg2 "<<pdg2<<std::endl;
  // if(pdg1!=211 || pdg2!=211)std::cout<<" CFModel Qinv mass1 mass2 "<<aPair->QInv()<<" Qinv_true "<<tQinvTrue<<" "<<am1<<" "<<am2<<" pdg1 "<<pdg1<<" pdg2 "<<pdg2<<std::endl;
 
@@ -423,14 +427,6 @@ void AliFemtoModelCorrFctn::Write()
 
 
 }
-//_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctn::Clone()
-{
-  // Create clone
-  AliFemtoModelCorrFctn *tCopy = new AliFemtoModelCorrFctn(*this);
-
-  return tCopy;
-}
 //_________________________
 TList* AliFemtoModelCorrFctn::GetOutputList()
 {
@@ -463,7 +459,7 @@ double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
 {
     AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
     AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
-    
+
     if(!first)
     {
         if(second) delete second;
@@ -474,10 +470,10 @@ double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
         if(first) delete first;
         return -1;
     }
-    
+
     AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
     AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
-    
+
     if(!info1 || !info2)
     {
         if(first) delete first;
@@ -486,7 +482,7 @@ double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
     }
     AliFemtoThreeVector* p1 = info1->GetMotherMomentum();
     AliFemtoThreeVector* p2 = info2->GetMotherMomentum();
-    
+
     if(!p1 || !p2)
     {
         if(first) delete first;
@@ -496,9 +492,9 @@ double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
     double px = p1->x() + p2->x();
     double py = p1->y() + p2->y();
     double pT = sqrt(px*px + py*py);
-    
+
     delete first;delete second;
-    
+
     return pT/2.;
 }
 
@@ -506,7 +502,7 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
 {
     AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
     AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
-    
+
     if(!first)
     {
         if(second) delete second;
@@ -517,29 +513,29 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
         if(first) delete first;
         return -1;
     }
-    
+
     AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
     AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
-    
+
     if(!info1 || !info2)
     {
         if(first) delete first;
         if(second) delete second;
         return -1;
     }
-        
+
     int pdg1 = TMath::Abs(info1->GetMotherPdgCode());
     int pdg2 = TMath::Abs(info2->GetMotherPdgCode());
-    
+
     int tmp;
     if(pdg2 < pdg1){
         tmp = pdg1;
         pdg1 = pdg2;
         pdg2 = tmp;
     }
-    
+
     delete first;delete second;
-    
+
     if(pdg1 == 2212 && pdg2 == 2212) return 0; // pp
     if(pdg1 == 2212 && pdg2 == 3122) return 1; // pΛ
     if(pdg1 == 3122 && pdg2 == 3122) return 2; // ΛΛ
@@ -561,7 +557,7 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
     if(pdg1 == 3212 && pdg2 == 3322) return 18; // Σ0Ξ0
     if(pdg1 == 3212 && pdg2 == 3312) return 19; // Σ0Ξ-
     if(pdg1 == 3212 && pdg2 == 3212) return 20; // Σ0Σ0
-    
+
     return -1;
 }
 

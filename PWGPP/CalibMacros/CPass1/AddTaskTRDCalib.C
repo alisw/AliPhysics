@@ -25,7 +25,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   // check the presence of the detectors
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
-  if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
+  if (!grpData) {printf("Failed to get GRP data for run %d", runNumber); return NULL;}
   Int_t activeDetectors = grpData->GetDetectorMask(); 
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
   TString type = grpData->GetBeamType();

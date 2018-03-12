@@ -109,6 +109,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
 
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
+
     void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
@@ -116,6 +119,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
+    TString               fCorrTaskSetting;
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion
     AliVEvent*            fInputEvent;                                          // current event
     AliMCEvent*           fMCEvent;                                             // corresponding MC event
@@ -318,6 +322,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoNGoodESDTracks;                                 //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                fHistoVertexZ;                                        //! array of histos with vertex z distribution for selected events
     TH1F**                fHistoNGammaCandidates;                               //! array of histos with number of gamma candidates per event
+    TH1F**                fHistoNGammaCandidatesBasic;                          //! array of histos with number of gamma candidates per event for basic cluster cut
     TH2F**                fHistoNGoodESDTracksVsNGammaCandidates;               //! array of histos with number of good tracks vs gamma candidates
     TH2F**                fHistoSPDClusterTrackletBackground;                   //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                fHistoNV0Tracks;                                      //! array of histos with V0 counts
@@ -391,16 +396,17 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
     TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
     TObjString*           fFileNameBroken;                                      // string object for broken file name
+    TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
-
+    Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 41);
+    ClassDef(AliAnalysisTaskGammaCalo, 44);
 };
 
 #endif

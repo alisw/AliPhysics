@@ -19,6 +19,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
+#include "AliEventCuts.h"
 
 class TH1F;
 class TH2F;
@@ -79,11 +80,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0.){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0., Bool_t removesoftpionfromq2=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
     fRequireMassForDauRemFromq2=requiremass;
+    fRemoverSoftPionFromq2=removesoftpionfromq2;
     if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
       fRemoveNdauRandomTracks=kFALSE;
@@ -127,6 +129,26 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
   void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
 
+  void Setq2PercentileSelection(TString splinesfilepath);
+  
+  //additional event cuts for Pb-Pb 2015 
+  void SetUseCentralityMultiplicityCorrelationCut(Bool_t strongcuts=kFALSE) {
+    
+    fEnableCentralityCorrCuts=kTRUE;
+    fEnableCentralityMultiplicityCorrStrongCuts=strongcuts;
+    
+    fEventCuts.SetupLHC15o();
+    fEventCuts.SetManualMode();
+    if(strongcuts) {
+      fEventCuts.fUseVariablesCorrelationCuts=true;
+      fEventCuts.fUseStrongVarCorrelationCut=true;
+    }
+  }
+  
+  AliEventCuts& GetAliEventCut() {
+    return fEventCuts;
+  }
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -155,7 +177,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
   Double_t GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2], Double_t multQvec, Int_t nDauRemoved, Double_t qVecDau[2], Double_t corrRec[2], Double_t LbTwist[2], Bool_t isTwistApplied);
   void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, std::vector<Int_t> daulab);
-
+  
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
@@ -209,10 +231,16 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
   Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
+  Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
+  TList* fq2SplinesList; //list of splines used to compute the q2 percentile
+  Bool_t fEnableCentralityCorrCuts; //enable V0M - CL0 centrality correlation cuts
+  Bool_t fEnableCentralityMultiplicityCorrStrongCuts; //enable centrality vs. multiplicity correlation cuts
+  AliEventCuts fEventCuts; //Event cut object for centrality correlation event cuts
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,13); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,16); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

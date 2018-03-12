@@ -90,6 +90,8 @@ public:
 
   void EnableT0Triggers(Bool_t doEnable) { fEnableT0Triggers = doEnable; }
 
+  void EnableCentralityTriggers(Bool_t doEnable) { fEnableCentralityTriggers = doEnable; }
+
   /**
    * @brief Set the name of the OADB container with the downscale factors.
    *
@@ -223,9 +225,24 @@ public:
    * @brief Run event loop only on min. bias events.
    *
    * In this case EMCAL triggers are ignored, and the trigger selection code is not run.
+   * Also the calo trigger patch object container is not linked to the task / not required.
    * @param[in] exclusivemb If true only min. bias events are analyzed
    */
-  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; }
+  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; SetCaloTriggerPatchInfoName(""); }
+
+  /**
+   * @brief Use trigger selection container in addition to trigger string
+   * 
+   * @param[in] doUse If true results from the trigger decision container are used in addition 
+   */
+  void SetUseTriggerSelectionContainer(Bool_t doUse) { fUseTriggerSelectionContainer = doUse; }
+
+  /**
+   * @brief Set the name of the trigger decision container
+   * 
+   * @param[in] nameCont Name of the trigger decision container 
+   */
+  void SetNameTriggerSelectionContainer(TString &nameCont) { fNameTriggerSelectionContainer = nameCont;}
 
 protected:
 
@@ -406,13 +423,16 @@ protected:
   std::vector<int>                fMaskedFastors;             ///< List of masked fastors
   TObjArray                       fOnlineTriggerThresholds;   ///< Trigger thresholds applied at online level
   TString                         fNameAcceptanceOADB;        ///< Name of the OADB container with the trigger acceptance
+  TString                         fNameTriggerSelectionContainer; ///< Name of the trigger selection container
 
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
   Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE)
+  Bool_t                          fEnableCentralityTriggers;  ///< Enable central / semi-central trigger
   Bool_t                          fRequireL0forL1;            ///< Require L0 for L1
   Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
+  Bool_t                          fUseTriggerSelectionContainer;    ///< Use trigger decision in trigger selection container
 
 private:
   AliAnalysisTaskEmcalTriggerBase(const AliAnalysisTaskEmcalTriggerBase &);

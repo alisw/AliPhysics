@@ -47,7 +47,7 @@
 ClassImp(AliAnalysisTaskCheckESDTracks)
 //______________________________________________________________________________
 AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() : 
-  AliAnalysisTaskSE("ITSsa resolution"), 
+  AliAnalysisTaskSE("QAofESDTracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
@@ -84,9 +84,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistTPCchi2PerClusPhiPtTPCsel{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselITSref{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselSPDany{nullptr},
-  fHistTPCsig1ptPerClusPhiPtTPCsel{nullptr},
-  fHistTPCsig1ptPerClusPhiPtTPCselITSref{nullptr},
-  fHistTPCsig1ptPerClusPhiPtTPCselSPDany{nullptr},
+  fHistSig1ptCovMatPhiPtTPCsel{nullptr},
+  fHistSig1ptCovMatPhiPtTPCselITSref{nullptr},
+  fHistSig1ptCovMatPhiPtTPCselSPDany{nullptr},
   fHistEtaPhiPtGoodHypTPCsel{nullptr},
   fHistEtaPhiPtGoodHypTPCselITSref{nullptr},
   fHistEtaPhiPtGoodHypTPCselSPDany{nullptr},
@@ -121,6 +121,10 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistOneOverPtResidVsPtTPCselBadHyp{nullptr},
   fHistOneOverPtResidVsPtTPCselITSrefGoodHyp{nullptr},
   fHistOneOverPtResidVsPtTPCselITSrefBadHyp {nullptr},
+  fHistPzResidVsPtTPCselAll{nullptr},
+  fHistPzResidVsPtTPCselITSrefAll{nullptr},
+  fHistPzResidVsEtaTPCselAll{nullptr},
+  fHistPzResidVsEtaTPCselITSrefAll{nullptr},
   fHistEtaPhiPtTPCselITSrefGood{nullptr},
   fHistEtaPhiPtTPCselITSrefFake{nullptr},
   fHistImpParXYPtMulTPCselSPDanyGood{nullptr},
@@ -223,9 +227,9 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistTPCchi2PerClusPhiPtTPCsel;
     delete fHistTPCchi2PerClusPhiPtTPCselITSref;
     delete fHistTPCchi2PerClusPhiPtTPCselSPDany;
-    delete fHistTPCsig1ptPerClusPhiPtTPCsel;
-    delete fHistTPCsig1ptPerClusPhiPtTPCselITSref;
-    delete fHistTPCsig1ptPerClusPhiPtTPCselSPDany;
+    delete fHistSig1ptCovMatPhiPtTPCsel;
+    delete fHistSig1ptCovMatPhiPtTPCselITSref;
+    delete fHistSig1ptCovMatPhiPtTPCselSPDany;
     for(Int_t j=0; j<3; j++){
       delete fHistEtaPhiPtGoodHypTPCsel[j];
       delete fHistEtaPhiPtGoodHypTPCselITSref[j];
@@ -264,6 +268,10 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
       delete fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[iS];
       delete fHistOneOverPtResidVsPtTPCselITSrefBadHyp[iS];
     }
+    delete fHistPzResidVsPtTPCselAll;
+    delete fHistPzResidVsPtTPCselITSrefAll;
+    delete fHistPzResidVsEtaTPCselAll;
+    delete fHistPzResidVsEtaTPCselITSrefAll;
     delete fHistEtaPhiPtTPCselITSrefGood;
     delete fHistEtaPhiPtTPCselITSrefFake;
     delete fHistImpParXYPtMulTPCselSPDanyGood;
@@ -465,12 +473,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselITSref);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselSPDany);
   
-  fHistTPCsig1ptPerClusPhiPtTPCsel = new TH3F("hTPCsig1ptPerClusPhiPtTPCsel"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
-  fHistTPCsig1ptPerClusPhiPtTPCselITSref = new TH3F("hTPCsig1ptPerClusPhiPtTPCselITSref"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
-  fHistTPCsig1ptPerClusPhiPtTPCselSPDany = new TH3F("hTPCsig1ptPerClusPhiPtTPCselSPDany"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
-  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCsel);
-  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCselITSref);
-  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCselSPDany);
+  fHistSig1ptCovMatPhiPtTPCsel = new TH3F("hSig1ptCovMatPhiPtTPCsel"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistSig1ptCovMatPhiPtTPCselITSref = new TH3F("hSig1ptCovMatPhiPtTPCselITSref"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistSig1ptCovMatPhiPtTPCselSPDany = new TH3F("hSig1ptCovMatPhiPtTPCselSPDany"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCsel);
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCselITSref);
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCselSPDany);
  
   // Impact parameter binning
   const Int_t nPtBins4ip=90;
@@ -562,6 +570,14 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[iS]);
     fOutput->Add(fHistOneOverPtResidVsPtTPCselITSrefBadHyp[iS]);
   }
+  fHistPzResidVsPtTPCselAll = new TH2F("hPzResidVsPtTPCselAll","; p_{T,rec} (GeV/c) ; p_{z,rec}-p_{z,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
+  fHistPzResidVsPtTPCselITSrefAll = new TH2F("hPzResidVsPtTPCselITSrefAll","; p_{T,rec} (GeV/c) ; p_{z,rec}-p_{z,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
+  fHistPzResidVsEtaTPCselAll = new TH2F("hPzResidVsEtaTPCselAll","; #eta ; p_{z,rec}-p_{z,gen} (GeV/c)",fNEtaBins,-1.,1.,150,-0.3,0.3);
+  fHistPzResidVsEtaTPCselITSrefAll = new TH2F("hPzResidVsEtaTPCselITSrefAll","; #eta ; p_{z,rec}-p_{z,gen} (GeV/c)",fNEtaBins,-1.,1.,150,-0.3,0.3);
+  fOutput->Add(fHistPzResidVsPtTPCselAll);
+  fOutput->Add(fHistPzResidVsPtTPCselITSrefAll);
+  fOutput->Add(fHistPzResidVsEtaTPCselAll);
+  fOutput->Add(fHistPzResidVsEtaTPCselITSrefAll);
 
   fHistEtaPhiPtTPCselITSrefGood = new TH3F("hEtaPhiPtTPCselITSrefGood"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtTPCselITSrefFake = new TH3F("hEtaPhiPtTPCselITSrefFake"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -908,14 +924,14 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     }
 
     fHistTPCchi2PerClusPhiPtTPCsel->Fill(chi2clus,pttrack,phitrack);
-    fHistTPCsig1ptPerClusPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
+    fHistSig1ptCovMatPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
     if(itsRefit){
       if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselITSref[pidtr]->Fill(ptrackTPC,dedx);
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
-      fHistTPCsig1ptPerClusPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
+      fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){ 
 	fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
-	fHistTPCsig1ptPerClusPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
+	fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
     }
 
@@ -933,9 +949,13 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     if (fReadMC && pttrack>0.) {
       fHistPtResidVsPtTPCselAll->Fill(ptgen,(pttrack-ptgen));
       fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
+      fHistPzResidVsPtTPCselAll->Fill(pttrack,(track->Pz()-pzgen));
+      fHistPzResidVsEtaTPCselAll->Fill(etatrack,(track->Pz()-pzgen));
       if (itsRefit){
 	fHistPtResidVsPtTPCselITSrefAll->Fill(ptgen,(pttrack-ptgen));
 	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
+	fHistPzResidVsPtTPCselITSrefAll->Fill(pttrack,(track->Pz()-pzgen));
+	fHistPzResidVsEtaTPCselITSrefAll->Fill(etatrack,(track->Pz()-pzgen));
       }
       for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
         if (pid[iS]) {
