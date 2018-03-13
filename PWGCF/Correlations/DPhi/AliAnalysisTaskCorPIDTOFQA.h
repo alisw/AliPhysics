@@ -131,8 +131,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 deut_dphi_pt_neg_neg_08_B;   // 73
 
 	TH1F*                 DCAxy_pos;                   // 74
-	TH1F*                 DCAz_pos;                    // 75
-	TH1F*                 DCAxy_neg;                   // 76
+	TH1F*                 DCAxy_neg;                   // 75
+	TH1F*                 DCAz_pos;                    // 76
 	TH1F*                 DCAz_neg;                    // 77
 
 	TH2F*                 m2_pt_pos_fine;              // 78
