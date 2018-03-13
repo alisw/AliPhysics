@@ -7,15 +7,14 @@ If you want to have the OADB files locally, you can download them from lxplus vi
 rsync -av --delete cern_user@lxplus.cern.ch:/eos/experiment/alice/analysis-data/ /path/to/my/local/oadb/
 ~~~
 
-In order for local tests to work properly, please add the OADB_PATH global variable to your bashrc or similar.
+In order for local tests to work properly, please add the ALICE_DATA global variable to your bashrc or similar.
 ~~~{.sh}
-OADB_PATH=/path/to/my/local/oadb/OADB
+ALICE_DATA=/path/to/my/local/oadb
 ~~~
-It is crucial, that the additional /OADB is added to the global variable OADB_PATH. This is necessary as the downloaded directory from EOS contains the subfolder OADB. OADB_PATH must point to this subfolder in order to be able to properly load the files.
 
 Furthermore, the "export" command should be used in addition to adding the path to the bashrc. This will make the variable available to all processes:
 ~~~{.sh}
-export OADB_PATH=/path/to/my/local/oadb/OADB
+export ALICE_DATA=/path/to/my/local/oadb
 ~~~
 
 In addition, a short history of changes to the files in EOS will be listed here:
