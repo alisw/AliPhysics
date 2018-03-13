@@ -2897,7 +2897,6 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
-
   if (  fPeriodEnum != kLHC18b8 &&                                                                  // LHC17pq pp 5TeV JetJet MC's
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC17g8b &&  fPeriodEnum != kLHC17g8c &&                                    // LHC16sr pPb 8TeV JetJet MC's
@@ -5329,7 +5328,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k5TeV;
   } else if ( periodName.CompareTo("LHC18b8") == 0 || periodName.CompareTo("LHC18b8_fast") == 0 || periodName.CompareTo("LHC18b8_cent") == 0 ||
               periodName.CompareTo("LHC18b8_cent_woSDD") == 0){
-    fPeriodEnum = kLHC17l3b;
+    fPeriodEnum = kLHC18b8;
     fEnergyEnum = k5TeV;
 
   // MC upgrade
