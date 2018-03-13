@@ -165,6 +165,8 @@ public:
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH2             *fMassPtPionAcc;               //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
   TH2             *fMassPtPionRej;               //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH3             *fMassPtCentPionAcc;               //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
+  TH3             *fMassPtCentPionRej;               //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
 
 
   TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background

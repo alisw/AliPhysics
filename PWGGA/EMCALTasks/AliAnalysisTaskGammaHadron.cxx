@@ -59,7 +59,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
@@ -87,7 +87,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
@@ -394,7 +394,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     static const Int_t nEvtPlaneBins=3;
     Double_t evtPlaneArray[nEvtPlaneBins+1] = {0,1,2,3};// = {In Plane, MP, Out of Plane};
     static const Int_t nCentHistBins=4;
-    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
+    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,50.0,90.0};
     if(fForceBeamType != AliAnalysisTaskEmcal::kpp)
     {
      	//..Event plane
@@ -811,15 +811,29 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   Michael's Special Histograms
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
+
+
 	if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
 		fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
 		fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
 		fOutput->Add(fClusEnergy);
+		
+		Int_t nMassBinsAccRej = 3000;
+		Double_t binEdgesMassAccRej[nMassBinsAccRej+1];
+		GenerateFixedBinArray(nMassBinsAccRej,0.,0.75,binEdgesMassAccRej);
+
 
 		fMassPtPionAcc = new TH2F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
 		fOutput->Add(fMassPtPionAcc);
 		fMassPtPionRej = new TH2F("fMassPtPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
 		fOutput->Add(fMassPtPionRej);
+
+		fMassPtCentPionAcc = new TH3F("fMassPtCentPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c); Cent (%)",nMassBinsAccRej,binEdgesMassAccRej,kNoGammaBins,fArray_G_Bins,nCentHistBins,centBinArray);
+		fOutput->Add(fMassPtCentPionAcc);
+		fMassPtCentPionRej = new TH3F("fMassPtCentPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c); Cent (%)",nMassBinsAccRej,binEdgesMassAccRej,kNoGammaBins,fArray_G_Bins,nCentHistBins,centBinArray);
+		fOutput->Add(fMassPtCentPionRej);
+
 	}
 
 
@@ -1519,6 +1533,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				//			if(cluster2->GetNonLinCorrEnergy()>fClEnergyMin && cluster->GetNonLinCorrEnergy()>fClEnergyMin) //FIXME
 			{
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
+				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
 				nAccPi0Clusters++;
 				//	if((aliCaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (aliCaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
 
@@ -1988,6 +2003,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
 
   if (TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma) {
     fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
+    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
     return 0;
   }
 
