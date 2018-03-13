@@ -23,13 +23,13 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E,ylim=[0,13000])", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateTableau");
 
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
     AliPainter::DivideTPad("<horizontal>[1]", "Canvas1", canvasQA1);
     canvasQA1->cd(1);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E,ylim=[0,13000])", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E,ylim=[0,])", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplateTableau");
 }
 */
