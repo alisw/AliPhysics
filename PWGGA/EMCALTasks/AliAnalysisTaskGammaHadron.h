@@ -50,6 +50,7 @@ public:
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
   void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
+  void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
@@ -132,6 +133,7 @@ public:
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Double_t                    fClEnergyMin;              ///< Minimum cluster energy for pi0 Reconstruction
+  Double_t                    fOpeningAngleCut;          ///< Minimum opening angle cut for pi0 candidates
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
