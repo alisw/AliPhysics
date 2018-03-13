@@ -74,7 +74,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetSwitchkT(Int_t c)                                 { fSwitchKtNSub   = c   ; }
   void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
-  void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;} 
+  void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;}
+  void SetHardCutoff(Int_t c)                               { fHardCutoff =c   ;} 
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -151,6 +152,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fSwitchSDKtNSub;
   Int_t                               fSwitchSDMinNSub;
   Int_t                               fAdditionalTracks;             //number of extra tracks to stress the grooming
+  Int_t                               fHardCutoff;                  //hard cutoff in the iterative procedure 
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
