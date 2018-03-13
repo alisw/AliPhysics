@@ -141,7 +141,7 @@ class CEPTrackBuffer : public TObject {
     Float_t GetMCMass()         const { return fMCMass; }
     TVector3 GetMCMomentum()    const { return fMCMomentum; }
     
-  ClassDef(CEPTrackBuffer, 6)     // CEP track buffer
+  ClassDef(CEPTrackBuffer, 7)     // CEP track buffer
 
 };
 
