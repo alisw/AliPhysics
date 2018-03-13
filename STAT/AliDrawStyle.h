@@ -95,13 +95,14 @@ public:
   static const std::vector<int> &    GetFillColors(const char *style){return AliDrawStyle::fFillColors[style];};
   // CSS like attribute fields parsing
   static Bool_t  IsSelected(TString selectors, TString elementID, TString classID, TString objectID);
-  static TString GetProperty(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID);
+  static TString GetProperty(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, Int_t verbose = 4);
   static TString  GetPropertyValue(TString input, TString propertyName);
   //static Int_t    GetObjectIndex(TString &objName);
   static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID);
-  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status);
+  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status, Int_t verbose=4);
   static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index, Bool_t &status);
   static Double_t UnitsConverter(TString value, Double_t k);
+  static Int_t    ConvertColor(TString inputValues, Int_t index, Bool_t &status, Int_t verbose = 4);
   static TObjArray * ReadCSSFile(const char *  inputName, TObjArray * array=NULL, Int_t verbose=0);
   static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=NULL);
   //

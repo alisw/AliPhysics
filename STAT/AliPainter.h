@@ -14,6 +14,7 @@
 
 class TPad;
 class TMultiGraph;
+class TFormula;
 #include "TObject.h"
 #include <vector>
 #include <map>
@@ -22,21 +23,23 @@ class TMultiGraph;
 #include "TPad.h"
 
 class AliPainter : public TObject{
-
-public:
-    static void       DivideTPad(TPad *pad, const char *division, const char *classID);
-    static void       SetMultiGraphTimeAxis(TMultiGraph *graph, TString option);
-    static void       DrawHistogram(char *expresion, const TObjArray *histogramArray, TPad *pad=NULL, TObjArray *metaData=NULL, TObjArray *keepArray=NULL, Int_t verbose=4);
-//static TObject   *GetHistogram(TObject *hisN, TString range, std::vector<TString> fitOptions);
-    static TPad      *SetPadMargin(TPad *cPad, const char *position, const char *wMargin, const char *units, Double_t mValue, Int_t iCol, Int_t nCols);
-public:
-    typedef std::map<int, std::vector<int> > axisRangesMap;
+  public:
+    static TPad *DivideTPad(const char *division, const char *classID="",TPad *pad=nullptr, Int_t verbose=4);
+    static void SetMultiGraphTimeAxis(TMultiGraph *graph, TString option);
+    static void DrawHistogram(char *expresion, const TObjArray *histogramArray, TPad *pad=nullptr, TObjArray *metaData=nullptr, TObjArray *keepArray=nullptr, Int_t verbose=4);
+    static TPad *SetPadMargin(TPad *cPad, const char *position, const char *wMargin, const char *units, Double_t mValue, Int_t iCol, Int_t nCols);
+    //static Double_t GetLimitValue(TString expression, TPad *cPad);
+    //static void ApplyLimitValue();
+    ClassDef(AliPainter,1);
+  //TODO: it should be protected for inheritor test class @Boris
+  //protected:
+    typedef std::map<Int_t, std::vector<TString> > axisRangesMap;
     static std::map<TString, TString> optionValues;
-ClassDef(AliPainter,1);
+    static std::map<TString, Double_t> statValues;
     static void ArgsParser(TString exprsn, TString &hisName, TString &projections, std::vector<TString> &fitOptions, std::vector<TString> &rangesStrings, Int_t verbose = 4);
-    static std::vector<TString> OptParser(const TString fitStr, const char d[2], Int_t defSize);
-    static void OptionsParser(const TString optionsStr);
-    static void  RegisterDefaultOptions();
+    static std::vector<TString> OptionStringParser(const TString optStr, const char d[2], Int_t defSize);
+    static void PandasOptionParser(const TString optionsStr);
+    static void RegisterDefaultOptions();
     static std::vector<TString> RangesParser(TString inputRangesStr);
     static void RangesToMap (TString range , Int_t axisNum, axisRangesMap &result);
     static void RangesMapToString(Int_t n, axisRangesMap result, std::vector<TString> arr, std::vector<TString> &res);
