@@ -20,17 +20,22 @@ class AliFemtoDreamTrackCuts {
                                                 bool CombSigma,
                                                 bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayProtonCuts(bool isMC,
+                                                 bool PileUpRej,
                                                  bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayPionCuts(bool isMC,
+                                               bool PileUpRej,
                                                bool ContribSplitting);
   static AliFemtoDreamTrackCuts *Xiv0PionCuts(bool isMC,
-                                               bool ContribSplitting);
+                                              bool PileUpRej,
+                                              bool ContribSplitting);
   static AliFemtoDreamTrackCuts *Xiv0ProtonCuts(bool isMC,
-                                               bool ContribSplitting);
+                                                bool PileUpRej,
+                                                bool ContribSplitting);
   static AliFemtoDreamTrackCuts *XiBachPionCuts(bool isMC,
-                                               bool ContribSplitting);
-//  static AliFemtoDreamTrackCuts *OmegaKaonCuts(bool isMC,
-//                                               bool ContribSplitting);
+                                                bool PileUpRej,
+                                                bool ContribSplitting);
+  //  static AliFemtoDreamTrackCuts *OmegaKaonCuts(bool isMC,
+  //                                               bool ContribSplitting);
 
   //Setters for Plots
   void SetPlotDCADist(bool plot) {fDCAPlots=plot;};
@@ -51,6 +56,7 @@ class AliFemtoDreamTrackCuts {
   void SetCheckPileUpTOF(bool check){fCheckPileUpTOF=check;};
   void SetCheckPileUp(bool check){fCheckPileUp=check;};
   void SetNClsTPC(int nCls){fnTPCCls = nCls; fcutnTPCCls = kTRUE;};
+  void SetMaxSharedClsTPC(int nSCls){fMaxSharedClsTPC=nSCls;fCutSharedClsTPC=true;};
   void SetDCAReCalculation(bool which){fDCAProp = which;};
   void SetDCAVtxXY(float dcaXY){fDCAToVertexXY = dcaXY; fCutDCAToVtxXY = kTRUE;};
   void SetCutDCAVtxXY(bool cutdcaXY){fCutDCAToVtxXY = cutdcaXY;};
@@ -58,7 +64,8 @@ class AliFemtoDreamTrackCuts {
   void SetCutDCAVtxZ(bool cutdcaZ){fCutDCAToVtxZ = cutdcaZ;};
   void SetCutSharedCls(bool cutit){fCutSharedCls = cutit;};
   void SetCheckTPCRefit(bool cutit){fCheckTPCRefit=cutit;};
-  void SetCutTPCCrossedRows(bool cutit){fCutTPCCrossedRows = cutit;};
+  void SetCutTPCCrossedRows(bool cutit,int CrossedRows,float ratio){
+    fCutTPCCrossedRows = cutit;fCrossedRows=CrossedRows;fRatioCrossedRows=ratio;};
   void SetPID(AliPID::EParticleType pid, float pTPChresh, float sigVal = 3.)
   {fParticleID = pid; fPIDPTPCThreshold = pTPChresh; fNSigValue = sigVal; fCutPID = kTRUE;};
   void SetRejLowPtPionsTOF(bool use){fRejectPions = use;};
@@ -67,7 +74,7 @@ class AliFemtoDreamTrackCuts {
   bool isSelected(AliFemtoDreamTrack *Track);
   void BookQA(AliFemtoDreamTrack *Track);
   void BookMC(AliFemtoDreamTrack *Track);
-//  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
+  //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
   void Init(bool MinimalBooking);
   TList *GetQAHists() {return fHists->GetHistList();};
@@ -105,6 +112,8 @@ class AliFemtoDreamTrackCuts {
   int fCharge;                        //
   int fnTPCCls;                       //
   bool fcutnTPCCls;                   //
+  int fMaxSharedClsTPC;               //
+  bool fCutSharedClsTPC;              //
   bool fDCAProp;                      //  kTRUE means that the DCA gets recalculated by PropagateToDCA, kFALSE just uses the info stored in the AOD
   float fDCAToVertexXY;              //
   bool fCutDCAToVtxXY;                //
@@ -113,6 +122,8 @@ class AliFemtoDreamTrackCuts {
   bool fCutSharedCls;                 //
   bool fCheckTPCRefit;                //
   bool fCutTPCCrossedRows;            //
+  int fCrossedRows;                 //
+  float fRatioCrossedRows;            //
   bool fCutPID;                       //
   bool fCutHighPtSig;                 // Reject tracks which have a lower Sigma for other particles (implemented for electrons, pion, kaons and protons)
   AliPID::EParticleType fParticleID;  //

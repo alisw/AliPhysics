@@ -48,7 +48,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
   fHistList->SetName("TrackCuts");
   fHistList->SetOwner();
 
-  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 21, 0, 21);
+  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 22, 0, 22);
   fConfig->SetStats(0);
   fConfig->GetXaxis()->SetBinLabel(1, "pT_{min}");
   fConfig->GetXaxis()->SetBinLabel(2, "pT_{max}");
@@ -60,20 +60,22 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
   fConfig->GetXaxis()->SetBinLabel(8, "Is MC");
   fConfig->GetXaxis()->SetBinLabel(9, "DCA_{xy}");
   fConfig->GetXaxis()->SetBinLabel(10, "DCA_{z}");
-  fConfig->GetXaxis()->SetBinLabel(11, "Shared Cls");
-  fConfig->GetXaxis()->SetBinLabel(12, "TPC Crossed Rows");
-  fConfig->GetXaxis()->SetBinLabel(13, "PID Mom Thresh");
-  fConfig->GetXaxis()->SetBinLabel(14, "PID nsig");
-  fConfig->GetXaxis()->SetBinLabel(15, "Reject Pions");
-  fConfig->GetXaxis()->SetBinLabel(16, "Smallest Sig");
-  fConfig->GetXaxis()->SetBinLabel(17, "ITS Hit");
-  fConfig->GetXaxis()->SetBinLabel(18, "TOF Timing");
-  fConfig->GetXaxis()->SetBinLabel(19, "Pile Up Rej");
-  fConfig->GetXaxis()->SetBinLabel(20, "TPC Refit");
+  fConfig->GetXaxis()->SetBinLabel(11, "Max Shared Cls");
+  fConfig->GetXaxis()->SetBinLabel(12, "Shared Cls");
+  fConfig->GetXaxis()->SetBinLabel(13, "TPC Crossed Rows");
+  fConfig->GetXaxis()->SetBinLabel(14, "Ratio TPC Crossed Rows");
+  fConfig->GetXaxis()->SetBinLabel(15, "PID Mom Thresh");
+  fConfig->GetXaxis()->SetBinLabel(16, "PID nsig");
+  fConfig->GetXaxis()->SetBinLabel(17, "Reject Pions");
+  fConfig->GetXaxis()->SetBinLabel(18, "Smallest Sig");
+  fConfig->GetXaxis()->SetBinLabel(19, "ITS Hit");
+  fConfig->GetXaxis()->SetBinLabel(20, "TOF Timing");
+  fConfig->GetXaxis()->SetBinLabel(21, "Pile Up Rej");
+  fConfig->GetXaxis()->SetBinLabel(22, "TPC Refit");
 
   fHistList->Add(fConfig);
 
-  fCutCounter = new TH1F("CutCounter", "Cut Counter", 22, 0, 22);
+  fCutCounter = new TH1F("CutCounter", "Cut Counter", 23, 0, 23);
   fCutCounter->GetXaxis()->SetBinLabel(1, "Input");
   fCutCounter->GetXaxis()->SetBinLabel(2, "Filter Bit");
   fCutCounter->GetXaxis()->SetBinLabel(3, "p_{T} Cut");
@@ -83,19 +85,20 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
   fCutCounter->GetXaxis()->SetBinLabel(7, "PileUpTOF");
   fCutCounter->GetXaxis()->SetBinLabel(8, "PileUp");
   fCutCounter->GetXaxis()->SetBinLabel(9, "nClsTPC");
-  fCutCounter->GetXaxis()->SetBinLabel(10, "Shared Cls");
-  fCutCounter->GetXaxis()->SetBinLabel(11, "TPC Refit");
-  fCutCounter->GetXaxis()->SetBinLabel(12, "TPC Crossed Rows");
-  fCutCounter->GetXaxis()->SetBinLabel(13, "TPC Row Ratio");
-  fCutCounter->GetXaxis()->SetBinLabel(14, "TPC OK");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "TPC PID");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "TPC TOF OK");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(20, "Passes PID");
-  fCutCounter->GetXaxis()->SetBinLabel(21, "DCA_{Z}");
-  fCutCounter->GetXaxis()->SetBinLabel(22, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(10, "Max Shared Cls TPC");
+  fCutCounter->GetXaxis()->SetBinLabel(11, "Shared Cls");
+  fCutCounter->GetXaxis()->SetBinLabel(12, "TPC Refit");
+  fCutCounter->GetXaxis()->SetBinLabel(13, "TPC Crossed Rows");
+  fCutCounter->GetXaxis()->SetBinLabel(14, "TPC Row Ratio");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "TPC OK");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "TPC PID");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "TPC TOF OK");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "TPC TOF PID");
+  fCutCounter->GetXaxis()->SetBinLabel(20, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(21, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(22, "DCA_{Z}");
+  fCutCounter->GetXaxis()->SetBinLabel(23, "DCA_{XY}");
 
   fHistList->Add(fCutCounter);
 

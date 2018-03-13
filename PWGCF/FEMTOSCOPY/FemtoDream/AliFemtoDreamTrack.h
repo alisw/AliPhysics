@@ -64,7 +64,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float fNClsTPC;
   float fTPCCrossedRows;
   float fRatioCR;
-  float fnoSharedClst;
+  bool fnoSharedClst;
   float fTPCClsS;
   std::vector<bool> fSharedClsITSLayer;
   bool fHasSharedClsITSLayer;
