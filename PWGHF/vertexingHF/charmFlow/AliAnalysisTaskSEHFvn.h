@@ -171,7 +171,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
-  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg,Double_t q2VecFullTPC[2],Double_t q2VecPosTPC[2],Double_t q2VecNegTPC[2],Double_t multQvecTPC[3]) const;
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos, Double_t &q2TPCneg, Double_t q2VecFullTPC[2], Double_t q2VecPosTPC[2], Double_t q2VecNegTPC[2], Double_t multQvecTPC[3], std::vector<Int_t>& labrejtracks) const;
   void CreateSparseForEvShapeAnalysis();
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
@@ -233,14 +233,14 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
   Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
-  TList* fq2SplinesList; //list of splines used to compute the q2 percentile
+  TList* fq2SplinesList[6]; //lists of splines used to compute the q2 percentile
   Bool_t fEnableCentralityCorrCuts; //enable V0M - CL0 centrality correlation cuts
   Bool_t fEnableCentralityMultiplicityCorrStrongCuts; //enable centrality vs. multiplicity correlation cuts
   AliEventCuts fEventCuts; //Event cut object for centrality correlation event cuts
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,16); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,17); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
