@@ -255,6 +255,9 @@ TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pa
       newPad->SetNumber(nPads);
     }
   }
+  if (classID != TString("")) padName = TString::Format("%s.class(%s)",pad->GetName(),classID);
+  else padName = TString::Format("%s",pad->GetName());
+  pad->SetName(padName);
   return pad;
 }
 ///
