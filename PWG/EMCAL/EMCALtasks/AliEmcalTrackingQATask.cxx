@@ -425,6 +425,8 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       }
 
       Int_t label = TMath::Abs(track->GetLabel());
+      AliDebugStream(10) << "Track " << trackIterator.current_index() << " with type " << int(type) << " and label " << label <<
+          ", pt = " << track->Pt() << std::endl;
       Int_t mcGen = 1;
       // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
       if (label == 0 || track->GetGeneratorIndex() <= 0) mcGen = 0;
@@ -434,7 +436,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
         if (part) {
-          if (part->GetGeneratorIndex() == 0) {
+          if (part->GetGeneratorIndex() <= 0) {
             Int_t pdg = TMath::Abs(part->PdgCode());
             // select charged pions, protons, kaons , electrons, muons
             if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
