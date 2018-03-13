@@ -674,9 +674,26 @@ AliFemtoBasicEventCut* AliFemtoAnalysisLambdaKaon::CreateBasicEventCut(EventCutP
 AliFemtoEventCutEstimators* AliFemtoAnalysisLambdaKaon::CreateEventCutEstimators(EventCutParams &aEvCutParams)
 {
   AliFemtoEventCutEstimators* EvCutEst = new AliFemtoEventCutEstimators();
-    EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
-    EvCutEst->SetVertZPos(aEvCutParams.minVertexZ,aEvCutParams.maxVertexZ);
-    EvCutEst->SetVerboseMode(aEvCutParams.verboseMode);
+
+  if(aEvCutParams.centEstMethod > 0)
+  {
+    if     (aEvCutParams.centEstMethod == 1) EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 2) EvCutEst->SetCentEst2Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 3) EvCutEst->SetCentEst3Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 4) EvCutEst->SetCentEst4Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+  }
+  else if(aEvCutParams.multEstMethod > 0)
+  {
+    if     (aEvCutParams.multEstMethod == 1) EvCutEst->SetMultEst1Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else if(aEvCutParams.multEstMethod == 2) EvCutEst->SetMultEst2Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else if(aEvCutParams.multEstMethod == 3) EvCutEst->SetMultEst3Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else EvCutEst->SetMultEst1Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+  }
+  else EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+
+  EvCutEst->SetVertZPos(aEvCutParams.minVertexZ,aEvCutParams.maxVertexZ);
+  EvCutEst->SetVerboseMode(aEvCutParams.verboseMode);
   return EvCutEst;
 }
 
@@ -1808,6 +1825,9 @@ AliFemtoAnalysisLambdaKaon::DefaultEventCutParams()
   tReturnParams.maxVertexZ = 8.;
 
   tReturnParams.verboseMode = false;
+
+  tReturnParams.centEstMethod = 1;
+  tReturnParams.multEstMethod = -1;
 
   return tReturnParams;
 }

@@ -122,6 +122,9 @@ struct EventCutParams
          maxVertexZ;
 
   bool verboseMode;
+
+  int centEstMethod;
+  int multEstMethod;
 };
 
 struct V0CutParams
