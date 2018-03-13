@@ -14,9 +14,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
         TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
         hisArray->AddLast(o);
     }
-    AliDrawStyle::SetDefaults();
-    AliDrawStyle::ApplyStyle("figTemplate");
-    AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplate.css"));
+    AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
     // Use Canvas41 default layout
     TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
     AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41",canvasQA);
@@ -24,14 +22,14 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
-    AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplate");
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
+    AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
     AliPainter::DivideTPad("<horizontal>[1]", "Canvas1", canvasQA1);
     canvasQA1->cd(1);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E, ylim=[0,30000])", hisArray);
-    AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplate");
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E, ylim=[0,])", hisArray);
+    AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplateHex");
 }
 */
 
@@ -44,45 +42,45 @@ TH1*  {
     title-size: 20;
     label-size: 20;
     marker-style: 20,21,24,27;
-    marker-color: 14,2,4,8;
-    line-color: 14,1,4,8;
-    axis-color: 1,1,1,1;
+    marker-color: #7f7f7f,#ff0000,#3700ff,#00dd44;
+    line-color: #7f7f7f,#000000,#3700ff,#00dd44;
+    axis-color: #000000,#000000,#000000,#000000;
     title-offset:3.0;
 }
 
 .PtAll  {
     marker-style: 20;
-    marker-color: 14;
-    line-color: 14;
+    marker-color: #7f7f7f;
+    line-color: #7f7f7f;
     label-size: 20;
 }
 
 .PtIts  {
     marker-style: 21;
-    marker-color: 2;
-    line-color: 2;
+    marker-color: #ff0000;
+    line-color: #ff0000;
     label-size: 20;
 }
 
 .Tgl    {
     marker-style: 24;
-    marker-color: 4;
-    line-color: 4;
+    marker-color: #3700ff;
+    line-color: #3700ff;
     label-size: 20;
 }
 
 .Mass {
     marker-style: 20,21,24,27;
-    marker-color: 14,2,4,8;
-    line-color: 14,1,4,8;
-    axis-color: 1,1,1,1;
+    marker-color: #7f7f7f,#ff0000,#3700ff,#00dd44;
+    line-color: #7f7f7f,#000000,#3700ff,#00dd44;
+    axis-color: #000000,#000000,#000000,#000000;
     label-size: 20;
 }
 
 TPad {
     gridX:         0;
     gridY:         0;
-    fill-color:    10,10,10,10;
+    fill-color:    #fefefe,#fefefe,#fefefe,#fefefe;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
     border-mode:   0,0,0,0;
@@ -94,7 +92,7 @@ TPad {
     width:         800;
     gridX:         1;
     gridY:         1;
-    fill-color:    10,10,10,10;
+    fill-color:    #fefefe,#fefefe,#fefefe,#fefefe;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
     border-mode:   0,0,0,0;
@@ -108,7 +106,7 @@ TPad {
     width:         800;
     gridX:         1;
     gridY:         1;
-    fill-color:    10,10,10,10;
+    fill-color:    #fefefe,#fefefe,#fefefe,#fefefe;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
     border-mode:   0,0,0,0;
@@ -121,7 +119,7 @@ TPad {
     width:         700;
     gridX:         0;
     gridY:         0;
-    fill-color:    10;
+    fill-color:    #fefefe;
     tickX:         1;
     tickY:         1;
     border-mode:   0;
