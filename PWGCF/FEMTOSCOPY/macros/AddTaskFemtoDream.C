@@ -9,7 +9,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool MomReso=false,
     bool etaPhiPlots=false,
     bool CombSigma=false,
-    bool PileUpRej=false,
+    bool PileUpRej=true,
     bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
