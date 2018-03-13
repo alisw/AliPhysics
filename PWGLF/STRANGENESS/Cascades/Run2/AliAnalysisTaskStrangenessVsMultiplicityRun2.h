@@ -413,6 +413,14 @@ private:
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
     
+    //TOF (experimental, not corrected for weak decay traj)
+    Float_t fTreeCascVarNegTOFNSigmaPion;   //!
+    Float_t fTreeCascVarNegTOFNSigmaProton; //!
+    Float_t fTreeCascVarPosTOFNSigmaPion;   //!
+    Float_t fTreeCascVarPosTOFNSigmaProton; //!
+    Float_t fTreeCascVarBachTOFNSigmaPion;  //!
+    Float_t fTreeCascVarBachTOFNSigmaKaon;  //!
+    
     //ChiSquares
     Float_t fTreeCascVarChiSquareV0;
     Float_t fTreeCascVarChiSquareCascade;
