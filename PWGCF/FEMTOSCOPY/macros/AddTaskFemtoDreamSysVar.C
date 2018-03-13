@@ -5,6 +5,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool isMC=false,
     TString CentEst="kInt7",
     bool notpp=true,
+    bool PileUpRej=true,
     const char *swuffix="")
 {
   TString suffix=Form("%s",swuffix);
@@ -96,17 +97,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   v0Cuts=
       AliFemtoDreamv0Cuts::LambdaCuts(isMC,CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
-      isMC,false);
+      isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *Negv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
-      isMC,false);
+      isMC,PileUpRej,false);
 
   Antiv0Cuts=
       AliFemtoDreamv0Cuts::LambdaCuts(isMC,CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
-      isMC,false);
+      isMC,PileUpRej,false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
-      isMC,false);
+      isMC,PileUpRej,false);
   NegAntiv0Daug->SetCutCharge(-1);
 
   if (suffix=="10") {
@@ -163,23 +164,23 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
       AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts=
-      AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,false);
+      AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *XiPosCuts=
-      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,false);
+      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *XiBachCuts=
-      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,false);
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,PileUpRej,false);
 
   AntiCascadeCuts=
       AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts=
-      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,false);
+      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
   AntiXiNegCuts->SetCutCharge(-1);
   AliFemtoDreamTrackCuts *AntiXiPosCuts=
-      AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,false);
+      AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
   AntiXiPosCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiXiBachCuts=
-      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,false);
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,PileUpRej,false);
   AntiXiBachCuts->SetCutCharge(1);
   if (suffix=="19") {
     CascadeCuts->SetCutXiDaughterDCA(1.3);
