@@ -168,6 +168,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
 
   const Int_t nprim = mcEvent->GetNumberOfPrimaries();
 
+  AliDebugStream(3) << "Number of particles: " << Nparticles << std::endl;
+
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
@@ -191,6 +193,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
         ", kPhysicalPrim? " <<  Bool_t((flag & AliAODMCParticle::kPhysicalPrim) != 0) <<
         ", kSecondaryFromWeakDecay? " <<  Bool_t((flag & AliAODMCParticle::kSecondaryFromWeakDecay) != 0) <<
         ", kSecondaryFromMaterial? " << Bool_t((flag & AliAODMCParticle::kSecondaryFromMaterial) != 0) <<
+        ", nacc = " << nacc <<
+        ", iPart = " << iPart <<
         std::endl;
 
     AliAODMCParticle *aodPart = new ((*partOut)[nacc]) AliAODMCParticle(part, iPart, flag);
