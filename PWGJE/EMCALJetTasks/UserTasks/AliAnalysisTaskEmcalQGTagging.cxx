@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fHardCutoff(0),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -86,7 +87,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhPhi(0x0),
   fhTrackPhi(0x0),
   fHLundIterative(0x0),
-  fHCheckResolutionSubjets(0x0),  
+  fHCheckResolutionSubjets(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
@@ -121,6 +122,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fHardCutoff(0),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -1209,8 +1211,9 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
+    if(z>fHardCutoff){
     Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
-    fHLundIterative->Fill(LundEntries);
+    fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
 

@@ -69,6 +69,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
    void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
   void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
+   void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
@@ -120,6 +121,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Bool_t                              fTrackCheckPlots;              //switch on qa plots
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
+  Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
   Int_t                               fDerivSubtrOrder;
 
   
