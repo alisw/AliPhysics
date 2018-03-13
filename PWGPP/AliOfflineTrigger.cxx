@@ -653,7 +653,7 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
     rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
   }
   if (rawArray == 0) {
-    ::Error("AliOfflineTrigger::ExtractSelected","No AliEn support compiled-in");
+    ::Fatal("AliOfflineTrigger::ExtractSelected","Unable to get list of RAW files");
   }
   Int_t nFiles=rawArray->GetEntries();
   if (nFiles<=0){
