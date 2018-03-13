@@ -320,16 +320,23 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
     if (particleMotherLabel > -1){
       TParticle *dummyMother = mcEvent->Particle(particleMotherLabel);
+      Bool_t originReached   = kFALSE;
       if (dummyMother){
-        while (dummyMother->GetPdgCode() == 22){ // follow conversion photon's history, as long as the mother is a photon
+        while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
           if (dummyMother->GetMother(0) > -1){
             dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
             if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
               if (dummyMother->GetMother(0) > -1){
-                dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
+                dummyMother   = mcEvent->Particle(dummyMother->GetMother(0));
+              } else {
+                originReached = kTRUE;
               }
+            } else {
+              originReached = kTRUE;
             }
             isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+          } else {
+            originReached = kTRUE;
           }
         }
       }
@@ -687,15 +694,22 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
     if (particleMotherLabel > -1){
       AliAODMCParticle* dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
       if (dummyMother){
-        while (dummyMother->GetPdgCode() == 22){ // follow conversion photon's history, as long as the mother is a photon
+        Bool_t originReached   = kFALSE;
+        while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
           if (dummyMother->GetMother() > -1){
             dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
             if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
               if (dummyMother->GetMother() > -1){
                 dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
+              } else {
+                  originReached = kTRUE;
               }
+            } else {
+              originReached = kTRUE;
             }
             isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+          } else {
+            originReached = kTRUE;
           }
         }
       }
