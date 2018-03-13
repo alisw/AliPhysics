@@ -126,7 +126,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,2);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,3);
 };
 
 //_____________________________________________________________________________
@@ -135,14 +135,14 @@ class AliLightV0 : public TObject
  public:
  AliLightV0() : pt(-999), eta(-999), phi(-999), invmassL(-999), invmassAL(-999),
     cospt(-999), decayr(-999), decayl(-999), dcav0(-999), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), cascpt(-999), casceta(-999) {};
+    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t phiin) : pt(ptin), eta(etain), phi(phiin), invmassL(-999), invmassAL(-999),
     cospt(-999), decayr(-999), decayl(-999), dcav0(-999), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), cascpt(-999), casceta(-999) {};
+    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t phiin, Float_t invmassLin, Float_t invmassALin,
 	    Float_t cosptin, Float_t decayrin, Float_t decaylin, Float_t dcav0in) : pt(ptin), eta(etain), phi(phiin), invmassL(invmassLin),
     invmassAL(invmassALin), cospt(cosptin), decayr(decayrin), decayl(decaylin), dcav0(dcav0in), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), cascpt(-999), casceta(-999) {};
+    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
   void SetEta(Float_t val){eta = val;};
@@ -155,9 +155,10 @@ class AliLightV0 : public TObject
   void SetDCAV0(Float_t val){dcav0 = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
   void SetMcStatus(Int_t val){mcstatus = val;};
-  void SetPosDaughter(Float_t pt, Float_t eta, Float_t phi, Float_t nsigma, Float_t dca){ppt = pt; peta = eta; pphi = phi; pnsigmapr = nsigma; pdca = dca;};
-  void SetNegDaughter(Float_t pt, Float_t eta, Float_t phi, Float_t nsigma, Float_t dca){npt = pt; neta = eta; nphi = phi; nnsigmapr = nsigma; ndca = dca;};
-  void SetCascadePtEta(Float_t pt, Float_t eta){cascpt = pt; casceta = eta;};
+  void SetPosDaughter(Float_t ptin, Float_t etain, Float_t phiin, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pphi = phiin; pnsigmapr = nsigma; pdca = dca;};
+  void SetNegDaughter(Float_t ptin, Float_t etain, Float_t phiin, Float_t nsigma, Float_t dca){npt = ptin; neta = etain; nphi = phiin; nnsigmapr = nsigma; ndca = dca;};
+  void SetGenPtEta(Float_t ptin, Float_t etain){genpt = ptin; geneta = etain;};
+  void SetCascadePtEta(Float_t ptin, Float_t etain){cascpt = ptin; casceta = etain;};
   
   Float_t GetPt(){return pt;};
   Float_t GetEta(){return eta;};
@@ -170,8 +171,10 @@ class AliLightV0 : public TObject
   Float_t GetDCAV0(){return dcav0;};
   Float_t GetDCADaughters(){return dcadaughters;};
   Int_t   GetMcStatus(){return mcstatus;};
-  void    GetPosDaughter(Float_t& pt, Float_t& eta, Float_t& phi, Float_t& nsigma, Float_t& dca){pt = ppt; eta = peta; phi = pphi; nsigma = pnsigmapr; dca = pdca;};
-  void    GetNegDaughter(Float_t& pt, Float_t& eta, Float_t& phi, Float_t& nsigma, Float_t& dca){pt = npt; eta = neta; phi = nphi; nsigma = nnsigmapr; dca = ndca;};
+  void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; phiout = pphi; nsigma = pnsigmapr; dca = pdca;};
+  void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout, Float_t& nsigma, Float_t& dca){ptout = npt; etaout = neta; phiout = nphi; nsigma = nnsigmapr; dca = ndca;};
+  Float_t GetGenPt(){return genpt;};
+  Float_t GetGenEta(){return geneta;};
   Float_t GetCascadePt(){return cascpt;};
   Float_t GetCascadeEta(){return casceta;};
 
@@ -197,10 +200,12 @@ class AliLightV0 : public TObject
   Float_t   nphi;
   Float_t   nnsigmapr;
   Float_t   ndca;
+  Float_t   genpt;
+  Float_t   geneta;
   Float_t   cascpt;
   Float_t   casceta;
   
-  ClassDef(AliLightV0, 2);
+  ClassDef(AliLightV0, 3);
 };
 
 //_____________________________________________________________________________
@@ -214,15 +219,15 @@ class AliLightGenV0 : public TObject
   void SetEta(Float_t val){eta = val;};
   void SetPhi(Float_t val){phi = val;};
   void SetId(Int_t val){id = val;}
-  void SetPosDaughter(Float_t pt, Float_t eta, Float_t phi){ppt = pt; peta = eta; pphi = phi;};
-  void SetNegDaughter(Float_t pt, Float_t eta, Float_t phi){npt = pt; neta = eta; nphi = phi;};
+  void SetPosDaughter(Float_t ptin, Float_t etain, Float_t phiin){ppt = ptin; peta = etain; pphi = phiin;};
+  void SetNegDaughter(Float_t ptin, Float_t etain, Float_t phiin){npt = ptin; neta = etain; nphi = phiin;};
   
   Float_t GetPt(){return pt;};
   Float_t GetEta(){return eta;};
   Float_t GetPhi(){return phi;};
   Int_t   GetId(){return id;};
-  void    GetPosDaughter(Float_t& pt, Float_t& eta, Float_t& phi){pt = ppt; eta = peta; phi = pphi;};
-  void    GetNegDaughter(Float_t& pt, Float_t& eta, Float_t& phi){pt = npt; eta = neta; phi = nphi;};
+  void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout){ptout = ppt; etaout = peta; phiout = pphi;};
+  void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout){ptout = npt; etaout = neta; phiout = nphi;};
 
  private:
   Float_t   pt;
@@ -236,7 +241,7 @@ class AliLightGenV0 : public TObject
   Float_t   neta;
   Float_t   nphi;
   
-  ClassDef(AliLightGenV0, 1);
+  ClassDef(AliLightGenV0, 2);
 };
 #endif
 
