@@ -14,10 +14,12 @@ class TH2;
 class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskValidation();
-  AliAnalysisTaskValidation(const char *name);
+  /// `is_reconstructed` is used to toggle some event selections
+  AliAnalysisTaskValidation(const char *name, bool is_reconstructed);
 
   /// Set up this task. This function acts as the AddTask macro
-  static AliAnalysisTaskValidation* ConnectTask(const char *suffix);
+  /// `is_reconstructed` is passed on to the constructor of this task 
+  static AliAnalysisTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliAnalysisTaskValidation() {};

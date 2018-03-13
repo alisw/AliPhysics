@@ -48,7 +48,7 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation()
 {
 }
 
-AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
+AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name, bool is_reconstructed)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
@@ -67,20 +67,21 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
 {
   // Apply all cuts by default
   fEventValidators.push_back(EventValidation::kNoEventCut);
-  fEventValidators.push_back(EventValidation::kIsAODEvent);
-  fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
-  fEventValidators.push_back(EventValidation::kHasFMD);
-  fEventValidators.push_back(EventValidation::kHasEntriesFMD);
-  fEventValidators.push_back(EventValidation::kHasEntriesV0);
-  fEventValidators.push_back(EventValidation::kHasValidVertex);
-  fEventValidators.push_back(EventValidation::kHasMultSelection);
-  // This one kills another 60% of the events in LHC15o HIR :/
-  // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
-  fEventValidators.push_back(EventValidation::kNotSPDPU);
-  fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
-  fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
-
+  if (is_reconstructed) {
+    fEventValidators.push_back(EventValidation::kIsAODEvent);
+    fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+    fEventValidators.push_back(EventValidation::kHasFMD);
+    fEventValidators.push_back(EventValidation::kHasEntriesFMD);
+    fEventValidators.push_back(EventValidation::kHasEntriesV0);
+    fEventValidators.push_back(EventValidation::kHasValidVertex);
+    fEventValidators.push_back(EventValidation::kHasMultSelection);
+    // This one kills another 60% of the events in LHC15o HIR :/
+    // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
+    fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+    fEventValidators.push_back(EventValidation::kNotSPDPU);
+    fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
+    fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
+  }
   // Default track cuts
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
@@ -95,7 +96,8 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
   fEventCuts.fPileUpCutMV = true;
 }
 
-AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *suffix) {
+AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *suffix,
+								  bool is_reconstructed) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskValidation", "No analysis manager to connect to.");
@@ -114,7 +116,7 @@ AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *su
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s", mgr->GetCommonFileName()));
   
-  AliAnalysisTaskValidation *taskValidation = new AliAnalysisTaskValidation("TaskValidation");
+  auto *taskValidation = new AliAnalysisTaskValidation("TaskValidation", is_reconstructed);
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
     return NULL;
@@ -607,66 +609,68 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() 
 }
 
 Bool_t AliAnalysisTaskValidation::UserNotify() {
-  // return true;
-  // Turn off all branches
-  this->fInputHandler->GetTree()->SetBranchStatus("*", false, 0);
-  // Turn back on all branches which got dumped into the top-level.
-  // These are ~250 branches - hurray!
-  this->fInputHandler->GetTree()->SetBranchStatus("f*", true);
-  // Multiplicity framework; very expensive to read!
-  // this->fInputHandler->GetTree()->SetBranchStatus("MultSelection", true);
-  // Turn on headers;
-  this->fInputHandler->GetTree()->SetBranchStatus("header", true);
-  // Somehow vertices have to be turned on as glob...
-  this->fInputHandler->GetTree()->SetBranchStatus("vertices.*", true);
-  // ... but tracks individually for sub branches
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fUniqueID", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentum[3]", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPosition[3]", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentumAtDCA[3]", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPositionAtDCA[2]", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fRAtAbsorberEnd", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2perNDF", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2MatchTrigger", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSchi2", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFlags", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fLabel", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTOFLabel[3]", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackLength", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSMuonClusterMap", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrg", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrk", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFilterMap", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fUniqueID", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbytes", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fAllBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fUniqueID", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbytes", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fAllBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fUniqueID", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbytes", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fAllBits", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCnclsF", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCNCrossedRows", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fID", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCharge", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fType", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPIDForTracking", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCaloIndex", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fProdVertex", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPhiOnEMCal", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackEtaOnEMCal", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPtOnEMCal", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fIsMuonGlobalTrack", true);
-  this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMFTClusterPattern", true);
-
+  // If this is MC we have to read all the branches
+  // Also, we should check for other tasks here!
+  if (!this->MCEvent()) {
+    // Turn off all branches
+    this->fInputHandler->GetTree()->SetBranchStatus("*", false, 0);
+    // Turn back on all branches which got dumped into the top-level.
+    // These are ~250 branches - hurray!
+    this->fInputHandler->GetTree()->SetBranchStatus("f*", true);
+    // Multiplicity framework; very expensive to read!
+    // this->fInputHandler->GetTree()->SetBranchStatus("MultSelection", true);
+    // Turn on headers;
+    this->fInputHandler->GetTree()->SetBranchStatus("header", true);
+    // Somehow vertices have to be turned on as glob...
+    this->fInputHandler->GetTree()->SetBranchStatus("vertices.*", true);
+    // ... but tracks individually for sub branches
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fUniqueID", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentum[3]", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPosition[3]", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentumAtDCA[3]", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPositionAtDCA[2]", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fRAtAbsorberEnd", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2perNDF", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2MatchTrigger", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSchi2", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFlags", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fLabel", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTOFLabel[3]", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackLength", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSMuonClusterMap", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrg", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrk", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFilterMap", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fUniqueID", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbytes", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fAllBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fUniqueID", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbytes", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fAllBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fUniqueID", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbytes", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fAllBits", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCnclsF", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCNCrossedRows", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fID", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCharge", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fType", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPIDForTracking", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCaloIndex", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fProdVertex", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPhiOnEMCal", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackEtaOnEMCal", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPtOnEMCal", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fIsMuonGlobalTrack", true);
+    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMFTClusterPattern", true);
+  }
   return true;
 }
