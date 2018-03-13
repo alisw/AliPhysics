@@ -36,6 +36,7 @@
 #pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
 
 #pragma link C++ class AliAnalysisTaskTOFMC+;
+#pragma link C++ class AliAnalysisTaskTOFppSpectra+;
 
 #pragma link C++ class AliAnalysisTaskSpectraAOD+;
 #pragma link C++ class AliAnalysisTaskSpectraAllChAOD+;
