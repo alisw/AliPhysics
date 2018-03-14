@@ -49,5 +49,7 @@
 #pragma link C++ class AliJCatalystTask+;
 #pragma link C++ class AliJJtTask+;
 #pragma link C++ class AliJJtAna+;
+#pragma link C++ class AliJCIaaTask+;
+#pragma link C++ class AliJIaaAna+;
 
 #endif /* __CINT__ */

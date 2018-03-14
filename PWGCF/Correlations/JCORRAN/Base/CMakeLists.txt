@@ -78,6 +78,8 @@ set(SRCS
   AliJCatalystTask.cxx
   jtAnalysis/AliJJtTask.cxx
   jtAnalysis/AliJJtAna.cxx
+  iaaAnalysis/AliJCIaaTask.cxx
+  iaaAnalysis/AliJIaaAna.cxx
   )
 
 # Headers from sources
