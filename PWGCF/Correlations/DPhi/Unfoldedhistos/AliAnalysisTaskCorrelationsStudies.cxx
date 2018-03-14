@@ -1417,23 +1417,6 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     fhTrueLambdaVsPrimaries = new TH2I("fhTrueLambdaVsPrimaries","#lambda (truth);primary tracks;#lambda;counts",
         4000,0,4000,72,-TMath::PiOver2(),TMath::PiOver2());
 
-    /* the tracking of the true reconstructed but not accepted and of the true not reconstructed */
-    Int_t bins[kgTHnDimension] = {ptbins,etabins,phibins,AliPID::kSPECIES+1};
-    Double_t low[kgTHnDimension] = {ptlow,etalow,0.0,AliPID::kElectron};
-    Double_t up[kgTHnDimension] = {ptup,etaup,360.0,AliPID::kProton+2};
-    fhTrueRecNotAccepted = new THnSparseI(Form("fhTrueRecNotAccepted_%s",fTaskConfigurationString.Data()),
-        "True reconstructed but not accepted;p_{T} (GeV/c);#eta;#phi;species",
-        kgTHnDimension,bins,low,up);
-    fhTrueNotReconstructed= new THnSparseI(Form("fhTrueNotReconstructed_%s",fTaskConfigurationString.Data()),
-        "True not reconstructed;p_{T} (GeV/c);#eta;#phi;species",
-        kgTHnDimension,bins,low,up);
-
-    fhTrueMultiRec = new TH1I(Form("fhTrueMultiRec_%s",fTaskConfigurationString.Data()),
-        "Multi reconstructed tracks;no. of multi reconstructed tracks", 20, 0, 20);
-    fhPtTrueMultiRec = new TH1I(Form("fhPtTrueMultiRec_%s",fTaskConfigurationString.Data()),
-        "p_{T} of multi reconstructed tracks;p_{T} (GeV/c)", ptbins, ptlow, ptup);
-
-
 
     fOutput->Add(fhTruePt);
     fOutput->Add(fhTruePtPos);
@@ -1454,20 +1437,55 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     fOutput->Add(fhTruePt3D);
     fOutput->Add(fhTrueAcceptedVsPrimaries);
     fOutput->Add(fhTrueLambdaVsPrimaries);
-    fOutput->Add(fhTrueRecNotAccepted);
-    fOutput->Add(fhTrueNotReconstructed);
-    fOutput->Add(fhTrueMultiRec);
-    fOutput->Add(fhPtTrueMultiRec);
+
+    /* additional histograms if not only truth analysis */
+    if (!AliCSAnalysisCutsBase::IsMConlyTruth()) {
+      /* the tracking of the true reconstructed but not accepted and of the true not reconstructed */
+      Int_t bins[kgTHnDimension] = {ptbins,etabins,phibins,AliPID::kSPECIES+1};
+      Double_t low[kgTHnDimension] = {ptlow,etalow,0.0,AliPID::kElectron};
+      Double_t up[kgTHnDimension] = {ptup,etaup,360.0,AliPID::kProton+2};
+      fhTrueRecNotAccepted = new THnSparseI(Form("fhTrueRecNotAccepted_%s",fTaskConfigurationString.Data()),
+          "True reconstructed but not accepted;p_{T} (GeV/c);#eta;#phi;species",
+          kgTHnDimension,bins,low,up);
+      fhTrueNotReconstructed= new THnSparseI(Form("fhTrueNotReconstructed_%s",fTaskConfigurationString.Data()),
+          "True not reconstructed;p_{T} (GeV/c);#eta;#phi;species",
+          kgTHnDimension,bins,low,up);
+
+      fhTrueMultiRec = new TH1I(Form("fhTrueMultiRec_%s",fTaskConfigurationString.Data()),
+          "Multi reconstructed tracks;no. of multi reconstructed tracks", 20, 0, 20);
+      fhPtTrueMultiRec = new TH1I(Form("fhPtTrueMultiRec_%s",fTaskConfigurationString.Data()),
+          "p_{T} of multi reconstructed tracks;p_{T} (GeV/c)", ptbins, ptlow, ptup);
+
+      fOutput->Add(fhTrueRecNotAccepted);
+      fOutput->Add(fhTrueNotReconstructed);
+      fOutput->Add(fhTrueMultiRec);
+      fOutput->Add(fhPtTrueMultiRec);
+    }
 
     /* let's build the efficiency profile formula if required */
     if (!BuildEfficiencyProfiles()) {
       AliFatal("Something went wrong when building the efficiency profiles. ABORTING!!!");
     }
 
-    /* if not additional MC rec results we remove the content from the output list */
-    if (fDoProcessCorrelations) {
-      if (fMCRecOption == kNone) {
-        fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+    /* if only truth analysis remove the content for the reconstructed output lists */
+    if (AliCSAnalysisCutsBase::IsMConlyTruth()) {
+      if (fDoProcessCorrelations) {
+        fProcessCorrelations.GetHistogramsList()->Clear();
+        /* if not additional MC rec results we remove the content from the output list */
+        if (fMCRecOption == kNone) {
+          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+        }
+      }
+      if (fDoProcessPairAnalysis) {
+        fProcessPairAnalysis.GetHistogramsList()->Clear();
+      }
+    }
+    else {
+      /* if not additional MC rec results we remove the content from the output list */
+      if (fDoProcessCorrelations) {
+        if (fMCRecOption == kNone) {
+          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+        }
       }
     }
 
@@ -1496,17 +1514,8 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
     AliVEvent *event = InputEvent();
     if (!event) { AliError("ERROR: Could not retrieve event"); return; }
 
-    // If the task accesses MC info, this can be done as in the commented block below:
-    /*
-    // Create pointer to reconstructed event
-    AliMCEvent *mcEvent = MCEvent();
-    if (!mcEvent) { Printf("ERROR: Could not retrieve MC event"); return; }
-    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-
-    // set up a stack for use in check for primary/stable particles
-    AliStack* stack = mcEvent->Stack();
-    if( !stack ) { Printf( "Stack not available"); return; }
-    */
+    /* notify the new coming event to our cuts */
+    fEventCuts->NotifyEvent();
 
     /* check if the event is accepted */
     if (!fEventCuts->IsEventAccepted(fInputEvent)) return;
@@ -1515,7 +1524,6 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
     aodTrackMaps.NotifyEvent();
 
     /* notify the new coming event to our cuts */
-    fEventCuts->NotifyEvent();
     fTrackSelectionCuts->NotifyEvent();
 
     /* build true to rec tracks relation if MC event */
@@ -1525,22 +1533,28 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
       if (fMCEvent != NULL) {
         AliInfo(Form("========= event is 0x%lX while MC event is 0x%lX", (unsigned long) fInputEvent, (unsigned long) fMCEvent));
       }
-      BuildTrueRecRelation();
-    }
-
-    if (fDoProcessCorrelations && fProcessCorrelations.GetUseSimulation()) {
-      /* process rec tracks with potential simulation */
-      for (Int_t nsim = 0; nsim < fProcessCorrelations.GetSimEventsPerEvent(); nsim++) {
-        /* skip sensible process if additional simulation event is ongoing */
-        ProcessTracks(nsim != 0);
+      if (!fEventCuts->IsMConlyTruth()) {
+        /* only if not fast MC */
+        BuildTrueRecRelation();
       }
     }
-    else {
-      ProcessTracks(kFALSE);
+
+    /* process reconstructed tracks if not a fast MC analysis */
+    if (!fEventCuts->IsMConlyTruth()) {
+      if (fDoProcessCorrelations && fProcessCorrelations.GetUseSimulation()) {
+        /* process rec tracks with potential simulation */
+        for (Int_t nsim = 0; nsim < fProcessCorrelations.GetSimEventsPerEvent(); nsim++) {
+          /* skip sensible process if additional simulation event is ongoing */
+          ProcessTracks(nsim != 0);
+        }
+      }
+      else {
+        ProcessTracks(kFALSE);
+      }
     }
 
-    /* complete true to rec tracks relation if MC event */
-    if (fEventCuts->IsMC()) {
+    /* complete true to rec tracks relation if MC event and not fast MC */
+    if (fEventCuts->IsMC() && !fEventCuts->IsMConlyTruth()) {
       BuildTrueRecAccRelation();
     }
 
@@ -1874,24 +1888,27 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         }
 
         nNoOfTrueAccepted++;
-        if (fTrueToRec->At(iTrack) != NULL) {
-          /* true was reconstructed, let's check whether it was accepted */
-          if ((fMCRecFlags[((AliVTrack *) fTrueToRec->At(iTrack))->GetID()] & kAccepted) == kAccepted) {
-            /* the reconstructed was accepted so, what? */
-            nNoOfTrueReconstructedAndAccepted++;
-            if ((fMCRecFlags[((AliVTrack *) fTrueToRec->At(iTrack))->GetID()] & kSamePositiveLabel) == kSamePositiveLabel) {
-              nNoOfTrueMultiReconstructedAndAccepted++;
-              fhPtTrueMultiRec->Fill(pt);
+        if (!fEventCuts->IsMConlyTruth()) {
+          /* only if not fast MC */
+          if (fTrueToRec->At(iTrack) != NULL) {
+            /* true was reconstructed, let's check whether it was accepted */
+            if ((fMCRecFlags[((AliVTrack *) fTrueToRec->At(iTrack))->GetID()] & kAccepted) == kAccepted) {
+              /* the reconstructed was accepted so, what? */
+              nNoOfTrueReconstructedAndAccepted++;
+              if ((fMCRecFlags[((AliVTrack *) fTrueToRec->At(iTrack))->GetID()] & kSamePositiveLabel) == kSamePositiveLabel) {
+                nNoOfTrueMultiReconstructedAndAccepted++;
+                fhPtTrueMultiRec->Fill(pt);
+              }
+            }
+            else {
+              /* the reconstructed was not accepted */
+              fhTrueRecNotAccepted->Fill(filldata);
             }
           }
           else {
-            /* the reconstructed was not accepted */
-            fhTrueRecNotAccepted->Fill(filldata);
+            /* the track was not reconstructed */
+            fhTrueNotReconstructed->Fill(filldata);
           }
-        }
-        else {
-          /* the track was not reconstructed */
-          fhTrueNotReconstructed->Fill(filldata);
         }
 
         fhTruePt->Fill(pt);
@@ -1943,8 +1960,11 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
     fProcessTrueCorrelations.ProcessEventData();
   }
 
-  if (nNoOfTrueMultiReconstructedAndAccepted != 0)
-    fhTrueMultiRec->Fill(nNoOfTrueMultiReconstructedAndAccepted+0.5);
+  if (!fEventCuts->IsMConlyTruth()) {
+    /* only if not fast MC */
+    if (nNoOfTrueMultiReconstructedAndAccepted != 0)
+      fhTrueMultiRec->Fill(nNoOfTrueMultiReconstructedAndAccepted+0.5);
+  }
 
   /* track the event multiplicity */
   Double_t fillmdata[2] = {Double_t(nNoOfPrimaries+0.5),Double_t(nNoOfTrueAccepted+0.5)};
@@ -1962,14 +1982,18 @@ void AliAnalysisTaskCorrelationsStudies::FinishTaskOutput() {
   AliInfo("Starting!");
 
   if (fDoProcessPairAnalysis) {
-    fProcessPairAnalysis.FinalizeProcess();
+    if (!fEventCuts->IsMConlyTruth()) {
+      fProcessPairAnalysis.FinalizeProcess();
+    }
     if (fEventCuts->IsMC()) {
       fProcessTruePairAnalysis.FinalizeProcess();
     }
   }
 
   if (fDoProcessCorrelations) {
-    fProcessCorrelations.FinalizeProcess();
+    if (!fEventCuts->IsMConlyTruth()) {
+      fProcessCorrelations.FinalizeProcess();
+    }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
         fProcessMCRecCorrelationsWithOptions.FinalizeProcess();
@@ -1979,7 +2003,9 @@ void AliAnalysisTaskCorrelationsStudies::FinishTaskOutput() {
   }
 
   if (fDoProcessCorrelations) {
-    PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    if (!fEventCuts->IsMConlyTruth()) {
+      PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
         PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
