@@ -278,6 +278,9 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   case 3:
     DefineOutput(3,AliRDHFCutsDstoKKpi::Class());  //Cut object for Ds
     break;
+  case 4:
+    DefineOutput(3,AliRDHFCutsD0toKpi::Class());  //Cut object for D0
+    break;
   }
 
   fDetTPCConfName[0] = "TPC";
@@ -361,13 +364,20 @@ void AliAnalysisTaskSEHFvn::LocalInit()
       PostData(3,copycut);
     }
     break;
-  case 3:
+    case 3:
     {
       AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fRDCuts)));
       // Post the data
       PostData(3,copycut);
     }
     break;
+    case 4:
+    {
+      AliRDHFCutsD0toKpi* copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+      break;
   default:
     return;
   }
@@ -500,9 +510,9 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(hq2TPCFullEtaVsPosEta);
     
     //correlation between q2TPC and q2VZEROC (all events, events with candidates, events with candidates in mass range)
-    TH2F* hq2TPCVsq2VZEROC = new TH2F("hq2TPCVsq2VZEROC","q_{2}^{TPC} vs. q_{2}^{V0C};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
-    TH2F* hq2TPCVsq2VZEROCCand = new TH2F("hq2TPCVsq2VZEROCCand","q_{2}^{TPC} vs. q_{2}^{V0C};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
-    TH2F* hq2TPCVsq2VZEROCCandInMass = new TH2F("hq2TPCVsq2VZEROCCandInMass","q_{2}^{TPC} vs. q_{2}^{V0C};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROC = new TH2F("hq2TPCVsq2VZEROC","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROCCand = new TH2F("hq2TPCVsq2VZEROCCand","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROCCandInMass = new TH2F("hq2TPCVsq2VZEROCCandInMass","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     fOutput->Add(hq2TPCVsq2VZEROC);
     fOutput->Add(hq2TPCVsq2VZEROCCand);
     fOutput->Add(hq2TPCVsq2VZEROCCandInMass);
@@ -716,6 +726,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 	absPdgMom=431;
 	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       }
+      if(fDecChannel==4){
+        absPdgMom=421;
+        arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+      }
     }
   } else if(aod){
     if(fDecChannel==0){
@@ -733,6 +747,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     if(fDecChannel==3){
       absPdgMom=431;
       arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+    }
+    if(fDecChannel==4){
+      absPdgMom=421;
+      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Dstar");
     }
   }
 
@@ -1083,26 +1101,42 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   std::vector<Int_t> isSelectedCand;
 
   Int_t nSelCandInMassRange=0;
+  std::vector<Double_t> dzeropt; //vector of D0 pt necessary if kD0toKpiFromDstar is used
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
-    d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
-    Bool_t isSelBit=kTRUE;
-    if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
-    if(fDecChannel==1) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
-    if(fDecChannel==2) isSelBit=kTRUE;
-    if(fDecChannel==3) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
-    if(!isSelBit)continue;
-
-    if(fDecChannel==0 || fDecChannel==3) {
-      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+    if(fDecChannel!=4) {
+      d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
+      Bool_t isSelBit=kTRUE;
+      if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
+      if(fDecChannel==1) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+      if(fDecChannel==2) isSelBit=kTRUE;
+      if(fDecChannel==3) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
+      if(!isSelBit)continue;
+      
+      if(fDecChannel==0 || fDecChannel==3) {
+        if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+      }
+      else if(fDecChannel == 1) {
+        if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+      }
+      else if(fDecChannel == 2) {
+        if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
+      }
     }
-    else if(fDecChannel == 1) {
-      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+    else {
+      //Get the D* candidate, see if it is in the mass range and if it is the case assign the D0 daughter to d
+      AliAODRecoDecayHF* dstar=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
+      if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)dstar),kTRUE))continue;
+//      Double_t invMassDstar = ((AliAODRecoCascadeHF*)dstar)->DeltaInvMass();
+//      Double_t deltamassPDG=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
+//      Double_t sigma = 0.0008;
+//      if(invMassDstar<deltamassPDG-3*sigma || invMassDstar>deltamassPDG+3*sigma) continue;
+      d = ((AliAODRecoCascadeHF*)dstar)->Get2Prong();
+      std::vector<Double_t>::iterator it = find(dzeropt.begin(),dzeropt.end(),d->Pt());
+      if(it!=dzeropt.end()) continue; //if D0 candidate already used, continue (the same D0 candidate can build many D* candidates)
+      dzeropt.push_back(d->Pt());
     }
-    else if(fDecChannel == 2) {
-      if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
-    }
-
+    
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
       fhEventsInfo->Fill(15);
@@ -1160,7 +1194,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     //fill the histograms with the appropriate method
     if(fFlowMethod!=kEvShape) {
       if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,Q1,Q2);
-      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,Q1,Q2);
+      else if(fDecChannel==1 || fDecChannel==4)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,Q1,Q2);
       else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,Q1,Q2);
       else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,Q1,Q2);
     }
@@ -1205,7 +1239,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       else if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fRemoveDauFromq2>0 && ismassrange) { //remove daughter tracks from q2
         Int_t nDau=3;
-        if(fDecChannel==1 || (fDecChannel==2 && !fRemoverSoftPionFromq2)) {nDau=2;}
+        if(fDecChannel==1 || fDecChannel==4 || (fDecChannel==2 && !fRemoverSoftPionFromq2)) {nDau=2;}
         AliAODTrack *dautrack[3] = {0x0,0x0,0x0};
         Double_t daueta = 0.;
         Double_t dauphi = 0.;
@@ -1235,7 +1269,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
               dauqx=TMath::Cos(2*dauphi);
               dauqy=TMath::Sin(2*dauphi);
               std::vector<Int_t>::iterator it = find(labrejtracks.begin(),labrejtracks.end(),lab);
-              if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && it!=labrejtracks.end()) {//if is in right eta and pt region w.r.t. q2, and it was not removed by the random downsamping, remove
+              if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && it==labrejtracks.end()) {//if is in right eta and pt region w.r.t. q2, and it was not removed by the random downsamping, remove
                 qVecRemDauFullTPC[0] -= dauqx;
                 qVecRemDauFullTPC[1] -= dauqy;
                 multQvecRemDauTPC[0]--;
@@ -1303,7 +1337,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
               dauphi = dautrack[iDauTrk]->Phi();
               daupt=dautrack[iDauTrk]->Pt();
               std::vector<Int_t>::iterator it = find(labrejtracks.begin(),labrejtracks.end(),lab);
-              if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && it!=labrejtracks.end()) {
+              if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && it==labrejtracks.end()) {
                 dauqFullTPC[0] += TMath::Cos(2*dauphi);
                 dauqFullTPC[1] += TMath::Sin(2*dauphi);
                 nDauRemoved[0]++;
@@ -1530,7 +1564,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
         Double_t sparsearray[8] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
       }
-      else if(fDecChannel==1) {
+      else if(fDecChannel==1 || fDecChannel==4) {
         if(fSeparateD0D0bar) {
           if(isSelectedCand[iSelCand]==1 || isSelectedCand[iSelCand]==3) {
             Double_t sparsearray1[9] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)isSelectedCand[iSelCand]};
@@ -1579,6 +1613,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   isSelectedCand.clear();
   phiCand.clear();
   labrejtracks.clear();
+  dzeropt.clear();
   
   delete vHF;
   PostData(1,fhEventsInfo);
@@ -1615,13 +1650,13 @@ void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
 
   TString massaxisname;
   if(fDecChannel==0) massaxisname = "M_{K#pi#pi} (GeV/c^{2})";
-  else if(fDecChannel==1) massaxisname = "M_{K#pi} (GeV/c^{2})";
+  else if(fDecChannel==1 || fDecChannel==4) massaxisname = "M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==2) massaxisname = "M_{K#pi#pi}-M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==3) massaxisname = "M_{KK#pi} (GeV/c^{2})";
 
   Int_t naxes=8;
 
-  if(fSeparateD0D0bar && fDecChannel==1) {
+  if(fSeparateD0D0bar && (fDecChannel==1 || fDecChannel==4)) {
     Int_t npartantipartbins=3;
     Double_t minpartantipart=0.5;
     Double_t maxpartantipart=3.5;
@@ -1674,7 +1709,7 @@ void AliAnalysisTaskSEHFvn::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& ma
     Int_t pdgdaughters[3] = {211,321,211};
     masses[0]=d->InvMass(3,(UInt_t*)pdgdaughters);
   }
-  if(fDecChannel==1){
+  if(fDecChannel==1 || fDecChannel==4){
     //D0 (Kpi)  -- Chiara
     const Int_t ndght=2;
     nmasses=2;
@@ -2452,7 +2487,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, A
 
   // reduce Q vector for D+ and D0
 
-  if(fDecChannel==1){
+  if(fDecChannel==1 || fDecChannel==4){
     //D0 -- Chiara
     AliAODTrack *track0 = (AliAODTrack*)d->GetDaughter(0);
     AliAODTrack *track1 = (AliAODTrack*)d->GetDaughter(1);
@@ -2603,7 +2638,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayH
 
     Int_t nProngs = 0;
     if(fDecChannel==0) nProngs = 3;      //D+
-    else if(fDecChannel==1) nProngs = 2; //D0
+    else if(fDecChannel==1 || fDecChannel==4) nProngs = 2; //D0
     else if(fDecChannel==2) nProngs = 3; //D*
     else if(fDecChannel==3) nProngs = 3; //Ds
 
@@ -2765,7 +2800,7 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
   multQvecTPC[1]=0; //pos TPC
   multQvecTPC[2]=0; //neg TPC
   Int_t nDau=3;
-  if(fDecChannel==1) {nDau=2;}
+  if(fDecChannel==1 || fDecChannel==4) {nDau=2;}
   Int_t RandTracks[3]={-1,-1,-1};
   if(fRemoveNdauRandomTracks) {
     if(nTracks>=nDau) {
@@ -2829,7 +2864,7 @@ Bool_t AliAnalysisTaskSEHFvn::isInMassRange(Double_t massCand, Double_t pt) {
     Double_t sigma = 0.01+0.0005*pt; //GeV
     if(massCand>mass-3*sigma && massCand<mass+3*sigma) {return kTRUE;}
   }
-  else if(fDecChannel==1) {
+  else if(fDecChannel==1 || fDecChannel==4) {
     Double_t mass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
     Double_t sigma = 0.01+0.0005*pt; //GeV
     if(massCand>mass-3*sigma && massCand<mass+3*sigma) {return kTRUE;}
