@@ -41,12 +41,14 @@
 #include "AliHLTTRDTrackerComponent.h"
 #include "AliHLTTRDTrackletWord.h"
 #include "AliHLTTRDDefinitions.h"
+#include "AliHLTTPCDefinitions.h"
 #include "AliHLTTRDTrackPoint.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTTrackMCLabel.h"
 #include "AliHLTTRDTrackData.h"
+#include "AliGeomManager.h"
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -96,7 +98,8 @@ const char* AliHLTTRDTrackerComponent::GetComponentID() {
 void AliHLTTRDTrackerComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list) {
   list.clear();
   list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginITS );
-  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
+  //list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::TracksOuterDataType()|kAliHLTDataOriginTPC);
   list.push_back( kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC );
   list.push_back( AliHLTTRDDefinitions::fgkTRDTrackletDataType );
 }
@@ -180,6 +183,10 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv ) {
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");
 
+  if(AliGeomManager::GetGeometry()==NULL) {
+    AliGeomManager::LoadGeometry();
+  }
+
   fTrackList = new TList();
   if (!fTrackList) {
     return -ENOMEM;
@@ -260,9 +267,6 @@ int AliHLTTRDTrackerComponent::DoEvent
 
   for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 
-    if (ndx > 4)
-      HLTWarning("unexpected number of blocks (%i) for this component, expected 4", ndx);
-
     const AliHLTComponentBlockData* iter = blocks+ndx;
 
     // Look for (and store if present) MC information
@@ -302,7 +306,8 @@ int AliHLTTRDTrackerComponent::DoEvent
 
     // Read TPC tracks
 
-    if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){
+    //if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){
+    if( iter->fDataType == ( AliHLTTPCDefinitions::TracksOuterDataType()|kAliHLTDataOriginTPC ) ){
       AliHLTTracksData* dataPtr = ( AliHLTTracksData* ) iter->fPtr;
       int nTracks = dataPtr->fCount;
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
@@ -365,9 +370,6 @@ int AliHLTTRDTrackerComponent::DoEvent
   int nTracks = fTracker->NTracks();
   AliHLTTRDTracker::AliHLTTRDSpacePointInternal *spacePoints = fTracker->SpacePoints();
 
-  if (nTracks >= 2000) {
-    HLTWarning("Too many tracks in AliHLTTRDTracker (%i), skipping the last %i tracks", nTracks, nTracks-2000);
-  }
   for (int iTrack=0; iTrack<nTracks; ++iTrack) {
     fTrackList->AddLast(&trackArray[iTrack]);
   }
@@ -390,6 +392,7 @@ int AliHLTTRDTrackerComponent::DoEvent
 
     for (int iTrk=0; iTrk<nTracks; ++iTrk) {
       AliHLTTRDTrack &t = trackArray[iTrk];
+      if (t.GetNtracklets() == 0) continue;
       AliHLTTRDTrackDataRecord &currOutTrack = outTracks->fTracks[outTracks->fCount];
       t.ConvertTo(currOutTrack);
       outTracks->fCount++;
