@@ -697,6 +697,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
 
   // set common binning in pT for mesons and photons
+  Float_t binWidthPt          = 0.1;
   Int_t nBinsPt               = 250;
   Float_t minPt               = 0;
   Float_t maxPt               = 25;
@@ -733,6 +734,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
+    binWidthPt                = 0.05;
     nBinsPt                   = 261;
     minPt                     = 0;
     maxPt                     = 100;
@@ -771,6 +773,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV   ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV   ){
+    binWidthPt                = 0.05;
     nBinsPt                   = 201;
     minPt                     = 0;
     maxPt                     = 60;
@@ -1555,44 +1558,44 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       }
 
       if(fDoMesonAnalysis){
-        fHistoMCPi0Pt[iCut]           = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCPi0Pt[iCut]           = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCPi0Pt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCPi0Pt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0Pt[iCut]);
-        fHistoMCPi0WOWeightPt[iCut]   = new TH1F("MC_Pi0_WOWeights_Pt", "MC_Pi0_WOWeights_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCPi0WOWeightPt[iCut]   = new TH1F("MC_Pi0_WOWeights_Pt", "MC_Pi0_WOWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCPi0WOWeightPt[iCut]->Sumw2();
         fHistoMCPi0WOWeightPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fMCList[iCut]->Add(fHistoMCPi0WOWeightPt[iCut]);
 
-        fHistoMCEtaPt[iCut]           = new TH1F("MC_Eta_Pt", "MC_Eta_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCEtaPt[iCut]           = new TH1F("MC_Eta_Pt", "MC_Eta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCEtaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaPt[iCut]);
-        fHistoMCEtaWOWeightPt[iCut]   = new TH1F("MC_Eta_WOWeights_Pt", "MC_Eta_WOWeights_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCEtaWOWeightPt[iCut]   = new TH1F("MC_Eta_WOWeights_Pt", "MC_Eta_WOWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCEtaWOWeightPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCEtaWOWeightPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaWOWeightPt[iCut]);
-        fHistoMCPi0InAccPt[iCut]      = new TH1F("MC_Pi0InAcc_Pt", "MC_Pi0InAcc_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCPi0InAccPt[iCut]      = new TH1F("MC_Pi0InAcc_Pt", "MC_Pi0InAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCPi0InAccPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCPi0InAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
-        fHistoMCEtaInAccPt[iCut]      = new TH1F("MC_EtaInAcc_Pt", "MC_EtaInAcc_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCEtaInAccPt[iCut]      = new TH1F("MC_EtaInAcc_Pt", "MC_EtaInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCEtaInAccPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCEtaInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaInAccPt[iCut]);
         if (fIsMC > 1){
           fHistoMCPi0WOWeightPt[iCut]->Sumw2();
           fHistoMCEtaWOWeightPt[iCut]->Sumw2();
-          fHistoMCPi0WOEvtWeightPt[iCut] = new TH1F("MC_Pi0_WOEventWeights_Pt", "MC_Pi0_WOEventWeights_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+          fHistoMCPi0WOEvtWeightPt[iCut] = new TH1F("MC_Pi0_WOEventWeights_Pt", "MC_Pi0_WOEventWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fHistoMCPi0WOEvtWeightPt[iCut]->SetXTitle("p_{T} (GeV/c)");
           fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightPt[iCut]);
-          fHistoMCEtaWOEvtWeightPt[iCut] = new TH1F("MC_Eta_WOEventWeights_Pt", "MC_Eta_WOEventWeights_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+          fHistoMCEtaWOEvtWeightPt[iCut] = new TH1F("MC_Eta_WOEventWeights_Pt", "MC_Eta_WOEventWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fHistoMCEtaWOEvtWeightPt[iCut]->SetXTitle("p_{T} (GeV/c)");
           fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightPt[iCut]);
-          fHistoMCPi0WOEvtWeightInAccPt[iCut] = new TH1F("MC_Pi0WOEvtWeightInAcc_Pt", "MC_Pi0WOEvtWeightInAcc_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+          fHistoMCPi0WOEvtWeightInAccPt[iCut] = new TH1F("MC_Pi0WOEvtWeightInAcc_Pt", "MC_Pi0WOEvtWeightInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fHistoMCPi0WOEvtWeightInAccPt[iCut]->SetXTitle("p_{T} (GeV/c)");
           fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightInAccPt[iCut]);
-          fHistoMCEtaWOEvtWeightInAccPt[iCut] = new TH1F("MC_EtaWOEvtWeightInAcc_Pt", "MC_EtaWOEvtWeightInAcc_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+          fHistoMCEtaWOEvtWeightInAccPt[iCut] = new TH1F("MC_EtaWOEvtWeightInAcc_Pt", "MC_EtaWOEvtWeightInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fHistoMCEtaWOEvtWeightInAccPt[iCut]->SetXTitle("p_{T} (GeV/c)");
           fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightInAccPt[iCut]);
           if (fDoMesonQA > 0  && fDoMesonQA < 3 && fIsMC == 2){
@@ -1609,7 +1612,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           }
         }
 
-        fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt, 7, -0.5, 6.5);
+        fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 7, -0.5, 6.5);
         fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
         fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
         fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
@@ -1627,15 +1630,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
         fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
         fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
-        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt, 16, -0.5, 15.5);
+        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
         fHistoMCSecPi0PtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCSecPi0PtvsSource[iCut]->SetYTitle("source");
         fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
-        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt,  16, -0.5, 15.5);
+        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt,  16, -0.5, 15.5);
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetYTitle("source");
         fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
-        fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/0.1), minPt, maxPt);
+        fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
         if (fIsMC == 2) {
