@@ -174,8 +174,21 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) * ( 1 + [3]/(TMath::TwoPi() * [5]) * exp(-(x-[4]) * (x-[4])/(2 * [5]*[5] )) *( 1 + TMath::Erf([6]*((x-[4])/[5]))) )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.997,6.67,-0.0567,-0.728,10.8,1.53,-2.18);
+    f1tof->FixParameter(0, 9.97378e-01);
+    f1tof->FixParameter(1, 6.66818e+00);
+    f1tof->FixParameter(2,-5.65437e-02);
+    f1tof->FixParameter(3,-7.38995e-01);
+    f1tof->FixParameter(4, 9.72815e+00);
+    f1tof->FixParameter(5, 1.17920e+00);
+    f1tof->FixParameter(6, 5.55735e-02);
+
     task->SetTOFCutEfficiencyFunction(f1tof);
+  }
+  if(!isMC && Trgcorrection){
+    TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+    f1trg->SetNpx(1000);
+    f1trg->SetParameters(0.448,8.83,0.806);//from MB //acc x trigger efficiency 6-50GeV
+    task->SetTriggerEfficiency(f1trg);
   }
 
   if(isMC){
@@ -218,7 +231,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_K0S->Add(f1weightK0S[icen]);
     }
 
-    task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
+    //task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
 
      //for L0
     const Int_t Ncen_L0 = 7;
