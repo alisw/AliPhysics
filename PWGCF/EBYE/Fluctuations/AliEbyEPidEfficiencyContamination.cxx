@@ -21,7 +21,7 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/02/24)                       //
+//                        (Last Modified 2018/03/14)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -51,6 +51,8 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"
@@ -292,7 +294,9 @@ void AliEbyEPidEfficiencyContamination::UserCreateOutputObjects(){
     AliError("No PID response task found !!");
   }
   
-  fEventCuts = new AliEventCuts();
+  if(fRun == "LHC15o"){
+    fEventCuts = new AliEventCuts();
+  }
   
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
@@ -679,54 +683,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     LocalPost();
     return;
   }
-  
-  if(!fEventCuts->AcceptEvent(fVevent)) {
-    LocalPost();
-    return;
-  }
-  
-  const AliVVertex *vertex = fVevent->GetPrimaryVertex();
-  if(!vertex) { LocalPost(); return; }
 
-  Bool_t vtest = kFALSE;
-  Double32_t fCov[6];
-  vertex->GetCovarianceMatrix(fCov);
-  if(vertex->GetNContributors() > 0) {
-    if(fCov[5] != 0) {
-      vtest = kTRUE;
-    }
-  }
-  if(!vtest) { LocalPost(); return; }
-  
-  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }
-  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }
-  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
-
-  if( fRun == "LHC10h" || fRun == "LHC11h" ){
-    AliCentrality *centrality = fVevent->GetCentrality();
-    if(!centrality) return;
-    if (centrality->GetQuality() != 0) { LocalPost(); return; }
-    
-    fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-  }
-  
-  else if (fRun == "LHC15o" ){
-    AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
-    
-    if(!fMultSelection ){
-      cout << "AliMultSelection object not found!" << endl;
-      return;
-    }
-    else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
-
-  }
- 
-  if( fCentrality < 0 || fCentrality >=80 ) return;
-
-  fHistCent->Fill(fCentrality);
-
-  fEventCounter->Fill(2);
-  
   //---------- Initiate MC
   if (fIsMC){
     fMCEvent = NULL;
@@ -757,6 +714,86 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       }
     }
   }//if---fIsMC-----
+  
+  //Pile-up cut for Run2------
+  if(fRun == "LHC15o"){
+    if(!fEventCuts->AcceptEvent(fVevent)) {
+      LocalPost();
+      return;
+    }
+  }
+  
+  const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+  if(!vertex) { LocalPost(); return; }
+
+  Bool_t vtest = kFALSE;
+  Double32_t fCov[6];
+  vertex->GetCovarianceMatrix(fCov);
+  if(vertex->GetNContributors() > 0) {
+    if(fCov[5] != 0) {
+      vtest = kTRUE;
+    }
+  }
+  if(!vtest) { LocalPost(); return; }
+  
+  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
+
+  //-----------Centrality task---------------------------------
+  if( fRun == "LHC10h" || fRun == "LHC11h" ){
+    AliCentrality *centrality = fVevent->GetCentrality();
+    if(!centrality) return;
+    if (centrality->GetQuality() != 0) { LocalPost(); return; }
+    
+    fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
+  else if (fRun == "LHC15o" ){
+    AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
+    if(!fMultSelection ){
+      cout << "AliMultSelection object not found!" << endl;
+      return;
+    }
+    else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
+
+  }
+  else if( fRun == "LHC10hAMPT"){
+    //----------centrality range from imp. par. 
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    if(!genHeader) return;
+    
+    Double_t impactPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
+    
+    if( impactPar >= 0. && impactPar < 3.51 ) fCentrality = 1.; //0-5
+    if( impactPar >= 3.51 && impactPar < 4.96 ) fCentrality = 6.; //5-10
+    if( impactPar >= 4.96 && impactPar < 6.08 ) fCentrality = 11.;//10-15
+    if( impactPar >= 6.08 && impactPar < 7.01 ) fCentrality = 16.;//15-20
+    if( impactPar >= 7.01 && impactPar < 7.84 ) fCentrality = 21.;//20-25
+    if( impactPar >= 7.84 && impactPar < 8.59 ) fCentrality = 26.;//25-30
+    if( impactPar >= 8.59 && impactPar < 9.27 ) fCentrality = 31.;//30-35
+    if( impactPar >= 9.27 && impactPar < 9.92 ) fCentrality = 36.;//35-40
+    if( impactPar >= 9.92 && impactPar < 10.5 ) fCentrality = 41.;//40-45
+    if( impactPar >= 10.5 && impactPar < 11.1 ) fCentrality = 46.;//45-50
+    if( impactPar >= 11.1 && impactPar < 11.6 ) fCentrality = 51.;//50-55
+    if( impactPar >= 11.6 && impactPar < 12.1 ) fCentrality = 56.;//55-60
+    if( impactPar >= 12.1 && impactPar < 12.6 ) fCentrality = 61.;//60-65
+    if( impactPar >= 12.6 && impactPar < 13.1 ) fCentrality = 66.;//65-70
+    if( impactPar >= 13.1 && impactPar < 13.6 ) fCentrality = 71.;//70-75
+    if( impactPar >= 13.6 && impactPar < 14.0 ) fCentrality = 76.;//75-80
+  
+  }
+  else{
+    cout <<"Wrong run period for centrality" << endl;
+    LocalPost();
+    return;
+  }
+  
+  if( fCentrality < 0 || fCentrality >=80 ) return;
+
+  fHistCent->Fill(fCentrality);
+
+  fEventCounter->Fill(2);
+  
   
   //----------
   

@@ -19,12 +19,14 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/02/24)                       //
+//                        (Last Modified 2018/03/14)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
 //=========================================================================//
 TString fileNameBase="AnalysisResults.root";
+
+//Caution-> runName: LHC10h, LHC11h, LHC15o and LHC10hAMPT (only supported)
 
 AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
 						      TString runName = "LHC10h",
