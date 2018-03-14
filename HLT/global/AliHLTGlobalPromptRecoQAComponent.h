@@ -191,6 +191,7 @@ protected:
   double femcalSTU;
   
   double fnTRDTracklets;
+  double fnTRDTracks;
 
   double fcompressionRatio;
   double fcompressionRatioFull;
