@@ -172,7 +172,7 @@ AliXiStarPbPbEventCollection::AliXiStarPbPbEventCollection(short a):
   for(Int_t ii = 0; ii < fFIFO; ii++){   //Initialize to NULL
     (fEvtStr + ii)->fTracks = NULL;
     (fEvtStr + ii)->fNTracks = 0;
-    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[20000];
+    (fEvtStr + ii)->fTracks = new AliXiStarPbPbTrackStruct[300];
   }
   
 }
