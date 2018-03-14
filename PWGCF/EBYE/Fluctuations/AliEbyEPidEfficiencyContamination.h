@@ -20,7 +20,7 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/02/24)                       //
+//                        (Last Modified 2018/03/14)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -212,7 +212,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 4);
+  ClassDef(AliEbyEPidEfficiencyContamination, 5);
 };
 
 #endif
