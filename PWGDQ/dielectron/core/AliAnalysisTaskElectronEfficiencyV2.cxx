@@ -121,6 +121,21 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   DefineInput (0, TChain::Class());
   DefineOutput (1, TList::Class());
 
+
+
+}
+
+
+// ############################################################################
+// ############################################################################
+void AliAnalysisTaskElectronEfficiencyV2::Terminate(Option_t* option){
+  // fHistEventStat->SetAxisRange(0., fHistEventStat->GetMaximum() * 1.1, "Y");
+}
+
+
+// ############################################################################
+// ############################################################################
+void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kPIn, kTRUE);
@@ -144,19 +159,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
 
-}
 
-
-// ############################################################################
-// ############################################################################
-void AliAnalysisTaskElectronEfficiencyV2::Terminate(Option_t* option){
-  // fHistEventStat->SetAxisRange(0., fHistEventStat->GetMaximum() * 1.1, "Y");
-}
-
-
-// ############################################################################
-// ############################################################################
-void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   std::cout << "Starting UserCreateOutputObjects()" << std::endl;
 
   TObjArray arr = *(fGeneratorName.Tokenize(";"));
