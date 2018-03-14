@@ -690,7 +690,7 @@ void AliJJtAnalysis::Terminate() {
 
 }
 
-particleType  AliJJtAnalysis::GetParticleType(char *inchar){
+particleType  AliJJtAnalysis::GetParticleType(const char *inchar){
 	// part type
 	for(int i=0;i<kNumberOfParticleTypes;i++) {
 		if(strcmp(inchar,kParticleTypeStrName[i])==0) return (particleType)i;
