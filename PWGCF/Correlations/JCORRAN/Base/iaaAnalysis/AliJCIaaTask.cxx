@@ -12,14 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
-// author: Marton Vargyas, Jussi Viinikainen
+// author: Jussi Viinikainen, D. J.~Kim
 // ALICE Group University of Jyvaskyla 
 // Finland 
-// Fill the analysis containers for ESD or AOD
-// Adapted for AliAnalysisTaskSE and AOD objects  
 //////////////////////////////////////////////////////////////////////////////
 
 #include <AliAnalysisTaskSE.h>
@@ -27,131 +24,125 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
-#include "AliJDiHadronIaaTask.h"
-#include "../AliJEventHeader.h"
-#include "../AliJRunHeader.h"
-#include "../AliJCORRANTask.h"
+#include "AliJCIaaTask.h"
+#include "../AliJCatalystTask.h"
 #include "../AliJCard.h"
 
 //______________________________________________________________________________
-AliJDiHadronIaaTask::AliJDiHadronIaaTask() :
-	AliAnalysisTaskSE("AliJDiHadronIaaTaskTask"),
-	fFilterTask(NULL),
-	fFilterTaskName(""),
-	fIaaAnalysis(0x0),
+AliJCIaaTask::AliJCIaaTask() :   
+	AliAnalysisTaskSE("AliJCIaaTask"),
+	fJCatalystTask(NULL),
+	fJCatalystTaskName("JCatalystTask"),
+	fIaaAna(0x0),
 	fOutput(NULL)
 {
 	DefineOutput (1, TDirectory::Class());
 }
 
 //______________________________________________________________________________
-AliJDiHadronIaaTask::AliJDiHadronIaaTask(const char *name, TString inputformat):
+AliJCIaaTask::AliJCIaaTask(const char *name, TString inputformat):
 	AliAnalysisTaskSE(name),
-	fFilterTask(NULL),
-	fFilterTaskName(""),
-	fIaaAnalysis(0x0),
+	fJCatalystTask(NULL),
+	fJCatalystTaskName("JCatalystTask"),
+	fIaaAna(0x0),
 	fOutput(NULL)
 {
 	// Constructor
-	AliInfo("---- AliJDiHadronIaaTask Constructor ----");
+	AliInfo("---- AliJCIaaTask Constructor ----");
 
 	JUNUSED(inputformat);
 	DefineOutput (1, TDirectory::Class());
 }
 
 //____________________________________________________________________________
-AliJDiHadronIaaTask::AliJDiHadronIaaTask(const AliJDiHadronIaaTask& ap) :
+AliJCIaaTask::AliJCIaaTask(const AliJCIaaTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()),
-	fFilterTask(ap.fFilterTask),
-	fFilterTaskName(ap.fFilterTaskName),
-	fIaaAnalysis( ap.fIaaAnalysis ),
+	fJCatalystTask(ap.fJCatalystTask),
+	fJCatalystTaskName(ap.fJCatalystTaskName),
+	fIaaAna( ap.fIaaAna ),
 	fOutput( ap.fOutput )
 { 
 
-	AliInfo("----DEBUG AliJDiHadronIaaTask COPY ----");
+	AliInfo("----DEBUG AliJCIaaTask COPY ----");
 
 }
 
 //_____________________________________________________________________________
-AliJDiHadronIaaTask& AliJDiHadronIaaTask::operator = (const AliJDiHadronIaaTask& ap)
+AliJCIaaTask& AliJCIaaTask::operator = (const AliJCIaaTask& ap)
 {
 	// assignment operator
 
-	AliInfo("----DEBUG AliJDiHadronIaaTask operator= ----");
-	this->~AliJDiHadronIaaTask();
-	new(this) AliJDiHadronIaaTask(ap);
+	AliInfo("----DEBUG AliJCIaaTask operator= ----");
+	this->~AliJCIaaTask();
+	new(this) AliJCIaaTask(ap);
 	return *this;
 }
 
 //______________________________________________________________________________
-AliJDiHadronIaaTask::~AliJDiHadronIaaTask()
+AliJCIaaTask::~AliJCIaaTask()
 {
-	// destructor
+	// destructor 
 
-	delete fIaaAnalysis;
+	delete fIaaAna;
 
 }
 
 //________________________________________________________________________
 
-void AliJDiHadronIaaTask::UserCreateOutputObjects()
+void AliJCIaaTask::UserCreateOutputObjects()
 {  
 	//=== create the jcorran outputs objects
-	if(fDebug > 1) printf("AliJDiHadronIaaTask::UserCreateOutPutData() \n");
+	if(fDebug > 1) printf("AliJCIaaTask::UserCreateOutPutData() \n");
 
 	//=== Get AnalysisManager
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
-	fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
+	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 
 	OpenFile(1);
 	fOutput = gDirectory;
 	fOutput->cd();
 
 	// Order should be kept for correct functionality
-	fIaaAnalysis->SetRunHeader(fFilterTask->GetFilter()->GetAliJRunHeader()); // caution RunHeader must be taken from the filter since it is set in the task macro
-	fIaaAnalysis->UserCreateOutputObjects();
-	fIaaAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
-	fIaaAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
-	fIaaAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
-	fIaaAnalysis->GetCard()->WriteCard(fOutput);
+	fIaaAna->UserCreateOutputObjects();
+	fIaaAna->SetTrackList(fJCatalystTask->GetInputList());
+	fIaaAna->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
 
-	cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
-
 }
 
 //______________________________________________________________________________
-void AliJDiHadronIaaTask::UserExec(Option_t* /*option*/)
+void AliJCIaaTask::UserExec(Option_t* /*option*/) 
 {
 
 	// Processing of one event
-	if(fDebug > 5) cout << "------- AliJDiHadronIaaTask Exec-------"<<endl;
+	if(fDebug > 5) std::cout << "------- AliJCIaaTask Exec-------"<<endl;
+	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
+	// Event selection is done in fJCatalystTask
+	// need to put cent/vtx/run#
+	fIaaAna->SetRunNumber(fJCatalystTask->GetRunNumber());
+	fIaaAna->SetCentrality(fJCatalystTask->GetCentrality());
+	fIaaAna->SetZVertex(fJCatalystTask->GetZVertex());
+	fIaaAna->UserExec();
+	PostData(1, fOutput );
 
-	if( fFilterTask->GetFilterEntry() != fEntry ) return;
 
-	if( fFilterTask->GetFilter()->GetEventSuccess() ){
-		fIaaAnalysis->UserExec();
-		PostData(1, fOutput );
-	}
-
-
-	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
+	if(fDebug > 5) std::cout << "\t------- End UserExec "<<endl;
 }
 
 //______________________________________________________________________________
-void AliJDiHadronIaaTask::Init()
+void AliJCIaaTask::Init()
 {
 	// Intialisation of parameters
-	AliInfo("Doing initialization") ;
-	fIaaAnalysis->Init();
+	AliInfo("Doing initialization") ; 
+	fIaaAna->Init();
 }
 
 //______________________________________________________________________________
-void AliJDiHadronIaaTask::Terminate(Option_t *)
+void AliJCIaaTask::Terminate(Option_t *)
 {
 
-	cout<<"AliJDiHadronIaaTask Analysis DONE !!"<<endl;
+	std::cout<<"AliJCIaaTask Analysis DONE !!"<<endl;
 
 }
