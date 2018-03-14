@@ -443,7 +443,9 @@ class AliReducedVarManager : public TObject {
     kMassMC,
     kMassMCfromLegs,
     kRap,
+    kRapAbs,
     kRapMC,
+    kRapMCAbs,
     kRapMCfromLegs,
     kPdgMC,
     kCharge = kPdgMC+4,
@@ -554,11 +556,14 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,             // shifted to [-pi/2, 3/2 * pi]
-    kDeltaTheta,        
+    kDeltaPhi,      // shifted to [-pi/2, 3/2 * pi]
+    kDeltaPhiSym,   // shifted to [0, pi]
+    kDeltaTheta,
     kDeltaEta,
+    kDeltaEtaAbs,
     kTriggerPt,     // pt of J/psi candidate
     kTriggerRap,    // rapidity of J/psi candidate
+    kTriggerRapAbs, // absolute rapidity of J/psi candidate
     kAssociatedPt,  // pt of associated track
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets

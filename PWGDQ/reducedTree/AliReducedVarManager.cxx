@@ -204,12 +204,12 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kVtxZ] = kTRUE;
     fgUsedVars[kVtxZtpc] = kTRUE;
   }
-  if(fgUsedVars[kRap]) {
+  if(fgUsedVars[kRap] || fgUsedVars[kRapAbs]) {
     fgUsedVars[kMass] = kTRUE;
     fgUsedVars[kP] = kTRUE;
     fgUsedVars[kEta] = kTRUE;
   }
-  if(fgUsedVars[kTriggerRap]) {
+  if(fgUsedVars[kTriggerRap] || fgUsedVars[kTriggerRapAbs]) {
 	  fgUsedVars[kMass] = kTRUE;
 	  fgUsedVars[kP] = kTRUE;
 	  fgUsedVars[kEta] = kTRUE;
@@ -310,7 +310,7 @@ void AliReducedVarManager::SetVariableDependencies() {
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
      fgUsedVars[kSPDntracklets] = kTRUE;
   
-  if(fgUsedVars[kRapMC]) fgUsedVars[kMassMC] = kTRUE;
+  if(fgUsedVars[kRapMC] || fgUsedVars[kRapMCAbs]) fgUsedVars[kMassMC] = kTRUE;
 
   if(fgUsedVars[kPairPhiV]){
     fgUsedVars[kL3Polarity] = kTRUE;
@@ -1111,7 +1111,11 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       if(TMath::Abs(p->MCPdg(0))==443)
          values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]); 
    }
-   
+  if(fgUsedVars[kRapMCAbs]) {
+    if(TMath::Abs(p->MCPdg(0))==443)
+      values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
+  }
+
    // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
    // NOTE: this may be different from the kinematics of the mother, if not all decay legs are considered / tracked
    Bool_t requestMCfromLegs = kFALSE;
@@ -1411,6 +1415,10 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(pinfo->MCPdg(0)==443) values[kRap] = p->Rapidity(fgkPairMass[AliReducedPairInfo::kJpsiToEE]);
      if(TMath::Abs(pinfo->MCPdg(0))==11) values[kRap] = p->Rapidity(fgkParticleMass[AliReducedVarManager::kElectron]);
   }
+  if(fgUsedVars[kRapAbs] && pinfo->IsMCKineParticle())  {
+    if(pinfo->MCPdg(0)==443) values[kRapAbs] = TMath::Abs(p->Rapidity(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
+    if(TMath::Abs(pinfo->MCPdg(0))==11) values[kRapAbs] = TMath::Abs(p->Rapidity(fgkParticleMass[AliReducedVarManager::kElectron]));
+  }
 }
 
 
@@ -1515,9 +1523,10 @@ void AliReducedVarManager::FillPairInfo(PAIR* p, Float_t* values) {
   values[kMassV0+2] = p->Mass(2);
   values[kMassV0+3] = p->Mass(3);
   
-  if(fgUsedVars[kRap]) values[kRap]              = p->Rapidity();
-                       values[kPairLxy]          = p->Lxy();
-                       values[kPairPointingAngle]= p->PointingAngle();
+  if(fgUsedVars[kRap])    values[kRap]              = p->Rapidity();
+  if(fgUsedVars[kRapAbs]) values[kRapAbs]           = TMath::Abs(p->Rapidity());
+                          values[kPairLxy]          = p->Lxy();
+                          values[kPairPointingAngle]= p->PointingAngle();
 
   // polarization variables
   Bool_t usePolarization=kFALSE;
@@ -1570,7 +1579,8 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     p.SetMass(values[kMass]);
   }
 
-  if(fgUsedVars[kRap]) values[kRap] = p.Rapidity();
+  if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
+  if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
 
   values[kMassV0]   = -999.0;
   values[kMassV0+1] = -999.0;
@@ -1661,6 +1671,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
        pMC.SetMass(values[kMassMC]);
        values[kRapMC] = pMC.Rapidity();   
      }
+     if(fgUsedVars[kRapMCAbs]) values[kRapMCAbs] = TMath::Abs(pMC.Rapidity());
   }
 
    if( fgUsedVars[kPairPhiV] ){
@@ -1857,11 +1868,12 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kPt] = p.Pt();
     if(fgUsedVars[kPtSquared]) values[kPtSquared] = values[kPt]*values[kPt];
   }
-  if(fgUsedVars[kP]) values[kP] = p.P();
-  if(fgUsedVars[kEta]) values[kEta] = p.Eta();
-  if(fgUsedVars[kRap]) values[kRap] = p.Rapidity();
-  if(fgUsedVars[kPhi]) values[kPhi] = p.Phi();
-  if(fgUsedVars[kTheta]) values[kTheta] = p.Theta();
+  if(fgUsedVars[kP])      values[kP]      = p.P();
+  if(fgUsedVars[kEta])    values[kEta]    = p.Eta();
+  if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
+  if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
+  if(fgUsedVars[kPhi])    values[kPhi]    = p.Phi();
+  if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
 
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
@@ -1932,7 +1944,8 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   // NOTE:  Add here only NEEDED information because this function is called during event mixing in the innermost loop
   //
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
-  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	values[kTriggerRap] = ((PAIR*)trig)->Rapidity();
+  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
+  if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
 
   if(fgUsedVars[kDeltaPhi]) {
@@ -1941,10 +1954,16 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
     if(delta<-0.5*TMath::Pi()) delta += 2.0*TMath::Pi();
     values[kDeltaPhi] = delta;
   }
-  
+  if(fgUsedVars[kDeltaPhiSym]) {
+    Double_t delta = TMath::Abs(trig->Phi() - assoc->Phi());
+    if(delta>TMath::Pi()) delta = 2*TMath::Pi()-delta;
+    values[kDeltaPhiSym] = delta;
+  }
+
   if(fgUsedVars[kDeltaTheta]) values[kDeltaTheta] = trig->Theta() - assoc->Theta();
   
-  if(fgUsedVars[kDeltaEta]) values[kDeltaEta] = trig->Eta() - assoc->Eta();
+  if(fgUsedVars[kDeltaEta])     values[kDeltaEta]     = trig->Eta() - assoc->Eta();
+  if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 }
 
@@ -2508,9 +2527,11 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kMass]      = "m";         fgVariableUnits[kMass]        = "GeV/c^{2}";
   fgVariableNames[kMassMC]      = "m^{MC}";         fgVariableUnits[kMassMC]        = "GeV/c^{2}";
   fgVariableNames[kMassMCfromLegs]      = "m^{MC-legs}";         fgVariableUnits[kMassMCfromLegs]        = "GeV/c^{2}";
-  fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";
-  fgVariableNames[kRapMC]       = "y^{MC}";         fgVariableUnits[kRapMC]         = "";  
-  fgVariableNames[kRapMCfromLegs]       = "y^{MC-legs}";         fgVariableUnits[kRapMCfromLegs]         = "";  
+  fgVariableNames[kRap]       = "y";          fgVariableUnits[kRap]         = "";
+  fgVariableNames[kRapAbs]    = "|y|";        fgVariableUnits[kRapAbs]      = "";
+  fgVariableNames[kRapMC]     = "y^{MC}";     fgVariableUnits[kRapMC]       = "";
+  fgVariableNames[kRapMCAbs]  = "|y^{MC}|";   fgVariableUnits[kRapMCAbs]    = "";
+  fgVariableNames[kRapMCfromLegs]       = "y^{MC-legs}";         fgVariableUnits[kRapMCfromLegs]         = "";
   fgVariableNames[kPdgMC]       = "PDG code";          fgVariableUnits[kPdgMC]         = "";
   fgVariableNames[kPdgMC+1]  = "mother's PDG code";     fgVariableUnits[kPdgMC+1]         = "";
   fgVariableNames[kPdgMC+2]  = "grand-mother's PDG code";     fgVariableUnits[kPdgMC+2]         = "";
@@ -2627,12 +2648,15 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";  
   fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
   fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
-  fgVariableNames[kDeltaPhi]     = "#Delta #varphi"; fgVariableUnits[kDeltaPhi] = "rad.";  
-  fgVariableNames[kDeltaTheta]   = "#Delta #theta";  fgVariableUnits[kDeltaTheta] = "rad.";
-  fgVariableNames[kDeltaEta]     = "#Delta #eta";    fgVariableUnits[kDeltaEta] = "";
-  fgVariableNames[kTriggerPt]    = "p_{T} trigger particle";    fgVariableUnits[kTriggerPt] = "GeV/c";
-  fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap] = "";
-  fgVariableNames[kAssociatedPt] = "p_{T} associated particle"; fgVariableUnits[kAssociatedPt] = "GeV/c";
+  fgVariableNames[kDeltaPhi]      = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]      = "rad.";
+  fgVariableNames[kDeltaPhiSym]   = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSym]   = "rad.";
+  fgVariableNames[kDeltaTheta]    = "#Delta #theta";              fgVariableUnits[kDeltaTheta]    = "rad.";
+  fgVariableNames[kDeltaEta]      = "#Delta #eta";                fgVariableUnits[kDeltaEta]      = "";
+  fgVariableNames[kDeltaEtaAbs]   = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbs]   = "";
+  fgVariableNames[kTriggerPt]     = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]     = "GeV/c";
+  fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]    = "";
+  fgVariableNames[kTriggerRapAbs] = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs] = "";
+  fgVariableNames[kAssociatedPt]  = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]  = "GeV/c";
 }
 
 
