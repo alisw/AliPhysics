@@ -86,8 +86,8 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 	//event related
 	task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config
 
-	// task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
-	task->SetCentralityRange(CentMin, CentMax);  // -2, 102
+	task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
+	task->SetCentralityRange(CentMin, CentMax);  
 
 	//generated values
 	task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
