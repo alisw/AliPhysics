@@ -104,8 +104,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   if(L1input == 7)       Ethre = 8.0;
   else if(L1input == 6)  Ethre = 6.0;
   else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 3.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
-  else if(L0input == 17) Ethre = 4.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
+  else if(L0input == 17) Ethre = 0.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 2 GeV
 
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
@@ -163,9 +163,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   if(!isMC && Trgcorrection){
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
     f1trg->SetNpx(1000);
-    f1trg->SetParameters(0.985,2.56,0.30);
+    f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV
     task->SetTriggerEfficiency(f1trg);
-    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
 
   if(isMC){
