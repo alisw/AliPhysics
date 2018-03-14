@@ -556,7 +556,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Int_t fFirstMotherIndex; ///<  Index of the mother in the stack the track with MC truth
   Int_t fNMCTracks;        ///<  Number of MC tracks in the event
   Int_t fMCPrimaries;      ///<  Number of MC primary tracks in the event
-  Int_t fMCTOFMatch;       ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
+  Int_t fMCTOFMatch;       ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (2) Mother label is compatible with match, (-1) Not matched
 
   //Masks to store the event and track information in the Tree
   UChar_t fEvtMask;     ///< Event information mask
@@ -729,9 +729,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2F* hNumPrimMCTrueMatch[2][3];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
   TH2F* hNumPrimMCTrueMatchYCut[2][3];       ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
   TH2F* hNumPrimMCTrueMatchYCutTPC[2][3];    ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
-  TH2F* hNumPrimMCConsistentMatchYCut[2][3]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH3S* hDenMatchPrimNoCut[2][3];            ///<  Matching efficiency denominator with MC information on PID and on Primary production without any geometical cut i.e. it has the three variables for pT eta and phi
-  TH3S* hDenPrimMCNoCut[2][3];               ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection without any geometical cut i.e. it has the three variables for pT eta and phi
+  TH2F* hNumPrimMCConsistentMatchYCut[2][3]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, without true match in the TOF detector but compatible PID with a Y cut
+  TH2F* hNumPrimMCMotherMatchYCut[2][3];     ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with mother with true match in the TOF detector with a Y cut
+  TH3S* hDenMatchPrimNoCut[2][3];            ///<  Matching efficiency denominator with MC information on PID and on Primary production with pT eta and phi
+  TH3S* hDenPrimMCNoCut[2][3];               ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with pT eta and phi
 
   //histograms for matching efficiency calculation (Also in Real Data)
   //Positive / Negative
@@ -770,7 +771,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Copy constructor
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 13); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 14); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
