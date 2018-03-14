@@ -1439,7 +1439,7 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     fOutput->Add(fhTrueLambdaVsPrimaries);
 
     /* additional histograms if not only truth analysis */
-    if (AliCSAnalysisCutsBase::IsMConlyTruth()) {
+    if (!AliCSAnalysisCutsBase::IsMConlyTruth()) {
       /* the tracking of the true reconstructed but not accepted and of the true not reconstructed */
       Int_t bins[kgTHnDimension] = {ptbins,etabins,phibins,AliPID::kSPECIES+1};
       Double_t low[kgTHnDimension] = {ptlow,etalow,0.0,AliPID::kElectron};
