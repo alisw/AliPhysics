@@ -134,6 +134,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fTPCCQ4xVsCentRun(NULL),
   fTPCCQ4yVsCentRun(NULL),
   fFilterBit(1),
+  gN(1),
+  gM(1),
   gPsiN(2),
   fOldRunNum(111),
   fEventCount(0),
@@ -280,6 +282,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
   fTPCCQ4xVsCentRun(NULL),
   fTPCCQ4yVsCentRun(NULL),
   fFilterBit(1),
+  gN(1),
+  gM(1),
   gPsiN(2),
   fOldRunNum(111),
   fEventCount(0),
@@ -1443,8 +1447,16 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Double_t  probMis; 
   Int_t    TOFmatch=0; 
   Int_t    charge,ptBin,dChrg1,dChrg2;
-  Int_t n=1,m=1;
-  Int_t p=n+m;
+
+
+
+  //----------- Set the desired Harmonic ------------
+  Int_t n = gN;
+  Int_t m = gM;
+  Int_t p =n+m;
+  //------------------------------------------------
+
+
   Int_t skipPairHBT = 0;
 
 
@@ -2431,6 +2443,7 @@ void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(TString sMCfilePath){
 	//exit(1);
       }
       else if(fListFBHijing) {
+        cout<<"\n =========> Info: FB Efficiency is Used from file = "<<sMCfilePath.Data()<<endl;
 	for(int i=0;i<10;i++) {
 	  fFB_Efficiency_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_%d",i));
 	  //std::cout<<" input MC hist"<<i<<" = "<<fFB_Efficiency_Cent[i]->GetName()<<std::endl;
@@ -2443,7 +2456,7 @@ void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(TString sMCfilePath){
       fFB_Efficiency_Cent[i] = new TH1D(Form("eff_unbiased_%d",i),"",1,0,50.); 
       fFB_Efficiency_Cent[i]->SetBinContent(1,1.0);
     }
-    if(bApplyMCcorr){ printf("\n\n!!*****  Warning *****!!\n MC correction File not found, using Efficiency = 1.0 !!\n\n");}
+    if(bApplyMCcorr){ printf("\n!!*****  !!!! WARNING !!!! *****!!\n MC correction File not found, using Efficiency = 1.0 !!\n\n");}
   }   
 }
 
@@ -2562,14 +2575,20 @@ void AliAnalysisTaskCMEV0PID::SetupEventAndTaskConfigInfo(){
 
 void AliAnalysisTaskCMEV0PID::GetV0MCorrectionHist(Int_t run)
 {
-  cout<<"=========== Info:: Setting up V0 gain correction for run "<<run<<"============"<<endl;
   if(fListV0MCorr){
     fHCorrectV0M    = (TH1D *) fListV0MCorr->FindObject(Form("fHistV0Gain_Run%d",run));
     fHAvgerageQnV0A = (TH2D *) fListV0MCorr->FindObject(Form("fHistAvgQnV0A_Run%d",run));
     fHAvgerageQnV0C = (TH2D *) fListV0MCorr->FindObject(Form("fHistAvgQnV0C_Run%d",run));
+
+    if(fHCorrectV0M){
+      cout<<"\n =========== Info:: Setting up V0 gain correction for run = "<<run<<"============"<<endl;
+    }
+    else{
+      cout<<"\n =========== Info:: No V0 gain correction..!!! for run = "<<run<<"============"<<endl;
+    }
   }
   else{
-    cout<<"\n\n======== Error:: List of V0 gain correction not found for run "<<run<<"============\n"<<endl;
+    cout<<"\n ======== Error:: List of V0 gain correction not found for run "<<run<<"============"<<endl;
     fHCorrectV0M  = new TH1D("fHCorrectV0M","",64,0,64);
     for(int i=1;i<=64;i++){
       fHCorrectV0M->SetBinContent(i,1.0);
@@ -2593,11 +2612,14 @@ void AliAnalysisTaskCMEV0PID::GetV0MCorrectionHist(Int_t run)
 
 void AliAnalysisTaskCMEV0PID::GetNUACorrectionHist(Int_t run)
 {
-  cout<<"=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;
+
   if(fListNUACorr){
     for(int i=0;i<5;i++){
-      fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run)); // <= !!! ********** change Name 
+      fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",i,run)); 
       fHCorrectNUAneg[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",i,run));
+    }
+    if(fHCorrectNUApos[0] && fHCorrectNUApos[0]){
+      cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;
     }
   }
   else {
@@ -2622,6 +2644,12 @@ void AliAnalysisTaskCMEV0PID::GetNUACorrectionHist(Int_t run)
 
       fHCorrectNUAposProton[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Pos_Cent%d_Run%d",i,run)); 
       fHCorrectNUAnegProton[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Neg_Cent%d_Run%d",i,run));
+    }
+    if(fHCorrectNUAposPion[0] && fHCorrectNUAposKaon[0] && fHCorrectNUAposProton[0]) {
+      cout<<"\n=========== Info:: Setting up --> PID NUA corrections for run =  "<<run<<"============"<<endl;
+    }
+    else{
+      cout<<"\n=========== WARNING :: PID NUA corrections NOT found for run =  "<<run<<"============"<<endl;
     }
   }
   else {

@@ -50,6 +50,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   //User Defined Functions:
   void SetFilterBit(Int_t b)                 {this->fFilterBit = b;}
   void SetEventPlaneHarmonic(Int_t pn)       {this->gPsiN     = pn;}
+  void SetHarmonicsFor3Particle(Int_t n, Int_t m) {this->gN = n; this->gM = m;}
 
   void SetNSigmaCutTPC(Float_t b)            {this->fNSigmaCut = b;}
   void SetPtRangeMin(Float_t b)              {this->fMinPtCut  = b;}
@@ -170,6 +171,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
   Int_t                 fFilterBit;  //
+  Int_t                         gN;  //
+  Int_t                         gM;  //
   Int_t                      gPsiN;  //
   Int_t                 fOldRunNum;  //
   Int_t                fEventCount;  //!
