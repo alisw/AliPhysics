@@ -402,7 +402,7 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
-    fTempStruct = new AliXiStarPbPbTrackStruct[20000];
+    fTempStruct = new AliXiStarPbPbTrackStruct[300];
     
     
     fESDTrack4 = new AliESDtrack();
