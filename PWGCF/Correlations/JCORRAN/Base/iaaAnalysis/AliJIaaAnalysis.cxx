@@ -519,7 +519,7 @@ void AliJIaaAnalysis::Terminate() {
 
 }
 
-particleType  AliJIaaAnalysis::GetParticleType(char *inchar){
+particleType  AliJIaaAnalysis::GetParticleType(const char *inchar){
 	// part type
 	for(int i=0;i<kNumberOfParticleTypes;i++) {
 		if(strcmp(inchar,kParticleTypeStrName[i])==0) return (particleType)i;
