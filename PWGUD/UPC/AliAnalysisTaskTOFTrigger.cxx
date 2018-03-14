@@ -253,7 +253,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   	AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
   	fGeomLoaded = kTRUE;
 	}
-  
+
+//pass2,pass3  
   Bool_t fBadMaxiPadMask[72][23] ={ 0,0,1,1,0,0,0,0,1,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
 0,0,1,1,0,0,0,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,
 0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,0,
@@ -285,7 +286,13 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   fTOFmask = tofH->GetTriggerMask();
 
   TString trigger = esd->GetFiredTriggerClasses();
-  if(!trigger.Contains(fTriggerClass.Data()) && !trigger.Contains("CTRUE-B")) return;
+  
+  Bool_t triggeredEvent = kFALSE;
+  TString token;
+  Ssiz_t from = 0;
+  while (fTriggerClass.Tokenize(token, from, "[/]"))if(trigger.Contains(token.Data()))triggeredEvent=kTRUE;
+  
+  if(!triggeredEvent && !trigger.Contains("CTRUE-B")) return;
 
   TBits fIR1Map = esd->GetHeader()->GetIRInt1InteractionMap();
   TBits fIR2Map = esd->GetHeader()->GetIRInt2InteractionMap();
@@ -310,7 +317,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   }
   if(fClosestIR2 == 100)fClosestIR2 = 0;
 
-  if(trigger.Contains(fTriggerClass.Data())){
+  if(triggeredEvent){
   	hTriggerCounterIR1->Fill(fClosestIR1);
 	hTriggerCounterIR2->Fill(fClosestIR2);
 	}
@@ -320,16 +327,16 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   Bool_t isGoodCTRUE = trigger.Contains("CTRUE-B") && !esd->GetHeader()->IsTriggerInputFired("VBA") && !esd->GetHeader()->IsTriggerInputFired("VBC") && !esd->GetHeader()->IsTriggerInputFired("SH2");
 
   if(isGoodCTRUE)hTriggerCounter->Fill(0);
-  if(trigger.Contains(fTriggerClass.Data()))hTriggerCounter->Fill(1);
+  if(triggeredEvent)hTriggerCounter->Fill(1);
 
   for (Int_t ltm=0;ltm<72;ltm++){
    	for (Int_t channel=0;channel<23;channel++){
 		if(fTOFmask->IsON(ltm,channel) && isGoodCTRUE)hNoiseMaxiPad->Fill(ltm,channel);
-		if(fTOFmask->IsON(ltm,channel) && trigger.Contains(fTriggerClass.Data()))hFiredMaxiPad->Fill(ltm,channel);
+		if(fTOFmask->IsON(ltm,channel) && triggeredEvent)hFiredMaxiPad->Fill(ltm,channel);
 		}
 	}
 
-  if(!trigger.Contains(fTriggerClass.Data())) return;
+  if(!triggeredEvent) return;
 
   hNFiredMaxiPads->Fill(fTOFmask->GetNumberMaxiPadOn());
   Int_t fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
@@ -389,7 +396,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     Float_t posF_In[3]={0.0,0.0,0.0};
     Float_t posF_Out[3]={0.0,0.0,0.0};
     UInt_t nFiredPads = 0;
-    //cout<<"Track"<<endl;
+   // cout<<"Track"<<endl;
     for(UInt_t instep = 0; instep < nmaxstep; instep++){
     	rTOFused += 0.1; // 1 mm step
     	if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())){hNMaxiPadIn->Fill(-1); break;}
