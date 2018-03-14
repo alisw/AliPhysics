@@ -11,14 +11,14 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   Int_t PVtxZMax = 10,
 					   Int_t NumTPCclsMin = 70,
 					   Int_t TrackFilterBit = 96,
-                       Double_t MaxChi2perTPC = 4,
+                       			   Double_t MaxChi2perTPC = 4,
 					   Double_t DCAzMax = 0.,
-                       Double_t DCAxyMax = 0.,
+                       			   Double_t DCAxyMax = 0.,
 					   TString MultEstimator = "V0M",
 					   Bool_t DoOnlyMixedFlow = kTRUE,
 					   Bool_t AntiProtonOnly = kFALSE,
 					   Bool_t PIDbayesian = kFALSE,
-                       Double_t PIDprob = 0.9)
+                       			   Double_t PIDprob = 0.9)
 {
   cout<<"=========================================================="<<endl;
   cout<<"====================AddTaskFlowModes======================"<<endl;
@@ -42,19 +42,22 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
     task1->SetProcessPID(kTRUE,PIDbayesian);
+    task1->SetPIDnsigmaCombination(2); // applies PIDnsigma combination 2 out of the 3 possible combinations.
     // Flow
     task1->SetFlowRFPsPtMin(0.2);
     task1->SetFlowRFPsPtMax(5.);
     // task1->SetFlowDoFourCorrelations(kFALSE);
     task1->SetFlowDoOnlyMixedCorrelations(DoOnlyMixedFlow);
-    task1->SetFlowFillWeights(kFALSE);
-    
+    task1->SetFlowFillWeights(kTRUE);
+    task1->SetUseNUAWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUACorrectionMap.root"); 
+    //task1->SetUseNUEWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUECorrectionMap.root");
+
     //task1->SetPositivelyChargedRef(kFALSE);//reference particles both positively charged
     //task1->SetNegativelyChargedRef(kFALSE);//reference particles both negatively charged
     //task1->SetPositivelyChargedPOI(kFALSE);//POIs positively charged
     //task1->SetNegativelyChargedPOI(kFALSE);//POIs negatively charged
 
-    // task1->SetUseWeigthsFile("alice/cern.ch/user/v/vpacik/uniFlow_ver4_CENT_woSDD_16t_V0A/output/000267163/001/AnalysisResults.root");
+    // task1->SetUseWeightsFile("alice/cern.ch/user/v/vpacik/uniFlow_ver4_CENT_woSDD_16t_V0A/output/000267163/001/AnalysisResults.root");
     // task1->SetUseWeigthsFile("/alice/cern.ch/user/v/vpacik/weights_CENTwoSDD_16q.root");
     // Events selection
     task1->SetTrigger(0); // case 0: kINT7, case 1: kHighMultV0, case 2: kHighMultSPD.
