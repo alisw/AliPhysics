@@ -1180,6 +1180,21 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   
   if (!event) 
     return 0;
+
+  // MF Disable temperature calibration for run2 for the moment
+  // A memory leak in the AliOADBContainer was observed when the 
+  // container is deleted. As consequence when processing multiple
+  // runs the correction task leaks ~100 MB per run included in the 
+  // job, where 70% of the memory leak comes from the temperature
+  // calibration. Untill a fix is provided the temperature calibration
+  // has to be disabled for run2 runs. Disabling has to be done before
+  // opening the OADB container
+  // 
+  // For more information see https://alice.its.cern.ch/jira/browse/EMCAL-135
+  if(event->GetRunNumber() > 197692){
+    AliError("Temperature recalibration disabled for run2");
+    return 0;
+  }
   
   if (fDebugLevel>0) 
     AliInfo("Initialising recalibration factors");
