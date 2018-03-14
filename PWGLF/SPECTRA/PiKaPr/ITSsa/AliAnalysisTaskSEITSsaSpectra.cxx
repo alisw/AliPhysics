@@ -1355,12 +1355,7 @@ bool AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
     AliWarning(". Skipping multiplicity selection");
     fMultMethod = 0;
   }
-  if (fExtEventCuts) {
-    if (fEventCuts.fCentralityFramework)
-      fEvtMult = fEventCuts.GetCentrality();
-    else
-      return kTRUE; // skip multiplicity check
-  } else if (!fMultMethod)
+  if (!fMultMethod)
     return kTRUE; // skip multiplicity check
   else if (fMultMethod == 1) { // New multiplicity/centrality class framework
     AliMultSelection *fMultSel = (AliMultSelection *)fESD->FindListObject("MultSelection");
