@@ -41,14 +41,12 @@ public:
 	);
 
   //..setters for the analysis
-  void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
-  void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
+  void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-  //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
   void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
@@ -65,6 +63,7 @@ public:
   //..Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
   AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
+  TF1*                        GetEffFunction(Int_t no,Int_t cent)                           ;
   //..Set which pools will be saved
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
    private:
@@ -100,7 +99,7 @@ public:
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
-  Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
+  Double_t                    GetTrackEff(Double_t pT, Double_t eta)                        ;
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
@@ -110,10 +109,12 @@ public:
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
-
+  Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
   //..Input histograms
-  THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
-  THnF                       *fHistEffHadron;            ///< ??input efficiency for associate particles
+  TF1 						 *funcpT_low[4];            ///< input functions for the efficiency correction
+  TF1 						 *funcpT_high[4];
+  TF1 						 *funcpEta_left[4];
+  TF1 						 *funcpEta_right[4];
 
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
@@ -158,7 +159,7 @@ public:
   //..Other stuff
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
   TList                      *fOutputListQA;           //!<! Output list
-
+  Double_t                    fscaleEta[4];             ///<
   //..Histograms -
 
   TH2             *fHistClusPairInvarMasspT; //!<! Tyler's histogram
@@ -185,6 +186,7 @@ public:
   Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
   Float_t         fPi0AsymCut;                 ///< Asymmetry cut for Pi0 candidates
 
+  TH2                      **fEffCorrectionCheck;      //!<! applied efficiency correction in eta-pT to cross check
   TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
