@@ -53,14 +53,14 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
 fSavePool(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
-fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
+fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -81,14 +81,14 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
 fSavePool(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
-fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
+fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -190,12 +190,27 @@ void AliAnalysisTaskGammaHadron::InitArrays()
   // Lambda Range: [0.10 - 0.40]       Bins: 1 3
   // Energy Range: [2.00 - 119.94]     Bins: 5 6
   // Asym Range:   [0.00 - 0.80]       Bins: 1 4
-  Double_t fPi0MassFixedValue[kNoGammaBins] = {0.136189, 0.132716, 0.137215,
-                                               0.144112, 0.155093, 0.167641,
-                                               0.192909, 0.219976, 0.219976};
-  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.013780,0.016556, 0.015154,
-                                                0.014779, 0.017486, 0.018040,
-                                                0.021053, 0.029528, 0.029528}; //9
+//  Double_t fPi0MassFixedValue[kNoGammaBins] = {0.136189, 0.132716, 0.137215,
+//                                               0.144112, 0.155093, 0.167641,
+//                                               0.192909, 0.219976, 0.219976};
+//  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.013780,0.016556, 0.015154,
+//                                                0.014779, 0.017486, 0.018040,
+//                                                0.021053, 0.029528, 0.029528}; //9
+
+  // These cuts correspond to
+  // Lambda Range: [0.10 - 0.50]       Bins: 1 5
+  // Energy Range: [1.50 - 119.94]     Bins: 4 6
+  // Asym Range:   [0.00 - 1.0]        Bins: 1 5
+  // Angle Min Range:   [0.017 - 3.142]    Bins: 6 23
+  Double_t fPi0MassFixedValue[kNoGammaBins] = {0.138350, 0.130986, 0.137813,
+                                               0.145594, 0.156744, 0.175125,
+                                               0.220000, 0.220000, 0.220000};
+  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.012870, 0.021483, 0.015919,
+                                                0.016042, 0.017068, 0.021500,
+                                                0.031488, 0.031488, 0.031488}; //9
+
+
+
   memcpy (fPi0MassFixed, fPi0MassFixedValue, sizeof(fPi0MassFixed));
   memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue, sizeof(fPi0SigmaFixed));
 
@@ -1529,6 +1544,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			//........................
 			//..Applying Trigger Pt Cut
 			if ( aliCaloClusterVecpi0.Pt() < fTriggerPtCut) continue;
+
+			//........................
+			//..Applying Opening Angle Cut
+			if ( aliCaloClusterVec.Angle(aliCaloClusterVec2.Vect()) < fOpeningAngleCut) continue;
+
 			if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
 				//			if(cluster2->GetNonLinCorrEnergy()>fClEnergyMin && cluster->GetNonLinCorrEnergy()>fClEnergyMin) //FIXME
 			{
