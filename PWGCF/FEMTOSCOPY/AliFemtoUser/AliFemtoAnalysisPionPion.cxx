@@ -365,6 +365,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
   AliFemtoAnalysisPionPion::CutParams params = {
     // Event
+    false, // use AliFemtoBasicEventCut
     std::get<0>(default_event.multiplicity)
   , std::get<1>(default_event.multiplicity)
   , default_event.centrality.first
@@ -520,7 +521,8 @@ AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
 AliFemtoEventCut*
 AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParams& p) const
 {
-/*
+
+  if (p.event_use_basic) {
   AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
   cut->SetEventMult(p.event_MultMin,
@@ -531,7 +533,9 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
                   p.event_EP_VZeroMax);
   cut->SetTriggerSelection(p.event_TriggerSelection);
   cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
-*/
+  return cut;
+  }
+
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
   cut->SetCentralityRange(p.event_CentralityMin, p.event_CentralityMax);
   cut->SetZPosRange(p.event_VertexZMin, p.event_VertexZMax);

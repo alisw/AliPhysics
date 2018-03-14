@@ -187,6 +187,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 /// The expected way to use this class
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
+  Bool_t event_use_basic;
+
   // EVENT
   Int_t event_MultMin,
         event_MultMax;
