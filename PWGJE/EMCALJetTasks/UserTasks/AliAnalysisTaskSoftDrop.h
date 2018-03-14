@@ -25,6 +25,20 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
 
   static Float_t              SoftDropDeclustering(fastjet::PseudoJet jet, const Float_t zcut, const Float_t beta);
 
+  static AliAnalysisTaskSoftDrop* AddTaskSoftDrop(
+    const char *ntracks            = "usedefault",
+    const char *nclusters          = "usedefault",
+    const char *njets              = "Jets",
+    const char *nrho               = "Rho",
+    Int_t       nCentBins          = 1,
+    Double_t    jetradius          = 0.2,
+    Double_t    jetptcut           = 1,
+    Double_t    jetareacut         = 0.6,
+    const char *type               = "EMCAL",
+    Int_t       leadhadtype        = 0,
+    const char *taskname           = "AliAnalysisTaskSoftDrop"
+  );
+
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
