@@ -196,6 +196,10 @@ public:
     kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
     kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
     ///@}
+    /// \name fast MC productions
+    ///@{
+    kLHC13f3,         ///<  PbPb, AMPT, fast generation, 2.76TeV (min. bias)
+    ///@}
   };
 
   /// \enum EnergyValue
@@ -260,6 +264,9 @@ public:
                                 /// Is a Monte Carlo data set
                                 /// \return kTRUE if it is a Monte Carlo data set, kFALSE otherwise
   static Bool_t                 IsMC() { return fgIsMC; }
+                                /// Is a fast Monte Carlo data set (only MC truth)
+                                /// \return kTRUE if it is a fast Monte Carlo data set, kFALSE otherwise
+  static Bool_t                 IsMConlyTruth() { return fgIsMConlyTruth; }
                                 /// Get the Monte Carlo event handler
                                 /// \return the Monte Carlo event handler
   static AliMCEventHandler     *GetMCEventHandler() { return fgMCHandler; }
@@ -304,6 +311,7 @@ protected:
   ProdPeriods                   fDataPeriod;            ///< the current period under analysis. Occasionally could be different from the global period
   static EnergyValue            fgEnergy;               ///< the collision energy for the analysis period
   static Bool_t                 fgIsMC;                 ///< MC flag from production information
+  static Bool_t                 fgIsMConlyTruth;        ///< fast MC flag (only kinematics) from production information
   static AliInputEventHandler  *fgInputHandler;         ///< the input handler for the current ongoing analysis
   static AliMCEventHandler     *fgMCHandler;            ///< MC handler for the current ongoing analysis
   static Bool_t                 fgIsESD;                ///< kTRUE if data format is ESD, kFALSE if AOD
@@ -320,7 +328,7 @@ protected:
   AliCSAnalysisCutsBase& operator=(const AliCSAnalysisCutsBase&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSAnalysisCutsBase,1);
+  ClassDef(AliCSAnalysisCutsBase,2);
   /// \endcond
 };
 

@@ -78,6 +78,7 @@ public:
   virtual Bool_t                     GetConstrain() { return fConstrain; }
 
   static Bool_t                      IsTruePrimary(AliVTrack *trk);
+  static Bool_t                      IsPhysicalPrimary(Int_t itrk);
 
 private:
   virtual Bool_t                     AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk);
