@@ -3783,8 +3783,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     TH1F* fProtonProtonRelKMulti[13];
     TH1F* fProtonProtonRelKMEMulti[13];
     for(int i=0; i<13; ++i) {
-        fProtonProtonRelKMulti[i] = new TH1F(Form("fProtonProtonRelKMulti_%i", i), Form("Relative momentum of pp RE %i", i),150,0.,3.); //first choice was 300 bins
-        fProtonProtonRelKMEMulti[i] = new TH1F(Form("fProtonProtonRelKMEMulti_%i", i), Form("Relative momentum of pp ME %i", i),150,0.,3.);
+        fProtonProtonRelKMulti[i] = new TH1F(Form("fProtonProtonRelKMulti_%i", i), Form("Relative momentum of pp RE %i", i),750,0.,3.); //first choice was 300 bins
+        fProtonProtonRelKMEMulti[i] = new TH1F(Form("fProtonProtonRelKMEMulti_%i", i), Form("Relative momentum of pp ME %i", i),750,0.,3.);
         fOutputTP->Add(fProtonProtonRelKMulti[i]);
         fOutputTP->Add(fProtonProtonRelKMEMulti[i]);
     }
@@ -3835,8 +3835,8 @@ void AliAnalysisTaskPLFemto::DefineHistograms(TString whichV0)
     TH1F* fAntiProtonAntiProtonRelKMulti[13];
     TH1F* fAntiProtonAntiProtonRelKMEMulti[13];
     for(int i=0; i<13; ++i) {
-        fAntiProtonAntiProtonRelKMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMulti_%i", i), Form("Relative momentum of AntipAntip RE %i", i),150,0.,3.); //first choice was 300 bins
-        fAntiProtonAntiProtonRelKMEMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMEMulti_%i", i), Form("Relative momentum of AntipAntip ME %i", i),150,0.,3.);
+        fAntiProtonAntiProtonRelKMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMulti_%i", i), Form("Relative momentum of AntipAntip RE %i", i),750,0.,3.); //first choice was 300 bins
+        fAntiProtonAntiProtonRelKMEMulti[i] = new TH1F(Form("fAntiProtonAntiProtonRelKMEMulti_%i", i), Form("Relative momentum of AntipAntip ME %i", i),750,0.,3.);
         fOutputTP->Add(fAntiProtonAntiProtonRelKMulti[i]);
         fOutputTP->Add(fAntiProtonAntiProtonRelKMEMulti[i]);
     }
