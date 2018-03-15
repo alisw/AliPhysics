@@ -17,6 +17,10 @@ root.exe -b -q  $AliRoot_SRC/STAT/test/AliPainterTest.C+ | tee AliPainterTest.lo
 #include "AliDrawStyle.h"
 #include "TSystem.h"
 #include "TPad.h"
+#include "TObjArray.h"
+#include "TKey.h"
+#include "TFile.h"
+#include "TTree.h"
 
 void AliPainterTest_OptionStringParser();
 void AliPainterTest_PandasOptionParser();
@@ -24,7 +28,7 @@ void AliPainterTest_RangesParser();
 void AliPainterTest_ArgsParser();
 void AliPainterTest_DivideTPad();
 //void AliPainterTest_SetMultiGraphTimeAxisTest();
-//void AliPainterTest_DrawHistogramTest();
+void AliPainterTest_DrawHistogram();
 //void AliPainterTest_GetLimitValueTest();
 //void AliPainterTest_ApplyLimitValueTest();
 
@@ -35,13 +39,13 @@ void AliPainterTest(){
   AliPainterTest_ArgsParser();
   AliPainterTest_DivideTPad();
 //  AliPainterTest_SetMultiGraphTimeAxisTest();
-//  AliPainterTest_DrawHistogramTest();
+  AliPainterTest_DrawHistogram();
 //  AliPainterTest_GetLimitValueTest();
 //  AliPainterTest_ApplyLimitValueTest();
 }
 
 void AliPainterTest_OptionStringParser(){
-  Int_t result = 0;
+  auto result = 0;
   TString input="gaus,W,fitFunction(1,2,3),E,10,200";
   std::vector<TString> optValuesHandle;
   std::vector<TString> optValues;
@@ -203,7 +207,7 @@ void AliPainterTest_RangesParser() {
   std::vector<TString> outPutHandle;
   outPutHandle.push_back("0,10");
   outPutHandle.push_back("10,20");
-  Int_t result = 0;
+  auto result = 0;
   if (outPutHandle.size() != outPut.size()) {
     ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
     return;
@@ -242,7 +246,7 @@ void AliPainterTest_RangesParser() {
 }
 
 void AliPainterTest_ArgsParser(){
-  Int_t result=0;
+  auto result=0;
   TString input="hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)";
   TString hisName = "";
   TString projections = "";
@@ -267,21 +271,45 @@ void AliPainterTest_ArgsParser(){
 }
 
 void AliPainterTest_DivideTPad() {
-  TCanvas *canvasQATest = new TCanvas("canvasQATest", "canvasQATest", 1200, 800);
-  AliPainter::DivideTPad("<horizontal>[1b,1m,1m,1lst0.3]", "", canvasQATest);
-  Int_t result = 0;
-  TPad *cPad = (TPad *) canvasQATest->cd(1);
-  if (cPad->GetAbsXlowNDC() + cPad->GetBottomMargin() != 0.0) result++;
-  cPad = (TPad *) canvasQATest->cd(2);
-  if (cPad->GetAbsXlowNDC() + cPad->GetTopMargin() + cPad->GetBottomMargin() != 0.0) result++;
-  cPad = (TPad *) canvasQATest->cd(3);
-  if (cPad->GetAbsXlowNDC() + cPad->GetTopMargin() + cPad->GetBottomMargin() != 0.0) result++;
-  cPad = (TPad *) canvasQATest->cd(4);
-  if (cPad->GetAbsXlowNDC() + cPad->GetLeftMargin() < 0.3) result++;
+  auto *canvasQA = new TCanvas("canvasQATest", "canvasQATest", 1200, 800);
+  AliPainter::DivideTPad("<horizontal>[1b,1m,1r300px,1lst0.3]", "", canvasQA);
+  canvasQA->Print("canvasQADivideTPadTest.xml");
+  canvasQA->Print("canvasQADivideTPadTestFixed.xml");
 
-  if (result == 0) {
+  auto nDiff = gSystem->GetFromPipe("diff canvasQADivideTPadTest.xml $AliRoot_SRC/STAT/test/canvasQADivideTPadTestFixed.xml  | wc -l").Atoi();
+  if (nDiff - 6 <= 0) {
     ::Info("AliPainterTest","AliPainter::DivideTPad(\"canvasQATest\",\"<horizontal>[1b,1m,1m,1lst0.3]\",\"test\")- IsOK");
   }else{
     ::Error("AliPainterTest","AliDrawStyle::ApplyStyle(\"canvasQATest\",\"<horizontal>[1b,1m,1m,1lst0.3]\",\"test\")- FAILED");
+  }
+}
+
+void AliPainterTest_DrawHistogram() {
+  auto *finput = TFile::Open("$AliRoot_SRC/STAT/test/AliPainterTest.root");
+  auto *tree = (TTree *) finput->Get("hisPtAll");
+  auto *hisArray = new TObjArray();
+  auto *keys = finput->GetListOfKeys();
+  for (Int_t iKey = 0; iKey < keys->GetEntries(); iKey++) {
+    auto *o = finput->Get(
+            TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
+    hisArray->AddLast(o);
+  }
+  auto *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
+  AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41", canvasQA);
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram((char *) "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
+  AliPainter::DrawHistogram((char *) "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
+  AliPainter::DrawHistogram((char *) "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
+  AliPainter::DrawHistogram((char *) "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)",
+                            hisArray);
+  canvasQA->Print("canvasQADrawHistogramTest.xml");
+
+  auto nDiff = gSystem->GetFromPipe("diff canvasQADrawHistogramTest.xml $AliRoot_SRC/STAT/test/canvasQADrawHistogramTestFixed.xml  | wc -l").Atoi();
+  if (nDiff - 6 <= 0) {
+    ::Info("AliPainterTest",
+           "AliPainterTest::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)\",hisArray)- IsOK");
+  } else {
+    ::Error("AliPainterTest",
+            "AliPainterTest::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)\",hisArray)- FAILED");
   }
 }

@@ -296,7 +296,7 @@ void AliDrawStyleTest_ApplyCssStyle(){
   AliDrawStyle::ApplyCssStyle(canv, "test1");
   canv->Print("test2-1.xml");
   Int_t nDiff = gSystem->GetFromPipe("diff  test1.xml test2-1.xml  | wc -l").Atoi();
-  if (nDiff - 4  == 0 || nDiff - 6 == 0) {
+  if (nDiff - 4  == 0) {
     ::Info("AliDrawStyleTest","AliDrawStyle::ApplyStyle(\"canv\",\"test1\")- IsOK");
   }else{
     ::Error("AliDrawStyleTest","AliDrawStyle::ApplyStyle(\"canv\",\"test1\")- FAILED");

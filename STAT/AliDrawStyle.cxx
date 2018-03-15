@@ -1401,14 +1401,14 @@ void AliDrawStyle::ApplyCssStyle(TPad *pad, const char* styleName){
   //fixme: for pads we can use indexes only from name
   AliDrawStyle::SetObjectNumber(TString(TString(TString(pad->GetName())(numPat0))(numPat1)).Atoi());
   if (elementID == "TPad" || elementID == "TCanvas") AliDrawStyle::TPadApplyStyle(styleName, pad);
-
+  Int_t objNum = 0;
   for (Int_t k = 0; k < oList->GetEntries(); k++) {
     cObj = oList->At(k);
-    if (TString(TString(cObj->GetName())(numPat0))(numPat1) == TString("")) AliDrawStyle::SetObjectNumber(k);
+    if (TString(TString(cObj->GetName())(numPat0))(numPat1) == TString("")) AliDrawStyle::SetObjectNumber(objNum);
     else AliDrawStyle::SetObjectNumber(TString(TString(TString(cObj->GetName())(numPat0))(numPat1)).Atoi());
-    if (cObj->InheritsFrom("TH1")) AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj);
-    if (cObj->InheritsFrom("TGraph")) AliDrawStyle::TGraphApplyStyle (styleName, (TGraph *) cObj);
-    if (cObj->InheritsFrom("TF1")) AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj);
+    if (cObj->InheritsFrom("TH1")) {AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj);objNum++;}
+    if (cObj->InheritsFrom("TGraph")) {AliDrawStyle::TGraphApplyStyle(styleName, (TGraph *) cObj);objNum++;}
+    if (cObj->InheritsFrom("TF1")) {AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj);objNum++;}
   }
   pad->Modified();
 }
