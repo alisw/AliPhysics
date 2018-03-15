@@ -72,6 +72,7 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetLambda/AliAnalysisTaskNetLambdaIdent.cxx
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
