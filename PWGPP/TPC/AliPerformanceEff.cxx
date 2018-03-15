@@ -277,7 +277,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     // --- check for double filling in stack
     // use only particles with no daughters in the list of primaries
     //RS we just need to know if there are prim. daughters
-    if (particle->GetFirstDaughter() != -1 && particle->GetFirstDaughter() < nPrim) break;
+    if (particle->GetFirstDaughter() != -1 && particle->GetFirstDaughter() < nPrim) continue;
     
     /*Bool_t findable = kFALSE;
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
