@@ -36,7 +36,7 @@ public:
     
     AliXiStarPbPb();
     AliXiStarPbPb(const char *name, Bool_t AODdecision, Bool_t MCdecision, Int_t CutListOption=0);
-
+    
     virtual ~AliXiStarPbPb();
     AliXiStarPbPb(const AliXiStarPbPb &obj);
     AliXiStarPbPb &operator=(const AliXiStarPbPb &obj);
@@ -67,10 +67,10 @@ private:
         kNCutVariations      = 21,// number of cut variations // 13
         kNCuts               = 13// number of cut types //15
     };
-
+    
     
     const char* fname;// name of class
-   // AliInputEventHandler *fEventHandler;                              //  for ESDs or AODs
+    // AliInputEventHandler *fEventHandler;                              //  for ESDs or AODs
     AliESDEvent            *fESD; //!    // ESD object
     TList                  *fOutputList; //! Compact Output list
     AliESDtrackCuts        *fTrackCut; //! ESD track cuts
@@ -91,7 +91,7 @@ private:
     Bool_t fAODcase;// switch for AODs or ESDs
     //Int_t fEventCounter;// The event counter
     //ULong64_t fEventNumber; // calcuate event number
-
+    
     TString fCentralityEstimator; // Centrality Estimator string value (default V0A in pPb V0M in PbPb)
     // cut list data members
     Float_t fMaxDecayLength;// max decay length
@@ -126,7 +126,7 @@ private:
         
     };
     struct St_CutType CutVar[kNCutVariations]; //!
-
+    
     
     
     AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
@@ -136,9 +136,9 @@ private:
     
     Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
     Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
-
     
-    ClassDef(AliXiStarPbPb, 1); 
+    
+    ClassDef(AliXiStarPbPb, 1);
 };
 
 #endif
