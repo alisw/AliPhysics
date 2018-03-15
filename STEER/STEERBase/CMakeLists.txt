@@ -1,5 +1,5 @@
 # **************************************************************************
-# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
 # * Author: The ALICE Off-line Project.                                    *
 # * Contributors are mentioned in the code where appropriate.              *
@@ -150,7 +150,7 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-set(HDRS ${HDRS} 
+set(HDRS ${HDRS}
     AliSharedPtr.h
     )
 
@@ -159,7 +159,7 @@ set(HDRS ${HDRS}
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(STEERBase-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
@@ -187,7 +187,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
@@ -213,3 +213,7 @@ endif(ALIROOT_STATIC)
 #TEST programs
 add_executable(TestAliFileUtilities TestAliFileUtilities.cxx)
 target_link_libraries(TestAliFileUtilities STEERBase ${ROOT_LIBRARIES})
+
+# Include the libraries
+add_subdirectory(AliMagFastDip2k)
+add_subdirectory(AliMagFastDip5k)
