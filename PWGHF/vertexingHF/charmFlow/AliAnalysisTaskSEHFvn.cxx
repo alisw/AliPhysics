@@ -1127,10 +1127,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       //Get the D* candidate, see if it is in the mass range and if it is the case assign the D0 daughter to d
       AliAODRecoDecayHF* dstar=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)dstar),kTRUE))continue;
-//      Double_t invMassDstar = ((AliAODRecoCascadeHF*)dstar)->DeltaInvMass();
-//      Double_t deltamassPDG=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
-//      Double_t sigma = 0.0008;
-//      if(invMassDstar<deltamassPDG-3*sigma || invMassDstar>deltamassPDG+3*sigma) continue;
+      Double_t invMassDstar = ((AliAODRecoCascadeHF*)dstar)->DeltaInvMass();
+      Double_t deltamassPDG=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
+      Double_t sigma = 0.0008;
+      if(invMassDstar<deltamassPDG-5*sigma || invMassDstar>deltamassPDG+5*sigma) continue;
       d = ((AliAODRecoCascadeHF*)dstar)->Get2Prong();
       std::vector<Double_t>::iterator it = find(dzeropt.begin(),dzeropt.end(),d->Pt());
       if(it!=dzeropt.end()) continue; //if D0 candidate already used, continue (the same D0 candidate can build many D* candidates)
@@ -1525,14 +1525,13 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       if(nSelCandInMassRange>0) ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCandInMass"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
     }
     
+    Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
     if(fEnableNtrklHistos) {
-      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
-
-      ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2fill,tracklets);
+      ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2fill,(Double_t)tracklets);
       if(nSelCand>0) {
-        ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCand"))->Fill(centr,q2fill,tracklets);
+        ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCand"))->Fill(centr,q2fill,(Double_t)tracklets);
         if(nSelCandInMassRange>0) {
-          ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCandInMass"))->Fill(centr,q2fill,tracklets);
+          ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCandInMass"))->Fill(centr,q2fill,(Double_t)tracklets);
         }
       }
     }
@@ -1561,38 +1560,38 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       ((TH2F*)fOutput->FindObject("hq2CandVsq2Event"))->Fill(q2fill,q2CandFill[iSelCand]);
 
       if((fDecChannel==0 || fDecChannel==2) && isSelectedCand[iSelCand]) {
-        Double_t sparsearray[8] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
+        Double_t sparsearray[9] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
       }
       else if(fDecChannel==1 || fDecChannel==4) {
         if(fSeparateD0D0bar) {
           if(isSelectedCand[iSelCand]==1 || isSelectedCand[iSelCand]==3) {
-            Double_t sparsearray1[9] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)isSelectedCand[iSelCand]};
+            Double_t sparsearray1[10] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets,(Double_t)isSelectedCand[iSelCand]};
             fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelectedCand[iSelCand]>=2) {
-            Double_t sparsearray2[9] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)isSelectedCand[iSelCand]};
+            Double_t sparsearray2[10] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets,(Double_t)isSelectedCand[iSelCand]};
             fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
         else {
           if(isSelectedCand[iSelCand]==1 || isSelectedCand[iSelCand]==3) {
-            Double_t sparsearray1[8] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
+            Double_t sparsearray1[9] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets};
             fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelectedCand[iSelCand]>=2) {
-            Double_t sparsearray2[8] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
+            Double_t sparsearray2[9] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets};
             fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
       }
       else if(fDecChannel==3) {
         if(isSelectedCand[iSelCand]==1 || isSelectedCand[iSelCand]==3) {
-          Double_t sparsearray1[8] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
+          Double_t sparsearray1[9] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets};
           fHistMassPtPhiq2Centr->Fill(sparsearray1);
         }
         if(isSelectedCand[iSelCand]>=2) {
-          Double_t sparsearray2[8] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand]};
+          Double_t sparsearray2[9] = {invMassCand2[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2CandFill[iSelCand],centr,cosnphiCand[iSelCand],sinnphiCand[iSelCand],phiCand[iSelCand],(Double_t)tracklets};
           fHistMassPtPhiq2Centr->Fill(sparsearray2);
         }
       }
@@ -1648,31 +1647,35 @@ void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
   Double_t phimin=0.;
   Double_t phimax=2*TMath::Pi();
 
+  Int_t nNtrkBins=100;
+  Double_t Ntrkmin=0.;
+  Double_t Ntrkmax=5000.;
+
   TString massaxisname;
   if(fDecChannel==0) massaxisname = "M_{K#pi#pi} (GeV/c^{2})";
   else if(fDecChannel==1 || fDecChannel==4) massaxisname = "M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==2) massaxisname = "M_{K#pi#pi}-M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==3) massaxisname = "M_{KK#pi} (GeV/c^{2})";
 
-  Int_t naxes=8;
+  Int_t naxes=9;
 
   if(fSeparateD0D0bar && (fDecChannel==1 || fDecChannel==4)) {
     Int_t npartantipartbins=3;
     Double_t minpartantipart=0.5;
     Double_t maxpartantipart=3.5;
 
-    Int_t nbins[9]={fNMassBins,nptbins,ndeltaphibins,nq2bins,ncentbins,100,100,nphibins,npartantipartbins};
-    Double_t xmin[9]={fLowmasslimit,ptmin,mindeltaphi,minq2,(Double_t)fMinCentr,-1.,-1.,phimin,(Double_t)minpartantipart};
-    Double_t xmax[9]={fUpmasslimit,ptmax,maxdeltaphi,maxq2,(Double_t)fMaxCentr,1.,1.,phimax,(Double_t)maxpartantipart};
+    Int_t nbins[10]={fNMassBins,nptbins,ndeltaphibins,nq2bins,ncentbins,100,100,nphibins,nNtrkBins,npartantipartbins};
+    Double_t xmin[10]={fLowmasslimit,ptmin,mindeltaphi,minq2,(Double_t)fMinCentr,-1.,-1.,phimin,Ntrkmin,(Double_t)minpartantipart};
+    Double_t xmax[10]={fUpmasslimit,ptmax,maxdeltaphi,maxq2,(Double_t)fMaxCentr,1.,1.,phimax,Ntrkmax,(Double_t)maxpartantipart};
 
-    naxes=9;
+    naxes=10;
 
     fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. centr vs. D0-D0bar",naxes,nbins,xmin,xmax);
   }
   else {
-    Int_t nbins[8]={fNMassBins,nptbins,ndeltaphibins,nq2bins,ncentbins,100,100,nphibins};
-    Double_t xmin[8]={fLowmasslimit,ptmin,mindeltaphi,minq2,(Double_t)fMinCentr,-1.,-1.,phimin};
-    Double_t xmax[8]={fUpmasslimit,ptmax,maxdeltaphi,maxq2,(Double_t)fMaxCentr,1.,1.,phimax};
+    Int_t nbins[9]={fNMassBins,nptbins,ndeltaphibins,nq2bins,ncentbins,100,100,nphibins,nNtrkBins};
+    Double_t xmin[9]={fLowmasslimit,ptmin,mindeltaphi,minq2,(Double_t)fMinCentr,-1.,-1.,phimin,Ntrkmin};
+    Double_t xmax[9]={fUpmasslimit,ptmax,maxdeltaphi,maxq2,(Double_t)fMaxCentr,1.,1.,phimax,Ntrkmax};
 
     fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. centr",naxes,nbins,xmin,xmax);
   }
@@ -1686,7 +1689,7 @@ void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
 
   if(fPercentileq2) {q2axisname += " (%)";}
   
-  TString axTit[9]={massaxisname,"p_{T} (GeV/c)","#Delta#varphi",q2axisname,"Centrality (%)",Form("Cos(%d#varphi_{D})",fHarmonic),Form("Sin(%d#varphi_{D})",fHarmonic),"#varphi_{D}","part-antipart"};
+  TString axTit[10]={massaxisname,"p_{T} (GeV/c)","#Delta#varphi",q2axisname,"Centrality (%)",Form("Cos(%d#varphi_{D})",fHarmonic),Form("Sin(%d#varphi_{D})",fHarmonic),"#varphi_{D}","N_{tracklets}","part-antipart"};
 
   for(Int_t iax=0; iax<naxes; iax++)
     fHistMassPtPhiq2Centr->GetAxis(iax)->SetTitle(axTit[iax].Data());
