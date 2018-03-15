@@ -165,7 +165,8 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 
 	//static const Int_t NvertBins=8;
 	//Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
-	Double_t zvtxmix[kNvertBins+1] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
+//	Double_t zvtxmix[kNvertBins+1] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
+	Double_t zvtxmix[kNvertBins+1] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 	memcpy (fArrayNVertBins, zvtxmix, sizeof (fArrayNVertBins));
 	fMixBZvtx = new TAxis(kNvertBins,zvtxmix);
 
@@ -2498,8 +2499,8 @@ AliAnalysisTaskGammaHadron* AliAnalysisTaskGammaHadron::AddTaskGammaHadron(
 
 	if(AnalysisTask->GetTrackContainer(trackName))
 	{
-		AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
 		AnalysisTask->GetTrackContainer(trackName)->SetParticleEtaLimits(-trackEta,trackEta); //..Eta limits (-0.8,0.8 as in Pi0-h publication)
+		AnalysisTask->GetTrackContainer(trackName)->SetPtLimits(trackptcut,30.0);             //..pT limits for accepted tracks
 	}
 	if(AnalysisTask->GetClusterContainer(clusName))
 	{

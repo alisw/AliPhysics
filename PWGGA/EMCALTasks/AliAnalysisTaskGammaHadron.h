@@ -45,19 +45,19 @@ public:
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-  void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut = input; }
+  void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
+  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
-  void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
+  void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
-  void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
-  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
-  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+  void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
+  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
+  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
-  void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma = input;}
-  void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut = input;}
+  void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
+  void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut        = input;}
 
 
   //..Functions for mixed event purposes
@@ -119,7 +119,7 @@ public:
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
   static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
-  static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
+  static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
