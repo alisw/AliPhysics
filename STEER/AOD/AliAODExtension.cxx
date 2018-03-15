@@ -1,12 +1,5 @@
 #include "AliAODExtension.h"
 
-//-------------------------------------------------------------------------
-//     Support class for AOD extensions. This is created by the user analysis
-//     that requires a separate file for some AOD branches. The name of the 
-//     AliAODExtension object is the file name where the AOD branches will be
-//     stored.
-//-------------------------------------------------------------------------
-
 #include "AliAODBranchReplicator.h"
 #include "AliAODEvent.h"
 #include "AliCodeTimer.h"
@@ -51,7 +44,8 @@ fRepFiList(0x0),
 fEnableReferences(kTRUE),
 fObjectList(0x0)
 {
-  // Constructor.
+  /// Constructor.
+
   if (isfilter) {
     TObject::SetBit(kFilteredAOD);
     printf("####### Added AOD filter %s\n", name);
@@ -62,7 +56,8 @@ fObjectList(0x0)
 //______________________________________________________________________________
 AliAODExtension::~AliAODExtension()
 {
-  // Destructor.
+  /// Destructor.
+
   if(fFileE){
     // is already handled in TerminateIO
     fFileE->Close();
@@ -80,8 +75,8 @@ AliAODExtension::~AliAODExtension()
 //______________________________________________________________________________
 void AliAODExtension::AddBranch(const char* cname, void* addobj)
 {
-  // Add a new branch to the aod 
-  
+  /// Add a new branch to the aod
+
   if (!fAODEvent) {
     char type[20];
     gROOT->ProcessLine(Form("{TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());}", type));
@@ -138,7 +133,8 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
 //______________________________________________________________________________
 Bool_t AliAODExtension::FinishEvent()
 {
-  // Fill current event.
+  /// Fill current event.
+
   fNtotal++;
   if (!IsFilteredAOD()) {
     fAODEvent->MakeEntriesReferencable();
@@ -165,10 +161,8 @@ Bool_t AliAODExtension::FinishEvent()
 //______________________________________________________________________________
 void AliAODExtension::FillTree() 
 {
-  //
-  //   Fill AOD extension tree and check AutoFlush settings
-  //
-  
+  /// Fill AOD extension tree and check AutoFlush settings
+
   Long64_t nbf = fTreeE->Fill();
   
   // Check buffer size and set autoflush if fTreeBuffSize is reached
@@ -187,8 +181,8 @@ void AliAODExtension::FillTree()
 //______________________________________________________________________________
 Bool_t AliAODExtension::Init(Option_t *option)
 {
-  // Initialize IO.
-  
+  /// Initialize IO.
+
   AliCodeTimerAuto(GetName(),0);
   
   if(!fAODEvent) 
@@ -304,8 +298,8 @@ Bool_t AliAODExtension::Init(Option_t *option)
 //______________________________________________________________________________
 void AliAODExtension::Print(Option_t* opt) const
 {
-  // Print info about this extension
-  
+  /// Print info about this extension
+
   cout << opt << Form("%s - %s - %s - aod %p",IsFilteredAOD() ? "FilteredAOD" : "Extension",
                       GetName(),GetTitle(),GetAOD()) << endl;
   if ( !fEnableReferences ) 
@@ -340,7 +334,8 @@ void AliAODExtension::Print(Option_t* opt) const
 //______________________________________________________________________________
 void AliAODExtension::SetEvent(AliAODEvent* event)
 {
-  // Connects to an external event
+  /// Connects to an external event
+
   if (!IsFilteredAOD()) {
     Error("SetEvent", "Not allowed to set external event for non filtered AOD's");   
     return;
@@ -351,8 +346,8 @@ void AliAODExtension::SetEvent(AliAODEvent* event)
 //______________________________________________________________________________
 void AliAODExtension::AddAODtoTreeUserInfo()
 {
-  // Add aod event to tree user info
-  
+  /// Add aod event to tree user info
+
   if (!fTreeE) return;
   
   AliAODEvent* aodEvent(fAODEvent);
@@ -396,7 +391,8 @@ void AliAODExtension::AddAODtoTreeUserInfo()
 //______________________________________________________________________________
 Bool_t AliAODExtension::TerminateIO()
 {
-  // Terminate IO
+  /// Terminate IO
+
   if (TObject::TestBit(kFilteredAOD))
     printf("AOD Filter %s: events processed: %d   passed: %d\n", GetName(), fNtotal, fNpassed);
   else
@@ -416,17 +412,16 @@ Bool_t AliAODExtension::TerminateIO()
 //______________________________________________________________________________
 void AliAODExtension::FilterBranch(const char* branchName, AliAODBranchReplicator* repfi)
 {
-  // Specify a filter/replicator for a given branch
-  //
-  // If repfi=0x0, this will disable the branch (in the output) completely.
-  //
-  // repfi is adopted by this class, i.e. user should not delete it.
-  //
-  // WARNING : branch name must be exact.
-  //
-  // See also the documentation for AliAODBranchReplicator class.
-  //
-  
+  /// Specify a filter/replicator for a given branch
+  ///
+  /// If repfi=0x0, this will disable the branch (in the output) completely.
+  ///
+  /// repfi is adopted by this class, i.e. user should not delete it.
+  ///
+  /// WARNING : branch name must be exact.
+  ///
+  /// See also the documentation for AliAODBranchReplicator class.
+
   if (!fRepFiMap)
   {
     fRepFiMap = new TMap;

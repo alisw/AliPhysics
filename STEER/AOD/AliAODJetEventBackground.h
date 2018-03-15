@@ -3,11 +3,12 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//-------------------------------------------------------------------------
-//     AOD jet background class
-//     Stores Different background calculations on an event by event level
-//     Author: Christian Klein-Boesing, IKP Muenster
-//-------------------------------------------------------------------------
+/// \class AliAODJetEventBackground
+/// \brief AOD jet background class
+///
+/// Stores Different background calculations on an event by event level
+///
+/// \author Christian Klein-Boesing, IKP Muenster
 
 #include "TNamed.h"
 #include "TString.h"
@@ -55,11 +56,11 @@ class AliAODJetEventBackground : public TNamed {
 	   kMaxBackground};
 
  private:
-    static TString fgkStdBranchName;                    // Standard branch name
-    Double32_t      fBackground[kMaxBackground];        // Background from different schemes, normalized to area
+    static TString fgkStdBranchName;                    ///< Standard branch name
+    Double32_t      fBackground[kMaxBackground];        ///< Background from different schemes, normalized to area
 
-    Double32_t      fSigma[kMaxBackground];             // Sigma
-    Double32_t      fMeanArea[kMaxBackground];          // Mean area 
+    Double32_t      fSigma[kMaxBackground];             ///< Sigma
+    Double32_t      fMeanArea[kMaxBackground];          ///< Mean area
     ClassDef(AliAODJetEventBackground,3);
 
 };

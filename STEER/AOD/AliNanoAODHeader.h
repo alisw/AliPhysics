@@ -1,3 +1,5 @@
+/// \class AliNanoAODHeader
+
 
 #ifndef _ALINANOAODHEADER_H_
 #define _ALINANOAODHEADER_H_
@@ -138,21 +140,21 @@ private:
   TString fCentralityMethod;
 
 
-  Int_t fBunchCrossNumber;      // index of stored variable
-  Int_t fOrbitNumber;// index of stored variable
-  Int_t fPeriodNumber;// index of stored variable
-  Int_t fCentr;      // index of stored variable
-  Int_t fCentrTRK;   // index of stored variable
-  Int_t fCentrCL0;   // index of stored variable
-  Int_t fCentrCL1;   // index of stored variable
-  Int_t fFiredTriggerClasses;   // index of stored variable
-  Int_t fMagField;   // index of stored variable
-  Int_t fOfflineTrigger;//index of stored variable
-  Int_t fRunNumber;  // index of stored variable 
+  Int_t fBunchCrossNumber;      ///< index of stored variable
+  Int_t fOrbitNumber;///< index of stored variable
+  Int_t fPeriodNumber;///< index of stored variable
+  Int_t fCentr;      ///< index of stored variable
+  Int_t fCentrTRK;   ///< index of stored variable
+  Int_t fCentrCL0;   ///< index of stored variable
+  Int_t fCentrCL1;   ///< index of stored variable
+  Int_t fFiredTriggerClasses;   ///< index of stored variable
+  Int_t fMagField;   ///< index of stored variable
+  Int_t fOfflineTrigger;///< index of stored variable
+  Int_t fRunNumber;  ///< index of stored variable
 
-  std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
+  std::map<TString,int> fMapCstVar;///< Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
 
-  std::map<TString,int> fMapFiredTriggerClasses;// Map of indexes of fired trigger Classes
+  std::map<TString,int> fMapFiredTriggerClasses;///< Map of indexes of fired trigger Classes
 };
 
 #endif /* _ALINANOAODHEADER_H_ */

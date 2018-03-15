@@ -2,11 +2,11 @@
 #define ALIAODHMPIDRINGS_H
 
 
-//
-// Class to handle the AOD tracks with good HMPID rings 
-// Author: Levente Molnar
-// levente.molnar@cern.ch , March 2012
-// 
+/// \class AliAODHMPIDrings
+/// \brief Class to handle the AOD tracks with good HMPID rings
+///
+/// \author Levente Molnar <levente.molnar@cern.ch>
+/// \date March 2012
 
 
 

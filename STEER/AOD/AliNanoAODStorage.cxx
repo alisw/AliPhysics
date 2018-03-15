@@ -9,7 +9,8 @@ void AliNanoAODStorage::AllocateInternalStorage(Int_t size) {
 }
 
 void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeInt) {
-  // Creates the internal array
+  /// Creates the internal array
+
   if(size == 0){
     AliError("Zero size");
     return;
@@ -35,7 +36,8 @@ void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeInt) {
 
 AliNanoAODStorage& AliNanoAODStorage::operator=(const AliNanoAODStorage& sto)
 {
-  // Assignment operator
+  /// Assignment operator
+
   AllocateInternalStorage(sto.fNVars, sto.fNVarsInt);
   if(this!=&sto) {
     for (Int_t isize = 0; isize<sto.fNVars; isize++) {

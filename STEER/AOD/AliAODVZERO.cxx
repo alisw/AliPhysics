@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//     Container class for AOD VZERO data
-//     Author: Cvetan Cheshkov
-//     cvetan.cheshkov@cern.ch 2/02/2011
-//-------------------------------------------------------------------------
-
 #include "AliAODVZERO.h"
 #include "AliLog.h"
 
@@ -63,7 +57,8 @@ AliAODVZERO::AliAODVZERO(const AliAODVZERO &source)
    fTriggerChargeC(source.fTriggerChargeC),
    fTriggerBits(source.fTriggerBits)
 {   
-   // Default constructor 
+   /// Default constructor
+
    for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = source.fMultiplicity[j];
        fBBFlag[j] = source.fBBFlag[j];
@@ -90,7 +85,8 @@ AliAODVZERO::AliAODVZERO(const AliVVZERO &source)
    fTriggerChargeC(source.GetTriggerChargeC()),
    fTriggerBits(source.GetTriggerBits())
 {   
-   // Default constructor 
+   /// Default constructor
+
    for(Int_t j=0; j<64; j++) {
      fMultiplicity[j] = source.GetMultiplicity(j);
      fBBFlag[j] = source.GetBBFlag(j);
@@ -112,8 +108,8 @@ AliAODVZERO::AliAODVZERO(const AliVVZERO &source)
 //__________________________________________________________________________
 AliAODVZERO& AliAODVZERO::operator=(const AliAODVZERO& source)
 {
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if(this==&source) return *this;
   AliVVZERO::operator=(source);
   // Assignment operator
@@ -145,8 +141,9 @@ AliAODVZERO& AliAODVZERO::operator=(const AliAODVZERO& source)
 //__________________________________________________________________________
 AliAODVZERO& AliAODVZERO::operator=(const AliVVZERO& source)
 {
-  // Assignment operator
-  // used in esd->aod filter
+  /// Assignment operator
+  /// used in esd->aod filter
+
   if(this==&source) return *this;
   AliVVZERO::operator=(source);
 
@@ -183,8 +180,9 @@ AliAODVZERO& AliAODVZERO::operator=(const AliVVZERO& source)
 //__________________________________________________________________________
 Short_t AliAODVZERO::GetNbPMV0A() const
 {
-  // Returns the number of
-  // fired PM in V0A
+  /// Returns the number of
+  /// fired PM in V0A
+
   Short_t n=0;
   for(Int_t i=32;i<64;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -194,8 +192,9 @@ Short_t AliAODVZERO::GetNbPMV0A() const
 //__________________________________________________________________________
 Short_t AliAODVZERO::GetNbPMV0C() const
 {
-  // Returns the number of
-  // fired PM in V0C
+  /// Returns the number of
+  /// fired PM in V0C
+
   Short_t n=0;
   for(Int_t i=0;i<32;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -205,8 +204,9 @@ Short_t AliAODVZERO::GetNbPMV0C() const
 //__________________________________________________________________________
 Float_t AliAODVZERO::GetMTotV0A() const
 {
-  // returns total multiplicity
-  // in V0A
+  /// returns total multiplicity
+  /// in V0A
+
   Float_t mul=0.0;
   for(Int_t i=32;i<64;i++) 
     mul+=  fMultiplicity[i];
@@ -216,8 +216,9 @@ Float_t AliAODVZERO::GetMTotV0A() const
 //__________________________________________________________________________
 Float_t AliAODVZERO::GetMTotV0C() const
 {
-  // returns total multiplicity
-  // in V0C
+  /// returns total multiplicity
+  /// in V0C
+
   Float_t mul=0.0;
   for(Int_t i=0;i<32;i++) 
     mul+=  fMultiplicity[i];
@@ -227,8 +228,9 @@ Float_t AliAODVZERO::GetMTotV0C() const
 //__________________________________________________________________________
 Float_t AliAODVZERO::GetMRingV0A(Int_t ring) const
 { 
-  // returns multiplicity in a
-  // given ring of V0A
+  /// returns multiplicity in a
+  /// given ring of V0A
+
   if (OutOfRange(ring, "AliAODVZERO:::GetMRingV0A",4)) return -1;
   Float_t mul =0.0;
 
@@ -242,8 +244,9 @@ Float_t AliAODVZERO::GetMRingV0A(Int_t ring) const
 //__________________________________________________________________________
 Float_t AliAODVZERO::GetMRingV0C(Int_t ring) const
 { 
-  // returns multiplicity in a
-  // given ring of V0C
+  /// returns multiplicity in a
+  /// given ring of V0C
+
   if (OutOfRange(ring, "AliAODVZERO:::GetMRingV0C",4)) return -1;
   Float_t mul =0.0;
 
@@ -258,8 +261,9 @@ Float_t AliAODVZERO::GetMRingV0C(Int_t ring) const
 Float_t AliAODVZERO::GetMultiplicity(Int_t i) const
 
 {
-  // returns multiplicity in a
-  // given cell of V0
+  /// returns multiplicity in a
+  /// given cell of V0
+
   if (OutOfRange(i, "AliAODVZERO::GetMultiplicity:",64)) return -1;
   return fMultiplicity[i];
 }
@@ -268,8 +272,9 @@ Float_t AliAODVZERO::GetMultiplicity(Int_t i) const
 Float_t AliAODVZERO::GetMultiplicityV0A(Int_t i) const
 
 {
-  // returns multiplicity in a
-  // given cell of V0A
+  /// returns multiplicity in a
+  /// given cell of V0A
+
   if (OutOfRange(i, "AliAODVZERO::GetMultiplicityV0A:",32)) return -1;
   return fMultiplicity[32+i];
 }
@@ -278,8 +283,9 @@ Float_t AliAODVZERO::GetMultiplicityV0A(Int_t i) const
 Float_t AliAODVZERO::GetMultiplicityV0C(Int_t i) const
 
 {
-  // returns multiplicity in a
-  // given cell of V0C
+  /// returns multiplicity in a
+  /// given cell of V0C
+
   if (OutOfRange(i, "AliAODVZERO::GetMultiplicityV0C:",32)) return -1;
   return fMultiplicity[i];
 }
@@ -287,8 +293,9 @@ Float_t AliAODVZERO::GetMultiplicityV0C(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODVZERO::BBTriggerV0A(Int_t i) const
 {
-  // returns offline beam-beam flags in V0A
-  // one bit per cell
+  /// returns offline beam-beam flags in V0A
+  /// one bit per cell
+
   if (OutOfRange(i, "AliAODVZERO:::BBTriggerV0A",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerV0A & (test << i) ? kTRUE : kFALSE );
@@ -297,8 +304,9 @@ Bool_t AliAODVZERO::BBTriggerV0A(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODVZERO::BGTriggerV0A(Int_t i) const
 {
-  // returns offline beam-gas flags in V0A
-  // one bit per cell
+  /// returns offline beam-gas flags in V0A
+  /// one bit per cell
+
   if (OutOfRange(i, "AliAODVZERO:::BGTriggerV0A",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerV0A & (test << i) ? kTRUE : kFALSE );
@@ -307,8 +315,9 @@ Bool_t AliAODVZERO::BGTriggerV0A(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODVZERO::BBTriggerV0C(Int_t i) const
 {
-  // returns offline beam-beam flags in V0C
-  // one bit per cell
+  /// returns offline beam-beam flags in V0C
+  /// one bit per cell
+
   if (OutOfRange(i, "AliAODVZERO:::BBTriggerV0C",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerV0C & (test << i) ? kTRUE : kFALSE );
@@ -317,8 +326,9 @@ Bool_t AliAODVZERO::BBTriggerV0C(Int_t i) const
 //__________________________________________________________________________
 Bool_t AliAODVZERO::BGTriggerV0C(Int_t i) const
 {
-  // returns offline beam-gasflags in V0C
-  // one bit per cell
+  /// returns offline beam-gasflags in V0C
+  /// one bit per cell
+
   if (OutOfRange(i, "AliAODVZERO:::BGTriggerV0C",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerV0C & (test << i) ? kTRUE : kFALSE );
@@ -328,8 +338,9 @@ Bool_t AliAODVZERO::BGTriggerV0C(Int_t i) const
 Bool_t AliAODVZERO::GetBBFlag(Int_t i) const
 
 {
-  // returns online beam-beam flag in V0
-  // one boolean per cell
+  /// returns online beam-beam flag in V0
+  /// one boolean per cell
+
   if (OutOfRange(i, "AliAODVZERO::GetBBFlag:",64)) return kFALSE;
   return fBBFlag[i];
 }
@@ -338,8 +349,9 @@ Bool_t AliAODVZERO::GetBBFlag(Int_t i) const
 Bool_t AliAODVZERO::GetBGFlag(Int_t i) const
 
 {
-  // returns online beam-gas flag in V0
-  // one boolean per cell
+  /// returns online beam-gas flag in V0
+  /// one boolean per cell
+
   if (OutOfRange(i, "AliAODVZERO::GetBGFlag:",64)) return kFALSE;
   return fBGFlag[i];
 }

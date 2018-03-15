@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//     Class for AOD ZDC data
-//     Author: Chiara Oppedisano
-//     Chiara.Oppedisano@cern.ch March 2011
-//-------------------------------------------------------------------------
-
 #include <TMath.h>
 #include "AliAODZDC.h"
 
@@ -91,7 +85,8 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fIsZEM1fired(zdcAOD.fIsZEM1fired),
   fIsZEM2fired(zdcAOD.fIsZEM2fired)
 {
-// Constructor
+/// Constructor
+
   for(Int_t i=0; i<5; i++){
     fZNCTowerEnergy[i] = zdcAOD.fZNCTowerEnergy[i];
     fZNATowerEnergy[i] = zdcAOD.fZNATowerEnergy[i];
@@ -113,8 +108,8 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
 //__________________________________________________________________________
 AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
 {
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if(this!=&zdcAOD) {
     TObject::operator=(zdcAOD);
     fZNCEnergy  = zdcAOD.fZNCEnergy;
@@ -166,7 +161,8 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
 //______________________________________________________________________________
 void  AliAODZDC::SetZNCTowers(const Double_t value[5], const Double_t valueLR[5])
 {
-  // Sets ZNC towers
+  /// Sets ZNC towers
+
   for(Int_t i=0; i<5; i++){
     fZNCTowerEnergy[i] = value[i];
     fZNCTowerEnergyLR[i] = valueLR[i];
@@ -176,7 +172,8 @@ void  AliAODZDC::SetZNCTowers(const Double_t value[5], const Double_t valueLR[5]
 //______________________________________________________________________________
 void  AliAODZDC::SetZNATowers(const Double_t value[5], const Double_t valueLR[5])
 {
-  // Sets ZNA towers
+  /// Sets ZNA towers
+
   for(Int_t i=0; i<5; i++){
     fZNATowerEnergy[i] = value[i];
     fZNATowerEnergyLR[i] = valueLR[i];
@@ -186,7 +183,8 @@ void  AliAODZDC::SetZNATowers(const Double_t value[5], const Double_t valueLR[5]
 //______________________________________________________________________________
 void  AliAODZDC::SetZPCTowers(const Double_t value[5], const Double_t valueLR[5])
 {
-  // Sets ZPC towers
+  /// Sets ZPC towers
+
   for(Int_t i=0; i<5; i++){
     fZPCTowerEnergy[i] = value[i];
     fZPCTowerEnergyLR[i] = valueLR[i];
@@ -196,7 +194,8 @@ void  AliAODZDC::SetZPCTowers(const Double_t value[5], const Double_t valueLR[5]
 //______________________________________________________________________________
 void  AliAODZDC::SetZPATowers(const Double_t value[5], const Double_t valueLR[5])
 {
-  // Sets ZPA towers
+  /// Sets ZPA towers
+
   for(Int_t i=0; i<5; i++){
     fZPATowerEnergy[i] = value[i];
     fZPATowerEnergyLR[i] = valueLR[i];
@@ -206,7 +205,8 @@ void  AliAODZDC::SetZPATowers(const Double_t value[5], const Double_t valueLR[5]
 //______________________________________________________________________________
 Bool_t AliAODZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]) 
 {
-  // Provides coordinates of centroid over ZN (side C) front face in PbPb
+  /// Provides coordinates of centroid over ZN (side C) front face in PbPb
+
    if(beamEne==0){
     printf(" ZDC centroid in PbPb can't be calculated with E_beam = 0 !!!\n");
     //for(Int_t jj=0; jj<2; jj++) fZNCCentrCoord[jj] = 999.;
@@ -265,7 +265,8 @@ Bool_t AliAODZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Dou
 //______________________________________________________________________________
 Bool_t AliAODZDC::GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]) 
 {
-  // Provides coordinates of centroid over ZN (side C) front face in pp
+  /// Provides coordinates of centroid over ZN (side C) front face in pp
+
   const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   const Float_t alpha=0.5;
@@ -308,7 +309,8 @@ Bool_t AliAODZDC::GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2])
 //______________________________________________________________________________
 Bool_t AliAODZDC::GetTDCSum(Float_t sum[4]) 
 {
-  // Provides value(s) != -999 if both ZN are fired
+  /// Provides value(s) != -999 if both ZN are fired
+
   for(int i=0; i<4; i++) sum[i] = -999.;
   int ind=0;
   if(IsZNANDfired()){
@@ -330,7 +332,8 @@ Bool_t AliAODZDC::GetTDCSum(Float_t sum[4])
 //______________________________________________________________________________
 Bool_t AliAODZDC::GetTDCDiff(Float_t diff[4]) 
 {
-  // Provides value(s) != -999 if both ZN are fired
+  /// Provides value(s) != -999 if both ZN are fired
+
   for(int i=0; i<4; i++) diff[i] = -999.;
   int ind=0;
   if(IsZNANDfired()){

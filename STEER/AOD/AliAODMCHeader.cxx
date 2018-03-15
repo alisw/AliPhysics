@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//                      Implementation of   Class AliAODMCHeader
-//   Header data
-//   for the ESD   
-//   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
-//-------------------------------------------------------------------------
-
 #include "TList.h"
 #include "AliAODMCHeader.h"
 #include "AliGenEventHeader.h"
@@ -48,7 +41,8 @@ AliAODMCHeader::AliAODMCHeader() :
   ,fReactionPlaneAngle(0)  
   ,fHeaders(0)
 {
-  // default constructor
+  /// default constructor
+
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
   SetName(fgkStdBranchName.Data());
 }
@@ -74,7 +68,8 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   ,fReactionPlaneAngle(header.fReactionPlaneAngle)  
   ,fHeaders(0)
 {
-  // copy constructor
+  /// copy constructor
+
   for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
   SetName(header.fName);
   SetTitle(header.fTitle);
@@ -82,7 +77,7 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
 
 AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
 { 
-  // assigment operator
+  /// assigment operator
 
   if(this!=&header) {
     Reset();
@@ -107,7 +102,8 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
 
 void AliAODMCHeader::AddCocktailHeader(const AliGenEventHeader* header)
 {
-// Add a header to the list
+/// Add a header to the list
+
   if(!header)return;
   if (!fHeaders){ 
     fHeaders = new TList();
@@ -118,9 +114,9 @@ void AliAODMCHeader::AddCocktailHeader(const AliGenEventHeader* header)
 
 void AliAODMCHeader::Copy(TObject &obj) const {
   
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
+  /// this overwrites the virtual TOBject::Copy()
+  /// to allow run time copying without casting
+  /// in AliESDEvent
 
   if(this==&obj)return;
   AliAODMCHeader *robj = dynamic_cast<AliAODMCHeader*>(&obj);
@@ -134,7 +130,8 @@ void AliAODMCHeader::Copy(TObject &obj) const {
 //______________________________________________________________________________
 void AliAODMCHeader::Reset()
 {
-  // reset all data members
+  /// reset all data members
+
   fGenerator = "";
   fImpactPar = 0;
   fEventType = 0;
@@ -149,7 +146,8 @@ void AliAODMCHeader::Reset()
 //______________________________________________________________________________
 void AliAODMCHeader::Print(const Option_t *) const
 {
-  // Print some data members
+  /// Print some data members
+
   Printf("MC EventHeader Generators: %s # EventType %d  Vtx = (%3.3f,%3.3f,%3.3f) ptHard = %3.3f GeV Impact parameter %3.3f  \n",
 	 GetGeneratorName(),
 	 GetEventType(),

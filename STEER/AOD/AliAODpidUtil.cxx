@@ -15,12 +15,6 @@
 
 /* $Id: AliAODpidUtil.cxx 38329 2010-01-17 19:17:24Z hristov $ */
 
-//-----------------------------------------------------------------
-//           Implementation of the combined PID class
-//           For the AOD Class
-//           containing information on the particle identification
-//      Origin: Rosa Romita, GSI, r.romita@gsi.de
-//-----------------------------------------------------------------
 
 #include "AliLog.h"
 #include "AliAODpidUtil.h"

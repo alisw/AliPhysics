@@ -2,12 +2,12 @@
 #define _ALINANOAODSTORAGE_H_
 
 
-//-------------------------------------------------------------------------
-//  AliNanoAODStorage
-//
-//  Implements the storage for special AOD classes 
-//
-//-------------------------------------------------------------------------
+/// \class AliNanoAODStorage
+/// \brief AliNanoAODStorage
+///
+/// Implements the storage for special AOD classes
+///
+
 #include "TObject.h"
 #include "TString.h"
 
@@ -47,8 +47,8 @@ public:
 
 protected:
 
-  Int_t    fNVars;     // Number of kimematic variables, set by constructor
-  Int_t    fNVarsInt;     // Number of int variables, set by constructor
+  Int_t    fNVars;     ///< Number of kimematic variables, set by constructor
+  Int_t    fNVarsInt;     ///< Number of int variables, set by constructor
   std::vector<Double32_t> fVars; // Array of kinematic vars. Here we use an STL vector because it produces ~5% smaller files. It may be aslo splittable
   std::vector<Int_t> fVarsInt; // Array of int vars. Use same structure as for fVars, int has to be used for a bitwise variable describing the fired trigger particles, because this is bitwise coded
 
