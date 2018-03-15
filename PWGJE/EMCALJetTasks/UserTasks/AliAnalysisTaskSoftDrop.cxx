@@ -17,6 +17,7 @@
 #include "AliClusterContainer.h"
 #include "AliPicoTrack.h"
 
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSoftDrop.h"
 
 ClassImp(AliAnalysisTaskSoftDrop)
@@ -118,6 +119,108 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop(const char *name) :
 AliAnalysisTaskSoftDrop::~AliAnalysisTaskSoftDrop()
 {
   // Destructor.
+}
+
+AliAnalysisTaskSoftDrop* AliAnalysisTaskSoftDrop::AddTaskSoftDrop(
+  const char *ntracks,
+  const char *nclusters,
+  const char *njets,
+  const char *nrho,
+  Int_t       nCentBins,
+  Double_t    jetradius,
+  Double_t    jetptcut,
+  Double_t    jetareacut,
+  const char *type,
+  Int_t       leadhadtype,
+  const char *taskname
+)
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskEmcalJetSample", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+  {
+    ::Error("AddTaskEmcalJetSample", "This task requires an input event handler");
+    return NULL;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  TString name(taskname);
+  if (strcmp(njets,"")) {
+    name += "_";
+    name += njets;
+  }
+  if (strcmp(nrho,"")) {
+    name += "_";
+    name += nrho;
+  }
+  if (strcmp(type,"")) {
+    name += "_";
+    name += type;
+  }
+
+  Printf("name: %s",name.Data());
+
+  AliAnalysisTaskSoftDrop* jetTask = new AliAnalysisTaskSoftDrop(name);
+  //jetTask->SetCentRange(0.,100.);
+  //jetTask->SetNCentBins(nCentBins);
+
+  AliParticleContainer* partCont = 0;
+  if (trackName == "mcparticles") {
+    partCont = jetTask->AddMCParticleContainer(ntracks);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    partCont = jetTask->AddTrackContainer(ntracks);
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+
+  TString strType(type);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
+  if(jetCont) {
+    jetCont->SetRhoName(nrho);
+    jetCont->ConnectParticleContainer(partCont);
+    jetCont->ConnectClusterContainer(clusterCont);
+    //jetCont->SetZLeadingCut(0.98,0.98);
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetJetPtCut(jetptcut);
+    jetCont->SetLeadingHadronType(leadhadtype);
+  }
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  TString contname(name);
+  contname += "_histos";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (jetTask, 0,  cinput1 );
+  mgr->ConnectOutput (jetTask, 1, coutput1 );
+
+  return jetTask;
 }
 
 //________________________________________________________________________
