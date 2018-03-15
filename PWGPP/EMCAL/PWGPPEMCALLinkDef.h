@@ -12,6 +12,7 @@
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEMCALTimeCalib+;
 #pragma link C++ class BadChannelAna+;
+#pragma link C++ class BadChannelAna_V2+;
 #pragma link C++ class ElectronForAlignment+;
 
 #endif
