@@ -92,6 +92,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
   fEmbeddingQA(),
+  fMinSharedMomentumFraction(0.5),
+  fMaxMatchedJetDistance(0.3),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -134,6 +136,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
   fEmbeddingQA(),
+  fMinSharedMomentumFraction(0.5),
+  fMaxMatchedJetDistance(0.3),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -913,6 +917,21 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   histname = "MatchedJetHistograms/hMatchingDistance";
   title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
   fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hMatchingDistancepp";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
+  histname = "MatchedJetHistograms/fHistJetMatchingQA";
+  title = histname;
+  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+  auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
+  // Set label names
+  for (unsigned int i = 1; i <= binLabels.size(); i++) {
+    histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  }
+  histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
 
 }
 
@@ -2093,7 +2112,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 {
   TString histname;
   AliJetContainer* jets = 0;
-  const AliEmcalJet* matchedJet = nullptr;
+  const AliEmcalJet* matchedPartLevelJet = nullptr;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     TString jetContName = jets->GetName();
@@ -2110,9 +2129,9 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     
     for (auto jet : jets->accepted()) {
       
-      // Get the matched jet, if it exists
-      matchedJet = jet->MatchedJet();
-      if (!matchedJet) {
+      // Get the matched part-level jet, if one exists, subject to fMinSharedMomentumFraction, fMaxMatchedJetDistance criteria
+      matchedPartLevelJet = GetMatchedPartLevelJet(jets, jet, "MatchedJetHistograms/fHistJetMatchingQA");
+      if (!matchedPartLevelJet) {
         continue;
       }
       
@@ -2123,7 +2142,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
       }
       
       Float_t detPt = GetJetPt(jet, rhoVal);
-      Float_t truthPt = matchedJet->Pt();
+      Float_t truthPt = matchedPartLevelJet->Pt();
       
       // Fill response matrix (centrality, pT-truth, pT-det)
       if (type == kEMCal) {
@@ -2155,9 +2174,13 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
       fHistManager.FillTH3(histname, fCent, truthPt, z);
       
-      // Fill matching distance (centrality, pT-truth, R)
+      // Fill matching distance between combined jet and pp det-level jet (centrality, pT-truth, R)
       histname = "MatchedJetHistograms/hMatchingDistance";
       fHistManager.FillTH3(histname, fCent, truthPt, jet->ClosestJetDistance());
+      
+      // Fill matching distance between pp det-level jet and  pp truth-level jet (centrality, pT-truth, R)
+      histname = "MatchedJetHistograms/hMatchingDistancepp";
+      fHistManager.FillTH3(histname, fCent, truthPt, matchedPartLevelJet->ClosestJetDistance());
       
     } //jet loop
   }
@@ -2266,6 +2289,90 @@ Double_t AliAnalysisTaskEmcalJetPerformance::GetJetPt(const AliEmcalJet* jet, Do
 Bool_t AliAnalysisTaskEmcalJetPerformance::IsHadron(const ContributorType contributor)
 {
   return (contributor == kChargedPion) || (contributor == kProton) || (contributor == kAntiProton) || (contributor == kChargedKaon) || (contributor == kK0L) || (contributor == kNeutron) || (contributor == kAntiNeutron);
+}
+
+/**
+ * Return a pointer to an accepted matched truth-level jet, if it exists
+ *
+ * Check for whether a matched jet should be accepted based on:
+ * - Jet (combined jet) being identified as matched to another jet (pp det-level), which is matched to a another jet (pp truth-level)
+ * - The shared momentum fraction being larger than some minimum value fMinSharedMomentumFraction
+ * - Their matched distance being below the max matching distance fMaxMatchedJetDistance
+ *
+ * NOTE: AliEmcalJet::ClosestJet() is called instead of AliEmcalJet::MatchedJet() because ClosestJet() will work
+ * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
+ * due to the design of the classes.
+ *
+ * @param[in] jets Jet container corresponding to the jet to be checked
+ * @param[in] jet Jet to be checked
+ * @param[in] histName Name of the hist in the hist manager where QA information will be filled
+ * @return Pointer to an accepted matched jet, if it exists. False otherwise.
+ *
+ * This function is essentially copied from AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet
+ */
+const AliEmcalJet* AliAnalysisTaskEmcalJetPerformance::GetMatchedPartLevelJet(const AliJetContainer * jets, const AliEmcalJet * jet, const std::string & histName)
+{
+  bool returnValue = false;
+  const AliEmcalJet* partLevelJet = nullptr;
+  
+  // First, check if combined jet has a pp det-level match assigned
+  if (jet->ClosestJet()) {
+    fHistManager.FillTH1(histName.c_str(), "matchedJet");
+    returnValue = true;
+    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString() << "\n";
+    
+    // Check shared momentum fraction
+    // We explicitly want to use indices instead of geometric matching
+    double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
+    if (sharedFraction < fMinSharedMomentumFraction) {
+      AliDebugStream(4) << "Jet rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
+      fHistManager.FillTH1(histName.c_str(), "sharedMomentumFraction");
+    }
+    
+    // Check that the combined jet has a particle-level match
+    AliEmcalJet * detLevelJet = jet->ClosestJet();
+    partLevelJet = detLevelJet->ClosestJet();
+    if (!partLevelJet) {
+      AliDebugStream(4) << "Jet rejected due to no matching part level jet.\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Det level jet has a required match to a part level jet.\n" << "Part level jet: " << partLevelJet->toString() << "\n";
+      fHistManager.FillTH1(histName.c_str(), "partLevelMatchedJet");
+    }
+    
+    // Check the matching distance between the combined and pp det-level jets, if a value has been set
+    if (fMaxMatchedJetDistance > 0) {
+      double matchedJetDistance = jet->ClosestJetDistance();
+      if (matchedJetDistance > fMaxMatchedJetDistance) {
+        AliDebugStream(4) << "Jet rejected due to matching distance of " << matchedJetDistance << ", which is larger than the max distance of " << fMaxMatchedJetDistance << "\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Jet passed distance cut with distance of " << matchedJetDistance << "\n";
+        fHistManager.FillTH1(histName.c_str(), "jetDistance");
+      }
+    }
+    
+    // Record all cuts passed
+    if (returnValue == true) {
+      fHistManager.FillTH1(histName.c_str(), "passedAllCuts");
+    }
+  }
+  else {
+    AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+    fHistManager.FillTH1(histName.c_str(), "noMatch");
+    returnValue = false;
+  }
+  
+  if (returnValue) {
+    return partLevelJet;
+  }
+  return 0;
 }
 
 /**
