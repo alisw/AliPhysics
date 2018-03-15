@@ -308,7 +308,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;
 	}
-	task->SetDebugLevel(0);
+//	task->SetDebugLevel(0);
 	task->SetEvtCutQA(true);
 	task->SetTrackBufferSize(10000);
 	task->SetEventCuts(evtCuts);
@@ -465,117 +465,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
 		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
 	}
-//	if (!mgr->InitAnalysis()) {
-//		return nullptr;
-//	}
 	return task;
 }
 
-
-//  if (ContributionSplitting) {
-//    v0Cuts=new AliFemtoDreamv0Cuts();
-//    v0Cuts->SetAxisInvMassPlots(400,1.0, 1.2);
-//    v0Cuts->SetIsMonteCarlo(isMC);
-//    v0Cuts->SetPlotCPADist(false);
-//    v0Cuts->SetPlotContrib(true);
-//    AliFemtoDreamTrackCuts *Posv0Daug=
-//        new AliFemtoDreamTrackCuts();
-//    Posv0Daug->SetIsMonteCarlo(isMC);
-//    Posv0Daug->SetPlotContrib(true);
-//    AliFemtoDreamTrackCuts *Negv0Daug=
-//        new AliFemtoDreamTrackCuts();
-//    Negv0Daug->SetIsMonteCarlo(isMC);
-//    Negv0Daug->SetPlotContrib(true);
-//    v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
-//    v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
-//    v0Cuts->SetPDGCodePosDaug(2212);//Proton
-//    v0Cuts->SetPDGCodeNegDaug(211);//Pion
-//    v0Cuts->SetPDGCodev0(3122);//Lambda
-//
-//    Antiv0Cuts=new AliFemtoDreamv0Cuts();
-//    Antiv0Cuts->SetAxisInvMassPlots(400,1.0, 1.2);
-//    Antiv0Cuts->SetIsMonteCarlo(isMC);
-//    Antiv0Cuts->SetPlotCPADist(false);
-//    Antiv0Cuts->SetPlotContrib(true);
-//    AliFemtoDreamTrackCuts *PosAntiv0Daug=
-//        new AliFemtoDreamTrackCuts();
-//    PosAntiv0Daug->SetCutCharge(1);
-//    PosAntiv0Daug->SetIsMonteCarlo(isMC);
-//    PosAntiv0Daug->SetPlotContrib(true);
-//    AliFemtoDreamTrackCuts *NegAntiv0Daug=
-//        new AliFemtoDreamTrackCuts();
-//    NegAntiv0Daug->SetCutCharge(-1);
-//    NegAntiv0Daug->SetIsMonteCarlo(isMC);
-//    NegAntiv0Daug->SetPlotContrib(true);
-//    Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
-//    Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
-//    Antiv0Cuts->SetPDGCodePosDaug(211);//Pion
-//    Antiv0Cuts->SetPDGCodeNegDaug(2212);//Proton
-//    Antiv0Cuts->SetPDGCodev0(-3122);//Lambda
-//
-//    CascadeCuts=
-//        new AliFemtoDreamCascadeCuts();
-//    CascadeCuts->SetIsMonteCarlo(isMC);
-//    CascadeCuts->SetContributionSplitting(true);
-//    CascadeCuts->SetXiCharge(-1);
-//    CascadeCuts->SetXiMassRange(1.31486,5000);
-//    AliFemtoDreamTrackCuts *XiNegCuts=
-//        new AliFemtoDreamTrackCuts();
-//    XiNegCuts->SetCutCharge(-1);
-//    XiNegCuts->SetIsMonteCarlo(isMC);
-//    XiNegCuts->SetPlotContrib(true);
-//    XiNegCuts->SetCutCharge(-1);
-//    AliFemtoDreamTrackCuts *XiPosCuts=
-//        new AliFemtoDreamTrackCuts();
-//    XiPosCuts->SetCutCharge(-1);
-//    XiPosCuts->SetIsMonteCarlo(isMC);
-//    XiPosCuts->SetPlotContrib(true);
-//    XiPosCuts->SetCutCharge(1);
-//    AliFemtoDreamTrackCuts *XiBachCuts=
-//        new AliFemtoDreamTrackCuts();
-//    XiBachCuts->SetCutCharge(-1);
-//    XiBachCuts->SetIsMonteCarlo(isMC);
-//    XiBachCuts->SetPlotContrib(true);
-//    XiBachCuts->SetCutCharge(-1);
-//    CascadeCuts->Setv0Negcuts(XiNegCuts);
-//    CascadeCuts->Setv0PosCuts(XiPosCuts);
-//    CascadeCuts->SetBachCuts(XiBachCuts);
-//    CascadeCuts->SetPDGCodeCasc(-3312);
-//    CascadeCuts->SetPDGCodev0(3122);
-//    CascadeCuts->SetPDGCodePosDaug(2212);
-//    CascadeCuts->SetPDGCodeNegDaug(-211);
-//    CascadeCuts->SetPDGCodeBach(-211);
-//
-//    AntiCascadeCuts=
-//        new AliFemtoDreamCascadeCuts();
-//    AntiCascadeCuts->SetIsMonteCarlo(isMC);
-//    AntiCascadeCuts->SetContributionSplitting(true);
-//    AntiCascadeCuts->SetXiCharge(1);
-//    AntiCascadeCuts->SetXiMassRange(1.31486,5000);
-//    AliFemtoDreamTrackCuts *AntiXiNegCuts=
-//        new AliFemtoDreamTrackCuts();
-//    AntiXiNegCuts->SetCutCharge(-1);
-//    AntiXiNegCuts->SetIsMonteCarlo(isMC);
-//    AntiXiNegCuts->SetPlotContrib(true);
-//    AntiXiNegCuts->SetCutCharge(-1);
-//    AliFemtoDreamTrackCuts *AntiXiPosCuts=
-//        new AliFemtoDreamTrackCuts();
-//    AntiXiPosCuts->SetCutCharge(-1);
-//    AntiXiPosCuts->SetIsMonteCarlo(isMC);
-//    AntiXiPosCuts->SetPlotContrib(true);
-//    AntiXiPosCuts->SetCutCharge(1);
-//    AliFemtoDreamTrackCuts *AntiXiBachCuts=
-//        new AliFemtoDreamTrackCuts();
-//    AntiXiBachCuts->SetCutCharge(-1);
-//    AntiXiBachCuts->SetIsMonteCarlo(isMC);
-//    AntiXiBachCuts->SetPlotContrib(true);
-//    AntiXiBachCuts->SetCutCharge(1);
-//    AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
-//    AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
-//    AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
-//    AntiCascadeCuts->SetPDGCodeCasc(3312);
-//    AntiCascadeCuts->SetPDGCodev0(-3122);
-//    AntiCascadeCuts->SetPDGCodePosDaug(211);
-//    AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
-//    AntiCascadeCuts->SetPDGCodeBach(211);
-//  } else {

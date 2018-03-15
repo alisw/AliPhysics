@@ -47,14 +47,7 @@ void AliFemtoDreamPartCollection::SetEvent(
   }
   int bins[2] = {0,0};
   FindBin(ZVtx,Mult,bins);
-  if (bins[0]==-99||bins[1]==-99) {
-    std::cout << "Mult ("<<Mult<<") Bin ("<<bins[1]<<") and ZVtx ("<<ZVtx<<") Bin ("<<bins[0]<<")\n";
-    TString fatalOut=
-        Form("No Multiplicity bin (%i) for this multiplicity (%i) "
-            " or Vtx Bin (%i) for this zVtx (%4.2f) \n",bins[1],Mult,bins[0],ZVtx);
-    std::cout << "Mult ("<<Mult<<") Bin ("<<bins[1]<<") and ZVtx ("<<ZVtx<<") Bin ("<<bins[0]<<")\n";
-    AliWarning(fatalOut.Data());
-  } else {
+  if (!(bins[0]==-99||bins[1]==-99)) {
     auto itZVtx=fZVtxMultBuffer.begin();
     itZVtx+=bins[0];
     auto itMult=itZVtx->begin();

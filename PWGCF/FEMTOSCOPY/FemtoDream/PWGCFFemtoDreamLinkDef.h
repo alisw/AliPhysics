@@ -29,6 +29,7 @@
 #pragma link C++ class AliFemtoDreamPartCollection+;
 #pragma link C++ class AliFemtoDreamAnalysis+;
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
+#pragma link C++ class AliAnalysisTaskMCFemtoDream+;
 
 #endif
 

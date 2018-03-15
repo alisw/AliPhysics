@@ -52,6 +52,7 @@ set(SRCS
   AliFemtoDreamPartCollection.cxx 
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
+  AliAnalysisTaskMCFemtoDream.cxx
   )
 
 

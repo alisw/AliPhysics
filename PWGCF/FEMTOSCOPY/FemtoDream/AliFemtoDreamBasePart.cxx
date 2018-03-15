@@ -39,3 +39,28 @@ AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
 }
 
 
+void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart) {
+  this->SetPt(mcPart->Pt());
+  this->SetMomentum(mcPart->Px(),mcPart->Py(),mcPart->Pz());
+  this->SetEta(mcPart->Eta());
+  this->SetTheta(mcPart->Theta());
+  this->SetPhi(mcPart->Phi());
+  this->SetCharge(mcPart->Charge());
+  this->SetPDGCode(mcPart->GetPdgCode());
+  this->fIsSet=true;
+  this->SetUse(true);
+  this->fIsReset=false;
+}
+
+void AliFemtoDreamBasePart::ResetMCInfo() {
+  this->SetPt(0);
+  //a change
+  this->SetEta(0);
+  this->SetTheta(0);
+  this->SetPhi(0);
+  this->SetCharge(0);
+  this->SetPDGCode(0);
+  this->fIsSet=false;
+  this->SetUse(false);
+  this->fIsReset=true;
+}
