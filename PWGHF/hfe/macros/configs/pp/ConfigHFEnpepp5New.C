@@ -148,10 +148,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          kHadronDown = 1,
          kHadronUp= 2,
          kHadronError = 3,
-         kHadronTPCMinus05 = 4,
+
          kHadronTPC0 = 5,
          kHadronTPC025 = 6,
          kHadronTPCMinus025 = 7,
+         kHadronTPCMinus10 = 4, // exchange -1 and -0.5
          kHadronTPCMinus075 = 8,
          kHadronTPCMinus13 = 9,
          kHadronTPCUp10 = 10,
@@ -244,17 +245,6 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(4,8.75536e-01);
                hBackground->SetParameter(5,3.92824e-02);
                break;
-            case kHadronTPCMinus05:
-               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,1.54134e+00);
-               hBackground->SetParameter(1,1.15392e+01);
-               hBackground->SetParameter(2,2.85580e+00);
-
-               //remaining Kaon crossing
-               hBackground->SetParameter(3,2.51913e-02);
-               hBackground->SetParameter(4,8.72570e-01);
-               hBackground->SetParameter(5,2.88833e-02);
-               break;
             case kHadronTPCMinus075:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
                hBackground->SetParameter(0,2.30571e+00);
@@ -307,7 +297,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(4,8.76299e-01);
                hBackground->SetParameter(5,2.67965e-02);
                break;
-            default:
+            case kHadronTPCMinus10:
                hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
                hBackground->SetParameter(0, 3.03382e+00 );
                hBackground->SetParameter(1, 9.63780e+00);
@@ -316,6 +306,17 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                hBackground->SetParameter(3, 2.18302e-02);
                hBackground->SetParameter(4, 8.72968e-01);
                hBackground->SetParameter(5, 2.88664e-02);
+               break;
+            default:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
+               hBackground->SetParameter(0,1.54134e+00);
+               hBackground->SetParameter(1,1.15392e+01);
+               hBackground->SetParameter(2,2.85580e+00);
+
+               //remaining Kaon crossing
+               hBackground->SetParameter(3,2.51913e-02);
+               hBackground->SetParameter(4,8.72570e-01);
+               hBackground->SetParameter(5,2.88833e-02);
                break;
          }
       }
