@@ -1319,9 +1319,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
         else
           return kFALSE;
       }
-    }
     else
       fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+    }
   } //the flag fANnoSameTcard could be used also independently of fQA and fWho,
     //depending on the results of the analysis on full dataset.
   
@@ -4116,11 +4116,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, Ali
           if(TMath::Abs(phip-phi) < fIsoConeRadius){
 	    if(mcpp->Charge() != 0){
 	      sumUE += mcpp->Pt();
-	      fEtaBandUENeutral_MC->Fill(sumUE);
+	      if(fWho == 2){
+	        fEtaBandUENeutral_MC->Fill(sumUE);
+	      }
 	    }
 	    else if(mcpp->GetPdgCode() == 22){
 	      sumUE += mcpp->E()*(TMath::Sin(mcpp->Theta()));
-	      fEtaBandUECharged_MC->Fill(sumUE);
+	      if(fWho == 2){
+	        fEtaBandUECharged_MC->Fill(sumUE);
+	      }
 	    }
 	  }
 
