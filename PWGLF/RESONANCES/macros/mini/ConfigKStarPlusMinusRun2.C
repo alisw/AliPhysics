@@ -26,9 +26,10 @@ Bool_t ConfigKStarPlusMinusRun2
  TString                 monitorOpt="",
  Float_t                 massTol,
  Float_t                 massTolVeto,
+ Bool_t 				 tol_switch,
+ Double_t                tol_sigma,
  Float_t                 pLife,
  Float_t                 radiuslow,
- Float_t                 radiushigh,
  Bool_t                  Switch,
  Float_t                 k0sDCA,
  Float_t                 k0sCosPoinAn,
@@ -42,7 +43,6 @@ Bool_t ConfigKStarPlusMinusRun2
  Bool_t                  enableSys,
  Float_t                 crossedRows,
  Float_t                 rowsbycluster,
- Float_t                 chi2tpc,
  Double_t                pt1,
  Double_t                pt2,
  Int_t                   Sys
@@ -106,7 +106,7 @@ Bool_t ConfigKStarPlusMinusRun2
     esdTrackCuts->SetAcceptKinkDaughters(0); //
     esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);
-    esdTrackCuts->SetMaxChi2PerClusterTPC(chi2tpc);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(100);
     
     if(ptDep){
         esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
@@ -127,8 +127,10 @@ Bool_t ConfigKStarPlusMinusRun2
     cutK0s->SetSwitch(Switch);
     cutK0s->SetfLife(pLife);
     cutK0s->SetfLowRadius(radiuslow);
-    cutK0s->SetfHighRadius(radiushigh);
+    cutK0s->SetfHighRadius(200);
     cutK0s->SetMaxRapidity(2.0);
+    cutK0s->SetpT_Tolerance(tol_switch);
+    cutK0s->SetMassTolSigma(tol_sigma);
     
     if(enableSys)
     {
@@ -255,32 +257,6 @@ Bool_t ConfigKStarPlusMinusRun2
         if(isGT) out->AddAxis(sdpt,100,0.,10.);
     }
     
-
-    ///////////////////////////////////////////////////////////
-   // test part: use ROTATE in place of MIX
-   //i=0; // test is for ChargeKstar only
-   for (Int_t i = 0; i < 2; i++) 
-     {  if (!use[i]) continue;
-       //if (collSyst) output[i] = "SPARSE";
-       AliRsnMiniOutput *out = task->CreateOutput(Form("ChargeKstar_Rotated_%s%s", name[i].Data(), suffix), output[i].Data(), "ROTATE2");
-       out->SetCutID(0, cutID1[i]);
-       out->SetCutID(1, cutID2[i]);
-       out->SetDaughter(0, AliRsnDaughter::kKaon0);
-       out->SetDaughter(1, AliRsnDaughter::kPion);
-       out->SetCharge(0, charge1[i]);
-       out->SetCharge(1, charge2[i]);
-       out->SetMotherPDG(ipdg[i]);
-       out->SetMotherMass(mass[i]);
-       // pair cuts
-       out->SetPairCuts(PairCutsSame);
-      
-       if (useIM[i]) out->AddAxis(imID, 90, 0.6, 1.5);
-       out->AddAxis(ptID, 300, 0.0, 30.0);
-       //if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
-       //
-       // end test part 
-       ///////////////////////////////////////////////////////////
-     }
     
     // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
@@ -765,30 +741,6 @@ void AddMonitorOutput_K0sMass_Pt(TObjArray *mon=0, TString opt="", AliRsnLoopDau
     AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("K0s_Mass_Pt", AliRsnListOutput::kHistoDefault);
     outMonitorTrMom->AddValue(axisK0sPt);
     outMonitorTrMom->AddValue(axisMass);
-    
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorTrMom);
-    if (lPt) lpt->AddOutput(outMonitorTrMom);
-    //if (mon) mon->Add(outMonitorM);
-    //if (lMass) lm->AddOutput(outMonitorM);
-    
-}
-
-
-
-
-void AddMonitorOutput_DCAPV_Pt(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *lDCAPV=0, AliRsnLoopDaughter *lPt=0)
-{
-    AliRsnValueDaughter *axisDCAPV = new AliRsnValueDaughter("K0s_DCAPV", AliRsnValueDaughter::kV0DCA);
-    axisDCAPV->SetBins(0,110,0.001);
-     
-    AliRsnValueDaughter *axisK0sPt = new AliRsnValueDaughter("K0s_Pt", AliRsnValueDaughter::kV0Pt);
-    axisK0sPt->SetBins(0.,30.,0.001);
-    
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("DCAPV_Pt", AliRsnListOutput::kHistoDefault);
-    outMonitorTrMom->AddValue(axisK0sPt);
-    outMonitorTrMom->AddValue(axisDCAPV);
     
     // add outputs to loop
     if (mon) mon->Add(outMonitorTrMom);
