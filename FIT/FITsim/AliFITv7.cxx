@@ -87,7 +87,7 @@ AliFITv7::AliFITv7():  AliFIT(),
   fV0PlusR4(41.3),//From V0A
   fV0PlusR5(72.94),//Computed for z = 325 cm from IP
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
-  fV0PlusSciWd(2.),//From V0A
+  fV0PlusSciWd(5.),//From V0A
   fV0PlusFraWd(0.2),//From V0A
   fV0PlusZposition(+318),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
@@ -124,7 +124,7 @@ AliFITv7::AliFITv7(const char *name, const char *title):
   fV0PlusR4(41.3),//From V0A
   fV0PlusR5(72.94),//Computed for z = 325 cm from IP
   fV0PlusR6(72.6),//Needed to compute fV0PlusnMeters
-  fV0PlusSciWd(2.),//From V0A
+  fV0PlusSciWd(5.),//From V0A
   fV0PlusFraWd(0.2),//From V0A
   fV0PlusZposition(+318),//Must be changed to specifications from Corrado (meeting 10/11/176)
   fV0PlusnMeters(fV0PlusR6*0.01),//From V0A
@@ -251,7 +251,7 @@ void AliFITv7::CreateGeometry()
   TGeoVolumeAssembly* stlinC = new TGeoVolumeAssembly("0STR");  // C side mother
   //FIT interior
   // tube inside T0A
-  Float_t pinnertube[3] = {3.9, 4.0, 6.22}; 
+  Float_t pinnertube[3] = {3.95, 4.0, 6.22}; 
   TVirtualMC::GetMC()->Gsvolu("0TIN","TUBE",idtmed[kAl],pinnertube,3); 
   TGeoVolume * innertube = gGeoManager->GetVolume("0TIN");
   stlinA->AddNode(innertube,1,new TGeoTranslation(0,0,0) );
@@ -259,7 +259,7 @@ void AliFITv7::CreateGeometry()
   Float_t poutertube[3] = {41, 41.1, 6.54}; 
   TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kAl],poutertube,3); 
   TGeoVolume *outertube = gGeoManager->GetVolume("0OUT");
-  stlinA->AddNode(outertube,1,new TGeoTranslation(0,0,0) );
+   stlinA->AddNode(outertube,1,new TGeoTranslation(0,0,0) );
  
 
   TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kOpAir],pinstart,3);
@@ -888,7 +888,7 @@ void AliFITv7::SetVZEROGeo(TGeoVolume *alice)
    TVirtualMC::GetMC()->Gsvolu("VALB","TUBE",idtmed[kAl],pv0Albo,3); 
   TGeoVolume *v0Alb = gGeoManager->GetVolume("VALB");
    z = fV0PlusSciWd/2. +  pv0Albo[2] +0.1;
-  v0Plus->AddNode(v0Alb,1,new TGeoTranslation(0, 0, z));
+   v0Plus->AddNode(v0Alb,1,new TGeoTranslation(0, 0, z));
  
 
   alice->AddNode(v0Plus,1,new TGeoTranslation(0, 0, fV0PlusZposition));

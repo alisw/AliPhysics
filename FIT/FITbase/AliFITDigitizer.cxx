@@ -204,7 +204,7 @@ void AliFITDigitizer::DigitizeHits()
 	mcp=startHit->MCP();
 	volume = startHit->Volume();
 	if (volume<2) numpmt=4*(mcp) +pmt-1;
-	if(volume==2) numpmt=pmt+208;
+	if (volume==2) numpmt=pmt+208;
 	besttime[numpmt] = startHit->Time();
 	if(besttime[numpmt]<time[numpmt]) time[numpmt]=besttime[numpmt];
 	if (ipart==50)	countE[numpmt]++;
@@ -222,7 +222,7 @@ void AliFITDigitizer::DigitizeHits()
 	//	qt= countE[ipmt] ;  // !!!!
 	//  fill TDC
 	//	if (ipmt>95) time[ipmt] = time[ipmt] + eqdistance;
-	timeCFD = Int_t (gRandom->Gaus(time[ipmt], 50)/channelWidth ); 
+	timeCFD = Int_t (gRandom->Gaus(time[ipmt]/channelWidth, 50) ); 
 	timeLED =  Int_t (time[ipmt]/channelWidth );
 	timeQT0 = countCh[ipmt];
 	timeQT1 = countE[ipmt] ;

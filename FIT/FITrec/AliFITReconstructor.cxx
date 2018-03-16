@@ -166,7 +166,7 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
     for (Int_t dig=0; dig<nDigits; dig++) {    
       AliFITDigit* digit = (AliFITDigit*) fDigits->At(dig);      
       pmt = digit->NPMT();
-      time[pmt] = Float_t (digit->TimeCFD() );
+      time[pmt] = Float_t (digit->TimeLED() );
       amp[pmt] = Float_t (digit->TimeQT0() );
       photons[pmt] =  Float_t (digit->TimeQT1() );
      } 
