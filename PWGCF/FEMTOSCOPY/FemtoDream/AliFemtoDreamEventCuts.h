@@ -32,6 +32,7 @@ class AliFemtoDreamEventCuts {
   }
   //Everything else disabled if you use the following option:
   void UseDontWorryEvtCuts(bool apply) {fUseAliEvtCuts=apply;};
+  void SetMultVsCentPlots(bool doIt) {fCentVsMultPlots=doIt;};
   void InitQA(bool MinimalBooking);
   TList *GetHistList() const {return fHist->GetHistList();};
  private:
@@ -53,7 +54,8 @@ class AliFemtoDreamEventCuts {
   bool fUseRef08Mult;             //
   //Use evt cuts tuned by expert(don't worry solution)
   bool fUseAliEvtCuts;            //
-  ClassDef(AliFemtoDreamEventCuts,2)
+  bool fCentVsMultPlots;          //
+  ClassDef(AliFemtoDreamEventCuts,3)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

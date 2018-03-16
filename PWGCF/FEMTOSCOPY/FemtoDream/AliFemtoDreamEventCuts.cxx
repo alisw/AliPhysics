@@ -23,6 +23,7 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
 ,fUseV0CMult(false)
 ,fUseRef08Mult(false)
 ,fUseAliEvtCuts(false)
+,fCentVsMultPlots(false)
 {
 }
 
@@ -112,7 +113,7 @@ void AliFemtoDreamEventCuts::InitQA(bool MinimalBooking) {
   if (MinimalBooking) {
     fHist=0;
   } else {
-    fHist=new AliFemtoDreamEventHist();
+    fHist=new AliFemtoDreamEventHist(fCentVsMultPlots);
     BookCuts();
   }
 }
@@ -145,6 +146,12 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultV0C(i,evt->GetV0CMult());
         fHist->FillMultRef08(i,evt->GetRefMult08());
       }
+    }
+    if (fCentVsMultPlots) {
+      fHist->FillCentVsMultV0A(evt->GetV0MCentrality(),evt->GetV0AMult());
+      fHist->FillCentVsMultV0M(evt->GetV0MCentrality(),evt->GetV0MMult());
+      fHist->FillCentVsMultV0C(evt->GetV0MCentrality(),evt->GetV0CMult());
+      fHist->FillCentVsMultRef(evt->GetV0MCentrality(),evt->GetRefMult08());
     }
   }
 }

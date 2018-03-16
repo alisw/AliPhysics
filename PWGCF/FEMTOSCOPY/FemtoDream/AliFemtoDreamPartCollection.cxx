@@ -38,11 +38,11 @@ AliFemtoDreamPartCollection::~AliFemtoDreamPartCollection() {
 
 void AliFemtoDreamPartCollection::SetEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    float ZVtx,float Mult)
+    float ZVtx,float Mult,float cent)
 {
   if (Particles.size()!=fNSpecies) {
     TString fatalOut=
-        Form("Too few Species %d for %d",Particles.size(),fNSpecies);
+        Form("Too few Species %d for %d",Particles.size(),(int)fNSpecies);
     AliFatal(fatalOut.Data());
   }
   int bins[2] = {0,0};
@@ -52,8 +52,8 @@ void AliFemtoDreamPartCollection::SetEvent(
     itZVtx+=bins[0];
     auto itMult=itZVtx->begin();
     itMult+=bins[1];
-    itMult->PairParticlesSE(Particles,fResults,bins[1]);
-    itMult->PairParticlesME(Particles,fResults,bins[1]);
+    itMult->PairParticlesSE(Particles,fResults,bins[1],cent);
+    itMult->PairParticlesME(Particles,fResults,bins[1],cent);
     itMult->SetEvent(Particles);
   }
   return;

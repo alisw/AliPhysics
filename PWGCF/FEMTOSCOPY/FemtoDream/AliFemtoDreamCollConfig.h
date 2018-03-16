@@ -18,7 +18,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   AliFemtoDreamCollConfig(const char *name, const char *title);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
+  void SetkTBinning(bool doIt){fkTBinning=doIt;};
+  void SetmTBinning(bool doIt){fmTBinning=doIt;};
   void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
+  void SetkTCentralityBinning(bool doIt){fkTCentrality=doIt;};
   void SetPhiEtaBinnign(bool doIt){
     fPhiEtaBinning=doIt;fNumberRadii=9;
   };
@@ -28,11 +31,15 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetNBinsHist(std::vector<int> NBins);
   void SetMinKRel(std::vector<float> minKRel);
   void SetMaxKRel(std::vector<float> maxKRel);
+  void SetCentBins(std::vector<float> CentBins);
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
 
   bool GetDoMultBinning() {return fMultBinning;};
+  bool GetDokTBinning() {return fkTBinning;};
+  bool GetDomTBinning() {return fmTBinning;};
   bool GetDoMomResolution() {return fMomentumResolution;};
   bool GetDoPhiEtaBinning() {return fPhiEtaBinning;};
+  bool GetDokTCentralityBinning() {return fkTCentrality;};
   int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins(){return (fZVtxBins->GetEntries()-1);};
@@ -44,9 +51,12 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
+  std::vector<float> GetCentBins();
   int GetMixingDepth(){return fMixingDepth;};
  private:
   bool fMultBinning;            //
+  bool fkTBinning;            //
+  bool fmTBinning;            //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   int fNumberRadii;             //
@@ -56,8 +66,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fNBinsHists;         //
   TNtuple *fMinK_rel;           //
   TNtuple *fMaxK_rel;           //
+  TNtuple *fCentBins;           //
   int fMixingDepth;             //
-  ClassDef(AliFemtoDreamCollConfig,2);
+  bool fkTCentrality;           //
+
+  ClassDef(AliFemtoDreamCollConfig,3);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

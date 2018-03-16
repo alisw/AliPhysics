@@ -4,9 +4,9 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool isMC=false,
     TString CentEst="kInt7",
-    bool notpp=true,
-    bool PileUpRej=true,
-    const char *swuffix="")
+    bool notpp=true,//1
+    bool PileUpRej=true,//2
+    const char *swuffix="")//3
 {
   TString suffix=Form("%s",swuffix);
   bool DCAPlots=false;
@@ -392,6 +392,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
+  config->SetkTBinning(false);
+  config->SetkTCentralityBinning(false);
+  config->SetmTBinning(false);
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
       new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);
@@ -423,79 +426,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   task->SetAntiCascadeCuts(AntiCascadeCuts);
   task->SetCollectionConfig(config);
   mgr->AddTask(task);
-  //  TString QAOutput="AnalysisQA.root";
-  //  TString TrackOutput="AnalysisQATracks.root";
-  //  TString v0Output="AnalysisQAv0.root";
-  //  TString CascadeOutput="AnalysisQACascade.root";
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
+  TString addon="";
+  if (CentEst=="kInt7") {
+    addon+="MB";
+  } else if (CentEst=="kHM") {
+    addon+="HM";
+  }
 
-  //  AliAnalysisDataContainer *coutputQA;
-  //  TString QAName = Form("QA_%s",suffix);
-  //  coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      QAName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), QAName.Data()));
-  //  mgr->ConnectOutput(task, 1, coutputQA);
-  //
-  //  AliAnalysisDataContainer *coutputEvtCuts;
-  //  TString EvtCutsName = Form("EvtCuts_%s",suffix);
-  //  coutputEvtCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      EvtCutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  //  mgr->ConnectOutput(task, 2, coutputEvtCuts);
-  //
-  //  AliAnalysisDataContainer *couputTrkCuts;
-  //  TString TrackCutsName = Form("TrackCuts_%s",suffix);
-  //  couputTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      TrackCutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  //  mgr->ConnectOutput(task, 3, couputTrkCuts);
-  //
-  //  AliAnalysisDataContainer *coutputAntiTrkCuts;
-  //  TString AntiTrackCutsName = Form("AntiTrackCuts_%s",suffix);
-  //  coutputAntiTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      AntiTrackCutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  //  mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
-  //
-  //  AliAnalysisDataContainer *coutputv0Cuts;
-  //  TString v0CutsName = Form("v0Cuts_%s",suffix);
-  //  coutputv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      v0CutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), v0CutsName.Data()));
-  //  mgr->ConnectOutput(task, 5, coutputv0Cuts);
-  //
-  //  AliAnalysisDataContainer *coutputAntiv0Cuts;
-  //  TString Antiv0CutsName = Form("Antiv0Cuts_%s",suffix);
-  //  coutputAntiv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      Antiv0CutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
-  //  mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
-  //
-  //  AliAnalysisDataContainer *coutputCascadeCuts;
-  //  TString CascadeCutsName = Form("CascadeCuts_%s",suffix);
-  //  coutputCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      CascadeCutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), CascadeCutsName.Data()));
-  //  mgr->ConnectOutput(task, 7, coutputCascadeCuts);
-  //
-  //  AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  //  TString AntiCascadeCutsName = Form("AntiCascadeCuts_%s",suffix);
-  //  coutputAntiCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      AntiCascadeCutsName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
-  //  mgr->ConnectOutput(task, 8, coutputAntiCascadeCuts);
   TString addon="";
   if (CentEst=="kInt7") {
     addon+="MB";
@@ -504,72 +446,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   }
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("Results_%s",suffix.Data());
-  coutputResults = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+  TString ResultsName = Form("%sResults_%s",addon.Data(),suffix.Data());
+  coutputResults = mgr->CreateContainer(
       ResultsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
   mgr->ConnectOutput(task, 1, coutputResults);
 
-  //  AliAnalysisDataContainer *coutputResultQA;
-  //  TString ResultQAName = Form("ResultQA_%s",suffix);
-  //  coutputResultQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //      ResultQAName.Data(), TList::Class(),
-  //      AliAnalysisManager::kOutputContainer,
-  //      Form("%s:%s", file.Data(), ResultQAName.Data()));
-  //  mgr->ConnectOutput(task, 10, coutputResultQA);
-  //  if (isMC) {
-  //    AliAnalysisDataContainer *coutputTrkCutsMC;
-  //    TString TrkCutsMCName = Form("TrkCutsMC_%s",suffix);
-  //    coutputTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        TrkCutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
-  //
-  //    AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-  //    TString AntiTrkCutsMCName = Form("AntiTrkCutsMC_%s",suffix);
-  //    coutputAntiTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        AntiTrkCutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
-  //
-  //    AliAnalysisDataContainer *coutputv0CutsMC;
-  //    TString v0CutsMCName = Form("v0CutsMC_%s",suffix);
-  //    coutputv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        v0CutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 13, coutputv0CutsMC);
-  //
-  //    AliAnalysisDataContainer *coutputAntiv0CutsMC;
-  //    TString Antiv0CutsMCName = Form("Antiv0CutsMC_%s",suffix);
-  //    coutputAntiv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        Antiv0CutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
-  //
-  //    AliAnalysisDataContainer *coutputXiCutsMC;
-  //    TString XiCutsMCName = Form("XiCutsMC_%s",suffix);
-  //    coutputXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        XiCutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 15, coutputXiCutsMC);
-  //
-  //    AliAnalysisDataContainer *coutputAntiXiCutsMC;
-  //    TString AntiXiCutsMCName = Form("AntiXiCutsMC_%s",suffix);
-  //    coutputAntiXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-  //        AntiXiCutsMCName.Data(), TList::Class(),
-  //        AliAnalysisManager::kOutputContainer,
-  //        Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-  //    mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
-  //  }
-  //  if (!mgr->InitAnalysis()) {
-  //    return nullptr;
-  //  }
   return task;
 }
 
