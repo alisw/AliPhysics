@@ -131,6 +131,16 @@ public:
   void SetFillMultiplicityHistograms(Bool_t doFill) { fDoFillMultiplicityHistograms = doFill; }
 
   /**
+  * @brief Switch on/off exclusive triggers
+  * 
+  * Exclusive triggers do not contain lower threshold triggers. Switching
+  * off is for memory considerations
+  * 
+  * @param doUse If true exclusive triggers are used 
+  */
+  void SetUseExclusiveTriggers(Bool_t doUse) { fUseExclusiveTriggers = doUse; }
+
+  /**
    * @brief Preconfigure task so that it can be used in subwagons
    * @param[in] nClusters Name of the input cluster container
    * @param[in] suffix Suffix of the subwagon
@@ -209,6 +219,7 @@ protected:
   EnergyDefinition_t                  fEnergyDefinition;          ///< Energy definition used for a given cluster
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 when creating histograms
   Bool_t                              fDoFillMultiplicityHistograms;    ///< Swich for multiplcity histograms
+  Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
 
 private:

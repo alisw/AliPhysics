@@ -320,9 +320,10 @@ protected:
    * Creates a list of trigger classes supported by this framework.
    * It can be used by the users when creating or filling histograms
    * according to trigger classes.
+   * @param useExclusiveTriggers If true also exclusive triggers are added
    * @return List of supported trigger classes
    */
-  std::vector<TString> GetSupportedTriggers();
+  std::vector<TString> GetSupportedTriggers(Bool_t useExclusiveTriggers = true) const;
 
   /**
    * Get a trigger class dependent event weight. The weight
