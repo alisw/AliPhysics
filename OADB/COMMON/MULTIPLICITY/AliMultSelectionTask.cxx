@@ -1959,11 +1959,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
             }
             if ( (!lItsHijing) && (!lItsDPMJet) && (!lItsEPOSLHC) ){
-                AliWarning(" Unable to detect generator type from header. Sorry.");
-		AliMCEvent *mcevptr = MCEvent(); 
-		if(mcevptr){ 
-			AliWarning(Form(" Header title for debug: %s",mcevptr->GenEventHeader()->GetTitle()));
-		} 
+                AliWarning(" Unable to detect generator type from header.");
+                AliMCEvent *mcevptr = MCEvent();
+                if(mcevptr){
+                    AliWarning(Form(" Header title for debug: %s",mcevptr->GenEventHeader()->GetTitle()));
+                }
+                AliWarning(" Consulting list of exceptions, hang on...");
+                TString lExceptionMap = GetExceptionMapping( lProductionName );
+                if( !lExceptionMap.EqualTo("") ){
+                    AliWarning(Form(" Found exception! Production %s will map to %s!", lProductionName.Data(), lExceptionMap.Data() ));
+                    lProductionName = lExceptionMap;
+                }
             }
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
@@ -2649,6 +2655,25 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     
     return lSystemType;
 }
+//______________________________________________________________________
+TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) const
+{
+    //This function stores some exceptional productions in which MC auto-detect
+    //will not work because headers are lacking relevant information
+    //
+    //This will capture only productions for which manual intervention
+    //has been coded right here! And yes, this is an ugly hack :-(
+    
+    TString lReturnString = ""; //I don't know of this exception, return empty 
+    
+    if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+    
+    return lReturnString;
+}
+
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
     //This helper function checks if an OADB exists for the production named lProdName
