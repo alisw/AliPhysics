@@ -1367,17 +1367,24 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
   //----- Psi_N from TPC sub & full event plane -------
+  /*
   PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0] )) ; // negetive eta
   if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-
   PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1] )) ; // positive eta
-  if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+  if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;  */
+
+  // Enable periodicity PsiN directly:
+  PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) + TMath::Pi() ) ; // negetive eta
+  //if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+  PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) + TMath::Pi() ) ; // positive eta
+  //if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+
 
   //fHTPCAEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCA-PsiNTPCC));
   //fHTPCCEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCC-PsiNV0C));
 
-  fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
-  fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
+  //fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
+  //fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
 
   fEventCount++;
 
@@ -1940,12 +1947,21 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	sumQyTPCpos2 -= w2NUA*TMath::Sin(gPsiN*dPhi2); // [1] = eta > 0.05
       }
 
+      /*
       // track by track EP:
       PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) );
       if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-
       PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) );
-      if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+      if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN; */
+
+      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) + TMath::Pi() );
+      //if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) + TMath::Pi() );
+      //if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+
+
+      fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
+      fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
 
 
       // combined weight for EP:
