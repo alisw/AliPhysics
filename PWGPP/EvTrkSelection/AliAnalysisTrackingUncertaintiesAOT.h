@@ -69,6 +69,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetMinCentrality(Double_t val) {fminCent = val;}
   void           SetMaxCentrality(Double_t val) {fmaxCent = val;}
   void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
+  void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
@@ -114,6 +115,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t   fUseFinePtAxis;          //flag to use fine bin width for low pt axis in match. eff. sparse
   Bool_t   fUseGenPt;               //flag to use generated pt in match. eff. sparse
   Bool_t   fDoCutV0multTPCout;      //flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t   fDCAz;                   //flag to switch on the DCAz axis
 
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
 
@@ -124,7 +126,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 7);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 8);
 };
 
 #endif
