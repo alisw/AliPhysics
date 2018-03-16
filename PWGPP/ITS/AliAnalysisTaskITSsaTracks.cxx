@@ -888,14 +888,14 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
 	  Float_t invpttrack=track->OneOverPt();
 	  Float_t invptgen=0.;
 	  if(ptgen>0.) invptgen=1./ptgen;
-	  fHistMCPtResid[hadronSpecie]->Fill(pttrack,pttrack-ptgen);
-	  fHistMCPtRelResid[hadronSpecie]->Fill(pttrack,(pttrack-ptgen)/ptgen);
-	  fHistMCInvPtResid[hadronSpecie]->Fill(pttrack,invpttrack-invptgen);
-	  fHistMCInvPtRelResid[hadronSpecie]->Fill(pttrack,(invpttrack-invptgen)/invptgen);	  
+	  fHistMCPtResid[hadronSpecie]->Fill(ptgen,pttrack-ptgen);
+	  fHistMCPtRelResid[hadronSpecie]->Fill(ptgen,(pttrack-ptgen)/ptgen);
+	  fHistMCInvPtResid[hadronSpecie]->Fill(ptgen,invpttrack-invptgen);
+	  fHistMCInvPtRelResid[hadronSpecie]->Fill(ptgen,(invpttrack-invptgen)/invptgen);
 	  Float_t deltaphi=track->Phi()-part->Phi();
 	  if(deltaphi<-TMath::Pi()) deltaphi+=2*TMath::Pi();
 	  if(deltaphi>TMath::Pi()) deltaphi-=2*TMath::Pi();
-	  fHistMCPhiResid->Fill(pttrack,deltaphi);
+	  fHistMCPhiResid->Fill(ptgen,deltaphi);
 	}
       }
     }else if(iTrackType==kTypeITSsa){ // TPC+ITS tracks
