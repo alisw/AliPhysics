@@ -8,6 +8,7 @@
 #ifndef ALIFEMTODREAMBASEPART_H_
 #define ALIFEMTODREAMBASEPART_H_
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "Rtypes.h"
 #include "TVector3.h"
 
@@ -23,7 +24,8 @@ class AliFemtoDreamBasePart {
     kContamination=4,
     kUnknown=5
   };
-
+  void SetMCParticle(AliAODMCParticle *mcPart);
+  void ResetMCInfo();
   void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};
   TVector3 GetMomentum() const {return fP;};
   void SetMCMomentum(float px,float py,float pz) {fMCP.SetXYZ(px,py,pz);};
