@@ -83,6 +83,22 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (ResultsHist->GetDoMultBinning()) {
             ResultsHist->FillSameEventMultDist(HistCounter,iMult+1,RelativeK);
           }
+          if (ResultsHist->GetDokTBinning()) {
+            ResultsHist->FillSameEventkTDist(
+                HistCounter,
+                RelativePairkT(
+                    itPart1->GetMomentum(),*itPDGPar1,
+                    itPart2->GetMomentum(),*itPDGPar2),
+                    RelativeK);
+          }
+          if (ResultsHist->GetDomTBinning()) {
+            ResultsHist->FillSameEventmTDist(
+                HistCounter,
+                RelativePairmT(
+                    itPart1->GetMomentum(),*itPDGPar1,
+                    itPart2->GetMomentum(),*itPDGPar2),
+                    RelativeK);
+          }
           if (ResultsHist->GetEtaPhiPlots()) {
             DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
@@ -129,6 +145,22 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             ResultsHist->FillMixedEventDist(HistCounter,RelativeK);
             if (ResultsHist->GetDoMultBinning()) {
               ResultsHist->FillMixedEventMultDist(HistCounter,iMult+1,RelativeK);
+            }
+            if (ResultsHist->GetDokTBinning()) {
+              ResultsHist->FillMixedEventkTDist(
+                  HistCounter,
+                  RelativePairkT(
+                      itPart1->GetMomentum(),*itPDGPar1,
+                      itPart2->GetMomentum(),*itPDGPar2),
+                      RelativeK);
+            }
+            if (ResultsHist->GetDomTBinning()) {
+              ResultsHist->FillMixedEventmTDist(
+                  HistCounter,
+                  RelativePairmT(
+                      itPart1->GetMomentum(),*itPDGPar1,
+                      itPart2->GetMomentum(),*itPDGPar2),
+                      RelativeK);
             }
             if (ResultsHist->GetObtainMomentumResolution()) {
               //It is sufficient to do this in Mixed events, which allows
@@ -192,6 +224,48 @@ float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentu
 
   trackRelK = SPtrackCMS - TPProngCMS;
   results = 0.5*trackRelK.P();
+  return results;
+}
+float AliFemtoDreamZVtxMultContainer::RelativePairkT(TVector3 Part1Momentum,
+                                                     int PDGPart1,
+                                                     TVector3 Part2Momentum,
+                                                     int PDGPart2) {
+  if(PDGPart1 == 0 || PDGPart2== 0){
+    AliError("Invalid PDG Code");
+  }
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
+  //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
+  //only looking at the mother mass
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  trackSum = SPtrack + TPProng;
+
+  results=0.5*trackSum.Pt();
+  return results;
+}
+float AliFemtoDreamZVtxMultContainer::RelativePairmT(TVector3 Part1Momentum,
+                                                     int PDGPart1,
+                                                     TVector3 Part2Momentum,
+                                                     int PDGPart2) {
+  if(PDGPart1 == 0 || PDGPart2== 0){
+    AliError("Invalid PDG Code");
+  }
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
+  //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
+  //only looking at the mother mass
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  trackSum = SPtrack + TPProng;
+  float pairKT=0.5*trackSum.Pt();
+  float averageMass = 0.5*(TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass()
+      + TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  results= TMath::Sqrt(pow(pairKT,2.) + pow(averageMass,2.));
   return results;
 }
 

@@ -19,14 +19,20 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fPhiEtaPlots(false)
 ,fSameEventDist(0)
 ,fSameEventMultDist(0)
+,fSameEventkTDist(0)
+,fSameEventmTDist(0)
 ,fPairCounterSE(0)
 ,fMixedEventDist(0)
 ,fMixedEventMultDist(0)
+,fMixedEventkTDist(0)
+,fMixedEventmTDist(0)
 ,fPairCounterME(0)
 ,fMomResolution(0)
 ,fRadiiEtaPhiSE(0)
 ,fRadiiEtaPhiME(0)
 ,fDoMultBinning(false)
+,fDokTBinning(false)
+,fDomTBinning(false)
 {
 }
 
@@ -35,6 +41,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   fMinimalBooking=MinimalBooking;
   fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
+  fDokTBinning=conf->GetDokTBinning();
+  fDomTBinning=conf->GetDomTBinning();
   fPhiEtaPlots=conf->GetDoPhiEtaBinning();
   int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
@@ -107,6 +115,20 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fSameEventMultDist=0;
     fMixedEventMultDist=0;
   }
+  if (fDokTBinning) {
+    fSameEventkTDist=new TH2F*[nHists];
+    fMixedEventkTDist=new TH2F*[nHists];
+  } else {
+    fSameEventkTDist=0;
+    fMixedEventkTDist=0;
+  }
+  if (fDomTBinning) {
+    fSameEventmTDist=new TH2F*[nHists];
+    fMixedEventmTDist=new TH2F*[nHists];
+  } else {
+    fSameEventmTDist=0;
+    fMixedEventmTDist=0;
+  }
   int Counter=0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
     for (int iPar2 = iPar1; iPar2 < nParticles; ++iPar2) {
@@ -148,6 +170,48 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
                                               multbins,1,multbins+1);
         fMixedEventMultDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventMultDist[Counter]);
+
+      }
+
+      if (fDokTBinning) {
+        TString SamekTEventName=
+            Form("SEkTDist_Particle%d_Particle%d",iPar1,iPar2);
+        fSameEventkTDist[Counter]=new TH2F(SamekTEventName.Data(),
+                                             SamekTEventName.Data(),
+                                             *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                             *itNBins*1.5,*itKMin,*itKMax*1.5);
+        fSameEventkTDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fSameEventkTDist[Counter]);
+
+        TString MixedkTEventName=
+            Form("MEkTDist_Particle%d_Particle%d",iPar1,iPar2);
+        fMixedEventkTDist[Counter]=new TH2F(MixedkTEventName.Data(),
+                                              MixedkTEventName.Data(),
+                                              *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                              *itNBins*1.5,*itKMin,*itKMax*1.5);
+        fMixedEventkTDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fMixedEventkTDist[Counter]);
+
+      }
+
+      if (fDomTBinning) {
+        TString SamemTEventName=
+            Form("SEmTDist_Particle%d_Particle%d",iPar1,iPar2);
+        fSameEventmTDist[Counter]=new TH2F(SamemTEventName.Data(),
+                                             SamemTEventName.Data(),
+                                             *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                             *itNBins*1.5,*itKMin,*itKMax*1.5);
+        fSameEventmTDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fSameEventmTDist[Counter]);
+
+        TString MixedmTEventName=
+            Form("MEmTDist_Particle%d_Particle%d",iPar1,iPar2);
+        fMixedEventmTDist[Counter]=new TH2F(MixedmTEventName.Data(),
+                                              MixedmTEventName.Data(),
+                                              *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                              *itNBins*1.5,*itKMin,*itKMax*1.5);
+        fMixedEventmTDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
 
       }
       if (!fMinimalBooking) {

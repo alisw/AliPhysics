@@ -10,6 +10,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool etaPhiPlots=false,
     bool CombSigma=false,
     bool PileUpRej=true,
+    bool mTkTPlot=false,
     bool ContributionSplitting=false,
     bool ContributionSplittingDaug=false)
 {
@@ -265,6 +266,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     config->SetMultBins(MultBins);
   }
 	config->SetMultBinning(true);
+	config->SetkTBinning(mTkTPlot);
+	config->SetmTBinning(mTkTPlot);
 	config->SetZBins(ZVtxBins);
 	if (MomReso) {
 	  if (isMC) {

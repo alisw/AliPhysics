@@ -20,16 +20,30 @@ class AliFemtoDreamCorrHists {
   AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,bool MinimalBooking);
   virtual ~AliFemtoDreamCorrHists();
   bool GetDoMultBinning(){return fDoMultBinning;};
+  bool GetDokTBinning(){return fDokTBinning;};
+  bool GetDomTBinning(){return fDomTBinning;};
   bool GetObtainMomentumResolution() {return fMomentumResolution;};
   bool GetEtaPhiPlots() {return fPhiEtaPlots;};
   void FillSameEventDist(int i,float RelK){fSameEventDist[i]->Fill(RelK);};
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
   }
+  void FillSameEventkTDist(int i,float kT,float RelK){
+    if (fSameEventkTDist[i])fSameEventkTDist[i]->Fill(RelK,kT);
+  }
+  void FillSameEventmTDist(int i,float mT, float RelK){
+    if (fSameEventmTDist[i])fSameEventmTDist[i]->Fill(RelK,mT);
+  }
   void FillMixedEventDist(int i,float RelK){fMixedEventDist[i]->Fill(RelK);};
   void FillMixedEventMultDist(int i,int iMult,float RelK){
-     if (fMixedEventMultDist[i])fMixedEventMultDist[i]->Fill(RelK,iMult);
-   }
+    if (fMixedEventMultDist[i])fMixedEventMultDist[i]->Fill(RelK,iMult);
+  }
+  void FillMixedEventkTDist(int i,float kT,float RelK){
+    if (fMixedEventkTDist[i])fMixedEventkTDist[i]->Fill(RelK,kT);
+  }
+  void FillMixedEventmTDist(int i,float mT,float RelK){
+    if (fMixedEventmTDist[i])fMixedEventmTDist[i]->Fill(RelK,mT);
+  }
   void FillPartnersSE(int hist,int nPart1,int nPart2){
     if (!fMinimalBooking)fPairCounterSE[hist]->Fill(nPart1,nPart2);
   }
@@ -57,14 +71,20 @@ class AliFemtoDreamCorrHists {
   bool          fPhiEtaPlots;
   TH1F          **fSameEventDist;
   TH2F          **fSameEventMultDist;
+  TH2F          **fSameEventmTDist;
+  TH2F          **fSameEventkTDist;
   TH2F          **fPairCounterSE;
   TH1F          **fMixedEventDist;
   TH2F          **fMixedEventMultDist;
+  TH2F          **fMixedEventmTDist;
+  TH2F          **fMixedEventkTDist;
   TH2F          **fPairCounterME;
   TH2F          **fMomResolution;
   TH2F          ****fRadiiEtaPhiSE;
   TH2F          ****fRadiiEtaPhiME;
   bool          fDoMultBinning;
+  bool          fDokTBinning;
+  bool          fDomTBinning;
 
   ClassDef(AliFemtoDreamCorrHists,2);
 };

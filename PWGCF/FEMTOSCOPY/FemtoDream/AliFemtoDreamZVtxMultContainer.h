@@ -34,6 +34,10 @@ class AliFemtoDreamZVtxMultContainer {
  private:
   float RelativePairMomentum(TVector3 Part1Momentum,int PDGPart1,
                               TVector3 Part2Momentum,int PDGPart2);
+  float RelativePairkT(TVector3 Part1Momentum,int PDGPart1,
+                       TVector3 Part2Momentum,int PDGPart2);
+  float RelativePairmT(TVector3 Part1Momentum,int PDGPart1,
+                              TVector3 Part2Momentum,int PDGPart2);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   ClassDef(AliFemtoDreamZVtxMultContainer,2);

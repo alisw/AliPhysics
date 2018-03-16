@@ -18,6 +18,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   AliFemtoDreamCollConfig(const char *name, const char *title);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
+  void SetkTBinning(bool doIt){fkTBinning=doIt;};
+  void SetmTBinning(bool doIt){fmTBinning=doIt;};
   void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
   void SetPhiEtaBinnign(bool doIt){
     fPhiEtaBinning=doIt;fNumberRadii=9;
@@ -31,6 +33,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
 
   bool GetDoMultBinning() {return fMultBinning;};
+  bool GetDokTBinning() {return fkTBinning;};
+  bool GetDomTBinning() {return fmTBinning;};
   bool GetDoMomResolution() {return fMomentumResolution;};
   bool GetDoPhiEtaBinning() {return fPhiEtaBinning;};
   int GetNRadii() {return fNumberRadii;};
@@ -47,6 +51,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   int GetMixingDepth(){return fMixingDepth;};
  private:
   bool fMultBinning;            //
+  bool fkTBinning;            //
+  bool fmTBinning;            //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   int fNumberRadii;             //
