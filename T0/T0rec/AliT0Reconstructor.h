@@ -34,7 +34,7 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual Bool_t   HasDigitConversion() const {return kFALSE;}
   static const AliT0RecoParam* GetRecoParam()
     { return dynamic_cast<const AliT0RecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj
-  void  ReadNewQTC(Int_t alldata[250][5], Int_t amplitude[26]) const;
+  void  ReadNewQTC(Int_t alldata[250][5], Float_t amplitude[26]) const;
   void ReadOldQTC( Int_t alldata[250][5], Int_t amplitude[26]) const;
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -50,9 +50,9 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t             fZposition;        // vertex position
   Float_t             fTime0vertex[24];  // time position if Zvertex=0
   AliT0Parameters     *fParam;           //pointer to T0 parameters class     
-  TObjArray           fAmpLEDrec;        // amp LED-CFD 
+  TObjArray           fAmpLEDrec;        // amp new QTC 
   TObjArray           fQTC;        // QTC vs #MIPs
-  TObjArray           fAmpLED;        // LED-CFD vs #MIPs
+  TObjArray           fAmpLED;        // new QTC vs #MIPs
   AliT0Calibrator     *fCalib;           //pointer to T0 Calibrator     
   Float_t fLatencyHPTDC;  //latency HPTDC
   Float_t fLatencyL1;     //  latency for (T0A+T0C)/2

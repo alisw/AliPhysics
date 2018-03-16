@@ -419,3 +419,40 @@ void AliT0CalibWalk::SetWalkZero()
      
   }
 }
+//______________________________________________________________________________
+void AliT0CalibWalk::SetWalk2018() 
+{
+  Float_t newch2mip[24] = {2.15228e+01, 2.46186e+01, 1.85221e+01, 2.53265e+01,
+			2.37084e+01, 2.97587e+01, 2.23943e+01, 2.05614e+01,
+			3.30282e+01, 2.50644e+01, 5.80760e+01, 1.97917e+01,
+			2.06258e+01, 2.09589e+01, 1.94397e+01, 3.28368e+01,
+			2.99657e+01, 1.71774e+01, 2.49746e+01, 2.36674e+01,
+			2.97738e+01, 2.70350e+01, 2.24858e+01, 2.03851e+01};
+ Float_t ch2mip[24] =  {0.00421941 ,0.00482625 ,0.00891266 ,0.00521648 ,
+			 0.00601685 ,0.00428816 ,0.00752445 ,0.00985222 ,
+			 0.00475511 ,0.010352 ,0.00537346 ,0.00769231 ,
+			 0.00755287 ,0.0074184 ,0.00769231 ,0.0039604 ,
+			 0.0049456 ,0.00631712 ,0.00609756 ,0.00593824 ,
+			 0.0060024 ,0.00664894 ,0.0088574 ,0.00947867};
+ Float_t amp[100], walk[100],ch[100], newamp[100], newch[100];
+ for (int igr=0; igr<24; igr++) {
+   for (int  i=0; i<100; i++) {
+     ch[i] = 100* Float_t(i);
+     newch[i] = 10* Float_t(i);
+     amp[i] = ch2mip[igr] *  ch[i] ;  
+     newamp[i] =newch[i]/ newch2mip[igr]  ;
+     walk[i]=0;
+   }
+   TGraph *gramp, *grwalk, *grnewamp;
+   gramp = new TGraph(100, ch,amp);
+   grnewamp = new TGraph(100, newch,newamp);
+   grwalk = new TGraph(100, ch,walk);
+   grwalk->SetTitle(Form("PMT%i",igr+1));
+   gramp->SetTitle(Form("PMT%i",igr+1));
+   fWalk.AddAtAndExpand(grwalk,igr);
+   fAmpLEDRec.AddAtAndExpand(grwalk,igr);
+   fQTC.AddAtAndExpand(gramp,igr);	 
+   fAmpLED.AddAtAndExpand(grnewamp,igr);
+   
+ }
+}
