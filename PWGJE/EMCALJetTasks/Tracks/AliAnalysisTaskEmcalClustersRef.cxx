@@ -81,6 +81,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
+    fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -95,6 +96,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
+    fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -121,7 +123,7 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   // Binnings for Multiplicity correlation
   TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
-  for(auto trg : GetSupportedTriggers()){
+  for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
     fHistos->CreateTH1("hEventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
@@ -219,6 +221,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     }
   }
 
+  auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
   Double_t energy, et, eta, phi;
   const TList *selpatches(nullptr);
   for(auto clust : GetClusterContainer(fNameClusterContainer.Data())->all()){
@@ -257,6 +260,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
 
     // fill histograms allEta
     for(const auto & trg : fSelectedTriggers){
+      if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
       selpatches = nullptr;
       for(auto t : l1triggers) {
         if(trg.Contains(t)) {
