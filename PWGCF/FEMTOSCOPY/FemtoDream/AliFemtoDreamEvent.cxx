@@ -9,6 +9,8 @@
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
+#include "AliMultSelection.h"
+
 ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
 :fUtils(new AliAnalysisUtils())
@@ -21,6 +23,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
+,fV0MCentrality(0)
 ,fnContrib(0)
 ,fPassAliEvtSelection(false)
 ,fisPileUp(false)
@@ -42,6 +45,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
+,fV0MCentrality(0)
 ,fnContrib(0)
 ,fPassAliEvtSelection(false)
 ,fisPileUp(false)
@@ -122,6 +126,15 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
   this->fRefMult08=header->GetRefMultiplicityComb08();
+  float lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) evt->FindListObject("MultSelection");
+  if( !MultSelection) {
+    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  }else{
+    fV0MCentrality= MultSelection->GetMultiplicityPercentile("V0M");
+  }
   return;
 }
 

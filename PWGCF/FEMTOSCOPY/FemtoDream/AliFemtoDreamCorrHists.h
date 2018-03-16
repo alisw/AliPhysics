@@ -28,9 +28,11 @@ class AliFemtoDreamCorrHists {
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
   }
-  void FillSameEventkTDist(int i,float kT,float RelK){
+  void FillSameEventkTDist(int i,float kT,float RelK,float cent){
     if (fSameEventkTDist[i])fSameEventkTDist[i]->Fill(RelK,kT);
+    if (fDokTCentralityBins) FillSameEventkTCentDist(i,kT,RelK,cent);
   }
+  void FillSameEventkTCentDist(int i,float kT,float RelK,float cent);
   void FillSameEventmTDist(int i,float mT, float RelK){
     if (fSameEventmTDist[i])fSameEventmTDist[i]->Fill(RelK,mT);
   }
@@ -38,9 +40,12 @@ class AliFemtoDreamCorrHists {
   void FillMixedEventMultDist(int i,int iMult,float RelK){
     if (fMixedEventMultDist[i])fMixedEventMultDist[i]->Fill(RelK,iMult);
   }
-  void FillMixedEventkTDist(int i,float kT,float RelK){
+  void FillMixedEventkTDist(int i,float kT,float RelK,float cent){
     if (fMixedEventkTDist[i])fMixedEventkTDist[i]->Fill(RelK,kT);
+    if (fDokTCentralityBins) FillMixedEventkTCentDist(i,kT,RelK,cent);
   }
+  void FillMixedEventkTCentDist(int i,float kT,float RelK,float cent);
+
   void FillMixedEventmTDist(int i,float mT,float RelK){
     if (fMixedEventmTDist[i])fMixedEventmTDist[i]->Fill(RelK,mT);
   }
@@ -61,6 +66,7 @@ class AliFemtoDreamCorrHists {
   }
   TList* GetHistList(){return fResults;};
   TList* GetQAHists(){return fQA;};
+  TString ClassName(){return "AliFemtoDreamCorrHists";}
  private:
   TList         *fQA;
   TList         *fResults;
@@ -73,11 +79,13 @@ class AliFemtoDreamCorrHists {
   TH2F          **fSameEventMultDist;
   TH2F          **fSameEventmTDist;
   TH2F          **fSameEventkTDist;
+  TH2F          ***fSameEventkTCentDist;
   TH2F          **fPairCounterSE;
   TH1F          **fMixedEventDist;
   TH2F          **fMixedEventMultDist;
   TH2F          **fMixedEventmTDist;
   TH2F          **fMixedEventkTDist;
+  TH2F          ***fMixedEventkTCentDist;
   TH2F          **fPairCounterME;
   TH2F          **fMomResolution;
   TH2F          ****fRadiiEtaPhiSE;
@@ -85,8 +93,9 @@ class AliFemtoDreamCorrHists {
   bool          fDoMultBinning;
   bool          fDokTBinning;
   bool          fDomTBinning;
-
-  ClassDef(AliFemtoDreamCorrHists,2);
+  bool          fDokTCentralityBins;
+  std::vector<float> fCentBins;
+  ClassDef(AliFemtoDreamCorrHists,3);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

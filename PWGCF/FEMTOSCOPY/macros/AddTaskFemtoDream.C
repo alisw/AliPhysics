@@ -3,16 +3,18 @@
 AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,
     TString CentEst="kInt7",
-    bool notpp=true,
-    bool DCAPlots=false,
-    bool CPAPlots=false,
-    bool MomReso=false,
-    bool etaPhiPlots=false,
-    bool CombSigma=false,
-    bool PileUpRej=true,
-    bool mTkTPlot=false,
-    bool ContributionSplitting=false,
-    bool ContributionSplittingDaug=false)
+    bool notpp=true,//1
+    bool DCAPlots=false,//2
+    bool CPAPlots=false,//3
+    bool MomReso=false,//4
+    bool etaPhiPlots=false,//5
+    bool CombSigma=false,//6
+    bool PileUpRej=true,//7
+    bool mTkTPlot=false,//8
+    bool kTCentPlot=false,//9
+    bool MultvsCentPlot=false,//10
+    bool ContributionSplitting=false,//11
+    bool ContributionSplittingDaug=false)//12
 {
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,7 +51,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AliFemtoDreamEventCuts *evtCuts=
 			AliFemtoDreamEventCuts::StandardCutsRun2();
 	evtCuts->CleanUpMult(false,false,false,true);
-
+	evtCuts->SetMultVsCentPlots(MultvsCentPlot);
 	//Track Cuts
 	AliFemtoDreamTrackCuts *TrackCuts=
 			AliFemtoDreamTrackCuts::PrimProtonCuts(
@@ -268,6 +270,14 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	config->SetMultBinning(true);
 	config->SetkTBinning(mTkTPlot);
 	config->SetmTBinning(mTkTPlot);
+	config->SetkTCentralityBinning(kTCentPlot);
+	if (kTCentPlot) {
+	  std::vector<float> centBins;
+	  centBins.push_back(20);
+	  centBins.push_back(40);
+	  centBins.push_back(90);
+	  config->SetCentBins(centBins);
+	}
 	config->SetZBins(ZVtxBins);
 	if (MomReso) {
 	  if (isMC) {

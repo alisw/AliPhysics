@@ -8,6 +8,7 @@
 #include <vector>
 #include "AliFemtoDreamCorrHists.h"
 #include "TMath.h"
+#include "AliLog.h"
 ClassImp(AliFemtoDreamCorrHists)
 AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 :fQA(0)
@@ -19,13 +20,15 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fPhiEtaPlots(false)
 ,fSameEventDist(0)
 ,fSameEventMultDist(0)
-,fSameEventkTDist(0)
 ,fSameEventmTDist(0)
+,fSameEventkTDist(0)
+,fSameEventkTCentDist(0)
 ,fPairCounterSE(0)
 ,fMixedEventDist(0)
 ,fMixedEventMultDist(0)
-,fMixedEventkTDist(0)
 ,fMixedEventmTDist(0)
+,fMixedEventkTDist(0)
+,fMixedEventkTCentDist(0)
 ,fPairCounterME(0)
 ,fMomResolution(0)
 ,fRadiiEtaPhiSE(0)
@@ -33,6 +36,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fDoMultBinning(false)
 ,fDokTBinning(false)
 ,fDomTBinning(false)
+,fDokTCentralityBins(false)
+,fCentBins(0)
 {
 }
 
@@ -42,8 +47,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
   fDokTBinning=conf->GetDokTBinning();
+  fDokTCentralityBins=conf->GetDokTCentralityBinning();
   fDomTBinning=conf->GetDomTBinning();
   fPhiEtaPlots=conf->GetDoPhiEtaBinning();
+  if (fDokTCentralityBins && !fDokTBinning) {
+    AliWarning("Doing the Centrality binning without the kT Binning wont work!\n");
+  }
+  if(fDokTCentralityBins){
+    fCentBins=conf->GetCentBins();
+    if (fCentBins.size()==0) {
+      AliWarning("Did you set the Centrality bins, since their size is 0?\n");
+    }
+  }
   int multbins=conf->GetNMultBins();
   int nParticles=conf->GetNParticles();
   const int nHists=conf->GetNParticleCombinations();
@@ -53,7 +68,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   std::vector<float>::iterator itKMin=kRelMin.begin();
   std::vector<float> kRelMax=conf->GetMaxKRel();
   std::vector<float>::iterator itKMax=kRelMax.begin();
-
   if (nHists!=(int)NBinsHist.size() || nHists!=(int)kRelMin.size() ||
       nHists!=(int)kRelMax.size()) {
     //Todo: Replace by AliFatal!
@@ -122,6 +136,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fSameEventkTDist=0;
     fMixedEventkTDist=0;
   }
+  if (fDokTCentralityBins) {
+    fSameEventkTCentDist=new TH2F**[nHists];
+    fMixedEventkTCentDist=new TH2F**[nHists];
+  } else {
+    fSameEventkTCentDist=0;
+    fMixedEventkTCentDist=0;
+  }
   if (fDomTBinning) {
     fSameEventmTDist=new TH2F*[nHists];
     fMixedEventmTDist=new TH2F*[nHists];
@@ -177,39 +198,63 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         TString SamekTEventName=
             Form("SEkTDist_Particle%d_Particle%d",iPar1,iPar2);
         fSameEventkTDist[Counter]=new TH2F(SamekTEventName.Data(),
-                                             SamekTEventName.Data(),
-                                             *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                             *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                           SamekTEventName.Data(),
+                                           *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                           *itNBins*1.5,*itKMin,*itKMax*1.5);
         fSameEventkTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventkTDist[Counter]);
 
         TString MixedkTEventName=
             Form("MEkTDist_Particle%d_Particle%d",iPar1,iPar2);
         fMixedEventkTDist[Counter]=new TH2F(MixedkTEventName.Data(),
-                                              MixedkTEventName.Data(),
-                                              *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                              *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                            MixedkTEventName.Data(),
+                                            *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                            *itNBins*1.5,*itKMin,*itKMax*1.5);
         fMixedEventkTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventkTDist[Counter]);
 
+      }
+      if (fDokTCentralityBins) {
+        const int nCentBins=fCentBins.size();
+        fSameEventkTCentDist[Counter]=new TH2F*[nCentBins];
+        fMixedEventkTCentDist[Counter]=new TH2F*[nCentBins];
+        for (int iCent=0;iCent<nCentBins;++iCent) {
+          TString SamekTCentEventName=
+              Form("SEkTCentDist_Cent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
+          fSameEventkTCentDist[Counter][iCent]=new TH2F(SamekTCentEventName.Data(),
+                                                 SamekTCentEventName.Data(),
+                                                 *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                                 *itNBins*1.5,*itKMin,*itKMax*1.5);
+          fSameEventkTCentDist[Counter][iCent]->Sumw2();
+          fPairs[Counter]->Add(fSameEventkTCentDist[Counter][iCent]);
+
+          TString MixedkTCentEventName=
+              Form("MEkTCentDistCent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
+          fMixedEventkTCentDist[Counter][iCent]=new TH2F(MixedkTCentEventName.Data(),
+                                                  MixedkTCentEventName.Data(),
+                                                  *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                                  *itNBins*1.5,*itKMin,*itKMax*1.5);
+          fMixedEventkTCentDist[Counter][iCent]->Sumw2();
+          fPairs[Counter]->Add(fMixedEventkTCentDist[Counter][iCent]);
+        }
       }
 
       if (fDomTBinning) {
         TString SamemTEventName=
             Form("SEmTDist_Particle%d_Particle%d",iPar1,iPar2);
         fSameEventmTDist[Counter]=new TH2F(SamemTEventName.Data(),
-                                             SamemTEventName.Data(),
-                                             *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                             *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                           SamemTEventName.Data(),
+                                           *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                           *itNBins*1.5,*itKMin,*itKMax*1.5);
         fSameEventmTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventmTDist[Counter]);
 
         TString MixedmTEventName=
             Form("MEmTDist_Particle%d_Particle%d",iPar1,iPar2);
         fMixedEventmTDist[Counter]=new TH2F(MixedmTEventName.Data(),
-                                              MixedmTEventName.Data(),
-                                              *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                              *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                            MixedmTEventName.Data(),
+                                            *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                            *itNBins*1.5,*itKMin,*itKMax*1.5);
         fMixedEventmTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
 
@@ -259,9 +304,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           fRadiiEtaPhiSE[Counter]=new TH2F**[3];
           fRadiiEtaPhiME[Counter]=new TH2F**[3];
           for (int iDaug=0;iDaug<3;++iDaug) {
-          const int nRad=conf->GetNRadii();
-          fRadiiEtaPhiSE[Counter][iDaug]=new TH2F*[nRad];
-          fRadiiEtaPhiME[Counter][iDaug]=new TH2F*[nRad];
+            const int nRad=conf->GetNRadii();
+            fRadiiEtaPhiSE[Counter][iDaug]=new TH2F*[nRad];
+            fRadiiEtaPhiME[Counter][iDaug]=new TH2F*[nRad];
             for (int iRad=0;iRad<nRad;++iRad) {
               TString RadNameSE=Form("SERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
               TString RadNameME=Form("MERad_%i_Particle%d_Particle%d_Daug%d",iRad,iPar1,iPar2,iDaug);
@@ -303,3 +348,34 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   }
 }
 
+void AliFemtoDreamCorrHists::FillSameEventkTCentDist(
+    int i,float kT,float RelK,float cent) {
+  int centBin=-1;
+  if (0 < cent) {
+    for (int iCent=0; iCent<fCentBins.size(); ++iCent) {
+      if (cent < fCentBins[iCent]) {
+        centBin=iCent;
+        break;
+      }
+    }
+    if (centBin!=-1) {
+      fSameEventkTCentDist[i][centBin]->Fill(RelK,kT);
+    }
+  }
+}
+
+void AliFemtoDreamCorrHists::FillMixedEventkTCentDist(
+    int i,float kT,float RelK,float cent) {
+  int centBin=-1;
+  if (0 < cent) {
+    for (int iCent=0; iCent<fCentBins.size(); ++iCent) {
+      if (cent < fCentBins[iCent]) {
+        centBin=iCent;
+        break;
+      }
+    }
+    if (centBin!=-1) {
+      fMixedEventkTCentDist[i][centBin]->Fill(RelK,kT);
+    }
+  }
+}

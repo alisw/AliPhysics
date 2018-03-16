@@ -4,10 +4,9 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool isMC=false,
     TString CentEst="kInt7",
-    bool notpp=true,
-    bool PileUpRej=true,
-    bool mTkTPlot=false,
-    const char *swuffix="")
+    bool notpp=true,//1
+    bool PileUpRej=true,//2
+    const char *swuffix="")//3
 {
   TString suffix=Form("%s",swuffix);
   bool DCAPlots=false;
@@ -393,8 +392,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
-  config->SetkTBinning(mTkTPlot);
-  config->SetmTBinning(mTkTPlot);
+  config->SetkTBinning(false);
+  config->SetkTCentralityBinning(false);
+  config->SetmTBinning(false);
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
       new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);

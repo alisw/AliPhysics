@@ -24,7 +24,7 @@ class AliFemtoDreamPartCollection {
       AliFemtoDreamCollConfig *conf,bool MinimalBooking);
   virtual ~AliFemtoDreamPartCollection();
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-                float ZVtx,float Mult);
+                float ZVtx,float Mult,float cent);
   void PrintEvent(int ZVtx,int Mult);
   TList* GetHistList(){return fResults->GetHistList();};
   TList* GetQAList(){return fResults->GetQAHists();};

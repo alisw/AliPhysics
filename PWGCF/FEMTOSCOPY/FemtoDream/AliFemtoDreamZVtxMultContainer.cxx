@@ -54,7 +54,7 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 }
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist,int iMult)
+    AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent)
 {
   float RelativeK = 0;
   int _intSpec1 = 0;
@@ -89,7 +89,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                 RelativePairkT(
                     itPart1->GetMomentum(),*itPDGPar1,
                     itPart2->GetMomentum(),*itPDGPar2),
-                    RelativeK);
+                    RelativeK,cent);
           }
           if (ResultsHist->GetDomTBinning()) {
             ResultsHist->FillSameEventmTDist(
@@ -116,7 +116,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist,int iMult)
+    AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent)
 {
   float RelativeK = 0;
   int _intSpec1 = 0;
@@ -152,7 +152,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                   RelativePairkT(
                       itPart1->GetMomentum(),*itPDGPar1,
                       itPart2->GetMomentum(),*itPDGPar2),
-                      RelativeK);
+                      RelativeK,cent);
             }
             if (ResultsHist->GetDomTBinning()) {
               ResultsHist->FillMixedEventmTDist(
@@ -280,7 +280,7 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
   std::vector<float> Phirad1=part1->GetPhiAtRaidius().at(0);
 
   std::vector<float> eta2=part2->GetEta();
-  for (int iDaug=0;iDaug<part2->GetPhiAtRaidius().size();++iDaug) {
+  for (unsigned int iDaug=0;iDaug<part2->GetPhiAtRaidius().size();++iDaug) {
     std::vector<float> phiAtRad2=part2->GetPhiAtRaidius().at(iDaug);
     float etaPar2;
     if (part2->GetPhiAtRaidius().size()==1) {

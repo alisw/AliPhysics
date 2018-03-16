@@ -22,10 +22,10 @@ class AliFemtoDreamZVtxMultContainer {
   virtual ~AliFemtoDreamZVtxMultContainer();
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist,int iMult);
+      AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist,int iMult);
+      AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent);
   void DeltaEtaDeltaPhi(
       int Hist,AliFemtoDreamBasePart *part1, AliFemtoDreamBasePart *part2,
       bool SEorME, AliFemtoDreamCorrHists *ResultsHist);

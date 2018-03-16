@@ -491,7 +491,7 @@ void AliAnalysisTaskMCFemtoDream::UserExec(Option_t *) {
   ParticlesAll.push_back(AllAntiLambdas);
   ParticlesAll.push_back(AllXis);
   ParticlesAll.push_back(AllAntiXis);
-  fPartCollAll->SetEvent(ParticlesAll,1.3,mult);
+  fPartCollAll->SetEvent(ParticlesAll,1.3,mult,0);
   std::vector<std::vector<AliFemtoDreamBasePart>> ParticlesAccepted;
   ParticlesAccepted.push_back(AcceptedProtons);
   ParticlesAccepted.push_back(AcceptedAntiProtons);
@@ -499,7 +499,7 @@ void AliAnalysisTaskMCFemtoDream::UserExec(Option_t *) {
   ParticlesAccepted.push_back(AcceptedAntiLambdas);
   ParticlesAccepted.push_back(AcceptedXis);
   ParticlesAccepted.push_back(AcceptedAntiXis);
-  fPartCollAccept->SetEvent(ParticlesAccepted,1.3,mult);
+  fPartCollAccept->SetEvent(ParticlesAccepted,1.3,mult,0);
 
   PostData(1,foutput);
 }

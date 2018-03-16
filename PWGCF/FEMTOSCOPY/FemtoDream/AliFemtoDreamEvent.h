@@ -33,6 +33,8 @@ class AliFemtoDreamEvent {
   int GetV0AMult() const {return fV0AMult;};
   void SetV0CMult(int v0CMult){fV0CMult=v0CMult;};
   int GetV0CMult() const {return fV0CMult;};
+  int GetV0MMult() const {return (fV0AMult+fV0CMult)/2.;};
+  float GetV0MCentrality() const {return fV0MCentrality;};
   void SetNumberOfContributers(int nContrib){fnContrib=nContrib;};
   int GetNumberOfContributers() const {return fnContrib;};
   void SetPassAliEvtSelection(bool pass){fPassAliEvtSelection=pass;};
@@ -58,6 +60,7 @@ class AliFemtoDreamEvent {
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!
+  float fV0MCentrality;       //!
   int fnContrib;              //!
   bool fPassAliEvtSelection;  //!
   bool fisPileUp;             //!

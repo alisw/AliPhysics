@@ -21,7 +21,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fNBinsHists(0)
 ,fMinK_rel(0)
 ,fMaxK_rel(0)
+,fCentBins(0)
 ,fMixingDepth(0)
+,fkTCentrality(false)
 {
   //should not be used, since we need a name to deal with root objects
 }
@@ -36,6 +38,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fPhiEtaBinning(false)
 ,fNumberRadii(0)
 ,fMixingDepth(0)
+,fkTCentrality(false)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
   fMultBins=new TNtuple("MultBins","MultBins","mult");
@@ -43,6 +46,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
   fNBinsHists=new TNtuple("NmbBins","NmbBins","NmbBins");
   fMinK_rel=new TNtuple("MinK_rel","MinK_rel","minkRel");
   fMaxK_rel=new TNtuple("MaxK_rel","MaxK_rel","maxkRel");
+  fCentBins=new TNtuple("CentBins","CentBins","centBin");
 }
 
 AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
@@ -183,4 +187,20 @@ std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
   }
   return MaxKRel;
 }
-
+void AliFemtoDreamCollConfig::SetCentBins(std::vector<float> CentBins) {
+  //Set Centrality Bins for the kT Centrality Binning
+  for (std::vector<float>::iterator it=CentBins.begin();it!=CentBins.end();++it)
+  {
+    fCentBins->Fill(*it);
+  }
+}
+std::vector<float> AliFemtoDreamCollConfig::GetCentBins() {
+  std::vector<float> CentBins;
+  float out=0;
+  fCentBins->SetBranchAddress("centBin",&out);
+  for (int iBins=0;iBins<fMaxK_rel->GetEntries();++iBins) {
+    fCentBins->GetEntry(iBins);
+    CentBins.push_back(out);
+  }
+  return CentBins;
+}
