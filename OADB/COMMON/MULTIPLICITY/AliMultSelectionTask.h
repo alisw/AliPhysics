@@ -82,6 +82,7 @@ public:
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
     TString GetSystemTypeByRunNumber()  const; //no input required, use fCurrentRun
+    TString GetExceptionMapping( TString lProductionName ) const; //list of exceptions
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
