@@ -690,7 +690,7 @@ void AliMagF::Print(Option_t *opt) const
 void AliMagF::AllowFastField(Bool_t v)
 {
   if (v) {
-    if (!fFastField) fFastField = new AliMagFast(GetFactorSol(),fMapType==k2kG ? 2:5);
+    if (!fFastField) fFastField = new AliMagFast(GetFactorSol(),GetFactorDip(),fMapType==k2kG ? 2:5);
   }
   else {
     delete fFastField;
