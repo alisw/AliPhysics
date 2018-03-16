@@ -569,40 +569,64 @@ public:
   //
   TH3F *   fhSMNCellModuleMax;                  //!<! Number of cells in cell maximum module with energy, per SM, per cluster E
   TH3F *   fhSMNCellModuleOut;                  //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMNCellModuleOutModSame;           //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card
+  TH3F *   fhSMNCellModuleOutModDiff;           //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card
   TH3F *   fhSMECellModuleMax;                  //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E
   TH3F *   fhSMECellModuleMaxTot;               //!<! Total energy of cells in cell maximum module, per SM, per cluster E
   TH3F *   fhSMECellModuleOut;                  //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E
+  TH3F *   fhSMECellModuleOutModSame;           //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card
+  TH3F *   fhSMECellModuleOutModDiff;           //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card
   
   TH3F *   fhSMNCellModuleMaxOutRat;            //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E
+  TH3F *   fhSMNCellModuleMaxOutModSameRat;     //!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, same T-Card
+  TH3F *   fhSMNCellModuleMaxOutModDiffRat;     //!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, different T-Card
   TH3F *   fhSMECellModuleMaxRat ;              //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E
   TH3F *   fhSMECellModuleMaxTotRat ;           //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E
   TH3F *   fhSMECellModuleMaxTotRatClus ;       //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E
   TH3F *   fhSMECellModuleMaxOutRat;            //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E
-
+  TH3F *   fhSMECellModuleMaxOutModSameRat;     //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, same T-Card
+  TH3F *   fhSMECellModuleMaxOutModDiffRat;     //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, different T-Card
+  
   TH3F *   fhSMNCellModuleMaxLowM02;            //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, photon shape
   TH3F *   fhSMNCellModuleOutLowM02;            //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMNCellModuleOutModSameLowM02;     //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card, photon shape
+  TH3F *   fhSMNCellModuleOutModDiffLowM02;     //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card, photon shape
   TH3F *   fhSMECellModuleMaxLowM02;            //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E, photon shape
   TH3F *   fhSMECellModuleMaxTotLowM02;         //!<! Total energy of cells in cell maximum module, per SM, per cluster E, photon shape
   TH3F *   fhSMECellModuleOutLowM02;            //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, photon shape
+  TH3F *   fhSMECellModuleOutModSameLowM02;     //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card, photon shape
+  TH3F *   fhSMECellModuleOutModDiffLowM02;     //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card, photon shape
   
   TH3F *   fhSMNCellModuleMaxOutRatLowM02;      //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, photon shape
+  TH3F *   fhSMNCellModuleMaxOutModSameRatLowM02;//!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, same T-Card, photon shape
+  TH3F *   fhSMNCellModuleMaxOutModDiffRatLowM02;//!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, different T-Card, photon shape
   TH3F *   fhSMECellModuleMaxRatLowM02 ;        //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E, photon shape
   TH3F *   fhSMECellModuleMaxTotRatLowM02 ;     //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
   TH3F *   fhSMECellModuleMaxTotRatClusLowM02 ; //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E, photon shape
   TH3F *   fhSMECellModuleMaxOutRatLowM02;      //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, photon shape
-
+  TH3F *   fhSMECellModuleMaxOutModSameRatLowM02;//!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, same T-Card, photon shape
+  TH3F *   fhSMECellModuleMaxOutModDiffRatLowM02;//!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, different T-Card, photon shape
+  
   TH3F *   fhSMNCellModuleMaxHighM02;           //!<! Number of cells in cell maximum module with energy, per SM, per cluster E, non photon shape
   TH3F *   fhSMNCellModuleOutHighM02;           //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, non photon shape
+  TH3F *   fhSMNCellModuleOutModSameHighM02;    //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card, non photon shape
+  TH3F *   fhSMNCellModuleOutModDiffHighM02;    //!<! Number of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card, non photon shape
   TH3F *   fhSMECellModuleMaxHighM02;           //!<! Total energy of cells in cell maximum module (not max), per SM, per cluster E, non photon shape
   TH3F *   fhSMECellModuleMaxTotHighM02;        //!<! Total energy of cells in cell maximum module, per SM, per cluster E, non photon shape
   TH3F *   fhSMECellModuleOutHighM02;           //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, non photon shape
+  TH3F *   fhSMECellModuleOutModSameHighM02;    //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, same T-Card, non photon
+  TH3F *   fhSMECellModuleOutModDiffHighM02;    //!<! Total energy of cells out of cell maximum module with energy, per SM, per cluster E, different T-Card, non photon
   
   TH3F *   fhSMNCellModuleMaxOutRatHighM02;     //!<! Number of cells out of cell maximum module to the ones in module, per SM, per cluster E, non photon shape
+  TH3F *   fhSMNCellModuleMaxOutModSameRatHighM02;//!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, same T-Card, non photon
+  TH3F *   fhSMNCellModuleMaxOutModDiffRatHighM02;//!<! Number of cells out of cell maximum module with energy to the ones in module, per SM, per cluster E, different T-Card, non photon
   TH3F *   fhSMECellModuleMaxRatHighM02 ;       //!<! Energy of cells in cell maximum module (not max) divided to cell maximum E, per SM, per cluster E, non photon shape
   TH3F *   fhSMECellModuleMaxTotRatHighM02 ;    //!<! Energy of cells in cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
   TH3F *   fhSMECellModuleMaxTotRatClusHighM02; //!<! Energy of cells in cell maximum module divided to cluster E, per SM, per cluster E, non photon shape
   TH3F *   fhSMECellModuleMaxOutRatHighM02;     //!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, non photon shape
- 
+  TH3F *   fhSMECellModuleMaxOutModSameRatHighM02;//!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, same T-Card, non photon
+  TH3F *   fhSMECellModuleMaxOutModDiffRatHighM02;//!<! Energy of cells out of cell maximum module divided to cell maximum E, per SM, per cluster E, different T-Card, non photon
+  
   TH3F *   fhSMEMaxEClusterRat;                 //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape
   TH3F *   fhSMEMaxEClusterRatLowM02;           //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, photon shape
   TH3F *   fhSMEMaxEClusterRatHighM02;          //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, non photon shape
