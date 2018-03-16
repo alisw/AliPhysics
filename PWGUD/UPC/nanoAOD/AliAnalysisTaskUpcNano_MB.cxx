@@ -77,11 +77,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0),
-	hNV0BB(0),
-	hNV0BG(0),
-	hNADBB(0),
-	hNADBG(0),
 	fTOFmask(0) 
 
 {
@@ -112,11 +107,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0),
-	hNV0BB(0),
-	hNV0BG(0),
-	hNADBB(0),
-	hNADBG(0),
 	fTOFmask(0) 
 
 {
@@ -177,11 +167,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
   fTreeJPsi ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
   fTreeJPsi ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
-  fTreeJPsi ->Branch("fNV0BB", &fNV0BB, "fNV0BB/I");
-  fTreeJPsi ->Branch("fNV0BG", &fNV0BG, "fNV0BG/I");
-  fTreeJPsi ->Branch("fNADBB", &fNADBB, "fNADBB/I");
-  fTreeJPsi ->Branch("fNADBG", &fNADBG, "fNADBG/I");
-  fTreeJPsi ->Branch("fGoodBC", &fGoodBC, "fGoodBC/O");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -217,11 +202,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
   fTreeRho ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
-  fTreeRho ->Branch("fNV0BB", &fNV0BB, "fNV0BB/I");
-  fTreeRho ->Branch("fNV0BG", &fNV0BG, "fNV0BG/I");
-  fTreeRho ->Branch("fNADBB", &fNADBB, "fNADBB/I");
-  fTreeRho ->Branch("fNADBG", &fNADBG, "fNADBG/I");
-  fTreeRho ->Branch("fGoodBC", &fGoodBC, "fGoodBC/O");
   fTreeRho ->Branch("fTOFmask", &fTOFmask);
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
@@ -302,19 +282,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
-  
-  hNLooseTracks = new TH1D("hNLooseTracks"," ",10000,0,10000);
-  fOutputList->Add(hNLooseTracks);
-  
-  hNV0BB = new TH1D("hNV0BB"," ",65,-0.5,64.5);
-  fOutputList->Add(hNV0BB);
-  hNV0BG = new TH1D("hNV0BG"," ",65,-0.5,64.5);
-  fOutputList->Add(hNV0BG);
-  hNADBB = new TH1D("hNADBB"," ",16,-0.5,16.5);
-  fOutputList->Add(hNADBB);
-  hNADBG = new TH1D("hNADBG"," ",16,-0.5,16.5);
-  fOutputList->Add(hNADBG);
-  
+    
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -328,77 +296,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(!aod) return;
   
   TString trigger = aod->GetFiredTriggerClasses();
-  if(!trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
-  
-  Int_t goodBCs[22];
+  if(!isMC && !trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
    
   fRunNumber = aod->GetRunNumber();
   
-  if(fOldRun != fRunNumber){
-  	for(Int_t i=0;i<22;i++)goodBCs[i] = -1;
-  	AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
-  	AliTriggerConfiguration *ctpCfg = (AliTriggerConfiguration*)entry->GetObject();
-  	TObjArray bcMask = ctpCfg->GetMasks();
-  	fBCmask = (AliTriggerBCMask*)bcMask.At(0);
-  	Int_t nTrainStarts = 0;
-  	Int_t nBCs = 0;
-  	Int_t currentBC = 0;
-
-  	for(Int_t i=0; i<3564 ; i++){
-  		if(!fBCmask->GetMask(i)){
-			//cout<<"This "<<i<<endl;
-			nBCs++;
-			Bool_t isFirst = kTRUE;
-			for(Int_t j=1; j<20; j++){
-				currentBC = i-j;
-				if(currentBC<0)currentBC = 3564 - j;
-				//cout<<currentBC<<endl;
-				if(!fBCmask->GetMask(currentBC))isFirst = kFALSE;
-				}
-			if(isFirst){
-				goodBCs[nTrainStarts] = i;
-				nTrainStarts++;
-				cout<<"Train start BC "<<i<<endl;
-				}
-			}
-		}
-	fOldRun = fRunNumber;
-	}
-	
-  
-  fGoodBC = kFALSE;
-  Int_t thisEventBC = aod ->GetBunchCrossNumber();
-  for(Int_t i=0;i<22;i++)if(thisEventBC == goodBCs[i])fGoodBC = kTRUE;
-  
   AliAODVZERO *fV0data = aod ->GetVZEROData();
   AliAODAD *fADdata = aod ->GetADData();
-
-  fNV0BB = 0;
-  fNV0BG = 0;
-  fNADBB = 0;
-  fNADBG = 0;
-  Int_t previousBC = 0;
-  for(Int_t i=1;i<11;i++){
-  	previousBC = thisEventBC - i;
-	if(previousBC<0)previousBC = 3564 - i;
-	if(!fBCmask->GetMask(previousBC)){
-		for(Int_t V0channel = 0; V0channel<64; V0channel++){
-			fNV0BB += fV0data->GetPFBBFlag(V0channel,10-i);
-			fNV0BG += fV0data->GetPFBGFlag(V0channel,10-i);
-			}
-		for(Int_t ADchannel = 0; ADchannel<16; ADchannel++){
-			fNADBB += fADdata->GetPFBBFlag(ADchannel,10-i);
-			fNADBG += fADdata->GetPFBGFlag(ADchannel,10-i);
-			}
-		break;
-		}
-	}
-  if(trigger.Contains("CCUP8-B")){
-  	hNV0BB->Fill(fNV0BB);
-  	hNV0BG->Fill(fNV0BG);
-  	hNADBB->Fill(fNADBB);
-  	hNADBG->Fill(fNADBG);
-	}
   
   if(isMC) RunMC(aod);
   
@@ -792,29 +695,34 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   //0SH1 - More then 6 hits on outer layer
   if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
   
-  TLorentzVector vGenerated, vDecayProduct;
-  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+  //TLorentzVector vGenerated, vDecayProduct;
+  //TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
   TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(!arrayMC) return;
 
-  vGenerated.SetXYZM(0.,0.,0.,0.);
+  //vGenerated.SetXYZM(0.,0.,0.,0.);
   //loop over mc particles
   for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
     AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
     if(!mcPart) continue;
-
-    if(mcPart->GetMother() >= 0) continue;
     
-    if(cutEta && TMath::Abs(mcPart->Eta())>0.9)return;
+    if(TMath::Abs(mcPart->GetPdgCode()) == 443){
+    	fPt = mcPart->Pt();
+	fY = mcPart->Y();
+	fM = mcPart->GetCalcMass();
+	fTreeGen->Fill();
+    	break;
+    	}
     
-    TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
-    vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+    //if(cutEta && TMath::Abs(mcPart->Eta())>0.9)return;
     
-    vGenerated += vDecayProduct;
+    //TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
+    //vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+    
+    //vGenerated += vDecayProduct;
     
   }//loop over mc particles 
-  FillTree(fTreeGen,vGenerated);
 
 }//RunMC
 
