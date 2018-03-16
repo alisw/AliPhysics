@@ -2262,6 +2262,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                    Bool_t lKeepV0 = kTRUE;
                    if(fkDownScaleV0 && ( fRand->Uniform() > fDownScaleFactorV0 )) lKeepV0 = kFALSE;
                    
+                   //pT window
+                   if( fTreeVariablePt < fMinPtToSave ) lKeepV0 = kFALSE;
+                   if( fTreeVariablePt > fMaxPtToSave ) lKeepV0 = kFALSE;
+                   
                    if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 ) fTreeV0->Fill();
                }
         }
