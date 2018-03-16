@@ -17,10 +17,16 @@
 
 // modified: Kunal Garg (kgarg@cern.ch) 
 //  Modifications: Added Competing V0 Rejection, Lifetime cut and a switch for using or not using Competing V0 Rejection
+//Modification (13 March 2018): Added pT dependent Mass Tolerance cut for K* charged
 
 /* Note: Competing V0 Rejection
 For selection of V0 particle, we typically set a wide range around the mass of the particle. With Competing V0 rejection, we reject the other V0 particle in the same region with a small range. 
 Lifetime cut should be quite intuitive. Set the value to a high value if not needed in the analysis. 
+*/
+
+/*Switch to a pT dependent Mass Tolerance Cut has been added. fpT_Tolerance is a Boolean check to switch to this pT dependent version of the cut. fMassTolSigma is as it says, how strict you want the cut to be. 
+P.S: these values have been calculated for K* charged at different energies. For other analysis, it's recommended to stick to the fix Mass Tolerance Cut. By default, the cut will stay with the fix value cut as well. 
+
 */
 
 #include <Riostream.h>
@@ -40,6 +46,8 @@ ClassImp(AliRsnCutV0)
 AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleType pid, AliPID::EParticleType pid2) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fHypothesis(0),
+   fpT_Tolerance(0), 
+   fMassTolSigma(0),
    fMass(0.0),
    fTolerance(0.01),
    fToleranceVeto(0.01),
@@ -72,6 +80,8 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
 AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    AliRsnCut(copy),
    fHypothesis(copy.fHypothesis),
+   fpT_Tolerance(copy.fpT_Tolerance),
+   fMassTolSigma(copy.fMassTolSigma),
    fMass(copy.fMass),
    fTolerance(copy.fTolerance),
    fToleranceVeto(copy.fToleranceVeto),
@@ -119,6 +129,8 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    if (this == &copy)
      return *this;
    fHypothesis = copy.fHypothesis;
+   fpT_Tolerance = copy.fpT_Tolerance;  
+   fMassTolSigma = copy.fMassTolSigma;    
    fMass = copy.fMass;
    fTolerance = copy.fTolerance;
    fToleranceVeto = copy.fToleranceVeto;
@@ -271,15 +283,33 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
        return kFALSE;
     }
     
-   
-
+   Double_t v0pT = TMath::Abs(TMath::Sqrt(tV0mom[0]*tV0mom[0] + tV0mom[1]*tV0mom[1]));    
+    Double_t upper_limit = (0.000299 + 0.00104*fMassTolSigma)*v0pT + 0.4949 + 0.00385*fMassTolSigma;
+    Double_t lower_limit = (0.000299 - 0.00104*fMassTolSigma)*v0pT + 0.4949 - 0.00385*fMassTolSigma;
     
+    
+    
+    
+    if(fpT_Tolerance){  
     // check compatibility with expected species hypothesis
     v0->ChangeMassHypothesis(fHypothesis);
-   if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
+   if ((v0->GetEffMass() < lower_limit ) || (v0->GetEffMass() > upper_limit)) 
+   {
       AliDebugClass(2, "V0 is not in the expected inv mass range");
       return kFALSE;
    }   
+        
+    }
+    
+    else if(!fpT_Tolerance)
+    {
+        
+        v0->ChangeMassHypothesis(fHypothesis);
+   if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
+      AliDebugClass(2, "V0 is not in the expected inv mass range");
+      return kFALSE;
+        }
+    }
    
     //Set Switch to kTRUE to use Competing V0 Rejection
     if(fSwitch){
@@ -592,6 +622,8 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    return kTRUE;
 
 }
+
+    
 
 //_________________________________________________________________________________________________
 void AliRsnCutV0::Print(const Option_t *) const
