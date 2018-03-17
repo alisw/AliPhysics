@@ -217,7 +217,7 @@ void AliAnalysisTaskEbyeCharge::UserCreateOutputObjects()
     
     // Event statistics
     fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
-    fEventStatistics->SetBit(TH1::kCanRebin);
+   // fEventStatistics->SetBit(TH1::kCanRebin);
     fOutputList->Add(fEventStatistics);
     
     // ****************** Efficiency matrix histograms ************************
