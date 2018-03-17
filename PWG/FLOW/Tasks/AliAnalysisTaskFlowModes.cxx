@@ -2366,7 +2366,7 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
         fhNUEWeightProtonMinus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonMinus"); if(!fhNUEWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
 
     }
-  }
+ 
     
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
