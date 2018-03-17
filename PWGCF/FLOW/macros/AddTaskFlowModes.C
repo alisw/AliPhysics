@@ -17,6 +17,8 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   TString MultEstimator = "V0M",
 					   Bool_t DoOnlyMixedFlow = kTRUE,
 					   Bool_t AntiProtonOnly = kFALSE,
+					   Bool_t FillWeights = kFALSE,
+					   Int_t PIDComb = 2,					   
 					   Bool_t PIDbayesian = kFALSE,
                        			   Double_t PIDprob = 0.9)
 {
@@ -42,14 +44,14 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
     task1->SetProcessPID(kTRUE,PIDbayesian);
-    task1->SetPIDnsigmaCombination(2); // applies PIDnsigma combination 2 out of the 3 possible combinations.
+    task1->SetPIDnsigmaCombination(PIDComb); // applies PIDnsigma combination 2 out of the 3 possible combinations.
     // Flow
     task1->SetFlowRFPsPtMin(0.2);
     task1->SetFlowRFPsPtMax(5.);
     // task1->SetFlowDoFourCorrelations(kFALSE);
     task1->SetFlowDoOnlyMixedCorrelations(DoOnlyMixedFlow);
-    task1->SetFlowFillWeights(kTRUE);
-    task1->SetUseNUAWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUACorrectionMap.root"); 
+    task1->SetFlowFillWeights(FillWeights);
+    //task1->SetUseNUAWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUACorrectionMap.root"); 
     //task1->SetUseNUEWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUECorrectionMap.root");
 
     //task1->SetPositivelyChargedRef(kFALSE);//reference particles both positively charged
