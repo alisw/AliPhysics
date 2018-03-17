@@ -658,6 +658,12 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("54610113","11111020530a2230000","01631031000000d0"); // 40-60 TM // reproduce Astrids cuts with opening angle cut
     cuts.AddCut("56810113","11111020530a2230000","01631031000000d0"); // 60-80 TM // reproduce Astrids cuts with opening angle cut
 
+  } else if (trainConfig == 226){ // EMCAL clusters - peripheral centrality selection for PbPb EMCal
+    cuts.AddCut("15910113","11111020530a2230000","01631031000000d0"); //
+    cuts.AddCut("15910113","11111870530a2230000","01631031000000d0"); //
+    cuts.AddCut("15910113","11111020530b2230000","01631031000000d0"); //
+    cuts.AddCut("15910113","11111870530b2230000","01631031000000d0"); //
+
   } else if (trainConfig == 230){ // EMCAL clusters central add sig
     cuts.AddCut("10110123","1111100057032230000","01631031000000d0"); // 0-10
     cuts.AddCut("30110123","1111100057032230000","01631031000000d0"); // 0-5
