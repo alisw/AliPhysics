@@ -421,6 +421,13 @@ private:
     Float_t fTreeCascVarBachTOFNSigmaPion;  //!
     Float_t fTreeCascVarBachTOFNSigmaKaon;  //!
     
+    Float_t fTreeCascVarNegITSNSigmaPion;   //!
+    Float_t fTreeCascVarNegITSNSigmaProton; //!
+    Float_t fTreeCascVarPosITSNSigmaPion;   //!
+    Float_t fTreeCascVarPosITSNSigmaProton; //!
+    Float_t fTreeCascVarBachITSNSigmaPion;  //!
+    Float_t fTreeCascVarBachITSNSigmaKaon;  //!
+    
     //ChiSquares
     Float_t fTreeCascVarChiSquareV0;
     Float_t fTreeCascVarChiSquareCascade;
