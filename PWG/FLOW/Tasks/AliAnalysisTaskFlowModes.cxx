@@ -2332,10 +2332,24 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
 
         
     }
-    if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
-    {
-        TDirectory* dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("000%d",fRunNumber));
-        if(!dirFlowNUEWeights) {::Error("ProcessEvent","TList from flow weights not found."); return kFALSE; }
+   }
+   // filtering particles
+   Filtering();
+   // at this point, centrality index (percentile) should be properly estimated, if not, skip event
+   if(fIndexCentrality < 0) {return kFALSE;}
+  
+
+   if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
+   {
+        TDirectory* dirFlowNUEWeights = 0x0;
+        if(fIndexCentrality>0. && fIndexCentrality<5.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("0-5cc"));
+        if(fIndexCentrality>5. && fIndexCentrality<10.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("5-10cc"));
+        if(fIndexCentrality>10. && fIndexCentrality<20.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("10-20cc"));
+        if(fIndexCentrality>20. && fIndexCentrality<30.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("20-30cc"));
+        if(fIndexCentrality>30. && fIndexCentrality<40.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("30-60cc"));
+        if(fIndexCentrality>40. && fIndexCentrality<50.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("40-50cc"));
+
+        if(!dirFlowNUEWeights) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
         fhNUEWeightRefsPlus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedPlus"); if(!fhNUEWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs weights not found"); return kFALSE; }
         fhNUEWeightRefsMinus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedMinus"); if(!fhNUEWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs weights not found"); return kFALSE; }
 
@@ -2352,11 +2366,7 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
         fhNUEWeightProtonMinus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonMinus"); if(!fhNUEWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
 
     }
-  }
-  // filtering particles
-  Filtering();
-  // at this point, centrality index (percentile) should be properly estimated, if not, skip event
-  if(fIndexCentrality < 0) {return kFALSE;}
+ 
     
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
