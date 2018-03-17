@@ -13,10 +13,13 @@ class TTree;
 class AliAODEvent;
 class AliVEvent;
 class TString;
-//class TObjArray;
+class TObjArray;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "THnSparse.h"
+#include "THn.h"
+#include "TTreeStream.h"
 
 
 class AliAnalysisTaskEbyeCharge : public AliAnalysisTaskSE
