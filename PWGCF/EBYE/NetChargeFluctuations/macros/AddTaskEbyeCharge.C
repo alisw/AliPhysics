@@ -9,8 +9,8 @@ AliAnalysisTaskEbyeCharge* AddTaskEbyeCharge(Int_t MCthere)
     }
     
     // in your macro:
-    gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask= AddTaskPhysicsSelection(kFALSE,1);  //kFALSE for data, kTRUE for MC
+//    gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+ //   AliPhysicsSelectionTask* physSelTask= AddTaskPhysicsSelection(kFALSE,1);  //kFALSE for data, kTRUE for MC
     
     // now we create an instance of your task
     AliAnalysisTaskEbyeCharge* task = new AliAnalysisTaskEbyeCharge("TaskEbyE");
