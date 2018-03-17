@@ -39,11 +39,7 @@
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
 #include "AliTOFTriggerMask.h"
-#include "AliCDBEntry.h" 
-#include "AliCDBManager.h"
-#include "AliTriggerConfiguration.h" 
 #include "TObjArray.h"
-#include "AliTriggerBCMask.h"
 
 
 // my headers
@@ -137,8 +133,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   
-  fOldRun = -1;
-
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
