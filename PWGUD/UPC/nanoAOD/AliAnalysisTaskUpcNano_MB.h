@@ -56,7 +56,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2D *hTPCdEdxCorr;		//!
   
   Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime, fZNCtime, fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fOldRun, fClosestIR1, fClosestIR2;
+  Int_t fChannel, fSign, fRunNumber, fClosestIR1, fClosestIR2;
   Bool_t fTriggerInputsMC[10];
   TBits fFOFiredChips;
   AliTOFTriggerMask *fTOFmask;
