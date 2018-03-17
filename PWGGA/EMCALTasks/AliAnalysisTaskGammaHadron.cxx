@@ -116,7 +116,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	fDebug             =0; //set only 1 for debugging
 	fSavePool          =0; //= 0 do not save the pool by default. Use the set function to do this.
 	fUseManualEventCuts=0; //= 0 use automatic setting from AliEventCuts. =1 load manual cuts
-	fCorrectEff        =0;  //=0 no efficiency correction
+	fCorrectEff        =1; //= 0 no efficiency correction
 	//..These two items are set in AliAnalysisTaskEmcal::RetrieveEventObjects()
 	//fCent, zVertex
 
