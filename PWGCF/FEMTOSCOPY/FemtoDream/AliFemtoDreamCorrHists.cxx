@@ -222,18 +222,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           TString SamekTCentEventName=
               Form("SEkTCentDist_Cent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
           fSameEventkTCentDist[Counter][iCent]=new TH2F(SamekTCentEventName.Data(),
-                                                 SamekTCentEventName.Data(),
-                                                 *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                                 *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                                        SamekTCentEventName.Data(),
+                                                        *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                                        *itNBins*1.5,*itKMin,*itKMax*1.5);
           fSameEventkTCentDist[Counter][iCent]->Sumw2();
           fPairs[Counter]->Add(fSameEventkTCentDist[Counter][iCent]);
 
           TString MixedkTCentEventName=
               Form("MEkTCentDistCent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
           fMixedEventkTCentDist[Counter][iCent]=new TH2F(MixedkTCentEventName.Data(),
-                                                  MixedkTCentEventName.Data(),
-                                                  *itNBins*1.5,*itKMin,*itKMax*1.5,
-                                                  *itNBins*1.5,*itKMin,*itKMax*1.5);
+                                                         MixedkTCentEventName.Data(),
+                                                         *itNBins*1.5,*itKMin,*itKMax*1.5,
+                                                         *itNBins*1.5,*itKMin,*itKMax*1.5);
           fMixedEventkTCentDist[Counter][iCent]->Sumw2();
           fPairs[Counter]->Add(fMixedEventkTCentDist[Counter][iCent]);
         }
@@ -342,9 +342,41 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
     delete [] fSameEventDist;
     delete fSameEventDist;
   }
+  if (fSameEventMultDist) {
+    delete [] fSameEventMultDist;
+    delete fSameEventMultDist;
+  }
+  if (fSameEventmTDist) {
+    delete [] fSameEventmTDist;
+    delete fSameEventmTDist;
+  }
+  if (fSameEventkTDist) {
+    delete [] fSameEventkTDist;
+    delete fSameEventDist;
+  }
+  if (fSameEventkTCentDist) {
+    delete [] fSameEventkTCentDist;
+    delete fSameEventkTCentDist;
+  }
   if (fMixedEventDist) {
     delete [] fMixedEventDist;
     delete fMixedEventDist;
+  }
+  if (fMixedEventMultDist) {
+    delete [] fMixedEventMultDist;
+    delete fMixedEventMultDist;
+  }
+  if (fMixedEventmTDist) {
+    delete [] fMixedEventmTDist;
+    delete fMixedEventmTDist;
+  }
+  if (fMixedEventkTDist) {
+    delete [] fMixedEventkTDist;
+    delete fMixedEventDist;
+  }
+  if (fMixedEventkTCentDist) {
+    delete [] fMixedEventkTCentDist;
+    delete fMixedEventkTCentDist;
   }
 }
 

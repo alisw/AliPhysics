@@ -198,7 +198,7 @@ std::vector<float> AliFemtoDreamCollConfig::GetCentBins() {
   std::vector<float> CentBins;
   float out=0;
   fCentBins->SetBranchAddress("centBin",&out);
-  for (int iBins=0;iBins<fMaxK_rel->GetEntries();++iBins) {
+  for (int iBins=0;iBins<fCentBins->GetEntries();++iBins) {
     fCentBins->GetEntry(iBins);
     CentBins.push_back(out);
   }

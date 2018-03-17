@@ -64,22 +64,26 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fCentVsMultPlots=centVsMultPlot;
   if (fCentVsMultPlots) {
     TString vsV0AName=Form("CentvsV0A");
-    fCentVsV0A=new TH2F(vsV0AName.Data(),vsV0AName.Data(),100,0.5,100,200,0.5,200);
+    fCentVsV0A=new TH2F(
+        vsV0AName.Data(),vsV0AName.Data(),100,0.5,100,300,0.5,600.5);
     fCentVsV0A->Sumw2();
     fEventCutList->Add(fCentVsV0A);
 
     TString vsV0MName=Form("CentvsV0M");
-    fCentVsV0M=new TH2F(vsV0MName.Data(),vsV0MName.Data(),100,0.5,100,200,0.5,200);
+    fCentVsV0M=new TH2F(
+        vsV0MName.Data(),vsV0MName.Data(),100,0.5,100,300,0.5,600.5);
     fCentVsV0M->Sumw2();
     fEventCutList->Add(fCentVsV0M);
 
     TString vsV0CName=Form("CentvsV0C");
-    fCentVsV0C=new TH2F(vsV0CName.Data(),vsV0CName.Data(),100,0.5,100,200,0.5,200);
+    fCentVsV0C=new TH2F(
+        vsV0CName.Data(),vsV0CName.Data(),100,0.5,100,300,0.5,600.5);
     fCentVsV0C->Sumw2();
     fEventCutList->Add(fCentVsV0C);
 
     TString vsV0RefName=Form("CentvsRefMult");
-    fCentVsRefMult=new TH2F(vsV0RefName.Data(),vsV0RefName.Data(),100,0.5,100,200,0.5,200);
+    fCentVsRefMult=new TH2F(
+        vsV0RefName.Data(),vsV0RefName.Data(),100,0.5,100,100,0.5,200.5);
     fCentVsRefMult->Sumw2();
     fEventCutList->Add(fCentVsRefMult);
   } else {
