@@ -88,6 +88,7 @@ class AliAODv0;
 #include "AliLightV0vertexer.h"
 #include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
+#include "AliExternalTrackParam.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
@@ -160,6 +161,9 @@ fTrigType(AliVEvent::kMB),
 fMinPtToSave( 0.55 ),
 fMaxPtToSave( 100.00 ),
 
+//---> Sandbox switch
+fkSandboxMode ( kFALSE ),
+
 //---> Variables for fTreeEvent
 fCentrality(0),
 fMVPileupFlag(kFALSE),
@@ -229,6 +233,15 @@ fTreeVariableClosestNonEmptyBC(-1),
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
+
+fTreeVariablePrimVertexX(0),
+fTreeVariablePrimVertexY(0),
+fTreeVariablePrimVertexZ(0),
+
+fTreeVariablePosTrack(0x0),
+fTreeVariableNegTrack(0x0),
+
+fTreeVariableMagneticField(0x0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -404,6 +417,9 @@ fTrigType(AliVEvent::kMB),
 fMinPtToSave( 0.55 ),
 fMaxPtToSave( 100.00 ),
 
+//---> Sandbox switch
+fkSandboxMode ( kFALSE ),
+
 //---> Variables for fTreeEvent
 fCentrality(0),
 fMVPileupFlag(kFALSE),
@@ -473,6 +489,15 @@ fTreeVariableClosestNonEmptyBC(-1),
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
+
+fTreeVariablePrimVertexX(0),
+fTreeVariablePrimVertexY(0),
+fTreeVariablePrimVertexZ(0),
+
+fTreeVariablePosTrack(0x0),
+fTreeVariableNegTrack(0x0),
+
+fTreeVariableMagneticField(0x0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -663,10 +688,11 @@ fHistCentrality(0)
     // A - Study Wrong PID for tracking bug
     // B - Study invariant mass *B*ump
     // C - Study OOB pileup in pp 2016 data
+    // S - Add sandbox mode information, please
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
     if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
-    
+    if ( lExtraOptions.Contains("S") ) fkSandboxMode              = kTRUE;
 }
 
 
@@ -799,6 +825,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNHitsFMDA",&fTreeVariableNHitsFMDA,"fTreeVariableNHitsFMDA/F");
             fTreeV0->Branch("fTreeVariableNHitsFMDC",&fTreeVariableNHitsFMDC,"fTreeVariableNHitsFMDC/F");
             fTreeV0->Branch("fTreeVariableClosestNonEmptyBC",&fTreeVariableClosestNonEmptyBC,"fTreeVariableClosestNonEmptyBC/I");
+        }
+        if( fkSandboxMode ){
+            //Full track info
+            fTreeV0->Branch("fTreeVariablePrimVertexX",&fTreeVariablePrimVertexX,"fTreeVariablePrimVertexX/F");
+            fTreeV0->Branch("fTreeVariablePrimVertexY",&fTreeVariablePrimVertexY,"fTreeVariablePrimVertexY/F");
+            fTreeV0->Branch("fTreeVariablePrimVertexZ",&fTreeVariablePrimVertexZ,"fTreeVariablePrimVertexZ/F");
+            fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
+            fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
+            fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
         }
         //------------------------------------------------
     }
@@ -1127,6 +1162,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
     
+    //sandbox this info, please
+    fTreeVariablePrimVertexX = lBestPrimaryVtxPos[0];
+    fTreeVariablePrimVertexY = lBestPrimaryVtxPos[1];
+    fTreeVariablePrimVertexZ = lBestPrimaryVtxPos[2];
+    
+    fTreeVariableMagneticField = lMagneticField;
+    
     //------------------------------------------------
     // Multiplicity Information Acquistion
     //------------------------------------------------
@@ -1325,6 +1367,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
         AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
+        
+        fTreeVariablePosTrack = pTrack;
+        fTreeVariableNegTrack = nTrack;
+        
         if (!pTrack || !nTrack) {
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;

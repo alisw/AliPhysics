@@ -366,8 +366,6 @@ private:
     Float_t fNHitsFMDA; //!
     Float_t fNHitsFMDC; //!
     
-    
-    
     //===========================================================================================
     //   Variables for V0 Tree
     //===========================================================================================
@@ -441,6 +439,18 @@ private:
     Int_t fTreeVariablePIDMother; //!
     Int_t fTreeVariablePrimaryStatus; //!
     Int_t fTreeVariablePrimaryStatusMother; //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox V0
+    Float_t fTreeVariablePrimVertexX;
+    Float_t fTreeVariablePrimVertexY;
+    Float_t fTreeVariablePrimVertexZ;
+    
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
     //===========================================================================================
     //   Variables for Cascade Candidate Tree
