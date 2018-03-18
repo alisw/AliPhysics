@@ -43,6 +43,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_XeXe(Bool_t isMC = kFALSE,
   deu->SetPDG(pdgCode);
   deu->SetIsMC(isMC);
   deu->SetDCABins(80,-0.5,0.5);
+  deu->SetRequireMaxMomentum(1.3);
 
   //float p[5] = {7.25105e-01,4.99820e+01,2.35714e-10,2.49196e+00,1.41570e+01};
   //deu->SetCustomTPCpid(p,0.08f);
