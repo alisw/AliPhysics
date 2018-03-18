@@ -38,6 +38,8 @@ private:
   AliPIDResponse* fPID;              //!<! ALICE PID framework
 
   // Data histograms
+  TH2D *fTPCperformance;
+  TH2D *fTPCperformanceTwoCharges;
   TH2F *fITSsignal[2];               /// ITS dE/dx for positive and negative particles
   TH2F *fTPCsignal[2];               /// TPC dE/dx for positive and negative particles
   TH2F *fTOFsignal[2];               /// TOF beta for positive and negative particles
