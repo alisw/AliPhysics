@@ -58,9 +58,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
     kPassINELgtZERO,
     kCorrelations,
     kPassSPDclsVsTCut,
-    kIsPileupSPD,
-    kIsPileupSPDinMultBins,
-    kIsPileupMV,
+    kIsNotPileupSPD,
+    kIsNotPileupSPDinMultBins,
+    kIsNotPileupMV,
+    kIsNotPileup,
     kHasRecVtx,
     kHasGoodVtxZ,
     kNEvtCuts
