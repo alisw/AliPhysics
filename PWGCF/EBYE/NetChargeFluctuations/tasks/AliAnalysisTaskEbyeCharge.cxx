@@ -869,7 +869,7 @@ Bool_t AliAnalysisTaskEbyeCharge::AcceptTrack(AliAODTrack* aodtrack) const{
     if(!aodtrack) return kFALSE;
     if( aodtrack->Charge() == 0 ) return kFALSE;
     
-    if(!aodtrack->TestFilterBit(756)) return kFALSE;
+    if(!aodtrack->TestFilterBit(768)) return kFALSE;
     
     return kTRUE;
 }
