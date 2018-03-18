@@ -251,6 +251,15 @@ fTreeVariablePIDMother(0),
 fTreeVariablePrimaryStatus(0),
 fTreeVariablePrimaryStatusMother(0),
 
+fTreeVariablePrimVertexX(0),
+fTreeVariablePrimVertexY(0),
+fTreeVariablePrimVertexZ(0),
+
+fTreeVariablePosTrack(0x0),
+fTreeVariableNegTrack(0x0),
+
+fTreeVariableMagneticField(0x0),
+
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
@@ -681,6 +690,15 @@ fTreeVariablePIDNegative(0),
 fTreeVariablePIDMother(0),
 fTreeVariablePrimaryStatus(0),
 fTreeVariablePrimaryStatusMother(0),
+
+fTreeVariablePrimVertexX(0),
+fTreeVariablePrimVertexY(0),
+fTreeVariablePrimVertexZ(0),
+
+fTreeVariablePosTrack(0x0),
+fTreeVariableNegTrack(0x0),
+
+fTreeVariableMagneticField(0x0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -1187,6 +1205,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePIDMother",&fTreeVariablePIDMother,"fTreeVariablePIDMother/I");
         fTreeV0->Branch("fTreeVariablePrimaryStatus",&fTreeVariablePrimaryStatus,"fTreeVariablePrimaryStatus/I");
         fTreeV0->Branch("fTreeVariablePrimaryStatusMother",&fTreeVariablePrimaryStatusMother,"fTreeVariablePrimaryStatusMother/I");
+        //------------------------------------------------
+        if( fkSandboxMode ){
+            //Full track info 
+        fTreeV0->Branch("fTreeVariablePrimVertexX",&fTreeVariablePrimVertexX,"fTreeVariablePrimVertexX/F");
+        fTreeV0->Branch("fTreeVariablePrimVertexY",&fTreeVariablePrimVertexY,"fTreeVariablePrimVertexY/F");
+        fTreeV0->Branch("fTreeVariablePrimVertexZ",&fTreeVariablePrimVertexZ,"fTreeVariablePrimVertexZ/F");
+        fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
+        fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
+        fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
+        }
         //------------------------------------------------
     }
     
@@ -1701,6 +1729,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+    
+    //sandbox this info, please
+    fTreeVariablePrimVertexX = lBestPrimaryVtxPos[0];
+    fTreeVariablePrimVertexY = lBestPrimaryVtxPos[1];
+    fTreeVariablePrimVertexZ = lBestPrimaryVtxPos[2];
+    
+    fTreeVariableMagneticField = lMagneticField;
     
     //------------------------------------------------
     // Multiplicity Information Acquistion
@@ -2538,6 +2573,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
         AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
+        
+        fTreeVariablePosTrack = pTrack;
+        fTreeVariableNegTrack = nTrack;
+        
         if (!pTrack || !nTrack) {
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
