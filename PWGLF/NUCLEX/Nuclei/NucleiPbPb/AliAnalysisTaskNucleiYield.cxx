@@ -361,7 +361,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
           if (part->IsPhysicalPrimary()) {
-            if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy) fReconstructed[iR][iC]->Fill(centrality,pT);
+            if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
+                (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum))
+              fReconstructed[iR][iC]->Fill(centrality,pT);
             fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
             if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
           } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
@@ -386,7 +388,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
       if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
-      fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
+      if (fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum)
+        fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
 
       if (iTof == 0) continue;
       if (std::abs(tof_n_sigma) < 4.)
@@ -435,7 +438,6 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   if (track->GetTPCFoundFraction() < fRequireTPCfoundFraction) return false;
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
-  if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return false;
 
   /// ITS related cuts
   dca[0] = 0.;
