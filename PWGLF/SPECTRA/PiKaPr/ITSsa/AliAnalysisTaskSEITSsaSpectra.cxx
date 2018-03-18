@@ -302,12 +302,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistNEvents->GetYaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
   fHistNEvents->GetYaxis()->SetBinLabel(kPassSPDclsVsTCut,
                                         Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
-  fHistNEvents->GetYaxis()->SetBinLabel(kIsPileupSPD,
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsNotPileupSPD,
                                         Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
   fHistNEvents->GetYaxis()->SetBinLabel(
-    kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
-  fHistNEvents->GetYaxis()->SetBinLabel(kIsPileupMV,
+    kIsNotPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsNotPileupMV,
                                         Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsNotPileup, "PassIsNoPileup");
   fHistNEvents->GetYaxis()->SetBinLabel(kHasRecVtx, "HasVertex");
   fHistNEvents->GetYaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
   fHistNEvents->GetYaxis()->SetBinLabel(kNEvtCuts, "IsSelected");
@@ -327,12 +328,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistMCEvents->GetYaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
   fHistMCEvents->GetYaxis()->SetBinLabel(kPassSPDclsVsTCut,
                                          Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
-  fHistMCEvents->GetYaxis()->SetBinLabel(kIsPileupSPD,
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsNotPileupSPD,
                                          Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
   fHistMCEvents->GetYaxis()->SetBinLabel(
-    kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
-  fHistMCEvents->GetYaxis()->SetBinLabel(kIsPileupMV,
+    kIsNotPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsNotPileupMV,
                                          Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsNotPileup, "PassIsNoPileup");
   fHistMCEvents->GetYaxis()->SetBinLabel(kHasRecVtx, "HasVertex");
   fHistMCEvents->GetYaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
   fHistMCEvents->GetYaxis()->SetBinLabel(kNEvtCuts, "IsSelected");
@@ -461,10 +463,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fOutput->Add(fHistMCPartGoodGenVtxZ[index]);
 
         hist_name = Form("fHistRecoMC%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-        const UInt_t nDims = 6;                                   // cent, recPt, genPt, truePID, IsPrim
+        const UInt_t nDims = 6;                                         // cent, recPt, genPt, truePID, IsPrim
         int nBins[nDims] = { nCentBins, nPtBins, nPtBins, 1000, 4, 2 }; //
-        double minBin[nDims] = { 0., 0., 0.,-200, -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
-        double maxBin[nDims] = { 1., 1., 1., 200,  2.5, 1.5 };          // Dummy limits for cent, recPt, genPt
+        double minBin[nDims] = { 0., 0., 0., -200, -1.5, -.5 };         // Dummy limits for cent, recPt, genPt
+        double maxBin[nDims] = { 1., 1., 1., 200, 2.5, 1.5 };           // Dummy limits for cent, recPt, genPt
         fHistRecoMC[index] =
           new THnSparseF(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c});", nDims,
                          nBins, minBin, maxBin);
@@ -1022,8 +1024,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
       int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
       if (fIsMC && lIsGoodTrack) {
-        double invPtDifference = 1./trkPt - 1./lMCpt;
-        double tmp_vect[6] = { fEvtMult, trkPt, lMCpt, invPtDifference, static_cast<double>(binPart),
+        double invPtDifference = 1. / trkPt - 1. / lMCpt;
+        double tmp_vect[6] = { fEvtMult,
+                               trkPt,
+                               lMCpt,
+                               invPtDifference,
+                               static_cast<double>(binPart),
                                (lMCevent->IsPhysicalPrimary(lMCtrk)) ? 0. : 1. };
         fHistRecoMC[lPidIndex]->Fill(tmp_vect);
       } // end y
@@ -1173,7 +1179,7 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
 
   if (fExtEventCuts) {
     if (fEventCuts.AcceptEvent(fESD)) {
-      evtSel = kNEvtCuts;
+      evtSel = static_cast<EEvtCut_Type>(kNEvtCuts - 1);
       return kTRUE;
     }
     AliDebug(3, "Event dont accepted by AliEventCuts");
@@ -1196,17 +1202,18 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
     }
     evtSel = kPassINELgtZERO;
 
-    if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
-      AliDebug(3, "Event with PileUp");
-      return kFALSE;
-    }
-    evtSel = kIsPileupMV;
-
     if (!fEventCuts.PassedCut(AliEventCuts::kCorrelations)) {
       AliDebug(3, "Event with PileUp");
       return kFALSE;
     }
     evtSel = kCorrelations;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
+      AliDebug(3, "Event with PileUp");
+      return kFALSE;
+    }
+    evtSel = kIsNotPileup;
+
 
     if (!fEventCuts.PassedCut(AliEventCuts::kVertex) || !fEventCuts.PassedCut(AliEventCuts::kVertexQuality)) {
       AliDebug(3, "Event doesn't pass has good vtx sel");
@@ -1220,7 +1227,6 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
     }
     evtSel = kHasGoodVtxZ;
 
-    evtSel = kNEvtCuts;
     return kFALSE;
   } else { // If not Eventcut used
 
@@ -1261,18 +1267,19 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
         AliDebug(3, "Pileup event from IsPileupFromSPD");
         return kFALSE;
       }
-      evtSel = kIsPileupSPD;
+      evtSel = kIsNotPileupSPD;
       if (lFlag & BIT(kPileupInMultBins)) {
         AliDebug(3, "Pileup event from IsPileupSPDinMultBins");
         return kFALSE;
       }
-      evtSel = kIsPileupSPDinMultBins;
+      evtSel = kIsNotPileupSPDinMultBins;
       if (lFlag & BIT(kPileupMV)) {
         AliDebug(3, "Pileup event from IsPileupMV");
         return kFALSE;
       }
-      evtSel = kIsPileupSPD;
+      evtSel = kIsNotPileupMV;
     }
+    evtSel = kIsNotPileup;
 
     if (fUseSelectVertex2015pp && !SelectVertex2015pp()) {
       AliDebug(3, "Event doesn't pass vtx 2015 pp selection sel");
@@ -1285,9 +1292,12 @@ bool AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type &evtSel)
       return kFALSE;
     }
     evtSel = kHasGoodVtxZ;
+
+    return kTRUE;
   }
-  evtSel = kNEvtCuts;
-  return kTRUE;
+  // Must ever be here
+  AliDebug(3, "Event is rejected by unknown reason");
+  return kFALSE;
 }
 
 //
@@ -1356,7 +1366,7 @@ bool AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
     fMultMethod = 0;
   }
   if (!fMultMethod)
-    return kTRUE; // skip multiplicity check
+    return kTRUE;              // skip multiplicity check
   else if (fMultMethod == 1) { // New multiplicity/centrality class framework
     AliMultSelection *fMultSel = (AliMultSelection *)fESD->FindListObject("MultSelection");
     if (!fMultSel) {
