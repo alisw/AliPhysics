@@ -3,6 +3,7 @@
 AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,
     TString CentEst="kInt7",
+    int cascCutVar=0,
     bool notpp=true,//1
     bool DCAPlots=false,//2
     bool CPAPlots=false,//3
@@ -131,6 +132,33 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AntiCascadeCuts->SetPDGCodePosDaug(211);
 	AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
 	AntiCascadeCuts->SetPDGCodeBach(-211);
+	TString CascVars="";
+	if (cascCutVar == 1) {
+	  XiNegCuts->SetPtRange(0,999.5);
+	  XiPosCuts->SetPtRange(0,999.5);
+	  XiBachCuts->SetPtRange(0,999.5);
+	  AntiXiNegCuts->SetPtRange(0,999.5);
+	  AntiXiPosCuts->SetPtRange(0,999.5);
+	  AntiXiBachCuts->SetPtRange(0,999.5);
+
+	  CascadeCuts->SetPtRangeXi(0.3,999.5);
+	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
+	  CascVars+="XiPt";
+	} else if (cascCutVar == 2) {
+	  XiNegCuts->SetPtRange(0,999.5);
+	  XiPosCuts->SetPtRange(0,999.5);
+	  XiBachCuts->SetPtRange(0,999.5);
+	  AntiXiNegCuts->SetPtRange(0,999.5);
+	  AntiXiPosCuts->SetPtRange(0,999.5);
+	  AntiXiBachCuts->SetPtRange(0,999.5);
+
+	  CascadeCuts->SetPtRangeXi(0.3,999.5);
+	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
+
+	  CascadeCuts->SetPtRangev0(0.3,999.5);
+	  AntiCascadeCuts->SetPtRangev0(0.3,999.5);
+	  CascVars+="XiAndV0Pt";
+	}
 
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -351,6 +379,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	} else if (CentEst=="kHM") {
 	  addon+="HM";
 	}
+	addon+=CascVars.Data();
+	std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
 	TString QAName = Form("%sQA",addon.Data());
 	coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
 			QAName.Data(), TList::Class(),
