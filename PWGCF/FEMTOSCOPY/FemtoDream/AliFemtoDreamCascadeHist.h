@@ -32,6 +32,7 @@ class AliFemtoDreamCascadeHist {
   void FillTransverseRadiusXi(int iBin,float rad){fTransRadiusXi[iBin]->Fill(rad);};
   void FillMaxDCAv0Daug(int iBin,float dca){fv0MaxDCADaug[iBin]->Fill(dca);};
   void FillCPAv0(int iBin,float cpa){fCPAv0[iBin]->Fill(cpa);};
+  void Fillv0Pt(int iBin,float v0pT){fv0Pt[iBin]->Fill(v0pT);};
   void FillTransverseRadiusv0(int iBin,float rad){fTransRadiusv0[iBin]->Fill(rad);};
   void FillMinDistPrimVtxv0(int iBin,float dist){fMinDistVtxv0[iBin]->Fill(dist);};
   void FillMinDistPrimVtxv0DaugPos(int iBin,float dist){fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
@@ -55,6 +56,7 @@ class AliFemtoDreamCascadeHist {
   TH1F *fTransRadiusXi[2];
   TH1F *fv0MaxDCADaug[2];
   TH1F *fCPAv0[2];
+  TH1F *fv0Pt[2];
   TH1F *fTransRadiusv0[2];
   TH1F *fMinDistVtxv0[2];
   TH1F *fMinDistVtxv0DaugPos[2];
