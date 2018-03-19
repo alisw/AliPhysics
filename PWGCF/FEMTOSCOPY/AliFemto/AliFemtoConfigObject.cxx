@@ -564,8 +564,7 @@ AliFemtoConfigObject::Parse(const TObjString &src)
 AliFemtoConfigObject
 AliFemtoConfigObject::Parse(const std::string &src)
 {
-  StringIter_t begin = src.begin(),
-                       it = begin;
+  StringIter_t it = src.begin();
 
   try {
     return Parse(it, src.cend());
