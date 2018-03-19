@@ -12,7 +12,7 @@ ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 :fResults()
 ,fNSpecies(0)
-,fMinimalBooking(false)
+,fDoMCAncestorCheck(false)
 ,fZVtxMultBuffer()
 ,fValuesZVtxBins()
 ,fValuesMultBins()
@@ -23,7 +23,7 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     AliFemtoDreamCollConfig *conf,bool MinimalBooking)
 :fResults(new AliFemtoDreamCorrHists(conf,MinimalBooking))
 ,fNSpecies(conf->GetNParticles())
-,fMinimalBooking(false)
+,fDoMCAncestorCheck(conf->GetDoSECommonAncestor())
 ,fZVtxMultBuffer(conf->GetNZVtxBins(),
                  std::vector<AliFemtoDreamZVtxMultContainer>(
                      conf->GetNMultBins(),
@@ -54,6 +54,9 @@ void AliFemtoDreamPartCollection::SetEvent(
     itMult+=bins[1];
     itMult->PairParticlesSE(Particles,fResults,bins[1],cent);
     itMult->PairParticlesME(Particles,fResults,bins[1],cent);
+    if (fDoMCAncestorCheck) {
+      itMult->PairMCParticlesSE(Particles,fResults,bins[1]);
+    }
     itMult->SetEvent(Particles);
   }
   return;
