@@ -124,7 +124,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass) {
     fCascadeQA[i]->Add(fInvMassv0[i]);
 
     TString XiPtName=Form("XiPt_%s",sName[i].Data());
-    fXiPt[i]=new TH1F(XiPtName.Data(),XiPtName.Data(),19,0.6,6.5);
+    fXiPt[i]=new TH1F(XiPtName.Data(),XiPtName.Data(),13,-0.2,6.3);
     fXiPt[i]->Sumw2();
     fCascadeQA[i]->Add(fXiPt[i]);
 
