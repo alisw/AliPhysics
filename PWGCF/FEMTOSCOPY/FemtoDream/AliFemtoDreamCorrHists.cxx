@@ -231,7 +231,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fMixedEventkTCentDist[Counter]=new TH2F*[nCentBins];
         for (int iCent=0;iCent<nCentBins;++iCent) {
           TString SamekTCentEventName=
-              Form("SEkTCentDist_Cent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
+              Form("SEkTCentDist_Cent_%.0f_Particle%d_Particle%d",
+                   fCentBins[iCent],iPar1,iPar2);
           fSameEventkTCentDist[Counter][iCent]=new TH2F(SamekTCentEventName.Data(),
                                                         SamekTCentEventName.Data(),
                                                         *itNBins*1.5,*itKMin,*itKMax*1.5,
@@ -240,7 +241,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           fPairs[Counter]->Add(fSameEventkTCentDist[Counter][iCent]);
 
           TString MixedkTCentEventName=
-              Form("MEkTCentDistCent%i_Particle%d_Particle%d",iCent,iPar1,iPar2);
+              Form("MEkTCentDistCent%.0f_Particle%d_Particle%d",
+                   fCentBins[iCent],iPar1,iPar2);
           fMixedEventkTCentDist[Counter][iCent]=new TH2F(MixedkTCentEventName.Data(),
                                                          MixedkTCentEventName.Data(),
                                                          *itNBins*1.5,*itKMin,*itKMax*1.5,
@@ -268,7 +270,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
                                             *itNBins*1.5,*itKMin,*itKMax*1.5);
         fMixedEventmTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
-
       }
 
       if (fDoMCCommonAncest) {
