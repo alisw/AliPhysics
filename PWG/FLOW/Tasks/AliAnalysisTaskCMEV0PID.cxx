@@ -27,7 +27,7 @@
 #include "stdio.h"
 #include "Riostream.h"
 
-#include "vector"
+// #include "vector"  not supported by ROOT6 yet.
 
 //---- manager and handler---
 #include "AliAnalysisManager.h"
@@ -1515,31 +1515,33 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Int_t multPOI1st = 0;
   Int_t multPOI2nd = 0;
 
-  /*
+ 
   const Int_t maxTrack =  40000;
   Float_t nSigPionTPC[maxTrack]   = {0.,};
   Float_t nSigKaonTPC[maxTrack]   = {0.,};
   Float_t nSigProtonTPC[maxTrack] = {0.,};    
   Float_t nSigPionTOF[maxTrack]   = {0.,};
   Float_t nSigKaonTOF[maxTrack]   = {0.,};
-  Float_t nSigProtonTOF[maxTrack] = {0.,};    */
-  
+  Float_t nSigProtonTOF[maxTrack] = {0.,};   
 
-  vector<float> nSigPionTPC;   // = {0.,};
+//Dont break segment for higher tracks:
+  if(ntracks>maxTrack)     return;
+    
+
+/*vector<float> nSigPionTPC;   // = {0.,};
   vector<float> nSigKaonTPC;   // = {0.,};
   vector<float> nSigProtonTPC; // = {0.,};
   vector<float> nSigPionTOF;   // = {0.,};
   vector<float> nSigKaonTOF;   // = {0.,};
-  vector<float> nSigProtonTOF; // = {0.,};
+  vector<float> nSigProtonTOF; // = {0.,}; 
 
- 
   nSigPionTPC.reserve(ntracks+1);
   nSigKaonTPC.reserve(ntracks+1);
   nSigProtonTPC.reserve(ntracks+1);
   nSigPionTOF.reserve(ntracks+1);
   nSigKaonTOF.reserve(ntracks+1);
   nSigProtonTOF.reserve(ntracks+1);
-  
+  */
 
 
   //Calling fPIDResponse in nested loop is CPU expensive.
@@ -1549,7 +1551,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
     AliAODTrack *trackForPID=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
 
-    /*// Array method:
+   // Array method:
     if(trackForPID){
       nSigPionTPC[itrack]   = fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion);
       nSigKaonTPC[itrack]   = fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kKaon);
@@ -1565,8 +1567,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       nSigPionTOF[itrack]   = -99; 
       nSigKaonTOF[itrack]   = -99; 
       nSigProtonTOF[itrack] = -99; 
-    }  */
+    }  
 
+    /*
     // Vector method:
     if(trackForPID){
       nSigPionTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion));
@@ -1586,6 +1589,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       nSigKaonTOF.push_back(-100.);
       nSigProtonTOF.push_back(-100.);
     }
+    */
 
   }//1st track loop for PID storing.
 
