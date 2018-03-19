@@ -241,6 +241,9 @@ public:
   
   void         SwitchOnFillHistogramsPerSM()     { fFillPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerSM()    { fFillPerSMHistograms = kFALSE ; }  
+
+  void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
   void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
     if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
@@ -328,8 +331,11 @@ private:
   
   Bool_t       fFillBkgBinsHisto;                        ///<  Fill pT in cone in background bins distributions.
   
-  Bool_t       fFillPerSMHistograms ;                    ///<  Fill histograms per SM
-
+  Bool_t       fFillPerSMHistograms ;                    ///<  Fill histograms per SM.
+  
+  Bool_t       fFillPerTCardIndexHistograms ;            ///<  Fill histograms per T-Card index.
+  Int_t        fTCardIndex;                              ///<  Store here the T-Card index per trigger cluster.
+  
   Bool_t       fFillTaggedDecayHistograms;               ///<  Fill pT in cone distributions in background bins for decay particles.
     
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
@@ -659,6 +665,12 @@ private:
   TH2F *       fhXEUeChargedPerSM    [20] ;              //!<! Trigger particle -Ue charged hadron momentum imbalance histogram, per SM number.
   TH2F *       fhDeltaPhiChargedPerSM[20] ;              //!<! Difference of charged particle phi and trigger particle phi as function of trigger pT, per SM number.
   TH2F *       fhDeltaPhiChargedPtA3GeVPerSM[20] ;       //!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per SM number
+
+  TH2F *       fhPtTriggerPerTCardIndex ;                //!<! pT distribution of trigger particles per T-Card index.
+  TH2F *       fhXEChargedPerTCardIndex      [16] ;      //!<! Trigger particle -charged hadron momentum imbalance histogram, per SM T-Card index.
+  TH2F *       fhXEUeChargedPerTCardIndex    [16] ;      //!<! Trigger particle -Ue charged hadron momentum imbalance histogram, per T-Card index.
+  TH2F *       fhDeltaPhiChargedPerTCardIndex[16] ;      //!<! Difference of charged particle phi and trigger particle phi as function of trigger pT, per T-Card index.
+  TH2F *       fhDeltaPhiChargedPtA3GeVPerTCardIndex[16];//!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per T-Card index
   
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
