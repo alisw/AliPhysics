@@ -1,6 +1,6 @@
 AliAnalysisTaskSE * AddTaskPhysPHOSQA()
 {
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsPhysQA.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/phys/macros/AddTaskCaloCellsPhysQA.C"); 
 
   AliAnalysisTaskCaloCellsPhysQA *taskPHOSCellQA = AddTaskCaloCellsPhysQA(5, 1, "CaloCellsQA.root","PHOSCellsQA");
   taskPHOSCellQA->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0); 
