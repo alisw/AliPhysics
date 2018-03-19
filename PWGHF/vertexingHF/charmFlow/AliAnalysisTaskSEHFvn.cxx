@@ -509,13 +509,20 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(hq2TPCFullEtaVsNegEta);
     fOutput->Add(hq2TPCFullEtaVsPosEta);
     
-    //correlation between q2TPC and q2VZEROC (all events, events with candidates, events with candidates in mass range)
+    //correlation between q2TPC and q2VZEROC/A (all events, events with candidates, events with candidates in mass range)
     TH2F* hq2TPCVsq2VZEROC = new TH2F("hq2TPCVsq2VZEROC","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     TH2F* hq2TPCVsq2VZEROCCand = new TH2F("hq2TPCVsq2VZEROCCand","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     TH2F* hq2TPCVsq2VZEROCCandInMass = new TH2F("hq2TPCVsq2VZEROCCandInMass","q_{2}^{V0C} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0C}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROA = new TH2F("hq2TPCVsq2VZEROA","q_{2}^{V0A} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0A}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROACand = new TH2F("hq2TPCVsq2VZEROACand","q_{2}^{V0A} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0A}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+    TH2F* hq2TPCVsq2VZEROACandInMass = new TH2F("hq2TPCVsq2VZEROACandInMass","q_{2}^{V0A} vs. q_{2}^{TPC};q_{2}^{TPC};q_{2}^{V0A}",nq2bins,q2min,q2max,nq2bins,q2min,q2max);
+
     fOutput->Add(hq2TPCVsq2VZEROC);
     fOutput->Add(hq2TPCVsq2VZEROCCand);
     fOutput->Add(hq2TPCVsq2VZEROCCandInMass);
+    fOutput->Add(hq2TPCVsq2VZEROA);
+    fOutput->Add(hq2TPCVsq2VZEROACand);
+    fOutput->Add(hq2TPCVsq2VZEROACandInMass);
 
     //Ntracklets vs. q2 vs. centrality histos
     if(fEnableNtrklHistos) {
@@ -1436,10 +1443,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     Double_t q2percentile = -1.;
     Double_t q2percentileFullTPC = -1.;
     Double_t q2percentileVZEROC = -1.;
+    Double_t q2percentileVZEROA = -1.;
     const Int_t ncentbins = (fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
     TSpline3* q2spline=0x0;
     TSpline3* q2splineFullTPC=0x0;
     TSpline3* q2splineVZEROC=0x0;
+    TSpline3* q2splineVZEROA=0x0;
     Int_t splineindex = 0;
     if(fq2Meth==kq2NegTPC) {splineindex=1;}
     else if(fq2Meth==kq2PosTPC) {splineindex=2;}
@@ -1453,6 +1462,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
           q2spline = (TSpline3*)fq2SplinesList[splineindex]->FindObject(Form("sq2Int_centr_%d_%d",fMinCentr+iCentr*fCentBinSizePerMil/10,fMinCentr+(iCentr+1)*fCentBinSizePerMil/10));
           q2splineFullTPC = (TSpline3*)fq2SplinesList[0]->FindObject(Form("sq2Int_centr_%d_%d",fMinCentr+iCentr*fCentBinSizePerMil/10,fMinCentr+(iCentr+1)*fCentBinSizePerMil/10));
           q2splineVZEROC = (TSpline3*)fq2SplinesList[5]->FindObject(Form("sq2Int_centr_%d_%d",fMinCentr+iCentr*fCentBinSizePerMil/10,fMinCentr+(iCentr+1)*fCentBinSizePerMil/10));
+          q2splineVZEROA = (TSpline3*)fq2SplinesList[4]->FindObject(Form("sq2Int_centr_%d_%d",fMinCentr+iCentr*fCentBinSizePerMil/10,fMinCentr+(iCentr+1)*fCentBinSizePerMil/10));
           break;
         }
       }
@@ -1460,6 +1470,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       q2percentile=q2spline->Eval(q2);
       q2percentileFullTPC=q2splineFullTPC->Eval(q2FullTPC);
       q2percentileVZEROC=q2splineVZEROC->Eval(q2VZEROC);
+      q2percentileVZEROA=q2splineVZEROA->Eval(q2VZEROA);
       q2fill=q2percentile;
       if(fRemoveDauFromq2==1 || fDeltaEtaDmesonq2>0) {
         for(UInt_t iCand=0; iCand<q2Cand.size(); iCand++) {
@@ -1516,13 +1527,27 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     if(!fPercentileq2) {
       ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROC"))->Fill(q2FullTPC,q2VZEROC);
-      if(nSelCand>0) ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCand"))->Fill(q2FullTPC,q2VZEROC);
-      if(nSelCandInMassRange>0) ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCandInMass"))->Fill(q2FullTPC,q2VZEROC);
+      ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROA"))->Fill(q2FullTPC,q2VZEROA);
+      if(nSelCand>0) {
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCand"))->Fill(q2FullTPC,q2VZEROC);
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROACand"))->Fill(q2FullTPC,q2VZEROA);
+      }
+      if(nSelCandInMassRange>0) {
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCandInMass"))->Fill(q2FullTPC,q2VZEROC);
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROACandInMass"))->Fill(q2FullTPC,q2VZEROA);
+      }
     }
     else {
       ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROC"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
-      if(nSelCand>0) ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCand"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
-      if(nSelCandInMassRange>0) ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCandInMass"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
+      ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROA"))->Fill(q2percentileFullTPC,q2percentileVZEROA);
+      if(nSelCand>0) {
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCand"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROACand"))->Fill(q2percentileFullTPC,q2percentileVZEROA);
+      }
+      if(nSelCandInMassRange>0) {
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROCCandInMass"))->Fill(q2percentileFullTPC,q2percentileVZEROC);
+        ((TH2F*)fOutput->FindObject("hq2TPCVsq2VZEROACandInMass"))->Fill(q2percentileFullTPC,q2percentileVZEROA);
+      }
     }
     
     Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
