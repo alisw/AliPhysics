@@ -23,6 +23,9 @@ class AliFemtoDreamZVtxMultContainer {
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent);
+  void PairMCParticlesSE(
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+      AliFemtoDreamCorrHists *ResultsHist,int iMult);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent);

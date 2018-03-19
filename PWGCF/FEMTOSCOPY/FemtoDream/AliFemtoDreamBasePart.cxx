@@ -6,6 +6,7 @@
  */
 
 #include "AliFemtoDreamBasePart.h"
+#include <iostream>
 ClassImp(AliFemtoDreamBasePart)
 AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 :fIsReset(false)
@@ -40,7 +41,9 @@ AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
 }
 
 
-void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart) {
+void AliFemtoDreamBasePart::SetMCParticle(
+    AliAODMCParticle *mcPart,AliMCEvent *evt)
+{
   this->SetPt(mcPart->Pt());
   this->SetMomentum(mcPart->Px(),mcPart->Py(),mcPart->Pz());
   this->SetEta(mcPart->Eta());
@@ -52,13 +55,12 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart) {
   this->SetUse(true);
   this->fIsReset=false;
   //find the original mother in the mc stack.
-  int lastMother=0;
-  int motherID=-99;
+  int motherID=mcPart->GetMother();
+  int lastMother=motherID;
   while (motherID!=-1) {
     lastMother=motherID;
-    motherID=mcPart->GetMother();
+    motherID=evt->GetTrack(motherID)->GetMother();
   }
-  std::cout << lastMoher << std::endl;
   this->SetMotherID(lastMother);
 }
 

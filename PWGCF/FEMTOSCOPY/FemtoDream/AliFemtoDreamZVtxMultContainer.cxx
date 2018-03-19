@@ -113,6 +113,51 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     itPDGPar1++;
   }
 }
+void AliFemtoDreamZVtxMultContainer::PairMCParticlesSE(
+    std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+    AliFemtoDreamCorrHists *ResultsHist,int iMult)
+{
+  float RelativeK = 0;
+  int _intSpec1 = 0;
+  int HistCounter=0;
+  //First loop over all the different Species
+  auto itPDGPar1 = fPDGParticleSpecies.begin();
+  for (auto itSpec1=Particles.begin();itSpec1!=Particles.end();++itSpec1) {
+    auto itPDGPar2 = fPDGParticleSpecies.begin();
+    itPDGPar2+=itSpec1-Particles.begin();
+    int _intSpec2 = itSpec1-Particles.begin();
+    for (auto itSpec2=itSpec1;itSpec2!=Particles.end();++itSpec2) {
+      ResultsHist->FillPartnersSE(HistCounter,itSpec1->size(),itSpec2->size());
+      //Now loop over the actual Particles and correlate them
+      for (auto itPart1=itSpec1->begin();itPart1!=itSpec1->end();++itPart1) {
+        std::vector<AliFemtoDreamBasePart>::iterator itPart2;
+        if (itSpec1==itSpec2) {
+          itPart2=itPart1+1;
+        } else {
+          itPart2=itSpec2->begin();
+        }
+        while (itPart2!=itSpec2->end()) {
+          RelativeK=RelativePairMomentum(itPart1->GetMomentum(),*itPDGPar1,
+                                         itPart2->GetMomentum(),*itPDGPar2);
+          //If the ancestor is the same fill one hist, if it isnt the other
+          std::cout << itPart1->GetMotherID() << '\t' << itPart2->GetMotherID() << std::endl;
+          if (itPart1->GetMotherID()==itPart2->GetMotherID()) {//common ancestor
+            ResultsHist->FillSameEventCommonAncestDist(HistCounter,RelativeK);
+          } else {//different ancestor
+            ResultsHist->FillSameEventNonCommonAncestDist(
+                HistCounter,RelativeK);
+          }
+          ++itPart2;
+        }
+      }
+      ++HistCounter;
+      _intSpec2++;
+      itPDGPar2++;
+    }
+    _intSpec1++;
+    itPDGPar1++;
+  }
+}
 
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
