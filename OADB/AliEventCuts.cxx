@@ -201,10 +201,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
+      if (!cent) {
+        AliFatal("The legacy centrality framework has been request but no AliCentrality object was found attached to the Event."
+                 " Did you run the Centrality Framework?");
+      }
       fCentPercentiles[0] = cent->GetCentralityPercentile(fCentEstimators[0].data());
       fCentPercentiles[1] = cent->GetCentralityPercentile(fCentEstimators[1].data());
     } else {
       AliMultSelection* cent = (AliMultSelection*)ev->FindListObject("MultSelection");
+      if (!cent) {
+        AliFatal("The multiplicity selection framework has been request but no AliMultSelection object was found attached to the Event."
+                 " Did you run the AliMultSelectionTask?");
+      }
       fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), fMultSelectionEvCuts);
       fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), fMultSelectionEvCuts);
     }
