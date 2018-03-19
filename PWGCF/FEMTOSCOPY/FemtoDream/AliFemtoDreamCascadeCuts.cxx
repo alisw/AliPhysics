@@ -240,7 +240,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
   }
   if (pass&&fCutPt) {
-    if (!((casc->GetPt()<fPtMin)&&(fPtMax<casc->GetPt()))) {
+    if ((casc->GetPt()<fPtMin)||(fPtMax<casc->GetPt())) {
       pass=false;
     } else {
       if (!fMinimalBooking)fHist->FillCutCounter(20);

@@ -67,7 +67,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass) {
 
   fHistList->Add(fCutCounter);
 
-  fConfig=new TProfile("Config","Config",25,0.5,25.5);
+  fConfig=new TProfile("Config","Config",25,0,25);
   fConfig->SetStats(0);
   fConfig->GetXaxis()->SetBinLabel(1,"Xi Pt Min");
   fConfig->GetXaxis()->SetBinLabel(2,"Xi Pt Max");
