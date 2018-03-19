@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskEMCALTriggerQA.cxx
     AliAnalysisTaskEMCALTimeCalib.cxx
     BadChannelAna.cxx
+    BadChannelAna_V2.cxx
    )
 
 # Headers from sources
