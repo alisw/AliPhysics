@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <string>
@@ -182,6 +183,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
  fQAHistos->CreateTH2("hClusterConstituentEHC", "cluster constituent hadronic-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
  fQAHistos->CreateTH2("hClusterIndexENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
  fQAHistos->CreateTH2("hClusterIndexEHC", "cluster constituent hadronic-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hLeadingChargedConstituentPt", "Pt of the leading charged constituent in jet; p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hLeadingClusterConstituentPt", "Pt of the leading cluster constituent in jet; p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
 #endif
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
@@ -271,6 +274,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   AliDebugStream(1) << "Inspecting jet radius " << (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius()) << std::endl;
   this->fGlobalTreeParams->fJetRadius = (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius());
+  fGlobalTreeParams->fTriggerClusterIndex = -1;       // Reset trigger cluster index
 
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
@@ -289,6 +293,21 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
         }
       }
+
+      // decode trigger string in order to determine the trigger clusters
+      std::vector<std::string> clusternames;
+      auto triggerinfos = DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      for(auto t : triggerinfos) {
+        if(std::find(clusternames.begin(), clusternames.end(), t.fTriggerCluster) == clusternames.end()) clusternames.emplace_back(t.fTriggerCluster);
+      }
+      bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
+           isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
+           isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
+           isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+      if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 0;
+      else if(isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 1;
+      else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 2;
+      else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
     } else {
       if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
         // Simulation - do EMCAL trigger selection from trigger selection object
@@ -641,21 +660,31 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
   }
 
   // Look over charged constituents
-  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().GetEntriesFast() << std::endl;
-  for(auto pconst : jet->GetParticleConstituents()) {
-    auto part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
-    AliDebugStream(3) << "Found particle constituent with pt " << part->Pt() << ", from VParticle " << part->GetParticle()->Pt() << std::endl;
-    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part->Pt());
+  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().size() << std::endl;
+  for(auto part : jet->GetParticleConstituents()) {
+    //auto part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
+    AliDebugStream(3) << "Found particle constituent with pt " << part.Pt() << ", from VParticle " << part.GetParticle()->Pt() << std::endl;
+    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part.Pt());
   }
 
   // Loop over neutral constituents
-  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().GetEntriesFast() << std::endl;
-  for(auto cconst : jet->GetClusterConstituents()){
-    auto clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
-    AliDebugStream(3) << "Found cluster constituent with energy " << clust->E() << " using energy definition " << static_cast<int>(clust->GetDefaultEnergyType()) << std::endl;
-    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust->E());
-    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust->GetCluster()->GetNonLinCorrEnergy());
-    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust->GetCluster()->GetHadCorrEnergy());
+  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().size() << std::endl;
+  for(auto clust : jet->GetClusterConstituents()){
+    //auto clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
+    AliDebugStream(3) << "Found cluster constituent with energy " << clust.E() << " using energy definition " << static_cast<int>(clust.GetDefaultEnergyType()) << std::endl;
+    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust.E());
+    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust.GetCluster()->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust.GetCluster()->GetHadCorrEnergy());
+  }
+
+  // Fill global observables: Leading charged and cluster constituents
+  auto leadingcharged = jet->GetLeadingParticleConstituent();
+  auto leadingcluster = jet->GetLeadingClusterConstituent();
+  if(leadingcluster){
+    fQAHistos->FillTH1("hLeadingClusterConstituentPt", jet->Pt(), leadingcluster->GetCluster()->GetHadCorrEnergy());
+  }
+  if(leadingcharged) {
+    fQAHistos->FillTH1("hLeadingChargedConstituentPt", jet->Pt(), leadingcharged->GetParticle()->Pt());
   }
 #endif
 }
@@ -858,7 +887,7 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
   LinkBranch(jettree, &fPhi, Form("Phi%s", tag), "D");
   LinkBranch(jettree, &fArea, Form("Area%s", tag), "D");
   LinkBranch(jettree, &fMass, Form("Mass%s", tag), "D");
-  LinkBranch(jettree, &fNEF, Form("NEFt%s", tag), "D");
+  LinkBranch(jettree, &fNEF, Form("NEF%s", tag), "D");
   LinkBranch(jettree, &fPt, Form("PtJet%s", tag), "D");
   LinkBranch(jettree, &fNCharged, Form("NCharged%s", tag), "I");
   LinkBranch(jettree, &fNNeutral, Form("NNeutral%s", tag), "I");
@@ -867,6 +896,7 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
 void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRho) {
   LinkBranch(jettree, &fJetRadius, "Radius", "D");
   LinkBranch(jettree, &fEventWeight, "EventWeight", "D");
+  LinkBranch(jettree, &fTriggerClusterIndex, "TriggerClusterIndex", "I");
   if(fillRho) {
     std::string varnames[] = {"RhoPtRec", "RhoPtSim", "RhoMassRec", "RhoMassSim"};
     for(int i = 0; i < 4; i++){

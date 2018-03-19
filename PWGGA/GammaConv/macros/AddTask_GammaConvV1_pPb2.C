@@ -71,6 +71,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 Bool_t        doMultiplicityWeighting       = kFALSE,                           //
                                 TString       fileNameInputForMultWeighing  = "Multiplicity.root",              //
                                 TString       periodNameAnchor              = "",
+                                Bool_t        runTHnSparse                  = kTRUE,                            // switch on THNsparse
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
@@ -232,6 +233,27 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   //Run 2 pPb
   } else if (trainConfig == 100) {
     cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
+  } else if (trainConfig == 101) {
+    cuts.AddCut("80110113", "00200009327000008250404000", "0162103500000000"); // 0-10
+  } else if (trainConfig == 102) {
+    cuts.AddCut("81210113", "00200009327000008250404000", "0162103500000000"); // 0-20
+  } else if (trainConfig == 103) {
+    cuts.AddCut("82410113", "00200009327000008250404000", "0162103500000000"); // 20-40
+  } else if (trainConfig == 104) {
+    cuts.AddCut("84610113", "00200009327000008250404000", "0162103500000000"); // 40-60
+  } else if (trainConfig == 105) {
+    cuts.AddCut("86810113", "00200009327000008250404000", "0162103500000000"); // 60-80
+  } else if (trainConfig == 106) {
+    cuts.AddCut("88010113", "00200009327000008250404000", "0162103500000000"); // 80-100
+  } else if (trainConfig == 107) {
+    cuts.AddCut("80210113", "00200009327000008250404000", "0162103500000000"); // 0-20
+  } else if (trainConfig == 108) {
+    cuts.AddCut("86010113", "00200009327000008250404000", "0162103500000000"); // 60-100
+  } else if (trainConfig == 109) {
+    cuts.AddCut("a0110113", "00200009327000008250404000", "0162103500000000"); // 0-5
+  } else if (trainConfig == 110) {
+    cuts.AddCut("a1210113", "00200009327000008250404000", "0162103500000000"); // 5-10
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -354,6 +376,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
 
+  task->SetDoTHnSparse(runTHnSparse);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);

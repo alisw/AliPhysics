@@ -176,26 +176,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t output_settings;
   Bool_t is_mc_analysis;
 
-/*
-  AnalysisParams():
-    vertex_bins(8)
-  , vertex_min(-8)
-  , vertex_max(8)
-
-  , mult_bins(4)
-  , mult_min(0)
-  , mult_max(10000)
-
-  , pion_type_1(kNone)
-  , pion_type_2(kNone)
-
-  , num_events_to_mix(10)
-  , min_coll_size(100)
-  , enable_pair_monitors(kTRUE)
-  , group_output_objects(kTRUE)
-  , is_mc_analysis(kFALSE)
-  {}
-*/
+  /// Default Values
+  AnalysisParams();
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -205,6 +187,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 /// The expected way to use this class
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
+  Bool_t event_use_basic;
+
   // EVENT
   Int_t event_MultMin,
         event_MultMax;

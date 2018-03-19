@@ -55,7 +55,7 @@ public:
     
     enum HijingOr {kHijing,kPhytia,kpi0,keta};
     enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};
-    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm};
+    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kKaonFromNonHF, kBeauty, kCharm, kKaonFromHF};
 
     AliAnalysisHFETPCTOFBeauty();
     AliAnalysisHFETPCTOFBeauty(const char *name);

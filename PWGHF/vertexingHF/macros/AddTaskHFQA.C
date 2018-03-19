@@ -16,7 +16,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   } else {
       filecuts=TFile::Open(filecutsname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	::Fatal("AddTaskHFQA", "Input file not found : check your cut object");
       }
   }
  
@@ -115,7 +115,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   if(!analysiscuts && filecutsname!="none"){
     cout<<"Specific AliRDHFCuts not found"<<endl;
-    return;
+    return NULL;
   }
 
   centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());

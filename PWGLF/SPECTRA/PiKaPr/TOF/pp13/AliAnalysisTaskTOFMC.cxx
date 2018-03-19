@@ -60,9 +60,68 @@ Double_t v0mpc,dtPion,dtKaon,dtProton;
 ClassImp(AliAnalysisTaskTOFMC)
 
 //________________________________________________________________________
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC()
+ : AliAnalysisTaskSE(),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
+fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
+fdEdxP(0),fdEdxPt(0),fdEdxPq(0),fdEdxPtq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
+fPtVsTPion(0),fPtVsTKaon(0),fPtVsTProton(0),
+fEventCounter(0),fEventPS(0),fEventVtx(0),fEventVtx10(0),fZVertex(0),fZVertexRec(0),fZVertexEff(0),fZVertex10(0),
+fCorrRefMultVsNch(0),fCorrRefMultVsV0M(0),fV0MPC(0),
+
+fPtV0MGenPion(0),fPtV0MTPCRecPion(0),fPtV0MTOFRecPion(0),
+fPtV0MGenPionP(0),fPtV0MTPCRecPionP(0),fPtV0MTOFRecPionP(0),
+fPtV0MGenPionM(0),fPtV0MTPCRecPionM(0),fPtV0MTOFRecPionM(0),
+
+fPtV0MGenKaon(0),fPtV0MTPCRecKaon(0),fPtV0MTOFRecKaon(0),
+fPtV0MGenKaonP(0),fPtV0MTPCRecKaonP(0),fPtV0MTOFRecKaonP(0),
+fPtV0MGenKaonM(0),fPtV0MTPCRecKaonM(0),fPtV0MTOFRecKaonM(0),
+
+fPtV0MGenProton(0),fPtV0MTPCRecProton(0),fPtV0MTOFRecProton(0),
+fPtV0MGenProtonP(0),fPtV0MTPCRecProtonP(0),fPtV0MTOFRecProtonP(0),
+fPtV0MGenProtonM(0),fPtV0MTPCRecProtonM(0),fPtV0MTOFRecProtonM(0),
+
+fPtV0MDCAxyTOFPriPion(0),fPtV0MDCAxyTOFPriPionP(0),fPtV0MDCAxyTOFPriPionM(0),
+fPtV0MDCAxyTOFWeakPion(0),fPtV0MDCAxyTOFWeakPionP(0),fPtV0MDCAxyTOFWeakPionM(0),
+fPtV0MDCAxyTOFMatPion(0),fPtV0MDCAxyTOFMatPionP(0),fPtV0MDCAxyTOFMatPionM(0),
+
+fPtV0MDCAxyTOFPriProton(0),fPtV0MDCAxyTOFPriProtonP(0),fPtV0MDCAxyTOFPriProtonM(0),
+fPtV0MDCAxyTOFWeakProton(0),fPtV0MDCAxyTOFWeakProtonP(0),fPtV0MDCAxyTOFWeakProtonM(0),
+fPtV0MDCAxyTOFMatProton(0),fPtV0MDCAxyTOFMatProtonP(0),fPtV0MDCAxyTOFMatProtonM(0),
+
+
+fPPVsMultUtils(new AliPPVsMultUtils()),
+fPtGenPion_kINT7(0),fPtGenPion_inel(0),fPtGenPion_signal_loss(0),
+fPtGenKaon_kINT7(0),fPtGenKaon_inel(0),fPtGenKaon_signal_loss(0),
+fPtGenProton_kINT7(0),fPtGenProton_inel(0),fPtGenProton_signal_loss(0),
+
+
+fPtV0MTOFRecPion_nSigma(0),fPtV0MTOFRecPionP_nSigma(0),fPtV0MTOFRecPionM_nSigma(0),
+fPtV0MTOFRecKaon_nSigma(0),fPtV0MTOFRecKaonP_nSigma(0),fPtV0MTOFRecKaonM_nSigma(0),
+fPtV0MTOFRecProton_nSigma(0),fPtV0MTOFRecProtonP_nSigma(0),fPtV0MTOFRecProtonM_nSigma(0),
+
+fPtV0MTOFRecPion_nSigma_excl(0),fPtV0MTOFRecPionP_nSigma_excl(0),fPtV0MTOFRecPionM_nSigma_excl(0),
+fPtV0MTOFRecKaon_nSigma_excl(0),fPtV0MTOFRecKaonP_nSigma_excl(0),fPtV0MTOFRecKaonM_nSigma_excl(0),
+fPtV0MTOFRecProton_nSigma_excl(0),fPtV0MTOFRecProtonP_nSigma_excl(0),fPtV0MTOFRecProtonM_nSigma_excl(0),
+
+fTOFTimeV0MPtPi(0),fTOFTimeV0MPtK(0),fTOFTimeV0MPtP(0),
+fTOFTimeV0MPtMismatchDecayPi(0),fTOFTimeV0MPtMismatchDecayK(0),fTOFTimeV0MPtMismatchDecayP(0), 
+
+fEventV0MPS(0),fEventV0MVtx(0),fEventV0M(0),
+fTOFLabel(),
+
+fV0MPC_vertexcut(0),
+fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
+
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
+
+{}
+
+//________________________________________________________________________
 //AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name)
-AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz)
-     : AliAnalysisTaskSE(name),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy)
+     : AliAnalysisTaskSE("name"),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
 fdEdxPt(0),fdEdxP(0),fdEdxPtq(0),fdEdxPq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
 fPtVsTPion(0),fPtVsTKaon(0),fPtVsTProton(0),
@@ -114,7 +173,9 @@ fTOFLabel(),
 fV0MPC_vertexcut(0),
 fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
-fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0)
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
 
 
 
@@ -297,11 +358,11 @@ fCorrRefMultVsV0M = new TH2F("fCorrRefMultVsV0M","Ref Mult vs V0M PC;V0M PC;Ref 
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionP);
 	fPtV0MDCAxyTOFMatPionP = new TH3F("fPtV0MDCAxyTOFMatPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionP);
-	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFPriPionM);
-	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionM);
-	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionM);
 
 
@@ -464,11 +525,17 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
         fOutputList->Add(fDCAxy);
 
 	 //ESD track cut
-//        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	fesdTrackCuts->SetMinNCrossedRowsTPC(fMinTPCcr);
+	fesdTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+	fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAz);
+	fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fMaxDCAxy);
 
-//	fesdTrackCuts_no_dca->GetTrackCuts();
-        //fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	//no DCAxy cut for secondaries
+        fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	fesdTrackCuts_no_dca->SetMinNCrossedRowsTPC(fMinTPCcr);
+        fesdTrackCuts_no_dca->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+        fesdTrackCuts_no_dca->SetMaxDCAToVertexZ(fMaxDCAz);
 
 
 
@@ -1338,7 +1405,7 @@ fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
         fTOFTimeV0MPtMismatchDecayP->Draw();
 
 
-
+/*
 TFile *f=new TFile("result/12dec/MC_final_TOF_output.root","recreate");//v0m bin different
 f->cd();
 
@@ -1460,6 +1527,8 @@ fPtTPC_AllP->Write();
 fPtTPC_AllN->Write();
 fPtTOF_AllP->Write();
 fPtTOF_AllN->Write();	
+*/
+
 }
 //-----------------------------------------------------------------
 Bool_t AliAnalysisTaskTOFMC::selectVertex2015pp(AliESDEvent *esd,

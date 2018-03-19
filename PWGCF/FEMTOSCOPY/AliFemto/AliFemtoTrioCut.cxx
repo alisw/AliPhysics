@@ -44,35 +44,29 @@ bool AliFemtoTrioCut::Pass(AliFemtoTrio *trio)
   AliFemtoTrio::EPart pairType[2];
   int trioPart1index=-1,trioPart2index=-1;
   
-  AliFemtoParticle *track1=nullptr;
-  AliFemtoParticle *track2=nullptr;
-  
   double pairMinv, mass, delta;
   
   for(int i=0;i<fExcludedPairsMasses.size();i++){
     pairType[0] = fExcludedPairsType1[i];
     pairType[1] = fExcludedPairsType2[i];
     
+    trioPart1index=-1;trioPart2index=-1;
+    
     for(int p1=0;p1<3;p1++){
       if(pairType[0] == trioType[p1]) trioPart1index=p1;
       if(pairType[1] == trioType[p1]) trioPart2index=p1;
     }
     if(trioPart1index<0 || trioPart2index<0) continue;
-    
-    if(trioPart1index == 0) track1 = trio->Track1();
-    if(trioPart1index == 1) track1 = trio->Track2();
-    if(trioPart1index == 2) track1 = trio->Track3();
-    
-    if(trioPart2index == 0) track2 = trio->Track1();
-    if(trioPart2index == 1) track2 = trio->Track2();
-    if(trioPart2index == 2) track2 = trio->Track3();
-    
-    if(track1 == track2){
-      cout<<"AliFemtoTrioCut::Pass() -- Warning -- same track counted twice!"<<endl;
-      continue;
+    if(trioPart1index > trioPart2index){
+      int tmp = trioPart2index;
+      trioPart2index = trioPart1index;
+      trioPart1index = tmp;
     }
     
-    pairMinv = GetPairMInv(track1, track2);
+    if(trioPart1index == 0 && trioPart2index == 1) pairMinv = trio->MInv12();
+    if(trioPart1index == 0 && trioPart2index == 2) pairMinv = trio->MInv31();
+    if(trioPart1index == 1 && trioPart2index == 2) pairMinv = trio->MInv23();
+    
     mass = fExcludedPairsMasses[i];
     delta = fExcludedPairsDeltas[i];
     
@@ -81,7 +75,6 @@ bool AliFemtoTrioCut::Pass(AliFemtoTrio *trio)
       return false;
     }
   }
-  
   fNpassed++;
   return true;
 }
@@ -99,23 +92,4 @@ void AliFemtoTrioCut::SetIncludeTrioOnly(double mass, double delta)
 {
   fIncludeTrioMass = mass;
   fIncludeTrioDelta = delta;
-}
-
-double AliFemtoTrioCut::GetPairMInv(AliFemtoParticle *track1,AliFemtoParticle *track2)
-{
-  if(!track1 || !track2){
-    cout<<"W - AliFemtoTrioCut::GetPairMInv - track missing:"<<endl;
-    cout<<"track1:"<<track1<<endl;
-    cout<<"track2:"<<track2<<endl;
-    return -1.0;
-  }
-  AliFemtoLorentzVector p1 = track1->FourMomentum();
-  AliFemtoLorentzVector p2 = track2->FourMomentum();
-  
-  double E  = p1.e()  + p2.e();
-  double px = p1.px() + p2.px();
-  double py = p1.py() + p2.py();
-  double pz = p1.pz() + p2.pz();
-  
-  return sqrt(E*E-(px*px+py*py+pz*pz));
 }

@@ -865,7 +865,7 @@ PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.0 , 0. ,100., kTR
 PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
 PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
-trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.4, 8.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
 //  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);

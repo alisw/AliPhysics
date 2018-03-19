@@ -20,7 +20,7 @@ class AliFemtoDreamEventCuts {
   void SetCutMinContrib(int nMinContrib) {
     fCutMinContrib=true;fMinContrib=nMinContrib;
   };
-  void SetZVtxPosition(double zVtxLow,double zVtxUp) {
+  void SetZVtxPosition(float zVtxLow,float zVtxUp) {
     fzVtxLow=zVtxLow;fzVtxUp=zVtxUp;fCutZVtx=true;
   };
   void SetMVPileUpRejection(bool apply){fUseMVPileUpRej=apply;};
@@ -32,17 +32,19 @@ class AliFemtoDreamEventCuts {
   }
   //Everything else disabled if you use the following option:
   void UseDontWorryEvtCuts(bool apply) {fUseAliEvtCuts=apply;};
-  void InitQA();
+  void SetMultVsCentPlots(bool doIt) {fCentVsMultPlots=doIt;};
+  void InitQA(bool MinimalBooking);
   TList *GetHistList() const {return fHist->GetHistList();};
  private:
   void BookQA(AliFemtoDreamEvent *evt);
   void BookCuts();
   AliFemtoDreamEventHist *fHist;  //!
+  bool fMinimalBooking;           //
   bool fCutMinContrib;            //
   int fMinContrib;                //
   bool fCutZVtx;                  //
-  double fzVtxLow;                //
-  double fzVtxUp;                 //
+  float fzVtxLow;                //
+  float fzVtxUp;                 //
   bool fPileUpRejection;          //
   bool fUseMVPileUpRej;           // Which method of Pile Up Rej should be used
   bool fCleanEvtMult;             //
@@ -52,7 +54,8 @@ class AliFemtoDreamEventCuts {
   bool fUseRef08Mult;             //
   //Use evt cuts tuned by expert(don't worry solution)
   bool fUseAliEvtCuts;            //
-  ClassDef(AliFemtoDreamEventCuts,1)
+  bool fCentVsMultPlots;          //
+  ClassDef(AliFemtoDreamEventCuts,3)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

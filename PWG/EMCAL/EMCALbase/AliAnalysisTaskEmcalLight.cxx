@@ -304,7 +304,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 
   OpenFile(1);
   fOutput = new TList();
-  fOutput->SetOwner();
+  fOutput->SetOwner(); // @suppress("Ambiguous problem")
 
   if (fCentralityEstimation == kNoCentrality) fCentBins.clear();
 
@@ -1040,7 +1040,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       else if (header->InheritsFrom("AliGenCocktailEventHeader")) {
         AliGenCocktailEventHeader* cocktailHeader = static_cast<AliGenCocktailEventHeader*>(header);
         TList* headers = cocktailHeader->GetHeaders();
-        for (auto obj : *headers) {
+        for (auto obj : *headers) { // @suppress("Symbol is not resolved")
           fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(obj);
           if (fPythiaHeader) break;
         }
@@ -1400,3 +1400,62 @@ Bool_t AliAnalysisTaskEmcalLight::CheckMCOutliers()
   return kTRUE;
 }
 
+/**
+ * Calculate Delta Phi.
+ * @param[in] phia \f$ \phi \f$ of the first particle
+ * @param[in] phib \f$ \phi \f$ of the second particle
+ * @param[in] rangeMin Minimum \f$ \phi \f$ range
+ * @param[in] rangeMax Maximum \f$ \phi \f$ range
+ * @return Difference in \f$ \phi \f$
+ */
+Double_t AliAnalysisTaskEmcalLight::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax)
+{
+  Double_t dphi = -999;
+  const Double_t tpi = TMath::TwoPi();
+
+  if (phia < 0)         phia += tpi;
+  else if (phia > tpi) phia -= tpi;
+  if (phib < 0)         phib += tpi;
+  else if (phib > tpi) phib -= tpi;
+  dphi = phib - phia;
+  if (dphi < rangeMin)      dphi += tpi;
+  else if (dphi > rangeMax) dphi -= tpi;
+
+  return dphi;
+}
+
+/**
+ * Generate array with fixed binning within min and max with n bins. The parameter array
+ * will contain the bin edges set by this function. Attention, the array needs to be
+ * provided from outside with a size of n+1
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @param[out] array Vector where the bins are added
+ */
+void AliAnalysisTaskEmcalLight::GenerateFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last)
+{
+  double binWidth = (max - min) / n;
+  double v = min;
+  if (last) n++;
+  for (int i = 0; i < n; i++) {
+    array.push_back(v);
+    v += binWidth;
+  }
+}
+
+/**
+ * Generate array with fixed binning within min and max with n bins. The array containing the bin
+ * edges set will be created by this function. Attention, this function does not take care about
+ * memory it allocates - the array needs to be deleted outside of this function
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @return Vector containing the bin edges created by this function
+ */
+std::vector<double> AliAnalysisTaskEmcalLight::GenerateFixedBinArray(int n, double min, double max, bool last)
+{
+  std::vector<double> array;
+  GenerateFixedBinArray(n, min, max, array, last);
+  return array;
+}

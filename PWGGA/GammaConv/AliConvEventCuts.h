@@ -133,13 +133,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2012
         kLHC12,           //!< pp 8TeV
         // MC's corresponding to 2012 data
-        kLHC14e2a,        //!< anchored LHC12[a-h] pass 1
         kLHC14e2b,        //!< anchored LHC12[a-h] pass 1
-        kLHC14e2c,        //!< anchored LHC12[a-h] pass 1
         kLHC15h1,         //!< anchored LHC12[a-h] pass 2
         kLHC15h2,         //!< anchored LHC12[a-h] pass 2
-        kLHC16c2,         //!< anchored LHC12[a-h] pass 2 - JJ
-        kLHC16c2_plus,    //!< anchored LHC12[a-h] pass 2 - JJ - additional stat
+        kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -265,6 +262,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
+        kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
         //13 TeV LHC2017
         kLHC17k1,               //!LHC17g added dielectrons from HF
         kLHC17k4,               //!LHC17i
@@ -277,8 +275,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
         kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
         kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
-
-	//
+        //13 TeV LHC2017 JJ
+        kLHC17P1JJ,              //!LHC17k JJ
+        kLHC17P1JJLowB,          //!LHC17k JJ
         kUnknownPeriod//!< kUnknownPeriod
       };
 
@@ -645,7 +644,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,44)
+      ClassDef(AliConvEventCuts,46)
       /// \endcond
 };
 

@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iomanip>
@@ -33,6 +34,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetConstituentQA.h"
@@ -86,19 +88,22 @@ AliAnalysisTaskEmcalJetConstituentQA::~AliAnalysisTaskEmcalJetConstituentQA(){
 void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningptconst(200, 0., 200.), binningptjet(20, 0., 200.);
+  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningR(50, 0., 0.5), binningptconst(200, 0., 200.), binningptjet(20, 0., 200.),
+                 binningNCell(101, -0.5, 100.5), binningFracCellLeading(100, 0., 1.), binningM02(100, 0., 1.);
 
   const TBinning *jetbinning[4] = {&binningptjet, &binningnef, &multbinning, &multbinning},
-                 *chargedbinning[6] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningz},
-                 *neutralbinning[7] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz};
+                 *chargedbinning[7] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningz, &binningR},
+                 *neutralbinning[8] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz, &binningR},
+                 *binningHighZClusters[7] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningNCell, &binningFracCellLeading, &binningM02};
 
   fHistos = new THistManager(Form("histos_%s", GetName()));
   for(auto c : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(c);
     if(!contname) continue;
     fHistos->CreateTHnSparse(Form("hJetCounter%s", contname->String().Data()), Form("jet counter for jets %s", contname->String().Data()), 4, jetbinning);
-    fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 6, chargedbinning);
-    fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 7, neutralbinning);
+    fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 7, chargedbinning);
+    fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 8, neutralbinning);
+    fHistos->CreateTHnSparse(Form("hHighZClusters"), "Properties of high-z clusters", 7, binningHighZClusters);
   }
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);  
@@ -160,9 +165,11 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     for(auto jet : jetcont->accepted()){
       AliDebugStream(3) << "Next accepted jet, found " << jet->GetNumberOfTracks() << " tracks and " << jet->GetNumberOfClusters() << " clusters." << std::endl;
       Double_t pointjet[4] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters())}, 
-               pointcharged[6] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1.}, 
-               pointneutral[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.};
+               pointcharged[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.}, 
+               pointneutral[8] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1., -1.},
+               pointHighZCluster[7] = {std::abs(jet->Pt()), jet->NEF(), -1., -1., -1., -1., -1.};
       fHistos->FillTHnSparse(Form("hJetCounter%s", contname->String().Data()), pointjet);
+      TVector3 jetvec{jet->Px(), jet->Py(), jet->Pz()};
       if(tracks){
         for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
           const auto trk = jet->TrackAt(itrk, tracks->GetArray());
@@ -170,11 +177,13 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           if(trk->Charge()){
             pointcharged[4] = std::abs(trk->Pt());
             pointcharged[5] = std::abs(jet->GetZ(trk));
+            pointcharged[6] = jet->DeltaR(trk);
             fHistos->FillTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), pointcharged);
           } else {
             // particle level jets
             pointneutral[4] = pointneutral[5] = std::abs(trk->E());
             pointneutral[6] = std::abs(jet->GetZ(trk));
+            pointneutral[7] = jet->DeltaR(trk);
             fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
           }
         }
@@ -188,7 +197,17 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
           pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
           pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
+          pointneutral[7] = jetvec.DeltaR(ptvec.Vect());
           fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+
+          if(pointneutral[6] > 0.95) {
+            pointHighZCluster[2] = pointneutral[4];
+            pointHighZCluster[3] = pointneutral[6];
+            pointHighZCluster[4] = clust->GetNCells();
+            pointHighZCluster[5] = *std::max_element(clust->GetCellsAmplitudeFraction(), clust->GetCellsAmplitudeFraction()+clust->GetNCells());
+            pointHighZCluster[6] = clust->GetM02();
+            fHistos->FillTHnSparse("hHighZClusters", pointHighZCluster);
+          }
         }
       }
     }

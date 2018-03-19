@@ -621,7 +621,7 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
 
     // NAME_PATTERN = "[A-Za-z_]+[A-Za-z_0-9]*",
 
-#define IDENT_PATTERN "[a-zA-Z_]+[a-zA-Z0-9_]*"
+#define IDENT_PATTERN "[a-zA-Z_]+(\\-?[a-zA-Z0-9_]+)*"
 #define KEY_PATTERN IDENT_PATTERN "(?:\\." IDENT_PATTERN "|/" IDENT_PATTERN ")*"
 
     // IDENT_PATTERN = "[a-zA-Z_]+[a-zA-Z0-9_]*(?:\\.[a-zA-Z_]+[a-zA-Z0-9_]*)*",
@@ -910,29 +910,46 @@ namespace std {
   template<>
   struct hash<AliFemtoConfigObject> {
     using Range_t = AliFemtoConfigObject::RangeValue_t;
+    using RangeListValue_t = AliFemtoConfigObject::RangeListValue_t;
+    using ArrayValue_t = AliFemtoConfigObject::ArrayValue_t;
+    using MapValue_t = AliFemtoConfigObject::MapValue_t;
 
     ULong_t operator()(Range_t const& pair) const {
       return std::hash<Range_t::first_type>{}(pair.first)
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
-    ULong_t operator()(AliFemtoConfigObject::ArrayValue_t const& array) const {
-      using Item_t = AliFemtoConfigObject::ArrayValue_t::value_type;
+    ULong_t operator()(ArrayValue_t const& array) const {
+      using Item_t = ArrayValue_t::value_type;
 
       return std::accumulate(
-        array.cbegin(), array.cend(), 0,
-        [] (ULong_t hash, const Item_t &obj) { return obj.Hash() ^ (hash << 1); });
+        array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
+        [] (ULong_t hash, const Item_t &obj) {
+          return obj.Hash() ^ (hash << 1); });
     }
 
-    ULong_t operator()(AliFemtoConfigObject::RangeListValue_t const& list) const {
-      using Item_t = AliFemtoConfigObject::RangeListValue_t::value_type;
+    ULong_t operator()(RangeListValue_t const& list) const {
+      using Item_t = RangeListValue_t::value_type;
 
       return std::accumulate(
-        list.cbegin(), list.cend(), 0,
-        [&] (ULong_t a, const Item_t &pair) {
-          return operator()(pair) ^ (a << 1); });
+        list.cbegin(), list.cend(), AliFemtoConfigObject::EMPTY_RANGELIST_HASH,
+        [] (ULong_t hash, const Item_t &pair) {
+          return std::hash<AliFemtoConfigObject>{}(pair) ^ (hash << 1); });
     }
+
+    ULong_t operator()(MapValue_t const& map) const {
+      using Item_t = MapValue_t::value_type;
+
+      return std::accumulate(
+        map.cbegin(), map.cend(), AliFemtoConfigObject::EMPTY_MAP_HASH,
+        [] (ULong_t hash, const Item_t &pair) {
+          return hash
+                 ^ (std::hash<AliFemtoConfigObject::Key_t>{}(pair.first) << 1)
+                 ^ (pair.second.Hash() << 2); });
+    }
+
   };
+
 }
 
 
@@ -951,16 +968,8 @@ AliFemtoConfigObject::Hash() const
     case kSTRING: return result ^ std::hash<StringValue_t>{}(fValueString);
     case kRANGE: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRange);
     case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
-
-    case kARRAY:
-
-    case kMAP:
-      return std::accumulate(
-        fValueMap.cbegin(), fValueMap.cend(), result,
-        [] (ULong_t hash, const MapValue_t::value_type &pair) {
-          return hash
-                 ^ (std::hash<Key_t>{}(pair.first) << 1)
-                 ^ (pair.second.Hash() << 2); });
+    case kARRAY: return result ^ std::hash<AliFemtoConfigObject>{}(fValueArray);
+    case kMAP: return result ^ std::hash<AliFemtoConfigObject>{}(fValueMap);
   }
 
   return 0;

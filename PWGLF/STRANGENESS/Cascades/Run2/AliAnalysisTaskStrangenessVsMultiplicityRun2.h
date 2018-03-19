@@ -43,6 +43,7 @@ class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
+class AliExternalTrackParam;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -281,6 +282,9 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
+    //if true, save sandbox mode info (beware large files!)
+    Bool_t fkSandboxMode; 
+    
 //===========================================================================================
 //   Variables for Event Tree
 //===========================================================================================
@@ -369,6 +373,18 @@ private:
     Float_t fTreeVariableCentrality; //!
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox V0
+    Float_t fTreeVariablePrimVertexX;
+    Float_t fTreeVariablePrimVertexY;
+    Float_t fTreeVariablePrimVertexZ;
+    
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -412,6 +428,21 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //TOF (experimental, not corrected for weak decay traj)
+    Float_t fTreeCascVarNegTOFNSigmaPion;   //!
+    Float_t fTreeCascVarNegTOFNSigmaProton; //!
+    Float_t fTreeCascVarPosTOFNSigmaPion;   //!
+    Float_t fTreeCascVarPosTOFNSigmaProton; //!
+    Float_t fTreeCascVarBachTOFNSigmaPion;  //!
+    Float_t fTreeCascVarBachTOFNSigmaKaon;  //!
+    
+    Float_t fTreeCascVarNegITSNSigmaPion;   //!
+    Float_t fTreeCascVarNegITSNSigmaProton; //!
+    Float_t fTreeCascVarPosITSNSigmaPion;   //!
+    Float_t fTreeCascVarPosITSNSigmaProton; //!
+    Float_t fTreeCascVarBachITSNSigmaPion;  //!
+    Float_t fTreeCascVarBachITSNSigmaKaon;  //!
     
     //ChiSquares
     Float_t fTreeCascVarChiSquareV0;
@@ -500,7 +531,7 @@ private:
     Bool_t fTreeCascVarNegIsKink;
     
     //Select charge (testing / checks)
-    Int_t fkSelectCharge; 
+    Int_t fkSelectCharge;
 
 //===========================================================================================
 //   Histograms

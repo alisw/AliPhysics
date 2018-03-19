@@ -1631,7 +1631,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      //cout << "step 2 Au-Au: arr: " << arr->GetEntriesFast() << endl;
 		      AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
 		      //cout << "step 3 Au-Au: particle ID: " << particle -> GetPdgCode() << endl;
-		      if ( TMath::Abs(particle->GetPdgCode()) != 211 ) continue;
+		      if( particleSpecies == 0 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                      else if( particleSpecies == 1 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                      else if( particleSpecies == 2 )
+                        { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
 		      //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
 		    }
 		

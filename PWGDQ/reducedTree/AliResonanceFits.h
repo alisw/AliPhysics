@@ -85,10 +85,11 @@
 
 #include <TObject.h>
 #include <THn.h>
+#include <TF1.h>
+#include <TFitResult.h>
 
 class TMinuit;
 class TH1;
-
 
 //_____________________________________________________________________
 class AliResonanceFits : public TObject {
@@ -98,7 +99,8 @@ class AliResonanceFits : public TObject {
   enum Constants {
      kBkgMixedEvent,    // opposite-sign mixed event bkg
      kBkgLikeSign,         // same-event like-sign bkg
-     kBkgFunction,         // function fitting
+     kBkgMixedEventAndResidualFit,   // fit of residual bkg with a user function for bkg and MC signal shape for signal
+     kBkgFitFunction,     // fit of the SE-OS with a user function for bkg and MC signal shape for signal
      kMatchSEOS,          // match to same-event opposite-sign outside signal region (side bands)
      kMatchSELS,           // match to same-event like-sign
      kScaleEntries,         // scale using the bin counts
@@ -108,6 +110,7 @@ class AliResonanceFits : public TObject {
      kLSGeometricMean,    // build LS bkg using geometric mean
      kMinuitMethodChi2,                // chi2 minimization method
      kMinuitMethodLikelihood,      // log-likelihood maximization
+     kDebug,
      kNMaxVariables=10
   };
   
@@ -116,6 +119,8 @@ class AliResonanceFits : public TObject {
     kSigErr,                     // signal counts error
     kBkg,                         // bkg counts
     kBkgErr,                    // bkg counts error
+    kBkgResidual,           // residual bkg obtained after fitting the combinatorial bkg subtracted minv distribution
+    kBkgResidualErr,
     kSplusB,                    // S+B counts
     kSplusBerr,               // S+B counts error
     kSoverB,                   // S/B
@@ -168,6 +173,7 @@ class AliResonanceFits : public TObject {
   void SetMinuitFitOption(Float_t option) {fOptionMinuit = option; fMatchingIsDone = kFALSE;}
   void SetUseSignificantZero(Bool_t option) {fgOptionUseSignificantZero = option; fMatchingIsDone = kFALSE;}
   void SetScaleSummedBkg(Bool_t option) {fOptionScaleSummedBkg = option; fMatchingIsDone = kFALSE;}
+  void SetDebugMode(Bool_t option) {fOptionDebug=option; fMatchingIsDone = kFALSE;}
   
   // set various ranges
   void SetMassFitRange(Double_t min, Double_t max) {fgMassFitRange[0] = min+1.0e-6; fgMassFitRange[1] = max-1.0e-6; fUserEnabledMassFitRange = kTRUE; fMatchingIsDone = kFALSE;}
@@ -177,6 +183,8 @@ class AliResonanceFits : public TObject {
       fUserEnabledMassExclusionRange = kTRUE;
       fMatchingIsDone = kFALSE;
   }
+  void SetResidualFitFunction(TF1* fitFunc) {fResidualFitFunc = (TF1*)fitFunc->Clone("ResidualFitFunction");}
+  void SetBkgFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction");}
   
   Bool_t Process();
   Double_t* ComputeOutputValues(Double_t minMass, Double_t maxMass, Double_t minPt=-1., Double_t maxPt=-1.);
@@ -193,6 +201,9 @@ class AliResonanceFits : public TObject {
   TH1* GetBkg() const {return (fMatchingIsDone ? fBkg : 0x0);}
   TH1* GetSignal() const {return (fMatchingIsDone ? fSig : 0x0);}
   TH1* GetSoverB() const {return (fMatchingIsDone ? fSoverB : 0x0);}
+  TH1* GetSplusResidualBkg() const {return (fMatchingIsDone ? fSplusResidualBkg : 0x0);}
+  TH1* GetBkgCombinatorial() const {return (fMatchingIsDone ? fBkgCombinatorial : 0x0);}
+  TH1* GetResidualBkg() const {return (fMatchingIsDone ? fBkgResidual : 0x0);}
   TH1* GetSignalMC() const {return (fMatchingIsDone ? fSignalMCshape : 0x0);}
   
   Int_t GetBkgMethod() const {return fOptionBkgMethod;}
@@ -202,8 +213,11 @@ class AliResonanceFits : public TObject {
   Double_t* GetMassFitRange() const {return fgMassFitRange;}
   Double_t* GetMassExclusionRange() const {return fgMassExclusionRange;}
   const Double_t* GetFitValues() const {return fFitValues;}
-  
-  
+  TF1* GetResidualFitFunction() const {return fResidualFitFunc;}
+  TF1* GetBkgFitFunction() const {return fBkgFitFunction;}
+  TF1* GetGlobalFitFunction() const {return fGlobalFitFunction;}
+  Bool_t GetDebugMode() const {return fOptionDebug;}
+   
  private:
    // User input data ------------------------------------------------------------------------------------------------
    THnF*    fSEOS;
@@ -243,7 +257,8 @@ class AliResonanceFits : public TObject {
              Int_t        fOptionMinuit;                // either kMinuitMethodChi2 (default) or kMinuitMethodLikelihood
    static Bool_t      fgOptionUseSignificantZero;    // if true, assume zero entries as significant and error of 1 during the chi2 calculation
              Bool_t      fOptionScaleSummedBkg;       // if true, run the matching procedure on the summed S+B and bkg (default is false)
-  
+             Bool_t      fOptionDebug;                       // if true, construct all possible distributions
+             
    // Matching / fit ranges
    // NOTE: Mass and pt ranges used for matching / fitting can in principle be different (a sub-interval only) wrt ranges in fVarLimits
    //            If the dedicated setter function are not called by user, these ranges will be made same as in fVarLimits at Initialize() time
@@ -258,12 +273,32 @@ class AliResonanceFits : public TObject {
    TH1* fSplusB;               //  total signal + bkg projection
    TH1* fBkg;                    //  background projection
    TH1* fSig;                    // signal projection
+   
+   TH1* fBkgLikeSign;
+   TH1* fBkgLikeSignLeg1;
+   TH1* fBkgLikeSignLeg2;
+   TH1* fBkgMixedEvent;
+   
+   static TF1* fBkgFitFunction;
+   static TF1* fGlobalFitFunction;
+   TFitResultPtr fFitResult;                // fit result of the residual fit
+   
+   /////////////////////////////////
+   TH1* fSplusResidualBkg;    //  combinatorial bkg subtracted minv distribution (signal + residual bkg) 
+   TH1* fBkgCombinatorial;    //  combinatorial bkg (used when the residual bkg fit option is switched on)
+   TH1* fBkgResidual;             // residual bkg obtained after fitting the combinatorial bkg subtracted distribution
+   ////////////////////////////////
+   
    TH1* fSoverB;              // S/B projection
-   TH1* fSignalMCshape;    // MC truth signal shape
+   static TH1* fSignalMCshape;    // MC truth signal shape
    Double_t fFitValues[kNFitValues];       // array used to store information on the signal fit
    Bool_t fMatchingIsDone;                  // set to true if the matching procedure was succesfully run; false if the object is in any other state
    
    TMinuit* fMinuitFitter;                    // used if fit option is required
+   ///////////////////////////////////////////////////
+   TF1*      fResidualFitFunc;            // fit function used to fit the combinatorial bkg subtracted minv distribution
+   
+   ////////////////////////////////////////////////////
    
    // Private utility functions
    Bool_t Initialize();            // returns true if all prerequisites for signal extraction are met
@@ -276,8 +311,11 @@ class AliResonanceFits : public TObject {
    void  FitScale(TH1* sig, TH1* bkg, Bool_t fixScale=kFALSE);
    static void Fcn(Int_t&, Double_t*, Double_t &f, Double_t *par, Int_t);
    static Double_t Chi2(TH1* sig, TH1* bkg, Double_t scale, Double_t scaleError=0.0);
-  
-  ClassDef(AliResonanceFits, 3);
+   void FitInvMass();
+   void FitResidualBkg();
+   static Double_t GlobalFitFunction(Double_t *x, Double_t* par);
+
+   ClassDef(AliResonanceFits, 4);
 };
 
 #endif

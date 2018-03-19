@@ -86,6 +86,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
       }
     }
   }
+  fEventCut.AddQAplotsToList(fOutputList);
 
   PostData(1,fOutputList);
 }
@@ -137,7 +138,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   for (int iT = 0; iT < (int)ev->GetNumberOfTracks(); ++iT) {
     /// Get the track and do the minimal cuts
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
-    if (track->GetID() <= 0) continue;
+    if (track->GetID() < 0) continue;
     if (!track->TestFilterBit(BIT(4))) continue;
 
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));

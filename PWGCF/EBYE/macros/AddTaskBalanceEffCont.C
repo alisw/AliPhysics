@@ -5,7 +5,9 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 						 Int_t AODfilterBit = 128,
 						 Bool_t bUseElectronRejection = kFALSE,
 						 TString fileNameBase="AnalysisResults",
-						 AliAnalysisTaskBFPsi::etriggerSel triggerSel = AliAnalysisTaskBFPsi::kINT7
+						 AliAnalysisTaskBFPsi::etriggerSel triggerSel = AliAnalysisTaskBFPsi::kINT7,
+						 Bool_t usePID=kFALSE,
+						 AliPID::EParticleType particleType = AliPID::kPion
 						 ) {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -66,6 +68,12 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
       taskEffContBF->SetElectronOnlyRejection(3.); // no other particle in nsigma (this is what we use standard in BF code)
     }
 
+    TString pidsuffix ="ch";
+    if (usePID) {
+      pidsuffix = AliPID::ParticleShortName(particleType);
+      taskEffContBF->SetUsePID(usePID, particleType);
+    }
+    
   //AODs  
   taskEffContBF->SetAODtrackCutBit(AODfilterBit);
   mgr->AddTask(taskEffContBF);
@@ -75,8 +83,8 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputBalanceFunctionEffContAnalysis";
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutEffContBF = mgr->CreateContainer(Form("listEffContBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s_%s",centralityName.Data(), pidsuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutEffContBF = mgr->CreateContainer(Form("listEffContBF_%s_%s",centralityName.Data(), pidsuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskEffContBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskEffContBF, 1, coutQA);

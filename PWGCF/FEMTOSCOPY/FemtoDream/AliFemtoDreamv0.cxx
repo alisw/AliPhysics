@@ -66,7 +66,9 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
 
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
   if (v0->GetPosID()>=fTrackBufferSize||v0->GetNegID()>=fTrackBufferSize) {
-    AliFatal("fGTI too small");
+    std::cout<<"fGTI too small, no Global Tracks to work with, PosID:  "
+        << v0->GetPosID() << " and NegID: " << v0->GetNegID() << std::endl;
+    this->fHasDaughter=false;
   } else {
     fpDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
     fnDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
@@ -116,10 +118,12 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
     if (fnDaug->IsSet()) {
       this->SetMCTheta(fnDaug->GetMCTheta().at(0));
       this->SetMCPhi(fnDaug->GetMCPhi().at(0));
+      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
     if (fpDaug->IsSet()) {
       this->SetMCTheta(fpDaug->GetMCTheta().at(0));
       this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
   }
 }
@@ -131,9 +135,9 @@ void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt,AliAODv0 *v0) {
   this->SetEta(v0->Eta());
   this->SetPhi(v0->Phi());
   this->SetTheta(v0->Theta());
-  double xvP = evt->GetPrimaryVertex()->GetX();
-  double yvP = evt->GetPrimaryVertex()->GetY();
-  double zvP = evt->GetPrimaryVertex()->GetZ();
+  float xvP = evt->GetPrimaryVertex()->GetX();
+  float yvP = evt->GetPrimaryVertex()->GetY();
+  float zvP = evt->GetPrimaryVertex()->GetZ();
   double vecTarget[3]={xvP,yvP,zvP};
   v0->GetXYZ(fv0Vtx);
   this->fdcav0Daug=v0->DcaV0Daughters();
@@ -213,6 +217,7 @@ void AliFemtoDreamv0::Reset() {
     fTheta.clear();
     fMCTheta.clear();
     fPhi.clear();
+    fPhiAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

@@ -35,7 +35,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
     fPodolandski[i]=0;
   }
 }
-AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
+AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass) {
   fHistList=new TList();
   fHistList->SetName("Cascade");
   fHistList->SetOwner();
@@ -59,7 +59,8 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
   fCutCounter->GetXaxis()->SetBinLabel(16, "Min Dist Prim Vtx v0");
   fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx v0 Daughter");
   fCutCounter->GetXaxis()->SetBinLabel(18, "Inv Mass Lambda");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "Inv Mass Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "Rej Omega");
+  fCutCounter->GetXaxis()->SetBinLabel(20, "Inv Mass Xi");
 
   fHistList->Add(fCutCounter);
 

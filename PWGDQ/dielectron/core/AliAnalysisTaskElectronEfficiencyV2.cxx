@@ -74,7 +74,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal()
-                                                                              , fGeneratorName(""), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
+                                                                              , fGeneratorName(""), fGeneratorHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
@@ -105,7 +105,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal()
-                                                                              , fGeneratorName(""), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
+                                                                              , fGeneratorName(""), fGeneratorHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
@@ -121,6 +121,21 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   DefineInput (0, TChain::Class());
   DefineOutput (1, TList::Class());
 
+
+
+}
+
+
+// ############################################################################
+// ############################################################################
+void AliAnalysisTaskElectronEfficiencyV2::Terminate(Option_t* option){
+  // fHistEventStat->SetAxisRange(0., fHistEventStat->GetMaximum() * 1.1, "Y");
+}
+
+
+// ############################################################################
+// ############################################################################
+void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kPIn, kTRUE);
@@ -143,21 +158,17 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fUsedVars->SetBitNumber(AliDielectronVarManager::kNFclsTPCr, kTRUE);
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
-}
 
 
-// ############################################################################
-// ############################################################################
-void AliAnalysisTaskElectronEfficiencyV2::Terminate(Option_t* option){
-  // fHistEventStat->SetAxisRange(0., fHistEventStat->GetMaximum() * 1.1, "Y");
-}
-
-
-// ############################################################################
-// ############################################################################
-void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   std::cout << "Starting UserCreateOutputObjects()" << std::endl;
 
+  TObjArray arr = *(fGeneratorName.Tokenize(";"));
+  std::cout << "Used Generators: " << std::endl;
+  for (int i = 0; i < arr.GetEntries(); ++i){
+    TString temp = arr.At(i)->GetName();
+    std::cout << "--- " << temp << std::endl;
+    fGeneratorHashs.push_back(temp.Hash());
+  }
 
   if (fResoFilename != ""){
     fResoFile = TFile::Open(fResoFilename.c_str());
@@ -649,7 +660,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    if (!CheckGenerator(iPart, fGeneratorName)) continue;
+    if (!CheckGenerator(iPart)) continue;
 
     // ##########################################################
     // Creating particles to summarize all the data
@@ -726,7 +737,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    if (!CheckGenerator(label, fGeneratorName)) continue;
+    if (!CheckGenerator(label)) continue;
 
     // ##########################################################
     // Check if particle is passing selection cuts
@@ -779,13 +790,13 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // Fill support histograms with first cutsetting and first mcsignal
     if(part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed[fSupportCutsetting] == kTRUE){
 
-      FillTrackHistograms(track); // Fill support histograms
+      AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
 
+      FillTrackHistograms(track, mcPart1); // Fill support histograms
 
       // ##########################################################
       // Fill resolution histograms
       // ##########################################################
-      AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
       double mcP = mcPart1->P();
       double mcPt = mcPart1->Pt();
       double mcEta = mcPart1->Eta();
@@ -1162,10 +1173,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
 // ############################################################################
 // ############################################################################
-void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* track){
+void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack){
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+  AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
+
   AliDielectronVarManager::Fill(track, values);
-  // std::cout << "pt var manager = " << values[AliDielectronVarManager::kPt] << std::endl;
+  // std::cout << "pt var  manager = " << values[AliDielectronVarManager::kPt] << std::endl;
+  // std::cout << "SITS    manager = " << values[AliDielectronVarManager::kNclsSITS] << std::endl;
+  // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
   // std::cout << fOutputListSupportHistos << std::endl;
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
@@ -1189,6 +1204,8 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(18)))->Fill(values[AliDielectronVarManager::kTPCsignalN]);
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(19)))->Fill(values[AliDielectronVarManager::kNclsTPC], values[AliDielectronVarManager::kNFclsTPCr]);
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(20)))->Fill(values[AliDielectronVarManager::kPt], values[AliDielectronVarManager::kNFclsTPCr]);
+  // (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
+  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(mcTrack->PdgCode());
 }
 
 
@@ -1320,6 +1337,12 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_TPCnCls, 19);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_Pt, 20);
 
+  TH1D* hPDGCode = new TH1D("PDGCode","PDGCode;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fOutputListSupportHistos->AddAt(hPDGCode, 21);
+  // TH2D* hPDGCode_PDGCodeMother = new TH2D("PDGCode_PDGCodeMother",";PDG code;PDG code Mother",
+  // 10001,-5000,5000,10001,-5000,5000);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+  // fOutputListSupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
+
 
 }
 
@@ -1390,16 +1413,25 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::GetSmearing(TObjArray *arr, Double
   return smearing;
 }
 
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, TString generator){
-  if (generator == "") return true;
+bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID){
+  if (fGeneratorHashs.size() == 0) return true;
 
   TString genname;
   Bool_t hasGenerator = fMC->GetCocktailGenerator(trackID, genname);
-  if(!hasGenerator) Printf("no cocktail header list was found for this event");
+  // std::cout << genname << std::endl;
+  if(!hasGenerator) {
+    Printf("no cocktail header list was found for this event");
+    return false;
+  }
+  else{
+    for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
+      std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
+      if (genname.Hash() == fGeneratorHashs[i]) return true;
 
-  if (genname == generator) return true;
-  else                      return false;
-
+    }
+    return false;
+  }
+  return false; // should not happen
 }
 
 double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle part2, double motherpt){

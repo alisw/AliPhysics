@@ -396,6 +396,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       else
         cluster = event->GetCaloCluster(iclus);
       if (!cluster){
+        if(arrClusters) delete cluster;
         continue;
       }
       // cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
@@ -403,24 +404,29 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
       //cout << "dR: " << dR << endl;
       if (dR > fMatchingWindow){
+        if(arrClusters) delete cluster;
         continue;
       }
       Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
       if(fClusterType == 1 || fClusterType == 3){
         if (!cluster->IsEMCAL()){
+          if(arrClusters) delete cluster;
           continue;
         }
         if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){
           fHistControlMatches->Fill(4.,inTrack->Pt());
+          if(arrClusters) delete cluster;
           continue;
         }
       }else if(fClusterType == 2){
         if (!cluster->IsPHOS()){
+          if(arrClusters) delete cluster;
           continue;
         }
         if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)){
           fHistControlMatches->Fill(4.,inTrack->Pt());
+          if(arrClusters) delete cluster;
           continue;
         }
         Double_t trkPos[3] = {0,0,0};
@@ -435,6 +441,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 
       //cout << dEta << " - " << dPhi << " - " << dR2 << endl;
       if(dR2 > fMatchingResidual){
+        if(arrClusters) delete cluster;
         continue;
       }
       nClusterMatchesToTrack++;
@@ -448,6 +455,8 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       fVectorDeltaEtaDeltaPhi.push_back(make_pair(dEta,dPhi));
       fMap_TrID_ClID_ToIndex[make_pair(inTrack->GetID(),cluster->GetID())] = fNEntries++;
       if( (Int_t)fVectorDeltaEtaDeltaPhi.size() != (fNEntries-1)) AliFatal("Fatal error in AliCaloTrackMatcher, vector and map are not in sync!");
+      if(arrClusters) delete cluster;
+
     }
     if(nClusterMatchesToTrack == 0) fHistControlMatches->Fill(5.,inTrack->Pt());
     else fHistControlMatches->Fill(6.,inTrack->Pt());

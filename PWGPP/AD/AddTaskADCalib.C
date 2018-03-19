@@ -6,7 +6,7 @@ AliAnalysisTaskADCalib* AddTaskADCalib(Int_t bcExtrapolationMin=9,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_ADCalib", "No analysis manager found.");
-    return MNULL;
+    return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {

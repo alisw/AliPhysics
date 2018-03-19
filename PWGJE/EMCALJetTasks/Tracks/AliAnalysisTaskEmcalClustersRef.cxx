@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <array>
 #include <bitset>
 #include <iostream>
@@ -37,6 +49,9 @@
 #include "AliEMCALGeometry.h"
 #include "AliEmcalList.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTriggerDecision.h"
+#include "AliEmcalTriggerDecisionContainer.h"
+#include "AliEmcalTriggerSelectionCuts.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
@@ -65,6 +80,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
+    fDoFillMultiplicityHistograms(false),
+    fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -78,6 +95,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
+    fDoFillMultiplicityHistograms(false),
+    fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6)
 {
 }
@@ -102,13 +121,13 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
 
   // Binnings for Multiplicity correlation
-  TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.);
+  TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
-  for(auto trg : GetSupportedTriggers()){
+  for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
     fHistos->CreateTH1("hEventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
-    fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
+    if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
     fHistos->CreateTH1("hClusterEnergy" + trg, "Cluster energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterET" + trg, "Cluster transverse energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterEnergyFired" + trg, "Cluster energy for trigger class " + trg + ", firing the trigger", energybinning, optionstring);
@@ -124,6 +143,8 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH2("hNCellET" + trg, "Cluster number of cells vs transverse energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
     fHistos->CreateTH2("hEtaEnergyFired" + trg, "Cluster energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
     fHistos->CreateTH2("hEtaETFired" + trg, "Cluster transverse energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
+    fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning);
+    fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning);
     for(int ism = 0; ism < 20; ism++){
       fHistos->CreateTH2(TString::Format("hEtaEnergySM%d", ism) + trg, TString::Format("Cluster energy vs. eta in Supermodule %d for trigger ", ism) + trg, etabinning, energybinning, optionstring);
       fHistos->CreateTH2(TString::Format("hEtaETSM%d", ism) + trg, TString::Format("Cluster transverse energy vs. eta in Supermodule %d for trigger ", ism) + trg, etabinning, energybinning, optionstring);
@@ -174,18 +195,35 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
 bool AliAnalysisTaskEmcalClustersRef::Run(){
   AliDebugStream(1) << GetName() << ": UserExec start" << std::endl;
 
-  TList ej1patches, dj1patches, ej2patches, dj2patches, eg1patches, dg1patches, eg2patches, dg2patches;
-  FindPatchesForTrigger("EJ2", fTriggerPatchInfo, ej2patches);
-  FindPatchesForTrigger("DJ2", fTriggerPatchInfo, dj2patches);
-  FindPatchesForTrigger("EJ1", fTriggerPatchInfo, ej1patches);
-  FindPatchesForTrigger("DJ1", fTriggerPatchInfo, dj1patches);
-  FindPatchesForTrigger("EG2", fTriggerPatchInfo, eg2patches);
-  FindPatchesForTrigger("DG2", fTriggerPatchInfo, dg2patches);
-  FindPatchesForTrigger("EG1", fTriggerPatchInfo, eg1patches);
-  FindPatchesForTrigger("DG1", fTriggerPatchInfo, dg1patches);
+  std::map<TString, const TList *> patchhandlers;
+  const std::vector<TString> l1triggers = {"EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2"};
+  int energycomp = -1;
+  // get fired trigger patches from the trigger selection task
+  if(auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"))){
+    /*
+    for(auto t : *(trgsel->GetListOfTriggerDecisions())){
+      auto dec  = static_cast<PWG::EMCAL::AliEmcalTriggerDecision *>(t);
+      std::cout << "Found trigger decision " << dec->GetName() << std::endl;
+    }
+    */
+    for(auto t : l1triggers){
+      auto decision = trgsel->FindTriggerDecision(t.Data());
+      if(decision){
+        patchhandlers[t] = decision->GetAcceptedPatches();
+        if(energycomp < 0) {
+          switch(decision->GetSelectionCuts()->GetSelectionMethod()){
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kADC: energycomp = 0; break;
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOffline: energycomp = 1; break;
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared: energycomp = 2; break;
+          }
+        }
+      }
+    }
+  }
 
+  auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
   Double_t energy, et, eta, phi;
-  TList *selpatches(nullptr);
+  const TList *selpatches(nullptr);
   for(auto clust : GetClusterContainer(fNameClusterContainer.Data())->all()){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
@@ -222,23 +260,28 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
 
     // fill histograms allEta
     for(const auto & trg : fSelectedTriggers){
+      if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
       selpatches = nullptr;
-      if(trg.Contains("EJ2")) selpatches = &ej2patches;
-      if(trg.Contains("DJ2")) selpatches = &dj2patches;
-      if(trg.Contains("EJ1")) selpatches = &ej1patches;
-      if(trg.Contains("DJ1")) selpatches = &dj1patches;
-      if(trg.Contains("EG2")) selpatches = &eg2patches;
-      if(trg.Contains("DG2")) selpatches = &dg2patches;
-      if(trg.Contains("EG1")) selpatches = &eg1patches;
-      if(trg.Contains("DG1")) selpatches = &dg1patches;
-      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), nullptr);
+      for(auto t : l1triggers) {
+        if(trg.Contains(t)) {
+          auto patchdata = patchhandlers.find(t);
+          if(patchdata != patchhandlers.end()){
+            selpatches = patchdata->second;
+          }
+        }
+      }
+      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), selpatches, energycomp);
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, TList *fTriggerPatches){
-  Bool_t hasTriggerPatch = fTriggerPatches  ? CorrelateToTrigger(eta, phi, fTriggerPatches) : kFALSE;
+void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, const TList *triggerPatches, int energycomp){
+  std::vector<AliEMCALTriggerPatchInfo *> matchedPatches;
+  if(triggerPatches) {
+    matchedPatches = CorrelateToTrigger(eta, phi, *triggerPatches);
+  }
+  auto hasTriggerPatch = matchedPatches.size() > 0;
   Int_t supermoduleID = -1, sector = -1;
   Double_t weight = GetTriggerWeight(triggerclass);
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
@@ -264,6 +307,23 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
     fHistos->FillTH2(TString::Format("hEtaETSec%d", sector) + triggerclass, eta, transverseenergy, weight);
   }
   if(hasTriggerPatch){
+    // find maximum trigger patch
+    AliEMCALTriggerPatchInfo *maxpatch(nullptr);
+    double maxenergy = 0;
+    for(auto patch : matchedPatches) {
+      double patche = 0;
+      switch(energycomp){
+        case 0: patche = patch->GetADCAmp(); break;
+        case 1: patche = patch->GetPatchE(); break;
+        case 2: patche = patch->GetSmearedEnergy(); break;
+      };
+      if(patche > maxenergy) {
+        maxpatch = patch;
+        maxenergy = patche;
+      }
+    }
+    fHistos->FillTH2("hCorrClusterEPatchADC" + triggerclass, energy, maxpatch->GetADCAmp());
+    fHistos->FillTH2("hCorrClusterEPatchE" + triggerclass, energy, maxpatch->GetPatchE());
     fHistos->FillTH1("hClusterEnergyFired" + triggerclass, energy, weight);
     fHistos->FillTH1("hClusterETFired" + triggerclass, energy, weight);
     fHistos->FillTH2("hEtaEnergyFired" + triggerclass, eta, energy, weight);
@@ -302,65 +362,36 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
 
     // Multiplicity correlation (no correction for downscaling)
-    double data[6] = {v0amult, trackletmult, emctrackletmult, itsclustermult, emcclustermult, emccellocc};
-    fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
+    if(fDoFillMultiplicityHistograms){
+      double data[6] = {v0amult, trackletmult, emctrackletmult, itsclustermult, emcclustermult, emccellocc};
+      fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
+    }
   }
 }
 
-Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *fTriggerPatches) const {
-  Bool_t hasfound = kFALSE;
-  for(TIter patchIter = TIter(fTriggerPatches).Begin(); patchIter != TIter::End(); ++patchIter){
+std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Double_t phiclust, const TList &triggerPatches) const {
+  std::vector<AliEMCALTriggerPatchInfo *> foundpatches;
+  for(auto patchIter : triggerPatches){
     Double_t boundaries[4];
-    GetPatchBoundaries(*patchIter, boundaries);
+    auto testpatch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
+    GetPatchBoundaries(*testpatch, boundaries);
     Double_t etamin = TMath::Min(boundaries[0], boundaries[1]),
         etamax = TMath::Max(boundaries[0], boundaries[1]),
         phimin = TMath::Min(boundaries[2], boundaries[3]),
         phimax = TMath::Max(boundaries[2], boundaries[3]);
     if(etaclust > etamin && etaclust < etamax && phiclust > phimin && phiclust < phimax){
-      hasfound = kTRUE;
+      foundpatches.push_back(testpatch);
       break;
     }
   }
-  return hasfound;
+  return foundpatches;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerPatches, TList &foundtriggers) const {
-  foundtriggers.Clear();
-  if(!triggerPatches) return;
-  AliEmcalTriggerOfflineSelection::EmcalTriggerClass myclass = AliEmcalTriggerOfflineSelection::kTrgEL0;
-  if(triggerclass == "EG1") myclass = AliEmcalTriggerOfflineSelection::kTrgEG1;
-  if(triggerclass == "EG2") myclass = AliEmcalTriggerOfflineSelection::kTrgEG2;
-  if(triggerclass == "EJ1") myclass = AliEmcalTriggerOfflineSelection::kTrgEJ1;
-  if(triggerclass == "EJ2") myclass = AliEmcalTriggerOfflineSelection::kTrgEJ2;
-  if(triggerclass == "DMC7") myclass = AliEmcalTriggerOfflineSelection::kTrgDL0;
-  if(triggerclass == "DG1") myclass = AliEmcalTriggerOfflineSelection::kTrgDG1;
-  if(triggerclass == "DG2") myclass = AliEmcalTriggerOfflineSelection::kTrgDG2;
-  if(triggerclass == "DJ1") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ1;
-  if(triggerclass == "DJ2") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ2;
-  for(auto patchiter : *triggerPatches){
-    AliEMCALTriggerPatchInfo *mypatch = static_cast<AliEMCALTriggerPatchInfo *>(patchiter);
-    if(!mypatch->IsOfflineSimple()) continue;
-    if(AliEmcalTriggerOfflineSelection::IsDCAL(myclass)){
-      if(!mypatch->IsDCalPHOS()) continue;
-    } else {
-      if(mypatch->IsDCalPHOS()) continue;
-    }
-    if(AliEmcalTriggerOfflineSelection::IsSingleShower(myclass)){
-      if(!mypatch->IsGammaLowSimple()) continue;
-    } else {
-      if(!mypatch->IsJetLowSimple()) continue;
-    }
-    double threshold = fTriggerSelection ? fTriggerSelection->GetThresholdForTrigger(myclass) : -1;
-    if(mypatch->GetPatchE() > threshold) foundtriggers.Add(patchiter);
-  }
-}
-
-void AliAnalysisTaskEmcalClustersRef::GetPatchBoundaries(TObject *o, Double_t *boundaries) const {
-  AliEMCALTriggerPatchInfo *patch= dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
-  boundaries[0] = patch->GetEtaMin();
-  boundaries[1] = patch->GetEtaMax();
-  boundaries[2] = patch->GetPhiMin();
-  boundaries[3] = patch->GetPhiMax();
+void AliAnalysisTaskEmcalClustersRef::GetPatchBoundaries(AliEMCALTriggerPatchInfo &patch, Double_t *boundaries) const {
+  boundaries[0] = patch.GetEtaMin();
+  boundaries[1] = patch.GetEtaMax();
+  boundaries[2] = patch.GetPhiMin();
+  boundaries[3] = patch.GetPhiMax();
 }
 
 int AliAnalysisTaskEmcalClustersRef::CountEmcalClusters(double ecut){

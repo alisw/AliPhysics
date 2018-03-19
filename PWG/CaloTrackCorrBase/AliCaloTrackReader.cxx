@@ -133,7 +133,8 @@ fFillInputBackgroundJetBranch(kFALSE),
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fOutputContainer(0x0),           
-fhEMCALClusterEtaPhi(0),     fhEMCALClusterTimeE(0),
+fhEMCALClusterEtaPhi(0),     fhEMCALClusterEtaPhiFidCut(0),     
+fhEMCALClusterTimeE(0),
 fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
 {
@@ -787,7 +788,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
-    fOutputContainer->Add(fhEMCALClusterEtaPhi);
+    fOutputContainer->Add(fhEMCALClusterEtaPhi);    
+    
+    fhEMCALClusterEtaPhiFidCut  = new TH2F 
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",40,-2, 2,50, 0,10);
+    fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
+    fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
+    fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
   }
   
   if(fFillPHOS)
@@ -2022,7 +2029,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   {
     bEMCAL = kTRUE;
   }
-
+  
   //---------------------------------------------------------------------
   // Mask all cells in collumns facing ALICE thick material if requested
   //
@@ -2049,6 +2056,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Check effect of energy and fiducial cuts
   fhEMCALClusterCutsE[4]->Fill(clus->E());
   
+  if ( bEMCAL || bDCAL ) fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+
   //----------------------------------------------------
   // Apply N cells cut
   //

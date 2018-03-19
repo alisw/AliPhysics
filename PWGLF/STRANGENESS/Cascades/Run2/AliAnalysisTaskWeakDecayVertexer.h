@@ -54,10 +54,23 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
+    void SetResetInitialPositions( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkResetInitialPositions = lOpt;
+    }
     void SetDoImprovedDCAV0DauPropagation( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
     }
+    void SetXYCase1Preoptimization( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkXYCase1 = lOpt;
+    }
+    void SetXYCase2Preoptimization( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkXYCase2 = lOpt;
+    }
+    
     void SetDoImprovedDCACascDauPropagation( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoImprovedDCACascDauPropagation = lOpt;
@@ -205,43 +218,45 @@ private:
 
     //Implementation of event selection utility
     AliEventCuts fEventCuts; /// Event cuts class
-
-    //Objects Controlling Task Behaviour
-    Bool_t fkPreselectDedx;
-    Bool_t fkPreselectDedxLambda;
-    Bool_t fkUseOnTheFlyV0Cascading;
-    Bool_t fkDoImprovedDCAV0DauPropagation;
-    Bool_t fkDoImprovedDCACascDauPropagation;
-    Bool_t fkDoPureGeometricMinimization;
-    Bool_t fkDoV0Refit;
-    Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
-    Long_t fMaxIterationsWhenMinimizing; 
     
-    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
-
-    //Objects Controlling Task Behaviour: has to be streamed!
-    Bool_t    fkRunV0Vertexer;           // if true, re-run V0 vertexer
-    Bool_t    fkRunCascadeVertexer;      // if true, re-run cascade vertexer
-    Bool_t    fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
-    Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
-
-    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
-    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-
-    //Min/Max pT for cascades
-    Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
-    Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
-    
+    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality
     Float_t fMinCentrality; //centrality interval to actually regenerate candidates
     Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     
-    //Mass Window around masses of interest
-    Double_t fMassWindowAroundCascade; 
+    //Objects Controlling Task Behaviour
+    Bool_t fkPreselectDedx;
+    Bool_t fkPreselectDedxLambda;
+    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    //Objects Controlling Task Behaviour: has to be streamed!
+    Bool_t fkRunV0Vertexer;           // if true, re-run V0 vertexer
+    Bool_t fkDoV0Refit;
+    Bool_t fkXYCase1; //Circles-far-away case pre-optimization switch
+    Bool_t fkXYCase2; //Circles-touch case pre-optimization switch (cowboy/sailor duality resolution)
+    Bool_t fkResetInitialPositions; 
+    Bool_t fkDoImprovedDCAV0DauPropagation;
+    
+    Bool_t fkRunCascadeVertexer;      // if true, re-run cascade vertexer
+    Bool_t fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
+    Bool_t fkUseOnTheFlyV0Cascading;
+    Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkDoPureGeometricMinimization;
+    Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
+    Long_t fMaxIterationsWhenMinimizing;
+    
+    //Min/Max pT for cascades
+    Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
-    //===========================================================================================
+    //Mass Window around masses of interest
+    Double_t fMassWindowAroundCascade;
+    
+    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+//===========================================================================================
 //   Histograms
 //===========================================================================================
 

@@ -7,6 +7,7 @@ AliAnalysisTask *AddTaskBeautyCal(
                                  Int_t MimCent = -1, Int_t MaxCent = -1, 
                                  Double_t nSig = -1.0,
                                  Int_t epana = 0,
+                                 Int_t eopcorr = 0,
                                  Int_t EtaRange = 0,
                                  Int_t ITSchi2 = 26,
                                  Double_t eopmim = 0.9,
@@ -112,6 +113,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqa7->SetEopMim(eopmim);
     hfecalqa7->SetPileUpCut(pileup);
     hfecalqa7->SetEPana(epana);
+    hfecalqa7->SetEpCorr(eopcorr);
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_hfeBeautyCalINT7";
@@ -232,6 +234,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig01->SetEopMim(eopmim);
         hfecalqaTrig01->SetPileUpCut(pileup);
         hfecalqaTrig01->SetEPana(epana);
+        hfecalqaTrig01->SetEpCorr(eopcorr);
         
         TString containerName01 = mgr->GetCommonFileName();
         containerName01 += ":PWGHF_hfeBeautyCalTrigGAEG1";
@@ -265,6 +268,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig02->SetEopMim(eopmim);
         hfecalqaTrig02->SetPileUpCut(pileup);
         hfecalqaTrig02->SetEPana(epana);
+        hfecalqaTrig02->SetEpCorr(eopcorr);
 
         TString containerName02 = mgr->GetCommonFileName();
         containerName02 += ":PWGHF_hfeBeautyCalTrigGAEG2";
@@ -299,6 +303,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig0->SetEopMim(eopmim);
         hfecalqaTrig0->SetPileUpCut(pileup);
         hfecalqaTrig0->SetEPana(epana);
+        hfecalqaTrig0->SetEpCorr(eopcorr);
 
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeBeautyCalTrigGA";
@@ -332,6 +337,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqaMB->SetEopMim(eopmim);
     hfecalqaMB->SetPileUpCut(pileup);     
     hfecalqaMB->SetEPana(epana);
+    hfecalqaMB->SetEpCorr(eopcorr);
 
     TString containerName2 = mgr->GetCommonFileName();
     containerName2 += ":PWGHF_hfeBeautyCalMB";

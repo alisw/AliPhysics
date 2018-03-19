@@ -225,8 +225,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			}
 		}
 		if( fEvtNum == 1 ){
-			int runN = 1234;
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
+			fFFlucAna->GetAliJEfficiency()->SetRunNumber (1234);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
 		ReadKineTracks( mcEvent, fInputList, fCent ) ; // read tracklist
@@ -250,9 +249,9 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fCent = ReadCentrality(currentEvent,fCentDetName);
 		//fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ;
 		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
+		fRunNum = currentEvent->GetRunNumber();
 		if( fEvtNum == 1 ){
-			int runN = currentEvent->GetRunNumber();
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
+			fFFlucAna->GetAliJEfficiency()->SetRunNumber(fRunNum);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
 
@@ -438,13 +437,11 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	if(flags & FLUC_KINEONLY)
 		return kTRUE;
 
-	int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
-	if(frunNumber < 0)
-		cout << "ERROR: unknown run number" << endl;
+	//int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
 	AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
-	fRunTable->SetRunNumber( frunNumber );
+	fRunTable->SetRunNumber(fRunNum);
 
-	int fperiod = fRunTable->GetRunNumberToPeriod(frunNumber);
+	int fperiod = fRunTable->GetRunNumberToPeriod(fRunNum);
 	if(fperiod == AliJRunTable::kLHC15o){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
@@ -655,24 +652,11 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 }
 
 double AliJFFlucTask::GetCentralityFromImpactPar(double ip) {
-/*
-\begin{tabular}{ |c|c c c c c c c c| }
- \hline
-Centrality(\%)&0-5      &5-10     &10-20    &20-30    &30-40     &40-50      &50-60      &60-70\\
-\hline
-b(fm) AMPT    &0.00-3.72&3.72-5.23&5.23-7.31&7.31-8.88&8.88-10.20&10.20-11.38&11.38-12.47&12.47-13.50\\
-b(fm) HIJING  &0.00-3.60&3.60-5.09&5.09-7.20&7.20-8.83&8.83-10.20&10.20-11.40&11.40-12.49&12.49-13.49\\
-b(fm) ALICE   &0.00-3.50&3.50-4.94&4.94-6.98&6.98-    &    -9.88 &9.81-      &     -12.09&12.09-\\
- \hline
-\end{tabular}
-   \begin{tablenotes}
- \url{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies}
-    \end{tablenotes}
-*/
-	static double bmin[10]={0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,14.51,100};
-	static double centmean[10]={2.5,7.5,15,25,35,45,55,65,75,90};
-	for(int i=0;i<9;i++){
-		if(bmin[i] < ip && ip <= bmin[i+1])
+	//https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
+	static double bmin[12] = {0.0,1.60,2.27,3.72,5.23,7.31,8.88,10.20,11.38,12.47,14.51,100};
+	static double centmean[12] = {0.5,1.5,3.5,7.5,15,25,35,45,55,65,75,90};
+	for(UInt_t i = 0; i < 11; i++){
+		if(bmin[i+1] > ip)
 			return centmean[i];
 	}
 	return 0.0;

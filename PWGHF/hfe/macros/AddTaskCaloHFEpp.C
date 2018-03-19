@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskCaloHFEpp* AddTaslCaloHFEpp(TString name = "name",
+AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 TString dataname = "dataname",
 		                 Bool_t flagEG1,
 		                 Bool_t flagEG2,

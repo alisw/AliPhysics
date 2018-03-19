@@ -26,34 +26,37 @@ class AliFemtoLambdaParticle // Reconstructed Lambdas parameters needed for corr
   
   AliFemtoLambdaParticle();
   virtual ~AliFemtoLambdaParticle();
-  //AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj);
+//  AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj);
   AliFemtoLambdaParticle &operator=(const AliFemtoLambdaParticle &obj);
   
   TVector3 fMomentum;  //v0 momentum
   TVector3 fMomentumMC;  //v0 Monte Carlo momentum
   TVector3 fMomentumMCMother;  //v0 Monte Carlo momentum of mother particle
+  TVector3 fPositionPosTPC[9];
+  TVector3 fPositionNegTPC[9];
+
   int fPDGCode;
   int fPDGCodeMother;
-  double fPt;           //v0 transverse momentum
-  double fMass;         //v0 reconstructed mass
+  float fPt;           //v0 transverse momentum
+  float fMass;         //v0 reconstructed mass
   short fDaughterID1;   //Daughter (proton) AODtrack ID
   short fDaughterID2;   //Daughter (pion) AODtrack ID
   bool fV0tag;
-  double fPointing;
+  float fPointing;
   bool fReal;
 
   //stuff related to daughter tracks:
   TVector3 fMomentumPosDaughter;//momentum of positive daughter particle
   TVector3 fMomentumNegDaughter;//momentum of negative daughter particle
-  double fPhiPosdaughter;
-  double fEtaPosdaughter;
-  double fPhiNegdaughter;
-  double fEtaNegdaughter;
-  double fPosDaughPosTPC[9][3];
-  double fNegDaughPosTPC[9][3];
-  
-#ifdef __ROOT__
-  ClassDef(AliFemtoLambdaParticle, 1);
-#endif
+  float fPhiPosdaughter;
+  float fPhiStarPosdaughter[9];
+  float fEtaPosdaughter;
+  float fPhiNegdaughter;
+  float fPhiStarNegdaughter[9];
+  float fEtaNegdaughter;
+  //double fPosDaughPosTPC[9][3];
+  //double fNegDaughPosTPC[9][3];
+
+  ClassDef(AliFemtoLambdaParticle, 3)
 };
 #endif

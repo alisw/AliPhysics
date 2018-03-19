@@ -319,7 +319,7 @@ namespace PWGJE {
 
       //fill histo with angle between jet axis and constituents
       for(Int_t icc=0; icc<jet1->GetNumberOfTracks(); icc++) {
-        AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(icc, jetCont->GetParticleContainer()->GetArray()));//fTracks));
+        AliVParticle *vp = static_cast<AliVParticle*>(jet1->Track(icc));
         if(!vp) continue;
         Double_t dEta = jet1->Eta()-vp->Eta();
         Double_t dPhi = jet1->Phi()-vp->Phi();

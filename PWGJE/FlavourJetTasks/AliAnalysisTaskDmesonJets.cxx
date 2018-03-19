@@ -15,6 +15,7 @@
 
 //C++
 #include <sstream>
+#include <array>
 
 // Root
 #include <TClonesArray.h>
@@ -1130,6 +1131,9 @@ const char* AliAnalysisTaskDmesonJets::AnalysisEngine::GetName() const
   case kD0Reflection:
     fName += "_D0Reflection";
     break;
+  case kOnlyWrongPIDAccepted:
+    fName += "_OnlyWrongPIDAccepted";
+    break;
   default:
     break;
   }
@@ -1317,7 +1321,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
-  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly || fMCMode == kD0Reflection) {
+  if (fMCMode != kNoMC) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
 
@@ -1631,7 +1635,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   for (auto& def : fJetDefinitions) maxJetPt[&def] = 0;
   Double_t maxDPt = 0;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int, 3> nAccCharm = {0};
+  std::array<std::array<int, 3>, 5> nAccCharmPt = {{{0}}};
+
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
@@ -1659,14 +1665,25 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
         fDmesonJets[(icharm+1)*(1-(im*2))] = DmesonJet;
         nMassHypo++;
         nAccCharm[im]++;
+
+        for (int i = 0; i < nAccCharmPt.size(); i++) {
+          if (charmCand->Pt() < i) break;
+          nAccCharmPt[i][im]++;
+        }
       }
     }
-    if (nMassHypo == 2) {
+    if (nMassHypo == 2) { // both mass hypothesis accepted
       nAccCharm[0]--;
       nAccCharm[1]--;
-      nAccCharm[2] += 2;
-    }
-    if (nMassHypo == 2) { // both mass hypothesis accepted
+      nAccCharm[2]++;
+
+      for (int i = 0; i < nAccCharmPt.size(); i++) {
+        if (charmCand->Pt() < i) break;
+        nAccCharmPt[i][0]--;
+        nAccCharmPt[i][1]--;
+        nAccCharmPt[i][2]++;
+      }
+
       fDmesonJets[(icharm+1)].fD0D0bar = kTRUE;
       fDmesonJets[-(icharm+1)].fD0D0bar = kTRUE;
     }
@@ -1716,6 +1733,16 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
   fHistManager->FillTH2(hname, ntracks, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+
+  for (int i = 0; i < nAccCharmPt.size(); i++) {
+    hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, "D", nAccCharmPt[i][0]);
+    fHistManager->FillTH1(hname, "Anti-D", nAccCharmPt[i][1]);
+    fHistManager->FillTH1(hname, "Both", nAccCharmPt[i][2]);
+
+    hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, nAccCharmPt[i][0]+nAccCharmPt[i][1]+nAccCharmPt[i][2]);
+  }
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
   fHistManager->FillTH1(hname, nD);
@@ -1852,7 +1879,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
   if (!fMCContainer->IsSpecialPDGFound()) return;
 
-  Int_t nAccCharm[3] = {0};
+  std::array<int,2> nAccCharm = {0};
+  std::array<std::array<int, 2>, 5> nAccCharmPt = {{{0}}};
 
   std::map<AliHFJetDefinition*, Double_t> maxJetPt;
   Double_t maxDPt = 0;
@@ -1923,11 +1951,18 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
             (*dMesonJetIt).second.fAncestor = FindParticleOrigin(part, fMCContainer->GetArray(), kFindFirst);
 
+            Int_t im = -1;
             if (part->PdgCode() > 0) {  // D0
-              nAccCharm[0]++;
+              im = 0;
             }
             else { // D0bar
-              nAccCharm[1]++;
+              im = 1;
+            }
+
+            nAccCharm[im]++;
+            for (int i = 0; i < nAccCharmPt.size(); i++) {
+              if (part->Pt() < i) break;
+              nAccCharmPt[i][im]++;
             }
           }
 
@@ -1975,13 +2010,21 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
   fHistManager->FillTH1(hname, "D", nAccCharm[0]);
   fHistManager->FillTH1(hname, "Anti-D", nAccCharm[1]);
-  fHistManager->FillTH1(hname, "Both", nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
-  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]);
+
+  for (int i = 0; i < nAccCharmPt.size(); i++) {
+    hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, "D", nAccCharmPt[i][0]);
+    fHistManager->FillTH1(hname, "Anti-D", nAccCharmPt[i][1]);
+
+    hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", GetName(), i);
+    fHistManager->FillTH1(hname, nAccCharmPt[i][0]+nAccCharmPt[i][1]);
+  }
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
-  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]); // same as the number of accepted D mesons, since no selection is performed
+  fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]); // same as the number of accepted D mesons, since no selection is performed
 }
 
 /// Builds the tree where the output will be posted
@@ -2725,10 +2768,6 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   htitle = hname + ";#phi_{charm};counts";
   fHistManager.CreateTH1(hname, htitle, 125, 0, TMath::TwoPi());
 
-  hname = "fHistCharmPt_Eta05";
-  htitle = hname + ";#it{p}_{T,charm} (GeV/#it{c});counts";
-  fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
-
   hname = "fHistBottomPt";
   htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
   fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
@@ -2740,10 +2779,6 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   hname = "fHistBottomPhi";
   htitle = hname + ";#phi_{bottom};counts";
   fHistManager.CreateTH1(hname, htitle, 125, 0, TMath::TwoPi());
-
-  hname = "fHistBottomPt_Eta05";
-  htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
-  fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
 
   hname = "fHistHighestPartonPt";
   htitle = hname + ";#it{p}_{T,bottom} (GeV/#it{c});counts";
@@ -2770,6 +2805,16 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     hname = TString::Format("%s/fHistNTotAcceptedDmesons", param.GetName());
     htitle = hname + ";;#it{N}_{D}";
     h = fHistManager.CreateTH1(hname, htitle, 3, 0, 3);
+
+    for (int i = 0 ; i < 5; i++) {
+      hname = TString::Format("%s/fHistNAcceptedDmesonsPt%d", param.GetName(), i);
+      htitle = hname + ";#it{N}_{D};events";
+      h = fHistManager.CreateTH1(hname, htitle, 21, -0.5, 20.5);
+
+      hname = TString::Format("%s/fHistNTotAcceptedDmesonsPt%d", param.GetName(), i);
+      htitle = hname + ";;#it{N}_{D}";
+      h = fHistManager.CreateTH1(hname, htitle, 3, 0, 3);
+    }
 
     hname = TString::Format("%s/fHistNDmesons", param.GetName());
     htitle = hname + ";#it{N}_{D};events";
@@ -3037,7 +3082,7 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
         if (!params.fCandidateArray->GetClass()->InheritsFrom(className)) {
           ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
               "%s: Objects of type %s in %s are not inherited from %s! Task will be disabled!",
-              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName(), className.Data());
+              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName(), className.Data()); // @suppress("Ambiguous problem")
           params.fCandidateArray = 0;
           params.fInhibit = kTRUE;
         }
@@ -3163,68 +3208,95 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
   auto itcont = fMCContainer->all_momentum();
   Int_t nHQ = 0;
   Double_t highestPartonPt = 0;
-  Int_t absPdgHighParton = 0;
-  for (auto part : itcont) {
-    Int_t absPdgCode = TMath::Abs(part.second->GetPdgCode());
+  Int_t PdgHighParton = 0;
+  for (auto it = itcont.begin(); it != itcont.end(); it++) {
+    auto part = *it;
+    if (part.first.Pt() == 0) continue;
+
+    Int_t PdgCode = part.second->GetPdgCode();
 
     // Skip all particles that are not either quarks or gluons
-    if (absPdgCode > 9 && absPdgCode != 21) continue;
+    if ((PdgCode < -9 || PdgCode > 9) && PdgCode != 21  && PdgCode != -21) continue;
+
+    AliDebugStream(5) << "Parton " << it.current_index() <<
+        " with pdg=" << PdgCode <<
+        ", px=" << part.first.Px() <<
+        ", py=" << part.first.Py() <<
+        ", pz=" << part.first.Pz() <<
+        ", n daughters = " << part.second->GetNDaughters() <<
+        std::endl;
+
+    // Skip partons that do not have any children
+    // Unclear how this can happen, it would seem that this parton were not fragmented by the generator
+    if (part.second->GetNDaughters() == 0) continue;
 
     // Look for highest momentum parton
     if (highestPartonPt < part.first.Pt()) {
       highestPartonPt = part.first.Pt();
-      absPdgHighParton = absPdgCode;
+      PdgHighParton = PdgCode;
     }
-    /*
-    // Look for the mother PDG code
-    Int_t motherIndex = part.second->GetMother();
-    AliAODMCParticle *mother = 0;
-    Int_t motherPdg = 0;
-    Double_t motherPt = 0;
-    if (motherIndex >= 0) {
-      mother = fMCContainer->GetMCParticle(motherIndex);
-      if (motherIndex) {
-        motherPdg =  TMath::Abs(mother->GetPdgCode());
-        motherPt = mother->Pt();
-      }
-    }
-    */
-    if (absPdgCode != 4 && absPdgCode != 5) continue;
-    Bool_t notLastInPartonShower = kFALSE;
-    for (Int_t idaugh = 0; idaugh < 2; idaugh++){
-      Int_t daughterIndex = part.second->GetDaughter(idaugh);
+
+    // Skip partons that are not HF
+    if (PdgCode != 4 && PdgCode != 5 && PdgCode != -4 && PdgCode != -5) continue;
+
+    Bool_t lastInPartonShower = kTRUE;
+    Bool_t hadronDaughter = kFALSE;
+    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
       if (daughterIndex < 0) {
-        AliDebug(10, Form("Could not find daughter of heavy quark (pdg=%d, pt=%.3f)!", absPdgCode, part.first.Pt()));
+        AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;
       }
       AliAODMCParticle *daughter = fMCContainer->GetMCParticle(daughterIndex);
       if (!daughter) {
-        AliDebug(10, Form("Could not find daughter %d of heavy quark (pdg=%d, pt=%.3f)!", daughterIndex, absPdgCode, part.first.Pt()));
+        AliDebugStream(5) << "Could not find particle with index " << daughterIndex << "!" << std::endl;
         continue;
       }
-      Int_t daughterAbsPdgCode = TMath::Abs(daughter->GetPdgCode());
-      if (daughterAbsPdgCode <= 9 || daughterAbsPdgCode == 21) notLastInPartonShower = kTRUE; // this parton is not the last parton in the shower
-      AliDebug(10, Form("Found daughter with PDG=%d, pt=%.3f", daughterAbsPdgCode, daughter->Pt()));
-    }
-    if (notLastInPartonShower) continue;
+      Int_t daughterPdgCode = daughter->GetPdgCode();
+      if (daughter->GetMother() != it.current_index()) {
+        AliDebugStream(5) << "Particle " << daughterIndex << " with pdg=" << daughterPdgCode <<
+            ", px=" << daughter->Px() <<
+            ", py=" << daughter->Py() <<
+            ", pz=" << daughter->Pz() <<
+            ", is not a daughter of " << it.current_index() <<
+            "!" << std::endl;
+        continue;
+      }
 
-    if (absPdgCode == 4) {
+      AliDebugStream(5) << "Found daughter " << daughterIndex <<
+          " with pdg=" << daughterPdgCode <<
+          ", px=" << daughter->Px() <<
+          ", py=" << daughter->Py() <<
+          ", pz=" << daughter->Pz() <<
+          std::endl;
+      if (daughterPdgCode == PdgCode) lastInPartonShower = kFALSE; // this parton is not the last parton in the shower
+      if (TMath::Abs(daughterPdgCode) >= 111) hadronDaughter = kTRUE;
+    }
+    if (hadronDaughter) {
+      AliDebugStream(5) << "This particle has at least a hadron among its daughters!" << std::endl;
+      if (!lastInPartonShower) AliDebugStream(2) << "Odly, quark " << it.current_index() << " with PDG " << PdgCode << " (pt = " << part.first.Pt() << ", eta = " <<  part.first.Eta() << ") is not the last in the parton shower but at least a hadron found among its daughters?!" << std::endl;
+    }
+    else {
+      AliDebugStream(5) << "This particle does not have hadrons among its daughters!" << std::endl;
+      if (lastInPartonShower) AliDebugStream(2) << "Odly, quark " << it.current_index() << " with PDG " << PdgCode << " (pt = " << part.first.Pt() << ", eta = " <<  part.first.Eta() << ") is the last in the parton shower but no hadron found among its daughters?!" << std::endl;
+      continue;
+    }
+
+    if (PdgCode == 4 || PdgCode == -4) {
       fHistManager.FillTH1("fHistCharmPt", part.first.Pt());
       fHistManager.FillTH1("fHistCharmEta", part.first.Eta());
       fHistManager.FillTH1("fHistCharmPhi", part.first.Phi_0_2pi());
-      if (TMath::Abs(part.first.Eta()) < 0.5) fHistManager.FillTH1("fHistCharmPt_Eta05", part.first.Pt());
     }
-    else if (absPdgCode == 5) {
+    else if (PdgCode == 5 || PdgCode == -5) {
       fHistManager.FillTH1("fHistBottomPt", part.first.Pt());
       fHistManager.FillTH1("fHistBottomEta", part.first.Eta());
       fHistManager.FillTH1("fHistBottomPhi", part.first.Phi_0_2pi());
-      if (TMath::Abs(part.first.Eta()) < 0.5) fHistManager.FillTH1("fHistBottomPt_Eta05", part.first.Pt());
     }
     nHQ++;
   }
   fHistManager.FillTH1("fHistNHeavyQuarks", nHQ);
   fHistManager.FillTH1("fHistHighestPartonPt",highestPartonPt);
   Int_t partonType = 0;
+  Int_t absPdgHighParton = TMath::Abs(PdgHighParton);
   if (absPdgHighParton == 9 || absPdgHighParton == 21) {
     partonType = 7;
   }

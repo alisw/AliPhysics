@@ -98,8 +98,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	return;
 	}
 	//trigger selectors
-// 	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
-	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
+// 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
 	
 	Double_t vec_hNoEvts[7]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
@@ -107,7 +107,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
 	// event shape for data (from ESD)
 	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+// 	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
 	vec_hNoEvts[0] = 0.;
@@ -136,7 +136,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 // 	vec_hNoEvts[0] = 3.;
 // 	hNoEvts->Fill(vec_hNoEvts);
 	
-	Double_t directivity = (directivity_plus + directivity_minus) / 2.0;
+	Double_t directivity = directivity_plus;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
@@ -145,15 +145,16 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	
 	
 	// event multiplicity and shape for MC (from MC event)
-	Double_t MC_directivity_plus = 0;
-	Double_t MC_directivity_minus = 0;
-	Double_t MC_directivity = 0;
-	Double_t MC_mult_glob08 = 0;
-	Double_t MC_sfer = 0;
+	Double_t MC_directivity_plus = -2;
+	Double_t MC_directivity_minus = -2;
+	Double_t MC_directivity = -2;
+	Double_t MC_mult_glob08 = -2;
+	Double_t MC_sfer = -2;
 	if( HasMCdata() ){ // run only on MC
 		MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
-		MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-		MC_directivity = (MC_directivity_plus + MC_directivity_minus) / 2.0;
+// 		MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
+// 		MC_directivity = (MC_directivity_plus + MC_directivity_minus) / 2.0;
+		MC_directivity= MC_directivity_plus;
 		MC_mult_glob08 = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
 		MC_sfer = fMCevInfo->GetEventShape()->GetSphericity();
 		vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
@@ -170,21 +171,21 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.0 && sfer<=0.3){
+      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.0 && directivity<=0.3){
         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks1) break;
         selectedTracks1->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
+      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.3 && directivity<=0.6){
         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks2) break;
         selectedTracks2->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
       }
-      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
+      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.6 && directivity<=0.9){
         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks3) break;
         selectedTracks3->SetOwner(kTRUE);
@@ -197,21 +198,21 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
 	if( HasMCdata() ){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if(MC_mult_glob08>49 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.0 && MC_sfer<=0.3){
+      if(MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_directivity>0.0 && MC_directivity<=0.3){
 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 		if(!selectedTracksMC1) return;
 		selectedTracksMC1->SetOwner(kTRUE);
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
-      if(MC_mult_glob08>49 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.3 && MC_sfer<=0.6){
+      if(MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_directivity>0.3 && MC_directivity<=0.6){
 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
 		if(!selectedTracksMC2) return;
 		selectedTracksMC2->SetOwner(kTRUE);
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
       }
-      if(MC_mult_glob08>49 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.6 && MC_sfer<=1.0){
+      if(MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_directivity>0.6 && MC_directivity<=0.9){
 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
 		if(!selectedTracksMC3) return;
 		selectedTracksMC3->SetOwner(kTRUE);

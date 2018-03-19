@@ -225,6 +225,11 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistMcDs(0),
   fHistMcLc(0),
   Eop010Corr(0),
+  Eop010Corr_data0(0),
+  Eop010Corr_mc0(0),
+  Eop010Corr_data1(0),
+  Eop010Corr_mc1(0),
+  iCorr(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -388,6 +393,11 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistMcDs(0),
   fHistMcLc(0),
   Eop010Corr(0),
+  Eop010Corr_data0(0),
+  Eop010Corr_mc0(0),
+  Eop010Corr_data1(0),
+  Eop010Corr_mc1(0),
+  iCorr(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -862,9 +872,21 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   PostData(1,fOutputList);
 
+  // old AOD + Tender
   Eop010Corr = new TF1("Eop010Corr","pol3");
-  //Eop010Corr->SetParameters(0.0485569,0.00274734,4.17124e-05,-1.13117e-05);
   Eop010Corr->SetParameters(0.034,0.0086,-0.00059,8.87525e-06);
+
+  // new AOD + correction stand
+  Eop010Corr_data0 = new TF1("Eop010Corr_data0","pol3");
+  Eop010Corr_data0->SetParameters(0.997497,0.0165938,-0.00103466,1.47221e-05);
+  Eop010Corr_mc0 = new TF1("Eop010Corr_mc0","pol3");
+  Eop010Corr_mc0->SetParameters(1.00373,0.00435646,-0.000186853,2.2387e-06);
+
+  // new AOD + correction strong E cuts
+  Eop010Corr_data1 = new TF1("Eop010Corr_data1","pol3");
+  Eop010Corr_data1->SetParameters(0.965562,0.0124811,-0.000544302,3.13731e-06);
+  Eop010Corr_mc1 = new TF1("Eop010Corr_mc1","pol3");
+  Eop010Corr_mc1->SetParameters(0.931579,0.0122448,-0.000587908,9.20055e-06);
 
 }
 
@@ -1592,11 +1614,25 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         {
          if(abs(pdg)==11 && (pid_eleD || pid_eleB))fHistEopTrueMC->Fill(track->Pt(),eop);
 
+         /*
          if(centrality>=0 && centrality<10)
            { 
             //cout << "eop = " << eop << endl;
             eop += Eop010Corr->Eval(track->Pt()); 
             //cout << "eop corr = " << eop << endl;
+           }
+         */
+         if(centrality>=0 && centrality<10)
+           { 
+            //cout << "iCorr = " << iCorr << endl;
+            if(iCorr==0)
+              {
+               eop += (Eop010Corr_data0->Eval(track->Pt()) - Eop010Corr_mc0->Eval(track->Pt())); 
+              }
+            else
+              {
+               eop += (Eop010Corr_data1->Eval(track->Pt()) - Eop010Corr_mc1->Eval(track->Pt())); 
+              } 
            }
          else if(centrality>=30 && centrality<50)
            {
@@ -2196,7 +2232,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            cout << "<------- imc = "<< gh->GetName() << endl;     
+            //cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
             //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING

@@ -587,7 +587,7 @@ public:
     kQnCorrFMDAy_FMDCy,
 
     // Flow estimators for measured Jpsis
-
+    // Eventplane Fourier calculation
     kQnDeltaPhiTPCrpH2,
     kQnDeltaPhiTrackTPCrpH2, // Track delta phi for cross-checks
     kQnDeltaPhiTrackV0CrpH2, // Track delta phi for cross-checks
@@ -600,6 +600,14 @@ public:
     kQnV0CrpH2FlowV2,
     kQnV0rpH2FlowV2,
     kQnSPDrpH2FlowV2,
+
+    // Eventplane Scalar-Product
+    kQnTPCrpH2FlowSPV2,
+    kQnV0ArpH2FlowSPV2,
+    kQnV0CrpH2FlowSPV2,
+    kQnV0rpH2FlowSPV2,
+    kQnSPDrpH2FlowSPV2,
+
 
     // End of Eventplane variables from Qn Framework
 
@@ -1870,7 +1878,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
 
   values[AliDielectronVarManager::kITSscPair]   = -999;
-  if(Req(kITSscPair)) { 
+  if(Req(kITSscPair)) {
 
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
@@ -1903,11 +1911,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
         if(itsNclsS1 > 0 && itsNclsS2 > 0)
           values[AliDielectronVarManager::kITSscPair]   = 2.;
-        else if (itsNclsS1 > 0 || itsNclsS2 > 0) 
-          values[AliDielectronVarManager::kITSscPair]   = 1.;     
+        else if (itsNclsS1 > 0 || itsNclsS2 > 0)
+          values[AliDielectronVarManager::kITSscPair]   = 1.;
         else
           values[AliDielectronVarManager::kITSscPair]   = 0.;
-        
+
       }
     }
   }
@@ -2214,7 +2222,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   //Random reaction plane
   values[AliDielectronVarManager::kRandomRP] = gRandom->Uniform(-TMath::Pi()/2.0,TMath::Pi()/2.0);
-  //delta phi of pair fron random reaction plane
+  //delta phi of pair from random reaction plane
   values[AliDielectronVarManager::kDeltaPhiRandomRP] = phi - values[kRandomRP];
   // keep the interval [-pi,+pi]
   if ( values[AliDielectronVarManager::kDeltaPhiRandomRP] > TMath::Pi() )
@@ -2252,6 +2260,33 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kQnV0CrpH2FlowV2)) values[AliDielectronVarManager::kQnV0CrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2] );
   if(Req(kQnV0rpH2FlowV2)) values[AliDielectronVarManager::kQnV0rpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0rpH2] );
   if(Req(kQnSPDrpH2FlowV2)) values[AliDielectronVarManager::kQnSPDrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2] );
+
+  // Eventplane Scalar-Product Second Harmonic
+  Int_t harmonic = 2;
+  TVector2 uDielectronSP( cos( harmonic * phi ), sin( harmonic * phi )); //Unitary Q vector of the dielectron pair
+
+  if(Req(kQnTPCrpH2FlowSPV2)){
+    TVector2 qVec2tpcACCorrected; qVec2tpcACCorrected.SetMagPhi(1,qnTPCeventplane); //Unitary Q vector from TPC
+    values[AliDielectronVarManager::kQnTPCrpH2FlowSPV2]    = uDielectronSP * qVec2tpcACCorrected;
+  }
+  if(Req(kQnV0ArpH2FlowSPV2)){
+    TVector2 qVec2V0A;
+    qVec2V0A.Set(values[AliDielectronVarManager::kQnV0AxH2], values[AliDielectronVarManager::kQnV0AyH2]); //Unitary Q vector from V0A
+    values[AliDielectronVarManager::kQnV0ArpH2FlowSPV2]    = uDielectronSP * qVec2V0A;
+  }
+  if(Req(kQnV0CrpH2FlowSPV2)){
+    TVector2 qVec2V0C; qVec2V0C.Set(values[AliDielectronVarManager::kQnV0CxH2], values[AliDielectronVarManager::kQnV0CyH2]); //Unitary Q vector from V0C
+    values[AliDielectronVarManager::kQnV0CrpH2FlowSPV2]    = uDielectronSP * qVec2V0C;
+  }
+  if(Req(kQnV0rpH2FlowSPV2)){
+    TVector2 qVec2V0; qVec2V0.Set(values[AliDielectronVarManager::kQnV0xH2], values[AliDielectronVarManager::kQnV0yH2]);     //Unitary Q vector from V0
+    values[AliDielectronVarManager::kQnV0rpH2FlowSPV2]      = uDielectronSP * qVec2V0;
+  }
+  if(Req(kQnSPDrpH2FlowSPV2)){
+    TVector2 qVec2SPD; qVec2SPD.Set(values[AliDielectronVarManager::kQnSPDxH2], values[AliDielectronVarManager::kQnSPDyH2]);     //Unitary Q vector from SPD
+    values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
+  }
+
 
   AliDielectronMC *mc = AliDielectronMC::Instance();
 

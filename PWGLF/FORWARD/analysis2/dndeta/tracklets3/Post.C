@@ -40,6 +40,7 @@ void Usage(std::ostream& o)
     << "  0x0008   Do scaling by fully differential\n"
     << "  0x0010   Correct for decay of strange to secondary \n"
     << "  0x0020   Correct for fake tracklets\n"
+    << "  0x0040   Correct for non-flat centrality in each bin\n"
     << "  0x1000   MC closure test\n"
     << std::endl;
   o << "Visualization options:\n"
@@ -106,6 +107,7 @@ const TString& FormatInput(const char* inp, TString& shrt)
  * - 0x0008   Do scaling by fully differential
  * - 0x0010   Correct for decay of strange to secondary 
  * - 0x0020   Correct for fake tracklets
+ * - 0x0040   Correct for non-flat centrality in each bin
  * - 0x1000   MC closure test
  *
  * Visualization options: 

@@ -44,7 +44,7 @@ ClassImp(AliJJtAnalysis)
 
 AliJJtAnalysis::AliJJtAnalysis() :
   TObject(),
-  fExecLocal(kTRUE),
+  fExecLocal(kFALSE),
   fFirstEvent(kTRUE),
   fjtrigg((particleType)-100),
   fjassoc((particleType)-100),
@@ -57,9 +57,7 @@ AliJJtAnalysis::AliJJtAnalysis() :
   fcorrelations(0),
   fAcceptanceCorrection(0x0),
   fassocPool(0),
-  fphotonList(0),
   fchargedHadronList(0),
-  fpizeroList(0),
   ftriggList(0),
   fassocList(0),
   finputList(0),
@@ -95,9 +93,7 @@ AliJJtAnalysis::AliJJtAnalysis(Bool_t execLocal) :
   fcorrelations(0),
   fAcceptanceCorrection(0x0),
   fassocPool(0),
-  fphotonList(0),
   fchargedHadronList(0),
-  fpizeroList(0),
   ftriggList(0),
   fassocList(0),
   finputList(0),
@@ -127,9 +123,7 @@ AliJJtAnalysis::~AliJJtAnalysis(){
   
   delete fassocPool;
   
-  delete fphotonList;
   delete fchargedHadronList;
-  delete fpizeroList;
   delete ftriggList;
   delete fassocList;
   
@@ -152,9 +146,7 @@ AliJJtAnalysis::AliJJtAnalysis(const AliJJtAnalysis& obj) :
   fcorrelations(obj.fcorrelations),
   fAcceptanceCorrection(obj.fAcceptanceCorrection),
   fassocPool(obj.fassocPool),
-  fphotonList(obj.fphotonList),
   fchargedHadronList(obj.fchargedHadronList),
-  fpizeroList(obj.fpizeroList),
   ftriggList(obj.ftriggList),
   fassocList(obj.fassocList),
   finputList(obj.finputList),
@@ -378,9 +370,7 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   // EventPool for Mixing
   fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
   
-  fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
   fchargedHadronList  = new TClonesArray(kParticleProtoType[fMCTruthRun ? kJHadronMC : kJHadron],1500);
-  fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
   ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
   fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
   finputList = NULL;
@@ -398,55 +388,52 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
     int nEvents = fdmg->GetNEvents();
     frunHeader = fdmg->GetRunHeader();
     cout<<"RunID = "<<frunHeader->GetRunNumber()<< " Looping over "<<nEvents<<" events"<<endl;
-    
-  } else {
-    fdmg->SetRunHeader( frunHeader );
-    frunHeader = fdmg->GetRunHeader();
   }
 
-	//==== Efficiency ====
-	fEfficiency = new AliJEfficiency;
-	fEfficiency->SetMode( fcard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
-	if(fExecLocal) { 
-		fEfficiency->SetDataPath("/mnt/flustre/alice/taxi_jcorran/2013/EFF/data"); // Efficiency root file location local or alien
-	} else {
-		fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
-	}
+  cout<<"RunID = "<<frunHeader->GetRunNumber()<< endl;
+  //==== Efficiency ====
+  fEfficiency = new AliJEfficiency;
+  fEfficiency->SetMode( fcard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
+  if(fExecLocal) { 
+	  fEfficiency->SetDataPath("/mnt/flustre/alice/taxi_jcorran/2013/EFF/data"); // Efficiency root file location local or alien
+  } else {
+	  fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
+  }
 
-	//-------------------------------------------------------------------
-	fbTriggCorrel  = fcard->Get("CorrelationType")==0;
-	fbLPCorrel     = fcard->Get("CorrelationType")==1;
+  //-------------------------------------------------------------------
+  fbTriggCorrel  = fcard->Get("CorrelationType")==0;
+  fbLPCorrel     = fcard->Get("CorrelationType")==1;
   fbLPSystematics = fcard->Get("LeadingParticleSystematics")==1;
-	fMinimumPt = fcard->GetBinBorder(kAssocType, 0);
+  fMinimumPt = fcard->GetBinBorder(kAssocType, 0);
 
   frandom = new TRandom3(); // Random number generator for systematic error estimation
   frandom->SetSeed(0);
-  
-	// Initialize counters
-  fcent = -1;
-	fhistos->fHMG->WriteConfig();
-	fFirstEvent = kTRUE;
-	fevt = -1;
 
-	cout << "end of jcorran user create output objects ----------------" << endl;
+  // Initialize counters
+  fcent = -1;
+  fhistos->fHMG->WriteConfig();
+  fFirstEvent = kTRUE;
+  fevt = -1;
+
+  cout << "end of jcorran user create output objects ----------------" << endl;
 
 }
 
 void AliJJtAnalysis::UserExec(){
-  
-  // Variables needed inside loops
-  AliJBaseTrack *triggerTrack;    // Track for the trigger particle
-  AliJBaseTrack *associatedTrack; // Track for the associated particle
-  double ptt;                     // pT of the trigger particle
-  double effCorr;                 // Efficiency correction
-  int iptt;                       // Index of trigger pT bin
-  int ipta;                       // Index of associated pT bin
-  
+
+	// Variables needed inside loops
+	AliJBaseTrack *triggerTrack;    // Track for the trigger particle
+	AliJBaseTrack *associatedTrack; // Track for the associated particle
+	double ptt;                     // pT of the trigger particle
+	double effCorr;                 // Efficiency correction
+	int iptt;                       // Index of trigger pT bin
+	int ipta;                       // Index of associated pT bin
+
 	// event loop
 	fevt++;
 
 	if( fFirstEvent ) {
-    
+
 		// ==== Set the RunTable only in the first event ====
 		fRunTable = &AliJRunTable::GetSpecialInstance();
 		fRunTable->SetRunNumber( frunHeader->GetRunNumber() );
@@ -454,39 +441,39 @@ void AliJJtAnalysis::UserExec(){
 		cout << "sqrts = "<< sqrtS << ",runnumber = "<< frunHeader->GetRunNumber() << endl;
 		fEfficiency->SetRunNumber( frunHeader->GetRunNumber() );
 		fEfficiency->Load();
-    double magneticFieldPolarity = 1;
-    if(frunHeader->GetL3MagnetFieldIntensity() < 0) magneticFieldPolarity = -1;
-    fcorrelations->SetMagneticFieldPolarity(magneticFieldPolarity);
-    cout << "Magnetic field polarity is: " << magneticFieldPolarity << endl;
+		double magneticFieldPolarity = 1;
+		if(frunHeader->GetL3MagnetFieldIntensity() < 0) magneticFieldPolarity = -1;
+		fcorrelations->SetMagneticFieldPolarity(magneticFieldPolarity);
+		cout << "Magnetic field polarity is: " << magneticFieldPolarity << endl;
 		fFirstEvent = kFALSE;
 	}
 
-  // Load the event to Data Manager and count events
+	// Load the event to Data Manager and count events
 	fdmg->LoadEvent(fevt);
 	fhistos->fhEvents->Fill( 0 );
 
 	if(!fdmg->IsGoodEvent()) return;  // Vertex cut applied in IsGoodEvent and histo saved there too
 
-  // Read event header and z-vertex position
+	// Read event header and z-vertex position
 	feventHeader  = fdmg->GetEventHeader();
 	double zVert    = feventHeader->GetZVertex();
 	//----------------------------------------------------------
 
-  // Read the trigger mask
+	// Read the trigger mask
 	UInt_t triggermaskJCorran = feventHeader->GetTriggerMaskJCorran();
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 5 );
-  }
+	}
 
 	// select only some BC%4
-  if( feventHeader->GetBunchCrossNumber() % 4 != fEventBC && fEventBC > -1 ){
+	if( feventHeader->GetBunchCrossNumber() % 4 != fEventBC && fEventBC > -1 ){
 		return;
-  }
+	}
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 6 );
-  }
+	}
 
 	if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
 		fcent = feventHeader->GetCentrality();
@@ -497,16 +484,16 @@ void AliJJtAnalysis::UserExec(){
 	int cBin        = fcard->GetBin(kCentrType, fcent);
 	if(cBin<0) return;
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 7 );
-  }
+	}
 
 	int zBin        = fcard->GetBin(kZVertType, zVert); //should be alway >0; checked in fdmg->IsGoodEvent()
 
 	// do not fill MB in case of MB mixing
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhZVert[cBin]->Fill(zVert);
-  }
+	}
 
 	//------------------------------------------------------------------
 	// Triggers and associated
@@ -514,7 +501,7 @@ void AliJJtAnalysis::UserExec(){
 
 	if(fjtrigg==kJHadron || fjassoc==kJHadron || fjtrigg==kJHadronMC || fjassoc==kJHadronMC){
 		fchargedHadronList->Clear();
-    
+
 		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, fMCTruthRun ? kJHadronMC : kJHadron);
 		// apply efficiencies
 
@@ -523,21 +510,19 @@ void AliJJtAnalysis::UserExec(){
 			triggerTrack = (AliJBaseTrack*)fchargedHadronList->At(i);
 			ptt = triggerTrack->Pt();
 
-      if(fMCTruthRun){
-        fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1.0 );
-        triggerTrack->SetTrackEff(1.0);
-      } else {
-			  effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
-			  fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
-			  triggerTrack->SetTrackEff( 1./effCorr );
-      }
+			if(fMCTruthRun){
+				fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1.0 );
+				triggerTrack->SetTrackEff(1.0);
+			} else {
+				effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
+				fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+				triggerTrack->SetTrackEff( 1./effCorr );
+			}
 		}
 	}
 
 	//---- assign input list ---- 
-	if(fjtrigg==kJPizero)      finputList = fpizeroList;  
-	else if(fjtrigg==kJHadron || fjtrigg==kJHadronMC) finputList = fchargedHadronList;
-	else if(fjtrigg==kJPhoton) finputList = fphotonList;
+	if(fjtrigg==kJHadron || fjtrigg==kJHadronMC) finputList = fchargedHadronList;
 	int noAllTriggTracks = finputList->GetEntries();
 	int noAllChargedTracks = fchargedHadronList->GetEntries();
 	fhistos->fhChargedMult[cBin]->Fill(noAllChargedTracks);
@@ -547,11 +532,11 @@ void AliJJtAnalysis::UserExec(){
 	//----------------------------------------------------
 	AliJTrackCounter *lpTrackCounter = new AliJTrackCounter();
 	AliJBaseTrack *lPTr = NULL;
-  
-  // Find also subleading particle in case of systematic error analysis
-  AliJTrackCounter *subLeadingTrackCounter = new AliJTrackCounter();
-  AliJBaseTrack *subLeadingTrack = NULL;
-  
+
+	// Find also subleading particle in case of systematic error analysis
+	AliJTrackCounter *subLeadingTrackCounter = new AliJTrackCounter();
+	AliJBaseTrack *subLeadingTrack = NULL;
+
 	int noTriggs=0;
 	ftriggList->Clear();
 	for(int itrack=0; itrack<noAllTriggTracks; itrack++){
@@ -573,46 +558,44 @@ void AliJJtAnalysis::UserExec(){
 		fhistos->fhIphiTrigg[cBin][iptt]->Fill( triggerTrack->Phi(), effCorr);
 		fhistos->fhIetaTrigg[cBin][iptt]->Fill( triggerTrack->Eta(), effCorr);
 
-    // If we find the second highest track remember it
-    if( fbLPSystematics && ptt > subLeadingTrackCounter->Pt() && ptt < lpTrackCounter->Pt()){
-      subLeadingTrackCounter->Store(noTriggs, ptt, iptt);
-      subLeadingTrack = triggerTrack;
-    }
-    
-    // Find the highest track as the leading particle
+		// If we find the second highest track remember it
+		if( fbLPSystematics && ptt > subLeadingTrackCounter->Pt() && ptt < lpTrackCounter->Pt()){
+			subLeadingTrackCounter->Store(noTriggs, ptt, iptt);
+			subLeadingTrack = triggerTrack;
+		}
+
+		// Find the highest track as the leading particle
 		if( ptt > lpTrackCounter->Pt() ) {
-      
-      // Set the previous leading particle as the subleading particle when new leading particle is found
-      if(fbLPSystematics && lpTrackCounter->Exists()){
-        subLeadingTrackCounter->Store(lpTrackCounter->GetIndex(), lpTrackCounter->GetPt(), lpTrackCounter->GetPtBin());
-        subLeadingTrack = lPTr;
-      }
-      
+
+			// Set the previous leading particle as the subleading particle when new leading particle is found
+			if(fbLPSystematics && lpTrackCounter->Exists()){
+				subLeadingTrackCounter->Store(lpTrackCounter->GetIndex(), lpTrackCounter->GetPt(), lpTrackCounter->GetPtBin());
+				subLeadingTrack = lPTr;
+			}
+
 			lpTrackCounter->Store(noTriggs, ptt, iptt);
 			lPTr = triggerTrack;
 		}
 
 		new ((*ftriggList)[noTriggs++]) AliJBaseTrack(*triggerTrack);
 	}
-  
-  // For systematic error estimation, decide that whather we saw the leading particle based on tracking efficiency. For example if tracking efficiency is 90 %, use subleading particle in 10 % of the cases.
-  int idOfLostTrigger = -100;
-  if(fbLPSystematics && lpTrackCounter->Exists() && subLeadingTrackCounter->Exists()){
-    if(frandom->Rndm() > lPTr->GetTrackEff()){
-      idOfLostTrigger = lPTr->GetID();
-      lpTrackCounter->Store(subLeadingTrackCounter->GetIndex(), subLeadingTrackCounter->GetPt(), subLeadingTrackCounter->GetPtBin());
-      lPTr = subLeadingTrack;
-    }
-  }
+
+	// For systematic error estimation, decide that whather we saw the leading particle based on tracking efficiency. For example if tracking efficiency is 90 %, use subleading particle in 10 % of the cases.
+	int idOfLostTrigger = -100;
+	if(fbLPSystematics && lpTrackCounter->Exists() && subLeadingTrackCounter->Exists()){
+		if(frandom->Rndm() > lPTr->GetTrackEff()){
+			idOfLostTrigger = lPTr->GetID();
+			lpTrackCounter->Store(subLeadingTrackCounter->GetIndex(), subLeadingTrackCounter->GetPt(), subLeadingTrackCounter->GetPtBin());
+			lPTr = subLeadingTrack;
+		}
+	}
 
 	//--------------------------------------------------
 	//---   Generate assoc list and pool             ---
 	//--------------------------------------------------
 	fassocList->Clear();
 	int noAssocs=0;
-	if(fjassoc==kJPizero) finputList = fpizeroList;  
-	else if(fjassoc==kJHadron || fjassoc==kJHadronMC) finputList = fchargedHadronList;
-	else if(fjassoc==kJPhoton) finputList = fphotonList;
+	if(fjassoc==kJHadron || fjassoc==kJHadronMC) finputList = fchargedHadronList;
 
 	int noAllAssocTracks = finputList->GetEntries();
 
@@ -621,9 +604,9 @@ void AliJJtAnalysis::UserExec(){
 
 		associatedTrack = (AliJBaseTrack*)finputList->At(itrack);
 		associatedTrack->SetAssocBin( fcard->GetBin(kAssocType, associatedTrack->Pt()) );
-    
-    // Skip the particle in the associated list that is lost in the trigger
-    if(fbLPSystematics && idOfLostTrigger != -100 && idOfLostTrigger == associatedTrack->GetID()) continue;
+
+		// Skip the particle in the associated list that is lost in the trigger
+		if(fbLPSystematics && idOfLostTrigger != -100 && idOfLostTrigger == associatedTrack->GetID()) continue;
 
 		if(associatedTrack->IsInAssocBin()){ 
 
@@ -634,16 +617,16 @@ void AliJJtAnalysis::UserExec(){
 			new ((*fassocList)[noAssocs++]) AliJBaseTrack(*associatedTrack);
 		}
 	}
-  
+
 	//-----------------------------------------------
 	// Leading particle pT and eta
 	//-----------------------------------------------
 	if( lpTrackCounter->Exists() ){
-    if(fMCTruthRun){
-      effCorr = 1.0;
-    } else {
-		  effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
-    }
+		if(fMCTruthRun){
+			effCorr = 1.0;
+		} else {
+			effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
+		}
 		fhistos->fhLPpt->Fill(lpTrackCounter->Pt(), effCorr);
 		fhistos->fhLPeta->Fill(lPTr->Eta(), effCorr);
 	}
@@ -655,12 +638,12 @@ void AliJJtAnalysis::UserExec(){
 	//----------------------ooooo---------------------------------------
 	int nTriggerTracks=-1;
 	nTriggerTracks = fbTriggCorrel ? noTriggs : 1;
-  if(fbLPCorrel && !lpTrackCounter->Exists()){
-    delete lpTrackCounter;
-    delete subLeadingTrackCounter;
-    return;
-  }
-  
+	if(fbLPCorrel && !lpTrackCounter->Exists()){
+		delete lpTrackCounter;
+		delete subLeadingTrackCounter;
+		return;
+	}
+
 	triggerTrack = NULL;
 
 	for(int ii=0;ii<nTriggerTracks;ii++){ // trigger loop 
@@ -686,14 +669,14 @@ void AliJJtAnalysis::UserExec(){
 	} // end trigg loop
 
 	// ===== Event mixing =====
-  fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
+	fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
 
 	//--------------------------------------------------------------
 	// End of the Correlation
 	//--------------------------------------------------------------
-  
-  delete lpTrackCounter;
-  delete subLeadingTrackCounter;
+
+	delete lpTrackCounter;
+	delete subLeadingTrackCounter;
 
 }
 
@@ -707,7 +690,7 @@ void AliJJtAnalysis::Terminate() {
 
 }
 
-particleType  AliJJtAnalysis::GetParticleType(char *inchar){
+particleType  AliJJtAnalysis::GetParticleType(const char *inchar){
 	// part type
 	for(int i=0;i<kNumberOfParticleTypes;i++) {
 		if(strcmp(inchar,kParticleTypeStrName[i])==0) return (particleType)i;

@@ -562,7 +562,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDAx_FMDCyCorrH2",       "FMDA^{Qn}_{x} * FMDC^{Qn}_{y}",               ""},
   {"QnFMDAy_FMDCxCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{x}",               ""},
   {"QnFMDAy_FMDCyCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{y}",               ""},
-//
+// Flow estimators for measured Jpsi
+// Eventplane Fourier calculation
   {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
   {"QnDeltaPhiTrackTPCrpH2",    "#phi^{Track}-#Psi^{TPC}",                     ""},
   {"QnDeltaPhiTrackV0CrpH2",    "#phi^{Track}-#Psi^{V0C}",                     ""},
@@ -575,6 +576,13 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnV0CrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{V0C}))",             ""},
   {"QnV0rpH2FlowV2",            "cos(2(#phi^{pair}-#Psi^{V0}))",              ""},
   {"QnSPDrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{SPD}))",             ""},
+// Eventplane Scalar-Product
+{"QnTPCrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{TPC*}#GT",             ""},
+{"QnV0ArpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0A*}#GT",             ""},
+{"QnV0CrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0C*}#GT",             ""},
+{"QnV0rpH2FlowSPV2",            "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0*}#GT",              ""},
+{"QnSPDrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{SPD*}#GT",             ""},
+
   // End of Eventplane variables from Qn Framework
 
   {"NTrk",                   "N_{trk}",                                            ""},

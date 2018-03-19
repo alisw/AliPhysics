@@ -169,15 +169,16 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) * ( 1 + [3]/(TMath::TwoPi() * [5]) * exp(-(x-[4]) * (x-[4])/(2 * [5]*[5] )) *( 1 + TMath::Erf([6]*((x-[4])/[5]))) )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+    f1tof->SetParameters(0.997,6.67,-0.0567,-0.728,10.8,1.53,-2.18);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
 
   if(isMC){
-
-
     //for pi0
     const Int_t Ncen_Pi0 = 11;
     const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
@@ -196,7 +197,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_Pi0->Add(f1weightPi0[icen]);
     }
 
-    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+    //task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
 
     //for K0S
     const Int_t Ncen_K0S = 7;
@@ -237,7 +238,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_L0->Add(f1weightL0[icen]);
     }
 
-    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
+    //task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
 
   }
 

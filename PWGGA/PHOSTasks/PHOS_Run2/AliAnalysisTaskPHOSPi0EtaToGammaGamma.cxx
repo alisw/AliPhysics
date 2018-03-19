@@ -324,16 +324,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=0;i<3;i++){
     fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
   }
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,400,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,400,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,400,-10,10));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,200,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,200,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,200,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,200,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,200,-10,10));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,200,-10,10));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
@@ -361,6 +361,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   //cell QA histograms
   const Int_t Nmod=5;
+  const Int_t Ntru=8;
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellNXZM%d",imod),Form("Cell N(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellEXZM%d",imod),Form("Cell E(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellAmpTimeM%d_LG",imod),Form("Cell Amplitude vs. Time LG M%d",imod),200,0,20,1000,-500,500));
@@ -429,20 +430,20 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
   for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
 
-  Int_t NbinQ   = 12;
+  Int_t NbinQ   =  1;
   Double_t Qmin = -1;
   Double_t Qmax = +1;
   TString axistitle = Form("cos(%d #Delta#phi)",fHarmonics);
   if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP){
-    NbinQ = 12;
+    NbinQ = 24;
     Qmin  = -1;
     Qmax  = +1; 
     axistitle = Form("cos(%d #Delta#phi)",fHarmonics);
   }
   else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP){
-    NbinQ = 30;
-    Qmin  = -0.3;
-    Qmax  = +0.3; 
+    NbinQ = 40;
+    Qmin  = -10.0;
+    Qmax  = +10.0; 
     axistitle = Form("#vec{u} #upoint #vec{Q_{%d}}",fHarmonics);
   }
 
@@ -460,7 +461,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);%s;",axistitle.Data()),Ndimg,Nbing,xming,xmaxg);
   hs_Photon_TOF->Sumw2();
   fOutputContainer->Add(hs_Photon_TOF);
-
 
   const Int_t Ndim = 4;
   const Int_t Nbin[Ndim]    = { 240, 500, 10, NbinQ};
@@ -575,8 +575,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h1PID);
   };
 
+  TH1F *h1all = new TH1F("hAllClusterEnergy","all cluster energy;E_{cluster} (GeV)",500,0,50);
+  h1all->Sumw2();
+  fOutputContainer->Add(h1all);
 
+  const TString str[4] = {"L0","L1L","L1M","L1H"};
+  for(Int_t it=0;it<4;it++){
+    TH1F *h1matched = new TH1F(Form("hMatchedClusterEnergy%s",str[it].Data()),"matched cluster energy;E_{cluster} (GeV)",500,0,50);
+    h1matched->Sumw2();
+    fOutputContainer->Add(h1matched);
 
+    //for(Int_t imod=1;imod<Nmod;imod++){
+    //  for(Int_t itru=1;itru<=Ntru;itru++){
+    //    TH1F *h1all_mt     = new TH1F(Form("hAllClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru)    ,Form("all cluster energy M%d TRU%d",imod,itru)    ,500,0,50);
+    //    TH1F *h1matched_mt = new TH1F(Form("hMatchedClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru),Form("matched cluster energy M%d TRU%d",imod,itru),500,0,50);
+
+    //    h1all_mt->Sumw2();
+    //    h1matched_mt->Sumw2();
+
+    //    fOutputContainer->Add(h1all_mt);
+    //    fOutputContainer->Add(h1matched_mt);
+
+    //  }//end of TRU loop
+    //}//end of module loop
+  }//end of trigger type loop
 
   if(fIsPHOSTriggerAnalysis){
 
@@ -585,7 +607,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5));
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hMatchedFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5,100,0,50));
 
-    const Int_t Ntru=8;
     for(Int_t imod=1;imod<Nmod;imod++){
       fOutputContainer->Add(new TH1F(Form("hClusterEnergyM%d",imod)       ,Form("cluster energy M%d",imod),500,0,50));
       fOutputContainer->Add(new TH1F(Form("hMatchedClusterEnergyM%d",imod),Form("cluster energy M%d",imod),500,0,50));
@@ -1492,7 +1513,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     if(fUseCoreEnergy){
       energy = (ph->GetMomV2())->Energy();
     }
-    
+
     digMult = ph->GetNCells();
     tof     = ph->GetTime();//unit is second.
     M02 = ph->GetLambda2();
@@ -1514,6 +1535,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
       return;
     }
 
+    if(ph->IsTOFOK()){
+      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
+    }
+
     FillHistogramTH2(fOutputContainer,"hEnergyvsDistanceToBadChannel",energy,ph->DistToBadfp()); //in unit of cell with floating point
 
     eta = global1.Eta();
@@ -1524,7 +1549,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     FillHistogramTH2(fOutputContainer,Form("hCluNXZM%d",module),cellx,cellz);
     FillHistogramTH2(fOutputContainer,Form("hCluEXZM%d",module),cellx,cellz,energy);
 
-   
     R     = ph->GetNsigmaFullDisp();
     coreR = ph->GetNsigmaCoreDisp();
     coreE = (ph->GetMomV2())->Energy();
@@ -1724,8 +1748,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!CheckMinimumEnergy(ph2)) continue;
 
       if(fIsPHOSTriggerAnalysis){
-        if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
         if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
       }
 
       if(fForceActiveTRU 
@@ -1734,6 +1758,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
+
 
       p12  = *ph1 + *ph2;
       m12  = p12.M();
@@ -1763,16 +1788,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
 
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
         trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
 
-        //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-        //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-        //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
       }
 
       FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
@@ -1882,8 +1904,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!CheckMinimumEnergy(ph2)) continue;
 
         if(fIsPHOSTriggerAnalysis){
-          if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;//use cluster pairs only on active TRU both in data and M.C.
           if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+          if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
         }
 
         if(fForceActiveTRU 
@@ -1917,16 +1939,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         weight = 1.;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-          if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
 
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
           trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
 
-          //if( ph1->IsTrig() && !ph2->IsTrig()) trgeff12 = trgeff1       * (1 - trgeff2);
-          //if(!ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = (1 - trgeff1) * trgeff2;
-          //if( ph1->IsTrig() &&  ph2->IsTrig()) trgeff12 = trgeff1       * trgeff2;
         }
 
         if(fIsMC){
@@ -2652,8 +2671,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
 
       if( (dm == 0)
        && (dt == 0)
-       && (TMath::Abs(dx) < 3)
-       && (TMath::Abs(dz) < 3)
+       && (TMath::Abs(dx) < 4)
+       && (TMath::Abs(dz) < 4)
        ) continue;//reject cluster pair where they belong to same 4x4 region.
 
       AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
@@ -3431,6 +3450,107 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   if(Is1PHLfired && Is1PHHmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 8);//1PHL
   if(Is1PHMfired && Is1PHMmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 9);//1PHM
   if(Is1PHHfired && Is1PHLmatched) FillHistogramTH1(fOutputContainer,"hEventSummary",10);//1PHH
+
+  if(Is0PH0fired) FillTriggerInfoMB(fPHOSTriggerHelperL0,-1);
+  if(Is1PHLfired) FillTriggerInfoMB(fPHOSTriggerHelperL1L,2);
+  if(Is1PHMfired) FillTriggerInfoMB(fPHOSTriggerHelperL1M,1);
+  if(Is1PHHfired) FillTriggerInfoMB(fPHOSTriggerHelperL1H,0);
+
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTriggerInfoMB(AliPHOSTriggerHelper *helper, const Int_t L1)
+{
+  Double_t energy = 0;
+  //Double_t pT = 0;
+  Float_t position[3] = {};
+  Int_t trgrelId[4]={};
+  Int_t tmod=0; //"Online" module number
+  Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
+  Int_t trgmodule=0,trgcellx=0,trgcellz=0;
+
+
+  Int_t relId[4]={};
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+
+  TString type = "";
+  if(L1== -1) type = "L0";
+  else if(L1== 0) type = "L1H";
+  else if(L1== 1) type = "L1M";
+  else if(L1== 2) type = "L1L";
+  else{
+    AliInfo(Form("Your choice of trigger type %d is wrong. return.",L1));
+    return;
+  }
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  for(Int_t i=0;i<multClust;i++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    if(!ph->IsTOFOK()) continue;//MB data requires timing cut.
+
+    //pT = ph->Pt();
+    energy = ph->Energy();
+
+    if(fUseCoreEnergy){
+      //pT = (ph->GetMomV2())->Pt();
+      energy = (ph->GetMomV2())->Energy();
+    }
+
+    position[0] = ph->EMCx();
+    position[1] = ph->EMCy();
+    position[2] = ph->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = helper->WhichTRU(cellx,cellz);
+
+    if(module < 1 || module > 4){
+      AliError(Form("Wrong module number %d",module));
+      return;
+    }
+    AliInfo(Form("cluster position M:%d, X:%d , Z:%d , TRU:%d",module,cellx,cellz,tru));
+
+    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s",type.Data()),energy);//all cluster
+    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s_M%d_TRU%d",type.Data(),module,tru),energy);//all cluster
+
+    AliVCaloTrigger* trg = fEvent->GetCaloTrigger("PHOS");
+    trg->Reset();
+
+    while(trg->Next()){
+
+      // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
+      if(trg->GetL1TimeSum() != L1) continue;
+
+      trg->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
+
+      fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
+      //for offline numbering, relId should be used.
+
+      trgmodule = trgrelId[0];
+      trgcellx  = trgrelId[2];
+      trgcellz  = trgrelId[3];
+
+      AliInfo(Form("fired TRU channel M:%d, X:%d , Z:%d",trgmodule,trgcellx,trgcellz));
+
+      if(trgmodule < 1 || trgmodule > 4){
+        AliError(Form("Wrong module number %d",trgmodule));
+        return;
+      }
+
+      if(helper->IsMatched(trgrelId,relId)){
+        FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%s",type.Data()),energy);//matched cluster
+        //FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%sM%dTRU%d",type.Data(),module,tru),energy);//all cluster
+        break;//exit from trigger patch loop
+      }
+    }//end of while trigger patch loop
+
+  }//end of cluster loop
 
 }
 //_______________________________________________________________________________

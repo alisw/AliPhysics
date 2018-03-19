@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskT0QA()
+AliT0AnalysisTaskQA* AddTaskT0QA()
 {
   // Creates a QA task to check T0 data
   

@@ -1,9 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoCutMonitorCollections - the cut monitor for events to study        ///
-/// the multiplicity distribution of events                                  ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemto/AliFemtoCutMonitorCollections.h
+///
+
 #ifndef AliFemtoCutMonitorCollections_hh
 #define AliFemtoCutMonitorCollections_hh
 
@@ -14,13 +12,20 @@ class AliFemtoKink;
 class AliFemtoPair;
 class TH1D;
 class TList;
+
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitor.h"
 
+/// \class AliFemtoCutMonitorCollections
+/// \brief A cut monitor for studying the multiplicity distributions of events
+///
+/// This CutMonitor returns two TH1D histograms: Coll1Mult & Coll2Mult, which
+/// simply store the number of particles in each particle collection.
+///
 class AliFemtoCutMonitorCollections : public AliFemtoCutMonitor{
 
- public:
+public:
   AliFemtoCutMonitorCollections();
   AliFemtoCutMonitorCollections(const char *aName);
   AliFemtoCutMonitorCollections(const AliFemtoCutMonitorCollections &aCut);
@@ -43,10 +48,10 @@ class AliFemtoCutMonitorCollections : public AliFemtoCutMonitor{
 
   virtual TList *GetOutputList();
 
- private:
-  TH1D *fCollection1Mult;     // Collection 1 multiplicity distribution
-  TH1D *fCollection2Mult; // Collection 2 multiplicity distribution
+private:
 
+  TH1D *fCollection1Mult;  ///< Collection 1 multiplicity distribution
+  TH1D *fCollection2Mult;  ///< Collection 2 multiplicity distribution
 
 };
 

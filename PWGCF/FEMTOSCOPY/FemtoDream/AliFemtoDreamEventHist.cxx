@@ -7,8 +7,29 @@
 
 #include "AliFemtoDreamEventHist.h"
 ClassImp(AliFemtoDreamEventHist)
+
 AliFemtoDreamEventHist::AliFemtoDreamEventHist()
+:fEventCutList(0)
+,fEvtCounter(0)
+,fCutConfig(0)
+,fCentVsMultPlots(false)
+,fCentVsV0A(0)
+,fCentVsV0M(0)
+,fCentVsV0C(0)
+,fCentVsRefMult(0)
 {
+  for (int i=0;i<2;++i) {
+    fEvtNCont[i]=0;
+    fEvtVtxX[i]=0;
+    fEvtVtxY[i]=0;
+    fEvtVtxZ[i]=0;
+    fMultDistSPD[i]=0;
+    fMultDistV0A[i]=0;
+    fMultDistV0C[i]=0;
+    fMultDistRef08[i]=0;
+  }
+}
+AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEventCutList=new TList();
   fEventCutList->SetName("Event Cuts");
   fEventCutList->SetOwner();
@@ -39,6 +60,38 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
   fCutConfig->GetXaxis()->SetBinLabel(10,"RefMult08");
   fCutConfig->GetXaxis()->SetBinLabel(11,"AliEvtCuts");
   fEventCutList->Add(fCutConfig);
+
+  fCentVsMultPlots=centVsMultPlot;
+  if (fCentVsMultPlots) {
+    TString vsV0AName=Form("CentvsV0A");
+    fCentVsV0A=new TH2F(
+        vsV0AName.Data(),vsV0AName.Data(),100,0.5,100,300,0.5,600.5);
+    fCentVsV0A->Sumw2();
+    fEventCutList->Add(fCentVsV0A);
+
+    TString vsV0MName=Form("CentvsV0M");
+    fCentVsV0M=new TH2F(
+        vsV0MName.Data(),vsV0MName.Data(),100,0.5,100,300,0.5,600.5);
+    fCentVsV0M->Sumw2();
+    fEventCutList->Add(fCentVsV0M);
+
+    TString vsV0CName=Form("CentvsV0C");
+    fCentVsV0C=new TH2F(
+        vsV0CName.Data(),vsV0CName.Data(),100,0.5,100,300,0.5,600.5);
+    fCentVsV0C->Sumw2();
+    fEventCutList->Add(fCentVsV0C);
+
+    TString vsV0RefName=Form("CentvsRefMult");
+    fCentVsRefMult=new TH2F(
+        vsV0RefName.Data(),vsV0RefName.Data(),100,0.5,100,100,0.5,200.5);
+    fCentVsRefMult->Sumw2();
+    fEventCutList->Add(fCentVsRefMult);
+  } else {
+    fCentVsV0A=0;
+    fCentVsV0M=0;
+    fCentVsV0C=0;
+    fCentVsRefMult=0;
+  }
 
   TString sName[2]={"before","after"};
 

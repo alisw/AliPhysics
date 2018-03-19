@@ -63,21 +63,19 @@ struct Configuration<AliFemtoAnalysisPionPion> {
     }
 };
 
-const struct { unsigned int bin_count; float min; float max; }
-
-VertexBinning = {16, -10.0f, 10.0f},
-MultBinning = {30, 0.0f, 10000.0f};
-
-const bool default_verbose = kFALSE
-         , default_enable_pair_monitors = kTRUE
-         , default_group_output_objects = kTRUE
-         , default_output_settings = kFALSE
-         , default_is_mc_analysis = kFALSE
-         ;
-
-const UInt_t default_num_events_to_mix = 6
-           , default_min_coll_size = 15
-           ;
+AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
+: vertex_bins(16), vertex_min(-10.0), vertex_max(10.0)
+, mult_bins(30), mult_min(0.0), mult_max(10000.0f)
+, pion_type_1(kNone)
+, pion_type_2(kNone)
+, num_events_to_mix(6)
+, min_coll_size(15)
+, verbose(kFALSE)
+, enable_pair_monitors(kTRUE)
+, group_output_objects(kTRUE)
+, is_mc_analysis(kFALSE)
+{
+}
 
 #include <initializer_list>
 
@@ -144,14 +142,17 @@ struct CutConfig_Pion {
            , nSigma = {-3.0, 3.0}
            ;
 
-    Int_t charge = 1,
-          min_tpc_ncls = 80;
+    Int_t charge = 1;
+    UInt_t min_tpc_ncls = 80;
 
     Float_t max_impact_xy = 2.4
           , max_impact_z = 3.0
           , max_tpc_chi_ndof = 0.032
           , max_its_chi_ndof = 0.032
           ;
+
+    Bool_t set_label = kTRUE,
+           remove_kinks = kTRUE;
 
     /// default constructor required to use default initialized members
     CutConfig_Pion(){};
@@ -168,6 +169,8 @@ struct CutConfig_Pair {
 
   Bool_t remove_same_label { kFALSE },
          TPCOnly { kTRUE };
+
+  CutConfig_Pair(){};
 };
 
 template<>
@@ -214,31 +217,6 @@ AliFemtoConfigObject::Construct() const
 static const Configuration<AliFemtoBasicEventCut> default_event;
 static const CutConfig_Pion default_pion;
 static const CutConfig_Pair default_pair;
-
-static const float default_pion_PtMin = 0.2
-           , default_pion_PtMax = 2.0
-
-          , default_pion_EtaMin = -0.8
-          , default_pion_EtaMax = 0.8
-
-          , default_pion_DCAMin = 0.5
-          , default_pion_DCAMax = 4.0
-
-          , default_pion_NSigmaMin = -3.0
-          , default_pion_NSigmaMax = 3.0
-
-          , default_pion_max_impact_xy = 0.2
-          , default_pion_max_impact_z = 0.15
-
-          , default_pion_max_tpc_chi_ndof = 0.032
-          , default_pion_max_its_chi_ndof = 0.032
-          ;
-
-const UInt_t default_pion_min_tpc_ncls = 80;
-const Bool_t default_pion_remove_kinks = kTRUE,
-             default_pion_set_label = kFALSE;
-
-
 
 const AliFemtoAnalysisPionPion::PionType
   default_PionType = AliFemtoAnalysisPionPion::kNone;
@@ -378,32 +356,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
 AliFemtoAnalysisPionPion::AnalysisParams
 AliFemtoAnalysisPionPion::DefaultConfig()
 {
-  AliFemtoAnalysisPionPion::AnalysisParams params = {
-    VertexBinning.bin_count
-  , VertexBinning.min
-  , VertexBinning.max
-
-  , MultBinning.bin_count
-  , MultBinning.min
-  , MultBinning.max
-
-  , default_PionType
-  , default_PionType
-
-  , default_num_events_to_mix
-  , default_min_coll_size
-
-  , default_verbose
-  , default_enable_pair_monitors
-  , default_group_output_objects
-  , default_output_settings
-  , default_is_mc_analysis
-  };
-
-  assert(params.min_coll_size == default_min_coll_size);
-  assert(params.is_mc_analysis == default_is_mc_analysis);
-
-  return params;
+  return AliFemtoAnalysisPionPion::AnalysisParams();
 }
 
 
@@ -412,6 +365,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
   AliFemtoAnalysisPionPion::CutParams params = {
     // Event
+    false, // use AliFemtoBasicEventCut
     std::get<0>(default_event.multiplicity)
   , std::get<1>(default_event.multiplicity)
   , default_event.centrality.first
@@ -427,42 +381,42 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
     // Pion 1
   , default_pion.pt.first
   , default_pion.pt.second
-  , default_pion_EtaMin
-  , default_pion_EtaMax
-  , default_pion_DCAMin
-  , default_pion_DCAMax
+  , default_pion.eta.first
+  , default_pion.eta.second
+  , default_pion.DCA.first
+  , default_pion.DCA.second
 
-  , default_pion_NSigmaMin
-  , default_pion_NSigmaMax
+  , default_pion.nSigma.first
+  , default_pion.nSigma.second
 
-  , default_pion_max_impact_xy
-  , default_pion_max_impact_z
-  , default_pion_max_tpc_chi_ndof
-  , default_pion_max_its_chi_ndof
+  , default_pion.max_impact_xy
+  , default_pion.max_impact_z
+  , default_pion.max_tpc_chi_ndof
+  , default_pion.max_its_chi_ndof
 
-  , default_pion_min_tpc_ncls
-  , default_pion_remove_kinks
-  , default_pion_set_label
+  , default_pion.min_tpc_ncls
+  , default_pion.remove_kinks
+  , default_pion.set_label
 
     // Pion 2
-  , default_pion_PtMin
-  , default_pion_PtMax
-  , default_pion_EtaMin
-  , default_pion_EtaMax
-  , default_pion_DCAMin
-  , default_pion_DCAMax
+  , default_pion.pt.first
+  , default_pion.pt.second
+  , default_pion.eta.first
+  , default_pion.eta.second
+  , default_pion.DCA.first
+  , default_pion.DCA.second
 
-  , default_pion_NSigmaMin
-  , default_pion_NSigmaMax
+  , default_pion.nSigma.first
+  , default_pion.nSigma.second
 
-  , default_pion_max_impact_xy
-  , default_pion_max_impact_z
-  , default_pion_max_tpc_chi_ndof
-  , default_pion_max_its_chi_ndof
+  , default_pion.max_impact_xy
+  , default_pion.max_impact_z
+  , default_pion.max_tpc_chi_ndof
+  , default_pion.max_its_chi_ndof
 
-  , default_pion_min_tpc_ncls
-  , default_pion_remove_kinks
-  , default_pion_set_label
+  , default_pion.min_tpc_ncls
+  , default_pion.remove_kinks
+  , default_pion.set_label
 
     // Pair
   , default_pair.TPCOnly
@@ -478,13 +432,13 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 
   // sanity checks
   assert(params.event_MultMin == default_event.multiplicity.first);
-  assert(params.pion_1_PtMin == default_pion_PtMin);
-  assert(params.pion_2_PtMin == default_pion_PtMin);
-  assert(params.pair_TPCOnly == default_pair_TPCOnly);
+  assert(params.pion_1_PtMin == default_pion.pt.first);
+  assert(params.pion_2_PtMin == default_pion.pt.first);
+  assert(params.pair_TPCOnly == default_pair.TPCOnly);
   // assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
-  assert(params.pair_delta_eta_min == default_pair_delta_eta_min);
-  assert(params.pair_max_share_fraction == default_pair_max_share_fraction);
-  assert(params.pair_remove_same_label == default_pair_remove_same_label);
+  assert(params.pair_delta_eta_min == default_pair.min_delta_eta);
+  assert(params.pair_max_share_fraction == default_pair.min_delta_phi);
+  assert(params.pair_remove_same_label == default_pair.remove_same_label);
 
   return params;
 }
@@ -567,7 +521,8 @@ AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
 AliFemtoEventCut*
 AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParams& p) const
 {
-/*
+
+  if (p.event_use_basic) {
   AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
   cut->SetEventMult(p.event_MultMin,
@@ -578,7 +533,9 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
                   p.event_EP_VZeroMax);
   cut->SetTriggerSelection(p.event_TriggerSelection);
   cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
-*/
+  return cut;
+  }
+
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
   cut->SetCentralityRange(p.event_CentralityMin, p.event_CentralityMax);
   cut->SetZPosRange(p.event_VertexZMin, p.event_VertexZMax);

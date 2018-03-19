@@ -1540,7 +1540,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
       histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
       histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
       histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
-      ana->SetFirstSMCoveredByTRD( 0);
     }
     
     histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
