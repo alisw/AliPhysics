@@ -92,20 +92,9 @@ void AliAnalysisTaskMCFemtoDream::UserCreateOutputObjects() {
   PDGParticles.push_back(3122);
   PDGParticles.push_back(3312);
   PDGParticles.push_back(3312);
-  //std::vector<double> ZVtxBins = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
-  ZVtxBins.push_back(-8);
-  ZVtxBins.push_back(-6);
-  ZVtxBins.push_back(-4);
-  ZVtxBins.push_back(-2);
-  ZVtxBins.push_back(0);
-  ZVtxBins.push_back(2);
-  ZVtxBins.push_back(4);
-  ZVtxBins.push_back(6);
-  ZVtxBins.push_back(8);
   ZVtxBins.push_back(10);
-  //std::vector<int> NBins= {750,750,150,150,150,150,750,150,150,150,150,150,150,150,150,150,150,150,150,150,150};
   std::vector<int> NBins;
   NBins.push_back(750);
   NBins.push_back(750);
@@ -197,6 +186,7 @@ void AliAnalysisTaskMCFemtoDream::UserCreateOutputObjects() {
   fcollConfig->SetMinKRel(kMin);
   fcollConfig->SetMaxKRel(kMax);
   fcollConfig->SetMixingDepth(10);
+  fcollConfig->SetSECommonAncestor(true);
 
   fPartCollAll=new AliFemtoDreamPartCollection(fcollConfig,false);
   fPartCollAccept=new AliFemtoDreamPartCollection(fcollConfig,false);
@@ -316,25 +306,12 @@ void AliAnalysisTaskMCFemtoDream::UserExec(Option_t *) {
   std::vector<AliFemtoDreamBasePart> AcceptedAntiLambdas;
   std::vector<AliFemtoDreamBasePart> AcceptedXis;
   std::vector<AliFemtoDreamBasePart> AcceptedAntiXis;
-  std::vector<int> QuarkGluonPDGCodes;
-  QuarkGluonPDGCodes.push_back(1);
-  QuarkGluonPDGCodes.push_back(2);
-  QuarkGluonPDGCodes.push_back(3);
-  QuarkGluonPDGCodes.push_back(4);
-  QuarkGluonPDGCodes.push_back(5);
-  QuarkGluonPDGCodes.push_back(6);
-  QuarkGluonPDGCodes.push_back(7);
-  QuarkGluonPDGCodes.push_back(8);
-  QuarkGluonPDGCodes.push_back(21);
-  std::vector<int> ProtonResonances;
-  std::vector<int> LambdaResonances;
-  std::vector<int> XiResonances;
 
   for(int iPart = 1; iPart < (fMC->GetNumberOfTracks()); iPart++) {
     AliAODMCParticle *mcPart  = (AliAODMCParticle*)fMC->GetTrack(iPart);
     if (mcPart->IsPhysicalPrimary()) {
       fPart->ResetMCInfo();
-      fPart->SetMCParticle(mcPart);
+      fPart->SetMCParticle(mcPart,fMC);
       if (mcPart->PdgCode()==2212 && TMath::Abs(mcPart->Eta())<1e29){
         if (mcPart->GetMother() > 0) {
           fProtonResonances->Fill(TMath::Abs(fMC->GetTrack((mcPart->GetMother()))->PdgCode()));
