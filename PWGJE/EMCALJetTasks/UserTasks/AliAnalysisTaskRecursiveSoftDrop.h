@@ -29,7 +29,8 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   };
   enum JetType {
     kData = 0, 
-    kEmb = 1
+    kEmb = 1,
+    kTrueDet = 2
   };
 
   AliAnalysisTaskRecursiveSoftDrop();

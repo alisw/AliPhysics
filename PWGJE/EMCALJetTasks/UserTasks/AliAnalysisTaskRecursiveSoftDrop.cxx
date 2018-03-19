@@ -280,6 +280,45 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
   }
 
 
+  if(fJetType == kTrueDet){            
+    AliEmcalJet *JetPythDet = NULL; //Detector Level Pythia Jet
+    AliEmcalJet *JetPythTrue = NULL; //Particle Level Pyhtia Jet                                                                                
+    AliJetContainer *JetContPythDet= GetJetContainer(0); //Jet Container for Detector Level Pyhtia Jets 
+    AliJetContainer *JetContPythTrue= GetJetContainer(1); //Jet Container for Particle Level Pythia Jets
+
+  
+
+    Bool_t JetsMatched = kFALSE;
+    Double_t JetPtThreshold;
+    JetContPythDet->ResetCurrentID();
+    JetContPythTrue->ResetCurrentID();
+
+    while((JetPythDet = JetContPythDet->GetNextAcceptJet())){ //Get next detector level jet
+      if (fJetShapeSub==kConstSub) JetPtThreshold=JetPythDet->Pt();
+      else JetPtThreshold=JetPythDet->Pt()-(GetRhoVal(0)*JetPythDet->Area());
+      if ( (!JetPythDet) || (JetPtThreshold<fPtThreshold)) continue; //check pT is above threshold
+      Int_t JetNumber=-1;
+      if((JetPythTrue = JetPythDet->ClosestJet())){
+	JetsMatched=kTRUE;
+      }
+      else continue;
+    
+     
+      fhJetPt->Fill(JetPythDet->Pt());    
+      Double_t JetPhi=JetPythDet->Phi();
+      if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+      else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+      fhJetPhi->Fill(JetPhi);
+      fhJetEta->Fill(JetPythDet->Eta());
+      RecursiveParents(JetPythDet,JetContPythDet,kFALSE); 
+      RecursiveParents(JetPythTrue,JetContPythTrue,kTRUE); 
+     
+      
+    
+     }
+  }
+
+  
   return kTRUE;
 }
 
@@ -432,6 +471,11 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
     wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsHybridS,trigClass.Data(),tag.Data());
     wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsHybridS,trigClass.Data(),tag.Data());
   }
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
+    wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsDet,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsDet,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsDet,trigClass.Data(),tag.Data());
+  }
   //Configure jet tagger task
   AliAnalysisTaskRecursiveSoftDrop *task = new AliAnalysisTaskRecursiveSoftDrop(wagonName1.Data());
 
@@ -445,12 +489,16 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
   AliParticleContainer *trackContHybridS=0x0;
   AliParticleContainer *trackContHybridUs=0x0;
 
-  trackContData = task->AddParticleContainer(ntracksData);
+  if(fjetType!=AliAnalysisTaskRecursiveSoftDrop::kTrueDet) trackContData = task->AddParticleContainer(ntracksData);
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
     trackContDet = task->AddParticleContainer(ntracksDet);
     trackContTrue = task->AddMCParticleContainer(ntracksTrue);
     trackContHybridS = task->AddParticleContainer(ntracksHybridS);
     trackContHybridUs = task->AddParticleContainer(ntracksHybridUs);
+  }
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
+    trackContDet = task->AddParticleContainer(ntracksDet);
+    trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   }
   AliJetContainer *JetContData=0x0;
   AliJetContainer *JetContTrue=0x0;
@@ -489,6 +537,27 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
       JetContHybridUs->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContHybridUs->SetAreaEmcCut(-2);
     }
+    JetContDet = task->AddJetContainer(njetsDet,strType,R); //Det
+    if(JetContDet) {
+      JetContDet->SetRhoName(nrhoBase);
+      JetContDet->ConnectParticleContainer(trackContDet);
+      JetContDet->SetPercAreaCut(0.6);
+      JetContDet->SetJetRadius(R);
+      JetContDet->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContDet->SetAreaEmcCut(-2);
+    }
+    JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //True
+    if(JetContTrue) {
+      JetContTrue->SetRhoName(nrhoBase);
+      JetContTrue->ConnectParticleContainer(trackContTrue);
+      JetContTrue->SetPercAreaCut(0.6);
+      JetContTrue->SetJetRadius(R);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContTrue->SetAreaEmcCut(-2);
+    }
+  }
+
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
     JetContDet = task->AddJetContainer(njetsDet,strType,R); //Det
     if(JetContDet) {
       JetContDet->SetRhoName(nrhoBase);
