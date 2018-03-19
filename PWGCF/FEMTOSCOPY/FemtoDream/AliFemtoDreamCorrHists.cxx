@@ -19,6 +19,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fMomentumResolution(false)
 ,fPhiEtaPlots(false)
 ,fSameEventDist(0)
+,fSameEventCommonAncestDist(0)
+,fSameEventNonCommonAncestDist(0)
 ,fSameEventMultDist(0)
 ,fSameEventmTDist(0)
 ,fSameEventkTDist(0)
@@ -37,6 +39,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fDokTBinning(false)
 ,fDomTBinning(false)
 ,fDokTCentralityBins(false)
+,fDoMCCommonAncest(false)
 ,fCentBins(0)
 {
 }
@@ -50,6 +53,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   fDokTCentralityBins=conf->GetDokTCentralityBinning();
   fDomTBinning=conf->GetDomTBinning();
   fPhiEtaPlots=conf->GetDoPhiEtaBinning();
+  fDoMCCommonAncest=conf->GetDoSECommonAncestor();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning("Doing the Centrality binning without the kT Binning wont work!\n");
   }
@@ -149,6 +153,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   } else {
     fSameEventmTDist=0;
     fMixedEventmTDist=0;
+  }
+  if (fDoMCCommonAncest) {
+    fSameEventCommonAncestDist=new TH1F*[nHists];
+    fSameEventNonCommonAncestDist=new TH1F*[nHists];
+  } else {
+    fSameEventCommonAncestDist=0;
+    fSameEventNonCommonAncestDist=0;
   }
   int Counter=0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
@@ -259,6 +270,27 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
 
       }
+
+      if (fDoMCCommonAncest) {
+        TString SameEventCommonAncestName=
+            Form("SECommonAncestDist_Particle%d_Particle%d",iPar1,iPar2);
+        fSameEventCommonAncestDist[Counter]=
+            new TH1F(SameEventCommonAncestName.Data(),
+                     SameEventCommonAncestName.Data(),
+                     *itNBins,*itKMin,*itKMax);
+        fSameEventCommonAncestDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fSameEventCommonAncestDist[Counter]);
+
+        TString SameEventNonCommonAncestName=
+            Form("SENonCommonAncestDist_Particle%d_Particle%d",iPar1,iPar2);
+        fSameEventNonCommonAncestDist[Counter]=
+            new TH1F(SameEventNonCommonAncestName.Data(),
+                     SameEventNonCommonAncestName.Data(),
+                     *itNBins,*itKMin,*itKMax);
+        fSameEventNonCommonAncestDist[Counter]->Sumw2();
+        fPairs[Counter]->Add(fSameEventNonCommonAncestDist[Counter]);
+      }
+
       if (!fMinimalBooking) {
         fPairQA[Counter]=new TList();
         TString PairQAName=Form("QA_Particle%d_Particle%d",iPar1,iPar2);

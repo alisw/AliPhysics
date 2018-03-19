@@ -9,6 +9,7 @@
 #define ALIFEMTODREAMBASEPART_H_
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliMCEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
 
@@ -24,7 +25,7 @@ class AliFemtoDreamBasePart {
     kContamination=4,
     kUnknown=5
   };
-  void SetMCParticle(AliAODMCParticle *mcPart);
+  void SetMCParticle(AliAODMCParticle *mcPart,AliMCEvent *evt);
   void ResetMCInfo();
   void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};
   TVector3 GetMomentum() const {return fP;};
@@ -62,6 +63,8 @@ class AliFemtoDreamBasePart {
   int GetMCPDGCode() const {return fMCPDGCode;};
   void SetPDGMotherWeak(int PDGMother){fPDGMotherWeak=PDGMother;};
   int GetMotherWeak() const {return fPDGMotherWeak;};
+  void SetMotherID(int ID) {fMotherID=ID;};
+  int GetMotherID() const {return fMotherID;};
   void SetUseMCInfo(bool useMC) {fIsMC=useMC;};
   bool IsSet() const {return fIsSet;};
   void SetUse(bool use) {fUse=use;};
@@ -92,6 +95,7 @@ class AliFemtoDreamBasePart {
   // pdg code as obtained from the MC for this particle
   int fMCPDGCode;
   int fPDGMotherWeak;
+  int fMotherID;
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly

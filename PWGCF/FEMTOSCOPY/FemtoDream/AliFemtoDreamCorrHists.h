@@ -24,7 +24,12 @@ class AliFemtoDreamCorrHists {
   bool GetDomTBinning(){return fDomTBinning;};
   bool GetObtainMomentumResolution() {return fMomentumResolution;};
   bool GetEtaPhiPlots() {return fPhiEtaPlots;};
+  bool GetDoMCCommonAncest() {return fDoMCCommonAncest;};
   void FillSameEventDist(int i,float RelK){fSameEventDist[i]->Fill(RelK);};
+  void FillSameEventCommonAncestDist(int i,float RelK){
+    fSameEventCommonAncestDist[i]->Fill(RelK);};
+  void FillSameEventNonCommonAncestDist(int i,float RelK){
+    fSameEventNonCommonAncestDist[i]->Fill(RelK);};
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
   }
@@ -76,6 +81,8 @@ class AliFemtoDreamCorrHists {
   bool          fMomentumResolution;
   bool          fPhiEtaPlots;
   TH1F          **fSameEventDist;
+  TH1F          **fSameEventCommonAncestDist;
+  TH1F          **fSameEventNonCommonAncestDist;
   TH2F          **fSameEventMultDist;
   TH2F          **fSameEventmTDist;
   TH2F          **fSameEventkTDist;
@@ -94,6 +101,7 @@ class AliFemtoDreamCorrHists {
   bool          fDokTBinning;
   bool          fDomTBinning;
   bool          fDokTCentralityBins;
+  bool          fDoMCCommonAncest;
   std::vector<float> fCentBins;
   ClassDef(AliFemtoDreamCorrHists,3);
 };
