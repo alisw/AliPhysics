@@ -140,7 +140,7 @@ void AliFemtoDreamZVtxMultContainer::PairMCParticlesSE(
           RelativeK=RelativePairMomentum(itPart1->GetMomentum(),*itPDGPar1,
                                          itPart2->GetMomentum(),*itPDGPar2);
           //If the ancestor is the same fill one hist, if it isnt the other
-          std::cout << itPart1->GetMotherID() << '\t' << itPart2->GetMotherID() << std::endl;
+//          std::cout << itPart1->GetMotherID() << '\t' << itPart2->GetMotherID() << std::endl;
           if (itPart1->GetMotherID()==itPart2->GetMotherID()) {//common ancestor
             ResultsHist->FillSameEventCommonAncestDist(HistCounter,RelativeK);
           } else {//different ancestor
