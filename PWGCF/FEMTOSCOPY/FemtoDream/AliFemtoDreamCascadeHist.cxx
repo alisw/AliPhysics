@@ -93,13 +93,13 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass) {
   fConfig->GetXaxis()->SetBinLabel(22,"Rej. Omega Width");
   fHistList->Add(fConfig);
 
-  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",19,0.6,6.5,500,mass*0.9,mass*1.3);
+  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
   fInvMassPtXi->Sumw2();
   fInvMassPtXi->GetXaxis()->SetTitle("P_{T}");
   fInvMassPtXi->GetYaxis()->SetTitle("Inv Mass");
   fHistList->Add(fInvMassPtXi);
 
-  fInvMassPtv0=new TH2F("InvMassv0Pt","InvMassv0Pt",19,0.6,6.5,400,0.9,1.2);
+  fInvMassPtv0=new TH2F("InvMassv0Pt","InvMassv0Pt",13,-0.2,6.3,400,0.9,1.2);
   fInvMassPtv0->Sumw2();
   fInvMassPtv0->GetXaxis()->SetTitle("P_{T}");
   fInvMassPtv0->GetYaxis()->SetTitle("Inv Mass");
