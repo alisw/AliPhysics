@@ -38,9 +38,16 @@ class AliAODTrack;
 class AliVVertex;
 class AliPIDResponse;
 class TList;
+class AliPWGFunc;
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
 public:
+  enum {
+    kNoPtShape,
+    kBlastWaveShape,
+    kTsallisShape
+  };
+
   AliAnalysisTaskNucleiYield(TString taskname = "NucleiYieldTask");
   virtual ~AliAnalysisTaskNucleiYield();
 
@@ -85,6 +92,10 @@ public:
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
+  void SetPtWeightingFunction (int functionID, int nPars, float* pars) {
+    fPtShapeFunction = functionID;
+    fPtShapeParams.Set(nPars,pars);
+  }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
@@ -158,6 +169,8 @@ private:
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
   Float_t               fRequireTPCfoundFraction; ///< Found over findable clusters
+  Int_t                 fPtShapeFunction;       ///<  Id of the function used to weight the MC input pt shape (see the enum)
+  Float_t               fPtShapeMaximum;        ///<  Maximum of the pt shape used
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
@@ -167,6 +180,10 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
+  TArrayF               fPtShapeParams;         ///<  Params used by the pt shape function
+
+  AliPWGFunc*           fFunctCollection;       //!<! Collection of functions
+  TF1*                  fPtShape;               //!<! Function used to model the pt shape in MC
 
   // Event related histograms
   TH2F                 *fNormalisationHist;     //!<! Normalisation per centrality classes
