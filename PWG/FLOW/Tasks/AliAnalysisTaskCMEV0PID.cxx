@@ -27,6 +27,8 @@
 #include "stdio.h"
 #include "Riostream.h"
 
+#include "vector"
+
 //---- manager and handler---
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -397,7 +399,7 @@ AliAnalysisTaskCMEV0PID::~AliAnalysisTaskCMEV0PID()
 
 
   if(fAnalysisUtil)  delete fAnalysisUtil; // its 'new' !!
-  
+
 }//---------------- sanity ------------------------
 
 
@@ -548,6 +550,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
     fHistTOFnSigmavsPtAfter[i] = new TH2F(Form("fHistTOFnSigmavsPtAfter_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c);n#sigma_{TOF}",gSpecies[i]),200,-5,5,400,-10.0,10.0);
     fListHist->Add(fHistTOFnSigmavsPtAfter[i]);
+
     fHistTPCnSigmavsPtAfter[i] = new TH2F(Form("fHistTPCnSigmavsPtAfter_%s",gSpecies[i]),Form("%s;p_{T}(GeV/c);n#sigma_{TPC}",gSpecies[i]),200,-5,5,400,-10.0,10.0);
     fListHist->Add(fHistTPCnSigmavsPtAfter[i]);
 
@@ -735,6 +738,10 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   PostData(1,fListHist);
   std::cout<<"\n.........UserCreateOutputObject called.........\n fFilterBit = "<<fFilterBit<<" CentMax = "<<fCentralityPercentMax;
   std::cout<<" PU C = "<<fPileUpConstParm<<" PsiN = "<<gPsiN<<"\n\n"<<std::endl;
+
+  //Reset the counter:
+  //watch.Reset();
+
 }
 
 
@@ -756,8 +763,10 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 //______________________________________________________________________
 void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   //printf("info: UserExec is called.... 1  \n");
+ 
+  //watch.Start(kTRUE);  //debug only
 
-  //if(fEventCount==1200) return;
+  if(fEventCount==100) return;
 
   Float_t stepCount = 0.5;
 
@@ -935,6 +944,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Float_t ptWgtMC = 1.0;
   Float_t WgtNUA  = 1.0;
   Float_t ptTrk   = 0.1;
+  Float_t dEdx = 0;
 
 
  //-------------- Track loop for outlier and PileUp cut -------------------
@@ -993,16 +1003,23 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   }
 
   Float_t multTPC     = 0;    // tpc mult estimate
-  Float_t RefMultRaw  = 0;    // tpc mult estimate
-  Float_t RefMultCorr = 0;    // tpc mult estimate
+  //Float_t RefMultRaw  = 0;    // tpc mult estimate
+  //Float_t RefMultCorr = 0;    // tpc mult estimate
   Float_t RefMultRawFB = 0;
   Float_t RefMultCorrFB= 0;
 
   Float_t multTPCAll  = 0;    // tpc mult estimate
   Float_t multGlobal  = 0; // global multiplicity
-  Float_t etaTrk, phiTrk;
-  Int_t   ChTrk;
+
   Float_t multEtaNeg, multEtaPos, multEtaFull;
+
+  Int_t   ChTrk;
+  Double_t etaTrk, phiTrk;  //  Never define eta as float, always double.!!
+
+  Double_t fMaxPtEP  =  5.0;
+  Double_t fMinPtEP  =  0.2;
+  Double_t fMaxEtaEP =  0.8;
+  Double_t fMinEtaEP = -0.8;
 
   multEtaNeg=0;
   multEtaPos=0;
@@ -1023,72 +1040,79 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     etaTrk = AODtrack->Eta();
     phiTrk = AODtrack->Phi();
     ChTrk  = AODtrack->Charge();
-    
+    dEdx   = AODtrack->GetDetPid()->GetTPCsignal();
+
+    //cuts for Outlier as in FlowEvent Task
     if(!(AODtrack->TestFilterBit(1))) continue;
-    if((ptTrk < .2) || (TMath::Abs(etaTrk) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
-    multTPC++;
+    if((ptTrk < 0.2) || (TMath::Abs(etaTrk) > 0.8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
+
+    multTPC++;   
+    //RefMultRaw++;
+    //RefMultCorr += ptWgtMC;
 
 
 
-    if(ptTrk >= 0.2 && ptTrk <= 5.0) {
-      if(fFB_Efficiency_Cent[cent10bin]){
-	ptBinMC = fFB_Efficiency_Cent[cent10bin]->FindBin(ptTrk);
-	ptWgtMC = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBinMC);
-        //cout<<iTrack<<"cent = "<<cent10bin<<" pt = "<<ptTrk<<"\t bin = "<<ptBinMC<<"\t Wgt = "<<ptWgtMC<<endl;    
-	RefMultRaw++;
-	RefMultCorr += ptWgtMC;
-	
-        if((AODtrack->TestFilterBit(fFilterBit))){
-	  
-	  RefMultRawFB++;
-	  RefMultCorrFB += ptWgtMC;
+    //cuts for EP calculation:
+    if((ptTrk <= fMaxPtEP) && (ptTrk >= fMinPtEP) && (etaTrk <= fMaxEtaEP) && (etaTrk >= fMinEtaEP) && (dEdx >= 10.0) && (AODtrack->DCA() <= fDCAxyMax) && (AODtrack->ZAtDCA() <= fDCAzMax) && ( TMath::Abs(ChTrk) > 0))
+      {
 
-	  if(ptTrk <= 5.0){
-	    //Get NUA weights for EP:
-	    if(ChTrk>0){
-	      if(fHCorrectNUApos[cForNUA]){
-		iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(pVtxZ,phiTrk,etaTrk);
-		WgtNUA  = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);
-	      }
-	      else{ WgtNUA = 1.0; }
-	    }
-	    else{
-	      if(fHCorrectNUAneg[cForNUA]){
-		iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(pVtxZ,phiTrk,etaTrk);
-		WgtNUA  = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);  
-	      }
-	      else{ WgtNUA = 1.0; }
-	    }
-	    
-	    if(etaTrk < -0.05){
-	      sumTPCQn2x[0] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
-	      sumTPCQn2y[0] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
-	      sumTPCQn3x[0] += WgtNUA*TMath::Cos(3*phiTrk);
-	      sumTPCQn3y[0] += WgtNUA*TMath::Sin(3*phiTrk);
-	      sumTPCQn4x[0] += WgtNUA*TMath::Cos(4*phiTrk);
-	      sumTPCQn4y[0] += WgtNUA*TMath::Sin(4*phiTrk);
-	      multEtaNeg++;
-	    }
-	    else if(etaTrk > 0.05){
-	      sumTPCQn2x[1] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
-	      sumTPCQn2y[1] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
-	      sumTPCQn3x[1] += WgtNUA*TMath::Cos(3*phiTrk);
-	      sumTPCQn3y[1] += WgtNUA*TMath::Sin(3*phiTrk);
-	      sumTPCQn4x[1] += WgtNUA*TMath::Cos(4*phiTrk);
-	      sumTPCQn4y[1] += WgtNUA*TMath::Sin(4*phiTrk);
-	      multEtaPos++;
-	    }
-	    sumTPCQn2x[3] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
-	    sumTPCQn2y[3] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
-	    sumTPCQn3x[3] += WgtNUA*TMath::Cos(3*phiTrk);
-	    sumTPCQn3y[3] += WgtNUA*TMath::Sin(3*phiTrk);
-	    sumTPCQn4x[3] += WgtNUA*TMath::Cos(4*phiTrk);
-	    sumTPCQn4y[3] += WgtNUA*TMath::Sin(4*phiTrk);
-	    multEtaFull++;
-	  }
+	ptWgtMC = 1.0;
+
+	if(fFB_Efficiency_Cent[cent10bin]){
+	  ptBinMC = fFB_Efficiency_Cent[cent10bin]->FindBin(ptTrk);    //Charge independent MC correction atm.
+	  ptWgtMC = 1.0/fFB_Efficiency_Cent[cent10bin]->GetBinContent(ptBinMC);
 	}
-      }
-    }  
+	  
+	RefMultRawFB++;
+	RefMultCorrFB += ptWgtMC;
+
+	if(ptTrk >= fMinPtCut && ptTrk <= fMaxPtCut) {
+
+	  //------> Get NUA weights for EP <----------
+	  if(ChTrk>0){
+	    if(fHCorrectNUApos[cForNUA]){
+	      iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(pVtxZ,phiTrk,etaTrk);
+	      WgtNUA  = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);
+	    }
+	    else{ WgtNUA = 1.0; }
+	  }
+	  else{
+	    if(fHCorrectNUAneg[cForNUA]){
+	      iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(pVtxZ,phiTrk,etaTrk);
+	      WgtNUA  = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);  
+	    }
+	    else{ WgtNUA = 1.0; }
+	  }
+	    
+	  if(etaTrk < -0.05){
+	    sumTPCQn2x[0] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
+	    sumTPCQn2y[0] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
+	    sumTPCQn3x[0] += WgtNUA*TMath::Cos(3*phiTrk);
+	    sumTPCQn3y[0] += WgtNUA*TMath::Sin(3*phiTrk);
+	    sumTPCQn4x[0] += WgtNUA*TMath::Cos(4*phiTrk);
+	    sumTPCQn4y[0] += WgtNUA*TMath::Sin(4*phiTrk);
+	    multEtaNeg++;
+	  }
+	  else if(etaTrk > 0.05){
+	    sumTPCQn2x[1] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
+	    sumTPCQn2y[1] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
+	    sumTPCQn3x[1] += WgtNUA*TMath::Cos(3*phiTrk);
+	    sumTPCQn3y[1] += WgtNUA*TMath::Sin(3*phiTrk);
+	    sumTPCQn4x[1] += WgtNUA*TMath::Cos(4*phiTrk);
+	    sumTPCQn4y[1] += WgtNUA*TMath::Sin(4*phiTrk);
+	    multEtaPos++;
+	  }
+	  sumTPCQn2x[3] += WgtNUA*TMath::Cos(gPsiN*phiTrk);
+	  sumTPCQn2y[3] += WgtNUA*TMath::Sin(gPsiN*phiTrk);
+	  sumTPCQn3x[3] += WgtNUA*TMath::Cos(3*phiTrk);
+	  sumTPCQn3y[3] += WgtNUA*TMath::Sin(3*phiTrk);
+	  sumTPCQn4x[3] += WgtNUA*TMath::Cos(4*phiTrk);
+	  sumTPCQn4y[3] += WgtNUA*TMath::Sin(4*phiTrk);
+	  multEtaFull++;
+	}
+    }
+      
+      
 
     Double_t b[2] = {-99., -99.};
     Double_t bCov[3] = {-99., -99., -99.};
@@ -1185,10 +1209,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-
-
-
-
+  /*
   Int_t icentBin = centrality;
   icentBin++;
 
@@ -1199,9 +1220,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   TPCmultHighLimit +=  5.0 * hCentvsTPCmultCuts->GetBinContent(icentBin,2); //mean + 5sigma
   //std::cout<<" Cent = "<<centrality<<"\t icent = "<<icentBin<<" low = "<<TPCmultLowLimit<<"\t high = "<<TPCmultHighLimit<<std::endl;
 
-  if(!bSkipPileUpCut){
-    if(multTPC<TPCmultLowLimit || multTPC>TPCmultHighLimit) return; //centrality outlier
-  }
+  //centrality outlier
+  if(!bSkipPileUpCut){  if(multTPC<TPCmultLowLimit || multTPC>TPCmultHighLimit) return;   }
+  */
+
+
+
+
 
   fHistEventCount->Fill(stepCount); //9
   stepCount++;
@@ -1268,9 +1293,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Double_t Qxan2  = 0., Qyan2 = 0.;
   Double_t Qxcn2  = 0., Qycn2 = 0.;
 
-  Float_t fMultv0, phiV0;
-  Float_t sumMa=0;
-  Float_t sumMc=0;
+  Double_t phiV0;
+  Float_t fMultv0 = 0;
+  Float_t sumMa = 0;
+  Float_t sumMc = 0;
 
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
@@ -1344,13 +1370,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   fV0AQ3xVsCentRun->Fill(centrCL1,Qxan3/sumMa); 
   fV0AQ3yVsCentRun->Fill(centrCL1,Qyan3/sumMa); 
   
-  PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) ); //+ TMath::Pi() );
-  if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
+  PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
+  //if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
+  PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
+  //if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
 
-  PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) ); //+ TMath::Pi() );
-  if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
-
-  //fHV0CEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNV0C-PsiNV0A));
   fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
   fHV0AEventPlaneVsCent->Fill(EvtCent,PsiNV0A);
   //-------------------------------------------------------------
@@ -1438,8 +1462,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   PDGmassPion   *= PDGmassPion;
   PDGmassKaon   *= PDGmassKaon;
  
-  Double_t mass=0,mom = -999, pT = -999, phi = -999, eta = -999, dEdx =-999;
-  Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
+  Double_t mass, mom, beta, dEdx1;
+  Double_t length, tofTime, dEdx2;
   Double_t dPhi1,dPhi2,dPt1,dPt2,dEta1,dEta2;
   Double_t ptw1, ptw2, w1NUA, w2NUA;
   Double_t nSigTOFpion,  nSigTPCpion;
@@ -1450,10 +1474,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Double_t nSigTOFproton2,nSigTPCproton2;
 
   Double_t c = TMath::C()*1.E-9;// velocity of light m/ns 
-  Double_t  dcaXY, dcaZ, WgtEP ;
-  Double_t  probMis; 
+  //Double_t dcaXY, dcaZ ;
+  Double_t probMis, WgtEP; 
   Int_t    TOFmatch=0; 
-  Int_t    charge,ptBin,dChrg1,dChrg2;
+  Int_t    ptBin,gCharge1,gCharge2;
 
 
 
@@ -1488,6 +1512,86 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Bool_t isKaon2  = kFALSE;
   Bool_t isProton2 = kFALSE;
 
+  Int_t multPOI1st = 0;
+  Int_t multPOI2nd = 0;
+
+  /*
+  const Int_t maxTrack =  40000;
+  Float_t nSigPionTPC[maxTrack]   = {0.,};
+  Float_t nSigKaonTPC[maxTrack]   = {0.,};
+  Float_t nSigProtonTPC[maxTrack] = {0.,};    
+  Float_t nSigPionTOF[maxTrack]   = {0.,};
+  Float_t nSigKaonTOF[maxTrack]   = {0.,};
+  Float_t nSigProtonTOF[maxTrack] = {0.,};    */
+  
+
+  vector<float> nSigPionTPC;   // = {0.,};
+  vector<float> nSigKaonTPC;   // = {0.,};
+  vector<float> nSigProtonTPC; // = {0.,};
+  vector<float> nSigPionTOF;   // = {0.,};
+  vector<float> nSigKaonTOF;   // = {0.,};
+  vector<float> nSigProtonTOF; // = {0.,};
+
+ 
+  nSigPionTPC.reserve(ntracks+1);
+  nSigKaonTPC.reserve(ntracks+1);
+  nSigProtonTPC.reserve(ntracks+1);
+  nSigPionTOF.reserve(ntracks+1);
+  nSigKaonTOF.reserve(ntracks+1);
+  nSigProtonTOF.reserve(ntracks+1);
+  
+
+
+  //Calling fPIDResponse in nested loop is CPU expensive.
+  //Store nSigma values in a array:
+
+  for(Int_t itrack = 0; itrack < ntracks; itrack++) {
+
+    AliAODTrack *trackForPID=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
+
+    /*// Array method:
+    if(trackForPID){
+      nSigPionTPC[itrack]   = fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion);
+      nSigKaonTPC[itrack]   = fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kKaon);
+      nSigProtonTPC[itrack] = fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kProton);
+      nSigPionTOF[itrack]   = fPIDResponse->NumberOfSigmasTOF(trackForPID, AliPID::kPion);
+      nSigKaonTOF[itrack]   = fPIDResponse->NumberOfSigmasTOF(trackForPID, AliPID::kKaon);
+      nSigProtonTOF[itrack] = fPIDResponse->NumberOfSigmasTOF(trackForPID, AliPID::kProton);   
+    }
+    else{
+      nSigPionTPC[itrack]   = -99; 
+      nSigKaonTPC[itrack]   = -99; 
+      nSigProtonTPC[itrack] = -99; 
+      nSigPionTOF[itrack]   = -99; 
+      nSigKaonTOF[itrack]   = -99; 
+      nSigProtonTOF[itrack] = -99; 
+    }  */
+
+    // Vector method:
+    if(trackForPID){
+      nSigPionTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion));
+      nSigKaonTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID,  AliPID::kKaon));
+      nSigProtonTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kProton));
+
+      nSigPionTOF.push_back(fPIDResponse->NumberOfSigmasTOF(trackForPID, AliPID::kPion));
+      nSigKaonTOF.push_back(fPIDResponse->NumberOfSigmasTOF(trackForPID,  AliPID::kKaon));
+      nSigProtonTOF.push_back(fPIDResponse->NumberOfSigmasTOF(trackForPID, AliPID::kProton));
+    }
+    else{
+      nSigPionTPC.push_back(-100.);
+      nSigKaonTPC.push_back(-100.);
+      nSigProtonTPC.push_back(-100.);
+
+      nSigPionTOF.push_back(-100.);
+      nSigKaonTOF.push_back(-100.);
+      nSigProtonTOF.push_back(-100.);
+    }
+
+  }//1st track loop for PID storing.
+
+
+
+
 
 
 
@@ -1498,22 +1602,20 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     AliAODTrack *track=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
     if(!track) continue;
 
-    dcaXY = track->DCA();
-    dcaZ  = track->ZAtDCA();
-
     if(!track->TestFilterBit(fFilterBit)) continue;
+
+
+
+    mom      = track->P();
+    dPt1     = track->Pt();
+    dPhi1    = track->Phi();
+    dEta1    = track->Eta();
+    gCharge1 = track->Charge();
+    dEdx1    = track->GetDetPid()->GetTPCsignal();
+    //dcaXY  = track->DCA();
+    //dcaZ   = track->ZAtDCA();
         
-    mom=track->P();
-    pT=track->Pt();
-    phi=track->Phi();
-    eta=track->Eta();
-    dEdx=track->GetDetPid()->GetTPCsignal();
-    charge = track->Charge();
-    
 
-
-
-    
     //-------------- Check TOF status ------------------
     AliPIDResponse::EDetPidStatus status;
     status = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
@@ -1525,7 +1627,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     fHistTOFMatchCount->Fill(TOFmatch,probMis);
 
     mass = -9.9;
-    beta = -0.5;
+    beta = -0.9;
 
     if(TOFmatch>0 && probMis < 0.01) { 
       //This conditions are called when detector status is checked above :  
@@ -1533,61 +1635,65 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       //if((track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid))) { //Naghmeh used it        
 	tofTime = track->GetTOFsignal();  // in pico seconds
 	length  = track->GetIntegratedLength();   
-	tof = tofTime*1.E-3; // ns
-	if (tof <= 0) tof = 9999;            
+	tofTime = tofTime*1.E-3; // ns
+	if (tofTime <= 0) tofTime = 9999;            
 	length = length*0.01; // in meters
-	tof = tof*c;
-	beta = length/tof;
+	tofTime = tofTime*c;
+	beta = length/tofTime;
 	mass = mom*mom*(1./(beta*beta) - 1);             
     }//------------ TOF signal -------------------------
 
-    
-    //QA histograms:
-    fHistEtaPtBefore->Fill(eta,pT);
-    fHistTPCdEdxvsPBefore->Fill(mom*charge,dEdx);
-    fHistTOFBetavsPBefore->Fill(mom*charge,beta);
-    fHistTOFMassvsPtBefore->Fill(pT*charge,mass);
 
 
 
-    
+    //QA histograms  before applying track cuts:
+    fHistEtaPtBefore->Fill(dEta1,dPt1);
+    fHistTPCdEdxvsPBefore->Fill(mom*gCharge1,dEdx1);
+    fHistTOFBetavsPBefore->Fill(mom*gCharge1,beta);
+    fHistTOFMassvsPtBefore->Fill(dPt1*gCharge1,mass);
+
     //-------- Apply Default track cuts for analysis: ---------
-    if(pT < fMinPtCut  ||  pT > fMaxPtCut)    continue;
-    if(eta <fMinEtaCut || eta > fMaxEtaCut)   continue;
-    //if(!(track->TestFilterBit(fFilterBit)))   continue;
+    if((dPt1 > fMaxPtCut) || (dPt1 < fMinPtCut) || (dEta1 > fMaxEtaCut) || (dEta1 < fMinEtaCut) || (dEdx1 < fdEdxMin) || (track->GetTPCNcls() < fTPCclustMin)  || (track->Chi2perNDF() < fTrkChi2Min) || (track->DCA() > fDCAxyMax) || (track->ZAtDCA() > fDCAzMax) || !(TMath::Abs(gCharge1)))
+      continue;
+
+
+
+    /*//tested above in one if(...)
+    if(track->GetDetPid()->GetTPCsignal() < 10.0) continue;
+    if(track->GetTPCNcls()  <  70)                continue;
+    if(track->Chi2perNDF()  < 0.2)                continue;
+    if(dPt1 < fMinPtCut  ||  dPt1 > fMaxPtCut)    continue;
+    if(eta< fMinEtaCut || eta > fMaxEtaCut)       continue;
+    if(!TMath::Abs(gCharge1))                     continue;
+    //if(!(track->TestFilterBit(fFilterBit)))     continue; */ 
     //-----------------------------------------------------
 
 
-
-
-
- //============= charged hadron analysis: ============
-
-    dPt1  =   pT;
-    dPhi1 =  phi;
-    dEta1 =  eta;
-    dChrg1=charge;
-
-      
+   //============= charged hadron analysis: ============
     sumQxTPCneg = sumTPCQn2x[0];   // first copy to remove 1st track fron Q vector (AutoCorrelation)
     sumQyTPCneg = sumTPCQn2y[0];
     sumQxTPCpos = sumTPCQn2x[1];
     sumQyTPCpos = sumTPCQn2y[1];
-
-
-
-
     
     //--------------------- PID signals 1st track-------------------------
-    nSigTOFpion   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+    /*nSigTOFpion   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
     nSigTOFkaon   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
     nSigTOFproton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
     nSigTPCpion   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
     nSigTPCkaon   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
-    nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);*/
 
+    //Vector/Array both works same way:
+    nSigTPCpion   = nSigPionTPC[itrack];
+    nSigTPCkaon   = nSigKaonTPC[itrack];
+    nSigTPCproton = nSigProtonTPC[itrack];
+    nSigTOFpion   = nSigPionTOF[itrack];
+    nSigTOFkaon   = nSigKaonTOF[itrack];
+    nSigTOFproton = nSigProtonTOF[itrack];    
 
+    multPOI1st++;
+
+    //if(itrack%100==0)
     //cout<<"Trk "<<itrack<<" pt1 = "<<dPt1<<"\tnSigPion = "<<nSigTPCpion<<"\tnSigKaon = "<<nSigTPCkaon <<"\tnSigprot = "<<nSigTPCproton<<endl;
 
     isPion1 = kFALSE;
@@ -1619,6 +1725,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     //-----------------------------------------------------------------
 
 
+
+
+
     //=================  MC wgt and NUA wgt for PID =================
     ptwPion1 = 1.0;
     ptwKaon1  = 1.0;
@@ -1635,7 +1744,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       }
       else{ ptwPion1 = 1.0; }
 
-      if(dChrg1>0){
+      if(gCharge1>0){
 	if(fHCorrectNUAposPion[cForNUA]){
 	  iBinNUA   = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	  wNUAPion1 = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
@@ -1660,7 +1769,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       }
       else{ ptwKaon1 = 1.0; }
 
-      if(dChrg1>0){
+      if(gCharge1>0){
 	if(fHCorrectNUAposKaon[cForNUA]){
 	  iBinNUA   = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	  wNUAKaon1 = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
@@ -1683,7 +1792,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       }
       else{ ptwProton1 = 1.0; }
 
-      if(dChrg1>0){
+      if(gCharge1>0){
 	if(fHCorrectNUAposProton[cForNUA]){
 	  iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	  wNUAProton1 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
@@ -1701,7 +1810,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     //=========================== X ===============================
 
 
-
       
     //------ get MC weight and NUA for Charged  track 1--------------
     ptw1  = 1.0;
@@ -1713,7 +1821,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     else{ ptw1 = 1.0; }
 
  
-    if(dChrg1>0){
+    if(gCharge1>0){
       if(fHCorrectNUApos[cForNUA]){
 	iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);
@@ -1746,7 +1854,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-   
+
+    multPOI2nd = 0;   
+
     //---2nd track loop (nested)---
     for(Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
 
@@ -1755,30 +1865,52 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       AliAODTrack *track2=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(jtrack));
       if(!track2) continue;
       
-      dPt2  = track2->Pt();
-      dPhi2 = track2->Phi();
-      dEta2 = track2->Eta();
-      dChrg2= track2->Charge();
+      if(!(track2->TestFilterBit(fFilterBit)))    continue; 
+
+      dPt2    = track2->Pt();
+      dPhi2   = track2->Phi();
+      dEta2   = track2->Eta();
+      gCharge2= track2->Charge();
+      dEdx2   = track2->GetDetPid()->GetTPCsignal();
+
+      if((dPt2 > fMaxPtCut) || (dPt2 < fMinPtCut) || (dEta2 > fMaxEtaCut) || (dEta2 < fMinEtaCut) || (dEdx2 < fdEdxMin) || (track2->GetTPCNcls() < fTPCclustMin)  || (track2->Chi2perNDF() < fTrkChi2Min) || (track2->DCA() > fDCAxyMax) || (track2->ZAtDCA() > fDCAzMax) || !(TMath::Abs(gCharge2)))
+        continue;
 
 
 
-      //------- Apply Default track cuts for analysis: -------
+
+      /*
+      if(track2->GetDetPid()->GetTPCsignal() < 10.0) continue;
+      if(track2->GetTPCNcls()  <  70)                continue;
+      if(track2->Chi2perNDF()  < 0.2)                continue;
       if(dPt2 < fMinPtCut  ||  dPt2 > fMaxPtCut)     continue;
-      if(dEta2 <fMinEtaCut || dEta2 > fMaxEtaCut)    continue;
-      if(!(track2->TestFilterBit(fFilterBit)))       continue;
+      if(dEta2< fMinEtaCut || dEta2 > fMaxEtaCut)    continue;
+      if(!TMath::Abs(gCharge2))                      continue;
+      //if(!(track2->TestFilterBit(fFilterBit)))     continue; */ 
       //-----------------------------------------------------
-			  
-      //cout<<"info: passes 1 ";
-
-
+		  
+      //calling fPIDResponse is too costly for CPU
       //--------------------- PID signals 2nd track-------------------------
-      nSigTOFpion2   = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kPion);
+      /*nSigTOFpion2 = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kPion);
       nSigTOFkaon2   = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kKaon);
       nSigTOFproton2 = fPIDResponse->NumberOfSigmasTOF(track2, AliPID::kProton);
-
       nSigTPCpion2   = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kPion);
       nSigTPCkaon2   = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kKaon);
-      nSigTPCproton2 = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kProton);
+      nSigTPCproton2 = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kProton); */
+
+
+
+      //Vector/Array both works same way:
+      nSigTPCpion2   = nSigPionTPC[jtrack];
+      nSigTPCkaon2   = nSigKaonTPC[jtrack];
+      nSigTPCproton2 = nSigProtonTPC[jtrack];
+      nSigTOFpion2   = nSigPionTOF[jtrack];
+      nSigTOFkaon2   = nSigKaonTOF[jtrack];
+      nSigTOFproton2 = nSigProtonTOF[jtrack];    
+
+
+      multPOI2nd++;
+
 
       isPion2 = kFALSE;
       isKaon2  = kFALSE;
@@ -1831,7 +1963,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	}
 	else{ ptwPion2 = 1.0; }
 
-	if(dChrg2>0){
+	if(gCharge2>0){
 	  if(fHCorrectNUAposPion[cForNUA]){
 	    iBinNUA   = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	    wNUAPion2 = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
@@ -1857,7 +1989,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	}
 	else{ ptwKaon2 = 1.0; }
 
-	if(dChrg2>0){
+	if(gCharge2>0){
 	  if(fHCorrectNUAposKaon[cForNUA]){
 	    iBinNUA   = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	    wNUAKaon2 = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
@@ -1882,7 +2014,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	}
 	else{ ptwProton2 = 1.0; }
 
-	if(dChrg2>0){
+	if(gCharge2>0){
 	  if(fHCorrectNUAposProton[cForNUA]){
 	    iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	    wNUAProton2 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
@@ -1915,7 +2047,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       }
       else{ ptw2 = 1.0; }
 
-      if(dChrg2>0){
+      if(gCharge2>0){
 	if(fHCorrectNUApos[cForNUA]){
 	  iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	  w2NUA   = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);
@@ -1971,7 +2103,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
       //cout<<", passes 2 ";
     
-      if(dChrg1!=dChrg2) {
+      if(gCharge1!=gCharge2) {
 	fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
 	fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
 	fHist_Corr3p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);
@@ -2002,7 +2134,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	}
 	//------------------------------------
       }
-      else if(dChrg1>0 && dChrg2>0 && skipPairHBT==0) {
+      else if(gCharge1>0 && gCharge2>0 && skipPairHBT==0) {
 	fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
 	fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
 	fHist_Corr3p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);	
@@ -2033,7 +2165,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	//------------------------------------
       }
 
-      else if(dChrg1<0 && dChrg2<0 && skipPairHBT==0){
+      else if(gCharge1<0 && gCharge2<0 && skipPairHBT==0){
 	fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0A), WgtEP);
 	fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP);
 	fHist_Corr3p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP);	
@@ -2068,20 +2200,18 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     }//-------- nested track loop ends ------------------
 
 
-
-
-
-
+    //cout<<" It doesn't break here 6   \n";
 
 
 
     //============ PID business starts here =============
     
-    fHistEtaPtAfter->Fill(eta,pT);
-    fHistTPCdEdxvsPAfter->Fill(mom*charge,dEdx);
+    fHistEtaPtAfter->Fill(dEta1,dPt1);
+
+    fHistTPCdEdxvsPAfter->Fill(mom*gCharge1,dEdx1);
 
     if(TOFmatch>0 && probMis < 0.01){
-      fHistTOFBetavsPAfter->Fill(mom*charge,beta);
+      fHistTOFBetavsPAfter->Fill(mom*gCharge1,beta);
     }
 
     //nSigTOFpion=fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
@@ -2093,9 +2223,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     fHistTOFMatchCount->Fill(TOFmatch+6,nSigTOFproton);
 
     if(!TOFmatch || probMis > 0.01){  // I dont want mismatched track in my signal distribution
-      nSigTOFpion   = -9.99;
-      nSigTOFkaon   = -9.99;
-      nSigTOFproton = -9.99;
+      nSigTOFpion   = -99;
+      nSigTOFkaon   = -99;
+      nSigTOFproton = -99;
     }
 
     //nSigTPCpion   = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
@@ -2103,37 +2233,39 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     //nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 
     //0=pi, 1=K, 2=Proton
-    fHistTPCTOFnSigmavsPtAfter[0]->Fill(pT,nSigTPCpion,nSigTOFpion);
-    fHistTPCTOFnSigmavsPtAfter[1]->Fill(pT,nSigTPCkaon,nSigTOFkaon);
-    fHistTPCTOFnSigmavsPtAfter[2]->Fill(pT,nSigTPCproton,nSigTOFproton);
+    fHistTPCTOFnSigmavsPtAfter[0]->Fill(dPt1,nSigTPCpion,nSigTOFpion);
+    fHistTPCTOFnSigmavsPtAfter[1]->Fill(dPt1,nSigTPCkaon,nSigTOFkaon);
+    fHistTPCTOFnSigmavsPtAfter[2]->Fill(dPt1,nSigTPCproton,nSigTOFproton);
 
 
+
+    //cout<<" It doesn't break here 7   \n";
 
 
 
     
     if(TMath::Abs(nSigTPCpion)<=fNSigmaCut){
-      fHistTOFnSigmavsPtAfter[0]->Fill(pT*charge,nSigTOFpion);
-      fHistPtwithTPCNsigma[0]->Fill(pT*charge);
-      fHistTPCdEdxvsPtPIDAfter[0]->Fill(pT,dEdx);
+      fHistTOFnSigmavsPtAfter[0]->Fill(dPt1*gCharge1,nSigTOFpion);
+      fHistPtwithTPCNsigma[0]->Fill(dPt1*gCharge1);
+      fHistTPCdEdxvsPtPIDAfter[0]->Fill(dPt1,dEdx1);
       if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[0]->Fill(pT*charge);
+        fHistPtwithTOFSignal[0]->Fill(dPt1*gCharge1);
       }
     }
     if(TMath::Abs(nSigTPCkaon)<=fNSigmaCut){
-      fHistPtwithTPCNsigma[1]->Fill(pT*charge);
-      fHistTOFnSigmavsPtAfter[1]->Fill(pT*charge,nSigTOFkaon);
-      fHistTPCdEdxvsPtPIDAfter[1]->Fill(pT,dEdx);
+      fHistPtwithTPCNsigma[1]->Fill(dPt1*gCharge1);
+      fHistTOFnSigmavsPtAfter[1]->Fill(dPt1*gCharge1,nSigTOFkaon);
+      fHistTPCdEdxvsPtPIDAfter[1]->Fill(dPt1,dEdx1);
       if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[1]->Fill(pT*charge);
+        fHistPtwithTOFSignal[1]->Fill(dPt1*gCharge1);
       }
     }
     if(TMath::Abs(nSigTPCproton)<=fNSigmaCut){
-      fHistPtwithTPCNsigma[2]->Fill(pT*charge);
-      fHistTOFnSigmavsPtAfter[2]->Fill(pT*charge,nSigTOFproton);
-      fHistTPCdEdxvsPtPIDAfter[2]->Fill(pT,dEdx);
+      fHistPtwithTPCNsigma[2]->Fill(dPt1*gCharge1);
+      fHistTOFnSigmavsPtAfter[2]->Fill(dPt1*gCharge1,nSigTOFproton);
+      fHistTPCdEdxvsPtPIDAfter[2]->Fill(dPt1,dEdx1);
       if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        fHistPtwithTOFSignal[2]->Fill(pT*charge);
+        fHistPtwithTOFSignal[2]->Fill(dPt1*gCharge1);
       }
     }
    
@@ -2142,140 +2274,134 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
     //========> nSigmaTOF distribution for circular cut <===============
     //if(TMath::Sqrt(nSigTPCpion*nSigTPCpion+nSigTOFpion*nSigTOFpion)<=fNSigmaCut){
-      //fHistTOFnSigmavsPtAfter[0]->Fill(pT*charge,nSigTOFpion);
+      //fHistTOFnSigmavsPtAfter[0]->Fill(dPt1*gCharge1,nSigTOFpion);
       //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        //fHistPtwithTOFSignal[0]->Fill(pT*charge);
+        //fHistPtwithTOFSignal[0]->Fill(dPt1*gCharge1);
       //}
     //}
     //if(TMath::Sqrt(nSigTPCkaon*nSigTPCkaon+nSigTOFkaon*nSigTOFkaon)<=fNSigmaCut){
-      //fHistTOFnSigmavsPtAfter[1]->Fill(pT*charge,nSigTOFkaon);
+      //fHistTOFnSigmavsPtAfter[1]->Fill(dPt1*gCharge1,nSigTOFkaon);
       //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        //fHistPtwithTOFSignal[1]->Fill(pT*charge);
+        //fHistPtwithTOFSignal[1]->Fill(dPt1*gCharge1);
       //}
     //}
     //if(TMath::Sqrt(nSigTPCproton*nSigTPCproton+nSigTOFproton*nSigTOFproton)<=fNSigmaCut){
-      //fHistTOFnSigmavsPtAfter[2]->Fill(pT*charge,nSigTOFproton);
+      //fHistTOFnSigmavsPtAfter[2]->Fill(dPt1*gCharge1,nSigTOFproton);
       //if(TOFmatch>0 && probMis < 0.01 && beta>0.2){
-        //fHistPtwithTOFSignal[2]->Fill(pT*charge);
+        //fHistPtwithTOFSignal[2]->Fill(dPt1*gCharge1);
       //}
     //} 
 
 
-    
 
+   
     if(TMath::Abs(nSigTPCpion)<=fNSigmaCut){
-      fHistPtwithTPCNsigma[0]->Fill(pT*charge);
-      fHistTPCdEdxvsPtPIDAfter[0]->Fill(pT,dEdx);
+      fHistPtwithTPCNsigma[0]->Fill(dPt1*gCharge1);
+      fHistTPCdEdxvsPtPIDAfter[0]->Fill(dPt1,dEdx1);
     }
     if(TMath::Abs(nSigTPCkaon)<=fNSigmaCut){
-      fHistPtwithTPCNsigma[1]->Fill(pT*charge);
-      fHistTPCdEdxvsPtPIDAfter[1]->Fill(pT,dEdx);
+      fHistPtwithTPCNsigma[1]->Fill(dPt1*gCharge1);
+      fHistTPCdEdxvsPtPIDAfter[1]->Fill(dPt1,dEdx1);
     }
     if(TMath::Abs(nSigTPCproton)<=fNSigmaCut){
-      fHistPtwithTPCNsigma[2]->Fill(pT*charge);
-      fHistTPCdEdxvsPtPIDAfter[2]->Fill(pT,dEdx);
+      fHistPtwithTPCNsigma[2]->Fill(dPt1*gCharge1);
+      fHistTPCdEdxvsPtPIDAfter[2]->Fill(dPt1,dEdx1);
     }
-
-
- 
 
 
 
     //-------------- Fill NUA for Charged tracks ----------------
-    if(charge>0){
-      fHist3DEtaPhiVz_Pos_Run[3][cForNUA]->Fill(pVtxZ,phi,eta);
+    if(gCharge1>0){
+      fHist3DEtaPhiVz_Pos_Run[3][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
     }
-    else if(charge<0){
-      fHist3DEtaPhiVz_Neg_Run[3][cForNUA]->Fill(pVtxZ,phi,eta);
+    else if(gCharge1<0){
+      fHist3DEtaPhiVz_Neg_Run[3][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
     }
      
     if(bFillNUAHistPID){
       //============== Fill NUA Histograms for Pion ---------------------
-      if(pT<0.6 && TMath::Abs(nSigTPCpion)<=2.5){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[0][cForNUA]->Fill(pVtxZ,phi,eta);
+      if(dPt1<0.6 && TMath::Abs(nSigTPCpion)<=2.5){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[0][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[0][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[0][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
-      else if(pT>=0.6 && pT<=2.0 && TMath::Abs(nSigTPCpion)<=2.5 && TMath::Abs(nSigTOFpion)<=2.0 ){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[0][cForNUA]->Fill(pVtxZ,phi,eta);
+      else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=2.5 && TMath::Abs(nSigTOFpion)<=2.0 ){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[0][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[0][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[0][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
      
       //============== Fill NUA Histograms for Kaon ---------------------
-      if(pT<0.6 && TMath::Abs(nSigTPCkaon)<=2.5){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[1][cForNUA]->Fill(pVtxZ,phi,eta);
+      if(dPt1<0.6 && TMath::Abs(nSigTPCkaon)<=2.5){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[1][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[1][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[1][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
-      else if(pT>=0.6 && pT<=2.0 && TMath::Abs(nSigTPCkaon)<=2.5 && TMath::Abs(nSigTOFkaon)<=2.0){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[1][cForNUA]->Fill(pVtxZ,phi,eta);
+      else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=2.5 && TMath::Abs(nSigTOFkaon)<=2.0){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[1][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[1][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[1][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
 
       //============== Fill NUA Histograms for proton ---------------------
-      if(pT<0.8 && TMath::Abs(nSigTPCproton)<=2.5){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[2][cForNUA]->Fill(pVtxZ,phi,eta);
+      if(dPt1<0.8 && TMath::Abs(nSigTPCproton)<=2.5){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[2][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[2][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[2][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
-      else if(pT>=0.8 && pT<=3.5 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){
-	if(charge>0){
-	  fHist3DEtaPhiVz_Pos_Run[2][cForNUA]->Fill(pVtxZ,phi,eta);
+      else if(dPt1>=0.8 && dPt1<=3.5 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){
+	if(gCharge1>0){
+	  fHist3DEtaPhiVz_Pos_Run[2][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
-	else if(charge<0){
-	  fHist3DEtaPhiVz_Neg_Run[2][cForNUA]->Fill(pVtxZ,phi,eta);
+	else if(gCharge1<0){
+	  fHist3DEtaPhiVz_Neg_Run[2][cForNUA]->Fill(pVtxZ,dPhi1,dEta1);
 	}
       }
 
     }// Fill NUA for PID or not?
 
 
+ 
+
     //------------------------------------------------------------
+   
+    // TOF matching is not needed from data as done by Davide using MC.
+    /*
     if(!TOFmatch || probMis > 0.01 || beta>0.2) continue;
 
     // nSigmaTPC distribution for Fixed nSigmaTOF cut
-   
     if(TMath::Abs(nSigTOFpion)<=fNSigmaCut){
-      fHistTPCnSigmavsPtAfter[0]->Fill(pT*charge,nSigTPCpion);
-      fHistPtwithTOFmasscut[0]->Fill(pT*charge);
+      fHistTPCnSigmavsPtAfter[0]->Fill(dPt1*gCharge1,nSigTPCpion);
+      fHistPtwithTOFmasscut[0]->Fill(dPt1*gCharge1);
     }
     if(TMath::Abs(nSigTOFkaon)<=fNSigmaCut){
-      fHistTPCnSigmavsPtAfter[1]->Fill(pT*charge,nSigTPCkaon);
-      fHistPtwithTOFmasscut[1]->Fill(pT*charge);
+      fHistTPCnSigmavsPtAfter[1]->Fill(dPt1*gCharge1,nSigTPCkaon);
+      fHistPtwithTOFmasscut[1]->Fill(dPt1*gCharge1);
     }
     if(TMath::Abs(nSigTOFproton)<=fNSigmaCut){
-      fHistTPCnSigmavsPtAfter[2]->Fill(pT*charge,nSigTPCproton);
-      fHistPtwithTOFmasscut[2]->Fill(pT*charge);
-    }
+      fHistTPCnSigmavsPtAfter[2]->Fill(dPt1*gCharge1,nSigTPCproton);
+      fHistPtwithTOFmasscut[2]->Fill(dPt1*gCharge1);
+    }    */
 
 
 
-
-
-  }
- //===================== track loop ends ============================
-
-
-
-
-
+ } 
+//===================== track loop ends ============================
 
 
 
@@ -2338,13 +2464,18 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   fHistEventCount->Fill(14.5); //15th bin is last one
   stepCount++;
 
+  //if(multPOI2nd!=(multPOI1st-1)) 
+  //cout<<"mismatched "<< "\tPOIs1st = "<<multPOI1st<<"\tPOIs2nd = "<<multPOI2nd <<" for Event = "<<fEventCount<<endl;
 
+  //if(multEtaFull>1250)
+  //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs = "<<multPOI1st<<"\tRealTime = "<< watch.RealTime() <<"\tCPUTime = "<< watch.CpuTime()<<endl;
 
+  //watch.Stop();
 
 }//================ UserExec ==============
 
-
-
+// last check: 6:50pm, 17/03/2018
+// 
 
 
 
@@ -2479,7 +2610,7 @@ void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(TString sMCfilePath){
 
 
 
-Int_t AliAnalysisTaskCMEV0PID::GetCentralityScaled0to10(Float_t fCent){
+Int_t AliAnalysisTaskCMEV0PID::GetCentralityScaled0to10(Double_t fCent){
 
  Int_t cIndex = 0;
 

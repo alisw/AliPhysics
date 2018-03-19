@@ -25,6 +25,7 @@
 #include "TString.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
+#include "TStopwatch.h"
 
 class    AliVEvent;      
 class    AliVVertex;    
@@ -48,32 +49,38 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t * /*option*/);
     
   //User Defined Functions:
-  void SetFilterBit(Int_t b)                 {this->fFilterBit = b;}
-  void SetEventPlaneHarmonic(Int_t pn)       {this->gPsiN     = pn;}
+  void SetFilterBit(Int_t b)                  {this->fFilterBit = b;}
+  void SetNSigmaCutTPC(Double_t b)            {this->fNSigmaCut = b;}
+  void SetPtRangeMin(Double_t b)              {this->fMinPtCut  = b;}
+  void SetPtRangeMax(Double_t b)              {this->fMaxPtCut  = b;}
+  void SetEtaRangeMin(Double_t b)             {this->fMinEtaCut = b;}
+  void SetEtaRangeMax(Double_t b)             {this->fMaxEtaCut = b;}
+
+  void SetTrackCutdEdxMin(Float_t   dEd)      {this->fdEdxMin = dEd; }
+  void SetTrackCutDCAxyMax(Double_t  dc)      {this->fDCAxyMax = dc; }
+  void SetTrackCutDCAzMax(Double_t   dc)      {this->fDCAzMax  = dc; }
+  void SetTrackCutChi2Min(Double_t  chi)      {this->fTrkChi2Min = chi; }
+  void SetTrackCutNclusterMin(Int_t ncl)      {this->fTPCclustMin = ncl; }
+  void SetFlagUseKinkTracks(Bool_t kink)      {this->bUseKinkTracks = kink; }
+
+  void SetEventPlaneHarmonic(Int_t pn)            {this->gPsiN     = pn;}
   void SetHarmonicsFor3Particle(Int_t n, Int_t m) {this->gN = n; this->gM = m;}
 
-  void SetNSigmaCutTPC(Float_t b)            {this->fNSigmaCut = b;}
-  void SetPtRangeMin(Float_t b)              {this->fMinPtCut  = b;}
-  void SetPtRangeMax(Float_t b)              {this->fMaxPtCut  = b;}
-  void SetEtaRangeMin(Float_t b)             {this->fMinEtaCut = b;}
-  void SetEtaRangeMax(Float_t b)             {this->fMaxEtaCut = b;}
-  void SetCollisionSystem(TString s)         {this->sNucleiTP  = s;}
-
-  void SetCentralityPercentileMin(Float_t b) {this->fCentralityPercentMin = b;}
-  void SetCentralityPercentileMax(Float_t b) {this->fCentralityPercentMax = b;}
-  void SetFBEfficiencyList(TList *flist)     {this->fListFBHijing  =  flist;}
-  
-  void SetFlagForMCcorrection(Bool_t b)      {this->bApplyMCcorr   = b;}
-  void SetFlagV0MGainCorr(Bool_t b)          {this->bV0MGainCorr   = b;}
-  void SetFlagSkipPileUpCuts(Bool_t b)       {this->bSkipPileUpCut = b;}
-  void SetFlagFillNUAforPID(Bool_t b)        {this->bFillNUAHistPID = b;}
-
-
-
-  void SetFBEfficiencyFilePath(TString path) {this->sPathOfMCFile  =   path;}
+  void SetCollisionSystem(TString s)          {this->sNucleiTP  = s;}
+  void SetCentralityPercentileMin(Double_t b) {this->fCentralityPercentMin = b;}
+  void SetCentralityPercentileMax(Double_t b) {this->fCentralityPercentMax = b;}
   void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetListForNUACorr(TList *fln)         {this->fListNUACorr   = fln;}
-  void SetListForV0MCorr(TList *flv)         {this->fListV0MCorr   = flv;}
+
+  void SetFlagForMCcorrection(Bool_t b)       {this->bApplyMCcorr    = b;}
+  void SetFlagV0MGainCorr(Bool_t b)           {this->bV0MGainCorr    = b;}
+  void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
+  void SetFlagFillNUAforPID(Bool_t b)         {this->bFillNUAHistPID = b;}
+
+  void SetFBEfficiencyList(TList *flist)      {this->fListFBHijing   = flist;}
+  void SetFBEfficiencyFilePath(TString path)  {this->sPathOfMCFile   = path;}
+  void SetListForNUACorr(TList *fln)          {this->fListNUACorr    = fln;}
+  void SetListForV0MCorr(TList *flv)          {this->fListV0MCorr    = flv;}
+
 
   
 
@@ -161,43 +168,41 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile              *fTPCCQ4yVsCentRun; //!
 
 
-
-
-
-
-
-
-
-
+  TStopwatch                 watch;  //!
 
   Int_t                 fFilterBit;  //
   Int_t                         gN;  //
   Int_t                         gM;  //
   Int_t                      gPsiN;  //
-  Int_t                 fOldRunNum;  //
+  Int_t                 fOldRunNum;  //!
   Int_t                fEventCount;  //!
-  Float_t               fNSigmaCut;  //
-  Float_t                fMinPtCut;  //
-  Float_t                fMaxPtCut;  //
-  Float_t               fMinEtaCut;  //
-  Float_t               fMaxEtaCut;  //
-  Float_t    fCentralityPercentMin;  //
-  Float_t    fCentralityPercentMax;  //
-  Float_t         fPileUpSlopeParm;  //
-  Float_t         fPileUpConstParm;  //
+  Int_t               fTPCclustMin;  // 
 
-  Bool_t              bApplyMCcorr;  //
-  Bool_t              bV0MGainCorr;  //
-  Bool_t            bSkipPileUpCut;  //
-  Bool_t           bFillNUAHistPID;  //
 
-  TString            sPathOfMCFile;  //
-  TString                sNucleiTP;  //
+  Double_t               fNSigmaCut;  //
+  Double_t                fMinPtCut;  //
+  Double_t                fMaxPtCut;  //
+  Double_t               fMinEtaCut;  //
+  Double_t               fMaxEtaCut;  //
+  Double_t              fTrkChi2Min;  //  
+  Double_t                fDCAxyMax;  //  
+  Double_t                 fDCAzMax;  //  
+  Float_t                  fdEdxMin;  //  
+
+  Double_t    fCentralityPercentMin;  //
+  Double_t    fCentralityPercentMax;  //
+  Double_t         fPileUpSlopeParm;  //
+  Double_t         fPileUpConstParm;  //
+
+  Bool_t               bApplyMCcorr;  //
+  Bool_t               bV0MGainCorr;  //
+  Bool_t             bSkipPileUpCut;  //
+  Bool_t            bFillNUAHistPID;  //
+  Bool_t             bUseKinkTracks;  // 
+
+  TString             sPathOfMCFile;  //
+  TString                 sNucleiTP;  //
  
-
-
-
-
 
 
   TH1F            *fHistEventCount;   //!    last in the list
@@ -222,19 +227,19 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH3F     *fHistTPCTOFnSigmavsPtAfter[3];   //!
   TH2F       *fHistTPCdEdxvsPtPIDAfter[3];   //!
 
-
   
-  TH3D                *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
-  TH3D                *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
+  
+  TH3D                  *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
+  TH3D                  *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D                *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
-  TH3D                *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
+  TH3D              *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
+  TH3D              *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D                *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
-  TH3D                *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3D              *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3D              *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D                *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
-  TH3D                *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
+  TH3D            *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
+  TH3D            *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
 
 
 
@@ -286,7 +291,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void  SetUpCentralityOutlierCut();
   void  SetupEventAndTaskConfigInfo();
   void  SetupMCcorrectionMap(TString sMCfilePath);
-  Int_t GetCentralityScaled0to10(Float_t fCent);
+  Int_t GetCentralityScaled0to10(Double_t fCent);
 
 
 
