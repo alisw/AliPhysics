@@ -51,6 +51,12 @@ class AliFemtoDreamCascadeCuts {
   void SetRejectOmegas(float mass, float width) {
     fRejOmega=true;fRejOmegaMass=mass;fRejOmegaWidth=width;
   }
+  void SetPtRangeXi(float PtMin,float PtMax){
+    fPtMin=PtMin;fPtMax=PtMax;fCutPt=true;
+  }
+  void SetPtRangev0(float PtMin,float PtMax){
+    fPtMinv0=PtMin;fPtMaxv0=PtMax;fCutPtv0=true;
+  }
   void SetPDGCodeCasc(int PDG){fPDGCasc=PDG;};
   int GetPDGCodeCasc(){return fPDGCasc;};
   void SetPDGCodePosDaug(int PDG){fPDGPosDaug=PDG;};
@@ -65,6 +71,7 @@ class AliFemtoDreamCascadeCuts {
   void Init(bool MinimalBooking);
   bool isSelected(AliFemtoDreamCascade *casc);
   void BookQA(AliFemtoDreamCascade *casc);
+  void BookCuts();
   void BookMCQA(AliFemtoDreamCascade *casc);
   void FillMCContributions(AliFemtoDreamCascade *casc);
   TList *GetQAHists() {return fHistList;};
@@ -80,6 +87,12 @@ class AliFemtoDreamCascadeCuts {
   bool fMinimalBooking;
   bool fMCData;
   bool fContribSplitting;
+  bool fCutPt;
+  double fPtMin;
+  double fPtMax;
+  bool fCutPtv0;
+  double fPtMinv0;
+  double fPtMaxv0;
   bool fcutXiMass;
   float fXiMass;
   float fXiMassWidth;

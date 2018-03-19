@@ -316,6 +316,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
           fHist->FillOnFlyStatus(i,0);
         }
         fHist->FillpTCut(i,v0->GetPt());
+        fHist->FillPhi(i,v0->GetPhi().at(0));
         fHist->FillEtaCut(i,v0->GetEta().at(0));
         fHist->Fillv0DecayVtxXCut(i,v0->GetDCAv0Vtx(0));
         fHist->Fillv0DecayVtxYCut(i,v0->GetDCAv0Vtx(1));

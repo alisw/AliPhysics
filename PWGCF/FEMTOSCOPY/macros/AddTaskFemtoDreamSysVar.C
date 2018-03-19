@@ -437,14 +437,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   } else if (CentEst=="kHM") {
     addon+="HM";
   }
-
-  TString addon="";
-  if (CentEst=="kInt7") {
-    addon+="MB";
-  } else if (CentEst=="kHM") {
-    addon+="HM";
-  }
-
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults_%s",addon.Data(),suffix.Data());
   coutputResults = mgr->CreateContainer(

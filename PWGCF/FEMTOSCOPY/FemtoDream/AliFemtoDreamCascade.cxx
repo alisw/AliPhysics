@@ -32,6 +32,7 @@ AliFemtoDreamCascade::AliFemtoDreamCascade()
 ,fv0DCADaug(0)
 ,fv0DCAPrimVtx(0)
 ,fv0Momentum()
+,fv0Pt(0)
 ,fDCABachPrimVtx(0)
 ,fv0TransRadius(0)
 ,fv0CPA(0)
@@ -139,6 +140,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
     fMassv0=casc->MassAntiLambda();
   }
   fv0Momentum.SetXYZ(casc->MomV0X(),casc->MomV0Y(),casc->MomV0Z());
+  fv0Pt=casc->MomV0X()*casc->MomV0X()+casc->MomV0Y()*casc->MomV0Y();
   fv0DCADaug=casc->DcaV0Daughters();
   fv0DCAPrimVtx=casc->DcaV0ToPrimVertex();
   fDCABachPrimVtx=casc->DcaBachToPrimVertex();
@@ -186,6 +188,7 @@ void AliFemtoDreamCascade::Reset() {
     fv0DCADaug=0;
     fv0DCAPrimVtx=0;
     fv0Momentum.SetXYZ(0,0,0);
+    fv0Pt=0;
     fDCABachPrimVtx=0;
     fv0TransRadius=0;
     fv0CPA=0;
