@@ -91,7 +91,7 @@ public:
   void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
-  void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
+  void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
   Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);

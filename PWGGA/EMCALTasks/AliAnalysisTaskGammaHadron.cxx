@@ -916,7 +916,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		Double_t DetectionEff;
 		Double_t pT,eta;
 		Double_t nYBins = fEffCorrectionCheck[0]->GetYaxis()->GetNbins();
-		//for(Int_t j=1;j<50+1;j++)
 		for(Int_t j=1;j<fNPtHistBins+1;j++)
 		{
 			pT = fEffCorrectionCheck[0]->GetXaxis()->GetBinCenter(j);
@@ -924,7 +923,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			if(pT<=3.5) efficiencyPt=funcpT_low[cent]->Eval(pT);
 			else        efficiencyPt=funcpT_high[cent]->Eval(pT);
 
-			//cout<<"pT: "<<pT<<", efficiency: "<<efficiencyPt<<endl;
 			for(Int_t k=1;k<nYBins+1;k++)
 			{
 				eta = fEffCorrectionCheck[0]->GetYaxis()->GetBinCenter(k);
@@ -935,8 +933,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 					if(eta<=-0.04)DetectionEff*=funcpEta_left[cent]->Eval(eta,0,0);
 					else          DetectionEff*=funcpEta_right[cent]->Eval(eta,0,0);
 				}
-				//cout<<"eta: "<<eta<<", efficiency: "<<DetectionEff/efficiencyPt<<endl;
-				fEffCorrectionCheck[cent]->SetBinContent(j,k,DetectionEff/fscaleEta[cent]);
+				if(fCorrectEff==1)fEffCorrectionCheck[cent]->SetBinContent(j,k,DetectionEff/fscaleEta[cent]);
+				if(fCorrectEff==0)fEffCorrectionCheck[cent]->SetBinContent(j,k,1);
 			}
 		}
 	}
@@ -1447,11 +1445,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		//------------------------------------------------
 		//..This section is for the moment to test
 		//..cluster distributions without cuts
-		if(SameMix==1)FillQAHistograms(0,clusters,cluster,trackNULL);
+		if(SameMix==1)FillQAHistograms(0,clusters,cluster,trackNULL,Weight);
 
 		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(0);
 		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
-		if(SameMix==1)FillQAHistograms(1,clusters,cluster,trackNULL);
+		if(SameMix==1)FillQAHistograms(1,clusters,cluster,trackNULL,Weight);
 		//------------------------------------------------
 
 		if(SameMix==1)
@@ -1482,8 +1480,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 
 					EffWeight_Hadron=GetTrackEff(track->Pt(),track->Eta());
 					FillGhHistograms(0,aliCaloClusterVec,track,Weight/EffWeight_Hadron);
-					if(GammaCounter==1)FillQAHistograms(4,clusters,cluster,track); //fill only once per track (first gamma) - good for each track
-					if(trackCounter==1)FillQAHistograms(5,clusters,cluster,track); //fill only once per gamma (first track) - good for gamma distr.
+					if(GammaCounter==1)FillQAHistograms(2,clusters,cluster,track,Weight/EffWeight_Hadron); //fill only once per track (first gamma) - good for each track
+					if(trackCounter==1)FillQAHistograms(3,clusters,cluster,track,Weight/EffWeight_Hadron); //fill only once per gamma (first track) - good for gamma distr.
 				}
 				//...........................................
 				//..double cluster loop for testing an anti pi0 cut
@@ -1523,15 +1521,14 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 			}
 		}
 		//...........................................
-		//..Additional histograms
+		//..Additional histograms to test fiducial cell cuts
 		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1);
 		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
-		if(SameMix==1)FillQAHistograms(2,clusters,cluster,trackNULL);
+		if(SameMix==1)FillQAHistograms(4,clusters,cluster,trackNULL,Weight);
 
 		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(2);
 		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
-		if(SameMix==1)FillQAHistograms(3,clusters,cluster,trackNULL);
-
+		if(SameMix==1)FillQAHistograms(5,clusters,cluster,trackNULL,Weight);
 	}
 	return GammaCounter;
 }
@@ -1643,7 +1640,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		clusters->GetMomentum(CaloClusterVec,cluster);
 		AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(CaloClusterVec); //..can acess phi from
 
-		FillQAHistograms(0,clusters,cluster,trackNULL);
+		FillQAHistograms(0,clusters,cluster,trackNULL,Weight);
 
 		for( Int_t NoCluster2 = NoCluster1 + 1; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
 		{
@@ -1901,7 +1898,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	fHistBinCheckXi[identifier] ->Fill(XI_Value,Weight);
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec)
+void AliAnalysisTaskGammaHadron::FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec,Double_t weight)
 {
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
@@ -2001,22 +1998,11 @@ void AliAnalysisTaskGammaHadron::FillQAHistograms(Int_t identifier,AliClusterCon
 				valueArray[5] = fCent;
 				fClusterProp->Fill(valueArray); //..all clusters - no cuts
 			}
-
 		}
-		//valueArray[6] = phiDistMatched;
-		//valueArray[7] = etaDistMatched;
-
-		//valueArray[2] = caloCluster->GetNExMax();
-		//valueArray[3] = caloCluster->GetNCells();
-
-		//valueArray[5]=0;//E/p
-		//valueArray[6]=130;//m_gg
-
-
 	}
-	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Eta(),aliCaloClusterVec.Phi_0_2pi()*fRtoD);
-	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Eta(),TrackVec->Phi()*fRtoD);
-	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetNonLinCorrEnergy());
+	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Eta(),aliCaloClusterVec.Phi_0_2pi()*fRtoD,weight);
+	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Eta(),TrackVec->Phi()*fRtoD,weight);
+	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetNonLinCorrEnergy(),weight);
 }
 //
 // Accept cluster for analysis. More cuts besides in ApplyClusterCuts and ApplyKinematicCuts
