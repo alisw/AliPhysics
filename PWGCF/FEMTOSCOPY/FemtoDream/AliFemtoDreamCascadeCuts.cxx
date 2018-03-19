@@ -20,6 +20,12 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 ,fMinimalBooking(false)
 ,fMCData(false)
 ,fContribSplitting(false)
+,fCutPt(false)
+,fPtMin(0)
+,fPtMax(0)
+,fCutPtv0(false)
+,fPtMinv0(0)
+,fPtMaxv0(0)
 ,fcutXiMass(false)
 ,fXiMass(0)
 ,fXiMassWidth(0)
@@ -184,19 +190,26 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       if (!fMinimalBooking)fHist->FillCutCounter(13);
     }
   }
+  if (pass&&fCutPtv0) {
+    if ((casc->Getv0Pt()<fPtMinv0) || (fPtMaxv0<casc->Getv0Pt())) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(14);
+    }
+  }
   if (pass&&fcutv0TransRadius) {
     if ((casc->Getv0TransverseRadius()<fMinv0TransRadius)||
         (casc->Getv0TransverseRadius()>fMaxv0TransRadius)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(14);
+      if (!fMinimalBooking)fHist->FillCutCounter(15);
     }
   }
   if (pass&&fcutv0MinDistVtx) {
     if (casc->Getv0DCAPrimVtx()<fv0MinDistVtx) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(15);
+      if (!fMinimalBooking)fHist->FillCutCounter(16);
     }
   }
   if (pass&&fcutv0DaugMinDistVtx) {
@@ -204,7 +217,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0NegToPrimVtx()<fv0DaugMinDistVtx)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(16);
+      if (!fMinimalBooking)fHist->FillCutCounter(17);
     }
   }
   if (pass) {
@@ -215,7 +228,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0Mass()>(fv0Mass+fv0Width))) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(17);
+      if (!fMinimalBooking)fHist->FillCutCounter(18);
     }
   }
   if (pass&&fRejOmega) {
@@ -223,7 +236,14 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->GetOmegaMass()<(fRejOmegaMass+fRejOmegaWidth))) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(18);
+      if (!fMinimalBooking)fHist->FillCutCounter(19);
+    }
+  }
+  if (pass&&fCutPt) {
+    if (!((casc->GetPt()<fPtMin)&&(fPtMax<casc->GetPt()))) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(20);
     }
   }
   if (pass) {
@@ -234,7 +254,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->GetXiMass()>(fXiMass+fXiMassWidth))) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(19);
+      if (!fMinimalBooking)fHist->FillCutCounter(21);
     }
   }
   casc->SetUse(pass);
@@ -257,6 +277,7 @@ void AliFemtoDreamCascadeCuts::Init(bool MinimalBooking) {
   fBachCuts->Init(fMinimalBooking);
   if (!fMinimalBooking) {
     fHist=new AliFemtoDreamCascadeHist(fXiMass);
+    BookCuts();
     if (!(fNegCuts||fPosCuts||fBachCuts)) {
       AliFatal("Track Cuts Object Missing");
     }
@@ -303,6 +324,7 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillTransverseRadiusXi(i,casc->GetXiTransverseRadius());
         fHist->FillMaxDCAv0Daug(i,casc->Getv0DCADaug());
         fHist->FillCPAv0(i,casc->Getv0CPA());
+        fHist->Fillv0Pt(i,casc->Getv0Pt());
         fHist->FillTransverseRadiusv0(i,casc->Getv0TransverseRadius());
         fHist->FillMinDistPrimVtxv0(i,casc->Getv0DCAPrimVtx());
         fHist->FillMinDistPrimVtxv0DaugPos(i,casc->Getv0PosToPrimVtx());
@@ -411,6 +433,61 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
     } else {
       std::cout << "this should not happen \n";
     }
+  }
+}
+
+void AliFemtoDreamCascadeCuts::BookCuts() {
+  if (fCutPt) {
+    fHist->FillConfig(0,fPtMin);
+    fHist->FillConfig(1,fPtMax);
+  }
+  if (fCutPtv0) {
+    fHist->FillConfig(2,fPtMinv0);
+    fHist->FillConfig(3,fPtMaxv0);
+  }
+  if (fcutXiMass) {
+    fHist->FillConfig(4,fXiMass);
+    fHist->FillConfig(5,fXiMassWidth);
+  }
+  if (fcutXiCharge) {
+    fHist->FillConfig(6,fXiCharge);
+  }
+  if (fcutDCAXiDaug) {
+    fHist->FillConfig(7,fMaxDCAXiDaug);
+  }
+  if (fcutMinDistVtxBach) {
+    fHist->FillConfig(8,fMinDistVtxBach);
+  }
+  if (fcutCPAXi) {
+    fHist->FillConfig(9,fCPAXi);
+  }
+  if (fcutXiTransRadius) {
+    fHist->FillConfig(10,fMinXiTransRadius);
+    fHist->FillConfig(11,fMaxXiTransRadius);
+  }
+  if (fcutv0Mass) {
+    fHist->FillConfig(12,fv0Mass);
+    fHist->FillConfig(13,fv0Width);
+  }
+  if (fcutv0MaxDCADaug) {
+    fHist->FillConfig(14,fv0MaxDCADaug);
+  }
+  if (fcutCPAv0) {
+    fHist->FillConfig(15,fCPAv0);
+  }
+  if (fcutv0TransRadius) {
+    fHist->FillConfig(16,fMinv0TransRadius);
+    fHist->FillConfig(17,fMaxv0TransRadius);
+  }
+  if (fcutv0MinDistVtx) {
+    fHist->FillConfig(18,fv0MinDistVtx);
+  }
+  if (fcutv0DaugMinDistVtx) {
+    fHist->FillConfig(19,fv0DaugMinDistVtx);
+  }
+  if (fRejOmega) {
+    fHist->FillConfig(20,fRejOmegaMass);
+    fHist->FillConfig(21,fRejOmegaWidth);
   }
 }
 
