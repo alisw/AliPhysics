@@ -29,6 +29,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 ,fPDGCode(0)
 ,fMCPDGCode(0)
 ,fPDGMotherWeak(0)
+,fMotherID(0)
 ,fIsMC(false)
 ,fUse(true)
 ,fIsSet(true)
@@ -50,6 +51,15 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart) {
   this->fIsSet=true;
   this->SetUse(true);
   this->fIsReset=false;
+  //find the original mother in the mc stack.
+  int lastMother=0;
+  int motherID=-99;
+  while (motherID!=-1) {
+    lastMother=motherID;
+    motherID=mcPart->GetMother();
+  }
+  std::cout << lastMoher << std::endl;
+  this->SetMotherID(lastMother);
 }
 
 void AliFemtoDreamBasePart::ResetMCInfo() {
@@ -60,6 +70,7 @@ void AliFemtoDreamBasePart::ResetMCInfo() {
   this->SetPhi(0);
   this->SetCharge(0);
   this->SetPDGCode(0);
+  this->SetMotherID(0);
   this->fIsSet=false;
   this->SetUse(false);
   this->fIsReset=true;

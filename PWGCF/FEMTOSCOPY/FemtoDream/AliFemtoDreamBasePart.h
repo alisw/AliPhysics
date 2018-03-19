@@ -62,6 +62,8 @@ class AliFemtoDreamBasePart {
   int GetMCPDGCode() const {return fMCPDGCode;};
   void SetPDGMotherWeak(int PDGMother){fPDGMotherWeak=PDGMother;};
   int GetMotherWeak() const {return fPDGMotherWeak;};
+  void SetMotherID(int ID) {fMotherID=ID;};
+  int GetMotherID() const {return fMotherID;};
   void SetUseMCInfo(bool useMC) {fIsMC=useMC;};
   bool IsSet() const {return fIsSet;};
   void SetUse(bool use) {fUse=use;};
@@ -92,6 +94,7 @@ class AliFemtoDreamBasePart {
   // pdg code as obtained from the MC for this particle
   int fMCPDGCode;
   int fPDGMotherWeak;
+  int fMotherID;
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly

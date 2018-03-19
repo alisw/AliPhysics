@@ -400,9 +400,6 @@ void AliAnalysisTaskMCFemtoDream::UserExec(Option_t *) {
       } else if (mcPart->PdgCode()==-3122){
         if (mcPart->GetMother() > 0) {
           fAntiLambdaResonances->Fill(TMath::Abs(fMC->GetTrack((mcPart->GetMother()))->PdgCode()));
-//          if (TMath::Abs(fMC->GetTrack((mcPart->GetMother()))->PdgCode())>10000) {
-//            std::cout << "AntiLambda PDG Mother: " << fMC->GetTrack((mcPart->GetMother()))->PdgCode() << std::endl;
-//          }
         }
         fAntiLambdaEta->Fill(mcPart->Eta());
         fAntiLambdaPt->Fill(mcPart->Pt());
