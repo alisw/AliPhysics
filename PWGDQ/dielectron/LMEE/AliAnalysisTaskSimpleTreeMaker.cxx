@@ -318,11 +318,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 			fTree->Branch("motherLabel", &motherLabel);
 		}
 		//Event variables
-		fTree->Branch("vertexX", &primaryVertex[0]);
-		fTree->Branch("vertexY", &primaryVertex[1]);
-		fTree->Branch("vertexZ", &primaryVertex[2]);
+		fTree->Branch("vertexX",   &primaryVertex[0]);
+		fTree->Branch("vertexY",   &primaryVertex[1]);
+		fTree->Branch("vertexZ",   &primaryVertex[2]);
 		fTree->Branch("runNumber", &runNumber);
-		fTree->Branch("event",     &event);
+		fTree->Branch("eventNum",  &eventNum);
 		fTree->Branch("gridPID",   &fGridPID);
 
     //Get grid PID which can be used later to assign unique event numbers
