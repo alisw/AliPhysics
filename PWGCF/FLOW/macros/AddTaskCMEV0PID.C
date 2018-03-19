@@ -4,7 +4,7 @@
 
 class AliAnalysisTaskCMEV0PID;
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5.0, Float_t fEtaMin=-0.8, Float_t fEtaMax=0.8, Float_t fCentralityMin=0.,Float_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Float_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fDCAxyMax=2.4,Double_t fDCAzMax=3.2, Int_t gNclustTPC=70, Float_t fCentralityMin=0., Float_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Double_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
@@ -56,18 +56,30 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Float_t fPtMin=0.2, Float_t fPtMax=5
       task_CME[i]->SelectCollisionCandidates(AliVEvent::kMB);
     }
 
+    //Track cuts:
     task_CME[i]->SetFilterBit(gFilterBit);
     task_CME[i]->SetNSigmaCutTPC(nSigmaCuts[i]);
     task_CME[i]->SetPtRangeMin(fPtMin);
     task_CME[i]->SetPtRangeMax(fPtMax);
     task_CME[i]->SetEtaRangeMin(fEtaMin);
     task_CME[i]->SetEtaRangeMax(fEtaMax);
+
+    task_CME[i]->SetTrackCutdEdxMin(10.0);
+    task_CME[i]->SetTrackCutDCAzMax(fDCAxyMax);
+    task_CME[i]->SetTrackCutDCAxyMax(fDCAzMax);
+    task_CME[i]->SetTrackCutChi2Min(0.1);
+    task_CME[i]->SetTrackCutNclusterMin(gNclustTPC);
+    task_CME[i]->SetFlagUseKinkTracks(kFALSE);
+
+ 
+
+    //Event cuts:
     task_CME[i]->SetCentralityPercentileMin(fCentralityMin);
     task_CME[i]->SetCentralityPercentileMax(fCentralityMax);
     task_CME[i]->SetPileUpCutParam(fSlope,fConst);
     task_CME[i]->SetCollisionSystem(sNuclei);
-    task_CME[i]->SetHarmonicsFor3Particle(gN, gM);       // n and m in Cos[ n*phi1 + m*phi2 - (n+m)Psi_{gPsiN} ]
-    task_CME[i]->SetEventPlaneHarmonic(gPsiN);           // gPsiN = order N of Event Plane.
+    task_CME[i]->SetHarmonicsFor3Particle(gN,gM);  // n and m, Cos(n*phi1 + m*phi2 - (n+m)Psi_{gPsiN})
+    task_CME[i]->SetEventPlaneHarmonic(gPsiN);     // gPsiN = order N of Event Plane. Look Here ---->^
     task_CME[i]->SetFlagSkipPileUpCuts(bSkipPileUp);
 
 
