@@ -493,7 +493,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
       fMuonCounter->Fill( kMunEta );
 
       pdca = fMuonCuts->IsSelected(trk);
-      if(!pdca) continue;
+      //if(!pdca) continue;
       fMuonCounter->Fill( kMunPDCA );
 
       //muon track is accepted to put to the output
@@ -805,7 +805,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   } //muon tracks loop
 
   //selection for at least one muon or central track
-  if( nmun + ncen < 1 ) return kFALSE;
+  if( nmun < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;
