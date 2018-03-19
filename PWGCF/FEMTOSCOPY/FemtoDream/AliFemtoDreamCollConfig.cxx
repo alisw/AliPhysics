@@ -24,6 +24,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fCentBins(0)
 ,fMixingDepth(0)
 ,fkTCentrality(false)
+,fMCCommonAncestor(false)
 {
   //should not be used, since we need a name to deal with root objects
 }
@@ -39,6 +40,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fNumberRadii(0)
 ,fMixingDepth(0)
 ,fkTCentrality(false)
+,fMCCommonAncestor(false)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
   fMultBins=new TNtuple("MultBins","MultBins","mult");
