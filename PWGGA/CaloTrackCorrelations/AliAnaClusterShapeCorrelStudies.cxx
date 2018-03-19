@@ -114,6 +114,9 @@ fhSMECellModuleMaxOutRatHighM02(0),    fhSMECellModuleMaxOutModSameRatHighM02(0)
 fhSMEMaxEClusterRat(0), 
 fhSMEMaxEClusterRatLowM02(0),          fhSMEMaxEClusterRatHighM02(0),
 
+fhTCardChannelM02(0),                  fhTCardChannelM02NoCut(0),
+fhTCardChannelNCellModMax(0),          fhTCardChannelNCell(0),
+
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
 fhEMaxCellClusterRatio(0),             fhEMaxCellClusterLogRatio(0),                
@@ -1680,53 +1683,66 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
   {
+    
+    Int_t rowTCard = Int_t(iphiMax%8);
+    Int_t colTCard = Int_t(ietaMax%2);
+    Int_t iTCard = rowTCard+8*colTCard;
+    //printf("row TCard %d, col TCard %d, iTCard %d\n",rowTCard,colTCard,iTCard);
+    
+    fhTCardChannelNCellModMax->Fill(energy, iTCard, nPerModule, GetEventWeight());
+    fhTCardChannelNCell      ->Fill(energy, iTCard, nCell     , GetEventWeight());
+    fhTCardChannelM02NoCut   ->Fill(energy, iTCard, m02       , GetEventWeight());
+    if( nCell > 4) fhTCardChannelM02->Fill(energy, iTCard, m02, GetEventWeight());
+    
     Float_t ePerModuleTot = ePerModule+eCellMax;
     
-    fhSMNCellModuleMax->Fill(energy, smMax, nPerModule   );
-    fhSMNCellModuleOut->Fill(energy, smMax, nPerModuleOut);
-    fhSMECellModuleMax->Fill(energy, smMax, ePerModule   );
-    fhSMECellModuleOut->Fill(energy, smMax, ePerModuleOut);
+    fhSMNCellModuleMax->Fill(energy, smMax, nPerModule   , GetEventWeight());
+    fhSMNCellModuleOut->Fill(energy, smMax, nPerModuleOut, GetEventWeight());
+    fhSMECellModuleMax->Fill(energy, smMax, ePerModule   , GetEventWeight());
+    fhSMECellModuleOut->Fill(energy, smMax, ePerModuleOut, GetEventWeight());
     
-    fhSMNCellModuleMaxOutRat->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
-    fhSMECellModuleMaxRat   ->Fill(energy, smMax, ePerModule   /eCellMax);
-    fhSMECellModuleMaxOutRat->Fill(energy, smMax, ePerModuleOut/eCellMax);
+    fhSMNCellModuleMaxOutRat->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.), GetEventWeight());
+    fhSMECellModuleMaxRat   ->Fill(energy, smMax, ePerModule   /eCellMax       , GetEventWeight());
+    fhSMECellModuleMaxOutRat->Fill(energy, smMax, ePerModuleOut/eCellMax       , GetEventWeight());
     
-    fhSMECellModuleMaxTot   ->Fill(energy, smMax, ePerModuleTot   );
-    fhSMECellModuleMaxTotRat->Fill(energy, smMax, ePerModuleTot/eCellMax);
-    fhSMECellModuleMaxTotRatClus->Fill(energy, smMax, ePerModuleTot/energy);
+    fhSMECellModuleMaxTot   ->Fill(energy, smMax, ePerModuleTot           , GetEventWeight());
+    fhSMECellModuleMaxTotRat->Fill(energy, smMax, ePerModuleTot/eCellMax  , GetEventWeight());
+    fhSMECellModuleMaxTotRatClus->Fill(energy, smMax, ePerModuleTot/energy, GetEventWeight());
     
-    fhSMNCellModuleOutModSame   ->Fill(energy, smMax, nPerModuleOutS);
-    fhSMNCellModuleOutModDiff   ->Fill(energy, smMax, nPerModuleOutD);    
-    fhSMECellModuleOutModSame   ->Fill(energy, smMax, ePerModuleOutS);
-    fhSMECellModuleOutModDiff   ->Fill(energy, smMax, ePerModuleOutD);
-    fhSMNCellModuleMaxOutModSameRat->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.));
-    fhSMNCellModuleMaxOutModDiffRat->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.));
-    fhSMECellModuleMaxOutModSameRat->Fill(energy, smMax, ePerModuleOutS/eCellMax);
-    fhSMECellModuleMaxOutModDiffRat->Fill(energy, smMax, ePerModuleOutD/eCellMax);
+    fhSMNCellModuleOutModSame   ->Fill(energy, smMax, nPerModuleOutS, GetEventWeight());
+    fhSMNCellModuleOutModDiff   ->Fill(energy, smMax, nPerModuleOutD, GetEventWeight());    
+    fhSMECellModuleOutModSame   ->Fill(energy, smMax, ePerModuleOutS, GetEventWeight());
+    fhSMECellModuleOutModDiff   ->Fill(energy, smMax, ePerModuleOutD, GetEventWeight());
+    
+    fhSMNCellModuleMaxOutModSameRat->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.), GetEventWeight());
+    fhSMNCellModuleMaxOutModDiffRat->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.), GetEventWeight());
+    fhSMECellModuleMaxOutModSameRat->Fill(energy, smMax, ePerModuleOutS/eCellMax       , GetEventWeight());
+    fhSMECellModuleMaxOutModDiffRat->Fill(energy, smMax, ePerModuleOutD/eCellMax       , GetEventWeight());
 
     if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
     {
-      fhSMNCellModuleMaxLowM02->Fill(energy, smMax, nPerModule   );
-      fhSMNCellModuleOutLowM02->Fill(energy, smMax, nPerModuleOut);
-      fhSMECellModuleMaxLowM02->Fill(energy, smMax, ePerModule   );
-      fhSMECellModuleOutLowM02->Fill(energy, smMax, ePerModuleOut);
+      fhSMNCellModuleMaxLowM02->Fill(energy, smMax, nPerModule   , GetEventWeight());
+      fhSMNCellModuleOutLowM02->Fill(energy, smMax, nPerModuleOut, GetEventWeight());
+      fhSMECellModuleMaxLowM02->Fill(energy, smMax, ePerModule   , GetEventWeight());
+      fhSMECellModuleOutLowM02->Fill(energy, smMax, ePerModuleOut, GetEventWeight());
       
-      fhSMNCellModuleMaxOutRatLowM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
-      fhSMECellModuleMaxRatLowM02   ->Fill(energy, smMax, ePerModule   /eCellMax);
-      fhSMECellModuleMaxOutRatLowM02->Fill(energy, smMax, ePerModuleOut/eCellMax);    
+      fhSMNCellModuleMaxOutRatLowM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.), GetEventWeight());
+      fhSMECellModuleMaxRatLowM02   ->Fill(energy, smMax, ePerModule   /eCellMax       , GetEventWeight());
+      fhSMECellModuleMaxOutRatLowM02->Fill(energy, smMax, ePerModuleOut/eCellMax       , GetEventWeight());    
       
-      fhSMECellModuleMaxTotLowM02   ->Fill(energy, smMax, ePerModuleTot   );
-      fhSMECellModuleMaxTotRatLowM02->Fill(energy, smMax, ePerModuleTot/eCellMax);
-      fhSMECellModuleMaxTotRatClusLowM02->Fill(energy, smMax, ePerModuleTot/energy);
+      fhSMECellModuleMaxTotLowM02   ->Fill(energy, smMax, ePerModuleTot           , GetEventWeight());
+      fhSMECellModuleMaxTotRatLowM02->Fill(energy, smMax, ePerModuleTot/eCellMax  , GetEventWeight());
+      fhSMECellModuleMaxTotRatClusLowM02->Fill(energy, smMax, ePerModuleTot/energy, GetEventWeight());
       
-      fhSMNCellModuleOutModSameLowM02   ->Fill(energy, smMax, nPerModuleOutS);
-      fhSMNCellModuleOutModDiffLowM02   ->Fill(energy, smMax, nPerModuleOutD);    
-      fhSMECellModuleOutModSameLowM02   ->Fill(energy, smMax, ePerModuleOutS);
-      fhSMECellModuleOutModDiffLowM02   ->Fill(energy, smMax, ePerModuleOutD);
-      fhSMNCellModuleMaxOutModSameRatLowM02->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.));
-      fhSMNCellModuleMaxOutModDiffRatLowM02->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.));
-      fhSMECellModuleMaxOutModSameRatLowM02->Fill(energy, smMax, ePerModuleOutS/eCellMax);
-      fhSMECellModuleMaxOutModDiffRatLowM02->Fill(energy, smMax, ePerModuleOutD/eCellMax);
+      fhSMNCellModuleOutModSameLowM02   ->Fill(energy, smMax, nPerModuleOutS, GetEventWeight());
+      fhSMNCellModuleOutModDiffLowM02   ->Fill(energy, smMax, nPerModuleOutD, GetEventWeight());    
+      fhSMECellModuleOutModSameLowM02   ->Fill(energy, smMax, ePerModuleOutS, GetEventWeight());
+      fhSMECellModuleOutModDiffLowM02   ->Fill(energy, smMax, ePerModuleOutD, GetEventWeight());
+      
+      fhSMNCellModuleMaxOutModSameRatLowM02->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.), GetEventWeight());
+      fhSMNCellModuleMaxOutModDiffRatLowM02->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.), GetEventWeight());
+      fhSMECellModuleMaxOutModSameRatLowM02->Fill(energy, smMax, ePerModuleOutS/eCellMax       , GetEventWeight());
+      fhSMECellModuleMaxOutModDiffRatLowM02->Fill(energy, smMax, ePerModuleOutD/eCellMax       , GetEventWeight());
       
 //      if(energy > 8) printf("SM %d, E %2.2f, E max %2.2f;\n"
 //                            " \t nMod %d, nModOut %d, nMod/nModOut %2.2f;\n"
@@ -1737,27 +1753,28 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     }
     else if ( m02 > fM02HighBin[0] && m02 <= fM02HighBin[1] )
     {
-      fhSMNCellModuleMaxHighM02->Fill(energy, smMax, nPerModule   );
-      fhSMNCellModuleOutHighM02->Fill(energy, smMax, nPerModuleOut);
-      fhSMECellModuleMaxHighM02->Fill(energy, smMax, ePerModule   );
-      fhSMECellModuleOutHighM02->Fill(energy, smMax, ePerModuleOut);
+      fhSMNCellModuleMaxHighM02->Fill(energy, smMax, nPerModule   , GetEventWeight());
+      fhSMNCellModuleOutHighM02->Fill(energy, smMax, nPerModuleOut, GetEventWeight());
+      fhSMECellModuleMaxHighM02->Fill(energy, smMax, ePerModule   , GetEventWeight());
+      fhSMECellModuleOutHighM02->Fill(energy, smMax, ePerModuleOut, GetEventWeight());
       
-      fhSMNCellModuleMaxOutRatHighM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.));
-      fhSMECellModuleMaxRatHighM02   ->Fill(energy, smMax, ePerModule   /eCellMax);
-      fhSMECellModuleMaxOutRatHighM02->Fill(energy, smMax, ePerModuleOut/eCellMax);
+      fhSMNCellModuleMaxOutRatHighM02->Fill(energy, smMax, nPerModuleOut/(nPerModule+1.), GetEventWeight());
+      fhSMECellModuleMaxRatHighM02   ->Fill(energy, smMax, ePerModule   /eCellMax       , GetEventWeight());
+      fhSMECellModuleMaxOutRatHighM02->Fill(energy, smMax, ePerModuleOut/eCellMax       , GetEventWeight());
       
-      fhSMECellModuleMaxTotHighM02   ->Fill(energy, smMax, ePerModuleTot   );
-      fhSMECellModuleMaxTotRatHighM02->Fill(energy, smMax, ePerModuleTot/eCellMax);
-      fhSMECellModuleMaxTotRatClusHighM02->Fill(energy, smMax, ePerModuleTot/energy);
+      fhSMECellModuleMaxTotHighM02   ->Fill(energy, smMax, ePerModuleTot           , GetEventWeight());
+      fhSMECellModuleMaxTotRatHighM02->Fill(energy, smMax, ePerModuleTot/eCellMax  , GetEventWeight());
+      fhSMECellModuleMaxTotRatClusHighM02->Fill(energy, smMax, ePerModuleTot/energy, GetEventWeight());
       
-      fhSMNCellModuleOutModSameHighM02   ->Fill(energy, smMax, nPerModuleOutS);
-      fhSMNCellModuleOutModDiffHighM02   ->Fill(energy, smMax, nPerModuleOutD);    
-      fhSMECellModuleOutModSameHighM02   ->Fill(energy, smMax, ePerModuleOutS);
-      fhSMECellModuleOutModDiffHighM02   ->Fill(energy, smMax, ePerModuleOutD);
-      fhSMNCellModuleMaxOutModSameRatHighM02->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.));
-      fhSMNCellModuleMaxOutModDiffRatHighM02->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.));
-      fhSMECellModuleMaxOutModSameRatHighM02->Fill(energy, smMax, ePerModuleOutS/eCellMax);
-      fhSMECellModuleMaxOutModDiffRatHighM02->Fill(energy, smMax, ePerModuleOutD/eCellMax);
+      fhSMNCellModuleOutModSameHighM02   ->Fill(energy, smMax, nPerModuleOutS, GetEventWeight());
+      fhSMNCellModuleOutModDiffHighM02   ->Fill(energy, smMax, nPerModuleOutD, GetEventWeight());    
+      fhSMECellModuleOutModSameHighM02   ->Fill(energy, smMax, ePerModuleOutS, GetEventWeight());
+      fhSMECellModuleOutModDiffHighM02   ->Fill(energy, smMax, ePerModuleOutD, GetEventWeight());
+      
+      fhSMNCellModuleMaxOutModSameRatHighM02->Fill(energy, smMax, nPerModuleOutS/(nPerModule+1.), GetEventWeight());
+      fhSMNCellModuleMaxOutModDiffRatHighM02->Fill(energy, smMax, nPerModuleOutD/(nPerModule+1.), GetEventWeight());
+      fhSMECellModuleMaxOutModSameRatHighM02->Fill(energy, smMax, ePerModuleOutS/eCellMax       , GetEventWeight());
+      fhSMECellModuleMaxOutModDiffRatHighM02->Fill(energy, smMax, ePerModuleOutD/eCellMax       , GetEventWeight());
     }
     
   }  
@@ -4777,6 +4794,38 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   
   if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
   {
+    fhTCardChannelNCellModMax  = new TH3F 
+    ("hTCardChannelNCellModMax","#it{E}_{cluster} vs Max cell index in T-Card vs n Cells in module with cell E max",
+     nEbins,minE,maxE, 16,-0.5,15.5, 4,-0.5,3.5); 
+    fhTCardChannelNCellModMax->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTCardChannelNCellModMax->SetYTitle("T-Card cell index");
+    fhTCardChannelNCellModMax->SetZTitle("#it{n}_{cell}^{in module max}-1");
+    outputContainer->Add(fhTCardChannelNCellModMax); 
+ 
+    fhTCardChannelNCell  = new TH3F 
+    ("hTCardChannelNCell","#it{E}_{cluster} vs Max cell index in T-Card vs #it{n}_{cells}^{w > 0}",
+     nEbins,minE,maxE, 16,-0.5,15.5, cellBins,cellMin,cellMax); 
+    fhTCardChannelNCell->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTCardChannelNCell->SetYTitle("T-Card cell index");
+    fhTCardChannelNCell->SetZTitle("#it{n}_{cells}^{w > 0}");
+    outputContainer->Add(fhTCardChannelNCell); 
+    
+    fhTCardChannelM02  = new TH3F 
+    ("hTCardChannelM02","#it{E}_{cluster} vs Max cell index in T-Card vs #sigma^{2}_{long} (#it{n}_{cells}^{w > 0} > 4)",
+     nEbins,minE,maxE, 16,-0.5,15.5,nShShBins,minShSh,maxShSh); 
+    fhTCardChannelM02->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTCardChannelM02->SetYTitle("T-Card cell index");
+    fhTCardChannelM02->SetZTitle("#sigma^{2}_{long}");
+    outputContainer->Add(fhTCardChannelM02); 
+  
+    fhTCardChannelM02NoCut  = new TH3F 
+    ("hTCardChannelM02NoCut","#it{E}_{cluster} vs Max cell index in T-Card vs #sigma^{2}_{long}",
+     nEbins,minE,maxE, 16,-0.5,15.5,nShShBins,minShSh,maxShSh); 
+    fhTCardChannelM02NoCut->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTCardChannelM02NoCut->SetYTitle("T-Card cell index");
+    fhTCardChannelM02NoCut->SetZTitle("#sigma^{2}_{long}");
+    outputContainer->Add(fhTCardChannelM02NoCut); 
+    
     fhSMNCellModuleMax  = new TH3F 
     ("hSMNCellModuleMax","#it{E}_{cluster} vs SM number vs n Cells in module with cell E max",
      nEbins,minE,maxE, fNModules,-0.5,fNModules-0.5, 4,-0.5,3.5); 
