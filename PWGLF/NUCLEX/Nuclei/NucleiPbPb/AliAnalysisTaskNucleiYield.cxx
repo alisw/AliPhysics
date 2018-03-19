@@ -21,6 +21,7 @@
 // ALIROOT includes
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliPWGFunc.h"
 #include "AliPDG.h"
 #include "AliMultSelection.h"
 #include "AliTPCPIDResponse.h"
@@ -112,6 +113,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
    ,fRequireTPCfoundFraction{0.}
+   ,fPtShapeFunction{kNoPtShape}
+   ,fPtShapeMaximum{0.f}
    ,fEnableFlattening{false}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
@@ -119,6 +122,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtBins{0}
    ,fCustomTPCpid{0}
    ,fFlatteningProbs{0}
+   ,fPtShapeParams{0}
+   ,fFunctCollection{nullptr}
+   ,fPtShape{nullptr}
    ,fNormalisationHist{nullptr}
    ,fProduction{nullptr}
    ,fReconstructed{{nullptr}}
@@ -149,6 +155,7 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
   if (fTOFfunction) delete fTOFfunction;
+  if (fFunctCollection) delete fFunctCollection;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -171,6 +178,17 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   char   letter[2] = {'A','M'};
   string tpctof[2] = {"TPC","TOF"};
   string tpctofMC[2] = {"TPC","TPC_TOF"};
+
+  if (fPtShapeFunction != kNoPtShape)
+    fFunctCollection = new AliPWGFunc;
+  switch (fPtShapeFunction) {
+    case kBlastWaveShape:
+      fPtShape = fFunctCollection->GetBGBW(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], fPtShapeParams[2], 1.);
+    case kTsallisShape:
+      fPtShape = fFunctCollection->GetTsallis(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], 1.);
+  }
+  if (fPtShape)
+    fPtShapeMaximum = fPtShape->GetMaximum(0,10,1.e-10,10000);
 
   if (fIsMC) {
     fProduction = new TH1F("fProduction",";#it{p} (GeV/#it{c});Entries",100,-10,10);
@@ -316,11 +334,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   TClonesArray *stack = nullptr;
-  if (fIsMC) {
+  std::vector<int> rejectedParticles;
+  if (fIsMC || fPtShape) {
     // get branch "mcparticles"
     stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if (!stack)
-      ::Fatal("AliAnalysisTaskNucleiYield::UserExec","MC analysis requested on a sample without the MC particle array.");
+      ::Fatal("AliAnalysisTaskNucleiYield::UserExec","MC analysis (or pt shape) requested on a sample without the MC particle array.");
 
     /// Making the list of the deuterons we want to measure
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -329,9 +348,15 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int iC = part->Charge() > 0 ? 1 : 0;
       const int mult = -1 + 2 * iC;
       if (pdg != fPDG) continue;
-      fProduction->Fill(mult * part->P());
+      if (fPtShape) {
+        if (gRandom->Uniform(0, fPtShapeMaximum) > fPtShape->Eval(part->Pt())) {
+          rejectedParticles.push_back(iMC);
+          continue;
+        }
+      }
+      if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
-      if (part->IsPhysicalPrimary()) fTotal[iC]->Fill(centrality,part->Pt());
+      if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(centrality,part->Pt());
     }
   }
 
@@ -348,8 +373,14 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     float pT = track->Pt() * fCharge;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
 
+    int mcId = TMath::Abs(track->GetLabel());
+    if (fPtShape) {
+      if (std::find(rejectedParticles.begin(), rejectedParticles.end(), mcId) != rejectedParticles.end()) {
+        continue;
+      }
+    }
     if (fIsMC) {
-      AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
+      AliAODMCParticle *part = (AliAODMCParticle*)stack->At(mcId);
       /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
       /// are marked as SecondaryFromMaterial.
       const int mother_id = part->GetMother();
