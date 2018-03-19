@@ -46,6 +46,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   void SetPDGDaugNeg(int PDGCode){fNegDaug->SetPDGCode(PDGCode);};
   void SetPDGDaugBach(int PDGCode){fBach->SetPDGCode(PDGCode);};
   TVector3 Getv0P() {return fv0Momentum;};
+  float Getv0Pt() {return fv0Pt;};
   void Setv0PDGCode(int PDG) {fv0PDG=PDG;};
   AliFemtoDreamTrack *GetPosDaug()const{return fPosDaug;};
   AliFemtoDreamTrack *GetNegDaug()const{return fNegDaug;};
@@ -71,6 +72,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fv0DCADaug;
   float fv0DCAPrimVtx;
   TVector3 fv0Momentum;
+  float fv0Pt;
   float fDCABachPrimVtx;
   float fv0TransRadius;
   float fv0CPA;
