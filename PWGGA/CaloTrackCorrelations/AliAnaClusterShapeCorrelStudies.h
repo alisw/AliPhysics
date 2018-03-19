@@ -631,6 +631,11 @@ public:
   TH3F *   fhSMEMaxEClusterRatLowM02;           //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, photon shape
   TH3F *   fhSMEMaxEClusterRatHighM02;          //!<! Energy of cell max over cluster, per SM, per cluster E, non photon shape, non photon shape
   
+  TH3F *   fhTCardChannelM02;                   //!<! 0 to 15 channel location of max cell in T-Card vs cluster E vs M02 with large n cell (> 4)
+  TH3F *   fhTCardChannelM02NoCut;              //!<! 0 to 15 channel location of max cell in T-Card vs cluster E vs M02 
+  TH3F *   fhTCardChannelNCellModMax;           //!<! 0 to 15 channel location of max cell in T-Card vs cluster E vs n cell in max module
+  TH3F *   fhTCardChannelNCell;                 //!<! 0 to 15 channel location of max cell in T-Card vs cluster E vs n cell in cluster with weight
+  
   // Weight studies
   //
   

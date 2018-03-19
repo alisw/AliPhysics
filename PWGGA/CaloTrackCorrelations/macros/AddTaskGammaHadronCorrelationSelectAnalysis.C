@@ -38,6 +38,7 @@
 #include "AliAnaParticleHadronCorrelation.h"
 #include "AliAnaChargedParticles.h"
 #include "AliAnaCalorimeterQA.h"
+#include "AliAnaClusterShapeCorrelStudies.h"
 #include "AliAnaGeneratorKine.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
@@ -107,7 +108,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
     histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
     histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
     histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
-    ana->SetFirstSMCoveredByTRD( 0);
   } 
   else if(calorimeter=="PHOS")
   {
@@ -120,7 +120,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
-  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 4.9, 500);
+  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
   
   // Invariant mass histo
   histoRanges->SetHistoMassRangeAndNBins(0., 1., 200) ;
@@ -132,12 +132,12 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
   // track-cluster residuals
-  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.15,0.15,300);
-  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,300);
-  histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.06,0.06,120);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.06,0.06,120);
+  histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoPOverERangeAndNBins(0,1.5,150);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -319,12 +319,12 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOffUseEMCALTimeCut();
   reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   
-   For data, check what is the range needed depending on the sample
-    if( !simulation) 
-    {
-      reader->SwitchOnUseEMCALTimeCut();
-      reader->SetEMCALTimeCut(-25,20);
-    }
+  // For data, check what is the range needed depending on the sample
+  if( !simulation) 
+  {
+    reader->SwitchOnUseEMCALTimeCut();
+    reader->SetEMCALTimeCut(-25,20);
+  }
   
   // CAREFUL
   if(nonLinOn) reader->SwitchOnClusterELinearityCorrection();
@@ -864,6 +864,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if ( kAnaGammaHadronCorrAnaSel.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
   
+  if ( kAnaGammaHadronCorrAnaSel.Contains("PerTCard") ) 
+    ana->SwitchOnFillHistogramsPerTCardIndex(); 
+  
   if(kAnaGammaHadronCorrAnaSel.Contains("Bkg"))
   {
     ana->SwitchOnPtTrigBinHistoFill();
@@ -1056,6 +1059,9 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   if ( kAnaGammaHadronCorrAnaSel.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
+ 
+  if ( kAnaGammaHadronCorrAnaSel.Contains("PerTCard") ) 
+    ana->SwitchOnFillHistogramsPerTCardIndex(); 
   
   ana->SetMCGenType(0,7);
   
@@ -1211,6 +1217,78 @@ AliAnaChargedParticles* ConfigureChargedAnalysis( Bool_t simulation, Bool_t prin
   ana->AddToHistogramsName("AnaHadrons_");
   
   SetAnalysisCommonParameters(ana,"CTS",2012,"pp",simulation,printSettings,debug); // see method below
+  
+  return ana;
+}
+
+///
+/// Configure the task doing cluster shape studies
+///
+AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
+(Int_t tm, TString col , Bool_t  simulation, 
+ TString calorimeter, Int_t year, Bool_t  printSettings, Int_t   debug)
+{
+  AliAnaClusterShapeCorrelStudies *ana = new AliAnaClusterShapeCorrelStudies();
+  
+  ana->SetM02Min(-1);
+  ana->SetNCellsPerClusterMin(-1);
+  
+  ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
+  
+  if(simulation) ana->SetConstantTimeShift(615);
+  
+  ana->SwitchOffFiducialCut();
+  
+  ana->SwitchOnStudyClusterShape();
+  
+  ana->SwitchOnStudyEMCalModuleCells();
+  
+  ana->SwitchOffStudyClusterShapeParam();
+  
+  ana->SwitchOffStudyMatchedPID() ;
+  
+  ana->SwitchOffStudyWeight();
+  
+  ana->SetNCellBinLimits(-1); // no analysis on predefined bins in nCell
+  
+  ana->SwitchOffStudyTCardCorrelation() ;
+  ana->SwitchOffStudyExotic();
+  ana->SwitchOffStudyInvariantMass();
+  ana->SwitchOffStudyColRowFromCellMax() ;
+  ana->SwitchOffStudyCellTime() ;
+  
+  // PID cuts (Track-matching)
+  ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  
+  if(tm > 1)
+  {
+    // track pT dependent cut
+    caloPID->SwitchOnEMCTrackPtDepResMatching();
+    
+    // Begining of histograms name
+    ana->AddToHistogramsName("Shape_TMDep_");
+  }
+  else if ( tm )
+  {
+    // Fix
+    caloPID->SwitchOffEMCTrackPtDepResMatching();
+    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDPhiCut(0.030);
+    
+    // Begining of histograms name
+    ana->AddToHistogramsName("Shape_TMFix_"); 
+  }
+  
+  SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
+  
+  AliHistogramRanges* histoRanges = ana->GetHistogramRanges();
+  histoRanges->SetHistoPtRangeAndNBins(0, 50, 100) ; // Reduce a bit size
   
   return ana;
 }
@@ -1514,6 +1592,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   if ( analysisString.Contains("Charged") ) 
   { 
     maker->AddAnalysis(ConfigureChargedAnalysis(simulation,printSettings,debug), n++); // track selection checks
+  }
+  
+  // Cluster Shape studies
+  if ( analysisString.Contains("ClusterShape") ) 
+  { 
+    maker->AddAnalysis(ConfigureClusterShape(tm,col,simulation,calorimeter,year,printSettings,debug) , n++);
   }
   
   // Calo QA

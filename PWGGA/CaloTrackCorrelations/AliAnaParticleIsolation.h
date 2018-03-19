@@ -140,6 +140,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
   
+  void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
+  
   void         SwitchOnFillEMCALRegionHistograms()   { fFillEMCALRegionHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionHistograms()  { fFillEMCALRegionHistograms = kFALSE ; }  
   
@@ -247,6 +250,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
+  Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
+  Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
@@ -628,6 +633,18 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInConePerSM[20] ;                       //!<! Cluster and tracks Pt in the cone, per supermodule.
   TH2F *   fhPtClusterInConePerSM[20] ;                //!<! Clusters Pt in the cone, per supermodule.
   TH2F *   fhPtTrackInConePerSM[20] ;                  //!<! Tracks Pt in the cone, per supermodule.
+
+  // Selection parameters per T-Card index
+  TH2F *   fhPtPerTCardIndex[2];                       //!<! Input particle pT distribution per T-Card index.
+  TH2F *   fhPtLambda0PerTCardIndex[2][16];            //!<! Shower shape of (non) isolated photons per T-Card index (do not apply shower shape cut previously).
+  
+  TH2F *   fhConeSumPtPerTCardIndex[16] ;              //!<! Cluster and tracks Sum Pt in the cone, per T-Card index.
+  TH2F *   fhConeSumPtClusterPerTCardIndex[16] ;       //!<! Clusters Sum Pt in the cone, per T-Card index.
+  TH2F *   fhConeSumPtTrackPerTCardIndex[16] ;         //!<! Tracks Sum Pt in the cone, per T-Card index.
+  
+  TH2F *   fhPtInConePerTCardIndex[16] ;               //!<! Cluster and tracks Pt in the cone, per T-Card index.
+  TH2F *   fhPtClusterInConePerTCardIndex[16] ;        //!<! Clusters Pt in the cone, per T-Card index.
+  TH2F *   fhPtTrackInConePerTCardIndex[16] ;          //!<! Tracks Pt in the cone, per T-Card index.
   
   /// Candidate Pt distribution depending on bin of cone leading particle.
   TH1F **  fhPtLeadConeBin ;                           //![fNBkgBin]
