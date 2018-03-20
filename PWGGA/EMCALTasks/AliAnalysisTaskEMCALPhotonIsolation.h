@@ -181,7 +181,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TClonesArray               * fNCluster;                       ///< Neutral clusters
   TClonesArray               * fAODMCParticles;                 ///<
   AliAODMCHeader             * fmcHeader;                       ///<
-  AliGenPythiaEventHeader    * fPythiaHeaderLocal;              ///< Pythia header for cocktail simulations
   AliGenDPMjetEventHeader    * fDPMjetHeader;                   ///< DPMjet header for cocktail simulations
   TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
   TClonesArray               * fTracksAna;                      ///< Hybrid track array in
@@ -276,6 +275,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fPtvsSumUE_MC;                   //!<!
   TH1F                       * fSumEiso_MC;                     //!<!
   TH1F                       * fSumUE_MC;                       //!<!
+  TH1F                       * fGenPromptPhotonSel;             //!<!
   TH2F                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2D                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH1D                       * fPT;                             //!<! Pt distribution

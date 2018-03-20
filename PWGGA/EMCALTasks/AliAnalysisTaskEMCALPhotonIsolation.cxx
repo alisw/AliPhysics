@@ -66,7 +66,6 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
-fPythiaHeaderLocal(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
 fTracksAna(0),
@@ -150,6 +149,7 @@ fTrackMult(0),
 fPtvsSumUE_MC(0),
 fSumEiso_MC(0),
 fSumUE_MC(0),
+fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -269,7 +269,6 @@ fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
-fPythiaHeaderLocal(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
 fTracksAna(0),
@@ -353,6 +352,7 @@ fTrackMult(0),
 fPtvsSumUE_MC(0),
 fSumEiso_MC(0),
 fSumUE_MC(0),
+fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -913,6 +913,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fSumUE_MC = new TH1F ("hSumUE_MC","Total UE estimation with Eta Band (generated)",250,0.,100.);
 	  fSumUE_MC->Sumw2();
 	  fOutput->Add(fSumUE_MC);
+
+	  fGenPromptPhotonSel = new TH1F ("hGenPromptPhotonSel","Generated direct photon selection cuts", 7, 0., 7.);
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(1, "All part.");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(2, "Final state");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(3, "Phys. prim.");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(4, "Photons");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(5, "Mother photon");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(6, "Prompt photon");
+	  fGenPromptPhotonSel->GetXaxis()->SetBinLabel(7, "Acceptance");
+	  fGenPromptPhotonSel->Sumw2();
+	  fOutput->Add(fGenPromptPhotonSel);
 	}
 
 	if(!fQA){
@@ -1448,14 +1459,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
     if(fPythiaVersion.Contains("8")){
 
-      // +++ ONLY USABLE WITH A COCKTAIL WHERE PYTHIA IS THE SECOND (1) GENERATOR (0 BEING THE FIRST ONE) +++ //
-      //
-      fPythiaHeaderLocal = dynamic_cast<AliGenPythiaEventHeader*>(fmcHeader->GetCocktailHeaders()->At(1));
-      //
-      // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-
-      // Pythia8 // 201 = qg to qgamma // 202 = qqbar to ggamma // 203 = gg to ggamma // 204 = qqbar to gammagamma // 205 = gg to gammagamma
-      if(fMCtruth || fPythiaHeaderLocal->ProcessType() == 201 || fPythiaHeaderLocal->ProcessType() == 202 || fPythiaHeaderLocal->ProcessType() == 203 || fPythiaHeaderLocal->ProcessType() == 204 || fPythiaHeaderLocal->ProcessType() == 205) AnalyzeMC_Pythia8();
+      // Pythia8 // 201 = qg to qgamma // 202 = qqbar to ggamma
+      if(fMCtruth || fPythiaHeader->ProcessType() == 201 || fPythiaHeader->ProcessType() == 202) AnalyzeMC_Pythia8();
 
     }
     else{
@@ -4520,21 +4525,20 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
     return;
   }
 
-  Int_t nTracks              = fAODMCParticles->GetEntriesFast();
-  Int_t nFinalStateParticles = 0;
-
+  Int_t nTracks = fAODMCParticles->GetEntriesFast();
   Int_t iTrack;
-  AliAODMCParticle *track;
 
-  for(iTrack = 0; iTrack < nTracks; iTrack ++){
-    track = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+  // AliAODMCParticle *track;
+  // Int_t nFinalStateParticles = 0;
+  // for(iTrack = 0; iTrack < nTracks; iTrack ++){
+  //   track = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
-    if(track->MCStatusCode() != 1 || !track->IsPhysicalPrimary()) // Discard non final-state particles and non physical primary
-      continue;
+  //   if(track->MCStatusCode() != 1 || !track->IsPhysicalPrimary()) // Discard non final-state particles and non physical primary
+  //     continue;
 
-    if(TMath::Abs(track->Eta()) <= 0.87 && track->Charge() != 0)  // Count charged particles in TPC acceptance
-      nFinalStateParticles ++;
-  }
+  //   if(TMath::Abs(track->Eta()) <= 0.87 && track->Charge() != 0)  // Count charged particles in TPC acceptance
+  //     nFinalStateParticles ++;
+  // }
 
   AliAODMCParticle *candidate, *particle, *candidateMother;
   Int_t candidatePDG, candidatePhotonLabel, particleMotherLabel, candidateMotherLabel, candidateMotherPDG;
@@ -4544,11 +4548,20 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
     candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
+    fGenPromptPhotonSel->Fill(0.5);
+
     if(candidate->MCStatusCode() != 1)  continue;       // Discard non final-state particles
+
+    fGenPromptPhotonSel->Fill(1.5);
+
     if(!candidate->IsPhysicalPrimary()) continue;       // Discard non physical primary particles
+
+    fGenPromptPhotonSel->Fill(2.5);
 
     candidatePDG = candidate->GetPdgCode();
     if(candidatePDG != 22) continue;                    // Discard particles which are not photons
+
+    fGenPromptPhotonSel->Fill(3.5);
 
     candidateMotherLabel = candidate->GetMother();
     if(candidateMotherLabel > 0 && candidateMotherLabel < nTracks){
@@ -4560,7 +4573,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 
     if(candidateMotherPDG != 22) continue;              // Discard particles whose mother is not a photon
 
-    if(fPythiaHeaderLocal->ProcessType() != 201 || fPythiaHeaderLocal->ProcessType() != 202 || fPythiaHeaderLocal->ProcessType() != 203 || fPythiaHeaderLocal->ProcessType() != 204 || fPythiaHeaderLocal->ProcessType() != 205) continue;              // Discard particles which do not come from prompt photon processes
+    fGenPromptPhotonSel->Fill(4.5);
+
+    if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+
+    fGenPromptPhotonSel->Fill(5.5);
 
     candidateEta = candidate->Eta();
     candidatePhi = candidate->Phi();
@@ -4579,9 +4596,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
 	phiMaxEMCal_fidu = TMath::Pi()-0.03-fFiducialCut;
       }
-
-      if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside EMCal acceptance
-	continue;
     }
     else{
       etaMax_fidu = 0.87-fFiducialCut;
@@ -4597,10 +4611,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
 	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03;
 	phiMaxEMCal_fidu = TMath::Pi()-0.03;
       }
-
-      if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside TPC acceptance
-	continue;
     }
+
+    if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside EMCal acceptance
+      continue;
+
+    fGenPromptPhotonSel->Fill(6.5);
 
     candidatePhotonLabel = iTrack;
     E_T = candidate->E()*(TMath::Sin(candidate->Theta())); // Transform to transverse Energy
