@@ -14,6 +14,7 @@ class AliFemtoDreamEventCuts {
  public:
   AliFemtoDreamEventCuts();
   virtual ~AliFemtoDreamEventCuts();
+  void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
   bool isSelected(AliFemtoDreamEvent *evt);
   static AliFemtoDreamEventCuts* StandardCutsRun1();
   static AliFemtoDreamEventCuts* StandardCutsRun2();
@@ -33,7 +34,7 @@ class AliFemtoDreamEventCuts {
   //Everything else disabled if you use the following option:
   void UseDontWorryEvtCuts(bool apply) {fUseAliEvtCuts=apply;};
   void SetMultVsCentPlots(bool doIt) {fCentVsMultPlots=doIt;};
-  void InitQA(bool MinimalBooking);
+  void InitQA();
   TList *GetHistList() const {return fHist->GetHistList();};
  private:
   void BookQA(AliFemtoDreamEvent *evt);

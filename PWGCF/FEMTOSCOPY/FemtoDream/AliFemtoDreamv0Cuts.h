@@ -19,6 +19,7 @@ class AliFemtoDreamv0Cuts {
   static AliFemtoDreamv0Cuts* LambdaCuts(bool isMC,bool CPAPlots,
                                          bool SplitContrib);
   //Setters for plots
+  void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
   void SetIsMonteCarlo(bool isMC){fMCData=isMC;};
   bool GetIsMonteCarlo(){return fMCData;};
   void SetPlotCPADist(bool plot) {fCPAPlots=plot;};
@@ -59,7 +60,7 @@ class AliFemtoDreamv0Cuts {
   }
   void SetCutCPA(float cpa) {fMinCPA=cpa;fCutCPA=true;};
   void SetCutInvMass(float width){fInvMassCutWidth=width;fCutInvMass=true;};
-  void Init(bool MinimalBooking);
+  void Init();
   TList *GetQAHists() {return fHistList;};
 //  TList *GetQAHistsPosDaug() {return fPosCuts->GetQAHists();};
 //  TList *GetQAHistsNegDaug() {return fNegCuts->GetQAHists();};
