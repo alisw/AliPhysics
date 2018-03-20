@@ -47,6 +47,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   }
   AliFemtoDreamEventCuts *evtCuts=
       AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->SetMinimalBooking(true);
 
   //Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts=
@@ -442,12 +443,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     addon+="HM";
   }
   AliAnalysisDataContainer *coutputQA;
-  TString addon="";
-  if (CentEst=="kInt7") {
-    addon+="MB";
-  } else if (CentEst=="kHM") {
-    addon+="HM";
-  }
 
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA",addon.Data());

@@ -17,7 +17,7 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fEvtCutQA(false)
 ,fIsMC(false)
 ,fAnalysis()
-,fQA()
+,fQA(0)
 ,fEvtCuts()
 ,fEvtHistList(0)
 ,fTrackCuts()
@@ -39,8 +39,8 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fAntiCascCutList(0)
 ,fAntiCascCutMCList(0)
 ,fConfig()
-,fResults()
-,fResultQA()
+,fResults(0)
+,fResultQA(0)
 {}
 
 AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
@@ -52,7 +52,7 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
 ,fEvtCutQA(false)
 ,fIsMC(isMC)
 ,fAnalysis()
-,fQA()
+,fQA(0)
 ,fEvtCuts()
 ,fEvtHistList(0)
 ,fTrackCuts()
@@ -74,10 +74,9 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
 ,fAntiCascCutList(0)
 ,fAntiCascCutMCList(0)
 ,fConfig()
-,fResults()
-,fResultQA()
+,fResults(0)
+,fResultQA(0)
 {
-  //  if (!fMinimalBooking) {
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
   DefineOutput(3, TList::Class());  //Output for the Track Cuts
@@ -96,9 +95,6 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
     DefineOutput(15, TList::Class()); //Output for the Xi Cut MC Info
     DefineOutput(16, TList::Class()); //Output for the AntiXi Cut MC Info
   }
-  //  } else {
-  //    DefineOutput(1, TList::Class());
-  //  }
 }
 
 AliAnalysisTaskFemtoDream::~AliAnalysisTaskFemtoDream() {
@@ -153,56 +149,89 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     AliFatal("Event Collection Config missing");
   }
   fAnalysis->Init(fIsMC,fMinResultBooking,GetCollisionCandidates());
-  //  if (!fMinimalBooking) {
-  if (fAnalysis->GetQAList()) {
-    fQA=fAnalysis->GetQAList();
+  if (!fMinResultBooking) {
+    if (fAnalysis->GetQAList()) {
+      fQA=fAnalysis->GetQAList();
+    }
+    if (fAnalysis->GetResultQAList()) {
+      fResultQA=fAnalysis->GetResultQAList();
+    }
   } else {
-    AliWarning("QA Histograms not available");
+    fQA=new TList();
+    fQA->SetName("QA");
+    fQA->SetOwner();
+    fResultQA=new TList();
+    fResultQA->SetName("ResultQA");
+    fResultQA->SetOwner();
   }
-  if (fAnalysis->GetEventCutHists()) {
-    fEvtHistList=fAnalysis->GetEventCutHists();
+  if (!fEvtCuts->GetMinimalBooking()) {
+    if (fAnalysis->GetEventCutHists()) {
+      fEvtHistList=fAnalysis->GetEventCutHists();
+    }
   } else {
-    AliWarning("Event Cut Histograms not available");
+    fEvtHistList=new TList();
+    fEvtHistList->SetName("EventCuts");
+    fEvtHistList->SetOwner();
   }
-  if (fAnalysis->GetTrackCutHists()) {
-    fTrackCutHistList=fAnalysis->GetTrackCutHists();
+  if (!fTrackCuts->GetMinimalBooking()) {
+    if (fAnalysis->GetTrackCutHists()) {
+      fTrackCutHistList=fAnalysis->GetTrackCutHists();
+    }
   } else {
-    AliWarning("Event Cut Histograms not available");
+    fTrackCutHistList=new TList();
+    fTrackCutHistList->SetName("TrackCuts");
+    fTrackCutHistList->SetOwner();
   }
-  if (fAnalysis->GetAntitrackCutHists()) {
-    fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
+  if (!fAntiTrackCuts->GetMinimalBooking()) {
+    if (fAnalysis->GetAntitrackCutHists()) {
+      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
+    }
   } else {
-    AliWarning("Event Cut Histograms not available");
+    fAntiTrackCutHistList=new TList();
+    fAntiTrackCutHistList->SetName("AntiTrackCuts");
+    fAntiTrackCutHistList->SetOwner();
   }
-  if (fAnalysis->Getv0CutHist()) {
-    fv0CutHistList=fAnalysis->Getv0CutHist();
+  if (!fv0Cuts->GetMinimalBooking()) {
+    if (fAnalysis->Getv0CutHist()) {
+      fv0CutHistList=fAnalysis->Getv0CutHist();
+    }
   } else {
-    AliWarning("v0 Cut Histograms not available");
+    fv0CutHistList=new TList();
+    fv0CutHistList->SetName("v0Cuts");
+    fv0CutHistList->SetOwner();
   }
-  if (fAnalysis->GetAntiv0CutHist()) {
-    fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
+  if (!fAntiv0Cuts->GetMinimalBooking()) {
+    if (fAnalysis->GetAntiv0CutHist()) {
+      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
+    }
   } else {
-    AliWarning("Antiv0 Cut Histograms not available");
+    fAntiv0CutHistList=new TList();
+    fAntiv0CutHistList->SetName("Antiv0Cuts");
+    fAntiv0CutHistList->SetOwner();
   }
-  if (fAnalysis->GetCascadeCutHist()) {
-    fCascCutList=fAnalysis->GetCascadeCutHist();
+  if (!fCascCuts->GetMinimalBooking()) {
+    if (fAnalysis->GetCascadeCutHist()) {
+      fCascCutList=fAnalysis->GetCascadeCutHist();
+    }
   } else {
-    AliWarning("Cascade Cut Histograms not availabl");
+    fCascCutList=new TList();
+    fCascCutList->SetName("CascadeCuts");
+    fCascCutList->SetOwner();
   }
-  if (fAnalysis->GetAntiCascadeCutHist()) {
-    fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
+  if (!fAntiCascCuts->GetMinimalBooking()) {
+    if (fAnalysis->GetAntiCascadeCutHist()) {
+      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
+    }
   } else {
-    AliWarning("AntiCascade Cut Histograms not available");
+    fAntiCascCutList=new TList();
+    fAntiCascCutList->SetName("AntiCascadeCuts");
+    fAntiCascCutList->SetOwner();
   }
+  //Results we always post
   if (fAnalysis->GetResultList()) {
     fResults=fAnalysis->GetResultList();
   } else {
     AliWarning("Results List not Available");
-  }
-  if (fAnalysis->GetResultQAList()) {
-    fResultQA=fAnalysis->GetResultQAList();
-  } else {
-    AliWarning("Results QA List not Available");
   }
   PostData(1,fQA);
   PostData(2,fEvtHistList);
@@ -215,35 +244,59 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   PostData(9,fResults);
   PostData(10,fResultQA);
   if (fIsMC) {
-    if (fTrackCuts->GetIsMonteCarlo()) {
-      fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
+    if (!fTrackCuts->GetMinimalBooking()) {
+      if (fTrackCuts->GetIsMonteCarlo()) {
+        fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No Track Cut MC Histograms!");
+      fTrackCutHistMCList=new TList();
+      fTrackCutHistMCList->SetName("MCTrkCuts");
+      fTrackCutHistMCList->SetOwner();
     }
-    if (fAntiTrackCuts->GetIsMonteCarlo()) {
-      fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
+    if (!fAntiTrackCuts->GetMinimalBooking()) {
+      if (fAntiTrackCuts->GetIsMonteCarlo()) {
+        fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No Antitrack Cut MC Histograms!");
+      fAntiTrackCutHistMCList=new TList();
+      fAntiTrackCutHistMCList->SetName("MCAntiTrkCuts");
+      fAntiTrackCutHistMCList->SetOwner();
     }
-    if (fv0Cuts->GetIsMonteCarlo()) {
-      fv0CutHistMCList=fv0Cuts->GetMCQAHists();
+    if (!fv0Cuts->GetMinimalBooking()) {
+      if (fv0Cuts->GetIsMonteCarlo()) {
+        fv0CutHistMCList=fv0Cuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No v0 cut MC Histograms");
+      fv0CutHistMCList=new TList();
+      fv0CutHistMCList->SetName("MCv0Cuts");
+      fv0CutHistMCList->SetOwner();
     }
-    if (fAntiv0Cuts->GetIsMonteCarlo()) {
-      fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
+    if (!fAntiv0Cuts->GetMinimalBooking()) {
+      if (fAntiv0Cuts->GetIsMonteCarlo()) {
+        fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No Antiv0 cut MC Histograms");
+      fAntiv0CutHistMCList=new TList();
+      fAntiv0CutHistMCList->SetName("MCAntiv0Cuts");
+      fAntiv0CutHistMCList->SetOwner();
     }
-    if (fCascCuts->GetIsMonteCarlo()) {
-      fCascCutMCList=fCascCuts->GetMCQAHists();
+    if (!fCascCuts->GetMinimalBooking()) {
+      if (fCascCuts->GetIsMonteCarlo()) {
+        fCascCutMCList=fCascCuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No Casc cut MC Histograms");
+      fCascCutMCList=new TList();
+      fCascCutMCList->SetName("MCCascCuts");
+      fCascCutMCList->SetOwner();
     }
-    if (fAntiCascCuts->GetIsMonteCarlo()) {
-      fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
+    if (!fAntiCascCuts->GetMinimalBooking()) {
+      if (fAntiCascCuts->GetIsMonteCarlo()) {
+        fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
+      }
     } else {
-      AliWarning("No Anti Casc cut MC Histograms");
+      fAntiCascCutMCList=new TList();
+      fAntiCascCutMCList->SetName("MCAntiCascCuts");
+      fAntiCascCutMCList->SetOwner();
     }
     PostData(11,fTrackCutHistMCList);
     PostData(12,fAntiTrackCutHistMCList);
@@ -261,55 +314,54 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     AliWarning("No Input Event");
   } else {
     fAnalysis->Make(Event);
-    if (fAnalysis->GetQAList()) {
-      fQA=fAnalysis->GetQAList();
-    } else {
-      AliWarning("QA Histograms not available");
+    if (!fMinResultBooking) {
+      if (fAnalysis->GetQAList()) {
+        fQA=fAnalysis->GetQAList();
+      }
+      if (fAnalysis->GetResultQAList()) {
+        fResultQA=fAnalysis->GetResultQAList();
+      }
     }
-    if (fAnalysis->GetEventCutHists()) {
-      fEvtHistList=fAnalysis->GetEventCutHists();
-    } else {
-      AliWarning("Event Cut Histograms not available");
+    if (!fEvtCuts->GetMinimalBooking()) {
+      if (fAnalysis->GetEventCutHists()) {
+        fEvtHistList=fAnalysis->GetEventCutHists();
+      }
     }
-    if (fAnalysis->GetTrackCutHists()) {
-      fTrackCutHistList=fAnalysis->GetTrackCutHists();
-    } else {
-      AliWarning("Event Cut Histograms not available");
+    if (!fTrackCuts->GetMinimalBooking()) {
+      if (fAnalysis->GetTrackCutHists()) {
+        fTrackCutHistList=fAnalysis->GetTrackCutHists();
+      }
     }
-    if (fAnalysis->GetAntitrackCutHists()) {
-      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
-    } else {
-      AliWarning("Event Cut Histograms not available");
+    if (!fAntiTrackCuts->GetMinimalBooking()) {
+      if (fAnalysis->GetAntitrackCutHists()) {
+        fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
+      }
     }
-    if (fAnalysis->Getv0CutHist()) {//&&
-      fv0CutHistList=fAnalysis->Getv0CutHist();
-    } else {
-      AliWarning("v0 Cut Histograms not available");
+    if (!fv0Cuts->GetMinimalBooking()) {
+      if (fAnalysis->Getv0CutHist()) {
+        fv0CutHistList=fAnalysis->Getv0CutHist();
+      }
     }
-    if (fAnalysis->GetAntiv0CutHist()) {//&&
-      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-    } else {
-      AliWarning("Antiv0 Cut Histograms not available");
+    if (!fAntiv0Cuts->GetMinimalBooking()) {
+      if (fAnalysis->GetAntiv0CutHist()) {
+        fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
+      }
     }
-    if (fAnalysis->GetCascadeCutHist()) {
-      fCascCutList=fAnalysis->GetCascadeCutHist();
-    } else {
-      AliWarning("Cascade Cut Histograms not availabl");
+    if (!fCascCuts->GetMinimalBooking()) {
+      if (fAnalysis->GetCascadeCutHist()) {
+        fCascCutList=fAnalysis->GetCascadeCutHist();
+      }
     }
-    if (fAnalysis->GetAntiCascadeCutHist()) {
-      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
-    } else {
-      AliWarning("AntiCascade Cut Histograms not availabl");
+    if (!fAntiCascCuts->GetMinimalBooking()) {
+      if (fAnalysis->GetAntiCascadeCutHist()) {
+        fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
+      }
     }
+    //Results we always post
     if (fAnalysis->GetResultList()) {
       fResults=fAnalysis->GetResultList();
     } else {
       AliWarning("Results List not Available");
-    }
-    if (fAnalysis->GetResultQAList()) {
-      fResultQA=fAnalysis->GetResultQAList();
-    } else {
-      AliWarning("Results QA List not Available");
     }
     PostData(1,fQA);
     PostData(2,fEvtHistList);
@@ -322,35 +374,35 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     PostData(9,fResults);
     PostData(10,fResultQA);
     if (fIsMC) {
-      if (fTrackCuts->GetIsMonteCarlo()) {
-        fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
-      } else {
-        AliWarning("No Track Cut MC Histograms!");
+      if (!fTrackCuts->GetMinimalBooking()) {
+        if (fTrackCuts->GetIsMonteCarlo()) {
+          fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
+        }
       }
-      if (fAntiTrackCuts->GetIsMonteCarlo()) {
-        fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
-      } else {
-        AliWarning("No Antitrack Cut MC Histograms!");
+      if (!fAntiTrackCuts->GetMinimalBooking()) {
+        if (fAntiTrackCuts->GetIsMonteCarlo()) {
+          fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
+        }
       }
-      if (fv0Cuts->GetIsMonteCarlo()) {
-        fv0CutHistMCList=fv0Cuts->GetMCQAHists();
-      } else {
-        AliWarning("No v0 cut MC Histograms");
+      if (!fv0Cuts->GetMinimalBooking()) {
+        if (fv0Cuts->GetIsMonteCarlo()) {
+          fv0CutHistMCList=fv0Cuts->GetMCQAHists();
+        }
       }
-      if (fAntiv0Cuts->GetIsMonteCarlo()) {
-        fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
-      } else {
-        AliWarning("No Antiv0 cut MC Histograms");
+      if (!fAntiv0Cuts->GetMinimalBooking()) {
+        if (fAntiv0Cuts->GetIsMonteCarlo()) {
+          fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
+        }
       }
-      if (fCascCuts->GetIsMonteCarlo()) {
-        fCascCutMCList=fCascCuts->GetMCQAHists();
-      } else {
-        AliWarning("No Casc cut MC Histograms");
+      if (!fCascCuts->GetMinimalBooking()) {
+        if (fCascCuts->GetIsMonteCarlo()) {
+          fCascCutMCList=fCascCuts->GetMCQAHists();
+        }
       }
-      if (fAntiCascCuts->GetIsMonteCarlo()) {
-        fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
-      } else {
-        AliWarning("No Anti Casc cut MC Histograms");
+      if (!fAntiCascCuts->GetMinimalBooking()) {
+        if (fAntiCascCuts->GetIsMonteCarlo()) {
+          fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
+        }
       }
       PostData(11,fTrackCutHistMCList);
       PostData(12,fAntiTrackCutHistMCList);

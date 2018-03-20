@@ -86,6 +86,8 @@ void AliFemtoDreamAnalysis::Init(
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
     if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+  } else {
+    fQA=nullptr;
   }
   fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
   return;
