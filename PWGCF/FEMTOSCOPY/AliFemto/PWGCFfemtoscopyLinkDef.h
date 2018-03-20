@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliFemtoBaryoniaAnalysis+;
+#pragma link C++ class AliFemtoMultCorrAnalysis+;
 #pragma link C++ class AliFemtoTrio+;
 #pragma link C++ class AliFemtoTrioCut+;
 #pragma link C++ class AliFemtoTrioMinvFctn+;
