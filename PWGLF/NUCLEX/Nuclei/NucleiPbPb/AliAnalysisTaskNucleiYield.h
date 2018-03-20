@@ -82,6 +82,7 @@ public:
   void SetDisableTPCpidAtHighPt (float pt) { fDisableTPCpidAtHighPt = pt; }
   void SetFixForLHC14a6 (bool fix) { fFixForLHC14a6 = fix; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
+  void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -116,7 +117,7 @@ private:
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
   bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
-  bool   PassesPIDSelection(AliAODTrack *t);
+  int   PassesPIDSelection(AliAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
 
   Bool_t Flatten(float cent);
@@ -171,6 +172,7 @@ private:
   Float_t               fRequireTPCfoundFraction; ///< Found over findable clusters
   Int_t                 fPtShapeFunction;       ///<  Id of the function used to weight the MC input pt shape (see the enum)
   Float_t               fPtShapeMaximum;        ///<  Maximum of the pt shape used
+  Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
