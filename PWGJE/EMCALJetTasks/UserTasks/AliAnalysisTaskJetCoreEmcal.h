@@ -113,7 +113,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fh2RPTC10; //!<!
 	TH2F *fh2RPTC20; //!<!
 
-	THnSparseF *fHJetPhiCorr; //!<!
+	THnSparse *fHJetPhiCorr; //!<!
 	TH2F *fhDphiPtSig; //!<!
 	TH2F *fhDphiPtRef; //!<!
 
@@ -122,7 +122,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 2);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 3);
   /// \endcond
 };
 #endif
