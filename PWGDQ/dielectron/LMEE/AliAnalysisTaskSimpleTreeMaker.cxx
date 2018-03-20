@@ -323,6 +323,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("vertexZ",   &primaryVertex[2]);
 		fTree->Branch("runNumber", &runNumber);
 		fTree->Branch("eventNum",  &eventNum);
+		fTree->Branch("multiplicity",  &nMultiplicity);
 		fTree->Branch("gridPID",   &fGridPID);
 
     //Get grid PID which can be used later to assign unique event numbers
