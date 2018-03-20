@@ -481,7 +481,7 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliCaloTrackParticleCorrelatio
 {
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
   
-  Float_t conesize   = GetIsolationCut()->GetConeSize();
+  Float_t conesize = GetIsolationCut()->GetConeSize();
   
   // Select the Calorimeter
   TObjArray * pl = 0x0;
@@ -575,7 +575,7 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliCaloTrackParticleCorrel
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
   
   Float_t conesize = GetIsolationCut()->GetConeSize();
-  
+
   Float_t phiTrig = pCandidate->Phi();
   if(phiTrig<0) phiTrig += TMath::TwoPi();
     
@@ -731,8 +731,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
 {
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
   
-  Float_t conesize   = GetIsolationCut()->GetConeSize();
-  
+  Float_t conesize = GetIsolationCut()->GetConeSize();
+
   Double_t sumptPerp = 0. ;
   Double_t sumptPerpBC0 = 0. ;
   Double_t sumptPerpITSSPD = 0. ;
@@ -1602,7 +1602,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
 }
 
 //______________________________________________________________________________________________________
-/// Get the cell amplityde or sum of amplitudes in isolation cone.
+/// Get the cell amplitude or sum of amplitudes in isolation cone.
 /// Missing: Remove signal cells in cone in case the trigger is a cluster.
 //______________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliCaloTrackParticleCorrelation * aodParticle,
@@ -1613,7 +1613,7 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliCaloTrackParticle
   if( !fFillCellHistograms ) return ;
   
   Float_t conesize = GetIsolationCut()->GetConeSize();
-  
+
   Float_t  ptTrig  = aodParticle->Pt();
   Float_t  phiTrig = aodParticle->Phi();
   if(phiTrig<0) phiTrig += TMath::TwoPi();
@@ -3039,6 +3039,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TString parTitleR   = Form("#it{R} = %2.2f%s"       ,GetIsolationCut()->GetConeSize(),sParticle.Data());
   TString parTitleRCh = Form("#it{R} = %2.2f, x^{#pm}",GetIsolationCut()->GetConeSize());
   TString parTitleRNe = Form("#it{R} = %2.2f, x^{0}"  ,GetIsolationCut()->GetConeSize());
+  
+  if( GetIsolationCut()->GetMinDistToTrigger() > 0 )
+  {
+    parTitle    = Form("%2.2f<#it{R}<%2.2f%s%s"     ,
+                       GetIsolationCut()->GetMinDistToTrigger(),GetIsolationCut()->GetConeSize(),sThreshold.Data(),sParticle.Data());
+    parTitleR   = Form("%2.2f<#it{R}<%2.2f%s"       ,
+                       GetIsolationCut()->GetMinDistToTrigger(),GetIsolationCut()->GetConeSize(),sParticle.Data());
+    parTitleRCh = Form("%2.2f<#it{R}<%2.2f, x^{#pm}",
+                       GetIsolationCut()->GetMinDistToTrigger(),GetIsolationCut()->GetConeSize());
+    parTitleRNe = Form("%2.2f<#it{R}<%2.2f, x^{0}"  ,
+                       GetIsolationCut()->GetMinDistToTrigger(),GetIsolationCut()->GetConeSize());
+  }
   
   TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
@@ -7883,6 +7895,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //       partInConeStatus, partInConeE, partInConePt, mcisopAOD->Pz(), partInConePDG, photonEta, photonPhi, partInConeEta, partInConePhi);
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+
+      if(dR < GetIsolationCut()->GetMinDistToTrigger())
+        continue;
       
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
@@ -7995,7 +8010,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if(mcIndex == kmcPrimPi0Decay)
         {
           // Second decay out of cone
-          if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
+               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
             fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt, GetEventWeight());
           
           // Second decay out of acceptance
@@ -8009,8 +8025,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCPi0DecayPairNoOverlap->Fill(photonPt, GetEventWeight());
           
           // Second decay pt smaller than threshold
-          if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-             fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
+          if ( d2Acc && 
+               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
+               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
             if(!overlap)
@@ -8023,7 +8041,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         else // eta decay
         {
           // Second decay out of cone
-          if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
+               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
             fhPtPrimMCEtaDecayPairOutOfCone->Fill(photonPt, GetEventWeight());
           
           // Second decay out of acceptance
@@ -8037,8 +8056,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCEtaDecayPairNoOverlap->Fill(photonPt, GetEventWeight());
           
           // Second decay pt smaller than threshold
-          if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-             fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
+          if ( d2Acc && 
+               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
+               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCEtaDecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
             if(!overlap)
@@ -8082,7 +8103,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight());
           
           // Second decay out of cone
-          if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
+               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
             fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight());
           
           // Second decay out of acceptance
@@ -8093,8 +8115,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           }
           
           // Second decay pt smaller than threshold
-          if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-             fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
+          if ( d2Acc && 
+               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
+               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
             if(!overlap)
@@ -8110,7 +8134,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCEtaDecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight());
           
           // Second decay out of cone
-          if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
+               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
             fhPtPrimMCEtaDecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight());
           
           // Second decay out of acceptance
@@ -8121,8 +8146,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           }
           
           // Second decay pt smaller than threshold
-          if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-             fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
+          if ( d2Acc && 
+               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
+               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
             if(!overlap)
