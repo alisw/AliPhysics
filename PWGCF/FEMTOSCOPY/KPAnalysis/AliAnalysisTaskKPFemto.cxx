@@ -702,7 +702,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   //TRee
 
   if(!fReadMCTruth){
-          
+         OpenFile(2);
          fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
 	 /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
@@ -722,7 +722,10 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 /*16*/   fHistSparseSignal->Branch("tSphericity",         &tSphericity        , "tSphericity/F" );
 	 /*17*/   fHistSparseSignal->Branch("tGammaCoversionMass", &tGammaCoversionMass, "tGammaCoversionMass/F" );
 	 /*18*/   fHistSparseSignal->Branch("tDTheta",             &tDTheta            , "tDTheta/F" );
+	 fHistSparseSignal->SetAutoSave(100000000);
 	 
+	 
+         OpenFile(3);
 	 fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
 	 /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
@@ -742,10 +745,12 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 /*16*/   fHistSparseBkg->Branch("tSphericity",         &tSphericity        , "tSphericity/F" );
 	 /*17*/   fHistSparseBkg->Branch("tGammaCoversionMass", &tGammaCoversionMass, "tGammaCoversionMass/F" );
 	 /*18*/   fHistSparseBkg->Branch("tDTheta",             &tDTheta            , "tDTheta/F" );
+	 fHistSparseBkg->SetAutoSave(100000000);
 	 
   }
   
   else{
+    OpenFile(2);
     fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
     /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
@@ -776,8 +781,9 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     /*27*/   fHistSparseSignal->Branch("tpdgcodeP1",          &tpdgcodeP1         , "tpdgcodeP1/I" ); 
     /*28*/   fHistSparseSignal->Branch("tpdgcodeP2",          &tpdgcodeP2         , "tpdgcodeP2/I" );
     /*29*/   fHistSparseSignal->Branch("tKstarGen",           &tKstarGen          , "tKstarGen/F" );
+    fHistSparseSignal->SetAutoSave(100000000);
     
- 
+    OpenFile(3);
     fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
     /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
@@ -808,6 +814,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     /*27*/   fHistSparseBkg->Branch("tpdgcodeP1",          &tpdgcodeP1         , "tpdgcodeP1/I" ); 
     /*28*/   fHistSparseBkg->Branch("tpdgcodeP2",          &tpdgcodeP2         , "tpdgcodeP2/I" );
     /*29*/   fHistSparseBkg->Branch("tKstarGen",           &tKstarGen          , "tKstarGen/F" );
+    fHistSparseBkg->SetAutoSave(100000000);
 	 
   }
   //TTree *fHistSparseBkg;      
@@ -1277,7 +1284,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   // cout<<"Min pt prim: "<<fMinPtForPrim<<" max pt: "<<fMaxPtForPrim<<endl;
   // cout<<"Min pt sec : "<<fMinPtForSec<<"  max pt: "<<fMaxPtForSec<<endl;
-
+  
   for (Int_t ip = 0; ip < ntracks; ip++){
     
     vtrack = fAODevent->GetTrack(ip);
