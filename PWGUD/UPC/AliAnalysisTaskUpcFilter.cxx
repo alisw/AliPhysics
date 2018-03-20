@@ -426,6 +426,8 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   fUPCEvent->SetZPCEnergy( dataZDC->GetZPCTowerEnergy()[0] );
   fUPCEvent->SetZNAEnergy( dataZDC->GetZNATowerEnergy()[0] );
   fUPCEvent->SetZPAEnergy( dataZDC->GetZPATowerEnergy()[0] );
+  
+  fUPCEvent->SetBCnumber(vEvent->GetBunchCrossNumber());
 
   //default primary vertex
   const AliVVertex *vtx = vEvent->GetPrimaryVertex();
