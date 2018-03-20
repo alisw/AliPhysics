@@ -686,6 +686,22 @@ Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent
 
   Int_t multipl = GetNumberOfTrackletsInEtaRange(aodEvent,-0.8,0.8);//this is the multiplicty calculated with tracklets, (bug, before it was float)
   GetNumberOfTPCtracksInEtaRange(aodEvent,-0.8,0.8);
+
+  Double_t RefMultiplicity08 = -1.f;
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  if(header)
+    {
+      RefMultiplicity08 = header->GetRefMultiplicityComb08();
+      TString fillthis = "fRefMultiplicity08";
+      if(!fIsLightweight) ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(RefMultiplicity08);
+
+      fillthis = "fNTrackletsRefMultiplicity";
+      if(!fIsLightweight) ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(multipl,RefMultiplicity08);
+    }
+
+  // Use RefMult08 for Run2
+  multipl = (fIsRun1) ? multipl : RefMultiplicity08;
+
   if(multipl <= 0) //multiplicity estimation fails
     {
       MixingBins[0] = -9999;
@@ -728,16 +744,6 @@ Int_t *AliAnalysisTaskPLFemto::MultiplicityBinFinderzVertexBinFinder(AliAODEvent
 
   //check filling of reference multiplicity:
 
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
-  if(header)
-    {
-      Double_t RefMultiplicity08 = header->GetRefMultiplicityComb08();
-      TString fillthis = "fRefMultiplicity08";
-      if(!fIsLightweight) ((TH1F*)(fOutputSP->FindObject(fillthis)))->Fill(RefMultiplicity08);
-
-      fillthis = "fNTrackletsRefMultiplicity";
-      if(!fIsLightweight) ((TH2F*)(fOutputSP->FindObject(fillthis)))->Fill(multipl,RefMultiplicity08);
-    }
 
   return MixingBins;
 }
