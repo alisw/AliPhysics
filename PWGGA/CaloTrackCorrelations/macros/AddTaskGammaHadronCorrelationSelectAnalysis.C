@@ -324,6 +324,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   {
     reader->SwitchOnUseEMCALTimeCut();
     reader->SetEMCALTimeCut(-25,20);
+    if(year > 2015)  reader->SetEMCALTimeCut(-20,15);
   }
   
   // CAREFUL
@@ -612,7 +613,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
-  ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",tm));
+  //ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",tm));
+  ana->AddToHistogramsName("AnaPhoton_");
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
   
@@ -674,7 +676,8 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   
   //Set Histograms name tag, bins and ranges
   
-  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),tm));
+  //ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),tm));
+  ana->AddToHistogramsName(Form("Ana%s%sEbE_",particle.Data(),opt.Data()));
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -692,7 +695,8 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     if(useSSIso)
     {
       ana->SwitchOnSelectIsolatedDecay();
-      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_TM%d_",particle.Data(),opt.Data(),tm));
+      //ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_TM%d_",particle.Data(),opt.Data(),tm));
+      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_",particle.Data(),opt.Data()));
       ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorrAnaSel.Data()));
     }
     
@@ -759,7 +763,8 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     {
       printf("Do not apply SS cut on merged pi0 analysis \n");
       caloPID->SwitchOffSplitShowerShapeCut() ;
-      ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_TM%d_",particle.Data(),opt.Data(),tm));
+      //ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_TM%d_",particle.Data(),opt.Data(),tm));
+      ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_",particle.Data(),opt.Data()));
       ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenSS",particle.Data(), opt.Data(), kAnaGammaHadronCorrAnaSel.Data()));
       caloPID->SetClusterSplittingM02Cut(0.1,10);
     }
@@ -781,12 +786,14 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       caloPID->SwitchOffSplitAsymmetryCut() ;
       if(!useSSIso)
       {
-        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
+        //ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
+        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_OpenAsy_",particle.Data(),opt.Data()));
         ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenSS_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorrAnaSel.Data()));
       }
       else
       {
-        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
+        //ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
+        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenAsy_",particle.Data(),opt.Data()));
         ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorrAnaSel.Data()));
       }
     }
@@ -816,12 +823,13 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
 ///
 /// Configure the task doing the trigger particle isolation
 ///
-AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t  leading,
+AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t   leading,
                                                     Int_t   partInCone,    Int_t   thresType,
-                                                    Float_t cone,          Float_t pth,        Bool_t multi,
+                                                    Float_t cone,          Float_t coneMin,
+                                                    Float_t pth,           Bool_t  multi,
                                                     TString col,           Bool_t  simulation,
                                                     TString calorimeter,   Int_t   year,       Int_t tm,
-                                                    Bool_t  printSettings, Int_t   debug                      )
+                                                    Bool_t  printSettings, Int_t   debug                )
 {
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   
@@ -918,17 +926,18 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if(cone > 0 && pth > 0)
   {
     ic->SetConeSize(cone);
+    ic->SetMinDistToTrigger(coneMin);    
     ic->SetPtThresholdMax(10000);
     
     if(thresType == AliIsolationCut::kPtThresIC)
     {
-      printf("*** Iso *** PtThresMin = %1.1f GeV/c *** R = %1.1f ***\n",pth,cone);
+      printf("*** Iso *** PtThresMin = %1.1f GeV/c *** R = %1.2f *** R min %1.2f\n",pth,cone,coneMin);
       ic->SetPtThreshold(pth);
     }
     
     if(thresType == AliIsolationCut::kSumPtIC)
     {
-      printf("*** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f ***\n",pth,cone);
+      printf("*** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
       ic->SetSumPtThreshold(pth);
     }
   }
@@ -939,12 +948,14 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
       ic->SetPtThreshold(0.5);
       ic->SetSumPtThreshold(1.0) ;
       ic->SetConeSize(0.4);
+      ic->SetMinDistToTrigger(-1);    
     }
     if(col=="PbPb")
     {
       ic->SetPtThreshold(3.);
       ic->SetSumPtThreshold(3.0) ;
       ic->SetConeSize(0.3);
+      ic->SetMinDistToTrigger(-1);    
     }
   }
   
@@ -958,8 +969,11 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   {
     ic->SetConeSize(1.);    // Take all for first iteration
     ic->SetPtThreshold(100);// Take all for first iteration
+    ic->SetMinDistToTrigger(-1);    
+
     ana->SwitchOnSeveralIsolation() ;
-    ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),tm));
+    //ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),tm));
+    ana->SetAODObjArrayName(Form("MultiIC%s",particle.Data()));
     
     ana->SetNCones(3);
     ana->SetNPtThresFrac(2);
@@ -987,8 +1001,10 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   //Set Histograms name tag, bins and ranges
   
-  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
-  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));
+//  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_"     ,particle.Data(),tm));
+//  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));  
+  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_"     ,particle.Data()));
+  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_",particle.Data()));
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1010,9 +1026,10 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,      Int_t   leading,
                                                                     Bool_t  bIsolated,     Float_t shshMax,
                                                                     Int_t partInCone,      Int_t   thresType,
-                                                                    Float_t cone,          Float_t pth,      Bool_t mixOn,
+                                                                    Float_t cone,          Float_t coneMin,
+                                                                    Float_t pth,           Bool_t  mixOn,
                                                                     TString col,           Bool_t  simulation,
-                                                                    TString calorimeter,   Int_t   year,     Int_t tm,
+                                                                    TString calorimeter,   Int_t   year,     Int_t /*tm*/,
                                                                     Bool_t  printSettings, Int_t   debug                      )
 {
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
@@ -1109,9 +1126,10 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
       
       if(cone >0 && pth > 0)
       {
-        printf("*** Correl *** PtThres = %1.1f GeV/c *** R = %1.1f ***\n",pth,cone);
+        printf("*** Correl *** PtThres = %1.1f GeV/c *** R = %1.1f *** R min = %1.2f\n",pth,cone,coneMin);
         ic->SetPtThreshold(pth);
         ic->SetConeSize(cone);
+        ic->SetMinDistToTrigger(coneMin);    
       }
       else
       {
@@ -1119,12 +1137,14 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
         {
           ic->SetPtThreshold(0.5);
           ic->SetConeSize(0.4);
+          ic->SetMinDistToTrigger(-1);    
         }
         if(col=="PbPb")
         {
           ic->SetPtThreshold(3.);
           //ic->SetPtThreshold(1.);
           ic->SetConeSize(0.3);
+          ic->SetMinDistToTrigger(-1);    
         }
       }
       
@@ -1174,7 +1194,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   //Set Histograms name tag, bins and ranges
   
-  ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,tm));
+  //ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,tm));
+  ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated));
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1334,8 +1355,8 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
 ///
 /// Configure the task filling generated particle kinematics histograms
 ///
-AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t cone,
-                                              Float_t pth,
+AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth,    
+                                              Float_t cone,          Float_t coneMin,
                                               TString col,           Bool_t  simulation,
                                               TString calorimeter,   Int_t   year,
                                               Bool_t  printSettings, Int_t   debug       )
@@ -1376,6 +1397,7 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t con
   ic->SetDebug(debug);
   ic->SetPtThreshold(pth);
   ic->SetConeSize(cone);
+  ic->SetMinDistToTrigger(coneMin);    
   ic->SetSumPtThreshold(1.0) ;
   ic->SetICMethod(thresType);
   
@@ -1400,7 +1422,8 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t con
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
-/// \param isoCone : A float setting the isolation cone size
+/// \param isoCone : A float setting the isolation cone size higher limit
+/// \param isoConeMin : A float setting the isolation cone size lower limit
 /// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
 /// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param isoContent : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
@@ -1428,11 +1451,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
  TString  analysisString= "Photon_MergedPi0_DecayPi0_Isolation_Correlation_QA_Charged",
  Float_t  shshMax       = 0.27,
  Float_t  isoCone       = 0.4,
- Float_t  isoPtTh       = 0.5,
- Int_t    isoMethod     = AliIsolationCut::kPtThresIC,
+ Float_t  isoConeMin    = -1,
+ Float_t  isoPtTh       = 2,
+ Int_t    isoMethod     = AliIsolationCut::kSumPtIC,
  Int_t    isoContent    = AliIsolationCut::kNeutralAndCharged,
  Int_t    leading       = 0,
- Int_t    tm            = 1,
+ Int_t    tm            = 2,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  Bool_t   mixOn         = kTRUE,
@@ -1456,11 +1480,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   printf("Analysis string <%s>, other passed settings:"
          "\n calorimeter <%s>, simulation <%d>, year <%d>,\n col <%s>, trigger <%s>, reject EMC <%d>, "
          "clustersArray <%s>, calibrate <%d>, non linearity <%d>\n shshMax <%2.2f>, "
-         "isoCone <%2.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,\n leading <%d>, "
+         "R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,\n leading <%d>, "
          "tm <%d>, minCen <%d>, maxCen <%d>, mixOn <%d>,\n  outputfile <%s>, printSettings <%d>, debug <%d>\n"
          , analysisString.Data(), calorimeter.Data(),simulation,year,col.Data(),trigger.Data(), rejectEMCTrig, 
          clustersArray.Data(), calibrate,nonLinOn, shshMax,
-         isoCone,isoPtTh,isoMethod,isoContent,leading,
+         isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,leading,
          tm,minCen,maxCen,mixOn,outputfile.Data(),printSettings,debug);
   
   // Get the pointer to the existing analysis manager via the static access method.
@@ -1484,13 +1508,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   
   // Name for containers
   
-  kAnaGammaHadronCorrAnaSel = Form("%s_%s_Trig%s_TM%d_M02_%1.2f_IsoParam_C%1.2fPt%1.2fM%dPa%d_Lead%d_Mix%d",
-                                   analysisString.Data(),calorimeter.Data(),trigger.Data(), tm,
-                                   shshMax,isoCone,isoPtTh,isoMethod,isoContent,leading,mixOn);
+  kAnaGammaHadronCorrAnaSel = Form("%s_%s_Trig%s_TM%d",
+                                   analysisString.Data(),calorimeter.Data(),trigger.Data(),tm);
+
+  if ( analysisString.Contains("Isolation") )
+    kAnaGammaHadronCorrAnaSel+= Form("_Iso_Meth%d_Part%d_Pt%1.2f_R%1.2f",isoMethod,isoContent,isoPtTh,isoCone);
+  if ( analysisString.Contains("Corr") && analysisString.Contains("Photon") )
+    kAnaGammaHadronCorrAnaSel+= Form("_CorrM02_%1.2f",shshMax);
   
-  if(col=="PbPb" && maxCen>=0) kAnaGammaHadronCorrAnaSel+=Form("Cen%d_%d",minCen,maxCen);
-  
-  if(clustersArray!="")        kAnaGammaHadronCorrAnaSel+=Form("_Cl%s",clustersArray.Data());
+  if ( isoConeMin > 0 )     kAnaGammaHadronCorrAnaSel+=Form("_Rmin%1.2f",isoConeMin);
+  if ( leading        )     kAnaGammaHadronCorrAnaSel+=Form("_Lead%d",leading);
+  if ( mixOn          )     kAnaGammaHadronCorrAnaSel+="_MixOn";
+  if ( col=="PbPb" && 
+       maxCen>=0      )     kAnaGammaHadronCorrAnaSel+=Form("_Cen%d_%d",minCen,maxCen);
+  if ( clustersArray!="" )  kAnaGammaHadronCorrAnaSel+=Form("_Cl%s",clustersArray.Data());
 
   printf("<<<< NAME: %s >>>>>\n",kAnaGammaHadronCorrAnaSel.Data());
   
@@ -1536,20 +1567,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
     
     if ( analysisString.Contains("Isolation") )
     {
-      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", leading, isoContent,isoMethod,isoCone,isoPtTh, kFALSE,
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
                                                     col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Photon isolation
       
     }
     
     if( analysisString.Contains("Correlation") )
     {
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoPtTh, mixOn,
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Gamma-hadron correlation
     }
     
     if ( analysisString.Contains("Isolation") && analysisString.Contains("Correlation") )
     {
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoPtTh, mixOn,
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                                                             col,simulation,calorimeter,year,tm,printSettings,debug) , n++); // Isolated gamma hadron correlation
     }
   }
@@ -1563,20 +1594,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
                                                col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 event by event selection, cluster splitting
     if ( analysisString.Contains("Isolation") )
     {
-      maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", leading, isoContent,isoMethod,isoCone,isoPtTh, kFALSE,
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
                                                     col,simulation,calorimeter,year,tm,printSettings,debug), n++);          // Pi0 isolation, cluster splits
       
     }
     
     if( analysisString.Contains("Correlation") )
     {
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoPtTh, mixOn,
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++);  // Pi0-hadron correlation
     }
     
     if ( analysisString.Contains("Isolation") && analysisString.Contains("Correlation") )
     {
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoPtTh, mixOn,
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                                                             col,simulation,calorimeter,year,tm,printSettings,debug) , n++); // Isolated pi0-hadron correlation
     }
   }
@@ -1584,7 +1615,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   // Check the generated kinematics
   if(simulation && analysisString.Contains("Generator")) 
   {
-    maker->AddAnalysis(ConfigureGenKineAnalysis(isoMethod,isoCone,isoPtTh,
+    maker->AddAnalysis(ConfigureGenKineAnalysis(isoMethod,isoPtTh,isoCone,isoConeMin,
                                                 col,simulation,calorimeter,year,printSettings,debug), n++);
   }
   
