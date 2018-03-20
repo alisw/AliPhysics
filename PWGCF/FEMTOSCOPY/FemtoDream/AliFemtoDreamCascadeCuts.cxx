@@ -272,8 +272,11 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
 
 void AliFemtoDreamCascadeCuts::Init() {
   fNegCuts->SetMinimalBooking(fMinimalBooking);
+  fNegCuts->Init();
   fPosCuts->SetMinimalBooking(fMinimalBooking);
+  fPosCuts->Init();
   fBachCuts->SetMinimalBooking(fMinimalBooking);
+  fBachCuts->Init();
   if (!fMinimalBooking) {
     fHist=new AliFemtoDreamCascadeHist(fXiMass);
     BookCuts();

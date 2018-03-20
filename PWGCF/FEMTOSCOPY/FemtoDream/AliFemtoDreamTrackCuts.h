@@ -82,8 +82,8 @@ class AliFemtoDreamTrackCuts {
   TList *GetQAHists() {return fHists->GetHistList();};
   TList *GetMCQAHists() {return fMCHists->GetHistList();};
   TString ClassName() {return "AliFemtoDreamTrackCuts";};
-  void SetName(TString name){fHists->SetName(name.Data());};
-  void SetMCName(TString name){fMCHists->SetName(name.Data());};
+  void SetName(TString name){if(fHists)fHists->SetName(name.Data());};
+  void SetMCName(TString name){if(fMCHists)fMCHists->SetName(name.Data());};
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDAODCuts(AliFemtoDreamTrack *Track);
