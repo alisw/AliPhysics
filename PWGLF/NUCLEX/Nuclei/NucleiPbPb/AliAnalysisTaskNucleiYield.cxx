@@ -115,6 +115,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireTPCfoundFraction{0.}
    ,fPtShapeFunction{kNoPtShape}
    ,fPtShapeMaximum{0.f}
+   ,fITSelectronRejectionSigma{-1.}
    ,fEnableFlattening{false}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
@@ -371,6 +372,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
+    int pid_mask = PassesPIDSelection(track);
+    bool pid_check = (pid_mask == 7);
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
 
     int mcId = TMath::Abs(track->GetLabel());
@@ -393,7 +396,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         for (int iR = iTof; iR >= 0; iR--) {
           if (part->IsPhysicalPrimary()) {
             if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
-                (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum))
+                (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+                (!iR || pid_check) && (iR || pid_mask & 8))
               fReconstructed[iR][iC]->Fill(centrality,pT);
             fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
             if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
@@ -404,7 +408,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
-      bool pid_check = PassesPIDSelection(track);
       const int iC = (track->Charge() > 0) ? 1 : 0;
 
       float tpc_n_sigma = GetTPCsigmas(track);
@@ -419,7 +422,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
       if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
-      if (fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum)
+      if ((fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+          (pid_mask & 8))
         fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
 
       if (iTof == 0) continue;
@@ -595,12 +599,16 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
 /// \param sigmas Number of sigmas
 /// \return Boolean value: true means that the track passes the PID selection
 ///
-bool AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
-  bool tofPID = true, itsPID = true, tpcPID = true;
+int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
+  bool tofPID = true, itsPID = true, tpcPID = true, electronRejection = true;
+
+  AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
-    AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
     itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
   }
+
+  /// Anyway it is always true if fITSelectronRejectionSigma is less than 0 (the default)
+  electronRejection = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
 
   if (fRequireTOFpidSigmas > 0) {
     tofPID = TMath::Abs(fPID->NumberOfSigmasTOF(t, fParticle)) < fRequireTOFpidSigmas;
@@ -619,7 +627,7 @@ bool AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
     }
   }
 
-  return itsPID && tpcPID && tofPID;
+  return int(itsPID) | int(tpcPID) << 1 | int(tofPID) << 2| int(electronRejection) << 3;
 }
 
 /// This function sets the number of TOF bins and the boundaries of the histograms
