@@ -13,7 +13,7 @@ ClassImp(AliFemtoDreamAnalysis)
 AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 :fMVPileUp(false)
 ,fEvtCutQA(false)
-,fQA(0)
+,fQA()
 ,fFemtoTrack()
 ,fFemtov0()
 ,fFemtoCasc()
@@ -86,8 +86,6 @@ void AliFemtoDreamAnalysis::Init(
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
     if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
-  } else {
-    fQA=nullptr;
   }
   fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
   return;
