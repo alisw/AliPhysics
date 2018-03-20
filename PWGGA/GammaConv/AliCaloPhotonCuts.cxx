@@ -3160,7 +3160,6 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 //  cout << "MatchTracksToClusters: " << event->GetNumberOfTracks() << ", " << fIsPureCalo << ", " << fUseDistTrackToCluster << endl;
 
   for (Int_t itr=0;itr<event->GetNumberOfTracks();itr++){
-    AliExternalTrackParam *trackParam = 0;
     AliVTrack *inTrack = 0x0;
     if(esdev){
       inTrack = esdev->GetTrack(itr);
@@ -3169,10 +3168,6 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
          if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
       }
-
-      const AliExternalTrackParam *in = esdt->GetInnerParam();
-      if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
-      trackParam = new AliExternalTrackParam(*in);
     } else if(aodev) {
       inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       if(!inTrack) continue;
@@ -3271,7 +3266,6 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       }
       if(arrClustersMatch) delete cluster;
     }
-    delete trackParam;
 
   }
   if(EsdTrackCuts){
