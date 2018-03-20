@@ -4613,7 +4613,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       }
     }
 
-    if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside EMCal acceptance
+    if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside acceptance
       continue;
 
     fGenPromptPhotonSel->Fill(6.5);
