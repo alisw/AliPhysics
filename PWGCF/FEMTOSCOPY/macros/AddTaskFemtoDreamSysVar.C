@@ -445,7 +445,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   AliAnalysisDataContainer *coutputQA;
 
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
-  TString QAName = Form("%sQA",addon.Data());
+  TString QAName = Form("%sQA%s",addon.Data(),suffix.Data());
   coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       QAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -453,7 +453,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 1, coutputQA);
 
   AliAnalysisDataContainer *coutputEvtCuts;
-  TString EvtCutsName = Form("%sEvtCuts",addon.Data());
+  TString EvtCutsName = Form("%sEvtCuts%s",addon.Data(),suffix.Data());
   coutputEvtCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       EvtCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -461,7 +461,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 2, coutputEvtCuts);
 
   AliAnalysisDataContainer *couputTrkCuts;
-  TString TrackCutsName = Form("%sTrackCuts",addon.Data());
+  TString TrackCutsName = Form("%sTrackCuts%s",addon.Data(),suffix.Data());
   couputTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -469,7 +469,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 3, couputTrkCuts);
 
   AliAnalysisDataContainer *coutputAntiTrkCuts;
-  TString AntiTrackCutsName = Form("%sAntiTrackCuts",addon.Data());
+  TString AntiTrackCutsName = Form("%sAntiTrackCuts%s",addon.Data(),suffix.Data());
   coutputAntiTrkCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -477,7 +477,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputv0Cuts;
-  TString v0CutsName = Form("%sv0Cuts",addon.Data());
+  TString v0CutsName = Form("%sv0Cuts%s",addon.Data(),suffix.Data());
   coutputv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       v0CutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -485,7 +485,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 5, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
-  TString Antiv0CutsName = Form("%sAntiv0Cuts",addon.Data());
+  TString Antiv0CutsName = Form("%sAntiv0Cuts%s",addon.Data(),suffix.Data());
   coutputAntiv0Cuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       Antiv0CutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -493,7 +493,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputCascadeCuts;
-  TString CascadeCutsName = Form("%sCascadeCuts",addon.Data());
+  TString CascadeCutsName = Form("%sCascadeCuts%s",addon.Data(),suffix.Data());
   coutputCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       CascadeCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -501,7 +501,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 7, coutputCascadeCuts);
 
   AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts",addon.Data());
+  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts%s",addon.Data(),suffix.Data());
   coutputAntiCascadeCuts = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       AntiCascadeCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -509,7 +509,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 8, coutputAntiCascadeCuts);
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults",addon.Data());
+  TString ResultsName = Form("%sResults%s",addon.Data(),suffix.Data());
   coutputResults = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       ResultsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -517,7 +517,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 9, coutputResults);
 
   AliAnalysisDataContainer *coutputResultQA;
-  TString ResultQAName = Form("%sResultQA",addon.Data());
+  TString ResultQAName = Form("%sResultQA%s",addon.Data(),suffix.Data());
   coutputResultQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
       ResultQAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -525,7 +525,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   mgr->ConnectOutput(task, 10, coutputResultQA);
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
-    TString TrkCutsMCName = Form("%sTrkCutsMC",addon.Data());
+    TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -533,7 +533,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC",addon.Data());
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -541,7 +541,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
-    TString v0CutsMCName = Form("%sv0CutsMC",addon.Data());
+    TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         v0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -549,7 +549,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 13, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
-    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC",addon.Data());
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
     coutputAntiv0CutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         Antiv0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -557,7 +557,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
-    TString XiCutsMCName = Form("%sXiCutsMC",addon.Data());
+    TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
     coutputXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         XiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -565,7 +565,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     mgr->ConnectOutput(task, 15, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
-    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC",addon.Data());
+    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
     coutputAntiXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
         AntiXiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
