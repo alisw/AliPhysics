@@ -20,6 +20,7 @@ class AliFemtoDreamv0Cuts {
                                          bool SplitContrib);
   //Setters for plots
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void SetIsMonteCarlo(bool isMC){fMCData=isMC;};
   bool GetIsMonteCarlo(){return fMCData;};
   void SetPlotCPADist(bool plot) {fCPAPlots=plot;};

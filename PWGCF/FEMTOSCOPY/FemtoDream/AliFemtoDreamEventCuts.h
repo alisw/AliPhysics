@@ -15,6 +15,7 @@ class AliFemtoDreamEventCuts {
   AliFemtoDreamEventCuts();
   virtual ~AliFemtoDreamEventCuts();
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   bool isSelected(AliFemtoDreamEvent *evt);
   static AliFemtoDreamEventCuts* StandardCutsRun1();
   static AliFemtoDreamEventCuts* StandardCutsRun2();

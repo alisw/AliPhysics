@@ -20,6 +20,7 @@ class AliFemtoDreamCascadeCuts {
   virtual ~AliFemtoDreamCascadeCuts();
   static AliFemtoDreamCascadeCuts *XiCuts(bool isMC,bool contribSplitting);
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void Setv0Negcuts(AliFemtoDreamTrackCuts *cuts){fNegCuts=cuts;};
   void Setv0PosCuts(AliFemtoDreamTrackCuts *cuts){fPosCuts=cuts;};
   void SetBachCuts(AliFemtoDreamTrackCuts *cuts){fBachCuts=cuts;};

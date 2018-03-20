@@ -39,6 +39,7 @@ class AliFemtoDreamTrackCuts {
 
   //Setters for Plots
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void SetPlotDCADist(bool plot) {fDCAPlots=plot;};
   void SetPlotCombSigma(bool plot) {fCombSigma=plot;};
   void SetPlotContrib(bool plot) {fContribSplitting=plot;};
