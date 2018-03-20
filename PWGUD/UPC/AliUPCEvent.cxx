@@ -37,7 +37,7 @@ AliUPCEvent::AliUPCEvent()
    fBBtriggerADC(0), fBBFlagADC(0), fBBtriggerADA(0), fBBFlagADA(0), fADADecision(0), fADCDecision(0),
   fZNCEnergy(0), fZPCEnergy(0), fZNAEnergy(0), fZPAEnergy(0),
   fZNCtdc(0), fZPCtdc(0), fZNAtdc(0), fZPAtdc(0),
-  fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),
+  fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),fBCnumber(0),
   fUPCTracks(0x0), fNtracks(0), fUPCMuonTracks(0x0), fNmuons(0),
   fMCParticles(0x0), fNmc(0),
   fArrayInt(0x0), fArrayD(0x0)
