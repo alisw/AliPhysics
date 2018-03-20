@@ -43,6 +43,7 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
 
   // set event mixing options
   int nmix=5;
+  if((EventCuts%10000)/1000==1) nmix=0;
   float maxDiffVzMix=1;
   float maxDiffMultMix=5;
   task->UseContinuousMix();
