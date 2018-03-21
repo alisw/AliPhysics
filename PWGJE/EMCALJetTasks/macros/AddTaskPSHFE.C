@@ -1,3 +1,4 @@
+#include "AliAnalysisTaskPSHFE.h"
 AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE, Bool_t UseNonSignalEvents=kFALSE)
 {
     //==============================================================================
