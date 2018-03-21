@@ -123,7 +123,7 @@ class CEPRawTrackBuffer : public TObject
    
     Double_t        GetEta() const { return fEta; }
 
-    ClassDef(CEPRawTrackBuffer,1)     // CEP raw track buffer
+    ClassDef(CEPRawTrackBuffer,1);     // CEP raw track buffer
 
 };
 
