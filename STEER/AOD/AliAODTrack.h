@@ -45,7 +45,7 @@ class AliAODTrack : public AliVTrack {
     kIsTPCConstrained=BIT(17), // set if this track is a SA TPC track constrained to the SPD vertex, needs to be skipped in any track loop to avoid double counting
     kIsHybridTPCCG=BIT(18), // set if this track can be used as a hybrid track i.e. Gbobal tracks with certain slecetion plus the TPC constrained tracks that did not pass the selection
     kIsGlobalConstrained=BIT(19), // set if this track is a global track constrained to the vertex, needs to be skipped in any track loop to avoid double counting
-    kIsHybridGCG=BIT(20)// set if this track can be used as a hybrid track i.e. tracks with certain slecetion plus the global constraint tracks that did not pass the selection
+    kIsHybridGCG=BIT(20)// set if this track can be used as a hybrid track i.e. tracks with certain selection plus the global constraint tracks that did not pass the selection
   };
 
 
