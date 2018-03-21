@@ -1272,22 +1272,35 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t tof_sig=fTOFsignal->GetRandom();
 	Double_t sec_tail=ftail->GetRandom()-20;
 	ftail_Random->Fill(sec_tail);
+	
+	Double_t sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
+	Double_t sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
+	Double_t sigma_pi=TMath::Sqrt(fTOFExpSigmaPi*fTOFExpSigmaPi-80*80);
+	Double_t sigma_k=TMath::Sqrt(fTOFExpSigmaK*fTOFExpSigmaK-80*80);
+	Double_t sigma_p=TMath::Sqrt(fTOFExpSigmaP*fTOFExpSigmaP-80*80);
+	Double_t sigma_d=TMath::Sqrt(fTOFExpSigmaD*fTOFExpSigmaD-80*80);
+	Double_t extra_sm_el= gRandom->Gaus(0, sigma_el);
+	Double_t extra_sm_mu= gRandom->Gaus(0, sigma_mu);
+	Double_t extra_sm_pi= gRandom->Gaus(0, sigma_pi);
+	Double_t extra_sm_k= gRandom->Gaus(0, sigma_k);
+	Double_t extra_sm_p= gRandom->Gaus(0, sigma_p);
+	Double_t extra_sm_d= gRandom->Gaus(0, sigma_d);
 
        // for pion 
         if(TMath::Abs(Y_Pi)<0.5){
 	
-/*	//TOF Resolution
+	//TOF Resolution
 	fTOFResolutionV0MPtPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0)fTOFResolutionV0MPtPosPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0)fTOFResolutionV0MPtNegPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
-*/
+
 
 	//TOF Time
 //	fTOFTimeV0MPtPi->Fill(track->Pt(),TdiffPi,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosPi->Fill(track->Pt(),TdiffPi,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegPi->Fill(track->Pt(),TdiffPi,V0mpc);
 
-/*	const Double_t TdiffSigmaPi = TdiffPi/fTOFExpSigmaPi;
+	const Double_t TdiffSigmaPi = TdiffPi/fTOFExpSigmaPi;
 	//TOF Sigma
 	fTOFSigmaV0MPtPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
 	if(track->Charge()>0)fTOFSigmaV0MPtPosPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
@@ -1305,20 +1318,8 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	if(track->Charge()>0)fTOFNoMismatchSigmaV0MPtPosPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
 	if(track->Charge()<0)fTOFNoMismatchSigmaV0MPtNegPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
 }
-*/
 
-	Double_t pi_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
-	Double_t pi_sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
-	Double_t pi_sigma_pi=TMath::Sqrt(fTOFExpSigmaPi*fTOFExpSigmaPi-80*80);
-	Double_t pi_sigma_k=TMath::Sqrt(fTOFExpSigmaK*fTOFExpSigmaK-80*80);
-	Double_t pi_sigma_p=TMath::Sqrt(fTOFExpSigmaP*fTOFExpSigmaP-80*80);
-	Double_t pi_sigma_d=TMath::Sqrt(fTOFExpSigmaD*fTOFExpSigmaD-80*80);
-	Double_t pi_extra_sm_el= gRandom->Gaus(0, pi_sigma_el);
-	Double_t pi_extra_sm_mu= gRandom->Gaus(0, pi_sigma_mu);
-	Double_t pi_extra_sm_pi= gRandom->Gaus(0, pi_sigma_pi);
-	Double_t pi_extra_sm_k= gRandom->Gaus(0, pi_sigma_k);
-	Double_t pi_extra_sm_p= gRandom->Gaus(0, pi_sigma_p);
-	Double_t pi_extra_sm_d= gRandom->Gaus(0, pi_sigma_d);
+
 
 
 //	Double_t gaus= gRandom->Gaus(0., 95.);
@@ -1328,84 +1329,84 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 
 	Double_t pi_expTdiffEl=0,pi_expTdiffMu=0,pi_expTdiffPi=0,pi_expTdiffK=0,pi_expTdiffP=0,pi_expTdiffD=0;
 	
-	pi_expTdiffEl=fTOFExpTimeEl-fTOFExpTimePi+tof_sig+pi_extra_sm_el;
-	pi_expTdiffMu=fTOFExpTimeMu-fTOFExpTimePi+tof_sig+pi_extra_sm_mu;
-	pi_expTdiffPi=fTOFExpTimePi-fTOFExpTimePi+tof_sig+pi_extra_sm_pi+sec_tail;
-	pi_expTdiffK=fTOFExpTimeK-fTOFExpTimePi+tof_sig+pi_extra_sm_k+sec_tail;
-	pi_expTdiffP=fTOFExpTimeP-fTOFExpTimePi+tof_sig+pi_extra_sm_p+sec_tail;
-	pi_expTdiffD=fTOFExpTimeD-fTOFExpTimePi+tof_sig+pi_extra_sm_d;
+	pi_expTdiffEl=fTOFExpTimeEl-fTOFExpTimePi+tof_sig+extra_sm_el;
+	pi_expTdiffMu=fTOFExpTimeMu-fTOFExpTimePi+tof_sig+extra_sm_mu;
+	pi_expTdiffPi=fTOFExpTimePi-fTOFExpTimePi+tof_sig+extra_sm_pi+sec_tail;
+	pi_expTdiffK=fTOFExpTimeK-fTOFExpTimePi+tof_sig+extra_sm_k+sec_tail;
+	pi_expTdiffP=fTOFExpTimeP-fTOFExpTimePi+tof_sig+extra_sm_p+sec_tail;
+	pi_expTdiffD=fTOFExpTimeD-fTOFExpTimePi+tof_sig+extra_sm_d;
 
 	
 	//Expected time with different particles hypothesis
 	//electron
 	//fTOFExpTimeV0MPtPi_El->Fill(track->Pt(),(fTOFExpTimePi-fT0TrkTime-fTOFExpTimeEl),V0mpc);//test1. not matching
 
-//	fTOFExpTimeV0MPtPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
+	fTOFExpTimeV0MPtPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 
-/*	fTOFExpSigmaV0MPtPi_El->Fill(track->Pt(),(pi_expTdiffEl)/fTOFExpSigmaPi,V0mpc);
+	fTOFExpSigmaV0MPtPi_El->Fill(track->Pt(),(pi_expTdiffEl)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_El->Fill(track->Pt(),(pi_expTdiffEl)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_El->Fill(track->Pt(),(pi_expTdiffEl)/fTOFExpSigmaPi,V0mpc);
-*/
+
 
 	//muon
-//	fTOFExpTimeV0MPtPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
+	fTOFExpTimeV0MPtPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 
-/*	fTOFExpSigmaV0MPtPi_Mu->Fill(track->Pt(),(pi_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
+	fTOFExpSigmaV0MPtPi_Mu->Fill(track->Pt(),(pi_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_Mu->Fill(track->Pt(),(pi_expTdiffMu)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_Mu->Fill(track->Pt(),(pi_expTdiffMu)/fTOFExpSigmaPi,V0mpc);
-*/
+
 	//Pion
-//	fTOFExpTimeV0MPtPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
+	fTOFExpTimeV0MPtPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	
-/*	fTOFExpSigmaV0MPtPi_Pi->Fill(track->Pt(),(pi_expTdiffPi)/fTOFExpSigmaPi,V0mpc);
+	fTOFExpSigmaV0MPtPi_Pi->Fill(track->Pt(),(pi_expTdiffPi)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_Pi->Fill(track->Pt(),(pi_expTdiffPi)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_Pi->Fill(track->Pt(),(pi_expTdiffPi)/fTOFExpSigmaPi,V0mpc);
-*/
+
 	//Kaon
-//	fTOFExpTimeV0MPtPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
+	fTOFExpTimeV0MPtPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 
-/*	fTOFExpSigmaV0MPtPi_K->Fill(track->Pt(),(pi_expTdiffK)/fTOFExpSigmaPi,V0mpc);
+	fTOFExpSigmaV0MPtPi_K->Fill(track->Pt(),(pi_expTdiffK)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_K->Fill(track->Pt(),(pi_expTdiffK)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_K->Fill(track->Pt(),(pi_expTdiffK)/fTOFExpSigmaPi,V0mpc);
-*/
+
 	//Proton
-//	fTOFExpTimeV0MPtPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
+	fTOFExpTimeV0MPtPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
-/*
+
 	fTOFExpSigmaV0MPtPi_P->Fill(track->Pt(),(pi_expTdiffP)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_P->Fill(track->Pt(),(pi_expTdiffP)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_P->Fill(track->Pt(),(pi_expTdiffP)/fTOFExpSigmaPi,V0mpc);
-*/
+
 	//Deuteron
-//	fTOFExpTimeV0MPtPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
+	fTOFExpTimeV0MPtPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
-/*
+
 	fTOFExpSigmaV0MPtPi_D->Fill(track->Pt(),(pi_expTdiffD)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosPi_D->Fill(track->Pt(),(pi_expTdiffD)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegPi_D->Fill(track->Pt(),(pi_expTdiffD)/fTOFExpSigmaPi,V0mpc);
-*/
+
 
 	Double_t mismtch_Pi=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-//	fTOFMismatchTimeV0MPtPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
+	fTOFMismatchTimeV0MPtPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 	//TOF Mismatch Sigma
-/*	fTOFMismatchSigmaV0MPtPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi)/fTOFExpSigmaPi,V0mpc);
+	fTOFMismatchSigmaV0MPtPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()>0) fTOFMismatchSigmaV0MPtPosPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi)/fTOFExpSigmaPi,V0mpc);
 	if(track->Charge()<0) fTOFMismatchSigmaV0MPtNegPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi)/fTOFExpSigmaPi,V0mpc);
-*/
+
 }//rapidity pion
 
 //=============================================================================Kaon=========================================================
@@ -1414,18 +1415,18 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
         if(TMath::Abs(Y_K)<0.5){
 
 
-/*	//TOF Resolution
+	//TOF Resolution
 	fTOFResolutionV0MPtK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0)fTOFResolutionV0MPtPosK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0)fTOFResolutionV0MPtNegK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
 
-*/
+
 	//TOF Time
-//	fTOFTimeV0MPtK->Fill(track->Pt(),TdiffK,V0mpc);
+	fTOFTimeV0MPtK->Fill(track->Pt(),TdiffK,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosK->Fill(track->Pt(),TdiffK,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegK->Fill(track->Pt(),TdiffK,V0mpc);
 
-/*	const Double_t TdiffSigmaK = TdiffK/fTOFExpSigmaK;
+	const Double_t TdiffSigmaK = TdiffK/fTOFExpSigmaK;
 	//TOF Sigma
 	fTOFSigmaV0MPtK->Fill(track->Pt(),TdiffSigmaK,V0mpc);
 	if(track->Charge()>0)fTOFSigmaV0MPtPosK->Fill(track->Pt(),TdiffSigmaK,V0mpc);
@@ -1446,8 +1447,8 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
         if(track->Charge()<0)fTOFNoMismatchSigmaV0MPtNegK->Fill(track->Pt(),TdiffSigmaK,V0mpc);
 }
 
-*/
-	Double_t K_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
+
+/*	Double_t K_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
 	Double_t K_sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
 	Double_t K_sigma_pi=TMath::Sqrt(fTOFExpSigmaPi*fTOFExpSigmaPi-80*80);
 	Double_t K_sigma_k=TMath::Sqrt(fTOFExpSigmaK*fTOFExpSigmaK-80*80);
@@ -1459,7 +1460,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t K_extra_sm_k= gRandom->Gaus(0, K_sigma_k);
 	Double_t K_extra_sm_p= gRandom->Gaus(0, K_sigma_p);
 	Double_t K_extra_sm_d= gRandom->Gaus(0, K_sigma_d);
-
+*/
 
 //	Double_t gaus= gRandom->Gaus(0., 95.);
 //	fGausTime_K->Fill(gaus);
@@ -1468,82 +1469,82 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 
 	Double_t K_expTdiffEl=0,K_expTdiffMu=0,K_expTdiffPi=0,K_expTdiffK=0,K_expTdiffP=0,K_expTdiffD=0;
 	
-	K_expTdiffEl=fTOFExpTimeEl-fTOFExpTimeK+tof_sig+K_extra_sm_el;
-	K_expTdiffMu=fTOFExpTimeMu-fTOFExpTimeK+tof_sig+K_extra_sm_mu;
-	K_expTdiffPi=fTOFExpTimePi-fTOFExpTimeK+tof_sig+K_extra_sm_pi+sec_tail;
-	K_expTdiffK=fTOFExpTimeK-fTOFExpTimeK+tof_sig+K_extra_sm_k+sec_tail;
-	K_expTdiffP=fTOFExpTimeP-fTOFExpTimeK+tof_sig+K_extra_sm_p+sec_tail;
-	K_expTdiffD=fTOFExpTimeD-fTOFExpTimeK+tof_sig+K_extra_sm_d;
+	K_expTdiffEl=fTOFExpTimeEl-fTOFExpTimeK+tof_sig+extra_sm_el;
+	K_expTdiffMu=fTOFExpTimeMu-fTOFExpTimeK+tof_sig+extra_sm_mu;
+	K_expTdiffPi=fTOFExpTimePi-fTOFExpTimeK+tof_sig+extra_sm_pi+sec_tail;
+	K_expTdiffK=fTOFExpTimeK-fTOFExpTimeK+tof_sig+extra_sm_k+sec_tail;
+	K_expTdiffP=fTOFExpTimeP-fTOFExpTimeK+tof_sig+extra_sm_p+sec_tail;
+	K_expTdiffD=fTOFExpTimeD-fTOFExpTimeK+tof_sig+extra_sm_d;
 
 	
 	//Expected time with different particles hypothesis
 	//electron
-//	fTOFExpTimeV0MPtK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
+	fTOFExpTimeV0MPtK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
-/*
+
 	fTOFExpSigmaV0MPtK_El->Fill(track->Pt(),(K_expTdiffEl)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_El->Fill(track->Pt(),(K_expTdiffEl)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_El->Fill(track->Pt(),(K_expTdiffEl)/fTOFExpSigmaK,V0mpc);
 
-*/
+
 	//muon
-//	fTOFExpTimeV0MPtK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
+	fTOFExpTimeV0MPtK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 
-/*	fTOFExpSigmaV0MPtK_Mu->Fill(track->Pt(),(K_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
+	fTOFExpSigmaV0MPtK_Mu->Fill(track->Pt(),(K_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_Mu->Fill(track->Pt(),(K_expTdiffMu)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_Mu->Fill(track->Pt(),(K_expTdiffMu)/fTOFExpSigmaK,V0mpc);
 
-*/	//Pion
-//	fTOFExpTimeV0MPtK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
+	//Pion
+	fTOFExpTimeV0MPtK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
-/*	
+	
 	fTOFExpSigmaV0MPtK_Pi->Fill(track->Pt(),(K_expTdiffPi)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_Pi->Fill(track->Pt(),(K_expTdiffPi)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_Pi->Fill(track->Pt(),(K_expTdiffPi)/fTOFExpSigmaK,V0mpc);
-*/
+
 	//Kaon
-//	fTOFExpTimeV0MPtK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
+	fTOFExpTimeV0MPtK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 
-/*	fTOFExpSigmaV0MPtK_K->Fill(track->Pt(),(K_expTdiffK)/fTOFExpSigmaK,V0mpc);
+	fTOFExpSigmaV0MPtK_K->Fill(track->Pt(),(K_expTdiffK)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_K->Fill(track->Pt(),(K_expTdiffK)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_K->Fill(track->Pt(),(K_expTdiffK)/fTOFExpSigmaK,V0mpc);
-*/
+
 	//Proton
-//	fTOFExpTimeV0MPtK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
+	fTOFExpTimeV0MPtK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 
-/*	fTOFExpSigmaV0MPtK_P->Fill(track->Pt(),(K_expTdiffP)/fTOFExpSigmaK,V0mpc);
+	fTOFExpSigmaV0MPtK_P->Fill(track->Pt(),(K_expTdiffP)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_P->Fill(track->Pt(),(K_expTdiffP)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_P->Fill(track->Pt(),(K_expTdiffP)/fTOFExpSigmaK,V0mpc);
-*/
+
 	//Deuteron
-//	fTOFExpTimeV0MPtK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
+	fTOFExpTimeV0MPtK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 
-/*	fTOFExpSigmaV0MPtK_D->Fill(track->Pt(),(K_expTdiffD)/fTOFExpSigmaK,V0mpc);
+	fTOFExpSigmaV0MPtK_D->Fill(track->Pt(),(K_expTdiffD)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosK_D->Fill(track->Pt(),(K_expTdiffD)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegK_D->Fill(track->Pt(),(K_expTdiffD)/fTOFExpSigmaK,V0mpc);
-*/
+
 
 	Double_t mismtch_K=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-//	fTOFMismatchTimeV0MPtK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
+	fTOFMismatchTimeV0MPtK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 	//TOF Mismatch Sigma
-/*	fTOFMismatchSigmaV0MPtK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK)/fTOFExpSigmaK,V0mpc);
+	fTOFMismatchSigmaV0MPtK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()>0) fTOFMismatchSigmaV0MPtPosK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK)/fTOFExpSigmaK,V0mpc);
 	if(track->Charge()<0) fTOFMismatchSigmaV0MPtNegK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK)/fTOFExpSigmaK,V0mpc);
-*/
+
 
 	
 
@@ -1554,17 +1555,17 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	// for Proton 
         if(TMath::Abs(Y_P)<0.5){
 	
-/*	//TOF Resolution
+	//TOF Resolution
 	fTOFResolutionV0MPtP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0)fTOFResolutionV0MPtPosP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0)fTOFResolutionV0MPtNegP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
-*/
+
 
 	//TOF Time
-//	fTOFTimeV0MPtP->Fill(track->Pt(),TdiffP,V0mpc);
+	fTOFTimeV0MPtP->Fill(track->Pt(),TdiffP,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosP->Fill(track->Pt(),TdiffP,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegP->Fill(track->Pt(),TdiffP,V0mpc);
-/*	const Double_t TdiffSigmaP = TdiffP/fTOFExpSigmaP;
+	const Double_t TdiffSigmaP = TdiffP/fTOFExpSigmaP;
 	//TOF Sigma
 	fTOFSigmaV0MPtP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
 	if(track->Charge()>0)fTOFSigmaV0MPtPosP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
@@ -1581,8 +1582,8 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
         if(track->Charge()>0)fTOFNoMismatchSigmaV0MPtPosP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
         if(track->Charge()<0)fTOFNoMismatchSigmaV0MPtNegP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
 }	
-*/
-	Double_t P_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
+
+/*	Double_t P_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
 	Double_t P_sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
 	Double_t P_sigma_pi=TMath::Sqrt(fTOFExpSigmaPi*fTOFExpSigmaPi-80*80);
 	Double_t P_sigma_k=TMath::Sqrt(fTOFExpSigmaK*fTOFExpSigmaK-80*80);
@@ -1594,7 +1595,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t P_extra_sm_k= gRandom->Gaus(0, P_sigma_k);
 	Double_t P_extra_sm_p= gRandom->Gaus(0, P_sigma_p);
 	Double_t P_extra_sm_d= gRandom->Gaus(0, P_sigma_d);
-
+*/
 
 //	Double_t P_tof_sig=fTOFsignal->GetRandom();
 //	Double_t gaus= gRandom->Gaus(0., 95.);
@@ -1603,82 +1604,82 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 
 	Double_t P_expTdiffEl=0,P_expTdiffMu=0,P_expTdiffPi=0,P_expTdiffK=0,P_expTdiffP=0,P_expTdiffD=0;
 	
-	P_expTdiffEl=fTOFExpTimeEl-fTOFExpTimeP+tof_sig+P_extra_sm_el;
-	P_expTdiffMu=fTOFExpTimeMu-fTOFExpTimeP+tof_sig+P_extra_sm_mu;
-	P_expTdiffPi=fTOFExpTimePi-fTOFExpTimeP+tof_sig+P_extra_sm_pi+sec_tail;
-	P_expTdiffK=fTOFExpTimeK-fTOFExpTimeP+tof_sig+P_extra_sm_k+sec_tail;
-	P_expTdiffP=fTOFExpTimeP-fTOFExpTimeP+tof_sig+P_extra_sm_p+sec_tail;
-	P_expTdiffD=fTOFExpTimeD-fTOFExpTimeP+tof_sig+P_extra_sm_d;
+	P_expTdiffEl=fTOFExpTimeEl-fTOFExpTimeP+tof_sig+extra_sm_el;
+	P_expTdiffMu=fTOFExpTimeMu-fTOFExpTimeP+tof_sig+extra_sm_mu;
+	P_expTdiffPi=fTOFExpTimePi-fTOFExpTimeP+tof_sig+extra_sm_pi+sec_tail;
+	P_expTdiffK=fTOFExpTimeK-fTOFExpTimeP+tof_sig+extra_sm_k+sec_tail;
+	P_expTdiffP=fTOFExpTimeP-fTOFExpTimeP+tof_sig+extra_sm_p+sec_tail;
+	P_expTdiffD=fTOFExpTimeD-fTOFExpTimeP+tof_sig+extra_sm_d;
 
 	
 	//Expected time with different particles hypothesis
 	//electron
-//	fTOFExpTimeV0MPtP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
+	fTOFExpTimeV0MPtP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 
-/*	fTOFExpSigmaV0MPtP_El->Fill(track->Pt(),(P_expTdiffEl)/fTOFExpSigmaP,V0mpc);
+	fTOFExpSigmaV0MPtP_El->Fill(track->Pt(),(P_expTdiffEl)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_El->Fill(track->Pt(),(P_expTdiffEl)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_El->Fill(track->Pt(),(P_expTdiffEl)/fTOFExpSigmaP,V0mpc);
 
-*/
+
 	//muon
-//	fTOFExpTimeV0MPtP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
+	fTOFExpTimeV0MPtP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 
-/*	fTOFExpSigmaV0MPtP_Mu->Fill(track->Pt(),(P_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
+	fTOFExpSigmaV0MPtP_Mu->Fill(track->Pt(),(P_expTdiffMu)/fTOFExpSigmaMu,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_Mu->Fill(track->Pt(),(P_expTdiffMu)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_Mu->Fill(track->Pt(),(P_expTdiffMu)/fTOFExpSigmaP,V0mpc);
-*/
+
 	//Pion
-//	fTOFExpTimeV0MPtP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
+	fTOFExpTimeV0MPtP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
-/*	
+	
 	fTOFExpSigmaV0MPtP_Pi->Fill(track->Pt(),(P_expTdiffPi)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_Pi->Fill(track->Pt(),(P_expTdiffPi)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_Pi->Fill(track->Pt(),(P_expTdiffPi)/fTOFExpSigmaP,V0mpc);
-*/
+
 	//Kaon
-//	fTOFExpTimeV0MPtP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
+	fTOFExpTimeV0MPtP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 
-/*	fTOFExpSigmaV0MPtP_K->Fill(track->Pt(),(P_expTdiffK)/fTOFExpSigmaP,V0mpc);
+	fTOFExpSigmaV0MPtP_K->Fill(track->Pt(),(P_expTdiffK)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_K->Fill(track->Pt(),(P_expTdiffK)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_K->Fill(track->Pt(),(P_expTdiffK)/fTOFExpSigmaP,V0mpc);
-*/
+
 	//Proton
-//	fTOFExpTimeV0MPtP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
+	fTOFExpTimeV0MPtP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 
-/*	fTOFExpSigmaV0MPtP_P->Fill(track->Pt(),(P_expTdiffP)/fTOFExpSigmaP,V0mpc);
+	fTOFExpSigmaV0MPtP_P->Fill(track->Pt(),(P_expTdiffP)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_P->Fill(track->Pt(),(P_expTdiffP)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_P->Fill(track->Pt(),(P_expTdiffP)/fTOFExpSigmaP,V0mpc);
-*/
+
 	//Deuteron
-//	fTOFExpTimeV0MPtP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
+	fTOFExpTimeV0MPtP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 
-/*	fTOFExpSigmaV0MPtP_D->Fill(track->Pt(),(P_expTdiffD)/fTOFExpSigmaP,V0mpc);
+	fTOFExpSigmaV0MPtP_D->Fill(track->Pt(),(P_expTdiffD)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFExpSigmaV0MPtPosP_D->Fill(track->Pt(),(P_expTdiffD)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFExpSigmaV0MPtNegP_D->Fill(track->Pt(),(P_expTdiffD)/fTOFExpSigmaP,V0mpc);
-*/
+
 
 	Double_t mismtch_P=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-//	fTOFMismatchTimeV0MPtP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
+	fTOFMismatchTimeV0MPtP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 	//TOF Mismatch Sigma
-/*	fTOFMismatchSigmaV0MPtP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP)/fTOFExpSigmaP,V0mpc);
+	fTOFMismatchSigmaV0MPtP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()>0) fTOFMismatchSigmaV0MPtPosP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP)/fTOFExpSigmaP,V0mpc);
 	if(track->Charge()<0) fTOFMismatchSigmaV0MPtNegP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP)/fTOFExpSigmaP,V0mpc);
-*/
+
 }//rapidity Proton
 }//eta cut
 }//TOFpid	
@@ -1709,7 +1710,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
 	Double_t fTPCTOFSigmaPi = TMath::Sqrt(fTPCSigmaPi*fTPCSigmaPi + fTOFSigmaPi*fTOFSigmaPi);
 	if(TMath::Abs(fTPCTOFSigmaPi)<2.){
-//	fTOFDCAxyV0MPtPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
+	fTOFDCAxyV0MPtPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()>0) fTOFDCAxyV0MPtPosPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()<0) fTOFDCAxyV0MPtNegPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
@@ -1720,7 +1721,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
 	Double_t fTPCTOFSigmaK = TMath::Sqrt(fTPCSigmaK*fTPCSigmaK + fTOFSigmaK*fTOFSigmaK);
 	if(TMath::Abs(fTPCTOFSigmaK)<2.){
-//	fTOFDCAxyV0MPtK->Fill(track->Pt(),V0mpc,dcaxy[0]);
+	fTOFDCAxyV0MPtK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()>0) fTOFDCAxyV0MPtPosK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()<0) fTOFDCAxyV0MPtNegK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
@@ -1731,7 +1732,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
         Double_t fTPCTOFSigmaP = TMath::Sqrt(fTPCSigmaP*fTPCSigmaP + fTOFSigmaP*fTOFSigmaP);
         if(TMath::Abs(fTPCTOFSigmaP)<2.){
-  //      fTOFDCAxyV0MPtP->Fill(track->Pt(),V0mpc,dcaxy[0]);
+        fTOFDCAxyV0MPtP->Fill(track->Pt(),V0mpc,dcaxy[0]);
         if(track->Charge()>0) fTOFDCAxyV0MPtPosP->Fill(track->Pt(),V0mpc,dcaxy[0]);
         if(track->Charge()<0) fTOFDCAxyV0MPtNegP->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
