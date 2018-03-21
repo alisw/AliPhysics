@@ -103,7 +103,7 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
     fHistos->CreateTHnSparse(Form("hJetCounter%s", contname->String().Data()), Form("jet counter for jets %s", contname->String().Data()), 4, jetbinning);
     fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 7, chargedbinning);
     fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 8, neutralbinning);
-    fHistos->CreateTHnSparse(Form("hHighZClusters"), "Properties of high-z clusters", 7, binningHighZClusters);
+    fHistos->CreateTHnSparse(Form("hHighZClusters%s", contname->String().Data()), "Properties of high-z clusters", 7, binningHighZClusters);
   }
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);  
@@ -206,7 +206,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
             pointHighZCluster[4] = clust->GetNCells();
             pointHighZCluster[5] = *std::max_element(clust->GetCellsAmplitudeFraction(), clust->GetCellsAmplitudeFraction()+clust->GetNCells());
             pointHighZCluster[6] = clust->GetM02();
-            fHistos->FillTHnSparse("hHighZClusters", pointHighZCluster);
+            fHistos->FillTHnSparse(Form("hHighZClusters%s", contname->String().Data()), pointHighZCluster);
           }
         }
       }
