@@ -18,7 +18,7 @@
 class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDream();
-  AliAnalysisTaskFemtoDream(const char *name,bool isMC,bool Minbooking);
+  AliAnalysisTaskFemtoDream(const char *name,bool isMC,bool MinResultBooking);
   virtual ~AliAnalysisTaskFemtoDream();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -36,7 +36,7 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {fConfig=conf;};
  private:
   int fTrackBufferSize;                     //
-  bool fMinimalBooking;                     //
+  bool fMinResultBooking;                   //
   bool fMVPileUp;                           //
   bool fEvtCutQA;                           //
   bool fIsMC;                               //

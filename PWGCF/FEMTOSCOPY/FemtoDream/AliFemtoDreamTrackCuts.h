@@ -38,6 +38,8 @@ class AliFemtoDreamTrackCuts {
   //                                               bool ContribSplitting);
 
   //Setters for Plots
+  void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void SetPlotDCADist(bool plot) {fDCAPlots=plot;};
   void SetPlotCombSigma(bool plot) {fCombSigma=plot;};
   void SetPlotContrib(bool plot) {fContribSplitting=plot;};
@@ -76,12 +78,12 @@ class AliFemtoDreamTrackCuts {
   void BookMC(AliFemtoDreamTrack *Track);
   //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
-  void Init(bool MinimalBooking);
+  void Init();
   TList *GetQAHists() {return fHists->GetHistList();};
   TList *GetMCQAHists() {return fMCHists->GetHistList();};
   TString ClassName() {return "AliFemtoDreamTrackCuts";};
-  void SetName(TString name){fHists->SetName(name.Data());};
-  void SetMCName(TString name){fMCHists->SetName(name.Data());};
+  void SetName(TString name){if(fHists)fHists->SetName(name.Data());};
+  void SetMCName(TString name){if(fMCHists)fMCHists->SetName(name.Data());};
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDAODCuts(AliFemtoDreamTrack *Track);

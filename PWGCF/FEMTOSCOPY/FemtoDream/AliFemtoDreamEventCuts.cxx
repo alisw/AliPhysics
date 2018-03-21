@@ -108,9 +108,8 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
   return pass;
 }
 
-void AliFemtoDreamEventCuts::InitQA(bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
-  if (MinimalBooking) {
+void AliFemtoDreamEventCuts::InitQA() {
+  if (fMinimalBooking) {
     fHist=0;
   } else {
     fHist=new AliFemtoDreamEventHist(fCentVsMultPlots);

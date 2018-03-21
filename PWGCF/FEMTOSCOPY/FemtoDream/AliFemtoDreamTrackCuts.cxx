@@ -351,9 +351,8 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
   return pass;
 }
 
-void AliFemtoDreamTrackCuts::Init(bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
-  if (!MinimalBooking) {
+void AliFemtoDreamTrackCuts::Init() {
+  if (!fMinimalBooking) {
     fHists=new AliFemtoDreamTrackHist(fDCAPlots,fCombSigma);
     if (fMCData) {
       fMCHists=new AliFemtoDreamTrackMCHist(fContribSplitting,fDCAPlots);

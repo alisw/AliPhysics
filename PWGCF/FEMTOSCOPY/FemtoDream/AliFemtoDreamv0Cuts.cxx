@@ -273,10 +273,13 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   bool pass=massPass&&cpaPass;
   return pass;
 }
-void AliFemtoDreamv0Cuts::Init(bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
-  fPosCuts->Init(fMinimalBooking);
-  fNegCuts->Init(fMinimalBooking);
+void AliFemtoDreamv0Cuts::Init() {
+  //Cant be set externally cause else the lists don't exist. Needs to be changed in case
+  //it is needed
+  fPosCuts->SetMinimalBooking(fMinimalBooking);
+  fPosCuts->Init();
+  fNegCuts->SetMinimalBooking(fMinimalBooking);
+  fNegCuts->Init();
   if (!fMinimalBooking) {
     fHist=new AliFemtoDreamv0Hist(fNumberXBins,fAxisMinMass,fAxisMaxMass,
                                   fCPAPlots);

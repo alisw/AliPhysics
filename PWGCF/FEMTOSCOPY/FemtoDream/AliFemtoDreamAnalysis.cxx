@@ -13,7 +13,7 @@ ClassImp(AliFemtoDreamAnalysis)
 AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 :fMVPileUp(false)
 ,fEvtCutQA(false)
-,fQA(0)
+,fQA()
 ,fFemtoTrack()
 ,fFemtov0()
 ,fFemtoCasc()
@@ -69,13 +69,13 @@ void AliFemtoDreamAnalysis::Init(
   fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
   fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc->Setv0PDGCode(fCascCuts->GetPDGv0());
-  fEvtCuts->InitQA(MinimalBooking);
-  fTrackCuts->Init(MinimalBooking);
-  fAntiTrackCuts->Init(MinimalBooking);
-  fv0Cuts->Init(MinimalBooking);
-  fAntiv0Cuts->Init(MinimalBooking);
-  fCascCuts->Init(MinimalBooking);
-  fAntiCascCuts->Init(MinimalBooking);
+  fEvtCuts->InitQA();
+  fTrackCuts->Init();
+  fAntiTrackCuts->Init();
+  fv0Cuts->Init();
+  fAntiv0Cuts->Init();
+  fCascCuts->Init();
+  fAntiCascCuts->Init();
   fGTI=new AliAODTrack*[fTrackBufferSize];
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinimalBooking);

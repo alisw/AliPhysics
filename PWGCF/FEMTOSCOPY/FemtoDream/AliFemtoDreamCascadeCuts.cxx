@@ -270,11 +270,13 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   return pass;
 }
 
-void AliFemtoDreamCascadeCuts::Init(bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
-  fNegCuts->Init(fMinimalBooking);
-  fPosCuts->Init(fMinimalBooking);
-  fBachCuts->Init(fMinimalBooking);
+void AliFemtoDreamCascadeCuts::Init() {
+  fNegCuts->SetMinimalBooking(fMinimalBooking);
+  fNegCuts->Init();
+  fPosCuts->SetMinimalBooking(fMinimalBooking);
+  fPosCuts->Init();
+  fBachCuts->SetMinimalBooking(fMinimalBooking);
+  fBachCuts->Init();
   if (!fMinimalBooking) {
     fHist=new AliFemtoDreamCascadeHist(fXiMass);
     BookCuts();
