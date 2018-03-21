@@ -114,14 +114,15 @@ AliJJetTask* AddTaskJJet(
   //-------------------------------------------------------
   // Reconstructed Track Jets : Both of Data, MC
   //-------------------------------------------------------
+  double bConeSizes[3] = {0.4,0.5,0.3};
+  int bJetType[2] = {0,1};
+  TString bType[2] = {"EMCAL","TPC"};
+
   if( doRecoTrackJet ){
     //================= Variables for array
     int iStart = countJetFinder;
     int iEnd   = countJetFinder += nTrackJetFinder;
     //================= AddTaskEmcalJet
-    double bConeSizes[3] = {0.4,0.3,0.2};
-    int bJetType[2] = {0,1};
-    TString bType[2] = {"EMCAL","TPC"};
 
     //================= Containers : Track, Cluster
     AliTrackContainer* partCont = new AliTrackContainer(tracksName);
@@ -174,9 +175,6 @@ AliJJetTask* AddTaskJJet(
     int iEnd   = countJetFinder += nMCParticleJetFinder; // WARN: this is a real end + 1
 
     //================= AddTaskEmcalJet
-    double bConeSizes[3] = {0.4,0.3,0.2};
-    int bJetType[2] = {0,1};
-    TString bType[2] = {"EMCAL","TPC"};
     char *nrho = rhoName;
 
     //================= Containers : MC Particle

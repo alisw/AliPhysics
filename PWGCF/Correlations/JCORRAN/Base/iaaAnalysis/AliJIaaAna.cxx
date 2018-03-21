@@ -19,7 +19,7 @@
 #include <TH1D.h>
 #include "AliJIaaAna.h"
 
-#include "AliJTrackCounter.h"
+#include "../AliJTrackCounter.h"
 #include <TClonesArray.h>
 
 #include "../AliJCard.h"
