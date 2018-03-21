@@ -105,6 +105,7 @@ fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
 fMaxCentrality(90.0),
+fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kTRUE ),
@@ -149,6 +150,7 @@ fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
 fMaxCentrality(90.0),
+fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kTRUE ),
@@ -306,6 +308,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
     
+    //Event taken for analysis! 
     fHistEventCounter->Fill(0.5);
     
     //------------------------------------------------
@@ -326,31 +329,46 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     //------------------------------------------------
     
     Float_t lPercentile = 500;
+    //this will be the result in the centrality counter if all events are re-vertexed
+    
     Int_t lEvSelCode = 100;
-    AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
-    if( !MultSelection) {
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
-    } else {
-        //V0M Multiplicity Percentile
-        lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-        //Event Selection Code
-        lEvSelCode = MultSelection->GetEvSelCode();
-    }
     
-    if( lEvSelCode != 0 ) {
-        PostData(1, fListHist    );
-        return;
-    }
-    
-    AliVEvent *ev = InputEvent();
-    if( fkDoExtraEvSels ) {
-        if( !fEventCuts.AcceptEvent(ev) ) {
+    //=======> Check if user requested to re-vertex only a selection of all events <===
+    if( fkRevertexAllEvents == kFALSE ){
+        AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+        if( !MultSelection) {
+            //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+            AliWarning("AliMultSelection object not found!");
+        } else {
+            //V0M Multiplicity Percentile
+            lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+            //Event Selection Code
+            lEvSelCode = MultSelection->GetEvSelCode();
+        }
+        
+        if( lEvSelCode != 0 ) {
+            //Event not of desired type
             PostData(1, fListHist    );
             return;
         }
+        
+        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ) {
+            //Event outside desired window
+            PostData(1, fListHist    );
+            return;
+        }
+        
+        AliVEvent *ev = InputEvent();
+        if( fkDoExtraEvSels ) {
+            if( !fEventCuts.AcceptEvent(ev) ) {
+                //Event doesn't pass AliEventCuts criteria
+                PostData(1, fListHist    );
+                return;
+            }
+        }
     }
-    
+
+    //Event is good!
     fHistEventCounter->Fill(1.5);
     
     //Fill centrality histogram
@@ -371,9 +389,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     if( fkRunV0Vertexer ){
         lESDevent->ResetV0s();
         //Only regenerate candidates if within interesting interval
-        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ){
-            Tracks2V0vertices(lESDevent);
-        }
+        Tracks2V0vertices(lESDevent);
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
@@ -391,12 +407,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     if( fkRunCascadeVertexer ){
         lESDevent->ResetCascades();
         //Only regenerate candidates if within interesting interval
-        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ){
-            if(!fkUseUncheckedChargeCascadeVertexer){
-                V0sTracks2CascadeVertices(lESDevent);
-            }else{
-                V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
-            }
+        if(!fkUseUncheckedChargeCascadeVertexer){
+            V0sTracks2CascadeVertices(lESDevent);
+        }else{
+            V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
         }
     }
     
