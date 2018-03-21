@@ -434,7 +434,16 @@ public:
       { __dest_type res(_def); pop_and_load(key, res); return res; }
 
     IMPL_POP_ITEM(StringValue_t, pop_str);
+    IMPL_POP_ITEM(TString, pop_str);
     IMPL_POP_ITEM(IntValue_t, pop_int);
+    IMPL_POP_ITEM(unsigned int, pop_int);
+    IMPL_POP_ITEM(FloatValue_t, pop_float);
+    IMPL_POP_ITEM(MapValue_t, pop_map);
+    IMPL_POP_ITEM(ArrayValue_t, pop_array);
+    IMPL_POP_ITEM(BoolValue_t, pop_bool);
+    IMPL_POP_ITEM(RangeValue_t, pop_range);
+    IMPL_POP_ITEM(pair_of_floats, pop_range);
+    IMPL_POP_ITEM(pair_of_ints, pop_range);
 
   #undef IMPL_POP_ITEM
 
