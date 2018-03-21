@@ -28,9 +28,9 @@ const Double_t PtBins[] = {0.0, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 
 Bool_t bUseEtaResolution      = kTRUE; // use eta or theta resolution?
 Bool_t CalcEfficiencyRec      = kTRUE;
 Bool_t CalcEfficiencyPoslabel = kFALSE;
-Bool_t CalcResolution         = kFALSE;
+Bool_t CalcResolution         = kTRUE;
 Bool_t MakeResolutionSparse   = kFALSE;
-Bool_t doPairing              = kTRUE;
+Bool_t doPairing              = kFALSE;
 
 // resolution binnings
 Int_t    NbinsMom        = 2000;
