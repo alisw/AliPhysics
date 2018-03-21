@@ -73,11 +73,11 @@ class AliAnalysisTaskCMEV0;
    cutsEvent->SetCheckPileup(kTRUE);
   }
 
-  if(sCentEstimator=="V0")
-    cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0); //default is V0
 
-  if(sCentEstimator=="TPC")
+  if(sCentEstimator=="TPC"){
     cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  }
 
   if(sDataSet == "2011"){
     cutsEvent->SetLHC11h(kTRUE);
@@ -273,23 +273,27 @@ class AliAnalysisTaskCMEV0;
      }
   }
 
+  TList* fListV0MUse=NULL;
 
   if(bV0MgainCorr){
+
     TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
+
      if(!fV0MFile) {
-       printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
-       exit(1);
+        printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
+        exit(1);
      } 
      else{
-       TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+       //TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+        fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
      }
 
      if(fListV0MUse) {
-       taskQC_prot->SetInputListforV0M(fListV0MUse);
+        taskQC_prot->SetInputListforV0M(fListV0MUse);
      }
      else{
-       printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
-       taskQC_prot->SetInputListforV0M(NULL);
+        printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
+        taskQC_prot->SetInputListforV0M(NULL);
        //exit(1);
      }
   }

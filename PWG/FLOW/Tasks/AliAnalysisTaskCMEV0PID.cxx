@@ -62,9 +62,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskCMEV0PID.h"
 
+using namespace std;
 
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
 
 ClassImp(AliAnalysisTaskCMEV0PID)
@@ -538,7 +539,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   //Dont forget to add histograms in the List. !!!
 
 
-  char const *gSpecies[4] = {"Pion","Kaon","proton","Charge"};
+  const char *gSpecies[4] = {"Pion","Kaon","proton","Charge"};
 
   for(int i=0;i<3;i++){
     fHistPtwithTPCNsigma[i]  = new TH1F(Form("fHistPtwithTPCNsigma_%s",gSpecies[i]), Form("%s;p_{T}(GeV/c))",gSpecies[i]),200,-5,5);
@@ -564,7 +565,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
   Double_t centRange[11]   = {0,5,10,20,30,40,50,60,70,80,90};
-  char const *gDetForEP[4] = {"V0A","V0C","TPC-A","TPC-C"};
+  const char *gDetForEP[4] = {"V0A","V0C","TPC-A","TPC-C"};
 
  //------------------- CME 3p correlator Charged hadrons (EP method) ------------------
   for(int i=0;i<2;i++){
@@ -736,8 +737,8 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   fListHist->Add(fListNUACalib);
 
   PostData(1,fListHist);
-  std::cout<<"\n.........UserCreateOutputObject called.........\n fFilterBit = "<<fFilterBit<<" CentMax = "<<fCentralityPercentMax;
-  std::cout<<" PU C = "<<fPileUpConstParm<<" PsiN = "<<gPsiN<<"\n\n"<<std::endl;
+  cout<<"\n.........UserCreateOutputObject called.........\n fFilterBit = "<<fFilterBit<<" CentMax = "<<fCentralityPercentMax;
+  cout<<" PU C = "<<fPileUpConstParm<<" PsiN = "<<gPsiN<<"\n\n"<<endl;
 
   //Reset the counter:
   //watch.Reset();
@@ -1526,14 +1527,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 //Dont break segment for higher tracks:
   if(ntracks>maxTrack)     return;
-    
+  
+  //vector<float> testVar;   
+  //testVar.reserve(20000);
+  //testVar.reserve(ntracks+1);
 
-/*vector<float> nSigPionTPC;   // = {0.,};
-  vector<float> nSigKaonTPC;   // = {0.,};
-  vector<float> nSigProtonTPC; // = {0.,};
-  vector<float> nSigPionTOF;   // = {0.,};
-  vector<float> nSigKaonTOF;   // = {0.,};
-  vector<float> nSigProtonTOF; // = {0.,}; 
+/*vector<float> nSigPionTPC;   
+  vector<float> nSigKaonTPC;   
+  vector<float> nSigProtonTPC; 
+  vector<float> nSigPionTOF;   
+  vector<float> nSigKaonTOF;   
+  vector<float> nSigProtonTOF;  
 
   nSigPionTPC.reserve(ntracks+1);
   nSigKaonTPC.reserve(ntracks+1);
@@ -2468,18 +2472,25 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   fHistEventCount->Fill(14.5); //15th bin is last one
   stepCount++;
 
+
+
+
+
+
   //if(multPOI2nd!=(multPOI1st-1)) 
   //cout<<"mismatched "<< "\tPOIs1st = "<<multPOI1st<<"\tPOIs2nd = "<<multPOI2nd <<" for Event = "<<fEventCount<<endl;
 
-  //if(multEtaFull>1250)
+  //if(fEventCount%10==0) 
+  //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs1st = "<<multPOI1st<<"\t POI2nd = "<< multPOI2nd <<endl;
   //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs = "<<multPOI1st<<"\tRealTime = "<< watch.RealTime() <<"\tCPUTime = "<< watch.CpuTime()<<endl;
 
   //watch.Stop();
 
-}//================ UserExec ==============
 
-// last check: 6:50pm, 17/03/2018
-// 
+
+
+
+}//================ UserExec ==============
 
 
 
