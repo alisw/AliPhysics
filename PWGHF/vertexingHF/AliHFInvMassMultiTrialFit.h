@@ -57,6 +57,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
     max = fMaxYieldGlob;
   }
   TNtuple* GetNtupleMultiTrials(){return fNtupleMultiTrials;}
+  TNtuple* GetNtupleBinCounting(){return fNtupleBinCount;}
 
   void SetMass(Double_t mass){fMassD=mass;}
   void SetSigmaGaussMC(Double_t sig){fSigmaGausMC=sig;}
@@ -192,6 +193,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   TH1F *fhTemplSign;        /// template of signal contribution
   Float_t fFixRefloS;
   TNtuple* fNtupleMultiTrials; /// tree
+  TNtuple* fNtupleBinCount;   /// tree
 
   Double_t fMinYieldGlob;   /// minimum yield
   Double_t fMaxYieldGlob;   /// maximum yield
@@ -199,7 +201,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,2); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,3); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
