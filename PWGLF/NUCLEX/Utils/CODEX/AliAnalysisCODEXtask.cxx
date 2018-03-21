@@ -163,7 +163,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     /// Tracking quality cuts
     if (!track->GetInnerParam()) continue;
     if (!Cuts.AcceptTrack(track)) continue;
-    if (track->Pt() < mPtCut && !mMCtrue) continue;
+    if (track->Pt() < mPtCut) continue;
 
     /// PID cuts
     float sig[8] = {999.f};
