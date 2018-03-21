@@ -422,6 +422,21 @@ public:
   template <typename ReturnType>
   AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_);
 
+
+  /// If object is map and key is present, returns pointer to subobject
+  /// otherwise return NULL
+  ///
+  /// Returned pointer is still owned by this object; do NOT delete.
+  ///
+  /// This should return std::weak_ptr<AliFemtoConfigObject> whenever
+  /// AliPhysics fully supports C++11
+  ///
+  AliFemtoConfigObject* find(const Key_t &key);
+
+  /// Apply find, but return a pointer to a constant ConfigObject
+  const AliFemtoConfigObject* find(const Key_t &key) const;
+
+
   /// Return copy of object with a key removed from map.
   /// If not a map, or key not present, object is simply copied
   AliFemtoConfigObject WithoutKey(const Key_t &key) const;

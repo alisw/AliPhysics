@@ -201,6 +201,35 @@ AliFemtoConfigObject::pop(const Key_t &key)
 }
 
 
+const AliFemtoConfigObject *
+AliFemtoConfigObject::find(const Key_t &key) const
+{
+  const AliFemtoConfigObject *result = nullptr;
+
+  if (is_map()) {
+    auto found = fValueMap.find(key);
+    if (found != fValueMap.end()) {
+      result = &found->second;
+    }
+  }
+  return result;
+}
+
+
+AliFemtoConfigObject*
+AliFemtoConfigObject::find(const Key_t &key)
+{
+  AliFemtoConfigObject *result = nullptr;
+
+  if (is_map()) {
+    auto found = fValueMap.find(key);
+    if (found != fValueMap.end()) {
+      result = &found->second;
+    }
+  }
+  return result;
+}
+
 void
 AliFemtoConfigObject::WarnOfRemainingItems(std::ostream& out) const
 {
