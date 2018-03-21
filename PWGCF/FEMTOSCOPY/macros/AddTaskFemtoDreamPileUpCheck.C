@@ -52,14 +52,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(MultvsCentPlot);
+  evtCuts->SetMinimalBooking(true);
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, CombSigma, ContributionSplitting);
   TrackCuts->SetCutCharge(1);
+  TrackCuts->SetMinimalBooking(true);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma,
                                              ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
+  AntiTrackCuts->SetMinimalBooking(true);
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
   AliFemtoDreamCascadeCuts *CascadeCuts;
@@ -114,12 +117,26 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   } else if (suffix == "8") {
     Posv0Daug->SetMaxSharedClsTPC(0);
     Negv0Daug->SetMaxSharedClsTPC(0);
+    PosAntiv0Daug->SetMaxSharedClsTPC(0);
+    NegAntiv0Daug->SetMaxSharedClsTPC(0);
   } else if (suffix == "9") {
-    Posv0Daug->SetCutTPCCrossedRows(true, 160, 0.35);
-    Negv0Daug->SetCutTPCCrossedRows(true, 160, 0.35);
+    Posv0Daug->SetNClsTPC(0);
+    Negv0Daug->SetNClsTPC(0);
+    PosAntiv0Daug->SetNClsTPC(0);
+    NegAntiv0Daug->SetNClsTPC(0);
+    Posv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
+    Negv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
+    PosAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
+    NegAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
   } else if (suffix == "10") {
-    Posv0Daug->SetCutTPCCrossedRows(true, 160, 0.83);
-    Negv0Daug->SetCutTPCCrossedRows(true, 160, 0.83);
+    Posv0Daug->SetNClsTPC(0);
+    Negv0Daug->SetNClsTPC(0);
+    PosAntiv0Daug->SetNClsTPC(0);
+    NegAntiv0Daug->SetNClsTPC(0);
+    Posv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
+    Negv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
+    PosAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
+    NegAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -137,12 +154,16 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   // Cascade Cuts
   CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
   CascadeCuts->SetXiCharge(-1);
+  CascadeCuts->SetMinimalBooking(true);
   AliFemtoDreamTrackCuts *XiNegCuts =
       AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, PileUpRej, false);
   AliFemtoDreamTrackCuts *XiPosCuts =
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
   AliFemtoDreamTrackCuts *XiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
+  XiNegCuts->SetMinimalBooking(true);
+  XiPosCuts->SetMinimalBooking(true);
+  XiBachCuts->SetMinimalBooking(true);
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
@@ -155,6 +176,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AntiCascadeCuts =
       AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
   AntiCascadeCuts->SetXiCharge(1);
+  AntiCascadeCuts->SetMinimalBooking(true);
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
   AntiXiNegCuts->SetCutCharge(-1);
@@ -163,6 +185,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AntiXiPosCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
+  AntiXiNegCuts->SetMinimalBooking(true);
+  AntiXiPosCuts->SetMinimalBooking(true);
+  AntiXiBachCuts->SetMinimalBooking(true);  
 
   // CHECK FOR BERNIE
   XiNegCuts->SetPtRange(0.1, 999.9);
@@ -362,7 +387,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   config->SetMixingDepth(10);
 
   AliAnalysisTaskFemtoDream *task =
-      new AliAnalysisTaskFemtoDream("FemtoDreamDefault", isMC, false);
+      new AliAnalysisTaskFemtoDream("FemtoDreamDefault", isMC, true);
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
@@ -392,8 +417,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
                  "========"
               << std::endl;
   }
-  //	task->SetDebugLevel(0);
-  task->SetEvtCutQA(true);
+  //task->SetDebugLevel(0);
+  task->SetEvtCutQA(false);
   task->SetTrackBufferSize(10000);
   task->SetEventCuts(evtCuts);
   task->SetTrackCuts(TrackCuts);
