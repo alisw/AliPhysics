@@ -64,22 +64,25 @@ ClassImp(AliAnalysisTaskMLTreeMakerEff)
 
 AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
   AliAnalysisTaskSE(),
-  eventCuts(0),
-  eventplaneCuts(0),
-  evfilter(0),
-  trcuts(0),
-  trfilter(),
-  pidcuts(0),      
-  cuts(0),
-  filter(0), 
-  varManager(0),   
   fPIDResponse(0),
   NCrossedRowsTPC(0),
   NClustersTPC(0),
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fFilterBit(96), 
+  fESDTrackCuts(0),
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -91,14 +94,9 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
   KsigITS(0),
   nITS(0),
   nITSshared(0),
-  ITS1S(0),
-  ITS2S(0),
-  ITS3S(0),
-  ITS4S(0),
-  ITS5S(0),
-  ITS6S(0),        
   chi2ITS(0),
-  chi2GlobalPerNDF(0),
+  chi2TPC(0),
+  chi2Global(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   ProdVx(0),
@@ -110,20 +108,17 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
   n(0),
   cent(0),
   fList(0x0),
-  fPtMinMC(0.1),
-  fPtMaxMC(1000),
-  fEtaMinMC(-10),
-  fEtaMaxMC(10),          
+  fCentralityPercentileMin(0),
+  fCentralityPercentileMax(100), 
+  fPtMin(0),
+  fPtMax(1000),
+  fEtaMin(-10),
+  fEtaMax(10),
   mcTrackIndex(0),
   fMcArray(0x0),
-  hasMC(kFALSE),       
-  Rej(kFALSE),        
   MCpt(0),
   MCeta(0),
   MCphi(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),            
   pt(0),      
   eta(0),
   phi(0),
@@ -148,22 +143,25 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
 
 AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   AliAnalysisTaskSE(name),
-  eventCuts(0),
-  eventplaneCuts(0),
-  evfilter(0),
-  trcuts(0),
-  trfilter(),
-  pidcuts(0),      
-  cuts(0),
-  filter(0), 
-  varManager(0),   
-  fPIDResponse(0),
+  fPIDResponse(0),      
   NCrossedRowsTPC(0),
   NClustersTPC(0),
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
-  fFilterBit(96), 
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
+  fFilterBit(96),       
+  fESDTrackCuts(0),
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -175,14 +173,9 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   KsigITS(0),
   nITS(0),
   nITSshared(0),
-  ITS1S(0),
-  ITS2S(0),
-  ITS3S(0),
-  ITS4S(0),
-  ITS5S(0),
-  ITS6S(0),        
   chi2ITS(0),
-  chi2GlobalPerNDF(0),
+  chi2TPC(0),
+  chi2Global(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   ProdVx(0),
@@ -194,20 +187,17 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   n(0),
   cent(0),
   fList(0x0),
-  fPtMinMC(0.1),
-  fPtMaxMC(1000),
-  fEtaMinMC(-10),
-  fEtaMaxMC(10),          
+  fCentralityPercentileMin(0),
+  fCentralityPercentileMax(100), 
+  fPtMin(0),
+  fPtMax(1000),
+  fEtaMin(-10),
+  fEtaMax(10),
   mcTrackIndex(0),
   fMcArray(0x0),
-  hasMC(kFALSE),       
-  Rej(kFALSE),        
   MCpt(0),
   MCeta(0),
   MCphi(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),            
   pt(0),      
   eta(0),
   phi(0),
@@ -227,28 +217,9 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   fTree(0),
   fQAHist(0)
 {  
- SetupTrackCuts(); 
- SetupEventCuts(); 
- AliInfo("Track & Event cuts were set");
+
   DefineOutput(1, TList::Class());
-//  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
-}
-AliAnalysisTaskMLTreeMaker::~AliAnalysisTaskMLTreeMaker(){
-  delete eventCuts;
-  delete eventplaneCuts;
-  delete evfilter;
-  
-  delete trcuts;
-  delete trfilter;
-  delete pidcuts;
-  delete cuts;
-  delete filter; 
-
-  delete fList;
-  delete fQAHist;
-  delete fTree;
-
-
+  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
 }
 
 
@@ -266,8 +237,10 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fList->SetOwner();
    
   
-  if (man->GetMCtruthEventHandler()!=0x0) hasMC=kTRUE;
-  else hasMC = kFALSE; 
+  if (man->GetMCtruthEventHandler()==0x0){
+      AliError("No MC Truth available");
+      return;
+  }
 
 
 
@@ -295,29 +268,23 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fTree->Branch("NTPCSignal", &NTPCSignal); 
   
   
-//   if(fPionSigmas){
+   if(fPionSigmas){
     fTree->Branch("PsigTPC", &PsigTPC);
-//    fTree->Branch("PsigITS", &PsigITS);
-//    fTree->Branch("PsigTOF", &PsigTOF);
-//  }
-//  if(fKaonSigmas){
-//    fTree->Branch("KsigTPC", &KsigTPC);
-//    fTree->Branch("KsigITS", &KsigITS);
-//    fTree->Branch("KsigTOF", &KsigTOF);
-//  }
+    fTree->Branch("PsigITS", &PsigITS);
+    fTree->Branch("PsigTOF", &PsigTOF);
+  }
+  if(fKaonSigmas){
+    fTree->Branch("KsigTPC", &KsigTPC);
+    fTree->Branch("KsigITS", &KsigITS);
+    fTree->Branch("KsigTOF", &KsigTOF);
+  }
   
   fTree->Branch("nITS", &nITS);
-  fTree->Branch("ITS1Shared", &ITS1S);
-  fTree->Branch("ITS2Shared", &ITS2S); 
-  fTree->Branch("ITS3Shared", &ITS3S); 
-  fTree->Branch("ITS4Shared", &ITS4S); 
-  fTree->Branch("ITS5Shared", &ITS5S); 
-  fTree->Branch("ITS6Shared", &ITS6S);   
   fTree->Branch("nITSshared_frac", &nITSshared);
   fTree->Branch("chi2ITS", &chi2ITS);
+  fTree->Branch("chi2TPC", &chi2TPC);
   fTree->Branch("chi2GlobalvsTPC", &chi2GlobalvsTPC);
-  fTree->Branch("chi2GlobalPerNDF", &chi2GlobalPerNDF);
- 
+  
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
   
@@ -328,11 +295,7 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fTree->Branch("ProdVx", &ProdVx);
   fTree->Branch("ProdVy", &ProdVy);
   fTree->Branch("ProdVz", &ProdVz);
-  
-  fTree->Branch("MCTrack_vertx", &MCvertx);
-  fTree->Branch("MCTrack_verty", &MCverty);
-  fTree->Branch("MCTrack_vertz", &MCvertz);  
-  
+      
   fTree->Branch("Pdg", &pdg);
   fTree->Branch("Pdg_Mother", &pdgmother);
   fTree->Branch("Mother_label", &motherlabel);
@@ -375,9 +338,8 @@ void AliAnalysisTaskMLTreeMakerEff::UserExec(Option_t *) {
     return;
   }
 
-  UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
-  varManager->SetEvent(event);
-  if(selectedMask!=(evfilter->IsSelected(event))){
+  // check event cuts
+  if( IsEventAccepted(esdevent) == 0){ 
     return;
   }
 
@@ -486,22 +448,12 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   nITSshared.clear();
   chi2ITS.clear();
   chi2TPC.clear();
-  chi2GlobalPerNDF.clear();
+  chi2Global.clear();
   chi2GlobalvsTPC.clear();
   
   ProdVx.clear();
   ProdVy.clear();
   ProdVz.clear();
-  
-  MCvertx.clear();
-  MCverty.clear();
-  MCvertz.clear();
-  ITS1S.clear();
-  ITS2S.clear();
-  ITS3S.clear();
-  ITS4S.clear();
-  ITS5S.clear();
-  ITS6S.clear(); 
   
   
   // Loop over tracks in event
@@ -512,9 +464,6 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   Int_t tempmpdg;
   AliMCParticle* mcMTrack;
   AliMCParticle* mcTrack;
-  
-  varManager->SetPIDResponse(fPIDResponse);
-
   
   mcEvent = MCEvent(); 
         if (!mcEvent) {
@@ -560,7 +509,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
 	      continue;
       }
         
-      if( abs(mcTrack->PdgCode())!=11 ) //AliError("This is not an electron!");
+      if( abs(mcTrack->PdgCode())!=11 ) AliError("This is not an electron!");
       
       
       Rej=kFALSE;
@@ -573,28 +522,28 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       
       fQAHist->Fill("Before MC track cuts",1); 
       
-      if( pttemp > fPtMaxMC || pttemp < fPtMinMC ) continue;
-      if( etatemp > fEtaMaxMC || etatemp < fEtaMinMC ) continue;
-      if( abs(mcTrack->PdgCode())!=11)  continue;     //use only electrons for efficiency
+      if( pttemp > fPtMax || pttemp < fPtMin ) continue;
+      if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
+      if( abs(mcTrack->PdgCode())!=11)  continue;
       
       fQAHist->Fill("After MC track cuts",1); 
 
       
       //check if particle is from enh signal
-//      temppdg = mcMTrack->PdgCode();  
-//      if(!(mcMTrack->GetMother() < 0)){       //get direct mother
-//          mcTrackIndex = mcMTrack->GetMother(); 
-//          mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-//          tempmpdg= mcMTrack->PdgCode(); 
-//      }
-//      else tempmpdg=-9999;
-// 
-//      while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
-//          mcTrackIndex = mcMTrack->GetMother(); 
-//          mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));  
-//      }
-// 
-//      if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
+      temppdg = mcMTrack->PdgCode();  
+      if(!(mcMTrack->GetMother() < 0)){       //get direct mother
+          mcTrackIndex = mcMTrack->GetMother(); 
+          mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
+          tempmpdg= mcMTrack->PdgCode(); 
+      }
+      else tempmpdg=-9999;
+ 
+      while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
+          mcTrackIndex = mcMTrack->GetMother(); 
+          mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));  
+      }
+ 
+      if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
 
       passtrcuts = 0;          
           
@@ -608,22 +557,30 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
 	      AliError(Form("Could not receive ESD track %d", vec[iTracks][2]));
       }   
       
-      UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
+      passtrcuts=1;
       
-      if(selectedMask!=(filter->IsSelected((AliVParticle*)esdTrack)))passtrcuts=0;
-      else  passtrcuts=1;   
+      if(!fESDTrackCuts->AcceptTrack(esdTrack))   passtrcuts = 0;
       
       fQAHist->Fill("Is Rec bef ESD cut",1); 
       
-//      // Kinematic cuts
-      Double_t pttemp = esdTrack->Pt();
-      Double_t etatemp = esdtrack->Eta();
-
-      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
-      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
-      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
+      // Kinematic cuts
+      Double_t pttemprec = esdTrack->Pt();
+      Double_t etatemprec = esdTrack->Eta();
       
+      if( pttemprec > fPtMax || pttemprec < fPtMin ) passtrcuts = 0;
+      if( etatemprec > fEtaMax || etatemprec < fEtaMin ) passtrcuts = 0;
+ 
+      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
+      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
+      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 0);
+      
+      if(fUsePionPIDTPC){
+        if (fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2)  < fPSigTPCMax){ passtrcuts = 0;} //exclude pions in TPC
+      }
 
+      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,esdTrack)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) passtrcuts = 0; 
+      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) passtrcuts = 0; 
+      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) passtrcuts = 0;
       
       
      fQAHist->Fill("Is Rec after ESD cut",1);

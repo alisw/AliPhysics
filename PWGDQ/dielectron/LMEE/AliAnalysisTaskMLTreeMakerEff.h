@@ -22,56 +22,40 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   AliAnalysisTaskMLTreeMakerEff();
   virtual ~AliAnalysisTaskMLTreeMakerEff(){} 
    
-  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-  
-  void SetupTrackCuts();
-  void SetupEventCuts();
-  
-  AliDielectronEventCuts* eventCuts;
-  AliDielectronVarCuts *eventplaneCuts;
-  AliAnalysisFilter* evfilter;
-  
-  AliDielectronVarCuts* trcuts;
-  AliDielectronTrackCuts *trfilter;
-  AliDielectronPID *pidcuts;
-  AliDielectronCutGroup* cuts;
-  AliAnalysisFilter* filter; 
-  
-    AliDielectronVarManager* varManager;
-  
-//  void SetCentralityPercentileRange(Double_t min, Double_t max){
-//    fCentralityPercentileMin = min;
-//    fCentralityPercentileMax = max;
-//
-//    Printf("Thresholds Set");
-//    Printf("pT = %f - %f",fPtMin,fPtMax);
-//    Printf("eta = %f - %f",fEtaMin,fEtaMax);
-//    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
-//  }
-//
-//  void SetPtRange(Double_t min, Double_t max){
-//    fPtMin = min;
-//    fPtMax = max;
-//
-//    Printf("Thresholds Set");
-//    Printf("pT = %f - %f",fPtMin,fPtMax);
-//    Printf("eta = %f - %f",fEtaMin,fEtaMax);
-//    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
-//  }
-//
-//  void SetEtaRange(Double_t min, Double_t max){
-//    fEtaMin = min;
-//    fEtaMax = max;
-//
-//    Printf("Thresholds Set");
-//    Printf("pT = %f - %f",fPtMin,fPtMax);
-//    Printf("eta = %f - %f",fEtaMin,fEtaMax);
-//    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
-//  }
+
+  void SetCentralityPercentileRange(Double_t min, Double_t max){
+    fCentralityPercentileMin = min;
+    fCentralityPercentileMax = max;
+
+    Printf("Thresholds Set");
+    Printf("pT = %f - %f",fPtMin,fPtMax);
+    Printf("eta = %f - %f",fEtaMin,fEtaMax);
+    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
+  }
+
+  void SetPtRange(Double_t min, Double_t max){
+    fPtMin = min;
+    fPtMax = max;
+
+    Printf("Thresholds Set");
+    Printf("pT = %f - %f",fPtMin,fPtMax);
+    Printf("eta = %f - %f",fEtaMin,fEtaMax);
+    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
+  }
+
+  void SetEtaRange(Double_t min, Double_t max){
+    fEtaMin = min;
+    fEtaMax = max;
+
+    Printf("Thresholds Set");
+    Printf("pT = %f - %f",fPtMin,fPtMax);
+    Printf("eta = %f - %f",fEtaMin,fEtaMax);
+    Printf("cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
+  }
 
   void SetFilterBit(Int_t filterBit){
     fFilterBit = filterBit;
@@ -92,11 +76,25 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal;    
   
+    //Electron nSigma values, initilaised to common cut values but can be set manually 
+  Double_t fESigITSMin;
+  Double_t fESigITSMax;
+  Double_t fESigTPCMin;
+  Double_t fESigTPCMax;
+  Double_t fESigTOFMin;
+  Double_t fESigTOFMax;
+  //Pion nSigma values, initilaised to common cut values but can be set manually 
+  Double_t fPSigTPCMin; 
+  Double_t fPSigTPCMax; 
+  
+  Bool_t fUsePionPIDTPC; //Use Pion nSigma information in TPC
 
+  Bool_t fPionSigmas; 
+  Bool_t fKaonSigmas;
 
   Int_t fFilterBit;// track cut bit from track selection (default = 96)
 
-//  AliESDtrackCuts* fESDTrackCuts;
+  AliESDtrackCuts* fESDTrackCuts;
   
   std::vector<Double_t> EsigTPC;
   std::vector<Double_t> EsigTOF;
@@ -112,21 +110,11 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
-  
-  std::vector<Int_t> ITS1S;
-  std::vector<Int_t> ITS2S;
-  std::vector<Int_t> ITS3S;
-  std::vector<Int_t> ITS4S;
-  std::vector<Int_t> ITS5S;
-  std::vector<Int_t> ITS6S;
-  
   std::vector<Double_t> chi2ITS;
-//  std::vector<Double_t> chi2TPC;
-  std::vector<Double_t> chi2GlobalPerNDF;
+  std::vector<Double_t> chi2TPC;
+  std::vector<Double_t> chi2Global;
   std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
-  
-  
   
   std::vector<Double_t> ProdVx;
   std::vector<Double_t> ProdVy;
@@ -148,18 +136,13 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
 
   TList *fList;//output list for QA histograms
 
-//  Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
-//  Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
-//
-//  Double_t fPtMin;// minimum pT threshold (default = 0)
-//  Double_t fPtMax;// maximum pT threshold (default = 1000)
-//  Double_t fEtaMin;// minimum eta threshold (default = -10)
-//  Double_t fEtaMax;// maximum eta threshold (default = 10)
-  
-  Double_t fPtMinMC;// minimum pT threshold (default = 0)
-  Double_t fPtMaxMC;// maximum pT threshold (default = 1000)
-  Double_t fEtaMinMC;// minimum eta threshold (default = -10)
-  Double_t fEtaMaxMC;// maximum eta threshold (default = 10)
+  Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
+  Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
+
+  Double_t fPtMin;// minimum pT threshold (default = 0)
+  Double_t fPtMax;// maximum pT threshold (default = 1000)
+  Double_t fEtaMin;// minimum eta threshold (default = -10)
+  Double_t fEtaMax;// maximum eta threshold (default = 10)
   
 //  Int_t gMultiplicity;
   Int_t mcTrackIndex;
@@ -169,22 +152,13 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   std::vector<Double_t> MCeta;
   std::vector<Double_t> MCphi;
   
-  std::vector<Double_t> MCvertx;
-  std::vector<Double_t> MCverty;
-  std::vector<Double_t> MCvertz;
-  
   std::vector<Double_t> pt;
   std::vector<Double_t> eta;
   std::vector<Double_t> phi;
-  std::vector<Int_t> charge;
-  std::vector<Int_t> enh;  
-  
+    
   Double_t vertx;
   Double_t verty;
   Double_t vertz; 
- 
-  Bool_t hasMC;
-  Bool_t Rej;
   
   std::vector<Int_t> pdg;
   std::vector<Int_t> pdgmother;
