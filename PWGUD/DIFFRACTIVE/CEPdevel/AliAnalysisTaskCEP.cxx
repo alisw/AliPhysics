@@ -692,7 +692,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // topology (dphiMin=0)
   // The OSTG trigger in 2017 required two online tracklets with
   // min opening angle >=54 deg (dphiMin=4)
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  const AliMultiplicity *mult = (AliMultiplicity*)fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
   
   // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a specific
@@ -750,7 +750,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // number of tracklets and singles
   Int_t nTracklets = mult->GetNumberOfTracklets();
-  Int_t nSingles   = ((AliMultiplicity*)mult)->GetNumberOfSingleClusters();
+  Int_t nSingles   = mult->GetNumberOfSingleClusters();
   
   // get number of ITS cluster
   Short_t nITSCluster[6] = {0};
@@ -1063,6 +1063,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
     fCEPEvent->SetnITSCluster(nITSCluster);
     fCEPEvent->SetnFiredChips(nFiredChips);
+    fCEPEvent->SetSPMapOnline(mult->GetFastOrFiredChips());
+    fCEPEvent->SetSPMapOffline(mult->GetFiredChipMap());
+    
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
     
@@ -1099,9 +1102,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // which track uses the tracklet-clusters on layers 1 and 2
       ref1=-1.; ref2=-1.;
-      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+      nr = mult->GetTrackletTrackIDsLay(0,ii,0,refs,5);
       if (nr>0) ref1 = refs[0];
-      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+      nr = mult->GetTrackletTrackIDsLay(1,ii,0,refs,5);
       if (nr>0) ref2 = refs[0];
       
       // new tracklet-track association
@@ -1187,12 +1190,16 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTPCStatus(stat);
       trk->SetPIDTPCSignal(tmptrk->GetTPCsignal());
+      printf("TPC PID:%f",tmptrk->GetTPCsignal());
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
         stat = fPIDResponse->NumberOfSigmas(
           AliPIDResponse::kTPC,tmptrk,(AliPID::EParticleType)jj,nsig);
         trk->SetPIDTPCnSigma(jj,nsig);
         trk->SetPIDTPCProbability(jj,probs[jj]);
+        
+        printf(" %f/%f ",nsig,probs[jj]);
       }
+      printf("\n");
       
       // ... TOF
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,tmptrk,AliPID::kSPECIES,probs);

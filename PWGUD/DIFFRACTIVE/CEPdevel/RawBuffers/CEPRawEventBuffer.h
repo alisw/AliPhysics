@@ -121,7 +121,7 @@ class CEPRawEventBuffer : public TObject
     Bool_t                      RemoveCaloCluster(UInt_t ind);
 
 
-    ClassDef(CEPRawEventBuffer, 1)     // CEP event buffer
+    ClassDef(CEPRawEventBuffer, 1);     // CEP event buffer
 };
 
 #endif
