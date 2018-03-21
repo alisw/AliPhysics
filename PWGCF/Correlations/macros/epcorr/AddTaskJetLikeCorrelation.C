@@ -3,16 +3,16 @@
 AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int filterbit, float fTwoTrackEffCut, float fConversionsCut, float fResonancesCut)
 {
   
-  double centarr[] = {0, 5, 10, 20, 50, 70};
+  double centarr[] = {0, 5, 10, 20, 50, 80};
   double zvertarr[] = {-9, -7, -5, -3, -1, 1, 3, 5, 7, 9};
-    double ptarr[] = {0.8, 1, 1.5, 2, 3, 4, 6, 8,12, 16, 25 };
+    double ptarr[] = {0.8, 1, 1.5, 2, 3, 4, 6, 8,15, 25 };
 //  double ptarr[] = {3, 4, 6, 8, 12, 16};
 
   //  double ptarr[] = {0.5, 1, 2, 3};  // To speed up analysis, we set queue size = 4~5 for very small pt
 
   TArrayD dcentarr(6, centarr);
   TArrayD dzvertarr(10, zvertarr);
-  TArrayD dptarr(11, ptarr);
+  TArrayD dptarr(10, ptarr);
   float fEtaCut = 0.9;
   float fPhiCut = TMath::TwoPi();
 //  float fTwoTrackEffCut = 0.02;
