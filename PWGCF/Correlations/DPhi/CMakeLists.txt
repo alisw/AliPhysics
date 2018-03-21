@@ -30,6 +30,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
   )
 
 # Sources - alphabetical order
@@ -78,6 +80,7 @@ set(SRCS
     DiHadronPID/AliFunctionsDiHadronPID.cxx
     DiHadronPID/AliHistToolsDiHadronPID.cxx
     DiHadronPID/AliTrackDiHadronPID.cxx
+    EPCorr/AliAnalysisTaskJetLikeCorrelation.cxx
     FourierDecomposition/AliDhcTask.cxx
     FourierDecomposition/AliMCTruthCent.cxx
     FourierDecomposition/AliMCTruthTrackMaker.cxx
