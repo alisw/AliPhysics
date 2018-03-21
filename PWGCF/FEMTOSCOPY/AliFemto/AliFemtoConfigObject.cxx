@@ -1,5 +1,5 @@
 ///
-/// \file AliFemtoUser/AliFemtoConfigObject.cxx
+/// \file AliFemto/AliFemtoConfigObject.cxx
 ///
 
 #include "AliFemtoConfigObject.h"

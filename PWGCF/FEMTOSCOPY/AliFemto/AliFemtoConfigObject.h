@@ -1,5 +1,5 @@
 ///
-/// \file AliFemtoUser/AliFemtoConfigObject.h
+/// \file AliFemto/AliFemtoConfigObject.h
 ///
 
 #pragma once

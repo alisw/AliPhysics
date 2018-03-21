@@ -30,6 +30,7 @@ set(SRCS
   AliFemtoAnalysisReactionPlane.cxx
   AliFemtoBPLCMS3DCorrFctn.cxx
   AliFemtoBPLCMS3DCorrFctnKK.cxx
+  AliFemtoConfigObject.cxx
   AliFemtoCorrFctn3DLCMSSym.cxx
   AliFemtoQinvCorrFctn.cxx
   AliFemtoBasicEventCut.cxx
