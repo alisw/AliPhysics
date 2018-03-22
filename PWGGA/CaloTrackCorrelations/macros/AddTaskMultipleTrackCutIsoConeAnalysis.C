@@ -80,17 +80,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrMultipleAnalysis
  const char *trigSuffix = "EMC7"
 )
 {
-  // Check the global variables, and reset the provided ones if empty.
-  //
-  TString trigger = trigSuffix;
-
-//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C");
-//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C");
-
   // Load macros
   //
-  gROOT->LoadMacro("AddTaskCaloTrackCorrBase.C");
-  gROOT->LoadMacro("ConfigureCaloTrackCorrAnalysis.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C");
   
   // Init base task
   //
