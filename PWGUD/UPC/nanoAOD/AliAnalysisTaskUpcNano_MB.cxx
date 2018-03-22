@@ -154,8 +154,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fSign", &fSign, "fSign/I");
   fTreeJPsi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
   fTreeJPsi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreeJPsi ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
+  fTreeJPsi ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
+  fTreeJPsi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
@@ -175,8 +175,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePhi ->Branch("fSign", &fSign, "fSign/I");
   fTreePhi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
   fTreePhi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreePhi ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreePhi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
+  fTreePhi ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
+  fTreePhi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/D");
   fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -190,8 +190,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fSign", &fSign, "fSign/I");
   fTreeRho ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
   fTreeRho ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreeRho ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
+  fTreeRho ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
+  fTreeRho ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/D");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
@@ -210,8 +210,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/D");
   fTreePsi2s ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
   fTreePsi2s ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreePsi2s ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreePsi2s ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
+  fTreePsi2s ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
+  fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/D");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC){ 
@@ -304,8 +304,11 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   AliAODZDC *fZDCdata = aod->GetZDCData();
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  fZNAtime = fZDCdata->GetZNATime();
-  fZNCtime = fZDCdata->GetZNCTime();
+
+  for (Int_t i=0;i<4;i++){ 
+  	fZNAtime[i] = fZDCdata->GetZNATDCm(i);
+  	fZNCtime[i] = fZDCdata->GetZNCTDCm(i);
+	}
   
   Int_t fV0Adecision = fV0data->GetV0ADecision();
   Int_t fV0Cdecision = fV0data->GetV0CDecision();
