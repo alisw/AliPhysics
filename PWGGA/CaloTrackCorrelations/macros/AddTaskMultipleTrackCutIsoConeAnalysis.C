@@ -1,12 +1,12 @@
 /// \file AddTaskMultipleTrackCutIsoConeAnalysis.C
 /// \ingroup CaloTrackCorrMacros
-/// \brief Configuration of (isolated) gamma/pi0-hadron and pi0-hadron analysis with multiple cuts
+/// \brief Configuration of (isolated) gamma/pi0-hadron analysis with multiple cuts
 ///
 /// Configuration macro for analysis of gamma-hadron and pi0-hadron correlation analysis
-/// both pi0 and gamma isolated or not with multiple cuts (Track matching, isolation cone etc).
-/// I calls 
+/// both pi0 and gamma isolated (or not) with multiple cuts (Track matching, isolation cone etc).
+/// It calls 
 ///   * the main task intializationg the base of the analysis AddTaskCaloTrackBase.C 
-///   * a configuration file for the analysis, as many times as cuts need to vary
+///   * a configuration file for the analysis, as many times as cuts needed to vary
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
@@ -23,7 +23,6 @@
 #include "ConfigureCaloTrackCorrAnalysis.C"
 
 #endif
-
 
 ///
 /// Main method calling all the configuration
@@ -108,14 +107,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrMultipleAnalysis
   //
   Float_t rMin[] = {-1,0.05,0.1};
   
-  // Test 3 track matching options (no track mathing)
-  for(Int_t itm = 0; itm < 3; itm++)
+  // 3 exclusion of isolation cone options, no cut and 2 cuts
+  for(Int_t irmin = 0; irmin < 3; irmin++)
   {
-    // 3 exclusion of isolation cone options, no cut and 2 cuts
-    for(Int_t irmin = 0; irmin < 2; irmin++)
+    // Add this string to deacticate the correlation without isolation
+    // and other histograms in the Photon and Pi0 selection task
+    if(irmin == 1 ) analysisString+="_MultiIso";
+    
+    // Test 3 track matching options (no track mathing)
+    for(Int_t itm = 0; itm < 3; itm++)
     {
+      
       TString histoString = Form("TM%d",itm);
       if ( irmin > 0 ) histoString+=Form("_Rmin%1.2f",rMin[irmin]);
+      
       
       ConfigureCaloTrackCorrAnalysis
       ( anaList, calorimeter, simulation, year, col, analysisString, histoString, 
@@ -123,6 +128,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrMultipleAnalysis
        leading, itm, mixOn, printSettings, debug);
     }
   }
+  
+  // Execute some control task only
+  ConfigureCaloTrackCorrAnalysis
+  ( anaList, calorimeter, simulation, year, col, "QA_Charged", "", 
+   -1, -1, -1, -1, -1, -1,-1,-1,0, printSettings, debug);
   
   return task;
 }
