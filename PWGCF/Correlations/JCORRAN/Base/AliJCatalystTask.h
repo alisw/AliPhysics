@@ -99,12 +99,14 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		};
 		void AddFlags(UInt_t nflags){flags |= nflags;}
 		Int_t GetJCatalystEntry(){ return fJCatalystEntry; } // in order to sync event id
+		void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 
 
 	private:
 		int fRunNum; //
 		float fcent; //
 		double fZvert; //
+		bool fnoCentBin; // no centrality bin => 1
 		TClonesArray * fInputList;  // tracklist
 		TDirectory *fOutput;     // output
 		TString fTaskName; //

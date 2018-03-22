@@ -113,6 +113,9 @@ public:
         fkExtraCleanup = lExtraCleanup;
     }
 //---------------------------------------------------------------------------------------
+    void SetRevertexAllEvents     ( Bool_t lOpt ) {
+        fkRevertexAllEvents = lOpt;
+    }
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
@@ -226,6 +229,7 @@ private:
     Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     
     //Objects Controlling Task Behaviour
+    Bool_t fkRevertexAllEvents; //Don't be smart. Re-vertex every single event 
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
     Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs

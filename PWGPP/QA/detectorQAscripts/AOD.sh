@@ -6,9 +6,9 @@
 #  $pass         e.g. cpass1,pass1,passMC
 #  #ocdbStorage  e.g. "raw://", "local://./OCDB"
 
-runLevelQA()
+runLevelAodQA()
 {
-  qaFile="QAresults_AOD.root"
+  qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/macros/PlotAODtrackQA.C .
   root -b -q -l "PlotAODtrackQA.C(\"$qaFile\",\"QA\",${runNumber})"

@@ -45,6 +45,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fRunNum(-1),
 	fcent(-999),
 	fZvert(-999),
+	fnoCentBin(false),
 	fInputList(0),
 	fOutput(0)
 {
@@ -74,6 +75,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fRunNum(-1),
 	fcent(-999),
 	fZvert(-999),
+	fnoCentBin(false),
 	fInputList(0),
 	fOutput(0)
 {
@@ -104,6 +106,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	fRunNum(ap.fRunNum),
 	fcent(ap.fcent),
 	fZvert(ap.fZvert),
+	fnoCentBin(ap.fnoCentBin),
 	fInputList(ap.fInputList),
 	fOutput(ap.fOutput)
 {
@@ -178,6 +181,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 					fcent = 0.5f*(ALICE_Cent[icent]+ALICE_Cent[icent+1]);
 			}
 		}
+		if(fnoCentBin) fcent = 1.0; // forcing no centrality selection
 		ReadKineTracks( mcEvent, fInputList, fcent ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
@@ -188,7 +192,11 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			fvertex[i] = gVertexArray.At(i);
 	} else { // Kine
 		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-		fcent = ReadCentrality(currentEvent,fCentDetName);
+		if(fnoCentBin) {
+			fcent = 1.0;
+		} else {
+			fcent = ReadCentrality(currentEvent,fCentDetName);
+		}
 		fRunNum = currentEvent->GetRunNumber();
 
 		if(!IsGoodEvent( currentEvent ))
@@ -267,7 +275,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - charge
 				}
-			        if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
+				if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
 				Int_t label = track->GetLabel();
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel( label );
@@ -424,7 +432,7 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
-			
+
 	}
 
 	return kTRUE;
@@ -511,7 +519,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 					}
 				}
 			}
-			
+
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
 			if(fPcharge != 0){ // fPcharge 0 : all particle

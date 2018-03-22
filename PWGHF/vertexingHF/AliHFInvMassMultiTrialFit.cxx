@@ -98,6 +98,7 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fhTemplSign(0x0),
   fFixRefloS(1.),
   fNtupleMultiTrials(0x0),
+  fNtupleBinCount(0x0),
   fMinYieldGlob(0),
   fMaxYieldGlob(0),
   fMassFitters()
@@ -165,6 +166,7 @@ AliHFInvMassMultiTrialFit::~AliHFInvMassMultiTrialFit(){
   delete [] fHistoBkgInBinEdgesTrial;
 
   delete fNtupleMultiTrials;
+  delete fNtupleBinCount;
 }
 
 //________________________________________________________________________
@@ -242,6 +244,8 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
   }
   fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy",128000);
   fNtupleMultiTrials->SetDirectory(nullptr);
+  fNtupleBinCount = new TNtuple(Form("ntuBinCount%s",fSuffix.Data()),Form("ntuBinCount%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:confsig:confmean:chi2:nSigmaBC:rawyBC0:erawyBC0:rawyBC1:erawyBC1",128000);
+  fNtupleBinCount->SetDirectory(nullptr);
   return kTRUE;
 
 }
@@ -261,6 +265,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
   fMinYieldGlob=999999.;
   fMaxYieldGlob=0.;
   Float_t xnt[15];
+  Float_t xntBC[13];
 
   for(Int_t ir=0; ir<fNumOfRebinSteps; ir++){
     Int_t rebin=fRebinSteps[ir];
@@ -372,7 +377,6 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
               Double_t erbkg=0.;
               Double_t bkgBEdge=0;
               Double_t erbkgBEdge=0;
-              TF1* fB1=0x0;
               if(typeb<kNBkgFuncCases){
                 printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs);
                 out=fitter->MassFitter(0);
@@ -386,7 +390,6 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                 if(epos<0.00001) epos=0.0001;
                 ry=fitter->GetRawYield();
                 ery=fitter->GetRawYieldError();
-                fB1=fitter->GetBackgroundFullRangeFunc();
                 fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
                 Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
                 Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
@@ -471,6 +474,10 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                   fHistoBkgInBinEdgesTrial[theCase]->SetBinContent(itrial,bkgBEdge);
                   fHistoBkgInBinEdgesTrial[theCase]->SetBinError(itrial,erbkgBEdge);
                 }
+		fNtupleMultiTrials->Fill(xnt);
+
+		for(Int_t j=0; j<8; j++) xntBC[j]=xnt[j];
+
 
                 for(Int_t iStepBC=0; iStepBC<fNumOfnSigmaBinCSteps; iStepBC++){
                   Double_t minMassBC=fMassD-fnSigmaBinCSteps[iStepBC]*sigma;
@@ -483,6 +490,11 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                     Double_t cnts1,ecnts1;
 		    cnts0=fitter->GetRawYieldBinCounting(ecnts0,minMassBC,maxMassBC,0);
 		    cnts1=fitter->GetRawYieldBinCounting(ecnts1,minMassBC,maxMassBC,1);
+		    xntBC[8]=fnSigmaBinCSteps[iStepBC];
+		    xntBC[9]=cnts0;
+		    xntBC[10]=ecnts0;
+		    xntBC[11]=cnts1;
+		    xntBC[12]=ecnts1;
                     ++itrialBC;
                     fHistoRawYieldDistBinC0All->Fill(cnts0);
                     fHistoRawYieldTrialBinC0All->SetBinContent(globBin,iStepBC+1,cnts0);
@@ -496,11 +508,11 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                     fHistoRawYieldTrialBinC1[theCase]->SetBinContent(itrial,iStepBC+1,cnts1);
                     fHistoRawYieldTrialBinC1[theCase]->SetBinError(itrial,iStepBC+1,ecnts1);
                     fHistoRawYieldDistBinC1[theCase]->Fill(cnts1);
+		    fNtupleBinCount->Fill(xntBC);
                   }
                 }
               }
               if (mustDeleteFitter) delete fitter;
-              fNtupleMultiTrials->Fill(xnt);
             }
           }
         }
@@ -551,6 +563,8 @@ void AliHFInvMassMultiTrialFit::SaveToRoot(TString fileName, TString option) con
   }
   fNtupleMultiTrials->SetDirectory(&outHistos);
   fNtupleMultiTrials->Write();
+  fNtupleBinCount->SetDirectory(&outHistos);
+  fNtupleBinCount->Write();
   outHistos.Close();
 }
 
