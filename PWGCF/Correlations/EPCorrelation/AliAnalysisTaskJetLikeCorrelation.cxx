@@ -1395,7 +1395,6 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
-  int lNPtBin = fPtArray.GetSize() - 1;
   int lMinimumPtABinMerging = GetPtBin(3.00);
   int lMinimumPtTBinMerging = GetPtBin(6.00);
 
@@ -2134,9 +2133,10 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
           fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]->Sumw2();
 
           }
-        }
-      }
-    }
+        } // ipta
+      } // iptt
+    } //izvertex 
+  }
   
 //  fHistNevtMixed = new TH2D(Form("fHistNevtMixed"), Form("fHistNevtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
 //  fHistNevtMixed->GetXaxis()->SetTitle("CentBin");
@@ -2197,8 +2197,8 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   fHistPtSameOut->GetYaxis()->SetTitle("ZVertBin");
   fHistPtSameOut->GetZaxis()->SetTitle("Pt(GeV/c)");
 
-  float lEtaMin = -0.9;
-  float lEtaMax = 0.9;
+//  float lEtaMin = -0.9;
+//  float lEtaMax = 0.9;
 
   int nbins[5] = {5, 20, 9, 200, 250};
   // In/out(5), Cent, ZVtx, Eta, Pt // total 5
