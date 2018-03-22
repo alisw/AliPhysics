@@ -14,7 +14,7 @@
 # **************************************************************************/
 
 #Module
-set(MODULE PWGCFCorrelationsDPhi)
+set(MODULE PWGCFCorrelationsEPCorrelation)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
@@ -96,5 +96,3 @@ install(FILES ${HDRS} DESTINATION include)
 
 set(LIBDEPS )
 
-# Macros
-install(FILES MuonHadron/AddAnalysisTaskMuonHadronCorrelations.C DESTINATION PWGCF/Correlations/DPhi/MuonHadron/)
