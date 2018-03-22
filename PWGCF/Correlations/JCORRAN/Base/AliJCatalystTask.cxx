@@ -166,12 +166,14 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			return;
 		}
 
-		AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-		if(!headerH)
-			return;
-		//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
-		Double_t gImpactParameter = headerH->ImpactParameter();
-		fcent = GetCentralityFromImpactPar(gImpactParameter);
+		if(!fnoCentBin) {
+			AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+			if(!headerH)
+				return;
+			//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
+			Double_t gImpactParameter = headerH->ImpactParameter();
+			fcent = GetCentralityFromImpactPar(gImpactParameter);
+		}
 		if(flags & FLUC_ALICE_IPINFO){
 			//force to use ALICE impact parameter setting
 			double ALICE_Cent[8] = {0, 5, 10, 20, 30, 40, 50, 60};
