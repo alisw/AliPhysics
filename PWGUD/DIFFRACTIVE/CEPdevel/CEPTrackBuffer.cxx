@@ -118,7 +118,7 @@ void CEPTrackBuffer::SetPIDITSnSigma(Int_t part, Float_t nsig)
 }
 
 // ----------------------------------------------------------------------------
-void CEPTrackBuffer::CEPTrackBuffer::SetPIDITSProbability(Int_t part, Float_t prob)
+void CEPTrackBuffer::SetPIDITSProbability(Int_t part, Float_t prob)
 {
 
   if (part < AliPID::kSPECIES) {
@@ -145,7 +145,7 @@ void CEPTrackBuffer::SetPIDTPCnSigma(Int_t part, Float_t nsig)
 }
 
 // ----------------------------------------------------------------------------
-void CEPTrackBuffer::CEPTrackBuffer::SetPIDTPCProbability(Int_t part, Float_t prob)
+void CEPTrackBuffer::SetPIDTPCProbability(Int_t part, Float_t prob)
 {
 
   if (part < AliPID::kSPECIES) {
@@ -186,7 +186,7 @@ void CEPTrackBuffer::SetPIDTOFProbability(Int_t part, Float_t prob)
 }
 
 // ----------------------------------------------------------------------------
-void CEPTrackBuffer::CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t prob)
+void CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t prob)
 {
 
   if (part < AliPID::kSPECIES) {
@@ -196,6 +196,40 @@ void CEPTrackBuffer::CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t 
       part,AliPID::kSPECIES-1);
   }
 
+
+}
+
+// ----------------------------------------------------------------------------
+Float_t CEPTrackBuffer::GetPIDITSnSigma(Int_t part)
+{
+
+  Float_t nsig = CEPTrackBuffer::kdumval;
+  
+  if (part < AliPID::kSPECIES) {
+    nsig = fPIDITSnSigma[part];
+  } else {
+    printf("Wrong particle index! %i is larger than allowed (%i)\n",
+      part,AliPID::kSPECIES-1);
+  }
+  
+  return nsig;
+
+}
+
+// ----------------------------------------------------------------------------
+Float_t CEPTrackBuffer::GetPIDITSProbability(Int_t part)
+{
+
+  Float_t prob = CEPTrackBuffer::kdumval;
+  
+  if (part < AliPID::kSPECIES) {
+    prob = fPIDITSnSigmaProb[part];
+  } else {
+    printf("Wrong particle index! %i is larger than allowed (%i)\n",
+      part,AliPID::kSPECIES-1);
+  }
+
+  return prob;
 
 }
 
