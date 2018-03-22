@@ -91,9 +91,9 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     }
   }
   Track->SetUse(pass);
-  if (!fFillQALater&&!fMinimalBooking) {
+  if (!fFillQALater) {
       BookQA(Track);
-      if (fMCData) {
+      if (fMCData&&!fMinimalBooking) {
         BookMC(Track);
       }
   }
@@ -358,6 +358,8 @@ void AliFemtoDreamTrackCuts::Init() {
       fMCHists=new AliFemtoDreamTrackMCHist(fContribSplitting,fDCAPlots);
     }
     BookTrackCuts();
+  } else {
+    fHists= new AliFemtoDreamTrackHist("MinimalBooking");
   }
 }
 
@@ -454,6 +456,8 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         }
       }
     }
+  } else {
+    if(Track->UseParticle())fHists->FillpTCut(1,Track->GetPt());
   }
   return;
 }

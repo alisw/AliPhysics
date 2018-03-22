@@ -247,7 +247,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
   }
   if (pass) {
-    if (!fMinimalBooking)fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
+    fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
   }
   if (pass&&fcutXiMass) {
     if ((casc->GetXiMass()<(fXiMass-fXiMassWidth))||
@@ -261,8 +261,8 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   casc->GetNegDaug()->SetUse(pass);
   casc->GetPosDaug()->SetUse(pass);
   casc->GetBach()->SetUse(pass);
+  BookQA(casc);
   if (!fMinimalBooking) {
-    BookQA(casc);
     if (fMCData) {
       BookMCQA(casc);
     }
@@ -309,6 +309,18 @@ void AliFemtoDreamCascadeCuts::Init() {
       fBachCuts->SetMCName("BachCuts");
       fMCHistList->Add(fBachCuts->GetMCQAHists());
     }
+  } else {
+    fHist=new AliFemtoDreamCascadeHist("MinimalBooking",fXiMass);
+    fHistList=new TList();
+    fHistList->SetOwner();
+    fHistList->SetName("CascadeCuts");
+    fHistList->Add(fHist->GetHistList());
+    fNegCuts->SetName("NegCuts");
+    fHistList->Add(fNegCuts->GetQAHists());
+    fPosCuts->SetName("PosCuts");
+    fHistList->Add(fPosCuts->GetQAHists());
+    fBachCuts->SetName("BachelorCuts");
+    fHistList->Add(fBachCuts->GetQAHists());
   }
 }
 
@@ -334,10 +346,10 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillPodolandski(i,casc->GetXiAlpha(),casc->GetPtArmXi());
       }
     }
-    fNegCuts->BookQA(casc->GetNegDaug());
-    fPosCuts->BookQA(casc->GetPosDaug());
-    fBachCuts->BookQA(casc->GetBach());
   }
+  fNegCuts->BookQA(casc->GetNegDaug());
+  fPosCuts->BookQA(casc->GetPosDaug());
+  fBachCuts->BookQA(casc->GetBach());
   return;
 }
 

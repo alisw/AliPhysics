@@ -19,53 +19,55 @@ class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
   AliFemtoDreamTrackHist(bool DCADist,bool CombSig);
+  AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
-  void FillConfig(int iBin, float val){fConfig->Fill(iBin, val);};
-  void FillTrackCounter(int iBin){fCutCounter->Fill(iBin);};
-  void FillpTCut(int i, float pT){fpTDist[i]->Fill(pT);};
-  void FillpTPCCut(int i, float pTPC){fpTPCDist[i]->Fill(pTPC);};
-  void FilletaCut(int i, float eta){fetaDist[i]->Fill(eta);};
-  void FillphiCut(int i, float phi){fphiDist[i]->Fill(phi);};
-  void FillTPCclsCut(int i, float nCls){fTPCCls[i]->Fill(nCls);};
+  void FillConfig(int iBin, float val){if(!fMinimalBooking)fConfig->Fill(iBin, val);};
+  void FillTrackCounter(int iBin){if(!fMinimalBooking)fCutCounter->Fill(iBin);};
+  void FillpTCut(int i, float pT){if((!fMinimalBooking)||(i==1))fpTDist[i]->Fill(pT);};
+  void FillpTPCCut(int i, float pTPC){if(!fMinimalBooking)fpTPCDist[i]->Fill(pTPC);};
+  void FilletaCut(int i, float eta){if(!fMinimalBooking)fetaDist[i]->Fill(eta);};
+  void FillphiCut(int i, float phi){if(!fMinimalBooking)fphiDist[i]->Fill(phi);};
+  void FillTPCclsCut(int i, float nCls){if(!fMinimalBooking)fTPCCls[i]->Fill(nCls);};
   void FillDCAxyCut(int i, float pT, float dcaxy){
-    fDCAxy[i]->Fill(pT, dcaxy);};
-  void FillDCAzCut(int i, float pT, float dcaz){fDCAz[i]->Fill(pT, dcaz);};
+    if(!fMinimalBooking)fDCAxy[i]->Fill(pT, dcaxy);};
+  void FillDCAzCut(int i, float pT, float dcaz){if(!fMinimalBooking)fDCAz[i]->Fill(pT, dcaz);};
   void FillTPCCrossedRowCut(int i, float Crossed){
-    fTPCCrossedRows[i]->Fill(Crossed);
+    if(!fMinimalBooking)fTPCCrossedRows[i]->Fill(Crossed);
   };
-  void FillTPCRatioCut(int i, float ratio){fTPCRatio[i]->Fill(ratio);};
-  void FillTPCClsS(int i, float TPCClsS){fTPCClsS[i]->Fill(TPCClsS);};
+  void FillTPCRatioCut(int i, float ratio){if(!fMinimalBooking)fTPCRatio[i]->Fill(ratio);};
+  void FillTPCClsS(int i, float TPCClsS){if(!fMinimalBooking)fTPCClsS[i]->Fill(TPCClsS);};
   void FillHasSharedClsITS(int i,int layer,int yesno){
-    fShrdClsITS[i]->Fill(layer,yesno);};
+    if(!fMinimalBooking)fShrdClsITS[i]->Fill(layer,yesno);};
   void FillTPCdedx(int i, float mom, float dedx){
-    fTPCdedx[i]->Fill(mom,dedx);
+    if(!fMinimalBooking)fTPCdedx[i]->Fill(mom,dedx);
   };
   void FillTOFbeta(int i, float mom, float beta){
-    fTOFbeta[i]->Fill(mom,beta);
+    if(!fMinimalBooking)fTOFbeta[i]->Fill(mom,beta);
   };
   void FillNSigTPC(int i, float mom, float nSigTPC){
-    fNSigTPC[i]->Fill(mom, nSigTPC);
+    if(!fMinimalBooking)fNSigTPC[i]->Fill(mom, nSigTPC);
   };
   void FillNSigTOF(int i, float mom, float nSigTOF){
-    fNSigTOF[i]->Fill(mom, nSigTOF);
+    if(!fMinimalBooking)fNSigTOF[i]->Fill(mom, nSigTOF);
   };
   void FillTPCStatus(int i, AliPIDResponse::EDetPidStatus statusTPC){
-    fTPCStatus[i]->Fill(statusTPC);
+    if(!fMinimalBooking)fTPCStatus[i]->Fill(statusTPC);
   };
   void FillTOFStatus(int i, AliPIDResponse::EDetPidStatus statusTOF){
-    fTOFStatus[i]->Fill(statusTOF);
+    if(!fMinimalBooking)fTOFStatus[i]->Fill(statusTOF);
   };
   void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
   void FillDCAXYPtBins(float pT, float dcaxy);
   void FillTPCClsCPileUp(int i,int iCrit,float TPCClsC){
-    fTPCClsCPiluUp[i]->Fill(iCrit,TPCClsC);
+    if(!fMinimalBooking)fTPCClsCPiluUp[i]->Fill(iCrit,TPCClsC);
   }
   void FillITSSharedPileUp(int i,int iCrit,int yesno){
-    fITShrdClsPileUp[i]->Fill(iCrit,yesno);
+    if(!fMinimalBooking)fITShrdClsPileUp[i]->Fill(iCrit,yesno);
   }
   void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList(){return fHistList;};
  private:
+  bool fMinimalBooking;     //!
   TList *fHistList;         //!
   TList *fTrackCutQA[2];    //!
   TProfile *fConfig;        //!

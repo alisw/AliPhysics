@@ -9,7 +9,8 @@
 #include "TMath.h"
 ClassImp(AliFemtoDreamTrackHist)
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
-:fHistList(0)
+:fMinimalBooking(false)
+,fHistList(0)
 ,fConfig(0)
 ,fCutCounter(0)
 ,fDCAXYPtBins(0)
@@ -38,7 +39,9 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i]=0;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
+:fMinimalBooking(false)
+{
   TString sName[2] = {"before", "after"};
   float ptmin = 0;
   float ptmax = 5;
@@ -305,6 +308,46 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig) {
     fDCAXYPtBins=0;
   }
 }
+
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
+:fMinimalBooking(true)
+,fConfig(0)
+,fCutCounter(0)
+,fDCAXYPtBins(0)
+,fNSigCom(0)
+{
+  for (int i=0;i<2;++i) {
+    fTrackCutQA[i]=0;
+    fpTPCDist[i]=0;
+    fetaDist[i]=0;
+    fphiDist[i]=0;
+    fTPCCls[i]=0;
+    fTPCClsS[i]=0;
+    fShrdClsITS[i]=0;
+    fDCAxy[i]=0;
+    fDCAz[i]=0;
+    fTPCCrossedRows[i]=0;
+    fTPCRatio[i]=0;
+    fTPCdedx[i]=0;
+    fTOFbeta[i]=0;
+    fNSigTPC[i]=0;
+    fNSigTOF[i]=0;
+    fTPCStatus[i]=0;
+    fTOFStatus[i]=0;
+    fTPCClsCPiluUp[i]=0;
+    fITShrdClsPileUp[i]=0;
+  }
+  fHistList=new TList();
+  fHistList->SetOwner();
+  fHistList->SetName(MinimalBooking.Data());
+
+  fpTDist[0]=0;
+  TString ptName=Form("pTDist_%s", "after");
+  fpTDist[1]=new TH1F(ptName.Data(), ptName.Data(), 100,0,5);
+  fpTDist[1]->Sumw2();
+  fHistList->Add(fpTDist[1]);
+}
+
 AliFemtoDreamTrackHist::~AliFemtoDreamTrackHist() {
   delete fHistList;
 }
@@ -312,9 +355,9 @@ AliFemtoDreamTrackHist::~AliFemtoDreamTrackHist() {
 void AliFemtoDreamTrackHist::FillNSigComb(
     float pT,float nSigTPC,float nSigTOF)
 {
-  fNSigCom->Fill(pT,nSigTPC,nSigTOF);
+  if(!fMinimalBooking)fNSigCom->Fill(pT,nSigTPC,nSigTOF);
 }
 
 void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT,float dcaxy) {
-  fDCAXYPtBins->Fill(pT,dcaxy);
+  if(!fMinimalBooking)fDCAXYPtBins->Fill(pT,dcaxy);
 }

@@ -173,55 +173,43 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     fEvtHistList->SetName("EventCuts");
     fEvtHistList->SetOwner();
   }
-  if (!fTrackCuts->GetMinimalBooking()) {
-    if (fAnalysis->GetTrackCutHists()) {
-      fTrackCutHistList=fAnalysis->GetTrackCutHists();
-    }
+  if (fAnalysis->GetTrackCutHists()) {
+    fTrackCutHistList=fAnalysis->GetTrackCutHists();
   } else {
     fTrackCutHistList=new TList();
     fTrackCutHistList->SetName("TrackCuts");
     fTrackCutHistList->SetOwner();
   }
-  if (!fAntiTrackCuts->GetMinimalBooking()) {
-    if (fAnalysis->GetAntitrackCutHists()) {
-      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
-    }
+  if (fAnalysis->GetAntitrackCutHists()) {
+    fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
   } else {
     fAntiTrackCutHistList=new TList();
     fAntiTrackCutHistList->SetName("AntiTrackCuts");
     fAntiTrackCutHistList->SetOwner();
   }
-  if (!fv0Cuts->GetMinimalBooking()) {
-    if (fAnalysis->Getv0CutHist()) {
-      fv0CutHistList=fAnalysis->Getv0CutHist();
-    }
+  if (fAnalysis->Getv0CutHist()) {
+    fv0CutHistList=fAnalysis->Getv0CutHist();
   } else {
     fv0CutHistList=new TList();
     fv0CutHistList->SetName("v0Cuts");
     fv0CutHistList->SetOwner();
   }
-  if (!fAntiv0Cuts->GetMinimalBooking()) {
-    if (fAnalysis->GetAntiv0CutHist()) {
-      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-    }
+  if (fAnalysis->GetAntiv0CutHist()) {
+    fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
   } else {
     fAntiv0CutHistList=new TList();
     fAntiv0CutHistList->SetName("Antiv0Cuts");
     fAntiv0CutHistList->SetOwner();
   }
-  if (!fCascCuts->GetMinimalBooking()) {
-    if (fAnalysis->GetCascadeCutHist()) {
-      fCascCutList=fAnalysis->GetCascadeCutHist();
-    }
+  if (fAnalysis->GetCascadeCutHist()) {
+    fCascCutList=fAnalysis->GetCascadeCutHist();
   } else {
     fCascCutList=new TList();
     fCascCutList->SetName("CascadeCuts");
     fCascCutList->SetOwner();
   }
-  if (!fAntiCascCuts->GetMinimalBooking()) {
-    if (fAnalysis->GetAntiCascadeCutHist()) {
-      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
-    }
+  if (fAnalysis->GetAntiCascadeCutHist()) {
+    fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
   } else {
     fAntiCascCutList=new TList();
     fAntiCascCutList->SetName("AntiCascadeCuts");
@@ -327,35 +315,23 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
         fEvtHistList=fAnalysis->GetEventCutHists();
       }
     }
-    if (!fTrackCuts->GetMinimalBooking()) {
-      if (fAnalysis->GetTrackCutHists()) {
-        fTrackCutHistList=fAnalysis->GetTrackCutHists();
-      }
+    if (fAnalysis->GetTrackCutHists()) {
+      fTrackCutHistList=fAnalysis->GetTrackCutHists();
     }
-    if (!fAntiTrackCuts->GetMinimalBooking()) {
-      if (fAnalysis->GetAntitrackCutHists()) {
-        fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
-      }
+    if (fAnalysis->GetAntitrackCutHists()) {
+      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
     }
-    if (!fv0Cuts->GetMinimalBooking()) {
-      if (fAnalysis->Getv0CutHist()) {
-        fv0CutHistList=fAnalysis->Getv0CutHist();
-      }
+    if (fAnalysis->Getv0CutHist()) {
+      fv0CutHistList=fAnalysis->Getv0CutHist();
     }
-    if (!fAntiv0Cuts->GetMinimalBooking()) {
-      if (fAnalysis->GetAntiv0CutHist()) {
-        fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-      }
+    if (fAnalysis->GetAntiv0CutHist()) {
+      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
     }
-    if (!fCascCuts->GetMinimalBooking()) {
-      if (fAnalysis->GetCascadeCutHist()) {
-        fCascCutList=fAnalysis->GetCascadeCutHist();
-      }
+    if (fAnalysis->GetCascadeCutHist()) {
+      fCascCutList=fAnalysis->GetCascadeCutHist();
     }
-    if (!fAntiCascCuts->GetMinimalBooking()) {
-      if (fAnalysis->GetAntiCascadeCutHist()) {
-        fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
-      }
+    if (fAnalysis->GetAntiCascadeCutHist()) {
+      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
     }
     //Results we always post
     if (fAnalysis->GetResultList()) {
