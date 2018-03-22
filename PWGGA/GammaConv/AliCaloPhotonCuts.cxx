@@ -3105,7 +3105,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     //nModules = fGeomEMCAL->GetNumberOfSuperModules();
   }else if(fClusterType == 2){
     fGeomPHOS = AliPHOSGeometry::GetInstance();
-    if(!fGeomPHOS) AliFatal("PHOS geometry not initialized!");
+    if(!fGeomPHOS){ AliFatal("PHOS geometry not initialized!");}
     //nModules = fGeomPHOS->GetNModules();
   }
 
@@ -3168,6 +3168,8 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
          if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
       }
+      const AliExternalTrackParam *in = esdt->GetInnerParam();
+      if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
     } else if(aodev) {
       inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       if(!inTrack) continue;
