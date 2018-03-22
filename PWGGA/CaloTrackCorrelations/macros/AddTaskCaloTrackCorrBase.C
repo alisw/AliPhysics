@@ -3,9 +3,9 @@
 /// \brief Configuration AliAnalysisTaskCaloTrackCorrelation base functionalities
 ///
 /// Configuration macro AliAnalysisTaskCaloTrackCorrelation base functionalities.
-/// Base task reader and caloUtils functionalities initialized and activated.
-/// Another configuration macro should be attached to run on analysis
-///
+/// AliCaloTrackReader and AliCalorimeterUtils functionalities initialized and activated.
+/// Another configuration macro should be attached to run on analysis, 
+/// like AddTaskMultipleTrackCutIsoConeAnalysis.C that needs also ConfigureCaloTrackCorrAnalysis.C
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
@@ -17,7 +17,6 @@
 #include <TSystem.h>
 #include <TROOT.h>
 
-#include "AliLog.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
 #include "AliCalorimeterUtils.h"
@@ -34,6 +33,21 @@
 
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
+///
+/// \param col: A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
+/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
+/// \param year: The year the data was taken, used to configure some histograms
+/// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, TString calorimeter, 
@@ -64,8 +78,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SetPtHardAndJetPtFactor(2);
     
     // Event rejection more suitable for gamma-jet simulations, do not use in other
-    //    reader->SetPtHardAndClusterPtComparison(kTRUE);
-    //    reader->SetPtHardAndClusterPtFactor(1.5);
+    // reader->SetPtHardAndClusterPtComparison(kTRUE);
+    // reader->SetPtHardAndClusterPtFactor(1.5);
   }
   
   //---------------------------
@@ -165,12 +179,12 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   
   // For data, check what is the range needed depending on the sample
-//  if( !simulation) 
-//  {
-//    reader->SwitchOnUseEMCALTimeCut();
-//    reader->SetEMCALTimeCut(-25,20);
-//    if(year > 2015)  reader->SetEMCALTimeCut(-20,15);
-//  }
+  if( !simulation) 
+  {
+    reader->SwitchOnUseEMCALTimeCut();
+    reader->SetEMCALTimeCut(-25,20);
+    if(year > 2015)  reader->SetEMCALTimeCut(-20,15);
+  }
   
   // CAREFUL
   if(nonLinOn) reader->SwitchOnClusterELinearityCorrection();
@@ -260,6 +274,15 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 
 ///
 /// Configure the class handling the calorimeter clusters specific methods
+///
+/// \param col: A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
+/// \param year: The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation, 
                                         TString calorimeter, Bool_t nonLinOn,      
@@ -387,6 +410,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param col: A string with the colliding system
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
