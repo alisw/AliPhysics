@@ -80,4 +80,8 @@
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
 #pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class AliExtractedTrack+;
+#pragma link C++ class AliExtractedEvent+;
+#pragma link C++ class AliAnalysisTaskJetLikeCorrelation+;
+#pragma link C++ class MixedParticle+;
 #endif
