@@ -191,7 +191,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
 
   for( int ij=0;ij< fJetTask->GetNumberOfJetCollections();ij++ ){
-    fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij) );
+    fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij), fJetTask->GetConeSize(ij));
   }
   fJJetJtAnalysis->SetJTracks(fJetTask->GetJTracks());
   if(fDoMC){

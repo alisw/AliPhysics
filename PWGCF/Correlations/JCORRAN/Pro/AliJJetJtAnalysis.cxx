@@ -197,6 +197,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhBgZBin() //Bg Z as fn of jet pt
   , fhBgRBin() //Bg R as fn of jet pt
   , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
+  , fhDeltaPhi() // Angle between the jets in dijet system.
+  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
+  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
+  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhBgJt() //Bg jt 
   , fhBgJtBin() //Bg jt as fn of jet pt
   , fhBgJtWeightBin() //Bg jt in PS as fn of jet pt
@@ -473,6 +477,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhBgZBin()
   , fhBgRBin() //Bg R as fn of jet pt
   , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
+  , fhDeltaPhi() // Angle between the jets in dijet system.
+  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
+  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
+  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhBgJt()
   , fhBgJtBin()
   , fhBgJtWeightBin()
@@ -741,6 +749,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhBgZBin(ap.fhBgZBin)
   , fhBgRBin(ap.fhBgRBin) 
   , fhBgRndmRBin(ap.fhBgRndmRBin)
+  , fhDeltaPhi(ap.fhDeltaPhi)
+  , fhDeltaPhiCentBinned(ap.fhDeltaPhiCentBinned)
+  , fhDeltaPhiCentBinnedSubtracted(ap.fhDeltaPhiCentBinnedSubtracted)
+  , fhDeltaPhiCentBinnedCutSubtracted(ap.fhDeltaPhiCentBinnedCutSubtracted) // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhBgJt(ap.fhBgJt)
   , fhBgJtBin(ap.fhBgJtBin)
   , fhBgJtWeightBin(ap.fhBgJtWeightBin)
@@ -928,6 +940,38 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   fiHist.Set("iHist","iHist","iHist : %d ", AliJBin::kSingle).SetBin(10);
   fCentralityBin.Set("EventCentariltyBin","NCent","Centrality: %d - %d ").SetBin(fCard->GetVector("CentBinBorders"));
   fktFinderBin.Set("ktFinderBin","nkt","nkt:%d", AliJBin::kSingle).SetBin(fnkt);
+  fDeltaPhiCutBin.Set("DeltaPhiCutBin","DPhi","DPhi:%d", AliJBin::kSingle).SetBin(2); // 0 for no cut, 1 for deltaPhi cut
+
+  int NBINSDijet=170;
+  double LogBinsXDijet[NBINSDijet+1], LimLDijet=0.1, LimHDijet=1000;
+  double logBWDijet = (log(LimHDijet)-log(LimLDijet))/NBINSDijet;
+  for(int ij=0;ij<=NBINSDijet;ij++) LogBinsXDijet[ij]=LimLDijet*exp(ij*logBWDijet);
+
+  // Dijet Histograms - Oskari
+  fhDiJetM
+    << TH1D("DiJetM","Di-jet invariant mass",NBINSDijet, LogBinsXDijet ) 
+    << fDeltaPhiCutBin << fJetFinderBin
+    <<"END";
+
+  fhDiJetMCentBinned
+    << TH1D("DiJetMCentBinned","Di-jet invariant mass, centrality binned",NBINSDijet, LogBinsXDijet ) 
+    << fDeltaPhiCutBin << fJetFinderBin << fCentralityBin
+    <<"END";
+
+  fhDiJetMCentBinnedSubtracted
+    << TH1D("DiJetMCentBinnedSubtracted","Di-jet invariant mass, centrality binned, background subtracted",NBINSDijet, LogBinsXDijet ) 
+    << fDeltaPhiCutBin << fJetFinderBin << fCentralityBin
+    <<"END";
+
+  fhDiJetMCentBinnedCut
+    << TH1D("DiJetMCentBinnedCut","Cut di-jet invariant mass, centrality binned",NBINSDijet, LogBinsXDijet ) 
+    << fDeltaPhiCutBin << fJetFinderBin << fCentralityBin
+    <<"END";
+
+  fhDiJetMCentBinnedCutSubtracted
+    << TH1D("DiJetMCentBinnedCutSubtracted","Cut di-jet invariant mass, centrality binned, background subtracted",NBINSDijet, LogBinsXDijet ) 
+    << fDeltaPhiCutBin << fJetFinderBin << fCentralityBin
+    <<"END";
 
 
   int NBINS=150;
@@ -935,32 +979,6 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   double logBW = (log(LimH)-log(LimL))/NBINS;
   for(int ij=0;ij<=NBINS;ij++) LogBinsX[ij]=LimL*exp(ij*logBW);
 
-
-  // Dijet Histograms - Oskari
-  fhDiJetM
-    << TH1D("DiJetM","Di-jet invariant mass",NBINS, LogBinsX ) 
-    << fJetFinderBin
-    <<"END";
-
-  fhDiJetMCentBinned
-    << TH1D("DiJetMCentBinned","Di-jet invariant mass, centrality binned",NBINS, LogBinsX ) 
-    << fJetFinderBin << fCentralityBin
-    <<"END";
-
-  fhDiJetMCentBinnedSubtracted
-    << TH1D("DiJetMCentBinnedSubtracted","Di-jet invariant mass, centrality binned, background subtracted",NBINS, LogBinsX ) 
-    << fJetFinderBin << fCentralityBin
-    <<"END";
-
-  fhDiJetMCentBinnedCut
-    << TH1D("DiJetMCentBinnedCut","Cut di-jet invariant mass, centrality binned",NBINS, LogBinsX ) 
-    << fJetFinderBin << fCentralityBin
-    <<"END";
-
-  fhDiJetMCentBinnedCutSubtracted
-    << TH1D("DiJetMCentBinnedCutSubtracted","Cut di-jet invariant mass, centrality binned, background subtracted",NBINS, LogBinsX ) 
-    << fJetFinderBin << fCentralityBin
-    <<"END";
 
   fhRho
     << TH1D("Rho","Background pt estimation",NBINS, LogBinsX ) 
@@ -1115,6 +1133,31 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   fhBgRndmRBin
     << TH1D("BgRndmRBin","",NBINSR,LimLR,LimHR)
     << fJetFinderBin << fJetTriggerBin
+    << "END";
+
+  int NBINSDPhi = 100;
+  double LimLDPhi = 0;
+  double LimHDPhi = 2*TMath::Pi();
+
+  // By Oskari Saarimäki
+  fhDeltaPhi
+    << TH1D("DeltaPhi","",NBINSDPhi,LimLDPhi,LimHDPhi)
+    << fJetFinderBin
+    << "END";
+
+  fhDeltaPhiCentBinned
+    << TH1D("DeltaPhiCentBinned","",NBINSDPhi,LimLDPhi,LimHDPhi)
+    << fJetFinderBin << fCentralityBin
+    << "END";
+
+  fhDeltaPhiCentBinnedSubtracted
+    << TH1D("DeltaPhiCentBinnedSubtracted","",NBINSDPhi,LimLDPhi,LimHDPhi)
+    << fJetFinderBin << fCentralityBin
+    << "END";
+
+  fhDeltaPhiCentBinnedCutSubtracted
+    << TH1D("DeltaPhiCentBinnedCutSubtracted","",NBINSDPhi,LimLDPhi,LimHDPhi)
+    << fJetFinderBin << fCentralityBin
     << "END";
 
   int NBINSJt=150;
@@ -2104,6 +2147,7 @@ void AliJJetJtAnalysis::KtCalculations( int iContainer, int mc )
               ktJet = dynamic_cast<AliJJet*>( ktJets->At(kk) );
               ktPt = 0;
               ktM  = 0;
+              if (TMath::Abs(ktJet->Eta()) > fJetEtaCut || TMath::Abs(ktJet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
               for(int ki=0;ki<ktJet->GetConstituents()->GetEntries(); ki++) {
                   ktTrack = ktJet->GetConstituent(ki);
                   ktPt   += ktTrack->Pt();
@@ -2183,6 +2227,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   int dijetTracksOk = 0;
   TLorentzVector leadingJetSubtracted;
   TLorentzVector subleadingJetSubtracted;
+  TLorentzVector jetSubtracted;
+  bool leadingTrackOverThreshold;
 
   //fTrackJt.reserve(fTracks->GetEntries());
   //fTrackPt.reserve(fTracks->GetEntries());
@@ -2221,7 +2267,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     jet->ReSum(); 
     //if (TMath::Abs(jet->Eta()) > fJetEtaCut) {cout << "ijet: " << i << " Jet outside eta range, eta: " << jet->Eta() << " pT: " << jet->Pt() << endl; continue;}
     //if (TMath::Abs(jet->Eta()) > fJetEtaCut && i == 0) cout << "Leading jet skipped because outside eta range!, eta: " << jet->Eta() << endl;
-    if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+    if (TMath::Abs(jet->Eta()) > fJetEtaCut || TMath::Abs(jet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
     if(fSide != 0){
       if(fSide == -1 && jet->Eta() > 0) continue; //fSide -1 means A side which is positive Eta
       else if(jet->Eta() < 0) continue;
@@ -2231,8 +2277,6 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     fhJetEtaPhi[iContainer]->Fill(jet->Eta(),jet->Phi());
     pT = jet->Pt();
     area = jet->Area();
-    TLorentzVector jetSubtracted;
-    bool leadingTrackOverThreshold;
 
     leadingTrackOverThreshold=false;
     for(int ki=0;ki<jet->GetConstituents()->GetEntries(); ki++) {
@@ -2647,28 +2691,55 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   AliJJet *subleadingjet;
   TLorentzVector dijet;
   TLorentzVector dijetSubtracted;
+  TLorentzVector leadingJetLorentz;
+  TLorentzVector subleadingJetLorentz;
+  double dPhi1, dPhi2;
   if (Jets->GetEntries()>1) { // Need at least two jets.
     leadingjet = dynamic_cast<AliJJet*>( Jets->At(0) ); // Highest p_T
     subleadingjet = dynamic_cast<AliJJet*>( Jets->At(1) ); // Second highest p_T
-    dijet = leadingjet->GetLorentzVector() + subleadingjet->GetLorentzVector(); // Adding the jets together.
+    leadingJetLorentz = leadingjet->GetLorentzVector();
+    subleadingJetLorentz = subleadingjet->GetLorentzVector();
+    dijet = leadingJetLorentz + subleadingJetLorentz; // Adding the jets together.
     if(fnkt>0) dijetSubtracted = leadingJetSubtracted + subleadingJetSubtracted; // Adding the jets together.
     if (leadingjet->Pt() > 20 && subleadingjet->Pt() > 20){ 
         (*fDiJetMjj)[iContainer] = dijet.M();
         //cout << "Dijet mass in an event: " << dijet.M() << ", leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
+        dPhi1 = leadingJetLorentz.DeltaPhi(subleadingJetLorentz);
+        dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
+        fhDeltaPhi[iContainer]->Fill(dPhi2);
+        if (cBin>-1) fhDeltaPhiCentBinned[iContainer][cBin]->Fill(dPhi2);
+
+        // First fill without DeltaPhi cut
+        fhDiJetM[0][iContainer]->Fill((*fDiJetMjj)[iContainer]);
+        // Then fill with DeltaPhi cut
+        if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) fhDiJetM[1][iContainer]->Fill((*fDiJetMjj)[iContainer]);
         if (cBin>-1) {
-            fhDiJetMCentBinned[iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-            if(dijetTracksOk==2) fhDiJetMCentBinnedCut[iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+            fhDiJetMCentBinned[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+            if(dijetTracksOk==2) fhDiJetMCentBinnedCut[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
             fhDiJetCutCounter[iContainer][cBin]->Fill(dijetTracksOk);
+            if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
+                fhDiJetMCentBinned[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+                if(dijetTracksOk==2) fhDiJetMCentBinnedCut[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+            }
         }
-        fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
     } else { // For testing:
         //cout << "No dijet in an event!        leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
     }
     if (fnkt>0 && leadingJetSubtracted.Pt() > 20 && subleadingJetSubtracted.Pt() > 20){ 
         (*fDiJetMjjSubtr)[iContainer] = dijetSubtracted.M();
         if (cBin>-1) {
-            fhDiJetMCentBinnedSubtracted[iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
-            if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+            fhDiJetMCentBinnedSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+            dPhi1 = leadingJetSubtracted.DeltaPhi(subleadingJetSubtracted);
+            dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
+            fhDeltaPhiCentBinnedSubtracted[iContainer][cBin]->Fill(dPhi2);
+            if(dijetTracksOk==2) {
+                fhDiJetMCentBinnedCutSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+                fhDeltaPhiCentBinnedCutSubtracted[iContainer][cBin]->Fill(dPhi2);
+            }
+            if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
+                fhDiJetMCentBinnedSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+                if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+            }
         }
     }
   }
@@ -2753,7 +2824,7 @@ void AliJJetJtAnalysis::FillPythia(TObjArray *Jets, int iContainer){
     }else{ //If the origin is found -> calculate jT
       AliJMCTrack *jetCandidate = dynamic_cast<AliJMCTrack*>(fMCTracks->At(ijet));
       double jetPt = jetCandidate->Pt();
-      if (TMath::Abs(jetCandidate->Eta()) > fJetEtaCut) continue;
+      if (TMath::Abs(jetCandidate->Eta()) > fJetEtaCut || TMath::Abs(jetCandidate->Eta()) > 0.8-GetConeSize(iContainer)) continue;
       if(jetPt > (*fJetTriggPtBorders)[1]){ //If the original particle is energetic enough
         iBin = GetBin(fJetTriggPtBorders,jetPt);
         if(iBin < 0) {  
@@ -2939,7 +3010,7 @@ void AliJJetJtAnalysis::FillPythia(TObjArray *Jets, int iContainer){
     AliJJet *pythiaJet = (AliJJet*)fpythiaJets[ij];
     AliJMCTrack *jetCandidate = dynamic_cast<AliJMCTrack*>(fMCTracks->At(jetlist[ij]));
     if (!jetCandidate) continue;
-    if (TMath::Abs(jetCandidate->Eta()) > fJetEtaCut) continue;
+    if (TMath::Abs(jetCandidate->Eta()) > fJetEtaCut || TMath::Abs(jetCandidate->Eta()) > 0.8-GetConeSize(iContainer)) continue;
     pTmc = jetCandidate->Pt();
     if (pTmc<(*fJetTriggPtBorders)[1]) continue;
     iBin = GetBin(fJetTriggPtBorders,pTmc);
@@ -2953,7 +3024,7 @@ void AliJJetJtAnalysis::FillPythia(TObjArray *Jets, int iContainer){
     for( int j = 0 ; j < Jets->GetEntries(); j++){
       AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(j));
       if(!jet) continue;
-      if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+      if (TMath::Abs(jet->Eta()) > fJetEtaCut || TMath::Abs(jet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
       pT = jet->Pt();
       deltaR   = getDiffR(jet->Phi(),jetCandidate->Phi(),jet->Eta(),jetCandidate->Eta());
       if(deltaR < 0.5){
@@ -3051,7 +3122,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
     if(i > 0 && fLeadingJets > 0) continue;
     AliJJet *mcjet = dynamic_cast<AliJJet*>( MCJets->At(i) );
     if (!mcjet) continue;
-    if (TMath::Abs(mcjet->Eta()) > fJetEtaCut) continue;
+    if (TMath::Abs(mcjet->Eta()) > fJetEtaCut || TMath::Abs(mcjet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
     pTmc   = mcjet->Pt();
     areaMC = mcjet->Area();
     if (pTmc<(*fJetTriggPtBorders)[1]) continue;
@@ -3061,7 +3132,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
     for( int j = 0 ; j < Jets->GetEntries(); j++){
       AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(j));
       if(!jet) continue;
-      if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+      if (TMath::Abs(jet->Eta()) > fJetEtaCut || TMath::Abs(jet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
       pT      = jet->Pt();
       areaDet = jet->Area();
       deltaR   = getDiffR(jet->Phi(),mcjet->Phi(),jet->Eta(),mcjet->Eta());
@@ -3095,7 +3166,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
   for (int i = 0 ; i<MCJets->GetEntries(); i++){
     AliJJet *mcjet = dynamic_cast<AliJJet*>( MCJets->At(i));
     if(!mcjet) continue;
-    if (TMath::Abs(mcjet->Eta()) > fJetEtaCut) continue;
+    if (TMath::Abs(mcjet->Eta()) > fJetEtaCut || TMath::Abs(mcjet->Eta()) > 0.8-GetConeSize(iContainer)) continue;
     pTmc = mcjet->Pt();
     if (pTmc<(*fJetTriggPtBorders)[1]) continue;
     iBin = GetBin(fJetTriggPtBorders,pTmc); // fill jetPt histos	

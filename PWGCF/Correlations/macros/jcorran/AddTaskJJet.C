@@ -150,6 +150,7 @@ AliJJetTask* AddTaskJJet(
         jetFinderTask[iF] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::antikt_algorithm, consize, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
         jetFinderTask[iF]->SelectCollisionCandidates(trigger);
         jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJRecoTrack ); 
+        jtTask->SetConeSize( iF, consize );
         cout << jetFinderTask[iF]->GetName() << endl;
         jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consize ); 
 
@@ -197,6 +198,7 @@ AliJJetTask* AddTaskJJet(
         cout << jetFinderTask[iF]->GetName() << endl;
         //jetFinderTask[i]->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE); 
         jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJMCParticle ); 
+        jtTask->SetConeSize( iF, consizeMC );
         jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consizeMC );
 
         if(jetCont[iF]) {
@@ -223,6 +225,7 @@ AliJJetTask* AddTaskJJet(
       ktFinderTask[0] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // kt
       ktFinderTask[0]->SelectCollisionCandidates(trigger);
       jtTask->SetTrackOrMCParticle( iEnd, AliJJetTask::kJRecoTrack );
+      jtTask->SetConeSize( iEnd, ktConeSize );
       cout << ktFinderTask[0]->GetName() << endl;
       ktCont[0] = jtTask->AddJetContainer( ktFinderTask[0]->GetName(), ktType, ktConeSize );
 
@@ -241,6 +244,7 @@ AliJJetTask* AddTaskJJet(
       ktFinderTask[1] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // kt
       ktFinderTask[1]->SelectCollisionCandidates(trigger);
       jtTask->SetTrackOrMCParticle( iEnd+1, AliJJetTask::kJMCParticle );
+      jtTask->SetConeSize( iEnd+1, ktConeSize );
       ktCont[1] = jtTask->AddJetContainer( ktFinderTask[1]->GetName(), ktType, ktConeSize );
 
       if( ktCont[1] ) {
