@@ -175,6 +175,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
