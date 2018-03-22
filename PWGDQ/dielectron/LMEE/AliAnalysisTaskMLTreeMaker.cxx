@@ -789,42 +789,10 @@ AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
 AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
 
 
-//my cuts used so far (1.2.2018)
-//trcuts   = new AliDielectronVarCuts("TrCuts","TrCuts");
-//trfilter = new AliDielectronTrackCuts("TrFilter","TrFilter");
-//pidcuts  = new AliDielectronPID("PIDCuts","PIDCuts");
-//
-//filter   = new AliAnalysisFilter("filter","filter");
-//
-//varManager = new AliDielectronVarManager;
-//     
-//trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
-//trfilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
-//trfilter->SetRequireITSRefit(kTRUE);
-//trfilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
-//
-//trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-//trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
-//trcuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-//trcuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
-//trcuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
-//trcuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-//trcuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-//trcuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-//trcuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-//trcuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-//trcuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-//
-//pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-//pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-//pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-
-
-
 //Cuts used for nano AOD filtering (taken from ConfigLMEE_nano_PbPb2015.C on 22082018) - redundant for nano AODs but necessary for MC
 
-  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");    
-  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
+//  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");    
+//  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
 
   AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
