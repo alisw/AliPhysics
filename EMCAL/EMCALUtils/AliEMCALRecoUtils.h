@@ -167,8 +167,8 @@ public:
   void     InitEMCALRecalibrationFactors() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
-  void     SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ; }
-  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecalibrationFactors->AddAt(h,iSM)          ; }
+  void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
   Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
@@ -203,8 +203,8 @@ public:
     ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
   TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
-  void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALTimeRecalibrationFactors = map                 ; }
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
+  void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1F* h);
 
   Bool_t   IsLGOn()const { return fLowGain   ; }
   void     SwitchOffLG() { fLowGain = kFALSE ; }
@@ -229,8 +229,8 @@ public:
     ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->SetBinContent(iSM,c) ; }  
   
   TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const       { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0) ; }	
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map)            { fEMCALL1PhaseInTimeRecalibration = map  ; }
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h)     { fEMCALL1PhaseInTimeRecalibration->AddAt(h,0)          ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map);
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h);
 
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
@@ -265,8 +265,8 @@ public:
     if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
     ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
   TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
-  void     SetEMCALChannelStatusMap(TObjArray *map)      { fEMCALBadChannelMap = map                  ; }
-  void     SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) { fEMCALBadChannelMap->AddAt(h,iSM)          ; }
+  void     SetEMCALChannelStatusMap(const TObjArray *map);
+  void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
   Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, Int_t nCells);
  
   //-----------------------------------------------------
