@@ -217,7 +217,7 @@ public:
   void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
