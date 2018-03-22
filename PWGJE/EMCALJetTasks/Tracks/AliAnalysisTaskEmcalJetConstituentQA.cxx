@@ -256,7 +256,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   }
 
   // create jet containers for R02 and R04 jets
-  std::array<double, 2> jetradii = {{0.2, 0.4}};
+  std::array<double, 4> jetradii = {{0.2, 0.3, 0.4, 0.5}};
   for(auto r : jetradii) {
     std::stringstream contname;
     contname << "fulljets_R" << std::setw(2) << std::setfill('0') << int(r*10.);
