@@ -194,8 +194,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
-  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSame(0), fHistEtaSameIn(0),
-  fHistEtaSameOut(0), fHistEtaSameM1(0), fHistEtaSameM2(0),
+  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
   fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
@@ -215,8 +214,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
-  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSame(0), fHistEtaSameIn(0),
-  fHistEtaSameOut(0), fHistEtaSameM1(0), fHistEtaSameM2(0),
+  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
   fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
@@ -313,6 +311,11 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fHistEventPlaneV0C = new TH1D("fHistEventPlaneV0C", "fHistEventPlaneV0C", 315 , 0, 3.15);
   fHistEventPlaneTPC = new TH1D("fHistEventPlaneTPC", "fHistEventPlaneTPC", 315 , 0, 3.15);
 
+  fHistV2 = new TProfile("fHistV2", "fHistV2", 10, 0, 100);
+  fHistResolutionV2[0] = new TProfile("fHistResolutionV2_01", "fHistResolutionV2_01", 10, 0, 100);
+  fHistResolutionV2[1] = new TProfile("fHistResolutionV2_02", "fHistResolutionV2_02", 10, 0, 100);
+  fHistResolutionV2[2] = new TProfile("fHistResolutionV2_12", "fHistResolutionV2_12", 10, 0, 100);
+
   int nbins[6] = {2, 5, 20, 9, 200, 250};
   // Contamination/Primary, In/out(5), Cent, ZVtx, Eta, Pt // total 6
   double maxbin[6] = {1.5, 4.5, 100, 9,1,25 };
@@ -322,6 +325,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
     fHistContamination->Sumw2();
   }
   InitHistograms();
+
   
   fOutputInc->Add(fHistZVertex);
   fOutputInc->Add(fHistPt);
@@ -342,11 +346,6 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fOutputOut->Add(fHistPtSameOut);
   fOutputM1->Add(fHistPtSameM1);
   fOutputM2->Add(fHistPtSameM2);
-  fOutputInc->Add(fHistEtaSame);
-  fOutputIn->Add(fHistEtaSameIn);
-  fOutputOut->Add(fHistEtaSameOut);
-  fOutputM1->Add(fHistEtaSameM1);
-  fOutputM2->Add(fHistEtaSameM2);
 
   int lMinPtBin = GetPtBin(fMinPtTrigCut);
   
@@ -623,6 +622,10 @@ string  filename;
 
   int cont_inout = 0;
   double contvars[6] = {0,};
+  double etavars[5] = {0,};
+
+  etavars[1] = fCentPercentile;
+  etavars[2] = fZVertex;
 
   fHistCent->Fill(fCentPercentile);
   fHistZVertex->Fill(fZVertex);
@@ -658,6 +661,13 @@ string  filename;
       lChargeTrig = aodTrack->Charge();
 
       lpTTrig = aodTrack->Pt();
+
+      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+
+      if (lpTTrig > 0.5 && lpTTrig < 5) {
+        fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
+      }
+
       if (lpTTrig < 0.8) continue;
       lEtaTrig = aodTrack->Eta();
       lPhiTrig = aodTrack->Phi();
@@ -673,7 +683,7 @@ string  filename;
       if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
       if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
 
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+//      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
       if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
 
       if (fMCCorrection) {
@@ -683,64 +693,63 @@ string  filename;
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
 
+      etavars[3] = lEtaTrig;
+      etavars[4] = lpTTrig;
 
       fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSame->Fill(lCentBin, lZVertexBin, lEtaTrig);
+      fHistEtaSparse->Fill(etavars);
 
       if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
         fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM1->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 3;
+        etavars[0] = 3;
         cont_inout = 3;
       } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
         fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM1->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 3;
+        etavars[0] = 3;
         cont_inout = 3;
       } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
         fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM2->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 4;
+        etavars[0] = 4;
         cont_inout = 4;
       } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
         fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM2->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 4;
+        etavars[0] = 4;
         cont_inout = 4;
       } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
         fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameOut->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 2;
+        etavars[0] = 2;
         cont_inout = 2;
       } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
         fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameOut->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 2;
+        etavars[0] = 2;
         cont_inout = 2;
       }
 
+      fHistEtaSparse->Fill(etavars);
+
       if (fMCCorrection) {
         // Inclusive & All Reco particles (contaminated + primary)
-        contvars[0] = 0;
-        contvars[2] = fCentPercentile;
-        contvars[3] = fZVertex;
-        contvars[4] = lEtaTrig;
-        contvars[5] = lpTTrig;
 
         fHistContamination->Fill(contvars);
         if (kPrimaryTrig) {
@@ -909,6 +918,12 @@ string  filename;
       lChargeTrig = aodTrack->Charge();
 
       lpTTrig = aodTrack->Pt();
+      
+      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+
+      if (lpTTrig > 0.5 && lpTTrig < 5) {
+        fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
+      }
       if (lpTTrig < 0.8) continue;
       lpTTrigBin = GetPtBin(lpTTrig);
       if (lpTTrigBin == -1) continue;
@@ -924,7 +939,7 @@ string  filename;
       if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
       if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
 
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+//      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
       if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
 
       if (fMCCorrection) {
@@ -934,56 +949,60 @@ string  filename;
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
 
+      etavars[3] = lEtaTrig;
+      etavars[4] = lpTTrig;
 
       fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSame->Fill(lCentBin, lZVertexBin, lEtaTrig);
+      fHistEtaSparse->Fill(etavars);
 
       if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
         fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameIn->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 1;
+        etavars[0] = 1;
         cont_inout = 1;
       } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
         fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM1->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 3;
+        etavars[0] = 3;
         cont_inout = 3;
       } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
         fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM1->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 3;
+        etavars[0] = 3;
         cont_inout = 3;
       } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
         fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM2->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 4;
+        etavars[0] = 4;
         cont_inout = 4;
       } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
         fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameM2->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 4;
+        etavars[0] = 4;
         cont_inout = 4;
       } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
         fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameOut->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 2;
+        etavars[0] = 2;
         cont_inout = 2;
       } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
         fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        fHistEtaSameOut->Fill(lCentBin, lZVertexBin, lEtaTrig);
         contvars[1] = 2;
+        etavars[0] = 2;
         cont_inout = 2;
       }
+
+      fHistEtaSparse->Fill(etavars);
 
       if (fMCCorrection) {
         // Inclusive & All Reco particles (contaminated + primary)
@@ -1187,9 +1206,12 @@ string  filename;
         lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
+      
+      etavars[3] = lEtaTrig;
+      etavars[4] = lpTTrig;
 
       fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSame->Fill(lCentBin, lZVertexBin, lEtaTrig);
+      fHistEtaSparse->Fill(etavars);
 
       if (fMCCorrection) {
         // Inclusive & All Reco particles (contaminated + primary)
@@ -1373,6 +1395,9 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
+  int lNPtBin = fPtArray.GetSize() - 1;
+  int lMinimumPtABinMerging = GetPtBin(3.00);
+  int lMinimumPtTBinMerging = GetPtBin(6.00);
 
   if (bUseMixingPool) {
 //    lTracksMixing->SetOwner();
@@ -1414,7 +1439,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
     }
 
 
-    if (fCollision == kPbPb) {      // For speeeed
+    if (fCollision == kPbPb) {      
       for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
         fInputTree->GetEntry(ientry);
 
@@ -1542,12 +1567,21 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
+              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            } else {
+              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+
+              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            }
           }
         }
       }
@@ -1657,7 +1691,11 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            } else { 
+                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            }
 
           }
         }
@@ -1812,14 +1850,21 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
           if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
             continue;
 
-          fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-//          cout << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin] << " & " << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->GetEntries() << "\n";
+          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
+            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-          if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+          } else {
+            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
+            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+          }
 //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
         } // jtrack
@@ -2092,7 +2137,6 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
         }
       }
     }
-  }
   
 //  fHistNevtMixed = new TH2D(Form("fHistNevtMixed"), Form("fHistNevtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
 //  fHistNevtMixed->GetXaxis()->SetTitle("CentBin");
@@ -2153,32 +2197,15 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   fHistPtSameOut->GetYaxis()->SetTitle("ZVertBin");
   fHistPtSameOut->GetZaxis()->SetTitle("Pt(GeV/c)");
 
-  int lEtaBin = 7200;
   float lEtaMin = -0.9;
   float lEtaMax = 0.9;
 
-  fHistEtaSame = new TH3D(Form("fHistEtaSame"), Form("fHistEtaSame"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lEtaBin, lEtaMin, lEtaMax);
-  fHistEtaSame->GetXaxis()->SetTitle("CentBin");
-  fHistEtaSame->GetYaxis()->SetTitle("ZVertBin");
-  fHistEtaSame->GetZaxis()->SetTitle("Eta(GeV/c)");
-  
-  fHistEtaSameIn = new TH3D(Form("fHistEtaSameIn"), Form("fHistEtaSameIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lEtaBin, lEtaMin, lEtaMax);
-  fHistEtaSameIn->GetXaxis()->SetTitle("CentBin");
-  fHistEtaSameIn->GetYaxis()->SetTitle("ZVertBin");
-  fHistEtaSameIn->GetZaxis()->SetTitle("Eta(GeV/c)");
-  fHistEtaSameM1 = new TH3D(Form("fHistEtaSameM1"), Form("fHistEtaSameM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lEtaBin, lEtaMin, lEtaMax);
-  fHistEtaSameM1->GetXaxis()->SetTitle("CentBin");
-  fHistEtaSameM1->GetYaxis()->SetTitle("ZVertBin");
-  fHistEtaSameM1->GetZaxis()->SetTitle("Eta(GeV/c)");
-  fHistEtaSameM2 = new TH3D(Form("fHistEtaSameM2"), Form("fHistEtaSameM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lEtaBin, lEtaMin, lEtaMax);
-  fHistEtaSameM2->GetXaxis()->SetTitle("CentBin");
-  fHistEtaSameM2->GetYaxis()->SetTitle("ZVertBin");
-  fHistEtaSameM2->GetZaxis()->SetTitle("Eta(GeV/c)");
-  fHistEtaSameOut = new TH3D(Form("fHistEtaSameOut"), Form("fHistEtaSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lEtaBin, lEtaMin, lEtaMax);
-  fHistEtaSameOut->GetXaxis()->SetTitle("CentBin");
-  fHistEtaSameOut->GetYaxis()->SetTitle("ZVertBin");
-  fHistEtaSameOut->GetZaxis()->SetTitle("Eta(GeV/c)");
- 
+  int nbins[5] = {5, 20, 9, 200, 250};
+  // In/out(5), Cent, ZVtx, Eta, Pt // total 5
+  double maxbin[5] = {4.5, 100, 9,1,25 };
+  double minbin[5] = { -0.5, 0, -9, -1, 0};
+  fHistEtaSparse = new THnSparseD("fHistEtaSparse", "fHistEtaSparse", 5, nbins, minbin, maxbin);
+  fHistEtaSparse->Sumw2();
 
 }
 
@@ -2308,6 +2335,13 @@ int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent
       fEventPlaneTPC = myTPCQnVector->EventPlane(2);
       if (fEventPlaneTPC < 0) fEventPlaneTPC += TMath::Pi();
     }
+
+    if (fEventPlaneTPC >=0 && fEventPlaneV0A >= 0 && fEventPlaneV0C >= 0) {
+      fHistResolutionV2[0]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0A - fEventPlaneTPC)));
+      fHistResolutionV2[1]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0A - fEventPlaneV0C)));
+      fHistResolutionV2[2]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneTPC - fEventPlaneV0C)));
+    }
+  
   }
   else if (fCollision == kpp) {
     fCentPercentile = 1;

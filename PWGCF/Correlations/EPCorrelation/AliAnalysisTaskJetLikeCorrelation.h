@@ -259,11 +259,16 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     TH3D *fHistPtSameM1;         //!
     TH3D *fHistPtSameM2;         //!
 
-    TH3D *fHistEtaSame;         //!
-    TH3D *fHistEtaSameIn;         //!
-    TH3D *fHistEtaSameOut;         //!
-    TH3D *fHistEtaSameM1;         //!
-    TH3D *fHistEtaSameM2;         //!
+    THnSparse *fHistEtaSparse;   //!
+    TProfile *fHistV2;             //! Only for V0A
+    TProfile *fHistResolutionV2[3];   //!
+    
+
+//    TH3D *fHistEtaSame;         //!
+//    TH3D *fHistEtaSameIn;         //!
+//    TH3D *fHistEtaSameOut;         //!
+//    TH3D *fHistEtaSameM1;         //!
+//    TH3D *fHistEtaSameM2;         //!
 
     THnSparse *fHistContamination; //!
     AliExtractedEvent *fHighPtMixing; //!

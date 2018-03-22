@@ -38,7 +38,6 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
   TObjArray *exchagecontainerList = mgr->GetExchangeContainers();
   AliAnalysisDataContainer *corrTask = exchagecontainerList->FindObject("CalibratedQvectorList");
 
-
   AliAnalysisTaskJetLikeCorrelation *taskjetlikecorr = new AliAnalysisTaskJetLikeCorrelation(taskname);
   taskjetlikecorr->UseSeparateMixingPool(kFALSE);
   taskjetlikecorr->SetMC(kFALSE);
