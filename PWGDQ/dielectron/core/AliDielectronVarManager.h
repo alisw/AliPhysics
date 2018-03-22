@@ -2593,8 +2593,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
   // ep angle interval [todo, fill]
-  AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
-  if(ep) {
+  // AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
+  // if(ep) {
   //   // TPC event plane quantities (uncorrected)
   //   TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
   //   TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
@@ -2752,7 +2752,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   //   values[AliDielectronVarManager::kZDCArpH1] = 999;
   //   values[AliDielectronVarManager::kZDCCrpH1] = 999;
   //   values[AliDielectronVarManager::kZDCACrpH1] = 999;
-  }
+  // }
 
 
 
