@@ -41,6 +41,8 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fConfig()
 ,fResults(0)
 ,fResultQA(0)
+,fResultsSample(0)
+,fResultQASample(0)
 {}
 
 AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
@@ -76,6 +78,8 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
 ,fConfig()
 ,fResults(0)
 ,fResultQA(0)
+,fResultsSample(0)
+,fResultQASample(0)
 {
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
@@ -87,13 +91,15 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
   DefineOutput(8, TList::Class());  //Output for the Anti Cascade
   DefineOutput(9, TList::Class());  //Output for the Results
   DefineOutput(10, TList::Class());  //Output for the Results QA
+  DefineOutput(11, TList::Class());  //Output for the Sample
+  DefineOutput(12, TList::Class());  //Output for the Sample QA
   if (fIsMC) {
-    DefineOutput(11, TList::Class());  //Output for the Track Cut MC Info
-    DefineOutput(12, TList::Class()); //Output for the AntiTrack Cut MC Info
-    DefineOutput(13, TList::Class()); //Output for the v0 Cut MC Info
-    DefineOutput(14, TList::Class()); //Output for the Antiv0 Cut MC Info
-    DefineOutput(15, TList::Class()); //Output for the Xi Cut MC Info
-    DefineOutput(16, TList::Class()); //Output for the AntiXi Cut MC Info
+    DefineOutput(13, TList::Class());  //Output for the Track Cut MC Info
+    DefineOutput(14, TList::Class()); //Output for the AntiTrack Cut MC Info
+    DefineOutput(15, TList::Class()); //Output for the v0 Cut MC Info
+    DefineOutput(16, TList::Class()); //Output for the Antiv0 Cut MC Info
+    DefineOutput(17, TList::Class()); //Output for the Xi Cut MC Info
+    DefineOutput(18, TList::Class()); //Output for the AntiXi Cut MC Info
   }
 }
 
@@ -156,6 +162,9 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     if (fAnalysis->GetResultQAList()) {
       fResultQA=fAnalysis->GetResultQAList();
     }
+    if (fAnalysis->GetResultSampleQAList()) {
+    	fResultQASample=fAnalysis->GetResultSampleQAList();
+    }
   } else {
     fQA=new TList();
     fQA->SetName("QA");
@@ -163,6 +172,9 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     fResultQA=new TList();
     fResultQA->SetName("ResultQA");
     fResultQA->SetOwner();
+    fResultQASample=new TList();
+    fResultQASample->SetName("ResultQASample");
+    fResultQASample->SetOwner();
   }
   if (!fEvtCuts->GetMinimalBooking()) {
     if (fAnalysis->GetEventCutHists()) {
@@ -221,6 +233,11 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   } else {
     AliWarning("Results List not Available");
   }
+  if (fAnalysis->GetResultSampleList()) {
+	  fResultsSample=fAnalysis->GetResultSampleList();
+  } else {
+	  AliWarning("Results Sample List not Available");
+  }
   PostData(1,fQA);
   PostData(2,fEvtHistList);
   PostData(3,fTrackCutHistList);
@@ -231,6 +248,8 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   PostData(8,fAntiCascCutList);
   PostData(9,fResults);
   PostData(10,fResultQA);
+  PostData(11,fResultsSample);
+  PostData(12,fResultQASample);
   if (fIsMC) {
     if (!fTrackCuts->GetMinimalBooking()) {
       if (fTrackCuts->GetIsMonteCarlo()) {
@@ -286,12 +305,12 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
       fAntiCascCutMCList->SetName("MCAntiCascCuts");
       fAntiCascCutMCList->SetOwner();
     }
-    PostData(11,fTrackCutHistMCList);
-    PostData(12,fAntiTrackCutHistMCList);
-    PostData(13,fv0CutHistMCList);
-    PostData(14,fAntiv0CutHistMCList);
-    PostData(15,fCascCutMCList);
-    PostData(16,fAntiCascCutMCList);
+    PostData(13,fTrackCutHistMCList);
+    PostData(14,fAntiTrackCutHistMCList);
+    PostData(15,fv0CutHistMCList);
+    PostData(16,fAntiv0CutHistMCList);
+    PostData(17,fCascCutMCList);
+    PostData(18,fAntiCascCutMCList);
   }
 }
 
@@ -339,16 +358,23 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     } else {
       AliWarning("Results List not Available");
     }
-    PostData(1,fQA);
-    PostData(2,fEvtHistList);
-    PostData(3,fTrackCutHistList);
-    PostData(4,fAntiTrackCutHistList);
-    PostData(5,fv0CutHistList);
-    PostData(6,fAntiv0CutHistList);
-    PostData(7,fCascCutList);
-    PostData(8,fAntiCascCutList);
-    PostData(9,fResults);
-    PostData(10,fResultQA);
+    if (fAnalysis->GetResultSampleList()) {
+   	  fResultsSample=fAnalysis->GetResultSampleList();
+     } else {
+   	  AliWarning("Results Sample List not Available");
+     }
+     PostData(1,fQA);
+     PostData(2,fEvtHistList);
+     PostData(3,fTrackCutHistList);
+     PostData(4,fAntiTrackCutHistList);
+     PostData(5,fv0CutHistList);
+     PostData(6,fAntiv0CutHistList);
+     PostData(7,fCascCutList);
+     PostData(8,fAntiCascCutList);
+     PostData(9,fResults);
+     PostData(10,fResultQA);
+     PostData(11,fResultsSample);
+     PostData(12,fResultQASample);
     if (fIsMC) {
       if (!fTrackCuts->GetMinimalBooking()) {
         if (fTrackCuts->GetIsMonteCarlo()) {
@@ -380,12 +406,12 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
           fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
         }
       }
-      PostData(11,fTrackCutHistMCList);
-      PostData(12,fAntiTrackCutHistMCList);
-      PostData(13,fv0CutHistMCList);
-      PostData(14,fAntiv0CutHistMCList);
-      PostData(15,fCascCutMCList);
-      PostData(16,fAntiCascCutMCList);
+      PostData(13,fTrackCutHistMCList);
+      PostData(14,fAntiTrackCutHistMCList);
+      PostData(15,fv0CutHistMCList);
+      PostData(16,fAntiv0CutHistMCList);
+      PostData(17,fCascCutMCList);
+      PostData(18,fAntiCascCutMCList);
     }
   }
 }

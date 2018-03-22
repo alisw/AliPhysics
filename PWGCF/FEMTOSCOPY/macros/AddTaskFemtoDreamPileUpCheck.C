@@ -17,7 +17,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
     bool ContributionSplittingDaug = false,  // 14
     const char *swuffix = "0")               // 15
 {
-  TString suffix=Form("%s",swuffix);
+  TString suffix = Form("%s", swuffix);
 
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -187,7 +187,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
   AntiXiNegCuts->SetMinimalBooking(true);
   AntiXiPosCuts->SetMinimalBooking(true);
-  AntiXiBachCuts->SetMinimalBooking(true);  
+  AntiXiBachCuts->SetMinimalBooking(true);
 
   // CHECK FOR BERNIE
   XiNegCuts->SetPtRange(0.1, 999.9);
@@ -385,6 +385,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
+  config->SetSpinningDepth(10);
 
   AliAnalysisTaskFemtoDream *task =
       new AliAnalysisTaskFemtoDream("FemtoDreamDefault", isMC, true);
@@ -417,7 +418,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
                  "========"
               << std::endl;
   }
-  //task->SetDebugLevel(0);
+  // task->SetDebugLevel(0);
   task->SetEvtCutQA(false);
   task->SetTrackBufferSize(10000);
   task->SetEventCuts(evtCuts);
@@ -449,7 +450,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
     addon += "_HM";
   }
 
-  std::cout << addon.Data() << "\n";
+  std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA", addon.Data());
   coutputQA =
       mgr->CreateContainer(  //@suppress("Invalid arguments") it works ffs
@@ -537,6 +538,25 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
           AliAnalysisManager::kOutputContainer,
           Form("%s:%s", file.Data(), ResultQAName.Data()));
   mgr->ConnectOutput(task, 10, coutputResultQA);
+
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample", addon.Data());
+  coutputResultsSample =
+      mgr->CreateContainer(  //@suppress("Invalid arguments") it works ffs
+          ResultsSampleName.Data(), TList::Class(),
+          AliAnalysisManager::kOutputContainer,
+          Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 11, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultQASample;
+  TString ResultQASampleName = Form("%sResultQASample", addon.Data());
+  coutputResultQASample =
+      mgr->CreateContainer(  //@suppress("Invalid arguments") it works ffs
+          ResultQASampleName.Data(), TList::Class(),
+          AliAnalysisManager::kOutputContainer,
+          Form("%s:%s", file.Data(), ResultQASampleName.Data()));
+  mgr->ConnectOutput(task, 12, coutputResultQASample);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sTrkCutsMC", addon.Data());
@@ -545,7 +565,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             TrkCutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC", addon.Data());
@@ -554,7 +574,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             AntiTrkCutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC", addon.Data());
@@ -563,7 +583,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             v0CutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC", addon.Data());
@@ -572,7 +592,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             Antiv0CutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
     TString XiCutsMCName = Form("%sXiCutsMC", addon.Data());
@@ -581,7 +601,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             XiCutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputXiCutsMC);
+    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
     TString AntiXiCutsMCName = Form("%sAntiXiCutsMC", addon.Data());
@@ -590,7 +610,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
             AntiXiCutsMCName.Data(), TList::Class(),
             AliAnalysisManager::kOutputContainer,
             Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
+    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
   }
   return task;
 }

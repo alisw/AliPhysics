@@ -327,6 +327,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	config->SetMinKRel(kMin);
 	config->SetMaxKRel(kMax);
 	config->SetMixingDepth(10);
+	config->SetSpinningDepth(10);
 
 	AliAnalysisTaskFemtoDream *task=
 	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
@@ -459,6 +460,23 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 			AliAnalysisManager::kOutputContainer,
 			Form("%s:%s", file.Data(), ResultQAName.Data()));
 	mgr->ConnectOutput(task, 10, coutputResultQA);
+
+	AliAnalysisDataContainer *coutputResultsSample;
+	TString ResultsSampleName = Form("%sResultsSample",addon.Data());
+	coutputResultsSample = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+			ResultsSampleName.Data(), TList::Class(),
+			AliAnalysisManager::kOutputContainer,
+			Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+	mgr->ConnectOutput(task, 11, coutputResultsSample);
+
+	AliAnalysisDataContainer *coutputResultQASample;
+	TString ResultQASampleName = Form("%sResultQASample",addon.Data());
+	coutputResultQASample = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+			ResultQASampleName.Data(), TList::Class(),
+			AliAnalysisManager::kOutputContainer,
+			Form("%s:%s", file.Data(), ResultQASampleName.Data()));
+	mgr->ConnectOutput(task, 12, coutputResultQASample);
+
 	if (isMC) {
 		AliAnalysisDataContainer *coutputTrkCutsMC;
 		TString TrkCutsMCName = Form("%sTrkCutsMC",addon.Data());
@@ -466,7 +484,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				TrkCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-		mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
+		mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
 
 		AliAnalysisDataContainer *coutputAntiTrkCutsMC;
 		TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC",addon.Data());
@@ -474,7 +492,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				AntiTrkCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-		mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
+		mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
 
 		AliAnalysisDataContainer *coutputv0CutsMC;
 		TString v0CutsMCName = Form("%sv0CutsMC",addon.Data());
@@ -482,7 +500,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				v0CutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-		mgr->ConnectOutput(task, 13, coutputv0CutsMC);
+		mgr->ConnectOutput(task, 15, coutputv0CutsMC);
 
 		AliAnalysisDataContainer *coutputAntiv0CutsMC;
 		TString Antiv0CutsMCName = Form("%sAntiv0CutsMC",addon.Data());
@@ -490,7 +508,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				Antiv0CutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-		mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+		mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
 		AliAnalysisDataContainer *coutputXiCutsMC;
 		TString XiCutsMCName = Form("%sXiCutsMC",addon.Data());
@@ -498,7 +516,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				XiCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-		mgr->ConnectOutput(task, 15, coutputXiCutsMC);
+		mgr->ConnectOutput(task, 17, coutputXiCutsMC);
 
 		AliAnalysisDataContainer *coutputAntiXiCutsMC;
 		TString AntiXiCutsMCName = Form("%sAntiXiCutsMC",addon.Data());
@@ -506,7 +524,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				AntiXiCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
+		mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
 	}
 	return task;
 }

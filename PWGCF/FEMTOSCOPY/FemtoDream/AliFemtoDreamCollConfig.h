@@ -33,6 +33,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<float> CentBins);
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
+  void SetSpinningDepth(int SpinningDepth){fSpinningDepth=SpinningDepth;};
   void SetSECommonAncestor(bool doit) {fMCCommonAncestor=doit;};
 
   bool GetDoMultBinning() {return fMultBinning;};
@@ -56,6 +57,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<float> GetMaxKRel();
   std::vector<float> GetCentBins();
   int GetMixingDepth(){return fMixingDepth;};
+  int GetSpinningDepth(){return fSpinningDepth;};
  private:
   bool fMultBinning;            //
   bool fkTBinning;            //
@@ -71,6 +73,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   int fMixingDepth;             //
+  int fSpinningDepth;			//
   bool fkTCentrality;           //
   bool fMCCommonAncestor;       // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
   ClassDef(AliFemtoDreamCollConfig,3);

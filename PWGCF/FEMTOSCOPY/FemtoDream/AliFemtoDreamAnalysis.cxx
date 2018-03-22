@@ -26,6 +26,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fCascCuts()
 ,fAntiCascCuts()
 ,fPairCleaner()
+,fControlSample()
 ,fTrackBufferSize(0)
 ,fGTI(0)
 ,fConfig(0)
@@ -88,6 +89,7 @@ void AliFemtoDreamAnalysis::Init(
     if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
   }
   fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
+  fControlSample=new AliFemtoDreamControlSample(fConfig,MinimalBooking);
   return;
 }
 
@@ -272,5 +274,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
                       fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
+  fControlSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetRefMult08());
 }
 
