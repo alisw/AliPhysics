@@ -95,20 +95,24 @@ public:
   TH1F *fPiPlusPT;
   TH1F *fPiMinusPT;
   TH1F *fDeuPT;
+  TH1F *fMultiplicity;
 
   /// pions energy loss in TPC for check
-  TH2F *fDedxPi;
+  TH2D *fDedxPiDeu;
+  TH2D *fDedx;
+  TH2D *fBeta;
 
   /// invariant mass distribution with blinded region (2.280 < mInv < 2.480) GeV/c^2
   TH2D *fMInvBlind[11];
   /// event mixing background with cuts (last one without cuts)
-  TH2D *fMEMInvBackground[11];
+  TH2D *fMEMInvBackPPSame[11];
+  TH2D *fMEMInvBack3Event[11];
   /// like-sign background
   TH2D *fLSPlusMInvBackground[11];
-  TH2D *fLSMinusMInvBackground[11];  
+  TH2D *fLSMinusMInvBackground[11];
 
   /// event mixing pool
-  AliAnalysisCODEX::EventMixingPool<1, 20, 1> *fPool;
+  AliAnalysisCODEX::EventMixingPool<1, 10, 3> *fPool;
 
 
   ClassDef(dStarAnalysisSelector,0);
