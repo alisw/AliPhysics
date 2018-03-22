@@ -90,6 +90,7 @@ public:
   void CalculateXtalkCorrection();
   void GetTailValue(Float_t ampfactor,Double_t &ionTailMax,Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1);
   //
+  void FixKinkIndices();
   void FillESD(const TObjArray* arr);
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}

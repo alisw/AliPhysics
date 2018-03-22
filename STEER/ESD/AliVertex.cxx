@@ -158,6 +158,22 @@ Bool_t AliVertex::UsesTrack(Int_t index) const {
   }
   return kFALSE;
 }
+
+//--------------------------------------------------------------------------
+Bool_t AliVertex::SubstituteTrack(Int_t indexOld, Int_t indexNew) {
+//
+// substirute old track index by new one
+//
+  if(fNIndices<1) return kFALSE;
+  for(Int_t i=fNIndices;i--;) {
+    if((Int_t)fIndices[i]==indexOld) {
+      fIndices[i] = UShort_t(indexNew);
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
 //--------------------------------------------------------------------------
 void AliVertex::Print(Option_t* /*option*/) const {
 //

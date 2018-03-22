@@ -23,6 +23,7 @@ class AliESDV0Params;
 
 class AliESDv0 : public AliVParticle {
 public:
+  enum {kUsedByCascadeBit = BIT(14)};
   AliESDv0();
   AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
            const AliExternalTrackParam &t2, Int_t i2);
@@ -144,6 +145,9 @@ public:
   Double_t GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const;
   Double_t GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const;
   //
+  void SetUsedByCascade(Bool_t v) {SetBit(kUsedByCascadeBit,v);}
+  Bool_t GetUsedByCascade() const {return TestBit(kUsedByCascadeBit);}
+  
 protected:
   AliExternalTrackParam fParamN;  // external parameters of negative particle
   AliExternalTrackParam fParamP;  // external parameters of positive particle

@@ -14,6 +14,8 @@
 
 
 #include "AliDetectorRecoParam.h"
+#include "TObjArray.h"
+class AliV0HypSel;
 
 class AliGRPRecoParam : public AliDetectorRecoParam
 {
@@ -43,6 +45,10 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
   Int_t GetVertexerV0NCuts() const { return fVertexerV0NCuts; }
+  Double_t GetVertexerV0EtaMax() const { return fVertexerV0EtaMax; }
+  void  SetVertexerV0EtaMax(double eta)  { fVertexerV0EtaMax = eta; }
+  Bool_t GetCleanOfflineV0Prongs() const { return fCleanOfflineV0Prongs;}
+  void  SetCleanOfflineV0Prongs(Bool_t v) { fCleanOfflineV0Prongs = v;}
   Int_t GetVertexerCascadeNCuts() const { return fVertexerCascadeNCuts; }
   void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts,Int_t n) const;
   void  GetVertexerTracksCutsITS(Double_t *cuts,Int_t n) const
@@ -52,6 +58,15 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   void  GetVertexerV0Cuts(Double_t *cuts) const;
   void  GetVertexerCascadeCuts(Double_t *cuts) const;
 
+  ULong_t GetFlagsNotToClean() const {return fFlagsNotToClean;}
+  void    SetFlagsNotToClean(ULong_t v) {fFlagsNotToClean = v;}
+
+  Double_t GetCleanDCAZCut() const {return fCleanDCAZCut;}
+  void    SetCleanDCAZCut(double v) {fCleanDCAZCut = v;}
+  
+  const TObjArray* GetV0HypSelArray() const {return &fV0HypSelArray;}
+  void  AddV0HypSel(const AliV0HypSel& sel);
+  
   AliGRPRecoParam(const AliGRPRecoParam&);
   AliGRPRecoParam& operator=(const AliGRPRecoParam&);
 
@@ -129,7 +144,8 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerV0CPAmin;  //min cosine of V0's pointing angle
   Double_t fVertexerV0Rmin;    //min radius of the fiducial volume
   Double_t fVertexerV0Rmax;    //max radius of the fiducial volume
-
+  Double_t fVertexerV0EtaMax;  //max eta
+  Bool_t   fCleanOfflineV0Prongs; // compress redundant prongs by filling 0s
   Int_t    fVertexerCascadeNCuts; // number of cuts for AliCascadeVertexer
 
   // cuts for AliCascadeVertexer:
@@ -141,8 +157,13 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerCascadeCPAmin;   //min cosine of the cascade pointing angle
   Double_t fVertexerCascadeRmin;     //min radius of the fiducial volume
   Double_t fVertexerCascadeRmax;     //max radius of the fiducial volume
+  Double_t fCleanDCAZCut;            // consider track removal if its DCA exceeds this
+  ULong_t fFlagsNotToClean;         // tracks with these flags are kept in CleanESD  
+  TObjArray fV0HypSelArray;         // array of V0 hypotheses selection
 
-  ClassDef(AliGRPRecoParam,7) // global reco parameters
+
+  
+  ClassDef(AliGRPRecoParam,8) // global reco parameters
 };
 
 inline void  AliGRPRecoParam::SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut)

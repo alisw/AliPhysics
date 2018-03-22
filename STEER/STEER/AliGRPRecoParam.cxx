@@ -14,6 +14,8 @@
  **************************************************************************/
 
 #include "AliGRPRecoParam.h"
+#include "AliV0HypSel.h"
+#include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -86,7 +88,7 @@ fVertexerTracksTPCclusterize(0),
 fVertexerTracksTPCclusterdz(999999.),
 fVertexerTracksTPCclusternsigmaz(3.),
 //
-fVertexerV0NCuts(7),
+fVertexerV0NCuts(8),
 fVertexerV0Chi2max(33.),
 fVertexerV0DNmin(0.05),
 fVertexerV0DPmin(0.05),
@@ -94,6 +96,8 @@ fVertexerV0DCAmax(1.5),
 fVertexerV0CPAmin(0.9),
 fVertexerV0Rmin(0.2),
 fVertexerV0Rmax(200.),
+fVertexerV0EtaMax(5.0),
+fCleanOfflineV0Prongs(kFALSE),
 fVertexerCascadeNCuts(8),
 fVertexerCascadeChi2max(33.),
 fVertexerCascadeDV0min(0.01),
@@ -102,7 +106,11 @@ fVertexerCascadeDBachMin(0.01),
 fVertexerCascadeDCAmax(2.0),
 fVertexerCascadeCPAmin(0.98),
 fVertexerCascadeRmin(0.2),
-fVertexerCascadeRmax(100.)
+fVertexerCascadeRmax(100.),
+fCleanDCAZCut(-1),
+fFlagsNotToClean(0xffffffffffffffff),
+fV0HypSelArray()
+
 {
   //
   // constructor
@@ -187,6 +195,8 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerV0CPAmin(par.fVertexerV0CPAmin),
   fVertexerV0Rmin(par.fVertexerV0Rmin),
   fVertexerV0Rmax(par.fVertexerV0Rmax),
+  fVertexerV0EtaMax(par.fVertexerV0EtaMax),
+  fCleanOfflineV0Prongs(par.fCleanOfflineV0Prongs),
   fVertexerCascadeNCuts(par.fVertexerCascadeNCuts),
   fVertexerCascadeChi2max(par.fVertexerCascadeChi2max),
   fVertexerCascadeDV0min(par.fVertexerCascadeDV0min),
@@ -195,9 +205,19 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerCascadeDCAmax(par.fVertexerCascadeDCAmax),
   fVertexerCascadeCPAmin(par.fVertexerCascadeCPAmin),
   fVertexerCascadeRmin(par.fVertexerCascadeRmin),
-  fVertexerCascadeRmax(par.fVertexerCascadeRmax)
+  fVertexerCascadeRmax(par.fVertexerCascadeRmax),
+  fCleanDCAZCut(par.fCleanDCAZCut),
+  fFlagsNotToClean(par.fFlagsNotToClean)
 {
   // copy constructor
+  for (int i=0;i<par.fV0HypSelArray.GetEntriesFast();i++) {
+    const AliV0HypSel* h = dynamic_cast<const AliV0HypSel*>( par.fV0HypSelArray.At(i) );
+    if (!h) {
+      AliFatal("Object provided as V0 hypothesis selection cut is not recognized");      
+    }
+    AddV0HypSel( *h );
+  }
+  fV0HypSelArray.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -411,10 +431,11 @@ void AliGRPRecoParam::GetVertexerV0Cuts(Double_t *cuts) const {
   cuts[4] = fVertexerV0CPAmin;
   cuts[5] = fVertexerV0Rmin;
   cuts[6] = fVertexerV0Rmax;
+  cuts[7] = fVertexerV0EtaMax;
   return;
 }
 //_____________________________________________________________________________
-void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]) {
+void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[8]) {
   //
   // set cuts for AliV0vertexer
   //
@@ -429,6 +450,7 @@ void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]) {
   fVertexerV0CPAmin  = cuts[4];
   fVertexerV0Rmin    = cuts[5];
   fVertexerV0Rmax    = cuts[6];
+  fVertexerV0EtaMax  = cuts[7];
   return;
 }
 //_____________________________________________________________________________
@@ -464,4 +486,10 @@ void AliGRPRecoParam::SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]) {
   fVertexerCascadeRmin     = cuts[6];
   fVertexerCascadeRmax     = cuts[7];
   return;
+}
+
+//_____________________________________________________________________________
+void AliGRPRecoParam::AddV0HypSel(const AliV0HypSel& sel)
+{
+  fV0HypSelArray.AddLast(new AliV0HypSel(sel));
 }

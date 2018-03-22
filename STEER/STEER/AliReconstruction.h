@@ -50,6 +50,7 @@ class AliAnalysisManager;
 class AliRecoInputHandler;
 class THashList;
 class AliMCEventHandler;
+class AliGRPRecoParam;
 
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
@@ -265,7 +266,7 @@ private:
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
   Bool_t         RunMultFinder(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd, AliESDpid &PID);
-  Bool_t         CleanESD(AliESDEvent *esd);
+  Bool_t         CleanESD(AliESDEvent *esd,const AliGRPRecoParam *grpRecoParam);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESDEvent*& esd);
   Bool_t         FillTriggerScalers(AliESDEvent*& esd);
