@@ -689,34 +689,46 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   //0SH1 - More then 6 hits on outer layer
   if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
   
-  //TLorentzVector vGenerated, vDecayProduct;
-  //TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+  TLorentzVector vGenerated, vDecayProduct;
+  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
   TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(!arrayMC) return;
 
-  //vGenerated.SetXYZM(0.,0.,0.,0.);
+  vGenerated.SetXYZM(0.,0.,0.,0.);
+  Bool_t motherFound = kFALSE;
   //loop over mc particles
   for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
     AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
     if(!mcPart) continue;
     
-    if(TMath::Abs(mcPart->GetPdgCode()) == 443){
+    if((TMath::Abs(mcPart->GetPdgCode()) == 443 || TMath::Abs(mcPart->GetPdgCode()) == 100443) && mcPart->GetMother() == -1){//Mother found
     	fPt = mcPart->Pt();
-	fY = mcPart->Y();
-	fM = mcPart->GetCalcMass();
+  	fY  = mcPart->Y();
+  	fM  = mcPart->GetCalcMass();
 	fTreeGen->Fill();
-    	break;
-    	}
+	motherFound = kTRUE;
+	break;
+        }
     
-    //if(cutEta && TMath::Abs(mcPart->Eta())>0.9)return;
+    if(TMath::Abs(mcPart->GetPdgCode()) == 11 || 
+       TMath::Abs(mcPart->GetPdgCode()) == 13 ||
+       TMath::Abs(mcPart->GetPdgCode()) == 2212 ||
+       TMath::Abs(mcPart->GetPdgCode()) == 211||
+       TMath::Abs(mcPart->GetPdgCode()) == 22){
+       
+       if(mcPart->GetMother() != -1)continue;
+       if(cutEta && TMath::Abs(mcPart->GetPdgCode()) != 22 && TMath::Abs(mcPart->Eta())>0.9)return;
     
-    //TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
-    //vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+       TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
+       vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
     
-    //vGenerated += vDecayProduct;
+       vGenerated += vDecayProduct;
+       }
+       
     
   }//loop over mc particles 
+  if(!motherFound)FillTree(fTreeGen,vGenerated);
 
 }//RunMC
 
@@ -732,7 +744,8 @@ void AliAnalysisTaskUpcNano_MB::Terminate(Option_t *)
 void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v) {
 
   fPt      = v.Pt();
-  fY       = v.Rapidity();
+  if(v.E() != v.Pz())fY = v.Rapidity();
+  else fY = -999;
   fM       = v.M();
 
   t->Fill();
