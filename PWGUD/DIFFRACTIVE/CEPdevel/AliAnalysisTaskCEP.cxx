@@ -1174,6 +1174,28 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       // check if track contributes to main vertex reconstruction
       trk->SetinVertex(vertex->UsesTrack(trkIndex));      
       
+      // get MC truth
+      Int_t MCind = tmptrk->GetLabel();
+      // printf("MCind %i\n",MCind);
+      //printf("%i - TPC PID:",fEventNum);
+      if (fMCEvent && MCind >= 0) {
+        
+        TParticle* part = stack->Particle(MCind);
+        // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
+        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+        
+        // set MC mass and momentum
+        TLorentzVector lv;
+        part->Momentum(lv);
+        
+        trk->SetMCPID(part->GetPdgCode());
+        trk->SetMCMass(part->GetMass());
+        trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
+
+        //printf(" %i",part->GetPdgCode());
+
+      }
+
       // set PID information
       // ... ITS
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,tmptrk,AliPID::kSPECIES,probs);
@@ -1190,16 +1212,16 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTPCStatus(stat);
       trk->SetPIDTPCSignal(tmptrk->GetTPCsignal());
-      printf("TPC PID:%f",tmptrk->GetTPCsignal());
+      //printf(" %f",tmptrk->GetTPCsignal());
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
         stat = fPIDResponse->NumberOfSigmas(
           AliPIDResponse::kTPC,tmptrk,(AliPID::EParticleType)jj,nsig);
         trk->SetPIDTPCnSigma(jj,nsig);
         trk->SetPIDTPCProbability(jj,probs[jj]);
         
-        printf(" %f/%f ",nsig,probs[jj]);
+        //printf(" %f/%f ",nsig,probs[jj]);
       }
-      printf("\n");
+      //printf("\n");
       
       // ... TOF
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,tmptrk,AliPID::kSPECIES,probs);
@@ -1229,25 +1251,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++)
         trk->SetPIDBayesProbability(jj,probs[jj]);
       
-      // get MC truth
-      Int_t MCind = tmptrk->GetLabel();
-      // printf("MCind %i\n",MCind);
-      if (fMCEvent && MCind >= 0) {
-        
-        TParticle* part = stack->Particle(MCind);
-        // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
-        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
-        
-        // set MC mass and momentum
-        TLorentzVector lv;
-        part->Momentum(lv);
-        
-        trk->SetMCPID(part->GetPdgCode());
-        trk->SetMCMass(part->GetMass());
-        trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
-
-      }
-
       // add track to the CEPEventBuffer
       fCEPEvent->AddTrack(trk);
     
