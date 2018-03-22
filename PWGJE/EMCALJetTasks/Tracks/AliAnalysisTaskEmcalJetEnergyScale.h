@@ -64,6 +64,7 @@ public:
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
     Double_t                          radius,
+    Bool_t                            useDCAL,
     const char *                      trigger
   );
 
