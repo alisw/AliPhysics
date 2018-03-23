@@ -61,6 +61,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	eff_MaxiPadLTM_1Trk_Mu(0),
 	eff_MaxiPadLTM_1Trk_El(0),
 	eff_AverageTracklets(0),
+	eff_AverageTrackPt(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -110,6 +111,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	eff_MaxiPadLTM_1Trk_Mu(0),
 	eff_MaxiPadLTM_1Trk_El(0),
 	eff_AverageTracklets(0),
+	eff_AverageTrackPt(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -189,6 +191,9 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   
   eff_AverageTracklets = new TEfficiency("eff_AverageTracklets"," ",1000,0,10000);
   fOutputList->Add(eff_AverageTracklets);
+  
+  eff_AverageTrackPt = new TEfficiency("eff_AverageTrackPt"," ",50,0,5);
+  fOutputList->Add(eff_AverageTrackPt);
 
   hTrackDistributionLTM = new TH2F("hTrackDistributionLTM","hTrackDistributionLTM",72,0,72,23,0,23);
   fOutputList->Add(hTrackDistributionLTM);
@@ -458,6 +463,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackPadCorrEta->Fill(trc->Eta(),channelCTTM);
 		    }
 
+		if(!fBadMaxiPadMask[indexLTM[0]][channelCTTM])eff_AverageTrackPt->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),esdTrack->Pt());
                 if(nFiredPads<2)numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);

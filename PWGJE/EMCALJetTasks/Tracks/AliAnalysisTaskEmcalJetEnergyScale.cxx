@@ -120,7 +120,7 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, Double_t jetradius, const char *trigger) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, Double_t jetradius, Bool_t useDCAL, const char *trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -136,7 +136,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   switch(jettype){
     case AliJetContainer::kFullJet:
         jettypename = "FullJet";
-        acceptance = AliJetContainer::kEMCALfid;
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = addTrackContainer = true;
         break;
     case AliJetContainer::kChargedJet:
@@ -146,7 +146,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         break;
     case AliJetContainer::kNeutralJet:
         jettypename = "NeutralJet";
-        acceptance = AliJetContainer::kEMCALfid;
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
         break;
   };

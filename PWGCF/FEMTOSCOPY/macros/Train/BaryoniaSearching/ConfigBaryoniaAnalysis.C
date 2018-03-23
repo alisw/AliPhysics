@@ -17,8 +17,8 @@ enum ESys  { kAPL, kPAL, kApXz, kPrAxz, kKKpi, kDplus, nSys };
 const char *sysNames[nSys]      = { "APL", "PAL", "ApXz", "PrAxz",  "D+" , "KKpi"};
 const bool runSys[nSys]         = {   1  ,   0  ,   0   ,    0   ,    1  ,   0   };
 const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.5  ,   1.5  ,   1.7 ,  1.0  }; // everything in GeV here
-const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,   1.9 ,  2.0  };
-const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 , 0.0001 , 0.001 };
+const double distMax[nSys]      = {  2.5 ,  2.5 ,  3.0  ,   3.0  ,  2.05 ,  2.0  };
+const double distBinWidth[nSys] = { 0.001, 0.001, 0.001 ,  0.001 ,  0.014, 0.001 };
 
 const double dalitzCutMass[nSys]= { 2.148, 2.148, 2.330 ,  2.330 ,1.86959,   0   };
 const double dalitzCutGamma[nSys]={ 0.134, 0.134, 0.100 ,  0.100 ,0.00063,   0   };
@@ -27,13 +27,13 @@ const double dalitzMin       = 0.0;
 const double dalitzMax       = 6.0;
 const double dalitzBinWidth  = 0.005;
 
-const int nMultBins = 10;
-const int multBins[nMultBins+1] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 1000};
-const int runMult[nMultBins]    = {1, 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 };
+const int nMultBins = 16;
+const int multBins[nMultBins+1] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 150, 160, 1000};
+const int runMult[nMultBins]    = {0, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 1  , 1  , 1  , 1  , 1  , 1 };
 
 const int nVertZbins = 9;
 const int vertZbins[nVertZbins+1] = {-1000, -21, -15, -9, -3, 3, 9, 15, 21, 1000};
-const int runVertZ[nVertZbins]    = { 1   ,  1 ,  1 ,  1 , 1, 1, 1, 1 , 1 };
+const int runVertZ[nVertZbins]    = { 0   ,  0 ,  0 ,  1 , 1, 1, 0, 0 , 0 };
 
 bool separationCuts;
 bool ppCollisions;

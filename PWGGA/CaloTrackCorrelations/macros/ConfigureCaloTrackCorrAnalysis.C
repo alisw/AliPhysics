@@ -4,8 +4,8 @@
 ///
 /// Configuration macro for analysis of gamma-hadron and pi0-hadron correlation analysis
 /// both pi0 and gamma isolated or not. Extracted from AddTaskGammaHadronCorrelationSelectAnalysis.C. 
-/// The base configuration of the AliAnalysisTaskCaloTrackCorrelations.C is handled in 
-/// the separate macro AddTaskBase.C
+/// The base configuration handled in the separate macro AddTaskCaloTrackCorrBase.C and this configuration
+/// should be executed like in AddTaskMultipleTrackCutIsoConeAnalysis.C
 ///
 /// It can do:
 ///   * Photon selection in calorimeter with AliAnaPhoton: Track matching, mild shower shape, NLM ... cuts
@@ -15,7 +15,8 @@
 ///   * Pi0 selection with the identification of merged clusters with AliAnaPi0EbE
 ///   * Tagging of pi0 as isolated with AliAnaParticleIsolation
 ///   * Correlation of the pi0 and charged tracks, twice, one without isolation condition, and other with isolation condition
-///   * Optionally, the QA tasks AliAnaCalorimeterQA and AliAnaChargedParticle are executed
+///   * Particle correlation and isolation at generator level with AliAnaGeneratorKine
+///   * Optionally, the QA tasks AliAnaCalorimeterQA, AliAnaChargedParticle and AliAnaClusterShapeStudies are executed
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
@@ -43,11 +44,23 @@
 /// Global name to be composed of the settings, used to set the AOD branch name
 TString kAnaCaloTrackCorr = "";
 
+/// Global name to be composed of the analysis components chain and some internal settings
+TString kAnaCutsString = ""; // "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged",
+
 ///
 /// Set common histograms binning
 /// plus other analysis common settings like TRD covered super modules
 /// the activation of the MC dedicated histograms and the activation of
-/// the debug mode
+/// the debug mode.
+///
+/// \param ana : Analysis task where histograms are created and common settings are needed
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
 ///
 void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString histoString,
                                  TString calorimeter,   Int_t  year,
@@ -183,6 +196,15 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
 /// Configure the task doing the first photon cluster selections
 /// Basically the track matching, minor shower shape cut, NLM selection ...
 ///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param tm : Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
 AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
                                       TString calorimeter,   Int_t year, Int_t tm,
                                       Bool_t  printSettings, Int_t   debug, 
@@ -204,8 +226,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   }
   
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
-  
-  if ( kAnaCaloTrackCorr.Contains("PerSM") ) 
+  if( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffFillShowerShapeHistograms();
+    
+  if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillShowerShapeHistogramsPerSM(); 
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
@@ -213,7 +236,10 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if(tm) ana->SwitchOnTrackMatchRejection() ;
   else   ana->SwitchOffTrackMatchRejection() ;
   
-  ana->SwitchOnTMHistoFill() ;
+  // Fill track matching histograms if track matching activated
+  // and only once in case of multiple analysis
+  if ( tm && !kAnaCutsString.Contains("MultiIso") ) 
+    ana->SwitchOnTMHistoFill() ;
   
   if(calorimeter == "PHOS")
   {
@@ -271,11 +297,14 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
   
   if(ana->GetFirstSMCoveredByTRD() > 0)
-    printf("AddTaskGammaHadronCorrelation() >>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
+    printf("ConfigurePhotonAnalysis() >>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
   
   // Number of particle type MC histograms
   ana->FillNOriginHistograms (17); // 18 max
   ana->FillNPrimaryHistograms(6); // 6 max
+  
+  // Do not redo MC histograms in case of multiple iso analysis
+  if( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffDataMC();
   
   return ana;
 }
@@ -283,6 +312,19 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 ///
 /// Configure the task doing the pi0 even by event selection (invariant mass or split)
 /// and the cluster tagging as decay in different mass windows.
+///
+/// \param particle : String with particle type, "Pi0" or "Eta". If string contains "SideBand", not peak but side band inspected    
+/// \param analysis : analysis type, merged clusters or cluster selected from invariant mass pair or side band
+/// \param useSSIso : bool, select pairs tagged as isolated previously  
+/// \param useAsy : bool, for merged cluster analysis apply asymmetry cut or not
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param tm : Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
                                       Bool_t useSSIso,       Bool_t useAsy,
@@ -311,8 +353,12 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   
   if(tm) ana->SwitchOnTrackMatchRejection() ;
   else   ana->SwitchOffTrackMatchRejection() ;
-  ana->SwitchOffTMHistoFill() ;
   
+  if ( tm && !kAnaCutsString.Contains("Photon") &&  !kAnaCutsString.Contains("MultiIso") )
+    ana->SwitchOnTMHistoFill() ;
+  else
+    ana->SwitchOffTMHistoFill() ;
+    
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
   {
@@ -322,7 +368,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("%s%sTrigger_%s",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data()));
-  printf("***Out branch %s***\n",ana->GetOutputAODName().Data());
+  printf("ConfigurePi0EbEAnalysis() *** Out branch %s***\n",ana->GetOutputAODName().Data());
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
@@ -414,7 +460,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     if(!useSSIso)
     {
-      printf("Do not apply SS cut on merged pi0 analysis \n");
+      printf("ConfigurePi0EbEAnalysis() << Do not apply SS cut on merged pi0 analysis >> \n");
       caloPID->SwitchOffSplitShowerShapeCut() ;
       //ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_TM%d_",particle.Data(),opt.Data(),tm));
       ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_",particle.Data(),opt.Data()));
@@ -476,6 +522,23 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
 ///
 /// Configure the task doing the trigger particle isolation
 ///
+/// \param particle : Particle trigger name
+/// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
+/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
+/// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param cone : A float setting the isolation cone size higher limit
+/// \param coneMin : A float setting the isolation cone size lower limit
+/// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param multi : Bool, execute isolation analysis with multiple parameters (cone, pT thresholds)
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param tm : Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t   leading,
                                                     Int_t   partInCone,    Int_t   thresType,
                                                     Float_t cone,          Float_t coneMin,
@@ -516,21 +579,22 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   {
     ana->SwitchOnSSHistoFill();
 
-    if(kAnaCaloTrackCorr.Contains("Decay"))
+    if(kAnaCutsString.Contains("Decay"))
     {
       ana->SwitchOffDecayTaggedHistoFill() ;
       ana->SetNDecayBits(5);
     }
   }
  
-  if ( kAnaCaloTrackCorr.Contains("PerSM") ) 
+  if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
   
-  if ( kAnaCaloTrackCorr.Contains("PerTCard") ) 
+  if ( kAnaCutsString.Contains("PerTCard") ) 
     ana->SwitchOnFillHistogramsPerTCardIndex(); 
   
-  if(kAnaCaloTrackCorr.Contains("Bkg"))
+  if(kAnaCutsString.Contains("Bkg"))
   {
+    printf("ConfigureIsolationAnalysis() *** Activate analysis on PtTrig and Bkg bins >> \n");
     ana->SwitchOnPtTrigBinHistoFill();
     ana->SetNPtTrigBins(6);
     //ana->SetPtTrigLimits(0,8); ana->SetPtTrigLimits(1,12); ana->SetPtTrigLimits(2,16); ana->SetPtTrigLimits(3,25);
@@ -585,13 +649,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     
     if(thresType == AliIsolationCut::kPtThresIC)
     {
-      printf("*** Iso *** PtThresMin = %1.1f GeV/c *** R = %1.2f *** R min %1.2f\n",pth,cone,coneMin);
+      printf("ConfigureIsolationAnalysis() *** Iso *** PtThresMin = %1.1f GeV/c *** R = %1.2f *** R min %1.2f\n",pth,cone,coneMin);
       ic->SetPtThreshold(pth);
     }
     
     if(thresType == AliIsolationCut::kSumPtIC)
     {
-      printf("*** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
+      printf("ConfigureIsolationAnalysis() *** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
       ic->SetSumPtThreshold(pth);
     }
   }
@@ -676,6 +740,24 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 ///
 /// Configure the task doing the trigger particle hadron correlation
 ///
+/// \param particle : Particle trigger name
+/// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
+/// \param bIsolated : Bool setting the analysis for previously isolated triggers
+/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
+/// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param cone : A float setting the isolation cone size higher limit
+/// \param coneMin : A float setting the isolation cone size lower limit
+/// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param mixOn : A bool to switch the correlation mixing analysis
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param tm : Not in use here now - Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,      Int_t   leading,
                                                                     Bool_t  bIsolated,     Float_t shshMax,
                                                                     Int_t   partInCone,    Int_t   thresType,
@@ -714,24 +796,22 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   if(particle.Contains("Photon"))
   {
-    if(kAnaCaloTrackCorr.Contains("Decay"))
+    if(kAnaCutsString.Contains("Decay"))
     {
       ana->SwitchOnDecayTriggerDecayCorr();
       ana->SetNDecayBits(5);
       ana->SwitchOnInvariantMassHistograms();
-      if(kAnaCaloTrackCorr.Contains("Bkg")) ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
+      if(kAnaCutsString.Contains("Bkg")) ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
     }
 
-    //printf("**** SET M02 limits in correlation task *** \n");
+    //printf("ConfigureHadronCorrelationAnalysis() *** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(0.10,shshMax);
-    
-    if(kAnaCaloTrackCorr.Contains("Bkg")) ana->SwitchOnBackgroundBinsPtInConeHistograms();
   }
   
-  if ( kAnaCaloTrackCorr.Contains("PerSM") ) 
+  if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
  
-  if ( kAnaCaloTrackCorr.Contains("PerTCard") ) 
+  if ( kAnaCutsString.Contains("PerTCard") ) 
     ana->SwitchOnFillHistogramsPerTCardIndex(); 
   
   ana->SetMCGenType(0,7);
@@ -739,7 +819,11 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
   ana->SwitchOnFillLeadHadronHistograms();
   
-  if(kAnaCaloTrackCorr.Contains("Bkg")) ana->SwitchOnBackgroundBinsPtInConeHistograms();
+  if(kAnaCutsString.Contains("Bkg")) 
+  {
+    printf("ConfigureHadronCorrelationAnalysis() *** Activate analysis on PtTrig and Bkg bins >> \n");
+    ana->SwitchOnBackgroundBinsPtInConeHistograms();
+  }
   
   ana->SetLeadHadronPhiCut(TMath::DegToRad()*130, TMath::DegToRad()*230.);
   ana->SetLeadHadronPtCut(0.5, 1000);
@@ -780,7 +864,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
       
       if(cone >0 && pth > 0)
       {
-        //printf("*** Correl *** PtThres = %1.1f GeV/c *** R = %1.1f *** R min = %1.2f\n",pth,cone,coneMin);
+        //printf("ConfigureHadronCorrelationAnalysis() *** PtThres = %1.1f GeV/c *** R = %1.1f *** R min = %1.2f\n",pth,cone,coneMin);
         ic->SetPtThreshold(pth);
         ic->SetConeSize(cone);
         ic->SetMinDistToTrigger(coneMin);    
@@ -828,7 +912,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->SetNRPBin(3);
     if(kAnaCaloTrackCorr.Contains("60_90"))
     {
-      //printf("*** Set mixing for peripheral\n");
+      //printf("ConfigureHadronCorrelationAnalysis() *** Set mixing for peripheral ***\n");
       ana->SetNMaxEvMix(50);
       ana->SetNCentrBin(2);
     }
@@ -865,6 +949,11 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 ///
 /// Configure the task doing the selected tracks checking
 ///
+/// \param simulation : A bool identifying the data as simulation
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
 AliAnaChargedParticles* ConfigureChargedAnalysis
 ( Bool_t simulation, Bool_t printSettings, Int_t   debug, TString histoString  )
 {
@@ -899,6 +988,15 @@ AliAnaChargedParticles* ConfigureChargedAnalysis
 
 ///
 /// Configure the task doing cluster shape studies
+///
+/// \param tm : Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
 (Int_t tm, TString col , Bool_t  simulation, 
@@ -973,6 +1071,14 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
 ///
 /// Configure the task doing standard calorimeter QA
 ///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulation,
                                          TString calorimeter,   Int_t   year,
                                          Bool_t  printSettings, Int_t   debug, 
@@ -1011,6 +1117,18 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
 
 ///
 /// Configure the task filling generated particle kinematics histograms
+///
+/// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param cone : A float setting the isolation cone size higher limit
+/// \param coneMin : A float setting the isolation cone size lower limit
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth,    
                                               Float_t cone,          Float_t coneMin,
@@ -1114,13 +1232,13 @@ void ConfigureCaloTrackCorrAnalysis
 {
   if ( !anaList ) 
   {
-    printf("No analysis list passed. Stop\n");
+    printf("ConfigureCaloTrackCorrAnalysis() << No analysis list passed. Stop >>\n");
     return;
   }
   
   // Check the passed variables
   //
-  printf("ConfigureCaloTrackCorrAnalysis::Main() << Settings: Base string <%s>, Analysis string <%s>, "
+  printf("ConfigureCaloTrackCorrAnalysis() << Settings: Base string <%s>, Analysis string <%s>, "
          "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
          "\n shshMax <%2.2f>, R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,"
          "\n leading <%d>, tm <%d>, mixOn <%d>, printSettings <%d>, debug <%d>\n",
@@ -1129,17 +1247,20 @@ void ConfigureCaloTrackCorrAnalysis
          shshMax,isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
          leading,tm,mixOn,printSettings,debug);
   
-  kAnaCaloTrackCorr = Form("%s_TM%d",anaList->GetName(),tm);
+  kAnaCutsString    = analysisString;
+  
+  kAnaCaloTrackCorr = Form("%s",anaList->GetName());
 
   if ( analysisString.Contains("Isolation") )
     kAnaCaloTrackCorr+= Form("_Iso_Meth%d_Part%d_Pt%1.2f_R%1.2f",isoMethod,isoContent,isoPtTh,isoCone);
-  if ( analysisString.Contains("Corr") && analysisString.Contains("Photon") )
+  if ( analysisString.Contains("Corr") && analysisString.Contains("Photon") && shshMax > 0)
     kAnaCaloTrackCorr+= Form("_CorrM02_%1.2f",shshMax);
   
-  if ( isoConeMin > 0 )     kAnaCaloTrackCorr+=Form("_Rmin%1.2f",isoConeMin);
-  if ( leading        )     kAnaCaloTrackCorr+=Form("_Lead%d",leading);
+  if ( isoConeMin > 0 ) kAnaCaloTrackCorr+=Form("_Rmin%1.2f",isoConeMin);
+  if ( leading    > 0 ) kAnaCaloTrackCorr+=Form("_Lead%d"   ,leading);
+  if ( tm         > 0 ) kAnaCaloTrackCorr+=Form("_TM%d"     ,tm);
  
-  printf("ConfigureCaloTrackCorrAnalysis::Main() <<<< TMP branch internal NAME: %s >>>>>\n",kAnaCaloTrackCorr.Data());
+  printf("ConfigureCaloTrackCorrAnalysis() <<<< TMP branch internal NAME: %s >>>>>\n",kAnaCaloTrackCorr.Data());
   
   // #### Configure analysis ####
   
@@ -1183,17 +1304,20 @@ void ConfigureCaloTrackCorrAnalysis
     
     if( analysisString.Contains("Correlation") )
     {
-      anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                     ("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Gamma-hadron correlation
-    }
-    
-    if ( analysisString.Contains("Isolation") && analysisString.Contains("Correlation") )
-    {
-      anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                     ("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
-    }
+      if ( !analysisString.Contains("MultiIso") )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Gamma-hadron correlation
+      }
+      
+      if ( analysisString.Contains("Isolation")  )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
+      }
+    } // correlation
   }
   
   //
@@ -1214,17 +1338,20 @@ void ConfigureCaloTrackCorrAnalysis
     
     if( analysisString.Contains("Correlation") )
     {
-      anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                     ("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);  // Pi0-hadron correlation
-    }
-    
-    if ( analysisString.Contains("Isolation") && analysisString.Contains("Correlation") )
-    {
-      anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                     ("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated pi0-hadron correlation
-    }
+      if ( !analysisString.Contains("MultiIso") )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);  // Pi0-hadron correlation
+      }
+      
+      if ( analysisString.Contains("Isolation") )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated pi0-hadron correlation
+      }
+    } // correlation
   }
   
   // Check the generated kinematics
@@ -1253,7 +1380,7 @@ void ConfigureCaloTrackCorrAnalysis
     anaList->AddAt(ConfigureQAAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
   }
   
-  printf("ConfigureCaloTrackCorrAnalysis::Main() << End configuration for %s with total analysis %d>>\n",
+  printf("ConfigureCaloTrackCorrAnalysis() << End configuration for %s with total analysis %d>>\n",
          kAnaCaloTrackCorr.Data(), n);
 }
 

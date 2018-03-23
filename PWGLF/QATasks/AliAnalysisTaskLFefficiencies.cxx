@@ -36,7 +36,7 @@
 
 using TMath::TwoPi;
 
-const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"pos","neg"};
+const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"neg","pos"};
 const int AliAnalysisTaskLFefficiencies::fNcuts = 5;
 const std::string AliAnalysisTaskLFefficiencies::fCutNames[5] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF"};
 

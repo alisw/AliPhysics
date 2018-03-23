@@ -751,7 +751,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::IsSelectEmcalTriggers(const std::s
   return isEMCAL;
 }
 
-AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
+AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -781,7 +781,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              (isData && ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet))) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
+                              (isData && ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet))) ? (useDCAL ? AliEmcalJet::kDCALfid : AliEmcalJet::kEMCALfid) : AliEmcalJet::kTPC,
                               particles, nullptr);
     mcjets->SetName("mcjets");
     mcjets->SetJetPtCut(20.);
@@ -810,7 +810,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
+                              ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? (useDCAL ? AliEmcalJet::kDCALfid : AliEmcalJet::kEMCALfid): AliEmcalJet::kTPCfid,
                               tracks, clusters);
     datajets->SetName("datajets");
     datajets->SetJetPtCut(20.);

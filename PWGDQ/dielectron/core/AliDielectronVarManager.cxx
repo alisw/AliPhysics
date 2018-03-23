@@ -564,7 +564,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   // {"QnFMDAx_FMDCxCorrH2",       "FMDA^{Qn}_{x} * FMDC^{Qn}_{x}",               ""},
   // {"QnFMDAx_FMDCyCorrH2",       "FMDA^{Qn}_{x} * FMDC^{Qn}_{y}",               ""},
   // {"QnFMDAy_FMDCxCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{x}",               ""},
-  // {"QnFMDAy_FMDCyCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{y}",               ""},
+  {"QnFMDAy_FMDCyCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{y}",               ""},
 // Flow estimators for measured Jpsi
 // Eventplane Fourier calculation
   {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
