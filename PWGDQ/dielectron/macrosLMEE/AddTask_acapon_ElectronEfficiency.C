@@ -1,4 +1,8 @@
-AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE, Bool_t getFromAlien=kFALSE,
+AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
+                                                     Double_t CentMin = -2,
+                                                     Double_t CentMax = 102,
+																										 TString directoryBaseName = "acapon",
+                                                     Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_acapon_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE_output.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
@@ -82,8 +86,8 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE, Bool_t
 	//event related
 	task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config
 
-	// task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
-	task->SetCentralityRange(CentMin, CentMax);  // -2, 102
+	task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
+	task->SetCentralityRange(CentMin, CentMax);  
 
 	//generated values
 	task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
@@ -155,13 +159,13 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE, Bool_t
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("acapon_ElectronEfficiency", TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(TString::Format("%s_ElectronEfficiency", directoryBaseName.Data()), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("acapon_supportHistos", TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(TString::Format("%s_supportHistos", directoryBaseName.Data()), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("acapon_EffTree", TTree::Class(),
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(TString::Format("%s_EffTree", directoryBaseName.Data()), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("acapon_stats", TH1D::Class(),
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(TString::Format("%s_stats", directoryBaseName.Data()), TH1D::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);                                                          
 
   //connect input/output

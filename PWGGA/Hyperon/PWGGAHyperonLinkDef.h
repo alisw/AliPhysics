@@ -19,6 +19,7 @@
 #pragma link C++ class AliSigma0V0Cuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
 #pragma link C++ class AliSigma0PhotonMotherCuts+;
+#pragma link C++ class AliSigma0EventContainer+;
 
 #endif
 

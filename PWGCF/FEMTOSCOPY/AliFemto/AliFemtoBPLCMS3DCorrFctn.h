@@ -48,6 +48,7 @@ public:
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoBPLCMS3DCorrFctn(*this); }
 
   //  void SetCoulombCorrection(AliFemtoCoulomb* Correction);
 

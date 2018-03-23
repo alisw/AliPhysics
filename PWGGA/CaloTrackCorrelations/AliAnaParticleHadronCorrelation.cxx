@@ -76,6 +76,7 @@ fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
 fMinLeadHadPt(0),               fMaxLeadHadPt(0),
 fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
 fFillInvMassHisto(0),           fFillBkgBinsHisto(0),
+fFillPerSMHistograms(0),        fFillPerTCardIndexHistograms(0), fTCardIndex(-1),
 fFillTaggedDecayHistograms(0),  fDecayTagsM02Cut(0),
 fMCGenTypeMin(0),               fMCGenTypeMax(0),
 fTrackVector(),                 fMomentum(),           fMomentumIM(),
@@ -190,7 +191,8 @@ fhMassPtTrigger(0),             fhMCMassPtTrigger(),
 fhPtLeadInConeBin(),            fhPtSumInConeBin(),
 fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
 fhPtLeadConeBinMC(),            fhSumPtConeBinMC(),
-fhTrackResolution(0),           fhTrackResolutionUE(0)
+fhTrackResolution(0),           fhTrackResolutionUE(0),
+fhPtTriggerPerSM(0),            fhPtTriggerPerTCardIndex(0)
 {
   InitParameters();
   
@@ -216,6 +218,22 @@ fhTrackResolution(0),           fhTrackResolutionUE(0)
     fhZTChargedPileUp             [i] = 0 ; fhZTUeChargedPileUp           [i] = 0 ;
     fhPtTrigChargedPileUp         [i] = 0 ;
     fhDeltaPhiChargedPtA3GeVPileUp[i] = 0 ; fhDeltaEtaChargedPtA3GeVPileUp[i] = 0 ;
+  }
+  
+  for(Int_t ism = 0; ism < 20; ism++)
+  {
+    fhXEChargedPerSM             [ism] = 0 ;              
+    fhXEUeChargedPerSM           [ism] = 0 ;
+    fhDeltaPhiChargedPerSM       [ism] = 0 ;
+    fhDeltaPhiChargedPtA3GeVPerSM[ism] = 0 ;
+  }
+  
+  for(Int_t itc = 0; itc < 16; itc++)
+  {
+    fhXEChargedPerTCardIndex             [itc] = 0 ;              
+    fhXEUeChargedPerTCardIndex           [itc] = 0 ;
+    fhDeltaPhiChargedPerTCardIndex       [itc] = 0 ;
+    fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc] = 0 ;
   }
 }
 
@@ -269,7 +287,7 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 //____________________________________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Float_t ptAssoc,  Float_t ptTrig,      Int_t   bin,
                                                                               Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
-                                                                              Float_t etaAssoc, Float_t etaTrig,
+                                                                              Float_t etaAssoc, Float_t etaTrig,     Int_t sm, 
                                                                               Int_t   decayTag, Float_t hmpidSignal, Int_t  outTOF,
                                                                               Int_t   cen,      Int_t   mcTag)
 {
@@ -288,6 +306,20 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     fhDeltaEtaChargedPtA3GeV        ->Fill(ptTrig  , deltaEta, GetEventWeight());
     fhDeltaPhiChargedPtA3GeV        ->Fill(ptTrig  , deltaPhi, GetEventWeight());
     fhDeltaPhiDeltaEtaChargedPtA3GeV->Fill(deltaPhi, deltaEta, GetEventWeight());
+  }
+  
+  if( fFillPerSMHistograms )
+  {
+    fhDeltaPhiChargedPerSM[sm]->Fill(ptTrig, deltaPhi, GetEventWeight());
+    if(ptAssoc > 3 )
+      fhDeltaPhiChargedPtA3GeVPerSM[sm]->Fill(ptTrig, deltaPhi, GetEventWeight());
+  }
+
+  if( fFillPerTCardIndexHistograms )
+  {
+    fhDeltaPhiChargedPerTCardIndex[fTCardIndex]->Fill(ptTrig, deltaPhi, GetEventWeight());
+    if(ptAssoc > 3 )
+      fhDeltaPhiChargedPtA3GeVPerTCardIndex[fTCardIndex]->Fill(ptTrig, deltaPhi, GetEventWeight());
   }
   
   // Pile up studies
@@ -694,7 +726,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
 /// Fill mostly momentum imbalance related histograms.
 //______________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Float_t ptTrig,   Float_t ptAssoc,
-                                                                             Float_t deltaPhi,
+                                                                             Float_t deltaPhi, Int_t   sm,
                                                                              Int_t   cen,      Int_t   charge,
                                                                              Int_t   bin,      Int_t   decayTag,
                                                                              Int_t   outTOF,   Int_t   mcTag)
@@ -720,6 +752,10 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   fhPtHbpZTCharged    ->Fill(ptTrig, hbpZT  , GetEventWeight());
   fhPtTrigPout        ->Fill(ptTrig, pout   , GetEventWeight());
   fhPtTrigCharged     ->Fill(ptTrig, ptAssoc, GetEventWeight());
+  
+  if ( fFillPerSMHistograms ) fhXEChargedPerSM[sm]->Fill(ptTrig, xE, GetEventWeight());
+  
+  if ( fFillPerTCardIndexHistograms ) fhXEChargedPerTCardIndex[fTCardIndex]->Fill(ptTrig, xE, GetEventWeight());
   
   if((deltaPhi > 5*TMath::Pi()/6.)   && (deltaPhi < 7*TMath::Pi()/6.))
   {
@@ -856,8 +892,8 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
 //___________________________________________________________________________________________________________________
 /// Fill underlying event histograms.
 //___________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float_t ptTrig,   Float_t ptAssoc,
-                                                                           Float_t deltaPhi, Int_t cen, Int_t outTOF, Int_t   mcTag)
+void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float_t ptTrig,   Float_t ptAssoc, Float_t deltaPhi, 
+                                                                           Int_t sm, Int_t cen, Int_t outTOF, Int_t   mcTag)
 {
   fhUePart->Fill(ptTrig, GetEventWeight());
   
@@ -872,6 +908,11 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
                     uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg()));
   
   fhXEUeCharged->Fill(ptTrig, uexE, GetEventWeight());
+  
+  if ( fFillPerSMHistograms ) fhXEUeChargedPerSM[sm]->Fill(ptTrig, uexE, GetEventWeight());
+  
+  if ( fFillPerTCardIndexHistograms ) fhXEUeChargedPerTCardIndex[fTCardIndex]->Fill(ptTrig, uexE, GetEventWeight());
+
   if(deltaPhi > TMath::DegToRad()*80 && deltaPhi < TMath::DegToRad()*100)fhXEUeChargedSmallCone->Fill(ptTrig, uexE, GetEventWeight());
   if(deltaPhi > TMath::DegToRad()*70 && deltaPhi < TMath::DegToRad()*110)fhXEUeChargedMediumCone->Fill(ptTrig, uexE, GetEventWeight());
   if(deltaPhi > TMath::DegToRad()*60 && deltaPhi < TMath::DegToRad()*120)fhXEUeChargedLargeCone->Fill(ptTrig, uexE, GetEventWeight());
@@ -1502,6 +1543,10 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   if(fCorrelVzBin) nz = GetNZvertBin();
   TString sz  = "" ;
   TString tz  = "" ;
+  
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
   
   // Fill histograms for neutral clusters in mixing?
   Bool_t isoCase = OnlyIsolated() && (GetIsolationCut()->GetParticleTypeInCone() != AliIsolationCut::kOnlyCharged);
@@ -3241,6 +3286,96 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     }
   }
   
+  if ( fFillPerSMHistograms )
+  {
+    Int_t totalSM = fLastModule-fFirstModule+1;
+    
+    fhPtTriggerPerSM = new TH2F("hPtTriggerPerSM","Selected triggers #it{p}_{T} and super-module number",
+                             nptbins,ptmin,ptmax,
+                             totalSM,fFirstModule-0.5,fLastModule+0.5);
+    fhPtTriggerPerSM->SetYTitle("SuperModule ");
+    fhPtTriggerPerSM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtTriggerPerSM) ;
+    
+    for(Int_t ism = 0; ism < fNModules; ism++)
+    {
+      if ( ism < fFirstModule || ism > fLastModule ) continue;
+      
+      fhXEChargedPerSM[ism]  = new TH2F
+      (Form("hXECharged_SM%d",ism),Form("#it{x}_{#it{E}} for charged tracks, SM %d",ism),
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhXEChargedPerSM[ism]->SetYTitle("#it{x}_{#it{E}}");
+      fhXEChargedPerSM[ism]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhXEChargedPerSM[ism]) ;
+
+      fhXEUeChargedPerSM[ism]  = new TH2F
+      (Form("hXEUeCharged%s_SM%d",right.Data(),ism),Form("#it{x}_{#it{E}} for Underlying event, SM %d",ism),
+       nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhXEUeChargedPerSM[ism]->SetYTitle("#it{x}_{#it{E}}");
+      fhXEUeChargedPerSM[ism]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhXEUeChargedPerSM[ism]) ;
+      
+      fhDeltaPhiChargedPerSM[ism]  = new TH2F
+      (Form("hDeltaPhiCharged_SM%d",ism),
+       Form("#varphi_{trigger} - #varphi_{h^{#pm}} vs #it{p}_{T trigger}, SM %d",ism),
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPerSM[ism]->SetYTitle("#Delta #varphi (rad)");
+      fhDeltaPhiChargedPerSM[ism]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhDeltaPhiChargedPerSM[ism]) ;
+
+      fhDeltaPhiChargedPtA3GeVPerSM[ism]  = new TH2F
+      (Form("hDeltaPhiChargedPtA3GeV_SM%d",ism),
+       Form("#varphi_{trigger} - #varphi_{h^{#pm}} vs #it{p}_{T trigger}, #it{p}_{TA}>3 GeV/#it{c}, SM %d",ism),
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPtA3GeVPerSM[ism]->SetYTitle("#Delta #varphi (rad)");
+      fhDeltaPhiChargedPtA3GeVPerSM[ism]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhDeltaPhiChargedPtA3GeVPerSM[ism]) ;
+    }
+  } // Per SM
+
+  if ( fFillPerTCardIndexHistograms )
+  {    
+    fhPtTriggerPerTCardIndex = new TH2F("hPtTriggerPerTCardIndex","Selected triggers #it{p}_{T} and T-Card index",
+                                nptbins,ptmin,ptmax,
+                                16,-0.5,15.5);
+    fhPtTriggerPerTCardIndex->SetYTitle("Index in T-Card");
+    fhPtTriggerPerTCardIndex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtTriggerPerTCardIndex) ;
+    
+    for(Int_t itc = 0; itc < 16; itc++)
+    {      
+      fhXEChargedPerTCardIndex[itc]  = new TH2F
+      (Form("hXECharged_TC%d",itc),Form("#it{x}_{#it{E}} for charged tracks, SM %d",itc),
+       nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhXEChargedPerTCardIndex[itc]->SetYTitle("#it{x}_{#it{E}}");
+      fhXEChargedPerTCardIndex[itc]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhXEChargedPerTCardIndex[itc]) ;
+      
+      fhXEUeChargedPerTCardIndex[itc]  = new TH2F
+      (Form("hXEUeCharged%s_TC%d",right.Data(),itc),Form("#it{x}_{#it{E}} for Underlying event, SM %d",itc),
+       nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhXEUeChargedPerTCardIndex[itc]->SetYTitle("#it{x}_{#it{E}}");
+      fhXEUeChargedPerTCardIndex[itc]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhXEUeChargedPerTCardIndex[itc]) ;
+      
+      fhDeltaPhiChargedPerTCardIndex[itc]  = new TH2F
+      (Form("hDeltaPhiCharged_TC%d",itc),
+       Form("#varphi_{trigger} - #varphi_{h^{#pm}} vs #it{p}_{T trigger}, SM %d",itc),
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPerTCardIndex[itc]->SetYTitle("#Delta #varphi (rad)");
+      fhDeltaPhiChargedPerTCardIndex[itc]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhDeltaPhiChargedPerTCardIndex[itc]) ;
+      
+      fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc]  = new TH2F
+      (Form("hDeltaPhiChargedPtA3GeV_TC%d",itc),
+       Form("#varphi_{trigger} - #varphi_{h^{#pm}} vs #it{p}_{T trigger}, #it{p}_{TA}>3 GeV/#it{c}, SM %d",itc),
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc]->SetYTitle("#Delta #varphi (rad)");
+      fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+      outputContainer->Add(fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc]) ;
+    }
+  } // Per T-Card index
+  
   return outputContainer;
 }
 
@@ -3731,6 +3866,36 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       if(!okLeadHad && fSelectLeadingHadronAngle) continue;
     }
     
+    // T-Card checks
+    fTCardIndex = -1;
+    if ( fFillPerTCardIndexHistograms )
+    {
+      Int_t iclus = -1;      
+      if ( GetEMCALClusters() )
+      {
+        Int_t  clusterID = particle->GetCaloLabel(0) ;
+        
+        if ( clusterID < 0 )
+          AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
+        else
+        {
+          AliVCluster* clus = FindCluster(GetEMCALClusters(),clusterID,iclus);
+          
+          // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+          Float_t maxCellFraction = 0.;
+          Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),clus,maxCellFraction);
+          
+          Int_t ietaMax=-1, iphiMax = 0, rcuMax = 0;  
+          GetModuleNumberCellIndexes(absIdMax, GetCalorimeter(),ietaMax, iphiMax, rcuMax);
+          
+          Int_t rowTCard = Int_t(iphiMax%8);
+          Int_t colTCard = Int_t(ietaMax%2);
+          fTCardIndex    = rowTCard+8*colTCard; 
+          //printf("Cor: row TCard %d, col TCard %d, iTCard %d\n",rowTCard,colTCard,fTCardIndex);
+        }
+      } // clusters array ok
+    } // T-Card
+    
     //
     // Charged particles correlation
     //
@@ -3766,6 +3931,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     //
     fhPtTrigger->Fill(pt, GetEventWeight());
     
+    // SM by SM checks
+    if ( fFillPerSMHistograms ) fhPtTriggerPerSM->Fill(pt, particle->GetSModNumber(),GetEventWeight());
+
+    // T-Card checks
+    if ( fFillPerTCardIndexHistograms ) fhPtTriggerPerTCardIndex->Fill(pt, fTCardIndex, GetEventWeight());
     
     if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
     {
@@ -3988,7 +4158,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
   Float_t ptTrig  = aodParticle->Pt();
   Int_t    mcTag  = aodParticle->GetTag();
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
-  
+  Int_t    sm     = aodParticle->GetSModNumber();
   
   Int_t   decayTag = 0;
   if(fDecayTrigger)
@@ -4151,7 +4321,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
     if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
     
     FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                            eta, etaTrig, decayTag, track->GetHMPIDsignal(),
+                                            eta, etaTrig, sm, decayTag, track->GetHMPIDsignal(),
                                             outTOF, cenbin, mcTag);
     
     //
@@ -4172,7 +4342,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
                                 GetEventWeight());
       }
 
-      FillChargedMomentumImbalanceHistograms(ptTrig, pt, deltaPhi, cenbin, track->Charge(),
+      FillChargedMomentumImbalanceHistograms(ptTrig, pt, deltaPhi, sm, cenbin, track->Charge(),
                                              assocBin, decayTag, outTOF, mcTag);
     }
     
@@ -4188,7 +4358,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
                                   GetEventWeight());
       }
       
-      FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, cenbin, outTOF,mcTag);
+      FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, sm, cenbin, outTOF,mcTag);
     }
     
     //

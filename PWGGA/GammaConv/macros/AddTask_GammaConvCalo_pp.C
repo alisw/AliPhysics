@@ -166,11 +166,6 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
     if(trainConfig < 31 || (trainConfig>=100 && trainConfig<200)) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
-
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -200,7 +195,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -924,6 +919,11 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00062113","00200009327000008250400000","2444400000013300000","0163103100000010"); // QA
     cuts.AddCut("00062113","00200009327000008250400000","2444400040013300000","0163103100000010"); // QA, 100ns timing
     cuts.AddCut("00062113","00200009327000008250400000","2444400043013300000","0163103100000010"); // QA, 100ns timing, TM on with default EMC params
+
+  // 5 TeV run 2 PCM-PHOS setup
+  } else if (trainConfig == 383){ // QA
+    cuts.AddCut("00010113","00200009327000008250400000","2446600040013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","00200009327000008250400000","2446600040013300000","0163103100000010"); // PHI7
 
   //*************************************************************************************************
   // 5 TeV EMC setup

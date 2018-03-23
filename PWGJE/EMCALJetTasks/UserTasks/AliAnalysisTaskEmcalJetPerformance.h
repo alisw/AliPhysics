@@ -118,6 +118,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetComputeMBDownscaling(Bool_t b)                    { fComputeMBDownscaling = b; }
   void SetTrackMatchingDeltaEtaMax(Double_t deta)           { fTrackMatchingDeltaEtaMax = deta; }
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
+  void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
+  void SetMaximumMatchedJetDistance(double d)               { fMaxMatchedJetDistance = d; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -151,6 +153,9 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetType(const AliEmcalJet* jet);
   ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   Bool_t                      IsHadron(const ContributorType contributor);
+  
+  // Jet matching functions (for embedding)
+  const AliEmcalJet*          GetMatchedPartLevelJet(const AliJetContainer * jets, const AliEmcalJet * jet, const std::string & histName);
   
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
@@ -186,6 +191,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   
   // Embedding parameters
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
+  Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
+  Double_t                    fMaxMatchedJetDistance;               ///< Maximum distance between two matched jets
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -204,7 +211,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 9);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 10);
   /// \endcond
 };
 #endif

@@ -121,8 +121,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
@@ -137,8 +139,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       TString GeneratorName = gh->GetName();
       lastindexUE += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDUE = igen;
@@ -178,8 +182,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
@@ -197,6 +203,7 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       if(
          (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDUE = igen;

@@ -1,3 +1,5 @@
+AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE);
+
 AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
 {
   gSystem->Load("libANALYSIS");
@@ -61,7 +63,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   AliESDtrackCuts* esdTrackCuts = CreateCuts();
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
-    return;
+    return 0;
   } else {
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
@@ -84,14 +86,14 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
     printf("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF: From env. variable\t%f\n", downscale);
   }else {
     ::Info("AliAnalysisTaskFilteredTree__SetLowPtTrackDownscalingF", "Use default");
-    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%s\n");
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t\n");
   }
   if (gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")) {
     Float_t downscale=TString(gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")).Atof();
     task->SetLowPtV0DownscaligF(downscale);
     printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF:From enc. variable\t%f\n",downscale);
   }else {
-    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t%f\n");
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t\n");
   }
   //task->Dump();
   //task->SetProcessAll(kFALSE);
@@ -148,7 +150,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   return task;
 }
 
-AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreateCuts(Bool_t fieldOn, Bool_t hists)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   if(!esdTrackCuts) return 0;

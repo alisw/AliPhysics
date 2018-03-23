@@ -40,6 +40,7 @@ class AliAnTOFtrack {
   Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
   Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
   Float_t fT0TrkTime;                //T0 best for the event
+  Double32_t fT0TrkSigma;            //[0,1048.576,20]  T0 best resolution for the event
   Double32_t fTOFchan;               //[-1.5,262142.5,18]  Channel of the matched track
   Float_t fEta;                      //Eta distribution of the track
   Double32_t fPhi;                   //[0,6.5536,16]  Phi distribution of the track
@@ -70,11 +71,11 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the diffenece between the track time and the expected one
-  Float_t GetDeltaT(const UInt_t id);
+  Float_t GetDeltaT(const UInt_t id) const;
 
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
-  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo);
+  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo) const;
 
   ///
   /// Method to get the resolution on T0 based on the expected sigma of electrons
@@ -84,87 +85,102 @@ class AliAnTOFtrack {
   /// Method to get the track beta
   Double_t GetBeta() const { return fLength / ((fTOFTime - fT0TrkTime) * CSPEED); }
 
+  ///
+  /// Method to get the track gamma * beta
+  Double_t GetGammaBeta() const
+  {
+    Double_t beta = GetBeta();
+    return beta / (TMath::Sqrt(1 - beta * beta));
+  }
+
+  ///
+  /// Method to get the track mass
+  Double_t GetTOFMass(const Double_t p) const { return p / GetGammaBeta(); }
+  ///
+  /// Method to get the track mass from the momentum at vertex
+  Double_t GetTOFMass() const { return GetTOFMass(GetMomentum()); }
+
   //T0 Methods
 
   ///
   /// Method to get if the T0 time is T0 TOF
-  Bool_t IsT0TOF(const Bool_t exclusive = kFALSE);
+  Bool_t IsT0TOF(const Bool_t exclusive = kFALSE) const;
 
   ///
   /// Method to get if the T0 time is T0 T0A
-  Bool_t IsT0A(const Bool_t exclusive = kFALSE);
+  Bool_t IsT0A(const Bool_t exclusive = kFALSE) const;
 
   ///
   /// Method to get if the T0 time is T0 T0C
-  Bool_t IsT0C(const Bool_t exclusive = kFALSE);
+  Bool_t IsT0C(const Bool_t exclusive = kFALSE) const;
 
   ///
   /// Method to get if the T0 time is T0 Fill
-  Bool_t IsT0Fill();
+  Bool_t IsT0Fill() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF and T0 T0A
-  Bool_t IsT0TOF_T0A();
+  Bool_t IsT0TOF_T0A() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF or T0 T0A
-  Bool_t IsOrT0TOF_T0A();
+  Bool_t IsOrT0TOF_T0A() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF and T0 T0C
-  Bool_t IsT0TOF_T0C();
+  Bool_t IsT0TOF_T0C() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF or T0 T0C
-  Bool_t IsOrT0TOF_T0C();
+  Bool_t IsOrT0TOF_T0C() const;
 
   ///
   /// Method to get if the T0 time is T0 T0A and T0 T0C
-  Bool_t IsT0A_T0C();
+  Bool_t IsT0A_T0C() const;
 
   ///
   /// Method to get if the T0 time is T0 T0A or T0 T0C
-  Bool_t IsOrT0A_T0C();
+  Bool_t IsOrT0A_T0C() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF, T0 T0A and T0 T0C
-  Bool_t IsT0TOF_T0A_T0C();
+  Bool_t IsT0TOF_T0A_T0C() const;
 
   ///
   /// Method to get if the T0 time is T0 TOF or T0 T0A or T0 T0C
-  Bool_t IsOrT0TOF_T0A_T0C();
+  Bool_t IsOrT0TOF_T0A_T0C() const;
 
   // Cut flags
 
   ///
   /// Method to check the standard cuts
-  Bool_t PassStdCut();
+  Bool_t PassStdCut() const;
 
   ///
   /// Method to check all the cut variations
-  Bool_t PassCut(const Int_t cut = -1);
+  Bool_t PassCut(const Int_t cut = -1) const;
 
   // TPC PID
 
   ///
   /// TPC PID for electrons
-  Bool_t IsTPCElectron();
+  Bool_t IsTPCElectron() const;
 
   ///
   /// Method to check if it is TPC Pi K P
-  Bool_t IsTPCPiKP(const UInt_t i);
+  Bool_t IsTPCPiKP(const UInt_t i) const;
 
   ///
   /// Method to check that in TPC the PID is for Pi K P
-  Bool_t IsTPCPiKP();
+  Bool_t IsTPCPiKP() const;
 
   ///
   /// Method to check consistency between TOF and TPC for Pi K P to remove mismatch
-  Bool_t ConsistentTPCTOF();
+  Bool_t ConsistentTPCTOF() const;
 
   ///
   /// Method to get the particle charge
-  Bool_t IsNegative();
+  Bool_t IsNegative() const;
 
   ///
   /// Method to get the particle theta
@@ -176,7 +192,7 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the particle momentum
-  void Print()
+  void Print() const
   {
     cout << "fTrkMask " << fTrkMask << endl;
     cout << "fTPCPIDMask " << fTPCPIDMask << endl;

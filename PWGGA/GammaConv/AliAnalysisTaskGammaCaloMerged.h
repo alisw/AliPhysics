@@ -214,6 +214,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusBGPtvsSource;                         //!
     TH2F**                  fHistoTrueClusGammaPtvsSource;                      //!
     TH2F**                  fHistoTrueClusElectronPtvsSource;                   //!
+//    TH2F**                  fHistoTrueClusElectronPtvsMotherID;                 //!
+//    TH2F**                  fHistoTrueClusElectronPtvsTopMotherID;              //!
+//    TH2F**                  fHistoTrueClusElectronPtvsConvPhotonTopMotherID;    //!
     TH1F**                  fHistoTrueMergedMissedPDG;                          //!
 
     // MC validated reconstructed quantities mesons
@@ -277,7 +280,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 26);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 27);
 };
 
 #endif

@@ -14,6 +14,12 @@
 // function to set TPC OCDB parameters
 int ConfigOCDB();
 
+// functions to set up the trains
+void SetupCalibTaskTrain1(TObject* task, const char* options="ALL");
+void SetupCalibTaskTrainAlign(TObject* task, const char* options="ALL");
+void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL");
+AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL");
+
 Int_t debugLevel=0;
 Int_t streamLevel=0;
 
@@ -31,7 +37,7 @@ Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const cha
 }
 
 //_____________________________________________________________________________
-AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL")
+AliAnalysisTask  *AddTaskTPCCalib(const char* options)
 {
   //
   // add calibration task
@@ -145,7 +151,7 @@ void AddCalibCalib(TObject* task){
 }
 
 //_____________________________________________________________________________
-void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "calibTimeGain"){
+void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name = "calibTimeGain"){
   //
   //  Responsible: Alexander Kalweit
   //  Description: Time Gain calibration
@@ -203,7 +209,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
 
   // ===| get reco param                     |==================================
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
+  const AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
   const Int_t spec = recoParam->GetEventSpecie();
 
   Float_t minTPCsignalN = spec&AliRecoParam::kLowMult?100.:90.;
@@ -358,7 +364,7 @@ void AddCalibCosmic(TObject* task){
 
 
 //_____________________________________________________________________________
-void SetupCalibTaskTrain1(TObject* task, const char* options="ALL"){
+void SetupCalibTaskTrain1(TObject* task, const char* options){
   //
   // Setup tasks for calibration train
   //
@@ -368,7 +374,7 @@ void SetupCalibTaskTrain1(TObject* task, const char* options="ALL"){
   if (isOptionSelected(":CalibAlignInterpolation",options)) AddCalibAlignInterpolation(task);
 }
 
-void SetupCalibTaskTrainAlign(TObject* task, const char* options="ALL"){
+void SetupCalibTaskTrainAlign(TObject* task, const char* options){
   //
   // Setup tasks for calibration train
   //
@@ -377,7 +383,7 @@ void SetupCalibTaskTrainAlign(TObject* task, const char* options="ALL"){
   //AddCalibCosmic(task);
 }
 
-void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL"){
+void SetupCalibTaskTrainCluster(TObject* task, const char* options){
   //
   // Setup tasks for calibration train
   //
@@ -397,7 +403,7 @@ int ConfigOCDB(){
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   param->ReadGeoMatrices();
   //
-  AliMagF* magF= TGeoGlobalMagField::Instance()->GetField();
+  AliMagF* magF= (AliMagF*)(TGeoGlobalMagField::Instance()->GetField());
   if (print_info) ::Info("AddTaskTPCCalib", "\n\nSET EXB FIELD\t\n\n");
   AliTPCcalibDB::Instance()->SetExBField(magF);
   //
@@ -439,7 +445,7 @@ int ConfigOCDB(){
   if (beamType.Contains("p-p")) {fluxType=0;}
   if (beamType.Contains("Pb-Pb") || beamType.Contains("A-A")) {fluxType=1;}
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
-  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
+  ::Info("AddTaskTPCCalib", "Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   if (print_info) tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);

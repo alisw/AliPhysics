@@ -130,16 +130,22 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isAOD = false, bool isMC = false,
   spCuts->SetExtendedQA(isQA);
   spCuts->InitCutHistograms();
 
+  AliSigma0SingleParticleCuts *spCutsProton =
+      AliSigma0SingleParticleCuts::DefaultCuts();
+  spCutsProton->SetIsMC(isMC);
+  spCutsProton->SetExtendedQA(isQA);
+  spCutsProton->InitCutHistograms();
+
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::Sigma0Cuts();
   v0Cuts->SetIsMC(isMC);
-  v0Cuts->SetIsRun1(isRun1);
+  v0Cuts->SetPileUpRejection(!isRun1);
   v0Cuts->SetSingleParticleCuts(spCuts);
   v0Cuts->SetExtendedQA(isQA);
   v0Cuts->InitCutHistograms("Sigma0");
 
   AliSigma0V0Cuts *v0LambdaCuts = AliSigma0V0Cuts::DefaultCuts();
   v0LambdaCuts->SetIsMC(isMC);
-  v0LambdaCuts->SetIsRun1(isRun1);
+  v0LambdaCuts->SetPileUpRejection(!isRun1);
   v0LambdaCuts->SetSingleParticleCuts(spCuts);
   v0LambdaCuts->SetExtendedQA(isQA);
   v0LambdaCuts->InitCutHistograms("Lambda");
@@ -157,16 +163,31 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isAOD = false, bool isMC = false,
   photonMotherCuts->SetSigmaSideband(0.015, 0.05);
   photonMotherCuts->InitCutHistograms();
 
+  AliSigma0EventContainer *evCont = new AliSigma0EventContainer();
+  evCont->SetIsMC(isMC);
+  evCont->SetExtendedQA(isQA);
+  evCont->SetSigmaMass(1.192642);
+  evCont->SetSigmaMassCut(0.005);
+  evCont->SetSigmaSideband(0.015, 0.05);
+  evCont->SetProtonMixingDepth(10);
+  evCont->SetLambdaMixingDepth(10);
+  evCont->SetPhotonMixingDepth(10);
+  evCont->SetSigmaMixingDepth(25);
+  //  evCont->SetZvertexBins(10, -10, 2);
+  evCont->InitCutHistograms();
+
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
   task->SelectCollisionCandidates(evCuts->GetTrigger());
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetEventCuts(evCuts);
   task->SetSingleParticleCuts(spCuts);
+  task->SetProtonCuts(spCutsProton);
   task->SetV0Cuts(v0Cuts);
   task->SetV0LambdaCuts(v0LambdaCuts);
   task->SetPhotonCuts(photonCuts);
   task->SetPhotonMotherCuts(photonMotherCuts);
+  task->SetEventContainer(evCont);
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   mgr->AddTask(task);

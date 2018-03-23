@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliFemtoBaryoniaAnalysis+;
+#pragma link C++ class AliFemtoMultCorrAnalysis+;
 #pragma link C++ class AliFemtoTrio+;
 #pragma link C++ class AliFemtoTrioCut+;
 #pragma link C++ class AliFemtoTrioMinvFctn+;
@@ -98,4 +99,16 @@
 #pragma link C++ class AliFemtoBetaTPairCut+;
 #pragma link C++ class AliFemtoCutMonitorPairBetaT+;
 #pragma link C++ class AliFemtoCutMonitorXi+;
+
+#pragma link C++ class AliFemtoConfigObject-;
+#pragma link C++ class AliFemtoConfigObject::Painter;
+#pragma link C++ class AliFemtoConfigObject::BuildMap;
+#pragma link C++ class AliFemtoConfigObject::list_iterator;
+#pragma link C++ class AliFemtoConfigObject::map_iterator;
+#pragma link C++ class std::map<std::string, AliFemtoConfigObject>;
+#pragma link C++ class std::vector<AliFemtoConfigObject>;
+#pragma link C++ class std::vector<AliFemtoConfigObject>::iterator;
+#pragma link C++ class std::vector<std::pair<double, double>>;
+// ^ these std:: classes required here for use in ROOT-5 macros (ROOT-6 should be ok)
+
 #endif

@@ -146,6 +146,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhTrackPhi(0x0),
+  fhTrackPhi_Cut(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -302,6 +303,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhTrackPhi(0x0),
+  fhTrackPhi_Cut(0x0),
   fh2PtRatio(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
@@ -536,6 +538,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter);
     fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
     fOutput->Add(fhTrackPhi);
+    fhTrackPhi_Cut= new TH1F("fhTrackPhi_Cut", "fhTrackPhi_Cut",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi_Cut);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
     fhSubJettiness1_FJ_KT= new TH1D("fhSubJettiness1_FJ_KT","fhSubJettiness1_FJ_KT",400,-2,2);
@@ -726,6 +730,10 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter_1);
     fhEventCounter_2= new TH1F("fhEventCounter_2", "Event Counter Particle Level", 15,0.5,15.5);
     fOutput->Add(fhEventCounter_2);
+    fhTrackPhi= new TH1F("fhTrackPhi", "fhTrackPhi",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi);
+    fhTrackPhi_Cut= new TH1F("fhTrackPhi_Cut", "fhTrackPhi_Cut",780 , -7, 7);   
+    fOutput->Add(fhTrackPhi_Cut);
   }
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
@@ -804,6 +812,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
 	  if (Track_Particles->Pt()<0.15) continue;
 	  fhTrackPhi->Fill(Track_Particles->Phi());
+	  if (Track_Particles->Pt()>=4.0) fhTrackPhi_Cut->Fill(Track_Particles->Phi());
 	}
       }
     }
@@ -816,6 +825,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if(TMath::Abs(Track_Particles->Eta())>0.9) continue;
 	  if (Track_Particles->Pt()<0.15) continue;
 	  fhTrackPhi->Fill(Track_Particles->Phi());
+	  if (Track_Particles->Pt()>=4.0) fhTrackPhi_Cut->Fill(Track_Particles->Phi());
 	}
       }
     }
@@ -1709,7 +1719,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Option==9 Subjet1 Leading track Pt
 
   
-  
+  Algorithm=fReclusteringAlgorithm;
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
@@ -1764,7 +1774,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_onepassca();
     } 
     else{
-      Algorithm=fReclusteringAlgorithm;
+      //Algorithm=fReclusteringAlgorithm;
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder JetFinder("Nsubjettiness");
       JetFinder.SetJetMaxEta(0.9-fJetRadius);

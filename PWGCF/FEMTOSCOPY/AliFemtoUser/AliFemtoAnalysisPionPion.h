@@ -176,26 +176,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t output_settings;
   Bool_t is_mc_analysis;
 
-/*
-  AnalysisParams():
-    vertex_bins(8)
-  , vertex_min(-8)
-  , vertex_max(8)
-
-  , mult_bins(4)
-  , mult_min(0)
-  , mult_max(10000)
-
-  , pion_type_1(kNone)
-  , pion_type_2(kNone)
-
-  , num_events_to_mix(10)
-  , min_coll_size(100)
-  , enable_pair_monitors(kTRUE)
-  , group_output_objects(kTRUE)
-  , is_mc_analysis(kFALSE)
-  {}
-*/
+  /// Default Values
+  AnalysisParams();
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -205,17 +187,19 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 /// The expected way to use this class
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
-  // EVENT
-  Float_t event_MultMin,
-          event_MultMax;
+  Bool_t event_use_basic;
 
-  Float_t event_CentralityMin,
+  // EVENT
+  Int_t event_MultMin,
+        event_MultMax;
+
+  double event_CentralityMin,
           event_CentralityMax;
 
-  Float_t event_VertexZMin,
+  double event_VertexZMin,
           event_VertexZMax;
 
-  Float_t event_EP_VZeroMin,
+  double event_EP_VZeroMin,
           event_EP_VZeroMax;
 
   Int_t   event_TriggerSelection;
@@ -277,10 +261,10 @@ struct AliFemtoAnalysisPionPion::CutParams {
   // Float_t pair_MinAvgSeparationPos;
   // Float_t pair_MinAvgSeparationNeg;
 
-  Float_t pair_delta_eta_min
-        , pair_delta_phi_min
-        , pair_phi_star_radius
-        ;
+  Float_t pair_delta_eta_min,
+          pair_delta_phi_min,
+          pair_phi_star_radius;
+
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
@@ -289,4 +273,3 @@ struct AliFemtoAnalysisPionPion::CutParams {
 };
 
 #endif
-

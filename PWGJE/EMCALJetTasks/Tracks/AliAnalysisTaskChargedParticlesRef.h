@@ -248,7 +248,7 @@ protected:
    */
   bool IsExoticsTrigger(const TString &trg);
 
-  AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection *fTrackCuts;                ///< Standard track selection
 
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1

@@ -744,6 +744,10 @@ const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
       return "TRK";
     case kVZERO:
       return "V0M";
+    case kV0C:
+      return "V0C";
+    case kV0A:
+      return "V0A";
     case kZDC:
       return "ZDC";
     default:

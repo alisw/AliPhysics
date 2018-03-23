@@ -88,6 +88,9 @@ public:
     //2.76 TeV reanalysis cuts
     void SetCutUse276TeVV0CosPA ( Bool_t lCut ) { fCutUse276TeVV0CosPA = lCut; }
     
+    //experimental TOF 3-sigma cut (no weak decay correction)
+    void SetCutUseTOFUnchecked ( Bool_t lCut ) { fCutUseTOFUnchecked = lCut; }
+    
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
@@ -213,6 +216,9 @@ public:
     //2.76 TeV reanalysis cuts
     Bool_t GetCutUse276TeVV0CosPA () const { return fCutUse276TeVV0CosPA; }
     
+    //experimental TOF 3-sigma cut (no weak decay correction)
+    Bool_t GetCutUseTOFUnchecked () const { return fCutUseTOFUnchecked; }
+    
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
@@ -319,6 +325,8 @@ private:
     
     Bool_t fCutUse276TeVV0CosPA; //use 2.76 TeV-like variable V0 CosPA (experimental)
     
+    Bool_t fCutUseTOFUnchecked; //experimental TOF 3-sigma cut (no weak decay correction)
+    
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
@@ -372,7 +380,7 @@ private:
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     
-    ClassDef(AliCascadeResult, 30)
+    ClassDef(AliCascadeResult, 31)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -403,5 +411,6 @@ private:
     // 28 - implementation of 276TeVV0CosPA cut (variable with lambda p)
     // 29 - implementation of 3D DCA cascade to PV cut, weighted single-track DCA to PV cuts
     // 30 - implementation of variable DCA cascade daughters cut
+    // 31 - implementation of TOF experimental cut (no weak decay trajectory correction)
 };
 #endif

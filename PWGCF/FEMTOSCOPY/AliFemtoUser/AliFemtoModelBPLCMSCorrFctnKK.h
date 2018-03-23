@@ -41,6 +41,7 @@ class AliFemtoModelBPLCMSCorrFctnKK : public AliFemtoModelCorrFctn {
 
   virtual void Write();
   virtual TList* GetOutputList();
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelBPLCMSCorrFctnKK(*this); }
 
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
   void SetUseRPSelection(unsigned short aRPSel);

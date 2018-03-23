@@ -46,7 +46,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fVertex(0),
 	fCent(0),
 	fCBin(0),
-	fNJacek(0),
 	fEffMode(0),
 	fEffFilterBit(0),
 	fHMG(0),
@@ -81,17 +80,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
 
-	fNCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
-	fCentBin = AliJFFlucAnalysis::CentBin;
-
-	fNJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
-	fPttJacek = AliJFFlucAnalysis::pttJacek;
-
-	for(int icent=0; icent<fNCent; icent++){
-		for(int isub=0; isub<2; isub++){
+	for(UInt_t icent = 0; icent < NCentBin; icent++)
+		for(UInt_t isub = 0; isub < 2; isub++)
 			h_phi_module[icent][isub] = NULL;
-		}
-	}
 }
 
 //________________________________________________________________________
@@ -103,7 +94,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fVertex(0),
 	fCent(0),
 	fCBin(0),
-	fNJacek(0),
 	fEffMode(0),
 	fEffFilterBit(0),
 	fHMG(0),
@@ -140,21 +130,16 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
 
-	fNCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
-	fCentBin = AliJFFlucAnalysis::CentBin;
-
-	fNJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
-	fPttJacek = AliJFFlucAnalysis::pttJacek;
-
-	for(int icent=0; icent<fNCent; icent++){
-		for(int isub=0; isub<2; isub++){
+	for(UInt_t icent = 0; icent < NCentBin; icent++)
+		for(UInt_t isub = 0; isub < 2; isub++)
 			h_phi_module[icent][isub] = NULL;
-		}
-	}
 }
 
-Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
+//Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
+Double_t AliJFFlucAnalysis::CentBin[CENTN+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
+UInt_t AliJFFlucAnalysis::NCentBin = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
 Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
+UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
 
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
@@ -165,7 +150,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fVertex(a.fVertex),
 	fCent(a.fCent),
 	fCBin(a.fCBin),
-	fNJacek(a.fNJacek),
 	fEffMode(a.fEffMode),
 	fEffFilterBit(a.fEffFilterBit),
 	fHMG(a.fHMG),
@@ -223,7 +207,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fBin_hh .Set("NHH","NHH","NHH:%d", AliJBin::kSingle).SetBin(kNH);
 	fBin_kk .Set("KK","KK","KK:%d", AliJBin::kSingle).SetBin(nKL);
 
-	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
+	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NCentBin);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
 	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(28);
 
@@ -255,7 +239,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fVertexBin
 		<< "END" ;
 	fh_pt
-		<< TH1D("hChargedPtJacek", "", fNJacek, fPttJacek)
+		<< TH1D("hChargedPtJacek", "", AliJFFlucAnalysis::NpttJacek, AliJFFlucAnalysis::pttJacek)
 		<< fHistCentBin
 		<< "END" ;
 
@@ -768,18 +752,26 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 	Long64_t ntracks = fInputList->GetEntriesFast();
 	for( Long64_t it=0; it< ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
+		Double_t eta = itrack->Eta();
+		Double_t phi = itrack->Phi();
+
+		Double_t phi_module_corr = 1.0;
+		int isub = (int)(eta > 0);
+		if(flags & FLUC_PHI_MODULATION){
+			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi ) )  );
+			if(flags & FLUC_PHI_INVERSE)
+				phi_module_corr = 1.0/phi_module_corr;
+		}
+
 		Double_t pt = itrack->Pt();
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-		Double_t eta = itrack->Eta();
-		int isub = (int)(eta > 0);
-		Double_t phi = itrack->Phi();
 		if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){
 			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
 			fh_pt[fCBin]->Fill(pt, 1./ effCorr );
 			if( eta < 0 )
-				fh_phi[fCBin][0]->Fill( phi, 1./effCorr) ;
+				fh_phi[fCBin][0]->Fill( phi, phi_module_corr/effCorr);
 			if( eta > 0 )
-				fh_phi[fCBin][1]->Fill( phi, 1./effCorr) ;
+				fh_phi[fCBin][1]->Fill( phi, phi_module_corr/effCorr);
 		}
 	}
 	for(int iaxis=0; iaxis<3; iaxis++)
@@ -814,7 +806,7 @@ TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int har
 		}
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent );
 
-		Double_t tf = 1.0/effCorr*phi_module_corr;
+		Double_t tf = phi_module_corr/effCorr;
 		Qn += TComplex( tf*TMath::Cos(ih*phi), tf*TMath::Sin(ih*phi) );
 		Sub_Ntrk += tf;
 	}
@@ -861,7 +853,7 @@ TComplex AliJFFlucAnalysis::Get_Qn_pt(Double_t eta1, Double_t eta2, int harmonic
 				Double_t pt = itrack->Pt();
 				Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 
-				Double_t tf = 1.0/effCorr*phi_module_corr;
+				Double_t tf = phi_module_corr/effCorr;
 				Qn += TComplex(tf*TMath::Cos(nh*phi),tf*TMath::Sin(nh*phi));
 				Sub_Ntrk += tf;
 			}
@@ -922,7 +914,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			for(int ik=0; ik<nKL; ik++){
 				q[ik] = TComplex(tf*TMath::Cos(ih*phi),tf*TMath::Sin(ih*phi));
 				QvectorQC[ih][ik] += q[ik];
-				tf *= 1.0/effCorr*phi_module_corr;
+				tf *= phi_module_corr/effCorr;
 			}
 			//this is for normalized SC ( denominator needs an eta gap )
 			if(TMath::Abs(eta) > fQC_eta_gap_half){
@@ -963,8 +955,7 @@ void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi
 }
 
 int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
-	int NCent = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
-	for(int iCbin = 0; iCbin < NCent; iCbin++){
+	for(UInt_t iCbin = 0; iCbin < NCentBin; iCbin++){
 		if(fCent > CentBin[iCbin] && fCent < CentBin[iCbin+1])
 			return iCbin;
 	}

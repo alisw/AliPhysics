@@ -134,9 +134,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
 
   // Pi,K,p with good hypothesis in tracking
   TH3F* fHistEtaPhiPtGoodHypTPCsel[3];             //!<!  histo of eta,phi,pt (TPC cuts)
@@ -176,6 +176,10 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistOneOverPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  1/Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselITSrefBadHyp[AliPID::kSPECIESC];  //!<!  1/Pt residuals for ITS+TPC tracks tracked with bad mass hypothesis (for each species)
+  TH2F* fHistPzResidVsPtTPCselAll;                       //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsPtTPCselITSrefAll;                 //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsEtaTPCselAll;                      //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsEtaTPCselITSrefAll;                //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
 
   TH3F* fHistEtaPhiPtTPCselITSrefGood;        //!<!  histo of eta,phi,pt - good MC tracks
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
@@ -213,7 +217,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,9);
+  ClassDef(AliAnalysisTaskCheckESDTracks,10);
 };
 
 

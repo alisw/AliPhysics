@@ -68,6 +68,9 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
+fMaxVtxChi2PileupMV(5.),
+fMinWDzPileupMV(15.),
+fRejectPlpFromDiffBCMV(kFALSE),
 fTriggerMask(AliVEvent::kAnyINT),
 fUseOnlyOneTrigger(kFALSE),
 fTrackCuts(0),
@@ -140,6 +143,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
+  fMaxVtxChi2PileupMV(source.fMaxVtxChi2PileupMV),
+  fMinWDzPileupMV(source.fMinWDzPileupMV),
+  fRejectPlpFromDiffBCMV(source.fRejectPlpFromDiffBCMV),
   fTriggerMask(source.fTriggerMask),
   fUseOnlyOneTrigger(source.fUseOnlyOneTrigger),
   fTriggerClass(),
@@ -233,6 +239,9 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
+  fMaxVtxChi2PileupMV=source.fMaxVtxChi2PileupMV;
+  fMinWDzPileupMV=source.fMinWDzPileupMV;
+  fRejectPlpFromDiffBCMV=source.fRejectPlpFromDiffBCMV;
   fTriggerMask=source.fTriggerMask;
   fUseOnlyOneTrigger=source.fUseOnlyOneTrigger;
   fTriggerClass[0]=source.fTriggerClass[0];
@@ -684,6 +693,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
   else if(fOptPileup==kRejectMVPileupEvent){
     AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(fMinContrPileup);  // min. multiplicity of the pile-up vertex to consider
+    utils.SetMaxPlpChi2MV(fMaxVtxChi2PileupMV); // max chi2 per contributor of the pile-up vertex to consider.
+    utils.SetMinWDistMV(fMinWDzPileupMV);       // minimum weighted distance in Z between 2 vertices (i.e. (zv1-zv2)/sqrt(sigZv1^2+sigZv2^2) )
+    utils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV); // vertex with |BCID|>2 will trigger pile-up (based on TOF)
     Bool_t isPUMV = utils.IsPileUpMV(event);
     if(isPUMV) {
       if(accept) fWhyRejection=1;
@@ -1149,13 +1162,14 @@ void AliRDHFCuts::PrintAll() const {
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
   if(fUseCentrality>0) {
     TString estimator="";
-    if(fUseCentrality==1) estimator = "V0";
-    if(fUseCentrality==2) estimator = "Tracks";
-    if(fUseCentrality==3) estimator = "Tracklets";
-    if(fUseCentrality==4) estimator = "SPD clusters outer"; 
-    if(fUseCentrality==5) estimator = "ZNA"; 
-    if(fUseCentrality==6) estimator = "ZPA"; 
-    if(fUseCentrality==7) estimator = "V0A"; 
+    if(fUseCentrality==kCentV0M) estimator = "V0";
+    if(fUseCentrality==kCentTRK) estimator = "Tracks";
+    if(fUseCentrality==kCentTKL) estimator = "Tracklets";
+    if(fUseCentrality==kCentCL1) estimator = "SPD clusters outer";
+    if(fUseCentrality==kCentZNA) estimator = "ZNA"; 
+    if(fUseCentrality==kCentZPA) estimator = "ZPA"; 
+    if(fUseCentrality==kCentV0A) estimator = "V0A";
+    if(fUseCentrality==kCentCL0) estimator = "SPD clusters inner";
     printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
@@ -1334,6 +1348,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
     cent=multSelection->GetMultiplicityPercentile("ZNA");
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
+  }else if(estimator==kCentCL0){
+    cent=multSelection->GetMultiplicityPercentile("CL0");
   }else {
     AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
     return cent;

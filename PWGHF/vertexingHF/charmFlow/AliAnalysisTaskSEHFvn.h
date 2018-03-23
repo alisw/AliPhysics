@@ -19,6 +19,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
+#include "AliEventCuts.h"
 
 class TH1F;
 class TH2F;
@@ -32,7 +33,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
 
  public:
 
-  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
+  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpiFromDstar}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
   enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // q2 for Event Shape to be calculated in the task
@@ -128,6 +129,26 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
   void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
 
+  void Setq2PercentileSelection(TString splinesfilepath);
+  
+  //additional event cuts for Pb-Pb 2015 
+  void SetUseCentralityMultiplicityCorrelationCut(Bool_t strongcuts=kFALSE) {
+    
+    fEnableCentralityCorrCuts=kTRUE;
+    fEnableCentralityMultiplicityCorrStrongCuts=strongcuts;
+    
+    fEventCuts.SetupLHC15o();
+    fEventCuts.SetManualMode();
+    if(strongcuts) {
+      fEventCuts.fUseVariablesCorrelationCuts=true;
+      fEventCuts.fUseStrongVarCorrelationCut=true;
+    }
+  }
+  
+  AliEventCuts& GetAliEventCut() {
+    return fEventCuts;
+  }
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -150,13 +171,13 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
-  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg,Double_t q2VecFullTPC[2],Double_t q2VecPosTPC[2],Double_t q2VecNegTPC[2],Double_t multQvecTPC[3]) const;
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos, Double_t &q2TPCneg, Double_t q2VecFullTPC[2], Double_t q2VecPosTPC[2], Double_t q2VecNegTPC[2], Double_t multQvecTPC[3], std::vector<Int_t>& labrejtracks) const;
   void CreateSparseForEvShapeAnalysis();
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
   Double_t GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2], Double_t multQvec, Int_t nDauRemoved, Double_t qVecDau[2], Double_t corrRec[2], Double_t LbTwist[2], Bool_t isTwistApplied);
   void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, std::vector<Int_t> daulab);
-
+  
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
@@ -211,10 +232,15 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
   Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
-  
+  Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
+  TList* fq2SplinesList[6]; //lists of splines used to compute the q2 percentile
+  Bool_t fEnableCentralityCorrCuts; //enable V0M - CL0 centrality correlation cuts
+  Bool_t fEnableCentralityMultiplicityCorrStrongCuts; //enable centrality vs. multiplicity correlation cuts
+  AliEventCuts fEventCuts; //Event cut object for centrality correlation event cuts
+
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,14); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,17); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

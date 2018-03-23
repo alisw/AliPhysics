@@ -2,10 +2,11 @@
 #define ALIEMCALCONTAINERUTILS_H
 
 #include <string>
+#include <map>
 
 #include <TObjArray.h>
 
-class AliVEvent;
+#include <AliVEvent.h>
 
 /**
  * @namespace AliEmcalContainerUtils
@@ -47,6 +48,11 @@ class AliEmcalContainerUtils {
     kCluster = 1,                  //!<! Cluster container
     kTrack = 2,                    //!<! Track container
   };
+
+  // YAML Configuration helpers
+  /// Relates string to the physics selection enumeration for %YAML configuration
+  static const std::map <std::string, AliVEvent::EOfflineTriggerTypes> fgkPhysicsSelectionMap; //!<!
+  static UInt_t DeterminePhysicsSelectionFromYAML(const std::vector<std::string> & selections);
 
   // Utility functions
   static std::string DetermineUseDefaultName(InputObject_t objType);

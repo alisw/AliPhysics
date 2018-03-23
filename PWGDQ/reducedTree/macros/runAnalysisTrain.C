@@ -283,7 +283,8 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
     for (Int_t i=0; i<outputs->GetEntries(); i++) {
       TFile* tmpOut = (TFile*)mgr->OpenFile((AliAnalysisDataContainer*)outputs->At(i), "UPDATE", kTRUE);
       if (!tmpOut) continue;
-      if (((TString)tmpOut->GetName()).Contains("dstTree")) continue;
+      TString tmpOutName = tmpOut->GetName();
+      if (tmpOutName.Contains("dstTree")) continue;
       if (!histArr->GetEntries()) continue;
       cout << "Writing histograms to " << tmpOut->GetName() << endl;
       for (Int_t j=0; j<histArr->GetEntries(); j++) histArr->At(j)->Write();

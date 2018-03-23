@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskFBFqa(Char_t *name, Bool_t debug=kFALSE)
+AliGlobalFBFqa* AddTaskFBFqa(const Char_t *name, Bool_t debug=kFALSE)
 {
   // Creates a QA task to explore main observables related to FLOW and BALANCE FUNCTION analysis
   
@@ -16,7 +16,7 @@ AliAnalysisTaskSE* AddTaskFBFqa(Char_t *name, Bool_t debug=kFALSE)
   //gROOT->LoadMacro("AliGlobalFBFqa.cxx++");
   AliGlobalFBFqa *taskChk = new AliGlobalFBFqa( name );
   if(debug)
-    taskChkMB->SetDebugON();
+    taskChk->SetDebugON();
   mgr->ConnectInput (taskChk,0,cinput1);
   AliAnalysisDataContainer *outListMB = mgr->CreateContainer(name,TList::Class(),
                                        AliAnalysisManager::kOutputContainer, 

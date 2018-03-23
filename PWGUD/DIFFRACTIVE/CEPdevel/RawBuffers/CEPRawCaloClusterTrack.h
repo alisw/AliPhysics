@@ -47,7 +47,7 @@ class CEPRawCaloClusterTrack : public TObject {
     Float_t         GetCaloClusterIsPHOS()            const { return fIsPHOS;      }
 
 
-    ClassDef(CEPRawCaloClusterTrack,1)
+    ClassDef(CEPRawCaloClusterTrack,1);
 };
 
 #endif

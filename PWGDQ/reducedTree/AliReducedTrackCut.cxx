@@ -22,6 +22,9 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fRejectKinks(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
+  fCutOnTrackQualityMap(0),
+  fCutOnTrackQualityMapExclude(0),
+  fUseANDonTrackQualityMap(kTRUE),
   fCutOnTrackFilterMap(0),
   fUseANDonTrackFilterMap(kTRUE),
   fRejectPureMC(kFALSE),
@@ -46,6 +49,9 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fRejectKinks(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
+  fCutOnTrackQualityMap(0),
+  fCutOnTrackQualityMapExclude(0),
+  fUseANDonTrackQualityMap(kTRUE),
   fCutOnTrackFilterMap(0),
   fUseANDonTrackFilterMap(kTRUE),
   fRejectPureMC(kFALSE),
@@ -95,6 +101,23 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
 
    // reject pure MC tracks
    if(fRejectPureMC && ((AliReducedBaseTrack*)obj)->GetMCFlags()) return kFALSE;
+   
+   // apply cut on the track quality map (see AliReducedBaseTrack::fQualityFlags for description of the meaning of various bits)
+   // NOTE: the track quality filter map is stored in the AliReducedBaseTrack::fQualityFlags starting with bit 0 up to bit 31
+   if(fCutOnTrackQualityMap) {
+      UInt_t decisionMap = 0;
+      for(UShort_t i=0;i<32;++i)  {
+         Bool_t testBit = ((AliReducedBaseTrack*)obj)->TestQualityFlag(i);
+         Bool_t exclude = fCutOnTrackQualityMapExclude & (UInt_t(1)<<i);
+         if((testBit && !exclude) || (!testBit && exclude)) 
+            decisionMap |= (UInt_t(1)<<i);
+      }
+      //UInt_t decisionMap = ((AliReducedBaseTrack*)obj)->GetFirstHalfOfQualityFlags();
+      //decisionMap ^= fCutOnTrackQualityMapExclude; 
+      UInt_t eval = decisionMap & fCutOnTrackQualityMap;
+      if(fUseANDonTrackQualityMap && (eval!=fCutOnTrackQualityMap)) return kFALSE;
+      if(!fUseANDonTrackQualityMap && (eval==0)) return kFALSE;
+   }
    
    // apply cut on the filter map
    // NOTE: the track filter map is stored in the AliReducedBaseTrack::fQualityFlags starting with bit 32

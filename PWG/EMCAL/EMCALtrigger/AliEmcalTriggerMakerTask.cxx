@@ -83,6 +83,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
 
 AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
   if(fTriggerMaker) delete fTriggerMaker;
+  if(fQAHistos) delete fQAHistos;
+  if(fCaloTriggersOut) delete fCaloTriggersOut;
 }
 
 /**
@@ -154,6 +156,7 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
       fQAHistos->CreateTH2("FastORDiffEsmearADCrough", "FastOR ADC rough - smeared energy", 4994, -0.5, 4993.5, 200, -10., 10);
 
       for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
+      fQAHistos->GetListOfHistograms()->SetOwner(false);
       PostData(1, fOutput);
     } else {
       AliWarningStream() << "QA requested but no output container initialized - QA needs to be disabled" << std::endl;

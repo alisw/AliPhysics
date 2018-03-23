@@ -45,7 +45,6 @@ fReconstructed(),
 fTotal(),
 fMCDalitzPlot(),
 fTree(nullptr),
-fMCTree(nullptr),
 fDeuteronVector(),
 fPiPlusVector(),
 fPiMinusVector(),
@@ -66,7 +65,6 @@ AliAnalysisTaskdStar::~AliAnalysisTaskdStar() {
   if (fList)   delete fList;
   if (fPID)    delete fPID;
   if (fTree)   delete fTree;
-  if (fMCTree) delete fMCTree;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -108,16 +106,11 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fTree->Branch("PiPlus", &fPiPlusVector);
   fTree->Branch("PiMinus", &fPiMinusVector);
   fTree->Branch("ZVertex", &fZvtx);
+  fTree->Branch("MCDeuteron", &fMCDeuteronVector);
+  fTree->Branch("MCPiPlus", &fMCPiPlusVector);
+  fTree->Branch("MCPiMinus", &fMCPiMinusVector);
   fTree->SetAutoSave(100000000);
   PostData(2,fTree);
-
-  OpenFile(3);
-  fMCTree = new TTree("dStarMCTree", "MC generated data for dStar background analysis");
-  fMCTree->Branch("MCDeuteron", &fMCDeuteronVector);
-  fMCTree->Branch("MCPiPlus", &fMCPiPlusVector);
-  fMCTree->Branch("MCPiMinus", &fMCPiMinusVector);
-  fMCTree->SetAutoSave(100000000);
-  PostData(3,fMCTree);
 
 }
 
@@ -332,7 +325,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
 
   // Filling three
   fTree->Fill();
-  fMCTree->Fill();
 
   // Filling histograms
   for (const auto& mum : mothers) {
@@ -350,7 +342,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   //  Post output data.
   PostData(1,fList);
   PostData(2,fTree);
-  PostData(3,fMCTree);
 }
 
 /// This function checks whether a track has or has not a prolongation in the TOF.

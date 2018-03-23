@@ -125,6 +125,7 @@ public:
    static Double_t    SpeciesMass(ESpecies species);
    static EPARTYPE    ToAliPID(ESpecies species);
    static ESpecies    FromAliPID(EPARTYPE species);
+   static Bool_t      IsEquivalentPDGCode(Long_t i1, Long_t i2);
 
 private:
 

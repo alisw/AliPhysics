@@ -75,10 +75,12 @@ protected:
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
 	  TH1F* BuildHitAndEnergyMean(Int_t crit, Double_t emin = 0.1, Double_t emax=2.);
+          TH1F* BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin = 0.1, Double_t emax=2.);
 	  TH1F* BuildTimeMean(Int_t crit, Double_t tmin, Double_t tmax);
 
 	  void FlagAsDead();
 	  void FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma = 4., Double_t dnbins = 200);
+          void FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut = 1.5);
 
 	  void SummarizeResultsByFlag();
 	  void SummarizeResults();

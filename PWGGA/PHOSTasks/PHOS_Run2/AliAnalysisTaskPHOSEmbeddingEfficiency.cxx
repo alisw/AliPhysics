@@ -82,8 +82,7 @@ ClassImp(AliAnalysisTaskPHOSEmbeddingEfficiency)
 AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(const char *name):
   AliAnalysisTaskPHOSPi0EtaToGammaGamma(name),
   fParticleName(""),
-  fMCArray(0x0),
-  fWeightCen0005(0x0)
+  fMCArray(0x0)
 {
   // Constructor
 
@@ -99,9 +98,6 @@ AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(c
 //________________________________________________________________________
 AliAnalysisTaskPHOSEmbeddingEfficiency::~AliAnalysisTaskPHOSEmbeddingEfficiency()
 {
-  delete fWeightCen0005;
-  fWeightCen0005 = 0x0;
-
 
 }
 //________________________________________________________________________
@@ -109,8 +105,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-  fWeightCen0005 = new TF1("fWeightCen0005" ,"64.41*TMath::Power(x,-(5.88 + -92.9/(TMath::Power(x,4.12) + 54.1)))" ,0.,100.);
-  fWeightCen0005->SetNpx(1000);
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects();
 
@@ -123,15 +117,15 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
   const Int_t Npar = 3;
   const TString parname[Npar] = {"Pi0","Eta","Gamma"};
   for(Int_t ipar=0;ipar<Npar;ipar++){
-    TH1F *h1Pt = new TH1F(Form("hGenEmbedded%sPt",parname[ipar].Data()        ),Form("generated %s pT",parname[ipar].Data()        ),NpTgg-1,pTgg);
+    TH1F *h1Pt = new TH1F(Form("hGenEmbedded%sPt",parname[ipar].Data()        ),Form("generated %s pT;p_{T} (GeV/c)",parname[ipar].Data()        ),NpTgg-1,pTgg);
     h1Pt->Sumw2();
     fOutputContainer->Add(h1Pt);
 
-    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
+    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
     h2EtaPhi->Sumw2();
     fOutputContainer->Add(h2EtaPhi);
 
-    TH2F *h2EtaPt = new TH2F(Form("hGenEmbedded%sEtaPt",parname[ipar].Data()  ),Form("generated %s eta vs pT",parname[ipar].Data() ),200,-1,1,NpTgg-1,pTgg);
+    TH2F *h2EtaPt = new TH2F(Form("hGenEmbedded%sEtaPt",parname[ipar].Data()  ),Form("generated %s y vs pT;rapidity;p_{T} (GeV/c)",parname[ipar].Data() ),200,-1,1,NpTgg-1,pTgg);
     h2EtaPt->Sumw2();
     fOutputContainer->Add(h2EtaPt);
 
@@ -519,10 +513,14 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
 
-     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+    if(fIsPHOSTriggerAnalysis){
+      if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
+
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+
+
 
     weight = 1.;
     if(fIsMC){
@@ -595,23 +593,28 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
   Double_t value[4] = {};
   Double_t sp1 = -999;
 
-  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Double_t weight = 1., w1 = 1.;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
-
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(fIsPHOSTriggerAnalysis){
+        if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(ph2->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+        if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+      }
 
-      if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+      if(fForceActiveTRU 
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        ) continue;//only for kINT7
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -646,7 +649,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       weight = 1.;
       if(fIsMC){
         w1 = ph1->GetWeight();
-        w2 = ph2->GetWeight();
         weight = w1;//common weighting to all generated particles in embedding.
 
       }//end of if fIsMC

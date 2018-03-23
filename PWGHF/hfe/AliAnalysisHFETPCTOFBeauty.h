@@ -16,7 +16,6 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-
 class AliAnalysisUtils;
 class TH1F;
 class TH2F;
@@ -56,7 +55,7 @@ public:
     
     enum HijingOr {kHijing,kPhytia,kpi0,keta};
     enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};
-    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm};
+    enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kKaonFromNonHF, kBeauty, kCharm, kKaonFromHF};
 
     AliAnalysisHFETPCTOFBeauty();
     AliAnalysisHFETPCTOFBeauty(const char *name);
@@ -113,7 +112,8 @@ private:
     //Correlation cuts between TPC and SPD vertexes
     Bool_t PassCorrCuts(AliAODEvent *fAOD);
     
-    
+    //Function that gives DCA resolution in MC
+    Float_t GetDCAResolMC(Float_t x);
     
     // ------------------------------------------
     
@@ -164,6 +164,7 @@ private:
     TH1F				*fNevent_corrcut;//!
     TH1F				*fNevent_no_vertex; //!
     TH1F				*fNevent_no_vertex_2; //!
+    TH1F				*fNeventAnalized;//!
     TH1F				*fCent;	//!
     TH1F				*fCent2;	//!
     TH2F				*fTPC_p1;//!
@@ -211,6 +212,8 @@ private:
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F                *fDCAxy_pt_had_ResCorr;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
@@ -220,30 +223,19 @@ private:
 	TH1F                *hCharmMotherPt_corr3;
 	TH1F                *hCharmMotherPt_corr4;
 	
-	TH1F				*hCharmMotherPt1_corr;
-	TH1F				*hCharmMotherPt2_corr;
-	TH1F				*hCharmMotherPt3_corr;
-	TH1F				*hCharmMotherPt4_corr;
-	TH1F				*hCharmMotherPt5_corr;
-	TH1F				*hCharmMotherPt6_corr;
-	TH1F				*hCharmMotherPt7_corr;
-	TH1F				*hCharmMotherPt8_corr;
-	TH1F				*hCharmMotherPt9_corr;
-	TH1F				*hCharmMotherPt10_corr;
-	TH1F				*hCharmMotherPt11_corr;
-	TH1F				*hCharmMotherPt12_corr;
-	TH1F				*hCharmMotherPt13_corr;
-	TH1F				*hCharmMotherPt14_corr;
-	TH1F				*hCharmMotherPt15_corr;
-	
 	TH1F                *hBeautyMotherPt;//!
 	TH1F				*fPtBeautyGenerated;
 	TH1F				*fPtBeautyReconstructedTracks;
 	TH1F				*fPtBeautyReconstructedTracksPID;
+	TH1F				*fPtBeautyReconstructedTracksPIDTPC;
+	TH1F				*fPtBeautyReconstructedTracksPIDTOF;
+	TH1F				*fResGausCorr; //! DCA resolution correction (the gaussian that is convoluted)
     
     TH2F				*hCharmMotherPt_vsElecPt;
     TH2F				*hElecPt_vsCharmMotherPt;
     
+    TH2F				*hCharmMotherPt_vsElecPt_corr;
+    TH2F				*hElecPt_vsCharmMotherPt_corr;
     
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE

@@ -55,7 +55,7 @@ ClassImp(AliAnalysisTrackingUncertaintiesAOT)
 
 //________________________________________________________________________
 AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
-: AliAnalysisTaskSE("TaskTestPA"),
+  : AliAnalysisTaskSE("TaskTestPA"),
   fUseCentrality(kCentOff),
   fMaxDCAxy(2.4),
   fMaxDCAz(3.2),
@@ -82,6 +82,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fUseFinePtAxis(kFALSE),
   fUseGenPt(kFALSE),
   fDoCutV0multTPCout(kFALSE),
+  fDCAz(0),
   fMultSelectionObjectName("MultSelection"),
   fListHist(0x0),
   fESDtrackCuts(0x0),
@@ -118,6 +119,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fUseFinePtAxis(kFALSE),
     fUseGenPt(kFALSE),
     fDoCutV0multTPCout(kFALSE),
+    fDCAz(0),
     fMultSelectionObjectName("MultSelection"),
     fListHist(0x0),
     fESDtrackCuts(0x0),
@@ -218,31 +220,54 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   //fraction extraction and associated correction factor
   Int_t nEtaBins = 2*fMaxEta/0.1;
   if(fMC) {
-    const Int_t nvars = 10;
-    Int_t nBins[nvars]   = {300,   64,   29,    29,   18,   nEtaBins,    3,   2,    5,    2};
-    Double_t xmin[nvars] = {-3., -3.2,  0.5,   0.5,   0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2, 15.0,  15.0, 6.28,    fMaxEta,  2.5,  2.,  4.5,  1.5};
-    TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
-        
-    fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
-    fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
-    for (Int_t j=0; j<nvars; j++) {
-      fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-      fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+    if(fDCAz){
+      const Int_t nvars = 10;
+      Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,    2};
+      Double_t xmin[nvars] = {-3., -3.2,  0.5, 0.5, 0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
+      Double_t xmax[nvars] = {3.,   3.2, 15.0, 15,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5};
+      TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
+      fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+      fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+      for (Int_t j=0; j<nvars; j++) {
+	fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+    }
+    else{
+      const Int_t nvars = 8;
+      Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2};
+      Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
+      Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5};
+      TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
+      fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+      fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+      for (Int_t j=0; j<nvars; j++) {
+	fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
     }
     fListHist->Add(fHistMC);
     fListHist->Add(fHistMCTPConly);
   }
   else {
-    const Int_t nvars = 6;
-    Int_t nBins[nvars]   = {300,   64,    29,    18,  nEtaBins,    2};
-    Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5};
-    TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","phi","eta","TOFbc"};
-        
-    fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
-        
-    for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+    if(fDCAz){
+      const Int_t nvars = 6;
+      Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2};
+      Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5};
+      Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5};
+      TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","phi","eta","TOFbc"};
+      fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+      for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+    }
+    else{
+      const Int_t nvars = 5;
+      Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2};
+      Double_t xmin[nvars] = {-3.,   0.5,    0.,  -fMaxEta, -0.5};
+      Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5};
+      TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc"};
+      fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+      for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+    }        
     fListHist->Add(fHistData);
   }
     
@@ -475,7 +500,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	    TParticle* moth = stack->Particle(indexMoth);
 	    Float_t codemoth = TMath::Abs(moth->GetPdgCode());
 	    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-	}
+	  }
 	  if(track->GetLabel()<0.) label = -1;
 	  if(isph==1) {
 	    partType = 0; //primaries in MC
@@ -562,8 +587,15 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	      if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
 	      histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	      if(fMC){
-		Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
-		fHistMCTPConly->Fill(vec4Sparse);
+		if(fDCAz)
+		  {
+		    Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
+		    fHistMCTPConly->Fill(vec4Sparse);
+		  }
+		else{
+		  Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d};
+		  fHistMCTPConly->Fill(vec4Sparse);
+		}
 	      }
 	      break;
 	    }
@@ -593,12 +625,25 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	    if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
 	    histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	    if(fMC){
-	      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
-	      fHistMC->Fill(vec4Sparse);
+	      if(fDCAz){
+		Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
+		fHistMC->Fill(vec4Sparse);
+	      }
+	      else {
+		Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n};
+		fHistMC->Fill(vec4Sparse);
+	      }
 	    }
 	    else {
-	      Double_t vec4Sparse[6] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n};
-	      fHistData->Fill(vec4Sparse);
+	      if(fDCAz)
+		{
+		  Double_t vec4Sparse[6] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n};
+		  fHistData->Fill(vec4Sparse);
+		}
+	      else {
+		Double_t vec4Sparse[5] = {dca[0],pT,phi,eta,(Double_t)bcTOF_n};
+		fHistData->Fill(vec4Sparse);
+	      }
 	    }
 	    break;
 	  }
@@ -654,27 +699,27 @@ void AliAnalysisTrackingUncertaintiesAOT::BinLogAxis(const THnSparseF *h, Int_t 
 
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::BinFinePt(const THnSparseF *h, Int_t axisNumber) {
-    //
-    // Method for the correct logarithmic binning of histograms
-    //
-    TAxis *axis = h->GetAxis(axisNumber);
-    int bins = 16;
+  //
+  // Method for the correct logarithmic binning of histograms
+  //
+  TAxis *axis = h->GetAxis(axisNumber);
+  int bins = 16;
     
-    Double_t from = 0.1;
-    Double_t to = axis->GetXmax();
-    Double_t *newBins = new Double_t[bins + 1];
+  Double_t from = 0.1;
+  Double_t to = axis->GetXmax();
+  Double_t *newBins = new Double_t[bins + 1];
     
-    newBins[0] = from;
-    for (int i = 1;  i < 10; i++) newBins[i] = 0.1*i + newBins[0];//w=0.1 from 0.1-1 GeV/c
-    for (int i = 10; i < 13; i++) newBins[i] = 1. + newBins[i-1]; //w=1.  from 1-4 GeV/c
+  newBins[0] = from;
+  for (int i = 1;  i < 10; i++) newBins[i] = 0.1*i + newBins[0];//w=0.1 from 0.1-1 GeV/c
+  for (int i = 10; i < 13; i++) newBins[i] = 1. + newBins[i-1]; //w=1.  from 1-4 GeV/c
 
-    newBins[13] = 6.;
-    newBins[14] = 8.;
-    newBins[15] = 11.;
-    newBins[16] = to;
+  newBins[13] = 6.;
+  newBins[14] = 8.;
+  newBins[15] = 11.;
+  newBins[16] = to;
 
-    axis->Set(bins, newBins);
-    delete [] newBins;
+  axis->Set(bins, newBins);
+  delete [] newBins;
     
 }
 

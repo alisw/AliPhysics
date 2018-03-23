@@ -47,14 +47,14 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   varForTrending[33]="MatchEffSPDPt350EtaNeg";
   varForTrending[34]="MatchEffSPDPt1000EtaNeg";
   varForTrending[35]="MatchEffSPDPt4000EtaNeg";
- 
-  TTree* trtree=new TTree("trending","tree of trending variables");
+
+  TTree* trtree=new TTree("trendingTrack","tree of trending variables");
   trtree->Branch("nrun",&runNumber,"nrun/I");
   for(Int_t j=0; j<totTrending; j++){
     trtree->Branch(varForTrending[j].Data(),&vecForTrend[j],Form("%s/F",varForTrending[j].Data()));
     vecForTrend[j]=-99.;
   }
-  
+
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
   if(!df){
@@ -104,6 +104,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPhiEtaPosTPCselLowPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaPosTPCselLowPtTOFbc",eta0p,etamax,ptzero4,ptzero7);
   TH1D* hPhiEtaNegTPCselHighPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaNegTPCselHighPtTOFbc",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselHighPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaPosTPCselHighPtTOFbc",eta0p,etamax,ptone,ptten);
+
 
   TH1D* hPhiEtaNegTPCselITSref=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaNegTPCselITSref",etamin,eta0m);
   TH1D* hPhiEtaPosTPCselITSref=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaPosTPCselITSref",eta0p,etamax);
@@ -201,6 +202,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     TH1D* hPtEtaPosPosChargeTPCselSPDany=hEtaPhiPtPosChargeTPCselSPDany->ProjectionZ("hPtEtaPosPosChargeTPCselSPDany",eta0p,etamax);
     TH1D* hPtEtaNegNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaNegNegChargeTPCselSPDany",etamin,eta0m);
     TH1D* hPtEtaPosNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaPosNegChargeTPCselSPDany",eta0p,etamax);
+
     TH1D* hRatioPosNegEtaNegTPCsel=ComputeRatio(hPtEtaNegPosChargeTPCsel,hPtEtaNegNegChargeTPCsel,"hRatioPosNegEtaNegTPCsel",kGray+1,21,"p_{T} (GeV/c)");
     hRatioPosNegEtaNegTPCsel->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
     TH1D* hRatioPosNegEtaPosTPCsel=ComputeRatio(hPtEtaPosPosChargeTPCsel,hPtEtaPosNegChargeTPCsel,"hRatioPosNegEtaPosTPCsel",kGray+1,21,"p_{T} (GeV/c)");
@@ -303,7 +305,6 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hMatchEffVsPtPosEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaPosTPCselSPDanyTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
 
 
-
   TH1D* hMatchEffVsPhiNegEta=ComputeMatchEff(hPhiEtaNegTPCselITSref,hPhiEtaNegTPCsel,"hMatchEffVsPhiNegEta",1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiPosEta=ComputeMatchEff(hPhiEtaPosTPCselITSref,hPhiEtaPosTPCsel,"hMatchEffVsPhiPosEta",1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiNegEtaSPDany=ComputeMatchEff(hPhiEtaNegTPCselSPDany,hPhiEtaNegTPCsel,"hMatchEffVsPhiNegEtaSPDAny",kBlue-7,33,"#varphi (rad)");
@@ -326,6 +327,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hMatchEffVsPhiPosEtaHighPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselITSrefHighPtTOFbc,hPhiEtaPosTPCselHighPtTOFbc,"hMatchEffVsPhiPosEtaHighPtTOFbc",kRed+1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc=ComputeMatchEff(hPhiEtaNegTPCselSPDanyHighPtTOFbc,hPhiEtaNegTPCselHighPtTOFbc,"hMatchEffVsPhiNegEtaSPDAnyHighPtTOFbc",kGreen+2,33,"#varphi (rad)");
   TH1D* hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselSPDanyHighPtTOFbc,hPhiEtaPosTPCselHighPtTOFbc,"hMatchEffVsPhiPosEtaSPDAnyHighPtTOFbc",kGreen+2,33,"#varphi (rad)");
+
 
   hMatchEffVsPtNegEta->SetTitle("#eta<0");
   hMatchEffVsPtPosEta->SetTitle("#eta>0");
@@ -557,6 +559,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hImpParPrim=hImpParXYPtMulTPCselSPDanyPrim->ProjectionY("hImpParPrim");
   TH1D* hImpParSecDec=hImpParXYPtMulTPCselSPDanySecDec->ProjectionY("hImpParSecDec");
   TH1D* hImpParSecMat=hImpParXYPtMulTPCselSPDanySecMat->ProjectionY("hImpParSecMat");
+    
   TH1D* hImpParAll=(TH1D*)hImpParSecDec->Clone("hImpParAll");
   hImpParAll->Add(hImpParSecMat);
   hImpParAll->Add(hImpParPrim);
@@ -1017,7 +1020,6 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hInvMassLambdaR4=hInvMassLambda3d->ProjectionX("hInvMassLambda1dR4",0,-1,z5,z6);
   TH1D* hInvMassAntiLambdaR4=hInvMassAntiLambda3d->ProjectionX("hInvMassAntiLambda1dR4",0,-1,z5,z6);
 
-
   // K0s histos vs. pt
   Int_t p1=hInvMassK0s3d->GetYaxis()->FindBin(0.499);
   TH1D* hInvMassK0sP1=hInvMassK0s3d->ProjectionX("hInvMassK0sP1",1,p1,0,-1);
@@ -1028,7 +1030,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Int_t p4=hInvMassK0s3d->GetYaxis()->FindBin(5.01);
   Int_t p5=hInvMassK0s3d->GetYaxis()->FindBin(9.99);
   TH1D* hInvMassK0sP4=hInvMassK0s3d->ProjectionX("hInvMassK0sP4",p4,p5,0,-1);
-  
+
 
 
   TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.54);
@@ -1134,10 +1136,13 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   trtree->Fill();
 
   if(runNumber>0){
-    TFile* fouttree=new TFile("trending.root","recreate");
+    TFile* foutfile=new TFile("trendingAODtracks.root","recreate");
     trtree->Write();
-    fouttree->Close();
-    delete fouttree;
+    TDirectory* outdir=foutfile->mkdir(df->GetName());
+    outdir->cd();
+    l->Write(l->GetName(),1);
+    foutfile->Close();
+    delete foutfile;
   }
 
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));

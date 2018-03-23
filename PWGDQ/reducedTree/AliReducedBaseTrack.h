@@ -36,6 +36,8 @@ class AliReducedBaseTrack : public TObject {
     Bool_t IsCartesian() const {return fIsCartesian;}           
     
     ULong_t GetQualityFlags()             const {return fQualityFlags;}
+    UInt_t  GetFirstHalfOfQualityFlags() const;
+    UInt_t  GetSecondHalfOfQualityFlags() const;
     Bool_t UsedForQvector()               const {return fQualityFlags&(UShort_t(1)<<0);}
     Bool_t TestQualityFlag(UShort_t iflag)  const {return ((iflag<(8*sizeof(ULong_t))) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
     Bool_t IsMCTruth()                        const {return (fIsMCTruth ? kTRUE : kFALSE);}

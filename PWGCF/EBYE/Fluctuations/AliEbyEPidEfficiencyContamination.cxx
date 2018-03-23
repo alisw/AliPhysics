@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: ALICE Offline.                                                 *
  * Contributors are mentioned in the code where appropriate.              *
@@ -16,12 +16,15 @@
 
 //=========================================================================//
 //             AliEbyE Analysis for Net-Particle Higher Moment study       //
+//                           Nirbhay K. Behera                             //
+//                           nbehera@cern.ch                               //
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
-//                            Nirbhay K. Behera                            //
-//                         (Last Modified 2017/04/07)                      //
+//                                                                         //
+//                        (Last Modified 2018/03/14)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
-//   Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
+//Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
+//analysis task.                                                           //
 //=========================================================================//
 
 #include <Riostream.h>
@@ -41,14 +44,18 @@
 #include "AliPIDCombined.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
-#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
+#include "AliMultSelection.h"
 //#include "AliHelperPID.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
@@ -63,13 +70,16 @@ ClassImp(AliEbyEPidEfficiencyContamination)
 //-----------------------------------------------------------------------
 AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination() 
 : AliAnalysisTaskSE(), 
-  fThnList(NULL), 
-  fPtArray(NULL),
-  fArrayMC(0x0),
-  fESDtrackCuts(0x0),
-  fMCEvent(0x0),
-  fMCStack(0x0),
-  fanaUtils(0x0),
+  fThnList(NULL),
+  fInputHandler(NULL),
+  fMCEventHandler(NULL),
+  fVevent(NULL),
+  fArrayMC(NULL),
+  fESDtrackCuts(NULL),
+  fMCEvent(NULL),
+  fMCStack(NULL),
+  fEventCuts(NULL),
+  fRun("LHC10h"),
   fCentralityEstimator("V0M"),
   
   fAODtrackCutBit(128),
@@ -90,6 +100,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fIsMC(kFALSE),
   fIsAOD(kFALSE),
   fIsQA(kFALSE),
+  fIsRapCut(kFALSE),
   fIsTrig(kFALSE),
   fIsThn(kFALSE),
 
@@ -162,13 +173,16 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
 //-----------------------------------------------------------------------
 AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char *name ) 
   : AliAnalysisTaskSE(name), 
-    fThnList(NULL), 
-    fPtArray(NULL),
+    fThnList(NULL),
+    fInputHandler(NULL),
+    fMCEventHandler(NULL),
+    fVevent(NULL),
     fArrayMC(NULL),
     fESDtrackCuts(NULL),
     fMCEvent(NULL),
     fMCStack(NULL),
-    fanaUtils(NULL),
+    fEventCuts(NULL),
+    fRun("LHC10h"),
     fCentralityEstimator("V0M"),
     
     fAODtrackCutBit(128),
@@ -188,6 +202,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fIsMC(kFALSE),
     fIsAOD(kFALSE),
     fIsQA(kFALSE),
+    fIsRapCut(kFALSE),
     fIsTrig(kFALSE),
     fIsThn(kFALSE),
     
@@ -259,21 +274,29 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
 //---------------------------------------------------------------------------------
 AliEbyEPidEfficiencyContamination::~AliEbyEPidEfficiencyContamination() {
   
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fThnList;
-    delete [] fPtArray;
-  }
+   // Default destructor
+  if( fThnList ) delete fThnList;
+  if( fEventCuts ) delete fEventCuts;
+  if( fESDtrackCuts ) delete fESDtrackCuts;
+  
 }
 
 //---------------------------------------------------------------------------------
 void AliEbyEPidEfficiencyContamination::UserCreateOutputObjects(){
   
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  inputHandler->SetNeedField();
-  fPIDResponse = inputHandler->GetPIDResponse();
-
-  fanaUtils = new AliAnalysisUtils();
+  fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(!fInputHandler){
+    AliError("No PID response task found !!");
+  }
+  
+  fPIDResponse =  dynamic_cast<AliInputEventHandler *>(fInputHandler)->GetPIDResponse();
+  if(!fPIDResponse){
+    AliError("No PID response task found !!");
+  }
+  
+  if(fRun == "LHC15o"){
+    fEventCuts = new AliEventCuts();
+  }
   
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
@@ -411,20 +434,16 @@ void AliEbyEPidEfficiencyContamination::CreateEffCont() {
     xBinEdge[iBin] = iBin - 0.5;
   }
 
-  fPtArray = new Double_t[fNptBins+1];
-  
+  //fPtArray
   Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
   Double_t pidPtBins[20] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
-  
-  if( fPidType == 0) fPtArray = chPtBins;
-  else fPtArray = pidPtBins;
-  
+ 
   const Char_t *gstName[3] = {"Pt","Eta","Phi"};
   const Char_t *gstLat[3]  = {"p_{T}","#eta","#phi"};
   
   const Char_t *PidCut[4] = {
     "ChHad",
-    "TPC+TOF", // 0 only TPC
+    "TPC+TOF",
     "TPC+TOF",
     "TPC+ITS+TOF"
   };
@@ -451,33 +470,64 @@ void AliEbyEPidEfficiencyContamination::CreateEffCont() {
       
       if( j == 0){ //for pt only--(unequal bin width )
 	
-	fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	fHistERec[k][j]->Sumw2();
-	fThnList->Add(fHistERec[k][j]);
-	
-	if(fIsMC){ 
-	  fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	  fHistERecPri[k][j]->Sumw2();
-	  fThnList->Add(fHistERecPri[k][j]);
+	if( fPidType == 0){
 	  
-	  fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	  fHistEGen[k][j]->Sumw2();
-	  fThnList->Add(fHistEGen[k][j]);
+	  fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	  fHistERec[k][j]->Sumw2();
+	  fThnList->Add(fHistERec[k][j]);
 	  
-	  fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	  fHistCSec[k][j]->Sumw2();
-	  fThnList->Add(fHistCSec[k][j]);
+	  if(fIsMC){ 
+	    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	    fHistERecPri[k][j]->Sumw2();
+	    fThnList->Add(fHistERecPri[k][j]);
+	    
+	    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	    fHistEGen[k][j]->Sumw2();
+	    fThnList->Add(fHistEGen[k][j]);
+	    
+	    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	    fHistCSec[k][j]->Sumw2();
+	    fThnList->Add(fHistCSec[k][j]);
+	    
+	    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	    fHistCMat[k][j]->Sumw2();
+	    fThnList->Add(fHistCMat[k][j]);
+	    
+	    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
+	    fHistCMisId[k][j]->Sumw2();
+	    fThnList->Add(fHistCMisId[k][j]);
+	  }//if MC
+	}//if fPidType == 0 ch. hadron
+	else{
 	  
-	  fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	  fHistCMat[k][j]->Sumw2();
-	  fThnList->Add(fHistCMat[k][j]);
+	  fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	  fHistERec[k][j]->Sumw2();
+	  fThnList->Add(fHistERec[k][j]);
 	  
-	  fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
-	  fHistCMisId[k][j]->Sumw2();
-	  fThnList->Add(fHistCMisId[k][j]);
+	  if(fIsMC){ 
+	    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	    fHistERecPri[k][j]->Sumw2();
+	    fThnList->Add(fHistERecPri[k][j]);
+	    
+	    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	    fHistEGen[k][j]->Sumw2();
+	    fThnList->Add(fHistEGen[k][j]);
+	    
+	    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	    fHistCSec[k][j]->Sumw2();
+	    fThnList->Add(fHistCSec[k][j]);
+	    
+	    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	    fHistCMat[k][j]->Sumw2();
+	    fThnList->Add(fHistCMat[k][j]);
+	    
+	    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
+	    fHistCMisId[k][j]->Sumw2();
+	    fThnList->Add(fHistCMisId[k][j]);
+	  }//if MC
 	  
-	}
-	
+	}//else pi, k, p
+
       }//j == 0; pT only
       
       else {
@@ -549,7 +599,7 @@ void AliEbyEPidEfficiencyContamination::CreateEffCont() {
     
   }
   else {//for PID
-    const Int_t dim = 39; //1 centrality bin + (17 pt bins) * 2
+    const Int_t dim = 39; //1 centrality bin + (19 pt bins) * 2
     Int_t bin[dim]    = { 100,
 			  500, 500, 500,
 			  500, 500, 500, 500, 500, 500, 500, 500,
@@ -619,59 +669,39 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   }
   
   fEventCounter->Fill(1);
-  AliVEvent *event = InputEvent(); 
-  if (!event) { LocalPost(); return; }
-
-  AliInputEventHandler* fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if (!fInputEventHandler) return;
- 
-  //---Check pileup
-  fanaUtils->SetUseMVPlpSelection(kTRUE);
-  fanaUtils->SetUseOutOfBunchPileUp(kTRUE);
-  if(fanaUtils->IsPileUpEvent(event)) return;
- 
-  const AliVVertex *vertex = event->GetPrimaryVertex();
-  if(!vertex) { LocalPost(); return; }        
+  if(!fInputHandler)
+    fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   
-  Bool_t vtest = kFALSE;
-  Double32_t fCov[6];
-  vertex->GetCovarianceMatrix(fCov);
-  if(vertex->GetNContributors() > 0) {
-    if(fCov[5] != 0) {
-      vtest = kTRUE;
-    }
+  if(!fInputHandler){
+    AliError("No InputHandler");
+    return;
   }
-  if(!vtest) { LocalPost(); return; }        
   
-  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }        
-  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }        
-  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }        
+  fVevent = dynamic_cast<AliVEvent*>(fInputHandler->GetEvent());
+  if (!fVevent) {
+    printf("ERROR: fVEvent not available\n");
+    LocalPost();
+    return;
+  }
 
-  
-  AliCentrality *centrality = event->GetCentrality();
-  if(!centrality) return;
-  if (centrality->GetQuality() != 0) { LocalPost(); return; }
-
-  fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-  if( fCentrality < 0 || fCentrality >=80 ) return;
-  
-  
-  fHistCent->Fill(fCentrality);
-
-  fEventCounter->Fill(2);
-  
   //---------- Initiate MC
   if (fIsMC){
     fMCEvent = NULL;
     fEventCounter->Fill(8);
     if(fIsAOD) {
       fArrayMC = NULL;
-      fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+      fArrayMC = dynamic_cast<TClonesArray*>(fVevent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (!fArrayMC)
 	AliFatal("No array of MC particles found !!!");
     }
-    else {
-      fMCEvent = MCEvent();
+    else{
+
+      fMCEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if(!fMCEventHandler){
+	AliError("No MC Event Handler available");
+	LocalPost(); return;
+      }
+      fMCEvent = fMCEventHandler->MCEvent();
       if (!fMCEvent) {
 	Printf("ERROR: Could not retrieve MC event");
 	LocalPost(); return; 
@@ -684,12 +714,92 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       }
     }
   }//if---fIsMC-----
+  
+  //Pile-up cut for Run2------
+  if(fRun == "LHC15o"){
+    if(!fEventCuts->AcceptEvent(fVevent)) {
+      LocalPost();
+      return;
+    }
+  }
+  
+  const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+  if(!vertex) { LocalPost(); return; }
 
+  Bool_t vtest = kFALSE;
+  Double32_t fCov[6];
+  vertex->GetCovarianceMatrix(fCov);
+  if(vertex->GetNContributors() > 0) {
+    if(fCov[5] != 0) {
+      vtest = kTRUE;
+    }
+  }
+  if(!vtest) { LocalPost(); return; }
+  
+  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
+
+  //-----------Centrality task---------------------------------
+  if( fRun == "LHC10h" || fRun == "LHC11h" ){
+    AliCentrality *centrality = fVevent->GetCentrality();
+    if(!centrality) return;
+    if (centrality->GetQuality() != 0) { LocalPost(); return; }
+    
+    fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
+  else if (fRun == "LHC15o" ){
+    AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
+    if(!fMultSelection ){
+      cout << "AliMultSelection object not found!" << endl;
+      return;
+    }
+    else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
+
+  }
+  else if( fRun == "LHC10hAMPT"){
+    //----------centrality range from imp. par. 
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    if(!genHeader) return;
+    
+    Double_t impactPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
+    
+    if( impactPar >= 0. && impactPar < 3.51 ) fCentrality = 1.; //0-5
+    if( impactPar >= 3.51 && impactPar < 4.96 ) fCentrality = 6.; //5-10
+    if( impactPar >= 4.96 && impactPar < 6.08 ) fCentrality = 11.;//10-15
+    if( impactPar >= 6.08 && impactPar < 7.01 ) fCentrality = 16.;//15-20
+    if( impactPar >= 7.01 && impactPar < 7.84 ) fCentrality = 21.;//20-25
+    if( impactPar >= 7.84 && impactPar < 8.59 ) fCentrality = 26.;//25-30
+    if( impactPar >= 8.59 && impactPar < 9.27 ) fCentrality = 31.;//30-35
+    if( impactPar >= 9.27 && impactPar < 9.92 ) fCentrality = 36.;//35-40
+    if( impactPar >= 9.92 && impactPar < 10.5 ) fCentrality = 41.;//40-45
+    if( impactPar >= 10.5 && impactPar < 11.1 ) fCentrality = 46.;//45-50
+    if( impactPar >= 11.1 && impactPar < 11.6 ) fCentrality = 51.;//50-55
+    if( impactPar >= 11.6 && impactPar < 12.1 ) fCentrality = 56.;//55-60
+    if( impactPar >= 12.1 && impactPar < 12.6 ) fCentrality = 61.;//60-65
+    if( impactPar >= 12.6 && impactPar < 13.1 ) fCentrality = 66.;//65-70
+    if( impactPar >= 13.1 && impactPar < 13.6 ) fCentrality = 71.;//70-75
+    if( impactPar >= 13.6 && impactPar < 14.0 ) fCentrality = 76.;//75-80
+  
+  }
+  else{
+    cout <<"Wrong run period for centrality" << endl;
+    LocalPost();
+    return;
+  }
+  
+  if( fCentrality < 0 || fCentrality >=80 ) return;
+
+  fHistCent->Fill(fCentrality);
+
+  fEventCounter->Fill(2);
+  
+  
   //----------
   
   fEventCounter->Fill(3);
-  fNTracks  = event->GetNumberOfTracks();
-
+  fNTracks  = fVevent->GetNumberOfTracks();
+  
   Int_t iTracks = 0;
   Double_t nRec[2] = {0., 0.};
   Double_t nGen[2] = {0., 0.};
@@ -705,7 +815,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   
   for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
     
-    AliVTrack *track = static_cast<AliVTrack*>(event->GetTrack(idxTrack)); 
+    AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack)); 
     if(!AcceptTrackL(track)) continue;
     
     Int_t icharge = track->Charge() < 0 ? 0 : 1;    
@@ -714,7 +824,6 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     Float_t lPhi = (Float_t)track->Phi();
     
     Int_t iptbin = GetPtBin(lPt);
-    
     if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
     Bool_t isPid = kFALSE;
     
@@ -992,6 +1101,8 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
 
+  //cout << "Track --" << track->Pt() << endl;
+
   Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
   Double_t pz = track->Pz();
   Double_t en = TMath::Sqrt( ptot*ptot + partMass*partMass );
@@ -1000,12 +1111,17 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
     rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
   }
   else rap = -999.;
-  
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  
-  if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE; 
+  }
+  
   return kTRUE;
+  
 }
 
 
@@ -1027,10 +1143,16 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   }
   else rap = -999;
   
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE; //rapidity cut
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
   
   return kTRUE;
+  
 }
 //---------------------------------------------------------------
 Int_t AliEbyEPidEfficiencyContamination::GetPtBin(Double_t pt){

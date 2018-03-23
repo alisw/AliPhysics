@@ -109,6 +109,7 @@
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
 #pragma link C++ class  AliAnalysisTaskHaHFECorrel+;
 #pragma link C++ class  AliAnalysisTaskCaloHFEpPbRun2+;
+#pragma link C++ class  AliAnalysisTaskCaloHFEpp+;
 
 #pragma link C++ class  AliBasicParticleHaHFE+;
 #pragma link C++ class  AliehDPhiBasicParticle+;
@@ -117,4 +118,5 @@
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 #pragma link C++ class  AliAnalysisHFETPCTOFBeauty+;
 
+#pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 #endif

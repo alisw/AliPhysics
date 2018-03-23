@@ -66,6 +66,7 @@ set ( SRCS2
   global/AliAnalysisTaskCheckVertexAOD.cxx
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
+  global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )

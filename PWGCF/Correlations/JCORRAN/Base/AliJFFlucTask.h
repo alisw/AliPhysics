@@ -85,7 +85,9 @@ public:
 	void SetPtRange( double pt_min, double pt_max){
 		fPt_min = pt_min; fPt_max = pt_max; cout << "setting Pt range as " << fPt_min << " ~ " << fPt_max << endl;}
 	void SetFFlucTaskName(TString taskname){fTaskName = taskname;}
-	TString GetFFlucTaskName(){return fTaskName;}
+	TString GetFFlucTaskName() const{return fTaskName;}
+	AliJFFlucAnalysis * GetAnalysis() const{return fFFlucAna;}
+	int GetRunNumber() const{return fRunNum;}
 	void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
@@ -96,6 +98,7 @@ public:
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
 					cout << "setting z vertex cut = " << fzvtxCut << endl;}
+	double GetZVertexCut() const{return fzvtxCut;}
 	//void SetSCptdep( Bool_t isSCptdep){ IsSCptdep = isSCptdep;
 					//cout << "setting : SCpt dep = " << isSCptdep << endl;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
@@ -114,17 +117,6 @@ public:
 					fQC_eta_min=QC_eta_min; fQC_eta_max=QC_eta_max;
 					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl;}
 
-//#define FLUC_MC 0x1
-//#define FLUC_EXCLUDEWDECAY 0x2
-//#define FLUC_KINEONLY 0x4
-//#define FLUC_PHI_MODULATION 0x8
-//#define FLUC_PHI_INVERSE 0x10
-//#define FLUC_PHI_REJECTION 0x20
-//#define FLUC_SCPT 0x40
-//#define FLUC_EBE_WEIGHTING 0x80
-//#define FLUC_CENT_FLATTENING 0x100
-//#define FLUC_CUT_OUTLIERS 0x200
-//#define FLUC_ALICE_IPINFO 0x400
 	enum{
 		FLUC_MC = 0x1,
 		FLUC_EXCLUDEWDECAY = 0x2,
@@ -148,7 +140,7 @@ private:
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
 	 TH1D *h_ratio;
-	 TH1D *h_ModuledPhi[7][2]; // cent7, sub2
+	 TH1D *h_ModuledPhi[CENTN][2]; // cent7, sub2
 
 	 TString fTaskName;
 	 int fDebugLevel;
@@ -157,6 +149,7 @@ private:
 	 int fEffMode;
 	 int fEffFilterBit;
 	 int fPcharge;
+	 int fRunNum;
 	 unsigned int GlobTracks;
 	 unsigned int TPCTracks;
 	 unsigned int FB32Tracks;

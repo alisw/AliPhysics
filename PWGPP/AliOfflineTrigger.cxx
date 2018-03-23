@@ -80,7 +80,9 @@
 #include "AliOfflineTrigger.h"
 #include "AliSysInfo.h"
 #include "TTimeStamp.h"
+#ifdef WITHALIEN
 #include "TAlienCollection.h"
+#endif
 #include "TPRegexp.h"
 using std::cout;
 using std::endl;
@@ -639,14 +641,19 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
   */
   TObjArray* rawArray = 0;
   if (TPRegexp(".xml$").Match(rawList)){
+#ifdef WITHALIEN
     TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(rawList);
     Int_t nFiles =  coll->GetNofGroups();
     rawArray=new TObjArray(nFiles);
     while( coll->Next()){
       rawArray->AddLast(new TObjString(coll->GetTURL()));
     }
+#endif
   }else{
     rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  }
+  if (rawArray == 0) {
+    ::Fatal("AliOfflineTrigger::ExtractSelected","Unable to get list of RAW files");
   }
   Int_t nFiles=rawArray->GetEntries();
   if (nFiles<=0){

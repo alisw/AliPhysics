@@ -29,6 +29,8 @@ class AliEmcalList;
 #include <string>
 
 #include <AliAnalysisTaskSE.h>
+#include "AliEventCuts.h"
+#include "AliYAMLConfiguration.h"
 #include "THistManager.h"
 
 /**
@@ -71,9 +73,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper(const char *name)          ;
   virtual ~AliAnalysisTaskEmcalEmbeddingHelper()                 ;
 
+  /**
+   * @{
+   * @name Inherited from AliAnalysisTaskSE
+   */
   void      UserExec(Option_t *option)                           ;
   void      UserCreateOutputObjects()                            ;
   void      Terminate(Option_t *option)                          ;
+  /* @} */
 
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
@@ -87,7 +94,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @{
    * @name Properties of the embedding helper
    */
-  bool Initialize();
+  /**
+   * Initialize the Embedding Helper task. *Must* be called setting configuration for the task,
+   * either during the run macro or wagon configuration. Once called, most of the configuration is locked in,
+   * so be certain to change any configuration options before calling it.
+   *
+   * @param[in] removeDummyTask If true, the dummy task created with the configure wagon is removed.
+   */
+  bool Initialize(bool removeDummyTask = false);
 
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
@@ -130,8 +144,41 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
   /// Create QA histograms. These are necessary for proper scaling, so be careful disabling them!
   void SetCreateHistos(bool b)                                    { fCreateHisto = b; }
-  /// Set path to YAML configuration file
+  /// Set path to %YAML configuration file
   void SetConfigurationPath(const char * path)                    { fConfigurationPath = path; }
+  /* @} */
+
+  /**
+   * @{
+   * @name Internal event selection
+   */
+  /// Whether internal event selection is enabled.
+  bool GetUseInternalEventSelection()                       const { return fUseInternalEventSelection; }
+  /// Enable internal event selection. Can also be enabled through the %YAML configuration.
+  void SetUseInternalEventSelection(bool b = true)                { fUseInternalEventSelection = b; }
+  /**
+   * If true, it indicates that the embedded event was used by the embedding helper and that it is
+   * available for use. If false, this internal event should be ignored.
+   *
+   * This value can return false if internal event selection is enabled and the internal event was
+   * rejected.
+   *
+   * @return true if the embedded event was actually embedded and should be used.
+   */
+  bool EmbeddedEventUsed()                                  const { return fEmbeddedEventUsed; }
+  /// Whether to use manual cuts for AliEventCuts.
+  bool GetUseManualInternalEventSelection()                 const { return fUseManualInternalEventCuts; }
+  /// Enable manual internal event cuts. Can also be enabled through the %YAML configuration.
+  /// Must be configured through the retrieving the AliEventCuts object and configuring the cuts.
+  /// It is not included via %YAML because it is rather difficult to fully map, especially for an infrequently used mode.
+  void SetUseManualInternalEventCuts(bool b = true)               { fUseManualInternalEventCuts = b; }
+  /// Event cuts object for accessing centrality, etc from another task if so inclined.
+  const AliEventCuts * GetInternalEventCuts()               const { return (fUseInternalEventSelection ? &fInternalEventCuts : nullptr); }
+  /// Event cuts object for configuring for setting manual cuts
+  /// To access this object, manual event cuts must be enabled!
+  AliEventCuts * GetInternalEventCuts();
+  /// Set internal event centrality selection
+  void SetCentralityRange(double min, double max)                 { fCentMin = min; fCentMax = max; }
   /* @} */
 
   /**
@@ -153,7 +200,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   /**
    * @{
-   * @name Properties of Embedded Event
+   * @name Properties of the embedded event
    */
   AliVHeader * GetEventHeader()                             const { return fExternalHeader; }
   AliGenPythiaEventHeader * GetPythiaHeader()               const { return fPythiaHeader; }
@@ -165,7 +212,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /**
    * @{
    * @name pT hard bin auto configuration
-   * @brief Setup pt hard bin auto configuration to be used on the LEGO train. See AutoConfigurePtHardBins() and the variable definitions for the purpose of each variable.
+   * @brief %Setup pt hard bin auto configuration to be used on the LEGO train. See AutoConfigurePtHardBins() and the variable definitions for the purpose of each variable.
    */
   bool GetAutoConfigurePtHardBins()                         const { return fAutoConfigurePtHardBins; }
   std::string GetAutoConfigureBasePath()                    const { return fAutoConfigureBasePath; }
@@ -182,8 +229,25 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @{
    * @name Utility functions
    */
-  // AddTask
+  /**
+   * Add task function. This contains the normal AddTask functionality, except in compiled code, making errors
+   * easier to spot than in CINT. The AddTask macro still exists for use on the LEGO train, but simply wraps this
+   * function.
+   *
+   * @return An properly instance of AliAnalysisTaskEmcalEmbeddingHelper, added to the current analysis manager.
+   */
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
+  /**
+   * Retrieve an existing embedding helper to perform further configuration. This should
+   * _ONLY_ be used on the LEGO train.
+   *
+   * To achieve this, a dummy task is created when the configure task is called because AliAnalysisTaskCfg
+   * requires that all wagons add a task. Then, when Initialize(true) is called on the embedding helper task, the
+   * dummy task is removed. This is a hack, but is required to work around constraints in AliAnalysisTaskCfg.
+   *
+   * @return An existing (usually unconfigured) EMCal Embedding Helper.
+   */
+  static AliAnalysisTaskEmcalEmbeddingHelper* ConfigureEmcalEmbeddingHelperOnLEGOTrain();
 
   // Printing
   friend std::ostream & operator<<(std::ostream &in, const AliAnalysisTaskEmcalEmbeddingHelper &myTask);
@@ -192,6 +256,10 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::string toString(bool includeFileList = false) const;
   /* @} */
 
+  /**
+   * @{
+   * @name To be ignored
+   */
   /**
    * @brief **SHOULD NOT BE USED! Use GetExternalEvent()!**
    * **SHOULD NOT BE USED! Use GetExternalEvent()!**
@@ -204,9 +272,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @return The external event
    */
   AliVEvent* InputEvent()                                   const { return GetExternalEvent(); }
+  /* @} */
 
  protected:
+  void            RetrieveTaskPropertiesFromYAMLConfig();
   bool            GetFilenames()        ;
+  void            DeterminePythiaXSecFilename();
+  bool            IsRunInRunlist(const std::string & path) const;
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -214,7 +286,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
-  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const;
+  std::string     ConstructFullPythiaXSecFilename(std::string inputFilename, const std::string & pythiaFilename, bool testIfExists) const;
   Bool_t          GetNextEntry()        ;
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
@@ -223,7 +295,11 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
-  Bool_t          IsGoodEmbeddedRun(TString path);
+  // Helper functions
+  bool            IsFileAccessible() const;
+  void            ConnectToAliEn() const;
+  // LEGO Train utility
+  void            RemoveDummyTask() const;
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
   bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
@@ -242,19 +318,28 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
   Bool_t                                        fRandomFileAccess ; ///<  If true, it will start embedding from a random file in the input files list
   bool                                          fCreateHisto      ; ///<  If true, create QA histograms
+  PWG::Tools::AliYAMLConfiguration              fYAMLConfig       ; ///<  Hanldes configuration from YAML
+
+  bool                                  fUseInternalEventSelection; ///<  If true, apply internal event selection though AliEventCuts
+  bool                                 fUseManualInternalEventCuts; ///<  If true, manual event cuts mode will be used for AliEventCuts
+  AliEventCuts                                  fInternalEventCuts; ///<  If enabled, Handles internal event selection
+  bool                                          fEmbeddedEventUsed; //!<! If true, the internal event was selected, so the embedded event is used. Defaults to true so other tasks are not disrupted if internal event selection is disabled.
+  double                                        fCentMin          ; ///<  Minimum centrality for internal event selection
+  double                                        fCentMax          ; ///<  Maximum centrality for internal event selection
 
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
   std::string                          fAutoConfigureTrainTypePath; ///<  The path associated with the train type (for example, "PWGJE/Jets_EMC_PbPb/")
-  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration YAML file should be identified. (for example, "rehlersTrain")
+  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration %YAML file should be identified. (for example, "rehlersTrain")
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
   TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
-  std::string                                   fConfigurationPath; ///<  Path to YAML configuration
+  std::string                                   fConfigurationPath; ///<  Path to %YAML configuration
   std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
+  std::string                                  fPythiaXSecFilename; ///<  Name of the pythia x sec filename (either "pyxsec.root" or "pyxsec_hists.root")
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
@@ -283,7 +368,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 8);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 10);
   /// \endcond
 };
 #endif

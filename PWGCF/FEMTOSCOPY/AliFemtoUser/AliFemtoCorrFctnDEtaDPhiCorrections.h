@@ -51,6 +51,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiCorrections(*this); }
+
 private:
 
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function

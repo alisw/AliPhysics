@@ -7,13 +7,13 @@
 #include <iostream>
 #endif
 
-AliAnalysisTaskTOFSpectra* AddTaskTOFSpectra(const Bool_t optTree = kTRUE, const Bool_t readMC = kFALSE, const Bool_t HeavyIon = kTRUE, const Bool_t ChannelMismatch = kTRUE, const Bool_t CutVariation = kFALSE, const Int_t SimpleCutMode = -1, const TString prefix = "", const TString tname = "TOFSpectra", const Bool_t stdoutput = kFALSE)
+AliAnalysisTaskTOFSpectra* AddTaskTOFSpectra(const Bool_t optTree = kTRUE, const Bool_t readMC = kFALSE, const Int_t system = 0 /*kPbPb*/, const Bool_t ChannelMismatch = kTRUE, const Bool_t CutVariation = kFALSE, const Int_t SimpleCutMode = -1, const TString prefix = "", const TString tname = "TOFSpectra", const Bool_t stdoutput = kFALSE)
 {
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
 
-  Info("AddTaskTOFSpectra", "Adding a new task %s with this settings optTree = %i, readMC = %i, HeavyIon = %i, ChannelMismatch = %i, CutVariation = %i, SimpleCutMode = %i", tname.Data(), optTree, readMC, HeavyIon, ChannelMismatch, CutVariation, SimpleCutMode);
+  Info("AddTaskTOFSpectra", "Adding a new task %s with this settings optTree = %i, readMC = %i, system = %i, ChannelMismatch = %i, CutVariation = %i, SimpleCutMode = %i", tname.Data(), optTree, readMC, system, ChannelMismatch, CutVariation, SimpleCutMode);
 
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -42,12 +42,7 @@ AliAnalysisTaskTOFSpectra* AddTaskTOFSpectra(const Bool_t optTree = kTRUE, const
   }
 
   // Create and configure the task
-  AliAnalysisTaskTOFSpectra* taskTOF = new AliAnalysisTaskTOFSpectra(tname, HeavyIon, readMC, optTree, ChannelMismatch, CutVariation, SimpleCutMode);
-  taskTOF->SetTreeFlag(optTree);
-  taskTOF->SetHeavyIonFlag(HeavyIon);
-  taskTOF->SetMCFlag(readMC);
-  taskTOF->SetChannelFlag(ChannelMismatch);
-
+  AliAnalysisTaskTOFSpectra* taskTOF = new AliAnalysisTaskTOFSpectra(tname, system, readMC, optTree, ChannelMismatch, CutVariation, SimpleCutMode);
   mgr->AddTask(taskTOF);
 
   // Create ONLY the output containers for the data produced by the task.

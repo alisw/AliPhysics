@@ -39,11 +39,7 @@
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
 #include "AliTOFTriggerMask.h"
-#include "AliCDBEntry.h" 
-#include "AliCDBManager.h"
-#include "AliTriggerConfiguration.h" 
 #include "TObjArray.h"
-#include "AliTriggerBCMask.h"
 
 
 // my headers
@@ -77,11 +73,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0),
-	hNV0BB(0),
-	hNV0BG(0),
-	hNADBB(0),
-	hNADBG(0),
 	fTOFmask(0) 
 
 {
@@ -112,11 +103,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0),
-	hNV0BB(0),
-	hNV0BG(0),
-	hNADBB(0),
-	hNADBG(0),
 	fTOFmask(0) 
 
 {
@@ -147,8 +133,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   
-  fOldRun = -1;
-
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
@@ -163,25 +147,20 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(fHistMCTriggers);
   
   fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
-  fTreeJPsi ->Branch("fPt", &fPt, "fPt/D");
-  fTreeJPsi ->Branch("fY", &fY, "fY/D");
-  fTreeJPsi ->Branch("fM", &fM, "fM/D");
+  fTreeJPsi ->Branch("fPt", &fPt, "fPt/F");
+  fTreeJPsi ->Branch("fY", &fY, "fY/F");
+  fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreeJPsi ->Branch("fSign", &fSign, "fSign/I");
-  fTreeJPsi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
-  fTreeJPsi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreeJPsi ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
-  fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreeJPsi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
+  fTreeJPsi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
+  fTreeJPsi ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
+  fTreeJPsi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
+  fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
   fTreeJPsi ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
   fTreeJPsi ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
-  fTreeJPsi ->Branch("fNV0BB", &fNV0BB, "fNV0BB/I");
-  fTreeJPsi ->Branch("fNV0BG", &fNV0BG, "fNV0BG/I");
-  fTreeJPsi ->Branch("fNADBB", &fNADBB, "fNADBB/I");
-  fTreeJPsi ->Branch("fNADBG", &fNADBG, "fNADBG/I");
-  fTreeJPsi ->Branch("fGoodBC", &fGoodBC, "fGoodBC/O");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -189,56 +168,51 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(fTreeJPsi);
   
   fTreePhi = new TTree("fTreePhi", "fTreePhi");
-  fTreePhi ->Branch("fPt", &fPt, "fPt/D");
-  fTreePhi ->Branch("fY", &fY, "fY/D");
-  fTreePhi ->Branch("fM", &fM, "fM/D");
+  fTreePhi ->Branch("fPt", &fPt, "fPt/F");
+  fTreePhi ->Branch("fY", &fY, "fY/F");
+  fTreePhi ->Branch("fM", &fM, "fM/F");
   fTreePhi ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreePhi ->Branch("fSign", &fSign, "fSign/I");
-  fTreePhi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
-  fTreePhi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreePhi ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreePhi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
-  fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreePhi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
+  fTreePhi ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
+  fTreePhi ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
+  fTreePhi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
+  fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreePhi);
   
   fTreeRho = new TTree("fTreeRho", "fTreeRho");
-  fTreeRho ->Branch("fPt", &fPt, "fPt/D");
-  fTreeRho ->Branch("fY", &fY, "fY/D");
-  fTreeRho ->Branch("fM", &fM, "fM/D");
+  fTreeRho ->Branch("fPt", &fPt, "fPt/F");
+  fTreeRho ->Branch("fY", &fY, "fY/F");
+  fTreeRho ->Branch("fM", &fM, "fM/F");
   fTreeRho ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreeRho ->Branch("fSign", &fSign, "fSign/I");
-  fTreeRho ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
-  fTreeRho ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreeRho ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
-  fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreeRho ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
+  fTreeRho ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
+  fTreeRho ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
+  fTreeRho ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
+  fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
   fTreeRho ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
-  fTreeRho ->Branch("fNV0BB", &fNV0BB, "fNV0BB/I");
-  fTreeRho ->Branch("fNV0BG", &fNV0BG, "fNV0BG/I");
-  fTreeRho ->Branch("fNADBB", &fNADBB, "fNADBB/I");
-  fTreeRho ->Branch("fNADBG", &fNADBG, "fNADBG/I");
-  fTreeRho ->Branch("fGoodBC", &fGoodBC, "fGoodBC/O");
   fTreeRho ->Branch("fTOFmask", &fTOFmask);
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
   fTreePsi2s = new TTree("fTreePsi2s", "fTreePsi2s");
-  fTreePsi2s ->Branch("fPt", &fPt, "fPt/D");
-  fTreePsi2s ->Branch("fY", &fY, "fY/D");
-  fTreePsi2s ->Branch("fM", &fM, "fM/D");
+  fTreePsi2s ->Branch("fPt", &fPt, "fPt/F");
+  fTreePsi2s ->Branch("fY", &fY, "fY/F");
+  fTreePsi2s ->Branch("fM", &fM, "fM/F");
   fTreePsi2s ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreePsi2s ->Branch("fSign", &fSign, "fSign/I");
-  fTreePsi2s ->Branch("fDiLeptonM", &fDiLeptonM, "fDiLeptonM/D");
-  fTreePsi2s ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/D");
-  fTreePsi2s ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
-  fTreePsi2s ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fTreePsi2s ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
-  fTreePsi2s ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
-  fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreePsi2s ->Branch("fDiLeptonM", &fDiLeptonM, "fDiLeptonM/F");
+  fTreePsi2s ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/F");
+  fTreePsi2s ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
+  fTreePsi2s ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
+  fTreePsi2s ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
+  fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
+  fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC){ 
   	fTreePsi2s ->Branch("fFOFiredChips", &fFOFiredChips);
@@ -247,9 +221,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(fTreePsi2s);
     
   fTreeGen = new TTree("fTreeGen", "fTreeGen");
-  fTreeGen ->Branch("fPt", &fPt, "fPt/D");
-  fTreeGen ->Branch("fY", &fY, "fY/D");
-  fTreeGen ->Branch("fM", &fM, "fM/D");
+  fTreeGen ->Branch("fPt", &fPt, "fPt/F");
+  fTreeGen ->Branch("fY", &fY, "fY/F");
+  fTreeGen ->Branch("fM", &fM, "fM/F");
   fTreeGen ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fOutputList->Add(fTreeGen);
    
@@ -302,19 +276,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
-  
-  hNLooseTracks = new TH1D("hNLooseTracks"," ",10000,0,10000);
-  fOutputList->Add(hNLooseTracks);
-  
-  hNV0BB = new TH1D("hNV0BB"," ",65,-0.5,64.5);
-  fOutputList->Add(hNV0BB);
-  hNV0BG = new TH1D("hNV0BG"," ",65,-0.5,64.5);
-  fOutputList->Add(hNV0BG);
-  hNADBB = new TH1D("hNADBB"," ",16,-0.5,16.5);
-  fOutputList->Add(hNADBB);
-  hNADBG = new TH1D("hNADBG"," ",16,-0.5,16.5);
-  fOutputList->Add(hNADBG);
-  
+    
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -328,77 +290,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(!aod) return;
   
   TString trigger = aod->GetFiredTriggerClasses();
-  if(!trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
-  
-  Int_t goodBCs[22];
+  if(!isMC && !trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
    
   fRunNumber = aod->GetRunNumber();
   
-  if(fOldRun != fRunNumber){
-  	for(Int_t i=0;i<22;i++)goodBCs[i] = -1;
-  	AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
-  	AliTriggerConfiguration *ctpCfg = (AliTriggerConfiguration*)entry->GetObject();
-  	TObjArray bcMask = ctpCfg->GetMasks();
-  	fBCmask = (AliTriggerBCMask*)bcMask.At(0);
-  	Int_t nTrainStarts = 0;
-  	Int_t nBCs = 0;
-  	Int_t currentBC = 0;
-
-  	for(Int_t i=0; i<3564 ; i++){
-  		if(!fBCmask->GetMask(i)){
-			//cout<<"This "<<i<<endl;
-			nBCs++;
-			Bool_t isFirst = kTRUE;
-			for(Int_t j=1; j<20; j++){
-				currentBC = i-j;
-				if(currentBC<0)currentBC = 3564 - j;
-				//cout<<currentBC<<endl;
-				if(!fBCmask->GetMask(currentBC))isFirst = kFALSE;
-				}
-			if(isFirst){
-				goodBCs[nTrainStarts] = i;
-				nTrainStarts++;
-				cout<<"Train start BC "<<i<<endl;
-				}
-			}
-		}
-	fOldRun = fRunNumber;
-	}
-	
-  
-  fGoodBC = kFALSE;
-  Int_t thisEventBC = aod ->GetBunchCrossNumber();
-  for(Int_t i=0;i<22;i++)if(thisEventBC == goodBCs[i])fGoodBC = kTRUE;
-  
   AliAODVZERO *fV0data = aod ->GetVZEROData();
   AliAODAD *fADdata = aod ->GetADData();
-
-  fNV0BB = 0;
-  fNV0BG = 0;
-  fNADBB = 0;
-  fNADBG = 0;
-  Int_t previousBC = 0;
-  for(Int_t i=1;i<11;i++){
-  	previousBC = thisEventBC - i;
-	if(previousBC<0)previousBC = 3564 - i;
-	if(!fBCmask->GetMask(previousBC)){
-		for(Int_t V0channel = 0; V0channel<64; V0channel++){
-			fNV0BB += fV0data->GetPFBBFlag(V0channel,10-i);
-			fNV0BG += fV0data->GetPFBGFlag(V0channel,10-i);
-			}
-		for(Int_t ADchannel = 0; ADchannel<16; ADchannel++){
-			fNADBB += fADdata->GetPFBBFlag(ADchannel,10-i);
-			fNADBG += fADdata->GetPFBGFlag(ADchannel,10-i);
-			}
-		break;
-		}
-	}
-  if(trigger.Contains("CCUP8-B")){
-  	hNV0BB->Fill(fNV0BB);
-  	hNV0BG->Fill(fNV0BG);
-  	hNADBB->Fill(fNADBB);
-  	hNADBG->Fill(fNADBG);
-	}
   
   if(isMC) RunMC(aod);
   
@@ -407,8 +304,11 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   AliAODZDC *fZDCdata = aod->GetZDCData();
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  fZNAtime = fZDCdata->GetZNATime();
-  fZNCtime = fZDCdata->GetZNCTime();
+
+  for (Int_t i=0;i<4;i++){ 
+  	fZNAtime[i] = fZDCdata->GetZNATDCm(i);
+  	fZNCtime[i] = fZDCdata->GetZNCTDCm(i);
+	}
   
   Int_t fV0Adecision = fV0data->GetV0ADecision();
   Int_t fV0Cdecision = fV0data->GetV0CDecision();
@@ -799,22 +699,39 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   if(!arrayMC) return;
 
   vGenerated.SetXYZM(0.,0.,0.,0.);
+  Bool_t motherFound = kFALSE;
   //loop over mc particles
   for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
     AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
     if(!mcPart) continue;
-
-    if(mcPart->GetMother() >= 0) continue;
     
-    if(cutEta && TMath::Abs(mcPart->Eta())>0.9)return;
+    if((TMath::Abs(mcPart->GetPdgCode()) == 443 || TMath::Abs(mcPart->GetPdgCode()) == 100443) && mcPart->GetMother() == -1){//Mother found
+    	fPt = mcPart->Pt();
+  	fY  = mcPart->Y();
+  	fM  = mcPart->GetCalcMass();
+	fTreeGen->Fill();
+	motherFound = kTRUE;
+	break;
+        }
     
-    TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
-    vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+    if(TMath::Abs(mcPart->GetPdgCode()) == 11 || 
+       TMath::Abs(mcPart->GetPdgCode()) == 13 ||
+       TMath::Abs(mcPart->GetPdgCode()) == 2212 ||
+       TMath::Abs(mcPart->GetPdgCode()) == 211||
+       TMath::Abs(mcPart->GetPdgCode()) == 22){
+       
+       if(mcPart->GetMother() != -1)continue;
+       if(cutEta && TMath::Abs(mcPart->GetPdgCode()) != 22 && TMath::Abs(mcPart->Eta())>0.9)return;
     
-    vGenerated += vDecayProduct;
+       TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
+       vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+    
+       vGenerated += vDecayProduct;
+       }
+       
     
   }//loop over mc particles 
-  FillTree(fTreeGen,vGenerated);
+  if(!motherFound)FillTree(fTreeGen,vGenerated);
 
 }//RunMC
 
@@ -830,7 +747,8 @@ void AliAnalysisTaskUpcNano_MB::Terminate(Option_t *)
 void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v) {
 
   fPt      = v.Pt();
-  fY       = v.Rapidity();
+  if(v.E() != v.Pz())fY = v.Rapidity();
+  else fY = -999;
   fM       = v.M();
 
   t->Fill();

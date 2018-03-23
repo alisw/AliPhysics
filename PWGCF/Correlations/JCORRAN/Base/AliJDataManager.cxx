@@ -27,7 +27,6 @@
 #include  "AliJMCTrack.h"
 #include  "AliJPhoton.h"
 #include  "AliJEventHeader.h"
-// TODO #include  "AliESDVZERO.h"
 #include "AliJHistogramInterface.h"
 
 #include  "AliJCard.h"
@@ -48,12 +47,7 @@ AliJDataManager::AliJDataManager(AliJCard *inCard, AliJHistogramInterface *histi
     fEventHeader(NULL), 
     fEventHeaderList(NULL), 
     fTrackList(NULL), 
-    fPhotonList(NULL), 
-    fCellList(NULL), 
-    fPhotonListRecalib(NULL), 
-    fCellListRecalib(NULL), 
     fMCTrackList(NULL),
-    fVZEROData(NULL),
     fRunInfoList(NULL),
     fhadronSelectionCut(0),
     fFilterMap(0),
@@ -89,12 +83,7 @@ AliJDataManager::AliJDataManager() :
     fEventHeader(NULL), 
     fEventHeaderList(NULL), 
     fTrackList(NULL), 
-    fPhotonList(NULL), 
-    fCellList(NULL), 
-    fPhotonListRecalib(NULL), 
-    fCellListRecalib(NULL), 
     fMCTrackList(NULL),
-    fVZEROData(NULL),
     fRunInfoList(NULL),
     fhadronSelectionCut(0),
     fFilterMap(0),
@@ -105,43 +94,6 @@ AliJDataManager::AliJDataManager() :
 {
   // default constructor
 }
-
-//______________________________________________________________________________
-/* prohibitted
-AliJDataManager::AliJDataManager(const AliJDataManager& obj) :
-    fChain(obj.fChain), 
-    fCard(obj.fCard), 
-    fhistos(obj.fhistos), 
-    fcorrelations(obj.fcorrelations),
-    fRunHeader(obj.fRunHeader), 
-    fEventHeader(obj.fEventHeader), 
-    fEventHeaderList(obj.fEventHeaderList), 
-    fTrackList(obj.fTrackList), 
-    fPhotonList(obj.fPhotonList), 
-    fCellList(obj.fCellList), 
-    fPhotonListRecalib(obj.fPhotonListRecalib), 
-    fCellListRecalib(obj.fCellListRecalib), 
-    fMCTrackList(obj.fMCTrackList),
-    fVZEROData(obj.fVZEROData),
-    fRunInfoList(obj.fRunInfoList),
-    fhadronSelectionCut(obj.fhadronSelectionCut),
-    fFilterMap(obj.fFilterMap),
-    fFName(obj.fFName),
-    fExecLocal(obj.fExecLocal),
-    fTriggerMask(obj.fTriggerMask),
-    fTrackCut(obj.fTrackCut)
-{
-    // copy constructor TODO: proper handling of pointer data members
-    JUNUSED(obj);
-}
-
-//______________________________________________________________________________
-AliJDataManager& AliJDataManager::operator=(const AliJDataManager& obj){
-  // equal sign TODO: contents
-  JUNUSED(obj);
-  return *this;
-}*/
-
 
 //______________________________________________________________________________
 
@@ -368,17 +320,8 @@ void AliJDataManager::ChainInputStream(const char* infileList){
             fChain->SetBranchAddress("HeaderList", &fEventHeaderList);
         if( fChain->FindBranch("TrackList") )
             fChain->SetBranchAddress("TrackList", &fTrackList);
-        if( fChain->FindBranch("PhotonList") )
-            fChain->SetBranchAddress("PhotonList", &fPhotonList);
-        if( fChain->FindBranch("CaloCellList") )
-            fChain->SetBranchAddress("CaloCellList", &fCellList);
         if( fChain->FindBranch("MCTrackList") )
             fChain->SetBranchAddress("MCTrackList", &fMCTrackList);
-
-        if( AliJRunTable::GetInstance().IsHeavyIon() && fChain->FindBranch("AliESDVZERO")) { // if fevent-plane sources were stored
-            fChain->SetBranchAddress("AliESDVZERO", &fVZEROData);
-            // TODO for FMD, TZERO
-        }
 
         // fChain->SetBranchAddress("AliJMCTrackList", &fMCTrackList);
         // Event Header

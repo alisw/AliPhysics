@@ -133,13 +133,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2012
         kLHC12,           //!< pp 8TeV
         // MC's corresponding to 2012 data
-        kLHC14e2a,        //!< anchored LHC12[a-h] pass 1
         kLHC14e2b,        //!< anchored LHC12[a-h] pass 1
-        kLHC14e2c,        //!< anchored LHC12[a-h] pass 1
         kLHC15h1,         //!< anchored LHC12[a-h] pass 2
         kLHC15h2,         //!< anchored LHC12[a-h] pass 2
-        kLHC16c2,         //!< anchored LHC12[a-h] pass 2 - JJ
-        kLHC16c2_plus,    //!< anchored LHC12[a-h] pass 2 - JJ - additional stat
+        kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -174,8 +171,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16a2a,        //!< anchored LHC15h pass 1
         kLHC16a2b,        //!< anchored LHC15h pass 1
         kLHC16a2c,        //!< anchored LHC15h pass 1
-	kLHC15P2EPos,     //!< anchored LHC15f pass 2
-        kLHC15P2Pyt8,     //!< anchored LHC15[h,i] pass 2	
+        kLHC15P2EPos,     //!< anchored LHC15f pass 2
+        kLHC15P2Pyt8,     //!< anchored LHC15[h,i] pass 2
         kLHC15l1a2,       //!< anchored LHC15n pass 1
         kLHC15l1b2,       //!< anchored LHC15n pass 1
         kLHC15k1a1,       //!< LHC15o low IR firstPhysics
@@ -189,15 +186,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
         kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
         kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
-	kLHC16i1a,        //!< anchored LHC15o pass1 - LF added (multi-)strange 0-10%
-	kLHC16i1b,        //!<                                                  10-50%
-	kLHC16i1c,        //!<                                                  50-90%
-	kLHC16i2a,        //!< anchored LHC15o pass1 - HF added hadronic decays 0-10%
-	kLHC16i2b,        //!<                                                  10-50%
-	kLHC16i2c,        //!<                                                  50-90%
-	kLHC16i3a,        //!< anchored LHC15o pass1 - HF added electron decays 0-10%
-	kLHC16i3b,        //!<                                                  10-50%
-	kLHC16i3c,        //!<                                                  50-90%
+        kLHC16i1a,        //!< anchored LHC15o pass1 - LF added (multi-)strange 0-10%
+        kLHC16i1b,        //!<                                                  10-50%
+        kLHC16i1c,        //!<                                                  50-90%
+        kLHC16i2a,        //!< anchored LHC15o pass1 - HF added hadronic decays 0-10%
+        kLHC16i2b,        //!<                                                  10-50%
+        kLHC16i2c,        //!<                                                  50-90%
+        kLHC16i3a,        //!< anchored LHC15o pass1 - HF added electron decays 0-10%
+        kLHC16i3b,        //!<                                                  10-50%
+        kLHC16i3c,        //!<                                                  50-90%
         kLHC16h2a,        //!< anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        //!< anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        //!< anchored LHC15o pass1 - jet-jet 50-90%
@@ -213,7 +210,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
         kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
-        kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses  
+        kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
 
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
@@ -221,10 +218,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2016
         kLHC16NomB,         //!< pp 13 TeV nominal B field
         kLHC16LowB,         //!< pp 13 TeV low B field
-        kLHC16q,            //!< pPb 5 TeV
+        kLHC16qt,           //!< pPb 5 TeV
         kLHC16r,            //!< pPb 8 TeV
         kLHC16s,            //!< pPb 8 TeV
-        kLHC16t,            //!< pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16P1Pyt8,       //!< anchored LHC16x pass 1 nom B-field - general purpose Pythia8
         kLHC16P1Pyt8LowB,   //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
@@ -253,28 +249,20 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
         kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
-        
+
         //heavy flavour MC pPb k17d2a_fast,
-        kLHC17d2a_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
-        kLHC17d2a_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT 
-        kLHC17d2b_fast,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
-        kLHC17d2b_cent,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, CENT
+        kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
+        kLHC17d2b,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
 
         // 2017
-        kLHC17NomB,         //!< pp 13 TeV nominal B field
-        kLHC17LowB,         //!< pp 13 TeV low B field
-        kLHC17n,            //!< Xe-Xe 5.44 TeV
-	kLHC17p,            //!< pp 5 TeV
-	kLHC17q,            //!< pp 5 TeV
+        kLHC17NomB,           //!< pp 13 TeV nominal B field
+        kLHC17LowB,           //!< pp 13 TeV low B field
+        kLHC17n,              //!< Xe-Xe 5.44 TeV
+        kLHC17pq,             //!< pp 5 TeV
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
-	kLHC17l3b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, fast only
-        kLHC17l3b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT
-        kLHC17l3b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3, CENT woSDD
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
-	kLHC17l4b_fast,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, fast only
-        kLHC17l4b_cent,       //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT
-        kLHC17l4b_cent_woSDD, //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4, CENT woSDD
+        kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
         //13 TeV LHC2017
         kLHC17k1,               //!LHC17g added dielectrons from HF
         kLHC17k4,               //!LHC17i
@@ -287,8 +275,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
         kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
         kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
-
-	//
+        //13 TeV LHC2017 JJ
+        kLHC17P1JJ,              //!LHC17k JJ
+        kLHC17P1JJLowB,          //!LHC17k JJ
         kUnknownPeriod//!< kUnknownPeriod
       };
 
@@ -297,19 +286,21 @@ class AliConvEventCuts : public AliAnalysisCuts {
        * @brief Supported collision systems
        */
       enum EnergyVar {
-        kUnset        = 0,  //!< not defined
-        k900GeV       = 1,  //!< pp 900 GeV
-        k2760GeV      = 2,  //!< pp 2.76TeV
-        k5TeV         = 3,  //!< pp 5 TeV
-        k7TeV         = 4,  //!< pp 7 TeV
-        k8TeV         = 5,  //!< pp 8 TeV
-        k13TeV        = 6,  //!< pp 13 TeV
-        k13TeVLowB    = 7,  //!< pp 13 TeV low B
-        kpPb5TeV      = 8,  //!< pPb 5 TeV
-        kpPb8TeV      = 9,  //!< pPb 8 TeV
+        kUnset        = 0,   //!< not defined
+        k900GeV       = 1,   //!< pp 900 GeV
+        k2760GeV      = 2,   //!< pp 2.76TeV
+        k5TeV         = 3,   //!< pp 5 TeV
+        k7TeV         = 4,   //!< pp 7 TeV
+        k8TeV         = 5,   //!< pp 8 TeV
+        k13TeV        = 6,   //!< pp 13 TeV
+        k13TeVLowB    = 7,   //!< pp 13 TeV low B
+        kpPb5TeV      = 8,   //!< pPb 5 TeV
+        kpPb8TeV      = 9,   //!< pPb 8 TeV
         kPbPb2760GeV  = 10,  //!< PbPb 2.76TeV
-        kPbPb5TeV     = 11, //!< PbPb 5 TeV
-        kXeXe5440GeV  = 12  //!< XeXe 5.44 TeV
+        kPbPb5TeV     = 11,  //!< PbPb 5 TeV
+        kXeXe5440GeV  = 12,  //!< XeXe 5.44 TeV
+        kpPb5TeVR2    = 13   //!< pPb 5 TeV run 2
+
       };
 
 
@@ -653,7 +644,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,42)
+      ClassDef(AliConvEventCuts,46)
       /// \endcond
 };
 

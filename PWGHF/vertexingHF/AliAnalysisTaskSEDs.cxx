@@ -109,7 +109,6 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fnSparse(0),
   fnSparseIP(0),
   fImpParSparse(0x0),
-  fImpParSparseMC(0x0),
   fMultSelectionObjectName("MultSelection"),
   fCentEstName("off")
 {
@@ -153,6 +152,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   for (Int_t i=0; i<4; i++) {
     fnSparseMC[i]=0;
     fnSparseMCDplus[i]=0;
+    fImpParSparseMC[i]=0;
   }
 }
 
@@ -212,7 +212,6 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fnSparse(0),
   fnSparseIP(0),
   fImpParSparse(0x0),
-  fImpParSparseMC(0x0),
   fMultSelectionObjectName("MultSelection"),
   fCentEstName("off")
 {
@@ -258,6 +257,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   for (Int_t i=0; i<4; i++) {
     fnSparseMC[i]=0;
     fnSparseMCDplus[i]=0;
+    fImpParSparseMC[i]=0;
   }
     
   Int_t nptbins=fAnalysisCuts->GetNPtBins();
@@ -363,7 +363,7 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     delete fnSparseIP;
     if(fFillImpParSparse) {
       delete fImpParSparse;
-      delete fImpParSparseMC;
+      for(Int_t i=0; i<4; i++) delete fImpParSparseMC[i];
     }
     for (Int_t i=0; i<4; i++) {
       delete fnSparseMC[i];
@@ -648,140 +648,15 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fPtVsMassK0st);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
-
-  nInvMassBins=(Int_t)(0.7/fMassBinSize+0.5);
-  minMass=massDs-0.5*nInvMassBins*fMassBinSize;
-  maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
-    
-  Int_t nTrklBins = 1;
-  if(fUseTrkl) nTrklBins = 300;
-  Int_t nCentrBins = 1;
-  if(fUseCentrAxis) nCentrBins = 101;
-
-  Int_t nBinsReco[knVarForSparse]   = {nInvMassBins,  20,     30,     14,    14,   20,    10,   10,     14,     6,     6,   12,  nTrklBins, nCentrBins};
-  Double_t xminReco[knVarForSparse] = {minMass,       0.,     0.,     0.,    0.,   0.,   90.,   90.,    0.,    7.,    0.,   0.,         1.,         0.};
-  Double_t xmaxReco[knVarForSparse] = {maxMass,      20.,     15,    70.,   70.,  10.,  100.,  100.,   70.,   10.,    3.,   6.,       301.,       101.};
-  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","N tracklets",Form("Percentile (%s)",fCentEstName.Data())};
-  if(fSystem == 1) { //pPb,PbPb
-    nInvMassBins=(Int_t)(0.45/fMassBinSize+0.5);
-    minMass=massDs-0.5*nInvMassBins*fMassBinSize;
-    maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
-    nBinsReco[0] = nInvMassBins; //Ds mass
-    xminReco[0]  = minMass;
-    xmaxReco[0]  = maxMass;
-        
-    nBinsReco[1] = 16; //pt
-    xminReco[1]  = 0.;
-    xmaxReco[1]  = 16.;
-        
-    nBinsReco[2] =  12; //#Delta Mass(KK)
-    xmaxReco[2]  = 12.;
-        
-    nBinsReco[3] = 7; //dlen
-    nBinsReco[4] = 7; //dlenxy
-    nBinsReco[5] = 10; //ndlenxy
-        
-    nBinsReco[6] =    6; //cosP
-    xminReco[6]  =  97.;
-    xmaxReco[6]  = 100.;
-        
-    nBinsReco[7] =    6; //cosPxy
-    xminReco[7]  =  97.;
-    xmaxReco[7]  = 100.;
-  }
-    
-  Int_t nBinsAcc[knVarForSparseAcc]   = {20,   20,  nTrklBins};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -10.,         1.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {20,  10.,       301.};
-    
-  Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
-  Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
-  Double_t xmaxIP[knVarForSparseIP] = {20.,  10.,  10.,  10.,  10., 3.};
-  TString axisIP[knVarForSparseIP]  = {"motherPt","maxNormImp","IP0","IP1","IP2","candType"};
-    
+  
+  //Sparses for Cut variation and IP studies
   if(fFillSparse) {
-        
-    if(fReadMC) {
-      TString label[2] = {"fromC","fromB"};
-      for (Int_t i=0; i<2; i++) {
-	TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
-	fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s",label[i].Data()), titleSparse.Data(),
-				       knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
-	fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-	fnSparseMC[i]->GetAxis(1)->SetTitle("y");
-	fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
-	fOutput->Add(fnSparseMC[i]);
-                
-	//Dplus
-	if(fFillSparseDplus) {
-	  titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
-	  fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseAccDplus_%s",label[i].Data()), titleSparse.Data(),
-					      knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
-	  fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-	  fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
-	  fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
-	  fOutput->Add(fnSparseMCDplus[i]);
-	}
-      }
-      for (Int_t i=2; i<4; i++) {
-	fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s",label[i-2].Data()),Form("MC nSparse (Reco Step)- %s",label[i-2].Data()),
-				       knVarForSparse, nBinsReco, xminReco, xmaxReco);
-	for (Int_t j=0; j<knVarForSparse; j++) {
-	  fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-	}
-	fOutput->Add(fnSparseMC[i]);
-                
-	//Dplus
-	if(fFillSparseDplus) {
-	  fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s",label[i-2].Data()),Form("MC nSparse D^{+} (Reco Step)- %s",label[i-2].Data()),
-					      knVarForSparse, nBinsReco, xminReco, xmaxReco);
-	  for (Int_t j=0; j<knVarForSparse; j++) {
-	    fnSparseMCDplus[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-	  }
-	  fOutput->Add(fnSparseMCDplus[i]);
-	}
-      }
-            
-      fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", knVarForSparseIP, nBinsIP, xminIP, xmaxIP);
-      for (Int_t j=0; j<knVarForSparseIP; j++) {
-	fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
-      }
-      fnSparseIP->GetAxis(5)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
-      fOutput->Add(fnSparseIP);
-    }
-    else {
-      fnSparse = new THnSparseF("fnSparse","nSparse", knVarForSparse, nBinsReco, xminReco, xmaxReco);
-      for (Int_t j=0; j<knVarForSparse; j++) {
-	fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-      }
-      fOutput->Add(fnSparse);
-    }
+    CreateCutVarsAndEffSparses();
+    if(fReadMC) CreateIPSparse();
   }
     
-  if(fFillImpParSparse) {
-    Int_t nBinsImpPar[3]   = { 20,   200,  350};
-    Double_t xminImpPar[3] = { 0.,    0.,  1.6};
-    Double_t xmaxImpPar[3] = {20., 1000.,  2.3};
-    TString axisImpPar[3]  = {"Pt","imp.par. (#mum)","invMassDsAllPhi"};
-    if(!fReadMC) {
-      fImpParSparse = new THnSparseF("fImpParSparse","ImpParSparse", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
-      for (Int_t j=0; j<3; j++) {
-	fImpParSparse->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
-      }
-      fOutput->Add(fImpParSparse);
-    }
-    else {
-      nBinsImpPar[2] = 3;
-      xminImpPar[2]  = 0.;
-      xmaxImpPar[2]  = 3.;
-      axisImpPar[2]  = "candType (0.5=bkg; 1.5=prompt; 2.5=FD)";
-      fImpParSparseMC  = new THnSparseF("fImpParSparseMC","ImpParSparseMC", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
-      for (Int_t j=0; j<3; j++) {
-	fImpParSparseMC->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
-      }
-      fOutput->Add(fImpParSparseMC);
-    }
-  }
+  //Sparses for Impact parameter fits
+  if(fFillImpParSparse) CreateImpactParameterSparses();
     
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -790,14 +665,17 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   PostData(1,fOutput);
   PostData(3,fCounter);
     
-  if(fFillNtuple>0){
+  if(fFillNtuple>0 && fFillNtuple<4){
     OpenFile(4); // 4 is the slot number of the ntuple
         
     fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:P0:P1:P2:PidTrackBit0:PidTrackBit1:PidTrackBit2:PointingAngle:PointingAngleXY:DecLeng:DecLengXY:NorDecLeng:NorDecLengXY:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK:centrality:runNumber");
-        
   }
-    
-    
+  else if(fFillNtuple==4) {
+    OpenFile(4); // 4 is the slot number of the ntuple
+
+    fNtupleDs = new TNtuple("fNtupleDs","Ds","Pt:InvMass:d0:origin");
+  }
+  
   return;
 }
 
@@ -958,8 +836,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
     
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
-        
-        
+    
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     fHistNEvents->Fill(11);
         
@@ -990,7 +867,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Double_t rapid=d->YDs();
     fYVsPt->Fill(ptCand,rapid);
     Bool_t isFidAcc=fAnalysisCuts->IsInFiducialAcceptance(ptCand,rapid);
-        
+    
     if(isFidAcc){
             
       Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kAll,aod);
@@ -1049,7 +926,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
                 
 	fChanHist[0]->Fill(retCodeAnalysisCuts);
                 
-                
+        
 	Double_t invMass = 0.;
 	Int_t indexMCKKpi=-1;
 	Int_t indexMCpiKK=-1;
@@ -1067,7 +944,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
 	    AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
 	    pdgCode0=TMath::Abs(p->GetPdgCode());
-                        
+
 	    if(isKKpi){
 	      if(pdgCode0==321) {
 		indexMCKKpi=GetSignalHistoIndex(iPtBin);
@@ -1100,12 +977,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
               Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
               AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
               pdgCode0=TMath::Abs(p->GetPdgCode());
-	    }
-	  }
-	}
+      }
+    }
+  }
           
 	Double_t candType = 0.5; //for bkg
-
+  Float_t trueImpParDsFromB = 99999.;
 	if(isKKpi){
 	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,1,iPtBin);
         
@@ -1133,14 +1010,17 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      if(fFillSparse) {
 		if(indexMCKKpi==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs;
-		  if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+      if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
+        partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+      }
 		  if(labDplus >= 0) partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
-		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+      Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
 		    candType = 1.5;
 		  }
 		  if(orig==5) {
 		    candType = 2.5;
+        if(isPhiKKpi && fFillImpParSparse) {trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader,arrayMC,partDs)*10000;}
 		  }
 		}
 	      }
@@ -1148,19 +1028,28 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass,weightKKpi);
 	  }
 	  if(isPhiKKpi && fFillImpParSparse) {
-            Double_t impParxy = d->ImpParXY()*10000.;
-            if(!fReadMC) {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
-	      fImpParSparse->Fill(array4ImpPar);
-            }
-            else {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
-	      fImpParSparseMC->Fill(array4ImpPar);
-            }
-	  }
-	}
-	if(ispiKK){
-	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
+      Double_t impParxy = d->ImpParXY()*10000.;
+      Double_t array4ImpPar[3] = {invMass,ptCand,impParxy};
+      if(!fReadMC) fImpParSparse->Fill(array4ImpPar);
+      else {
+        if(candType == 1.5 && indexMCKKpi==GetSignalHistoIndex(iPtBin)) fImpParSparseMC[0]->Fill(array4ImpPar);
+        else if(candType == 2.5 && indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
+          fImpParSparseMC[1]->Fill(array4ImpPar);
+          Double_t array4ImpParTrueB[3] = {invMass,ptCand,trueImpParDsFromB};
+          fImpParSparseMC[2]->Fill(array4ImpParTrueB);
+        }
+        else fImpParSparseMC[3]->Fill(array4ImpPar);
+      }
+    }
+    if(isPhiKKpi && fFillNtuple==4) {
+      Float_t impParxy = d->ImpParXY()*10000.;
+      Float_t tmp[4] = {(Float_t)ptCand,(Float_t)invMass,impParxy,(Float_t)candType};
+      fNtupleDs->Fill(tmp);
+      PostData(4,fNtupleDs);
+    }
+  }
+  if(ispiKK){
+    if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
               
 	  invMass=d->InvMassDspiKK();
 	  fMassHist[index]->Fill(invMass,weightpiKK);
@@ -1186,14 +1075,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      if(fFillSparse) {
 		if(indexMCpiKK==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs;
-		  if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+      if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
 		  if(labDplus >= 0) partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
-		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+      Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
 		    candType = 1.5;
 		  }
 		  if(orig==5) {
 		    candType = 2.5;
+        if(isPhipiKK && fFillImpParSparse) {trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader,arrayMC,partDs)*10000;}
 		  }
 		}
 	      }
@@ -1202,18 +1092,26 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  }
 	  if(isPhipiKK && fFillImpParSparse) {
 	    Double_t impParxy = d->ImpParXY()*10000.;
-	    if(!fReadMC) {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
-	      fImpParSparse->Fill(array4ImpPar);
-	    }
+      Double_t array4ImpPar[3] = {invMass,ptCand,impParxy};
+      if(!fReadMC) fImpParSparse->Fill(array4ImpPar);
 	    else {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
-	      fImpParSparseMC->Fill(array4ImpPar);
+	      if(candType == 1.5 && indexMCpiKK==GetSignalHistoIndex(iPtBin)) fImpParSparseMC[0]->Fill(array4ImpPar);
+        else if(candType == 2.5 && indexMCpiKK==GetSignalHistoIndex(iPtBin)) {
+          fImpParSparseMC[1]->Fill(array4ImpPar);
+          Double_t array4ImpParTrueB[3] = {invMass,ptCand,trueImpParDsFromB};
+          fImpParSparseMC[2]->Fill(array4ImpParTrueB);
+        }
+        else fImpParSparseMC[3]->Fill(array4ImpPar);
 	    }
 	  }
+    if(isPhipiKK && fFillNtuple==4) {
+      Float_t impParxy = d->ImpParXY()*10000.;
+      Float_t tmp[4] = {(Float_t)ptCand,(Float_t)invMass,impParxy,(Float_t)candType};
+      fNtupleDs->Fill(tmp);
+      PostData(4,fNtupleDs);
+    }
 	}
-          
-          
+  
 	///////////////////// CODE FOR NSPARSE /////////////////////////
           
 	const Int_t nProng = 3;
@@ -1232,6 +1130,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t cosPiKPhi=-99.;
 	Double_t normIP=-999.;                //to store the maximum topomatic var. among the 3 prongs
 	Double_t normIPprong[nProng];        //to store IP of k,k,pi
+        Double_t absimpparxy=TMath::Abs(d->ImpParXY());
         for(Int_t ijp=0; ijp<nProng; ijp++) normIPprong[ijp]=-999.;
 
 	Double_t ptWeight = 1.;
@@ -1272,7 +1171,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[2] = tmpNormIP[2];
                         
 	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
-						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent};
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent,absimpparxy*10000};
           
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
@@ -1311,7 +1210,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[2] = tmpNormIP[0];
                         
 	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
-						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent};
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent,absimpparxy*10000};
           
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
@@ -1434,7 +1333,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	}
                 
 	Float_t tmp[37];
-	if(fFillNtuple>0){
+	if(fFillNtuple>0 && fFillNtuple<4){
                     
 	  if ((fFillNtuple==1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple==2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple==3 && (isKKpi || ispiKK))){
                         
@@ -1510,6 +1409,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     
   return;
 }
+
 
 //_________________________________________________________________
 
@@ -1686,6 +1586,220 @@ void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, 
 }
 
 //_________________________________________________________________________
+void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses() {
+  
+  Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  Int_t nInvMassBins=(Int_t)(0.7/fMassBinSize+0.5);
+  Double_t minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+  Double_t maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+  
+  Int_t nTrklBins = 1;
+  if(fUseTrkl) nTrklBins = 300;
+  Int_t nCentrBins = 1;
+  if(fUseCentrAxis) nCentrBins = 101;
+  
+  Int_t nBinsReco[knVarForSparse]   = {nInvMassBins,24, 30, 14, 14, 20, 10, 10, 14, 6, 6, 12, nTrklBins, nCentrBins, 30};
+  Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 1., 0., 0.};
+  Double_t xmaxReco[knVarForSparse] = {maxMass, 24., 15., 70., 70., 10., 100., 100., 70., 10., 3., 6., 301., 101., 300.};
+  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","N tracklets",Form("Percentile (%s)",fCentEstName.Data()),"ImpPar_{xy}"};
+ 
+  if(fSystem == 1) { //pPb,PbPb
+    nInvMassBins=(Int_t)(0.45/fMassBinSize+0.5);
+    minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+    maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+    nBinsReco[0] = nInvMassBins; //Ds mass
+    xminReco[0]  = minMass;
+    xmaxReco[0]  = maxMass;
+    
+    nBinsReco[1] = 16; //pt
+    xminReco[1]  = 0.;
+    xmaxReco[1]  = 16.;
+    
+    nBinsReco[2] =  12; //#Delta Mass(KK)
+    xmaxReco[2]  = 12.;
+    
+    nBinsReco[3] = 7; //dlen
+    nBinsReco[4] = 7; //dlenxy
+    nBinsReco[5] = 10; //ndlenxy
+    
+    nBinsReco[6] =    6; //cosP
+    xminReco[6]  =  97.;
+    xmaxReco[6]  = 100.;
+    
+    nBinsReco[7] =    6; //cosPxy
+    xminReco[7]  =  97.;
+    xmaxReco[7]  = 100.;
+  }
+  
+  Int_t nBinsAcc[knVarForSparseAcc]   = {20,   20,  nTrklBins};
+  Double_t xminAcc[knVarForSparseAcc] = {0., -10.,         1.};
+  Double_t xmaxAcc[knVarForSparseAcc] = {20,  10.,       301.};
+
+  if(fReadMC) {
+    TString label[2] = {"fromC","fromB"};
+    for (Int_t i=0; i<2; i++) {
+      TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
+      fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s",label[i].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+      fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+      fnSparseMC[i]->GetAxis(1)->SetTitle("y");
+      fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
+      fOutput->Add(fnSparseMC[i]);
+      
+      //Dplus
+      if(fFillSparseDplus) {
+        titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
+        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseAccDplus_%s",label[i].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+        fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
+        fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
+        fOutput->Add(fnSparseMCDplus[i]);
+      }
+    }
+    for (Int_t i=2; i<4; i++) {
+      fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s",label[i-2].Data()),Form("MC nSparse (Reco Step)- %s",label[i-2].Data()), knVarForSparse, nBinsReco, xminReco, xmaxReco);
+      for (Int_t j=0; j<knVarForSparse; j++) {
+        fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+      fOutput->Add(fnSparseMC[i]);
+      
+      //Dplus
+      if(fFillSparseDplus) {
+        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s",label[i-2].Data()),Form("MC nSparse D^{+} (Reco Step)- %s",label[i-2].Data()), knVarForSparse, nBinsReco, xminReco, xmaxReco);
+        for (Int_t j=0; j<knVarForSparse; j++) {
+          fnSparseMCDplus[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+        }
+        fOutput->Add(fnSparseMCDplus[i]);
+      }
+    }
+  } //end MC
+  else {
+    fnSparse = new THnSparseF("fnSparse","nSparse", knVarForSparse, nBinsReco, xminReco, xmaxReco);
+    for (Int_t j=0; j<knVarForSparse; j++) {
+      fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+    }
+    fOutput->Add(fnSparse);
+  }
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDs::CreateIPSparse() {
+  
+  Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
+  Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
+  Double_t xmaxIP[knVarForSparseIP] = {20.,  10.,  10.,  10.,  10., 3.};
+  TString axisIP[knVarForSparseIP]  = {"motherPt","maxNormImp","IP0","IP1","IP2","candType"};
+  
+  fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", knVarForSparseIP, nBinsIP, xminIP, xmaxIP);
+  for (Int_t j=0; j<knVarForSparseIP; j++) {
+    fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
+  }
+  fnSparseIP->GetAxis(5)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
+  fOutput->Add(fnSparseIP);
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDs::CreateImpactParameterSparses() {
+
+  /// Histos for impact parameter study
+  Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  Int_t nInvMassBins=(Int_t)(0.7/fMassBinSize+0.5);
+  Double_t minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+  Double_t maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+
+  Int_t nptbins=48;
+  Double_t ptmin=0.;
+  Double_t ptmax=24.;
+  
+  //dimensions for THnSparse
+  TString axTit[kVarForImpPar]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)"};
+  
+  Int_t nbins[kVarForImpPar]={nInvMassBins,nptbins,1000};
+  Double_t xmin[kVarForImpPar]={minMass,ptmin,-1000};
+  Double_t xmax[kVarForImpPar]={maxMass,ptmax,1000};
+  
+  //mass, pt, imppar
+  fImpParSparse=new THnSparseF("hMassPtImpParAll","Mass vs. pt vs. imppar - All",kVarForImpPar,nbins,xmin,xmax);
+  fImpParSparseMC[0]=new THnSparseF("hMassPtImpParPrompt","Mass vs. pt vs. imppar - promptD",kVarForImpPar,nbins,xmin,xmax);
+  fImpParSparseMC[1]=new THnSparseF("hMassPtImpParBfeed","Mass vs. pt vs. imppar - DfromB",kVarForImpPar,nbins,xmin,xmax);
+  fImpParSparseMC[2]=new THnSparseF("hMassPtImpParTrueBfeed","Mass vs. pt vs. true imppar -DfromB",kVarForImpPar,nbins,xmin,xmax);
+  fImpParSparseMC[3]=new THnSparseF("hMassPtImpParBkg","Mass vs. pt vs. imppar - backgr.",kVarForImpPar,nbins,xmin,xmax);
+
+  if(!fReadMC) fOutput->Add(fImpParSparse);
+  else {
+    for(Int_t iSparse=0; iSparse<4; iSparse++) {
+      fOutput->Add(fImpParSparseMC[iSparse]);
+    }
+  }
+}
+
+//_________________________________________________________________________________________________
+Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const {
+  /// true impact parameter calculation
+  
+  Double_t vtxTrue[3];
+  mcHeader->GetVertex(vtxTrue);
+  Double_t origD[3];
+  partDs->XvYvZv(origD);
+  Short_t charge=partDs->Charge();
+  Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
+  for(Int_t iDau=0; iDau<3; iDau++){
+    pXdauTrue[iDau]=0.;
+    pYdauTrue[iDau]=0.;
+    pZdauTrue[iDau]=0.;
+  }
+  
+  Int_t nDau=partDs->GetNDaughters();
+  Int_t labelFirstDau = partDs->GetDaughter(0);
+  if(nDau==2){
+    Int_t theDau=0;
+    for(Int_t iDau=0; iDau<2; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+        AliError("Daughter particle not found in MC array");
+        return 99999.;
+      }
+      Int_t pdgCode=TMath::Abs(part->GetPdgCode());
+      if(pdgCode==211){
+        pXdauTrue[theDau]=part->Px();
+        pYdauTrue[theDau]=part->Py();
+        pZdauTrue[theDau]=part->Pz();
+        ++theDau;
+      }else{
+        Int_t nDauRes=part->GetNDaughters();
+        if(nDauRes==2){
+          Int_t labelFirstDauRes = part->GetDaughter(0);
+          for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
+            Int_t indDR = labelFirstDauRes+iDauRes;
+            AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
+            if(!partDR){
+              AliError("Daughter particle not found in MC array");
+              return 99999.;
+            }
+            
+            Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
+            if(pdgCodeDR==321){
+              pXdauTrue[theDau]=partDR->Px();
+              pYdauTrue[theDau]=partDR->Py();
+              pZdauTrue[theDau]=partDR->Pz();
+              ++theDau;
+            }
+          }
+        }
+      }
+    }
+  }
+  else {
+    AliError("Wrong number of decay prongs");
+    return 99999.;
+  }
+  
+  Double_t d0dummy[3]={0.,0.,0.};
+  AliAODRecoDecayHF aodDsMC(vtxTrue,origD,3,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
+  return aodDsMC.ImpParXY();
+}
+
+//_________________________________________________________________________
 void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5anddataoverLHC16i2a(){
   // weight function from the ratio of the LHC16i2a MC
   // 1.5-14 GeV/c using data and 1-1.5, 14-50 GeV/c using FONLL calculations
@@ -1741,6 +1855,21 @@ void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc(){
   fHistoPtWeight = new TH1F("histoWeight","histoWeight",400,0.,40.);
   fHistoPtWeight->Sumw2();
   Float_t binc[400]={1.179906, 1.091249, 1.047774, 1.045579, 1.071679, 1.112413, 1.167414, 1.236240, 1.310301, 1.390289, 1.471711, 1.553389, 1.626886, 1.692115, 1.760647, 1.813658, 1.850817, 1.886699, 1.907671, 1.934832, 1.955433, 1.966727, 1.987262, 1.996316, 2.013326, 1.973926, 1.931144, 1.871654, 1.812942, 1.752718, 1.690846, 1.635303, 1.572611, 1.523510, 1.459790, 1.402510, 1.331908, 1.261575, 1.192241, 1.127915, 1.061798, 0.998830, 0.933514, 0.871774, 0.812936, 0.762844, 0.719340, 0.686587, 0.644108, 0.615714, 0.579512, 0.545254, 0.510508, 0.479884, 0.447423, 0.426154, 0.408934, 0.388264, 0.376424, 0.361389, 0.347757, 0.331685, 0.318029, 0.305285, 0.290922, 0.278523, 0.269807, 0.262025, 0.254878, 0.249325, 0.238179, 0.230899, 0.224792, 0.216253, 0.207879, 0.204465, 0.201153, 0.195373, 0.190926, 0.185773, 0.178589, 0.175371, 0.168959, 0.167004, 0.161705, 0.156809, 0.152788, 0.149806, 0.146429, 0.143478, 0.140037, 0.134813, 0.134679, 0.128205, 0.126078, 0.125038, 0.122214, 0.116329, 0.115044, 0.112427, 0.110279, 0.108098, 0.105784, 0.102628, 0.101429, 0.099101, 0.095464, 0.093631, 0.091491, 0.090045, 0.088374, 0.086188, 0.085067, 0.083168, 0.080636, 0.079414, 0.077610, 0.075013, 0.074825, 0.073932, 0.071106, 0.071050, 0.069574, 0.066593, 0.066924, 0.064876, 0.065064, 0.062345, 0.061980, 0.060859, 0.061616, 0.058952, 0.058079, 0.057894, 0.058031, 0.056604, 0.055180, 0.054490, 0.053909, 0.051768, 0.052210, 0.049552, 0.050152, 0.048955, 0.047953, 0.047224, 0.045588, 0.044985, 0.043728, 0.042934, 0.043434, 0.041834, 0.040118, 0.040281, 0.039348, 0.038987, 0.037793, 0.036258, 0.036420, 0.035528, 0.034761, 0.033524, 0.033296, 0.033280, 0.031825, 0.031351, 0.030329, 0.031103, 0.030401, 0.029481, 0.029247, 0.029352, 0.029174, 0.028286, 0.028500, 0.028017, 0.027293, 0.027932, 0.026779, 0.026379, 0.026628, 0.026211, 0.025508, 0.025877, 0.025433, 0.025328, 0.024636, 0.025069, 0.024282, 0.023625, 0.023278, 0.023074, 0.023000, 0.022943, 0.022514, 0.021767, 0.022180, 0.021594, 0.022175, 0.021944, 0.021456, 0.020901, 0.021419, 0.021230, 0.020738, 0.020322, 0.020055, 0.019686, 0.019371, 0.019725, 0.018835, 0.019029, 0.018163, 0.018398, 0.018163, 0.017719, 0.018126, 0.017208, 0.017086, 0.016622, 0.016865, 0.015663, 0.015791, 0.015108, 0.015069, 0.015033, 0.015006, 0.014940, 0.014604, 0.014133, 0.013968, 0.013904, 0.013934, 0.013780, 0.013930, 0.013727, 0.013940, 0.013763, 0.013826, 0.014192, 0.014801, 0.014347, 0.014048, 0.014009, 0.014197, 0.014571, 0.014999, 0.015030, 0.014491, 0.014891, 0.014456, 0.014596, 0.015256, 0.014648, 0.014492, 0.014756, 0.015344, 0.014986, 0.015433, 0.015394, 0.015756, 0.014778, 0.015145, 0.015478, 0.015051, 0.014986, 0.015067, 0.015793, 0.015748, 0.015188, 0.015502, 0.015533, 0.015340, 0.015759, 0.015745, 0.016026, 0.015635, 0.015194, 0.014579, 0.015225, 0.014963, 0.015365, 0.016030, 0.015387, 0.016341, 0.015327, 0.015340, 0.015030, 0.015246, 0.015420, 0.015015, 0.015195, 0.016021, 0.015034, 0.015528, 0.015114, 0.015423, 0.015564, 0.015348, 0.015107, 0.015314, 0.015411, 0.015243, 0.015154, 0.016324, 0.015215, 0.014823, 0.015030, 0.015104, 0.014896, 0.015400, 0.015721, 0.015131, 0.014951, 0.014630, 0.014597, 0.015235, 0.014583, 0.015418, 0.014648, 0.014769, 0.014601, 0.015167, 0.014857, 0.015134, 0.015053, 0.014405, 0.014800, 0.014921, 0.014760, 0.013966, 0.014979, 0.014230, 0.014620, 0.014581, 0.014701, 0.013799, 0.014299, 0.015071, 0.013931, 0.014846, 0.014290, 0.013988, 0.014113, 0.013767, 0.014263, 0.014131, 0.013840, 0.013604, 0.014456, 0.013853, 0.014505, 0.013416, 0.014010, 0.014081, 0.014352, 0.013589, 0.013952, 0.013690, 0.014241, 0.014024, 0.013868, 0.014517, 0.014587, 0.013927, 0.013857, 0.014084, 0.013619, 0.014417, 0.013644, 0.013607, 0.013185, 0.014200, 0.013665, 0.013437, 0.013849, 0.013431, 0.014252, 0.013648, 0.013652, 0.013039, 0.013761, 0.013836, 0.013043, 0.013408, 0.013319, 0.013344, 0.014065, 0.013400, 0.012560, 0.013294, 0.012773, 0.012721, 0.013663, 0.012939, 0.012823, 0.013835, 0.012942, 0.013723, 0.013525};
+  for(Int_t i=0; i<400; i++){
+    fHistoPtWeight->SetBinContent(i+1,binc[i]);
+  }
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDs::SetPtWeightsFromFONLL13overLHC17c3a12(){
+  // Weight function from the ratio of the LHC17c3a1+2 MC
+  // and FONLL calculations for pp data at 13 TeV
+  // (From D0, Susanna Costanza)
+  if(fHistoPtWeight) delete fHistoPtWeight;
+  fHistoPtWeight = new TH1F("histoWeight","histoWeight",400,0.,40.);
+  fHistoPtWeight->Sumw2();
+  Float_t binc[400]={1.489198, 1.386131, 1.328213, 1.309866, 1.324383, 1.364766, 1.424282, 1.496803, 1.576996, 1.660407, 1.743464, 1.823431, 1.898334, 1.966862, 2.028262, 2.082235, 2.128839, 2.168395, 2.201406, 2.228492, 2.250331, 2.267616, 2.281022, 2.291181, 2.298668, 2.303992, 2.307592, 2.309839, 2.311043, 2.311454, 2.311272, 2.310653, 2.309719, 2.308559, 2.307242, 2.305816, 2.304318, 2.302771, 2.301193, 2.299596, 2.297986, 2.296369, 2.294749, 2.293127, 2.291504, 2.289881, 2.288259, 2.286638, 2.285018, 2.283398, 2.281780, 2.280163, 2.278547, 2.276933, 2.275319, 2.273707, 2.272095, 2.270485, 2.268876, 2.267268, 2.265661, 2.264056, 2.262451, 2.260848, 2.259246, 2.257645, 2.256045, 2.254446, 2.252848, 2.251252, 2.249656, 2.248062, 2.246469, 2.244877, 2.243286, 2.241696, 2.240108, 2.238520, 2.236934, 2.235348, 2.233764, 2.232181, 2.230599, 2.229019, 2.227439, 2.225860, 2.224283, 2.222707, 2.221132, 2.219557, 2.217985, 2.216413, 2.214842, 2.213272, 2.211704, 2.210136, 2.208570, 2.207005, 2.205441, 2.203878, 2.202316, 2.200755, 2.199196, 2.197637, 2.196080, 2.194524, 2.192968, 2.192011, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000, 2.192000};
   for(Int_t i=0; i<400; i++){
     fHistoPtWeight->SetBinContent(i+1,binc[i]);
   }

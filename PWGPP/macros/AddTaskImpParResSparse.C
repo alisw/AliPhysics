@@ -8,10 +8,11 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          TString dirName="",
                                                          Bool_t isAOD=kFALSE,
                                                          Int_t tracktype=0,
-                                                         Int_t SPDreq=6,
+                                                         Int_t SPDreq=7,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
-                                                         Bool_t usetriggersel=kFALSE)
+                                                         Bool_t usetriggersel=kFALSE,
+                                          							 Int_t species=-1)
 {
     
     // Get the pointer to the existing analysis manager via the static access method.
@@ -38,6 +39,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
     d0ResTask->SetFillSparseForExpert(fillexpertSparse);
     d0ResTask->SetUsePtWeights(0,1.);
     d0ResTask->SetCheckSDDIsIn(checkSDDIsIn);
+    d0ResTask->SetParticleSpecies(species);
     if(usetriggersel){
         d0ResTask->SetUseTriggerSelection(usetriggersel);
         d0ResTask->SetTriggerClass("");
@@ -64,6 +66,9 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
             break;
         case(5):
             esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+            break;
+        case(6):
+            esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
             break;
         default:
             esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);

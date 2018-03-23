@@ -311,6 +311,21 @@ void AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
                   // otherwise label remains '-1' --> fake V0
                   if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) {
                      out.SetLabel(pp->GetMother());
+                     //patch for k0s/k0l
+                      AliAODMCParticle *mom = (AliAODMCParticle*)mcArray->At(pn->GetMother());
+
+                     if(mom->GetPdgCode() == 310) {
+                        if(mom->GetMother() >= 0) {
+			   AliAODMCParticle *mom2 = (AliAODMCParticle*)mcArray->At(mom->GetMother());
+                           if(mom2 && TMath::Abs(mom2->GetPdgCode()) == 311) {
+                              //take the mother of the k0s which is a k0 (311)
+                              out.SetLabel(mom->GetMother());
+                           }
+                        } else {
+                           out.SetLabel(mom->GetMother());
+                        }
+                     }
+
                      SetMCInfoAOD(out);
                   }
                }

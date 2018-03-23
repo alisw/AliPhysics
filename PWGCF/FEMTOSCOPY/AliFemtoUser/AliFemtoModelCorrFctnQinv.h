@@ -59,8 +59,7 @@ public:
   /// all stored data.
   /// No pointers are shared between this object and the clone.
   ///
-  // virtual AliFemtoModelCorrFctn* Clone() const;
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 
   /// Destructor

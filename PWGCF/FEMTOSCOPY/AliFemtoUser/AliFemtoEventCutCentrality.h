@@ -96,7 +96,7 @@ public:
   bool PassEventPlane(const AliFemtoEvent* event) const;
   bool PassTrigger(const AliFemtoEvent* event) const;
 
-  AliFemtoEventCut* Clone() const;
+  virtual AliFemtoEventCut* Clone() const;
 
   /// Return the centrality of the event based on whatever algorithm is
   /// selected by the CentralityType member.

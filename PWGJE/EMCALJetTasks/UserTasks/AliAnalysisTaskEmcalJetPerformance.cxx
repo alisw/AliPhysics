@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
-  fMaxPt(200),
+  fMaxPt(250),
   fNEtaBins(40),
   fNPhiBins(200),
   fNCentHistBins(0),
@@ -92,6 +92,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
   fEmbeddingQA(),
+  fMinSharedMomentumFraction(0.5),
+  fMaxMatchedJetDistance(0.3),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -116,7 +118,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
-  fMaxPt(200),
+  fMaxPt(250),
   fNEtaBins(40),
   fNPhiBins(200),
   fNCentHistBins(0),
@@ -134,6 +136,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
   fEmbeddingQA(),
+  fMinSharedMomentumFraction(0.5),
+  fMaxMatchedJetDistance(0.3),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -285,7 +289,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     // (Centrality, pT, NEF)
     Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
-    Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+    Int_t nbinsy = fMaxPt; Int_t miny = 0; Int_t maxy = fMaxPt;
     Int_t nbinsz = 50; Int_t minz = 0; Int_t maxz = 1.;
     
     histname = TString::Format("%s/JetHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
@@ -311,7 +315,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     // A vs. pT
     histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 50, 0, 0.5);
     
     // (Centrality, pT, z-leading (charged))
     nbinsx = 20; minx = 0; maxx = 100;
@@ -705,6 +709,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateBackgroundHistograms()
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
+    // EMCal
     histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
     title = histname + ";Centrality;Scale factor;counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
@@ -712,6 +717,23 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateBackgroundHistograms()
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
     title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCalFid", jets->GetArrayName().Data());
+    title = histname + ";Centrality;Scale factor;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    
+    // DCal
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality;Scale factor;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorDCalFid", jets->GetArrayName().Data());
+    title = histname + ";Centrality;Scale factor;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
     
   }
 }
@@ -789,7 +811,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
     // A vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 50, 0, 0.5);
     
     // (Centrality, pT, z-leading (charged))
     nbinsx = 20; minx = 0; maxx = 100;
@@ -871,7 +893,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   
   // NEF of det-level matched jets, (centrality, pT-truth, NEF)
   nbinsx = 20; minx = 0; maxx = 100;
-  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsy = fMaxPt; miny = 0; maxy = fMaxPt;
   nbinsz = 50; minz = 0; maxz = 1.;
   
   histname = "MatchedJetHistograms/hNEFVsPt";
@@ -895,6 +917,21 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   histname = "MatchedJetHistograms/hMatchingDistance";
   title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
   fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hMatchingDistancepp";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
+  histname = "MatchedJetHistograms/fHistJetMatchingQA";
+  title = histname;
+  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+  auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
+  // Set label names
+  for (unsigned int i = 1; i <= binLabels.size(); i++) {
+    histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  }
+  histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
 
 }
 
@@ -942,7 +979,7 @@ void AliAnalysisTaskEmcalJetPerformance::RunChanged(Int_t run){
   if (fPlotJetHistograms && fComputeMBDownscaling) {
     
     // Get instance of the downscale factor helper class
-    AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+    PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscaleOCDB = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     downscaleOCDB->SetRun(InputEvent()->GetRunNumber());
     
     // There are two possible min bias triggers for LHC15o
@@ -1747,45 +1784,65 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
   // Define the acceptance boundaries for the TPC and EMCal/DCal/PHOS
   Double_t etaTPC = 0.9;
   Double_t etaEMCal = 0.7;
-  //Double_t etaMinDCal = 0.22;
+  Double_t etaMinDCal = 0.22;
   Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
   Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
-  //Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
-  //Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
+  Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
+  Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
   
   Double_t accTPC = 2 * etaTPC * 2 * TMath::Pi();
   Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
-  //Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
+  Double_t accDCal = 2 * (etaEMCal - etaMinDCal) * (phiMaxDCal - phiMinDCal);
   
   // Loop over jet containers
   AliJetContainer* jetCont = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
     
-    // Define fiducial acceptances, to be used to generate random cones
+    // Define fiducial acceptances, to be used to generate random cones, and for scale factor studies
     TRandom3* r = new TRandom3(0);
     Double_t jetR = jetCont->GetJetRadius();
     Double_t etaEMCalfid = etaEMCal - jetR;
+    Double_t etaMinDCalfid = etaMinDCal + jetR;
     Double_t phiMinEMCalfid = phiMinEMCal + jetR;
     Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
+    Double_t phiMinDCalfid = phiMinDCal + jetR;
+    Double_t phiMaxDCalfid = phiMaxDCal - jetR;
+    Double_t accEMCalfid = 2 * etaEMCalfid * (phiMaxEMCalfid - phiMinEMCalfid);
+    Double_t accDCalfid = 2 * (etaEMCalfid - etaMinDCalfid) * (phiMaxDCalfid - phiMinDCalfid);
+    if ( (etaEMCalfid - etaMinDCalfid) < 0) {
+      accDCalfid = 0;
+    }
     
     // Generate EMCal random cone eta-phi
     Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
     Double_t phiEMCalRC = r->Uniform(phiMinEMCalfid, phiMaxEMCalfid);
     
+    // Generate DCal random cone eta-phi
+    Double_t etaDCalRC = r->Uniform(etaMinDCalfid, etaEMCalfid);
+    Double_t sign = r->Uniform(-1., 1.);
+    if (sign < 0) {
+      etaDCalRC = -1*etaDCalRC;
+    }
+    Double_t phiDCalRC = r->Uniform(phiMinDCalfid, phiMaxDCalfid);
+    
     // Initialize the various sums to 0
     Double_t trackPtSumTPC = 0;
     Double_t trackPtSumEMCal = 0;
+    Double_t trackPtSumEMCalfid = 0;
+    Double_t trackPtSumDCal = 0;
+    Double_t trackPtSumDCalfid = 0;
     Double_t trackPtSumEMCalRC = 0;
-    Double_t clusESumEMCal = 0;
-    Double_t clusESumEMCalRC = 0;
-    
-    // Define a 2D vector (initialized to 0) to store the sum of track pT, and another for cluster ET
-    std::vector<std::vector<Double_t>> trackPtSumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
-    std::vector<std::vector<Double_t>> clusESumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
+    Double_t trackPtSumDCalRC = 0;
+    Double_t clusPtSumEMCal = 0;
+    Double_t clusPtSumEMCalfid = 0;
+    Double_t clusPtSumDCal = 0;
+    Double_t clusPtSumDCalfid = 0;
+    Double_t clusPtSumEMCalRC = 0;
+    Double_t clusPtSumDCalRC = 0;
     
     // Loop over tracks. Sum the track pT:
-    // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
+    // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal fiducial volume, (4) in the DCal, (5) in the DCal fiducial volume, (6) in the EMCal random cone, (7) in the DCal random cone
     // Note: Loops over all det-level track containers. For data there should be only one. For embedding, there should be signal+background tracks.
     AliParticleContainer * partCont = 0;
     AliTLorentzVector track;
@@ -1819,54 +1876,131 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
           }
           
           // (3)
+          if (TMath::Abs(trackEta) < etaEMCalfid && trackPhi > phiMinEMCalfid && trackPhi < phiMaxEMCalfid) {
+            trackPtSumEMCalfid += trackPt;
+          }
+          
+          // (4)
+          if (TMath::Abs(trackEta) > etaMinDCal && TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinDCal && trackPhi < phiMaxDCal) {
+            trackPtSumDCal += trackPt;
+          }
+          
+          // (5)
+          if (TMath::Abs(trackEta) > etaMinDCalfid && TMath::Abs(trackEta) < etaEMCalfid && trackPhi > phiMinDCalfid && trackPhi < phiMaxDCalfid) {
+            trackPtSumDCalfid += trackPt;
+          }
+          
+          // (6)
           deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
           if (deltaR < jetR) {
             trackPtSumEMCalRC += trackPt;
+          }
+          
+          // (7)
+          deltaR = GetDeltaR(&track, etaDCalRC, phiDCalRC);
+          if (deltaR < jetR) {
+            trackPtSumDCalRC += trackPt;
           }
         }
       }
     }
     
-    // Loop over clusters. Sum the cluster ET:
-    // (1) in the EMCal, (2) in the EMCal random cone
-    AliClusterContainer* clusCont = GetClusterContainer(0);
-    AliTLorentzVector clus;
-    Double_t clusEta;
-    Double_t clusPhi;
-    Double_t clusE;
-    for (auto clusIterator : clusCont->accepted_momentum() ) {
+    // Loop over clusters, if the jet container is for full jets. Sum the cluster ET:
+    // (1) in the EMCal, (2) in the EMCal fiducial volume, (3) in the DCal, (4), in the DCal fiducial volume, (5) in the EMCal random cone, (6) in the DCal random cone
+    if (jetCont->GetClusterContainer()) {
+      AliClusterContainer* clusCont = GetClusterContainer(0);
       
-      clus.Clear();
-      clus = clusIterator.first;
-      clusEta = clus.Eta();
-      clusPhi = clus.Phi_0_2pi();
-      clusE = clus.E();
-      
-      // (1)
-      if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
-        clusESumEMCal += clusE;
+      AliTLorentzVector clus;
+      Double_t clusEta;
+      Double_t clusPhi;
+      Double_t clusPt;
+      for (auto clusIterator : clusCont->accepted_momentum() ) {
+        
+        clus.Clear();
+        clus = clusIterator.first;
+        clusEta = clus.Eta();
+        clusPhi = clus.Phi_0_2pi();
+        clusPt = clus.Pt();
+        
+        // (1)
+        if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
+          clusPtSumEMCal += clusPt;
+        }
+        
+        // (2)
+        if (TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinEMCalfid && clusPhi < phiMaxEMCalfid) {
+          clusPtSumEMCalfid += clusPt;
+        }
+        
+        // (3)
+        if (TMath::Abs(clusEta) > etaMinDCal && TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinDCal && clusPhi < phiMaxDCal) {
+          clusPtSumDCal += clusPt;
+        }
+        
+        // (4)
+        if (TMath::Abs(clusEta) > etaMinDCalfid && TMath::Abs(clusEta) < etaEMCalfid && clusPhi > phiMinDCalfid && clusPhi < phiMaxDCalfid) {
+          clusPtSumDCalfid += clusPt;
+        }
+        
+        // (5)
+        deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
+        if (deltaR < jetR) {
+          clusPtSumEMCalRC += clusPt;
+        }
+        
+        // (6)
+        deltaR = GetDeltaR(&clus, etaDCalRC, phiDCalRC);
+        if (deltaR < jetR) {
+          clusPtSumDCalRC += clusPt;
+        }
+        
       }
-      
-      // (2)
-      deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
-      if (deltaR < jetR) {
-        clusESumEMCalRC += clusE;
-      }
-      
     }
     
-    // Compute the scale factor for EMCal, as a function of centrality
-    Double_t numerator = (trackPtSumEMCal + clusESumEMCal) / accEMCal;
+    // Compute the scale factor, as a function of centrality, for (1) EMCal, (2) EMCalfid, (3) DCal, (4) DCalfid
+    // (1)
+    Double_t numerator = (trackPtSumEMCal + clusPtSumEMCal) / accEMCal;
     Double_t denominator = trackPtSumTPC / accTPC;
     Double_t scaleFactor = numerator / denominator;
     TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, scaleFactor);
     
-    // Compute delta pT for EMCal, as a function of centrality
+    // (2)
+    if (accEMCalfid > 1e-3) {
+      numerator = (trackPtSumEMCalfid + clusPtSumEMCalfid) / accEMCalfid;
+      scaleFactor = numerator / denominator;
+      histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCalFid", jetCont->GetArrayName().Data());
+      fHistManager.FillTH2(histname, fCent, scaleFactor);
+    }
+    
+    // (3)
+    numerator = (trackPtSumDCal + clusPtSumDCal) / accDCal;
+    scaleFactor = numerator / denominator;
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorDCal", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, scaleFactor);
+    
+    // (4)
+    if (accDCalfid > 1e-3) {
+      numerator = (trackPtSumDCalfid + clusPtSumDCalfid) / accDCalfid;
+      scaleFactor = numerator / denominator;
+      histname = TString::Format("%s/BackgroundHistograms/hScaleFactorDCalFid", jetCont->GetArrayName().Data());
+      fHistManager.FillTH2(histname, fCent, scaleFactor);
+    }
+    
+    // Compute delta pT, as a function of centrality
+    
+    // EMCal
     Double_t rho = jetCont->GetRhoVal();
-    Double_t deltaPt = trackPtSumEMCalRC + clusESumEMCalRC - rho * TMath::Pi() * jetR * jetR;
+    Double_t deltaPt = trackPtSumEMCalRC + clusPtSumEMCalRC - rho * TMath::Pi() * jetR * jetR;
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, deltaPt);
+    
+    // DCal
+    if (accDCalfid > 1e-3) {
+      deltaPt = trackPtSumDCalRC + clusPtSumDCalRC - rho * TMath::Pi() * jetR * jetR;
+      histname = TString::Format("%s/BackgroundHistograms/hDeltaPtDCal", jetCont->GetArrayName().Data());
+      fHistManager.FillTH2(histname, fCent, deltaPt);
+    }
     
     delete r;
     
@@ -1978,7 +2112,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 {
   TString histname;
   AliJetContainer* jets = 0;
-  const AliEmcalJet* matchedJet = nullptr;
+  const AliEmcalJet* matchedPartLevelJet = nullptr;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     TString jetContName = jets->GetName();
@@ -1995,9 +2129,9 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     
     for (auto jet : jets->accepted()) {
       
-      // Get the matched jet, if it exists
-      matchedJet = jet->MatchedJet();
-      if (!matchedJet) {
+      // Get the matched part-level jet, if one exists, subject to fMinSharedMomentumFraction, fMaxMatchedJetDistance criteria
+      matchedPartLevelJet = GetMatchedPartLevelJet(jets, jet, "MatchedJetHistograms/fHistJetMatchingQA");
+      if (!matchedPartLevelJet) {
         continue;
       }
       
@@ -2008,7 +2142,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
       }
       
       Float_t detPt = GetJetPt(jet, rhoVal);
-      Float_t truthPt = matchedJet->Pt();
+      Float_t truthPt = matchedPartLevelJet->Pt();
       
       // Fill response matrix (centrality, pT-truth, pT-det)
       if (type == kEMCal) {
@@ -2040,9 +2174,13 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
       fHistManager.FillTH3(histname, fCent, truthPt, z);
       
-      // Fill matching distance (centrality, pT-truth, R)
+      // Fill matching distance between combined jet and pp det-level jet (centrality, pT-truth, R)
       histname = "MatchedJetHistograms/hMatchingDistance";
       fHistManager.FillTH3(histname, fCent, truthPt, jet->ClosestJetDistance());
+      
+      // Fill matching distance between pp det-level jet and  pp truth-level jet (centrality, pT-truth, R)
+      histname = "MatchedJetHistograms/hMatchingDistancepp";
+      fHistManager.FillTH3(histname, fCent, truthPt, matchedPartLevelJet->ClosestJetDistance());
       
     } //jet loop
   }
@@ -2151,6 +2289,90 @@ Double_t AliAnalysisTaskEmcalJetPerformance::GetJetPt(const AliEmcalJet* jet, Do
 Bool_t AliAnalysisTaskEmcalJetPerformance::IsHadron(const ContributorType contributor)
 {
   return (contributor == kChargedPion) || (contributor == kProton) || (contributor == kAntiProton) || (contributor == kChargedKaon) || (contributor == kK0L) || (contributor == kNeutron) || (contributor == kAntiNeutron);
+}
+
+/**
+ * Return a pointer to an accepted matched truth-level jet, if it exists
+ *
+ * Check for whether a matched jet should be accepted based on:
+ * - Jet (combined jet) being identified as matched to another jet (pp det-level), which is matched to a another jet (pp truth-level)
+ * - The shared momentum fraction being larger than some minimum value fMinSharedMomentumFraction
+ * - Their matched distance being below the max matching distance fMaxMatchedJetDistance
+ *
+ * NOTE: AliEmcalJet::ClosestJet() is called instead of AliEmcalJet::MatchedJet() because ClosestJet() will work
+ * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
+ * due to the design of the classes.
+ *
+ * @param[in] jets Jet container corresponding to the jet to be checked
+ * @param[in] jet Jet to be checked
+ * @param[in] histName Name of the hist in the hist manager where QA information will be filled
+ * @return Pointer to an accepted matched jet, if it exists. False otherwise.
+ *
+ * This function is essentially copied from AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet
+ */
+const AliEmcalJet* AliAnalysisTaskEmcalJetPerformance::GetMatchedPartLevelJet(const AliJetContainer * jets, const AliEmcalJet * jet, const std::string & histName)
+{
+  bool returnValue = false;
+  const AliEmcalJet* partLevelJet = nullptr;
+  
+  // First, check if combined jet has a pp det-level match assigned
+  if (jet->ClosestJet()) {
+    fHistManager.FillTH1(histName.c_str(), "matchedJet");
+    returnValue = true;
+    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString() << "\n";
+    
+    // Check shared momentum fraction
+    // We explicitly want to use indices instead of geometric matching
+    double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
+    if (sharedFraction < fMinSharedMomentumFraction) {
+      AliDebugStream(4) << "Jet rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
+      fHistManager.FillTH1(histName.c_str(), "sharedMomentumFraction");
+    }
+    
+    // Check that the combined jet has a particle-level match
+    AliEmcalJet * detLevelJet = jet->ClosestJet();
+    partLevelJet = detLevelJet->ClosestJet();
+    if (!partLevelJet) {
+      AliDebugStream(4) << "Jet rejected due to no matching part level jet.\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Det level jet has a required match to a part level jet.\n" << "Part level jet: " << partLevelJet->toString() << "\n";
+      fHistManager.FillTH1(histName.c_str(), "partLevelMatchedJet");
+    }
+    
+    // Check the matching distance between the combined and pp det-level jets, if a value has been set
+    if (fMaxMatchedJetDistance > 0) {
+      double matchedJetDistance = jet->ClosestJetDistance();
+      if (matchedJetDistance > fMaxMatchedJetDistance) {
+        AliDebugStream(4) << "Jet rejected due to matching distance of " << matchedJetDistance << ", which is larger than the max distance of " << fMaxMatchedJetDistance << "\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Jet passed distance cut with distance of " << matchedJetDistance << "\n";
+        fHistManager.FillTH1(histName.c_str(), "jetDistance");
+      }
+    }
+    
+    // Record all cuts passed
+    if (returnValue == true) {
+      fHistManager.FillTH1(histName.c_str(), "passedAllCuts");
+    }
+  }
+  else {
+    AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+    fHistManager.FillTH1(histName.c_str(), "noMatch");
+    returnValue = false;
+  }
+  
+  if (returnValue) {
+    return partLevelJet;
+  }
+  return 0;
 }
 
 /**

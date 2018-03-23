@@ -33,10 +33,14 @@ class CEPEventBuffer : public TObject {
     Bool_t fPhysel;
     Bool_t fisPileup;
     Bool_t fisClusterCut;
-    Short_t fnITSCluster[6];  // Number of ITS clusters on all 6 layers
-                              // and number of offline fired chips
-    Short_t fFiredChips[4];   // Number of FastOR chips in the two SPD layers
-                              // and number of offline fired chips
+    Short_t fnITSCluster[6];   // Number of ITS clusters on all 6 layers
+                               // and number of offline fired chips
+    Short_t fFiredChips[4];    // Number of FastOR chips in the two SPD layers
+                               // and number of offline fired chips
+    TBits  fSPD_0STG_Online;   //! using FastOrMap    (online)
+    TBits  fSPD_0STG_Offline;  //! using FiredChipMap (offline)
+
+
     Bool_t fisDGTrigger;
     UInt_t fisSTGTriggerFired;
     Int_t  fnTOFmaxipads;
@@ -97,6 +101,9 @@ class CEPEventBuffer : public TObject {
     void SetnFiredChips(Short_t chips[4]) {
       for (Int_t ii=0; ii<4; ii++) fFiredChips[ii]=chips[ii];
     }
+    void SetSPMapOnline(TBits map)     { fSPD_0STG_Online=map; }
+    void SetSPMapOffline(TBits map)    { fSPD_0STG_Offline=map; }
+
     void SetisSTGTriggerFired(UInt_t stgtrig) { fisSTGTriggerFired = stgtrig; }
     void SetnTOFmaxipads(Int_t nmaxipads) { fnTOFmaxipads = nmaxipads; }
 
@@ -157,6 +164,9 @@ class CEPEventBuffer : public TObject {
       return (layer>=0 && layer<=5) ? fnITSCluster[layer] : -1; }
     Short_t GetnFiredChips(Int_t layer) {
       return (layer>=0 && layer<=3) ? fFiredChips[layer] : -1; }
+    TBits GetSPMapOnline( )  { return fSPD_0STG_Online;  }
+    TBits GetSPMapOffline( ) { return fSPD_0STG_Offline; }
+
     UInt_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
     Int_t   GetnTOFmaxipads() { return fnTOFmaxipads; }
 

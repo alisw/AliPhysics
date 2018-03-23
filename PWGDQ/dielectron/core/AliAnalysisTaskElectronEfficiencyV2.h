@@ -144,7 +144,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, TString generator);
+  bool    CheckGenerator(int trackID);
 
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -152,7 +152,7 @@ private:
 
   void    CreateSupportHistos();
 
-  void    FillTrackHistograms(AliVParticle* track);
+  void    FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -216,6 +216,7 @@ private:
   std::vector<AliDielectronSignalMC> fPairMCSignal;
 
   TString fGeneratorName;
+  std::vector<unsigned int> fGeneratorHashs;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;

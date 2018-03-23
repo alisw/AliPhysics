@@ -40,17 +40,23 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   }
 
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
+
+  void SetPileUpCutsParamsLHC15o(Float_t slope, Float_t offset){
+    fPileupLHC15oSlope = slope;
+    fPileupLHC15oOffset = offset;
+  }
   
   void UsePileUpCutspPb() {fpPb = kTRUE;}
   
   void USEextendedDCA() {fDCAext = kTRUE;}
   
   void UsePID() {fUsePID = kTRUE;}
-  
+  void SetUsePIDnSigmaComb() {fUsePIDnSigmaComb = kTRUE;} //not that if UsePID true and nSigmaComb not activated, Bayesian PID is used!!
+  void SetPIDBayesThreshold(Float_t bayesThresh) {fBayesPIDThr = bayesThresh;}
+  void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // momentum threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.7 for pi and p and o.4 for K.
   void SetUseRapidity() {fUseRapidity = kTRUE;}
 
   void SetNSigmaPID(Int_t nsigma) {
- 
     fPIDNSigma = nsigma;
   }
  
@@ -63,27 +69,27 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
     fCentralityPercentileMax=max;
   }
 
-  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
+  // enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
   enum kCentralityBinning { kFull, kBins};
   enum kSystem { kPbPb, kpPb};
 
-  void setParticleType(kParticleOfInterest ptype){
+  void setParticleType(AliPID::EParticleType ptype){
   fParticleOfInterest = ptype;
   
-  if(fParticleOfInterest == kParticleOfInterest::kElectron){
+  if(fParticleOfInterest == AliPID::kElectron){
     fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(11)->Mass();
   }  
  
-  else if(fParticleOfInterest == kParticleOfInterest::kMuon){
+  else if(fParticleOfInterest == AliPID::kMuon){
     fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(13)->Mass();
   }
-  else if(fParticleOfInterest == kParticleOfInterest::kPion){
+  else if(fParticleOfInterest == AliPID::kPion){
     fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   }
-  else if(fParticleOfInterest == kParticleOfInterest::kKaon){
+  else if(fParticleOfInterest == AliPID::kKaon){
     fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(321)->Mass();
   }
-  else if(fParticleOfInterest == kParticleOfInterest::kProton){
+  else if(fParticleOfInterest == AliPID::kProton){
     fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   }
   else{
@@ -139,13 +145,21 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   TH2F *fHistGlobalvsESDBeforePileUpCuts;
   TH2F *fHistGlobalvsESDAfterPileUpCuts;
+
+  TH3F* hNSigmaCutApplied;
+  TH3F* hBayesProbab;
   
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fPbPb;
   Bool_t fpPb;
+
+  Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
+  Float_t fPileupLHC15oOffset;
+  
   Bool_t fUsePID;
   Bool_t fDCAext;
   Bool_t fUseRapidity;
+  Bool_t fUsePIDnSigmaComb;
  
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -155,21 +169,25 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   
   Int_t fPIDNSigma;
   Double_t fMassParticleOfInterest;
-  kParticleOfInterest fParticleOfInterest;
+  AliPID::EParticleType fParticleOfInterest;
  
   Double_t fEtaMin; 
   Double_t fEtaMax; 
   Double_t fPtMin; 
   Double_t fPtMax;
 
+  Float_t fBayesPIDThr;
+  Float_t fPIDMomCut;
+  
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
-  AliPIDResponse *fPIDResponse;  
+  AliPIDResponse *fPIDResponse;
+  AliPIDCombined *fPIDCombined;     //! combined PID object
  
   AliAnalysisTaskAccCont(const AliAnalysisTaskAccCont&); // not implemented
   AliAnalysisTaskAccCont& operator=(const AliAnalysisTaskAccCont&); // not implemented
   
-  ClassDef(AliAnalysisTaskAccCont, 1); // example of analysis
+  ClassDef(AliAnalysisTaskAccCont, 2); // example of analysis
 };
 
 #endif

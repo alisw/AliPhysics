@@ -145,8 +145,8 @@ AliFemtoString AliFemtoCorrFctn3DPRF::Report(){
 //____________________________
 void AliFemtoCorrFctn3DPRF::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double kOut = (pair->KOut());
@@ -163,8 +163,8 @@ void AliFemtoCorrFctn3DPRF::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctn3DPRF::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double kOut = (pair->KOut());
@@ -175,9 +175,6 @@ void AliFemtoCorrFctn3DPRF::AddMixedPair( AliFemtoPair* pair){
 
     fDenominator->Fill(kOut,kSide,kLong,1.0);
     //fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
-
-
-
 }
 
 

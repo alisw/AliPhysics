@@ -61,7 +61,6 @@ set(SRCS
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
-  Nuclei/NucleiPbPb/AliNuclexEventCuts.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx

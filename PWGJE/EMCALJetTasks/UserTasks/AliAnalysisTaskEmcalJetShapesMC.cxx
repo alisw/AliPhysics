@@ -67,6 +67,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fSwitchSDKtNSub(0), 
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
+  fHardCutoff(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -120,6 +121,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fSwitchSDKtNSub(0), 
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
+  fHardCutoff(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -1456,8 +1458,9 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
+    if(z>fHardCutoff){
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,fJet->Pt(),ndepth};  
-    fHLundIterative->Fill(LundEntries);
+    fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
     if(fAdditionalTracks>0 && xflagAdded>0){

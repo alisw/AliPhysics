@@ -30,6 +30,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoChi2CorrFctn(*this); }
+
 private:
 
   TH2D *fChi2ITSSUMNumerator;        // Numerator as a function of ITS quality sum for the pair

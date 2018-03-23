@@ -7,7 +7,7 @@
 #include <TArrayF.h>
 #include "AliPIDResponse.h"
 #include "AliPID.h"
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 #include "AliESDtrackCuts.h"
 
 class AliPIDResponse;
@@ -43,7 +43,7 @@ public:
   virtual void   Terminate(Option_t *);
 
   AliESDtrackCuts    fTrackCuts;
-  AliNuclexEventCuts fEventCuts;
+  AliEventCuts fEventCuts;
 private:
   AliAnalysisTaskNucleiYieldESD (const AliAnalysisTaskNucleiYieldESD &source);
   AliAnalysisTaskNucleiYieldESD &operator=(const AliAnalysisTaskNucleiYieldESD &source);

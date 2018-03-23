@@ -156,10 +156,6 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     if(trainConfig>=100 && trainConfig<200) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
     AliConvEventCuts *fEventCuts    = NULL;
     if(cutnumberEvent!=""){
       fEventCuts                    = new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -188,7 +184,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -684,6 +680,20 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
 
   // LHC12
   // default
+  } else if (trainConfig == 101){ // pPb cuts : open timing, TB nonlin, with TM
+    cuts.AddCut("00010113","1111101017032200000","1111101017022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111101017032200000","1111101017022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111101017032200000","1111101017022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 102){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111101010032200000","1111101010022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 103){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 104){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 105){ //  pPb cuts : open timing, TB nonlin, without TM
+    cuts.AddCut("00081113","1111101010032200000","1111101010022700001","0163300000000000"); // EGA
   } else if (trainConfig == 107){  // no M02, pt dep TM
     cuts.AddCut("00010113","1111111067032200000","1111111067022000001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000001","0163300000000000"); // EMC7
@@ -720,6 +730,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067032200000","1111111067022000001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022000001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022000001","0163300000000000"); // EGA
+    cuts.AddCut("00091113","1111111067032200000","1111111067022000001","0163300000000000"); // EJE
   } else if (trainConfig == 115){  // Mass only band at 0, M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300700000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300700000000"); // EMC7
@@ -728,6 +739,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 117){  // M02 cut at 0.27, TM only in merged
     cuts.AddCut("00010113","1111111060032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111060032200000","1111111067022700001","0163300000000000"); // EMC7

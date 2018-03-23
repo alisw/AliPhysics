@@ -79,7 +79,6 @@ set(SRCS
   AliFemtoShareQualityQAPairCut.cxx
   AliFemtoShareQualityCorrFctn.cxx
   AliFemtoYlm.cxx
-  AliFemtoConfigObject.cxx
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
@@ -133,6 +132,7 @@ set(SRCS
   AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx
   AliFemtoV0PurityBgdEstimator.cxx
+  AliFemtoPairCutRadialDistanceKKdist.cxx
   )
 
 

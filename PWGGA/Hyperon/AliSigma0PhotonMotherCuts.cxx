@@ -52,6 +52,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts()
       fHistSigmaArmenterosAfter(nullptr),
       fHistSigmaMixedPt(nullptr),
       fHistSigmaMixedInvMass(nullptr),
+      fHistSigmaMixedPtY(),
       fHistSigmaMixedInvMassPt(nullptr),
       fHistSigmaMixedInvMassEta(nullptr),
       fHistSigmaPtTwoGamma(nullptr),
@@ -92,6 +93,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts()
       fHistAntiSigmaArmenterosAfter(nullptr),
       fHistAntiSigmaMixedPt(nullptr),
       fHistAntiSigmaMixedInvMass(nullptr),
+      fHistAntiSigmaMixedPtY(),
       fHistAntiSigmaMixedInvMassPt(nullptr),
       fHistAntiSigmaMixedInvMassEta(nullptr),
       fHistAntiSigmaPtTwoGamma(nullptr),
@@ -221,6 +223,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistSigmaArmenterosAfter(nullptr),
       fHistSigmaMixedPt(nullptr),
       fHistSigmaMixedInvMass(nullptr),
+      fHistSigmaMixedPtY(),
       fHistSigmaMixedInvMassPt(nullptr),
       fHistSigmaMixedInvMassEta(nullptr),
       fHistSigmaPtTwoGamma(nullptr),
@@ -261,6 +264,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistAntiSigmaArmenterosAfter(nullptr),
       fHistAntiSigmaMixedPt(nullptr),
       fHistAntiSigmaMixedInvMass(nullptr),
+      fHistAntiSigmaMixedPtY(),
       fHistAntiSigmaMixedInvMassPt(nullptr),
       fHistAntiSigmaMixedInvMassEta(nullptr),
       fHistAntiSigmaPtTwoGamma(nullptr),
@@ -589,6 +593,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         const float invMass = sigma->GetMass();
         fHistAntiSigmaMixedPt->Fill(sigma->GetPt());
         fHistAntiSigmaMixedInvMass->Fill(invMass);
+        const float rap =
+            ComputeRapidity(sigma->GetPt(), sigma->GetPz(), invMass);
+        const int rapBin = GetRapidityBin(rap);
+        if (rapBin > -1)
+          fHistAntiSigmaMixedPtY[rapBin]->Fill(sigma->GetPt(), invMass);
         fHistAntiSigmaMixedInvMassPt->Fill(sigma->GetPt(), invMass);
         fHistAntiSigmaMixedInvMassEta->Fill(sigma->GetEta(), invMass);
         delete sigma;
@@ -619,6 +628,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         const float invMass = sigma->GetMass();
         fHistAntiSigmaMixedPt->Fill(sigma->GetPt());
         fHistAntiSigmaMixedInvMass->Fill(invMass);
+        const float rap =
+            ComputeRapidity(sigma->GetPt(), sigma->GetPz(), invMass);
+        const int rapBin = GetRapidityBin(rap);
+        if (rapBin > -1)
+          fHistAntiSigmaMixedPtY[rapBin]->Fill(sigma->GetPt(), invMass);
         fHistAntiSigmaMixedInvMassPt->Fill(sigma->GetPt(), invMass);
         fHistAntiSigmaMixedInvMassEta->Fill(sigma->GetEta(), invMass);
         delete sigma;
@@ -650,6 +664,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         const float invMass = sigma->GetMass();
         fHistSigmaMixedPt->Fill(sigma->GetPt());
         fHistSigmaMixedInvMass->Fill(invMass);
+        const float rap =
+            ComputeRapidity(sigma->GetPt(), sigma->GetPz(), invMass);
+        const int rapBin = GetRapidityBin(rap);
+        if (rapBin > -1)
+          fHistSigmaMixedPtY[rapBin]->Fill(sigma->GetPt(), invMass);
         fHistSigmaMixedInvMassPt->Fill(sigma->GetPt(), invMass);
         fHistSigmaMixedInvMassEta->Fill(sigma->GetEta(), invMass);
         delete sigma;
@@ -680,6 +699,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         const float invMass = sigma->GetMass();
         fHistSigmaMixedPt->Fill(sigma->GetPt());
         fHistSigmaMixedInvMass->Fill(invMass);
+        const float rap =
+            ComputeRapidity(sigma->GetPt(), sigma->GetPz(), invMass);
+        const int rapBin = GetRapidityBin(rap);
+        if (rapBin > -1)
+          fHistSigmaMixedPtY[rapBin]->Fill(sigma->GetPt(), invMass);
         fHistSigmaMixedInvMassPt->Fill(sigma->GetPt(), invMass);
         fHistSigmaMixedInvMassEta->Fill(sigma->GetEta(), invMass);
         delete sigma;
@@ -1808,7 +1832,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms() {
                "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
   fHistSigmaMixedInvMassPt =
       new TH2F("fHistSigmaMixedInvMassPt",
-               "; #it{p}_{T} #Lambda#gamma#gamma (GeV/#it{c}); "
+               "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                1000, 0, 20, 2000, 1., 2.);
   fHistSigmaMixedInvMassEta = new TH2F(
@@ -1939,7 +1963,14 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms() {
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                       rapBins[i], rapBins[i + 1]),
                  500, 0, 10, 1000, 1., 1.5);
+    fHistSigmaMixedPtY[i] =
+        new TH2F(Form("fHistSigmaMixedPtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+                 Form("%.2f < y < %.2f ; #it{p}_{T} [GeV/#it{c}]; "
+                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                      rapBins[i], rapBins[i + 1]),
+                 500, 0, 10, 1000, 1., 1.5);
     fHistogramsSigma->Add(fHistSigmaPtY[i]);
+    fHistogramsSigma->Add(fHistSigmaMixedPtY[i]);
   }
   fHistograms->Add(fHistogramsSigma);
 
@@ -2152,7 +2183,14 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms() {
              "M_{#bar{#Lambda}#gamma} (GeV/#it{c}^{2})",
              rapBins[i], rapBins[i + 1]),
         500, 0, 10, 1000, 1., 1.5);
+    fHistAntiSigmaMixedPtY[i] = new TH2F(
+        Form("fHistAntiSigmaMixedPtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+        Form("%.2f < y < %.2f ; #it{p}_{T} [GeV/#it{c}]; "
+             "M_{#bar{#Lambda}#gamma} (GeV/#it{c}^{2})",
+             rapBins[i], rapBins[i + 1]),
+        500, 0, 10, 1000, 1., 1.5);
     fHistogramsAntiSigma->Add(fHistAntiSigmaPtY[i]);
+    fHistogramsAntiSigma->Add(fHistAntiSigmaMixedPtY[i]);
   }
   fHistograms->Add(fHistogramsAntiSigma);
 

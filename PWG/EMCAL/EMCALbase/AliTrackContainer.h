@@ -32,6 +32,8 @@ class AliVParticle;
 class AliVCuts;
 class AliTLorentzVector;
 
+#include <map>
+
 #include <TArrayC.h>
 
 #include "AliVTrack.h"
@@ -91,6 +93,9 @@ class AliTrackContainer : public AliParticleContainer {
   };
 
   typedef AliEmcalTrackSelection::ETrackFilterType_t ETrackFilterType_t;
+
+  /// Relates string to the track filter enumeration for %YAML configuration
+  static const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
 
   /**
    * @enum ETrackType_t
@@ -197,7 +202,7 @@ class AliTrackContainer : public AliParticleContainer {
   Bool_t                      fITSHybridTrackDistinction;     ///< Distinct hybrid tracks via SPD information
   UInt_t                      fAODFilterBits;                 ///< track filter bits
   TString                     fTrackCutsPeriod;               ///< period string used to generate track cuts
-  AliEmcalTrackSelection     *fEmcalTrackSelection;           //!<! track selection object
+  AliEmcalTrackSelection     *fEmcalTrackSelection;  //!<! track selection object
   TrackOwnerHandler           fFilteredTracks;                //!<! tracks filtered using fEmcalTrackSelection
   TArrayC                     fTrackTypes;                    //!<! track types
 

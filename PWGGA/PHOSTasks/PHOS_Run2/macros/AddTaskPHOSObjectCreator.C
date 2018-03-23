@@ -6,7 +6,8 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     const Double_t BunchSpace  = 25.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
-    const TString period       = "LHC15n"
+    const TString period       = "LHC15n",
+    const Bool_t isSingleSim   = kFALSE
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -27,7 +28,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   TString taskname = Form("%s_BS%dns",name,(Int_t)BunchSpace);
 
   AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
-  task->SelectCollisionCandidates(trigger);
+  if(!isSingleSim) task->SelectCollisionCandidates(trigger);
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
@@ -54,7 +55,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     else if(period.Contains("LHC17p") || period.Contains("LHC17q")){
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
       f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2,1.012);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,1.013);//for core E at ZS 20 MeV with only MIP cut
     }
     else{
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut

@@ -97,6 +97,10 @@ void AliReducedAnalysisJpsi2eeCorrelations::Process() {
    // The AliReducedAnalysisJpsi2ee ancestor class must be set via the options to run the same event pairing
    // The jpsi pair candidates will then be stored in the array fJpsiCandidates
    AliReducedAnalysisJpsi2ee::Process();
+
+  // apply event selection
+  if(!IsEventSelected(fEvent)) return;
+
    // loop over associated tracks
    RunAssociatedTrackSelection();
    FillAssociatedTrackHistograms();

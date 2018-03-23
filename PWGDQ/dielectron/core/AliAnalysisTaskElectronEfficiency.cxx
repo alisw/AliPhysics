@@ -2710,7 +2710,7 @@ Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassHF(AliMCEvent* mcEve
   AliMCParticle *mcpart = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(label));
   if(!mcpart) return kFALSE;
   Int_t pdgref = mcpart->PdgCode();
-  if(TMath::Abs(pdgref!=11)) return kFALSE; // take only true electrons
+  if(TMath::Abs(pdgref)!=11) return kFALSE; // take only true electrons
   Int_t motherlabel = mcpart->GetMother();
   AliMCParticle *motherpart(0x0);
   if(motherlabel >= 0) motherpart = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(motherlabel));
@@ -2779,7 +2779,7 @@ Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassSM(AliMCEvent* mcEve
   AliMCParticle *mcpart = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(label));
   if(!mcpart) return kFALSE;
   Int_t pdgref = mcpart->PdgCode();
-  if(TMath::Abs(pdgref!=11)) return kFALSE; // take only true electrons
+  if(TMath::Abs(pdgref)!=11) return kFALSE; // take only true electrons
   Int_t motherlabel = mcpart->GetMother();
   AliMCParticle *motherpart(0x0);
   if(motherlabel >= 0) motherpart = dynamic_cast<AliMCParticle*> (mcEventLocal->GetTrack(motherlabel));

@@ -168,6 +168,7 @@ class AliReducedVarManager : public TObject {
     kVertexCorrectionGlobalGainLoss,
     kVertexCorrectionRunwiseGainLoss,
     kVertexCorrection2D,
+    kGainLossCorrection,
     kNCorrections
   };
 
@@ -379,6 +380,9 @@ class AliReducedVarManager : public TObject {
     kTZEROpileup,                              // TZERO pileup flag
     kTZEROsatellite,                           // TZERO satellite flag
     // External Multiplicity estimators
+    kMultEstimatorV0M,
+    kMultEstimatorV0A,
+    kMultEstimatorV0C,
     kMultEstimatorOnlineV0M,
     kMultEstimatorOnlineV0A,
     kMultEstimatorOnlineV0C,
@@ -389,6 +393,9 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorSPDTracklets,
     kMultEstimatorRefMult05,
     kMultEstimatorRefMult08,
+    kMultEstimatorPercentileV0M,
+    kMultEstimatorPercentileV0A,
+    kMultEstimatorPercentileV0C,
     kMultEstimatorPercentileOnlineV0M,
     kMultEstimatorPercentileOnlineV0A,
     kMultEstimatorPercentileOnlineV0C,
@@ -436,7 +443,9 @@ class AliReducedVarManager : public TObject {
     kMassMC,
     kMassMCfromLegs,
     kRap,
+    kRapAbs,
     kRapMC,
+    kRapMCAbs,
     kRapMCfromLegs,
     kPdgMC,
     kCharge = kPdgMC+4,
@@ -547,12 +556,23 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,             // shifted to [-pi/2, 3/2 * pi]
-    kDeltaTheta,        
+    kDeltaPhi,      // shifted to [-pi/2, 3/2 * pi]
+    kDeltaPhiSym,   // shifted to [0, pi]
+    kDeltaTheta,
     kDeltaEta,
+    kDeltaEtaAbs,
     kTriggerPt,     // pt of J/psi candidate
+    kTriggerRap,    // rapidity of J/psi candidate
+    kTriggerRapAbs, // absolute rapidity of J/psi candidate
     kAssociatedPt,  // pt of associated track
+    // TRD GTU online tracks
+    kTRDGTUtracklets,   // TRD online track #tracklets
+    kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
+    kTRDGTUpt,          // TRD online track pT
+    kTRDGTUsagitta,     // TRD online track sagitta
+    kTRDGTUPID,         // TRD online track pid
     kTrackingFlags,
+    kTRDTriggeredType,
     kTrackingStatus=kTrackingFlags+kNTrackingFlags,
     kNVars=kTrackingStatus+kNTrackingStatus,     
   };
@@ -607,7 +627,6 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillCorrelationInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t, Float_t* values);
-  static void FillCorrelationInfo(AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);

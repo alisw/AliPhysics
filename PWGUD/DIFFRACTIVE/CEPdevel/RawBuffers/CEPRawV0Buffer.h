@@ -55,7 +55,7 @@ class CEPRawV0Buffer : public TObject
     UInt_t              GetNCells()                 const { return fNCells; }
 
 
-    ClassDef(CEPRawV0Buffer,1)     // CEP raw track buffer
+    ClassDef(CEPRawV0Buffer,1);     // CEP raw track buffer
 };
 
 #endif

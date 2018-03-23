@@ -58,7 +58,8 @@ set(HDRS
   )
 
 # Statically build YAML
-set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tools (which are not used)")
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests (which we are not running)")
 add_subdirectory(yaml-cpp)
 
 # Generate the dictionary

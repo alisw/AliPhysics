@@ -1,12 +1,12 @@
 AliJJetTask* AddTaskJJet(
-    // FIXME: Really need default values? Is this needed by AliROOT? Or, let's remove it to reduce mistakes
     Int_t       trigger           = AliVEvent::kEMCEJE,
     const char *taskname          = "AliJJetTask",
     int         debug             = 1,
     int         doRecoMCPartleJet = 0,  // if do Jet Reconstruction with MC Particle. only for MC
     int         doRecoTrackJet    = 1,  // if do Jet Reconstruction with Reconstructed track. both of MC,Data
-    int         isMC              = 0,   // If this event is MC ( both of particle, track )
-    int         nR                = 3 //Number(1-3) of R parameters in order from list 0.4, 0.5, 0.6
+    int         isMC              = 0,  // If this event is MC ( both of particle, track )
+    int         nR                = 3,  //Number(1-3) of R parameters in order from list 0.4, 0.5, 0.6
+    int         doBackgroundEst   = 0   // If user wants to do background estimation with kt-algorithm
     )
 {  
 
@@ -65,14 +65,35 @@ AliJJetTask* AddTaskJJet(
   }
   const int nJetFinder              = nMCParticleJetFinder + nTrackJetFinder;
 
+  if(doBackgroundEst){
+      if(doRecoTrackJet){
+          const int nktTrackFinders = 1;
+      }
+      else{
+          const int nktTrackFinders = 0;
+      }
+      if(nMCParticleJetFinder){
+          const int nktMCParticleFinders = 1;
+      }
+      else{
+          const int nktMCParticleFinders = 0;
+      }
+      const int nktFinders = nktTrackFinders + nktMCParticleFinders;
+  }
+  else{
+      const int nktFinders = 0;
+  }
+
 
   int countJetFinder                = 0;  // Counter for number of current Jet Finders
 
   //-------------------------------------------------------
   // AliJJetTask , AliEmcalJetTask, AliJetContainer
   //-------------------------------------------------------
-  AliJJetTask *jtTask = new AliJJetTask(name, nJetFinder);
+  AliJJetTask *jtTask = new AliJJetTask(name, nJetFinder + nktFinders);
   jtTask->SetMC( isMC ) ; // Set isMC explicitly. 
+  jtTask->SetnR( nR ) ; // Set number of jet resolution parameters. 
+  jtTask->Setnkt( nktFinders ) ; // Set information about if kt algorithm reconstruction was done or not. 
   jtTask->SetDebug( debug );
   jtTask->SelectCollisionCandidates( trigger ); // WARNING: default is AliVEvent::kEMCEJE. Double check it!
 
@@ -82,23 +103,26 @@ AliJJetTask* AddTaskJJet(
   AliJetContainer *jetCont[nJetFinder];
   for( int i=0;i<nJetFinder;i++ ) jetCont[i] = NULL;
 
+  AliEmcalJetTask *ktFinderTask[nktFinders];
+  for( int i=0;i<nktFinders;i++) ktFinderTask[i] = NULL;
+  AliJetContainer *ktCont[nktFinders]; //0 for Data and 1 for MC. Implementation for different R left for later.
+  for( int i=0;i<nktFinders;i++) ktCont[i] = NULL; 
+  double  ktConeSizes[1]={  0.2};
+  int     ktJetTypes [1]={    1};// 0:FullJet 1:Charged 
+  TString ktTypes    [1]={"TPC"};// Check if 100% sure about this
 
   //-------------------------------------------------------
   // Reconstructed Track Jets : Both of Data, MC
   //-------------------------------------------------------
+  double bConeSizes[3] = {0.4,0.5,0.3};
+  int bJetType[2] = {0,1};
+  TString bType[2] = {"EMCAL","TPC"};
+
   if( doRecoTrackJet ){
     //================= Variables for array
     int iStart = countJetFinder;
     int iEnd   = countJetFinder += nTrackJetFinder;
     //================= AddTaskEmcalJet
-    // We have 6 type of recos
-    double   aConeSizes[6]={     0.4,     0.5,     0.6,   0.4,   0.5,   0.6 };
-    int      aJetType  [6]={       0,       0,       0,     1,     1,     1 }; // 0 :FullJet  1:Charged
-    TString  aType     [6]={ "EMCAL", "EMCAL", "EMCAL", "TPC", "TPC", "TPC" };
-
-    double bConeSizes[3] = {0.4,0.5,0.6};
-    int bJetType[2] = {0,1};
-    int bType[2] = {"EMCAL","TPC"};
 
     //================= Containers : Track, Cluster
     AliTrackContainer* partCont = new AliTrackContainer(tracksName);
@@ -117,34 +141,29 @@ AliJJetTask* AddTaskJJet(
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
         //== Variables
-        //int iHere = iStart - countJetFinder; // array index based 0 in a block
-        int iHere = i-iStart; // array index based 0 in a block
-        //double consize = aConeSizes[iHere];
-        //int jettype = aJetType  [iHere];
-        //int type    = aType     [iHere];
         double consize = bConeSizes[iR];
         int jettype = bJetType[itype];
-        int type = bType[itype];
+        TString type = bType[itype];
 
         //== JetFinderTask, JetContainer
         TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL
         jetFinderTask[iF] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::antikt_algorithm, consize, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
         jetFinderTask[iF]->SelectCollisionCandidates(trigger);
-        jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJRecoTrack ); // TODO: Move this to AddJetContainer
+        jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJRecoTrack ); 
         cout << jetFinderTask[iF]->GetName() << endl;
-        jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consize ); // TODO: SetTrackOrMCParticle here
+        jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consize ); 
 
         if( jetCont[iF] ) {
           jetCont[iF]->SetRhoName( rhoName );
           jetCont[iF]->ConnectParticleContainer( trackCont );
           if ( type == "EMCAL" ) jetCont[iF]->ConnectClusterContainer( clusterCont );
-          jetCont[iF]->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
-          jetCont[iF]->SetPercAreaCut( 0.6 );
-          jetCont[iF]->SetJetPtCut( 5 );    
-          jetCont[iF]->SetLeadingHadronType( 0 );
+            jetCont[iF]->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
+            jetCont[iF]->SetPercAreaCut( 0.6 );
+            jetCont[iF]->SetJetPtCut( 5 );    
+            jetCont[iF]->SetLeadingHadronType( 0 );
         }
-      }
-    } // for i
+      } // for iR
+    } // for itype
   } // if doRecoTrackJet
 
   //-------------------------------------------------------
@@ -156,15 +175,6 @@ AliJJetTask* AddTaskJJet(
     int iEnd   = countJetFinder += nMCParticleJetFinder; // WARN: this is a real end + 1
 
     //================= AddTaskEmcalJet
-    // We have 3 type of recos
-    double   aConeSizesMC[6]={     0.4,     0.5,     0.6,   0.4,   0.5,   0.6 };
-    int      aJetTypeMC  [6]={       0,       0,       0,     1,     1,     1 }; // 0 :FullJet  1:Charged
-    TString  aTypeMC     [6]={ "TPC", "TPC", "TPC", "TPC", "TPC", "TPC" };  
-
-    double bConeSizes[3] = {0.4,0.5,0.6};
-    int bJetType[2] = {0,1};
-    int bType[2] = {"EMCAL","TPC"};
-
     char *nrho = rhoName;
 
     //================= Containers : MC Particle
@@ -176,39 +186,74 @@ AliJJetTask* AddTaskJJet(
     for(int itype = 0; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
-        //== Variables
-        //int iHere = iStart - countJetFinder; // array index based 0 in a block
-        //int iHere = i - iStart; // array index based 0 in a block
-        //double consizeMC = aConeSizesMC[iHere];
-        //int jettype = aJetTypeMC  [iHere];
-        //int type    = aTypeMC     [iHere];
         double consizeMC = bConeSizes[iR];
         int jettype = bJetType[itype];
-        int type = bType[itype];
+        TString type = bType[itype];
 
         //== JetFinderTask, JetContainer
-        TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL // FIXME: Good for MC particles also? //No clusters in mc particles?
+        TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL 
         jetFinderTask[iF] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::antikt_algorithm, consizeMC, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
         jetFinderTask[iF]->SelectCollisionCandidates(trigger);
         cout << jetFinderTask[iF]->GetName() << endl;
         //jetFinderTask[i]->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE); 
-        // FIXME: DUPLICATION? not needed here, I think // FIXME: Why before ConnectParticleContainer? //I don't think the order matters
-        // FIXME: Is this means, we don't need to make particle container manually?
-        jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJMCParticle ); // TODO: Move this to AddJetContainer FIXME: Maybe not possible in easy
-        jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consizeMC ); // TODO: SetTrackOrMCParticle here
+        jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJMCParticle ); 
+        jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consizeMC );
 
         if(jetCont[iF]) {
           jetCont[iF]->SetRhoName( rhoName );
           jetCont[iF]->ConnectParticleContainer( mcTrackCont );
-          // if ( aType[iHere] == "EMCAL" ) jetCont[i]->ConnectClusterContainer( clusterCont );
           jetCont[iF]->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
           jetCont[iF]->SetPercAreaCut( 0.6 );
           jetCont[iF]->SetJetPtCut( 5 );    
           jetCont[iF]->SetLeadingHadronType( 0 );
         }
-      }
-    } // for i
+      } // for iR
+    } // for itype
   } // if doRecoMCPartleJet
+
+  //-------------------------------------------------------
+  // kt-algorithm
+  //-------------------------------------------------------
+  if (doBackgroundEst) {
+    double ktConeSize = ktConeSizes[0];
+    int ktJetType  = ktJetTypes[0];
+    TString ktType = ktTypes[0];
+    if (doRecoTrackJet) {
+      TString _clustersCorrName = ( ktType == "EMCAL" ? clustersCorrName : "" );
+      ktFinderTask[0] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // kt
+      ktFinderTask[0]->SelectCollisionCandidates(trigger);
+      jtTask->SetTrackOrMCParticle( iEnd, AliJJetTask::kJRecoTrack );
+      cout << ktFinderTask[0]->GetName() << endl;
+      ktCont[0] = jtTask->AddJetContainer( ktFinderTask[0]->GetName(), ktType, ktConeSize );
+
+      if( ktCont[0] ) {
+        ktCont[0]->SetRhoName( rhoName );
+        ktCont[0]->ConnectParticleContainer( trackCont );
+        if ( ktType == "EMCAL" ) ktCont[0]->ConnectClusterContainer( clusterCont );
+          ktCont[0]->SetZLeadingCut( 0.98, 0.98 );
+          ktCont[0]->SetPercAreaCut( 0.6 );
+          ktCont[0]->SetJetPtCut( 5 );    
+          ktCont[0]->SetLeadingHadronType( 0 );
+      }
+    } // if doRecoTrackJet
+    if (doRecoMCPartleJet) {
+      TString _clustersCorrName = ( ktType == "EMCAL" ? clustersCorrName : "" );
+      ktFinderTask[1] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // kt
+      ktFinderTask[1]->SelectCollisionCandidates(trigger);
+      jtTask->SetTrackOrMCParticle( iEnd+1, AliJJetTask::kJMCParticle );
+      ktCont[1] = jtTask->AddJetContainer( ktFinderTask[1]->GetName(), ktType, ktConeSize );
+
+      if( ktCont[1] ) {
+        ktCont[1]->SetRhoName( rhoName );
+        ktCont[1]->ConnectParticleContainer( mcTrackCont );
+        if ( ktType == "EMCAL" ) ktCont[0]->ConnectClusterContainer( clusterCont );
+          ktCont[1]->SetZLeadingCut( 0.98, 0.98 );
+          ktCont[1]->SetPercAreaCut( 0.6 );
+          ktCont[1]->SetJetPtCut( 5 );    
+          ktCont[1]->SetLeadingHadronType( 0 );
+      }
+    } // if doRecoTrackJet
+  } // if doBackgroundEst
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -76,7 +76,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
-#pragma link C++ class AliAnalysisTaskEmcalJetHCorrelations+;
 #pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
 #pragma link C++ namespace NS_AliAnalysisTaskEmcalJetCDF+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
@@ -176,6 +175,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
@@ -208,6 +208,8 @@
 #pragma link C++ namespace EmcalTriggerJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
 #pragma link C++ class Cumulants+;
@@ -215,6 +217,8 @@
 #pragma link C++ namespace PWGJE;
 #pragma link C++ namespace PWGJE::EMCALJetTasks;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetTaggerTaskFast+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 

@@ -190,6 +190,7 @@ updateQA()
     #source the detector script
     #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
+    unset -f runLevelAodQA
     unset -f runLevelQAouter
     unset -f periodLevelQA
     unset -f runLevelEventStatQA
@@ -228,6 +229,7 @@ updateQA()
       #check what kind of input file we have, default is a zip archive
       #set the inputs accordingly
       qaFile=""
+      qaFileAod=""
       qaFileOuter=""
       highPtTree=""
       eventStatFile=""
@@ -241,6 +243,7 @@ updateQA()
       #if we are explicit about the input file this takes precedence
       #over earlier additions
       [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
+      [[ "${inputFile}" =~ QAresults_AOD.root$ ]] && qaFileAod=${inputFile}
       [[ "${inputFile}" =~ QAresults_merged.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_barrel.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
@@ -250,6 +253,7 @@ updateQA()
       [[ "${inputFile}" =~ event_stat_outer.root$ ]] && eventStatFileOuter=${inputFile}
       if [[ "${inputFile}" =~ \.zip$ ]]; then
         [[ -z ${qaFile} ]] && qaFile=${inputFile}
+        [[ -z ${qaFileAod} ]] && qaFileAod=${inputFile}
         [[ -z ${qaFileOuter} ]] && qaFileOuter=${inputFile}
         [[ -z ${highPtTree} ]] && highPtTree=${inputFile}
         [[ -z ${eventStatFile} ]] && eventStatFile=${inputFile}
@@ -297,8 +301,16 @@ updateQA()
           eventStatFileOuter=""
         fi
       fi
-
+     if [[ "${qaFileAod}" =~ .*.zip$ ]]; then
+        if unzip -l ${qaFileAod} | egrep "QAresults_AOD.root" &>/dev/null; then
+          qaFileAod+="#QAresults_AOD.root"
+        else
+          qaFileAod=""
+        fi
+      fi
+  
       echo qaFile=$qaFile
+      echo qaFileAod=$qaFileAod
       echo qaFileOuter=$qaFileOuter
       echo highPtTree=$highPtTree
       echo eventStatFile=$eventStatFile
@@ -313,6 +325,17 @@ updateQA()
         #cache the touched production + an example file to guarantee consistent run data parsing
         arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
       fi
+
+     #standard QA based on QAresults_AOD.root file (and variants)
+      if [[ -n ${qaFileAod} && $(type -t runLevelAodQA) =~ "function" ]]; then
+        echo running ${detector} runLevelAodQA for run ${runNumber} from ${qaFileAod}
+        ( runLevelAodQA "${qaFileAod}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+
+
+
       #standard QA based on QAresults_outer.root file (there in cpass, with different triggers)
       if [[ -n ${qaFileOuter} && $(type -t runLevelQAouter) =~ "function" ]]; then
         echo running ${detector} runLevelQAouter for run ${runNumber} from ${qaFileOuter}

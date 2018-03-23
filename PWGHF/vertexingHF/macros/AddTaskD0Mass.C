@@ -174,7 +174,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   } else {
       filecuts=TFile::Open(finname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	::Fatal("AddTaskD0Mass", "Input file not found : check your cut object");
       }
   }
 
@@ -194,8 +194,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   else   {
     RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
     if(!RDHFD0toKpi){
-      AliFatal("Specific AliRDHFCuts not found");
-      return;
+      ::Fatal("AddTaskD0Mass", "Specific AliRDHFCuts not found");
+      return NULL;
     }
     if(flagAOD049)RDHFD0toKpi->SetUseAOD049(kTRUE);
     if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object

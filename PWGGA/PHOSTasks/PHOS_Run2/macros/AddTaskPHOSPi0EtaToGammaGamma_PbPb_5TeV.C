@@ -169,17 +169,35 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) * ( 1 + [3]/(TMath::TwoPi() * [5]) * exp(-(x-[4]) * (x-[4])/(2 * [5]*[5] )) *( 1 + TMath::Erf([6]*((x-[4])/[5]))) )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+    f1tof->SetParameters(0.997,6.67,-0.0567,-0.728,10.8,1.53,-2.18);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
 
   if(isMC){
-    //const Int_t centrality_Pi0[] = {0,10,30,50,90};
-    //const Int_t Ncen_Pi0 = sizeof(centrality_Pi0)/sizeof(centrality_Pi0[0]);
-    //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
-    //task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
+    //for pi0
+    const Int_t Ncen_Pi0 = 11;
+    const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
+    TArrayD *centarray_Pi0 = new TArrayD(Ncen_Pi0,centrality_Pi0);
+
+    TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
+    TF1 *f1weightPi0[Ncen_Pi0-1];
+    const Double_t p0_Pi0[Ncen_Pi0-1] = {8.52796e-02,9.57970e-02,1.09042e-01,1.28762e-01 ,1.51087e-01 ,1.82705e-01 ,2.16360e-01 ,2.37666e-01 ,2.52706e-01 ,3.34001e-01};
+    const Double_t p1_Pi0[Ncen_Pi0-1] = {8.34243e-01,8.11715e-01,7.73274e-01,7.28962e-01 ,6.77506e-01 ,6.06502e-01 ,5.31093e-01 ,4.52193e-01 ,3.86976e-01 ,3.22488e-01};
+    const Double_t p2_Pi0[Ncen_Pi0-1] = {9.27577e-01,9.53380e-01,9.52280e-01,9.78872e-01 ,9.82192e-01 ,1.01124e+00 ,1.08236e+00 ,1.14572e+00 ,1.12243e+00 ,2.16920e+00};
+    const Double_t p3_Pi0[Ncen_Pi0-1] = {2.13453e-01,2.09818e-01,2.03573e-01,2.00238e-01 ,1.94211e-01 ,1.87993e-01 ,1.94509e-01 ,1.95069e-01 ,1.75698e-01 ,3.62140e-01};
+
+    for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
+      f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0] + [1]*pow(x,[2])*exp(-[3]*x*x)",0,100);
+      f1weightPi0[icen]->SetParameters(p0_Pi0[icen],p1_Pi0[icen],p2_Pi0[icen],p3_Pi0[icen]);
+      farray_Pi0->Add(f1weightPi0[icen]);
+    }
+
+    //task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
 
     //for K0S
     const Int_t Ncen_K0S = 7;
@@ -220,9 +238,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_L0->Add(f1weightL0[icen]);
     }
 
-    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
-
-
+    //task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
 
   }
 

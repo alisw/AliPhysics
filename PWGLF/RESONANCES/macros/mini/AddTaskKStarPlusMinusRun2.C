@@ -64,12 +64,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
- Float_t     massTolVeto = 0.004,
+ Float_t     massTolVeto = 0.0043,
+ Bool_t      tol_switch = kTRUE,
+ Double_t    tol_sigma = 6,
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
- Float_t     radiushigh = 200,
- Bool_t      Switch = kFALSE,
- Float_t     k0sDCA = 0.3,
+ Bool_t      Switch = kTRUE,
+ Float_t     k0sDCA = 1000.0,
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
@@ -77,14 +78,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     maxDiffMultMix = 3.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
- TString     outNameSuffix = "KStarPlusMinus_dca006",
+ TString     outNameSuffix = "KStarPlusMinus_V0Mass_Pt",
  Int_t       centr = 0,
  Bool_t      ptDep = kFALSE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
  Float_t     crossedRows = 70,
  Float_t     rowsbycluster = 0.8,
- Float_t     chi2tpc = 4,
  Double_t    pt1 = 0.0105,
  Double_t    pt2 = 0.0350,
  Int_t       Sys= 0
@@ -261,7 +261,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
     } else
         Printf("========================== DATA analysis - PID cuts used");
     
-    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster,chi2tpc, pt1, pt2, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, pt1, pt2, Sys)) return 0x0;
     
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
     Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );
     
     
-    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f_%.3f_%.1f", outNameSuffix.Data(),piPIDCut,customQualityCutsID,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow,radiushigh,k0sDCA,k0sCosPoinAn,k0sDaughDCA, DCAxy, Sys), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f_%.3f_%.1f", outNameSuffix.Data(),piPIDCut,customQualityCutsID,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow, k0sDCA,k0sCosPoinAn,k0sDaughDCA, DCAxy, Sys), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 1, output);

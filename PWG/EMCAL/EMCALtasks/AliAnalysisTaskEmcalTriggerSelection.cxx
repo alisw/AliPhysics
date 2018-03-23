@@ -25,7 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
-#include <vector>
 #include <TH1.h>
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
@@ -108,12 +107,100 @@ void AliAnalysisTaskEmcalTriggerSelection::MakeQA(const AliEmcalTriggerDecisionC
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
-  std::vector<TString> pp2016periods = {"LHC16h", "LHC16i", "LHC16j", "LHC16k", "LHC16l", "LHC16o", "LHC16p"};
-  std::vector<TString> mcpp2016periods = {"LHC17f8", "LHC17f8a", "LHC17f8b", "LHC178c", "LHC17f8d", "LHC17f8e",
-                                          "LHC17f8f", "LHC17f8g", "LHC17f8h", "LHC17f8i", "LHC17f8j", "LHC17f8k"};
-  TString periodstring(period);
-  if(std::find(pp2016periods.begin(), pp2016periods.end(), periodstring) != pp2016periods.end()) ConfigurePP2016();
-  if(std::find(mcpp2016periods.begin(), mcpp2016periods.end(), periodstring) != mcpp2016periods.end()) ConfigureMCPP2016();
+  if(Is2012PP(period)) ConfigurePP2012();
+  if(Is2016PP(period)) ConfigurePP2016();
+  if(Is2012MCPP(period)) ConfigureMCPP2012();
+  if(Is2016MCPP(period)) ConfigureMCPP2016();
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012PP(const char *dataset) const {
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  if(datasetstring.Contains("lhc12")){
+    auto subperiod = datasetstring[5];
+    if(subperiod > 'b' && subperiod < 'j') return true;
+  }
+  return false;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016PP(const char *dataset) const { 
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  if(datasetstring.Contains("lhc16") || datasetstring.Contains("lhc17") || datasetstring.Contains("lhc18")){
+    auto subperiod = datasetstring[5];
+    if(datasetstring.Contains("lhc16")){
+      if(subperiod > 'g' && subperiod < 'q') return true;
+    }
+    if(datasetstring.Contains("lhc17")) {
+      if((subperiod > 'c' && subperiod < 'n') || (subperiod == 'o') || (subperiod < 'r')) return true;
+    }
+    if(datasetstring.Contains("lhc18")) {
+      // 2018 runs will follow when taken
+      return true;
+    }
+  }
+  return false;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012MCPP(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc15h1", "lhc15h2", "lhc16a1", "lhc16c2", "lhc17g5a", "lhc17g5"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPP(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc17f8"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::IsSupportedMCSample(const char *dataset, std::vector<TString> &supportedProductions) const{
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  bool found(false);
+  for(const auto & prod : supportedProductions) {
+    if(datasetstring.Contains(prod)) {
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
+  AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
+  eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
+  eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
+  eg1cuts->SetUseRecalcPatches(true);
+  eg1cuts->SetThreshold(130);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+
+  AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
+  ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
+  ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
+  ej1cuts->SetUseRecalcPatches(true);
+  ej1cuts->SetThreshold(200);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
+  AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
+  eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
+  eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  eg1cuts->SetUseSimpleOfflinePatches(true);
+  eg1cuts->SetThreshold(10.);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+
+  AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
+  ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
+  ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  ej1cuts->SetUseSimpleOfflinePatches(true);
+  ej1cuts->SetThreshold(15.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2016(){
@@ -222,7 +309,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
   ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej1cuts->SetUseSimpleOfflinePatches(true);
-  ej1cuts->SetThreshold(20.);
+  ej1cuts->SetThreshold(19.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ1", ej1cuts));
 
   AliEmcalTriggerSelectionCuts *ej2cuts = new AliEmcalTriggerSelectionCuts;
@@ -230,7 +317,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   ej2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej2cuts->SetUseSimpleOfflinePatches(true);
-  ej2cuts->SetThreshold(16.);
+  ej2cuts->SetThreshold(14.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ2", ej2cuts));
 
   AliEmcalTriggerSelectionCuts *dj1cuts = new AliEmcalTriggerSelectionCuts;
@@ -238,7 +325,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
   dj1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dj1cuts->SetUseSimpleOfflinePatches(true);
-  dj1cuts->SetThreshold(20.);
+  dj1cuts->SetThreshold(19.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ1", dj1cuts));
 
   AliEmcalTriggerSelectionCuts *dj2cuts = new AliEmcalTriggerSelectionCuts;
@@ -246,7 +333,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   dj2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dj2cuts->SetUseSimpleOfflinePatches(true);
-  dj2cuts->SetThreshold(16.);
+  dj2cuts->SetThreshold(14.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
 }
 

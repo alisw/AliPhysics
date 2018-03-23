@@ -71,6 +71,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fSubjetCutoff(0.1),
+  fHardCutoff(0),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -83,7 +85,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fhTrackPhi(0x0),
   fHLundIterative(0x0),
+  fHCheckResolutionSubjets(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
@@ -117,6 +121,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fSubjetCutoff(0.1),
+  fHardCutoff(0),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -129,7 +135,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fhTrackPhi(0x0),
   fHLundIterative(0x0),
+  fHCheckResolutionSubjets(0x0),  
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
   
@@ -200,7 +208,21 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-  fOutput->Add(fHLundIterative);  
+  fOutput->Add(fHLundIterative);
+
+
+  //// 
+   const Int_t dimResol   = 4;
+   const Int_t nBinsResol[4]     = {10,10,80,80};
+   const Double_t lowBinResol[4] = {0,0,-1,-1};
+   const Double_t hiBinResol[4]  = {200,0.3,1,1};
+   fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
+                   "Mom.Resolution of Subjets vs opening angle",
+					     dimResol,nBinsResol,lowBinResol,hiBinResol);
+  fOutput->Add(fHCheckResolutionSubjets);
+
+
+  
   
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
@@ -293,6 +315,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
       else PartCont = GetTrackContainer(0);
     }
+
     TClonesArray *TrackArray = NULL;
     TClonesArray *TrackArrayMC = NULL;
     if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
@@ -329,13 +352,13 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         return 0;}
     }
 
-    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
-    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
+  
     fhPt->Fill(triggerHadron->Pt());
 
   }
   
 
+  if(fTrackCheckPlots){
       //here check tracks//
       AliAODTrack *Track = 0x0;
      for(Int_t i=0; i < NTracks; i++){
@@ -356,12 +379,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       }
     } 
   }
-
+  }
   
   
   AliParticleContainer *partContAn = GetParticleContainer(0);
   TClonesArray *trackArrayAn = partContAn->GetArray();
-  Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
+ 
   
   Float_t rhoVal=0, rhoMassVal = 0.;
   if(jetCont) {
@@ -506,7 +529,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
-        
+        CheckSubjetResolution(jet1,jetCont,jet3,jetContTrue);
         
       }
       
@@ -1188,8 +1211,9 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
+    if(z>fHardCutoff){
     Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
-    fHLundIterative->Fill(LundEntries);
+    fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
 
@@ -1206,6 +1230,114 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   return;
 
   
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont,AliEmcalJet *fJetM,AliJetContainer *fJetContM){
+ 
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+
+  std::vector<fastjet::PseudoJet>  fInputVectorsM;
+  fInputVectorsM.clear();
+  fastjet::PseudoJet  PseudoTracksM;
+  
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  AliParticleContainer *fTrackContM = fJetContM->GetParticleContainer();
+  
+    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+    fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+   if (fTrackContM) for (Int_t i=0; i<fJetM->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJetM->TrackAt(i, fTrackContM->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracksM.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracksM.set_user_index(fJetM->TrackAt(i)+100);
+      fInputVectorsM.push_back(PseudoTracksM);
+     
+    }
+    fastjet::JetAlgorithm jetalgoM(fastjet::cambridge_algorithm);
+    fastjet::JetDefinition fJetDefM(jetalgoM, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+
+    try {
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
+
+    fastjet::ClusterSequence fClustSeqSAM(fInputVectorsM, fJetDefM);
+    std::vector<fastjet::PseudoJet>   fOutputJetsM;
+    fOutputJetsM.clear();
+    fOutputJetsM=fClustSeqSAM.inclusive_jets(0);
+
+    
+  
+    fastjet::PseudoJet jj,jjM;
+    fastjet::PseudoJet j1,j1M;
+    fastjet::PseudoJet j2,j2M;
+    jj=fOutputJets[0];
+    jjM=fOutputJetsM[0];
+
+   double z=0;
+   double zcut=0.1;
+   while((jj.has_parents(j1,j2)) && (z<zcut)){
+    if(j1.perp() < j2.perp()) swap(j1,j2);
+   
+     z=j2.perp()/(j1.perp()+j2.perp());
+    jj=j1;} 
+   if(z<zcut) return;
+    z=0;
+
+     
+   while((jjM.has_parents(j1M,j2M)) && (z<zcut)){
+    if(j1M.perp() < j2M.perp()) swap(j1M,j2M);
+   
+     z=j2M.perp()/(j1M.perp()+j2M.perp());
+    jjM=j1M;}
+   if(z<zcut) return;
+        
+
+
+   double delta_R1=j1.delta_R(j1M);
+   double delta_R2=j2.delta_R(j2M);
+   double delta_R=j1.delta_R(j2);
+  
+   double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
+   double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
+    
+   if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
+   Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
+   fHCheckResolutionSubjets->Fill(ResolEntries);}
+
+   
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+
+
+
+  return;
+
+
+
+
+
+ 
+
 }
 
 

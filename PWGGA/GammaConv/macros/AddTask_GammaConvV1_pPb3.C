@@ -60,7 +60,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
                                 Int_t         enableQAPhotonTask            = 0,                                // enable additional QA task
                                 TString       fileNameInputForWeighting     = "MCSpectraInput.root",            // path to file for weigting input
                                 Bool_t        doWeightingPart               = kFALSE,                           // enable Weighting
-                                TString       generatorName                 = "DPMJET",                         // generator Name    
+                                TString       generatorName                 = "DPMJET",                         // generator Name
                                 TString       cutnumberAODBranch            = "800000006008400000001500000",    // cutnumber for AOD branch
                                 Bool_t        enableV0findingEffi           = kFALSE,                           // enables V0finding efficiency histograms
                                 Bool_t        enablePlotVsCentrality        = kFALSE,
@@ -78,8 +78,8 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
   Int_t isHeavyIon = 2;
   if (additionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
-  
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -148,12 +148,12 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
       cout << "AOD handler: adding " << cutnumberAODBranch.Data() << " as conversion branch" << endl;
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
-  
+
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
-  
+
     //connect input V0Reader
     mgr->AddTask(fV0ReaderV1);
     mgr->ConnectInput(fV0ReaderV1,0,cinput);
@@ -171,12 +171,12 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
-  
+
   CutHandlerConv cuts;
-  
+
   Bool_t doEtaShiftIndCuts = kFALSE;
   TString stringShift = "";
-  
+
   if (trainConfig == 1) {
     cuts.AddCut("80000113", "10200009217000008260400000", "0162103500900000");  // all Photon Qualities  //offline V0Finder
     cuts.AddCut("80000113", "10200009217000008260420000", "0162103500900000");  // only photon quality 1  //offline V0Finder
@@ -191,7 +191,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
@@ -199,12 +199,12 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts(); 
-  
+  Int_t numberOfCuts = cuts.GetNCuts();
+
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
-  
+
   TList *HeaderList = new TList();
   if (doWeightingPart==1) {
     TObjString *Header1 = new TObjString("pi0_1");
@@ -220,21 +220,21 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     TObjString *Header3 = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
-  
-  
+
+
   Bool_t doWeighting = kFALSE;
   if (doWeightingPart == 1 || doWeightingPart == 2 || doWeightingPart == 3) doWeighting = kTRUE;
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
-  
-  
+
+
   for(Int_t i = 0; i<numberOfCuts; i++){
-    
+
     analysisEventCuts[i] = new AliConvEventCuts();
     if ( trainConfig == 1  ){
       if (doWeighting){
@@ -244,13 +244,13 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
         }
       }
-    }   
+    }
     if ( trainConfig == 2 ){
       if (doWeighting){
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
       }
-      
-    }   
+
+    }
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
@@ -258,7 +258,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
-        
+
     if (doEtaShiftIndCuts) {
       analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
       analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -267,10 +267,10 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
       analysisEventCuts[0]->DoEtaShift(kTRUE);
       analysisEventCuts[0]->SetEtaShift(-0.215);
     }
-    
+
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
@@ -278,7 +278,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
@@ -286,7 +286,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
-  
+
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
@@ -295,16 +295,16 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(enablePlotVsCentrality);
-  
+
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
               AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
-  
+
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
-  
+
   return;
-  
+
 }

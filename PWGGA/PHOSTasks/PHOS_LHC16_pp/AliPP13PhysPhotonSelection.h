@@ -4,6 +4,8 @@
 // --- Custom header files ---
 #include "AliPP13PhotonSelection.h"
 #include "AliPP13DetectorHistogram.h"
+#include "AliPP13SelectionWeights.h"
+	
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -21,8 +23,9 @@ public:
 		fClusters(0)
 	{}
 
-	AliPP13PhysPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
-		AliPP13PhotonSelection(name, title, cuts),
+	AliPP13PhysPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
+			AliPP13SelectionWeights * w):
+		AliPP13PhotonSelection(name, title, cuts, w),
 		fInvariantMass(),
 		fClusters(0)
 	{}

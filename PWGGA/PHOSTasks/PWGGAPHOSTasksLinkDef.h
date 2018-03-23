@@ -81,6 +81,10 @@
 #pragma link C++ class AliCaloCellsQA+;
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
 
+// CaloCellPhysQA
+#pragma link C++ class AliCaloCellsPhysQA+;
+#pragma link C++ class AliAnalysisTaskCaloCellsPhysQA+;
+
 // Omega3pi
 #pragma link C++ class AliAnalysisTaskOmegaPi0PiPi+;
 
@@ -103,8 +107,13 @@
 
 // LHC16_pp
 #pragma link C++ class AliPP13ClusterCuts+;
+#pragma link C++ class AliPP13SelectionWeights+;
+#pragma link C++ class AliPP13SelectionWeightsTOF+;
+#pragma link C++ class AliPP13SelectionWeightsMC+;
+#pragma link C++ class AliPP13SelectionWeightsSPMC+;
 #pragma link C++ class AliPP13DetectorHistogram+;
 #pragma link C++ class AliPP13PhotonSelection+;
+#pragma link C++ class AliPP13PhotonSelectionMC+;
 #pragma link C++ class AliPP13PhotonSpectrumSelection+;
 #pragma link C++ class AliPP13QualityPhotonSelection+;
 #pragma link C++ class AliPP13ParticlesHistogram+;
@@ -112,9 +121,11 @@
 #pragma link C++ class AliPP13PhysPhotonSelection+;
 #pragma link C++ class AliPP13TagAndProbeSelection+;
 #pragma link C++ class AliPP13MesonSelectionMC+;
+#pragma link C++ class AliPP13EfficiencySelectionMC+;
 #pragma link C++ class AliPP13PythiaInfoSelection+;
 #pragma link C++ class AliPP13PhysPhotonSelectionMC+;
 #pragma link C++ class AliPP13NonlinearityScanSelection+;
+#pragma link C++ class AliPP13NonlinearitySelection+;
 #pragma link C++ class AliPP13MixingSample+;
 #pragma link C++ class AliAnalysisTaskPP13+;
 

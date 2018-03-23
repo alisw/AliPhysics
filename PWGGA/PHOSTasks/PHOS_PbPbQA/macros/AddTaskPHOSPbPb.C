@@ -1,5 +1,5 @@
-AliAnalysisTaskPHOSPbPbQA* AddTaskPHOSPbPbQA(char* fname="PHOSPbPbQA.root",
-					     char* contname=NULL)
+AliAnalysisTaskPHOSPbPbQA* AddTaskPHOSPbPbQA(const char* fname="PHOSPbPbQA.root",
+					     const char* contname=NULL)
 {
   //Add PHOS PbPb QA task to the PWGPP QA train.
   //See PHOSPbPb.C how to run it locally or standalone.

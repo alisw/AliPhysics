@@ -14,7 +14,7 @@ AliAnalysisTaskSEDStarJets *AddTaskDStarJets(Bool_t theMCon=kTRUE)
   TFile* filecuts=TFile::Open("DStartoKpipiCuts.root");
   if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: exit"<<endl;
-    return;
+    return NULL;
   }
 
   AliRDHFCutsDStartoKpipi* RDHFDStartoKpipi=new AliRDHFCutsDStartoKpipi();
@@ -24,7 +24,7 @@ AliAnalysisTaskSEDStarJets *AddTaskDStarJets(Bool_t theMCon=kTRUE)
   // mm let's see if everything is ok
   if(!RDHFDStartoKpipi){
     cout<<"Specific AliRDHFCuts not found"<<endl;
-    return;
+    return NULL;
   } 
 
   //CREATE THE TASK

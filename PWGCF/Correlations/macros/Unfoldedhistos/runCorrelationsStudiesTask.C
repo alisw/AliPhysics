@@ -92,8 +92,12 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     /* we only do this outside trains scope */
     if (bUseESD) {
       AliESDInputHandler* esdH = new AliESDInputHandler();
+      /* taken from fast MC trains */
+      if (bMConlyTruth) {
+        esdH->SetReadFriends(kFALSE);
+        esdH->SetNeedField();
+      }
       mgr->SetInputEventHandler(esdH);
-    //  esdH->SetReadFriends(kFALSE);
     }
     else if (bUseAOD) {
       AliAODInputHandler* aodH = new AliAODInputHandler();
@@ -106,6 +110,11 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
 
     if (bMC && !bUseAOD){
         AliMCEventHandler* mcH = new AliMCEventHandler();
+        /* taken from fast MC trains */
+        if (bMConlyTruth) {
+          mcH->SetReadTR(kFALSE);
+          mcH->SetPreReadMode(AliMCEventHandler::kLmPreRead);
+        }
         mgr->SetMCtruthEventHandler(mcH);
     }
 

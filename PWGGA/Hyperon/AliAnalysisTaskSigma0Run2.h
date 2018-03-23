@@ -21,6 +21,7 @@
 #include "AliSigma0PhotonMotherCuts.h"
 #include "AliSigma0SingleParticleCuts.h"
 #include "AliSigma0V0Cuts.h"
+#include "AliSigma0EventContainer.h"
 
 // forward delcarations
 class AliVParticle;
@@ -47,6 +48,10 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetIsQA(bool isQA) { fIsQA = isQA; }
   void SetEventCuts(AliSigma0EventCuts *cuts) { fEventCuts = cuts; }
+  void SetProtonCuts(AliSigma0SingleParticleCuts *cuts) {
+    fSingleParticleCutsProton = cuts;
+  }
+
   void SetSingleParticleCuts(AliSigma0SingleParticleCuts *cuts) {
     fSingleParticleCuts = cuts;
   }
@@ -55,6 +60,9 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   void SetPhotonCuts(AliSigma0PhotonCuts *cuts) { fPhotonCuts = cuts; }
   void SetPhotonMotherCuts(AliSigma0PhotonMotherCuts *cuts) {
     fPhotonMotherCuts = cuts;
+  }
+  void SetEventContainer(AliSigma0EventContainer *cont) {
+    fEventContainer = cont;
   }
 
  private:
@@ -72,13 +80,18 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
 
   AliSigma0EventCuts *fEventCuts;
   AliSigma0SingleParticleCuts *fSingleParticleCuts;
+  AliSigma0SingleParticleCuts *fSingleParticleCutsProton;
   AliSigma0V0Cuts *fV0Cuts;
   AliSigma0V0Cuts *fV0LambdaCuts;
   AliSigma0PhotonCuts *fPhotonCuts;
   AliSigma0PhotonMotherCuts *fPhotonMotherCuts;
+  AliSigma0EventContainer *fEventContainer;
 
   std::vector<AliSigma0ParticleBase> fElectron;  //!
   std::vector<AliSigma0ParticleBase> fPositron;  //!
+
+  std::vector<AliSigma0ParticleBase> fProton;  //!
+  std::vector<AliSigma0ParticleBase> fAntiProton;  //!
 
   std::vector<AliSigma0ParticleV0> fLambda;      //!
   std::vector<AliSigma0ParticleV0> fAntiLambda;  //!

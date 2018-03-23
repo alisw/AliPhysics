@@ -84,9 +84,9 @@ AliQnCorrectionsQnVectorAlignment::~AliQnCorrectionsQnVectorAlignment() {
 /// The detector configuration name is stored for further use.
 /// \param name the name of the reference detector configuration
 void AliQnCorrectionsQnVectorAlignment::SetReferenceConfigurationForAlignment(const char *name) {
-  AliInfo(Form("Reference name: %s, attached to detector configuration: %s",
+  AliInfo(TString::Format("Reference name: %s, attached to detector configuration: %s",
       name,
-      ((fDetectorConfiguration != NULL) ? "yes" : "no")));
+      ((fDetectorConfiguration != NULL) ? "yes" : "no")).Data());
 
   fDetectorConfigurationForAlignmentName = name;
 
@@ -97,7 +97,7 @@ void AliQnCorrectionsQnVectorAlignment::SetReferenceConfigurationForAlignment(co
 /// Informs when the detector configuration has been attached to the framework manager
 /// Basically this allows interaction between the different framework sections at configuration time
 void AliQnCorrectionsQnVectorAlignment::AttachedToFrameworkManager() {
-  AliInfo(Form("Attached! reference for alignment: %s", fDetectorConfigurationForAlignmentName.Data()));
+  AliInfo(TString::Format("Attached! reference for alignment: %s", fDetectorConfigurationForAlignmentName.Data()).Data());
 
 }
 
@@ -147,7 +147,7 @@ void AliQnCorrectionsQnVectorAlignment::CreateSupportDataStructures() {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateSupportHistograms(TList *list) {
 
-  TString histoNameAndTitle = Form("%s %s#times%s ",
+  TString histoNameAndTitle = TString::Format("%s %s#times%s ",
       szSupportHistogramName,
       fDetectorConfiguration->GetName(),
       fDetectorConfigurationForAlignment->GetName());
@@ -183,8 +183,8 @@ Bool_t AliQnCorrectionsQnVectorAlignment::AttachInput(TList *list) {
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
 
   fQAQnAverageHistogram = new AliQnCorrectionsProfileComponents(
-      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
-      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
+      TString::Format("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
+      TString::Format("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
       fDetectorConfiguration->GetEventClassVariablesSet());
 
   /* get information about the configured harmonics to pass it for histogram creation */
@@ -204,8 +204,8 @@ Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateNveQAHistograms(TList *list) {
 
   fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
       fDetectorConfiguration->GetEventClassVariablesSet());
   fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;
@@ -227,9 +227,9 @@ Bool_t AliQnCorrectionsQnVectorAlignment::ProcessCorrections(const Float_t *vari
     /* and proceed to ... */
   case QCORRSTEP_apply: /* apply the correction if the current Qn vector is good enough */
     /* logging */
-    AliInfo(Form("Alignment process in detector %s with reference %s: applying correction.",
+    AliInfo(TString::Format("Alignment process in detector %s with reference %s: applying correction.",
         fDetectorConfiguration->GetName(),
-        fDetectorConfigurationForAlignment->GetName()));
+        fDetectorConfigurationForAlignment->GetName()).Data());
     if (fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) {
       /* we get the properties of the current Qn vector but its name */
       fCorrectedQnVector->Set(fDetectorConfiguration->GetCurrentQnVector(),kFALSE);
@@ -288,9 +288,9 @@ Bool_t AliQnCorrectionsQnVectorAlignment::ProcessDataCollection(const Float_t *v
   switch (fState) {
   case QCORRSTEP_calibration:
     /* logging */
-    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
+    AliInfo(TString::Format("Alignment process in detector %s with reference %s: collecting data.",
         fDetectorConfiguration->GetName(),
-        fDetectorConfigurationForAlignment->GetName()));
+        fDetectorConfigurationForAlignment->GetName()).Data());
     /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
     if ((fInputQnVector->IsGoodQuality()) &&
         (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {
@@ -312,9 +312,9 @@ Bool_t AliQnCorrectionsQnVectorAlignment::ProcessDataCollection(const Float_t *v
     break;
   case QCORRSTEP_applyCollect:
     /* logging */
-    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
+    AliInfo(TString::Format("Alignment process in detector %s with reference %s: collecting data.",
         fDetectorConfiguration->GetName(),
-        fDetectorConfigurationForAlignment->GetName()));
+        fDetectorConfigurationForAlignment->GetName()).Data());
     /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
     if ((fInputQnVector->IsGoodQuality()) &&
         (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {

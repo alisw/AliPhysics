@@ -41,6 +41,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetJetEtaMax(Float_t eta){fJetEtaMax=eta;}
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void		 SetJetContName(TString cont){fJetContName=cont;}
+	virtual void		 SetRunAnaAzimuthalCorrelation(Bool_t b){fRunAnaAzimuthalCorrelation=b;}
 
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 //      const char *ntracks            = "usedefault",
@@ -85,38 +86,43 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   THistManager                fHistManager                                      ;///< Histogram manager
 
 	// flags and selection
-	AliEventCuts fEventCuts; // Event cuts
-	Float_t fCentMin;
-	Float_t fCentMax;
-	Float_t fTTLowRef;
-	Float_t fTTUpRef;
-	Float_t fTTLowSig;
-	Float_t fTTUpSig;
-	Int_t fNRPBins;	
-	Float_t fFrac;
-	Float_t fJetEtaMin;
-	Float_t fJetEtaMax;
-	Float_t fJetHadronDeltaPhi;
-	TString fJetContName;
+	AliEventCuts fEventCuts; ///< Event cuts
+	Float_t fCentMin; ///<
+	Float_t fCentMax; ///<
+	Float_t fTTLowRef; ///<
+	Float_t fTTUpRef; ///<
+	Float_t fTTLowSig; ///<
+	Float_t fTTUpSig; ///<
+	Int_t fNRPBins;	 ///<
+	Float_t fFrac; ///<
+	Float_t fJetEtaMin; ///<
+	Float_t fJetEtaMax; ///<
+	Float_t fJetHadronDeltaPhi; ///<
+	TString fJetContName; ///<
+	Bool_t fRunAnaAzimuthalCorrelation; ///<
 	//
-	TRandom3 *fRandom;
+	TRandom3 *fRandom; ///<
 	//histograms to fill
-	TH1I *fHistEvtSelection; //!
-	THnSparse *fHJetSpec;  //!
-	TH1D *fh1TrigRef; //!
-	TH1D *fh1TrigSig; //!
-	TH2F *fh2Ntriggers; //!
-	TH2F *fh2RPJetsC10; //!
-	TH2F *fh2RPJetsC20; //!
-	TH2F *fh2RPTC10; //!
-	TH2F *fh2RPTC20; //!
+	TH1I *fHistEvtSelection; //!<!
+	THnSparse *fHJetSpec;  //!<!
+	TH1D *fh1TrigRef; //!<!
+	TH1D *fh1TrigSig; //!<!
+	TH2F *fh2Ntriggers; //!<!
+	TH2F *fh2RPJetsC10; //!<!
+	TH2F *fh2RPJetsC20; //!<!
+	TH2F *fh2RPTC10; //!<!
+	TH2F *fh2RPTC20; //!<!
+
+	THnSparse *fHJetPhiCorr; //!<!
+	TH2F *fhDphiPtSig; //!<!
+	TH2F *fhDphiPtRef; //!<!
 
  private:
   AliAnalysisTaskJetCoreEmcal(const AliAnalysisTaskJetCoreEmcal&)           ; // not implemented
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 1);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 3);
   /// \endcond
 };
 #endif

@@ -3,24 +3,24 @@
 
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
+#include "AliAnalysisCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
+#include "AliEMCALGeometry.h"
+#include "AliPHOSGeometry.h"
+#include "AliAODCaloCluster.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliCalorimeterUtils.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
 #include "AliAODTrack.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisCuts.h"
 #include "TProfile2D.h"
 #include "TH1F.h"
 #include "TF1.h"
-#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
-#include "AliEMCALGeometry.h"
-#include "AliPHOSGeometry.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAODCaloCluster.h"
-#include "AliCalorimeterUtils.h"
 #include "AliCaloTrackMatcher.h"
 #include <vector>
 
@@ -110,52 +110,52 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     enum MCSet {
       // MC data sets
       kNoMC=0,
-      k14e2a,
-      k14e2b,
-      k14e2c,
+      // pp 7 TeV 2010
+      k14j4,
+      // pp 2.76 TeV 2011
       k12f1a,
       k12f1b,
       k12i3,
-      k15g1a,
+      kPP2T11P4JJ,
       k15g1b,
-      k15g2,
-      k15a3a,
-      k15a3a_plus,
-      k15a3b,
-      k13b2_efix,
-      k13e7,
-      k15h1,
-      k15h2,
-      k14j4,
+      // PbPb 2.76 TeV 2011
       k14a1,
-      k16c2,
-      k16c2_plus,
+      // pp 8 TeV 2012
+      k14e2b,
+      kPP8T12P2Pyt8,
+      kPP8T12P2Pho,
+      kPP8T12P2JJ,
+      // pPb 5 TeV 2013
+      kPPb5T13P2DPMJet,
+      kPPb5T13P2HIJAdd,
       k16c3a,
       k16c3b,
       k16c3c,
-      k16h3,
-      k16h3b,
+      // pp 2.76TeV 2013
+      k15g2,
+      kPP2T13P1JJ,
+      k15a3b,
+      // pp 13 TeV 2015
+      kPP13T15P2Pyt8,
+      kPP13T15P2EPOS,
+      k15k5,
+      // pp 5 TeV 2015
       k16h8a,
       k16h8b,
       k16k3a,
-      k16k3b,
       k16k5a,
       k16k5b,
-      k17a2a,
-      k17a2b,
-      k17a3a,
-      k17a3b,
-      k17a4a,
-      k17a4b,
       k17e2,
-      k17f2a,
-      k17f2b,
-      k17f3a,
-      k17f3b,
-      k17f4a,
-      k17f4b,
-      k17g8b,
-      k17g8c,
+      k16h3,
+      // PbPb 5 TeV 2015
+      kPbPb5T15HIJING,
+      k16k3b,
+      // pp 13 TeV 2016
+      kPP13T16P1Pyt8,
+      kPP13T16P1Pyt8LowB,
+      kPP13T16P1EPOS,
+      kPP13T16P1JJ,
+      kPP13T16P1JJLowB,
       k17h8a,
       k17h8b,
       k17h8c,
@@ -163,35 +163,28 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17c3a1,
       k17c3b2,
       k17c3a2,
-      k17d2a_fast,
-      k17d2a_cent,
-      k17d2b_fast,
-      k17d2b_cent,
-      // 13TeV MC anc 2015 pp
-      k15k5,
-      k15P2Pyt8,
-      k15P2EPos,
-
-      // 13TeV MC anc 2016 pp
-      k16P1Pyt8,        //
-      k16P1Pyt8LowB,    //
-      k16P1EPOS,        //
-      k16P1JJ,          //
-      k16P1JJLowB,      //
-      //13 TeV LHC2017
-      k17k1, //LHC17g added dielectrons from HF
-      k17k4, //LHC17i
-      k17h11, //LHC17j
-      k17h7b, //LHC17j
-      k17h7a, //LHC17j
-      k17j5a, //LHC17k Strangeness enhanced
-      k17j5b, //LHC17l Strangeness enhanced
-      k17j5c, //LHC17o Strangeness enhanced
-      k17l5,
-      k17h1,
-      k17h3,
+      // pPb 5 TeV 2016
+      kPPb5T16EPOS,
+      kPPb5T16DPMJet,
+      k17g8a,
+      k17d2a,
+      k17d2b,
+      // pPb 8 TeV 2016
+      k17f3a,
+      k17f3b,
+      k17f4a,
+      k17f4b,
+      k17g8b,
+      k17g8c,
+      // pp 13 TeV 2017
+      k17k1,
+      kPP13T17P1Pyt8,
+      kPP13T17P1Pho,
+      kPP13T17P1Pyt6,
+      kPP13T17P1Pyt8Str,
+      kPP13T17P1Pyt8LowB,
       // Xe-Xe MC
-      k17j7,            // HIJING
+      kXeXe5T17HIJING,
 
       // Data starts here
       k10pp7TeV,
@@ -213,7 +206,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17pp13TeV,
       k17pp13TeVLow,
       k17pp13TeVNo,
-      k17XeXe5440GeV
+      k17XeXe5440GeV,
+      k17pp5TeV
     };
 
 
@@ -260,8 +254,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-    Float_t     FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2);
-    Float_t     FunctionNL_PHOSRun2(Float_t e, Float_t p0 = 0.08, Float_t p1 = 0.055, Float_t p2 = 0.03, Float_t p3 = 6.65e-02);
+    Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
@@ -314,6 +308,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
 
+    Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
+
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
 
@@ -359,10 +355,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
-    
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
-    
+
     AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
     AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
 
@@ -540,6 +536,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     // histograms for track matching efficiency
     TH2F*     fHistClusterTMEffiInput;                  //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_00_20;     //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_20_50;     //
+    TH2F*     fHistClusterElecEtaPhiBeforeTM_50_00;     //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_00_20;      //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_20_50;      //
+    TH2F*     fHistClusterElecEtaPhiAfterTM_50_00;      //
     TH2F*     fHistClusterEvsTrackECharged;             //
     TH2F*     fHistClusterEvsTrackEChargedLead;         //
     TH2F*     fHistClusterEvsTrackENeutral;             //
@@ -554,11 +556,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Int_t      fNMaxDCalModules;                        // max number of DCal Modules
     Int_t      fgkDCALCols;                             // Number of columns in DCal
-
+    Bool_t     fIsAcceptedForBasic;                     // basic counting
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,53)
+    ClassDef(AliCaloPhotonCuts,59)
 };
 
 #endif

@@ -21,6 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA/phys/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
@@ -63,6 +64,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
     CaloCellQA/AliCaloCellsQA.cxx
+    CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
+    CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
@@ -80,17 +83,21 @@ set(SRCS
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
     PHOS_LHC16_pp/AliPP13ClusterCuts.cxx
     PHOS_LHC16_pp/AliPP13DetectorHistogram.cxx
+    PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MesonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MixingSample.cxx
     PHOS_LHC16_pp/AliPP13NonlinearityScanSelection.cxx
+    PHOS_LHC16_pp/AliPP13NonlinearitySelection.cxx
     PHOS_LHC16_pp/AliPP13ParticlesHistogram.cxx
     PHOS_LHC16_pp/AliPP13PhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13PhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PhotonSpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13PhotonTimecutStudySelection.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelection.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PythiaInfoSelection.cxx
     PHOS_LHC16_pp/AliPP13QualityPhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
@@ -131,7 +138,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskPHOSCluster.cxx
     UserTasks/AliCaloClusterContent.cxx
    )
- 
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -151,7 +158,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library. Note the extra includes (relative paths)
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "CaloCellQA omega3pi PHOS_embedding PHOS_PbPbQA PHOS_pp_pi0 PHOS_TriggerQA")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
@@ -206,6 +213,7 @@ install(FILES PHOS_PbPb/AddTaskPHOSEtaPhiMult.C DESTINATION PWGGA/PHOSTasks/PHOS
 install(DIRECTORY PHOSCalib/macros          DESTINATION  PWGGA/PHOSTasks/PHOSCalib)
 install(DIRECTORY UserTasks/macros          DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros         DESTINATION PWGGA/PHOSTasks/CaloCellQA)
+install(DIRECTORY CaloCellQA/phys/macros    DESTINATION PWGGA/PHOSTasks/CaloCellQA/phys)
 install(DIRECTORY PHOS_PbPbQA/macros        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros     DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb                  DESTINATION PWGGA/PHOSTasks)

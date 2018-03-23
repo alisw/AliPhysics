@@ -92,6 +92,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                             ) {
 
   Int_t isHeavyIon = 0;
+  TString corrTaskSetting = ""; // select which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -122,6 +123,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
               cout << "INFO: AddTask_GammaConvV1_pp the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
           }
         }
+      } else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pPb will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
       }
     }
   }
@@ -130,7 +135,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
   }
-
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+    
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -141,23 +148,22 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
-  Bool_t isMCForOtherSettings = 0;
-  if (isMC > 0) isMCForOtherSettings = 1;
-  //========= Add PID Reponse to ANALYSIS manager ====
+  //========= Check whether PID Reponse is there ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherSettings);
+    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No PID response has been initialized aborting.");
+    return;
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00200008400000002200000000";
-  TString cutnumberEvent = "00000003";
+  TString cutnumberPhoton     = "00200008400000002200000000";
+  TString cutnumberEvent      = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  AliV0ReaderV1 *fV0ReaderV1  = NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+    fV0ReaderV1               = new AliV0ReaderV1(V0ReaderName.Data());
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -170,9 +176,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     }
     if(trainConfig>=60 && trainConfig<80) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
+    if(inputHandler->IsA()==AliAODInputHandler::Class()){
+      // AOD mode
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
 
     AliConvEventCuts *fEventCuts=NULL;
@@ -203,12 +209,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87)   ){
         fCuts->SetDodEdxSigmaCut(kFALSE);
       }
-    }
-
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-    // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -814,6 +814,27 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
     cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
 
+  // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
+  } else if (trainConfig == 400){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+  } else if (trainConfig == 401){
+    cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
+    cuts.AddCut("00010113", "00200009247300008250404000", "0152103500000000"); // pidEdx 3, 1
+    cuts.AddCut("00010113", "00200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
+    cuts.AddCut("00010113", "00200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "00200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+  } else if (trainConfig == 402){
+    cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+    cuts.AddCut("00010113", "00200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.2 2D
+    cuts.AddCut("00010113", "00200009227300008150404000", "0152103500000000"); // variation chi2 50 psi pair 0.1 2D
+    cuts.AddCut("00010113", "00200009227300008250004000", "0152103500000000"); // CosPA -1
+  } else if (trainConfig == 403){
+    cuts.AddCut("00057113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EMC7
+    cuts.AddCut("00083113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
+    cuts.AddCut("00085113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
+    cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
+
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -927,6 +948,7 @@ if(!cuts.AreValid()){
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -934,13 +956,14 @@ if(!cuts.AreValid()){
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350  ){
+    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350 ) ){
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
         TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
         if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
           AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
           fTrackMatcher->SetV0ReaderName(V0ReaderName);
+          fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
           mgr->AddTask(fTrackMatcher);
           mgr->ConnectInput(fTrackMatcher,0,cinput);
         }
@@ -948,6 +971,7 @@ if(!cuts.AreValid()){
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
         analysisClusterCuts[i]->SetLightOutput(runLightOutput);
         analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
@@ -1001,8 +1025,8 @@ if(!cuts.AreValid()){
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvV1_%i",trainConfig) : Form("GammaConvV1_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
