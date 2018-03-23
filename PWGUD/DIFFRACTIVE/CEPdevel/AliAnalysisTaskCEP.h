@@ -99,7 +99,7 @@ private:
   // some hit information
   UInt_t fisSTGTriggerFired;
   Int_t  fnTOFmaxipads;
-
+  
 	// event information
 	Int_t           fRun;           //  run number
   AliESDRun      *fESDRun;        //! esd run object

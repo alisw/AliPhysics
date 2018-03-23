@@ -743,6 +743,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
   // in addition to CCUP13
   fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
+  AliTOFTriggerMask *fTOFTriggerMask =
+    fEvent->GetTOFHeader()->GetTriggerMask();
   // if ( isDGTrigger ) {
   //   printf("Number of fired TOF MaxiPads = %i / %i\n",
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
@@ -1065,9 +1067,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetnFiredChips(nFiredChips);
     fCEPEvent->SetSPMapOnline(mult->GetFastOrFiredChips());
     fCEPEvent->SetSPMapOffline(mult->GetFiredChipMap());
+    printf("\nOnline: ");
+    mult->GetFastOrFiredChips().Print();
+    printf("\nOffline: ");
+    mult->GetFiredChipMap().Print();
     
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
+    fCEPEvent->SetTOFTriggerMask(fTOFTriggerMask);
     
     // FP Flags of V0 and AD
     fCEPEvent->SetPFFlags(fEvent);
