@@ -92,8 +92,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kNMinCells,
       kMinM02,
       kMaxM02,
-      kMinM20,
-      kMaxM20,
+      kMinMaxM20,
+      kRecConv,
       kDispersion,
       kNLM,
       kNCuts
@@ -334,8 +334,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetMinNCellsCut(Int_t);
     Bool_t      SetMaxM02(Int_t);
     Bool_t      SetMinM02(Int_t);
-    Bool_t      SetMaxM20(Int_t);
-    Bool_t      SetMinM20(Int_t);
+    Bool_t      SetMinMaxM20(Int_t);
+    Bool_t      SetRecConv(Int_t);
     Bool_t      SetDispersion(Int_t);
     Bool_t      SetNLM(Int_t);
     Bool_t      SetNonLinearity1(Int_t);
@@ -436,6 +436,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxM20;                                  // maximum M20
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
+    Double_t  fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Bool_t    fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
@@ -563,7 +565,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,59)
+    ClassDef(AliCaloPhotonCuts,60)
 };
 
 #endif
