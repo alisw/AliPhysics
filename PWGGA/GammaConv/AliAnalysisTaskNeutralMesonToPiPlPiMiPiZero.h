@@ -308,7 +308,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 21);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 22);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
