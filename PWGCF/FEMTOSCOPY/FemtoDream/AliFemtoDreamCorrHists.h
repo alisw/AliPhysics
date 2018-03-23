@@ -25,6 +25,7 @@ class AliFemtoDreamCorrHists {
   bool GetObtainMomentumResolution() {return fMomentumResolution;};
   bool GetEtaPhiPlots() {return fPhiEtaPlots;};
   bool GetDoMCCommonAncest() {return fDoMCCommonAncest;};
+  bool GetDodPhidEtaPlots() {return fdPhidEtaPlots;};
   void FillSameEventDist(int i,float RelK){fSameEventDist[i]->Fill(RelK);};
   void FillSameEventCommonAncestDist(int i,float RelK){
     fSameEventCommonAncestDist[i]->Fill(RelK);};
@@ -69,6 +70,12 @@ class AliFemtoDreamCorrHists {
   void FillEtaPhiAtRadiiME(int hist,int iDaug,int iRad,float dPhi,float dEta){
     if (!fMinimalBooking&&fPhiEtaPlots)fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta,dPhi);
   }
+  void FilldPhidEtaSE(int iHist,float dPhi,float dEta) {
+    if (fdPhidEtaPlots) fdEtadPhiSE[iHist]->Fill(dEta,dPhi);
+  }
+  void FilldPhidEtaME(int iHist,float dPhi,float dEta) {
+    if (fdPhidEtaPlots) fdEtadPhiME[iHist]->Fill(dEta,dPhi);
+  }
   void FillEffectiveMixingDepth(int iHist,int iDepth) {
     if (!fMinimalBooking)fEffMixingDepth[iHist]->Fill(iDepth);
   }
@@ -100,12 +107,15 @@ class AliFemtoDreamCorrHists {
   TH2F          **fMomResolution;
   TH2F          ****fRadiiEtaPhiSE;
   TH2F          ****fRadiiEtaPhiME;
+  TH2F          **fdEtadPhiSE;
+  TH2F          **fdEtadPhiME;
   TH1F          **fEffMixingDepth;
   bool          fDoMultBinning;
   bool          fDokTBinning;
   bool          fDomTBinning;
   bool          fDokTCentralityBins;
   bool          fDoMCCommonAncest;
+  bool          fdPhidEtaPlots;
   std::vector<float> fCentBins;
   ClassDef(AliFemtoDreamCorrHists,3);
 };

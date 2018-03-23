@@ -25,10 +25,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetPhiEtaBinnign(bool doIt){
     fPhiEtaBinning=doIt;fNumberRadii=9;
   };
+  void SetdPhidEtaPlots(bool doIt) {fdPhidEtaPlots=doIt;};
   void SetUseEventMixing(bool use){fMixedEventStatistics=use;};
-  bool GetUseEventMixing(){return fMixedEventStatistics;};
   void SetUsePhiSpinning(bool use){fGetTheControlSampel=use;};
-  bool GetUsePhiSpinning(){return fGetTheControlSampel;};
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -47,6 +46,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoPhiEtaBinning() {return fPhiEtaBinning;};
   bool GetDokTCentralityBinning() {return fkTCentrality;};
   bool GetDoSECommonAncestor() {return fMCCommonAncestor;};
+  bool GetUseEventMixing(){return fMixedEventStatistics;};
+  bool GetUsePhiSpinning(){return fGetTheControlSampel;};
+  bool GetdPhidEtaPlots() {return fdPhidEtaPlots;};
 
   int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
@@ -68,6 +70,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fmTBinning;            //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
+  bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
   int fNumberRadii;             //

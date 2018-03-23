@@ -35,12 +35,15 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fMomResolution(0)
 ,fRadiiEtaPhiSE(0)
 ,fRadiiEtaPhiME(0)
+,fdEtadPhiSE(0)
+,fdEtadPhiME(0)
 ,fEffMixingDepth(0)
 ,fDoMultBinning(false)
 ,fDokTBinning(false)
 ,fDomTBinning(false)
 ,fDokTCentralityBins(false)
 ,fDoMCCommonAncest(false)
+,fdPhidEtaPlots(false)
 ,fCentBins(0)
 {
 }
@@ -55,6 +58,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   fDomTBinning=conf->GetDomTBinning();
   fPhiEtaPlots=conf->GetDoPhiEtaBinning();
   fDoMCCommonAncest=conf->GetDoSECommonAncestor();
+  fdPhidEtaPlots=conf->GetdPhidEtaPlots();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning("Doing the Centrality binning without the kT Binning wont work!\n");
   }
@@ -163,6 +167,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
   } else {
     fSameEventCommonAncestDist=0;
     fSameEventNonCommonAncestDist=0;
+  }
+  if (fdPhidEtaPlots) {
+    fdEtadPhiSE=new TH2F*[nHists];
+    fdEtadPhiME=new TH2F*[nHists];
+  } else {
+    fdEtadPhiSE=0;
+    fdEtadPhiME=0;
   }
   int Counter=0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
@@ -295,6 +306,29 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fPairs[Counter]->Add(fSameEventNonCommonAncestDist[Counter]);
       }
 
+      if (fdPhidEtaPlots) {
+        TString SameEventdPhidEtaName =
+            Form("SEdPhidEtaDist_Particle%d_Particle%d",iPar1,iPar2);
+        fdEtadPhiSE[Counter]=new TH2F(SameEventdPhidEtaName.Data(),
+                                      SameEventdPhidEtaName.Data(),
+                                      80,-2.,2.,80,-TMath::Pi()/3,1.66*TMath::Pi());
+        fdEtadPhiSE[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+        fdEtadPhiSE[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+        fdEtadPhiSE[Counter]->Sumw2();
+        fPairs[Counter]->Add(fdEtadPhiSE[Counter]);
+
+        TString MixedEventdPhidEtaName =
+            Form("MEdPhidEtaDist_Particle%d_Particle%d",iPar1,iPar2);
+        fdEtadPhiME[Counter]=new TH2F(MixedEventdPhidEtaName.Data(),
+                                      MixedEventdPhidEtaName.Data(),
+                                      80,-2.,2.,80,-TMath::Pi()/3,1.66*TMath::Pi());
+        fdEtadPhiME[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+        fdEtadPhiME[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+        fdEtadPhiME[Counter]->Sumw2();
+        fPairs[Counter]->Add(fdEtadPhiME[Counter]);
+
+      }
+
       if (!fMinimalBooking) {
         fPairQA[Counter]=new TList();
         TString PairQAName=Form("QA_Particle%d_Particle%d",iPar1,iPar2);
@@ -321,8 +355,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
 
         TString EffMixingDepthName=
             Form("EffMixingDepth_Particle%d_Particle%d",iPar1,iPar2);
+        int MixingDepth=conf->GetMixingDepth();
+        ++MixingDepth; //+1 since counting starts at 0
         fEffMixingDepth[Counter]=new TH1F(
-            EffMixingDepthName.Data(),EffMixingDepthName.Data(),10,0,10);
+            EffMixingDepthName.Data(),EffMixingDepthName.Data(),MixingDepth,-0.5,MixingDepth+0.5);
         fEffMixingDepth[Counter]->Sumw2();
         fEffMixingDepth[Counter]->GetXaxis()->SetTitle("MixingDepth");
         fPairQA[Counter]->Add(fEffMixingDepth[Counter]);
