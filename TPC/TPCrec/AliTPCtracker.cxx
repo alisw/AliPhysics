@@ -791,11 +791,11 @@ void AliTPCtracker::FixKinkIndices()
       }
       if (knkId<0) { // update track index of the kink: mother at 0, daughter at 1
 	kink->SetIndex(it, 0); 
-	accKMD[kinkID] |= 0x2;
+	accKMD[kinkID] |= 0x1;
       }
       else {
 	kink->SetIndex(it, 1); 
-	accKMD[kinkID] |= 0x1;
+	accKMD[kinkID] |= 0x2;
       }
     }
   }
