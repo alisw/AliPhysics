@@ -3,7 +3,6 @@
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
-#include "TTimeStamp.h"
 
 ClassImp(AliFemtoDreamControlSample)
 
@@ -14,8 +13,7 @@ ClassImp(AliFemtoDreamControlSample)
       fRandom(),
       fPi(TMath::Pi()),
       fSpinningDepth(0) {
-  TTimeStamp s;
-  fRandom.SetSeed(s.GetNanoSec());
+  fRandom.SetSeed(0);
 }
 
 AliFemtoDreamControlSample::AliFemtoDreamControlSample(
@@ -27,8 +25,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
  fPi(TMath::Pi()),
  fSpinningDepth(0) {
   fSpinningDepth = conf->GetSpinningDepth();
-  TTimeStamp s;
-  fRandom.SetSeed(s.GetNanoSec());
+  fRandom.SetSeed(0);
 }
 
 AliFemtoDreamControlSample::~AliFemtoDreamControlSample() {}
