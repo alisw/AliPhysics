@@ -15,7 +15,8 @@ AliAnalysisHFETPCTOFBeauty* AddTaskHFETPCTOFBeauty( ///-> to run locally
             Float_t EtaMax,
             AliVEvent::EOfflineTriggerTypes trigger,
             Float_t DCAxy,
-            Float_t DCAz
+            Float_t DCAz,
+            Int_t IsBcorr = 0
             
 )           
 {
@@ -33,7 +34,7 @@ AliAnalysisHFETPCTOFBeauty* AddTaskHFETPCTOFBeauty( ///-> to run locally
 	}
 	
 	//_______________________
-    AliAnalysisHFETPCTOFBeauty *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz);
+    AliAnalysisHFETPCTOFBeauty *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz,IsBcorr);
     //_____________________________________________________
 	//Trigger
 		if(!isMC){
@@ -60,7 +61,7 @@ AliAnalysisHFETPCTOFBeauty* AddTaskHFETPCTOFBeauty( ///-> to run locally
 }
 
 
-AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz)
+AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -86,11 +87,11 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
     //cout<<DCAxy<<endl;
     //cout<<DCAz<<endl;
     
-    hfecuts->SetMaxImpactParam(DCAxy,DCAz); 							                //DCA to vertex
-    								//
-    ///_______________________________________________________________________________________________________________
-    
-    //___________________________________________________________________________________________________________
+    hfecuts->SetMaxImpactParam(DCAxy,DCAz); //DCA to vertex
+   
+   
+   
+   
     ///Task config
     AliAnalysisHFETPCTOFBeauty *task = new AliAnalysisHFETPCTOFBeauty();
     printf("task ------------------------ %p\n ", task);
@@ -118,6 +119,29 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
         task->SetMCanalysis();
     }
     //______________________________________
+    
+    
+    ///RAA model for B correction
+    ///Default
+    if(IsBcorr == 0){
+		TF1 *fBmesonShape = new TF1("fBmesonShape","0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300", 0, 30);
+		task->SetBcorrFunction(fBmesonShape);
+		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
+	}
+    ///Var 1
+    if(IsBcorr == 1){
+		TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)+(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		task->SetBcorrFunction(fBmesonShape1);
+		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
+	}
+    ///Var 2
+    if(IsBcorr == 2){
+		TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)-(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		task->SetBcorrFunction(fBmesonShape2);
+		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
+	}
+    
+    
     
     
     ///Configure PID
