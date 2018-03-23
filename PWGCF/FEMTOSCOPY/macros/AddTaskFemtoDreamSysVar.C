@@ -239,6 +239,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     AntiXiNegCuts->SetPID(AliPID::kProton,999,3);
     AntiXiPosCuts->SetPID(AliPID::kPion,999,3);
     AntiXiBachCuts->SetPID(AliPID::kPion,999,3);
+  } else if (suffix=="31") {
+    CascadeCuts->SetPtRangeXi(0.4,999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.4,999.5);
+  } else if (suffix=="32") {
+    XiNegCuts->SetCutTPCCrossedRows(false,0,0);
+    XiPosCuts->SetCutTPCCrossedRows(false,0,0);
+    XiBachCuts->SetCutTPCCrossedRows(false,0,0);
+    AntiXiNegCuts->SetCutTPCCrossedRows(false,0,0);
+    AntiXiPosCuts->SetCutTPCCrossedRows(false,0,0);
+    AntiXiBachCuts->SetCutTPCCrossedRows(false,0,0);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);

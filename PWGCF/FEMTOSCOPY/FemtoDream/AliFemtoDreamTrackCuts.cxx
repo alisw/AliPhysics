@@ -726,7 +726,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0PionCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);
@@ -748,7 +748,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(1);
@@ -770,7 +770,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);

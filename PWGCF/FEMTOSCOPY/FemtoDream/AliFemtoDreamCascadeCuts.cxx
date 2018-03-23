@@ -95,6 +95,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   XiCuts->SetCutv0MinDistToPrimVtx(0.07);
   XiCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
   XiCuts->SetRejectOmegas(1672,0.005);
+  XiCuts->SetPtRangeXi(0.3,999.9);
   return XiCuts;
 }
 
