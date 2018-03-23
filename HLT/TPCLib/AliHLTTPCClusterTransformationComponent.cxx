@@ -196,6 +196,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     }
   }
 
+  //fgTransform.GetFastTransformNonConst().WriteQATree("fastTransformQA.root");
+
   return iResult;
 } // end DoInit()
 
@@ -310,7 +312,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
-  
+
   if( fOfflineMode && !fInitializeByObjectInDoEvent && !fOfflineKeepInitialTimestamp )
   {
     Long_t eventTimeStamp = GetTimeStamp();
