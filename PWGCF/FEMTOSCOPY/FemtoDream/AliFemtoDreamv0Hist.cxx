@@ -9,7 +9,8 @@
 #include "TMath.h"
 ClassImp(AliFemtoDreamv0Hist)
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
-:fHistList(0)
+:fMinimalBooking(false)
+,fHistList(0)
 ,fConfig(0)
 ,fCutCounter(0)
 ,fInvMassBefKaonRej(0)
@@ -36,7 +37,9 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 }
 
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,float MassMin,
-                                         float MassMax,bool CPAPlots) {
+                                         float MassMax,bool CPAPlots)
+:fMinimalBooking(false)
+{
   TString sName[2]={"before","after"};
 
   fHistList=new TList();
@@ -208,6 +211,43 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,float MassMin,
   } else {
       fCPAPtBins=0;
   }
+}
+
+AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax)
+:fMinimalBooking(true)
+,fConfig(0)
+,fCutCounter(0)
+,fInvMassBefKaonRej(0)
+,fInvMassKaon(0)
+,fInvMassBefSelection(0)
+,fInvMassPt(0)
+,fCPAPtBins(0)
+{
+  for (int i=0;i<2;++i) {
+    fv0CutQA[i]=0;
+    fOnFly[i]=0;
+    fpTDist[i]=0;
+    fetaDist[i]=0;
+    fDecayVtxv0X[i]=0;
+    fDecayVtxv0Y[i]=0;
+    fDecayVtxv0Z[i]=0;
+    fTransRadius[i]=0;
+    fDCAPosDaugToPrimVtx[i]=0;
+    fDCANegDaugToPrimVtx[i]=0;
+    fDCADaugToVtx[i]=0;
+    fCPA[i]=0;
+    fInvMass[i]=0;
+  }
+  fHistList=new TList();
+  fHistList->SetOwner();
+  fHistList->SetName(MinimalBooking.Data());
+
+  fInvMassPt=new TH2F("InvMassPt","Invariant Mass in Pt Bins",
+                      8,0.3,4.3,MassNBins,MassMin,MassMax);
+  fInvMassPt->Sumw2();
+  fInvMassPt->GetXaxis()->SetTitle("P_{T}");
+  fInvMassPt->GetYaxis()->SetTitle("m_{Pair}");
+  fHistList->Add(fInvMassPt);
 }
 
 AliFemtoDreamv0Hist::~AliFemtoDreamv0Hist() {

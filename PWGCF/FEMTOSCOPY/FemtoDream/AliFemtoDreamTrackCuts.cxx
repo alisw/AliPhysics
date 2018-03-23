@@ -91,9 +91,9 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     }
   }
   Track->SetUse(pass);
-  if (!fFillQALater&&!fMinimalBooking) {
+  if (!fFillQALater) {
       BookQA(Track);
-      if (fMCData) {
+      if (fMCData&&!fMinimalBooking) {
         BookMC(Track);
       }
   }
@@ -358,6 +358,8 @@ void AliFemtoDreamTrackCuts::Init() {
       fMCHists=new AliFemtoDreamTrackMCHist(fContribSplitting,fDCAPlots);
     }
     BookTrackCuts();
+  } else {
+    fHists= new AliFemtoDreamTrackHist("MinimalBooking");
   }
 }
 
@@ -454,6 +456,8 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         }
       }
     }
+  } else {
+    if(Track->UseParticle())fHists->FillpTCut(1,Track->GetPt());
   }
   return;
 }
@@ -714,7 +718,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0PionCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);
@@ -722,7 +725,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0PionCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);
@@ -736,7 +739,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);
@@ -744,7 +746,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(1);
@@ -758,7 +760,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);
@@ -766,7 +767,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   trackCuts->SetCheckPileUp(PileUpRej);
   trackCuts->SetCheckFilterBit(kFALSE);
   trackCuts->SetEtaRange(-0.8, 0.8);
-  trackCuts->SetPtRange(0.3,999);
+//  trackCuts->SetPtRange(0.3,999);
   trackCuts->SetCutTPCCrossedRows(true,70,0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);

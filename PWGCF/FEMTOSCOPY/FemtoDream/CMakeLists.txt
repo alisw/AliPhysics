@@ -44,6 +44,7 @@ set(SRCS
   AliFemtoDreamCascade.cxx
   AliFemtoDreamCascadeHist.cxx
   AliFemtoDreamCascadeCuts.cxx
+  AliFemtoDreamControlSample.cxx
   AliFemtoDreamPairCleanerHists.cxx
   AliFemtoDreamPairCleaner.cxx 
   AliFemtoDreamCollConfig.cxx 

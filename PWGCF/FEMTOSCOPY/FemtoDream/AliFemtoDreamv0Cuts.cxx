@@ -110,8 +110,8 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
     }
   }
   v0->SetUse(pass);
+  BookQA(v0);
   if (!fMinimalBooking) {
-    BookQA(v0);
     if (fMCData) {
       BookMC(v0);
     }
@@ -254,7 +254,7 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   }
   //now with this information fill the histograms
   if (cpaPass) {
-    if (!fMinimalBooking) fHist->FillInvMassPtBins(v0->GetPt(),v0->Getv0Mass());
+    fHist->FillInvMassPtBins(v0->GetPt(),v0->Getv0Mass());
     if (!fMinimalBooking) fHist->Fillv0MassDist(v0->Getv0Mass());
   }
   if (massPass&&fCPAPlots&&!fMinimalBooking) {
@@ -305,6 +305,17 @@ void AliFemtoDreamv0Cuts::Init() {
       fNegCuts->SetMCName("NegCuts");
       fMCHistList->Add(fNegCuts->GetMCQAHists());
     }
+  } else {
+    fHist=new AliFemtoDreamv0Hist("MinimalBooking",fNumberXBins,fAxisMinMass,fAxisMaxMass);
+    fHistList = new TList();
+    fHistList->SetOwner();
+    fHistList->SetName("v0Cuts");
+    fHistList->Add(fHist->GetHistList());
+    fPosCuts->SetName("PosCuts");
+    fHistList->Add(fPosCuts->GetQAHists());
+    fNegCuts->SetName("NegCuts");
+    fHistList->Add(fNegCuts->GetQAHists());
+
   }
 }
 
@@ -332,12 +343,12 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
         fHist->FillInvMass(i,v0->Getv0Mass());
       }
     }
-    v0->GetPosDaughter()->SetUse(v0->UseParticle());
-    v0->GetNegDaughter()->SetUse(v0->UseParticle());
-
-    fPosCuts->BookQA(v0->GetPosDaughter());
-    fNegCuts->BookQA(v0->GetNegDaughter());
   }
+  v0->GetPosDaughter()->SetUse(v0->UseParticle());
+  v0->GetNegDaughter()->SetUse(v0->UseParticle());
+
+  fPosCuts->BookQA(v0->GetPosDaughter());
+  fNegCuts->BookQA(v0->GetNegDaughter());
 }
 
 void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
@@ -464,7 +475,7 @@ void AliFemtoDreamv0Cuts::BookTrackCuts() {
 }
 
 float AliFemtoDreamv0Cuts::CalculateInvMass(AliFemtoDreamv0 *v0,
-                                             int PDGPosDaug,int PDGNegDaug) {
+                                            int PDGPosDaug,int PDGNegDaug) {
   Double_t invMass = 0;
   float massDP=TDatabasePDG::Instance()->GetParticle(PDGPosDaug)->Mass();
   float massDN=TDatabasePDG::Instance()->GetParticle(PDGNegDaug)->Mass();

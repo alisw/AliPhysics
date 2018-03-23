@@ -65,6 +65,8 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;         //
   TList *fResults;                          //!
   TList *fResultQA;                         //!
+  TList *fResultsSample;                    //!
+  TList *fResultQASample;					//!
   ClassDef(AliAnalysisTaskFemtoDream,2)
 };
 

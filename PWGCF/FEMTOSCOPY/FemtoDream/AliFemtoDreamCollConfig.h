@@ -25,6 +25,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetPhiEtaBinnign(bool doIt){
     fPhiEtaBinning=doIt;fNumberRadii=9;
   };
+  void SetdPhidEtaPlots(bool doIt) {fdPhidEtaPlots=doIt;};
+  void SetUseEventMixing(bool use){fMixedEventStatistics=use;};
+  void SetUsePhiSpinning(bool use){fGetTheControlSampel=use;};
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -33,6 +36,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<float> CentBins);
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
+  void SetSpinningDepth(int SpinningDepth){fSpinningDepth=SpinningDepth;};
   void SetSECommonAncestor(bool doit) {fMCCommonAncestor=doit;};
 
   bool GetDoMultBinning() {return fMultBinning;};
@@ -42,6 +46,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoPhiEtaBinning() {return fPhiEtaBinning;};
   bool GetDokTCentralityBinning() {return fkTCentrality;};
   bool GetDoSECommonAncestor() {return fMCCommonAncestor;};
+  bool GetUseEventMixing(){return fMixedEventStatistics;};
+  bool GetUsePhiSpinning(){return fGetTheControlSampel;};
+  bool GetdPhidEtaPlots() {return fdPhidEtaPlots;};
 
   int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
@@ -56,12 +63,16 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<float> GetMaxKRel();
   std::vector<float> GetCentBins();
   int GetMixingDepth(){return fMixingDepth;};
+  int GetSpinningDepth(){return fSpinningDepth;};
  private:
   bool fMultBinning;            //
   bool fkTBinning;            //
   bool fmTBinning;            //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
+  bool fdPhidEtaPlots;          //
+  bool fMixedEventStatistics;   //
+  bool fGetTheControlSampel;    //
   int fNumberRadii;             //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
@@ -71,6 +82,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   int fMixingDepth;             //
+  int fSpinningDepth;			//
   bool fkTCentrality;           //
   bool fMCCommonAncestor;       // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
   ClassDef(AliFemtoDreamCollConfig,3);

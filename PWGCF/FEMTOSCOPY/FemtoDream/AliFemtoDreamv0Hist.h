@@ -18,33 +18,35 @@ class AliFemtoDreamv0Hist {
   AliFemtoDreamv0Hist();
   AliFemtoDreamv0Hist(
       int MassNBins,float MassMin,float MassMax,bool CPAPlots);
+  AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax);
   virtual ~AliFemtoDreamv0Hist();
-  void FillConfig(int iBin,float val){fConfig->Fill(iBin,val);};
-  void FillTrackCounter(int iBin){fCutCounter->Fill(iBin);};
-  void FillOnFlyStatus(int i,float val){fOnFly[i]->Fill(val);};
-  void FillpTCut(int i,float pT){fpTDist[i]->Fill(pT);};
-  void FillPhi(int i,float phi){fPhiDist[i]->Fill(phi);};
+  void FillConfig(int iBin,float val){if(!fMinimalBooking)fConfig->Fill(iBin,val);};
+  void FillTrackCounter(int iBin){if(!fMinimalBooking)fCutCounter->Fill(iBin);};
+  void FillOnFlyStatus(int i,float val){if(!fMinimalBooking)fOnFly[i]->Fill(val);};
+  void FillpTCut(int i,float pT){if(!fMinimalBooking)fpTDist[i]->Fill(pT);};
+  void FillPhi(int i,float phi){if(!fMinimalBooking)fPhiDist[i]->Fill(phi);};
   void FillEtaCut(int i,float eta){fetaDist[i]->Fill(eta);};
-  void Fillv0DecayVtxXCut(int i,float vtx){fDecayVtxv0X[i]->Fill(vtx);};
-  void Fillv0DecayVtxYCut(int i,float vtx){fDecayVtxv0Y[i]->Fill(vtx);};
-  void Fillv0DecayVtxZCut(int i,float vtx){fDecayVtxv0Z[i]->Fill(vtx);};
-  void FillTransverRadiusCut(int i,float rad){fTransRadius[i]->Fill(rad);};
+  void Fillv0DecayVtxXCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0X[i]->Fill(vtx);};
+  void Fillv0DecayVtxYCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0Y[i]->Fill(vtx);};
+  void Fillv0DecayVtxZCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0Z[i]->Fill(vtx);};
+  void FillTransverRadiusCut(int i,float rad){if(!fMinimalBooking)fTransRadius[i]->Fill(rad);};
   void FillDCAPosDaugToPrimVtxCut(int i,float dca){
-    fDCAPosDaugToPrimVtx[i]->Fill(dca);
+    if(!fMinimalBooking)fDCAPosDaugToPrimVtx[i]->Fill(dca);
   };
   void FillDCANegDaugToPrimVtxCut(int i,float dca){
-    fDCANegDaugToPrimVtx[i]->Fill(dca);
+    if(!fMinimalBooking)fDCANegDaugToPrimVtx[i]->Fill(dca);
   };
-  void FillDCADaugTov0VtxCut(int i, float dca){fDCADaugToVtx[i]->Fill(dca);};
-  void FillCPACut(int i,float cpa){fCPA[i]->Fill(cpa);};
-  void FillInvMass(int i,float mass){fInvMass[i]->Fill(mass);};
-  void FillInvMassBefKaonRej(float mass){fInvMassBefKaonRej->Fill(mass);};
-  void FillInvMassKaon(float mass){fInvMassKaon->Fill(mass);};
-  void Fillv0MassDist(float mass){fInvMassBefSelection->Fill(mass);};
+  void FillDCADaugTov0VtxCut(int i, float dca){if(!fMinimalBooking)fDCADaugToVtx[i]->Fill(dca);};
+  void FillCPACut(int i,float cpa){if(!fMinimalBooking)fCPA[i]->Fill(cpa);};
+  void FillInvMass(int i,float mass){if(!fMinimalBooking)fInvMass[i]->Fill(mass);};
+  void FillInvMassBefKaonRej(float mass){if(!fMinimalBooking)fInvMassBefKaonRej->Fill(mass);};
+  void FillInvMassKaon(float mass){if(!fMinimalBooking)fInvMassKaon->Fill(mass);};
+  void Fillv0MassDist(float mass){if(!fMinimalBooking)fInvMassBefSelection->Fill(mass);};
   void FillInvMassPtBins(float pT,float mass){fInvMassPt->Fill(pT,mass);};
-  void FillCPAPtBins(float pT,float cpa){fCPAPtBins->Fill(pT,cpa);};
+  void FillCPAPtBins(float pT,float cpa){if(!fMinimalBooking)fCPAPtBins->Fill(pT,cpa);};
   TList *GetHistList(){return fHistList;};
  private:
+  bool fMinimalBooking;
   TList *fHistList;
   TList *fv0CutQA[2];
   TProfile *fConfig;

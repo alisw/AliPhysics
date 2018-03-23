@@ -3,19 +3,21 @@
 AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,
     TString CentEst="kInt7",
-    int cascCutVar=0,
     bool notpp=true,//1
     bool DCAPlots=false,//2
     bool CPAPlots=false,//3
     bool MomReso=false,//4
-    bool etaPhiPlots=false,//5
+    bool etaPhiPlotsAtTPCRadii=false,//5
     bool CombSigma=false,//6
     bool PileUpRej=true,//7
     bool mTkTPlot=false,//8
     bool kTCentPlot=false,//9
     bool MultvsCentPlot=false,//10
-    bool ContributionSplitting=false,//11
-    bool ContributionSplittingDaug=false)//12
+    bool dPhidEtaPlots=false,//11
+    bool eventMixing=true,//12
+    bool phiSpin=true,//13
+    bool ContributionSplitting=false,//14
+    bool ContributionSplittingDaug=false)//15
 {
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -132,33 +134,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AntiCascadeCuts->SetPDGCodePosDaug(211);
 	AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
 	AntiCascadeCuts->SetPDGCodeBach(-211);
-	TString CascVars="";
-	if (cascCutVar == 1) {
-	  XiNegCuts->SetPtRange(0,999.5);
-	  XiPosCuts->SetPtRange(0,999.5);
-	  XiBachCuts->SetPtRange(0,999.5);
-	  AntiXiNegCuts->SetPtRange(0,999.5);
-	  AntiXiPosCuts->SetPtRange(0,999.5);
-	  AntiXiBachCuts->SetPtRange(0,999.5);
-
-	  CascadeCuts->SetPtRangeXi(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
-	  CascVars+="XiPt";
-	} else if (cascCutVar == 2) {
-	  XiNegCuts->SetPtRange(0,999.5);
-	  XiPosCuts->SetPtRange(0,999.5);
-	  XiBachCuts->SetPtRange(0,999.5);
-	  AntiXiNegCuts->SetPtRange(0,999.5);
-	  AntiXiPosCuts->SetPtRange(0,999.5);
-	  AntiXiBachCuts->SetPtRange(0,999.5);
-
-	  CascadeCuts->SetPtRangeXi(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
-
-	  CascadeCuts->SetPtRangev0(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangev0(0.3,999.5);
-	  CascVars+="XiAndV0Pt";
-	}
 
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -314,19 +289,22 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
 	  }
  	}
-	if (etaPhiPlots) {
+	if (etaPhiPlotsAtTPCRadii) {
 	  if (isMC) {
 	    config->SetPhiEtaBinnign(true);
 	  } else {
 	    std::cout << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
 	  }
  	}
-//	config->SetMultBins(MultBins);
+	config->SetdPhidEtaPlots(dPhidEtaPlots);
 	config->SetPDGCodes(PDGParticles);
 	config->SetNBinsHist(NBins);
 	config->SetMinKRel(kMin);
 	config->SetMaxKRel(kMax);
 	config->SetMixingDepth(10);
+	config->SetSpinningDepth(10);
+	config->SetUseEventMixing(eventMixing);
+	config->SetUsePhiSpinning(phiSpin);
 
 	AliAnalysisTaskFemtoDream *task=
 	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
@@ -379,7 +357,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	} else if (CentEst=="kHM") {
 	  addon+="HM";
 	}
-	addon+=CascVars.Data();
 	std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
 	TString QAName = Form("%sQA",addon.Data());
 	coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
@@ -459,6 +436,23 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 			AliAnalysisManager::kOutputContainer,
 			Form("%s:%s", file.Data(), ResultQAName.Data()));
 	mgr->ConnectOutput(task, 10, coutputResultQA);
+
+	AliAnalysisDataContainer *coutputResultsSample;
+	TString ResultsSampleName = Form("%sResultsSample",addon.Data());
+	coutputResultsSample = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+			ResultsSampleName.Data(), TList::Class(),
+			AliAnalysisManager::kOutputContainer,
+			Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+	mgr->ConnectOutput(task, 11, coutputResultsSample);
+
+	AliAnalysisDataContainer *coutputResultQASample;
+	TString ResultQASampleName = Form("%sResultQASample",addon.Data());
+	coutputResultQASample = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+			ResultQASampleName.Data(), TList::Class(),
+			AliAnalysisManager::kOutputContainer,
+			Form("%s:%s", file.Data(), ResultQASampleName.Data()));
+	mgr->ConnectOutput(task, 12, coutputResultQASample);
+
 	if (isMC) {
 		AliAnalysisDataContainer *coutputTrkCutsMC;
 		TString TrkCutsMCName = Form("%sTrkCutsMC",addon.Data());
@@ -466,7 +460,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				TrkCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-		mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
+		mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
 
 		AliAnalysisDataContainer *coutputAntiTrkCutsMC;
 		TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC",addon.Data());
@@ -474,7 +468,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				AntiTrkCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-		mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
+		mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
 
 		AliAnalysisDataContainer *coutputv0CutsMC;
 		TString v0CutsMCName = Form("%sv0CutsMC",addon.Data());
@@ -482,7 +476,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				v0CutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-		mgr->ConnectOutput(task, 13, coutputv0CutsMC);
+		mgr->ConnectOutput(task, 15, coutputv0CutsMC);
 
 		AliAnalysisDataContainer *coutputAntiv0CutsMC;
 		TString Antiv0CutsMCName = Form("%sAntiv0CutsMC",addon.Data());
@@ -490,7 +484,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				Antiv0CutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-		mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+		mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
 		AliAnalysisDataContainer *coutputXiCutsMC;
 		TString XiCutsMCName = Form("%sXiCutsMC",addon.Data());
@@ -498,7 +492,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				XiCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-		mgr->ConnectOutput(task, 15, coutputXiCutsMC);
+		mgr->ConnectOutput(task, 17, coutputXiCutsMC);
 
 		AliAnalysisDataContainer *coutputAntiXiCutsMC;
 		TString AntiXiCutsMCName = Form("%sAntiXiCutsMC",addon.Data());
@@ -506,7 +500,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 				AntiXiCutsMCName.Data(), TList::Class(),
 				AliAnalysisManager::kOutputContainer,
 				Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-		mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
+		mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
 	}
 	return task;
 }
