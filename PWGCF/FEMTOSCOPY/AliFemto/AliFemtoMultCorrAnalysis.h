@@ -64,7 +64,10 @@ protected:
   
 private:
   TH2D *fMultCorrFctn;
+  TH2D *fNmotherNdaughterCorrFctn;
   
+  TH2D *fMultCorrTimesMultFctn;
+  TH2D *fNmotherNdaughterRootsCorrFctn;
   
 #ifdef __ROOT__
   /// \cond CLASSIMP

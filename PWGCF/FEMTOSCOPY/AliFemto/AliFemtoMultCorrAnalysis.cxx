@@ -27,7 +27,11 @@ fNeventsPassed(0)
   fDaughterCut[1] = nullptr;
   fDaughterCut[2] = nullptr;
   
-  fMultCorrFctn = new TH2D("multCorrFctn","multCorrFctn",500,0,500,1000,0,1.0);
+  fMultCorrFctn             = new TH2D("multCorrFctn","multCorrFctn",500,0,500,1000,0,1.0);
+  fMultCorrTimesMultFctn    = new TH2D("multCorrTimesMultFctn","multCorrTimesMultFctn",500,0,500,1000,0,50);
+  
+  fNmotherNdaughterCorrFctn = new TH2D("NmotherNdaughterCorrFctn","NmotherNdaughterCorrFctn",500,0,500,1000,0,0.01);
+  fNmotherNdaughterRootsCorrFctn = new TH2D("NmotherNdaughterRootsCorrFctn","NmotherNdaughterRootsCorrFctn",500,0,500,1000,0,1.0);
 }
 
 AliFemtoMultCorrAnalysis::~AliFemtoMultCorrAnalysis()
@@ -38,6 +42,11 @@ AliFemtoMultCorrAnalysis::~AliFemtoMultCorrAnalysis()
   if(fDaughterCut[0])    delete fDaughterCut[0];
   if(fDaughterCut[1])    delete fDaughterCut[1];
   if(fDaughterCut[2])    delete fDaughterCut[2];
+  
+  if(fMultCorrFctn) delete fMultCorrFctn;
+  if(fMultCorrTimesMultFctn) delete fMultCorrTimesMultFctn;
+  if(fNmotherNdaughterCorrFctn) delete fNmotherNdaughterCorrFctn;
+  if(fNmotherNdaughterRootsCorrFctn) delete fNmotherNdaughterRootsCorrFctn;
 }
 
 void AliFemtoMultCorrAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
@@ -67,10 +76,21 @@ void AliFemtoMultCorrAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
   FillHbtParticleCollection(fDaughterCut[2], currentEvent,daughterCollection[2]);
   
   int mothersMult = motherCollection[0]->size() + motherCollection[1]->size();
+  int mothersMultProduct = motherCollection[0]->size() * motherCollection[1]->size();
   int daughtersMult = daughterCollection[0]->size() + daughterCollection[1]->size() + daughterCollection[2]->size();
+  int daughtersMultProduct = daughterCollection[0]->size() * daughterCollection[1]->size() * daughterCollection[2]->size();
   int totalMult = currentEvent->NumberOfTracks();
   
-  if(daughtersMult > 0) fMultCorrFctn->Fill(totalMult, mothersMult/(double)(daughtersMult));
+  if(daughtersMult > 0){
+    fMultCorrFctn->Fill(totalMult, mothersMult/(double)(daughtersMult));
+    fMultCorrTimesMultFctn->Fill(totalMult, mothersMult*totalMult/(double)(daughtersMult));
+  }
+  
+  if(daughtersMultProduct > 0){
+    fNmotherNdaughterCorrFctn->Fill(totalMult, mothersMultProduct/(double)(daughtersMultProduct));
+    fNmotherNdaughterRootsCorrFctn->Fill(totalMult, sqrt(mothersMultProduct)/(double)pow(daughtersMultProduct,1/3.));
+    cout<<mothersMultProduct/(double)(daughtersMultProduct)<<"\t"<<sqrt(mothersMultProduct)/(double)pow(daughtersMultProduct,1/3.)<<endl;
+  }
   
   delete motherCollection[0];
   delete motherCollection[1];
@@ -111,5 +131,9 @@ TList* AliFemtoMultCorrAnalysis::GetOutputList()
 {
   TList *outputList = new TList();
   outputList->Add(fMultCorrFctn);
+  outputList->Add(fMultCorrTimesMultFctn);
+  outputList->Add(fNmotherNdaughterCorrFctn);
+  outputList->Add(fNmotherNdaughterRootsCorrFctn);
+  
   return outputList;
 }
