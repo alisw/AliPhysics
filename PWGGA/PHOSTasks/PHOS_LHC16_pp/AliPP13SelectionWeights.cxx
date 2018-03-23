@@ -47,27 +47,33 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     AliPP13SelectionWeightsSPMC & ws = * new AliPP13SelectionWeightsSPMC();
 
     // Weights 3
-    ws.fW0 = 0.014875782846110793;
-    ws.fW1 = 0.28727403800708634;
-    ws.fW2 = 9.9198075195331;
+    // ws.fW0 = 0.014875782846110793;
+    // ws.fW1 = 0.28727403800708634;
+    // ws.fW2 = 9.9198075195331;
+
+    // Weights 0 (new efficiency)
+    ws.fW0 = 0.10325998438001027;
+    ws.fW1 = 0.1710556728057399;
+    ws.fW2 = 8.613628140871766;
 
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
 
+
+
     // Nonlinearity Naive estimation
     //
-    
     // ws.fNonA = -0.022934923767457753;
     // ws.fNonSigma = 1.4188237289034245;
     // ws.fNonGlobal = 1.0579663356860527;
 
-     ws.fNonA = -0.014719244288611932;
-     ws.fNonSigma = 2 * 0.8017501954719543;
-     ws.fNonGlobal = 1.050000000000015;
+     // ws.fNonA = -0.014719244288611932;
+     // ws.fNonSigma = 2 * 0.8017501954719543;
+     // ws.fNonGlobal = 1.050000000000015;
 
-    // ws.fNonGlobal = 1.0;
-    // ws.fNonA = 0;
-    // ws.fNonSigma = 1.0579663356860527;
+    ws.fNonGlobal = 1.0;
+    ws.fNonA = 0;
+    ws.fNonSigma = 1.0579663356860527;
 
     return ws;
 }

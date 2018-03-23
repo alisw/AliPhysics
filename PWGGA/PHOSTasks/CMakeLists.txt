@@ -94,6 +94,7 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13PhotonSpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13PhotonTimecutStudySelection.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13PionToKaonRatioMC.cxx
     PHOS_LHC16_pp/AliPP13PhysPhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PythiaInfoSelection.cxx
     PHOS_LHC16_pp/AliPP13QualityPhotonSelection.cxx
