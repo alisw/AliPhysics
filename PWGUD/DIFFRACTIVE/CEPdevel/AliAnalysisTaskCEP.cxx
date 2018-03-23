@@ -1067,10 +1067,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetnFiredChips(nFiredChips);
     fCEPEvent->SetSPMapOnline(mult->GetFastOrFiredChips());
     fCEPEvent->SetSPMapOffline(mult->GetFiredChipMap());
-    printf("\nOnline: ");
-    mult->GetFastOrFiredChips().Print();
-    printf("\nOffline: ");
-    mult->GetFiredChipMap().Print();
+    //printf("\nOnline: ");
+    //mult->GetFastOrFiredChips().Print();
+    //printf("\nOffline: ");
+    //mult->GetFiredChipMap().Print();
     
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
