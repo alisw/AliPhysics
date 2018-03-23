@@ -35,8 +35,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
 
 //  AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
 //  AliAnalysisTaskFlowVectorCorrections *taskQnCorrections = mgr->GetTask("FlowQnVectorCorrections");
-  TObjArray *exchagecontainerList = mgr->GetExchangeContainers();
-  AliAnalysisDataContainer *corrTask = exchagecontainerList->FindObject("CalibratedQvectorList");
+//  TObjArray *exchagecontainerList = mgr->GetExchangeContainers();
+//  AliAnalysisDataContainer *corrTask = exchagecontainerList->FindObject("CalibratedQvectorList");
 
   AliAnalysisTaskJetLikeCorrelation *taskjetlikecorr = new AliAnalysisTaskJetLikeCorrelation(taskname);
   taskjetlikecorr->UseSeparateMixingPool(kFALSE);
@@ -71,7 +71,7 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
   
 
   mgr->ConnectInput(taskjetlikecorr, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput(taskjetlikecorr, 1, corrTask);
+//  mgr->ConnectInput(taskjetlikecorr, 1, corrTask);
   mgr->ConnectOutput(taskjetlikecorr, 1, coutputList);
   mgr->ConnectOutput(taskjetlikecorr, 2, coutputListIn);
   mgr->ConnectOutput(taskjetlikecorr, 3, coutputListOut);

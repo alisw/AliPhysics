@@ -221,7 +221,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   flowQnVectorTask(0), fFlowQnVectorMgr(0)
 {
   DefineInput(0, TChain::Class());
-  DefineInput(1, TList::Class());
+//  DefineInput(1, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
