@@ -15,6 +15,7 @@
 #include <TList.h>
 #include <TLatex.h>
 #include <TError.h>
+#include <TVectorD.h>
 
 #include <Riostream.h>
 #include <stdio.h>
@@ -770,7 +771,7 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
         Int_t cellCol, cellRow, trash, col, row;
         Double_t dCellEnergy;
         Double_t dNumOfHits = 0.;
-        Double_t arrHits[fNoOfCells] = {0.};
+        Double_t *arrHits = new Double_t[fNoOfCells];
     
         /// Flag Bad Cells for later scaling, these bad cells found here can be good after the scaling process!
         Double_t NoOfHits = 0.;
@@ -791,8 +792,9 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
             
         // Declare Histos for BC finding for scaling
         TH1D *hHitDistrib_forScaling = new TH1D("hHitDistrib_forScaling","hHitDistrib_forScaling",1000,0.,TMath::Median(fNoOfCells,arrHits)*4);
-        TF1 *fgaus_forScaling = new TF1("fgaus_forScaling","gaus", 0.,TMath::Median(fNoOfCells,arrHits)*4);
-        Int_t fFlag_forScaling[fNoOfCells] = {0};
+        TF1 *fgausForScaling = new TF1("fgausForScaling","gaus", 0.,TMath::Median(fNoOfCells,arrHits)*4);
+        TVectorD fFlagForScaling;
+        fFlagForScaling.ResizeTo(fNoOfCells);
         Double_t dhits = 0.;
         for(int i = 1; i <= fNoOfCells; i++){
             dhits = 0.;
@@ -812,9 +814,9 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
         
     
         /// Fit the distribution with a gaussian
-        fgaus_forScaling->SetParameter(1, hHitDistrib_forScaling->GetBinCenter(hHitDistrib_forScaling-> GetMaximumBin()));
-        hHitDistrib_forScaling->Fit(fgaus_forScaling,"MQ0");
-        hHitDistrib_forScaling->Fit(fgaus_forScaling,"MQ0");
+        fgausForScaling->SetParameter(1, hHitDistrib_forScaling->GetBinCenter(hHitDistrib_forScaling-> GetMaximumBin()));
+        hHitDistrib_forScaling->Fit(fgausForScaling,"MQ0");
+        hHitDistrib_forScaling->Fit(fgausForScaling,"MQ0");
 
         for(int iCell = 1; iCell <= fNoOfCells; iCell++){
             dhits = 0.;
@@ -827,15 +829,16 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
                 }
             }
             if(crit==4 && dNumOfHits > 0){dhits = dhits / dNumOfHits;}
-            if(dhits > fgaus_forScaling->GetParameter(1) + 5* fgaus_forScaling->GetParameter(2) || dhits < fgaus_forScaling->GetParameter(1) - 5* fgaus_forScaling->GetParameter(2)){
-                fFlag_forScaling[iCell - 1] = 1;
+            if(dhits > fgausForScaling->GetParameter(1) + 5* fgausForScaling->GetParameter(2) || dhits < fgausForScaling->GetParameter(1) - 5* fgausForScaling->GetParameter(2)){
+                fFlagForScaling[iCell - 1] = 1;
             }
         
         }
     
 
         delete hHitDistrib_forScaling;
-        delete fgaus_forScaling;
+        delete fgausForScaling;
+        delete [] arrHits;
 
         TF1 *fFitCol;
         TF1 *fFitRow;
@@ -855,7 +858,7 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
 //             
 //             // Build the Hitmap 
 //             for(int iCell = 1; iCell <= fNoOfCells; iCell++){
-//                 if(fFlag[iCell -1 ] == 0 && fFlag_forScaling[iCell - 1] == 0){
+//                 if(fFlag[iCell -1 ] == 0 && fFlagForScaling[iCell - 1] == 0){
 //                     fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(iCell - 1 ,0,cellCol, cellRow, trash, col, row);
 //                     dhits = 0.;
 //                     dNumOfHits = 0.;
@@ -873,7 +876,7 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
         
             // Calculate the mean number of hits of each row and column
             for(int iCell = 0; iCell < fNoOfCells; iCell++){
-                if(fFlag[iCell] == 0 && fFlag_forScaling[iCell] == 0){  
+                if(fFlag[iCell] == 0 && fFlagForScaling[iCell] == 0){  
                     fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(iCell ,0,cellCol, cellRow, trash, col, row);            
                     dCellEnergy = 0.;
                     dNumOfHits = 0.;
