@@ -53,7 +53,7 @@
 /// \param debug : An int to define the debug level of all the tasks
 /// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 ///
-AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrMultipleAnalysis
+AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
 (
  TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
  Bool_t   simulation    = kFALSE,
