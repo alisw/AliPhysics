@@ -489,15 +489,15 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
         else if ( cc == k6080 )  systematics->SetCentrality("6080");
         else if ( cc == k4080 ) systematics->SetCentrality("4080");
     } else if (Energy==k5dot023){
-				systematicsAB->SetRunNumber(15);
-				if ( cc == k3050 ){
-					 systematicsAB->SetCentrality("3050");
-				}
-				else if ( cc == k1030 ) {
-					systematicsAB->SetCentrality("3050"); //no systematics available for 10--30
-				}
-			}
-			else {
+      systematics->SetRunNumber(15);
+      if ( cc == k3050 ){
+	systematics->SetCentrality("3050");
+      }
+      else if ( cc == k1030 ) {
+	systematics->SetCentrality("3050"); //no systematics available for 10--30
+      }
+    }
+    else {
       cout << " Systematics not yet implemented " << endl;
       return;
     }
