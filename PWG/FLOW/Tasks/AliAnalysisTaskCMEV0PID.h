@@ -25,7 +25,7 @@
 #include "TString.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
-#include "TStopwatch.h"
+
 
 class    AliVEvent;      
 class    AliVVertex;    
@@ -82,8 +82,6 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetListForV0MCorr(TList *flv)          {this->fListV0MCorr    = flv;}
 
 
-  
-
    
 
  protected:
@@ -99,9 +97,10 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   AliAnalysisUtils      *fAnalysisUtil;       //! Event selection
   TList                 *fListHist;           //!
   TFile                 *mfileFBHijing;       //!
-  TList                 *fListFBHijing;       //!
+  TList                 *fListFBHijing;       //
   TList                 *fListNUACorr;        //
   TList                 *fListV0MCorr;        //
+
   //histograms:
   TH1F         *fHistTaskConfigParameters;   //! Task input parameters FB / cut values etc.
   TH1F                  *fHistPileUpCount;   //!
@@ -168,7 +167,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile              *fTPCCQ4yVsCentRun; //!
 
 
-  TStopwatch                 watch;  //!
+  //TStopwatch                 watch;  //!
 
   Int_t                 fFilterBit;  //
   Int_t                         gN;  //
@@ -264,6 +263,115 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile     *fHist_Corr3p_Proton_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_Proton_EP_Norm_NN[2][4];  //!
 
+
+  //CME Differential Histograms:
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_NN[2][6]; //!
+  // |(pT_A - pT_B)|
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_NN[2][6]; //!
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[2][6]; //!
+ 
+
+
+  //CME PID  differential Histograms:
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_NN[2][6]; //!
+  // |(pT_A - pT_B)|
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_NN[2][6]; //!
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_NN[2][6]; //!
+ 
+
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_NN[2][6]; //!
+  // |(pT_A - pT_B)|
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_NN[2][6]; //!
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_NN[2][6]; //!
+ 
+
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_NN[2][6]; //!
+  // |(pT_A - pT_B)|
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_NN[2][6]; //!
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_NN[2][6]; //!
+ 
+
+
+
+
+
+
+
+
+
+  // Two particle correlation:
+
+
+
+   
 
 
 
