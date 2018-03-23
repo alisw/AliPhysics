@@ -156,6 +156,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
   void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
   void                        SelectGeneratorName(TString gen)                      { fSelectGeneratorName = gen                          ; }
+  void                        SetInhibit(Bool_t s)                                  { fInhibit = s                                        ; }
+
+  Bool_t IsInhibit() const { return fInhibit; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -246,6 +249,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   TString                     fSelectGeneratorName;        ///< Selects only events produced by a generator that has a name containing a string
 
   // Service fields
+  Bool_t                      fInhibit;                    //!<!inhibit execution of the task
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
   EDataType_t                 fDataType;                   //!<!data type (ESD or AOD)
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry

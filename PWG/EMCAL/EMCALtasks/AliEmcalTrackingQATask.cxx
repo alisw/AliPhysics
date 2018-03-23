@@ -24,7 +24,6 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   AliAnalysisTaskEmcalLight("AliEmcalTrackingQA", kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
-  fInhibit(kFALSE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -52,7 +51,6 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   AliAnalysisTaskEmcalLight("AliEmcalTrackingQA", kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
-  fInhibit(kFALSE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -392,8 +390,6 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
  */
 Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
-  if (fInhibit) return kFALSE;
-
   auto iterable = fDetectorLevel->accepted_momentum();
   for (auto trackIterator = iterable.begin(); trackIterator != iterable.end(); trackIterator++) {
     auto track = trackIterator->second;

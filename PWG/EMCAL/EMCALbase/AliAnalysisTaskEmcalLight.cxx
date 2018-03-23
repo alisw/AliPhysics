@@ -95,6 +95,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
   fSelectGeneratorName(),
+  fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -190,6 +191,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
   fSelectGeneratorName(),
+  fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -280,6 +282,10 @@ AliAnalysisTaskEmcalLight::~AliAnalysisTaskEmcalLight()
  */
 void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 {
+  if (fInhibit) {
+    AliWarningStream() << "The execution of this task is inhibited. Returning." << std::endl;
+    return;
+  }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (mgr) {
     AliVEventHandler *evhand = mgr->GetInputEventHandler();
@@ -501,6 +507,11 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
+  if (fInhibit) {
+    AliWarningStream() << "The execution of this task is inhibited. Returning." << std::endl;
+    return;
+  }
+
   if (!fLocalInitialized) ExecOnce();
 
   if (!fLocalInitialized) return;

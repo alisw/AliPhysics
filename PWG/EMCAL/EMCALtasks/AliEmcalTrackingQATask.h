@@ -56,7 +56,6 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   Bool_t                  fDoSigmaPtOverPtGen    ; ///<  MC: if true do sigma((ptgen - ptdet) / ptgen), otherwise do sigma((ptgen - ptdet) / ptdet)
 
   // Service fields (non-streamed)
-  Bool_t                  fInhibit               ; //!<! Inhibit execution of task
   Bool_t                  fIsEsd                 ; //!<! whether it is ESD data
   AliMCParticleContainer* fGeneratorLevel        ; //!<! generator level container
   AliTrackContainer*      fDetectorLevel         ; //!<! detector level container
