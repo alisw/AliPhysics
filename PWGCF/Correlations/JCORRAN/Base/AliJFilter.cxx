@@ -389,7 +389,7 @@ AliJEventHeader* AliJFilter::ReadCommonHeader(AliAODEvent *event){
 		fcent = pms->GetMultiplicityPercentile("V0M");
 	} else {
 		fcent = -1;
-		cout<<"warning: centrality unavailable";
+		//cout<<"warning: centrality unavailable";
 	}
 
 	hdr->SetCentrality( fcent );
