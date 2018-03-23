@@ -44,7 +44,6 @@ class AliGenEventHeader;
 #include "AliAnalysisTaskSE.h"
 #include "AliHFEpid.h"
 #include "AliLog.h"
-//#include "AliMultSelection.h"
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -79,6 +78,9 @@ public:
     //Setter for the Eta cut
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
     
+    //Setter for the B correction function
+	void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+    
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -112,9 +114,6 @@ private:
     //Correlation cuts between TPC and SPD vertexes
     Bool_t PassCorrCuts(AliAODEvent *fAOD);
     
-    //Function that gives DCA resolution in MC
-    Float_t GetDCAResolMC(Float_t x);
-    
     // ------------------------------------------
     
     
@@ -133,7 +132,10 @@ private:
     Bool_t				fIsHFE2;
     Bool_t				fIsNonHFE;
     Bool_t				fIsFromD;
-    Bool_t				fIsFromB;
+    Bool_t				fIsFromBarionB;
+	Bool_t				fIsFromMesonB;
+    Bool_t				fIsFromBarionBD;
+	Bool_t				fIsFromMesonBD;
     Bool_t				fIsFromPi0;
     Bool_t				fIsFromEta;
     Bool_t				fIsFromGamma;
@@ -152,7 +154,7 @@ private:
     //
     
     //Vertex selection
-    Float_t					fZvtx;
+    Float_t					fZvtx;//!
   
     
     //Histograms for the analysis
@@ -166,7 +168,7 @@ private:
     TH1F				*fNevent_no_vertex_2; //!
     TH1F				*fNeventAnalized;//!
     TH1F				*fCent;	//!
-    TH1F				*fCent2;	//!
+    TH1F				*fCent2;//!
     TH2F				*fTPC_p1;//!
     TH2F				*fTPC_p2;//!
     TH2F				*fTPC_p3;//!
@@ -212,54 +214,56 @@ private:
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
+    TH2F                *fDCAxy_pt_charmbef;//!
+    TH2F                *fDCAxy_pt_charmaft;//!
+    TH2F                *fDCAxy_pt_beautybef;//!
+    TH2F                *fDCAxy_pt_beautyaft;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
-    TH2F                *fDCAxy_pt_had_ResCorr;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
     TH1F                *hCharmMotherPt;//! pt of mothers of eletrons from mesons D
     TH1F                *hCharmMotherPt_corr;//! pt of mothers of eletrons from mesons D corrected statistically
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
-	TH1F                *hCharmMotherPt_corr3;
-	TH1F                *hCharmMotherPt_corr4;
 	
-	TH1F                *hBeautyMotherPt;//!
-	TH1F				*fPtBeautyGenerated;
-	TH1F				*fPtBeautyReconstructedTracks;
-	TH1F				*fPtBeautyReconstructedTracksPID;
-	TH1F				*fPtBeautyReconstructedTracksPIDTPC;
-	TH1F				*fPtBeautyReconstructedTracksPIDTOF;
-	TH1F				*fResGausCorr; //! DCA resolution correction (the gaussian that is convoluted)
+	TH2F                *hBeautyMotherPt;//!
+	TH1F				*fPtBeautyGenerated;//!
+	TH1F				*fPtBeautyReconstructedTracks;//!
+	TH1F				*fPtBeautyReconstructedTracksPID;//!
+	TH1F				*fPtBeautyReconstructedTracksPIDTPC;//!
+	TH1F				*fPtBeautyReconstructedTracksPIDTOF;//!
     
-    TH2F				*hCharmMotherPt_vsElecPt;
-    TH2F				*hElecPt_vsCharmMotherPt;
+    TH2F				*hCharmMotherPt_vsElecPt;//!
+    TH2F				*hElecPt_vsCharmMotherPt;//!
     
-    TH2F				*hCharmMotherPt_vsElecPt_corr;
-    TH2F				*hElecPt_vsCharmMotherPt_corr;
+    TH2F				*hCharmMotherPt_vsElecPt_corr;//!
+    TH2F				*hElecPt_vsCharmMotherPt_corr;//!
+    
+    TF1					*fBcorr;
     
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
-    AliCFManager 		*fCFM;                  		// Correction Framework Manager
-    AliHFEpid 			*fPID;                  		// PID
-    AliHFEpidQAmanager 	*fPIDqa;					// PID QA manager
+    AliCFManager 		*fCFM;                  // Correction Framework Manager
+    AliHFEpid 			*fPID;                  // PID
+    AliHFEpidQAmanager 	*fPIDqa;				// PID QA manager
     
     //Others
-    AliStack 			*fMCstack;						//
-    Bool_t              fRejectKinkMother;				//
-    TParticle 			*fMCtrack;
-    TParticle 			*fMCtrackMother;
-    TParticle 			*fMCtrackGMother;
-    TParticle 			*fMCtrackGGMother;
-    TParticle 			*fMCtrackGGGMother;
-    TClonesArray 		*fMCarray;
+    AliStack 			*fMCstack;	//!						
+    Bool_t              fRejectKinkMother;	//!			
+    TParticle 			*fMCtrack;//!
+    TParticle 			*fMCtrackMother;//!
+    TParticle 			*fMCtrackGMother;//!
+    TParticle 			*fMCtrackGGMother;//!
+    TParticle 			*fMCtrackGGGMother;//!
+    TClonesArray 		*fMCarray;//!
     AliAODMCHeader 		*fMCheader;  //!
     AliAODMCParticle 	*fMCparticle; //!
-    AliAODMCParticle 	*fMCparticleMother;
-    AliAODMCParticle 	*fMCparticleGMother;
-    AliAODMCParticle 	*fMCparticleGGMother;
-    AliAODMCParticle 	*fMCparticleGGGMother;
-    AliMCEventHandler	*fEventHandler;
-    AliMCEvent			*fMCevent;
+    AliAODMCParticle 	*fMCparticleMother;//!
+    AliAODMCParticle 	*fMCparticleGMother;//!
+    AliAODMCParticle 	*fMCparticleGGMother;//!
+    AliAODMCParticle 	*fMCparticleGGGMother;//!
+    AliMCEventHandler	*fEventHandler;//!
+    AliMCEvent			*fMCevent;//!
     Float_t				ftpcPIDmincut;
     Float_t				ftpcPIDmaxcut;
     Float_t				ftofPIDmincut;
