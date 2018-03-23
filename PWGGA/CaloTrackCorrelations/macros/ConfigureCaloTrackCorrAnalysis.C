@@ -753,7 +753,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 /// \param simulation : A bool identifying the data as simulation
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param year : The year the data was taken, used to configure some histograms
-/// \param tm : Not in use here now - Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals)
+/// \param tm : Index with track matching option (0- no TM; 1-Fixed residuals cut; 2-Track pT dependent residuals). In use in case of mixing and neutrals used, specially in isolation.
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
@@ -764,7 +764,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
                                                                     Float_t cone,          Float_t coneMin,
                                                                     Float_t pth,           Bool_t  mixOn,
                                                                     TString col,           Bool_t  simulation,
-                                                                    TString calorimeter,   Int_t   year,     Int_t /*tm*/,
+                                                                    TString calorimeter,   Int_t   year,     Int_t tm,
                                                                     Bool_t  printSettings, Int_t   debug, 
                                                                     TString histoString                       )
 {
@@ -919,19 +919,30 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   }
     
   // Avoid borders of calorimeter, same as for isolation
+  //
   ana->SwitchOnFiducialCut();
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
   else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
   
-  // Input / output delta AOD settings
+  // Track matching, in case of mixing and specially in isolation case
+  //
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  // tm = 1, fixed cuts
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.030);
   
+  // pT track dependent cuts
+  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+  
+  // Input / output delta AOD settings
+  //
   ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
   ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTrigger_%s",particle.Data(),bIsolated,kAnaCaloTrackCorr.Data()));
   //ana->SetAODNamepTInConeHisto(Form("IC%s_%s_R%1.1f_ThMin%1.1f"           ,particle.Data(),kAnaCaloTrackCorr.Data(),cone,pth));
   
   //Set Histograms name tag, bins and ranges
-  
+  //
   //ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,tm));
   ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated));
   
