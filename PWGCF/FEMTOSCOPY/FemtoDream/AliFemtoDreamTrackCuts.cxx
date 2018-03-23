@@ -718,7 +718,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0PionCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);
@@ -740,7 +739,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);
@@ -762,7 +760,6 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
-  trackCuts->SetCheckPileUp(false);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
   trackCuts->SetFillQALater(true);

@@ -242,15 +242,45 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     AntiXiPosCuts->SetPID(AliPID::kPion,999,3);
     AntiXiBachCuts->SetPID(AliPID::kPion,999,3);
   } else if (suffix=="31") {
-    CascadeCuts->SetPtRangeXi(0.4,999.5);
+    CascadeCuts->SetPtRangeXi(0.1,999.5);
     AntiCascadeCuts->SetPtRangeXi(0.4,999.5);
   } else if (suffix=="32") {
-    XiNegCuts->SetCutTPCCrossedRows(false,0,0);
-    XiPosCuts->SetCutTPCCrossedRows(false,0,0);
-    XiBachCuts->SetCutTPCCrossedRows(false,0,0);
-    AntiXiNegCuts->SetCutTPCCrossedRows(false,0,0);
-    AntiXiPosCuts->SetCutTPCCrossedRows(false,0,0);
-    AntiXiBachCuts->SetCutTPCCrossedRows(false,0,0);
+    CascadeCuts->SetPtRangeXi(0.2,999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.4,999.5);
+  } else if (suffix=="33") {
+    CascadeCuts->SetPtRangeXi(0.4,999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.4,999.5);
+  } else if (suffix=="34") {
+    XiNegCuts->SetCheckPileUp(false);
+    XiPosCuts->SetCheckPileUp(false);
+    XiBachCuts->SetCheckPileUp(false);
+    AntiXiNegCuts->SetCheckPileUp(false);
+    AntiXiPosCuts->SetCheckPileUp(false);
+    AntiXiBachCuts->SetCheckPileUp(false);
+  } else if (suffix=="35") {
+    XiNegCuts->SetCutTPCCrossedRows(true,0,0.83);
+    XiPosCuts->SetCutTPCCrossedRows(true,0,0.83);
+    XiBachCuts->SetCutTPCCrossedRows(true,0,0.83);
+    AntiXiNegCuts->SetCutTPCCrossedRows(true,0,0.83);
+    AntiXiPosCuts->SetCutTPCCrossedRows(true,0,0.83);
+    AntiXiBachCuts->SetCutTPCCrossedRows(true,0,0.83);
+  } else if (suffix=="36") {
+    XiNegCuts->SetCutTPCCrossedRows(true,0,0.5);
+    XiPosCuts->SetCutTPCCrossedRows(true,0,0.5);
+    XiBachCuts->SetCutTPCCrossedRows(true,0,0.5);
+    AntiXiNegCuts->SetCutTPCCrossedRows(true,0,0.5);
+    AntiXiPosCuts->SetCutTPCCrossedRows(true,0,0.5);
+    AntiXiBachCuts->SetCutTPCCrossedRows(true,0,0.5);
+  } else if (suffix=="37") {
+    XiNegCuts->SetPtRange(0.2,999.5);
+    XiPosCuts->SetPtRange(0.2,999.5);
+    XiBachCuts->SetPtRange(0.2,999.5);
+    AntiXiNegCuts->SetPtRange(0.2,999.5);
+    AntiXiPosCuts->SetPtRange(0.2,999.5);
+    AntiXiBachCuts->SetPtRange(0.2,999.5);
+  } else if (suffix=="38") {
+    CascadeCuts->SetPtRangev0(0.3,999.5);
+    AntiCascadeCuts->SetPtRangev0(0.3,999.5);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
