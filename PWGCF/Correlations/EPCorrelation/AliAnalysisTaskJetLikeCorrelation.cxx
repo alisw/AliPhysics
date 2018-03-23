@@ -334,6 +334,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fOutputInc->Add(fHistEta);
   fOutputInc->Add(fHistPos);
   fOutputInc->Add(fHistNeg);
+  fOutputInc->Add(fHistEtaSparse);
   fOutputInc->Add(fHistEventPlaneV0A);
   fOutputInc->Add(fHistEventPlaneV0C);
   fOutputInc->Add(fHistEventPlaneTPC);
