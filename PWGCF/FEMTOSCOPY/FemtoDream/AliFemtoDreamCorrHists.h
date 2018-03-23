@@ -69,6 +69,9 @@ class AliFemtoDreamCorrHists {
   void FillEtaPhiAtRadiiME(int hist,int iDaug,int iRad,float dPhi,float dEta){
     if (!fMinimalBooking&&fPhiEtaPlots)fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta,dPhi);
   }
+  void FillEffectiveMixingDepth(int iHist,int iDepth) {
+    if (!fMinimalBooking)fEffMixingDepth[iHist]->Fill(iDepth);
+  }
   TList* GetHistList(){return fResults;};
   TList* GetQAHists(){return fQA;};
   TString ClassName(){return "AliFemtoDreamCorrHists";}
@@ -97,6 +100,7 @@ class AliFemtoDreamCorrHists {
   TH2F          **fMomResolution;
   TH2F          ****fRadiiEtaPhiSE;
   TH2F          ****fRadiiEtaPhiME;
+  TH1F          **fEffMixingDepth;
   bool          fDoMultBinning;
   bool          fDokTBinning;
   bool          fDomTBinning;

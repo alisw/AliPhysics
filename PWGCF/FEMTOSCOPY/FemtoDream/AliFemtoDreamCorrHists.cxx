@@ -35,6 +35,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 ,fMomResolution(0)
 ,fRadiiEtaPhiSE(0)
 ,fRadiiEtaPhiME(0)
+,fEffMixingDepth(0)
 ,fDoMultBinning(false)
 ,fDokTBinning(false)
 ,fDomTBinning(false)
@@ -100,6 +101,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fPairQA=new TList*[nHists];
     fPairCounterSE=new TH2F*[nHists];
     fPairCounterME=new TH2F*[nHists];
+    fEffMixingDepth=new TH1F*[nHists];
     if (fMomentumResolution) {
       fMomResolution=new TH2F*[nHists];
     } else {
@@ -117,6 +119,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fPairQA=0;
     fPairCounterSE=0;
     fPairCounterME=0;
+    fEffMixingDepth=0;
     fMomResolution=0;
     fMomResolution = 0;
     fRadiiEtaPhiSE=0;
@@ -315,6 +318,16 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fPairCounterME[Counter]->GetXaxis()->SetTitle(Form("Particle%d",iPar1));
         fPairCounterME[Counter]->GetYaxis()->SetTitle(Form("Particle%d",iPar2));
         fPairQA[Counter]->Add(fPairCounterME[Counter]);
+
+        TString EffMixingDepthName=
+            Form("EffMixingDepth_Particle%d_Particle%d",iPar1,iPar2);
+        fEffMixingDepth[Counter]=new TH1F(
+            EffMixingDepthName.Data(),EffMixingDepthName.Data(),10,0,10);
+        fEffMixingDepth[Counter]->Sumw2();
+        fEffMixingDepth[Counter]->GetXaxis()->SetTitle("MixingDepth");
+        fPairQA[Counter]->Add(fEffMixingDepth[Counter]);
+
+
 
         if (fMomentumResolution) {
           //take twice the number of bins we use for the CF to be sure, the range is
