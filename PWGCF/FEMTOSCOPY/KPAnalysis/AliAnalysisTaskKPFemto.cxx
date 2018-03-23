@@ -77,6 +77,7 @@ class AliAODVertex;
 #include "AliAODv0.h"
 #include "AliAODMCParticle.h"
 
+#include "AliEventCuts.h"
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -95,6 +96,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskKPFemto)
 
 AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto():AliAnalysisTaskSE(),
+  fEventCuts(0),
   fESDevent(NULL),
   fAODevent(NULL),
   fAnalysisType("AOD"),
@@ -265,6 +267,7 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto():AliAnalysisTaskSE(),
 
 AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto(const char *name):
   AliAnalysisTaskSE(name),
+  fEventCuts(0),
   fESDevent(NULL),
   fAODevent(NULL),
   fAnalysisType("AOD"),
@@ -440,12 +443,22 @@ AliAnalysisTaskKPFemto::~AliAnalysisTaskKPFemto() {
   //
   // Destructor
   //
-  if (fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())   { delete fOutputContainer;     fOutputContainer = 0x0;    }
-  if (fESDtrackCuts) delete fESDtrackCuts;
-
-  if(fHistSparseSignal) delete fHistSparseSignal;
-  if(fHistSparseBkg) delete fHistSparseBkg;
-
+  if (fOutputContainer){
+    delete fOutputContainer;     
+    fOutputContainer = 0x0;    
+  }
+  if (fESDtrackCuts){
+    delete fESDtrackCuts;
+    fESDtrackCuts = 0x0;
+  }
+  if(fHistSparseSignal){
+    delete fHistSparseSignal;
+    fHistSparseSignal = 0x0;
+  }
+  if(fHistSparseBkg) {
+    delete fHistSparseBkg;
+    fHistSparseBkg = 0x0;
+  }
   if (farrGT)
     delete[] farrGT;
   farrGT=0;
@@ -474,14 +487,14 @@ AliAnalysisTaskKPFemto::~AliAnalysisTaskKPFemto() {
 
   delete[] fEventColl;
   delete[] fEventCollwSp;
-  
+ 
 }
 
 //--------------------------------------------------------------------------------
 
 void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 
-
+  OpenFile(1);
   // // PID object
   // AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   // AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -698,7 +711,14 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   // UInt_t dimsparse;
   // if(!fReadMCTruth) dimsparse=16;
   // else dimsparse=26;
+
+  fHistTrackBufferOverflow = new TH1F("fHistTrackBufferOverflow","",2,0,2);
+  fOutputContainer->Add(fHistTrackBufferOverflow);
   
+  fEventCuts.AddQAplotsToList(fOutputContainer);
+  
+  PostData(1, fOutputContainer );
+
   //TRee
 
   if(!fReadMCTruth){
@@ -724,7 +744,8 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 /*18*/   fHistSparseSignal->Branch("tDTheta",             &tDTheta            , "tDTheta/F" );
 	 fHistSparseSignal->SetAutoSave(100000000);
 	 
-	 
+	 PostData(2, fHistSparseSignal );
+
          OpenFile(3);
 	 fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
 	 /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
@@ -746,9 +767,11 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 /*17*/   fHistSparseBkg->Branch("tGammaCoversionMass", &tGammaCoversionMass, "tGammaCoversionMass/F" );
 	 /*18*/   fHistSparseBkg->Branch("tDTheta",             &tDTheta            , "tDTheta/F" );
 	 fHistSparseBkg->SetAutoSave(100000000);
-	 
+	 PostData(3, fHistSparseBkg );
   }
+
   
+
   else{
     OpenFile(2);
     fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
@@ -782,6 +805,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     /*28*/   fHistSparseSignal->Branch("tpdgcodeP2",          &tpdgcodeP2         , "tpdgcodeP2/I" );
     /*29*/   fHistSparseSignal->Branch("tKstarGen",           &tKstarGen          , "tKstarGen/F" );
     fHistSparseSignal->SetAutoSave(100000000);
+    PostData(2, fHistSparseSignal );
     
     OpenFile(3);
     fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
@@ -815,17 +839,12 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     /*28*/   fHistSparseBkg->Branch("tpdgcodeP2",          &tpdgcodeP2         , "tpdgcodeP2/I" );
     /*29*/   fHistSparseBkg->Branch("tKstarGen",           &tKstarGen          , "tKstarGen/F" );
     fHistSparseBkg->SetAutoSave(100000000);
-	 
+    PostData(3, fHistSparseBkg ); 
   }
   //TTree *fHistSparseBkg;      
   
-  fHistTrackBufferOverflow = new TH1F("fHistTrackBufferOverflow","",2,0,2);
-  fOutputContainer->Add(fHistTrackBufferOverflow);
  
-  PostData(1, fOutputContainer );
-  PostData(2, fHistSparseSignal );
-  PostData(3, fHistSparseBkg );
-
+  
 }
 
 //---------------------------------------------------------------------------------
@@ -853,14 +872,25 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     fESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
     if (!fESDevent) {
       AliWarning("ERROR: ESDevent not available \n");
+      PostData(1, fOutputContainer);
+      PostData(2, fHistSparseSignal );
+      PostData(3, fHistSparseBkg );
       return;
     }
-
+ 
+    /// Use the event cut class to apply the required selections
+    if (!fEventCuts.AcceptEvent(fESDevent)) {
+      return;
+    }
+    
     if (fReadMCTruth) {
       lMCevent = MCEvent();
       if (!lMCevent) {
         Printf("ERROR: Could not retrieve MC event \n");
-        //cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+        //cout << "Name of the file with pb :" <<  CurrentFileName() << endl; 
+	PostData(1, fOutputContainer);
+	PostData(2, fHistSparseSignal );
+	PostData(3, fHistSparseBkg );
         return;
       }
       
@@ -869,7 +899,10 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       if (!lMCstack) {
         Printf("ERROR: Could not retrieve MC stack \n");
         //cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
-        return;
+	PostData(1, fOutputContainer);
+	PostData(2, fHistSparseSignal );
+	PostData(3, fHistSparseBkg );
+      return;
       }
     }
    
@@ -895,10 +928,19 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     //    cout<<"fAODevent: "<<fAODevent <<endl;
     
     if (!fAODevent) {
-      AliWarning("ERROR: AODevent not available \n");
+      AliWarning("ERROR: AODevent not available \n"); 
+      PostData(1, fOutputContainer);
+      PostData(2, fHistSparseSignal );
+      PostData(3, fHistSparseBkg );
       return;
     }
-
+    /// Use the event cut class to apply the required selections
+    if (!fEventCuts.AcceptEvent(fAODevent)) {   
+      PostData(1, fOutputContainer);
+      PostData(2, fHistSparseSignal );
+      PostData(3, fHistSparseBkg );
+      return;
+    }
     ntracks = fAODevent->GetNumberOfTracks();
     centrality = fAODevent->GetCentrality(); //FIXME :  Find out centrality object in pp and pPb
    
@@ -925,6 +967,9 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   } else {
     
     Printf("Analysis type (ESD or AOD) not specified \n");
+    PostData(1, fOutputContainer);
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
     return;
 
   }
@@ -954,8 +999,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   fHistEventMultiplicity->Fill(2);
 
-  if((TMath::Abs(lBestPrimaryVtxPos[2])) > 10.) return;
- 
+  if((TMath::Abs(lBestPrimaryVtxPos[2])) > 10.) {
+    PostData(1, fOutputContainer);
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
+    return;
+  }
   fHistEventMultiplicity->Fill(3);
 
   Float_t lcentrality = -99.;

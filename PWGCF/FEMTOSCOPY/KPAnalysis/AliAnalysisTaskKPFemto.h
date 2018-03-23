@@ -11,6 +11,8 @@ class AliPIDResponse;
 class THnSparse;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisKPEventCollection.h"
+#include "AliEventCuts.h"
+
 /* #include "AliCFContainer.h"*/
 
 class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
@@ -82,7 +84,7 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   void SetRadius (Float_t radius)  { fRadius = radius;}
   Double_t EtaS( Double_t posSftR125[3] ) const; 
   Double_t ThetaS( Double_t posSftR125[3] ) const;
-
+  AliEventCuts fEventCuts;
  private:
  
   AliESDEvent *fESDevent;                         //! 
