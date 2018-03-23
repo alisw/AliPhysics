@@ -85,7 +85,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   int fSpinningDepth;			//
   bool fkTCentrality;           //
   bool fMCCommonAncestor;       // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
-  ClassDef(AliFemtoDreamCollConfig,3);
+  ClassDef(AliFemtoDreamCollConfig,4);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
