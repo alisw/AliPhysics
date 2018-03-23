@@ -10,8 +10,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool kTBinning=false,//4
     bool kTCentBinning=false,//5
     bool mTBinning=false,//6
-    bool eventMixing=true,//8
-    bool phiSpin=true,//9
+    bool eventMixing=true,//7
+    bool phiSpin=true,//8
     const char *swuffix="")//10
 {
   TString suffix=Form("%s",swuffix);
