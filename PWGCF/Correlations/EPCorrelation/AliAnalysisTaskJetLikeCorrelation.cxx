@@ -337,6 +337,10 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fOutputInc->Add(fHistEventPlaneV0A);
   fOutputInc->Add(fHistEventPlaneV0C);
   fOutputInc->Add(fHistEventPlaneTPC);
+  fOutputInc->Add(fHistV2);
+  fOutputInc->Add(fHistResolutionV2[0]);
+  fOutputInc->Add(fHistResolutionV2[1]);
+  fOutputInc->Add(fHistResolutionV2[2]);
   fOutputInc->Add(fHistNevtSame);
   if (fMCCorrection)
     fOutputInc->Add(fHistContamination);
