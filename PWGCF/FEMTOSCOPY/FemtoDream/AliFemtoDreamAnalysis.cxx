@@ -272,8 +272,14 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
-                      fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
-  fControlSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetRefMult08());
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl->SetEvent(
+        fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
+        fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample->SetEvent(
+        fPairCleaner->GetCleanParticles(), fEvent->GetRefMult08());
+  }
 }
 

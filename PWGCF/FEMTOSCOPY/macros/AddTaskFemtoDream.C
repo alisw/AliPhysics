@@ -15,7 +15,9 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool kTCentPlot=false,//9
     bool MultvsCentPlot=false,//10
     bool ContributionSplitting=false,//11
-    bool ContributionSplittingDaug=false)//12
+    bool ContributionSplittingDaug=false,//12
+    bool eventMixing=true,//13
+    bool phiSpin=true)//14
 {
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -328,6 +330,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	config->SetMaxKRel(kMax);
 	config->SetMixingDepth(10);
 	config->SetSpinningDepth(10);
+	config->SetUseEventMixing(eventMixing);
+	config->SetUsePhiSpinning(phiSpin);
 
 	AliAnalysisTaskFemtoDream *task=
 	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);

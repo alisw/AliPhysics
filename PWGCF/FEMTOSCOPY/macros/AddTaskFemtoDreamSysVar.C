@@ -10,7 +10,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool kTBinning=false,//4
     bool kTCentBinning=false,//5
     bool mTBinning=false,//6
-    const char *swuffix="")//7
+    bool eventMixing=true,//8
+    bool phiSpin=true,//9
+    const char *swuffix="")//10
 {
   TString suffix=Form("%s",swuffix);
   bool DCAPlots=false;
@@ -415,6 +417,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetkTBinning(kTBinning);
   config->SetkTCentralityBinning(kTCentBinning);
   config->SetmTBinning(mTBinning);
+  config->SetUseEventMixing(eventMixing);
+  config->SetUsePhiSpinning(phiSpin);
+
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
       new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);

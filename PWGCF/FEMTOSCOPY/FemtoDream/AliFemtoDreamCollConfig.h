@@ -25,6 +25,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetPhiEtaBinnign(bool doIt){
     fPhiEtaBinning=doIt;fNumberRadii=9;
   };
+  void SetUseEventMixing(bool use){fMixedEventStatistics=use;};
+  bool GetUseEventMixing(){return fMixedEventStatistics;};
+  void SetUsePhiSpinning(bool use){fGetTheControlSampel=use;};
+  bool GetUsePhiSpinning(){return fGetTheControlSampel;};
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -64,6 +68,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fmTBinning;            //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
+  bool fMixedEventStatistics;   //
+  bool fGetTheControlSampel;    //
   int fNumberRadii;             //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
