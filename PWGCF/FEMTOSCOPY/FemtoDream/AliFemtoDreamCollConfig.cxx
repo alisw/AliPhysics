@@ -23,6 +23,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fMaxK_rel(0)
 ,fCentBins(0)
 ,fMixingDepth(0)
+,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
 {
@@ -39,6 +40,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fPhiEtaBinning(false)
 ,fNumberRadii(0)
 ,fMixingDepth(0)
+,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
 {
