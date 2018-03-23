@@ -3,21 +3,21 @@
 AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,
     TString CentEst="kInt7",
-    int cascCutVar=0,
     bool notpp=true,//1
     bool DCAPlots=false,//2
     bool CPAPlots=false,//3
     bool MomReso=false,//4
-    bool etaPhiPlots=false,//5
+    bool etaPhiPlotsAtTPCRadii=false,//5
     bool CombSigma=false,//6
     bool PileUpRej=true,//7
     bool mTkTPlot=false,//8
     bool kTCentPlot=false,//9
     bool MultvsCentPlot=false,//10
-    bool ContributionSplitting=false,//11
-    bool ContributionSplittingDaug=false,//12
-    bool eventMixing=true,//13
-    bool phiSpin=true)//14
+    bool dPhidEtaPlots=false,//11
+    bool eventMixing=true,//12
+    bool phiSpin=true,//13
+    bool ContributionSplitting=false,//14
+    bool ContributionSplittingDaug=false)//15
 {
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -134,33 +134,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AntiCascadeCuts->SetPDGCodePosDaug(211);
 	AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
 	AntiCascadeCuts->SetPDGCodeBach(-211);
-	TString CascVars="";
-	if (cascCutVar == 1) {
-	  XiNegCuts->SetPtRange(0,999.5);
-	  XiPosCuts->SetPtRange(0,999.5);
-	  XiBachCuts->SetPtRange(0,999.5);
-	  AntiXiNegCuts->SetPtRange(0,999.5);
-	  AntiXiPosCuts->SetPtRange(0,999.5);
-	  AntiXiBachCuts->SetPtRange(0,999.5);
-
-	  CascadeCuts->SetPtRangeXi(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
-	  CascVars+="XiPt";
-	} else if (cascCutVar == 2) {
-	  XiNegCuts->SetPtRange(0,999.5);
-	  XiPosCuts->SetPtRange(0,999.5);
-	  XiBachCuts->SetPtRange(0,999.5);
-	  AntiXiNegCuts->SetPtRange(0,999.5);
-	  AntiXiPosCuts->SetPtRange(0,999.5);
-	  AntiXiBachCuts->SetPtRange(0,999.5);
-
-	  CascadeCuts->SetPtRangeXi(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangeXi(0.3,999.5);
-
-	  CascadeCuts->SetPtRangev0(0.3,999.5);
-	  AntiCascadeCuts->SetPtRangev0(0.3,999.5);
-	  CascVars+="XiAndV0Pt";
-	}
 
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -316,14 +289,14 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
 	  }
  	}
-	if (etaPhiPlots) {
+	if (etaPhiPlotsAtTPCRadii) {
 	  if (isMC) {
 	    config->SetPhiEtaBinnign(true);
 	  } else {
 	    std::cout << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
 	  }
  	}
-//	config->SetMultBins(MultBins);
+	config->SetdPhidEtaPlots(dPhidEtaPlots);
 	config->SetPDGCodes(PDGParticles);
 	config->SetNBinsHist(NBins);
 	config->SetMinKRel(kMin);
@@ -384,7 +357,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	} else if (CentEst=="kHM") {
 	  addon+="HM";
 	}
-	addon+=CascVars.Data();
 	std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
 	TString QAName = Form("%sQA",addon.Data());
 	coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs

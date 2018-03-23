@@ -6,13 +6,13 @@
 
 ClassImp(AliFemtoDreamControlSample)
 
-    AliFemtoDreamControlSample::AliFemtoDreamControlSample()
-    : fHists(nullptr),
-      fPDGParticleSpecies(),
-      fMultBins(),
-      fRandom(),
-      fPi(TMath::Pi()),
-      fSpinningDepth(0) {
+AliFemtoDreamControlSample::AliFemtoDreamControlSample()
+: fHists(nullptr),
+  fPDGParticleSpecies(),
+  fMultBins(),
+  fRandom(),
+  fPi(TMath::Pi()),
+  fSpinningDepth(0) {
   fRandom.SetSeed(0);
 }
 
@@ -57,7 +57,6 @@ void AliFemtoDreamControlSample::SetEvent(
           if (fHists->GetDoMultBinning()) {
             fHists->FillSameEventMultDist(HistCounter, iMult + 1, RelativeK);
           }
-
           for (int i = 0; i < fSpinningDepth; ++i) {
             // randomized sample - who is the father???
             RelativeK =
@@ -124,7 +123,7 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
 int AliFemtoDreamControlSample::FindBin(float Multiplicity) {
   int binCounter = fMultBins.size();
   for (std::vector<int>::reverse_iterator itBin = fMultBins.rbegin();
-       itBin != fMultBins.rend(); ++itBin) {
+      itBin != fMultBins.rend(); ++itBin) {
     binCounter--;
     if (Multiplicity >= *itBin) {
       break;

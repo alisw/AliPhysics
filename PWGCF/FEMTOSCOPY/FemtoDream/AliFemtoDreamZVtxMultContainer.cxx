@@ -100,6 +100,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (ResultsHist->GetEtaPhiPlots()) {
             DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
+          if (ResultsHist->GetDodPhidEtaPlots()) {
+            float deta=itPart1->GetEta().at(0)-itPart2->GetEta().at(0);
+            float dphi=itPart1->GetPhi().at(0)-itPart2->GetPhi().at(0);
+            ResultsHist->FilldPhidEtaSE(HistCounter,dphi,deta);
+          }
           ++itPart2;
         }
       }
@@ -134,7 +139,7 @@ void AliFemtoDreamZVtxMultContainer::PairMCParticlesSE(
           RelativeK=RelativePairMomentum(itPart1->GetMomentum(),*itPDGPar1,
                                          itPart2->GetMomentum(),*itPDGPar2);
           //If the ancestor is the same fill one hist, if it isnt the other
-//          std::cout << itPart1->GetMotherID() << '\t' << itPart2->GetMotherID() << std::endl;
+          //          std::cout << itPart1->GetMotherID() << '\t' << itPart2->GetMotherID() << std::endl;
           if (itPart1->GetMotherID()==itPart2->GetMotherID()) {//common ancestor
             ResultsHist->FillSameEventCommonAncestDist(HistCounter,RelativeK);
           } else {//different ancestor
@@ -163,12 +168,13 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     //We dont want to correlate the particles twice. Mixed Event Dist. of
     //Particle1 + Particle2 == Particle2 + Particle 1
     int SkipPart=itSpec1-Particles.begin();
-    auto itPDGPar2 = fPDGParticleSpecies.begin()+
-        SkipPart;
+    auto itPDGPar2 = fPDGParticleSpecies.begin()+SkipPart;
     for (auto itSpec2=fPartContainer.begin()+SkipPart;
         itSpec2!=fPartContainer.end();++itSpec2) {
-      ResultsHist->FillEffectiveMixingDepth(
-          HistCounter,(int)itSpec2->GetMixingDepth());
+      if(itSpec1->size()>0) {
+        ResultsHist->FillEffectiveMixingDepth(
+            HistCounter,(int)itSpec2->GetMixingDepth());
+      }
       for(int iDepth=0;iDepth<(int)itSpec2->GetMixingDepth();++iDepth){
         std::vector<AliFemtoDreamBasePart> ParticlesOfEvent=
             itSpec2->GetEvent(iDepth);
@@ -216,6 +222,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             }
             if (ResultsHist->GetEtaPhiPlots()) {
               DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),false,ResultsHist);
+            }
+            if (ResultsHist->GetDodPhidEtaPlots()) {
+              float deta=itPart1->GetEta().at(0)-itPart2->GetEta().at(0);
+              float dphi=itPart1->GetPhi().at(0)-itPart2->GetPhi().at(0);
+              ResultsHist->FilldPhidEtaME(HistCounter,dphi,deta);
             }
           }
         }
