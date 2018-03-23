@@ -65,7 +65,9 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t b
     mix->SetMixType(AliDielectronMixingHandler::kAll);
     
     // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
-    // mix->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+    if(cutDefinition==671){
+     mix->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+    }
     
     die->SetMixingHandler(mix);
   }//kMix
