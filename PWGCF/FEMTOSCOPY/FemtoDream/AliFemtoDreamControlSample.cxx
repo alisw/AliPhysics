@@ -36,23 +36,20 @@ void AliFemtoDreamControlSample::SetEvent(
   float RelativeK = 0.f;
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
-
-  for (auto itSpec1 = Particles.begin(); itSpec1 != Particles.end();
-       ++itSpec1) {
+  for (auto itSpec1=Particles.begin();itSpec1!=Particles.end();++itSpec1) {
     auto itPDGPar2 = fPDGParticleSpecies.begin();
-    itPDGPar2 += itSpec1 - Particles.begin();
-    for (auto itSpec2 = itSpec1; itSpec2 != Particles.end(); ++itSpec2) {
-      fHists->FillPartnersSE(HistCounter, itSpec1->size(), itSpec2->size());
+    itPDGPar2+=itSpec1-Particles.begin();
+    for(auto itSpec2=itSpec1;itSpec2!=Particles.end();++itSpec2) {
+      fHists->FillPartnersSE(HistCounter,itSpec1->size(),itSpec2->size());
       // Now loop over the actual Particles and correlate them
-      for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
-           ++itPart1) {
+      for(auto itPart1=itSpec1->begin();itPart1!=itSpec1->end();++itPart1) {
         std::vector<AliFemtoDreamBasePart>::iterator itPart2;
-        if (itSpec1 == itSpec2) {
-          itPart2 = itPart1 + 1;
+        if (itSpec1==itSpec2) {
+          itPart2 =itPart1+1;
         } else {
-          itPart2 = itSpec2->begin();
+          itPart2=itSpec2->begin();
         }
-        while (itPart2 != itSpec2->end()) {
+        while (itPart2!=itSpec2->end()) {
           // correlated sample
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
@@ -60,6 +57,7 @@ void AliFemtoDreamControlSample::SetEvent(
           if (fHists->GetDoMultBinning()) {
             fHists->FillSameEventMultDist(HistCounter, iMult + 1, RelativeK);
           }
+
           for (int i = 0; i < fSpinningDepth; ++i) {
             // randomized sample - who is the father???
             RelativeK =
@@ -70,10 +68,13 @@ void AliFemtoDreamControlSample::SetEvent(
               fHists->FillMixedEventMultDist(HistCounter, iMult + 1, RelativeK);
             }
           }
+          ++itPart2;
         }
       }
       ++HistCounter;
+      itPDGPar2++;
     }
+    itPDGPar1++;
   }
 }
 
