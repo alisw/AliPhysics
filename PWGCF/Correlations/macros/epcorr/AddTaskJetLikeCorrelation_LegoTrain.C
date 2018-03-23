@@ -1,4 +1,4 @@
-AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int collision, int filterbit, float fTwoTrackEffCut, float fConversionsCut, float fResonancesCut, TString dataset, const char *configpath, TString taskname="JetLikeCorrelation")
+AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int collision, int filterbit, float fTwoTrackEffCut, float fConversionsCut, float fResonancesCut, TString dataset, TString taskname="JetLikeCorrelation")
 {
 
  taskname = Form("%s_Fbit%d_Twotrackeff%.0f_fConv%.0f_fReso_%.0f", dataset.Data(), filterbit, fTwoTrackEffCut*100, fConversionsCut*100 , fResonancesCut*100);
@@ -28,7 +28,6 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
     AliError("AddTaskRunQA : No Input Event Handler!");
     return NULL;
   }
-  
 
   AliAnalysisTaskJetLikeCorrelation *taskjetlikecorr = new AliAnalysisTaskJetLikeCorrelation(taskname);
   taskjetlikecorr->UseSeparateMixingPool(kFALSE);
