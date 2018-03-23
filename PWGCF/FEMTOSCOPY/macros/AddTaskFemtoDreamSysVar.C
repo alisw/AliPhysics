@@ -6,7 +6,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     TString CentEst="kInt7",
     bool notpp=true,//1
     bool PileUpRej=true,//2
-    const char *swuffix="")//3
+    bool multBinning=false,//3
+    bool kTBinning=false,//4
+    bool kTCentBinning=false,//5
+    bool mTBinning=false,//6
+    const char *swuffix="")//7
 {
   TString suffix=Form("%s",swuffix);
   bool DCAPlots=false;
@@ -390,7 +394,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
-  config->SetMultBinning(true);
+  config->SetMultBinning(multBinning);
   config->SetZBins(ZVtxBins);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -398,9 +402,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetSpinningDepth(10);
-  config->SetkTBinning(false);
-  config->SetkTCentralityBinning(false);
-  config->SetmTBinning(false);
+  config->SetkTBinning(kTBinning);
+  config->SetkTCentralityBinning(kTCentBinning);
+  config->SetmTBinning(mTBinning);
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
       new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);
