@@ -15,6 +15,7 @@
 #include <TList.h>
 #include <TLatex.h>
 #include <TError.h>
+#include <TVectorD.h>
 
 #include <Riostream.h>
 #include <stdio.h>
@@ -792,7 +793,8 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
         // Declare Histos for BC finding for scaling
         TH1D *hHitDistrib_forScaling = new TH1D("hHitDistrib_forScaling","hHitDistrib_forScaling",1000,0.,TMath::Median(fNoOfCells,arrHits)*4);
         TF1 *fgausForScaling = new TF1("fgausForScaling","gaus", 0.,TMath::Median(fNoOfCells,arrHits)*4);
-        Int_t *fFlagForScaling = new Int_t[fNoOfCells];
+        TVectorD fFlagForScaling;
+        fFlagForScaling.ResizeTo(fNoOfCells);
         Double_t dhits = 0.;
         for(int i = 1; i <= fNoOfCells; i++){
             dhits = 0.;
@@ -836,7 +838,7 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
 
         delete hHitDistrib_forScaling;
         delete fgausForScaling;
-        delete arrHits;
+        delete [] arrHits;
 
         TF1 *fFitCol;
         TF1 *fFitRow;
@@ -978,7 +980,6 @@ TH1F* BadChannelAna::BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin, Doub
         delete hEnergyRow;
         delete fFitCol;
         delete fFitRow;
-        delete fFlagForScaling;
         
         
 	return histogram;
