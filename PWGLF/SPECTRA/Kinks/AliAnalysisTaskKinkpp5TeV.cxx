@@ -408,7 +408,7 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 	fNumberOfEvent->Fill(3.5);
 
 //multiplicity/ centrality 
-        Float_t cent = -999;
+/*        Float_t cent = -999;
         if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
         AliCentrality *centrality = esd->GetCentrality();
         cent = centrality->GetCentralityPercentile("V0M");
@@ -423,7 +423,9 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 //        if ((cent < 0) || (cent > 100)) return; //Event selection
         }
         }
+
         fCent->Fill(cent);
+*/
 	fNumberOfEvent->Fill(4.5);
 
 // check incomplete event
@@ -462,7 +464,7 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
         if (TMath::Abs( vpos[2] ) > 10. ) return;
         fEventVertex->Fill(2);
         fNumberOfEvent->Fill(10.5);
-        fEventVsCentrality->Fill(cent, 2);
+       // fEventVsCentrality->Fill(cent, 2);
 
    	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
