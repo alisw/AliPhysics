@@ -142,6 +142,7 @@ fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels(kTRUE),
+fkUseOldCentrality ( kFALSE ) ,
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -398,6 +399,7 @@ fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels(kTRUE),
+fkUseOldCentrality ( kFALSE ) , 
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -1191,6 +1193,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
+    
+    //===================================================================
+    //Override centrality with equivalent run 1 info if requested, please
+    if (fkUseOldCentrality) {
+        AliCentrality* centrality;
+        centrality = lESDevent->GetCentrality();
+        if ( centrality ) {
+            fCentrality = centrality->GetCentralityPercentile( "V0M" );
+        }
+    }
+    //===================================================================
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
