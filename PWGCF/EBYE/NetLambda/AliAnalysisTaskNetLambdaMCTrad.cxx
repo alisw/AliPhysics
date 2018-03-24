@@ -291,8 +291,8 @@ fHistGeneratedCentralityVsAntiLambda(0)
     fkSaveEventTree    = lSaveEventTree;
     fkSaveV0Tree       = lSaveV0Tree;
     DefineOutput(1, TList::Class()); // Basic Histograms
-    DefineOutput(2, TTree::Class()); // Event Tree output
-    DefineOutput(3, TTree::Class()); // V0 Tree output
+//     DefineOutput(2, TTree::Class()); // Event Tree output
+//     DefineOutput(3, TTree::Class()); // V0 Tree output
 
     
     
@@ -590,8 +590,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
 
     
     PostData(1, fListHist);
-    PostData(2, fTreeEvent);
-    PostData(3, fTreeV0);
+//     PostData(2, fTreeEvent);
+//     PostData(3, fTreeV0);
 
 }// end UserCreateOutputObjects
 
@@ -689,8 +689,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
+//         PostData(2, fTreeEvent);
+//         PostData(3, fTreeV0);
         return;
 
     }
@@ -1189,8 +1189,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     
     // Post output data.
     PostData(1, fListHist);
-    PostData(2, fTreeEvent);
-    PostData(3, fTreeV0);
+//     PostData(2, fTreeEvent);
+//     PostData(3, fTreeV0);
 }
 
 //________________________________________________________________________
