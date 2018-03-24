@@ -581,7 +581,7 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 
 
 //multiplicity/ centrality 
-
+/*
         Float_t cent = -999;
         if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
         AliCentrality *centrality = esd->GetCentrality();
@@ -597,8 +597,8 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 //        if ((cent < 0) || (cent > 100)) return; //Event selection
         }
         }
-
-        fNumberOfEvent->Fill(4.5);
+*/
+       fNumberOfEvent->Fill(4.5);
         Double_t mctrack= mcEvent->GetNumberOfTracks();
 
         fMultTriggerMCAfterV0->Fill(mctrack );
@@ -644,7 +644,7 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
         fEventVertex->Fill(2);
         fNumberOfEvent->Fill(10.5);
 
-        fEventVsCentrality->Fill(cent, 2);
+      //  fEventVsCentrality->Fill(cent, 2);
 	
   	Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
   	AliStack* stack=mcEvent->Stack();
