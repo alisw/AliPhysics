@@ -38,8 +38,8 @@ class AliOADBObjCache : public TObject {
 class AliOADBContainer : public TNamed {
 
  public :
-  AliOADBContainer();
-  AliOADBContainer(const char* name);
+  AliOADBContainer(Bool_t b=0);
+  AliOADBContainer(const char* name, Bool_t b=0);
   virtual ~AliOADBContainer();
   AliOADBContainer(const AliOADBContainer& cont); 
   AliOADBContainer& operator=(const AliOADBContainer& cont);
@@ -58,7 +58,7 @@ class AliOADBContainer : public TNamed {
 // I/O  
   void  WriteToFile(const char* fname)  const;
   Int_t InitFromFile(const char* fname, const char* key);
-  void  SetOwner(Bool_t deflist=1);
+  void  SetOwner(Bool_t flag);
 // Getters
   Int_t GetNumberOfEntries()    const {return fEntries;}
   Int_t LowerLimit(Int_t idx)   const {return fLowerLimits[idx];}
@@ -89,7 +89,8 @@ class AliOADBContainer : public TNamed {
   TArrayI                  fLowerLimits;   ///< lower limit of run range
   TArrayI                  fUpperLimits;   ///< upper limit of run range
   Int_t                    fEntries;       ///< Number of entries
-  ClassDef(AliOADBContainer, 2);
+  Bool_t                   fDefOwn;        ///< Default ownership (off by default)
+  ClassDef(AliOADBContainer, 3);
 };
 
 #endif
