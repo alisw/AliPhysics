@@ -84,4 +84,7 @@
 
 #pragma link C++ class AliAnalysisTaskEbyeCharge+;
 
+#pragma link C++ class AliAnalysisTaskNetLambdaMCTrad+;
+
+
 #endif
