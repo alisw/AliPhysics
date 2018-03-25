@@ -412,7 +412,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 
 					    nSigmaTPCOnly = fPIDResponse->NumberOfSigmasTPC(aodTrack,fParticleOfInterest);
 
-					    if(mom < fPIDMomCut){
+					    if(pt < fPIDMomCut){
 					     
 					      if (fUsePIDnSigmaComb){
 						if (TMath::Abs(nSigmaTPCOnly)>3.)
@@ -440,12 +440,12 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					      combSquaredSigma = TMath::Sqrt((nSigmaTPCNsigcomb*nSigmaTPCNsigcomb) + (nSigmaTOFNsigcomb*nSigmaTOFNsigcomb));
 					      // printf("highpT : combSquaredSigma =%f", combSquaredSigma);
 
-					      if (mom >= fPIDMomCut){
+					      if (pt >= fPIDMomCut){
 						if (fParticleOfInterest == (AliPID::kPion)){
 						 
 						  if (fUsePIDnSigmaComb){
-						    if ((mom <= 2.5) && (TMath::Abs(combSquaredSigma)>3)) continue;
-						    else if ((mom>2.5) && (TMath::Abs(combSquaredSigma)>2)) continue;
+						    if ((pt <= 2.5) && (TMath::Abs(combSquaredSigma)>3)) continue;
+						    else if ((pt>2.5) && (TMath::Abs(combSquaredSigma)>2)) continue;
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
 
@@ -458,8 +458,8 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 						if (fParticleOfInterest == (AliPID::kKaon)){
 						  
 						  if (fUsePIDnSigmaComb){
-						    if ((mom <= 2.)&&(TMath::Abs(combSquaredSigma)>2.5)) continue;
-						    if ((mom > 2.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
+						    if ((pt <= 2.)&&(TMath::Abs(combSquaredSigma)>2.5)) continue;
+						    if ((pt > 2.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
 						  else{
@@ -471,9 +471,9 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 						if (fParticleOfInterest == (AliPID::kProton)){
 						  
 						  if (fUsePIDnSigmaComb){
-						    if ((mom <= 3.)&&(TMath::Abs(combSquaredSigma)>3)) continue;
-						    if ((mom > 3.)&&(mom <= 5.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
-						    if ((mom > 5.)&&(TMath::Abs(combSquaredSigma)>1)) continue;
+						    if ((pt <= 3.)&&(TMath::Abs(combSquaredSigma)>3)) continue;
+						    if ((pt > 3.)&&(mom <= 5.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
+						    if ((pt > 5.)&&(TMath::Abs(combSquaredSigma)>1)) continue;
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
 						  
