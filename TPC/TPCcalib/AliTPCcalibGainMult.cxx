@@ -1593,10 +1593,23 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliVEvent *event) {
 	  "\n";      
       }
       //
-      AliVfriendTrack *friendTrack0 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack0));
+      AliVfriendTrack *friendTrack0 = 0, *friendTrack1 = 0;
+      if (track0->IsA()==AliESDtrack::Class()) {
+	friendTrack0 = (AliVfriendTrack*)(((AliESDtrack*)track0)->GetFriendTrack());
+      }
+      else {
+	friendTrack0 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack0));
+      }
       if (!friendTrack0) continue;
-      AliVfriendTrack *friendTrack1 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack1));
+      if (track1->IsA()==AliESDtrack::Class()) {
+	friendTrack1 = (AliVfriendTrack*)(((AliESDtrack*)track1)->GetFriendTrack());
+      }
+      else {
+	friendTrack1 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack1));
+      }
       if (!friendTrack1) continue;
+
+
       AliTPCseed *seed0 = 0;   
       AliTPCseed *seed1 = 0;
       //
@@ -1792,10 +1805,21 @@ void AliTPCcalibGainMult::ProcessKinks(const AliVEvent *event){
     if (TMath::Abs(eta)>1) continue;
     //
     //
-    AliVfriendTrack *friendTrackM = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(kink->GetIndex(0)));
-    AliVfriendTrack *friendTrackD = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(kink->GetIndex(1)));
-    if (!friendTrackM) continue;
-    if (!friendTrackD) continue;
+    AliVfriendTrack *friendTrackM = 0, *friendTrackD = 0;
+    if (trackM->IsA()==AliESDtrack::Class()) {
+      friendTrackM = (AliVfriendTrack*)(((AliESDtrack*)trackM)->GetFriendTrack());
+    }
+    else {
+      friendTrackM = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(kink->GetIndex(0)));      
+    }
+    if (!friendTrackM) continue;   
+    if (trackD->IsA()==AliESDtrack::Class()) {
+      friendTrackD = (AliVfriendTrack*)(((AliESDtrack*)trackD)->GetFriendTrack());
+    }
+    else {
+      friendTrackD = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(kink->GetIndex(1)));      
+    }
+    if (!friendTrackD) continue;   
     //AliTPCseed *seedM = 0;
     //AliTPCseed *seedD = 0;
     //AliTPCseed tpcSeedM;
@@ -1837,7 +1861,13 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
 
     if ((status&AliVTrack::kTPCrefit)==0) continue;
     if ((status&AliVTrack::kITSrefit)==0) continue;
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(i));
+    }
     if (!friendTrack) continue;
 
     AliExternalTrackParam prmitsOut;

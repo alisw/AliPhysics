@@ -27,6 +27,7 @@
 #include "AliVTrack.h"
 #include "AliVfriendEvent.h"
 #include "AliVfriendTrack.h"
+#include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliMathBase.h" 
 #include "AliTPCseed.h"
@@ -164,7 +165,13 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliVEvent *ev){
     printf("DUMPHPTTrack:%s|%f|%d|%d|%d\n",filename.Data(),track->Pt(), eventNumber,hasFriend,hasITS);
     //
     if (!vFriend) continue;
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
+    }
     if (!friendTrack) continue;
 
     if (!isOK) continue;
@@ -240,10 +247,19 @@ void  AliTPCcalibV0::DumpToTree(AliVEvent *ev){
     //
     
     //
-    AliVfriendTrack *ftrack0 = const_cast<AliVfriendTrack*>(vFriend->GetTrack(v0->GetIndex(0)));
-    if (!ftrack0) continue;
-    AliVfriendTrack *ftrack1 = const_cast<AliVfriendTrack*>(vFriend->GetTrack(v0->GetIndex(1)));
-    if (!ftrack1) continue;
+    AliVfriendTrack *ftrack0 = 0,*ftrack1 = 0;
+    if (track0->IsA()==AliESDtrack::Class()) {
+      ftrack0 = (AliVfriendTrack*)(((AliESDtrack*)track0)->GetFriendTrack());
+    }
+    else {
+      ftrack0 = const_cast<AliVfriendTrack*>(vFriend->GetTrack( v0->GetIndex(0) ));
+    }
+    if (track1->IsA()==AliESDtrack::Class()) {
+      ftrack1 = (AliVfriendTrack*)(((AliESDtrack*)track1)->GetFriendTrack());
+    }
+    else {
+      ftrack1 = const_cast<AliVfriendTrack*>(vFriend->GetTrack( v0->GetIndex(1) ));
+    }
     //
     AliTPCseed *seed0 = 0;
     AliTPCseed *seed1 = 0;

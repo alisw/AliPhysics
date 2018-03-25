@@ -57,7 +57,7 @@
 #include "AliTracker.h"
 #include "AliTPCClusterParam.h"
 #include "AliTPCParam.h"
-
+#include "AliESDtrack.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCRecoParam.h"
@@ -152,7 +152,13 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
 
   for (Int_t i=0;i<ntracks;++i) {
     AliVTrack *track = event->GetVTrack(i);
-    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i));
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i));
+    }
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
     fCurrentFriendTrack=friendTrack;
