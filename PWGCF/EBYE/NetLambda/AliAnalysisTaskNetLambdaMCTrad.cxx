@@ -27,14 +27,8 @@ class AliAODv0;
 #include "TMath.h"
 #include "TLegend.h"
 #include "TRandom3.h"
-//#include "AliLog.h"
 
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
-#include "AliLightV0vertexer.h"
-#include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -54,14 +48,11 @@ class AliAODv0;
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 #include "AliAODMCParticle.h"
-#include "AliESDcascade.h"
-#include "AliAODcascade.h"
+
 #include "AliESDUtils.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
-#include "AliV0Result.h"
-#include "AliCascadeResult.h"
 #include "AliAnalysisTaskNetLambdaMCTrad.h"
 
 using std::cout;
@@ -291,8 +282,8 @@ fHistGeneratedCentralityVsAntiLambda(0)
     fkSaveEventTree    = lSaveEventTree;
     fkSaveV0Tree       = lSaveV0Tree;
     DefineOutput(1, TList::Class()); // Basic Histograms
-    DefineOutput(2, TTree::Class()); // Event Tree output
-    DefineOutput(3, TTree::Class()); // V0 Tree output
+//     DefineOutput(2, TTree::Class()); // Event Tree output
+//     DefineOutput(3, TTree::Class()); // V0 Tree output
 
     
     
@@ -590,8 +581,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
 
     
     PostData(1, fListHist);
-    PostData(2, fTreeEvent);
-    PostData(3, fTreeV0);
+//     PostData(2, fTreeEvent);
+//     PostData(3, fTreeV0);
 
 }// end UserCreateOutputObjects
 
@@ -689,8 +680,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
+//         PostData(2, fTreeEvent);
+//         PostData(3, fTreeV0);
         return;
 
     }
@@ -1189,8 +1180,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     
     // Post output data.
     PostData(1, fListHist);
-    PostData(2, fTreeEvent);
-    PostData(3, fTreeV0);
+//     PostData(2, fTreeEvent);
+//     PostData(3, fTreeV0);
 }
 
 //________________________________________________________________________
