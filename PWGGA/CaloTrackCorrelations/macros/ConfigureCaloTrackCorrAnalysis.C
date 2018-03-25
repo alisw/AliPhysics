@@ -302,10 +302,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   // Number of particle type MC histograms
   ana->FillNOriginHistograms (17); // 18 max
   ana->FillNPrimaryHistograms(6); // 6 max
-  
-  // Do not redo MC histograms in case of multiple iso analysis
-  if( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffDataMC();
-  
+
   return ana;
 }
 
