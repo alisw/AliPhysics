@@ -6,10 +6,6 @@ class TTree;
 class TParticle;
 class TVector3;
 
-//class AliMCEventHandler;
-//class AliMCEvent;
-//class AliStack;
-
 class AliESDVertex;
 class AliAODVertex;
 class AliESDv0;
@@ -27,41 +23,27 @@ class AliAODv0;
 #include "TMath.h"
 #include "TLegend.h"
 #include "TRandom3.h"
-//#include "AliLog.h"
 
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
-#include "AliLightV0vertexer.h"
-#include "AliLightCascadeVertexer.h"
-#include "AliESDpid.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliInputEventHandler.h"
-#include "AliAnalysisManager.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliAODTrack.h"
+#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliAnalysisFilter.h"
+#include "AliVMultiplicity.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCParticle.h"
 #include "AliStack.h"
-#include "AliCentrality.h"
-#include "AliOADBContainer.h"
-#include "AliOADBMultSelection.h"
-#include "AliMultEstimator.h"
-#include "AliMultVariable.h"
-#include "AliMultInput.h"
+#include "AliPIDResponse.h"
+#include "AliMCEventHandler.h"
+#include "AliV0vertexer.h"
+#include "AliESDv0Cuts.h"
 #include "AliMultSelection.h"
 
-#include "AliCFContainer.h"
-#include "AliMultiplicity.h"
-#include "AliAODMCParticle.h"
-#include "AliESDcascade.h"
-#include "AliAODcascade.h"
-#include "AliESDUtils.h"
-#include "AliGenEventHeader.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisUtils.h"
-#include "AliV0Result.h"
-#include "AliCascadeResult.h"
+
 #include "AliAnalysisTaskNetLambdaMCTrad.h"
 
 using std::cout;
