@@ -53,7 +53,6 @@ class AliAODv0;
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
-#include "AliV0Result.h"
 #include "AliAnalysisTaskNetLambdaMCTrad.h"
 
 using std::cout;
