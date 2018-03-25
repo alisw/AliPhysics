@@ -194,7 +194,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
-  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSparse(0), fHistV2(0),
+  fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
   fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
@@ -214,7 +214,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
-  fHistPtSameM1(0), fHistPtSameM2(0), fHistEtaSparse(0), fHistV2(0),
+  fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
   fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
@@ -225,8 +225,8 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
-  DefineOutput(5, TList::Class());
+//  DefineOutput(4, TList::Class());
+//  DefineOutput(5, TList::Class());
 }
 
 AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
@@ -237,12 +237,12 @@ AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
   if (fOutputIn && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutputIn;
   }
-  if (fOutputM1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputM1;
-  }
-  if (fOutputM2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputM2;
-  }
+//  if (fOutputM1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+//    delete fOutputM1;
+//  }
+//  if (fOutputM2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+//    delete fOutputM2;
+//  }
   if (fOutputOut && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutputOut;
   }
@@ -265,16 +265,16 @@ void AliAnalysisTaskJetLikeCorrelation::Terminate(Option_t *option) {
     AliFatal("fOutputOutList == NULL");
     return;
   }
-  fOutputM1 = dynamic_cast<TList*>(GetOutputData(4));
-  if (NULL == fOutputM1) {
-    AliFatal("fOutputM1List == NULL");
-    return;
-  }
-  fOutputM2 = dynamic_cast<TList*>(GetOutputData(5));
-  if (NULL == fOutputM2) {
-    AliFatal("fOutputM2List == NULL");
-    return;
-  }
+//  fOutputM1 = dynamic_cast<TList*>(GetOutputData(4));
+//  if (NULL == fOutputM1) {
+//    AliFatal("fOutputM1List == NULL");
+//    return;
+//  }
+//  fOutputM2 = dynamic_cast<TList*>(GetOutputData(5));
+//  if (NULL == fOutputM2) {
+//    AliFatal("fOutputM2List == NULL");
+//    return;
+//  }
 
 }
 
@@ -289,10 +289,10 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fOutputIn->SetOwner(kTRUE);
   fOutputOut = new TList();
   fOutputOut->SetOwner(kTRUE);
-  fOutputM1 = new TList();
-  fOutputM1->SetOwner(kTRUE);
-  fOutputM2 = new TList();
-  fOutputM2->SetOwner(kTRUE);
+//  fOutputM1 = new TList();
+//  fOutputM1->SetOwner(kTRUE);
+//  fOutputM2 = new TList();
+//  fOutputM2->SetOwner(kTRUE);
   
 //  fOutput->Add(fOutputInc);
 //  fOutput->Add(fOutputIn);
@@ -349,8 +349,8 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fOutputInc->Add(fHistPtSame);
   fOutputIn->Add(fHistPtSameIn);
   fOutputOut->Add(fHistPtSameOut);
-  fOutputM1->Add(fHistPtSameM1);
-  fOutputM2->Add(fHistPtSameM2);
+//  fOutputM1->Add(fHistPtSameM1);
+//  fOutputM2->Add(fHistPtSameM2);
 
   int lMinPtBin = GetPtBin(fMinPtTrigCut);
   
@@ -390,42 +390,42 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
       }
     }
   }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputM1->Add(fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta]);
-          fOutputM1->Add(fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta]);
-
-          if (fMCCorrection) {
-            fOutputM1->Add(fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta]);
-            fOutputM1->Add(fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta]);
-          }
-        }
-      }
-    }
-  }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputM2->Add(fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta]);
-          fOutputM2->Add(fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta]);
-
-          if (fMCCorrection) {
-            fOutputM2->Add(fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]);
-            fOutputM2->Add(fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta]);
-          }
-        }
-      }
-    }
-  }
+//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
+//        if (iptt < lMinPtBin) continue;
+//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
+//          if (iptt < ipta) continue;
+//
+//          fOutputM1->Add(fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta]);
+//          fOutputM1->Add(fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta]);
+//
+//          if (fMCCorrection) {
+//            fOutputM1->Add(fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta]);
+//            fOutputM1->Add(fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta]);
+//          }
+//        }
+//      }
+//    }
+//  }
+//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
+//        if (iptt < lMinPtBin) continue;
+//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
+//          if (iptt < ipta) continue;
+//
+//          fOutputM2->Add(fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta]);
+//          fOutputM2->Add(fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta]);
+//
+//          if (fMCCorrection) {
+//            fOutputM2->Add(fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]);
+//            fOutputM2->Add(fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta]);
+//          }
+//        }
+//      }
+//    }
+//  }
   for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
     for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
       for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
@@ -465,8 +465,8 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   PostData(1, fOutputInc);
   PostData(2, fOutputIn);
   PostData(3, fOutputOut);
-  PostData(4, fOutputM1);
-  PostData(5, fOutputM2);
+//  PostData(4, fOutputM1);
+//  PostData(5, fOutputM2);
 
 }
 
@@ -720,22 +720,18 @@ string  filename;
         etavars[0] = 1;
         cont_inout = 1;
       } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-        fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 3;
         etavars[0] = 3;
         cont_inout = 3;
       } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-        fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 3;
         etavars[0] = 3;
         cont_inout = 3;
       } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-        fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 4;
         etavars[0] = 4;
         cont_inout = 4;
       } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-        fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 4;
         etavars[0] = 4;
         cont_inout = 4;
@@ -879,22 +875,16 @@ string  filename;
           fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 3 ) fHistdEtadPhiSameMCCorrContM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if (cont_inout == 4 ) fHistdEtadPhiSameMCCorrContM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           if (kPrimaryAsso && kPrimaryTrig) {
             fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 3 ) fHistdEtadPhiSameMCCorrPrimM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if (cont_inout == 4 ) fHistdEtadPhiSameMCCorrPrimM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           }
         }
 
         fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
         if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
         else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if ( cont_inout == 3 ) fHistdEtadPhiSameM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if (cont_inout == 4 ) fHistdEtadPhiSameM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
 
       }
 
@@ -976,22 +966,18 @@ string  filename;
         etavars[0] = 1;
         cont_inout = 1;
       } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-        fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 3;
         etavars[0] = 3;
         cont_inout = 3;
       } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-        fHistPtSameM1->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 3;
         etavars[0] = 3;
         cont_inout = 3;
       } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-        fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 4;
         etavars[0] = 4;
         cont_inout = 4;
       } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-        fHistPtSameM2->Fill(lCentBin, lZVertexBin, lpTTrig);
         contvars[1] = 4;
         etavars[0] = 4;
         cont_inout = 4;
@@ -1142,22 +1128,16 @@ string  filename;
           fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 3 ) fHistdEtadPhiSameMCCorrContM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if (cont_inout == 4 ) fHistdEtadPhiSameMCCorrContM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           if (kPrimaryAsso && kPrimaryTrig) {
             fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 3 ) fHistdEtadPhiSameMCCorrPrimM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if (cont_inout == 4 ) fHistdEtadPhiSameMCCorrPrimM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
           }
         }
 
         fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
         if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
         else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if ( cont_inout == 3 ) fHistdEtadPhiSameM1[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if (cont_inout == 4 ) fHistdEtadPhiSameM2[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
 
       }
 
@@ -1369,8 +1349,8 @@ string  filename;
   PostData(1, fOutputInc);
   PostData(2, fOutputIn);
   PostData(3, fOutputOut);
-  PostData(4, fOutputM1);
-  PostData(5, fOutputM2);
+ // PostData(4, fOutputM1);
+//  PostData(5, fOutputM2);
 }
 
 int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
@@ -1575,16 +1555,12 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
             } else {
               fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
               if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             }
           }
         }
@@ -1858,16 +1834,12 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
           } else {
             fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
             if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
           }
 //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
@@ -2054,23 +2026,15 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistogramVectors() {
   fHistdEtadPhiMixed = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiMixedIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameM1 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedM1 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameM2 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedM2 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiMixedOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
 
   fHistdEtadPhiSameMCCorrCont = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameMCCorrContIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContM1 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContM2 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameMCCorrContOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   
   fHistdEtadPhiSameMCCorrPrim = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameMCCorrPrimIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimM1 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimM2 = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fHistdEtadPhiSameMCCorrPrimOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
   fPoolSize = vector< vector <int> > (fCentArray.GetSize() - 1, vector< int > (fZVertexArray.GetSize() - 1 ) );
 }
@@ -2094,48 +2058,32 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
           fHistdEtadPhiMixed[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSame[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiMixed[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta]->Sumw2();
           
           if (fMCCorrection) {
           fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta]->Sumw2();
           
           fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimM1%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimM2%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
           fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]->Sumw2();
 
           }
         } // ipta
@@ -2189,14 +2137,6 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   fHistPtSameIn->GetXaxis()->SetTitle("CentBin");
   fHistPtSameIn->GetYaxis()->SetTitle("ZVertBin");
   fHistPtSameIn->GetZaxis()->SetTitle("Pt(GeV/c)");
-  fHistPtSameM1 = new TH3D(Form("fHistPtSameM1"), Form("fHistPtSameM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameM1->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameM1->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameM1->GetZaxis()->SetTitle("Pt(GeV/c)");
-  fHistPtSameM2 = new TH3D(Form("fHistPtSameM2"), Form("fHistPtSameM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameM2->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameM2->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameM2->GetZaxis()->SetTitle("Pt(GeV/c)");
   fHistPtSameOut = new TH3D(Form("fHistPtSameOut"), Form("fHistPtSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
   fHistPtSameOut->GetXaxis()->SetTitle("CentBin");
   fHistPtSameOut->GetYaxis()->SetTitle("ZVertBin");
