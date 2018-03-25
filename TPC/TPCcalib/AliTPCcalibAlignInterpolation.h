@@ -41,7 +41,7 @@ public :
   AliTPCcalibAlignInterpolation(const Text_t *name, const Text_t *title, Bool_t onTheFlyFill);
   virtual ~AliTPCcalibAlignInterpolation();
   void ProcessStandalone(const char * inputList);
-  virtual void     Process(AliESDEvent *event);
+  virtual void     Process(AliVEvent *event);
   virtual void     Terminate();
   void   SetStreamLevelTrack(Int_t streamLevelTrack){fStreamLevelTrack=streamLevelTrack;}
   Bool_t RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints, Int_t* sortInd=0);
