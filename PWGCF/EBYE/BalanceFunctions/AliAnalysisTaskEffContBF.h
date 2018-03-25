@@ -1,5 +1,6 @@
-#ifndef ALIANALYSISTASKEFFCONTBF_cxx
-#define ALIANALYSISTASKEFFCONTBF_cxx
+
+#ifndef ALIANALYSISTASKEFFCONTBF_H
+#define ALIANALYSISTASKEFFCONTBF_H
 
 // ---------------------------------------------------------------------
 //
@@ -23,79 +24,8 @@ class TH2D;
 
 class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(), 
-    fAOD(0), 
-    fArrayMC(0),  
-    fQAList(0), 
-    fOutputList(0),
-    fHistEventStats(0),
-    fHistCentrality(0), 
-    fHistNMult(0), 
-    fHistVz(0),
-    fHistNSigmaTPCvsPtbeforePID(0),
-    fHistNSigmaTPCvsPtafterPID(0),  
-    fHistContaminationSecondariesPlus(0),
-    fHistContaminationSecondariesMinus(0),
-    fHistContaminationPrimariesPlus(0),
-    fHistContaminationPrimariesMinus(0),
-    fHistGeneratedEtaPtPhiPlus(0),
-    fHistSurvivedEtaPtPhiPlus(0),
-    fHistGeneratedEtaPtPhiMinus(0),
-    fHistSurvivedEtaPtPhiMinus(0),
-    fHistGeneratedEtaPtPlusControl(0), 
-    fHistSurvivedEtaPtPlusControl(0),
-    fHistGeneratedEtaPtMinusControl(0), 
-    fHistSurvivedEtaPtMinusControl(0), 
-    fHistGeneratedEtaPtPlusPlus(0), 
-    fHistSurvivedEtaPtPlusPlus(0),
-    fHistGeneratedEtaPtMinusMinus(0), 
-    fHistSurvivedEtaPtMinusMinus(0),
-    fHistGeneratedEtaPtPlusMinus(0), 
-    fHistSurvivedEtaPtPlusMinus(0),
-    fHistGeneratedPhiEtaPlusPlus(0),
-    fHistSurvivedPhiEtaPlusPlus(0),
-    fHistGeneratedPhiEtaMinusMinus(0), 
-    fHistSurvivedPhiEtaMinusMinus(0),
-    fHistGeneratedPhiEtaPlusMinus(0),
-    fHistSurvivedPhiEtaPlusMinus(0), 
-    fUseCentrality(kFALSE), 
-    fCentralityEstimator("V0M"), 
-    fCentralityPercentileMin(0.0), 
-    fCentralityPercentileMax(5.0), 
-    fInjectedSignals(kFALSE),
-    fRejectLabelAboveThreshold(kFALSE),
-    fGenToBeKept("Hijing"),
-    fRejectCheckGenName(kFALSE),
-    fPIDResponse(0),
-    fElectronRejection(kFALSE),
-    fElectronOnlyRejection(kFALSE),
-    fElectronRejectionNSigma(-1.),
-    fElectronRejectionMinPt(0.),
-    fElectronRejectionMaxPt(1000.),
-    fVxMax(3.0), 
-    fVyMax(3.0), 
-    fVzMax(10.), 
-    fAODTrackCutBit(128),
-    fMinNumberOfTPCClusters(80), 
-    fMaxChi2PerTPCCluster(4.0),
-    fMaxDCAxy(3.0), 
-    fMaxDCAz(3.0),
-    fMinPt(0.0), 
-    fMaxPt(20.0), 
-    fMinEta(-0.8),
-    fMaxEta(0.8), 
-    fEtaRangeMin(0.0), 
-    fEtaRangeMax(1.6), 
-    fPtRangeMin(0.0), 
-    fPtRangeMax(20.0), 
-    fEtaBin(100),
-    fdEtaBin(64),
-    fPtBin(100),
-    fHistSurvived4EtaPtPhiPlus(0), 
-    fHistSurvived8EtaPtPhiPlus(0),
-    fUsePID(kFALSE),
-    fpartOfInterest(AliPID::kPion),
-    fPDGCodeWanted(0){}
+    
+    AliAnalysisTaskEffContBF();
     AliAnalysisTaskEffContBF(const char *name);
     virtual ~AliAnalysisTaskEffContBF() {}
   
@@ -136,24 +66,17 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
     fGenToBeKept = genToBeKept; 
     fRejectCheckGenName=kTRUE;
-    fInjectedSignals = kTRUE; 
+    fInjectedSignals = kTRUE;
   }
-
-  // electron rejection
-  void SetElectronRejection(Double_t gMaxNSigma){
-    fElectronRejection = kTRUE;
-    fElectronRejectionNSigma = gMaxNSigma;
+  void SetUseParticleID(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
+    fUseParticleID = usePID;
+    fpartOfInterest = partOfInterest;
   }
-  
-  void SetElectronOnlyRejection(Double_t gMaxNSigma){
-    fElectronRejection       = kTRUE;
-    fElectronOnlyRejection   = kTRUE;
-    fElectronRejectionNSigma = gMaxNSigma;
+  void SetUsePIDnSigmaComb(Bool_t UsePIDnSigmaComb){
+     fUsePIDnSigmaComb = UsePIDnSigmaComb;
   }
-  
-  void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
-    fElectronRejectionMinPt  = minPt;
-    fElectronRejectionMaxPt  = maxPt;
+  void SetBayesPIDThr(Double_t Thr){
+      fBayesPIDThr = Thr;
   }
   
   //Track cuts
@@ -183,10 +106,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fPtRangeMax = maxRangePt;
     fPtBin = binPt;}
 
-  void SetUsePID(Bool_t usePID, AliPID::EParticleType partOfInterest = AliPID::kPion) {
-    fUsePID = usePID;
-    fpartOfInterest = partOfInterest;
-  }
+ 
     
   
  private:
@@ -241,49 +161,49 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
 
-  Bool_t  fUseCentrality;// Bool_t use centrality or not
-  TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
-  Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
+  Bool_t  fUseCentrality;//! Bool_t use centrality or not
+  TString fCentralityEstimator;// "V0M","TRK","TKL","ZDC","FMD"
+  Float_t fCentralityPercentileMin; // min centrality percentile 
+  Float_t fCentralityPercentileMax; // max centrality percentile
 
   Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
   Bool_t fRejectLabelAboveThreshold;// 
-  TString fGenToBeKept; //name of the generator that should be kept in the analysis (in case of rejection of injected signals)
-  Bool_t fRejectCheckGenName; //Flag for using the rejection of injected signals on a track by track base (different cocktails with respect to fInjectedSignals) 
+  TString fGenToBeKept; // name of the generator that should be kept in the analysis (in case of rejection of injected signals)
+  Bool_t fRejectCheckGenName; // Flag for using the rejection of injected signals on a track by track base (different cocktails with respect to fInjectedSignals) 
 
   
   AliPIDResponse *fPIDResponse;     //! PID response object
-  Bool_t   fElectronRejection;//flag to use electron rejection
-  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
-  Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
-  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
-  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
+  AliPIDCombined* fPIDCombined;  //! PID combined
 
-  Double_t fVxMax;//vxmax
-  Double_t fVyMax;//vymax
-  Double_t fVzMax;//vzmax
+  Bool_t  fUsePIDnSigmaComb;//!
+  Double_t fBayesPIDThr;//!
+    
+  Bool_t fUseParticleID; // flag to switch on PID
+  AliPID::EParticleType fpartOfInterest; //
+  Int_t fPDGCodeWanted;//!
+    
+  Double_t fVxMax;//! vxmax
+  Double_t fVyMax;//! vymax
+  Double_t fVzMax;//! vzmax
   
-  Int_t fAODTrackCutBit;//track cut bit from track selection (only used for AODs)
+  Int_t fAODTrackCutBit;// track cut bit from track selection (only used for AODs)
 
   Double_t fMinNumberOfTPCClusters;//!
   Double_t fMaxChi2PerTPCCluster;//!
   Double_t fMaxDCAxy, fMaxDCAz;//!
   Double_t fMinPt, fMaxPt;//!
   Double_t fMinEta, fMaxEta;//!
-  Double_t fEtaRangeMin;// acceptance cuts 
-  Double_t fEtaRangeMax; // acceptance cuts
-  Double_t fPtRangeMin;  //acceptance cuts
-  Double_t fPtRangeMax;  //acceptance cuts
+  Double_t fEtaRangeMin;//! acceptance cuts 
+  Double_t fEtaRangeMax; //! acceptance cuts
+  Double_t fPtRangeMin;  //! acceptance cuts
+  Double_t fPtRangeMax;  //! acceptance cuts
   
-  Int_t fEtaBin;  //acceptance cuts
-  Int_t fdEtaBin;  //acceptance cuts
-  Int_t fPtBin; //acceptance cuts
+  Int_t fEtaBin;  //! acceptance cuts
+  Int_t fdEtaBin;  //! acceptance cuts
+  Int_t fPtBin; //! acceptance cuts
 
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!
-
-  Bool_t fUsePID; //flag to switch on PID
-  AliPID::EParticleType fpartOfInterest;
-  Int_t fPDGCodeWanted;
 
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
