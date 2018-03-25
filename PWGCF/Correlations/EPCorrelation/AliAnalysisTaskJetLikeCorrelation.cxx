@@ -1221,12 +1221,13 @@ string  filename;
         }
       }
 
-//      if (lpTTrig < fMinPtTrigCut) { 
 //        //      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
 //        continue;
 //      }
 //      else 
         lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+      if (lpTTrig < fMinPtTrigCut)  
+        continue;
 
       for (int jtrack = 0; jtrack < ntracks; jtrack++) {
         if (itrack == jtrack) continue;
