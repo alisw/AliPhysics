@@ -41,8 +41,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
   taskjetlikecorr->SetZVertexArray(dzvertarr);
 //  taskjetlikecorr->SetEventMixingQueueSize(fEventMixingQueueSize);
   taskjetlikecorr->SetMixingPoolSize(fMixingPoolSize);
-  taskjetlikecorr->SetMinNumTrack(5000);
-  taskjetlikecorr->SetTrackDepth(50000);
+  taskjetlikecorr->SetMinNumTrack(3000);
+  taskjetlikecorr->SetTrackDepth(30000);
   taskjetlikecorr->SetCollision(collision);
   taskjetlikecorr->SetFilterBit(filterbit); //tpconly
 //  taskjetlikecorr->SetFilterBit(768); //hybrid
@@ -57,16 +57,16 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
     AliAnalysisDataContainer *coutputList = mgr->CreateContainer("InclList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     AliAnalysisDataContainer *coutputListIn = mgr->CreateContainer("InList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     AliAnalysisDataContainer *coutputListOut = mgr->CreateContainer("OutList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-    AliAnalysisDataContainer *coutputListM1 = mgr->CreateContainer("M1List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-    AliAnalysisDataContainer *coutputListM2 = mgr->CreateContainer("M2List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+//    AliAnalysisDataContainer *coutputListM1 = mgr->CreateContainer("M1List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+//    AliAnalysisDataContainer *coutputListM2 = mgr->CreateContainer("M2List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   
 
   mgr->ConnectInput(taskjetlikecorr, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskjetlikecorr, 1, coutputList);
   mgr->ConnectOutput(taskjetlikecorr, 2, coutputListIn);
   mgr->ConnectOutput(taskjetlikecorr, 3, coutputListOut);
-  mgr->ConnectOutput(taskjetlikecorr, 4, coutputListM1);
-  mgr->ConnectOutput(taskjetlikecorr, 5, coutputListM2);
+//  mgr->ConnectOutput(taskjetlikecorr, 4, coutputListM1);
+//  mgr->ConnectOutput(taskjetlikecorr, 5, coutputListM2);
   
   return taskjetlikecorr;
 
