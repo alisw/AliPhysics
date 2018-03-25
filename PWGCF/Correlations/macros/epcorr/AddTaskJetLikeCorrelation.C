@@ -3,14 +3,18 @@
 AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int filterbit, float fTwoTrackEffCut, float fConversionsCut, float fResonancesCut)
 {
   
-  double centarr[] = {0, 5, 10, 20, 50, 80};
+  double centarrPbPb[] = {0, 5, 10, 20, 50, 80};
+  double centarrpp[] = {0, 100};
   double zvertarr[] = {-9, -7, -5, -3, -1, 1, 3, 5, 7, 9};
-    double ptarr[] = {0.8, 1, 1.5, 2, 3, 4, 6, 8,15, 25 };
-//  double ptarr[] = {3, 4, 6, 8, 12, 16};
+  double ptarr[] = {0.8, 1, 1.5, 2, 3, 4, 6, 8,15, 25 };
+  
+  TArrayD dcentarr;
+  if (collision == 0) {
+    dcentarr.Set(2, centarrpp);
+  } else {
+    dcentarr.Set(6, centarrPbPb);
+  }
 
-  //  double ptarr[] = {0.5, 1, 2, 3};  // To speed up analysis, we set queue size = 4~5 for very small pt
-
-  TArrayD dcentarr(6, centarr);
   TArrayD dzvertarr(10, zvertarr);
   TArrayD dptarr(10, ptarr);
   float fEtaCut = 0.9;
@@ -57,8 +61,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int 
     AliAnalysisDataContainer *coutputList = mgr->CreateContainer("InclList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     AliAnalysisDataContainer *coutputListIn = mgr->CreateContainer("InList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     AliAnalysisDataContainer *coutputListOut = mgr->CreateContainer("OutList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-    AliAnalysisDataContainer *coutputListM1 = mgr->CreateContainer("M1List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-    AliAnalysisDataContainer *coutputListM2 = mgr->CreateContainer("M2List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+//    AliAnalysisDataContainer *coutputListM1 = mgr->CreateContainer("M1List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+//    AliAnalysisDataContainer *coutputListM2 = mgr->CreateContainer("M2List", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   
   mgr->AddTask(taskjetlikecorr);
 
@@ -66,8 +70,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int 
     mgr->ConnectOutput(taskjetlikecorr, 1, coutputList);
     mgr->ConnectOutput(taskjetlikecorr, 2, coutputListIn);
     mgr->ConnectOutput(taskjetlikecorr, 3, coutputListOut);
-    mgr->ConnectOutput(taskjetlikecorr, 4, coutputListM1);
-    mgr->ConnectOutput(taskjetlikecorr, 5, coutputListM2);
+//    mgr->ConnectOutput(taskjetlikecorr, 4, coutputListM1);
+//    mgr->ConnectOutput(taskjetlikecorr, 5, coutputListM2);
   
   return taskjetlikecorr;
 

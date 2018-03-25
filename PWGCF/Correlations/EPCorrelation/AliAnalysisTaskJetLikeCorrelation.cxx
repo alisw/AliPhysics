@@ -1368,6 +1368,7 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
   } else if ( fCollision == kpp) {
     int poolsize = 300;
+    cout << "Collision pp, making pool of size : " << poolsize << endl;
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
   } else {
     AliError("[SetupMixing] Incorrect Collision Type! Aborting..");
