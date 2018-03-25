@@ -181,6 +181,9 @@ const char *AliRsnDaughter::SpeciesName(ESpecies species)
       case kLambda:   return "Lambda";
       case kXi:       return "Xi";
       case kOmega:    return "Omega";
+      case kKstar0:   return "Kstar0";
+      case kPhi:      return "Phi";
+      case kLambdastar: return "Lambdastar";
       default:        return "Undef";
    }
 }
@@ -202,6 +205,9 @@ Long_t AliRsnDaughter::SpeciesPDG(ESpecies species)
       case kLambda:   return 3122;
       case kXi:       return 3312;
       case kOmega:    return 3334;
+      case kKstar0:   return 313;
+      case kPhi:      return 333;
+      case kLambdastar: return 3124;
       default:        return 0;
    }
 }

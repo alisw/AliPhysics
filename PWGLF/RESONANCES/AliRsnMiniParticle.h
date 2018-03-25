@@ -17,7 +17,9 @@ class AliRsnMiniParticle : public TObject {
 public:
 
    AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0) {
-       Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;fIndexV0[0]=-1;fIndexV0[1]=-1;
+       Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;
+       fIndexV0[0] = fIndexV0[1] = -1;
+       fMass[0] = fMass[1] = -1.0;
    }
 
    Int_t         &Index()                    {return fIndex;}
@@ -38,7 +40,8 @@ public:
    Float_t       &Pz(Bool_t mc)              {return (mc ? fPsim[2] : fPrec[2]);}
    Long_t        &PDG()                      {return fPDG;}
    Long_t        PDGAbs()                    {return TMath::Abs(fPDG);}
-   Double_t      Mass();
+   Double_t      Mass();                     // returns PDG mass
+   Double_t      &StoredMass(Bool_t mc)      {return (mc ? fMass[0] : fMass[1]);} // store mass for resonances
    Int_t         &Mother()                   {return fMother;}
    Long_t        &MotherPDG()                {return fMotherPDG;}
    Bool_t        &IsFromB()                  {return fIsFromB;}
@@ -62,6 +65,7 @@ private:
    Char_t    fCharge;       // track charge *character*: '+', '-', '0' (whatever else = undefined)
    Float_t   fPsim[3];      // MC momentum of the track
    Float_t   fPrec[3];      // reconstructed momentum of the track
+   Double_t  fMass[2];      // reconstructed [0] and simulated [1] mass, only used for resonances
    Float_t   fPmother[3];   // MC momentum of the track's mother
    Long_t    fPDG;          // particle PDG code
    Int_t     fMother;       // index of mother in its container
@@ -72,7 +76,7 @@ private:
    Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
 
-   ClassDef(AliRsnMiniParticle, 8)
+   ClassDef(AliRsnMiniParticle, 9)
 };
 
 #endif

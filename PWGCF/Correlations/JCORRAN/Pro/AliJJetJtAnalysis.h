@@ -41,12 +41,13 @@ class AliJJetJtAnalysis{
 
     void FillHistosJets();
 
-    void AddJets(TObjArray * jets, int type ){ 
+    void AddJets(TObjArray * jets, int type, double coneSize){ 
       if( !jets ) {
         //return;
       }
       fJetListOfList.Add( (TObject*)jets ); 
       fTrackOrMCParticle.push_back(type);
+      fConeSizes.push_back(coneSize);
       //if( !jets ) return;
       for( int i=0;i<jets->GetEntriesFast();i++ ){
         //((AliJJet*)jets->At(i))->ReSum();
@@ -77,6 +78,7 @@ class AliJJetJtAnalysis{
     void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
     void SetLeadingJets(UInt_t i){fLeadingJets = i;}
     int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
+    double  GetConeSize( UInt_t i ){ return fConeSizes.at( i ); }
     //void SetTrackJetMap(std::vector<int> * v){ fTrackJetMap=v;}
     //void SetJetPtBin( TVector * b){ fJetPtBins=b; }
     void SetCard(AliJCard * card) {fCard = card;}
@@ -145,6 +147,7 @@ class AliJJetJtAnalysis{
     TObjArray fJetListOfList; //!<! List of jet finders
     TObjArray fMCJetListOfList; //!<! List of MC jet finders 
     vector<int>               fTrackOrMCParticle; ///< Keep track of 
+    vector<double>            fConeSizes; ///< Keep track of
     vector<TClonesArray>      fJetBgListOfList;
     TClonesArray     fpythiaJets;
     double fJetEtaCut;
@@ -166,7 +169,6 @@ class AliJJetJtAnalysis{
     AliJJetAnalysis *fJJetAnalysis;
     vector<TString> fJetFinderName;
     vector<TString> fMCJetFinderName;
-    vector<double>  fConeSizes;
     // Need for events
     AliJEfficiency *fEfficiency;
     int cBin;
@@ -213,6 +215,7 @@ class AliJJetJtAnalysis{
     AliJBin fiHist;
     AliJBin fCentralityBin;
     AliJBin fktFinderBin;
+    AliJBin fDeltaPhiCutBin;
     AliJBin fJetFinderBinMC; 
     AliJBin fJetTriggerBinMC; 
     AliJBin fTrkPtBinMC; 
@@ -349,6 +352,10 @@ class AliJJetJtAnalysis{
     AliJTH1D fhBgRndmTrkPt;
     AliJTH1D fhBgRndmZ;
     AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
+    AliJTH1D fhDeltaPhi; /// Distribution of the angle between the jets in dijet system.
+    AliJTH1D fhDeltaPhiCentBinned; /// Distribution of the angle between the jets in dijet system. Centrality binned
+    AliJTH1D fhDeltaPhiCentBinnedSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted.
+    AliJTH1D fhDeltaPhiCentBinnedCutSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
     AliJTH1D fhBgRndmJt; /// Random background jT distribution
     AliJTH1D fhBgRndmJtBin; /// Random background jT distribution
     AliJTH1D fhBgRndmJtWeight; /// Random background jT distribution

@@ -940,7 +940,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
     
     fHistTriggerTrackMix->SetVarTitle(0,"centrality");
     fHistTriggerTrackMix->SetVarTitle(1,"eta");
-    fHistTriggerTrackMix->SetVarTitle(2,"z vertex");
+    //    fHistTriggerTrackMix->SetVarTitle(2,"z vertex");
   }else if(fAnaMode=="TPCFMD" ||fAnaMode=="TPCFMDC") {
     const Int_t nEvtVarsFMD = 3;
     const Int_t iEvtBinFMD[3] = {11,15,10};
@@ -1135,10 +1135,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
   }else if(fAnaMode=="FMDFMD"){
     const Int_t nTrackVars_fmdfmd = 6;
     const Double_t binning_cent_fmdfmd[12]={0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.1};
-    const Int_t iTrackBin_fmdfmd[6]={48,17,32,11,20,10};
+    const Int_t iTrackBin_fmdfmd[6]={49,17,32,11,20,10};
     fHistReconstTrack= new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
-    //    fHistReconstTrack->SetBinLimits(0,3.425,8.425);
-    fHistReconstTrack->SetBinLimits(0,3.525,8.325);
+    fHistReconstTrack->SetBinLimits(0,3.425,8.325);
+    //    fHistReconstTrack->SetBinLimits(0,3.525,8.325);
     fHistReconstTrack->SetBinLimits(1,binning_etafmdc);
     fHistReconstTrack->SetBinLimits(2,binning_etafmd);
     fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd);
@@ -1152,8 +1152,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
     fHistReconstTrack->SetVarTitle(4,"#Delta#phi");
     fHistReconstTrack->SetVarTitle(5,"z vertex");
     fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
-    //    fHistReconstTrackMix->SetBinLimits(0,3.425,8.425);
-    fHistReconstTrackMix->SetBinLimits(0,3.525,8.325);
+    fHistReconstTrackMix->SetBinLimits(0,3.425,8.325);
+    //fHistReconstTrackMix->SetBinLimits(0,3.525,8.325);
     fHistReconstTrackMix->SetBinLimits(1,binning_etafmdc);
     fHistReconstTrackMix->SetBinLimits(2,binning_etafmd);
     fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
@@ -3023,7 +3023,7 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedTrack(const AliAODTrack *ao
     return kFALSE;
   //  if(!aodTrack->TestFilterMask(BIT(5))) return kFALSE; // standard cut with
   //  tight DCA cut
-  if (!aodTrack->TestFilterMask(BIT(5)))
+  if (!aodTrack->TestFilterMask(BIT(ffilterbit)))
     return kFALSE; // only tpc cut
   /*
   if (!aodTrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;

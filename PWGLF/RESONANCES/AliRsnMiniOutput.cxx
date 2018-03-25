@@ -62,6 +62,7 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fCutID[0] = fCutID[1] = -1;
    fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -95,6 +96,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fCutID[0] = fCutID[1] = -1;
    fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -177,6 +179,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fCutID[0] = fCutID[1] = -1;
    fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -213,6 +216,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
       fDaughter[i] = copy.fDaughter[i];
       fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 }
 
@@ -240,6 +244,7 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
       fDaughter[i] = copy.fDaughter[i];
       fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 
    fSel1.Set(0);
@@ -525,6 +530,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *p1, *p2;
+   Double_t mass1, mass2;
 
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
@@ -570,7 +576,13 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             continue;
          }
          // sum momenta
-         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+          
+         mass1 = p1->StoredMass(kFALSE);
+         if(!fUseStoredMass[0] || mass1 < 0.0) mass1 = GetMass(0);
+         mass2 = p2->StoredMass(kFALSE);
+         if(!fUseStoredMass[1] || mass2 < 0.0) mass2 = GetMass(1);
+         fPair.Fill(p1, p2, mass1, mass2, fMotherMass);
+	 
          // do rotation if needed
          if (fComputation == kTrackPairRotated1) fPair.InvertP(kTRUE);
          if (fComputation == kTrackPairRotated2) fPair.InvertP(kFALSE);

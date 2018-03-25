@@ -111,6 +111,7 @@
 ///    std::cerr << "Warning - Histogram limits not set"
 ///                 " - using defaults (" << start << ", " << stop << ")\n";
 /// }
+
 ///
 /// ```
 ///
@@ -122,6 +123,7 @@ public:
 
   /// \defgroup Associated Types
   /// @{
+#if __cplusplus < 201103L
   typedef Bool_t BoolValue_t;
   typedef double FloatValue_t;
   typedef Long64_t IntValue_t;
@@ -131,7 +133,18 @@ public:
   typedef std::map<Key_t, AliFemtoConfigObject> MapValue_t;
   typedef std::pair<FloatValue_t, FloatValue_t> RangeValue_t;
   typedef std::vector<RangeValue_t> RangeListValue_t;
-  /// @}
+#else
+  using BoolValue_t = Bool_t;
+  using FloatValue_t = double;
+  using IntValue_t = Long64_t;
+  using StringValue_t = std::string;
+  using ArrayValue_t = std::vector<AliFemtoConfigObject>;
+  using Key_t = std::string;
+  using MapValue_t = std::map<Key_t, AliFemtoConfigObject>;
+  using RangeValue_t = std::pair<FloatValue_t, FloatValue_t> ;
+  using RangeListValue_t = std::vector<RangeValue_t>;
+#endif
+    /// @}
 
   /// class for visualizing on a canvas (TPad)
   class Painter;
