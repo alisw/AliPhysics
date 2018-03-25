@@ -99,6 +99,9 @@ public:
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
+    void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
+        fkUseOldCentrality = lUseOldCent;
+    }
 //---------------------------------------------------------------------------------------
     void SetSelectCharge ( Int_t lCharge = -1) {
         fkSelectCharge = lCharge;
@@ -257,6 +260,7 @@ private:
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
+    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection 
 
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
