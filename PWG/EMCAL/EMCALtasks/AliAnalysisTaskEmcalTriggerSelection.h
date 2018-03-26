@@ -27,11 +27,14 @@
 #ifndef ALIANALYSISTASKEMCALTRIGGERSELECTION_H
 #define ALIANALYSISTASKEMCALTRIGGERSELECTION_H
 
+#include <exception>
+#include <string>
 #include <vector>
 #include <TList.h>
 #include <TNamed.h>
 #include <TString.h>
 #include "AliAnalysisTaskEmcal.h"
+#include "AliEmcalTriggerSelectionCuts.h"
 
 namespace PWG{
 namespace EMCAL {
@@ -134,6 +137,47 @@ class AliEmcalTriggerSelection;
  */
 class AliAnalysisTaskEmcalTriggerSelection: public AliAnalysisTaskEmcal {
 public:
+
+  /**
+   * @class ConfigValueException
+   * @brief Handling of incorrect values in YAML configuration files
+   * 
+   * Many information (Acceptance, patch type, ...) are represented in the 
+   * YAML configuration file as strings. Thus they correspond to a finite
+   * set of values, usually handled as enumeration type. This class handles
+   * the error raised for improper configuration values;
+   */
+  class ConfigValueException : public std::exception {
+  public:
+    /**
+     * @brief Construct a new ConfigValueException object
+     * 
+     * Exception is thrown when decoding a configuration string with an unknown value
+     * 
+     * @param key   Key for which an improper value was set
+     * @param value Improper value
+     */
+    ConfigValueException(const char *key, const char *value);
+
+    /**
+     * @brief Destructor
+     */
+    virtual ~ConfigValueException() throw() {}
+
+    /**
+     * @brief Display error message
+     * @return Error message string
+     */
+    const char *what() const throw() { return fMessage.data(); }
+
+    const std::string &getKey() const { return fKey; }
+    const std::string &getValue() const { return fValue; }
+
+  private:
+    std::string           fKey;       ///< Key for which an unknown value was assigned
+    std::string           fValue;     ///< Improper value raising the exception
+    std::string           fMessage;   ///< Error message shown in what()
+  };
   /**
    * @brief Dummy constructor
    *
@@ -196,6 +240,76 @@ public:
    * @param[in] name Name of the trigger decision container
    */
   void SetGlobalDecisionContainerName(const char *name) { fGlobalDecisionContainerName = name; }
+
+  /**
+   * @brief Configure task using YAML configuration file
+   * 
+   * This interface allows to setup a complicated trigger scheme
+   * using a singe YAML file. The YAML file consists of a global
+   * part with settings in common for all triggers and a trigger
+   * specific part. Global configurations are (keyname):
+   * 
+   * - containername: Name of the output container
+   * - energydef: Energy definition
+   * - energysource: Offline (FEE) or Recalc (ADC, ignoring online STU decision)
+   * - triggerclasses: Array with the names of the trigger classes
+   * 
+   * Supported values for key energydef:
+   * 
+   * | Value name    | Energy definition                |
+   * |---------------|----------------------------------|
+   * | ADC           | ADC from FastORs                 |
+   * | Energy        | FEE Energy                       |
+   * | EnergyRough   | Energy estimated from FastORs    |
+   * | EnergySmeared | FEE Energy with offline smearing |
+   * 
+   * The key for the trigger class is the name of the trigger class.
+   * Configurations for the specific triggers are (keyname):
+   * 
+   * - acceptance: Acceptance type
+   * - patchtype: Patch type
+   * - Threshold: ADC / Energy threshold
+   * 
+   * Supported values for acceptance:
+   * 
+   * | Value name | Acceptance type      | 
+   * |------------|----------------------|
+   * | EMCAL      | EMCAL acceptance     |
+   * | DCAL       | DCAL+PHOS acceptance |
+   * 
+   * Supported values for patchtype:
+   * 
+   * | Value type  | Type of the patch                  |
+   * |-------------|------------------------------------|
+   * | L1Gamma     | Level1 gamma patch, any threshold  |
+   * | L1GammaHigh | Level1 gamma patch, high threshold |
+   * | L1GammaLow  | Level1 gamma patch, low threshold  |
+   * | L1Jet       | Level1 jet patch, any threshold    |
+   * | L1JetHigh   | Level1 jet patch, high threshold   |
+   * | L1JetLow    | Level1 jet patch, low threshold    |
+   * 
+   * Here is an example for a valid config file
+   * 
+   * ~~~{.yaml}
+   * containername: "EmcalTriggerDecisionV1"
+   * energysource: "Recalc"
+   * energydef: "ADC"
+   * triggerclasses:
+   * - EGA
+   * - EJE
+   * EGA:
+   *     acceptance: "EMCAL"
+   *     patchtype" "L1Gamma"
+   *     threshold: 130
+   * EJE:
+   *     acceptance: "EMCAL"
+   *     patchtype: "L1Jet"
+   *     threshold: 200
+   * ~~~
+   * 
+   * @param yamlconfig Name of the YAML configuration file
+   */
+  void ConfigureFromYAML(const char *yamlconfig);
 
   /**
    * @brief Automatically configure trigger decision handler for different periods
@@ -442,6 +556,10 @@ protected:
   Bool_t Is2016PP(const char *dataset) const;
   Bool_t Is2016MCPP(const char *dataset) const;
   Bool_t IsSupportedMCSample(const char *period, std::vector<TString> &supportedProductions) const;
+
+  AliEmcalTriggerSelectionCuts::AcceptanceType_t  DecodeAcceptanceString(const std::string &acceptancestring);
+  AliEmcalTriggerSelectionCuts::PatchType_t       DecodePatchTypeString(const std::string &patchtypestring);
+  AliEmcalTriggerSelectionCuts::SelectionMethod_t DecodeEnergyDefinition(const std::string &energydefstring);
 
   AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///<
   TString                                    fGlobalDecisionContainerName;     ///< Name of the global trigger selection
