@@ -106,8 +106,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
 	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
 	// event shape for data (from ESD)
-	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-// 	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+// 	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
+	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
 	vec_hNoEvts[0] = 0.;
@@ -136,7 +136,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 // 	vec_hNoEvts[0] = 3.;
 // 	hNoEvts->Fill(vec_hNoEvts);
 	
-	Double_t directivity = directivity_plus;
+	Double_t directivity = directivity_minus;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
@@ -151,10 +151,10 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	Double_t MC_mult_glob08 = -2;
 	Double_t MC_sfer = -2;
 	if( HasMCdata() ){ // run only on MC
-		MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
-// 		MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
+// 		MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
+		MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
 // 		MC_directivity = (MC_directivity_plus + MC_directivity_minus) / 2.0;
-		MC_directivity= MC_directivity_plus;
+		MC_directivity= MC_directivity_minus;
 		MC_mult_glob08 = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
 		MC_sfer = fMCevInfo->GetEventShape()->GetSphericity();
 		vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
