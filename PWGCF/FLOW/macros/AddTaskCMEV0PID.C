@@ -1,13 +1,10 @@
-#include "TList.h"
-#include "TGrid.h"
-#include "TSystem.h"
-#include "AliAnalysisTaskCMEV0PID.h"
 
-AliAnalysisTaskCMEV0PID* AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fDCAxyMax=2.4,Double_t fDCAzMax=3.2, Int_t gNclustTPC=70, Double_t fCentralityMin=0., Double_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Double_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
+
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fDCAxyMax=2.4,Double_t fDCAzMax=3.2, Int_t gNclustTPC=70, Double_t fCentralityMin=0., Double_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Double_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
-  printf("               PID: Initialising AliAnalysisTaskCMEV0PID \n");
+  printf("               PID: Initialising AliAnalysisTaskCMEV0PID \n"                               );
   printf("========================================================================================\n");
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,7 +19,6 @@ AliAnalysisTaskCMEV0PID* AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=
   TString listOutName1 = file;      // file is the common outfile filename
   listOutName1 += ":Results";
 
-  AliAnalysisTaskCMEV0PID *task_CME;
   AliAnalysisDataContainer *coutputCont1;
 
   Int_t gCentMin = fCentralityMin;
@@ -32,8 +28,10 @@ AliAnalysisTaskCMEV0PID* AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=
   TString fCME_container;
 
   TaskCMEV0PID.Form("TaskCMEV0PID_Cent_%d_%d_%s", gCentMin, gCentMax, suffix);
+
   //cout<<"Add taskname = "<<TaskCMEV0PID.Data()<<endl;
-  task_CME = new AliAnalysisTaskCMEV0PID(TaskCMEV0PID);
+
+  AliAnalysisTaskCMEV0PID *task_CME  = new AliAnalysisTaskCMEV0PID(TaskCMEV0PID);
 
   task_CME->SelectCollisionCandidates(AliVEvent::kINT7); //default if kINT7
 
@@ -157,7 +155,7 @@ AliAnalysisTaskCMEV0PID* AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=
  
   printf("\n ===================> AddTaskCMEV0PID() Configured properly <=====================\n");
 
-  return task_CME;
+//return task_CME;
 
 
 
