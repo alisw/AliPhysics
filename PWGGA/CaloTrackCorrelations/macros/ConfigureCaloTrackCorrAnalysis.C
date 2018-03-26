@@ -795,12 +795,14 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   {
     if(kAnaCutsString.Contains("Decay"))
     {
+      printf("ConfigureHadronCorrelationAnalysis() *** Activate analysis on Tagged clusters as Decay product >> \n");
       ana->SwitchOnDecayTriggerDecayCorr();
       ana->SetNDecayBits(5);
       ana->SwitchOnInvariantMassHistograms();
-      if(kAnaCutsString.Contains("Bkg")) ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
+      if ( kAnaCutsString.Contains("Bkg") && !bIsolated )
+        ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
     }
-
+    
     //printf("ConfigureHadronCorrelationAnalysis() *** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(0.10,shshMax);
   }
@@ -811,14 +813,15 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   if ( kAnaCutsString.Contains("PerTCard") ) 
     ana->SwitchOnFillHistogramsPerTCardIndex(); 
   
-  ana->SetMCGenType(0,7);
+  ana->SetMCGenType(0,7); // Change to higher to include Tagged decays
   
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
   ana->SwitchOnFillLeadHadronHistograms();
   
-  if(kAnaCutsString.Contains("Bkg")) 
+  if ( kAnaCutsString.Contains("Bkg") && !bIsolated )
   {
-    printf("ConfigureHadronCorrelationAnalysis() *** Activate analysis on PtTrig and Bkg bins >> \n");
+    printf("ConfigureHadronCorrelationAnalysis() *** Activate analysis on PtTrig and Bkg bins,\n"
+           " \t make sure isolation runs first even if not used to select trigger >> \n");
     ana->SwitchOnBackgroundBinsPtInConeHistograms();
   }
   
