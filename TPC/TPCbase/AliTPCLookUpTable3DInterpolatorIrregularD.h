@@ -1,6 +1,8 @@
 #ifndef AliTPCLookUpTable3DInterpolatorIrregularD_H
 #define AliTPCLookUpTable3DInterpolatorIrregularD_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 /// \class AliTPCLookUpTable3DInterpolatorIrregularD
 /// \brief Wrap up look-up table with irregular grid
@@ -8,11 +10,7 @@
 /// \author Rifki Sadikin <rifki.sadikin@cern.ch>, Indonesian Institute of Sciences
 /// \date Mar 4, 2015
 
-#include <TMath.h>
 #include "TMatrixD.h"
-#include "TVectorD.h"
-#include "TMatrixD.h"
-#include "TDecompLU.h"
 #include "AliTPC3DCylindricalInterpolatorIrregular.h"
 
 class AliTPCLookUpTable3DInterpolatorIrregularD {

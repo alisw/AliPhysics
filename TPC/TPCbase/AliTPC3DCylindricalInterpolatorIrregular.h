@@ -1,22 +1,21 @@
 #ifndef AliTPC3DCylindricalInterpolatorIrregular_H
 #define AliTPC3DCylindricalInterpolatorIrregular_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-/// \class AliTPC3DInterpolatorFull
-/// \brief Interpolator for cylindrical coordinate with r,phi,z different coordinates
+/* $Id$ */
+
+/// \class AliTPC3DInterpolatorIrregular
+/// \brief Irregular grid interpolator for cylindrical coordinate with r,phi,z different coordinates
+///        RBF-based interpolation
 ///
 /// \author Rifki Sadikin <rifki.sadikin@cern.ch>, Indonesian Institute of Sciences
 /// \date Jan 5, 2016
 
-#include <TMath.h>
-#include "TStopwatch.h"
-#include "TVector.h"
-#include "TVectorD.h"
-#include "TMatrix.h"
+
 #include "TMatrixD.h"
-#include "TDecompSVD.h"
-#include <TMatrixD.h>
-#include "AliTPCPoissonSolver.h"
+
 
 class AliTPC3DCylindricalInterpolatorIrregular {
 public:

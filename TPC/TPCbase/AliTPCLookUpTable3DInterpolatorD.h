@@ -1,19 +1,18 @@
 #ifndef AliTPCLookUpTable3DInterpolatorD_H
 #define AliTPCLookUpTable3DInterpolatorD_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-/// \class AliTPCCorrectionLookUpTableFunctor
+
+/// \class AliTPCLookUpTable3DInterpolatorD
 /// \brief Wrap up look-up table for correction/distortion integral or derivative (electric field)
 ///        assume 3 components: r-component, phi-component and z-component
 ///
 /// \author Rifki Sadikin <rifki.sadikin@cern.ch>, Indonesian Institute of Sciences
 /// \date Mar 4, 2015
 
-#include <TMath.h>
 #include "TMatrixD.h"
-#include "TVectorD.h"
-#include "TMatrixD.h"
-#include "TDecompLU.h"
 #include "AliTPC3DCylindricalInterpolator.h"
 
 class AliTPCLookUpTable3DInterpolatorD {

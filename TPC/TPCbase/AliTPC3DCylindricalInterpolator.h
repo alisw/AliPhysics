@@ -1,6 +1,11 @@
 #ifndef AliTPC3DCylindricalInterpolator_H
 #define AliTPC3DCylindricalInterpolator_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 /// \class AliTPC3DCylindricalInterpolator
 /// \brief Interpolator for cylindrical coordinate
 ///        this class provides: cubic spline, quadratic and linear interpolation
@@ -8,14 +13,8 @@
 /// \author Rifki Sadikin <rifki.sadikin@cern.ch>, Indonesian Institute of Sciences
 /// \date Jan 5, 2016
 
-#include <TMath.h>
+
 #include <TMatrixD.h>
-#include "TStopwatch.h"
-#include "TVector.h"
-#include "TVectorD.h"
-#include "TMatrix.h"
-#include "TMatrixD.h"
-#include "TDecompSVD.h"
 
 class AliTPC3DCylindricalInterpolator {
 public:

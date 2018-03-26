@@ -47,7 +47,7 @@ void distortionIFCDeltaPotential(Double_t zShort, Double_t amplitude, const Int_
     // create Poisson Solver
     AliTPCPoissonSolver *poissonSolver = new AliTPCPoissonSolver();
     sc->SetPoissonSolver(poissonSolver);
-    sc->SetOmegaTauT1T2(-0.35,1.,1.);
+    sc->SetOmegaTauT1T2(0.35,1.,1.);
     // space charge parameters
     //Double_t c0 = 0.904466;
     //Double_t c1 = 0.904466;// set constant parameters

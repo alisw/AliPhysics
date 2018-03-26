@@ -1268,6 +1268,10 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
       }
     }
     //    2.3 fill histograms
+    if (tree->GetVal(0)==NULL){
+      ::Error(" AliTreePlayer::MakeHistograms","Info  not available"); // TODO - fix the logic
+      continue;
+    }
     Double_t values[kMaxDim];
     for (Int_t iHis=0; iHis<nHistograms; iHis++){
       Int_t indeces[kMaxDim+1];
@@ -1288,6 +1292,10 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
       THnBase * his = (THnBase*) hisArray->UncheckedAt(iHis);
       for (Int_t cEvent=0; cEvent<qLength; cEvent++){
         for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
+          if (tree->GetVal(indeces[iDim])==NULL){
+            ::Error(" AliTreePlayer::MakeHistograms","Info %d not avaliable",iDim); // TODO - fix the logic
+            continue;
+          }
           values[iDim]=tree->GetVal(indeces[iDim])[cEvent];
         }
         Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent];

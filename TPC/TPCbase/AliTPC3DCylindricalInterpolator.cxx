@@ -1,3 +1,26 @@
+/*************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
+/// \class AliTPC3DCylindricalInterpolator
+/// \brief Interpolator for cylindrical coordinate
+///        this class provides: cubic spline, quadratic and linear interpolation
+///
+/// \author Rifki Sadikin <rifki.sadikin@cern.ch>, Indonesian Institute of Sciences
+/// \date Jan 5, 2016
+
+#include "TMath.h"
 #include "AliTPC3DCylindricalInterpolator.h"
 
 /// \cond CLASSIMP
@@ -272,7 +295,7 @@ Double_t AliTPC3DCylindricalInterpolator::InterpolateCubicSpline
 
   h = xArray[khi] - xArray[klo];
 
-  if (h < 1e-10) {
+  if (TMath::Abs(h) < 1e-10) {
     return 0.0;
   }
 
@@ -306,7 +329,7 @@ void AliTPC3DCylindricalInterpolator::InitCubicSpline() {
                 (1.5 * fValue[(m * (fNZ * fNR) + i * fNZ) + (fNZ - 3)]) +
                 ((1.0 / 3.0) * fValue[(m * (fNZ * fNR) + i * fNZ) + (fNZ - 4)])) / (fZList[0] - fZList[1]);
         InitCubicSpline(fZList, &fValue[m * (fNZ * fNR) + i * fNZ], fNZ,
-                        &fSecondDerZ[m * (fNZ * fNR) + i * fNZ], 1, yp0, ypn1);
+                        &fSecondDerZ[m * (fNZ * fNR) + i * fNZ], 1);
       }
 
     }
