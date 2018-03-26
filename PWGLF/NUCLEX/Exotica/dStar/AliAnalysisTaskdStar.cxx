@@ -52,7 +52,7 @@ fMCDeuteronVector(),
 fMCPiPlusVector(),
 fMCPiMinusVector()
 {
-  fFilterBit = BIT(8);
+  fFilterBit = BIT(5);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
