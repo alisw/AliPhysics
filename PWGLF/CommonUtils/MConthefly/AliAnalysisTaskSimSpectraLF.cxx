@@ -128,7 +128,7 @@ void AliAnalysisTaskSimSpectraLF::UserCreateOutputObjects(){
   fListOfObjects = new TList();
   fListOfObjects->SetOwner(kTRUE);
 
-  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Sigma0", "Phi", "KStar" };
+  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar","KStarPM" };
 
   // ### Create histograms
   fHistEvt = new TH1I("fHistEvt","fHistEvt",5,0,5) ;
@@ -174,9 +174,9 @@ void AliAnalysisTaskSimSpectraLF::UserCreateOutputObjects(){
   fHistQAPart->GetAxis(0)->SetBinLabel( 5, "Lambda"	);
   fHistQAPart->GetAxis(0)->SetBinLabel( 6, "Xi"		);
   fHistQAPart->GetAxis(0)->SetBinLabel( 7, "Omega"	);
-  fHistQAPart->GetAxis(0)->SetBinLabel( 8, "Sigma0"	);
-  fHistQAPart->GetAxis(0)->SetBinLabel( 9 ,"Phi"	);
-  fHistQAPart->GetAxis(0)->SetBinLabel( 10, "Kstar"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 8 ,"Phi"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 9, "Kstar"	);
+  fHistQAPart->GetAxis(0)->SetBinLabel( 10, "KstarPM"	);
   fHistQAPart->GetAxis(1)->SetTitle("pt");
   fListOfObjects->Add(fHistQAPart);  
   
@@ -384,14 +384,14 @@ void AliAnalysisTaskSimSpectraLF::EventSel(TObject* obj){
 
 void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 
-  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Sigma0", "Phi", "KStar" };
+  TString pidNames[10] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar","KStarPM" };
 
   if ( !obj ) return;
 
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(obj);
   if ( !event ) return;
     
-  Bool_t isPrimary[10] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE };
+  Bool_t isPrimary[10] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE };
 
   Short_t pidCodeMC = 0;
   Double_t myY = 0.;
@@ -423,7 +423,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
     
     isPhysPrim = event->IsPhysicalPrimary(ipart);
 
-    if ( pPDG==211 || pPDG==321 || pPDG==2212 || pPDG==310 || pPDG==3122 || pPDG==3312 || pPDG==3334 || pPDG==3212 || pPDG==333 || pPDG==313 )
+    if ( pPDG==211 || pPDG==321 || pPDG==2212 || pPDG==310 || pPDG==3122 || pPDG==3312 || pPDG==3334 || pPDG==333 || pPDG==313 || pPDG==323 )
     {
       if( isPhysPrim )
       {
@@ -434,11 +434,11 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 	if (pPDG==3122)	MCPartSel[0]	= 4.5;	//	Lambda
 	if (pPDG==3312) MCPartSel[0]	= 5.5;	//	Xi -
 	if (pPDG==3334) MCPartSel[0]	= 6.5;	//	Omega -
-	if (pPDG==3212) MCPartSel[0]	= 7.5;	//	Sigma 0
       }
       else{
-	if (pPDG==333)	MCPartSel[0]	= 8.5;	//	Phi(1020)
-	if (pPDG==313)	MCPartSel[0]	= 9.5;	//	K*(892)
+	if (pPDG==333)	MCPartSel[0]	= 7.5;	//	Phi(1020)
+	if (pPDG==313)	MCPartSel[0]	= 8.5;	//	K*(892)
+	if (pPDG==323)	MCPartSel[0]	= 9.5;	//	K*(892) +-
       }
     }
 
@@ -530,8 +530,8 @@ Short_t AliAnalysisTaskSimSpectraLF::GetPidCode(Int_t pdgCode) const  {
     case 313:
       pidCode = 8; // K*(892)0
     break;
-    case 3212:
-      pidCode = 9; // Sigma 0
+    case 323:
+      pidCode = 9; // K*(892)+-
     break;
     default:
       pidCode = 999;  // something else
