@@ -42,6 +42,7 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int 
   taskjetlikecorr->SetEtaCut(fEtaCut);
   taskjetlikecorr->SetPhiCut(fPhiCut);
   taskjetlikecorr->SetMinPtTrigCut(3.000);
+  taskjetlikecorr->SetMinimumPtABinForMerging(5);
   taskjetlikecorr->SetTwoTrackEffCut(fTwoTrackEffCut);
   taskjetlikecorr->SetCentArray(dcentarr);
   taskjetlikecorr->SetPtArray(dptarr);

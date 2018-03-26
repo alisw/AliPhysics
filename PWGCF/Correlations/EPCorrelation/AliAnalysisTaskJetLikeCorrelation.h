@@ -154,6 +154,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     void SetEtaCut(float etacut) { fEtaCut = etacut; }
     void SetPhiCut(float phicut) { fPhiCut = phicut; }
     void SetMinPtTrigCut(float ptcut) { fMinPtTrigCut = ptcut; }
+    void SetMinimumPtABinForMerging(int ptamin) {fMinimumPtABinMerging = ptamin;}
     void SetTwoTrackEffCut(float twotrackcut) { fTwoTrackEffCut = twotrackcut; }
     void SetResonancesCut(float resocut) { fResonancesVCut = resocut; }
     void SetConversionsCut(float convcut) { fConversionsVCut = convcut; }
@@ -220,6 +221,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     int fTrackDepth;  // 
     ULong64_t fEventID; //!
     int fIsFirstEvent; //!
+    int fMinimumPtABinMerging; //
 
     float fResonancesVCut;
     float fConversionsVCut;

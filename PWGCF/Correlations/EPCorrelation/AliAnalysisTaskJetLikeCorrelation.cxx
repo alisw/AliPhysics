@@ -192,7 +192,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
-  fResonancesVCut(0.02), fConversionsVCut(0.04),
+  fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
@@ -212,7 +212,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
-  fResonancesVCut(0.02), fConversionsVCut(0.04),
+  fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
@@ -1382,7 +1382,6 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
-  int lMinimumPtABinMerging = GetPtBin(3.00);
   int lMinimumPtTBinMerging = GetPtBin(6.00);
 
   if (bUseMixingPool) {
@@ -1553,10 +1552,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
             } else {
               fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
@@ -1673,8 +1672,8 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             } else { 
                 fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             }
@@ -1832,10 +1831,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
           if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
             continue;
 
-          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
           } else {
             fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
