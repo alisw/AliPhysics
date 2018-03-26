@@ -102,13 +102,13 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
         break;
       }
     }
-    return false;
+    return found;
   };
   bool isMB = std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), "MB") != fSelectedTriggers.end(),
        isEG = findTriggerType(fSelectedTriggers, "EG"),
-       isDG = findTriggerType(fSelectedTriggers, "EG"),
-       isEJ = findTriggerType(fSelectedTriggers, "EG"),
-       isDJ = findTriggerType(fSelectedTriggers, "EG");
+       isDG = findTriggerType(fSelectedTriggers, "DG"),
+       isEJ = findTriggerType(fSelectedTriggers, "EJ"),
+       isDJ = findTriggerType(fSelectedTriggers, "DJ");
 
   std::vector<AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
   if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
@@ -126,7 +126,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
       for(auto patch :  DJEpatches) fHistos->FillTH1("hPatchADCDJEMB", patch->GetADCAmp()); 
 
       continue;
-    } else {
+    } else if(std::find(kNamesTriggerClasses.begin(), kNamesTriggerClasses.end(), t.Data()) != kNamesTriggerClasses.end()) {
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
       std::vector<AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
@@ -152,8 +152,8 @@ std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::Se
     case kDGApatches: if(patch->IsEMCal() || !patch->IsGammaHighRecalc()) selected = false; break;
     case kEJEpatches: if(patch->IsDCalPHOS() || !patch->IsJetHighRecalc()) selected = false; break;
     case kDJEpatches: if(patch->IsEMCal() || !patch->IsJetHighRecalc()) selected = false; break;
-    if(selected) result.emplace_back(patch);
     };
+    if(selected) result.emplace_back(patch);
   }
   return result;
 }
@@ -170,6 +170,7 @@ std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::Se
   case kThresholdEJ2: patchtype = kEJEpatches; break;
   case kThresholdDJ1: patchtype = kDJEpatches; break;
   case kThresholdDJ2: patchtype = kDJEpatches; break;
+  default: return result;     // unsupported patch type - return empty list
   };
   for(auto patch : SelectAllPatchesByType(list, patchtype)) {
     if(patch->GetADCAmp() > fOnlineThresholds[trigger]) result.emplace_back(patch);
