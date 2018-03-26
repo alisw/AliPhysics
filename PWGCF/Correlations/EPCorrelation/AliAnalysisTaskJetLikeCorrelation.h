@@ -232,22 +232,14 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixed;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameIn;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameM1;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedM1;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameM2;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedM2;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameOut;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedOut;         //!
 
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrCont;          //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContM1;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContM2;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContOut;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrim;          //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimM1;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimM2;         //!
     std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimOut;         //!
 
 
@@ -256,8 +248,6 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     TH3D *fHistPtSame;         //!
     TH3D *fHistPtSameIn;         //!
     TH3D *fHistPtSameOut;         //!
-    TH3D *fHistPtSameM1;         //!
-    TH3D *fHistPtSameM2;         //!
 
     THnSparse *fHistEtaSparse;   //!
     TProfile *fHistV2;             //! Only for V0A
