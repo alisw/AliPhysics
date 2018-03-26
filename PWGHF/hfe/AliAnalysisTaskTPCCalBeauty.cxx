@@ -851,11 +851,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
             if(emcphi > 1.39 && emcphi < 3.265) {
                 fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
-                fClsEamEMCal->Fill(clustMatch->E());
+                //fClsEamEMCal->Fill(clustMatch->E());
             }
             if(emcphi > 4.53 && emcphi < 5.708) {
                 fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
-                fClsEamDCal->Fill(clustMatch->E());
+                //fClsEamDCal->Fill(clustMatch->E());
             }
             
             //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
