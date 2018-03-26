@@ -20,7 +20,7 @@ fDeuPT{nullptr}, fPiPlusPT{nullptr}, fPiMinusPT{nullptr}, fMultiplicity{nullptr}
 fMInvBlind{nullptr},
 fMEMInvBackPPSame{nullptr},
 fLSPlusMInvBackground{nullptr}, fLSMinusMInvBackground{nullptr},
-fOutputFileName{"dStarAnalysis.root"} {}
+fOutputFileName{"MInvPureEMfast.root"} {}
 
 //______________________________________________________________________________
 //______________________________________________________________________________
@@ -134,8 +134,8 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
   //
   // The return value is currently not used.
 
-  bool eventmixing3 = false;
-  bool eventmixing = true;
+  bool eventmixing3 = true;
+  bool eventmixing = false;
   bool likesign = false;
 
   fReader.SetEntry(entry);
@@ -155,18 +155,18 @@ Bool_t dStarAnalysisSelector::Process(Long64_t entry) {
   /// and conversion from AliAnalysisCODEX::Track to FourVector_t
   for (const auto track : fTracks) {
     // fill PID histograms
-    fDedx->Fill(track.GetTPCmomentum(), track.GetTPCsignal());
-    if (track.HasTOF()) fBeta->Fill(track.GetTPCmomentum(), track.TOFbeta());
+    // fDedx->Fill(track.GetTPCmomentum(), track.GetTPCsignal());
+    // if (track.HasTOF()) fBeta->Fill(track.GetTPCmomentum(), track.TOFbeta());
 
     // PID checks
     if (DeuteronCutGood(track, fNSigmaDe)) {
       fDeuteron.push_back(TrackToFourVector(track, 4));
-      fDedxPiDeu->Fill(track.GetTPCsignal(), track.GetTPCsignal());
-      fZVertex->Fill(zvtx);
+      // fDedxPiDeu->Fill(track.GetTPCsignal(), track.GetTPCsignal());
+      // fZVertex->Fill(zvtx);
     }
     if (PionCutGood(track, fNSigmaPi)) {
       track.Charge() > 0 ? fPiPlus.push_back(TrackToFourVector(track, 1)) : fPiMinus.push_back(TrackToFourVector(track, 1));
-      fDedxPiDeu->Fill(track.GetTPCmomentum(), track.GetTPCsignal());
+      // fDedxPiDeu->Fill(track.GetTPCmomentum(), track.GetTPCsignal());
     }
   }
 
