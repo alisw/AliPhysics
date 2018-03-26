@@ -52,12 +52,12 @@ ClassImp(AliAODTagCreator)
     fTreeTEsd(0), 
     fRunTagEsd(0)  
 {
-  //==============Default constructor for a AliAODTagCreator================
+/// Default constructor for a AliAODTagCreator
 }
 
 //______________________________________________________________________________
 AliAODTagCreator::~AliAODTagCreator() {
-/// ================Default destructor for a AliAODTagCreator===================
+/// Default destructor for a AliAODTagCreator
 
   delete fChain;
   delete fAODEvent;

@@ -5,7 +5,7 @@
 * See cxx source for full Copyright notice                               */
 
 /// \class AliAODBranchReplicator
-/// \brief $Id$
+/// \brief Base class of an object used for the replication
 ///
 /// Base class of an object used for the replication
 /// (and possibly filtering) of one (or several) AOD branches

@@ -3,9 +3,6 @@
 
 /// \class AliAODAD
 /// \brief Container class for AOD AD data
-///
-///
-///
 /// \author Michal Broz <michal.broz@cern.ch>
 
 #include <AliVAD.h>
