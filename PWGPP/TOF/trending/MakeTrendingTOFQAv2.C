@@ -507,27 +507,29 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     }
   } else {
     hMatchingVsEtaPhiOut = (TH2F*)((TH2F*)generalList->FindObject("hMatchedEtaVsOutPhi_all"))->Clone("hMatchingVsEtaPhiOut");
-    hMatchingVsEtaPhiOut->Sumw2();
-    hMatchingVsEtaPhiOut->Divide(hMatchingVsEtaPhiOut, hDenom2D, 1., 1., "B");
-    hMatchingVsEtaPhiOut->GetZaxis()->SetRangeUser(0., 1.);
-    hMatchingVsEtaPhiOut->SetTitle("TOF matching efficiency as function of #eta and #phi_{TPC,out}");
-    MakeUpHisto(hMatchingVsEtaPhiOut, "#phi_{TPC,out} (deg)", "#eta", "matching efficiency", 1, kBlue+2, 2);
-
     //
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsEta, "hMatchingVsEta", kFALSE);
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsPhiOut, "hMatchingVsPhiOut", kTRUE);
     //
-    hMatchingVsPhiOut->SetTitle("TOF matching efficiency as function of #phi_{TPC,out}");
-    hMatchingVsPhiOut->GetYaxis()->SetRangeUser(0,1.2);
-    MakeUpHisto(hMatchingVsPhiOut, "#phi_{TPC,out}", "matching efficiency", 1, kBlue+2, 2);
+    hMatchingVsEtaPhiOut->Sumw2();
+    hMatchingVsEtaPhiOut->Divide(hMatchingVsEtaPhiOut, hDenom2D, 1., 1., "B");
+    hMatchingVsEtaPhiOut->GetZaxis()->SetRangeUser(0., 1.);
+    hMatchingVsEtaPhiOut->SetTitle("TOF matching efficiency as function of #eta and #phi_{TPC,out}");
+    MakeUpHisto(hMatchingVsEtaPhiOut, "#phi_{TPC,out} (deg)", "#eta", "matching efficiency", 1, kBlue + 2, 2);
   }
-  
+
   if (hMatchingVsEta) {
     hMatchingVsEta->SetTitle("TOF matching efficiency as function of #eta");
     hMatchingVsEta->GetYaxis()->SetRangeUser(0, 1.2);
-    MakeUpHisto(hMatchingVsEta, "#eta", "matching efficiency", 1, kBlue+2, 2);
+    MakeUpHisto(hMatchingVsEta, "#eta", "matching efficiency", 1, kBlue + 2, 2);
   }
-  
+
+  if (hMatchingVsPhiOut) {
+    hMatchingVsPhiOut->SetTitle("TOF matching efficiency as function of #phi_{TPC,out}");
+    hMatchingVsPhiOut->GetYaxis()->SetRangeUser(0, 1.2);
+    MakeUpHisto(hMatchingVsPhiOut, "#phi_{TPC,out}", "matching efficiency", 1, kBlue + 2, 2);
+  }
+
   //matching as function of phi
   hDenom = (TH1F*)generalList->FindObject("hPrimaryPhi_all");
   if (hDenom) {
@@ -1651,7 +1653,8 @@ void Write(TObject* obj, const TString label)
 void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x)
 {
   h = (TH1F*)(x ? num->ProjectionX(name) : num->ProjectionY(name));
-  TH1F* hden = (TH1F*)(x ? den->ProjectionX("hDenominator") : den->ProjectionY("hDenominator"));
+  h->Sumw2();
+  TH1F* hden = (TH1F*)(x ? den->ProjectionX("hDenominatorX") : den->ProjectionY("hDenominatorY"));
   h->Divide(h, hden, 1, 1, "B");
   delete hden;
 }

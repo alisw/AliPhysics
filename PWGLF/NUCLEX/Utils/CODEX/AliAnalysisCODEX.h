@@ -249,7 +249,7 @@ namespace AliAnalysisCODEX {
         mDepth(depth),
         mLevel(),
         mCWBin(maxcent / centr),
-        mVWBin(2.0f * maxvtz / vert),
+        mVWBin(2.0f * maxvtz / (float)vert),
         mCMax(maxcent),
         mVMax(maxvtz),
         mPartMass() {
