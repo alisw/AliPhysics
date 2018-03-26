@@ -1653,6 +1653,7 @@ void Write(TObject* obj, const TString label)
 void Compute2Deff(TH2F* num, TH2F* den, TH1F*& h, TString name, Bool_t x)
 {
   h = (TH1F*)(x ? num->ProjectionX(name) : num->ProjectionY(name));
+  h->Sumw2();
   TH1F* hden = (TH1F*)(x ? den->ProjectionX("hDenominatorX") : den->ProjectionY("hDenominatorY"));
   h->Divide(h, hden, 1, 1, "B");
   delete hden;
