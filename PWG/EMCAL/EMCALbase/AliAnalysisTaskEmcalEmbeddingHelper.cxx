@@ -319,6 +319,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("randomEventNumberAccess", fRandomEventNumberAccess, false);
   res = fYAMLConfig.GetProperty("randomFileAccess", fRandomFileAccess, false);
   res = fYAMLConfig.GetProperty("createHisto", fCreateHisto, false);
+  res = fYAMLConfig.GetProperty("printTimingInfoInLog", fPrintTimingInfoToLog, false);
   // More general embedding helper properties
   res = fYAMLConfig.GetProperty("filePattern", fFilePattern, false);
   res = fYAMLConfig.GetProperty("inputFilename", fInputFilename, false);
@@ -1782,6 +1783,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Pythia cross section filename: \"" << fPythiaXSecFilename << "\"\n";
   tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
   tempSS << "Tree name: " << fTreeName << "\n";
+  tempSS << "Print timing info to log: " << fPrintTimingInfoToLog << "\n";
   tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";
   tempSS << "Random file access: " << fRandomFileAccess << "\n";
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
