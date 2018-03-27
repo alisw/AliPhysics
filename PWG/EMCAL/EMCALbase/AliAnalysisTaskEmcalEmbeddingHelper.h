@@ -19,6 +19,7 @@
 class TString;
 class TChain;
 class TFile;
+class TStopwatch;
 class AliVEvent;
 class AliVHeader;
 class AliGenPythiaEventHeader;
@@ -360,6 +361,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
   double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
+  
+  TStopwatch                                   *fTimer            ; //!<! Timer for the InitTree() function
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
