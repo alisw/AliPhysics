@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 #include <unordered_map>
 #include <TH1.h>
@@ -348,7 +349,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configf
   std::vector<std::string> triggerclasses;
   configuration.GetProperty("containername", namecontainer);
   configuration.GetProperty("energydef", energydef);
-  configuration.GetProperty("energysoure", energysource);
+  configuration.GetProperty("energysource", energysource);
   configuration.GetProperty("triggerclasses", triggerclasses);
   bool isOfflineSimple = energysource.find("Offline") != std::string::npos,
        isRecalc = energysource.find("Recalc") != std::string::npos;
@@ -423,6 +424,14 @@ AliEmcalTriggerSelectionCuts::SelectionMethod_t AliAnalysisTaskEmcalTriggerSelec
 
 }
 
+void AliAnalysisTaskEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
+    stream << "Task: " << GetName() << ", name of the output container: " << fGlobalDecisionContainerName << std::endl << std::endl;
+    stream << "Trigger classes: " << std::endl;
+    for(const auto c : this->fTriggerSelections){
+      PWG::EMCAL::AliEmcalTriggerSelection *sel = static_cast<PWG::EMCAL::AliEmcalTriggerSelection *>(c);
+      stream << *sel << std::endl;
+    }
+}
 
 AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA():
     TNamed(),
@@ -487,4 +496,9 @@ AliAnalysisTaskEmcalTriggerSelection::ConfigValueException::ConfigValueException
 }
 
 }
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection &task) {
+  task.PrintStream(stream);
+  return stream;
 }

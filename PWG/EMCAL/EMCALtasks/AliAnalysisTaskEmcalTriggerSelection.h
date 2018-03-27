@@ -27,6 +27,7 @@
 #ifndef ALIANALYSISTASKEMCALTRIGGERSELECTION_H
 #define ALIANALYSISTASKEMCALTRIGGERSELECTION_H
 
+#include <iosfwd>
 #include <exception>
 #include <string>
 #include <vector>
@@ -35,6 +36,11 @@
 #include <TString.h>
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEmcalTriggerSelectionCuts.h"
+
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWG { namespace EMCAL { class AliAnalysisTaskEmcalTriggerSelection; } }
+std::ostream & operator<< (std::ostream &in, const PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection &task);
 
 namespace PWG{
 namespace EMCAL {
@@ -221,6 +227,12 @@ public:
   void AddTriggerSelection(AliEmcalTriggerSelection * const selection);
 
   /**
+   * @brief Access to the trigger selection objects attached to the task
+   * @return List of trigger selections
+   */
+  const TList &GetListOfTriggerSelections() const { return fTriggerSelections; }
+
+  /**
    * @brief Set the name of the global trigger decision container
    *
    * The AliAnalysisTaskEmcalTriggerSelection appends an object
@@ -240,6 +252,12 @@ public:
    * @param[in] name Name of the trigger decision container
    */
   void SetGlobalDecisionContainerName(const char *name) { fGlobalDecisionContainerName = name; }
+
+  /**
+   * @brief Provide access to the name of the global trigger decision container name
+   * @return Name of the trigger decision container
+   */
+  const TString  &GetGlobalDecisionContainerName() const { return fGlobalDecisionContainerName; }
 
   /**
    * @brief Configure task using YAML configuration file
@@ -419,6 +437,18 @@ public:
    */
   void ConfigureMCPP2016();
 
+  /**
+   * @brief Output stream operator
+   * 
+   * Logging all settings (output container, trigger classes, trigger selection cuts) to the
+   * output stream
+   * 
+   * @param stream Output stream used for logging
+   * @param task Trigger selection task to be put on the stream
+   * @return stream after logging
+   */
+  friend std::ostream& ::operator<<(std::ostream &stream, const AliAnalysisTaskEmcalTriggerSelection &task);
+  
 protected:
 
   /**
@@ -556,20 +586,29 @@ protected:
   Bool_t Is2016PP(const char *dataset) const;
   Bool_t Is2016MCPP(const char *dataset) const;
   Bool_t IsSupportedMCSample(const char *period, std::vector<TString> &supportedProductions) const;
-
+ 
   AliEmcalTriggerSelectionCuts::AcceptanceType_t  DecodeAcceptanceString(const std::string &acceptancestring);
   AliEmcalTriggerSelectionCuts::PatchType_t       DecodePatchTypeString(const std::string &patchtypestring);
   AliEmcalTriggerSelectionCuts::SelectionMethod_t DecodeEnergyDefinition(const std::string &energydefstring);
 
-  AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///<
+  AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///< Trigger decision container objects
   TString                                    fGlobalDecisionContainerName;     ///< Name of the global trigger selection
   TList                                      fTriggerSelections;               ///< List of trigger selections
   TList                                      fSelectionQA;                     ///< Trigger selection QA
+
+private:
+
+  /**
+   * @brief Print information about the trigger decision container to the output stream
+   * @param stream Output stream used from printing
+   */
+  void PrintStream(std::ostream &stream) const;
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerSelection, 1);    // Task running different EMCAL trigger selections
   /// \endcond
 };
+
 
 }
 }
