@@ -83,7 +83,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (!MinBooking) {
+  if (MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
