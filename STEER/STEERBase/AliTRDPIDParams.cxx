@@ -25,6 +25,8 @@
 
 #include "AliTRDPIDParams.h"
 
+#include <iostream>
+
 ClassImp(AliTRDPIDParams)
 //ClassImp(AliTRDPIDParams::AliTRDPIDThresholds)
 //ClassImp(AliTRDPIDParams::AliTRDPIDCentrality)
@@ -177,6 +179,20 @@ AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Doub
     if(params) memcpy(fParams, params, sizeof(Double_t) * 4);
     else memset(fParams, 0, sizeof(Double_t) * 4);
 }
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Int_t charge) :
+    TObject(),
+    fNTracklets(nTracklets),
+    fCharge(charge)
+{
+    //
+    // Constructor used to find object in sorted list
+    //
+    fEfficiency[0] = fEfficiency[1] = eff;
+    memset(fParams, 0, sizeof(Double_t) * 4);
+}
+
 //____________________________________________________________
 AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params) :
     TObject(),
@@ -262,6 +278,7 @@ Bool_t AliTRDPIDParams::AliTRDPIDThresholds::IsEqual(const TObject *ref) const {
     // Check for equality
     // Tracklets and Efficiency are used
     //
+  
     const AliTRDPIDThresholds *refObj = dynamic_cast<const AliTRDPIDThresholds *>(ref);
     if(!refObj) return kFALSE;
     Bool_t eqNTracklets = fNTracklets == refObj->GetNTracklets();
@@ -269,6 +286,7 @@ Bool_t AliTRDPIDParams::AliTRDPIDThresholds::IsEqual(const TObject *ref) const {
     Bool_t eqEff = kFALSE;
     Bool_t hasRange = TMath::Abs(fEfficiency[1] - fEfficiency[0]) > kVerySmall;
     Bool_t hasRangeRef = TMath::Abs(refObj->GetElectronEfficiency(1) - refObj->GetElectronEfficiency(0)) > kVerySmall;
+    
     if(hasRange && hasRangeRef){
         // Both have ranges, check if they match
         eqEff = TMath::Abs(fEfficiency[0] - refObj->GetElectronEfficiency(0)) < kVerySmall && TMath::Abs(fEfficiency[1] - refObj->GetElectronEfficiency(1)) < kVerySmall;
@@ -350,11 +368,12 @@ AliTRDPIDParams::AliTRDPIDCentrality::~AliTRDPIDCentrality(){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDParams::AliTRDPIDCentrality::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params, Int_t charge) const{
+Bool_t AliTRDPIDParams::AliTRDPIDCentrality::GetThresholdParameters(Int_t ntracklets, Double_t efficiency,Double_t *params, Int_t charge) const{
     //
     // Get the threshold parameters
     //
     AliTRDPIDThresholds test(ntracklets, efficiency, charge);
+    
     TObject *result = fEntries->FindObject(&test);
     if(!result){
         AliDebug(1, Form("No threshold params found for %d tracklets, an electron efficiency of %f and a charge %d", ntracklets, efficiency, charge));
@@ -362,6 +381,7 @@ Bool_t AliTRDPIDParams::AliTRDPIDCentrality::GetThresholdParameters(Int_t ntrack
     }
     AliTRDPIDThresholds *parResult = static_cast<AliTRDPIDThresholds *>(result);
     AliDebug(1, Form("Threshold params found: NTracklets %d, Electron Efficiency %f, Charge %d", parResult->GetNTracklets(), parResult->GetElectronEfficiency(), parResult->GetCharge()));
+    
     memcpy(params, parResult->GetThresholdParams(), sizeof(Double_t) * 4);
     return kTRUE;
 }
@@ -389,8 +409,12 @@ void AliTRDPIDParams::AliTRDPIDCentrality::Print(Option_t *) const {
     printf("_________________________________________\n");
     TIter objects(fEntries);
     AliTRDPIDThresholds *par;
+    Double_t params[4];
     while((par = dynamic_cast<AliTRDPIDThresholds *>(objects()))){
         printf("Number of tracklets %d, Electron efficiency %f, Charge %d\n", par->GetNTracklets(), 0.5*(par->GetElectronEfficiency(0)+par->GetElectronEfficiency(1)),par->GetCharge());
+
+	memcpy(params, par->GetThresholdParams(),sizeof(Double_t) *4);
+	printf("threshold parameters: %f, %f, %f, %f\n",params[0],params[1],params[2],params[3]);
     }
 }
 
