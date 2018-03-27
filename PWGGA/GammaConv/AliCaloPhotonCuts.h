@@ -147,6 +147,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16k5b,
       k17e2,
       k16h3,
+      // pp 5 TeV 2017
+      k17l4b,
+      k17l3b,
       // PbPb 5 TeV 2015
       kPbPb5T15HIJING,
       k16k3b,
