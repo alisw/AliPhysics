@@ -497,6 +497,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetmTBinning(mTBinning);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+  config->SetMinimalBookingME(true);
+  config->SetMinimalBookingSample(true);
+
   if (!notpp) {
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
   } else {
@@ -505,7 +508,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
 
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
-      new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC,true);
+      new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC);
   if(CentEst == "kInt7"){
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetMVPileUp(kTRUE);

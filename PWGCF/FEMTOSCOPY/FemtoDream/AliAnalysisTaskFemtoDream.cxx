@@ -350,50 +350,6 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     AliWarning("No Input Event");
   } else {
     fAnalysis->Make(Event);
-//    if (!(fMinBookingME&&fMinBookingSample)) {
-//      if (fAnalysis->GetQAList()) {
-//        fQA=fAnalysis->GetQAList();
-//      }
-//    }
-//    if(!fMinBookingME) {
-//      if (fAnalysis->GetResultQAList()) {
-//        fResultQA=fAnalysis->GetResultQAList();
-//      }
-//    }
-//    if (!fEvtCuts->GetMinimalBooking()) {
-//      if (fAnalysis->GetEventCutHists()) {
-//        fEvtHistList=fAnalysis->GetEventCutHists();
-//      }
-//    }
-//    if (fAnalysis->GetTrackCutHists()) {
-//      fTrackCutHistList=fAnalysis->GetTrackCutHists();
-//    }
-//    if (fAnalysis->GetAntitrackCutHists()) {
-//      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
-//    }
-//    if (fAnalysis->Getv0CutHist()) {
-//      fv0CutHistList=fAnalysis->Getv0CutHist();
-//    }
-//    if (fAnalysis->GetAntiv0CutHist()) {
-//      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-//    }
-//    if (fAnalysis->GetCascadeCutHist()) {
-//      fCascCutList=fAnalysis->GetCascadeCutHist();
-//    }
-//    if (fAnalysis->GetAntiCascadeCutHist()) {
-//      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
-//    }
-//    //Results we always post
-//    if (fAnalysis->GetResultList()) {
-//      fResults=fAnalysis->GetResultList();
-//    } else {
-//      AliWarning("Results List not Available");
-//    }
-//    if (fAnalysis->GetResultSampleList()) {
-//   	  fResultsSample=fAnalysis->GetResultSampleList();
-//     } else {
-//   	  AliWarning("Results Sample List not Available");
-//     }
      PostData(1,fQA);
      PostData(2,fEvtHistList);
      PostData(3,fTrackCutHistList);
@@ -407,36 +363,6 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
      PostData(11,fResultsSample);
      PostData(12,fResultQASample);
     if (fIsMC) {
-//      if (!fTrackCuts->GetMinimalBooking()) {
-//        if (fTrackCuts->GetIsMonteCarlo()) {
-//          fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
-//        }
-//      }
-//      if (!fAntiTrackCuts->GetMinimalBooking()) {
-//        if (fAntiTrackCuts->GetIsMonteCarlo()) {
-//          fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
-//        }
-//      }
-//      if (!fv0Cuts->GetMinimalBooking()) {
-//        if (fv0Cuts->GetIsMonteCarlo()) {
-//          fv0CutHistMCList=fv0Cuts->GetMCQAHists();
-//        }
-//      }
-//      if (!fAntiv0Cuts->GetMinimalBooking()) {
-//        if (fAntiv0Cuts->GetIsMonteCarlo()) {
-//          fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
-//        }
-//      }
-//      if (!fCascCuts->GetMinimalBooking()) {
-//        if (fCascCuts->GetIsMonteCarlo()) {
-//          fCascCutMCList=fCascCuts->GetMCQAHists();
-//        }
-//      }
-//      if (!fAntiCascCuts->GetMinimalBooking()) {
-//        if (fAntiCascCuts->GetIsMonteCarlo()) {
-//          fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
-//        }
-//      }
       PostData(13,fTrackCutHistMCList);
       PostData(14,fAntiTrackCutHistMCList);
       PostData(15,fv0CutHistMCList);

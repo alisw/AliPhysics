@@ -305,9 +305,10 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	config->SetSpinningDepth(10);
 	config->SetUseEventMixing(eventMixing);
 	config->SetUsePhiSpinning(phiSpin);
-
+	config->SetMinimalBookingME(false);
+	config->SetMinimalBookingSample(false);
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
 		std::cout << "Added kINT7 Trigger \n";
