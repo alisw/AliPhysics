@@ -363,8 +363,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fEffMixingDepth[Counter]->GetXaxis()->SetTitle("MixingDepth");
         fPairQA[Counter]->Add(fEffMixingDepth[Counter]);
 
-
-
         if (fMomentumResolution) {
           //take twice the number of bins we use for the CF to be sure, the range is
           //hard coded. This assumed that the input is in GeV!
