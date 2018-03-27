@@ -24,6 +24,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#ifndef __ALIEMCALTRIGGERSTRINGDECODER_H__
+#define __ALIEMCALTRIGGERSTRINGDECODER_H__
+#if !defined(__CINT__)
 #include <string>
 #include <vector>
 
@@ -82,3 +85,5 @@ std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring);
 
 }
 }
+#endif
+#endif
