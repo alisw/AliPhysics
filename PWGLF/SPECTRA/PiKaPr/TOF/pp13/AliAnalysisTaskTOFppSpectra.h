@@ -92,43 +92,30 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 	TH1F          	*fEventVtx10;
 	TH1F          	*fZVertex;
 	
-	TH3F          	*fTOFTimeV0MPtPi;
 	TH3F          	*fTOFTimeV0MPtPosPi;
 	TH3F          	*fTOFTimeV0MPtNegPi;
 
-	TH3F          	*fTOFResolutionV0MPtPi;
-	TH3F          	*fTOFResolutionV0MPtPosPi;
-	TH3F          	*fTOFResolutionV0MPtNegPi;
-
-	TH3F          	*fTOFExpTimeV0MPtPi_El;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_El;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_El;
 
-	TH3F          	*fTOFExpTimeV0MPtPi_Mu;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_Mu;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_Mu;
 
-	TH3F          	*fTOFExpTimeV0MPtPi_Pi;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_Pi;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_Pi;
 
-	TH3F          	*fTOFExpTimeV0MPtPi_K;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_K;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_K;
 
-	TH3F          	*fTOFExpTimeV0MPtPi_P;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_P;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_P;
 
-	TH3F          	*fTOFExpTimeV0MPtPi_D;
 	TH3F          	*fTOFExpTimeV0MPtPosPi_D;
 	TH3F          	*fTOFExpTimeV0MPtNegPi_D;
 
-	TH3F          	*fTOFMismatchTimeV0MPtPi;
 	TH3F          	*fTOFMismatchTimeV0MPtPosPi;
 	TH3F          	*fTOFMismatchTimeV0MPtNegPi;
 
-	TH3F            *fTOFDCAxyV0MPtPi;
 	TH3F            *fTOFDCAxyV0MPtPosPi;
 	TH3F            *fTOFDCAxyV0MPtNegPi;
 
@@ -159,90 +146,62 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 
 
 
-	TH3F          	*fTOFTimeV0MPtK;
 	TH3F          	*fTOFTimeV0MPtPosK;
 	TH3F          	*fTOFTimeV0MPtNegK;
 
-	TH3F          	*fTOFResolutionV0MPtK;
-	TH3F          	*fTOFResolutionV0MPtPosK;
-	TH3F          	*fTOFResolutionV0MPtNegK;
-
-	TH3F          	*fTOFExpTimeV0MPtK_El;
 	TH3F          	*fTOFExpTimeV0MPtPosK_El;
 	TH3F          	*fTOFExpTimeV0MPtNegK_El;
 
-	TH3F          	*fTOFExpTimeV0MPtK_Mu;
 	TH3F          	*fTOFExpTimeV0MPtPosK_Mu;
 	TH3F          	*fTOFExpTimeV0MPtNegK_Mu;
 
-	TH3F          	*fTOFExpTimeV0MPtK_Pi;
 	TH3F          	*fTOFExpTimeV0MPtPosK_Pi;
 	TH3F          	*fTOFExpTimeV0MPtNegK_Pi;
 
-	TH3F          	*fTOFExpTimeV0MPtK_K;
 	TH3F          	*fTOFExpTimeV0MPtPosK_K;
 	TH3F          	*fTOFExpTimeV0MPtNegK_K;
 
-	TH3F          	*fTOFExpTimeV0MPtK_P;
 	TH3F          	*fTOFExpTimeV0MPtPosK_P;
 	TH3F          	*fTOFExpTimeV0MPtNegK_P;
 
-	TH3F          	*fTOFExpTimeV0MPtK_D;
 	TH3F          	*fTOFExpTimeV0MPtPosK_D;
 	TH3F          	*fTOFExpTimeV0MPtNegK_D;
 
-	TH3F          	*fTOFMismatchTimeV0MPtK;
 	TH3F          	*fTOFMismatchTimeV0MPtPosK;
 	TH3F          	*fTOFMismatchTimeV0MPtNegK;
 
 
-	TH3F            *fTOFDCAxyV0MPtK;
 	TH3F            *fTOFDCAxyV0MPtPosK;
 	TH3F            *fTOFDCAxyV0MPtNegK;
 
 	TH2F            *fTPCTOFnSigmaK;
-
 	
 
-	TH3F          	*fTOFTimeV0MPtP;
 	TH3F          	*fTOFTimeV0MPtPosP;
 	TH3F          	*fTOFTimeV0MPtNegP;
 
-
-	TH3F          	*fTOFResolutionV0MPtP;
-	TH3F          	*fTOFResolutionV0MPtPosP;
-	TH3F          	*fTOFResolutionV0MPtNegP;
-
-	TH3F          	*fTOFExpTimeV0MPtP_El;
 	TH3F          	*fTOFExpTimeV0MPtPosP_El;
 	TH3F          	*fTOFExpTimeV0MPtNegP_El;
 
-	TH3F          	*fTOFExpTimeV0MPtP_Mu;
 	TH3F          	*fTOFExpTimeV0MPtPosP_Mu;
 	TH3F          	*fTOFExpTimeV0MPtNegP_Mu;
 
-	TH3F          	*fTOFExpTimeV0MPtP_Pi;
 	TH3F          	*fTOFExpTimeV0MPtPosP_Pi;
 	TH3F          	*fTOFExpTimeV0MPtNegP_Pi;
 
-	TH3F          	*fTOFExpTimeV0MPtP_K;
 	TH3F          	*fTOFExpTimeV0MPtPosP_K;
 	TH3F          	*fTOFExpTimeV0MPtNegP_K;
 
-	TH3F          	*fTOFExpTimeV0MPtP_P;
 	TH3F          	*fTOFExpTimeV0MPtPosP_P;
 	TH3F          	*fTOFExpTimeV0MPtNegP_P;
 
-	TH3F          	*fTOFExpTimeV0MPtP_D;
 	TH3F          	*fTOFExpTimeV0MPtPosP_D;
 	TH3F          	*fTOFExpTimeV0MPtNegP_D;
 
-	TH3F          	*fTOFMismatchTimeV0MPtP;
 	TH3F          	*fTOFMismatchTimeV0MPtPosP;
 	TH3F          	*fTOFMismatchTimeV0MPtNegP;
 
 
-	TH3F            *fTOFDCAxyV0MPtP;
 	TH3F            *fTOFDCAxyV0MPtPosP;
 	TH3F            *fTOFDCAxyV0MPtNegP;
 
@@ -254,19 +213,6 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 	TH1F            *fTOFGausTime_P;
 
 	
-	TH3F          	*fTOFNoMismatchTimeV0MPtPi;
-	TH3F          	*fTOFNoMismatchTimeV0MPtPosPi;
-	TH3F          	*fTOFNoMismatchTimeV0MPtNegPi;
-
-	TH3F          	*fTOFNoMismatchTimeV0MPtK;
-	TH3F          	*fTOFNoMismatchTimeV0MPtPosK;
-	TH3F          	*fTOFNoMismatchTimeV0MPtNegK;
-
-
-	TH3F          	*fTOFNoMismatchTimeV0MPtP;
-	TH3F          	*fTOFNoMismatchTimeV0MPtPosP;
-	TH3F          	*fTOFNoMismatchTimeV0MPtNegP;
-
 	TH1F *fSec;
 	TH1F *fSec_k;
 	TH1F *fSec_p;
