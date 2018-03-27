@@ -154,5 +154,5 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
-}  //// namespace
+//}  //// namespace
 #endif
