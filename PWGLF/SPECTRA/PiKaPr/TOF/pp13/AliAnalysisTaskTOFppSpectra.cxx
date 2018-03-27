@@ -65,18 +65,17 @@ AliAnalysisTaskTOFppSpectra::AliAnalysisTaskTOFppSpectra()
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
 fEventCounter(0), fEventPS(0), fEventVtx(0),fEventVtx10(0),fZVertex(0),
 
-fTOFTimeV0MPtPi(0),fTOFTimeV0MPtPosPi(0),fTOFTimeV0MPtNegPi(0),
-fTOFResolutionV0MPtPi(0),fTOFResolutionV0MPtPosPi(0),fTOFResolutionV0MPtNegPi(0),
+fTOFTimeV0MPtPosPi(0),fTOFTimeV0MPtNegPi(0),
 
-fTOFExpTimeV0MPtPi_El(0),fTOFExpTimeV0MPtPosPi_El(0),fTOFExpTimeV0MPtNegPi_El(0),
-fTOFExpTimeV0MPtPi_Mu(0),fTOFExpTimeV0MPtPosPi_Mu(0),fTOFExpTimeV0MPtNegPi_Mu(0),
-fTOFExpTimeV0MPtPi_Pi(0),fTOFExpTimeV0MPtPosPi_Pi(0),fTOFExpTimeV0MPtNegPi_Pi(0),
-fTOFExpTimeV0MPtPi_K(0),fTOFExpTimeV0MPtPosPi_K(0),fTOFExpTimeV0MPtNegPi_K(0),
-fTOFExpTimeV0MPtPi_P(0),fTOFExpTimeV0MPtPosPi_P(0),fTOFExpTimeV0MPtNegPi_P(0),
-fTOFExpTimeV0MPtPi_D(0),fTOFExpTimeV0MPtPosPi_D(0),fTOFExpTimeV0MPtNegPi_D(0),
-fTOFMismatchTimeV0MPtPi(0),fTOFMismatchTimeV0MPtPosPi(0),fTOFMismatchTimeV0MPtNegPi(0),
+fTOFExpTimeV0MPtPosPi_El(0),fTOFExpTimeV0MPtNegPi_El(0),
+fTOFExpTimeV0MPtPosPi_Mu(0),fTOFExpTimeV0MPtNegPi_Mu(0),
+fTOFExpTimeV0MPtPosPi_Pi(0),fTOFExpTimeV0MPtNegPi_Pi(0),
+fTOFExpTimeV0MPtPosPi_K(0),fTOFExpTimeV0MPtNegPi_K(0),
+fTOFExpTimeV0MPtPosPi_P(0),fTOFExpTimeV0MPtNegPi_P(0),
+fTOFExpTimeV0MPtPosPi_D(0),fTOFExpTimeV0MPtNegPi_D(0),
+fTOFMismatchTimeV0MPtPosPi(0),fTOFMismatchTimeV0MPtNegPi(0),
 
-fTOFDCAxyV0MPtPi(0),fTOFDCAxyV0MPtPosPi(0),fTOFDCAxyV0MPtNegPi(0),
+fTOFDCAxyV0MPtPosPi(0),fTOFDCAxyV0MPtNegPi(0),
 fEventV0M(0),
 fT0Resolution(0x0),fTimeOfFlightRes(0x0),fTimeOfFlightTOFRes(0x0),fTimeOfFlightGoodRes(0x0),
 fTPCdEdxP(0x0),fTPCdEdxPt(0x0),
@@ -87,42 +86,35 @@ fTPCTOFnSigmaPi(0),fTOFChannelVsTime(0),
 fGausTime(0),fTOFGausTime(0),
 
 
-fTOFTimeV0MPtK(0),fTOFTimeV0MPtPosK(0),fTOFTimeV0MPtNegK(0),
-fTOFResolutionV0MPtK(0),fTOFResolutionV0MPtPosK(0),fTOFResolutionV0MPtNegK(0),
+fTOFTimeV0MPtPosK(0),fTOFTimeV0MPtNegK(0),
 
-fTOFExpTimeV0MPtK_El(0),fTOFExpTimeV0MPtPosK_El(0),fTOFExpTimeV0MPtNegK_El(0),
-fTOFExpTimeV0MPtK_Mu(0),fTOFExpTimeV0MPtPosK_Mu(0),fTOFExpTimeV0MPtNegK_Mu(0),
-fTOFExpTimeV0MPtK_Pi(0),fTOFExpTimeV0MPtPosK_Pi(0),fTOFExpTimeV0MPtNegK_Pi(0),
-fTOFExpTimeV0MPtK_K(0),fTOFExpTimeV0MPtPosK_K(0),fTOFExpTimeV0MPtNegK_K(0),
-fTOFExpTimeV0MPtK_P(0),fTOFExpTimeV0MPtPosK_P(0),fTOFExpTimeV0MPtNegK_P(0),
-fTOFExpTimeV0MPtK_D(0),fTOFExpTimeV0MPtPosK_D(0),fTOFExpTimeV0MPtNegK_D(0),
-fTOFMismatchTimeV0MPtK(0),fTOFMismatchTimeV0MPtPosK(0),fTOFMismatchTimeV0MPtNegK(0),
+fTOFExpTimeV0MPtPosK_El(0),fTOFExpTimeV0MPtNegK_El(0),
+fTOFExpTimeV0MPtPosK_Mu(0),fTOFExpTimeV0MPtNegK_Mu(0),
+fTOFExpTimeV0MPtPosK_Pi(0),fTOFExpTimeV0MPtNegK_Pi(0),
+fTOFExpTimeV0MPtPosK_K(0),fTOFExpTimeV0MPtNegK_K(0),
+fTOFExpTimeV0MPtPosK_P(0),fTOFExpTimeV0MPtNegK_P(0),
+fTOFExpTimeV0MPtPosK_D(0),fTOFExpTimeV0MPtNegK_D(0),
+fTOFMismatchTimeV0MPtPosK(0),fTOFMismatchTimeV0MPtNegK(0),
 
-fTOFDCAxyV0MPtK(0),fTOFDCAxyV0MPtPosK(0),fTOFDCAxyV0MPtNegK(0),
+fTOFDCAxyV0MPtPosK(0),fTOFDCAxyV0MPtNegK(0),
 fTPCTOFnSigmaK(0),
 
 
-fTOFTimeV0MPtP(0),fTOFTimeV0MPtPosP(0),fTOFTimeV0MPtNegP(0),
-fTOFResolutionV0MPtP(0),fTOFResolutionV0MPtPosP(0),fTOFResolutionV0MPtNegP(0),
+fTOFTimeV0MPtPosP(0),fTOFTimeV0MPtNegP(0),
 
-fTOFExpTimeV0MPtP_El(0),fTOFExpTimeV0MPtPosP_El(0),fTOFExpTimeV0MPtNegP_El(0),
-fTOFExpTimeV0MPtP_Mu(0),fTOFExpTimeV0MPtPosP_Mu(0),fTOFExpTimeV0MPtNegP_Mu(0),
-fTOFExpTimeV0MPtP_Pi(0),fTOFExpTimeV0MPtPosP_Pi(0),fTOFExpTimeV0MPtNegP_Pi(0),
-fTOFExpTimeV0MPtP_K(0),fTOFExpTimeV0MPtPosP_K(0),fTOFExpTimeV0MPtNegP_K(0),
-fTOFExpTimeV0MPtP_P(0),fTOFExpTimeV0MPtPosP_P(0),fTOFExpTimeV0MPtNegP_P(0),
-fTOFExpTimeV0MPtP_D(0),fTOFExpTimeV0MPtPosP_D(0),fTOFExpTimeV0MPtNegP_D(0),
-fTOFMismatchTimeV0MPtP(0),fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
+fTOFExpTimeV0MPtPosP_El(0),fTOFExpTimeV0MPtNegP_El(0),
+fTOFExpTimeV0MPtPosP_Mu(0),fTOFExpTimeV0MPtNegP_Mu(0),
+fTOFExpTimeV0MPtPosP_Pi(0),fTOFExpTimeV0MPtNegP_Pi(0),
+fTOFExpTimeV0MPtPosP_K(0),fTOFExpTimeV0MPtNegP_K(0),
+fTOFExpTimeV0MPtPosP_P(0),fTOFExpTimeV0MPtNegP_P(0),
+fTOFExpTimeV0MPtPosP_D(0),fTOFExpTimeV0MPtNegP_D(0),
+fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
 
-fTOFDCAxyV0MPtP(0),fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
+fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
 fTPCTOFnSigmaP(0),
 
 fGausTime_K(0),fTOFGausTime_K(0),
 fGausTime_P(0),fTOFGausTime_P(0),
-
-
-fTOFNoMismatchTimeV0MPtPi(0),fTOFNoMismatchTimeV0MPtPosPi(0),fTOFNoMismatchTimeV0MPtNegPi(0),
-fTOFNoMismatchTimeV0MPtK(0),fTOFNoMismatchTimeV0MPtPosK(0),fTOFNoMismatchTimeV0MPtNegK(0),
-fTOFNoMismatchTimeV0MPtP(0),fTOFNoMismatchTimeV0MPtPosP(0),fTOFNoMismatchTimeV0MPtNegP(0),
 
 
 fEventV0MPS(0),fEventV0MVtx(0), fSec(0),fSecondary(0),fSec_p(0),fSec_k(0),
@@ -140,18 +132,17 @@ AliAnalysisTaskTOFppSpectra::AliAnalysisTaskTOFppSpectra(const char *Periodname,
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0), 
 fEventCounter(0), fEventPS(0), fEventVtx(0),fEventVtx10(0),fZVertex(0),
 
-fTOFTimeV0MPtPi(0),fTOFTimeV0MPtPosPi(0),fTOFTimeV0MPtNegPi(0),
-fTOFResolutionV0MPtPi(0),fTOFResolutionV0MPtPosPi(0),fTOFResolutionV0MPtNegPi(0),
+fTOFTimeV0MPtPosPi(0),fTOFTimeV0MPtNegPi(0),
 
-fTOFExpTimeV0MPtPi_El(0),fTOFExpTimeV0MPtPosPi_El(0),fTOFExpTimeV0MPtNegPi_El(0),
-fTOFExpTimeV0MPtPi_Mu(0),fTOFExpTimeV0MPtPosPi_Mu(0),fTOFExpTimeV0MPtNegPi_Mu(0),
-fTOFExpTimeV0MPtPi_Pi(0),fTOFExpTimeV0MPtPosPi_Pi(0),fTOFExpTimeV0MPtNegPi_Pi(0),
-fTOFExpTimeV0MPtPi_K(0),fTOFExpTimeV0MPtPosPi_K(0),fTOFExpTimeV0MPtNegPi_K(0),
-fTOFExpTimeV0MPtPi_P(0),fTOFExpTimeV0MPtPosPi_P(0),fTOFExpTimeV0MPtNegPi_P(0),
-fTOFExpTimeV0MPtPi_D(0),fTOFExpTimeV0MPtPosPi_D(0),fTOFExpTimeV0MPtNegPi_D(0),
-fTOFMismatchTimeV0MPtPi(0),fTOFMismatchTimeV0MPtPosPi(0),fTOFMismatchTimeV0MPtNegPi(0),
+fTOFExpTimeV0MPtPosPi_El(0),fTOFExpTimeV0MPtNegPi_El(0),
+fTOFExpTimeV0MPtPosPi_Mu(0),fTOFExpTimeV0MPtNegPi_Mu(0),
+fTOFExpTimeV0MPtPosPi_Pi(0),fTOFExpTimeV0MPtNegPi_Pi(0),
+fTOFExpTimeV0MPtPosPi_K(0),fTOFExpTimeV0MPtNegPi_K(0),
+fTOFExpTimeV0MPtPosPi_P(0),fTOFExpTimeV0MPtNegPi_P(0),
+fTOFExpTimeV0MPtPosPi_D(0),fTOFExpTimeV0MPtNegPi_D(0),
+fTOFMismatchTimeV0MPtPosPi(0),fTOFMismatchTimeV0MPtNegPi(0),
 
-fTOFDCAxyV0MPtPi(0),fTOFDCAxyV0MPtPosPi(0),fTOFDCAxyV0MPtNegPi(0),
+fTOFDCAxyV0MPtPosPi(0),fTOFDCAxyV0MPtNegPi(0),
 fEventV0M(0),
 fT0Resolution(0x0),fTimeOfFlightRes(0x0),fTimeOfFlightTOFRes(0x0),fTimeOfFlightGoodRes(0x0),
 fTPCdEdxP(0x0),fTPCdEdxPt(0x0),
@@ -162,43 +153,37 @@ fTPCTOFnSigmaPi(0),fTOFChannelVsTime(0),
 fGausTime(0),fTOFGausTime(0),
 
 
-fTOFTimeV0MPtK(0),fTOFTimeV0MPtPosK(0),fTOFTimeV0MPtNegK(0),
-fTOFResolutionV0MPtK(0),fTOFResolutionV0MPtPosK(0),fTOFResolutionV0MPtNegK(0),
+fTOFTimeV0MPtPosK(0),fTOFTimeV0MPtNegK(0),
 
-fTOFExpTimeV0MPtK_El(0),fTOFExpTimeV0MPtPosK_El(0),fTOFExpTimeV0MPtNegK_El(0),
-fTOFExpTimeV0MPtK_Mu(0),fTOFExpTimeV0MPtPosK_Mu(0),fTOFExpTimeV0MPtNegK_Mu(0),
-fTOFExpTimeV0MPtK_Pi(0),fTOFExpTimeV0MPtPosK_Pi(0),fTOFExpTimeV0MPtNegK_Pi(0),
-fTOFExpTimeV0MPtK_K(0),fTOFExpTimeV0MPtPosK_K(0),fTOFExpTimeV0MPtNegK_K(0),
-fTOFExpTimeV0MPtK_P(0),fTOFExpTimeV0MPtPosK_P(0),fTOFExpTimeV0MPtNegK_P(0),
-fTOFExpTimeV0MPtK_D(0),fTOFExpTimeV0MPtPosK_D(0),fTOFExpTimeV0MPtNegK_D(0),
-fTOFMismatchTimeV0MPtK(0),fTOFMismatchTimeV0MPtPosK(0),fTOFMismatchTimeV0MPtNegK(0),
+fTOFExpTimeV0MPtPosK_El(0),fTOFExpTimeV0MPtNegK_El(0),
+fTOFExpTimeV0MPtPosK_Mu(0),fTOFExpTimeV0MPtNegK_Mu(0),
+fTOFExpTimeV0MPtPosK_Pi(0),fTOFExpTimeV0MPtNegK_Pi(0),
+fTOFExpTimeV0MPtPosK_K(0),fTOFExpTimeV0MPtNegK_K(0),
+fTOFExpTimeV0MPtPosK_P(0),fTOFExpTimeV0MPtNegK_P(0),
+fTOFExpTimeV0MPtPosK_D(0),fTOFExpTimeV0MPtNegK_D(0),
+fTOFMismatchTimeV0MPtPosK(0),fTOFMismatchTimeV0MPtNegK(0),
 
-fTOFDCAxyV0MPtK(0),fTOFDCAxyV0MPtPosK(0),fTOFDCAxyV0MPtNegK(0),
+fTOFDCAxyV0MPtPosK(0),fTOFDCAxyV0MPtNegK(0),
 fTPCTOFnSigmaK(0),
 
 
-fTOFTimeV0MPtP(0),fTOFTimeV0MPtPosP(0),fTOFTimeV0MPtNegP(0),
-fTOFResolutionV0MPtP(0),fTOFResolutionV0MPtPosP(0),fTOFResolutionV0MPtNegP(0),
+fTOFTimeV0MPtPosP(0),fTOFTimeV0MPtNegP(0),
 
-fTOFExpTimeV0MPtP_El(0),fTOFExpTimeV0MPtPosP_El(0),fTOFExpTimeV0MPtNegP_El(0),
-fTOFExpTimeV0MPtP_Mu(0),fTOFExpTimeV0MPtPosP_Mu(0),fTOFExpTimeV0MPtNegP_Mu(0),
-fTOFExpTimeV0MPtP_Pi(0),fTOFExpTimeV0MPtPosP_Pi(0),fTOFExpTimeV0MPtNegP_Pi(0),
-fTOFExpTimeV0MPtP_K(0),fTOFExpTimeV0MPtPosP_K(0),fTOFExpTimeV0MPtNegP_K(0),
-fTOFExpTimeV0MPtP_P(0),fTOFExpTimeV0MPtPosP_P(0),fTOFExpTimeV0MPtNegP_P(0),
-fTOFExpTimeV0MPtP_D(0),fTOFExpTimeV0MPtPosP_D(0),fTOFExpTimeV0MPtNegP_D(0),
-fTOFMismatchTimeV0MPtP(0),fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
+fTOFExpTimeV0MPtPosP_El(0),fTOFExpTimeV0MPtNegP_El(0),
+fTOFExpTimeV0MPtPosP_Mu(0),fTOFExpTimeV0MPtNegP_Mu(0),
+fTOFExpTimeV0MPtPosP_Pi(0),fTOFExpTimeV0MPtNegP_Pi(0),
+fTOFExpTimeV0MPtPosP_K(0),fTOFExpTimeV0MPtNegP_K(0),
+fTOFExpTimeV0MPtPosP_P(0),fTOFExpTimeV0MPtNegP_P(0),
+fTOFExpTimeV0MPtPosP_D(0),fTOFExpTimeV0MPtNegP_D(0),
+fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
 
-fTOFDCAxyV0MPtP(0),fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
+fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
 fTPCTOFnSigmaP(0),
 
 
 fGausTime_K(0),fTOFGausTime_K(0),
 fGausTime_P(0),fTOFGausTime_P(0),
 
-
-fTOFNoMismatchTimeV0MPtPi(0),fTOFNoMismatchTimeV0MPtPosPi(0),fTOFNoMismatchTimeV0MPtNegPi(0),
-fTOFNoMismatchTimeV0MPtK(0),fTOFNoMismatchTimeV0MPtPosK(0),fTOFNoMismatchTimeV0MPtNegK(0),
-fTOFNoMismatchTimeV0MPtP(0),fTOFNoMismatchTimeV0MPtPosP(0),fTOFNoMismatchTimeV0MPtNegP(0),
 
 fEventV0MPS(0),fEventV0MVtx(0), fSec(0),fSecondary(0),fSec_p(0),fSec_k(0),
 fV0MPC(0),  ftail(0),fV0MPC_vertexcut(0),ftail_Random(0),
@@ -305,63 +290,43 @@ inputHandler->SetNeedField();
 	Resobins[i]=Resobins[i-1]+1.0;
 }
 	
-	fTOFTimeV0MPtPi=new TH3F("fTOFTimeV0MPtPi","TOF Time vs pT #pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFTimeV0MPtPi);
 	fTOFTimeV0MPtPosPi=new TH3F("fTOFTimeV0MPtPosPi","TOF Time vs pT #pi^{+};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtPosPi);
 	fTOFTimeV0MPtNegPi=new TH3F("fTOFTimeV0MPtNegPi","TOF Time vs pT #pi^{-};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtNegPi);
 
 
-	fTOFResolutionV0MPtPi=new TH3F("fTOFResolutionV0MPtPi","TOF Resolution vs pT #pi;p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtPi);
-	fTOFResolutionV0MPtPosPi=new TH3F("fTOFResolutionV0MPtPosPi","TOF Resolution vs pT #pi^{+};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtPosPi);
-	fTOFResolutionV0MPtNegPi=new TH3F("fTOFResolutionV0MPtNegPi","TOF Resolution vs pT #pi^{-};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtNegPi);
 
-	fTOFExpTimeV0MPtPi_El=new TH3F("fTOFExpTimeV0MPtPi_El","Exp TOF Time vs pT #pi^{+-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_El);
 	fTOFExpTimeV0MPtPosPi_El=new TH3F("fTOFExpTimeV0MPtPosPi_El","Exp TOF Time vs pT #pi^{+} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_El);
 	fTOFExpTimeV0MPtNegPi_El=new TH3F("fTOFExpTimeV0MPtNegPi_El","Exp TOF Time vs pT #pi^{-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegPi_El);
 
 
-	fTOFExpTimeV0MPtPi_Mu=new TH3F("fTOFExpTimeV0MPtPi_Mu","Exp TOF Time vs pT #pi^{+-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_Mu);
 	fTOFExpTimeV0MPtPosPi_Mu=new TH3F("fTOFExpTimeV0MPtPosPi_Mu","Exp TOF Time vs pT #pi^{+} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_Mu);
 	fTOFExpTimeV0MPtNegPi_Mu=new TH3F("fTOFExpTimeV0MPtNegPi_Mu","Exp TOF Time vs pT #pi^{-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegPi_Mu);
 
 
-	fTOFExpTimeV0MPtPi_Pi=new TH3F("fTOFExpTimeV0MPtPi_Pi","Exp TOF Time vs pT #pi^{+-} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_Pi);
 	fTOFExpTimeV0MPtPosPi_Pi=new TH3F("fTOFExpTimeV0MPtPosPi_Pi","Exp TOF Time vs pT #pi^{+} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_Pi);
 	fTOFExpTimeV0MPtNegPi_Pi=new TH3F("fTOFExpTimeV0MPtNegPi_Pi","Exp TOF Time vs pT #pi^{-} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegPi_Pi);
 
 
-	fTOFExpTimeV0MPtPi_K=new TH3F("fTOFExpTimeV0MPtPi_K","Exp TOF Time vs pT #pi^{+-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_K);
 	fTOFExpTimeV0MPtPosPi_K=new TH3F("fTOFExpTimeV0MPtPosPi_K","Exp TOF Time vs pT #pi^{+} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_K);
 	fTOFExpTimeV0MPtNegPi_K=new TH3F("fTOFExpTimeV0MPtNegPi_K","Exp TOF Time vs pT #pi^{-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegPi_K);
 
 
-	fTOFExpTimeV0MPtPi_P=new TH3F("fTOFExpTimeV0MPtPi_P","Exp TOF Time vs pT #pi^{+-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_P);
 	fTOFExpTimeV0MPtPosPi_P=new TH3F("fTOFExpTimeV0MPtPosPi_P","Exp TOF Time vs pT #pi^{+} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_P);
 	fTOFExpTimeV0MPtNegPi_P=new TH3F("fTOFExpTimeV0MPtNegPi_P","Exp TOF Time vs pT #pi^{-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegPi_P);
 
 
-	fTOFExpTimeV0MPtPi_D=new TH3F("fTOFExpTimeV0MPtPi_D","Exp TOF Time vs pT #pi^{+-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtPi_D);
 	fTOFExpTimeV0MPtPosPi_D=new TH3F("fTOFExpTimeV0MPtPosPi_D","Exp TOF Time vs pT #pi^{+} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosPi_D);
 	fTOFExpTimeV0MPtNegPi_D=new TH3F("fTOFExpTimeV0MPtNegPi_D","Exp TOF Time vs pT #pi^{-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -370,8 +335,6 @@ inputHandler->SetNeedField();
 
 
 	//Mismatch time and sigma	
-	fTOFMismatchTimeV0MPtPi=new TH3F("fTOFMismatchTimeV0MPtPi","TOF Mismatch Time vs pT #pi^{+-};p_{T} (GeV/c);T-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFMismatchTimeV0MPtPi);
 	fTOFMismatchTimeV0MPtPosPi=new TH3F("fTOFMismatchTimeV0MPtPosPi","TOF Mismatch Time vs pT #pi^{+};p_{T} (GeV/c);T-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
         fOutputList->Add(fTOFMismatchTimeV0MPtPosPi);
 	fTOFMismatchTimeV0MPtNegPi=new TH3F("fTOFMismatchTimeV0MPtNegPi","TOF Mismatch Time vs pT #pi^{-};p_{T} (GeV/c);T-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -383,8 +346,6 @@ inputHandler->SetNeedField();
         for (Int_t i=1;i<1201;i++) DCAbin[i]=DCAbin[i-1]+0.005;	
 
 
-	fTOFDCAxyV0MPtPi = new TH3F("fTOFDCAxyV0MPtPi","Pt vs V0M vs DCAxy #pi^{+-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-        fOutputList->Add(fTOFDCAxyV0MPtPi);
 	fTOFDCAxyV0MPtPosPi = new TH3F("fTOFDCAxyV0MPtPosPi","Pt vs V0M vs DCAxy #pi^{+};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fTOFDCAxyV0MPtPosPi);
 	fTOFDCAxyV0MPtNegPi = new TH3F("fTOFDCAxyV0MPtNegPi","Pt vs V0M vs DCAxy #pi^{-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
@@ -445,31 +406,19 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 	//==================================================================Kaon=========================================
 
-	fTOFTimeV0MPtK=new TH3F("fTOFTimeV0MPtK","TOF Time vs pT K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFTimeV0MPtK);
 	fTOFTimeV0MPtPosK=new TH3F("fTOFTimeV0MPtPosK","TOF Time vs pT K^{+};p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtPosK);
 	fTOFTimeV0MPtNegK=new TH3F("fTOFTimeV0MPtNegK","TOF Time vs pT K^{-};p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtNegK);
 
 
-	fTOFResolutionV0MPtK=new TH3F("fTOFResolutionV0MPtK","TOF Resolution vs pT K;p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtK);
-	fTOFResolutionV0MPtPosK=new TH3F("fTOFResolutionV0MPtPosK","TOF Resolution vs pT K^{+};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtPosK);
-	fTOFResolutionV0MPtNegK=new TH3F("fTOFResolutionV0MPtNegK","TOF Resolution vs pT K^{-};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtNegK);
 
-	fTOFExpTimeV0MPtK_El=new TH3F("fTOFExpTimeV0MPtK_El","Exp TOF Time vs pT K^{+-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_El);
 	fTOFExpTimeV0MPtPosK_El=new TH3F("fTOFExpTimeV0MPtPosK_El","Exp TOF Time vs pT K^{+} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_El);
 	fTOFExpTimeV0MPtNegK_El=new TH3F("fTOFExpTimeV0MPtNegK_El","Exp TOF Time vs pT K^{-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegK_El);
 
 
-	fTOFExpTimeV0MPtK_Mu=new TH3F("fTOFExpTimeV0MPtK_Mu","Exp TOF Time vs pT K^{+-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_Mu);
 	fTOFExpTimeV0MPtPosK_Mu=new TH3F("fTOFExpTimeV0MPtPosK_Mu","Exp TOF Time vs pT K^{+} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_Mu);
 	fTOFExpTimeV0MPtNegK_Mu=new TH3F("fTOFExpTimeV0MPtNegK_Mu","Exp TOF Time vs pT K^{-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -477,8 +426,6 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 
 
-	fTOFExpTimeV0MPtK_Pi=new TH3F("fTOFExpTimeV0MPtK_Pi","Exp TOF Time vs pT K^{+-} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_Pi);
 	fTOFExpTimeV0MPtPosK_Pi=new TH3F("fTOFExpTimeV0MPtPosK_Pi","Exp TOF Time vs pT K^{+} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_Pi);
 	fTOFExpTimeV0MPtNegK_Pi=new TH3F("fTOFExpTimeV0MPtNegK_Pi","Exp TOF Time vs pT K^{-} Hypo. Pi;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -486,24 +433,18 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 
 
-	fTOFExpTimeV0MPtK_K=new TH3F("fTOFExpTimeV0MPtK_K","Exp TOF Time vs pT K^{+-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_K);
 	fTOFExpTimeV0MPtPosK_K=new TH3F("fTOFExpTimeV0MPtPosK_K","Exp TOF Time vs pT K^{+} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_K);
 	fTOFExpTimeV0MPtNegK_K=new TH3F("fTOFExpTimeV0MPtNegK_K","Exp TOF Time vs pT K^{-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegK_K);
 
 
-	fTOFExpTimeV0MPtK_P=new TH3F("fTOFExpTimeV0MPtK_P","Exp TOF Time vs pT K^{+-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_P);
 	fTOFExpTimeV0MPtPosK_P=new TH3F("fTOFExpTimeV0MPtPosK_P","Exp TOF Time vs pT K^{+} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_P);
 	fTOFExpTimeV0MPtNegK_P=new TH3F("fTOFExpTimeV0MPtNegK_P","Exp TOF Time vs pT K^{-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegK_P);
 
 
-	fTOFExpTimeV0MPtK_D=new TH3F("fTOFExpTimeV0MPtK_D","Exp TOF Time vs pT K^{+-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtK_D);
 	fTOFExpTimeV0MPtPosK_D=new TH3F("fTOFExpTimeV0MPtPosK_D","Exp TOF Time vs pT K^{+} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosK_D);
 	fTOFExpTimeV0MPtNegK_D=new TH3F("fTOFExpTimeV0MPtNegK_D","Exp TOF Time vs pT K^{-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -512,16 +453,12 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 
 	//Mismatch time and sigma	
-	fTOFMismatchTimeV0MPtK=new TH3F("fTOFMismatchTimeV0MPtK","TOF Mismatch Time vs pT K^{+-};p_{T} (GeV/c);T-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFMismatchTimeV0MPtK);
 	fTOFMismatchTimeV0MPtPosK=new TH3F("fTOFMismatchTimeV0MPtPosK","TOF Mismatch Time vs pT K^{+};p_{T} (GeV/c);T-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
         fOutputList->Add(fTOFMismatchTimeV0MPtPosK);
 	fTOFMismatchTimeV0MPtNegK=new TH3F("fTOFMismatchTimeV0MPtNegK","TOF Mismatch Time vs pT K^{-};p_{T} (GeV/c);T-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
         fOutputList->Add(fTOFMismatchTimeV0MPtNegK);
 
 
-	fTOFDCAxyV0MPtK = new TH3F("fTOFDCAxyV0MPtK","Pt vs V0M vs DCAxy K^{+-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-        fOutputList->Add(fTOFDCAxyV0MPtK);
 	fTOFDCAxyV0MPtPosK = new TH3F("fTOFDCAxyV0MPtPosK","Pt vs V0M vs DCAxy K^{+};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fTOFDCAxyV0MPtPosK);
 	fTOFDCAxyV0MPtNegK = new TH3F("fTOFDCAxyV0MPtNegK","Pt vs V0M vs DCAxy K^{-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
@@ -534,31 +471,19 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 //==========================================================Proton====================================================================
 
 
-	fTOFTimeV0MPtP=new TH3F("fTOFTimeV0MPtP","TOF Time vs pT P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFTimeV0MPtP);
 	fTOFTimeV0MPtPosP=new TH3F("fTOFTimeV0MPtPosP","TOF Time vs pT P^{+};p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtPosP);
 	fTOFTimeV0MPtNegP=new TH3F("fTOFTimeV0MPtNegP","TOF Time vs pT P^{-};p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFTimeV0MPtNegP);
 
 
-	fTOFResolutionV0MPtP=new TH3F("fTOFResolutionV0MPtP","TOF Resolution vs pT P;p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtP);
-	fTOFResolutionV0MPtPosP=new TH3F("fTOFResolutionV0MPtPosP","TOF Resolution vs pT P^{+};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtPosP);
-	fTOFResolutionV0MPtNegP=new TH3F("fTOFResolutionV0MPtNegP","TOF Resolution vs pT P^{-};p_{T} (GeV/c);#sigma (ps);V0M PC",nPtbins,Ptbins,nResobins,Resobins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFResolutionV0MPtNegP);
 
-	fTOFExpTimeV0MPtP_El=new TH3F("fTOFExpTimeV0MPtP_El","Exp TOF Time vs pT P^{+-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_El);
 	fTOFExpTimeV0MPtPosP_El=new TH3F("fTOFExpTimeV0MPtPosP_El","Exp TOF Time vs pT P^{+} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_El);
 	fTOFExpTimeV0MPtNegP_El=new TH3F("fTOFExpTimeV0MPtNegP_El","Exp TOF Time vs pT P^{-} Hypo. El;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegP_El);
 
 
-	fTOFExpTimeV0MPtP_Mu=new TH3F("fTOFExpTimeV0MPtP_Mu","Exp TOF Time vs pT P^{+-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_Mu);
 	fTOFExpTimeV0MPtPosP_Mu=new TH3F("fTOFExpTimeV0MPtPosP_Mu","Exp TOF Time vs pT P^{+} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_Mu);
 	fTOFExpTimeV0MPtNegP_Mu=new TH3F("fTOFExpTimeV0MPtNegP_Mu","Exp TOF Time vs pT P^{-} Hypo. Mu;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -566,32 +491,24 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 
 
-	fTOFExpTimeV0MPtP_Pi=new TH3F("fTOFExpTimeV0MPtP_Pi","Exp TOF Time vs pT P^{+-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_Pi);
 	fTOFExpTimeV0MPtPosP_Pi=new TH3F("fTOFExpTimeV0MPtPosP_Pi","Exp TOF Time vs pT P^{+} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_Pi);
 	fTOFExpTimeV0MPtNegP_Pi=new TH3F("fTOFExpTimeV0MPtNegP_Pi","Exp TOF Time vs pT P^{-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp #P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegP_Pi);
 
 
-	fTOFExpTimeV0MPtP_K=new TH3F("fTOFExpTimeV0MPtP_K","Exp TOF Time vs pT P^{+-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_K);
 	fTOFExpTimeV0MPtPosP_K=new TH3F("fTOFExpTimeV0MPtPosP_K","Exp TOF Time vs pT P^{+} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_K);
 	fTOFExpTimeV0MPtNegP_K=new TH3F("fTOFExpTimeV0MPtNegP_K","Exp TOF Time vs pT P^{-} Hypo. K;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegP_K);
 
 
-	fTOFExpTimeV0MPtP_P=new TH3F("fTOFExpTimeV0MPtP_P","Exp TOF Time vs pT P^{+-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_P);
 	fTOFExpTimeV0MPtPosP_P=new TH3F("fTOFExpTimeV0MPtPosP_P","Exp TOF Time vs pT P^{+} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_P);
 	fTOFExpTimeV0MPtNegP_P=new TH3F("fTOFExpTimeV0MPtNegP_P","Exp TOF Time vs pT P^{-} Hypo. P;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtNegP_P);
 
 
-	fTOFExpTimeV0MPtP_D=new TH3F("fTOFExpTimeV0MPtP_D","Exp TOF Time vs pT P^{+-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-	fOutputList->Add(fTOFExpTimeV0MPtP_D);
 	fTOFExpTimeV0MPtPosP_D=new TH3F("fTOFExpTimeV0MPtPosP_D","Exp TOF Time vs pT P^{+} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fTOFExpTimeV0MPtPosP_D);
 	fTOFExpTimeV0MPtNegP_D=new TH3F("fTOFExpTimeV0MPtNegP_D","Exp TOF Time vs pT P^{-} Hypo. D;p_{T} (GeV/c);T-T_{0}-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -600,16 +517,12 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 
 	//Mismatch time and sigma	
-	fTOFMismatchTimeV0MPtP=new TH3F("fTOFMismatchTimeV0MPtP","TOF Mismatch Time vs pT P^{+-};p_{T} (GeV/c);T-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFMismatchTimeV0MPtP);
 	fTOFMismatchTimeV0MPtPosP=new TH3F("fTOFMismatchTimeV0MPtPosP","TOF Mismatch Time vs pT P^{+};p_{T} (GeV/c);T-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
         fOutputList->Add(fTOFMismatchTimeV0MPtPosP);
 	fTOFMismatchTimeV0MPtNegP=new TH3F("fTOFMismatchTimeV0MPtNegP","TOF Mismatch Time vs pT P^{-};p_{T} (GeV/c);T-T_{exp P} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
         fOutputList->Add(fTOFMismatchTimeV0MPtNegP);
 
 
-	fTOFDCAxyV0MPtP = new TH3F("fTOFDCAxyV0MPtP","Pt vs V0M vs DCAxy P^{+-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
-        fOutputList->Add(fTOFDCAxyV0MPtP);
 	fTOFDCAxyV0MPtPosP = new TH3F("fTOFDCAxyV0MPtPosP","Pt vs V0M vs DCAxy P^{+};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fTOFDCAxyV0MPtPosP);
 	fTOFDCAxyV0MPtNegP = new TH3F("fTOFDCAxyV0MPtNegP","Pt vs V0M vs DCAxy P^{-};p_{T} (GeV/c);V0M p.c.;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
@@ -628,30 +541,6 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 	fTOFGausTime_P = new TH1F("fTOFGausTime_P", "TOF Gaussian;TOF raw Times(ps);Counts",200,-1000,1000);
 	fOutputList->Add(fTOFGausTime_P);
 
-
-	fTOFNoMismatchTimeV0MPtPi=new TH3F("fTOFNoMismatchTimeV0MPtPi","TOF no mismatch Time vs pT #pi;p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtPi);
-        fTOFNoMismatchTimeV0MPtPosPi=new TH3F("fTOFNoMismatchTimeV0MPtPosPi","TOF no mismatch Time vs pT #pi^{+};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtPosPi);
-        fTOFNoMismatchTimeV0MPtNegPi=new TH3F("fTOFNoMismatchTimeV0MPtNegPi","TOF no mismatch Time vs pT #pi^{-};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtNegPi);
-
-
-	fTOFNoMismatchTimeV0MPtK=new TH3F("fTOFNoMismatchTimeV0MPtK","TOF no mismatch Time vs pT K;p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtK);
-        fTOFNoMismatchTimeV0MPtPosK=new TH3F("fTOFNoMismatchTimeV0MPtPosK","TOF no mismatch Time vs pT K^{+};p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtPosK);
-        fTOFNoMismatchTimeV0MPtNegK=new TH3F("fTOFNoMismatchTimeV0MPtNegK","TOF no mismatch Time vs pT K^{-};p_{T} (GeV/c);T-T_{0}-T_{exp K} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtNegK);
-
-
-
-	fTOFNoMismatchTimeV0MPtP=new TH3F("fTOFNoMismatchTimeV0MPtP","TOF no mismatch Time vs pT p;p_{T} (GeV/c);T-T_{0}-T_{exp p} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtP);
-        fTOFNoMismatchTimeV0MPtPosP=new TH3F("fTOFNoMismatchTimeV0MPtPosP","TOF no mismatch Time vs pT p^{+};p_{T} (GeV/c);T-T_{0}-T_{exp p} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtPosP);
-        fTOFNoMismatchTimeV0MPtNegP=new TH3F("fTOFNoMismatchTimeV0MPtNegP","TOF no mismatch Time vs pT p^{-};p_{T} (GeV/c);T-T_{0}-T_{exp p} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
-        fOutputList->Add(fTOFNoMismatchTimeV0MPtNegP);
 
         fEventV0MPS = new TH2F("fEventV0MPS","Event vs V0M after PS;Events;V0M percentile",3,eventbins,nV0Mbins,V0Mbins);
 	fOutputList->Add(fEventV0MPS);
@@ -980,14 +869,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
        // for pion 
         if(TMath::Abs(Y_Pi)<0.5){
 	
-	//TOF Resolution
-	fTOFResolutionV0MPtPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
-	if(track->Charge()>0)fTOFResolutionV0MPtPosPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
-	if(track->Charge()<0)fTOFResolutionV0MPtNegPi->Fill(track->Pt(),fTOFExpSigmaPi,V0mpc);
-
-
 	//TOF Time
-	fTOFTimeV0MPtPi->Fill(track->Pt(),TdiffPi,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosPi->Fill(track->Pt(),TdiffPi,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegPi->Fill(track->Pt(),TdiffPi,V0mpc);
 
@@ -997,16 +879,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	if(track->Charge()>0)fTOFSigmaV0MPtPosPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
 	if(track->Charge()<0)fTOFSigmaV0MPtNegPi->Fill(track->Pt(),TdiffSigmaPi,V0mpc);
 */
-
-	 if(fTPCSigmaPi < 5 && fTPCSigmaK < 5 && fTPCSigmaP < 5) {
-	 //if(fTPCSigmaPi > 5 && fTPCSigmaK > 5 && fTPCSigmaP > 5) continue;//original command
-	//TOF Time
-	fTOFNoMismatchTimeV0MPtPi->Fill(track->Pt(),TdiffPi,V0mpc);
-	if(track->Charge()>0)fTOFNoMismatchTimeV0MPtPosPi->Fill(track->Pt(),TdiffPi,V0mpc);
-	if(track->Charge()<0)fTOFNoMismatchTimeV0MPtNegPi->Fill(track->Pt(),TdiffPi,V0mpc);
-}
-
-
 
 
 //	Double_t gaus= gRandom->Gaus(0., 95.);
@@ -1028,33 +900,27 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//electron
 	//fTOFExpTimeV0MPtPi_El->Fill(track->Pt(),(fTOFExpTimePi-fT0TrkTime-fTOFExpTimeEl),V0mpc);//test1. not matching
 
-	fTOFExpTimeV0MPtPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_El->Fill(track->Pt(),pi_expTdiffEl,V0mpc);
 
 
 	//muon
-	fTOFExpTimeV0MPtPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_Mu->Fill(track->Pt(),pi_expTdiffMu,V0mpc);
 
 	//Pion
-	fTOFExpTimeV0MPtPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_Pi->Fill(track->Pt(),(pi_expTdiffPi),V0mpc);
 	
 	//Kaon
-	fTOFExpTimeV0MPtPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_K->Fill(track->Pt(),pi_expTdiffK,V0mpc);
 
 	//Proton
-	fTOFExpTimeV0MPtPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_P->Fill(track->Pt(),pi_expTdiffP,V0mpc);
 
 	//Deuteron
-	fTOFExpTimeV0MPtPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegPi_D->Fill(track->Pt(),pi_expTdiffD,V0mpc);
 
@@ -1062,7 +928,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t mismtch_Pi=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-	fTOFMismatchTimeV0MPtPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegPi->Fill(track->Pt(),(mismtch_Pi-fTOFExpTimePi),V0mpc);
 
@@ -1074,14 +939,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
         if(TMath::Abs(Y_K)<0.5){
 
 
-	//TOF Resolution
-	fTOFResolutionV0MPtK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
-	if(track->Charge()>0)fTOFResolutionV0MPtPosK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
-	if(track->Charge()<0)fTOFResolutionV0MPtNegK->Fill(track->Pt(),fTOFExpSigmaK,V0mpc);
-
-
 	//TOF Time
-	fTOFTimeV0MPtK->Fill(track->Pt(),TdiffK,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosK->Fill(track->Pt(),TdiffK,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegK->Fill(track->Pt(),TdiffK,V0mpc);
 
@@ -1091,15 +949,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	if(track->Charge()>0)fTOFSigmaV0MPtPosK->Fill(track->Pt(),TdiffSigmaK,V0mpc);
 	if(track->Charge()<0)fTOFSigmaV0MPtNegK->Fill(track->Pt(),TdiffSigmaK,V0mpc);
 */
-
-
-	if(fTPCSigmaPi < 5 && fTPCSigmaK < 5 && fTPCSigmaP < 5) {
-         //if(fTPCSigmaPi > 5 && fTPCSigmaK > 5 && fTPCSigmaP > 5) continue;//original command
-	//TOF Time
-        fTOFNoMismatchTimeV0MPtK->Fill(track->Pt(),TdiffK,V0mpc);
-        if(track->Charge()>0)fTOFNoMismatchTimeV0MPtPosK->Fill(track->Pt(),TdiffK,V0mpc);
-        if(track->Charge()<0)fTOFNoMismatchTimeV0MPtNegK->Fill(track->Pt(),TdiffK,V0mpc);
-}
 
 
 /*	Double_t K_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
@@ -1133,39 +982,32 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	
 	//Expected time with different particles hypothesis
 	//electron
-	fTOFExpTimeV0MPtK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_El->Fill(track->Pt(),K_expTdiffEl,V0mpc);
 
 	//muon
-	fTOFExpTimeV0MPtK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_Mu->Fill(track->Pt(),K_expTdiffMu,V0mpc);
 
 	//Pion
-	fTOFExpTimeV0MPtK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_Pi->Fill(track->Pt(),(K_expTdiffPi),V0mpc);
 	
 	//Kaon
-	fTOFExpTimeV0MPtK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_K->Fill(track->Pt(),K_expTdiffK,V0mpc);
 
 	//Proton
-	fTOFExpTimeV0MPtK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_P->Fill(track->Pt(),K_expTdiffP,V0mpc);
 
 	//Deuteron
-	fTOFExpTimeV0MPtK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegK_D->Fill(track->Pt(),K_expTdiffD,V0mpc);
 
 	Double_t mismtch_K=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-	fTOFMismatchTimeV0MPtK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegK->Fill(track->Pt(),(mismtch_K-fTOFExpTimeK),V0mpc);
 
@@ -1176,14 +1018,7 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	// for Proton 
         if(TMath::Abs(Y_P)<0.5){
 	
-	//TOF Resolution
-	fTOFResolutionV0MPtP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
-	if(track->Charge()>0)fTOFResolutionV0MPtPosP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
-	if(track->Charge()<0)fTOFResolutionV0MPtNegP->Fill(track->Pt(),fTOFExpSigmaP,V0mpc);
-
-
 	//TOF Time
-	fTOFTimeV0MPtP->Fill(track->Pt(),TdiffP,V0mpc);
 	if(track->Charge()>0)fTOFTimeV0MPtPosP->Fill(track->Pt(),TdiffP,V0mpc);
 	if(track->Charge()<0)fTOFTimeV0MPtNegP->Fill(track->Pt(),TdiffP,V0mpc);
 
@@ -1193,13 +1028,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	if(track->Charge()>0)fTOFSigmaV0MPtPosP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
 	if(track->Charge()<0)fTOFSigmaV0MPtNegP->Fill(track->Pt(),TdiffSigmaP,V0mpc);
 */
-	if(fTPCSigmaPi < 5 && fTPCSigmaK < 5 && fTPCSigmaP < 5) {
-         //if(fTPCSigmaPi > 5 && fTPCSigmaK > 5 && fTPCSigmaP > 5) continue;//original command
-	//TOF Time
-        fTOFNoMismatchTimeV0MPtP->Fill(track->Pt(),TdiffP,V0mpc);
-        if(track->Charge()>0)fTOFNoMismatchTimeV0MPtPosP->Fill(track->Pt(),TdiffP,V0mpc);
-        if(track->Charge()<0)fTOFNoMismatchTimeV0MPtNegP->Fill(track->Pt(),TdiffP,V0mpc);
-}	
 
 /*	Double_t P_sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
 	Double_t P_sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
@@ -1232,39 +1060,32 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	
 	//Expected time with different particles hypothesis
 	//electron
-	fTOFExpTimeV0MPtP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_El->Fill(track->Pt(),P_expTdiffEl,V0mpc);
 
 	//muon
-	fTOFExpTimeV0MPtP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_Mu->Fill(track->Pt(),P_expTdiffMu,V0mpc);
 
 	//Pion
-	fTOFExpTimeV0MPtP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_Pi->Fill(track->Pt(),(P_expTdiffPi),V0mpc);
 	
 	//Kaon
-	fTOFExpTimeV0MPtP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_K->Fill(track->Pt(),P_expTdiffK,V0mpc);
 
 	//Proton
-	fTOFExpTimeV0MPtP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_P->Fill(track->Pt(),P_expTdiffP,V0mpc);
 
 	//Deuteron
-	fTOFExpTimeV0MPtP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 	if(track->Charge()>0) fTOFExpTimeV0MPtPosP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 	if(track->Charge()<0) fTOFExpTimeV0MPtNegP_D->Fill(track->Pt(),P_expTdiffD,V0mpc);
 
 	Double_t mismtch_P=AliTOFPIDResponse::GetMismatchRandomValue(track->Eta());
 
 	//TOF Mismatch Time
-	fTOFMismatchTimeV0MPtP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 	if(track->Charge()>0) fTOFMismatchTimeV0MPtPosP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 	if(track->Charge()<0) fTOFMismatchTimeV0MPtNegP->Fill(track->Pt(),(mismtch_P-fTOFExpTimeP),V0mpc);
 
@@ -1298,7 +1119,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
 	Double_t fTPCTOFSigmaPi = TMath::Sqrt(fTPCSigmaPi*fTPCSigmaPi + fTOFSigmaPi*fTOFSigmaPi);
 	if(TMath::Abs(fTPCTOFSigmaPi)<2.){
-	fTOFDCAxyV0MPtPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()>0) fTOFDCAxyV0MPtPosPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()<0) fTOFDCAxyV0MPtNegPi->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
@@ -1309,7 +1129,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
 	Double_t fTPCTOFSigmaK = TMath::Sqrt(fTPCSigmaK*fTPCSigmaK + fTOFSigmaK*fTOFSigmaK);
 	if(TMath::Abs(fTPCTOFSigmaK)<2.){
-	fTOFDCAxyV0MPtK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()>0) fTOFDCAxyV0MPtPosK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 	if(track->Charge()<0) fTOFDCAxyV0MPtNegK->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
@@ -1320,7 +1139,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	//for DCA xy TPCTOF Combined is used
         Double_t fTPCTOFSigmaP = TMath::Sqrt(fTPCSigmaP*fTPCSigmaP + fTOFSigmaP*fTOFSigmaP);
         if(TMath::Abs(fTPCTOFSigmaP)<2.){
-        fTOFDCAxyV0MPtP->Fill(track->Pt(),V0mpc,dcaxy[0]);
         if(track->Charge()>0) fTOFDCAxyV0MPtPosP->Fill(track->Pt(),V0mpc,dcaxy[0]);
         if(track->Charge()<0) fTOFDCAxyV0MPtNegP->Fill(track->Pt(),V0mpc,dcaxy[0]);
 }
@@ -1352,194 +1170,141 @@ void AliAnalysisTaskTOFppSpectra::Terminate(Option_t *)
 	fEventVtx10 = dynamic_cast<TH1F*> (fOutputList->At(3));
 	fZVertex = dynamic_cast<TH1F*> (fOutputList->At(4));
 
-	fTOFTimeV0MPtPi= dynamic_cast<TH3F*> (fOutputList->At(5));
-	fTOFTimeV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(6));
-	fTOFTimeV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(7));
+	fTOFTimeV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(5));
+	fTOFTimeV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(6));
 
-	fTOFResolutionV0MPtPi= dynamic_cast<TH3F*> (fOutputList->At(8));
-	fTOFResolutionV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(9));
-	fTOFResolutionV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(10));
+	fTOFExpTimeV0MPtPosPi_El= dynamic_cast<TH3F*> (fOutputList->At(7));
+	fTOFExpTimeV0MPtNegPi_El= dynamic_cast<TH3F*> (fOutputList->At(8));
 
-	fTOFExpTimeV0MPtPi_El= dynamic_cast<TH3F*> (fOutputList->At(11));
-	fTOFExpTimeV0MPtPosPi_El= dynamic_cast<TH3F*> (fOutputList->At(12));
-	fTOFExpTimeV0MPtNegPi_El= dynamic_cast<TH3F*> (fOutputList->At(13));
+	fTOFExpTimeV0MPtPosPi_Mu= dynamic_cast<TH3F*> (fOutputList->At(9));
+	fTOFExpTimeV0MPtNegPi_Mu= dynamic_cast<TH3F*> (fOutputList->At(10));
 
-	fTOFExpTimeV0MPtPi_Mu= dynamic_cast<TH3F*> (fOutputList->At(14));
-	fTOFExpTimeV0MPtPosPi_Mu= dynamic_cast<TH3F*> (fOutputList->At(15));
-	fTOFExpTimeV0MPtNegPi_Mu= dynamic_cast<TH3F*> (fOutputList->At(16));
+	fTOFExpTimeV0MPtPosPi_Pi= dynamic_cast<TH3F*> (fOutputList->At(11));
+	fTOFExpTimeV0MPtNegPi_Pi= dynamic_cast<TH3F*> (fOutputList->At(12));
 
-	fTOFExpTimeV0MPtPi_Pi= dynamic_cast<TH3F*> (fOutputList->At(17));
-	fTOFExpTimeV0MPtPosPi_Pi= dynamic_cast<TH3F*> (fOutputList->At(18));
-	fTOFExpTimeV0MPtNegPi_Pi= dynamic_cast<TH3F*> (fOutputList->At(19));
+	fTOFExpTimeV0MPtPosPi_K= dynamic_cast<TH3F*> (fOutputList->At(13));
+	fTOFExpTimeV0MPtNegPi_K= dynamic_cast<TH3F*> (fOutputList->At(14));
 
-	fTOFExpTimeV0MPtPi_K= dynamic_cast<TH3F*> (fOutputList->At(20));
-	fTOFExpTimeV0MPtPosPi_K= dynamic_cast<TH3F*> (fOutputList->At(21));
-	fTOFExpTimeV0MPtNegPi_K= dynamic_cast<TH3F*> (fOutputList->At(22));
+	fTOFExpTimeV0MPtPosPi_P= dynamic_cast<TH3F*> (fOutputList->At(15));
+	fTOFExpTimeV0MPtNegPi_P= dynamic_cast<TH3F*> (fOutputList->At(16));
 
-	fTOFExpTimeV0MPtPi_P= dynamic_cast<TH3F*> (fOutputList->At(23));
-	fTOFExpTimeV0MPtPosPi_P= dynamic_cast<TH3F*> (fOutputList->At(24));
-	fTOFExpTimeV0MPtNegPi_P= dynamic_cast<TH3F*> (fOutputList->At(25));
+	fTOFExpTimeV0MPtPosPi_D= dynamic_cast<TH3F*> (fOutputList->At(17));
+	fTOFExpTimeV0MPtNegPi_D= dynamic_cast<TH3F*> (fOutputList->At(18));
 
-	fTOFExpTimeV0MPtPi_D= dynamic_cast<TH3F*> (fOutputList->At(26));
-	fTOFExpTimeV0MPtPosPi_D= dynamic_cast<TH3F*> (fOutputList->At(27));
-	fTOFExpTimeV0MPtNegPi_D= dynamic_cast<TH3F*> (fOutputList->At(28));
-
-	fTOFMismatchTimeV0MPtPi= dynamic_cast<TH3F*> (fOutputList->At(29));
-	fTOFMismatchTimeV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(30));
-	fTOFMismatchTimeV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(31));
+	fTOFMismatchTimeV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(19));
+	fTOFMismatchTimeV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(20));
 
 
-	fTOFDCAxyV0MPtPi= dynamic_cast<TH3F*> (fOutputList->At(32));
-	fTOFDCAxyV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(33));
-	fTOFDCAxyV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(34));
+	fTOFDCAxyV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(21));
+	fTOFDCAxyV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(22));
 
-	fEventV0M= dynamic_cast<TH2F*> (fOutputList->At(35));
+	fEventV0M= dynamic_cast<TH2F*> (fOutputList->At(23));
 
-	fT0Resolution= dynamic_cast<TH1F*> (fOutputList->At(36));
-	fTimeOfFlightRes= dynamic_cast<TH1F*> (fOutputList->At(37));
-	fTimeOfFlightTOFRes= dynamic_cast<TH1F*> (fOutputList->At(38));
-	fTimeOfFlightGoodRes= dynamic_cast<TH1F*> (fOutputList->At(39));
+	fT0Resolution= dynamic_cast<TH1F*> (fOutputList->At(24));
+	fTimeOfFlightRes= dynamic_cast<TH1F*> (fOutputList->At(25));
+	fTimeOfFlightTOFRes= dynamic_cast<TH1F*> (fOutputList->At(26));
+	fTimeOfFlightGoodRes= dynamic_cast<TH1F*> (fOutputList->At(27));
 
-	fBetaP= dynamic_cast<TH2F*> (fOutputList->At(40));
-	fBetaPNoMismatch= dynamic_cast<TH2F*> (fOutputList->At(41));
-	fBetaPNoMismatchEtaCut= dynamic_cast<TH2F*> (fOutputList->At(42));
-	fBetaPt= dynamic_cast<TH2F*> (fOutputList->At(43));
-	fBetaPtNoMismatch= dynamic_cast<TH2F*> (fOutputList->At(44));
-	fBetaPtNoMismatchEtaCut= dynamic_cast<TH2F*> (fOutputList->At(45));
+	fBetaP= dynamic_cast<TH2F*> (fOutputList->At(28));
+	fBetaPNoMismatch= dynamic_cast<TH2F*> (fOutputList->At(29));
+	fBetaPNoMismatchEtaCut= dynamic_cast<TH2F*> (fOutputList->At(30));
+	fBetaPt= dynamic_cast<TH2F*> (fOutputList->At(31));
+	fBetaPtNoMismatch= dynamic_cast<TH2F*> (fOutputList->At(32));
+	fBetaPtNoMismatchEtaCut= dynamic_cast<TH2F*> (fOutputList->At(33));
 
-	fTPCdEdxP= dynamic_cast<TH2F*> (fOutputList->At(46));
-	fTPCdEdxPt= dynamic_cast<TH2F*> (fOutputList->At(47));
+	fTPCdEdxP= dynamic_cast<TH2F*> (fOutputList->At(34));
+	fTPCdEdxPt= dynamic_cast<TH2F*> (fOutputList->At(35));
 
-	fTPCTOFnSigmaPi= dynamic_cast<TH2F*> (fOutputList->At(48));
-	fTOFChannelVsTime= dynamic_cast<TH2F*> (fOutputList->At(49));
+	fTPCTOFnSigmaPi= dynamic_cast<TH2F*> (fOutputList->At(36));
+	fTOFChannelVsTime= dynamic_cast<TH2F*> (fOutputList->At(37));
 
-	fGausTime= dynamic_cast<TH1F*> (fOutputList->At(50));
-	fTOFGausTime= dynamic_cast<TH1F*> (fOutputList->At(51));
-
-
-	fTOFTimeV0MPtK= dynamic_cast<TH3F*> (fOutputList->At(52));
-	fTOFTimeV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(53));
-	fTOFTimeV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(54));
+	fGausTime= dynamic_cast<TH1F*> (fOutputList->At(38));
+	fTOFGausTime= dynamic_cast<TH1F*> (fOutputList->At(39));
 
 
-	fTOFResolutionV0MPtK= dynamic_cast<TH3F*> (fOutputList->At(55));
-	fTOFResolutionV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(56));
-	fTOFResolutionV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(57));
+	fTOFTimeV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(40));
+	fTOFTimeV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(41));
 
-	fTOFExpTimeV0MPtK_El= dynamic_cast<TH3F*> (fOutputList->At(58));
-	fTOFExpTimeV0MPtPosK_El= dynamic_cast<TH3F*> (fOutputList->At(59));
-	fTOFExpTimeV0MPtNegK_El= dynamic_cast<TH3F*> (fOutputList->At(60));
 
-	fTOFExpTimeV0MPtK_Mu= dynamic_cast<TH3F*> (fOutputList->At(61));
-	fTOFExpTimeV0MPtPosK_Mu= dynamic_cast<TH3F*> (fOutputList->At(62));
-	fTOFExpTimeV0MPtNegK_Mu= dynamic_cast<TH3F*> (fOutputList->At(63));
+	fTOFExpTimeV0MPtPosK_El= dynamic_cast<TH3F*> (fOutputList->At(42));
+	fTOFExpTimeV0MPtNegK_El= dynamic_cast<TH3F*> (fOutputList->At(43));
 
-	fTOFExpTimeV0MPtK_Pi= dynamic_cast<TH3F*> (fOutputList->At(64));
-	fTOFExpTimeV0MPtPosK_Pi= dynamic_cast<TH3F*> (fOutputList->At(65));
-	fTOFExpTimeV0MPtNegK_Pi= dynamic_cast<TH3F*> (fOutputList->At(66));
+	fTOFExpTimeV0MPtPosK_Mu= dynamic_cast<TH3F*> (fOutputList->At(44));
+	fTOFExpTimeV0MPtNegK_Mu= dynamic_cast<TH3F*> (fOutputList->At(45));
 
-	fTOFExpTimeV0MPtK_K= dynamic_cast<TH3F*> (fOutputList->At(67));
-	fTOFExpTimeV0MPtPosK_K= dynamic_cast<TH3F*> (fOutputList->At(68));
-	fTOFExpTimeV0MPtNegK_K= dynamic_cast<TH3F*> (fOutputList->At(69));
+	fTOFExpTimeV0MPtPosK_Pi= dynamic_cast<TH3F*> (fOutputList->At(46));
+	fTOFExpTimeV0MPtNegK_Pi= dynamic_cast<TH3F*> (fOutputList->At(47));
 
-	fTOFExpTimeV0MPtK_P= dynamic_cast<TH3F*> (fOutputList->At(70));
-	fTOFExpTimeV0MPtPosK_P= dynamic_cast<TH3F*> (fOutputList->At(71));
-	fTOFExpTimeV0MPtNegK_P= dynamic_cast<TH3F*> (fOutputList->At(72));
+	fTOFExpTimeV0MPtPosK_K= dynamic_cast<TH3F*> (fOutputList->At(48));
+	fTOFExpTimeV0MPtNegK_K= dynamic_cast<TH3F*> (fOutputList->At(49));
 
-	fTOFExpTimeV0MPtK_D= dynamic_cast<TH3F*> (fOutputList->At(73));
-	fTOFExpTimeV0MPtPosK_D= dynamic_cast<TH3F*> (fOutputList->At(74));
-	fTOFExpTimeV0MPtNegK_D= dynamic_cast<TH3F*> (fOutputList->At(75));
+	fTOFExpTimeV0MPtPosK_P= dynamic_cast<TH3F*> (fOutputList->At(50));
+	fTOFExpTimeV0MPtNegK_P= dynamic_cast<TH3F*> (fOutputList->At(51));
 
-	fTOFMismatchTimeV0MPtK= dynamic_cast<TH3F*> (fOutputList->At(76));
-	fTOFMismatchTimeV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(77));
-	fTOFMismatchTimeV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(78));
+	fTOFExpTimeV0MPtPosK_D= dynamic_cast<TH3F*> (fOutputList->At(52));
+	fTOFExpTimeV0MPtNegK_D= dynamic_cast<TH3F*> (fOutputList->At(53));
 
-	fTOFDCAxyV0MPtK= dynamic_cast<TH3F*> (fOutputList->At(79));
-	fTOFDCAxyV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(80));
-	fTOFDCAxyV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(81));
+	fTOFMismatchTimeV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(54));
+	fTOFMismatchTimeV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(55));
 
-	fTPCTOFnSigmaK= dynamic_cast<TH2F*> (fOutputList->At(82));
+	fTOFDCAxyV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(56));
+	fTOFDCAxyV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(57));
+
+	fTPCTOFnSigmaK= dynamic_cast<TH2F*> (fOutputList->At(58));
 	
 
-	fTOFTimeV0MPtP= dynamic_cast<TH3F*> (fOutputList->At(83));
-	fTOFTimeV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(84));
-	fTOFTimeV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(85));
+	fTOFTimeV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(59));
+	fTOFTimeV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(60));
 
-	fTOFResolutionV0MPtP= dynamic_cast<TH3F*> (fOutputList->At(86));
-	fTOFResolutionV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(87));
-	fTOFResolutionV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(88));
+	fTOFExpTimeV0MPtPosP_El= dynamic_cast<TH3F*> (fOutputList->At(61));
+	fTOFExpTimeV0MPtNegP_El= dynamic_cast<TH3F*> (fOutputList->At(62));
 
-	fTOFExpTimeV0MPtP_El= dynamic_cast<TH3F*> (fOutputList->At(89));
-	fTOFExpTimeV0MPtPosP_El= dynamic_cast<TH3F*> (fOutputList->At(90));
-	fTOFExpTimeV0MPtNegP_El= dynamic_cast<TH3F*> (fOutputList->At(91));
+	fTOFExpTimeV0MPtPosP_Mu= dynamic_cast<TH3F*> (fOutputList->At(63));
+	fTOFExpTimeV0MPtNegP_Mu= dynamic_cast<TH3F*> (fOutputList->At(64));
 
-	fTOFExpTimeV0MPtP_Mu= dynamic_cast<TH3F*> (fOutputList->At(92));
-	fTOFExpTimeV0MPtPosP_Mu= dynamic_cast<TH3F*> (fOutputList->At(93));
-	fTOFExpTimeV0MPtNegP_Mu= dynamic_cast<TH3F*> (fOutputList->At(94));
+	fTOFExpTimeV0MPtPosP_Pi= dynamic_cast<TH3F*> (fOutputList->At(65));
+	fTOFExpTimeV0MPtNegP_Pi= dynamic_cast<TH3F*> (fOutputList->At(66));
 
-	fTOFExpTimeV0MPtP_Pi= dynamic_cast<TH3F*> (fOutputList->At(95));
-	fTOFExpTimeV0MPtPosP_Pi= dynamic_cast<TH3F*> (fOutputList->At(96));
-	fTOFExpTimeV0MPtNegP_Pi= dynamic_cast<TH3F*> (fOutputList->At(97));
+	fTOFExpTimeV0MPtPosP_K= dynamic_cast<TH3F*> (fOutputList->At(67));
+	fTOFExpTimeV0MPtNegP_K= dynamic_cast<TH3F*> (fOutputList->At(68));
 
-	fTOFExpTimeV0MPtP_K= dynamic_cast<TH3F*> (fOutputList->At(98));
-	fTOFExpTimeV0MPtPosP_K= dynamic_cast<TH3F*> (fOutputList->At(99));
-	fTOFExpTimeV0MPtNegP_K= dynamic_cast<TH3F*> (fOutputList->At(100));
+	fTOFExpTimeV0MPtPosP_P= dynamic_cast<TH3F*> (fOutputList->At(69));
+	fTOFExpTimeV0MPtNegP_P= dynamic_cast<TH3F*> (fOutputList->At(70));
 
-	fTOFExpTimeV0MPtP_P= dynamic_cast<TH3F*> (fOutputList->At(101));
-	fTOFExpTimeV0MPtPosP_P= dynamic_cast<TH3F*> (fOutputList->At(102));
-	fTOFExpTimeV0MPtNegP_P= dynamic_cast<TH3F*> (fOutputList->At(103));
+	fTOFExpTimeV0MPtPosP_D= dynamic_cast<TH3F*> (fOutputList->At(71));
+	fTOFExpTimeV0MPtNegP_D= dynamic_cast<TH3F*> (fOutputList->At(72));
 
-	fTOFExpTimeV0MPtP_D= dynamic_cast<TH3F*> (fOutputList->At(104));
-	fTOFExpTimeV0MPtPosP_D= dynamic_cast<TH3F*> (fOutputList->At(105));
-	fTOFExpTimeV0MPtNegP_D= dynamic_cast<TH3F*> (fOutputList->At(106));
+	fTOFMismatchTimeV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(73));
+	fTOFMismatchTimeV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(74));
 
-	fTOFMismatchTimeV0MPtP= dynamic_cast<TH3F*> (fOutputList->At(107));
-	fTOFMismatchTimeV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(108));
-	fTOFMismatchTimeV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(109));
+	fTOFDCAxyV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(75));
+	fTOFDCAxyV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(76));
 
-	fTOFDCAxyV0MPtP= dynamic_cast<TH3F*> (fOutputList->At(110));
-	fTOFDCAxyV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(111));
-	fTOFDCAxyV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(112));
+	fTPCTOFnSigmaP= dynamic_cast<TH2F*> (fOutputList->At(77));
+	fGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(78));
+	fTOFGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(79));
+	fGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(80));
+	fTOFGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(81));
 
-	fTPCTOFnSigmaP= dynamic_cast<TH2F*> (fOutputList->At(113));
-	fGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(114));
-	fTOFGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(115));
-	fGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(116));
-	fTOFGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(117));
-
-
-	
-	fTOFNoMismatchTimeV0MPtPi= dynamic_cast<TH3F*> (fOutputList->At(118));
-	fTOFNoMismatchTimeV0MPtPosPi= dynamic_cast<TH3F*> (fOutputList->At(119));
-	fTOFNoMismatchTimeV0MPtNegPi= dynamic_cast<TH3F*> (fOutputList->At(120));
-	
-	fTOFNoMismatchTimeV0MPtK= dynamic_cast<TH3F*> (fOutputList->At(121));
-	fTOFNoMismatchTimeV0MPtPosK= dynamic_cast<TH3F*> (fOutputList->At(122));
-	fTOFNoMismatchTimeV0MPtNegK= dynamic_cast<TH3F*> (fOutputList->At(123));
-
-	fTOFNoMismatchTimeV0MPtP= dynamic_cast<TH3F*> (fOutputList->At(124));
-	fTOFNoMismatchTimeV0MPtPosP= dynamic_cast<TH3F*> (fOutputList->At(125));
-	fTOFNoMismatchTimeV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(126));
-
-	fEventV0MPS= dynamic_cast<TH2F*> (fOutputList->At(127));
-        fEventV0MVtx= dynamic_cast<TH2F*> (fOutputList->At(128));
-        fV0MPC= dynamic_cast<TH1F*> (fOutputList->At(129));
+	fEventV0MPS= dynamic_cast<TH2F*> (fOutputList->At(82));
+        fEventV0MVtx= dynamic_cast<TH2F*> (fOutputList->At(83));
+        fV0MPC= dynamic_cast<TH1F*> (fOutputList->At(84));
         
-	ftail= dynamic_cast<TH1F*> (fOutputList->At(130));
+	ftail= dynamic_cast<TH1F*> (fOutputList->At(85));
         
-	fV0MPC_vertexcut= dynamic_cast<TH1F*> (fOutputList->At(131));
+	fV0MPC_vertexcut= dynamic_cast<TH1F*> (fOutputList->At(86));
 	
-	fPtTPC_AllP= dynamic_cast<TH1F*> (fOutputList->At(132));
-	fPtTPC_AllN= dynamic_cast<TH1F*> (fOutputList->At(133));
-	fPtTOF_AllP= dynamic_cast<TH1F*> (fOutputList->At(134));
-	fPtTOF_AllN= dynamic_cast<TH1F*> (fOutputList->At(135));
+	fPtTPC_AllP= dynamic_cast<TH1F*> (fOutputList->At(87));
+	fPtTPC_AllN= dynamic_cast<TH1F*> (fOutputList->At(88));
+	fPtTOF_AllP= dynamic_cast<TH1F*> (fOutputList->At(89));
+	fPtTOF_AllN= dynamic_cast<TH1F*> (fOutputList->At(90));
 
-	ftail_Random= dynamic_cast<TH1F*> (fOutputList->At(136));
+	ftail_Random= dynamic_cast<TH1F*> (fOutputList->At(91));
 
-	fTPC_CR= dynamic_cast<TH1F*> (fOutputList->At(137));
-        fChi2TPCcluster= dynamic_cast<TH1F*> (fOutputList->At(138));
-        fDCAZ= dynamic_cast<TH1F*> (fOutputList->At(139));
-        fDCAxy= dynamic_cast<TH1F*> (fOutputList->At(140));
+	fTPC_CR= dynamic_cast<TH1F*> (fOutputList->At(92));
+        fChi2TPCcluster= dynamic_cast<TH1F*> (fOutputList->At(93));
+        fDCAZ= dynamic_cast<TH1F*> (fOutputList->At(94));
+        fDCAxy= dynamic_cast<TH1F*> (fOutputList->At(95));
 
 /*
 TFile *f=new TFile("result/12dec/ALICE_final_TOF_output_run1.root","recreate");//runlist1
