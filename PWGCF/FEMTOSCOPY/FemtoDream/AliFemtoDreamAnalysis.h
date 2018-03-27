@@ -54,7 +54,7 @@ class AliFemtoDreamAnalysis {
   TList *GetQAList() {return fQA;};
   void SetTrackBufferSize(int size){fTrackBufferSize=size;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {fConfig=conf;};
-  void Init(bool isMonteCarlo, bool MinimalBooking, UInt_t trigger);
+  void Init(bool isMonteCarlo, UInt_t trigger);
   TString ClassName() {return "AliFemtoDreamAnalysis";};
   void Make(AliAODEvent *evt);
   virtual ~AliFemtoDreamAnalysis();

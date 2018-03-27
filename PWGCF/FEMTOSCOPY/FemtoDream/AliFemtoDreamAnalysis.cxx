@@ -47,8 +47,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init(
-    bool isMonteCarlo,bool MinimalBooking,UInt_t trigger) {
+void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -79,17 +78,21 @@ void AliFemtoDreamAnalysis::Init(
   fAntiCascCuts->Init();
   fGTI=new AliAODTrack*[fTrackBufferSize];
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
-  fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinimalBooking);
+  bool MinBooking=
+      (!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample());
+  fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (!MinimalBooking) {
+  if (!MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
     if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
   }
-  fPartColl=new AliFemtoDreamPartCollection(fConfig,MinimalBooking);
-  fControlSample=new AliFemtoDreamControlSample(fConfig,MinimalBooking);
+  fPartColl=
+      new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
+  fControlSample=
+      new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
   return;
 }
 

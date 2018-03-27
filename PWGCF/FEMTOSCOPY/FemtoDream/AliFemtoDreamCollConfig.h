@@ -38,6 +38,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
   void SetSpinningDepth(int SpinningDepth){fSpinningDepth=SpinningDepth;};
   void SetSECommonAncestor(bool doit) {fMCCommonAncestor=doit;};
+  void SetMinimalBookingME(bool doIt) {fMinimalBookingME=doIt;};
+  void SetMinimalBookingSample(bool doIt) {fMinimalBookingSample=doIt;};
 
   bool GetDoMultBinning() {return fMultBinning;};
   bool GetDokTBinning() {return fkTBinning;};
@@ -49,7 +51,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetUseEventMixing(){return fMixedEventStatistics;};
   bool GetUsePhiSpinning(){return fGetTheControlSampel;};
   bool GetdPhidEtaPlots() {return fdPhidEtaPlots;};
-
+  bool GetMinimalBookingME() {return fMinimalBookingME;};
+  bool GetMinimalBookingSample() {return fMinimalBookingSample;};
   int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins(){return (fZVtxBins->GetEntries()-1);};
@@ -66,13 +69,15 @@ class AliFemtoDreamCollConfig : public TNamed {
   int GetSpinningDepth(){return fSpinningDepth;};
  private:
   bool fMultBinning;            //
-  bool fkTBinning;            //
-  bool fmTBinning;            //
+  bool fkTBinning;              //
+  bool fmTBinning;              //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fMinimalBookingME;       //
+  bool fMinimalBookingSample;   //
   int fNumberRadii;             //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
@@ -82,10 +87,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   int fMixingDepth;             //
-  int fSpinningDepth;			//
+  int fSpinningDepth;			      //
   bool fkTCentrality;           //
   bool fMCCommonAncestor;       // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
-  ClassDef(AliFemtoDreamCollConfig,4);
+  ClassDef(AliFemtoDreamCollConfig,5);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
