@@ -163,7 +163,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
-  fPythiaPtHard(0.)
+  fPythiaPtHard(0.),
+  fPrintTimingInfoToLog(false),
+  fTimer()
 {
   if (fgInstance != nullptr) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -231,7 +233,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
-  fPythiaPtHard(0.)
+  fPythiaPtHard(0.),
+  fPrintTimingInfoToLog(false),
+  fTimer()
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -315,6 +319,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("randomEventNumberAccess", fRandomEventNumberAccess, false);
   res = fYAMLConfig.GetProperty("randomFileAccess", fRandomFileAccess, false);
   res = fYAMLConfig.GetProperty("createHisto", fCreateHisto, false);
+  res = fYAMLConfig.GetProperty("printTimingInfoInLog", fPrintTimingInfoToLog, false);
   // More general embedding helper properties
   res = fYAMLConfig.GetProperty("filePattern", fFilePattern, false);
   res = fYAMLConfig.GetProperty("inputFilename", fInputFilename, false);
@@ -1125,6 +1130,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
       fInternalEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
     }
   }
+  
+  // Set up timer for logging purposes
+  if (fPrintTimingInfoToLog) {
+    fTimer = TStopwatch();
+  }
 
   if (!fCreateHisto) {
     return;
@@ -1210,6 +1220,17 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
       histInternalEventCutsStats->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
     }
     histInternalEventCutsStats->GetYaxis()->SetTitle("Number of selected events");
+  }
+  
+  // Time to execute InitTree()
+  if (fPrintTimingInfoToLog) {
+    histName = "fInitTreeCPUtime";
+    histTitle = "CPU time to execute InitTree() (s)";
+    fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
+    
+    histName = "fInitTreeRealtime";
+    histTitle = "Real time to execute InitTree() (s)";
+    fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
   }
 
   // Add all histograms to output list
@@ -1396,6 +1417,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 {
+  // Start the timer (for logging purposes)
+  if (fPrintTimingInfoToLog) {
+    fTimer.Start(kTRUE);
+    std::cout << "InitTree() has started for file " << (fFilenameIndex + fFileNumber + 1) % fMaxNumberOfFiles << fChain->GetCurrentFile()->GetName() << "..." << std::endl;
+  }
+  
   // Load first entry of the (next) file so that we can query information about it
   // (it is unaccessible otherwise).
   // Since fUpperEntry is the total number of entries, loading it will retrieve the
@@ -1459,6 +1486,15 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Note that the tree in the new file has been initialized
   fInitializedNewFile = kTRUE;
+  
+  // Stop timer (for logging purposes)
+  if (fPrintTimingInfoToLog) {
+    fTimer.Stop();
+    std::cout << "InitTree() complete. CPU time: " << fTimer.CpuTime() << " (s). Real time: " << fTimer.RealTime() << " (s)." << std::endl;
+    fHistManager.FillTH1("fInitTreeCPUtime", fTimer.CpuTime());
+    fHistManager.FillTH1("fInitTreeRealtime", fTimer.RealTime());
+  }
+
 }
 
 /**
@@ -1747,6 +1783,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Pythia cross section filename: \"" << fPythiaXSecFilename << "\"\n";
   tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
   tempSS << "Tree name: " << fTreeName << "\n";
+  tempSS << "Print timing info to log: " << fPrintTimingInfoToLog << "\n";
   tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";
   tempSS << "Random file access: " << fRandomFileAccess << "\n";
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
