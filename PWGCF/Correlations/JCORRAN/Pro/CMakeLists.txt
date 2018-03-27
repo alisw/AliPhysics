@@ -27,6 +27,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/OADB
   )
@@ -45,6 +46,7 @@ set(SRCS
 	AliJJetJtTask.cxx
 	AliJJetAnalysis.cxx
 	AliJHSInterplayTask.cxx
+	AliBSDiJetTask.cxx
 )
 
 # Headers from sources
