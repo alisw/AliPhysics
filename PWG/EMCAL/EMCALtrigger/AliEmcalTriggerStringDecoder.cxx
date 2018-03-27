@@ -24,70 +24,31 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#include <vector>
-#include <iostream>
-#include <TClonesArray.h>
+#include <sstream>
+#include "AliEmcalTriggerStringDecoder.h"
 
-#include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerSelection.h"
-#include "AliEmcalTriggerSelectionCuts.h"
-#include "AliLog.h"
+using namespace PWG::EMCAL;
 
-/// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalTriggerSelection)
-/// \endcond
-
-namespace PWG{
-namespace EMCAL{
-
-AliEmcalTriggerSelection::AliEmcalTriggerSelection() :
-  TNamed(),
-  fSelectionCuts(NULL)
-{
-}
-
-AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts):
-  TNamed(name, ""),
-  fSelectionCuts(cuts)
-{
-}
-
-AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArray * const inputPatches) const {
-  AliDebugStream(1) << "Trigger selection " << GetName() << ": Make decision" << std::endl;
-  AliEmcalTriggerDecision *result = new AliEmcalTriggerDecision(GetName());
-  TIter patchIter(inputPatches);
-  AliEMCALTriggerPatchInfo *patch(NULL);
-  std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
-  AliDebugStream(1) << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
-  while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
-    if(fSelectionCuts->IsSelected(patch)){
-      selectedPatches.push_back(patch);
-    }
-  }
-  AliDebugStream(1) << "Number of patches fulfilling the trigger condition: " << selectedPatches.size() << std::endl;
-  // Find the main patch
-  AliEMCALTriggerPatchInfo *mainPatch(NULL), *testpatch(NULL);
-  for(std::vector<AliEMCALTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){
-    testpatch = *it;
-    if(!mainPatch) mainPatch = testpatch;
-    else if(fSelectionCuts->CompareTriggerPatches(testpatch, mainPatch) > 0) mainPatch = testpatch;
-    result->AddAcceptedPatch(testpatch);
-  }
-  if(mainPatch) result->SetMainPatch(mainPatch);
-  result->SetSelectionCuts(fSelectionCuts);
+std::string Triggerinfo::ExpandClassName() const {
+  std::string result = fTriggerClass + "-" + fBunchCrossing + "-" + fPastFutureProtection + "-" + fTriggerCluster;
   return result;
 }
 
-void AliEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
-  stream << "  Name of the trigger class: " << GetName() << std::endl;
-  stream << *fSelectionCuts << std::endl;
+bool Triggerinfo::IsTriggerClass(const std::string &triggerclass) const {
+  return fTriggerClass.substr(1) == triggerclass; // remove C from trigger class part
 }
 
-}
-}
-
-std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTriggerSelection &sel) {
-  sel.PrintStream(stream);
-  return stream;
+std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) {
+  std::vector<Triggerinfo> result;
+  std::stringstream triggerparser(triggerstring);
+  std::string currenttrigger;
+  while(std::getline(triggerparser, currenttrigger, ' ')){
+    if(!currenttrigger.length()) continue;
+    std::vector<std::string> tokens;
+    std::stringstream triggerdecoder(currenttrigger);
+    std::string token;
+    while(std::getline(triggerdecoder, token, '-')) tokens.emplace_back(token);
+    result.emplace_back(Triggerinfo({tokens[0], tokens[1], tokens[2], tokens[3]}));
+  }
+  return result;
 }

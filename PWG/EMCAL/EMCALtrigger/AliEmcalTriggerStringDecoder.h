@@ -24,70 +24,66 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#ifndef __ALIEMCALTRIGGERSTRINGDECODER_H__
+#define __ALIEMCALTRIGGERSTRINGDECODER_H__
+#if !defined(__CINT__)
+#include <string>
 #include <vector>
-#include <iostream>
-#include <TClonesArray.h>
 
-#include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerSelection.h"
-#include "AliEmcalTriggerSelectionCuts.h"
-#include "AliLog.h"
+namespace PWG {
 
-/// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalTriggerSelection)
-/// \endcond
+namespace EMCAL {
 
-namespace PWG{
-namespace EMCAL{
+/**
+ * @struct Triggerinfo
+ * @brief Decoded structure of a trigger string
+ * 
+ * A trigger class string consists of 4 characteristic information
+ * - Name of the trigger input
+ * - Bunch crossing type
+ * - Type of the past-future protection algorithm
+ * - Name of the trigger cluster
+ * 
+ * For easy determinaton of the various information within a trigger
+ * string the struct provides access to the different information
+ * within the trigger string.
+ */
+struct Triggerinfo {
+  std::string fTriggerClass;              ///< Trigger class
+  std::string fBunchCrossing;             ///< Bunch crossing type
+  std::string fPastFutureProtection;      ///< Type of the past-future protection
+  std::string fTriggerCluster;            ///< Trigger cluster
 
-AliEmcalTriggerSelection::AliEmcalTriggerSelection() :
-  TNamed(),
-  fSelectionCuts(NULL)
-{
-}
+  /**
+   * @brief Reconstruct trigger string from information in the Triggerinfo object
+   * @return std::string Trigger class representation of the trigger info
+   */
+  std::string ExpandClassName() const; 
 
-AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts):
-  TNamed(name, ""),
-  fSelectionCuts(cuts)
-{
-}
+  /**
+   * @brief Check if the trigger info corresponds to a certain trigger input class
+   * 
+   * @param triggerclass Name of the trigger class without C
+   * @return true Trigger class matches
+   * @return false Trigger class does not match
+   */
+  bool IsTriggerClass(const std::string &triggerclass) const;
+};
 
-AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArray * const inputPatches) const {
-  AliDebugStream(1) << "Trigger selection " << GetName() << ": Make decision" << std::endl;
-  AliEmcalTriggerDecision *result = new AliEmcalTriggerDecision(GetName());
-  TIter patchIter(inputPatches);
-  AliEMCALTriggerPatchInfo *patch(NULL);
-  std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
-  AliDebugStream(1) << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
-  while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
-    if(fSelectionCuts->IsSelected(patch)){
-      selectedPatches.push_back(patch);
-    }
-  }
-  AliDebugStream(1) << "Number of patches fulfilling the trigger condition: " << selectedPatches.size() << std::endl;
-  // Find the main patch
-  AliEMCALTriggerPatchInfo *mainPatch(NULL), *testpatch(NULL);
-  for(std::vector<AliEMCALTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){
-    testpatch = *it;
-    if(!mainPatch) mainPatch = testpatch;
-    else if(fSelectionCuts->CompareTriggerPatches(testpatch, mainPatch) > 0) mainPatch = testpatch;
-    result->AddAcceptedPatch(testpatch);
-  }
-  if(mainPatch) result->SetMainPatch(mainPatch);
-  result->SetSelectionCuts(fSelectionCuts);
-  return result;
-}
-
-void AliEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
-  stream << "  Name of the trigger class: " << GetName() << std::endl;
-  stream << *fSelectionCuts << std::endl;
-}
+/**
+ * @brief Decoding trigger string
+ * 
+ * For easy access of the various components of a trigger string
+ * the trigger string is decoded into Tiggerinfo structs. Each
+ * entry in the struct corresponds to one trigger class present
+ * in the trigger string
+ * 
+ * @param triggerstring Valid trigger class string
+ * @return std::vector<Triggerinfo> Trigger info objects for all trigger classes found in the trigger string
+ */
+std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring);
 
 }
 }
-
-std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTriggerSelection &sel) {
-  sel.PrintStream(stream);
-  return stream;
-}
+#endif
+#endif

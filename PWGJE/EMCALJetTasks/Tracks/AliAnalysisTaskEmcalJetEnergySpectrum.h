@@ -24,8 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#ifndef ALIANALYSISTASKEMCALJETENERGYSCALE_H
-#define ALIANALYSISTASKEMCALJETENERGYSCALE_H
+#ifndef __ALINANLYSISTASKJETENERGYSPECTRUM_H__
+#define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
 #if !(defined __CINT__ || defined __MAKECINT__)
 #if __cplusplus >= 201103L
@@ -35,57 +35,60 @@
 #endif
 #endif
 
-#include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliJetContainer.h"
 
 class THistManager;
 
 namespace EmcalTriggerJets {
 
-class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
 public:
 #ifdef USECXX11HEADERS
-  AliAnalysisTaskEmcalJetEnergyScale() = default;
-  AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-  AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
+  AliAnalysisTaskEmcalJetEnergySpectrum() = default;
+  AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &) = delete;
+  AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &) = delete;
 #else
   // Only needed for rootcint - no implementation necessary
-  AliAnalysisTaskEmcalJetEnergyScale();
+  AliAnalysisTaskEmcalJetEnergySpectrum();
 #endif
-  AliAnalysisTaskEmcalJetEnergyScale(const char *name);
-  virtual ~AliAnalysisTaskEmcalJetEnergyScale();
+  AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
+  virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
-  void SetNameDetJetContainer(const char *name)  { fNameDetectorJets = name; }
-  void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }
-  void SetTriggerName(const char *name)          { fTriggerSelectionString = name; }
+  void SetIsMC(bool isMC) { fIsMC = isMC; }
+  void SetNameJetContainer(const char *name) { fNameJetContainer = name; }
+  void SetNameTriggerDecisionContainer(const char *name) { fNameTriggerDecisionContainer = name; }
+  void SetTriggerSelection(UInt_t triggerbits, const char *triggerstring) { 
+    fTriggerSelectionBits = triggerbits;
+    fTriggerSelectionString = triggerstring;
+  }
+  void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
+  void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
 
-  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
-    AliJetContainer::EJetType_t       jetType,
-    Double_t                          radius,
-    Bool_t                            useDCAL,
-    const char *                      trigger
-  );
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();
-  virtual Bool_t Run(); 
-  bool IsSelectEmcalTriggers(const TString &triggerstring) const;
+  virtual bool Run();
+  bool TriggerSelection() const;
+  Int_t GetTriggerClusterIndex(const TString &triggerstring) const;
+  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
 private:
-  THistManager                *fHistos;                       //!<! Histogram collection
-  TString                     fNameDetectorJets;              ///< Name of the data jet container
-  TString                     fNameParticleJets;              ///< Name of the MC jet container
-  TString                     fTriggerSelectionString;        ///< Trigger selection string
-  TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
-
 #ifndef USECXX11HEADERS
-  AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);
-  AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &);
+  AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
+  AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &);
 #endif
+  THistManager                  *fHistos;                       ///< Histogram manager
+  Bool_t                        fIsMC;                          ///< Running on simulated events
+	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
+  TString                       fTriggerSelectionString;        ///< Trigger selection string
+  TString                       fNameTriggerDecisionContainer;  ///< Global trigger decision container
+  Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
+  Bool_t                        fUseDownscaleWeight;            ///< Use 1/downscale as weight
+  TString                       fNameJetContainer;              ///< Name of the jet container 
 
-  ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
+  ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };
 
 }
-#endif // ALIANALYSISTASKEMCALJETENERGYSCALE_H
+#endif
