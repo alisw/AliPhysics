@@ -718,6 +718,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       h2EtaPt->Sumw2();
       fOutputContainer->Add(h2EtaPt);
 
+
+
     }//end of particle loop
 
     //for purity based on MC truth
@@ -1812,18 +1814,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         else weight = w1*w2;
 
         if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
-          FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
-          if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
+          }
         }
         if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
           //for feed down correction from K0S->pi0 + pi0
-          FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
-          if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+          }
         }
         if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
           //for feed down correction from L0->pi0 + neutron
-          FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
-          if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+          }
         }
 
       }//end of if fIsMC
@@ -2862,6 +2876,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
         if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
         if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
+ 
+
       }
       else if(pdg==221){//eta
         parname = "Eta";
@@ -2957,6 +2973,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
         if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
         if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
+
       }
       else if(pdg==221){//eta
         parname = "Eta";
