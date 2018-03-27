@@ -394,17 +394,17 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
             if(wSDD){
-                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0);
             }else{
-                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0);
+                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0);
             }
-						trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0, 0.1);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       100.0, 200.); //clusters
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 200.); //findable
+						//trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0, 0.1);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 4.5);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      60.0, 200.); //clusters
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    70.0, 200.); //findable
             //trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);
             //trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1); //Crossed rows over findable
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
             //Lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
             AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
             //trackCutsDiel->SetAODFilterBit(0<<0); // (=0) filterbit 0! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
