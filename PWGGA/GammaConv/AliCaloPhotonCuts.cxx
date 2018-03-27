@@ -803,8 +803,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistEnergyOfModvsMod);
       fHistClusterEnergyvsNCells      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterECoarse, minClusterELog, maxClusterELog,
                                                  50, 0, 50);
-      fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
-      fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
+      fHistClusterEnergyvsNCells->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCells->GetYaxis()->SetTitle("N_{cells}");
       SetLogBinningXTH2(fHistClusterEnergyvsNCells);
       fHistExtQA->Add(fHistClusterEnergyvsNCells);
       fHistClusterDistanceInTimeCut   = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut",20,-10,10,20,-10,10);
