@@ -29,9 +29,10 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t      get_deut_tof_pt( AliAODTrack *track);
 	virtual Double_t      get_deut_tof_p(  AliAODTrack *track);
 
-	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
-	TF1 *fit_deut_curve   = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
-
+	Double_t deut_curves[2][2][6];  /* [charge][mean,sigma][par]  */
+//	TF1 *fit_deut_curve   = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
+	TF1 *fit_deut_curve   = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/x^2 + [3]*x^2 + [4]*x^3 + [5]/x^4",      0.8, 4.5);
+	
 	Double_t cut_width    = 2.0;
 	short    do_lead_only = 0;     // 0 = all,  1 = only leading
 	short    run_mode     = 0;
@@ -131,8 +132,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 deut_dphi_pt_neg_neg_08_B;   // 73
 
 	TH1F*                 DCAxy_pos;                   // 74
-	TH1F*                 DCAxy_neg;                   // 75
-	TH1F*                 DCAz_pos;                    // 76
+	TH1F*                 DCAz_pos;                    // 75
+	TH1F*                 DCAxy_neg;                   // 76
 	TH1F*                 DCAz_neg;                    // 77
 
 	TH2F*                 m2_pt_pos_fine;              // 78
@@ -153,5 +154,5 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
-//}  //// namespace
+}  //// namespace
 #endif

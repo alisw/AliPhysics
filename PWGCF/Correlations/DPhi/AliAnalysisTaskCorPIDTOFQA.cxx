@@ -335,7 +335,40 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
     // 2.88465 0.0761582 0.709281 0.124386 0.017642 -0.0316078 2.65738 0.115151 0.918566 0.0986592 0.0187545 0.00346519    // pp 2016 untriggered
 
-  
+    //3.38661   0.0499084  0.200357   0.00351171 -0.0019421  0.101265
+    //0.668755 -0.313122  -0.639249   0.0563519   0          0.359363
+    //3.45988   0.0545625  0.0827224 -0.0253765   0.00486567 0.15201
+    //0.636145 -0.288126  -0.632198   0.0523836   0          0.368737
+
+    deut_curves[0][0][0] = 3.38661;     // pos deut mean curve
+    deut_curves[0][0][1] = 0.0499084;
+    deut_curves[0][0][2] = 0.200357;
+    deut_curves[0][0][3] = 0.00351171;
+    deut_curves[0][0][4] =-0.0019421;
+    deut_curves[0][0][5] = 0.101265;    
+
+    deut_curves[0][1][0] = 0.668755;    // pos deut sigma curve
+    deut_curves[0][1][1] =-0.313122;
+    deut_curves[0][1][2] =-0.639249;
+    deut_curves[0][1][3] = 0.0563519;
+    deut_curves[0][1][4] = 0.0;
+    deut_curves[0][1][5] = 0.359363;
+
+    deut_curves[1][0][0] = 3.45988;     // neg deut mean curve
+    deut_curves[1][0][1] = 0.0545625;
+    deut_curves[1][0][2] = 0.0827224;
+    deut_curves[1][0][3] =-0.0253765;
+    deut_curves[1][0][4] = 0.00486567;
+    deut_curves[1][0][5] = 0.15201;
+
+
+    deut_curves[1][1][0] = 0.636145;   // neg deut sigma curve
+    deut_curves[1][1][1] =-0.288126;
+    deut_curves[1][1][2] =-0.632198;
+    deut_curves[1][1][3] = 0.0523836;
+    deut_curves[1][1][4] = 0.0;
+    deut_curves[1][1][5] = 0.368737;    
+    /*
     deut_curves[0][0][0] = 2.88465;     // pos deut mean curve
     deut_curves[0][0][1] = 0.0761582;
     deut_curves[0][0][2] = 0.709281;
@@ -351,7 +384,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_curves[1][1][0] = 0.0986592;   // neg deut sigma curve
     deut_curves[1][1][1] = 0.0187545;
     deut_curves[1][1][2] = 0.00346519;
+    */
 
+    
 //2.6836 0.09 0.92872 -0.445429 0.121074 0.452984 2.69467 0.09 0.92872 -0.121833 0.06763 0.179748  // p+Pb 2013 untriggered
 
 /*
@@ -650,13 +685,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     int wide_cut = 0;
 
-    int deut_track_num_T[200];        int deut_count_T            = 0;
-    int deut_track_num_A[200];        int deut_count_A            = 0;
-    int deut_track_num_B[200];        int deut_count_B            = 0;
-    int deut_track_num_W[200];        int deut_count_W            = 0;
-    int trig_03_track_num[200];       int trig_03_track_count     = 0;
-    int trig_05_track_num[200];       int trig_05_track_count     = 0;
-    int trig_08_track_num[200];       int trig_08_track_count     = 0;
+    int deut_track_num_T[200];     int deut_count_T            = 0;
+    int deut_track_num_A[200];     int deut_count_A            = 0;
+    int deut_track_num_B[200];     int deut_count_B            = 0;
+    int deut_track_num_W[200];     int deut_count_W            = 0;
+    int trig_03_track_num[200];    int trig_03_track_count     = 0;
+    int trig_05_track_num[200];    int trig_05_track_count     = 0;
+    int trig_08_track_num[200];    int trig_08_track_count     = 0;
 
     // loop over all these tracks
     //
@@ -677,7 +712,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //	if(!track->IsTPCConstrained())                                                  {    continue;    }
 //	if(!track->IsPrimaryCandidate())                                                {    continue;    }
 	
-	Float_t pt   = track->Pt();	  //    if(pt < 0.95)                           {    continue;    }   // cut 2   // makes for fast processings, low momentum play no part of analysis anyway
+	Float_t pt   = track->Pt();	 //     if(pt < 0.95)                           {    continue;    }   // cut 2   // makes for fast processings, low momentum play no part of analysis anyway
         Float_t dedx = track->GetTPCsignal();	if(dedx > 1000)                         {    continue;    }   //
 	Float_t eta  = track->Eta();	        if(TMath::Abs(eta) > 0.9)               {    continue;    }
 
@@ -740,7 +775,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	if(run_mode == 4  &&  fabs(dca[1]) > 0.1)                                       {    continue;    }
 	
 //	Float_t deltat        = tof_minus_tpion(track);
-//	float   mom           = track->P();
+	float   mom           = track->P();
 
 	Float_t deut_mean     = 0.0;
 	Float_t deut_sigma    = 0.0;
@@ -766,9 +801,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
+		    for(int w=0; w<6; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
 		    deut_mean = fit_deut_curve->Eval(pt);
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
+		    for(int w=0; w<6; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
 		    deut_sigma = fit_deut_curve->Eval(pt);
 
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
@@ -861,9 +896,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
+		    for(int w=0; w<6; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
 		    deut_mean = fit_deut_curve->Eval(pt);
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
+		    for(int w=0; w<6; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
 		    deut_sigma = fit_deut_curve->Eval(pt);
 
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
@@ -1025,7 +1060,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_03_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1063,7 +1098,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1100,7 +1135,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_08_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1138,7 +1173,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_03_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1176,7 +1211,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1213,7 +1248,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_08_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1251,7 +1286,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_03_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1289,7 +1324,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1326,7 +1361,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    int H               = trig_08_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-//	    Float_t pt_H        = trackH->Pt();
+	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    Float_t phi_H       = trackH->Phi();	    
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
@@ -1395,7 +1430,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	if (1) {   TClonesArray    *out =                           eout->GetCaloClusters();     TClonesArray    *in =                evin->GetCaloClusters();  new (out) TClonesArray(*in);     }
 	if (1) {   AliAODCaloCells *out =                           eout->GetEMCALCells();       AliAODCaloCells *in =                evin->GetEMCALCells();    new (out) AliAODCaloCells(*in);  }
     }
-
 
 
     
