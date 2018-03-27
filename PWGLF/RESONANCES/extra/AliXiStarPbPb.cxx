@@ -1348,7 +1348,10 @@ void AliXiStarPbPb::Exec(Option_t *)
     ////////////////////////////////////////////////
     // Reconstruction
     
-    for(Int_t i=0; i<fESD->GetNumberOfCascades(); i++){
+    Long_t ncascades = 0;
+    ncascades = fESD->GetNumberOfCascades();
+    
+    for(Long_t i=0; i < ncascades; i++){
         
         AliESDcascade *Xicandidate = fESD->GetCascade(i);
         
