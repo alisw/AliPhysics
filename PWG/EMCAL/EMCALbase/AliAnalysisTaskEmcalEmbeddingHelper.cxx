@@ -35,7 +35,6 @@
 #include <TH1F.h>
 #include <TRandom3.h>
 #include <TList.h>
-#include <TStopwatch.h>
 
 #include <AliLog.h>
 #include <AliAnalysisManager.h>
@@ -165,7 +164,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
-  fTimer(nullptr)
+  fPrintTimingInfoToLog(false),
+  fTimer()
 {
   if (fgInstance != nullptr) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -234,7 +234,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
-  fTimer(nullptr)
+  fPrintTimingInfoToLog(false),
+  fTimer()
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -1130,7 +1131,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   }
   
   // Set up timer for logging purposes
-  fTimer = new TStopwatch();
+  if (fPrintTimingInfoToLog) {
+    fTimer = TStopwatch();
+  }
 
   if (!fCreateHisto) {
     return;
@@ -1219,13 +1222,15 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   }
   
   // Time to execute InitTree()
-  histName = "fInitTreeCPUtime";
-  histTitle = "CPU time to execute InitTree() (s)";
-  fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
-  
-  histName = "fInitTreeRealtime";
-  histTitle = "Real time to execute InitTree() (s)";
-  fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
+  if (fPrintTimingInfoToLog) {
+    histName = "fInitTreeCPUtime";
+    histTitle = "CPU time to execute InitTree() (s)";
+    fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
+    
+    histName = "fInitTreeRealtime";
+    histTitle = "Real time to execute InitTree() (s)";
+    fHistManager.CreateTH1(histName, histTitle, 200, 0, 2000);
+  }
 
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
@@ -1412,8 +1417,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
 void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 {
   // Start the timer (for logging purposes)
-  fTimer->Start(kTRUE);
-  Printf("InitTree() has started for file %i (%s) ...", (fFilenameIndex + fFileNumber + 1) % fMaxNumberOfFiles, fChain->GetCurrentFile()->GetName());
+  if (fPrintTimingInfoToLog) {
+    fTimer.Start(kTRUE);
+    std::cout << "InitTree() has started for file " << (fFilenameIndex + fFileNumber + 1) % fMaxNumberOfFiles << fChain->GetCurrentFile()->GetName() << "..." << std::endl;
+  }
   
   // Load first entry of the (next) file so that we can query information about it
   // (it is unaccessible otherwise).
@@ -1480,10 +1487,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   fInitializedNewFile = kTRUE;
   
   // Stop timer (for logging purposes)
-  fTimer->Stop();
-  Printf("InitTree() complete. CPU time: %f (s). Real time: %f (s).", fTimer->CpuTime(), fTimer->RealTime());
-  fHistManager.FillTH1("fInitTreeCPUtime", fTimer->CpuTime());
-  fHistManager.FillTH1("fInitTreeRealtime", fTimer->RealTime());
+  if (fPrintTimingInfoToLog) {
+    fTimer.Stop();
+    std::cout << "InitTree() complete. CPU time: " << fTimer.CpuTime() << " (s). Real time: " << fTimer.RealTime() << " (s)." << std::endl;
+    fHistManager.FillTH1("fInitTreeCPUtime", fTimer.CpuTime());
+    fHistManager.FillTH1("fInitTreeRealtime", fTimer.RealTime());
+  }
 
 }
 
