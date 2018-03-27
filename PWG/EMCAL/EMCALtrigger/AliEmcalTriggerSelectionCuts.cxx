@@ -26,7 +26,7 @@
  ************************************************************************************/
 #include <iostream>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include "AliEmcalTriggerSelectionCuts.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
@@ -109,17 +109,17 @@ Bool_t AliEmcalTriggerSelectionCuts::SelectAcceptance(const AliEMCALTriggerPatch
 }
 
 void AliEmcalTriggerSelectionCuts::PrintStream(std::ostream &stream) const {
-  std::unordered_map<AcceptanceType_t, std::string> acceptancetext = {{kEMCALAcceptance, "EMCAL"},
+  std::map<AcceptanceType_t, std::string> acceptancetext = {{kEMCALAcceptance, "EMCAL"},
                                                                       {kDCALAcceptance, "DCAL"},
                                                                       {kEMCALDCALAcceptance, "EMCAL-DCAL"}};
-  std::unordered_map<PatchType_t, std::string> patchtypetext = {{kL0Patch, "Level0"},
+  std::map<PatchType_t, std::string> patchtypetext = {{kL0Patch, "Level0"},
                                                                 {kL1GammaPatch, "L1-gamma"},
                                                                 {kL1GammaHighPatch, "L1-gamma, high threshold"},
                                                                 {kL1GammaLowPatch, "L1-gamma, low threshold"},
                                                                 {kL1JetPatch, "L1-jet"},
                                                                 {kL1JetHighPatch, "L1-jet, high threshold"},
                                                                 {kL1JetLowPatch, "L1-jet, low threshold"}};
-  std::unordered_map<SelectionMethod_t, std::string> selmodetext = {{kADC, "FastOR ADC"},
+  std::map<SelectionMethod_t, std::string> selmodetext = {{kADC, "FastOR ADC"},
                                                                     {kEnergyRough, "FastOR Energy"},
                                                                     {kEnergyOffline, "FEE Energy"},
                                                                     {kEnergyOfflineSmeared, "FEE Energy, decalibrated"}};
