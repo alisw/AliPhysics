@@ -125,6 +125,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //########################//
         TH2F *fCaloTrackDiff;
         TH1F *fCaloClusterEAfterMatch;
+        TH1F *fCaloClusterEincE;
         TH2F *fCaloClustEtaPhiAfterMatch;
         TH1F *fTrackPtAfterMatch;
         TH2F *fTrackphietaAfterMatch;
@@ -169,6 +170,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH2F *fMCTPCNSigmaelectron;
         TH2F *fMCNsigmaEtaElectron;
         TH2F *fMCHFEEop;
+        TH2F *fMCHFEEopwPID;
         //--- DCA for c/b separation ---//
         TH2F *fMCDCAinclusive;
         TH2F *fMCDCAconv;
