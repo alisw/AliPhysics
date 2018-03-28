@@ -54,6 +54,8 @@ public:
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
+  void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
+  void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
   void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
@@ -82,13 +84,14 @@ public:
 
   //..Functions for mixed event purposes
   void                        InitEventMixer()											  ;
+  void                        InitClusMixer()											  ;
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Correlate and fill
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Bool_t isMixed);
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
@@ -121,6 +124,8 @@ public:
   static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
   static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
+  static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
+  static const Int_t          kNEMCalMultBins=4;              ///< EMCal multiplicity bins in which the clusters are mixed
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
@@ -142,8 +147,11 @@ public:
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
+  TAxis                      *fMixBEMCalMult;            ///< TAxis for EMCAL Multiplicity bins for the mixed clusters
+  TAxis                      *fMixBClusZvtx;             ///< TAxis for vertex bins for the mixed clusters
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
   Int_t                       fTrackDepth;               ///<  #tracks to fill pool
+  Int_t                       fClusterDepth;             ///<  #clusters to fill cluster mixing pool
   Int_t                       fPoolSize;                 ///<  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
@@ -163,7 +171,7 @@ public:
   //..Histograms -
 
   TH2             *fHistClusPairInvarMasspT; //!<! Tyler's histogram
-  TH1 			  *fHistPi0;                 //!<! Tyler's histogram
+  TH1             *fHistPi0;                 //!<! Tyler's histogram
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH2             *fMassPtPionAcc;               //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
@@ -175,8 +183,10 @@ public:
   TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background
   TH1             *fClusEnergy;                //!<! Energy of clusters accepted for pi0 analysis
   Bool_t          fDoRotBkg;                   ///< Whether or not to calculate the rotational background
+  Bool_t          fDoClusMixing;               ///< Whether or not to use event pools to calculate mixed cluster pairs.  
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
+  TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
 
   Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
   Double_t        fPi0MassFixed[kNoGammaBins]; ///< Fixed Mass Peak per pT bin
