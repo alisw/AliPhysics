@@ -1,5 +1,5 @@
-#ifndef ALIPP13PION2KAONRATIOMC_H
-#define ALIPP13PION2KAONRATIOMC_H
+#ifndef ALIPP13KAONTOPIONRATIOMC_H
+#define ALIPP13KAONTOPIONRATIOMC_H
 
 
 #include <map>
@@ -28,7 +28,7 @@
 // TODO: Split this class to have separate efficiency and contamination estimators
 //
 
-class AliPP13PionToKaonRatioMC: public AliPP13PhysPhotonSelectionMC
+class AliPP13KaonToPionRatioMC: public AliPP13PhysPhotonSelectionMC
 {
 public:
 	enum Modes {kGenerated = 0, kReconstructed = 1, kNhists = 2};
@@ -41,7 +41,7 @@ public:
 	};
 
 
-	AliPP13PionToKaonRatioMC():
+	AliPP13KaonToPionRatioMC():
 		AliPP13PhysPhotonSelectionMC(),
 		fPrimary(),
 		fAll()
@@ -52,7 +52,7 @@ public:
 		fPartNames[kKminus] = "K^{-}";
 	}
 
-	AliPP13PionToKaonRatioMC(const char * name, const char * title,
+	AliPP13KaonToPionRatioMC(const char * name, const char * title,
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
 		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
 		fPrimary(),
@@ -81,8 +81,8 @@ protected:
 	}
 
 	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
-	AliPP13PionToKaonRatioMC(const AliPP13PionToKaonRatioMC &);
-	AliPP13PionToKaonRatioMC & operator = (const AliPP13PionToKaonRatioMC &);
+	AliPP13KaonToPionRatioMC(const AliPP13KaonToPionRatioMC &);
+	AliPP13KaonToPionRatioMC & operator = (const AliPP13KaonToPionRatioMC &);
 
 	typedef std::map<Int_t, TString> EnumNames;
 	EnumNames fPartNames;
@@ -92,6 +92,6 @@ protected:
 	EnumHists fAll;          //!
 
 	// Parameters of weighed MC parametrization
-	ClassDef(AliPP13PionToKaonRatioMC, 2)
+	ClassDef(AliPP13KaonToPionRatioMC, 2)
 };
 #endif
