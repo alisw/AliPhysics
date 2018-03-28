@@ -25,7 +25,6 @@
 
 #include "AliTRDPIDParams.h"
 
-#include <iostream>
 
 ClassImp(AliTRDPIDParams)
 //ClassImp(AliTRDPIDParams::AliTRDPIDThresholds)
