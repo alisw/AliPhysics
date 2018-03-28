@@ -60,10 +60,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskCMEV0PID.h"
 
-using namespace std;
+//using namespace std;
 
-//using std::cout;
-//using std::endl;
+using std::cout;
+using std::endl;
 
 
 ClassImp(AliAnalysisTaskCMEV0PID)
@@ -1482,12 +1482,11 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 //______________________________________________________________________
 void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
+  //debug only
+  //cout<<"\n Info:UserExec() called ..!!!\n";
+  //watch.Start(kTRUE);  
+  //if(fEventCount==501)  return;
 
-  //cout<<"\n Info:UserExec() Never got called... So unfortunate ..!!!\n";
-
-
-  //watch.Start(kTRUE);  //debug only
-  //if(fEventCount==100) return;
 
   Float_t stepCount = 0.5;
 
@@ -1511,15 +1510,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-
   //--------- Check if I have PID response object --------
   if(!fPIDResponse){
     printf("\n\n...... PIDResponse object not found..... \n\n");
     return;
   }
-
-
-
 
 
 
@@ -1558,8 +1553,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   
 
   
-
-
 
 
 
@@ -1608,8 +1601,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   else if(centrality>=40){
     cForNUA = 4; // 4=40-90
   }
-
-
 
 
 
@@ -1926,7 +1917,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   fHistGlobalVsV0MBefore->Fill(centrV0M, multGlobal);
 
 
-
   //if bSkipPileUpCut is kTRUE then don't apply PileUp removal.
   if(!bSkipPileUpCut && bIsOutLier) return; //outlier TPC vs Global
 
@@ -1987,6 +1977,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Float_t EvtCent = centrality;
 
 
+
+
   if(multEtaNeg<2 || multEtaPos<2) return;  //Minimum 2 tracks in each eta
 
   fHistEventCount->Fill(stepCount); //10
@@ -2021,7 +2013,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   stepCount++;
 
 
-  
+
+
 
   //-------- V0M info ---------------
   const AliAODVZERO *fAODV0 = fAOD->GetVZEROData();
@@ -2115,20 +2108,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
- //if(gPsiN>2){
+ if(gPsiN>2){
     PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
-    //if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
-
     PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
-    //if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
-  //}
-  /*else{
-    PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) );
+  }
+  else{
+    PsiNV0C = 1.0/gPsiN*TMath::ATan2(QycnCor,QxcnCor) ;
     if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
 
-    PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) );
+    PsiNV0A = 1.0/gPsiN*TMath::ATan2(QyanCor,QxanCor) ;
     if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
-  }*/
+  }
 
 
   fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
@@ -2218,7 +2208,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-
   Double_t ptwPion1,ptwKaon1,ptwProton1; 
   Double_t ptwPion2,ptwKaon2,ptwProton2;
   Double_t wNUAPion1,wNUAKaon1,wNUAProton1;
@@ -2239,17 +2228,18 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Int_t multPOI1st = 0;
   Int_t multPOI2nd = 0;
 
- 
-  const Int_t maxTrack =  40000;
-  Float_t nSigPionTPC[maxTrack]   = {0.,};
-  Float_t nSigKaonTPC[maxTrack]   = {0.,};
-  Float_t nSigProtonTPC[maxTrack] = {0.,};    
-  Float_t nSigPionTOF[maxTrack]   = {0.,};
-  Float_t nSigKaonTOF[maxTrack]   = {0.,};
-  Float_t nSigProtonTOF[maxTrack] = {0.,};   
+
+  //const Int_t maxTrack =  40000;
+
+  Float_t nSigPionTPC[40000]   = {0.,};
+  Float_t nSigKaonTPC[40000]   = {0.,};
+  Float_t nSigProtonTPC[40000] = {0.,};    
+  Float_t nSigPionTOF[40000]   = {0.,};
+  Float_t nSigKaonTOF[40000]   = {0.,};
+  Float_t nSigProtonTOF[40000] = {0.,};   
 
 //Dont break segment for higher tracks:
-  if(ntracks>maxTrack)     return;
+  if(ntracks > 40000)     return;
   
   //vector<float> testVar;   
   //testVar.reserve(20000);
@@ -2274,9 +2264,12 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   //Calling fPIDResponse in nested loop is CPU expensive.
   //Store nSigma values in a array:
 
-  for(Int_t itrack = 0; itrack < ntracks; itrack++) {
+
+
+  for(int itrack = 0; itrack < ntracks; itrack++) {
 
     AliAODTrack *trackForPID=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
+    if(!trackForPID) continue;
 
    // Array method:
     if(trackForPID){
@@ -2295,9 +2288,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       nSigKaonTOF[itrack]   = -99; 
       nSigProtonTOF[itrack] = -99; 
     }  
-
-    /*
-    // Vector method:
+    /* // Vector method:
     if(trackForPID){
       nSigPionTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion));
       nSigKaonTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID,  AliPID::kKaon));
@@ -2318,9 +2309,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     }
     */
 
-  }//1st track loop for PID storing.
 
 
+    //if(itrack%10==0)
+    //cout<< "nSig pi = " <<nSigPionTPC[itrack] << "nSig K = " << nSigKaonTPC[itrack]  << "nSig p = " << nSigProtonTOF[itrack] << endl;
+
+  }
+   
 
 
 
@@ -3256,18 +3251,18 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
   // ----------------- Event plane Resolution --------------
-  //if(gPsiN>2){
+  if(gPsiN>2){
   //Enable periodicity PsiN directly:
     PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) + TMath::Pi() ) ; // negetive eta
     PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) + TMath::Pi() ) ; // positive eta
-  //}
-  /*else{
-    PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) ) ; // negetive eta
+  }
+  else{
+    PsiNTPCA = (1.0/gPsiN)*TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0])  ; // negetive eta
     if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
 
-    PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) ) ; // positive eta
+    PsiNTPCC = (1.0/gPsiN)*TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1])  ; // positive eta
     if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
-  }*/
+  }
 
 
   //V0A-V0C 
@@ -3333,10 +3328,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   //if(fEventCount%10==0) 
   //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs1st = "<<multPOI1st<<"\t POI2nd = "<< multPOI2nd <<endl;
 
-
-
   //watch.Stop();
-
 
 }//================ UserExec ==============
 

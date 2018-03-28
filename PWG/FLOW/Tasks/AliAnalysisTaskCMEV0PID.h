@@ -11,8 +11,8 @@
 // and R Sultana
 /////////////////////////////////////////////////
 
-#ifndef AliAnalysisTaskCMEV0PID_H
-#define AliAnalysisTaskCMEV0PID_H
+#ifndef ALIANALYSISTASKCMEV0PID_H
+#define ALIANALYSISTASKCMEV0PID_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TH1F.h"
