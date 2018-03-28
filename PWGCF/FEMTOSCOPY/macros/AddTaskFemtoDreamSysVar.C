@@ -449,6 +449,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetmTBinning(mTBinning);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+  if (!notpp) {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  } else {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  }
 
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
