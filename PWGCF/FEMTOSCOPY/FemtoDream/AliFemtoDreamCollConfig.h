@@ -11,6 +11,7 @@
 #include "Rtypes.h"
 #include "TNamed.h"
 #include "TNtuple.h"
+#include "AliFemtoDreamEvent.h"
 
 class AliFemtoDreamCollConfig : public TNamed {
  public:
@@ -38,7 +39,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
   void SetSpinningDepth(int SpinningDepth){fSpinningDepth=SpinningDepth;};
   void SetSECommonAncestor(bool doit) {fMCCommonAncestor=doit;};
-
+  void SetMinimalBookingME(bool doIt) {fMinimalBookingME=doIt;};
+  void SetMinimalBookingSample(bool doIt) {fMinimalBookingSample=doIt;};
+  void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est) {
+    fEst=est;
+  }
   bool GetDoMultBinning() {return fMultBinning;};
   bool GetDokTBinning() {return fkTBinning;};
   bool GetDomTBinning() {return fmTBinning;};
@@ -49,7 +54,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetUseEventMixing(){return fMixedEventStatistics;};
   bool GetUsePhiSpinning(){return fGetTheControlSampel;};
   bool GetdPhidEtaPlots() {return fdPhidEtaPlots;};
-
+  bool GetMinimalBookingME() {return fMinimalBookingME;};
+  bool GetMinimalBookingSample() {return fMinimalBookingSample;};
+  AliFemtoDreamEvent::MultEstimator GetMultiplicityEstimator() {
+    return fEst;
+  }
   int GetNRadii() {return fNumberRadii;};
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins(){return (fZVtxBins->GetEntries()-1);};
@@ -58,6 +67,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<int> GetPDGCodes();
   int GetNParticles() {return fPDGParticleSpecies->GetEntries();};
   int GetNParticleCombinations();
+
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
@@ -66,13 +76,15 @@ class AliFemtoDreamCollConfig : public TNamed {
   int GetSpinningDepth(){return fSpinningDepth;};
  private:
   bool fMultBinning;            //
-  bool fkTBinning;            //
-  bool fmTBinning;            //
+  bool fkTBinning;              //
+  bool fmTBinning;              //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fMinimalBookingME;       //
+  bool fMinimalBookingSample;   //
   int fNumberRadii;             //
   TNtuple *fZVtxBins;           //
   TNtuple *fMultBins;           //
@@ -82,10 +94,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   int fMixingDepth;             //
-  int fSpinningDepth;			//
+  int fSpinningDepth;			      //
   bool fkTCentrality;           //
   bool fMCCommonAncestor;       // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
-  ClassDef(AliFemtoDreamCollConfig,4);
+  AliFemtoDreamEvent::MultEstimator fEst; //
+  ClassDef(AliFemtoDreamCollConfig,5);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

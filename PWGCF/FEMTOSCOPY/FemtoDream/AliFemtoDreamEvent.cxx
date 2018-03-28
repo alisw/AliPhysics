@@ -30,6 +30,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 ,fHasVertex(false)
 ,fHasMagField(false)
 ,fisSelected(false)
+,fEstimator(AliFemtoDreamEvent::kRef08)
 {
 
 }
@@ -52,6 +53,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
 ,fHasVertex(false)
 ,fHasMagField(false)
 ,fisSelected(false)
+,fEstimator(kRef08)
 {
   if (mvPileUp) {
     //For pPb this is necessary according to DPG Processing status news
@@ -150,4 +152,30 @@ int AliFemtoDreamEvent::CalculateITSMultiplicity(AliAODEvent *evt) {
     }
   }
   return count;
+}
+
+int AliFemtoDreamEvent::GetMultiplicity() {
+  int mult=0;
+  switch(fEstimator) {
+    case AliFemtoDreamEvent::kRef08:
+      mult=GetRefMult08();
+      break;
+    case AliFemtoDreamEvent::kSPD:
+      mult=GetSPDMult();
+      break;
+    case AliFemtoDreamEvent::kV0M:
+      mult=GetV0MMult();
+      break;
+    case AliFemtoDreamEvent::kV0A:
+      mult=GetV0AMult();
+      break;
+    case AliFemtoDreamEvent::kV0C:
+      mult=GetV0CMult();
+      break;
+    default:
+      AliFatal("Type Not implemented");
+      break;
+  }
+
+  return mult;
 }

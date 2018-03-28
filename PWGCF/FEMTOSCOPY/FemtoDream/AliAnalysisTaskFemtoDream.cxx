@@ -12,7 +12,8 @@ ClassImp(AliAnalysisTaskFemtoDream)
 AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 :AliAnalysisTaskSE()
 ,fTrackBufferSize(0)
-,fMinResultBooking(false)
+,fMinBookingME(false)
+,fMinBookingSample(false)
 ,fMVPileUp(false)
 ,fEvtCutQA(false)
 ,fIsMC(false)
@@ -45,11 +46,11 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fResultQASample(0)
 {}
 
-AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(
-    const char *name,bool isMC,bool MinResultBooking)
+AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isMC)
 :AliAnalysisTaskSE(name)
 ,fTrackBufferSize(0)
-,fMinResultBooking(MinResultBooking)
+,fMinBookingME(false)
+,fMinBookingSample(false)
 ,fMVPileUp(false)
 ,fEvtCutQA(false)
 ,fIsMC(isMC)
@@ -114,6 +115,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   fAnalysis->SetTrackBufferSize(fTrackBufferSize);
   fAnalysis->SetMVPileUp(fMVPileUp);
   fAnalysis->SetEvtCutQA(fEvtCutQA);
+
   if (fEvtCuts) {
     fAnalysis->SetEventCuts(fEvtCuts);
   } else {
@@ -151,31 +153,55 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   }
   if (fConfig) {
     fAnalysis->SetCollectionConfig(fConfig);
+    fMinBookingME=fConfig->GetMinimalBookingME();
+    fMinBookingSample=fConfig->GetMinimalBookingSample();
   } else {
     AliFatal("Event Collection Config missing");
   }
-  fAnalysis->Init(fIsMC,fMinResultBooking,GetCollisionCandidates());
-  if (!fMinResultBooking) {
+
+  fAnalysis->Init(fIsMC,GetCollisionCandidates());
+  if ((!fMinBookingME)||(!fMinBookingSample)) {
     if (fAnalysis->GetQAList()) {
       fQA=fAnalysis->GetQAList();
-    }
-    if (fAnalysis->GetResultQAList()) {
-      fResultQA=fAnalysis->GetResultQAList();
-    }
-    if (fAnalysis->GetResultSampleQAList()) {
-    	fResultQASample=fAnalysis->GetResultSampleQAList();
+    } else {
+      fQA=new TList();
+      fQA->SetName("QA");
+      fQA->SetOwner();
     }
   } else {
     fQA=new TList();
     fQA->SetName("QA");
     fQA->SetOwner();
+  }
+
+  if (!fMinBookingME) {
+    if (fAnalysis->GetResultQAList()) {
+      fResultQA=fAnalysis->GetResultQAList();
+    } else {
+      fResultQA=new TList();
+      fResultQA->SetName("ResultQA");
+      fResultQA->SetOwner();
+    }
+  } else {
     fResultQA=new TList();
     fResultQA->SetName("ResultQA");
     fResultQA->SetOwner();
-    fResultQASample=new TList();
-    fResultQASample->SetName("ResultQASample");
-    fResultQASample->SetOwner();
   }
+
+  if (!fMinBookingSample) {
+    if (fAnalysis->GetResultSampleQAList()) {
+      fResultQASample=fAnalysis->GetResultSampleQAList();
+    }else {
+      fResultQASample=new TList();
+      fResultQASample->SetOwner();
+      fResultQASample->SetName("ResultsQASample");
+    }
+  } else {
+    fResultQASample=new TList();
+    fResultQASample->SetOwner();
+    fResultQASample->SetName("ResultsQASample");
+  }
+
   if (!fEvtCuts->GetMinimalBooking()) {
     if (fAnalysis->GetEventCutHists()) {
       fEvtHistList=fAnalysis->GetEventCutHists();
@@ -234,9 +260,12 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     AliWarning("Results List not Available");
   }
   if (fAnalysis->GetResultSampleList()) {
-	  fResultsSample=fAnalysis->GetResultSampleList();
+    fResultsSample=fAnalysis->GetResultSampleList();
   } else {
 	  AliWarning("Results Sample List not Available");
+    fResultsSample=new TList();
+    fResultsSample->SetOwner();
+    fResultsSample->SetName("ResultsSample");
   }
   PostData(1,fQA);
   PostData(2,fEvtHistList);
@@ -321,48 +350,6 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
     AliWarning("No Input Event");
   } else {
     fAnalysis->Make(Event);
-    if (!fMinResultBooking) {
-      if (fAnalysis->GetQAList()) {
-        fQA=fAnalysis->GetQAList();
-      }
-      if (fAnalysis->GetResultQAList()) {
-        fResultQA=fAnalysis->GetResultQAList();
-      }
-    }
-    if (!fEvtCuts->GetMinimalBooking()) {
-      if (fAnalysis->GetEventCutHists()) {
-        fEvtHistList=fAnalysis->GetEventCutHists();
-      }
-    }
-    if (fAnalysis->GetTrackCutHists()) {
-      fTrackCutHistList=fAnalysis->GetTrackCutHists();
-    }
-    if (fAnalysis->GetAntitrackCutHists()) {
-      fAntiTrackCutHistList=fAnalysis->GetAntitrackCutHists();
-    }
-    if (fAnalysis->Getv0CutHist()) {
-      fv0CutHistList=fAnalysis->Getv0CutHist();
-    }
-    if (fAnalysis->GetAntiv0CutHist()) {
-      fAntiv0CutHistList=fAnalysis->GetAntiv0CutHist();
-    }
-    if (fAnalysis->GetCascadeCutHist()) {
-      fCascCutList=fAnalysis->GetCascadeCutHist();
-    }
-    if (fAnalysis->GetAntiCascadeCutHist()) {
-      fAntiCascCutList=fAnalysis->GetAntiCascadeCutHist();
-    }
-    //Results we always post
-    if (fAnalysis->GetResultList()) {
-      fResults=fAnalysis->GetResultList();
-    } else {
-      AliWarning("Results List not Available");
-    }
-    if (fAnalysis->GetResultSampleList()) {
-   	  fResultsSample=fAnalysis->GetResultSampleList();
-     } else {
-   	  AliWarning("Results Sample List not Available");
-     }
      PostData(1,fQA);
      PostData(2,fEvtHistList);
      PostData(3,fTrackCutHistList);
@@ -376,36 +363,6 @@ void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
      PostData(11,fResultsSample);
      PostData(12,fResultQASample);
     if (fIsMC) {
-      if (!fTrackCuts->GetMinimalBooking()) {
-        if (fTrackCuts->GetIsMonteCarlo()) {
-          fTrackCutHistMCList=fTrackCuts->GetMCQAHists();
-        }
-      }
-      if (!fAntiTrackCuts->GetMinimalBooking()) {
-        if (fAntiTrackCuts->GetIsMonteCarlo()) {
-          fAntiTrackCutHistMCList=fAntiTrackCuts->GetMCQAHists();
-        }
-      }
-      if (!fv0Cuts->GetMinimalBooking()) {
-        if (fv0Cuts->GetIsMonteCarlo()) {
-          fv0CutHistMCList=fv0Cuts->GetMCQAHists();
-        }
-      }
-      if (!fAntiv0Cuts->GetMinimalBooking()) {
-        if (fAntiv0Cuts->GetIsMonteCarlo()) {
-          fAntiv0CutHistMCList=fAntiv0Cuts->GetMCQAHists();
-        }
-      }
-      if (!fCascCuts->GetMinimalBooking()) {
-        if (fCascCuts->GetIsMonteCarlo()) {
-          fCascCutMCList=fCascCuts->GetMCQAHists();
-        }
-      }
-      if (!fAntiCascCuts->GetMinimalBooking()) {
-        if (fAntiCascCuts->GetIsMonteCarlo()) {
-          fAntiCascCutMCList=fAntiCascCuts->GetMCQAHists();
-        }
-      }
       PostData(13,fTrackCutHistMCList);
       PostData(14,fAntiTrackCutHistMCList);
       PostData(15,fv0CutHistMCList);

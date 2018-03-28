@@ -311,7 +311,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
             Form("SEdPhidEtaDist_Particle%d_Particle%d",iPar1,iPar2);
         fdEtadPhiSE[Counter]=new TH2F(SameEventdPhidEtaName.Data(),
                                       SameEventdPhidEtaName.Data(),
-                                      80,-2.,2.,94,-TMath::Pi(),2*TMath::Pi());
+                                      80,-2.,2.,84,-2*TMath::Pi()/3,2*TMath::Pi());
         fdEtadPhiSE[Counter]->GetXaxis()->SetTitle("#Delta#eta");
         fdEtadPhiSE[Counter]->GetYaxis()->SetTitle("#Delta#phi");
         fdEtadPhiSE[Counter]->Sumw2();
@@ -321,7 +321,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
             Form("MEdPhidEtaDist_Particle%d_Particle%d",iPar1,iPar2);
         fdEtadPhiME[Counter]=new TH2F(MixedEventdPhidEtaName.Data(),
                                       MixedEventdPhidEtaName.Data(),
-                                      80,-2.,2.,94,-TMath::Pi(),2*TMath::Pi());
+                                      80,-2.,2.,84,-2*TMath::Pi()/3,2*TMath::Pi());
         fdEtadPhiME[Counter]->GetXaxis()->SetTitle("#Delta#eta");
         fdEtadPhiME[Counter]->GetYaxis()->SetTitle("#Delta#phi");
         fdEtadPhiME[Counter]->Sumw2();
@@ -362,8 +362,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fEffMixingDepth[Counter]->Sumw2();
         fEffMixingDepth[Counter]->GetXaxis()->SetTitle("MixingDepth");
         fPairQA[Counter]->Add(fEffMixingDepth[Counter]);
-
-
 
         if (fMomentumResolution) {
           //take twice the number of bins we use for the CF to be sure, the range is

@@ -17,6 +17,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fdPhidEtaPlots(false)
 ,fMixedEventStatistics(true)
 ,fGetTheControlSampel(false)
+,fMinimalBookingME(false)
+,fMinimalBookingSample(false)
 ,fNumberRadii(0)
 ,fZVtxBins(0)
 ,fMultBins(0)
@@ -29,6 +31,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   //should not be used, since we need a name to deal with root objects
 }
@@ -44,11 +47,14 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fdPhidEtaPlots(false)
 ,fMixedEventStatistics(true)
 ,fGetTheControlSampel(false)
+,fMinimalBookingME(false)
+,fMinimalBookingSample(false)
 ,fNumberRadii(0)
 ,fMixingDepth(0)
 ,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
   fMultBins=new TNtuple("MultBins","MultBins","mult");
