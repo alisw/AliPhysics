@@ -662,6 +662,12 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),nq2bins,q2min,q2max,nq2bins,q2min,q2max);
     fOutput->Add(hq2CandVsq2Event);
 
+    //histo of number of Dstar built using from the same Dzero (only in case of Dzero<-Dstar analysis)
+    if(fDecChannel==kD0toKpiFromDstar) {
+      TH1F* hNumDstarCandFromSameDzeroCand = new TH1F("hNumDstarCandFromSameDzeroCand","Number of Dstar candidates built using same Dzero candidate",101,-0.5,100.5);
+      fOutput->Add(hNumDstarCandFromSameDzeroCand);
+    }
+    
     CreateSparseForEvShapeAnalysis();
   }
 
@@ -1108,9 +1114,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   std::vector<Int_t> isSelectedCand;
 
   Int_t nSelCandInMassRange=0;
-  std::vector<Double_t> dzeropt; //vector of D0 pt necessary if kD0toKpiFromDstar is used
+  std::vector<Int_t> dzerodaulab1; //vector of labels of D0 daugheter 1 necessary if kD0toKpiFromDstar is used
+  std::vector<Int_t> dzerodaulab2; //vector of labels of D0 daugheter 2 necessary if kD0toKpiFromDstar is used
+  Int_t nD0usedfordiffDstar=0;
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
+    Bool_t isD0new = kTRUE;
     if(fDecChannel!=4) {
       d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
       Bool_t isSelBit=kTRUE;
@@ -1130,18 +1139,29 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
         if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
       }
     }
-    else {
+    else if (fDecChannel == 4) {
       //Get the D* candidate, see if it is in the mass range and if it is the case assign the D0 daughter to d
       AliAODRecoDecayHF* dstar=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)dstar),kTRUE))continue;
       Double_t invMassDstar = ((AliAODRecoCascadeHF*)dstar)->DeltaInvMass();
       Double_t deltamassPDG=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
       Double_t sigma = 0.0008;
-      if(invMassDstar<deltamassPDG-5*sigma || invMassDstar>deltamassPDG+5*sigma) continue;
+      if(invMassDstar<deltamassPDG-3*sigma || invMassDstar>deltamassPDG+3*sigma) continue;
       d = ((AliAODRecoCascadeHF*)dstar)->Get2Prong();
-      std::vector<Double_t>::iterator it = find(dzeropt.begin(),dzeropt.end(),d->Pt());
-      if(it!=dzeropt.end()) continue; //if D0 candidate already used, continue (the same D0 candidate can build many D* candidates)
-      dzeropt.push_back(d->Pt());
+      AliAODTrack* dautrack1 = (AliAODTrack*)d->GetDaughter(0);
+      AliAODTrack* dautrack2 = (AliAODTrack*)d->GetDaughter(1);
+      Int_t lab1 = dautrack1->GetLabel();
+      Int_t lab2 = dautrack2->GetLabel();
+      for(UInt_t iDzero=0; iDzero<dzerodaulab1.size(); iDzero++) {
+        if(lab1 == dzerodaulab1[iDzero] && lab2 == dzerodaulab2[iDzero]) {
+          isD0new=kFALSE;
+          break;
+        }
+      }
+      if(isD0new) {
+        dzerodaulab1.push_back(lab1);
+        dzerodaulab2.push_back(lab2);
+      }
     }
     
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
@@ -1158,8 +1178,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       Int_t isDsPhipiKK = isSelected&8;
       if(!isDsPhiKKpi & !isDsPhipiKK) continue;
     }
+    if(fDecChannel==4 && !isD0new) {
+      nD0usedfordiffDstar++;
+      continue; //if D0 candidate already used for previous Dstar candidates, continue (the same D0 candidate can build many D* candidates)
+    }
     isSelectedCand.push_back(isSelected);
-
+    
     fhEventsInfo->Fill(14); // candidate selected
     if(fDebug>3) printf("+++++++Is Selected\n");
 
@@ -1580,6 +1604,11 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       ((TH2F*)fOutput->FindObject(Form("hEvPlaneReso3Vsq2%s",fCentrBinName.Data())))->Fill(TMath::Cos(fHarmonic*deltaSubBC),q2fill);
     }
 
+    //fill histo for number of Dstar built using the same Dzero (only in case of Dzero from Dstar analysis)
+    if(fDecChannel==kD0toKpiFromDstar) {
+      ((TH1F*)fOutput->FindObject("hNumDstarCandFromSameDzeroCand"))->Fill(nD0usedfordiffDstar);
+    }
+    
     //fill q2Cand vs. q2Event histo and THnSparseF for event-shape engineering
     for(UInt_t iSelCand=0; iSelCand<nSelCand; iSelCand++) {
       ((TH2F*)fOutput->FindObject("hq2CandVsq2Event"))->Fill(q2fill,q2CandFill[iSelCand]);
@@ -1637,8 +1666,9 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   isSelectedCand.clear();
   phiCand.clear();
   labrejtracks.clear();
-  dzeropt.clear();
-  
+  dzerodaulab1.clear();
+  dzerodaulab2.clear();
+
   delete vHF;
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
