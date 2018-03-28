@@ -167,7 +167,9 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 				//TTree branch variables
 				//Event variables
 				Double_t primaryVertex[3];
-				Double_t nMultiplicity;
+				Double_t multiplicityV0A;
+				Double_t multiplicityV0C;
+				Double_t multiplicityCL1;
 				Int_t runNumber;
 				Int_t event;
 				//Reconstructed

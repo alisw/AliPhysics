@@ -66,7 +66,9 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fPIDResponse(0),
     fTree(0x0),
 		primaryVertex{0,0,0},
-		nMultiplicity(0),
+		multiplicityV0A(0),
+		multiplicityV0C(0),
+		multiplicityCL1(0),
 		runNumber(0),
 		event(0),
 		pt(0),
@@ -149,7 +151,9 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fPIDResponse(0),
     fTree(0),
 		primaryVertex{0,0,0},
-		nMultiplicity(0),
+		multiplicityV0A(0),
+		multiplicityV0C(0),
+		multiplicityCL1(0),
 		runNumber(0),
 		event(0),
 		pt(0),
@@ -318,13 +322,15 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 			fTree->Branch("motherLabel", &motherLabel);
 		}
 		//Event variables
-		fTree->Branch("vertexX",   &primaryVertex[0]);
-		fTree->Branch("vertexY",   &primaryVertex[1]);
-		fTree->Branch("vertexZ",   &primaryVertex[2]);
-		fTree->Branch("runNumber", &runNumber);
-		fTree->Branch("eventNum",  &eventNum);
-		fTree->Branch("multiplicity",  &nMultiplicity);
-		fTree->Branch("gridPID",   &fGridPID);
+		fTree->Branch("vertexX",         &primaryVertex[0]);
+		fTree->Branch("vertexY",         &primaryVertex[1]);
+		fTree->Branch("vertexZ",         &primaryVertex[2]);
+		fTree->Branch("runNumber",       &runNumber);
+		fTree->Branch("eventNum",        &eventNum);
+		fTree->Branch("multiplicityV0A", &multiplicityV0A);
+		fTree->Branch("multiplicityV0C", &multiplicityV0C);
+		fTree->Branch("multiplicityCL1", &multiplicityCL1);
+		fTree->Branch("gridPID",         &fGridPID);
 
     //Get grid PID which can be used later to assign unique event numbers
     if(fIsGRIDanalysis){
@@ -427,7 +433,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 		AliWarning("AliMultSelection object not found");
 	}
 	else{
-		nMultiplicity = multSelection->GetMultiplicityPercentile("V0M");
+		multiplicityV0A = multSelection->GetMultiplicityPercentile("V0A");
+		multiplicityV0C = multSelection->GetMultiplicityPercentile("V0C");
+		multiplicityCL1 = multSelection->GetMultiplicityPercentile("CL1");
 	}
 
 	//Check if ESD or AOD analysis
