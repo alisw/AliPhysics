@@ -2305,10 +2305,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
         //     = p_T^2 + p_z^2 + m^2
         //     = p_T^2 + p_T^2*sinh^2(eta) + m^2
         //   E = sqrt( (1 + sinh^2(eta))*p_T^2 + m^2 )
-        jetSubtracted.SetPtEtaPhiE( jet->E() - thisRho*area*TMath::CosH(jet->Eta())
+        jetSubtracted.SetPtEtaPhiE( jet->Pt() - thisRho*area
                                    , jet->Eta()
                                    , jet->Phi()
-                                   , sqrt( ( 1 + std::pow(TMath::SinH(jet->Eta()), 2) )*std::pow(jet->Pt()-thisRho*area, 2) + std::pow(jet->M(), 2) )
+                                   , jet->E() - thisRho*area*TMath::CosH(jet->Eta())
                                    );
         if(i==0) leadingJetSubtracted    = jetSubtracted;
         if(i==1) subleadingJetSubtracted = jetSubtracted;
