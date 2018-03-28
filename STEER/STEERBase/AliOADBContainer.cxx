@@ -411,7 +411,7 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     fUpperLimits[i] = cont->UpperLimit(i);
     fArray->AddAt(cont->GetObjectByIndex(i), i);
     TObject* passName = cont->GetPassNameByIndex(i);
-    fPassNames->AddAt(passName ? passName : new TObjString(""), i);
+    fPassNames->AddAt(new TObjString(passName ? passName->GetName() : ""), i);
   }
 
   if (!fDefaultList) 
