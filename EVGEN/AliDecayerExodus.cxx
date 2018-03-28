@@ -36,6 +36,7 @@ ClassImp(AliDecayerExodus)
 // to the Kroll-Wada parametrization: N. Kroll, W. Wada: Phys. Rev 98(1955)1355
 // and generate electron-pair mass distributions for resonances according
 // to the Gounaris-Sakurai parametrization: G.J. Gounaris, J.J. Sakurai: Phys.Rev.Lett. 21(1968)244 
+// For rho, we use the parametrization from NA60 (R. Arnaldi et al., Physics Letters B 757 (2016) 437–444).
 //
 // For the electromagnetic form factor the parameterizations from
 // Lepton-G and NA60 are used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301, R. Arnaldi et al., Physics Letters B 757 (2016) 437–444
@@ -330,7 +331,9 @@ void AliDecayerExodus::Init()
      {
      mass_bin = mass_min+(Double_t)(ibin-1)*binwidth+binwidth/2.0;
 
-     weight_rho     = (Float_t)GounarisSakurai(mass_bin,vmass_rho,vwidth_rho,emass);
+//     weight_rho     = (Float_t)GounarisSakurai(mass_bin,vmass_rho,vwidth_rho,emass);
+     weight_rho     = (Float_t)RhoShapeFromNA60(mass_bin,vmass_rho,vwidth_rho,emass);
+
      weight_omega   = (Float_t)GounarisSakurai(mass_bin,vmass_omega,vwidth_omega,emass);
      weight_phi     = (Float_t)GounarisSakurai(mass_bin,vmass_phi,vwidth_phi,emass); 
      weight_jpsi    = (Float_t)Lorentz(mass_bin,vmass_jpsi,vwidth_jpsi);
@@ -347,7 +350,7 @@ void AliDecayerExodus::Init()
 Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass)
 {
 // Invariant mass distributions of electron pairs from resonance decays
-// of rho, omega and phi
+// of rho (not anymore, now using the shape from NA60), omega and phi
 // using Gounaris-Sakurai function
 
   Double_t corr = 0.;
@@ -371,6 +374,56 @@ Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_
   }
   return weight;  
 }
+
+
+
+
+Double_t AliDecayerExodus::RhoShapeFromNA60(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass)
+{
+  // Invariant mass distributions of electron pairs from rho decay
+  // Using NA06 shape and measured temperature parameter from Physics Letters B 757 (2016) 437–444
+  // Parameterization implemented by Hiroyuki Sako (GSI)
+
+  double r, GammaTot;
+  Double_t mRho    = vmass;
+  Double_t Gamma0  = vwidth;
+  Double_t mPi     = TDatabasePDG::Instance()->GetParticle("pi0")->Mass();
+
+  //HERE hack: substitute original muon mass for electron mass:
+  //Double_t mMu     = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
+  Double_t mMu     = TDatabasePDG::Instance()->GetParticle("e-")->Mass();
+
+  const double Norm = 0.0744416*1.01;
+  // 0.0744416 at m = 0.72297
+  // is the max number with Norm=1 (for rho)
+
+  double mThreshold = 2.*mPi;
+
+  //  const double T = 0.170; // Assumption of pi+ temperature [GeV/c2]
+  const double T=0.161;//measured value
+
+  if (mass < mThreshold) {
+    r = 0.;
+    return r;
+  }
+
+  double k = sqrt(0.25*mass*mass-(mThreshold/2)*(mThreshold/2));
+  double k0 = sqrt(0.25*mRho*mRho-(mThreshold/2)*(mThreshold/2));
+
+  GammaTot = (k/k0)*(k/k0)*(k/k0)*(mRho/mass)*(mRho/mass)*Gamma0;
+
+  double FormFactor2 = 1/((mass*mass-mRho*mRho)*(mass*mass-mRho*mRho)+
+              mass*mass*GammaTot*GammaTot);
+
+  r = pow(mass,1.5)*pow((1-mThreshold*mThreshold/(mass*mass)),1.5)*
+((mass*mass+2*mMu*mMu)/(mass*mass))*(pow((mass*mass-4*mMu*mMu),0.5)/mass)*FormFactor2
+    *exp(-mass/T)/Norm;
+
+  return r;
+}
+
+
+
 
 
 Double_t AliDecayerExodus::Lorentz(Float_t mass, Double_t vmass, Double_t vwidth)

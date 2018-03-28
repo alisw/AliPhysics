@@ -104,6 +104,7 @@ class AliDecayerExodus : public AliDecayer
 
  private:
     Double_t GounarisSakurai(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass);
+    Double_t RhoShapeFromNA60(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass);
     Double_t Lorentz(Float_t mass, Double_t vmass, Double_t vwidth); 
     virtual void    Rot(Double_t pin[3], Double_t pout[3],
                         Double_t costheta, Double_t sintheta,
