@@ -119,6 +119,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
+    fCaloClusterEincE(0),
     fCaloClustEtaphi(0),
     fCaloClustEtaPhiAfterMatch(0),
     fCaloClustTiming(0),
@@ -172,6 +173,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fMCTPCNSigmaelectron(0),
     fMCNsigmaEtaElectron(0),
     fMCHFEEop(0),
+    fMCHFEEopwPID(0),
     //----- DCA for c/b separation -----
     fMCDCAinclusive(0),
     fMCDCAconv(0),
@@ -258,6 +260,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
+    fCaloClusterEincE(0),
     fCaloClustEtaphi(0),
     fCaloClustEtaPhiAfterMatch(0),
     fCaloClustTiming(0),
@@ -310,6 +313,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fMCTPCNSigmaelectron(0),
     fMCNsigmaEtaElectron(0),
     fMCHFEEop(0),
+    fMCHFEEopwPID(0),
     //----- DCA for c/b separation -----
     fMCDCAinclusive(0),
     fMCDCAconv(0),
@@ -398,8 +402,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fCaloClusterE = new TH1F("fCaloClusterE", "cluster energy distribution;Energy (GeV.);counts",500,0,50);
     fOutputList->Add(fCaloClusterE);
 
-    fCaloClusterEAfterMatch = new TH1F("fCaloClusterEAfterMatch", "cluster energy distribution w/trackmatch);Energy (GeV.);counts",500,0,50);
+    fCaloClusterEAfterMatch = new TH1F("fCaloClusterEAfterMatch","cluster energy distribution w/trackmatch;E (GeV);counts",500,0,50);
     fOutputList->Add(fCaloClusterEAfterMatch);
+
+    fCaloClusterEincE = new TH1F("fCaloClusterEincE","cluster energy distribution w/eID;E (GeV);counts",500,0,50);
+    fOutputList->Add(fCaloClusterEincE);
 
     fCaloClustEtaphi = new TH2F("fCaloClustEtaphi","cluster #phi-#eta distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList -> Add(fCaloClustEtaphi);
@@ -550,8 +557,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
       fMCNsigmaEtaElectron = new TH2F("fMCNsigmaEtaElectron","n_{#sigma}^{TPC} (|PDG| = 11);#eta;n_{#sigma}^{TPC}",100,-0.9,0.9,500,-10,10);
       fOutputList -> Add(fMCNsigmaEtaElectron);
 
-      fMCHFEEop = new TH2F("fMCHFEEop","PYTHIA e^{HF} E/p vs p_{T};p_{T} (GeV/c);E/p",500,0,50,300,0,3);
+      fMCHFEEop = new TH2F("fMCHFEEop","embedding e^{HF} E/p vs p_{T};p_{T} (GeV/c);E/p",500,0,50,300,0,3);
       fOutputList -> Add(fMCHFEEop);
+
+      fMCHFEEopwPID = new TH2F("fMCHFEEopwPID","embedding e^{HF} E/p vs p_{T} (with n_{#sigma}^{TPC} & shower shape cut);p_{T} (GeV/c);E/p",500,0,50,300,0,3);
+      fOutputList -> Add(fMCHFEEopwPID);
 
       //----- DCA for c/b separation ------
       // fMCDCAinclusive = new TH2F("fMCDCAinclusive","inclusive electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
@@ -697,7 +707,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
   Double_t CutPhotEMass = MassCut;
   //################################################################# //
 
-    Bool_t IsPamaCheck = kFALSE;
+    Bool_t IsPamaCheck = kTRUE;
     if(IsPamaCheck)
     {
       cout << " ############### Analysis Parameters ###############" << endl;
@@ -707,7 +717,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
       cout << " Rapidity : " << CutTrackEta[0] << " <  y < " << CutTrackEta[1] << endl;
       cout << " # of TPC cluster = " << CutTPCNCls << endl;
       cout << " # of ITS cluster = " << CutITSNCls << endl;
-      cout << " # of CrossedRow = " << CutITSNCls << endl;
+      cout << " # of CrossedRow = " << CutNCrossedRow << endl;
       cout << " DCAxy = " << CutDCAxy << ", DCAz = " << CutDCAz << endl;
       cout << " Delta phi = " << CutPhidiff << ", Delta Eta = " << CutEtadiff << endl;
       cout << " --- electron PID ---" << endl;
@@ -781,8 +791,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     // fNcontV -> Fill(NcontV);
     fvtxZ_NoCut -> Fill(Zvertex);
     if(fVevent->IsPileupFromSPDInMultBins()) return; // pile up removal //
-    if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return; // remove Vtx with only TPC track //
+    // if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return; // remove Vtx with only TPC track //
     if(!(NcontV >= CutNcontV)) return; // # of contributors cut //
+    if(!(NcontVSPD >= CutNcontV)) return; // # of SPD contributors cut //
     fvtxZ_NcontCut -> Fill(Zvertex);
     if(TMath::Abs(Zvertex) > CutZver) return; // Z vertex position cut //
     fvtxZ -> Fill(Zvertex);
@@ -1280,10 +1291,17 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             }
             if(Eop < 0.6 && flagShowerShapeCut) fNSigmaTPChadron -> Fill(TrackPt,TrackNSigma);
 
+            // E/p of embedding HFE with PID //
+            if(fFlagMC && flagpidele)
+            {
+              if((flagCharm || flagBeauty) && TrackP > 0 && flagNsigmaECut && flagShowerShapeCut) fMCHFEEopwPID -> Fill(TrackPt,Eop);
+            }
+
             //########################## PID cut in TPC & EMCal/DCal ##########################//
             if(!flagNsigmaECut || !flagShowerShapeCut || !flagEopCut) continue;
             //#################################################################################//
             fElectronphieta -> Fill(TrackEta,TrackPhi);
+            fCaloClusterEincE -> Fill(EMCalClusterE);
 
             // only MC //
             if(fFlagMC && flagpidele)
