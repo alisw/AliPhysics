@@ -41,6 +41,8 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t b
     name="PbPbData670";//special cuts nano AOD filtering
   else if(cutDefinition==671)
     name="PbPbData671";//special cuts nano AOD filtering
+  else if(cutDefinition==672)
+    name="PbPbData672";//special cuts nano AOD filtering
   
   AliDielectron *die =
     new AliDielectron(Form("%s",name.Data()),
