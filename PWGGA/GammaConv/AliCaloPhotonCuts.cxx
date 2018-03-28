@@ -976,7 +976,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistNCellsBigger1500MeVvsMod->GetXaxis()->SetTitle("N_{cells} with E_{cell} > 1.5 GeV");
       fHistNCellsBigger1500MeVvsMod->GetYaxis()->SetTitle("module ID");
       fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
-      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", 1000, 0, 100,
+      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", nBinsClusterECoarse, minClusterELog, maxClusterELog,
                                                  fNMaxDCalModules, nModulesStart, fNMaxDCalModules+nModulesStart);
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
