@@ -41,14 +41,16 @@
 AliJJetJtAnalysis::AliJJetJtAnalysis():
   fInputList(NULL)
   , fJetList(NULL)
-  , fJetListOfList() // Jet finders container
-  , fpythiaJets("AliJJet",10)
   , fMCJetList(NULL)
+  , fJetListOfList() // Jet finders container
   , fMCJetListOfList() // Jet finders container
   //, fJetBgList(NULL) 
+  , fConeSizes(0)    //array of cone sizes of Jets finder
   , fJetBgListOfList() // Bg jet list of list container
+  , fpythiaJets("AliJJet",10)
   , fJetEtaCut() // Jet's eta cut
   , fLeadingJets(0)
+  , frandom(0x0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -61,7 +63,6 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fCard(NULL) // pointer to AliJCard
   , fJJetAnalysis(NULL) //pointer to AliJJetAnalysis
   , fJetFinderName(0) // string array for jet finder tags
-  , fConeSizes(0)    //array of cone sizes of Jets finder
   , fEfficiency(0x0) //pointer to tracking efficiency
   , cBin(-1)
   , fcent(-999) // values for centrality
@@ -101,6 +102,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fdRBin() //histmanager axis
   , fiHist() //histmanager axis
   , fCentralityBin() //histmanager axis
+  , fktFinderBin()
   , fJetFinderBinMC() //histmanager axis
   , fJetTriggerBinMC() //histmanager axis
   , fTrkPtBinMC() //histmanager axis
@@ -112,6 +114,14 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fCentralityBinMC() //histmanager axis
   , fBgTypeBin() //histmanager axis
   , fhNumber() // number of jets
+  , fhDiJetM() // Di-jet invariant mass
+  , fhDiJetMCentBinned() // Di-jet invariant mass, centrality binned
+  , fhDiJetMCentBinnedSubtracted() // Di-jet invariant mass, centrality binned, background subtracted
+  , fhDiJetMCentBinnedCut() // Cut di-jet invariant mass, centrality binned
+  , fhDiJetMCentBinnedCutSubtracted() // Cut di-jet invariant mass, centrality binned, background subtracted
+  , fhRho() // Background pt estimation.
+  , fhRhoM() // Background pt estimation.
+  , fhRhoAreaCentBinned() // Background pt estimation.
   , fhJetPt() //Jet pt distribution
   , fhktJetPt() //kt jet pt distribution
   , fhktJetPtCentBinned() //kt jet pt distribution
@@ -130,21 +140,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJetMultiplicityBin() //Number of tracks in jet
   , fhJetMultiplicityBin2() //Number of tracks with jT filled in jet
   , fhJetConeMultiplicityBin() //Number of tracks in jet cone
-  , fhDiJetM() // Di-jet invariant mass
-  , fhDiJetMCentBinned() // Di-jet invariant mass, centrality binned
-  , fhDiJetMCentBinnedSubtracted() // Di-jet invariant mass, centrality binned, background subtracted
-  , fhDiJetMCentBinnedCut() // Cut di-jet invariant mass, centrality binned
-  , fhDiJetMCentBinnedCutSubtracted() // Cut di-jet invariant mass, centrality binned, background subtracted
-  , fhRho() // Background pt estimation.
-  , fhRhoM() // Background pt estimation.
-  , fhRhoAreaCentBinned() // Background pt estimation.
   , fhZ() // z dist
   , fhZBin() // z dist as fn of jet pt
   , fhRBin() // R dist as fn of jet pt
-  , fhZPythia() // z dist
-  , fhZBinPythia() // z dist as fn of jet pt
-  , fhZBinPythiaRCut() // z dist as fn of jet pt where R < 0.4
-  , fhRBinPythia() // R dist as fn of jet pt
   , fhJt() // jt dist
   , fhJtBin() // jt as fn of jet pt
   , fhJtWeightBin() // jt in P.S as fn of jet pt
@@ -153,12 +151,16 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
   , fhLogJtWeight2Bin() //log jt in P.S as fn of jet pt
   , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
+  , fhLogJtWithPtCutWeightBinBin()
+  , fhLogJtWithPtCutWeight2BinBin()
+  , fhJtBinLimBin() //jt with maximum const pt bin
+  , fhJtWeightBinLimBin()
+  , fhLogJtWeightBinLimBin()
+  , fhLogJtWeight2BinLimBin()
   , fhLeadingJt() // jt dist for leading track
   , fhLeadingJtBin() // jt as fn of jet pt for leading track
   , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
   , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
-  , fhLogJtWithPtCutWeightBinBin()
-  , fhLogJtWithPtCutWeight2BinBin()
   , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
@@ -182,10 +184,6 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJtWeightBinUnfBg()
   , fhLogJtWeightBinUnfBg()
   , fhLogJtWeight2BinUnfBg()
-  , fhJtBinLimBin() //jt with maximum const pt bin
-  , fhJtWeightBinLimBin()
-  , fhLogJtWeightBinLimBin()
-  , fhLogJtWeight2BinLimBin()
   , fhJetConeJtUnfBg()
   , fhJetConeJtBinUnfBg()
   , fhJetConeJtWeightBinUnfBg()
@@ -193,36 +191,23 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJetConeLogJtWeight2BinUnfBg()
   , fhJetBgPt()
   , fhJetBgPtBin()
+  , fhBgRBin() //Bg R as fn of jet pt
   , fhBgZ() //Bg Z 
   , fhBgZBin() //Bg Z as fn of jet pt
-  , fhBgRBin() //Bg R as fn of jet pt
-  , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
-  , fhDeltaPhi() // Angle between the jets in dijet system.
-  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
-  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
-  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhBgJt() //Bg jt 
   , fhBgJtBin() //Bg jt as fn of jet pt
   , fhBgJtWeightBin() //Bg jt in PS as fn of jet pt
   , fhBgLogJtWeightBin() // log of Bg jt as fn of jet pt
   , fhBgLogJtWeight2Bin() // log of Bg jt as fn of jet pt
-  // Bg jt as fns of jet pt, track pt
   , fhBgJtWithPtCutWeightBinBin() 
-  // log of Bg jt in PS as fns of jet pt, track pt
   , fhBgLogJtWithPtCutWeightBinBin() 
   , fhBgLogJtWithPtCutWeight2BinBin() 
-  // Bg jt in PS as fns of jet pt, track pt
-  // if R = 0.6, all bg jts are filled for all R<0.6
   , fhBgJtWithPtCutWeightBinBinSmallerR() 
   , fhBgLogJtWithPtCutWeightBinBinSmallerR()
   , fhBgLogJtWithPtCutWeight2BinBinSmallerR()
-  // Bg jt in PS as fns of jet pt, track pt
-  // from new jet axis with present tracks
   , fhBgJtWithPtCutWeightBinBinDiffR()
   , fhBgLogJtWithPtCutWeightBinBinDiffR()
   , fhBgLogJtWithPtCutWeight2BinBinDiffR()
-  // Bg jt as a fn of jet pt 
-  // with maximum constituent's pT bin in a jet
   , fhBgJtBinLimBin()
   , fhBgJtWeightBinLimBin()
   , fhBgLogJtWeightBinLimBin()
@@ -237,8 +222,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhBgTrkNumber()
   , fhBgTrkNumberBin()
   , fhBgRndmTrkPt()
-  , fhBgRndmTrkNumber()
   , fhBgRndmZ()
+  , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
   , fhBgRndmJt()
   , fhBgRndmJtWeight()
   , fhBgRndmJtBin()
@@ -248,6 +233,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhBgRndmLogJtWithPtCutWeight2Bin()
   , fhBgRndmJtWithPtCutWeightBinBin()
   , fhBgRndmLogJtWithPtCutWeight2BinBin()
+  , fhBgRndmTrkNumber()
 
   // dE = E of charged jet - E of shared tracks of
   // charged and full jets
@@ -267,38 +253,45 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   //Jet eta and Phi 2D dist for each jet finder
   , fhJetEtaPhi()
   , fhTrackEtaPhi()
-
+  , fhJetdPt() //Jet momentum difference distribution
+  , fhDeltaPhi() // Angle between the jets in dijet system.
+  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
+  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
+  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhTrackJtCorrBin()
   //, fhTrackJtCorr2D()
-  , fhConstJtCorrBin()
   , fhTrackJtCorrBinTest()
   , fhTrackJtCorrBinTest2()
-  , fhTrackJtCorrBinPythia()
-  , fhJetPtCorr() //Correlation between true and reco mc jets
-  , fhJetPtCorrCoarse() //Correlation between true and reco mc jets
-  , fhJetPtCorrPythia() //Correlation between true and reco mc jets
-  , fhJetPtCorrPythiaCoarse() //Correlation between true and reco mc jets
-  , fhJetPtCorrCentBinned() //Correlation between true and reco mc jets
-  , fhJetPtCorrCentBinnedSubtracted() //Correlation between bg-subtracted true and reco mc jets
-  , fhTrackMatchSuccess()
-  , fhConstMatchSuccess()
-  , fhTrackMatchSuccessPythia()
-  , fhJetPtCorr2() 
-  , fhJetPtCorr2Pythia() 
   , fhTrackPtCorr() //Correlation between true and reco mc track pt
   , fhConstPtCorr() //Correlation between true and reco mc track pt for jet constituents
-  , fhTrackPtCorrPythia() //Correlation between true and reco mc track pt
+  , fhJetPtCorr() //Correlation between true and reco mc jets
+  , fhJetPtCorrCentBinned() //Correlation between true and reco mc jets
+  , fhJetPtCorrCentBinnedSubtracted() //Correlation between bg-subtracted true and reco mc jets
+  , fhJetPtCorr2() 
+  , fhJetPtCorr3() 
+  , fhJetPtCorrCoarse() //Correlation between true and reco mc jets
   , fhJetdR() //Jet distance distribution
-  , fhJetdRPythia() //Jet distance distribution
-  , fhJetdPt() //Jet momentum difference distribution
-  , fhJetdPtPythia() //Jet momentum difference distribution
+  , fhTrackMatchSuccess()
+  , fhConstJtCorrBin()
+  , fhConstMatchSuccess()
   , fhDiJetMjjCorr() //Correlation between true and reco mc di-jet invariant mass
   , fhDiJetMjjCorrCentBinned() //Correlation between true and reco mc di-jet invariant mass, centrality binned
   , fhDiJetMjjCorrCentBinnedSubtracted() //Correlation between bg-subtracted true and reco mc di-jet invariant mass, centrality binned
-  , frandom(0x0)
+  , fhTrackJtCorrBinPythia()
+  , fhTrackPtCorrPythia() //Correlation between true and reco mc track pt
+  , fhJetPtCorrPythia() //Correlation between true and reco mc jets
+  , fhJetPtCorr2Pythia() 
+  , fhJetPtCorrPythiaCoarse() //Correlation between true and reco mc jets
+  , fhJetdRPythia() //Jet distance distribution
+  , fhTrackMatchSuccessPythia()
+  , fhJetdPtPythia() //Jet momentum difference distribution
   , fhJetPtPythia()
   , fhJetPtBinPythia()
   , fhJetMultiplicityBinPythia()
+  , fhZPythia() // z dist
+  , fhZBinPythia() // z dist as fn of jet pt
+  , fhZBinPythiaRCut() // z dist as fn of jet pt where R < 0.4
+  , fhRBinPythia() // R dist as fn of jet pt
   , fhJtPythia()
   , fhJtBinPythia()
   , fhJtBinPythiaRCut()
@@ -328,13 +321,15 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
 AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   fInputList(NULL)
   , fJetList(NULL)
-  , fJetListOfList()
-  , fpythiaJets("AliJJet",10)
   , fMCJetList(NULL)
+  , fJetListOfList()
   , fMCJetListOfList() // Jet finders container
+  , fConeSizes(0)
   , fJetBgListOfList()
+  , fpythiaJets("AliJJet",10)
   , fJetEtaCut() 
   , fLeadingJets(0)
+  , frandom(0x0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -345,26 +340,29 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fnR(0)
   , fnkt(0)
   , fCard(card)
-  , fJJetAnalysis(NULL)
-  , fJetFinderName(0)
-  , fConeSizes(0)
-  , fEfficiency(0x0)
+  , fJJetAnalysis(NULL) //pointer to AliJJetAnalysis
+  , fJetFinderName(0) // string array for jet finder tags
+  , fEfficiency(0x0) //pointer to tracking efficiency
   , cBin(-1)
-  , fcent(-999)
+  , fcent(-999) // values for centrality
   , zBin(-1)
   , zVert(-999)
-  , fTracks(NULL)
-  , fMCTracks(NULL)
-  , fTrackJt(NULL)
-  , fConstJt(NULL)
-  , fTrackPt(NULL)
-  , fConstPt(NULL)
-  , fConstLabels(NULL)
-  , fJetPt(NULL)
-  , fDiJetMjj(NULL)
-  , fDiJetMjjSubtr(NULL)
-  , fTrackFound(NULL)
-  , fConstFound(NULL)
+  , fTracks(NULL) //list of tracks
+  , fMCTracks(NULL) //list of tracks
+  , fTrackJt(NULL)    //Store jT of tracks
+  , fConstJt(NULL)    //Store jT of jet constituents
+  , fTrackPt(NULL)    //Store pT of tracks
+  , fConstPt(NULL)    //Store pT of jet constituents
+  , fConstLabels(NULL)    //Store labels of jet constituents
+  , fJetPt(NULL)    //Store pT of corresponding jets
+  , fDiJetMjj(NULL) //Store di-jet invariant mass for each jet finder
+  , fDiJetMjjSubtr(NULL) //Store di-jet bg-subtracted invariant mass for each jet finder
+  , fTrackFound(NULL) //Keep track of matched tracks
+  , fConstFound(NULL) //Keep track of matched tracks
+  , fBin2(NULL)    //Store iBin2 of corresponding tracks 
+  , fBin3(NULL)    //Store iBin3 of corresponding tracks
+  , fpta(NULL)    //Store pTa bin of corresponding tracks
+  , fptt(NULL)    //Store pTt bin of corresponding tracks
   , Nrandom(1)
   , moveJet(1)
   , fDoMC(0)
@@ -374,44 +372,27 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fRhoM(NULL)
   , fHMG(NULL)
   , fHMGMC(NULL)
-  , fJetFinderBin()
-  , fJetTriggerBin()
-  , fTrkPtBin()
-  , fTrkLimPtBin()
+  , fJetFinderBin() //histmanager axis
+  , fJetTriggerBin() //histmanager axis
+  , fTrkPtBin() //histmanager axis
+  , fTrkLimPtBin() //histmanager axis
   , fJetLeadPtBin() //histmanager axis
   , fJetMultBin() //histmanager axis
-  , fdRBin()
-  , fiHist()
+  , fdRBin() //histmanager axis
+  , fiHist() //histmanager axis
   , fCentralityBin() //histmanager axis
+  , fktFinderBin()
   , fJetFinderBinMC() //histmanager axis
   , fJetTriggerBinMC() //histmanager axis
   , fTrkPtBinMC() //histmanager axis
   , fTrkLimPtBinMC() //histmanager axis
-  , fJetLeadPtBinMC() //histmanager axsi
+  , fJetLeadPtBinMC() //histmanager axis
   , fJetMultBinMC() //histmanager axis
   , fdRBinMC() //histmanager axis
   , fiHistMC() //histmanager axis
   , fCentralityBinMC() //histmanager axis
-  , fBgTypeBin()
-  , fhNumber()
-  , fhJetPt()
-  , fhktJetPt()
-  , fhktJetPtCentBinned()
-  , fhCent() //Centrality distribution
-  , fhZVtx() //Vertex distribution
-  , fhDiJetCutCounter()
-  , fhJetPtCentBinned() //Jet pt distribution binned in centrality classes.
-  , fhJetPtCentBinnedSubtracted() //Jet pt distribution binned in centrality classes.
-  , fhJetPtCentBinnedCut() //Leading track cut jet pt distribution binned in centrality classes.
-  , fhJetPtCentBinnedCutSubtracted() //Leading track cut jet pt distribution binned in centrality classes.
-  , fhJetPtBin()
-  , fhJetPtTrackCutBin()
-  , fhJetPtMultiplicityCutBin()
-  , fhJetPtWeight() //Jet pt distribution
-  , fhJetPtWeightBin() //Jet pt as a fn of jet pt 
-  , fhJetMultiplicityBin() //Number of tracks in jet
-  , fhJetMultiplicityBin2() //Number of tracks with jT filled in jet
-  , fhJetConeMultiplicityBin() //Number of tracks in jet cone
+  , fBgTypeBin() //histmanager axis
+  , fhNumber() // number of jets
   , fhDiJetM() // Di-jet invariant mass
   , fhDiJetMCentBinned() // Di-jet invariant mass, centrality binned
   , fhDiJetMCentBinnedSubtracted() // Di-jet invariant mass, centrality binned, background subtracted
@@ -420,34 +401,45 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhRho() // Background pt estimation.
   , fhRhoM() // Background pt estimation.
   , fhRhoAreaCentBinned() // Background pt estimation.
-  , fhZ()
-  , fhZBin()
-  , fhZPythia() // z dist
-  , fhZBinPythia() // z dist as fn of jet pt
-  , fhZBinPythiaRCut() // z dist as fn of jet pt with R < 0.4
-  , fhJt()
-  , fhJtBin()
-  , fhJtWeightBin()
-  , fhJtWeightBinTest()
-  , fhJtWeightBinTest2()
-  , fhLogJtWeightBin()
-  , fhLogJtWeight2Bin()
-  , fhJtWithPtCutWeightBinBin()
+  , fhJetPt() //Jet pt distribution
+  , fhktJetPt() //kt jet pt distribution
+  , fhktJetPtCentBinned() //kt jet pt distribution
+  , fhCent() //Centrality distribution
+  , fhZVtx() //Vertex distribution
+  , fhDiJetCutCounter()
+  , fhJetPtCentBinned() //Jet pt distribution binned in centrality classes.
+  , fhJetPtCentBinnedSubtracted() //Jet pt distribution binned in centrality classes.
+  , fhJetPtCentBinnedCut() //Leading track cut jet pt distribution binned in centrality classes.
+  , fhJetPtCentBinnedCutSubtracted() //Leading track cut jet pt distribution binned in centrality classes.
+  , fhJetPtBin() //Jet pt as a fn of jet pt 
+  , fhJetPtTrackCutBin()
+  , fhJetPtMultiplicityCutBin()
+  , fhJetPtWeight() //Jet pt distribution
+  , fhJetPtWeightBin() //Jet pt as a fn of jet pt 
+  , fhJetMultiplicityBin() //Number of tracks in jet
+  , fhJetMultiplicityBin2() //Number of tracks with jT filled in jet
+  , fhJetConeMultiplicityBin() //Number of tracks in jet cone
+  , fhZ() // z dist
+  , fhZBin() // z dist as fn of jet pt
+  , fhRBin() // R dist as fn of jet pt
+  , fhJt() // jt dist
+  , fhJtBin() // jt as fn of jet pt
+  , fhJtWeightBin() // jt in P.S as fn of jet pt
+  , fhJtWeightBinTest() // jt in P.S as fn of jet pt
+  , fhJtWeightBinTest2() // jt in P.S as fn of jet pt
+  , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
+  , fhLogJtWeight2Bin() //log jt in P.S as fn of jet pt
+  , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
+  , fhLogJtWithPtCutWeightBinBin()
+  , fhLogJtWithPtCutWeight2BinBin()
+  , fhJtBinLimBin() //jt with maximum const pt bin
+  , fhJtWeightBinLimBin()
+  , fhLogJtWeightBinLimBin()
+  , fhLogJtWeight2BinLimBin()
   , fhLeadingJt() // jt dist for leading track
   , fhLeadingJtBin() // jt as fn of jet pt for leading track
   , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
   , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
-  , fhLogJtWithPtCutWeightBinBin()
-  , fhLogJtWithPtCutWeight2BinBin()
-  , fhJtUnfBg()
-  , fhJtBinUnfBg()
-  , fhJtWeightBinUnfBg()
-  , fhLogJtWeightBinUnfBg()
-  , fhLogJtWeight2BinUnfBg()
-  , fhJtBinLimBin()
-  , fhJtWeightBinLimBin()
-  , fhLogJtWeightBinLimBin()
-  , fhLogJtWeight2BinLimBin()
   , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
@@ -466,6 +458,11 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetConeJtWithPtCutWeightBinBin()
   , fhJetConeLogJtWithPtCutWeightBinBin()
   , fhJetConeLogJtWithPtCutWeight2BinBin()
+  , fhJtUnfBg()
+  , fhJtBinUnfBg()
+  , fhJtWeightBinUnfBg()
+  , fhLogJtWeightBinUnfBg()
+  , fhLogJtWeight2BinUnfBg()
   , fhJetConeJtUnfBg()
   , fhJetConeJtBinUnfBg()
   , fhJetConeJtWeightBinUnfBg()
@@ -473,23 +470,18 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetConeLogJtWeight2BinUnfBg()
   , fhJetBgPt()
   , fhJetBgPtBin()
-  , fhBgZ()
-  , fhBgZBin()
   , fhBgRBin() //Bg R as fn of jet pt
-  , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
-  , fhDeltaPhi() // Angle between the jets in dijet system.
-  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
-  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
-  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
-  , fhBgJt()
-  , fhBgJtBin()
-  , fhBgJtWeightBin()
-  , fhBgLogJtWeightBin()
-  , fhBgLogJtWeight2Bin()
-  , fhBgJtWithPtCutWeightBinBin()
-  , fhBgLogJtWithPtCutWeightBinBin()
-  , fhBgLogJtWithPtCutWeight2BinBin()
-  , fhBgJtWithPtCutWeightBinBinSmallerR()
+  , fhBgZ() //Bg Z 
+  , fhBgZBin() //Bg Z as fn of jet pt
+  , fhBgJt() //Bg jt 
+  , fhBgJtBin() //Bg jt as fn of jet pt
+  , fhBgJtWeightBin() //Bg jt in PS as fn of jet pt
+  , fhBgLogJtWeightBin() // log of Bg jt as fn of jet pt
+  , fhBgLogJtWeight2Bin() // log of Bg jt as fn of jet pt
+  , fhBgJtWithPtCutWeightBinBin() 
+  , fhBgLogJtWithPtCutWeightBinBin() 
+  , fhBgLogJtWithPtCutWeight2BinBin() 
+  , fhBgJtWithPtCutWeightBinBinSmallerR() 
   , fhBgLogJtWithPtCutWeightBinBinSmallerR()
   , fhBgLogJtWithPtCutWeight2BinBinSmallerR()
   , fhBgJtWithPtCutWeightBinBinDiffR()
@@ -499,18 +491,6 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhBgJtWeightBinLimBin()
   , fhBgLogJtWeightBinLimBin()
   , fhBgLogJtWeight2BinLimBin()
-  , fhBgRndmTrkPt()
-  , fhBgRndmTrkNumber()
-  , fhBgRndmZ()
-  , fhBgRndmJt()
-  , fhBgRndmJtWeight()
-  , fhBgRndmJtBin()
-  , fhBgRndmJtWeightBin()
-  , fhBgRndmLogJt()
-  , fhBgRndmJtWithPtCutWeightBin()
-  , fhBgRndmLogJtWithPtCutWeight2Bin()
-  , fhBgRndmJtWithPtCutWeightBinBin()
-  , fhBgRndmLogJtWithPtCutWeight2BinBin()
   , fhTrkPt()
   , fhTrkPtBin()
   , fhTrkPtWeightBin()
@@ -520,64 +500,77 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhBgTrkPtWeightBin()
   , fhBgTrkNumber()
   , fhBgTrkNumberBin()
-  , fhdeltaE()
-  , fhdeltaN()
-  , fhFullJetEChJetBin()
-  , fhFullChdRChJetBin()
-  , fh2DFullEvsChEdN0()
-  , fh2DFullEvsChEdNnot0()
-  , fhJetEtaPhi()
-  , fhTrackEtaPhi()
-  // Bg jt as fns of jet pt, track pt
-  // log of Bg jt in PS as fns of jet pt, track pt
-  // Bg jt in PS as fns of jet pt, track pt
-  // if R = 0.6, all bg jts are filled for all R<0.6
-  // Bg jt in PS as fns of jet pt, track pt
-  // from new jet axis with present tracks
-  // Bg jt as a fn of jet pt 
-  // with maximum constituent's pT bin in a jet
+  , fhBgRndmTrkPt()
+  , fhBgRndmZ()
+  , fhBgRndmRBin() //Rndm Bg R as fn of jet pt
+  , fhBgRndmJt()
+  , fhBgRndmJtWeight()
+  , fhBgRndmJtBin()
+  , fhBgRndmJtWeightBin()
+  , fhBgRndmLogJt()
+  , fhBgRndmJtWithPtCutWeightBin()
+  , fhBgRndmLogJtWithPtCutWeight2Bin()
+  , fhBgRndmJtWithPtCutWeightBinBin()
+  , fhBgRndmLogJtWithPtCutWeight2BinBin()
+  , fhBgRndmTrkNumber()
 
   // dE = E of charged jet - E of shared tracks of
   // charged and full jets
+  , fhdeltaE()
   // dN = N of charged jet - N of shared tracks of
   // charged and full jets
+, fhdeltaN()
   // Fulljet E as a fn of charged jet E 
+, fhFullJetEChJetBin()
   // dR between full and charged jet 
   // as a fn of charged jet E
+, fhFullChdRChJetBin()
   // x-axis: fulljet E, y: ch jet E when dN == 0
+, fh2DFullEvsChEdN0()
   // x-axis: fulljet E, y: ch jet E when dN != 0
+, fh2DFullEvsChEdNnot0()
   //Jet eta and Phi 2D dist for each jet finder
+  , fhJetEtaPhi()
+  , fhTrackEtaPhi()
+  , fhJetdPt() //Jet momentum difference distribution
+  , fhDeltaPhi() // Angle between the jets in dijet system.
+  , fhDeltaPhiCentBinned() // Angle between the jets in dijet system. Centrality binned
+  , fhDeltaPhiCentBinnedSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted.
+  , fhDeltaPhiCentBinnedCutSubtracted() // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhTrackJtCorrBin()
   //, fhTrackJtCorr2D()
-  , fhConstJtCorrBin()
   , fhTrackJtCorrBinTest()
   , fhTrackJtCorrBinTest2()
-  , fhTrackJtCorrBinPythia()
-  , fhJetPtCorr()
-  , fhJetPtCorrCoarse()
-  , fhJetPtCorrPythia()
-  , fhJetPtCorrPythiaCoarse()
-  , fhJetPtCorrCentBinned()
-  , fhJetPtCorrCentBinnedSubtracted()
-  , fhTrackMatchSuccess()
-  , fhConstMatchSuccess()
-  , fhTrackMatchSuccessPythia()
+  , fhTrackPtCorr() //Correlation between true and reco mc track pt
+  , fhConstPtCorr() //Correlation between true and reco mc track pt for jet constituents
+  , fhJetPtCorr() //Correlation between true and reco mc jets
+  , fhJetPtCorrCentBinned() //Correlation between true and reco mc jets
+  , fhJetPtCorrCentBinnedSubtracted() //Correlation between bg-subtracted true and reco mc jets
   , fhJetPtCorr2() 
-  , fhJetPtCorr2Pythia() 
-  , fhTrackPtCorr() 
-  , fhConstPtCorr() 
-  , fhTrackPtCorrPythia() 
-  , fhJetdR() 
-  , fhJetdPt() 
-  , fhJetdRPythia() 
-  , fhJetdPtPythia() 
+  , fhJetPtCorr3() 
+  , fhJetPtCorrCoarse() //Correlation between true and reco mc jets
+  , fhJetdR() //Jet distance distribution
+  , fhTrackMatchSuccess()
+  , fhConstJtCorrBin()
+  , fhConstMatchSuccess()
   , fhDiJetMjjCorr() //Correlation between true and reco mc di-jet invariant mass
   , fhDiJetMjjCorrCentBinned() //Correlation between true and reco mc di-jet invariant mass, centrality binned
   , fhDiJetMjjCorrCentBinnedSubtracted() //Correlation between bg-subtracted true and reco mc di-jet invariant mass, centrality binned
-  , frandom(0x0)
+  , fhTrackJtCorrBinPythia()
+  , fhTrackPtCorrPythia() //Correlation between true and reco mc track pt
+  , fhJetPtCorrPythia() //Correlation between true and reco mc jets
+  , fhJetPtCorr2Pythia() 
+  , fhJetPtCorrPythiaCoarse() //Correlation between true and reco mc jets
+  , fhJetdRPythia() //Jet distance distribution
+  , fhTrackMatchSuccessPythia()
+  , fhJetdPtPythia() //Jet momentum difference distribution
   , fhJetPtPythia()
   , fhJetPtBinPythia()
   , fhJetMultiplicityBinPythia()
+  , fhZPythia() // z dist
+  , fhZBinPythia() // z dist as fn of jet pt
+  , fhZBinPythiaRCut() // z dist as fn of jet pt where R < 0.4
+  , fhRBinPythia() // R dist as fn of jet pt
   , fhJtPythia()
   , fhJtBinPythia()
   , fhJtBinPythiaRCut()
@@ -606,14 +599,16 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
 AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   fInputList(ap.fInputList)
   , fJetList(ap.fJetList)
-  , fJetListOfList(ap.fJetListOfList)
   , fMCJetList(ap.fMCJetList)
-  , fpythiaJets(ap.fpythiaJets)
+  , fJetListOfList(ap.fJetListOfList)
   , fMCJetListOfList(ap.fMCJetListOfList)
   //, fJetBgList(ap.fJetBgList)
+  , fConeSizes(ap.fConeSizes)
   , fJetBgListOfList(ap.fJetBgListOfList)
+  , fpythiaJets(ap.fpythiaJets)
   , fJetEtaCut(ap.fJetEtaCut) // Jet's eta cut
   , fLeadingJets(ap.fLeadingJets)
+  , frandom(0x0)
   , fJetTriggPtBorders(ap.fJetTriggPtBorders)
   , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
   , fJetAssocPtBorders(ap.fJetAssocPtBorders)
@@ -626,7 +621,6 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fCard(ap.fCard)
   , fJJetAnalysis(ap.fJJetAnalysis)
   , fJetFinderName(ap.fJetFinderName)
-  , fConeSizes(ap.fConeSizes)
   , fEfficiency(ap.fEfficiency)
   , cBin(-1)
   , fcent(-999)
@@ -634,9 +628,20 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , zVert(-999)
   , fTracks(ap.fTracks)
   , fMCTracks(ap.fMCTracks)
+  , fTrackJt(ap.fTrackJt)
+  , fConstJt(ap.fConstJt)
   , fTrackPt(ap.fTrackPt)
   , fConstPt(ap.fConstPt)
   , fConstLabels(ap.fConstLabels)
+  , fJetPt(ap.fJetPt)
+  , fDiJetMjj(ap.fDiJetMjj)
+  , fDiJetMjjSubtr(ap.fDiJetMjjSubtr)
+  , fTrackFound(ap.fTrackFound)
+  , fConstFound(ap.fConstFound)
+  , fBin2(ap.fBin2)
+  , fBin3(ap.fBin3)
+  , fpta(ap.fpta)
+  , fptt(ap.fptt)
   , Nrandom(ap.Nrandom)
   , moveJet(ap.moveJet)
   , fDoMC(ap.fDoMC)
@@ -655,6 +660,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fdRBin(ap.fdRBin)
   , fiHist(ap.fiHist)
   , fCentralityBin(ap.fCentralityBin)
+  , fktFinderBin(ap.fktFinderBin)
+  , fDeltaPhiCutBin(ap.fDeltaPhiCutBin)
   , fJetFinderBinMC(ap.fJetFinderBinMC) 
   , fJetTriggerBinMC(ap.fJetTriggerBinMC)
   , fTrkPtBinMC(ap.fTrkPtBinMC) 
@@ -665,7 +672,16 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fiHistMC(ap.fiHistMC) 
   , fCentralityBinMC(ap.fCentralityBinMC) //histmanager axis
   , fBgTypeBin(ap.fBgTypeBin) 
+  , fiHist2MC(ap.fiHist2MC)
   , fhNumber(ap.fhNumber)
+  , fhDiJetM(ap.fhDiJetM)
+  , fhDiJetMCentBinned(ap.fhDiJetMCentBinned)
+  , fhDiJetMCentBinnedSubtracted(ap.fhDiJetMCentBinnedSubtracted)
+  , fhDiJetMCentBinnedCut(ap.fhDiJetMCentBinnedCut)
+  , fhDiJetMCentBinnedCutSubtracted(ap.fhDiJetMCentBinnedCutSubtracted)
+  , fhRho(ap.fhRho)
+  , fhRhoM(ap.fhRhoM) // Background pt estimation.
+  , fhRhoAreaCentBinned(ap.fhRhoAreaCentBinned)
   , fhJetPt(ap.fhJetPt)
   , fhktJetPt(ap.fhktJetPt)
   , fhktJetPtCentBinned(ap.fhktJetPtCentBinned)
@@ -684,19 +700,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetMultiplicityBin(ap.fhJetMultiplicityBin) //Number of tracks in jet
   , fhJetMultiplicityBin2(ap.fhJetMultiplicityBin2) 
   , fhJetConeMultiplicityBin(ap.fhJetConeMultiplicityBin) 
-  , fhDiJetM(ap.fhDiJetM)
-  , fhDiJetMCentBinned(ap.fhDiJetMCentBinned)
-  , fhDiJetMCentBinnedSubtracted(ap.fhDiJetMCentBinnedSubtracted)
-  , fhDiJetMCentBinnedCut(ap.fhDiJetMCentBinnedCut)
-  , fhDiJetMCentBinnedCutSubtracted(ap.fhDiJetMCentBinnedCutSubtracted)
-  , fhRho(ap.fhRho)
-  , fhRhoM(ap.fhRhoM) // Background pt estimation.
-  , fhRhoAreaCentBinned(ap.fhRhoAreaCentBinned)
   , fhZ(ap.fhZ)
   , fhZBin(ap.fhZBin)
-  , fhZPythia(ap.fhZPythia) 
-  , fhZBinPythia(ap.fhZBinPythia) 
-  , fhZBinPythiaRCut(ap.fhZBinPythiaRCut) 
   , fhJt(ap.fhJt)
   , fhJtBin(ap.fhJtBin)
   , fhJtWeightBin(ap.fhJtWeightBin)
@@ -705,21 +710,16 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhLogJtWeightBin(ap.fhLogJtWeightBin)
   , fhLogJtWeight2Bin(ap.fhLogJtWeight2Bin)
   , fhJtWithPtCutWeightBinBin(ap.fhJtWithPtCutWeightBinBin)
-  , fhLeadingJt(ap.fhLeadingJt)
-  , fhLeadingJtBin(ap.fhLeadingJtBin)
-  , fhLeadingJtWeightBin(ap.fhLeadingJtWeightBin)
-  , fhLeadingJtWithPtCutWeightBinBin(ap.fhLeadingJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeightBinBin(ap.fhLogJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeight2BinBin(ap.fhLogJtWithPtCutWeight2BinBin)
-  , fhJtUnfBg(ap.fhJtUnfBg)
-  , fhJtBinUnfBg(ap.fhJtBinUnfBg)
-  , fhJtWeightBinUnfBg(ap.fhJtWeightBinUnfBg)
-  , fhLogJtWeightBinUnfBg(ap.fhLogJtWeightBinUnfBg)
-  , fhLogJtWeight2BinUnfBg(ap.fhLogJtWeight2BinUnfBg)
   , fhJtBinLimBin(ap.fhJtBinLimBin)
   , fhJtWeightBinLimBin(ap.fhJtWeightBinLimBin)
   , fhLogJtWeightBinLimBin(ap.fhLogJtWeightBinLimBin)
   , fhLogJtWeight2BinLimBin(ap.fhLogJtWeight2BinLimBin)
+  , fhLeadingJt(ap.fhLeadingJt)
+  , fhLeadingJtBin(ap.fhLeadingJtBin)
+  , fhLeadingJtWeightBin(ap.fhLeadingJtWeightBin)
+  , fhLeadingJtWithPtCutWeightBinBin(ap.fhLeadingJtWithPtCutWeightBinBin)
   , fhEventJtBin(ap.fhEventJtBin)
   , fhEventJtWeightBin(ap.fhEventJtWeightBin)
   , fhEventJtWithPtCutWeightBinBin(ap.fhEventJtWithPtCutWeightBinBin)
@@ -738,6 +738,11 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetConeJtWithPtCutWeightBinBin(ap.fhJetConeJtWithPtCutWeightBinBin)
   , fhJetConeLogJtWithPtCutWeightBinBin(ap.fhJetConeLogJtWithPtCutWeightBinBin)
   , fhJetConeLogJtWithPtCutWeight2BinBin(ap.fhJetConeLogJtWithPtCutWeight2BinBin)
+  , fhJtUnfBg(ap.fhJtUnfBg)
+  , fhJtBinUnfBg(ap.fhJtBinUnfBg)
+  , fhJtWeightBinUnfBg(ap.fhJtWeightBinUnfBg)
+  , fhLogJtWeightBinUnfBg(ap.fhLogJtWeightBinUnfBg)
+  , fhLogJtWeight2BinUnfBg(ap.fhLogJtWeight2BinUnfBg)
   , fhJetConeJtUnfBg(ap.fhJetConeJtUnfBg)
   , fhJetConeJtBinUnfBg(ap.fhJetConeJtBinUnfBg)
   , fhJetConeJtWeightBinUnfBg(ap.fhJetConeJtWeightBinUnfBg)
@@ -745,14 +750,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetConeLogJtWeight2BinUnfBg(ap.fhJetConeLogJtWeight2BinUnfBg)
   , fhJetBgPt(ap.fhJetBgPt)
   , fhJetBgPtBin(ap.fhJetBgPtBin)
+  , fhBgRBin(ap.fhBgRBin) 
   , fhBgZ(ap.fhBgZ)
   , fhBgZBin(ap.fhBgZBin)
-  , fhBgRBin(ap.fhBgRBin) 
-  , fhBgRndmRBin(ap.fhBgRndmRBin)
-  , fhDeltaPhi(ap.fhDeltaPhi)
-  , fhDeltaPhiCentBinned(ap.fhDeltaPhiCentBinned)
-  , fhDeltaPhiCentBinnedSubtracted(ap.fhDeltaPhiCentBinnedSubtracted)
-  , fhDeltaPhiCentBinnedCutSubtracted(ap.fhDeltaPhiCentBinnedCutSubtracted) // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhBgJt(ap.fhBgJt)
   , fhBgJtBin(ap.fhBgJtBin)
   , fhBgJtWeightBin(ap.fhBgJtWeightBin)
@@ -781,8 +781,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhBgTrkNumber(ap.fhBgTrkNumber)
   , fhBgTrkNumberBin(ap.fhBgTrkNumberBin)
   , fhBgRndmTrkPt(ap.fhBgRndmTrkPt)
-  , fhBgRndmTrkNumber(ap.fhBgRndmTrkNumber)
   , fhBgRndmZ(ap.fhBgRndmZ)
+  , fhBgRndmRBin(ap.fhBgRndmRBin)
   , fhBgRndmJt(ap.fhBgRndmJt)
   , fhBgRndmJtWeight(ap.fhBgRndmJtWeight)
   , fhBgRndmJtBin(ap.fhBgRndmJtBin)
@@ -792,6 +792,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhBgRndmLogJtWithPtCutWeight2Bin(ap.fhBgRndmLogJtWithPtCutWeight2Bin)
   , fhBgRndmJtWithPtCutWeightBinBin(ap.fhBgRndmJtWithPtCutWeightBinBin)
   , fhBgRndmLogJtWithPtCutWeight2BinBin(ap.fhBgRndmLogJtWithPtCutWeight2BinBin)
+  , fhBgRndmTrkNumber(ap.fhBgRndmTrkNumber)
   , fhdeltaE(ap.fhdeltaE)
   , fhdeltaN(ap.fhdeltaN)
   , fhFullJetEChJetBin(ap.fhFullJetEChJetBin)
@@ -800,34 +801,37 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fh2DFullEvsChEdNnot0(ap.fh2DFullEvsChEdNnot0)
   , fhJetEtaPhi(ap.fhJetEtaPhi)
   , fhTrackEtaPhi(ap.fhTrackEtaPhi)
+  , fhJetdPt(ap.fhJetdPt)
+  , fhDeltaPhi(ap.fhDeltaPhi)
+  , fhDeltaPhiCentBinned(ap.fhDeltaPhiCentBinned)
+  , fhDeltaPhiCentBinnedSubtracted(ap.fhDeltaPhiCentBinnedSubtracted)
+  , fhDeltaPhiCentBinnedCutSubtracted(ap.fhDeltaPhiCentBinnedCutSubtracted) // Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
   , fhTrackJtCorrBin(ap.fhTrackJtCorrBin)
-  //, fhTrackJtCorr2D(ap.fhTrackJtCorr2D)
-  , fhConstJtCorrBin(ap.fhConstJtCorrBin)
   , fhTrackJtCorrBinTest(ap.fhTrackJtCorrBinTest)
   , fhTrackJtCorrBinTest2(ap.fhTrackJtCorrBinTest2)
-  , fhJetPtCorr(ap.fhJetPtCorr)
-  , fhJetPtCorrCoarse(ap.fhJetPtCorrCoarse)
-  , fhTrackMatchSuccess(ap.fhTrackMatchSuccess)
-  , fhConstMatchSuccess(ap.fhConstMatchSuccess)
-  , fhJetPtCorr2(ap.fhJetPtCorr2) 
   , fhTrackPtCorr(ap.fhTrackPtCorr) 
   , fhConstPtCorr(ap.fhConstPtCorr)
-  , fhJetdR(ap.fhJetdR)
-  , fhJetdPt(ap.fhJetdPt)
-  , fhTrackJtCorrBinPythia(ap.fhTrackJtCorrBinPythia)
-  , fhJetPtCorrPythia(ap.fhJetPtCorrPythia)
-  , fhJetPtCorrPythiaCoarse(ap.fhJetPtCorrPythiaCoarse)
+  , fhJetPtCorr(ap.fhJetPtCorr)
   , fhJetPtCorrCentBinned(ap.fhJetPtCorrCentBinned)
   , fhJetPtCorrCentBinnedSubtracted(ap.fhJetPtCorrCentBinnedSubtracted)
-  , fhTrackMatchSuccessPythia(ap.fhTrackMatchSuccessPythia)
-  , fhJetPtCorr2Pythia(ap.fhJetPtCorr2Pythia) 
-  , fhTrackPtCorrPythia(ap.fhTrackPtCorrPythia) 
-  , fhJetdRPythia(ap.fhJetdRPythia)
-  , fhJetdPtPythia(ap.fhJetdPtPythia)
+  , fhJetPtCorr2(ap.fhJetPtCorr2) 
+  , fhJetPtCorrCoarse(ap.fhJetPtCorrCoarse)
+  , fhJetdR(ap.fhJetdR)
+  , fhTrackMatchSuccess(ap.fhTrackMatchSuccess)
+  //, fhTrackJtCorr2D(ap.fhTrackJtCorr2D)
+  , fhConstJtCorrBin(ap.fhConstJtCorrBin)
+  , fhConstMatchSuccess(ap.fhConstMatchSuccess)
   , fhDiJetMjjCorr(ap.fhDiJetMjjCorr) 
   , fhDiJetMjjCorrCentBinned(ap.fhDiJetMjjCorrCentBinned)
   , fhDiJetMjjCorrCentBinnedSubtracted(ap.fhDiJetMjjCorrCentBinnedSubtracted)
-  , frandom(0x0)
+  , fhTrackJtCorrBinPythia(ap.fhTrackJtCorrBinPythia)
+  , fhTrackPtCorrPythia(ap.fhTrackPtCorrPythia) 
+  , fhJetPtCorrPythia(ap.fhJetPtCorrPythia)
+  , fhJetPtCorr2Pythia(ap.fhJetPtCorr2Pythia) 
+  , fhJetPtCorrPythiaCoarse(ap.fhJetPtCorrPythiaCoarse)
+  , fhJetdRPythia(ap.fhJetdRPythia)
+  , fhTrackMatchSuccessPythia(ap.fhTrackMatchSuccessPythia)
+  , fhJetdPtPythia(ap.fhJetdPtPythia)
   , fhJetPtPythia(ap.fhJetPtPythia)
   , fhJetPtBinPythia(ap.fhJetPtBinPythia)
   , fhJetMultiplicityBinPythia(ap.fhJetMultiplicityBinPythia)
@@ -1785,9 +1789,6 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
     << TH2D("TrackPtCorrPythia","",NBINSPt,LogBinsPt,NBINSPt,LogBinsPt)
     << "END";
 
-  int NBINSNumber = 100;
-  int LBinsNumber = 0;
-  int HBinsNumber = 100;
 
   fhJetMultiplicityBinPythia
     << TH1D("JetMultiplicityBinPythia","Jet Mulplicity",50,0,50)
@@ -2210,15 +2211,11 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   //cout << "REMOVE THIS " << endl << endl << endl;
 
 
-  int k = 0;
   double deltaR = -1;
-  double deltaEta = -999;
-  double deltaPhi = -999;
+  //double deltaEta = -999;
+  //double deltaPhi = -999;
   double effCorrection = -1;
   double thisConeSize = fConeSizes[iContainer] ;
-  double etaRndm = 0;
-  double phiRndm = 0;
-  double leadingTrackPt = 0;
   double leadingTrackJt = 0;
   double leadingTrackEff = 0;
   int leadingTrackIndex = 0;
@@ -2308,7 +2305,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
         //     = p_T^2 + p_z^2 + m^2
         //     = p_T^2 + p_T^2*sinh^2(eta) + m^2
         //   E = sqrt( (1 + sinh^2(eta))*p_T^2 + m^2 )
-        jetSubtracted.SetPtEtaPhiE( jet->Pt() - thisRho*area
+        jetSubtracted.SetPtEtaPhiE( jet->E() - thisRho*area*TMath::CosH(jet->Eta())
                                    , jet->Eta()
                                    , jet->Phi()
                                    , sqrt( ( 1 + std::pow(TMath::SinH(jet->Eta()), 2) )*std::pow(jet->Pt()-thisRho*area, 2) + std::pow(jet->M(), 2) )
@@ -2473,7 +2470,6 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     vOrtho.SetE(jet->E());
     vOrtho.SetPhi(jet->Phi()+TMath::Pi()/2);
 
-    //k=0; // count number of rotations of the orthogonal axis of a jet. 
 
     //Background jet (iBgJet) will be produced. This background jet is orthogonal to the iJet.  
     //If there is another jJet, then iBgJet will be consecutevely moved not to 
@@ -2488,9 +2484,6 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
         deltaR   = getDiffR(vOrtho.Phi(),jet2->Phi(),vOrtho.Eta(),jet2->Eta());
         if ( deltaR < 2*thisConeSize) {
           doBkg = 0;
-          /*vOrtho.Rotate(TMath::Pi()/8, jet->Vect());
-            j=0;
-            k++;*/
           fhNumber[iContainer]->Fill(4.5);
           break;
         }
@@ -3082,10 +3075,8 @@ int AliJJetJtAnalysis::FindPythiaJet(int iContainer, int itrack){
 void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int iContainer, int iContainerParticle){
 
   int iBin=0;
-  int jBin=0;
   double pT = 0;
   double pTmc = 0;
-  double conPtMax =0;
   double z; double jt;
   double pta;
   //double Y , deltaY = 0;
@@ -3097,12 +3088,11 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
   TLorentzVector  randomTrack;
   TLorentzVector summedJet;
   fJetBgListOfList[iContainer].Clear();
-  TClonesArray & bgjets = fJetBgListOfList[iContainer];
+  //TClonesArray & bgjets = fJetBgListOfList[iContainer];
 
   //cout << "REMOVE THIS " << endl << endl << endl;
 
 
-  int k = 0;
   double deltaR = -1;
   double thisConeSize = fConeSizes[iContainer] ;
   int found = 0;
@@ -3372,7 +3362,6 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
   else 
     trackArray = fTracks;
   int iBin, iptaBin=0;
-  int jBin=0;
   iBin = GetBin(fJetTriggPtBorders,jetpT); // fill jetPt histos
   if(iBin < 0 ) return;
 
@@ -3390,10 +3379,9 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
   TLorentzVector summedJet;
 
   int counter =0 ;
-  int k = 0;
   double deltaR = -1;
-  double deltaEta = -999;
-  double deltaPhi = -999;
+  //double deltaEta = -999;
+  //double deltaPhi = -999;
   double effCorrection = -1;
   double thisConeSize = fConeSizes[iContainer] ;
   double etaRndm = 0;
@@ -3574,7 +3562,6 @@ void AliJJetJtAnalysis::FillBgJtWithDiffAxes (
       }
     }
   }
-
 }
 
 //Phi1 and Phi2 between 0 and 2 pi
