@@ -31,6 +31,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 ,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   //should not be used, since we need a name to deal with root objects
 }
@@ -53,6 +54,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fSpinningDepth(0)
 ,fkTCentrality(false)
 ,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
   fMultBins=new TNtuple("MultBins","MultBins","mult");

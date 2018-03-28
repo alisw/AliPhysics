@@ -78,11 +78,12 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   fAntiCascCuts->Init();
   fGTI=new AliAODTrack*[fTrackBufferSize];
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
+  fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   bool MinBooking=
-      (!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample());
+      !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (MinBooking) {
+  if (!MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
@@ -278,11 +279,11 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (fConfig->GetUseEventMixing()) {
     fPartColl->SetEvent(
         fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
-        fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
+        fEvent->GetMultiplicity(),fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample->SetEvent(
-        fPairCleaner->GetCleanParticles(), fEvent->GetRefMult08());
+        fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
   }
 }
 

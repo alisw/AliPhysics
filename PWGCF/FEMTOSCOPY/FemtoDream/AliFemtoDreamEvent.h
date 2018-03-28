@@ -14,6 +14,13 @@
 #include "TList.h"
 class AliFemtoDreamEvent {
  public:
+  enum MultEstimator {
+    kSPD=0,
+    kRef08=1,
+    kV0M=2,
+    kV0A=3,
+    kV0C=4,
+  };
   AliFemtoDreamEvent();
   AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA, UInt_t trigger);
   virtual ~AliFemtoDreamEvent();
@@ -38,6 +45,9 @@ class AliFemtoDreamEvent {
   void SetNumberOfContributers(int nContrib){fnContrib=nContrib;};
   int GetNumberOfContributers() const {return fnContrib;};
   void SetPassAliEvtSelection(bool pass){fPassAliEvtSelection=pass;};
+  void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est) {
+    fEstimator=est;
+  }
   bool PassAliEvtSelection() const {return fPassAliEvtSelection;};
   void SetIsPileUp(bool PileUp) {fisPileUp=PileUp;};
   bool GetIsPileUp() const {return fisPileUp;};
@@ -47,6 +57,7 @@ class AliFemtoDreamEvent {
   bool GetMagneticField() const {return fHasMagField;};
   void SetSelectionStatus(bool pass){fisSelected=pass;};
   bool GetSelectionStatus() const {return fisSelected;};
+  int GetMultiplicity();
   TString ClassName() {return "AliFemtoDreamEvent";};
  private:
   int CalculateITSMultiplicity(AliAODEvent *evt);
@@ -67,7 +78,8 @@ class AliFemtoDreamEvent {
   bool fHasVertex;            //!
   bool fHasMagField;          //!
   bool fisSelected;           //!
-  ClassDef(AliFemtoDreamEvent,2)
+  MultEstimator fEstimator;   //!
+  ClassDef(AliFemtoDreamEvent,3)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */
