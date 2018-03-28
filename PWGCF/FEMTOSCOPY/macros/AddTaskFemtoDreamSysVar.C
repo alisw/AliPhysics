@@ -154,6 +154,20 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   } else if (suffix=="18") {
     v0Cuts->SetCutDCADaugToPrimVtx(0.06);
     Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  } else if (suffix=="40") {
+	v0Cuts->SetCutCPA(0.97);
+	Antiv0Cuts->SetCutCPA(0.97);
+  } else if (suffix=="41") {
+	v0Cuts->SetCutDCADaugTov0Vtx(2);
+	Antiv0Cuts->SetCutDCADaugTov0Vtx(2);
+  } else if (suffix=="42") {
+	v0Cuts->SetCutMaxDecayVtx(200);
+	Antiv0Cuts->SetCutMaxDecayVtx(200);
+	v0Cuts->SetCutTransverseRadius(0., 200);
+	Antiv0Cuts->SetCutTransverseRadius(0., 200);
+  } else if (suffix=="43") {
+	v0Cuts->SetCutInvMass(0.005);
+	Antiv0Cuts->SetCutInvMass(0.005);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -281,6 +295,40 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   } else if (suffix=="38") {
     CascadeCuts->SetPtRangev0(0.3,999.5);
     AntiCascadeCuts->SetPtRangev0(0.3,999.5);
+  } else if (suffix=="44") {
+	CascadeCuts->SetCutXiDaughterDCA(2);
+	AntiCascadeCuts->SetCutXiDaughterDCA(2);
+  } else if (suffix=="45") {
+	CascadeCuts->SetCutXiCPA(0.95);
+	AntiCascadeCuts->SetCutXiCPA(0.95);
+  } else if (suffix=="46") {
+	CascadeCuts->SetCutv0CPA(0.95);
+	AntiCascadeCuts->SetCutv0CPA(0.95);
+  } else if (suffix=="47") {
+	CascadeCuts->SetCutv0TransverseRadius(0,200);
+	AntiCascadeCuts->SetCutv0TransverseRadius(0,200);
+  } else if (suffix=="48") {
+	CascadeCuts->SetCutXiTransverseRadius(0,200);
+	AntiCascadeCuts->SetCutXiTransverseRadius(0,200);
+  } else if (suffix=="49") {
+	CascadeCuts->SetCutv0MaxDaughterDCA(2);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(2);
+  } else if (suffix=="50") {
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.0);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.0);
+  } else if (suffix=="51") {
+    CascadeCuts->Setv0MassRange(1.116,0.01);
+    AntiCascadeCuts->Setv0MassRange(1.116,0.01);
+  } else if (suffix=="52") {
+    CascadeCuts->SetXiMassRange(1.322,0.0075);
+    AntiCascadeCuts->SetXiMassRange(1.322,0.0075);
+  } else if (suffix=="53") {
+    XiNegCuts->SetPID(AliPID::kPion,999,5);
+    XiPosCuts->SetPID(AliPID::kProton,999,5);
+    XiBachCuts->SetPID(AliPID::kPion,999,5);
+    AntiXiNegCuts->SetPID(AliPID::kProton,999,5);
+    AntiXiPosCuts->SetPID(AliPID::kPion,999,5);
+    AntiXiBachCuts->SetPID(AliPID::kPion,999,5);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
@@ -449,6 +497,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetmTBinning(mTBinning);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+  if (!notpp) {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  } else {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  }
 
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
