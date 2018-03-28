@@ -114,14 +114,14 @@ AliJJetTask* AddTaskJJet(
   AliJetContainer *ktCont[nktFinders]; //0 for Data and 1 for MC. Implementation for different R left for later.
   for( int i=0;i<nktFinders;i++) ktCont[i] = NULL; 
   double  ktConeSizes[1]={  0.2};
-  AliJetContainer::EJetType_t ktJetTypes [1]={  AliJetContainer::kNeutralJet};// 0:FullJet 1:Charged 
+  AliJetContainer::EJetType_t ktJetTypes [1]={  AliJetContainer::kChargedJet};
   TString ktTypes    [1]={"TPC"};// Check if 100% sure about this
 
   //-------------------------------------------------------
   // Reconstructed Track Jets : Both of Data, MC
   //-------------------------------------------------------
   double bConeSizes[3] = {0.4,0.5,0.3};
-  AliJetContainer::EJetType_t bJetType[2] = {AliJetContainer::kFullJet,AliJetContainer::kNeutralJet};
+  AliJetContainer::EJetType_t bJetType[2] = {AliJetContainer::kFullJet,AliJetContainer::kChargedJet};
   const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme;
   TString bType[2] = {"EMCAL","TPC"};
   int iEnd;
