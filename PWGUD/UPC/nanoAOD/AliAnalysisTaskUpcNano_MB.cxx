@@ -136,12 +136,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   
-  fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
-  hSPDeff = (TH2D*) fSPDfile->Get("hEff");
-  TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
-  hBCmod4 = hBCmod4_2D->ProjectionY();
-  fSPDfile->Close();
-  
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
@@ -280,6 +274,12 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
+  
+  fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
+  hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+  TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
+  hBCmod4 = hBCmod4_2D->ProjectionY();
+  //fSPDfile->Close();
     
   PostData(1, fOutputList);
 
