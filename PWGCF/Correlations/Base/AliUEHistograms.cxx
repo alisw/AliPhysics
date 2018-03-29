@@ -53,7 +53,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
   fYields(0),
-  fYieldsEtaPhiPTCent(0),
+  fYieldsEtaPhiPT(0),
   fInvYield2(0),
   fEventCount(0),
   fEventCountDifferential(0),
@@ -177,11 +177,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  int tmp1[4] = {100, 40, 60, 200};
-  double tmp2[4] = {0, 0, -3, 0};
-  double tmp3[4] = {100, 20, 3, TMath::TwoPi()};
   fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 200, -10, 10);
-  fYieldsEtaPhiPTCent = new THnF("fYieldsEtaPhiPTCent", ";centrality;pT;eta;phi", 4, tmp1, tmp2, tmp3);
+  fYieldsEtaPhiPT = new TH3F("fYieldsEtaPhiPT", ";pT;eta;phi", 40,0,20,60,-3,3,200,0,TMath::TwoPi());
   fInvYield2 = new TH2F("fInvYield2", ";centrality;pT;1/pT dNch/dpT", 100, 0, 100, 80, 0, 20);
 
   if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
@@ -229,7 +226,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
   fYields(0),
-  fYieldsEtaPhiPTCent(0),
+  fYieldsEtaPhiPT(0),
   fInvYield2(0),
   fEventCount(0),
   fEventCountDifferential(0),
@@ -336,10 +333,10 @@ void AliUEHistograms::DeleteContainers()
     fYields = 0;
   }
 
-  if (fYieldsEtaPhiPTCent)
+  if (fYieldsEtaPhiPT)
   {
-    delete fYieldsEtaPhiPTCent;
-    fYieldsEtaPhiPTCent = 0;
+    delete fYieldsEtaPhiPT;
+    fYieldsEtaPhiPT = 0;
   }
   
   if (fInvYield2)
@@ -995,8 +992,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         fCorrelationEta->Fill(centrality, triggerEta);
         fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
 	fYields->Fill(centrality, triggerParticle->Pt(), triggerEta);
-        double tmp[4] = {centrality, triggerParticle->Pt(), triggerEta, triggerParticle->Phi()};
-	fYieldsEtaPhiPTCent->Fill(tmp);
+	fYieldsEtaPhiPT->Fill(triggerParticle->Pt(), triggerEta, triggerParticle->Phi());
 	
 /*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
@@ -1246,8 +1242,8 @@ void AliUEHistograms::Copy(TObject& c) const
   if (fYields)
     target.fYields = dynamic_cast<TH3F*> (fYields->Clone());
 
-  if (fYieldsEtaPhiPTCent)
-    target.fYieldsEtaPhiPTCent = dynamic_cast<THnF*> (fYieldsEtaPhiPTCent->Clone());
+  if (fYieldsEtaPhiPT)
+    target.fYieldsEtaPhiPT = dynamic_cast<TH3F*> (fYieldsEtaPhiPT->Clone());
   
   if (fInvYield2)
     target.fInvYield2 = dynamic_cast<TH2F*> (fInvYield2->Clone());
@@ -1359,8 +1355,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
       lists[18]->Add(entry->fInvYield2);
     if (entry->fControlConvResoncances)
       lists[19]->Add(entry->fControlConvResoncances);
-    if (entry->fYieldsEtaPhiPTCent)
-      lists[20]->Add(entry->fYieldsEtaPhiPTCent);
+    if (entry->fYieldsEtaPhiPT)
+      lists[20]->Add(entry->fYieldsEtaPhiPT);
 
     fMergeCount += entry->fMergeCount;
 
@@ -1396,8 +1392,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     fInvYield2->Merge(lists[18]);
   if (fControlConvResoncances && lists[19]->GetEntries() > 0)
     fControlConvResoncances->Merge(lists[19]);
-  if (fYieldsEtaPhiPTCent && lists[20]->GetEntries() > 0)
-    fYieldsEtaPhiPTCent->Merge(lists[20]);
+  if (fYieldsEtaPhiPT && lists[20]->GetEntries() > 0)
+    fYieldsEtaPhiPT->Merge(lists[20]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -1448,7 +1444,7 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fCorrelationLeading2Phi);
   list.Add(fCorrelationMultiplicity);
   list.Add(fYields);
-  list.Add(fYieldsEtaPhiPTCent);
+  list.Add(fYieldsEtaPhiPT);
   list.Add(fInvYield2);
   list.Add(fEventCount);
   list.Add(fEventCountDifferential);
