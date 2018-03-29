@@ -128,6 +128,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
       k11a,
       k15a,
       k15o,
+      k17p,
     };
     AliAnalysisTaskJetLikeCorrelation();
     AliAnalysisTaskJetLikeCorrelation(const char *name);
