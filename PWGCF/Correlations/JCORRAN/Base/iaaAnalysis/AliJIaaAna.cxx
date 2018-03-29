@@ -43,6 +43,9 @@ AliJIaaAna::AliJIaaAna() :
 	fRunNumber(-999),
 	fcent(-999),
 	fZvert(-999),
+ 	fPsi2(-999),
+	fEPmin(0.),
+	fEPmax(90.),
 	fjtrigg((particleType)-100),
 	fjassoc((particleType)-100),
 	fcard(0),
@@ -73,6 +76,9 @@ AliJIaaAna::AliJIaaAna(Bool_t execLocal) :
 	fRunNumber(-999),
 	fcent(-999),
 	fZvert(-999),
+ 	fPsi2(-999),
+	fEPmin(0.),
+	fEPmax(90.),
 	fjtrigg((particleType)-100),
 	fjassoc((particleType)-100),
 	fcard(0),
@@ -118,6 +124,9 @@ AliJIaaAna::AliJIaaAna(const AliJIaaAna& obj) :
 	fRunNumber(obj.fRunNumber),
 	fcent(obj.fcent),
 	fZvert(obj.fZvert),
+ 	fPsi2(obj.fPsi2),
+	fEPmin(obj.fEPmin),
+	fEPmax(obj.fEPmax),
 	fjtrigg(obj.fjtrigg),
 	fjassoc(obj.fjassoc),
 	fcard(obj.fcard),
@@ -302,6 +311,7 @@ void AliJIaaAna::UserExec(){
 
 	fhistos->fhCentr->Fill(fcent);
 	fhistos->fhiCentr->Fill(cBin);
+	fhistos->fhEP[cBin]->Fill(fPsi2);
 
 	//----------------------------------------------------
 	//----- Generate trigg list and find LP             --
@@ -372,6 +382,7 @@ void AliJIaaAna::UserExec(){
 		fhistos->fhLPpt->Fill(lpTrackCounter->Pt(), effCorr);
 		fhistos->fhLPeta->Fill(lPTr->Eta(), effCorr);
 	}
+	//cout << "NoTrigg = "<< noTriggs <<", noAssocs = "<< noAssocs << endl;
 
 	if(noAssocs>0 ) fassocPool->AcceptList(fassocList, fcent, fZvert, noAllTriggTracks, fevt);
 
@@ -398,12 +409,22 @@ void AliJIaaAna::UserExec(){
 			cout<<"Not registered trigger ! I better stop here." <<endl;
 			exit(-1);
 		}
+		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// Correlation w.r.t \psi_2
+		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		if(fMCTruthRun){ // only MC mode at this moment 
+			double phis = GetPhiS2(triggerTrack->Phi(),fPsi2);
+			phis *= 180./TMath::Pi(); // card in degree 0-360
+			//cout <<"ptt = "<< ptt <<", EP="<< fPsi2 <<", phi="<< triggerTrack->Phi()<<" delta phi= "<< phis << endl;
+			fhistos->fhPhiS[cBin]->Fill(phis);
+			if(phis<fEPmin || phis>fEPmax) continue;
+		}
+		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		effCorr = 1.0/triggerTrack->GetTrackEff();
 		fhistos->fhTriggPtBin[cBin][zBin][iptt]->Fill(ptt, effCorr);//inclusive
 
 		for(int jj=0;jj<noAssocs;jj++){ // assoc loop
 			associatedTrack = (AliJBaseTrack*)fassocList->At(jj);
-
 			//-------------------------------------------------------------
 			fcorrelations->FillCorrelationHistograms(kReal, cBin, zBin, triggerTrack, associatedTrack);
 			//-------------------------------------------------------------
@@ -432,7 +453,7 @@ void AliJIaaAna::Terminate() {
 
 }
 
-particleType  AliJIaaAna::GetParticleType(char *inchar){
+particleType  AliJIaaAna::GetParticleType(char const *inchar){
 	// part type
 	for(int i=0;i<kNumberOfParticleTypes;i++) {
 		if(strcmp(inchar,kParticleTypeStrName[i])==0) return (particleType)i;
@@ -445,4 +466,12 @@ double AliJIaaAna::DeltaPhi(double phi1, double phi2) {
 	// dphi
 	double res =  atan2(sin(phi1-phi2), cos(phi1-phi2));
 	return res>-kJPi*0.5 ? res : kJTwoPi+res ;
+}
+
+double AliJIaaAna::GetPhiS2(double phit, double ep) {
+	double dphi = (phit - ep)/TMath::Pi() ;
+	while( dphi < 0 || dphi>=2 ){
+		dphi += dphi<0?2:-2;
+	} 
+	return dphi*TMath::Pi(); // 0 -2pi
 }
