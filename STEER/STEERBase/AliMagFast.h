@@ -63,6 +63,8 @@ class AliMagFast : public TObject
   void    SetFactorDip(float v=1.f)                       {fFactorDip = v;}
   Float_t GetFactorDip()                            const {return fFactorDip;}
 
+  Bool_t GetSegmentDip(const float xyz[3], UShort_t &formulaId) const;
+
  protected:
 
   Bool_t GetSegmentSol(const float xyz[3], int& zSeg,int &rSeg, int &quadrant) const;
@@ -78,7 +80,6 @@ class AliMagFast : public TObject
 
   float CalcPol(const float* cf, float x,float y, float z) const;
   Bool_t QuickSearch(const SegmentSearch_t ss, const float z, UShort_t &id) const;
-  Bool_t GetSegmentDip(const float xyz[3], UShort_t &formulaId) const;
 
   Float_t fFactorSol; // scaling factor
   SolParam_t fSolPar[kNSolRRanges][kNSolZRanges][kNQuadrants];
