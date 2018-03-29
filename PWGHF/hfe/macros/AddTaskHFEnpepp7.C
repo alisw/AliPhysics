@@ -21,9 +21,12 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
     // Default settings (TOF-TPC pp)
     // ESD analysis of LHC15n, 5 TeV analysis
     
-    const int	kDefTPCcl	= 120;
-    const int	kDefTPCclPID	=  90;
-    const int	kDefITScl	=   4;
+ /*   const int	kDefTPCcl	= 120;
+    const int	kDefTPCclPID	=  90;     // 7 TeV New Analysis Initial Cuts
+    const int	kDefITScl	=   4;*/
+    const int	kDefTPCcl	= 100;
+    const int	kDefTPCclPID	=  80;
+    const int	kDefITScl	=   3;
     const double	kDefDCAr	=   1.;
     const double	kDefDCAz	=   2.;
     const double	kDefTOFs	=   3.;
@@ -70,9 +73,9 @@ AliAnalysisTask *AddTaskHFEnpepp7(Bool_t MCthere,
     const double	kassTPCSplus	=  3.0;
     const double  kassITSpid      =  3.0;
     const double  kassTOFpid      =  0.0;
-    const double assETAm        =   -0.9;
-    const double assETAp        =   0.9;
-    const int	kasspTmin		=    0.0;
+    const double assETAm        =   -0.8;
+    const double assETAp        =   0.8;
+    const int	kasspTmin		=    0.1;
     
     
     //get the current analysis manager
