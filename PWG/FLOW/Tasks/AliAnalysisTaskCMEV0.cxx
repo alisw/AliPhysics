@@ -635,18 +635,18 @@ void AliAnalysisTaskCMEV0::UserCreateOutputObjects()
 AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 {
   delete                     fListHistos;        
-  delete                     fListCalibs;    
-  delete                    fListNUAHist;     
+  //delete                   fListCalibs;    
+  //delete                  fListNUAHist;     
 
   if(fAnalysisUtil) delete fAnalysisUtil; // it is '= new' !!!
 
-  delete            fHCentBinTrkRecenter;
+  if(fHCentBinTrkRecenter)
+    delete fHCentBinTrkRecenter;
 
   if(fHCorrectZDNP)   delete fHCorrectZDNP;
   if(fHCorrectV0M)    delete fHCorrectV0M;
   if(fHAvgerageQnV0A) delete fHAvgerageQnV0A;
   if(fHAvgerageQnV0C) delete fHAvgerageQnV0C;
-
 
 
   for(int i=0;i<5;i++){

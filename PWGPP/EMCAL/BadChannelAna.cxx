@@ -165,6 +165,8 @@ void BadChannelAna::Init()
 	fAnalysisOutput =Form("AnalysisOutput/%s/%s/Version%i",fPeriod.Data(),fTrainNo.Data(),fTrial);
 
 	//..Make output directory if it doesn't exist
+	//..first the general output folder, in case you run this analysis for the very first time
+	gSystem->mkdir(Form("%s/AnalysisOutput",fWorkdir.Data()));
 	//..first the period folder
 	gSystem->mkdir(Form("%s/AnalysisOutput/%s",fWorkdir.Data(),fPeriod.Data()));
 	//..then the Train folder

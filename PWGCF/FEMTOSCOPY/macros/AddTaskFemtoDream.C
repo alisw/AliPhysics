@@ -251,6 +251,11 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     MultBins.push_back(72);
     MultBins.push_back(76);
     MultBins.push_back(80);
+    MultBins.push_back(84);
+    MultBins.push_back(88);
+    MultBins.push_back(92);
+    MultBins.push_back(96);
+    MultBins.push_back(100);
     config->SetMultBins(MultBins);
   } else {
     //std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,60,80};
@@ -305,9 +310,15 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	config->SetSpinningDepth(10);
 	config->SetUseEventMixing(eventMixing);
 	config->SetUsePhiSpinning(phiSpin);
-
+	config->SetMinimalBookingME(false);
+	config->SetMinimalBookingSample(true);
+	if (!notpp) {
+	  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+	} else {
+	  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+	}
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC,false);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
 		std::cout << "Added kINT7 Trigger \n";

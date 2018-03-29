@@ -69,9 +69,9 @@ AliJJetTask* AddTaskJJet(
     nMCParticleJetFinder  = 0;
 
   }
-  int nJetFinder              = nMCParticleJetFinder + nTrackJetFinder;
+  const int nJetFinder              = nMCParticleJetFinder + nTrackJetFinder;
 
-  int nktTrackFinders, nktMCParticleFinders, nktFinders;
+  int nktTrackFinders, nktMCParticleFinders;
   if(doBackgroundEst){
       if(doRecoTrackJet){
           nktTrackFinders = 1;
@@ -85,12 +85,11 @@ AliJJetTask* AddTaskJJet(
       else{
           nktMCParticleFinders = 0;
       }
-      nktFinders = nktTrackFinders + nktMCParticleFinders;
   }
   else{
-      nktFinders = 0;
+      nktTrackFinders = nktMCParticleFinders =  0;
   }
-
+  const int nktFinders = nktTrackFinders + nktMCParticleFinders;
 
   int countJetFinder                = 0;  // Counter for number of current Jet Finders
 
@@ -115,14 +114,14 @@ AliJJetTask* AddTaskJJet(
   AliJetContainer *ktCont[nktFinders]; //0 for Data and 1 for MC. Implementation for different R left for later.
   for( int i=0;i<nktFinders;i++) ktCont[i] = NULL; 
   double  ktConeSizes[1]={  0.2};
-  AliJetContainer::EJetType_t ktJetTypes [1]={  AliJetContainer::kNeutralJet};// 0:FullJet 1:Charged 
+  AliJetContainer::EJetType_t ktJetTypes [1]={  AliJetContainer::kChargedJet};
   TString ktTypes    [1]={"TPC"};// Check if 100% sure about this
 
   //-------------------------------------------------------
   // Reconstructed Track Jets : Both of Data, MC
   //-------------------------------------------------------
   double bConeSizes[3] = {0.4,0.5,0.3};
-  AliJetContainer::EJetType_t bJetType[2] = {AliJetContainer::kFullJet,AliJetContainer::kNeutralJet};
+  AliJetContainer::EJetType_t bJetType[2] = {AliJetContainer::kFullJet,AliJetContainer::kChargedJet};
   const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme;
   TString bType[2] = {"EMCAL","TPC"};
   int iEnd;
@@ -170,7 +169,7 @@ AliJJetTask* AddTaskJJet(
           if ( type == "EMCAL" ) jetCont[iF]->ConnectClusterContainer( clusterCont );
             jetCont[iF]->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
             jetCont[iF]->SetPercAreaCut( 0.6 );
-            jetCont[iF]->SetJetPtCut( 5 );    
+            jetCont[iF]->SetJetPtCut( 5 );
             jetCont[iF]->SetLeadingHadronType( 0 );
         }
       } // for iR
@@ -217,7 +216,7 @@ AliJJetTask* AddTaskJJet(
           jetCont[iF]->ConnectParticleContainer( mcTrackCont );
           jetCont[iF]->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
           jetCont[iF]->SetPercAreaCut( 0.6 );
-          jetCont[iF]->SetJetPtCut( 5 );    
+          jetCont[iF]->SetJetPtCut( 5 );
           jetCont[iF]->SetLeadingHadronType( 0 );
         }
       } // for iR
@@ -233,7 +232,7 @@ AliJJetTask* AddTaskJJet(
     TString ktType = ktTypes[0];
     if (doRecoTrackJet) {
       TString _clustersCorrName = ( ktType == "EMCAL" ? clustersCorrName : "" );
-      ktFinderTask[0] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, reco, "Jet", 5. ); // kt
+      ktFinderTask[0] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, reco, "Jet", 0.0 ); // kt
       ktFinderTask[0]->SelectCollisionCandidates(trigger);
       jtTask->SetTrackOrMCParticle( iEnd, AliJJetTask::kJRecoTrack );
       jtTask->SetConeSize( iEnd, ktConeSize );
@@ -244,15 +243,15 @@ AliJJetTask* AddTaskJJet(
         ktCont[0]->SetRhoName( rhoName );
         ktCont[0]->ConnectParticleContainer( trackCont );
         if ( ktType == "EMCAL" ) ktCont[0]->ConnectClusterContainer( clusterCont );
-          ktCont[0]->SetZLeadingCut( 0.98, 0.98 );
-          ktCont[0]->SetPercAreaCut( 0.6 );
-          ktCont[0]->SetJetPtCut( 5 );    
-          ktCont[0]->SetLeadingHadronType( 0 );
+          //ktCont[0]->SetZLeadingCut( 0.98, 0.98 );
+          //ktCont[0]->SetPercAreaCut( 0.6 );
+          //ktCont[0]->SetJetPtCut( 5 );
+          //ktCont[0]->SetLeadingHadronType( 0 );
       }
     } // if doRecoTrackJet
     if (doRecoMCPartleJet) {
       TString _clustersCorrName = ( ktType == "EMCAL" ? clustersCorrName : "" );
-      ktFinderTask[1] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, reco, "Jet", 5. ); // kt
+      ktFinderTask[1] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::kt_algorithm, ktConeSize, ktJetType, 0.15, 0.300, 0.005, reco, "Jet", 0.0 ); // kt
       ktFinderTask[1]->SelectCollisionCandidates(trigger);
       jtTask->SetTrackOrMCParticle( iEnd+1, AliJJetTask::kJMCParticle );
       jtTask->SetConeSize( iEnd+1, ktConeSize );
@@ -262,10 +261,10 @@ AliJJetTask* AddTaskJJet(
         ktCont[1]->SetRhoName( rhoName );
         ktCont[1]->ConnectParticleContainer( mcTrackCont );
         if ( ktType == "EMCAL" ) ktCont[0]->ConnectClusterContainer( clusterCont );
-          ktCont[1]->SetZLeadingCut( 0.98, 0.98 );
-          ktCont[1]->SetPercAreaCut( 0.6 );
-          ktCont[1]->SetJetPtCut( 5 );    
-          ktCont[1]->SetLeadingHadronType( 0 );
+          //ktCont[1]->SetZLeadingCut( 0.98, 0.98 );
+          //ktCont[1]->SetPercAreaCut( 0.6 );
+          //ktCont[1]->SetJetPtCut( 5 );
+          //ktCont[1]->SetLeadingHadronType( 0 );
       }
     } // if doRecoTrackJet
   } // if doBackgroundEst

@@ -24,6 +24,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <iostream>
+#include <string>
+#include <map>
 #include "AliEmcalTriggerSelectionCuts.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
@@ -105,5 +108,34 @@ Bool_t AliEmcalTriggerSelectionCuts::SelectAcceptance(const AliEMCALTriggerPatch
   return selected;
 }
 
+void AliEmcalTriggerSelectionCuts::PrintStream(std::ostream &stream) const {
+  std::map<AcceptanceType_t, std::string> acceptancetext = {{kEMCALAcceptance, "EMCAL"},
+                                                                      {kDCALAcceptance, "DCAL"},
+                                                                      {kEMCALDCALAcceptance, "EMCAL-DCAL"}};
+  std::map<PatchType_t, std::string> patchtypetext = {{kL0Patch, "Level0"},
+                                                                {kL1GammaPatch, "L1-gamma"},
+                                                                {kL1GammaHighPatch, "L1-gamma, high threshold"},
+                                                                {kL1GammaLowPatch, "L1-gamma, low threshold"},
+                                                                {kL1JetPatch, "L1-jet"},
+                                                                {kL1JetHighPatch, "L1-jet, high threshold"},
+                                                                {kL1JetLowPatch, "L1-jet, low threshold"}};
+  std::map<SelectionMethod_t, std::string> selmodetext = {{kADC, "FastOR ADC"},
+                                                                    {kEnergyRough, "FastOR Energy"},
+                                                                    {kEnergyOffline, "FEE Energy"},
+                                                                    {kEnergyOfflineSmeared, "FEE Energy, decalibrated"}};
+  stream << "  Cut settings:" << std::endl;
+  stream << "    acceptance:      " << acceptancetext.find(fAcceptanceType)->second << std::endl;
+  stream << "    patchtype:       " << patchtypetext.find(fPatchType)->second << std::endl;
+  stream << "    sel mode:        " << selmodetext.find(fSelectionMethod)->second << std::endl;
+  stream << "    Offline Patches: " << (fUseSimpleOffline ? "yes" : "no") << std::endl;
+  stream << "    Recalc Patches:  " << (fUseRecalc ? "yes" : "no") << std::endl;
+  stream << "    Threshold:       " << fThreshold << std::endl;
 }
+
+}
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTriggerSelectionCuts &cuts){
+  cuts.PrintStream(stream);
+  return stream;
 }

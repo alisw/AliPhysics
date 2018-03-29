@@ -43,6 +43,7 @@ set(SRCS
   AliEMCALTriggerOfflineQAPP.cxx
   AliEMCALTriggerOfflineLightQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
+  AliEmcalTriggerStringDecoder.cxx
   )
 
 # Headers from sources

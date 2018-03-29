@@ -2,7 +2,7 @@
 // #include "iterator"
 
 // --- Custom header files ---
-#include "AliPP13PionToKaonRatioMC.h"
+#include "AliPP13KaonToPionRatioMC.h"
 
 // --- ROOT system ---
 #include <TParticle.h>
@@ -22,11 +22,11 @@
 using namespace std;
 
 
-ClassImp(AliPP13PionToKaonRatioMC);
+ClassImp(AliPP13KaonToPionRatioMC);
 
 
 //________________________________________________________________
-void AliPP13PionToKaonRatioMC::InitSelectionHistograms()
+void AliPP13KaonToPionRatioMC::InitSelectionHistograms()
 {
 	for (EnumNames::iterator i = fPartNames.begin(); i != fPartNames.end(); ++i)
 	{
@@ -46,7 +46,7 @@ void AliPP13PionToKaonRatioMC::InitSelectionHistograms()
 }
 
 
-void AliPP13PionToKaonRatioMC::ConsiderGeneratedParticles(const EventFlags & flags)
+void AliPP13KaonToPionRatioMC::ConsiderGeneratedParticles(const EventFlags & flags)
 {
 	if (!flags.fMcParticles)
 		return;
@@ -54,7 +54,7 @@ void AliPP13PionToKaonRatioMC::ConsiderGeneratedParticles(const EventFlags & fla
 	for (Int_t i = 0; i < flags.fMcParticles->GetEntriesFast(); i++)
 	{
 		AliAODMCParticle * particle = ( AliAODMCParticle *) flags.fMcParticles->At(i);
-		Int_t code = TMath::Abs(particle->GetPdgCode());
+		Int_t code = particle->GetPdgCode();
 
 		// NB: replace this condition by find, if the number of particles will grow
 		//
@@ -71,7 +71,7 @@ void AliPP13PionToKaonRatioMC::ConsiderGeneratedParticles(const EventFlags & fla
 
 
 //________________________________________________________________
-Bool_t AliPP13PionToKaonRatioMC::IsPrimary(const AliAODMCParticle * particle) const
+Bool_t AliPP13KaonToPionRatioMC::IsPrimary(const AliAODMCParticle * particle) const
 {
 	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
 	Double_t rcut = 1.;

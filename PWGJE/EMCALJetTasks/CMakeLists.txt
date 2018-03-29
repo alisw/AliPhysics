@@ -137,6 +137,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
+    Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx

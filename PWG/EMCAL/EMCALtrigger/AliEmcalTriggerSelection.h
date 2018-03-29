@@ -27,11 +27,17 @@
 #ifndef ALIEMCALTRIGGERSELECTION_H
 #define ALIEMCALTRIGGERSELECTION_H
 
+#include <iosfwd>
 #include <TNamed.h>
 #include <TString.h>
 
 class AliEMCALTriggerPatchInfo;
 class TClonesArray;
+
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWG { namespace EMCAL { class AliEmcalTriggerSelection; } }
+std::ostream & operator<< (std::ostream &in, const PWG::EMCAL::AliEmcalTriggerSelection &sel);
 
 namespace PWG {
 
@@ -98,6 +104,17 @@ public:
    * @return the trigger decision (an event is selected when it has a main patch that fired the decision)
    */
   AliEmcalTriggerDecision * MakeDecison(const TClonesArray * const reconstructedPatches) const;
+
+  /**
+   * @brief Output stream operator
+   * 
+   * Logging trigger selection configuration (name, cuts) to the output stream
+   * 
+   * @param stream Stream used for logging
+   * @param sel Trigger selection object to be logged
+   * @return Output stream after logging
+   */
+  friend std::ostream& ::operator<<(std::ostream &stream, const AliEmcalTriggerSelection &sel);
 protected:
   const AliEmcalTriggerSelectionCuts  *fSelectionCuts;    ///< Cuts used for the trigger patch selection
 
@@ -108,6 +125,15 @@ protected:
 private:
   AliEmcalTriggerSelection(const AliEmcalTriggerSelection &ref);
   AliEmcalTriggerSelection &operator=(const AliEmcalTriggerSelection &ref);
+
+  /**
+   * @brief Helper function for the stream operator
+   * 
+   * Performs logging
+   * 
+   * @param stream Stream used for logging
+   */
+  void PrintStream(std::ostream &stream) const;
 };
 
 }

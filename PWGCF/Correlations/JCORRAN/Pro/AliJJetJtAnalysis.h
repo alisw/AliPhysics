@@ -157,9 +157,9 @@ class AliJJetJtAnalysis{
     TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
     TVector  *fJetConstPtLowLimits; ///<  Comment needed
     TVector  *fJetAssocPtBorders; ///< Jet constituent pT bin borders
-    TVector  *fDeltaRBorders;
     TVector *fJetLeadPtBorders; ///< Leading track pT bin borders
     TVector *fJetMultBorders; ///< Jet multiplicity bin borders
+    TVector  *fDeltaRBorders;
     TVector *fCentralityBorders; ///< Jet multiplicity bin borders
     int nJetContainer; ///< Number of jet finders
     int fnR; ///< Number of jet resolution parameters
@@ -185,7 +185,6 @@ class AliJJetJtAnalysis{
     TVector *fConstPt; ///< Store constituent jT values
     TVector *fConstLabels; 
     TVector *fJetPt; ///< Store jet pT values
-    TVector *fJetPt2; ///< Comment needed
     TVector *fDiJetMjj; ///< Store di-jet invariant mass values
     TVector *fDiJetMjjSubtr; ///< Store di-jet bg-subtracted invariant mass values
     TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks
@@ -228,7 +227,6 @@ class AliJJetJtAnalysis{
     AliJBin fBgTypeBin;
     AliJBin fiHist2MC;
     AliJTH1D fhNumber;
-    AliJTH1D fhKNumber;
     AliJTH1D fhDiJetM; /// Di-jet invariant mass
     AliJTH1D fhDiJetMCentBinned; /// Di-jet invariant mass, centrality binned
     AliJTH1D fhDiJetMCentBinnedSubtracted; /// Di-jet invariant mass, centrality binned, background subtracted
@@ -248,8 +246,8 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetPtCentBinnedCut; /// Leading track cut jet pt distribution binned in centrality classes.
     AliJTH1D fhJetPtCentBinnedCutSubtracted; /// Leading track cut jet bg-subtracted pt distribution binned in centrality classes.
     AliJTH1D fhJetPtBin; /// Jet pT distribution in jet pT bins
-    AliJTH1D fhJetPtMultiplicityCutBin; /// Jet pT distribution in jet multiplicity bins
     AliJTH1D fhJetPtTrackCutBin; /// Jet pT distribution in leading track pT bins
+    AliJTH1D fhJetPtMultiplicityCutBin; /// Jet pT distribution in jet multiplicity bins
     AliJTH1D fhJetPtWeight ; /// Jet pT distribution with \f$ \frac{1}{p_T} \f$ weight
     AliJTH1D fhJetPtWeightBin; /// Jet pT distribution with \f$ \frac{1}{p_T} \f$ weight in jet pT bins
     AliJTH1D fhJetMultiplicityBin; /// Jet multiplicity distribution from jet->GetConstituents()
@@ -279,9 +277,9 @@ class AliJJetJtAnalysis{
 
 
     //Histograms for jt in event
-    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
-    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
     AliJTH1D fhEventJtBin; ///Distribution of track jT for all tracks without weight
+    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
+    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
 
 
     //Histograms for jt in cone
@@ -352,13 +350,9 @@ class AliJJetJtAnalysis{
     AliJTH1D fhBgRndmTrkPt;
     AliJTH1D fhBgRndmZ;
     AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
-    AliJTH1D fhDeltaPhi; /// Distribution of the angle between the jets in dijet system.
-    AliJTH1D fhDeltaPhiCentBinned; /// Distribution of the angle between the jets in dijet system. Centrality binned
-    AliJTH1D fhDeltaPhiCentBinnedSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted.
-    AliJTH1D fhDeltaPhiCentBinnedCutSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
     AliJTH1D fhBgRndmJt; /// Random background jT distribution
-    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution
     AliJTH1D fhBgRndmJtWeight; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution
     AliJTH1D fhBgRndmJtWeightBin; /// Random background jT distribution in jet pT bins
     AliJTH1D fhBgRndmLogJt;
     AliJTH1D fhBgRndmJtWithPtCutWeightBin;
@@ -376,6 +370,11 @@ class AliJJetJtAnalysis{
     AliJTH2D fhJetEtaPhi;
     AliJTH2D fhTrackEtaPhi;
     AliJTH1D fhJetdPt;
+
+    AliJTH1D fhDeltaPhi; /// Distribution of the angle between the jets in dijet system.
+    AliJTH1D fhDeltaPhiCentBinned; /// Distribution of the angle between the jets in dijet system. Centrality binned
+    AliJTH1D fhDeltaPhiCentBinnedSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted.
+    AliJTH1D fhDeltaPhiCentBinnedCutSubtracted; /// Angle between the jets in dijet system. Centrality binned, BG subtracted, constituent cut.
 
     //Jet Correlation Histograms
     AliJTH2D fhTrackJtCorrBin;	
@@ -414,10 +413,10 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetPtPythia; /// pT distribution of Pythia jet candidates
     AliJTH1D fhJetPtBinPythia; /// pT distribution of Pythia jet candidates in jet pT bins
     AliJTH1D fhJetMultiplicityBinPythia; /// Multiplicity distribution of pythia jet fragments in jet pT bins
-    AliJTH1D fhRBinPythia; /// R distribution in pythia \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2} \f$
     AliJTH1D fhZPythia; /// z distribution in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$
     AliJTH1D fhZBinPythia; /// z distribution in jet pT bins in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$
     AliJTH1D fhZBinPythiaRCut; /// z distribution in jet pT bins in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$ where \f$ R < 0.4 \f$
+    AliJTH1D fhRBinPythia; /// R distribution in pythia \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2} \f$
     AliJTH1D fhJtPythia; /// jT distribution in pythia
     AliJTH1D fhJtBinPythia; /// jT distribution in pythia in jet pT bins
     AliJTH1D fhJtBinPythiaRCut; /// jT distribution in pythia in jet pT bins for tracks in R = 0.4 cone

@@ -27,8 +27,6 @@
 #include "stdio.h"
 #include "Riostream.h"
 
-// #include "vector"  not supported by ROOT6 yet.
-
 //---- manager and handler---
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -62,10 +60,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskCMEV0PID.h"
 
-using namespace std;
+//using namespace std;
 
-//using std::cout;
-//using std::endl;
+using std::cout;
+using std::endl;
 
 
 ClassImp(AliAnalysisTaskCMEV0PID)
@@ -629,11 +627,11 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
   SetupEventAndTaskConfigInfo();
 
-  if(!gGrid){
-    TGrid::Connect("alien://");
-  }
+  //if(!gGrid){
+  //TGrid::Connect("alien://");
+  //}
 
-  SetupMCcorrectionMap(sPathOfMCFile);
+  SetupMCcorrectionMap();
  
 
 
@@ -915,43 +913,43 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   }
  
   //Double_t EtaRange[9] = {0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6}; //Use this after tests done
-  //Now Eta binning: 160,0,1.6 for test
+  //Now Eta binning: 16,0,1.6 for test
 
   for(Int_t i=0;i<2;i++){ 
     for(Int_t j=0;j<6;j++){
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j] = new TProfile(name,title,160,0,1.6,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j] = new TProfile(name,title,16,0,1.6,"");
       fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j] = new TProfile(name,title,160,0,1.6,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j] = new TProfile(name,title,16,0,1.6,"");
       fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j] = new TProfile(name,title,160,0,1.6,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j] = new TProfile(name,title,16,0,1.6,"");
       fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j]);
       //-----v0c----
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j] = new TProfile(name,title,160,0,1.6,""); 
+      fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j] = new TProfile(name,title,16,0,1.6,""); 
       fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j] = new TProfile(name,title,160,0,1.6,"");
+      fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j] = new TProfile(name,title,16,0,1.6,"");
       fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j] = new TProfile(name,title,160,0,1.6,"");
+      fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j] = new TProfile(name,title,16,0,1.6,"");
       fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j]);
     }
@@ -1468,12 +1466,6 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
 
-/*
- debug info: 
- Removed char extentions from Histogram names.  didn't work
- commented delete statement from the destructor and it compiled..!!!
- ==> Todo: Put back char extentions on Histrogram names and check.
-*/
 
 
 
@@ -1489,11 +1481,12 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
 //______________________________________________________________________
-void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
+void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
+  //debug only
+  //cout<<"\n Info:UserExec() called ..!!!\n";
+  //watch.Start(kTRUE);  
+  //if(fEventCount==501)  return;
 
-  //cout<<"info: UserExec is called.... 1  \n";
-  //watch.Start(kTRUE);  //debug only
-  //if(fEventCount==100) return;
 
   Float_t stepCount = 0.5;
 
@@ -1517,15 +1510,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-
   //--------- Check if I have PID response object --------
   if(!fPIDResponse){
     printf("\n\n...... PIDResponse object not found..... \n\n");
     return;
   }
-
-
-
 
 
 
@@ -1564,8 +1553,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   
 
   
-
-
 
 
 
@@ -1614,8 +1601,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   else if(centrality>=40){
     cForNUA = 4; // 4=40-90
   }
-
-
 
 
 
@@ -1763,6 +1748,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   multEtaPos=0;
   multEtaFull=0;
 
+ //cout<<" Info:UserExec() called ... I am before PU cut... event = "<<fEventCount<<" \n";
 
 //const Int_t nGoodTracks = fVevent->GetNumberOfTracks();
   const Int_t nGoodTracks = fAOD->GetNumberOfTracks();
@@ -1774,14 +1760,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
     if(AODtrack->TestFilterBit(128)) multTPCAll++; //A. Dobrin, no track cuts
 
+    //cuts for Outlier as in FlowEvent Task
+    if(!(AODtrack->TestFilterBit(1))) continue;
+
     ptTrk  = AODtrack->Pt();
     etaTrk = AODtrack->Eta();
     phiTrk = AODtrack->Phi();
     ChTrk  = AODtrack->Charge();
     dEdx   = AODtrack->GetDetPid()->GetTPCsignal();
 
-    //cuts for Outlier as in FlowEvent Task
-    if(!(AODtrack->TestFilterBit(1))) continue;
+    //cout<<iTrack<<" pt = "<<ptTrk<<"\tdEdx = "<<dEdx;
+
     if((ptTrk < 0.2) || (TMath::Abs(etaTrk) > 0.8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
 
     multTPC++;   
@@ -1850,6 +1839,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	}
     }
       
+    //cout<<"\teta = "<<etaTrk<<"\tch = "<<ChTrk<<endl;
       
 
     Double_t b[2] = {-99., -99.};
@@ -1860,6 +1850,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     multGlobal++;
 
   }//--- track loop outlier/PileUp ----
+
+
+
+ //cout<<" Info:UserExec() called ... I am after PU cut...  event = "<<fEventCount<<" \n";
+
 
   Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
 
@@ -1922,7 +1917,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   fHistGlobalVsV0MBefore->Fill(centrV0M, multGlobal);
 
 
-
   //if bSkipPileUpCut is kTRUE then don't apply PileUp removal.
   if(!bSkipPileUpCut && bIsOutLier) return; //outlier TPC vs Global
 
@@ -1983,6 +1977,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Float_t EvtCent = centrality;
 
 
+
+
   if(multEtaNeg<2 || multEtaPos<2) return;  //Minimum 2 tracks in each eta
 
   fHistEventCount->Fill(stepCount); //10
@@ -2017,7 +2013,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   stepCount++;
 
 
-  
+
+
 
   //-------- V0M info ---------------
   const AliAODVZERO *fAODV0 = fAOD->GetVZEROData();
@@ -2108,11 +2105,21 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   fV0AQ3xVsCentRun->Fill(centrCL1,Qxan3/sumMa); 
   fV0AQ3yVsCentRun->Fill(centrCL1,Qyan3/sumMa); 
   
-  PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
-  //if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
 
-  PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
-  //if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
+
+
+ if(gPsiN>2){
+    PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
+    PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
+  }
+  else{
+    PsiNV0C = 1.0/gPsiN*TMath::ATan2(QycnCor,QxcnCor) ;
+    if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
+
+    PsiNV0A = 1.0/gPsiN*TMath::ATan2(QyanCor,QxanCor) ;
+    if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
+  }
+
 
   fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
   fHV0AEventPlaneVsCent->Fill(EvtCent,PsiNV0A);
@@ -2120,40 +2127,17 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-  //----- Psi_N from TPC sub & full event plane -------
-  /*
-  PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0] )) ; // negetive eta
-  if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-  PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1] )) ; // positive eta
-  if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;  */
-
-  // Enable periodicity PsiN directly:
-  PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) + TMath::Pi() ) ; // negetive eta
-  //if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-  PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) + TMath::Pi() ) ; // positive eta
-  //if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
-
-
-  //fHTPCAEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCA-PsiNTPCC));
-  //fHTPCCEventPlaneVsCent->Fill(EvtCent,TMath::Cos(PsiNTPCC-PsiNV0C));
-
-  //fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
-  //fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
-
   fEventCount++;
-
-
-
-  PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3] )) ; // FUll TPC eta 
-  if(PsiNTPCF<0.) PsiNTPCF += 2*TMath::Pi()/gPsiN;
-
-  //Psi3TPCA = (1.0/3)*( TMath::ATan2(sumTPCQn3y[0],sumTPCQn3x[0] )) ; // negetive eta ; Psi3 not needed now.
-  //if(Psi3TPCA<0.) Psi3TPCA += 2*TMath::Pi()/3;
-  //Psi3TPCC = (1.0/3)*( TMath::ATan2(sumTPCQn3y[1],sumTPCQn3x[1] )) ; // positive eta 
-  //if(Psi3TPCC<0.) Psi3TPCC += 2*TMath::Pi()/3;
-  //----------------------------------------------------------------
-
-
+ 
+  //PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3] + TMath::Pi())) ; // FUll TPC eta 
+  //if(gPsiN>2){
+    //  PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3] + TMath::Pi())) ; // FUll TPC eta 
+    //if(PsiNTPCF<0.) PsiNTPCF += 2*TMath::Pi()/gPsiN;
+  //}
+  //else{
+     PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3] )) ; // FUll TPC eta 
+     if(PsiNTPCF<0.) PsiNTPCF += 2*TMath::Pi()/gPsiN;
+  //}
 
 
 
@@ -2224,7 +2208,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-
   Double_t ptwPion1,ptwKaon1,ptwProton1; 
   Double_t ptwPion2,ptwKaon2,ptwProton2;
   Double_t wNUAPion1,wNUAKaon1,wNUAProton1;
@@ -2245,17 +2228,18 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   Int_t multPOI1st = 0;
   Int_t multPOI2nd = 0;
 
- 
-  const Int_t maxTrack =  40000;
-  Float_t nSigPionTPC[maxTrack]   = {0.,};
-  Float_t nSigKaonTPC[maxTrack]   = {0.,};
-  Float_t nSigProtonTPC[maxTrack] = {0.,};    
-  Float_t nSigPionTOF[maxTrack]   = {0.,};
-  Float_t nSigKaonTOF[maxTrack]   = {0.,};
-  Float_t nSigProtonTOF[maxTrack] = {0.,};   
+
+  //const Int_t maxTrack =  40000;
+
+  Float_t nSigPionTPC[40000]   = {0.,};
+  Float_t nSigKaonTPC[40000]   = {0.,};
+  Float_t nSigProtonTPC[40000] = {0.,};    
+  Float_t nSigPionTOF[40000]   = {0.,};
+  Float_t nSigKaonTOF[40000]   = {0.,};
+  Float_t nSigProtonTOF[40000] = {0.,};   
 
 //Dont break segment for higher tracks:
-  if(ntracks>maxTrack)     return;
+  if(ntracks > 40000)     return;
   
   //vector<float> testVar;   
   //testVar.reserve(20000);
@@ -2280,9 +2264,12 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
   //Calling fPIDResponse in nested loop is CPU expensive.
   //Store nSigma values in a array:
 
-  for(Int_t itrack = 0; itrack < ntracks; itrack++) {
+
+
+  for(int itrack = 0; itrack < ntracks; itrack++) {
 
     AliAODTrack *trackForPID=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
+    if(!trackForPID) continue;
 
    // Array method:
     if(trackForPID){
@@ -2301,9 +2288,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
       nSigKaonTOF[itrack]   = -99; 
       nSigProtonTOF[itrack] = -99; 
     }  
-
-    /*
-    // Vector method:
+    /* // Vector method:
     if(trackForPID){
       nSigPionTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID, AliPID::kPion));
       nSigKaonTPC.push_back(fPIDResponse->NumberOfSigmasTPC(trackForPID,  AliPID::kKaon));
@@ -2324,9 +2309,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
     }
     */
 
-  }//1st track loop for PID storing.
 
 
+    //if(itrack%10==0)
+    //cout<< "nSig pi = " <<nSigPionTPC[itrack] << "nSig K = " << nSigKaonTPC[itrack]  << "nSig p = " << nSigProtonTOF[itrack] << endl;
+
+  }
+   
 
 
 
@@ -2816,17 +2805,20 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 	sumQyTPCpos2 -= w2NUA*TMath::Sin(gPsiN*dPhi2); // [1] = eta > 0.05
       }
 
-      /*
+     
       // track by track EP:
-      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) );
-      if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) );
-      if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN; */
+      if(gPsiN>2){
+       //Enable periodicity PsiN directly:
+        PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) + TMath::Pi() ) ; // negetive eta
+	PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) + TMath::Pi() ) ; // positive eta
+      }
+      else{
+	PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) ) ; // negetive eta
+	if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
 
-      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) + TMath::Pi() );
-      //if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) + TMath::Pi() );
-      //if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+	PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) ) ; // positive eta
+   	if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+      }
 
 
       fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
@@ -3258,13 +3250,27 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
 
 
-  // ----------------- Store Q-Vectors --------------
+  // ----------------- Event plane Resolution --------------
+  if(gPsiN>2){
+  //Enable periodicity PsiN directly:
+    PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) + TMath::Pi() ) ; // negetive eta
+    PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) + TMath::Pi() ) ; // positive eta
+  }
+  else{
+    PsiNTPCA = (1.0/gPsiN)*TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0])  ; // negetive eta
+    if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+
+    PsiNTPCC = (1.0/gPsiN)*TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1])  ; // positive eta
+    if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+  }
+
+
   //V0A-V0C 
   fHist_Reso2n_EP_Norm_Det[QAindex][0]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNV0A-PsiNV0C)));
   //V0A-TPC 
-  fHist_Reso2n_EP_Norm_Det[QAindex][1]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNV0A-PsiNTPCF)));
+  fHist_Reso2n_EP_Norm_Det[QAindex][1]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNV0A-PsiNTPCA)));
   //V0C-TPC 
-  fHist_Reso2n_EP_Norm_Det[QAindex][2]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNV0C-PsiNTPCF)));
+  fHist_Reso2n_EP_Norm_Det[QAindex][2]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNV0C-PsiNTPCA)));
   //TPCa -TPCc 
   fHist_Reso2n_EP_Norm_Det[QAindex][3]->Fill(EvtCent, TMath::Cos(gPsiN*(PsiNTPCA-PsiNTPCC)));
 
@@ -3321,13 +3327,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*){
 
   //if(fEventCount%10==0) 
   //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs1st = "<<multPOI1st<<"\t POI2nd = "<< multPOI2nd <<endl;
-  //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs = "<<multPOI1st<<"\tRealTime = "<< watch.RealTime() <<"\tCPUTime = "<< watch.CpuTime()<<endl;
 
   //watch.Stop();
-
-
-
-
 
 }//================ UserExec ==============
 
@@ -3426,7 +3427,7 @@ Bool_t AliAnalysisTaskCMEV0PID::PileUpMultiVertex(const AliAODEvent* faod)
 
 
 
-void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(TString sMCfilePath){
+void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(){
   /*
     if(bApplyMCcorr){
     if(!gGrid){

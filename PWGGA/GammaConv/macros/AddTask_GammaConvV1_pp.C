@@ -155,7 +155,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton     = "00200008400000002200000000";
+  TString cutnumberPhoton     = "00000008400000000100000000";
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.ComparedTo("LHC17d1") == 0  || periodNameV0Reader.ComparedTo("LHC17d12")==0   )
+    cutnumberPhoton         = "00000088400000000100000000";
+
   TString cutnumberEvent      = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -803,6 +806,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 351) {
     cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
+  } else if (trainConfig == 352) {
+    cuts.AddCut("00010113", "00200089267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+ 
 
   // Material studies Ana
   } else if (trainConfig == 360) {
@@ -813,6 +819,21 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
     cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
+  } else if (trainConfig == 362) {
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+    cuts.AddCut("00010113", "00200009267300008250404000", "0152103500000000"); // Min Bias with  dedx at high pT
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // 
+
+ } else if (trainConfig == 372) { // as iConfig 362 to be used with MBW
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+    cuts.AddCut("00010113", "00200009267300008250404000", "0152103500000000"); // Min Bias with  dedx at high pT
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // 
+
+
 
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
@@ -833,6 +854,17 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00083113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
     cuts.AddCut("00085113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
     cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
+  } else if (trainConfig == 404){
+   cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
+   cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
+   cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
+
+  } else if (trainConfig == 410){ // as 400 to be used MBW
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+  } else if (trainConfig == 414){  // as 404 to be used MBW
+   cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
+   cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72. 
+   cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
 
 
   } else {

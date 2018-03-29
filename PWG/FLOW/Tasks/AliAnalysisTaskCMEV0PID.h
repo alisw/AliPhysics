@@ -11,8 +11,8 @@
 // and R Sultana
 /////////////////////////////////////////////////
 
-#ifndef AliAnalysisTaskCMEV0PID_H
-#define AliAnalysisTaskCMEV0PID_H
+#ifndef ALIANALYSISTASKCMEV0PID_H
+#define ALIANALYSISTASKCMEV0PID_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TH1F.h"
@@ -398,7 +398,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   //----------- other functions ----------
   void  SetUpCentralityOutlierCut();
   void  SetupEventAndTaskConfigInfo();
-  void  SetupMCcorrectionMap(TString sMCfilePath);
+  void  SetupMCcorrectionMap();
   Int_t GetCentralityScaled0to10(Double_t fCent);
 
 

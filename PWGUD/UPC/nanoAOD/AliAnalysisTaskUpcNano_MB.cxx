@@ -26,6 +26,7 @@
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TColor.h"
+#include "TRandom.h"
 
 // aliroot headers
 #include "AliAnalysisManager.h"
@@ -40,6 +41,7 @@
 #include "AliAODMCParticle.h"
 #include "AliTOFTriggerMask.h"
 #include "TObjArray.h"
+#include "AliDataFile.h"
 
 
 // my headers
@@ -72,8 +74,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTOFPIDProtonCorr(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0),
-	fTOFmask(0) 
+	hTPCdEdxCorr(0)
 
 {
 
@@ -103,7 +104,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	fTOFmask(0) 
+	fSPDfile(0),
+  	hBCmod4(0),
+  	hSPDeff(0) 
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -158,11 +161,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
-  fTreeJPsi ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
-  fTreeJPsi ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
+  fTreeJPsi ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
   if(isMC){
-  	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
 	}
   fOutputList->Add(fTreeJPsi);
@@ -194,9 +194,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreeRho ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/I");
-  fTreeRho ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/I");
-  fTreeRho ->Branch("fTOFmask", &fTOFmask);
+  fTreeRho ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -214,8 +212,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreePsi2s ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
   if(isMC){ 
-  	fTreePsi2s ->Branch("fFOFiredChips", &fFOFiredChips);
   	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
 	}
   fOutputList->Add(fTreePsi2s);
@@ -276,6 +274,12 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
+  
+  fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
+  hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+  TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
+  hBCmod4 = hBCmod4_2D->ProjectionY();
+  //fSPDfile->Close();
     
   PostData(1, fOutputList);
 
@@ -319,7 +323,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if( fADAdecision != 0 || fADCdecision != 0) return;
   
   const AliTOFHeader *tofH = aod->GetTOFHeader();
-  fTOFmask = tofH->GetTriggerMask();
+  AliTOFTriggerMask *fTOFmask = tofH->GetTriggerMask();
+  fNFiredMaxiPads = fTOFmask->GetNumberMaxiPadOn();
     
   fHistEvents->Fill(1);
   
@@ -359,32 +364,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t TrackPtTPC[5]={0,0,0,0,0};
   Double_t TrackPtALL[7]={0,0,0,0,0,0,0};
   Double_t MeanPt = -1;
-  
-  
-  TBits fIR1Map = aod->GetHeader()->GetIRInt1InteractionMap();
-  TBits fIR2Map = aod->GetHeader()->GetIRInt2InteractionMap();
-  fClosestIR1 = 100;
-  fClosestIR2 = 100;
-  for(Int_t item=-1; item>=-90; item--) {
-    Int_t bin = 90+item;
-    Bool_t isFired = fIR1Map.TestBitNumber(bin);
-    if(isFired) {
-      fClosestIR1 = TMath::Abs(item);
-      break;
-    }
-  if(fClosestIR1 == 100)fClosestIR1 = 0;
-  }
-  for(Int_t item=-1; item>=-90; item--) {
-    Int_t bin = 90+item;
-    Bool_t isFired = fIR2Map.TestBitNumber(bin);
-    if(isFired) {
-      fClosestIR2 = TMath::Abs(item);
-      break;
-    }
-  }
-  if(fClosestIR2 == 100)fClosestIR2 = 0;
-  
-  
+   
   //Track loop
   for(Int_t iTrack=0; iTrack<aod ->GetNumberOfTracks(); iTrack++) {
     AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
@@ -652,16 +632,18 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   fTriggerInputsMC[3] = fTriggerAD & (1 << 13);   //0UBC ADC
   fTriggerInputsMC[4] = fL0inputs & (1 << 22);  //0OMU TOF two hits with topology
   fTriggerInputsMC[5] = fL0inputs & (1 << 19);	//0OM2 TOF two hits
-  					
+  		
+		
+  const Int_t bcMod4 = TMath::Nint(hBCmod4->GetRandom());			
   //SPD inputs
   const AliAODTracklets *mult = aod->GetMultiplicity();
-  fFOFiredChips = mult->GetFastOrFiredChips();
   Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
   Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
 
   Int_t nInner(0), nOuter(0);
   for (Int_t i(0); i<1200; ++i) {
-    Bool_t isFired(mult->TestFastOrFiredChips(i));
+    const Double_t eff = hSPDeff->GetBinContent(1+i, 1+bcMod4);
+    Bool_t isFired = (mult->TestFastOrFiredChips(i)) && (gRandom->Uniform(0,1) < eff);
     if (i<400) {
       vPhiInner[i/20] += isFired;
       nInner += isFired;

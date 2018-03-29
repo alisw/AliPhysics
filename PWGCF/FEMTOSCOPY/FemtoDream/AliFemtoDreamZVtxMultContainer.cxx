@@ -103,7 +103,12 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (ResultsHist->GetDodPhidEtaPlots()) {
             float deta=itPart1->GetEta().at(0)-itPart2->GetEta().at(0);
             float dphi=itPart1->GetPhi().at(0)-itPart2->GetPhi().at(0);
-            ResultsHist->FilldPhidEtaSE(HistCounter,dphi,deta);
+            if (dphi < 0) {
+              ResultsHist->FilldPhidEtaSE(HistCounter,dphi+2*TMath::Pi(),deta);
+            } else {
+
+              ResultsHist->FilldPhidEtaSE(HistCounter,dphi,deta);
+            }
           }
           ++itPart2;
         }
@@ -226,7 +231,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             if (ResultsHist->GetDodPhidEtaPlots()) {
               float deta=itPart1->GetEta().at(0)-itPart2->GetEta().at(0);
               float dphi=itPart1->GetPhi().at(0)-itPart2->GetPhi().at(0);
-              ResultsHist->FilldPhidEtaME(HistCounter,dphi,deta);
+              if (dphi < 0) {
+                ResultsHist->FilldPhidEtaME(HistCounter,dphi+2*TMath::Pi(),deta);
+              } else {
+                ResultsHist->FilldPhidEtaME(HistCounter,dphi,deta);
+              }
             }
           }
         }

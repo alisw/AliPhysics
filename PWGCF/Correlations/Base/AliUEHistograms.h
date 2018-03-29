@@ -127,7 +127,7 @@ protected:
   TH2F* fCorrelationLeading2Phi;// delta phi (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationMultiplicity; // number of mc particls vs reco particles (for pT > 0.5 GeV/c)
   TH3F* fYields;                // centrality vs pT vs eta
-  THnF* fYieldsEtaPhiPTCent;    // centrality vs pT vs eta vs phi
+  TH3F* fYieldsEtaPhiPT;        // pT vs eta vs phi
   TH2F* fInvYield2; 		// invariant yield as cross check of tracking
   
   TH2F* fEventCount;            // event count as function of step, (for pp: event type (plus additional step -1 for all events without vertex range even in MC)) (for PbPb: centrality)

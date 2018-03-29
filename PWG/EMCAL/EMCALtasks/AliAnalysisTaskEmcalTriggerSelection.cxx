@@ -25,13 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <unordered_map>
 #include <TH1.h>
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
-#include "AliEmcalTriggerSelectionCuts.h"
 #include "AliAnalysisTaskEmcalTriggerSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliYAMLConfiguration.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection)
@@ -337,6 +340,99 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
 }
 
+void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configfile) {
+  using YAMLhandler = PWG::Tools::AliYAMLConfiguration;
+  YAMLhandler configuration;
+  configuration.AddConfiguration(configfile, "user");
+  configuration.Initialize();
+  std::string namecontainer, acceptance, patchtype, energydef, energysource;
+  std::vector<std::string> triggerclasses;
+  configuration.GetProperty("containername", namecontainer);
+  configuration.GetProperty("energydef", energydef);
+  configuration.GetProperty("energysource", energysource);
+  configuration.GetProperty("triggerclasses", triggerclasses);
+  bool isOfflineSimple = energysource.find("Offline") != std::string::npos,
+       isRecalc = energysource.find("Recalc") != std::string::npos;
+
+  SetGlobalDecisionContainerName(namecontainer.data());
+
+  AliEmcalTriggerSelectionCuts::SelectionMethod_t selectionmethod;
+  try {
+    selectionmethod = DecodeEnergyDefinition(energydef);
+  } catch(ConfigValueException &e) {
+    AliErrorStream() << e.what() << " - not processing trigger classes" << std::endl;
+    return; 
+  }
+  for(auto t : triggerclasses) {
+    double threshold;
+    configuration.GetProperty(Form("%s:acceptance", t.data()), acceptance);
+    configuration.GetProperty(Form("%s:patchtype", t.data()), patchtype);
+    configuration.GetProperty(Form("%s:threshold", t.data()), threshold);
+
+    AliEmcalTriggerSelectionCuts *cuts = new AliEmcalTriggerSelectionCuts;
+    try {
+      cuts->SetAcceptanceType(DecodeAcceptanceString(acceptance));
+      cuts->SetPatchType(DecodePatchTypeString(patchtype));
+    } catch(ConfigValueException &e){
+      AliErrorStream() << e.what() << " - not adding trigger class " << t << std::endl;
+      delete cuts;
+      continue;
+    }
+
+    cuts->SetSelectionMethod(selectionmethod);
+    if(isOfflineSimple) cuts->SetUseSimpleOfflinePatches();
+    if(isRecalc) cuts->SetUseRecalcPatches();
+    cuts->SetThreshold(threshold);
+    this->AddTriggerSelection(new AliEmcalTriggerSelection(t.data(), cuts));
+  }
+}
+
+AliEmcalTriggerSelectionCuts::AcceptanceType_t AliAnalysisTaskEmcalTriggerSelection::DecodeAcceptanceString(const std::string &acceptancestring){
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::AcceptanceType_t> mapacceptance = {
+    {"EMCAL", AliEmcalTriggerSelectionCuts::kEMCALAcceptance},
+    {"DCAL", AliEmcalTriggerSelectionCuts::kDCALAcceptance}
+  };
+  auto result = mapacceptance.find(acceptancestring);
+  if(result == mapacceptance.end()) throw ConfigValueException("accpetance", acceptancestring.data());
+  return result->second;
+}
+
+AliEmcalTriggerSelectionCuts::PatchType_t AliAnalysisTaskEmcalTriggerSelection::DecodePatchTypeString(const std::string &patchtypestring) {
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::PatchType_t> mappatchtype = {
+    {"L1Gamma", AliEmcalTriggerSelectionCuts::kL1GammaPatch},
+    {"L1GammaHigh", AliEmcalTriggerSelectionCuts::kL1GammaHighPatch},
+    {"L1GammaLow", AliEmcalTriggerSelectionCuts::kL1GammaLowPatch},
+    {"L1Jet", AliEmcalTriggerSelectionCuts::kL1JetPatch},
+    {"L1JetHigh", AliEmcalTriggerSelectionCuts::kL1JetHighPatch},
+    {"L1JetLow", AliEmcalTriggerSelectionCuts::kL1JetLowPatch}
+  };
+  auto result = mappatchtype.find(patchtypestring);
+  if(result == mappatchtype.end()) throw ConfigValueException("accpetance", patchtypestring.data());
+  return result->second;
+}
+
+AliEmcalTriggerSelectionCuts::SelectionMethod_t AliAnalysisTaskEmcalTriggerSelection::DecodeEnergyDefinition(const std::string &energydefstring){
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::SelectionMethod_t> mapenergydef = {
+    {"ADC", AliEmcalTriggerSelectionCuts::kADC},
+    {"Energy", AliEmcalTriggerSelectionCuts::kEnergyOffline},
+    {"EnergyRough", AliEmcalTriggerSelectionCuts::kEnergyRough},
+    {"EnergySmeared", AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared}
+  };
+  auto result = mapenergydef.find(energydefstring);
+  if(result == mapenergydef.end()) throw ConfigValueException("accpetance", energydefstring.data());
+  return result->second;
+
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
+    stream << "Task: " << GetName() << ", name of the output container: " << fGlobalDecisionContainerName << std::endl << std::endl;
+    stream << "Trigger classes: " << std::endl;
+    for(const auto c : this->fTriggerSelections){
+      PWG::EMCAL::AliEmcalTriggerSelection *sel = static_cast<PWG::EMCAL::AliEmcalTriggerSelection *>(c);
+      stream << *sel << std::endl;
+    }
+}
+
 AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA():
     TNamed(),
     fMaxPatchADC(nullptr),
@@ -389,5 +485,20 @@ void AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::GetHistos
 
 }
 
+AliAnalysisTaskEmcalTriggerSelection::ConfigValueException::ConfigValueException(const char *key, const char *value): 
+  fKey(key), 
+  fValue(value),
+  fMessage()
+{
+  std::stringstream msgbuilder;
+  msgbuilder << "Improper value for key " << fKey << ": " << fValue;
+  fMessage = msgbuilder.str();
 }
+
+}
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection &task) {
+  task.PrintStream(stream);
+  return stream;
 }

@@ -59,6 +59,7 @@
 #include "AliEmcalJet.h"
 #include "AliEmcalList.h"
 #include "AliEmcalTriggerDecisionContainer.h"
+#include "AliEmcalTriggerStringDecoder.h"
 #include "AliLog.h"
 #include "AliParticleContainer.h"
 #include "AliRhoParameter.h"
@@ -143,6 +144,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fFillStructGlob(true)
 {
   DefineOutput(2, TTree::Class());
+  SetUseAliAnaUtils(true);
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTree() { 
@@ -296,7 +298,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
       // decode trigger string in order to determine the trigger clusters
       std::vector<std::string> clusternames;
-      auto triggerinfos = DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      auto triggerinfos = PWG::EMCAL::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
       for(auto t : triggerinfos) {
         if(std::find(clusternames.begin(), clusternames.end(), t.fTriggerCluster) == clusternames.end()) clusternames.emplace_back(t.fTriggerCluster);
       }
@@ -456,7 +458,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
   if(fLumiMonitor && fUseDownscaleWeight){
     auto downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) {
-      for(auto trigger : DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
+      for(auto trigger : PWG::EMCAL::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
         auto int7trigger = trigger.IsTriggerClass("INT7");
         auto bunchcrossing = trigger.fBunchCrossing == "B";
         auto nopf = trigger.fPastFutureProtection == "NOPF";
@@ -706,21 +708,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet, 
   return nallowed > 0;
 }
 
-std::vector<Triggerinfo> AliAnalysisTaskEmcalJetSubstructureTree::DecodeTriggerString(const std::string &triggerstring) const {
-  std::vector<Triggerinfo> result;
-  std::stringstream triggerparser(triggerstring);
-  std::string currenttrigger;
-  while(std::getline(triggerparser, currenttrigger, ' ')){
-    if(!currenttrigger.length()) continue;
-    std::vector<std::string> tokens;
-    std::stringstream triggerdecoder(currenttrigger);
-    std::string token;
-    while(std::getline(triggerdecoder, token, '-')) tokens.emplace_back(token);
-    result.emplace_back(Triggerinfo({tokens[0], tokens[1], tokens[2], tokens[3]}));
-  }
-  return result;
-}
-
 std::string AliAnalysisTaskEmcalJetSubstructureTree::MatchTrigger(const std::string &triggertoken) const {
   std::vector<std::string> tokens;
   std::string result;
@@ -849,15 +836,6 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer(treename.str().data(), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
   return treemaker;
-}
-
-std::string Triggerinfo::ExpandClassName() const {
-  std::string result = fTriggerClass + "-" + fBunchCrossing + "-" + fPastFutureProtection + "-" + fTriggerCluster;
-  return result;
-}
-
-bool Triggerinfo::IsTriggerClass(const std::string &triggerclass) const {
-  return fTriggerClass.substr(1) == triggerclass; // remove C from trigger class part
 }
 
 void AliSoftDropParameters::LinkJetTreeBranches(TTree *jettree, const char *tag) {

@@ -147,16 +147,6 @@ struct AliJetTreeGlobalParameters {
   void LinkJetTreeBranches(TTree *jettree, bool fillRho);
 };
 
-struct Triggerinfo {
-  std::string fTriggerClass;
-  std::string fBunchCrossing;
-  std::string fPastFutureProtection;
-  std::string fTriggerCluster;
-
-  std::string ExpandClassName() const; 
-  bool IsTriggerClass(const std::string &triggerclass) const;
-};
-
 /**
  * @class AliAnalysisTaskEmcalJetSubstructureTree
  * @brief Tree with jet substructure information
@@ -241,7 +231,6 @@ protected:
   
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
   std::string MatchTrigger(const std::string &triggerclass) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 

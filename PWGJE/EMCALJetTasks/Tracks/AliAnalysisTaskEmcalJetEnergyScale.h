@@ -47,15 +47,14 @@ class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
 #ifdef USECXX11HEADERS
   AliAnalysisTaskEmcalJetEnergyScale() = default;
-  AliAnalysisTaskEmcalJetEnergyScale(const char *name);
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
   AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-  ~AliAnalysisTaskEmcalJetEnergyScale() override;
 #else
+  // Only needed for rootcint - no implementation necessary
   AliAnalysisTaskEmcalJetEnergyScale();
+#endif
   AliAnalysisTaskEmcalJetEnergyScale(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergyScale();
-#endif
 
   void SetNameDetJetContainer(const char *name)  { fNameDetectorJets = name; }
   void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }

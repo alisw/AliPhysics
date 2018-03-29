@@ -373,7 +373,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     int pid_mask = PassesPIDSelection(track);
-    bool pid_check = (pid_mask == 7);
+    bool pid_check = (pid_mask & 7) == 7;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
 
     int mcId = TMath::Abs(track->GetLabel());

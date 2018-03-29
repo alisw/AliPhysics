@@ -803,8 +803,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistEnergyOfModvsMod);
       fHistClusterEnergyvsNCells      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterECoarse, minClusterELog, maxClusterELog,
                                                  50, 0, 50);
-      fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
-      fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
+      fHistClusterEnergyvsNCells->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCells->GetYaxis()->SetTitle("N_{cells}");
       SetLogBinningXTH2(fHistClusterEnergyvsNCells);
       fHistExtQA->Add(fHistClusterEnergyvsNCells);
       fHistClusterDistanceInTimeCut   = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut",20,-10,10,20,-10,10);
@@ -976,7 +976,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistNCellsBigger1500MeVvsMod->GetXaxis()->SetTitle("N_{cells} with E_{cell} > 1.5 GeV");
       fHistNCellsBigger1500MeVvsMod->GetYaxis()->SetTitle("module ID");
       fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
-      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", 1000, 0, 100,
+      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", nBinsClusterECoarse, minClusterELog, maxClusterELog,
                                                  fNMaxDCalModules, nModulesStart, fNMaxDCalModules+nModulesStart);
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
@@ -5338,8 +5338,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
           } else if(fClusterType==2){
-            energy /= ( 0.997*0.9965200155 ); // additional factors
-            energy /= ( 0.9969 ); // additional factors
+            energy /= ( 0.994914734 ); // additional factors
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
@@ -5825,7 +5824,15 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17e2") == 0  )     return k17e2;
   // pp 5 TeV 2015 JJ pass 3
   else if ( namePeriod.CompareTo("LHC16h3") == 0 )      return k16h3;
-
+  // pp 5 TeV 2017 MB MC pass 1
+  else if ( namePeriod.CompareTo("LHC17l4b") == 0 ||
+            namePeriod.CompareTo("LHC17l4b_fast") == 0 ||
+            namePeriod.CompareTo("LHC17l4b_cent") == 0 ||
+            namePeriod.CompareTo("LHC17l4b_cent_woSDD") == 0)     return k17l4b;
+  else if ( namePeriod.CompareTo("LHC17l3b") == 0 ||
+            namePeriod.CompareTo("LHC17l3b_fast") == 0 ||
+            namePeriod.CompareTo("LHC17l3b_cent") == 0 ||
+            namePeriod.CompareTo("LHC17l3b_cent_woSDD") == 0)     return k17l3b;
   // PbPb 5TeV 2015 MB prods
   else if ( namePeriod.CompareTo("LHC16g1") == 0 ||
             namePeriod.CompareTo("LHC16g1a") == 0 ||
