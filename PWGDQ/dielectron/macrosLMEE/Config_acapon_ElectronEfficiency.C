@@ -30,7 +30,7 @@ Bool_t CalcEfficiencyRec      = kTRUE;
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 Bool_t CalcResolution         = kTRUE;
 Bool_t MakeResolutionSparse   = kFALSE;
-Bool_t doPairing              = kFALSE;
+Bool_t doPairing              = kTRUE;
 
 // resolution binnings
 Int_t    NbinsMom        = 2000;
