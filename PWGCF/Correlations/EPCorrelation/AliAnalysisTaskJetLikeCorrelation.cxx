@@ -192,7 +192,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
-  fResonancesVCut(0.02), fConversionsVCut(0.04),
+  fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
@@ -212,7 +212,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
-  fResonancesVCut(0.02), fConversionsVCut(0.04),
+  fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
   fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
@@ -316,7 +316,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   fHistResolutionV2[1] = new TProfile("fHistResolutionV2_02", "fHistResolutionV2_02", 10, 0, 100);
   fHistResolutionV2[2] = new TProfile("fHistResolutionV2_12", "fHistResolutionV2_12", 10, 0, 100);
 
-  int nbins[6] = {2, 5, 20, 9, 200, 250};
+  int nbins[6] = {2, 5, 20, 9, 20, 250};
   // Contamination/Primary, In/out(5), Cent, ZVtx, Eta, Pt // total 6
   double maxbin[6] = {1.5, 4.5, 100, 9,1,25 };
   double minbin[6] = {-0.5, -0.5, 0, -9, -1, 0};
@@ -584,6 +584,14 @@ string  filename;
     if (!bTargetEvents) return;
     fPeriod = k15o;
     fCollision = kPbPb;
+  } else {
+    mask = static_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();
+    bTargetEvents = mask & (AliVEvent::kINT7);
+    if (!bTargetEvents) return;
+    fPeriod = k17p;
+    fCollision = kpp;
+
+
   }
 
   fEventPlane = -999;
@@ -667,7 +675,7 @@ string  filename;
 
       lpTTrig = aodTrack->Pt();
 
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+      ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
       if (lpTTrig > 0.5 && lpTTrig < 5) {
         fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
@@ -690,6 +698,7 @@ string  filename;
 
 //      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
       if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+      if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
       if (fMCCorrection) {
         label = TMath::Abs(aodTrack->GetLabel());
@@ -698,6 +707,7 @@ string  filename;
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
 
+      etavars[0] = 0;
       etavars[3] = lEtaTrig;
       etavars[4] = lpTTrig;
 
@@ -914,7 +924,7 @@ string  filename;
 
       lpTTrig = aodTrack->Pt();
       
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+      ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
       if (lpTTrig > 0.5 && lpTTrig < 5) {
         fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
@@ -936,6 +946,7 @@ string  filename;
 
 //      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
       if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+      if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
       if (fMCCorrection) {
         label = TMath::Abs(aodTrack->GetLabel());
@@ -943,6 +954,7 @@ string  filename;
         lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
+      etavars[0] = 0;
 
       etavars[3] = lEtaTrig;
       etavars[4] = lpTTrig;
@@ -1191,7 +1203,8 @@ string  filename;
         lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
         kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
       }
-      
+ 
+      etavars[0] = 0;
       etavars[3] = lEtaTrig;
       etavars[4] = lpTTrig;
 
@@ -1344,7 +1357,7 @@ string  filename;
   }  // fCollision = pp
 
 
-  DoMixing(fCentPercentile, fZVertex, lTrackArray_HighPt, lTrackArray, fEventPlaneV0A, lBSign);
+  DoMixing(fCentPercentile, fZVertex, lTrackArray_HighPt, lTrackArray, fEventPlaneV0C, lBSign);
   fHistNevtSame->Fill(lCentBin, lZVertexBin);
 
   PostData(1, fOutputInc);
@@ -1382,7 +1395,6 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
-  int lMinimumPtABinMerging = GetPtBin(3.00);
   int lMinimumPtTBinMerging = GetPtBin(6.00);
 
   if (bUseMixingPool) {
@@ -1455,6 +1467,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
 
           ldeltaEventPlane = trigPhi - eventPlane;
           if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+          if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
           if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
             evp_inout = 1;
@@ -1553,10 +1566,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
             } else {
               fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
@@ -1673,8 +1686,8 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
               continue;
 
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             } else { 
                 fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             }
@@ -1727,6 +1740,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
         trigCharge = lParticleTrig->Charge();
         ldeltaEventPlane = trigPhi - eventPlane;
         if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+        if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
         //        cout << ldeltaEventPlane << "\n";
         trigpTBin = GetPtBin(trigpT);
         
@@ -1832,10 +1846,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
           if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
             continue;
 
-          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= lMinimumPtABinMerging) {
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][lMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
           } else {
             fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
@@ -2045,7 +2059,7 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistogramVectors() {
 void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
 
   InitHistogramVectors();
-  int lPtBin = 25000;
+  int lPtBin = 250;
   int lPtMin = 0;
   int lPtMax = 25;
   int lMinPtBin = GetPtBin(fMinPtTrigCut);
@@ -2056,12 +2070,12 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
         if (iptt < lMinPtBin) continue;
         for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
           if (iptt < ipta) continue;
-          fHistdEtadPhiSame[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSame[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSame[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]->Sumw2();
@@ -2071,17 +2085,17 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
           fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]->Sumw2();
           
           if (fMCCorrection) {
-          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]->Sumw2();
           
-          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*4/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
           fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]->Sumw2();
           fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]->Sumw2();
@@ -2147,7 +2161,7 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
 //  float lEtaMin = -0.9;
 //  float lEtaMax = 0.9;
 
-  int nbins[5] = {5, 20, 9, 200, 250};
+  int nbins[5] = {5, 20, 9, 20, 50};
   // In/out(5), Cent, ZVtx, Eta, Pt // total 5
   double maxbin[5] = {4.5, 100, 9,1,25 };
   double minbin[5] = { -0.5, 0, -9, -1, 0};
@@ -2265,28 +2279,24 @@ int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent
     myV0QnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZERO");
     if (myV0QnVector != NULL) {
       fEventPlane = myV0QnVector->EventPlane(2);
-      if (fEventPlane < 0) fEventPlane += TMath::Pi();
     }
     myV0AQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
     if (myV0AQnVector != NULL){
       fEventPlaneV0A = myV0AQnVector->EventPlane(2);
-      if (fEventPlaneV0A < 0) fEventPlaneV0A += TMath::Pi();
     }
     myV0CQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROC");
     if (myV0CQnVector != NULL){
       fEventPlaneV0C = myV0CQnVector->EventPlane(2);
-      if (fEventPlaneV0C < 0) fEventPlaneV0C += TMath::Pi();
     }
     myTPCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPC");
     if (myTPCQnVector != NULL) {
       fEventPlaneTPC = myTPCQnVector->EventPlane(2);
-      if (fEventPlaneTPC < 0) fEventPlaneTPC += TMath::Pi();
     }
 
     if (fEventPlaneTPC >=0 && fEventPlaneV0A >= 0 && fEventPlaneV0C >= 0) {
-      fHistResolutionV2[0]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0A - fEventPlaneTPC)));
-      fHistResolutionV2[1]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0A - fEventPlaneV0C)));
-      fHistResolutionV2[2]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneTPC - fEventPlaneV0C)));
+      fHistResolutionV2[0]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0C - fEventPlaneTPC)));
+      fHistResolutionV2[1]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneV0C - fEventPlaneV0A)));
+      fHistResolutionV2[2]->Fill(fCentPercentile, TMath::Cos(2*(fEventPlaneTPC - fEventPlaneV0A)));
     }
   
   }
