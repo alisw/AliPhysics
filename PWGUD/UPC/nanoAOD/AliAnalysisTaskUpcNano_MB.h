@@ -6,8 +6,10 @@
 #define ALIANALYSISTASKUPCNano_MB_H
 
 class TH1;
+class TH2;
 class TTree;
 class TList;
+class TFile;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -64,7 +66,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 13); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 14); 
 };
 
 #endif

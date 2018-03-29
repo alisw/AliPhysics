@@ -1018,7 +1018,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00076113","3885500067032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL VOHM with SPD
 
   // *********************************************************************************************************
-  // 5 TeV  pp Run2 - DMC configurations
+  // 5 TeV 2015 pp Run2 - DMC configurations
   // *********************************************************************************************************
   } else if (trainConfig == 600){
     cuts.AddCut("00010113","3885522087041220000","01631031000000d0"); // std
@@ -1060,6 +1060,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","3885512087041220000","01331031000000d0"); // DCal kSDM
     cuts.AddCut("00010113","3885521087041220000","01331031000000d0"); // PCM-DCal DExp/DPow
     cuts.AddCut("00010113","3885522087041220000","01331031000000d0"); // DCal DExp/DPow
+    //5 TeV 2017 pp Run2 - DMC configurations
+  } else if (trainConfig == 608){
+    cuts.AddCut("00010113","3885500087041220000","01631031000000d0"); // std
+    cuts.AddCut("00010113","3885500017041220000","01631031000000d0"); // QA
 
   // ********************************* Past future cutstudies ******************************************
   } else if (trainConfig == 700){ // EMCAL clusters pp 8 TeV MinBias

@@ -43,6 +43,7 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
   taskjetlikecorr->SetTwoTrackEffCut(fTwoTrackEffCut);
   taskjetlikecorr->SetCentArray(dcentarr);
   taskjetlikecorr->SetPtArray(dptarr);
+  taskjetlikecorr->SetMinimumPtABinForMerging(5);
   taskjetlikecorr->SetZVertexArray(dzvertarr);
 //  taskjetlikecorr->SetEventMixingQueueSize(fEventMixingQueueSize);
   taskjetlikecorr->SetMixingPoolSize(fMixingPoolSize);
