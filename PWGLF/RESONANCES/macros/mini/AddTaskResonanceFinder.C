@@ -11,7 +11,6 @@ Bool_t Config_k0phi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int
 Bool_t Config_pphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_phiphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_Lambdaphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_test(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 
 void AddMonitorOutput_P(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_Pt(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
@@ -201,11 +200,6 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
     Config_Lambdaphi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
   }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kLambda){
     Config_Lambdaphi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
-
-  }else if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kKstar0){
-    Config_test(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kKstar0 && d1==AliRsnDaughter::kPion){
-    Config_test(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
 
   }
   cerr<<"done configuring"<<endl;
