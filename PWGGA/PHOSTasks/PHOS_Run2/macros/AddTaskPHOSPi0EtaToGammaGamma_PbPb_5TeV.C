@@ -199,8 +199,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
     TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
     TF1 *f1weightPi0[Ncen_Pi0-1];
-    const Double_t p0_Pi0[Ncen_Pi0-1] = {8.52796e-02,9.57970e-02,1.09042e-01,1.28762e-01 ,1.51087e-01 ,1.82705e-01 ,2.16360e-01 ,2.37666e-01 ,2.52706e-01 ,3.34001e-01};
-    const Double_t p1_Pi0[Ncen_Pi0-1] = {8.34243e-01,8.11715e-01,7.73274e-01,7.28962e-01 ,6.77506e-01 ,6.06502e-01 ,5.31093e-01 ,4.52193e-01 ,3.86976e-01 ,3.22488e-01};
+    const Double_t p0_Pi0[Ncen_Pi0-1] = {2. * 8.52796e-02,2. * 9.57970e-02,2. * 1.09042e-01,2. * 1.28762e-01 ,2. * 1.51087e-01 ,2. * 1.82705e-01 ,2. * 2.16360e-01 ,2. * 2.37666e-01 ,2. * 2.52706e-01 ,2. * 3.34001e-01};
+    const Double_t p1_Pi0[Ncen_Pi0-1] = {2. * 8.34243e-01,2. * 8.11715e-01,2. * 7.73274e-01,2. * 7.28962e-01 ,2. * 6.77506e-01 ,2. * 6.06502e-01 ,2. * 5.31093e-01 ,2. * 4.52193e-01 ,2. * 3.86976e-01 ,2. * 3.22488e-01};
     const Double_t p2_Pi0[Ncen_Pi0-1] = {9.27577e-01,9.53380e-01,9.52280e-01,9.78872e-01 ,9.82192e-01 ,1.01124e+00 ,1.08236e+00 ,1.14572e+00 ,1.12243e+00 ,2.16920e+00};
     const Double_t p3_Pi0[Ncen_Pi0-1] = {2.13453e-01,2.09818e-01,2.03573e-01,2.00238e-01 ,1.94211e-01 ,1.87993e-01 ,1.94509e-01 ,1.95069e-01 ,1.75698e-01 ,3.62140e-01};
 
@@ -210,7 +210,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_Pi0->Add(f1weightPi0[icen]);
     }
 
-    //task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
+    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
 
     //for K0S
     const Int_t Ncen_K0S = 7;
@@ -231,7 +231,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_K0S->Add(f1weightK0S[icen]);
     }
 
-    //task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
+    task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
 
      //for L0
     const Int_t Ncen_L0 = 7;
