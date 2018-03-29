@@ -86,57 +86,45 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   NegAntiv0Daug->SetCutCharge(-1);
 
   if (suffix == "1") {
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
+    v0Cuts->SetPtRange(0.5, 999.9);
+    Antiv0Cuts->SetPtRange(0.5, 999.9);
   } else if (suffix == "2") {
-    Posv0Daug->SetNClsTPC(90);
-    Negv0Daug->SetNClsTPC(90);
-    PosAntiv0Daug->SetNClsTPC(90);
-    NegAntiv0Daug->SetNClsTPC(90);
+    v0Cuts->SetPtRange(0.75, 999.9);
+    Antiv0Cuts->SetPtRange(0.75, 999.9);
   } else if (suffix == "3") {
-    Posv0Daug->SetNClsTPC(120);
-    Negv0Daug->SetNClsTPC(120);
-    PosAntiv0Daug->SetNClsTPC(120);
-    NegAntiv0Daug->SetNClsTPC(120);
+    v0Cuts->SetPtRange(1, 999.9);
+    Antiv0Cuts->SetPtRange(1, 999.9);
   } else if (suffix == "4") {
-    v0Cuts->SetCutCPA(0.999);
-    Antiv0Cuts->SetCutCPA(0.999);
+    v0Cuts->SetPtRange(1, 999.9);
+    Antiv0Cuts->SetPtRange(1, 999.9);
   } else if (suffix == "5") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.);
-    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.);
+    v0Cuts->SetCutInvMass(0.01);
+    Antiv0Cuts->SetCutInvMass(0.01);
   } else if (suffix == "6") {
-    v0Cuts->SetCutDCADaugTov0Vtx(0.5);
-    Antiv0Cuts->SetCutDCADaugTov0Vtx(0.5);
+    Posv0Daug->SetPtRange(0.1, 999.9);
+    Negv0Daug->SetPtRange(0.1, 999.9);
+    PosAntiv0Daug->SetPtRange(0.1, 999.9);
+    NegAntiv0Daug->SetPtRange(0.1, 999.9);
   } else if (suffix == "7") {
-    Posv0Daug->SetPID(AliPID::kProton, 999.9, 3);
-    Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
-    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
-    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+    Posv0Daug->SetPtRange(0.2, 999.9);
+    Negv0Daug->SetPtRange(0.2, 999.9);
+    PosAntiv0Daug->SetPtRange(0.2, 999.9);
+    NegAntiv0Daug->SetPtRange(0.2, 999.9);
   } else if (suffix == "8") {
-    Posv0Daug->SetMaxSharedClsTPC(0);
-    Negv0Daug->SetMaxSharedClsTPC(0);
-    PosAntiv0Daug->SetMaxSharedClsTPC(0);
-    NegAntiv0Daug->SetMaxSharedClsTPC(0);
+    Posv0Daug->SetPtRange(0.3, 999.9);
+    Negv0Daug->SetPtRange(0.3, 999.9);
+    PosAntiv0Daug->SetPtRange(0.3, 999.9);
+    NegAntiv0Daug->SetPtRange(0.3, 999.9);
   } else if (suffix == "9") {
-    Posv0Daug->SetNClsTPC(0);
-    Negv0Daug->SetNClsTPC(0);
-    PosAntiv0Daug->SetNClsTPC(0);
-    NegAntiv0Daug->SetNClsTPC(0);
-    Posv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
-    Negv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
-    PosAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
-    NegAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.35);
+    Posv0Daug->SetPtRange(0.5, 999.9);
+    Negv0Daug->SetPtRange(0.5, 999.9);
+    PosAntiv0Daug->SetPtRange(0.5, 999.9);
+    NegAntiv0Daug->SetPtRange(0.5, 999.9);
   } else if (suffix == "10") {
-    Posv0Daug->SetNClsTPC(0);
-    Negv0Daug->SetNClsTPC(0);
-    PosAntiv0Daug->SetNClsTPC(0);
-    NegAntiv0Daug->SetNClsTPC(0);
-    Posv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
-    Negv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
-    PosAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
-    NegAntiv0Daug->SetCutTPCCrossedRows(true, 0, 0.83);
+    Posv0Daug->SetPtRange(0.3, 999.9);
+    Negv0Daug->SetPtRange(0.125, 999.9);
+    PosAntiv0Daug->SetPtRange(0.125, 999.9);
+    NegAntiv0Daug->SetPtRange(0.3, 999.9);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -188,18 +176,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AntiXiNegCuts->SetMinimalBooking(true);
   AntiXiPosCuts->SetMinimalBooking(true);
   AntiXiBachCuts->SetMinimalBooking(true);
-
-  // CHECK FOR BERNIE
-  XiNegCuts->SetPtRange(0.1, 999.9);
-  XiPosCuts->SetPtRange(0.1, 999.9);
-  XiBachCuts->SetPtRange(0.1, 999.9);
-  CascadeCuts->SetCutv0CPA(0.99);
-  CascadeCuts->SetCutXiCPA(0.99);
-  AntiXiNegCuts->SetPtRange(0.1, 999.9);
-  AntiXiPosCuts->SetPtRange(0.1, 999.9);
-  AntiXiBachCuts->SetPtRange(0.1, 999.9);
-  AntiCascadeCuts->SetCutv0CPA(0.99);
-  AntiCascadeCuts->SetCutXiCPA(0.99);
 
   AntiXiBachCuts->SetCutCharge(1);
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
@@ -355,6 +331,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
+
   if (kTCentPlot) {
     std::vector<float> centBins;
     centBins.push_back(20);
@@ -385,10 +362,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
-  config->SetSpinningDepth(10);
+  config->SetUsePhiSpinning(true);
+  config->SetSpinningDepth(20);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
 
   AliAnalysisTaskFemtoDream *task =
-      new AliAnalysisTaskFemtoDream("FemtoDreamDefault", isMC, true);
+      new AliAnalysisTaskFemtoDream("FemtoDreamPileUpTest", isMC);
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
