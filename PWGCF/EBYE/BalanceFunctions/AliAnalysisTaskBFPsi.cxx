@@ -1148,7 +1148,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   AliAnalysisUtils ut;
   if(fCheckPileUp){
     fUtils->SetUseMVPlpSelection(kTRUE);
-    fUtils->SetUseOutOfBunchPileUp(kTRUE);
+    //fUtils->SetUseOutOfBunchPileUp(kTRUE);
     if(fUtils->IsPileUpEvent(event))
       return -1.;
     fHistEventStats->Fill(7,gRefMultiplicity); 
