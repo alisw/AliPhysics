@@ -78,7 +78,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(),
-  fHistTrackPt(nullptr),
+  fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -111,7 +111,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(name),
-  fHistTrackPt(nullptr),
+  fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -146,11 +146,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   // Create histograms
-  fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
+  fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
-  fOutput->Add(fHistTrackPt);
+  fOutput->Add(fHistJetHTrackPt);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
 
@@ -172,16 +172,19 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   }
 
   // Jet matching cuts
-  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
-  for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
-    name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
-    std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
-    auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
-    // Set label names
-    for (unsigned int i = 1; i <= binLabels.size(); i++) {
-      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  // Only need if we actually jet matching
+  if (fRequireMatchedJetWhenEmbedding) {
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+    for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
+      name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
+      std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
+      auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
+      // Set label names
+      for (unsigned int i = 1; i <= binLabels.size(); i++) {
+        histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+      }
+      histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
     }
-    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
   }
 
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
@@ -246,6 +249,9 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   }
 
   fPoolMgr = new AliEventPoolManager(poolSize, fNMixingTracks, nEventActivityBins, eventActivityBins, nZVertexBins, zVertexBins);
+
+  // Print pool properties
+  fPoolMgr->Validate();
 }
 
 void AliAnalysisTaskEmcalJetHCorrelations::ExecOnce()
@@ -441,7 +447,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
         // Fill track properties
-        fHistTrackPt->Fill(track.Pt());
+        fHistJetHTrackPt->Fill(track.Pt());
         fHistJetHEtaPhi->Fill(deltaEta, deltaPhi);
 
         // Calculate single particle tracking efficiency for correlations
@@ -673,7 +679,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
  * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
  * due to the design of the classes.
  *
- * @param[in] jets Jet container corresponding to the matched jet
+ * @param[in] jets Jet container corresponding to the jet to be checked
  * @param[in] jet Jet to be checked
  * @param[in] histName Name of the hist in the hist manager where QA information will be filled
  * @return true if the jet passes the criteria. false otherwise.

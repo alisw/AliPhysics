@@ -231,7 +231,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // Histograms
   THistManager           fHistManager;             ///<  Histogram manager
-  TH1                   *fHistTrackPt;             //!<! Track pt spectrum
+  TH1                   *fHistJetHTrackPt;             //!<! Track pt spectrum
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
   TH2                   *fHistJetHEtaPhi;          //!<! Eta-phi distribution of jets which are in jet-hadron correlations
@@ -258,7 +258,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 16);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 17);
 };
 
 } /* namespace EMCALJetTasks */

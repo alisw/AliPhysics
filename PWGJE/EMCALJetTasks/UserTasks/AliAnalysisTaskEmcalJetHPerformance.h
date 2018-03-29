@@ -75,9 +75,14 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
 
+  // QA histograms
+  void SetupQAHists();
+  void QAHists();
+  void FillQAHists();
+
   // Response matrix functions
   void SetupResponseMatrixHists();
-  void CreateResponseMatrix();
+  void ResponseMatrix();
   void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
   ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
 
@@ -91,7 +96,11 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding)
 
   // Configuration options
+  bool fCreateQAHists;                ///<  If true, create QA histograms
   bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections
+
+  // QA variables
+  // None
 
   // Response matrix variables
   // Response matrix fill map
@@ -106,7 +115,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 1);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 2);
 };
 
 } /* namespace EMCALJetTasks */

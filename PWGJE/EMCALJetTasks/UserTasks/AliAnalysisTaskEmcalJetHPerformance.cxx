@@ -3,7 +3,6 @@
  */
 
 #include "AliAnalysisTaskEmcalJetHPerformance.h"
-#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 #include <map>
 #include <vector>
@@ -19,9 +18,13 @@
 
 #include "yaml-cpp/yaml.h"
 #include "THistManager.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliTrackContainer.h"
+#include "AliClusterContainer.h"
 #include "AliJetContainer.h"
 #include "AliEmcalJet.h"
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance);
 
@@ -38,6 +41,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fConfigurationInitialized(false),
   fHistManager(),
   fEmbeddingQA(),
+  fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
@@ -55,6 +59,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fConfigurationPath(""),
   fConfigurationInitialized(false),
   fHistManager(name),
+  fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
@@ -73,6 +78,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const A
   fConfigurationPath(other.fConfigurationPath),
   fConfigurationInitialized(other.fConfigurationInitialized),
   fHistManager(other.fHistManager.GetName()),
+  fCreateQAHists(other.fCreateQAHists),
   fCreateResponseMatrix(other.fCreateResponseMatrix),
   fResponseMatrixFillMap(other.fResponseMatrixFillMap),
   fResponseFromThreeJetCollections(other.fResponseFromThreeJetCollections),
@@ -104,6 +110,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   // Same ordering as in the constructor (for consistency)
   std::string baseName = "enable";
   fYAMLConfig.GetProperty({baseName, "responseMatrix"}, fCreateResponseMatrix, false);
+  fYAMLConfig.GetProperty({baseName, "QAHists"}, fCreateQAHists, false);
 
   // Response matrix properties
   baseName = "responseMatrix";
@@ -220,6 +227,9 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   // Create histograms
+  if (fCreateQAHists) {
+    SetupQAHists();
+  }
   if (fCreateResponseMatrix) {
     SetupResponseMatrixHists();
   }
@@ -245,14 +255,29 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
 }
 
 /**
+ * Setup and allocate histograms related to QA histograms.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
+{
+  AliEmcalContainer* cont = 0;
+  TIter nextClusColl(&fClusterCollArray);
+  while ((cont = static_cast<AliClusterContainer*>(nextClusColl()))) {
+    // Cluster time vs energy
+    std::string name = "QA/%s/fHistClusterEnergyVsTime";
+    std::string title = name + ";E_{cluster} (GeV);t_{cluster} (s)";
+    fHistManager.CreateTH2(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 1000, 0, 100, 300, -300e-9, 300e-9);
+  }
+
+}
+
+/**
  * Setup and allocate histograms related to creating a response matrix.
  */
 void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
 {
   // Main response matrix THnSparse
-  std::string name = "fHistResponseMatrix";
-  std::string title = "fHistResponseMatrix";
-  //histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
+  std::string name = "response/fHistResponseMatrix";
+  std::string title = name;
 
   // Retrieve binning from the YAML configuration
   std::vector<TAxis *> binning;
@@ -320,17 +345,47 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
     fEmbeddingQA.RecordEmbeddedEventProperties();
   }
 
+  if (fCreateQAHists) {
+    QAHists();
+  }
   if (fCreateResponseMatrix) {
-    CreateResponseMatrix();
+    ResponseMatrix();
   }
 
   return kTRUE;
 }
 
 /**
- * Handle the functionality necessary to create the response matrix.
+ * Process and fill QA hists
  */
-void AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrix()
+void AliAnalysisTaskEmcalJetHPerformance::QAHists()
+{
+  // No additional processing is necessary
+  // Continue on to filling the histograms
+  FillQAHists();
+}
+
+/**
+ * Fill QA histograms.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
+{
+  AliClusterContainer* clusCont = 0;
+  TIter nextClusColl(&fClusterCollArray);
+  AliVCluster * cluster = 0;
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusColl()))) {
+    for (auto clusIter : clusCont->accepted_momentum()) {
+      cluster = clusIter.second;
+      // Intentionally plotting against raw energy
+      fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEnergyVsTime", clusCont->GetName()), cluster->E(), cluster->GetTOF());
+    }
+  }
+}
+
+/**
+ * Process the jets according to defined cuts and fill the response matrix.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
 {
   AliJetContainer * jetsHybrid = GetJetContainer("hybridLevelJets");
   AliJetContainer * jetsDetLevel = GetJetContainer("detLevelJets");
@@ -421,7 +476,7 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
   };
 
   // Fill histograms
-  std::string histName = "fHistResponseMatrix";
+  std::string histName = "response/fHistResponseMatrix";
   std::vector<double> values;
   THnSparse * response = static_cast<THnSparse*>(fHistManager.FindObject(histName.c_str()));
   AliDebugStream(3) << "About to fill response matrix values\n";
@@ -522,6 +577,8 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   while ((jetCont = static_cast<AliJetContainer *>(next()))) {
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
+  tempSS << "QA Hists:\n";
+  tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";
   tempSS << "\tEnabled: " << fCreateResponseMatrix << "\n";
   tempSS << "\tConstruct response from 3 jet collections: " << fResponseFromThreeJetCollections << "\n";
@@ -585,6 +642,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   swap(first.fConfigurationPath, second.fConfigurationPath);
   swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
   //swap(first.fHistManager, second.fHistManager); // Skip here, as there is no copy constructor for THistManager
+  swap(first.fCreateQAHists, second.fCreateQAHists);
   swap(first.fCreateResponseMatrix, second.fCreateResponseMatrix);
   swap(first.fResponseMatrixFillMap, second.fResponseMatrixFillMap);
   swap(first.fResponseFromThreeJetCollections, second.fResponseFromThreeJetCollections);
