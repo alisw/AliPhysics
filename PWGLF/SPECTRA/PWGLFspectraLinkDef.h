@@ -51,6 +51,8 @@
 #pragma link C++ class AliAnalysisTaskKinksFilimon+;
 #pragma link C++ class AliAnalysisKinkESDat13+;
 #pragma link C++ class AliAnalysisKinkESDMC13+;
+#pragma link C++ class AliAnalysisKinkTaskMult13pp+;
+#pragma link C++ class AliAnalysisKinkTaskMult13ppMC+;
 #pragma link C++ class AliAnalysisTaskKinkpp5TeV+;
 #pragma link C++ class AliAnalysisTaskKinkpp5TeVMC+;
 #pragma link C++ class AliAnalysisTaskKinkPbPb+;
