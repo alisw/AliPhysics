@@ -156,7 +156,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = "00000008400000000100000000";
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.ComparedTo("LHC17d1") == 0  || periodNameV0Reader.ComparedTo("LHC17d12")==0   )
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0   )
     cutnumberPhoton         = "00000088400000000100000000";
 
   TString cutnumberEvent      = "00000003";
