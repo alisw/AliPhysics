@@ -59,6 +59,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		// Getters for other analysis tasks
 		// Particle list
 		TClonesArray * GetInputList() const{return fInputList;}
+		TClonesArray * GetInputListALICE() const{return fInputListALICE;}
 		// Getters Event Info, centrality, zvertex, runnumber
 		float GetCentrality() const{return fcent;};
 		double GetZVertex() const{return fZvert;};
@@ -71,7 +72,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		double GetCentralityFromImpactPar(double ip);
 		// Read AOD or KineOnly files
 		void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
-		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent);
+		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
 		void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 		void SetEffConfig( int effMode, int FilterBit );
 		void SetEtaRange( double eta_min, double eta_max ){
@@ -108,6 +109,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		double fZvert; //
 		bool fnoCentBin; // no centrality bin => 1
 		TClonesArray * fInputList;  // tracklist
+		TClonesArray * fInputListALICE;  // tracklist ALICE acceptance +-0.8 eta
 		TDirectory *fOutput;     // output
 		TString fTaskName; //
 		int fDebugLevel; //
@@ -125,9 +127,6 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		double fPt_min; //
 		double fPt_max; //
 		double fzvtxCut; //
-
-		Double_t feta_min; //
-		Double_t feta_max; //
 
 		TString fCentDetName; //
 		UInt_t flags; //

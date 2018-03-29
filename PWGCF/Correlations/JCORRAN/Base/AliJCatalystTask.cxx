@@ -47,6 +47,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fZvert(-999),
 	fnoCentBin(false),
 	fInputList(0),
+	fInputListALICE(0),
 	fOutput(0)
 {
 	fEvtNum=0;
@@ -61,9 +62,6 @@ AliJCatalystTask::AliJCatalystTask():
 	fCentDetName="V0M";
 	flags = 0;
 
-	feta_min=-0.8;
-	feta_max=0.8;
-
 	fzvtxCut = 10;  // default z vertex cut
 	fJCatalystEntry = 0;
 	//  DefineOutput(1, TDirectory::Class());
@@ -77,6 +75,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fZvert(-999),
 	fnoCentBin(false),
 	fInputList(0),
+	fInputListALICE(0),
 	fOutput(0)
 {
 	DefineOutput(1, TDirectory::Class());
@@ -93,9 +92,6 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fCentDetName="V0M";
 	flags = 0;
 
-	feta_min=-0.8;
-	feta_max=0.8;
-
 	fzvtxCut = 10;
 	fJCatalystEntry = 0;
 }
@@ -108,6 +104,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	fZvert(ap.fZvert),
 	fnoCentBin(ap.fnoCentBin),
 	fInputList(ap.fInputList),
+	fInputListALICE(ap.fInputListALICE),
 	fOutput(ap.fOutput)
 {
 	AliInfo("----DEBUG AliJCatalystTask COPY ----");
@@ -127,6 +124,7 @@ AliJCatalystTask& AliJCatalystTask::operator = (const AliJCatalystTask& ap)
 AliJCatalystTask::~AliJCatalystTask()
 {
 	delete fInputList;
+	delete fInputListALICE;
 	delete fOutput;
 }
 
@@ -135,6 +133,8 @@ void AliJCatalystTask::UserCreateOutputObjects()
 {
 	fInputList = new TClonesArray("AliJBaseTrack" , 2500);
 	fInputList->SetOwner(kTRUE);
+	fInputListALICE = new TClonesArray("AliJBaseTrack" , 2500);
+	fInputListALICE->SetOwner(kTRUE);
 
 	OpenFile(1);
 	fOutput = gDirectory;
@@ -150,6 +150,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	// initializing variables from last event
         fJCatalystEntry = fEntry;
 	fInputList->Clear();
+	fInputListALICE->Clear();
 
 	float fImpactParameter = -1.0f;
 	double fvertex[3];
@@ -184,7 +185,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			}
 		}
 		if(fnoCentBin) fcent = 1.0; // forcing no centrality selection
-		ReadKineTracks( mcEvent, fInputList, fcent ) ; // read tracklist
+		ReadKineTracks( mcEvent, fInputList, fInputListALICE, fcent ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -277,7 +278,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - charge
 				}
-				if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
+				if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
 				Int_t label = track->GetLabel();
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel( label );
@@ -309,7 +310,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - particle
 				}
-				if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
+				if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
@@ -494,7 +495,7 @@ void AliJCatalystTask::SetEffConfig( int effMode, int FilterBit)
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
-void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fcent)
+void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
 {
 	Int_t nt = mcEvent->GetNumberOfPrimaries();
 	Int_t ntrack = 0;
@@ -530,13 +531,20 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 				if(fPcharge == -1 && ch > 0)
 					continue; // -1 for - particle
 			}
-			if(track->Eta() < feta_min || track->Eta() > feta_max) continue;
+			if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
 			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 			itrack->SetLabel( label );
 			itrack->SetParticleType(pdg);
 			itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 			itrack->SetCharge(ch) ;
+			if(TMath::Abs(track->Eta()) < 0.8) {
+				AliJBaseTrack *jtrack =  new ((*TrackListALICE)[TrackListALICE->GetEntriesFast()])AliJBaseTrack;
+				jtrack->SetLabel( label );
+				jtrack->SetParticleType(pdg);
+				jtrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
+				jtrack->SetCharge(ch) ;
+			}
 		}
 	}
 }
