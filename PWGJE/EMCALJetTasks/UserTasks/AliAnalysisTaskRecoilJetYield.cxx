@@ -248,7 +248,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
   
   if (!fFullTree){
-    const Int_t nVarMin = 20;
+    const Int_t nVarMin = 22;
     TString *fJetInfoVarNames = new TString [nVarMin];
   
     fJetInfoVarNames[0] = "Pt";
@@ -265,13 +265,14 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[11] = "SLSubJetPt_Truth";
     fJetInfoVarNames[12] = "DelR";
     fJetInfoVarNames[13] = "DelR_Truth";
-    fJetInfoVarNames[14] = "N_Groomed_Branches";
-    fJetInfoVarNames[15] = "N_Groomed_Branches_Truth";
+    fJetInfoVarNames[14] = "N_SplittingsHard";
+    fJetInfoVarNames[15] = "N_SplittingsHard_Truth";
     fJetInfoVarNames[16] = "Groomed_Jet_Pt";
     fJetInfoVarNames[17] = "Groomed_Jet_Pt_Truth";
     fJetInfoVarNames[18] = "Groomed_Mass";
     fJetInfoVarNames[19] = "Groomed_Mass_Truth";
-
+    fJetInfoVarNames[20] = "N_SplittingsAll";
+    fJetInfoVarNames[21] = "N_SplittingsAll_Truth";
   
     
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
@@ -1067,8 +1068,8 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
   else fJetInfoVar[13] = DeltaR;
-  if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
-  else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  //if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  //else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   if(!(fJetShapeSub==kConstSub)){
     if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp()-(GetRhoVal(0)*fJet->Area()));
     else fJetInfoVar[17]=finaljet.perp();
@@ -1112,7 +1113,9 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     jetalgo=fastjet::antikt_algorithm;} 
   
   fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-
+  double ndepth=0;
+  double nhard=0;
+  double nall=0;
   try {
     fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
     std::vector<fastjet::PseudoJet>   fOutputJets;
@@ -1123,12 +1126,14 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     fastjet::PseudoJet j1;
     fastjet::PseudoJet j2;
     jj=fOutputJets[0];
-    double ndepth=0;
+    
     while(jj.has_parents(j1,j2)){
       ndepth=ndepth+1;
+      nall=nall+1;
       if(j1.perp() < j2.perp()) swap(j1,j2);
       double delta_R=j1.delta_R(j2);
       double z=j2.perp()/(j1.perp()+j2.perp());
+      if(z > 0.1) nhard=nhard+1;
       double y =log(1.0/delta_R);
       double lnpt_rel=log(z*delta_R);
       Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
@@ -1139,10 +1144,15 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
 
 
 
-  } catch (fastjet::Error) {
+  }
+  catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }
+  if(!bTruth) fJetInfoVar[14]=nhard;
+  else if(bTruth) fJetInfoVar[15]=nhard;
+  if(!bTruth) fJetInfoVar[20] = nall;
+  else if(bTruth) fJetInfoVar[21] = nall;
 
 
 
