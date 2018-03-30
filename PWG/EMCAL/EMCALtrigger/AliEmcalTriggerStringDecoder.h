@@ -26,16 +26,16 @@
  ************************************************************************************/
 #ifndef __ALIEMCALTRIGGERSTRINGDECODER_H__
 #define __ALIEMCALTRIGGERSTRINGDECODER_H__
-#if !defined(__CINT__)
 #include <string>
 #include <vector>
+#include <TObject.h>
 
 namespace PWG {
 
 namespace EMCAL {
 
 /**
- * @struct Triggerinfo
+ * @class Triggerinfo
  * @brief Decoded structure of a trigger string
  * 
  * A trigger class string consists of 4 characteristic information
@@ -48,11 +48,13 @@ namespace EMCAL {
  * string the struct provides access to the different information
  * within the trigger string.
  */
-struct Triggerinfo {
-  std::string fTriggerClass;              ///< Trigger class
-  std::string fBunchCrossing;             ///< Bunch crossing type
-  std::string fPastFutureProtection;      ///< Type of the past-future protection
-  std::string fTriggerCluster;            ///< Trigger cluster
+class Triggerinfo : public TObject {
+public:
+  Triggerinfo(): TObject(), fTriggerClass(), fBunchCrossing(), fPastFutureProtection(), fTriggerCluster() {}
+  Triggerinfo(const std::string &triggerclass, const std::string &bc, const std::string &pf, const std::string &clust): 
+    TObject(), 
+    fTriggerClass(triggerclass), fBunchCrossing(bc), fPastFutureProtection(pf), fTriggerCluster(clust) {}
+  virtual ~Triggerinfo() {}
 
   /**
    * @brief Reconstruct trigger string from information in the Triggerinfo object
@@ -68,22 +70,33 @@ struct Triggerinfo {
    * @return false Trigger class does not match
    */
   bool IsTriggerClass(const std::string &triggerclass) const;
+
+  const std::string &Triggerclass() const { return fTriggerClass; }
+  const std::string &BunchCrossing() const { return fBunchCrossing; }
+  const std::string &PastFutureProtection() const { return fPastFutureProtection; }
+  const std::string &Triggercluster() const { return fTriggerCluster; }
+
+  /**
+   * @brief Decoding trigger string
+   * 
+   * For easy access of the various components of a trigger string
+   * the trigger string is decoded into Tiggerinfo structs. Each
+   * entry in the struct corresponds to one trigger class present
+   * in the trigger string
+   * 
+   * @param triggerstring Valid trigger class string
+   * @return std::vector<Triggerinfo> Trigger info objects for all trigger classes found in the trigger string
+   */
+  static std::vector<PWG::EMCAL::Triggerinfo> DecodeTriggerString(const std::string &triggerstring);
+private:
+  std::string fTriggerClass;              ///< Trigger class
+  std::string fBunchCrossing;             ///< Bunch crossing type
+  std::string fPastFutureProtection;      ///< Type of the past-future protection
+  std::string fTriggerCluster;            ///< Trigger cluster
+  ClassDef(Triggerinfo, 1);
 };
 
-/**
- * @brief Decoding trigger string
- * 
- * For easy access of the various components of a trigger string
- * the trigger string is decoded into Tiggerinfo structs. Each
- * entry in the struct corresponds to one trigger class present
- * in the trigger string
- * 
- * @param triggerstring Valid trigger class string
- * @return std::vector<Triggerinfo> Trigger info objects for all trigger classes found in the trigger string
- */
-std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring);
 
 }
 }
-#endif
 #endif

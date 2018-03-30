@@ -37,6 +37,7 @@
 #include <TString.h>
 #include "AliAnalysisManager.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTriggerStringDecoder.h"
 #include "AliAnalysisTaskEmcalRecalcPatchesRef.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef);
@@ -61,14 +62,27 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const
 
 void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
   const std::array<std::string, 9> kNamesTriggerClasses = {{"MB", "EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"}};
+  const std::array<std::string, 6> kNamesTriggerClusters = {{"ANY", "CENT", "CENTNOTRD", "BOTH", "ONLYCENT", "ONLYCENTNOTRD"}};
   const std::array<std::string, 4> kNamesPatchTypes = {{"EGA", "DGA", "EJE", "DJE"}};
 
-  TLinearBinning ADCBinning(2000, 0., 2000.), colbinning(48, -0.5, 47.5), rowbinning(104, -0.5, 103.5);
-  const TBinning *firedpatchbinning[3] = {&ADCBinning, &colbinning, &rowbinning};
+  TLinearBinning ADCBinning(2000, 0., 2000.), colbinning(48, -0.5, 47.5), rowbinning(104, -0.5, 103.5), npatchbinning(51, -0.5, 50.5), noverlapbinning(21, -0.5, 20.5);
+  const TBinning *firedpatchbinning[5] = {&ADCBinning, &colbinning, &rowbinning, &npatchbinning, &noverlapbinning},
+                 *allpatchbinning[3] = {&ADCBinning, &npatchbinning, &noverlapbinning};
   // Create event counters
-  for(const auto &kt : kNamesTriggerClasses) fHistos->CreateTH1(Form("hEventCounter%s", kt.data()), Form("Event counter for %s", kt.data()), 1, 0.5, 1.5);
+  for(const auto &kt : kNamesTriggerClasses){
+    // Min. Bias: Only CENT cluster - no distinction between trigger clusters
+    // EMCAL triggers: Distinction between CENT and CENTNOTRD necessary
+    if(kt.find("MB") != std::string::npos)
+      fHistos->CreateTH1(Form("hEventCounter%s", kt.data()), Form("Event counter for %s", kt.data()), 1, 0.5, 1.5);
+    else {
+      for(const auto &kc : kNamesTriggerClusters) {
+        fHistos->CreateTH1(Form("hEventCounter%s%s", kt.data(), kc.data()), Form("Event counter for %s in cluster %s", kt.data(), kc.data()), 1, 0.5, 1.5);
+     }
+    }
+  } 
 
   // Min. Bias: Create patch energy spectra (all patches) for EMCAL and DCAL
+  // Min. Bias trigger only in CENT cluster
   for(const auto &kp : kNamesPatchTypes) fHistos->CreateTH1(Form("hPatchADC%sMB", kp.data()), Form("Patch ADC spectra for %s patches in MB events", kp.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
 
   // Triggers: Create trigger spectra and THnSparse of firing patches
@@ -76,15 +90,25 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
     if(kt == "MB") continue;
     const char detector = kt[0];
     const char *patchtype = ((kt[1] == 'G') ? "GA" : "JE");
-    fHistos->CreateTH1(Form("hPatchADC%c%s%s", detector, patchtype, kt.data()), Form("Patch ADC spectra for %c%s patches in %s events", detector, patchtype, kt.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
-    fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s", detector, patchtype, kt.data()), Form("Fired %c%s patches for trigger %s", detector, patchtype, kt.data()), 3, firedpatchbinning, fEnableSumw2 ? "s" : "");
+    // distinction between trigger clusters
+    for(const auto &kc : kNamesTriggerClusters){
+      fHistos->CreateTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+      fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+      fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+    } 
   }
 }
 
 void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
   const std::array<std::string, 9> kNamesTriggerClasses = {{"MB", "EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"}};
+  const auto selclusters = GetAcceptedTriggerClusters(fInputEvent->GetFiredTriggerClasses().Data());
   for(const auto &kt : kNamesTriggerClasses) {
-    if(std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kt) != fSelectedTriggers.end()) fHistos->FillTH1(Form("hEventCounter%s", kt.data()), 1.);
+    if(std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kt) != fSelectedTriggers.end()) {
+      if(kt == "MB") fHistos->FillTH1(Form("hEventCounter%s", kt.data()), 1.);
+      else {
+        for(const auto &kc : selclusters) fHistos->FillTH1(Form("hEventCounter%s%s", kt.data(), kc.data()), 1.);
+      }
+    }
   }
 }
 
@@ -93,6 +117,9 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   const std::unordered_map<std::string, ETriggerThreshold_t> kPatchIndex = {{"EG1", kThresholdEG1},{"EG2", kThresholdEG2},{"DG1", kThresholdDG1},{"DG2", kThresholdDG2},
                                                                             {"EJ1", kThresholdEJ1},{"EJ2", kThresholdEJ2},{"DJ1", kThresholdDJ1},{"DJ2", kThresholdDJ2}};
   if(!fSelectedTriggers.size()) return false;       // no trigger selected
+
+  // Decode trigger clusters
+  const auto selclusters = GetAcceptedTriggerClusters(fInputEvent->GetFiredTriggerClasses().Data());
 
   auto findTriggerType = [](const std::vector<TString> &triggers, TString type) -> bool {
     bool found = false;
@@ -130,11 +157,19 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
       std::vector<AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
-      for(auto p : patchhandler) fHistos->FillTH1(Form("hPatchADC%c%s%s", detector, patchtype, t.Data()), p->GetADCAmp());
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
+      auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);
+      for(auto p : patchhandler){
+        for(const auto &kc : selclusters) {
+          fHistos->FillTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp());
+          double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
+          fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+        }
+      }
       for(auto p : firedpatches) {
-        double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart())};
-        fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s", detector, patchtype, t.Data()), point);
+        double point[5] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
+        for(const auto &kc : selclusters)
+          fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
       }
     }
   }
@@ -176,6 +211,51 @@ std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::Se
     if(patch->GetADCAmp() > fOnlineThresholds[trigger]) result.emplace_back(patch);
   }
   return result;
+}
+
+std::vector<std::string> AliAnalysisTaskEmcalRecalcPatchesRef::GetAcceptedTriggerClusters(const char *triggerstring) const {
+  auto clusters = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring);
+  std::vector<std::string> selclusters;
+  selclusters.push_back("ANY");
+  bool isCENT(false), isCENTNOTRD(false);
+  for(const auto &c : clusters){
+    if((c.Triggercluster() == "CENT") && !isCENT) { // don't count clusters multiple times
+      selclusters.push_back("CENT");
+      isCENT = true;
+    } else if((c.Triggercluster() == "CENTNOTRD") && !isCENTNOTRD) { // don't count clusters multiple times
+      selclusters.push_back("CENTNOTRD");
+      isCENTNOTRD = true;
+    }
+  }
+  if(isCENT && isCENTNOTRD) selclusters.push_back("BOTH");
+  else {
+    if(isCENT) selclusters.push_back("ONLYCENT");
+    if(isCENTNOTRD) selclusters.push_back("ONLYCENTNOTRD");
+  }
+  return selclusters;
+}
+
+int AliAnalysisTaskEmcalRecalcPatchesRef::GetNumberNonOverlappingPatchAreas(const std::vector<AliEMCALTriggerPatchInfo *> &firedpatches) const {
+  std::vector<AliEMCALTriggerPatchInfo *> patchareas;
+  for(const auto patch : firedpatches) {
+    if(!patchareas.size()) patchareas.push_back(patch); // first patch always considered as new area
+    else {
+      for(const auto refpatch : patchareas) {
+        if(!HasOverlap(refpatch, patch)) patchareas.emplace_back(patch); // New non-overlapping patch found
+      }
+    }
+  }
+  return patchareas.size();
+}
+
+bool AliAnalysisTaskEmcalRecalcPatchesRef::HasOverlap(const AliEMCALTriggerPatchInfo *ref, const AliEMCALTriggerPatchInfo *test) const {
+  int testcolmin = test->GetColStart(), testcolmax = test->GetColStart()+test->GetPatchSize()-1,
+      testrowmin = test->GetRowStart(), testrowmax = test->GetRowStart()+test->GetPatchSize()-1,
+      refcolmin = ref->GetColStart(), refcolmax = ref->GetColStart()+ref->GetPatchSize()-1,
+      refrowmin = ref->GetRowStart(), refrowmax = ref->GetRowStart()+ref->GetPatchSize()-1;
+  if((InRange(testcolmin, refcolmin, refcolmax) && InRange(testrowmin, refrowmin, refrowmax)) ||
+     (InRange(testcolmax, refcolmin, refcolmax) && InRange(testrowmax, refrowmin, refrowmax))) return true;
+  return false;
 }
 
 AliAnalysisTaskEmcalRecalcPatchesRef *AliAnalysisTaskEmcalRecalcPatchesRef::AddTaskEmcalRecalcPatches(const char *suffix) {
