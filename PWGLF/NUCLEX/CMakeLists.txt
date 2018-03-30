@@ -62,6 +62,7 @@ set(SRCS
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
+  Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx

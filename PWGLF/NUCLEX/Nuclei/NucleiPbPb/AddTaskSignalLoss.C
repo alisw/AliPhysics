@@ -1,0 +1,41 @@
+#include "AliAnalysisTaskSignalLoss.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisDataContainer.h"
+#include <Rtypes.h>
+#include <TString.h>
+
+AliAnalysisTaskSignalLoss* AddTaskSignalLoss(TString tskname = "signal_loss",
+TString suffix = ""){
+
+  // Get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskNucleiYield", "No analysis manager found.");
+    return 0x0;
+  }
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskNucleiYield", "This task requires an input event handler");
+    return 0x0;
+  }
+
+  tskname.Append(Form("%s",suffix.Data()));
+
+  AliAnalysisTaskSignalLoss *task = new AliAnalysisTaskSignalLoss(tskname);
+  float cent[14] = {-5.f,0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  task->SetCentBins(13, cent);
+  float cent[14] = {-5.f,0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  task->SetCentBins(13, cent);
+  int pdgcodes[3] = {211,321,2212};
+  task->SetPDGcodes(3,pdgcodes);
+
+  TString output = "AnalysisResults.root";
+  AliAnalysisDataContainer *taskCont = mgr->CreateContainer(tskname.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      output.Data());
+  mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput (task,  1, taskCont);
+  return deu;
+}
