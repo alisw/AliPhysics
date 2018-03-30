@@ -22,7 +22,6 @@ class TObjArray;
 class AliESDEvent;
 class AliESDtrack;
 class AliMCEvent;
-class AliStack;
 class AliHeader;
 class AliESDpid;
 class AliAnalysisFilter;
@@ -397,7 +396,6 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   /////////////////////
   AliESDEvent* fESD;                  //!<! ESD object
   AliMCEvent* fMCEvt;                 //!<! MC event
-  AliStack* fMCStack;                 //!<! Stack
   AliESDtrackCuts* fCutVar[nCutVars]; //!<! basic cut variables cut variations
   AliMultSelection* fMultSel;         //!<! Multiplicity selection
 
@@ -520,7 +518,6 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Double_t fTOFImpactDX;                    ///<  Local difference along z of track's impact on the TOF pad and the extrapolated track from the TPC
   Int_t fTOFchan;                           ///<  Channel Index of the TOF Signal
   Float_t fT0TrkTime;                       ///<  Best start time of the track
-  Float_t fT0TrkTimeSigma;                  ///<  Best start time resolution of the track
   Int_t fT0UsedMask;                        ///<  Mask with the T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
   Float_t fT0TrkSigma;                      ///<  Measured resolution on the T0
   Float_t fTOFExpSigma[kExpSpecies];        ///<  TOF expected Sigma of the track in the hypothesis (0) Electron, (1) Muon, (2) Pion, (3) Kaon, (4) Proton
@@ -771,7 +768,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Copy constructor
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 14); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 15); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
