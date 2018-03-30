@@ -64,7 +64,7 @@
 #include "AliESDTrdTracklet.h"
 #include "AliAODTrdTrack.h"
 #include "AliAODTrdTracklet.h"
-#include "AliEMCALRecoUtils.h"
+#include "AliEMCALRecoUtilsBase.h"
 #include "AliESDUtils.h"
 
 using std::cout;
@@ -2391,7 +2391,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
     const Int_t ntrack = esd->GetNumberOfTracks();
     for (Int_t i=0;i<ntrack;++i) {
       AliESDtrack *t = esd->GetTrack(i);
-      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(t,fEMCalSurfaceDistance);
+      AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(t,fEMCalSurfaceDistance);
     }
   }
  
