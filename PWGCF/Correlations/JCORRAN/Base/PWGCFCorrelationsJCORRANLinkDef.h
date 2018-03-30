@@ -52,6 +52,8 @@
 #pragma link C++ class AliJCIaaTask+;
 #pragma link C++ class AliJIaaAna+;
 #pragma link C++ class AliJFlowBaseTask+;
+#pragma link C++ class AliJFlowHistos+;
 #pragma link C++ class AliJCIaaEPTask+;
+
 
 #endif /* __CINT__ */

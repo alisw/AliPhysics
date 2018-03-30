@@ -22,10 +22,13 @@
 #include <AliLog.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliJCatalystTask.h"
+#include "AliJFlowHistos.h"
+
 
 using namespace std;
 //==============================================================
 class TClonesArray;
+class AliJFlowHistos;
 //class AliJCatalystTask;
 
 class AliJFlowBaseTask : public AliAnalysisTaskSE {
@@ -55,7 +58,8 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
 	  D_TPC_ETAC,
 	  D_V0A,
 	  D_V0C,
-	  D_V0P, //V0+
+	  D_V0P, // V0+
+	  D_VIRT, //FWD virtual
 	  D_COUNT
   };
 
@@ -64,6 +68,8 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
   AliJCatalystTask *fJCatalystTask;  //
   TString           fJCatalystTaskName; // Name for JCatalyst task
   TComplex QvectorsEP[D_COUNT][2]; // 0->2th 1->3rd
+  AliJFlowHistos *fhistos;
+  int fCBin;
   TDirectory     *fOutput; // Output directory
 
   ClassDef(AliJFlowBaseTask, 1); 

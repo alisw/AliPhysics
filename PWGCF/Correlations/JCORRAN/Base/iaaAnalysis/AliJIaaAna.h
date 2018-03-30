@@ -59,6 +59,8 @@ public:
 	double GetPhiS2(double phit, double ep);
 	void SetEPmin(double min) { fEPmin = min;}
 	void SetEPmax(double max) { fEPmax = max;}
+	Bool_t AccecptEPBins(double phis, double min, double max);
+	void SetEnableEP(Bool_t enable) { fenableEP = enable;}
 
 	double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from two phi values
 	particleType  GetParticleType(char const *inchar); // Get particleType from string
@@ -69,6 +71,7 @@ private:
 	double fRunNumber;
 	double fcent;
 	double fZvert;
+	Bool_t fenableEP;
 	double fPsi2;
 	double fEPmin;
 	double fEPmax;
