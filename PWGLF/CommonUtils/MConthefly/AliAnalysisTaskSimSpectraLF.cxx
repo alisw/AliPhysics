@@ -319,9 +319,10 @@ Bool_t AliAnalysisTaskSimSpectraLF::IsMCParticleInKinematicRange(TObject *obj){
 
   if ( vpart->Pt() < fPtMin || vpart->Pt() > fPtMax ) // set pt cut
     isSelected = kFALSE;
+/*  
   if ( TMath::Abs(vpart->Eta()) > fEta ) // set pseudorapidity cut
     isSelected = kFALSE;
-
+*/
   return isSelected;
 }
 
@@ -349,7 +350,7 @@ void AliAnalysisTaskSimSpectraLF::EventSel(TObject* obj){
 
     Int_t pdgcode = TMath::Abs(mcPart->PdgCode());
     
-    if ( TMath::Abs(mcPart->Eta()) > fEta ) continue;
+     /* if ( TMath::Abs(mcPart->Eta()) > fEta ) continue; */ 
 
     if ( event->IsPhysicalPrimary(i) )
     {
@@ -524,14 +525,14 @@ Short_t AliAnalysisTaskSimSpectraLF::GetPidCode(Int_t pdgCode) const  {
     case 3334:
       pidCode = 6; // Omega-
     break;
+    case 3212:
+      pidCode = 7; // Sigma 0
+    break;
     case 333:
-      pidCode = 7; // phi(1020)
+      pidCode = 8; // phi(1020)
     break;
     case 313:
-      pidCode = 8; // K*(892)0
-    break;
-    case 3212:
-      pidCode = 9; // Sigma 0
+      pidCode = 9; // K*(892)0
     break;
     default:
       pidCode = 999;  // something else
