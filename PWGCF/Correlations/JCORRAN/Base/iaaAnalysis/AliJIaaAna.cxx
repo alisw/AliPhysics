@@ -40,6 +40,7 @@ ClassImp(AliJIaaAna)
 AliJIaaAna::AliJIaaAna() :
 	TObject(),
 	fFirstEvent(kTRUE),
+	fenableEP(kFALSE),
 	fRunNumber(-999),
 	fcent(-999),
 	fZvert(-999),
@@ -73,6 +74,7 @@ AliJIaaAna::AliJIaaAna() :
 AliJIaaAna::AliJIaaAna(Bool_t execLocal) :
 	TObject(),
 	fFirstEvent(kTRUE),
+	fenableEP(kFALSE),
 	fRunNumber(-999),
 	fcent(-999),
 	fZvert(-999),
@@ -121,6 +123,7 @@ AliJIaaAna::~AliJIaaAna(){
 AliJIaaAna::AliJIaaAna(const AliJIaaAna& obj) :
 	TObject(),
 	fFirstEvent(obj.fFirstEvent),
+	fenableEP(obj.fenableEP),
 	fRunNumber(obj.fRunNumber),
 	fcent(obj.fcent),
 	fZvert(obj.fZvert),
@@ -412,12 +415,11 @@ void AliJIaaAna::UserExec(){
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		// Correlation w.r.t \psi_2
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		if(fMCTruthRun){ // only MC mode at this moment 
+		if(fenableEP) {
 			double phis = GetPhiS2(triggerTrack->Phi(),fPsi2);
 			phis *= 180./TMath::Pi(); // card in degree 0-360
-			//cout <<"ptt = "<< ptt <<", EP="<< fPsi2 <<", phi="<< triggerTrack->Phi()<<" delta phi= "<< phis << endl;
+			if (!AccecptEPBins( phis, fEPmin, fEPmax)) return;
 			fhistos->fhPhiS[cBin]->Fill(phis);
-			if(phis<fEPmin || phis>fEPmax) continue;
 		}
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		effCorr = 1.0/triggerTrack->GetTrackEff();
@@ -474,4 +476,15 @@ double AliJIaaAna::GetPhiS2(double phit, double ep) {
 		dphi += dphi<0?2:-2;
 	} 
 	return dphi*TMath::Pi(); // 0 -2pi
+}
+
+Bool_t AliJIaaAna::AccecptEPBins(double phis, double min, double max) {
+	// Selecting all slices [min,max],[180-max,180-min],[180+min,180+max],[360-max,360-min]
+	// give min max 0-90 degree intuitive... only works for max<180
+	Bool_t accept = kFALSE;
+	if( phis>min      && phis<max      ) accept = kTRUE; 
+	if( phis>180.-max && phis<180.-min ) accept = kTRUE; 
+	if( phis>180.+min && phis<180.+max ) accept = kTRUE; 
+	if( phis>360.-max && phis<360.-min ) accept = kTRUE; 
+	return accept;
 }

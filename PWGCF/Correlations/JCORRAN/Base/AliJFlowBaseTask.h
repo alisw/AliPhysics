@@ -55,7 +55,8 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
 	  D_TPC_ETAC,
 	  D_V0A,
 	  D_V0C,
-	  D_V0P, //V0+
+	  D_V0P, // V0+
+	  D_VIRT, //FWD virtual
 	  D_COUNT
   };
 

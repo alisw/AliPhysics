@@ -31,9 +31,10 @@ static double decAcc[AliJFlowBaseTask::D_COUNT][2] = {
 	{-0.8,0.8},
 	{-1.5,-0.8},
 	{0.8,1.5},
-	{2.8,5.1},
-	{-3.7,-1.7},
-	{2.19,5.08}
+	{2.8,5.1},   // V0A
+	{-3.7,-1.7}, // V0C
+	{2.8,5.1},   // V0P+ need to do it manually
+	{2.5,5.1} // Virtual dector +-
 };
 
 //______________________________________________________________________________
@@ -150,9 +151,22 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 		double phi = trk->Phi();
 		double eta = trk->Eta();
 		for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-			if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
-				for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
-				NtracksDEC[is]++;
+			if(is == AliJFlowBaseTask::D_VIRT) {
+				if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
+					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
+					NtracksDEC[is]++;
+				}
+			} else if(is == AliJFlowBaseTask::D_V0P) {
+				if((decAcc[AliJFlowBaseTask::D_V0A][0]<eta && decAcc[AliJFlowBaseTask::D_V0A][1]>eta) || 
+				   (decAcc[AliJFlowBaseTask::D_V0C][0]<eta && decAcc[AliJFlowBaseTask::D_V0C][1]>eta) ) {
+					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
+					NtracksDEC[is]++;
+				}
+			} else {
+				if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
+					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
+					NtracksDEC[is]++;
+				}
 			}
 		}
 	}
@@ -163,9 +177,11 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			QvectorsEP[is][iH-2] = QvectorsEP[is][iH-2]/TComplex::Abs(QvectorsEP[is][iH-2]);
 		}
 	}
-	//for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-	//	for(int iH=2;iH<=2;iH++) {		
-	//		cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
-	//	}
-	//}
+/*
+	for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+		for(int iH=2;iH<=2;iH++) {		
+			cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
+		}
+	}
+*/
 }

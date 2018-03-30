@@ -33,6 +33,7 @@ AliJCIaaEPTask::AliJCIaaEPTask() :
 	AliAnalysisTaskSE("AliJCIaaEPTask"),
 	fJFlowBaseTask(NULL),
 	fJFlowBaseTaskName("JFlowBaseTask"),
+	fEPDetID(0),
 	fIaaAna(0x0),
 	fOutput(NULL)
 {
@@ -44,6 +45,7 @@ AliJCIaaEPTask::AliJCIaaEPTask(const char *name, TString inputformat):
 	AliAnalysisTaskSE(name),
 	fJFlowBaseTask(NULL),
 	fJFlowBaseTaskName("JFlowBaseTask"),
+	fEPDetID(0),
 	fIaaAna(0x0),
 	fOutput(NULL)
 {
@@ -123,7 +125,7 @@ void AliJCIaaEPTask::UserExec(Option_t* /*option*/)
 	// need to put cent/vtx/run#
 	TComplex Qvector;
 	int iH = 2;
-	Qvector = fJFlowBaseTask->GetQvectorsEP(AliJFlowBaseTask::D_V0C, iH);
+	Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
 	float EP2 = Qvector.Theta()/double(iH);
 	fIaaAna->SetRunNumber(fJFlowBaseTask->GetJCatalystTask()->GetRunNumber());
 	fIaaAna->SetCentrality(fJFlowBaseTask->GetJCatalystTask()->GetCentrality());

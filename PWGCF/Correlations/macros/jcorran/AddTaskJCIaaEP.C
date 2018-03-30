@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJCIaaEP(TString taskName, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
+AliAnalysisTask *AddTaskJCIaaEP(TString taskName, Bool_t enableEP, int EPdetID, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
@@ -10,6 +10,7 @@ AliAnalysisTask *AddTaskJCIaaEP(TString taskName, TString cardName, TString jtri
 	AliJCIaaEPTask *myTask = new AliJCIaaEPTask(taskName.Data(),"JOD");
 	myTask->SetDebugLevel(5);
   	myTask->SetJFlowBaseTaskName("JFlowBaseTask");  // AliJCatalystTask has this name hard coded
+	myTask->SetEPDector( EPdetID );
 	cout << myTask->GetName() << endl;
 
 
@@ -28,6 +29,7 @@ AliAnalysisTask *AddTaskJCIaaEP(TString taskName, TString cardName, TString jtri
 	fAna->SetCard( card );
 	fAna->SetTrigger( jtrigg.Data() );
 	fAna->SetAssoc( jassoc.Data() );
+	fAna->SetEnableEP( enableEP );
 	if( inclusFileName ) fAna->SetInclusiveFile(inclusFileName.Data());
 
 	myTask->SetAnalysis( fAna );

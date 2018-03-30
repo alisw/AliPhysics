@@ -36,6 +36,7 @@ class AliJCIaaEPTask : public AliAnalysisTaskSE {
 
   // Methods specific for this class
   void SetJFlowBaseTaskName(TString name){ fJFlowBaseTaskName=name; } // Setter for filter task name
+  void SetEPDector(int i) { fEPDetID = i;}
   void SetAnalysis(AliJIaaAna *ana){ fIaaAna=ana; } // Setter for analysis
   void SetEPmin(double min) { fEPmin = min;}
   void SetEPmax(double max) { fEPmax = max;}
@@ -45,6 +46,7 @@ class AliJCIaaEPTask : public AliAnalysisTaskSE {
 
   AliJFlowBaseTask *fJFlowBaseTask;  // 
   TString           fJFlowBaseTaskName; // Name for JCatalyst task
+  int fEPDetID; 
   double fEPmin;
   double fEPmax;
   AliJIaaAna *fIaaAna; // Analysis for the data

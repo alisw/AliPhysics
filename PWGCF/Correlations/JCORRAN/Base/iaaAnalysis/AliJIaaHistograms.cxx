@@ -222,8 +222,8 @@ void AliJIaaHistograms::CreateEventTrackHistos(){
 		<< TH1D( "fhEP", "",  240, -kJPi, kJPi)
 		<<  fCentBin << "END";
 	fhPhiS
-		<< TH1D( "fhPhiS", "",  240, 0., 2*kJPi)
-		<<  fCentBin << fPTtBin << "END";
+		<< TH1D( "fhPhiS", "",  1200, -1., 360.1)
+		<<  fCentBin << fPTtBin << "END"; // in degree 0-360
 	fhChargedPt
 		<< TH1D("hChargedPt","", nBINS, logBinsX )
 		<< fCentBin << "END";
