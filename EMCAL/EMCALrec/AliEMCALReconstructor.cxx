@@ -39,7 +39,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
-#include "AliEMCALRecoUtils.h"
+#include "AliEMCALRecoUtilsBase.h"
 #include "AliRawReader.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -940,7 +940,7 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   if(!trkParam) return kFALSE;
   
   AliExternalTrackParam trkParamTmp (*trkParam);
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi))
+  if(!AliEMCALRecoUtilsBase::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi))
   {
     if(ITSTrackSA) delete trkParam;
     return kFALSE;
