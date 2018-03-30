@@ -143,6 +143,9 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH2D                   *fHAvgerageQnV0A;   //!   V0A Average <Qn>, n=2,3
   TH2D                   *fHAvgerageQnV0C;   //!   V0C Average <Qn>, n=2,3
 
+  TH1D                *fHCentWeightForRun;   //!   Event weights for non-flat centrality 
+
+
   TProfile              *fV0AQ2xVsCentRun; //!
   TProfile              *fV0AQ2yVsCentRun; //!
   TProfile              *fV0CQ2xVsCentRun; //!
