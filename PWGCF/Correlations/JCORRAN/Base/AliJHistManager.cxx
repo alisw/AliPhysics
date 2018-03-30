@@ -746,6 +746,7 @@ AliJTH1 * AliJHistManager::GetTH1(TString s ){
         if( fHistNames[i] == s ){
             if( fHistConfigs[i].BeginsWith("AliJTH1D")) return new AliJTH1D( fHistConfigs[i], this );
             if( fHistConfigs[i].BeginsWith("AliJTH2D")) return new AliJTH2D( fHistConfigs[i], this );
+            if( fHistConfigs[i].BeginsWith("AliJTH3D")) return new AliJTH3D( fHistConfigs[i], this );
             if( fHistConfigs[i].BeginsWith("AliJTProfile")) return new AliJTProfile( fHistConfigs[i], this );
         }
     return NULL;
@@ -861,6 +862,7 @@ TString Join( vector<TString>& ss , TString del){
 
 template class AliJTH1Derived<TH1D>;
 template class AliJTH1Derived<TH2D>;
+template class AliJTH1Derived<TH3D>;
 template class AliJTH1Derived<TProfile>;
 
 bool OutOf( int i, int x, int y ){ return ( i<x || i>y ); }
