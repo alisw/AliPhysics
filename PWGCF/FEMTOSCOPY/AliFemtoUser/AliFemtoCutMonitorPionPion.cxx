@@ -431,14 +431,16 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
     fMC_mass->Fill(mc->GetMass());
     fMC_pt->Fill(pt, mc->GetTrueMomentum()->Perp());
 
-    const auto type_location = std::find(codes.begin(), codes.end(), mc->GetPDGPid());
+    auto pdg_code = mc->GetPDGPid(),
+         pdg_code_parent = mc->GetMotherPdgCode();
+
+    const auto type_location = std::find(codes.begin(), codes.end(), pdg_code);
     const Int_t type_bin = type_location == codes.end()
                          ? 0
                          : std::distance(codes.begin(), type_location);
     fMC_type->Fill(type_bin);
 
-
-    auto parent_location = std::find(parent_codes.begin(), parent_codes.end(), mc->GetMotherPdgCode());
+    auto parent_location = std::find(parent_codes.begin(), parent_codes.end(), pdg_code_parent);
     const Int_t parent_type_bin = parent_location == parent_codes.end()
                                 ? 0
                                 : std::distance(parent_codes.begin(), parent_location);
@@ -450,7 +452,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
     #ifndef MC_PARENT_IS_THSPARSE
     fMC_parent->Fill(type_bin, parent_type_bin);
     #else
-    Double_t value[] = {static_cast<double>(type_bin), static_cast<double>(parent_type_bin)};
+    Double_t value[] = {static_cast<double>(pdg_code), static_cast<double>(pdg_code_parent)};
     fMC_parent->Fill(value);
     #endif
 
