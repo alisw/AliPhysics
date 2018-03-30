@@ -102,9 +102,9 @@ Int_t AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndex(const TStrin
   // decode trigger string in order to determine the trigger clusters
   int clusterindex = -1;
   std::vector<std::string> clusternames;
-  auto triggerinfos = PWG::EMCAL::DecodeTriggerString(triggerstring.Data());
+  auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
   for(auto t : triggerinfos) {
-    if(std::find(clusternames.begin(), clusternames.end(), t.fTriggerCluster) == clusternames.end()) clusternames.emplace_back(t.fTriggerCluster);
+    if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
   }
   bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
        isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),

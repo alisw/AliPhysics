@@ -27,6 +27,8 @@
 #include <sstream>
 #include "AliEmcalTriggerStringDecoder.h"
 
+ClassImp(PWG::EMCAL::Triggerinfo);
+
 using namespace PWG::EMCAL;
 
 std::string Triggerinfo::ExpandClassName() const {
@@ -38,7 +40,7 @@ bool Triggerinfo::IsTriggerClass(const std::string &triggerclass) const {
   return fTriggerClass.substr(1) == triggerclass; // remove C from trigger class part
 }
 
-std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) {
+std::vector<Triggerinfo> Triggerinfo::DecodeTriggerString(const std::string &triggerstring) {
   std::vector<Triggerinfo> result;
   std::stringstream triggerparser(triggerstring);
   std::string currenttrigger;
@@ -48,7 +50,7 @@ std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) {
     std::stringstream triggerdecoder(currenttrigger);
     std::string token;
     while(std::getline(triggerdecoder, token, '-')) tokens.emplace_back(token);
-    result.emplace_back(Triggerinfo({tokens[0], tokens[1], tokens[2], tokens[3]}));
+    result.emplace_back(Triggerinfo{tokens[0], tokens[1], tokens[2], tokens[3]});
   }
   return result;
 }

@@ -214,15 +214,15 @@ std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::Se
 }
 
 std::vector<std::string> AliAnalysisTaskEmcalRecalcPatchesRef::GetAcceptedTriggerClusters(const char *triggerstring) const {
-  auto clusters = PWG::EMCAL::DecodeTriggerString(triggerstring);
+  auto clusters = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring);
   std::vector<std::string> selclusters;
   selclusters.push_back("ANY");
   bool isCENT(false), isCENTNOTRD(false);
   for(const auto &c : clusters){
-    if(c.fTriggerCluster == "CENT") {
+    if((c.Triggercluster() == "CENT") && !isCENT) { // don't count clusters multiple times
       selclusters.push_back("CENT");
       isCENT = true;
-    } else if(c.fTriggerCluster == "CENTNOTRD") {
+    } else if((c.Triggercluster() == "CENTNOTRD") && !isCENTNOTRD) { // don't count clusters multiple times
       selclusters.push_back("CENTNOTRD");
       isCENTNOTRD = true;
     }
