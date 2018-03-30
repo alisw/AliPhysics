@@ -622,7 +622,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=jet3->Phi();
+        massMatch=jet2->Pt();
 	//GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
