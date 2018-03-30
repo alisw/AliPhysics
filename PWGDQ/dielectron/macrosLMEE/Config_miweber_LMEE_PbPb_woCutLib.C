@@ -801,9 +801,9 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 1e30);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 161.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
   AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
@@ -845,7 +845,7 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
 
   trackCuts->AddCut(trackCutsDiel);
   trackCuts->AddCut(trackCutsAOD);
-//  trackCuts->AddCut(SharedClusterCut);
+  trackCuts->AddCut(SharedClusterCut);
   
   cuts->AddCut(PIDcut_3);
   die->GetTrackFilter().AddCuts(PIDcut_3);
