@@ -13,6 +13,8 @@ class TH2F;
 class TH2I;
 class AliFemtoEvent;
 
+#include <THnSparse.h>
+
 #include "AliFemtoCutMonitor.h"
 #include "AliFemtoCutMonitorHandler.h"
 #include "AliFemtoAnalysisPionLambda.h"
@@ -114,7 +116,9 @@ namespace AliFemtoCutMonitorPionPion {
     TH1F *fMC_mass;
     TH2F *fMC_pt;
     TH1I *fMC_type;
-    TH2I *fMC_parent;
+    // TH2I *fMC_parent;
+    THnSparseI *fMC_parent;
+    #define MC_PARENT_IS_THSPARSE
   };
 
   /// \class AliFemtoCutMonitorPionPion::Pair
