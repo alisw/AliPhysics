@@ -725,9 +725,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"#pi+-");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(20 ,"p, n");
       outputContainer->Add(fhPrimPi0PtOrigin) ;
       
       fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -2840,7 +2841,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           fhPrimPi0ProdVertex->Fill(mesonPt, momR  , GetEventWeight()*weightPt);
           fhPrimPi0PtStatus  ->Fill(mesonPt, status, GetEventWeight()*weightPt);
 
-	  if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321)
+	  if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321 && mompdg!=211)
 	     || mompdg==3212 || mompdg==3222 || mompdg==3112 || mompdg==3322 || mompdg==3212) {
 	    //310 - K0S
 	    //130 - K0L
@@ -2863,11 +2864,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
 	  else if(mompdg==3122) {
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 13.5, GetEventWeight()*weightPt);//lambda 
 	  }
+	  else if(mompdg==211) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//pi+-
+	  }
 	  else if(momRcorr>0.1) {//in cm
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 15.5, GetEventWeight()*weightPt);//radius too large
-	  }
-	  else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
-	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//p,n,pi
 	  }
 	  else if(mompdg==11) {
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 17.5, GetEventWeight()*weightPt);//e+-
@@ -2875,6 +2876,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
 	  else if(mompdg==13) {
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 18.5, GetEventWeight()*weightPt);//mu+-
 	  }
+	  else if(mompdg==2212 || mompdg==2112) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 19.5, GetEventWeight()*weightPt);//p,n
+	  }
+	  
           else if(momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);//parton
           else if(mompdg     < 22  && mompdg!=11 && mompdg!=13) fhPrimPi0PtOrigin->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);//quark
           else if(mompdg     > 2100  && mompdg < 2210)
