@@ -42,6 +42,8 @@ AliJFlowBaseTask::AliJFlowBaseTask() :
 	AliAnalysisTaskSE("JFlowBaseTask"),
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
+	fhistos(NULL),
+	fCBin(-1),
 	fOutput(NULL)
 {
 }
@@ -51,6 +53,8 @@ AliJFlowBaseTask::AliJFlowBaseTask(const char *name, TString inputformat):
 	AliAnalysisTaskSE(name), 
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
+	fhistos(NULL),
+	fCBin(-1),
 	fOutput(NULL)
 {
 	// Constructor
@@ -63,6 +67,8 @@ AliJFlowBaseTask::AliJFlowBaseTask(const AliJFlowBaseTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()), 
 	fJCatalystTask(ap.fJCatalystTask),
 	fJCatalystTaskName(ap.fJCatalystTaskName),
+	fhistos(ap.fhistos),
+	fCBin(ap.fCBin),
 	fOutput( ap.fOutput )
 { 
 
@@ -86,6 +92,7 @@ AliJFlowBaseTask::~AliJFlowBaseTask()
 {
 	// destructor 
 	delete fOutput;
+	delete fhistos;
 
 }
 
@@ -104,6 +111,12 @@ void AliJFlowBaseTask::UserCreateOutputObjects()
 	fOutput = gDirectory;
 	fOutput->cd();
 
+	fhistos = new AliJFlowHistos();
+	fhistos->CreateEventTrackHistos();
+
+	fhistos->fHMG->Print();
+
+
 	PostData(1, fOutput);
 
 }
@@ -116,6 +129,9 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 	if(fDebug > 5) cout << "------- AliJFlowBaseTask Exec-------"<<endl;
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
+	fCBin = AliJFlowHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+	if(fCBin == -1)
+		return;
 	TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 	CalculateEventPlane(fInputList);
 	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
@@ -145,7 +161,6 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 		NtracksDEC[is] = 0;
 		for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] = TComplex(0,0); }
 	}
-
 	for(int itrack=0;itrack<noTracks; itrack++){
 		AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(itrack);
 		double phi = trk->Phi();
@@ -155,17 +170,23 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 				if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
+					fhistos->fh_eta[fCBin][is]->Fill(eta);
+			        fhistos->fh_eta[fCBin][is]->Fill(phi);
 				}
 			} else if(is == AliJFlowBaseTask::D_V0P) {
 				if((decAcc[AliJFlowBaseTask::D_V0A][0]<eta && decAcc[AliJFlowBaseTask::D_V0A][1]>eta) || 
 				   (decAcc[AliJFlowBaseTask::D_V0C][0]<eta && decAcc[AliJFlowBaseTask::D_V0C][1]>eta) ) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
+					fhistos->fh_eta[fCBin][is]->Fill(eta);
+			        fhistos->fh_eta[fCBin][is]->Fill(phi);
 				}
 			} else {
 				if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
+					fhistos->fh_eta[fCBin][is]->Fill(eta);
+			        fhistos->fh_eta[fCBin][is]->Fill(phi);
 				}
 			}
 		}
@@ -175,6 +196,7 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 		for(int iH=2;iH<=3;iH++) {		
 			QvectorsEP[is][iH-2] /= (double)NtracksDEC[is];
 			QvectorsEP[is][iH-2] = QvectorsEP[is][iH-2]/TComplex::Abs(QvectorsEP[is][iH-2]);
+			fhistos->fh_EP[fCBin][is][iH-2]->Fill(QvectorsEP[is][iH-2].Theta()/double(iH));
 		}
 	}
 /*

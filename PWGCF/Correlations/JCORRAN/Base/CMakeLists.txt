@@ -81,6 +81,7 @@ set(SRCS
   iaaAnalysis/AliJCIaaTask.cxx
   iaaAnalysis/AliJIaaAna.cxx
   AliJFlowBaseTask.cxx
+  AliJFlowHistos.cxx
   iaaAnalysis/AliJCIaaEPTask.cxx
   )
 
