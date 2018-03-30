@@ -92,6 +92,9 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         TH1F                *fClsEta;         //! cluster eta
         TH1F                *fClsEamDCal;    //! cluster energy after matching to DCal
         TH1F                *fClsEamEMCal;   //! cluster energy after matching to EMCal
+        TH1F                *fClsEAll;   //! cluster energy of all track-matched clusters
+        TH1F                *fClsEamElecEMC;   //! cluster energy of e- after matching to EMCal
+        TH1F                *fClsEamElecDC;   //! cluster energy of e- after matching to EMCal
         TH1F                *fTrkPhi;        //! track phi after track matching
         TH1F                *fTrkEta;        //! track eta after track matching
         TH1F                *fdEdx;          //! track dEdx
