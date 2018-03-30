@@ -64,6 +64,9 @@ fClsPhi(0),
 fClsEta(0),
 fClsEamDCal(0),
 fClsEamEMCal(0),
+fClsEAll(0),
+fClsEamElecEMC(0),
+fClsEamElecDC(0),
 fTrkPhi(0),
 fTrkEta(0),
 fdEdx(0),
@@ -182,6 +185,9 @@ AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty(const char *name) :
     fClsEta(0),
     fClsEamDCal(0),
     fClsEamEMCal(0),
+fClsEAll(0),
+fClsEamElecEMC(0),
+fClsEamElecDC(0),
     fTrkPhi(0),
     fTrkEta(0),
     fdEdx(0),
@@ -331,6 +337,13 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
 
     fClsEamEMCal = new TH1F("fClsEamEMCal","Cluster Energy after track matching to EMCal;Cluster E;Counts",250,0.,50.);
     fOutputList->Add(fClsEamEMCal);
+    
+    fClsEAll = new TH1F("fClsEAll","Cluster Energy, All Clusters;Cluster E;Counts",250,0.,50);
+    fOutputList->Add(fClsEAll);
+    fClsEamElecEMC = new TH1F("fClsEamElecEMC","Cluster Energy of e- after track matching to DCal;Cluster E;Counts",250,0.,50);
+    fOutputList->Add(fClsEamElecEMC);
+    fClsEamElecDC = new TH1F("fClsEamElecDC","Cluster Energy of e- after track matching to DCal;Cluster E;Counts",250,0.,50);
+    fOutputList->Add(fClsEamElecDC);
     
     fTrkPhi = new TH1F("fTrkPhi","Track #phi Distribution after matching;#phi;Counts",100,0,6.3);
     fOutputList->Add(fTrkPhi);
@@ -838,6 +851,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             
+            fClsEAll->Fill(clustMatch->E()); //E of all clusters
+            
             if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
             
             /////////////////////////////////
@@ -1139,6 +1154,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             
             if((EovP<0.9) || (EovP>1.2)) continue;
             
+            if(fClsTypeDCAL) fClsEamElecDC->Fill(clustMatch->E());
+            if(fClsTypeEMC) fClsEamElecEMC->Fill(clustMatch->E());
             
             /////////////////////////
             // Plot Reco Electrons //
