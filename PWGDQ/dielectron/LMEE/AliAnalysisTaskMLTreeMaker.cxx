@@ -818,7 +818,7 @@ AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDie
 
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
   // TOF
-  // pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-4.,4.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
+  // pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-4.,4.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);   //tighter TOF if cut applied below
   // TPC
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
@@ -836,9 +836,9 @@ PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100.
 trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
 trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
 
@@ -882,7 +882,7 @@ cuts->AddCut(pidCuts);
 cuts->AddCut(PIDcut_3);
 cuts->AddCut(trackCutsDiel);
 cuts->AddCut(trackCutsAOD);
-//cuts->AddCut(SharedClusterCut);
+cuts->AddCut(SharedClusterCut);
 
 cuts->Print();
 
