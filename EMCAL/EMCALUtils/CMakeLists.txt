@@ -38,6 +38,7 @@ set(SRCS
     AliEMCALGeoParams.cxx
     AliEMCALPIDUtils.cxx
     AliEMCALRecoUtils.cxx
+    AliEMCALRecoUtilsBase.cxx
     AliEMCALShishKebabTrd1Module.cxx
     AliEMCALTrack.cxx
    )
