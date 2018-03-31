@@ -19,6 +19,7 @@
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoKKTrackCut.h"
+#include "AliFemtoKKTrackCutFull.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
 #include "AliFemtoCutMonitorParticleVertPos.h"
