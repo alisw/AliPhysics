@@ -298,10 +298,20 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     SetPairCut(BuildPairCut(cut_params));
   }
 
+  auto eventcut_cls = TClass::GetClass(typeid(*fEventCut));
+  TString eventcut_classname(eventcut_cls->GetName());
+
+  auto trackcut_cls = TClass::GetClass(typeid(*fFirstParticleCut));
+  TString trackcut_classname(trackcut_cls->GetName());
+
+  auto paircut_cls = TClass::GetClass(typeid(*fPairCut));
+  TString paircut_classname(paircut_cls->GetName());
+
   fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
-    type: 'AliFemtoAnalysisPionPion',
+    class: 'AliFemtoAnalysisPionPion',
     is_mc: %d,
     event: {
+      class: '%s',
       multiplicity: %d:%d,
       centrality: %f:%f,
       zVertex: %f:%f,
@@ -310,6 +320,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       accept_only_physics: %s,
     },
     track: {
+      class: '%s',
       pt: %f:%f,
       eta: %f:%f,
       DCA: %f:%f,
@@ -330,6 +341,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     },
   })#",
     fMCAnalysis,
+    eventcut_classname.Data(),
     cut_params.event_MultMin, cut_params.event_MultMax,
     cut_params.event_CentralityMin, cut_params.event_CentralityMax,
     cut_params.event_VertexZMin, cut_params.event_VertexZMax,
@@ -337,6 +349,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     (cut_params.event_AcceptBadVertex ? "true" : "false"),
     (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
 
+    trackcut_classname.Data(),
     cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
     cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
     cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
@@ -346,6 +359,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     (cut_params.pion_1_remove_kinks ? "true" : "false"),
     (cut_params.pion_1_set_label ? "true" : "false"),
 
+    paircut_classname.Data(),
     cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
     cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
     cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
