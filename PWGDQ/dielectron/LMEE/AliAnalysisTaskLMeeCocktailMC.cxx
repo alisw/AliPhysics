@@ -149,6 +149,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
+	fpPbDataSetName(0),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -262,6 +263,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
+	fpPbDataSetName(0),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -375,6 +377,9 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   if(fResolType == 2) {
    if(fcollisionSystem==200){ //pp 13TeV
     fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+	 }else if(fcollisionSystem == 300){
+    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fpPbDataSetName;
+	 }
     fFile = TFile::Open(fFileName.Data());
     if(!fFile->IsOpen()){
      AliError(Form("Could not open file %s",fFileName.Data() ));
@@ -391,7 +396,6 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
     fArrResoEta=ArrResoEta;
     fArrResoPhi_Pos=ArrResoPhi_Pos;
     fArrResoPhi_Neg=ArrResoPhi_Neg;
-   } 
   } 
 
   // Define the output tree
