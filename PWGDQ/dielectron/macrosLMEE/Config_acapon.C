@@ -15,7 +15,7 @@ TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
-Bool_t isQAtask =  kFALSE;
+Bool_t isQAtask =  kTRUE;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
