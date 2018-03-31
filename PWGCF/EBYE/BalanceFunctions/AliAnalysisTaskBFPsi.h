@@ -17,7 +17,7 @@ class AliBalancePsi;
 class AliESDtrackCuts;
 class AliEventPoolManager;
 class AliAnalysisUtils;
-
+class AliPID;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliBalancePsi.h"
@@ -234,8 +234,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   void SetUseNSigmaPID(Double_t gMaxNSigma) {
     fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-    fPIDNSigma = gMaxNSigma; }
-
+    fPIDNSigma = gMaxNSigma;} //not used at the moment. Values are hardcoded in the .cxx for the different species
+  
+  void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
+  
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
   void SetEventClass(TString receivedEventClass){
@@ -267,8 +269,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
-    void SetParticleOfInterest(kParticleOfInterest poi);
-
+    void SetParticleOfInterest(AliPID::EParticleType poi);
+    
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -417,7 +419,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  kParticleOfInterest  fParticleOfInterest;//analyzed particle
+  AliPID::EParticleType fParticleOfInterest;//analyzed particle
   kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
   Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
 
@@ -433,6 +435,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
   Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
+
+  Double_t fPIDMomCut; // pT value from which we switche from TPC only to TPC TOD PID (both nsigma and Bayes) 
+  
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
@@ -530,7 +535,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 13); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 14); // example of analysis
 };
 
 
