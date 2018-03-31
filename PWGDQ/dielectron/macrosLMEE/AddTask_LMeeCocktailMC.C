@@ -46,7 +46,7 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetResolType(ResolType);
   task->SetALTweight(ALTweightType);
 	if(pPbDataSetName != ""){
-		task->SetpPbResFileName(pPbDataSetName);
+		task->SetpPbResFileName(resFileName);
 	}
   
   //connect containers
