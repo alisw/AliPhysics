@@ -61,7 +61,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 	std::cout << "task created: " << task->GetName() << std::endl;
 
 	if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
-	 (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/i/acapon/ResolutionFiles/%s .",resolutionfile.Data()))) ){
+	 (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/ResolutionFiles/%s .",resolutionfile.Data()))) ){
 		TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
 	  	task->SetResolutionP ((TObjArray*) fRes->Get("DeltaPResArr"),kFALSE);
 	  	if(bUseEtaResolution){
