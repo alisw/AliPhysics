@@ -105,8 +105,8 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Float_t ncrossedrows;
   Float_t crossedrowsclustercut;
 
-  Float_t fCent;
-  Float_t fNSpdTracklets;
+  Float_t fCentV0M;
+  Float_t fCentCL1;
   Double_t fVtxZ;
   Int_t fRunNumber;
   TClonesArray *fAcceptV0;
@@ -126,7 +126,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,3);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,4);
 };
 
 //_____________________________________________________________________________

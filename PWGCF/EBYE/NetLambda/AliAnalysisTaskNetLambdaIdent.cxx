@@ -101,8 +101,8 @@ AliAnalysisTaskSE(name),
     minradius(5.),
     ncrossedrows(70),
     crossedrowsclustercut(0.8),
-    fCent(-1),
-    fNSpdTracklets(-1),
+    fCentV0M(-1),
+    fCentCL1(-1),
     fVtxZ(-20),
     fRunNumber(-1),
     fAcceptV0(0x0),
@@ -231,8 +231,8 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   OpenFile(2);
   fTree = new TTree("events","events");
   owd->cd();
-  fTree->Branch("fCent",&fCent);
-  fTree->Branch("fNSpdTracklets",&fNSpdTracklets);
+  fTree->Branch("fCentV0M",&fCentV0M);
+  fTree->Branch("fCentCL1",&fCentCL1);
   fTree->Branch("fVtxZ",&fVtxZ);
   fTree->Branch("fRunNumber",&fRunNumber);
   fTree->Branch("fAcceptV0",&fAcceptV0);
@@ -336,9 +336,9 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   hEventStatistics->Fill("vz cut",1);
   fVtxZ = fVtx[2];
 
-  fCent = MultSelection->GetMultiplicityPercentile("V0M");
-  if(fCent > centcut) return;
-  fNSpdTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue();
+  fCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
+  fCentV0M = MultSelection->GetMultiplicityPercentile("V0M");
+  if(fCentV0M > centcut && fCentCL1 > centcut) return;
   hEventStatistics->Fill("centrality selection",1);
 
   /*Printf("require track vertex = %i",fEventCuts.fRequireTrackVertex);
@@ -458,22 +458,22 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      AliLightGenV0* tempGenCascade = 0x0;
 	      if(pid == -3312) // xi+
 		{
-		  hXiPlus->Fill(pt,eta,fCent);
+		  hXiPlus->Fill(pt,eta,fCentV0M);
 		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,1);
 		}
 	      else if(pid == 3312) // xi-
 		{
-		  hXiMinus->Fill(pt,eta,fCent);
+		  hXiMinus->Fill(pt,eta,fCentV0M);
 		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,-1);
 		}
 	      else if(pid == 3322) // xi0
 		{
-		  hXiZero->Fill(pt,eta,fCent);
+		  hXiZero->Fill(pt,eta,fCentV0M);
 		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,-2);
 		}
 	      else if(pid == -3322) // anti-xi0
 		{
-		  hXiZeroAnti->Fill(pt,eta,fCent);
+		  hXiZeroAnti->Fill(pt,eta,fCentV0M);
 		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,2);
 		}
 
