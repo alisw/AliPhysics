@@ -61,6 +61,7 @@ public:
 	void SetEPmax(double max) { fEPmax = max;}
 	Bool_t AccecptEPBins(double phis, double min, double max);
 	void SetEnableEP(Bool_t enable) { fenableEP = enable;}
+	void RunCorrelations(TClonesArray *triggList, TClonesArray *assoList, int noAllTriggTracks, int cbin, int zbin); 
 
 	double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from two phi values
 	particleType  GetParticleType(char const *inchar); // Get particleType from string
