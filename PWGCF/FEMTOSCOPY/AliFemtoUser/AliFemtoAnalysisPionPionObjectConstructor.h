@@ -129,6 +129,7 @@ struct Configuration<AliFemtoEventReaderAOD> : AbstractConfiguration<AliFemtoEve
     Configure(*rdr);
     return rdr;
   }
+
 };
 #endif
 

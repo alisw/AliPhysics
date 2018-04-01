@@ -332,6 +332,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       set_label: %s,
     },
     pair: {
+      class: '%s',
       max_share_quality: %f,
       max_share_fraction: %f,
       delta_eta_min: %f,
