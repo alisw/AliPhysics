@@ -171,22 +171,25 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
 					fhistos->fh_eta[fCBin][is]->Fill(eta);
-			        fhistos->fh_eta[fCBin][is]->Fill(phi);
+					fhistos->fh_phi[fCBin][is]->Fill(phi);
+					fhistos->fh_pt[fCBin][is]->Fill(trk->Pt());
 				}
 			} else if(is == AliJFlowBaseTask::D_V0P) {
 				if((decAcc[AliJFlowBaseTask::D_V0A][0]<eta && decAcc[AliJFlowBaseTask::D_V0A][1]>eta) || 
-				   (decAcc[AliJFlowBaseTask::D_V0C][0]<eta && decAcc[AliJFlowBaseTask::D_V0C][1]>eta) ) {
+						(decAcc[AliJFlowBaseTask::D_V0C][0]<eta && decAcc[AliJFlowBaseTask::D_V0C][1]>eta) ) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
 					fhistos->fh_eta[fCBin][is]->Fill(eta);
-			        fhistos->fh_eta[fCBin][is]->Fill(phi);
+					fhistos->fh_phi[fCBin][is]->Fill(phi);
+					fhistos->fh_pt[fCBin][is]->Fill(trk->Pt());
 				}
 			} else {
 				if(decAcc[is][0]<eta && decAcc[is][1]>eta) {
 					for(int iH=2;iH<=3;iH++) { QvectorsEP[is][iH-2] += TComplex(TMath::Cos(iH*phi),TMath::Sin(iH*phi));}
 					NtracksDEC[is]++;
 					fhistos->fh_eta[fCBin][is]->Fill(eta);
-			        fhistos->fh_eta[fCBin][is]->Fill(phi);
+					fhistos->fh_phi[fCBin][is]->Fill(phi);
+					fhistos->fh_pt[fCBin][is]->Fill(trk->Pt());
 				}
 			}
 		}
@@ -199,11 +202,11 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			fhistos->fh_EP[fCBin][is][iH-2]->Fill(QvectorsEP[is][iH-2].Theta()/double(iH));
 		}
 	}
-/*
-	for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-		for(int iH=2;iH<=2;iH++) {		
-			cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
-		}
-	}
-*/
+	/*
+	   for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+	   for(int iH=2;iH<=2;iH++) {		
+	   cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
+	   }
+	   }
+	 */
 }

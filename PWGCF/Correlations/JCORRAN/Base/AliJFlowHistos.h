@@ -1,14 +1,11 @@
-/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice */
-
-// Container class for histograms needed in the jT analysis.
-
-//===========================================================
-// AliJFlowHistos.h
-//
-// author: Marton Vargyas
-//===========================================================
-
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice     */
+//______________________________________________________________________________
+// Basic histogram implimentation via AliJHistogramInterface.
+// author:  D.J. Kim (dong.jo.kim@cern.ch)
+// ALICE Group University of Jyvaskyla, Finland
+// Note: Adapted for AliAnalysisTaskSE
+//////////////////////////////////////////////////////////////////////////////
 #ifndef ALIJFLOWHISTOS_H
 #define ALIJFLOWHISTOS_H
 
@@ -41,8 +38,8 @@ public:
 	AliJFlowHistos& operator=(const AliJFlowHistos& obj); // equal sign operator
 
 	void CreateEventTrackHistos();
-	#define CENTN 8
-	static Double_t CentBin[CENTN+1]; //8
+	#define NCENT 8
+	static Double_t CentBin[NCENT+1]; //8
 	static Double_t pttJacek[74];
 	static UInt_t NCentBin;
 	static UInt_t NpttJacek;
