@@ -633,7 +633,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       Float_t ppt = -999, pphi = -999, peta = -999, pnsigmapr = -999;
       Float_t npt = -999, nphi = -999, neta = -999, nnsigmapr = -999;
       Bool_t swapflag = kFALSE, ontheflystat = kFALSE;
-      Float_t dcaV0ToVertex = -999, dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, cosPointingAngle = -999;
+      Float_t /*dcaV0ToVertex = -999,*/ dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, cosPointingAngle = -999;
       Float_t ncrossedrowsPos = -999, ncrossedratioPos = -999, ncrossedrowsNeg = -999, ncrossedratioNeg = -999;
       
       if(fIsAOD) // aod
@@ -685,7 +685,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  pnsigmapr = fPIDResponse->NumberOfSigmasTPC(aodTrackPos, AliPID::kProton);
 	  nnsigmapr = fPIDResponse->NumberOfSigmasTPC(aodTrackNeg, AliPID::kProton);
 
-	  dcaV0ToVertex = aodv0->DcaV0ToPrimVertex();
+	  //dcaV0ToVertex = aodv0->DcaV0ToPrimVertex();
 	  dcaPosToVertex = aodv0->DcaPosToPrimVertex();
 	  dcaNegToVertex = aodv0->DcaNegToPrimVertex();
 	  cosPointingAngle = aodv0->CosPointingAngle(fVtx);
@@ -745,7 +745,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  pnsigmapr = fPIDResponse->NumberOfSigmasTPC(esdTrackPos, AliPID::kProton);
 	  nnsigmapr = fPIDResponse->NumberOfSigmasTPC(esdTrackNeg, AliPID::kProton);
 
-	  dcaV0ToVertex = esdv0->GetD(fVtx[0],fVtx[1],fVtx[2]);
+	  //dcaV0ToVertex = esdv0->GetD(fVtx[0],fVtx[1],fVtx[2]);
 	  Float_t d1, d2;
 	  esdTrackPos->GetImpactParameters(d1,d2);
 	  dcaPosToVertex = TMath::Sqrt(d1*d1+d2*d2);
@@ -813,7 +813,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 		  tempLightV0->SetCosPointingAngle(cosPointingAngle);
 		  tempLightV0->SetDecayR(v0Radius);
 		  tempLightV0->SetDecayL(pmom > 0. ? v0DecayLength/pmom : 0.);
-		  tempLightV0->SetDCAV0(dcaV0ToVertex);
+		  //tempLightV0->SetDCAV0(dcaV0ToVertex);
 		  tempLightV0->SetDCADaughters(dcaDaughters);
 		  tempLightV0->SetMcStatus(0);
 		  tempLightV0->SetPosDaughter(ppt,peta,pphi, 0, dcaPosToVertex);
@@ -832,7 +832,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 		      tempLightV0->SetCosPointingAngle(cosPointingAngle);
 		      tempLightV0->SetDecayR(v0Radius);
 		      tempLightV0->SetDecayL(pmom > 0. ? v0DecayLength/pmom : 0.);
-		      tempLightV0->SetDCAV0(dcaV0ToVertex);
+		      //tempLightV0->SetDCAV0(dcaV0ToVertex);
 		      tempLightV0->SetDCADaughters(dcaDaughters);
 		      tempLightV0->SetMcStatus(0);
 		      tempLightV0->SetPosDaughter(ppt,peta,pphi, pnsigmapr, dcaPosToVertex);
