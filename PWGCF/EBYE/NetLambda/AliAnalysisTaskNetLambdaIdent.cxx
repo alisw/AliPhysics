@@ -217,7 +217,7 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   hPtResAntiLambdaPrim = new TH2F("hPtResAntiLambdaPrim","primary #bar{#Lambda} pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
   fListOfHistos->Add(hPtResAntiLambdaPrim);
   
-  fEventCuts.AddQAplotsToList(fListOfHistos);  
+  fEventCuts.AddQAplotsToList(fListOfHistos,true);  
   
   fAcceptV0 = new TClonesArray("AliLightV0",1000);
   if(fIsMC)
