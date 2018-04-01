@@ -211,7 +211,8 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fhEventCentrality(0x0),
   fh2EventCentralityNumSelCharged(0x0),
   fhEventCounter(0x0),
-
+  fhEventsMultTOFFilterbit32(0x0),
+ 
   // charged histogram
   fh2RefsMult(0x0),
   fh2RefsPt(0x0),
@@ -412,6 +413,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fhEventCentrality(0x0),
   fh2EventCentralityNumSelCharged(0x0),
   fhEventCounter(0x0),
+  fhEventsMultTOFFilterbit32(0x0),
 
   // charged histogram
   fh2RefsMult(0x0),
@@ -677,15 +679,17 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); centrality/multiplicity",fMultEstimator.Data()), fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fhEventCentrality);
-    fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 150,0,150, fFlowCentNumBins,0,fFlowCentNumBins);
+    fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 3000,0,3000, fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fh2EventCentralityNumSelCharged); 
 
-    const Short_t iEventCounterBins = 10;
-    TString sEventCounterLabel[iEventCounterBins] = {"Input","Physics selection OK","Centr. Est. Consis. OK","PV OK","SPD Vtx OK","Pileup MV OK","Vtx Consis. OK","PV #it{z} OK","ESD TPC Mult. Diff. OK","Selected"};
+    const Short_t iEventCounterBins = 11;//10 it was
+    TString sEventCounterLabel[iEventCounterBins] = {"Input","Physics selection OK","Centr. Est. Consis. OK","PV OK","SPD Vtx OK","Pileup MV OK","Out-of-bunch Pileup OK","Vtx Consis. OK","PV #it{z} OK","ESD TPC Mult. Diff. OK","Selected"};
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Short_t i(0); i < iEventCounterBins; i++) fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() );
     fQAEvents->Add(fhEventCounter);
-  
+    
+    fhEventsMultTOFFilterbit32 = new TH2D("fhEventsMultTOFFilterbit32","filterbit32 vs. TOF multiplicity; multiplicity(fb32);multiplicity(fb32+TOF)", 4000,0,4000,2000,0,2000);
+    fQAEvents->Add(fhEventsMultTOFFilterbit32); 
     // flow histograms & profiles
     // weights
     if(fFlowFillWeights || fRunMode == kFillWeights)
@@ -1386,6 +1390,7 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
  
  
   // check for multi-vertexer pile-up
+  /*
   const int    kMinPileUpContrib = 5;
   const double kMaxPileUpChi2 = 5.0;
   const double kMinWDist = 15;
@@ -1396,20 +1401,40 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   
   if (nPileUp) {
     if (vtx == vtxSPD) return kTRUE; // there are pile-up vertices but no primary
+    Int_t bcPrim = vtPrm->GetBC();
     for (int iPileUp=0;iPileUp<nPileUp;iPileUp++) {
         vtxPileUp = (const AliAODVertex*)fEventAOD->GetPileupVertexTracks(iPileUp);
         if (vtxPileUp->GetNContributors() < kMinPileUpContrib) continue;
         if (vtxPileUp->GetChi2perNDF() > kMaxPileUpChi2) continue;
-        //  int bcPlp = vtxPileUp->GetBC();
-        //  if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other BC
+        int bcPlp = vtxPileUp->GetBC(); ///newly added
+        if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other Bunch crossing (BC)
         double wDst = GetWDist(vtx,vtxPileUp);
         if (wDst<kMinWDist) continue;
         return kTRUE; // pile-up: well separated vertices
     }
   }
+*/
+//  fhEventCounter->Fill("Pileup MV OK",1);
+/////////////////////////////  
+  AliAnalysisUtils utils;
+  utils.SetMinPlpContribMV(5);
+  utils.SetMaxPlpChi2MV(5);
+  utils.SetMinWDistMV(15);
+  utils.SetCheckPlpFromDifferentBCMV(kTRUE);
 
+  Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
+
+  if(isPileupFromMV) return kFALSE;
   fhEventCounter->Fill("Pileup MV OK",1);
-    
+
+  //Bool_t fRejectOutOfBunchPileUp = kFALSE;
+  //if(fRejectOutOfBunchPileUp) // out-of-bunch rejection (provided by Christian)
+  //{
+    //out-of-bunch
+  //  if (utils.IsOutOfBunchPileUp(fEventAOD)){ return kFALSE; }
+  //}
+  fhEventCounter->Fill("Out-of-bunch Pileup OK",1);
+/////////////////////////////
   // check vertex consistency
   double dz = vtx->GetZ() - vtxSPD->GetZ();
   double errTot = TMath::Sqrt(cov[5]+covSPD[5]);
@@ -1427,21 +1452,30 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   // cut on # ESD tracks vs # TPC only tracks
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fEventAOD->GetHeader())->GetNumberOfESDTracks();
-  //Int_t multTrk = 0;
+  Int_t multTrk = 0;
   //Int_t multTrkBefC = 0;
-  //Int_t multTrkTOFBefC = 0;
+  Int_t multTrkTOF = 0;
   Int_t multTPC = 0;
   for (Int_t it = 0; it < nTracks; it++) {
      AliAODTrack* AODTrk = (AliAODTrack*)fEventAOD->GetTrack(it);
      if (!AODTrk){ delete AODTrk; continue; }
      if (AODTrk->TestFilterBit(128)) {multTPC++;}
+     if (AODTrk->TestFilterBit(32)){
+         multTrk++;
+         if ( TMath::Abs(AODTrk->GetTOFsignalDz()) <= 10 && AODTrk->GetTOFsignal() >= 12000 && AODTrk->GetTOFsignal() <= 25000) multTrkTOF++;
+    }
   } // end of for (Int_t it = 0; it < nTracks; it++)
   Double_t multTPCn = multTPC;
   Double_t multEsdn = multEsd;
+
   Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
   if (multESDTPCDif > 15000.) return kFALSE;
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
+  Double_t multTrkn = multTrk;
+  Double_t multTrkTOFn = multTrkTOF;
+  
+  fhEventsMultTOFFilterbit32->Fill(multTrkn,multTrkTOFn);
     
   fhEventCounter->Fill("Selected",1);
     
@@ -1519,25 +1553,26 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_pp()
     //fhEventCounter->Fill("Pileup SPD OK",1);
     
     // pileup rejection from multivertexer
+    
     AliAnalysisUtils utils;
-    utils.SetMinPlpContribMV(5);
-    utils.SetMaxPlpChi2MV(5);
-    utils.SetMinWDistMV(15);
-    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
-    Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
-    
-    if(isPileupFromMV) return kFALSE;
-    fhEventCounter->Fill("Pileup MV OK",1);
-    
-    // if(fRejectOutOfBunchPU) // out-of-bunch rejection (provided by Christian)
-    // {
-    //   //out-of-bunch 11 BC
-    //   if (utils.IsOutOfBunchPileUp(fEventAOD))
-    //   {
-    //     return kFALSE;
-    //   }
-    //   fhEventCounter->Fill("OOBPU OK",1);
-    //
+  utils.SetMinPlpContribMV(5);
+  utils.SetMaxPlpChi2MV(5);
+  utils.SetMinWDistMV(15);
+  utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
+  utils.SetCheckPlpFromDifferentBCMV(kTRUE);
+
+  if(isPileupFromMV) return kFALSE;
+  fhEventCounter->Fill("Pileup MV OK",1);
+
+  //Bool_t fRejectOutOfBunchPileUp = kTRUE; //you have to add this to the task and set from header
+  //if(fRejectOutOfBunchPileUp) // out-of-bunch rejection (provided by Christian)
+  //{
+    //out-of-bunch
+  //  if (utils.IsOutOfBunchPileUp(fEventAOD)){ return kFALSE; }
+  //}
+  fhEventCounter->Fill("Out-of-bunch Pileup OK",1);
+
     //   if (utils.IsSPDClusterVsTrackletBG(fEventAOD))
     //   {
     //     return kFALSE;
