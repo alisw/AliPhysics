@@ -105,8 +105,8 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Float_t ncrossedrows;
   Float_t crossedrowsclustercut;
 
-  Float_t fCent;
-  Float_t fNSpdTracklets;
+  Float_t fCentV0M;
+  Float_t fCentCL1;
   Double_t fVtxZ;
   Int_t fRunNumber;
   TClonesArray *fAcceptV0;
@@ -126,7 +126,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,3);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,4);
 };
 
 //_____________________________________________________________________________
@@ -134,14 +134,14 @@ class AliLightV0 : public TObject
 {
  public:
  AliLightV0() : pt(-999), eta(-999), phi(-999), invmassL(-999), invmassAL(-999),
-    cospt(-999), decayr(-999), decayl(-999), dcav0(-999), dcadaughters(-999), mcstatus(0),
+    cospt(-999), decayr(-999), decayl(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t phiin) : pt(ptin), eta(etain), phi(phiin), invmassL(-999), invmassAL(-999),
-    cospt(-999), decayr(-999), decayl(-999), dcav0(-999), dcadaughters(-999), mcstatus(0),
+    cospt(-999), decayr(-999), decayl(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t phiin, Float_t invmassLin, Float_t invmassALin,
-	    Float_t cosptin, Float_t decayrin, Float_t decaylin, Float_t dcav0in) : pt(ptin), eta(etain), phi(phiin), invmassL(invmassLin),
-    invmassAL(invmassALin), cospt(cosptin), decayr(decayrin), decayl(decaylin), dcav0(dcav0in), dcadaughters(-999), mcstatus(0),
+	    Float_t cosptin, Float_t decayrin, Float_t decaylin) : pt(ptin), eta(etain), phi(phiin), invmassL(invmassLin),
+    invmassAL(invmassALin), cospt(cosptin), decayr(decayrin), decayl(decaylin), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
@@ -152,7 +152,6 @@ class AliLightV0 : public TObject
   void SetCosPointingAngle(Float_t val){cospt = val;};
   void SetDecayR(Float_t val){decayr = val;};
   void SetDecayL(Float_t val){decayl = val;};
-  void SetDCAV0(Float_t val){dcav0 = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
   void SetMcStatus(Int_t val){mcstatus = val;};
   void SetPosDaughter(Float_t ptin, Float_t etain, Float_t phiin, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pphi = phiin; pnsigmapr = nsigma; pdca = dca;};
@@ -168,7 +167,6 @@ class AliLightV0 : public TObject
   Float_t GetCosPointingAngle(){return cospt;};
   Float_t GetDecayR(){return decayr;};
   Float_t GetDecayL(){return decayl;};
-  Float_t GetDCAV0(){return dcav0;};
   Float_t GetDCADaughters(){return dcadaughters;};
   Int_t   GetMcStatus(){return mcstatus;};
   void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; phiout = pphi; nsigma = pnsigmapr; dca = pdca;};
@@ -187,7 +185,6 @@ class AliLightV0 : public TObject
   Float_t   cospt;
   Float_t   decayr;
   Float_t   decayl;
-  Float_t   dcav0;
   Float_t   dcadaughters;
   Int_t     mcstatus;
   Float_t   ppt; // positive daughter properties
@@ -205,7 +202,7 @@ class AliLightV0 : public TObject
   Float_t   cascpt;
   Float_t   casceta;
   
-  ClassDef(AliLightV0, 3);
+  ClassDef(AliLightV0, 4);
 };
 
 //_____________________________________________________________________________
