@@ -115,6 +115,10 @@ AliAnalysisTaskSE(name),
     fLambdaTree(kTRUE)
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
+
+  fEventCuts.fUseVariablesCorrelationCuts = true;
+  fEventCuts.fUseStrongVarCorrelationCut = true;
+  
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
   DefineOutput(2,TTree::Class());
