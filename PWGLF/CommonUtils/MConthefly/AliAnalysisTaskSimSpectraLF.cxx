@@ -530,14 +530,14 @@ Short_t AliAnalysisTaskSimSpectraLF::GetPidCode(Int_t pdgCode) const  {
     case 3212:
       pidCode = 7; // Sigma 0
     break;
+    case 323:
+      pidCode = 8; // K*(892)+-
+    break;
     case 333:
-      pidCode = 8; // phi(1020)
+      pidCode = 9; // phi(1020)
     break;
     case 313:
-      pidCode = 9; // K*(892)0
-    break;
-    case 323:
-    pidCode = 10; // K*(892)+-
+      pidCode = 10; // K*(892)0
     break;
     default:
       pidCode = 999;  // something else
