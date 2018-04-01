@@ -30,15 +30,18 @@ public:
   void SetCentBins (int nbins, float *bins);
   void SetPtBins   (int nbins, float *bins);
   void SetPDGcodes (int nbins, int *bins);
+  void SetYRange (float ymin, float ymax) { fRequireYmin = ymin; fRequireYmax = ymax; }
 
 private:
+  AliAnalysisTaskSignalLoss(const AliAnalysisTaskSignalLoss &source);
+  AliAnalysisTaskSignalLoss &operator=(const AliAnalysisTaskSignalLoss &source);
 
   TList*    fOutputList; //! Output List
 
   TH1F*     fHistAccEvents; //! Number of accepted events
   TH1F*     fHistTrueINELgt0Events; //! Number of true INEL>0 events
   TH3F*     fHistGenPartsAcc[2]; //! Number of particles in accepted events
-  TH3F*     fHistGenPartsINELgt0[2]; //! NUmber of particles in true INEL>0 events
+  TH3F*     fHistGenPartsINELgt0[2]; //! Number of particles in true INEL>0 events
 
   TArrayF   fPtBins;
   TArrayF   fCentBins;
