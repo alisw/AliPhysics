@@ -101,7 +101,8 @@ fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAnglePhotonCuts(0x0),
 fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
-fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
+			 fhPrimPt(0),
+			 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
 			 fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
 fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
 fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
@@ -705,6 +706,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     // Primary origin
     if(fFillOriginHisto)
     {
+      //K+- & pi+-
+      fhPrimPt=new TH2F("hPrimPt","Primary K+- #pi+-",nptbins,ptmin,ptmax,2,0,2) ;
+      fhPrimPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPt->SetYTitle("Origin");
+      fhPrimPt->GetYaxis()->SetBinLabel(1 ,"K+-");
+      fhPrimPt->GetYaxis()->SetBinLabel(2 ,"pi+-");
+      outputContainer->Add(fhPrimPt) ;
+      
       // Pi0
       fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhPrimPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2743,7 +2752,17 @@ void AliAnaPi0::FillAcceptanceHistograms()
     }
     
     ///
-    if(pdg == 111)
+    if(pdg == 321){//k+-
+      if(TMath::Abs(mesonY) < 1.0){
+	fhPrimPt->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);
+      }
+    }
+    else if(pdg == 211){
+      if(TMath::Abs(mesonY) < 1.0){
+	fhPrimPt->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);
+      }
+    }
+    else if(pdg == 111)
     {
       if(TMath::Abs(mesonY) < 1.0)
       {
