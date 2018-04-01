@@ -2864,11 +2864,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
 	  else if(mompdg==3122) {
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 13.5, GetEventWeight()*weightPt);//lambda 
 	  }
-	  else if(mompdg==211) {
-	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//pi+-
-	  }
 	  else if(momRcorr>0.1) {//in cm
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 15.5, GetEventWeight()*weightPt);//radius too large
+	  }
+	  else if(mompdg==211) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//pi+-
 	  }
 	  else if(mompdg==11) {
 	    fhPrimPi0PtOrigin->Fill(mesonPt, 17.5, GetEventWeight()*weightPt);//e+-
