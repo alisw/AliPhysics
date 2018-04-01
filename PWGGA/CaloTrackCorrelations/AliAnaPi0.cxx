@@ -2696,7 +2696,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     pdg       = primary->PdgCode();
     // Select only pi0 or eta
-    if( pdg != 111 && pdg != 221) continue ;
+    if( pdg != 111 && pdg != 221 && pdg != 321 && pdg != 211) continue ;
     
     nDaught   = primary->GetNDaughters();
     iphot1    = primary->GetDaughterLabel(0) ;
@@ -2751,15 +2751,15 @@ void AliAnaPi0::FillAcceptanceHistograms()
       }
     }
     
-    ///
+    //
     if(pdg == 321){//k+-
       if(TMath::Abs(mesonY) < 1.0){
-	fhPrimPt->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);
+    	fhPrimPt->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);
       }
     }
-    else if(pdg == 211){
+    else if(pdg == 211){//pi+-
       if(TMath::Abs(mesonY) < 1.0){
-	fhPrimPt->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);
+    	fhPrimPt->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);
       }
     }
     else if(pdg == 111)
