@@ -221,7 +221,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
-  // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
+  // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
 
   //************************************************ EMCAL clusters **********************************************************
@@ -815,7 +815,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
     cuts.AddCut("80010113","00200009327000008250400000","11111510570c2230000","0163103100000010"); // 0-100
     cuts.AddCut("80010113","00200009327000008250400000","11111420570c2230000","0163103100000010"); // 0-100
     cuts.AddCut("80010113","00200009327000008250400000","11111520570c2230000","0163103100000010"); // 0-100
-  } else if (trainConfig == 217){ // EMCAL clusters nonlin variations, min E=0.625 GeV
+  } else if (trainConfig == 218){ // EMCAL clusters nonlin variations, min E=0.625 GeV
     cuts.AddCut("80010113","00200009327000008250400000","11111000570d2230000","0163103100000010"); // 0-100
     cuts.AddCut("80010113","00200009327000008250400000","11111410570d2230000","0163103100000010"); // 0-100
     cuts.AddCut("80010113","00200009327000008250400000","11111510570d2230000","0163103100000010"); // 0-100

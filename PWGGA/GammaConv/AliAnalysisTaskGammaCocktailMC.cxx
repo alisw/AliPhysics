@@ -164,13 +164,13 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fOutputContainer->SetOwner(kTRUE);
   }
 
-  fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1,kTRUE);
+  fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}", 1, 0, 1, kTRUE);
   fOutputContainer->Add(fHistNEvents);
 
-  fHistPtYGamma = (TH2F*)SetHist2D(fHistPtYGamma,"f","Pt_Y_Gamma","#it{p}_{T}","Y",500,0, 50,400,-2.0,2.0,kTRUE);
+  fHistPtYGamma = (TH2F*)SetHist2D(fHistPtYGamma,"f","Pt_Y_Gamma","#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
   fOutputContainer->Add(fHistPtYGamma);
 
-  fHistPtPhiGamma = (TH2F*)SetHist2D(fHistPtPhiGamma,"f","Pt_Phi_Gamma","#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+  fHistPtPhiGamma = (TH2F*)SetHist2D(fHistPtPhiGamma,"f","Pt_Phi_Gamma","#it{p}_{T}","#phi", 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
   fOutputContainer->Add(fHistPtPhiGamma);
 
   // tree + user info list to protect contents from merging
@@ -278,45 +278,52 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   for(Int_t i=0; i<nInputParticles; i++){
 
     if (fHasMother[i]) {
-      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYInput[i]);
 
       //Gammas from certain mother
-      fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaSource[i]);
 
       //phi distributions
-      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiInput[i]);
 
-      fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+      fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
+                                                  1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaSource[i]);
 
       if(i==0){
-        fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0,"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0,"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",
+                                                            1000, 0, 50, 400, -2.0, 2.0, kTRUE);
         fOutputContainer->Add(fHistPtYGammaSourceFromDalitzPi0);
-        fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0,"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+        fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0,"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
+                                                              1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
         fOutputContainer->Add(fHistPtPhiGammaSourceFromDalitzPi0);
-        fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0,"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0,"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",
+                                                               1000, 0, 50, 400, -2.0, 2.0, kTRUE);
         fOutputContainer->Add(fHistPtYGammaSourceFromNonDalitzPi0);
-        fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0,"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+        fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0,"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
+                                                                 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
         fOutputContainer->Add(fHistPtPhiGammaSourceFromNonDalitzPi0);
       }
 
       // correlation gamma from certain mother to mother
-      fHistPtGammaSourcePtInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourcePtInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
+      fHistPtGammaSourcePtInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourcePtInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",
+                                                      1000, 0, 50, 1000, 0, 50,kTRUE);
       fOutputContainer->Add(fHistPtGammaSourcePtInput[i]);
 
-      fHistPhiGammaSourcePhiInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourcePhiInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",100,0,7,100,0,2*TMath::Pi(),kTRUE);
+      fHistPhiGammaSourcePhiInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourcePhiInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",
+                                                        100, 0, 7 , 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPhiGammaSourcePhiInput[i]);
 
       // decay channels mother
-      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20, -0.5, 19.5, kTRUE);
       InitializeDecayChannelHist(fHistDecayChannelsInput[i], i);
       fOutputContainer->Add(fHistDecayChannelsInput[i]);
 
       // BR from pythia
-      fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f",Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f",Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20, -0.5, 19.5, kTRUE);
       InitializeDecayChannelHist(fHistPythiaBR[i], i);
       FillPythiaBranchingRatio(fHistPythiaBR[i], i);
       fUserInfo->Add(fHistPythiaBR[i]);
@@ -342,11 +349,13 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
 
       if (fHasMother[i]) {
         // gamma delta phi
-        fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",500,0,50,82,binsDeltaPhi,kTRUE);
+        fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",
+                                                   1000, 0, 50, 82, binsDeltaPhi,kTRUE);
         fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
 
         // alpha mother
-        fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",500,0,50,100,-1,1,kTRUE);
+        fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",
+                                                1000, 0, 50, 100, -1, 1, kTRUE);
         fOutputContainer->Add(fHistPtAlphaInput[i]);
       } else {
         fHistPtDeltaPhiInput[i] = NULL;
@@ -359,11 +368,11 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   }
   delete[] binsDeltaPhi;
 
-  fHistPdgInputRest = (TH1I*)SetHist1D(fHistPdgInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
+  fHistPdgInputRest = (TH1I*)SetHist1D(fHistPdgInputRest,"f","Pdg_primary_rest","PDG code","", 5000, 0, 5000, kTRUE);
   fOutputContainer->Add(fHistPdgInputRest);
 
   //Gammas from certain mother
-  fHistPdgGammaSourceRest = (TH1I*)SetHist1D(fHistPdgGammaSourceRest,"f","Pdg_Gamma_From_rest","PDG code mother","",5000,0,5000,kTRUE);
+  fHistPdgGammaSourceRest = (TH1I*)SetHist1D(fHistPdgGammaSourceRest,"f","Pdg_Gamma_From_rest","PDG code mother","", 5000, 0, 5000, kTRUE);
   fOutputContainer->Add(fHistPdgGammaSourceRest);
 
   fOutputContainer->Add(fOutputTree);
