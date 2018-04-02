@@ -709,9 +709,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    RecursiveParents(JetDet,JetContDet,1,kFALSE);
 	    RecursiveParents(JetDet,JetContDet,2,kFALSE);
 	    SoftDrop(JetTrue,JetContTrue,fZCut,fBeta_SD,kTRUE);
-	    RecursiveParents(JetTrue,JetContTrue,0,kFALSE);
-	    RecursiveParents(JetTrue,JetContTrue,1,kFALSE);
-	    RecursiveParents(JetTrue,JetContTrue,2,kFALSE);
+	    RecursiveParents(JetTrue,JetContTrue,0,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,1,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,2,kTRUE);
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
