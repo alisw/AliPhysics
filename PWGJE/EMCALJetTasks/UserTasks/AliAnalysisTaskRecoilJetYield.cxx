@@ -508,7 +508,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[19]=0;
-	    
+	    fJetInfoVar[21]=0;	    
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -529,6 +529,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
+
 	  }		    
 	  fTreeJetInfo->Fill();
 	}
@@ -628,6 +631,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	fJetInfoVar[17]=0;
 	fJetInfoVar[18]=0;
 	fJetInfoVar[19]=0;
+	fJetInfoVar[20]=0;
+	fJetInfoVar[21]=0;
+
       }
       fJetInfoVar[4]=JetHybridS->M();
       fJetInfoVar[5]=JetPythTrue->M();
@@ -699,7 +705,13 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  else fJetInfoVar[1]=JetTrue->Pt();
 	  if(fDoSoftDrop) {
 	    SoftDrop(JetDet,JetContDet,fZCut,fBeta_SD,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,0,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,1,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,2,kFALSE);
 	    SoftDrop(JetTrue,JetContTrue,fZCut,fBeta_SD,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,0,kFALSE);
+	    RecursiveParents(JetTrue,JetContTrue,1,kFALSE);
+	    RecursiveParents(JetTrue,JetContTrue,2,kFALSE);
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -720,6 +732,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
+
 	  }
 	  fJetInfoVar[4]=JetDet->M();
 	  fJetInfoVar[5]=JetTrue->M();
@@ -800,6 +815,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
 	  }
 	  fJetInfoVar[4]=Jet1->M();
 	  fJetInfoVar[5]=0;
@@ -1149,11 +1166,12 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }
-  if(!bTruth) fJetInfoVar[14]=nhard;
-  else if(bTruth) fJetInfoVar[15]=nhard;
-  if(!bTruth) fJetInfoVar[20] = nall;
-  else if(bTruth) fJetInfoVar[21] = nall;
-
+  if(ReclusterAlgo==1){
+    if(!bTruth) fJetInfoVar[14]=nhard;
+    else if(bTruth) fJetInfoVar[15]=nhard;
+    if(!bTruth) fJetInfoVar[20] = nall;
+    else if(bTruth) fJetInfoVar[21] = nall;
+  }
 
 
 
