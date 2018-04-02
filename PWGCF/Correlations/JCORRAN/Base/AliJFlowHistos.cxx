@@ -76,7 +76,7 @@ void AliJFlowHistos::CreateEventTrackHistos(){
 
 	fh_pt
 		<< TH1D("hChargedPtJacek", "", AliJFlowHistos::NpttJacek, AliJFlowHistos::pttJacek)
-		<< fHistCentBin
+		<< fHistCentBin << fBin_DetSet
 		<< "END" ;
 
 	fh_eta
