@@ -245,29 +245,107 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  //CME Using Event plane method: Charge
+
+
+  ///////////// CORRELATORS ////////////////
+  
+
+
+
+
+  // 3p correlator vs Centrality, EP method:
+  //Charge:
   TProfile     *fHist_Corr3p_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][4];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][4]; //! 
-
-  //CME Using Event plane method: Pion
+  //Pion:
   TProfile     *fHist_Corr3p_Pion_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_Pion_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_Pion_EP_Norm_NN[2][4];  //!
-
-  //CME Using Event plane method: Kaon
+  //Kaon:
   TProfile     *fHist_Corr3p_Kaon_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_Kaon_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_Kaon_EP_Norm_NN[2][4];  //!
-
-  //CME Using Event plane method: Proton
+  //Proton:
   TProfile     *fHist_Corr3p_Proton_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_Proton_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_Proton_EP_Norm_NN[2][4];  //!
 
 
-  //CME Differential Histograms:
+
+  // 3p correlator vs RefMult, EP method:
+  //Charge:
+  TProfile     *fHist_Corr3p_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_EP_Refm_NN[2][4];  //!
+  TProfile     *fHist_Reso2n_EP_Refm_Det[2][4]; //! 
+  //Pion:
+  TProfile     *fHist_Corr3p_Pion_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Pion_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Pion_EP_Refm_NN[2][4];  //!
+  //Kaon:
+  TProfile     *fHist_Corr3p_Kaon_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Kaon_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Kaon_EP_Refm_NN[2][4];  //!
+  //Proton:
+  TProfile     *fHist_Corr3p_Proton_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr3p_Proton_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr3p_Proton_EP_Refm_NN[2][4];  //!
+
+
+
+
+
+
+
+
+
+
+  //   2p correlator vs Centrality  EP method:
+  TProfile     *fHist_Corr2p_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_EP_Norm_NN[2][4];  //!
+  //Pion
+  TProfile     *fHist_Corr2p_Pion_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Pion_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Pion_EP_Norm_NN[2][4];  //!
+  //Kaon
+  TProfile     *fHist_Corr2p_Kaon_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Kaon_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Kaon_EP_Norm_NN[2][4];  //!
+  //Proton
+  TProfile     *fHist_Corr2p_Proton_EP_Norm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Proton_EP_Norm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Proton_EP_Norm_NN[2][4];  //!
+
+
+  // 2p correlator vs RefMult, EP method:
+  //Charge:
+  TProfile     *fHist_Corr2p_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_EP_Refm_NN[2][4];  //!
+  //Pion:
+  TProfile     *fHist_Corr2p_Pion_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Pion_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Pion_EP_Refm_NN[2][4];  //!
+  //Kaon:
+  TProfile     *fHist_Corr2p_Kaon_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Kaon_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Kaon_EP_Refm_NN[2][4];  //!
+  //Proton:
+  TProfile     *fHist_Corr2p_Proton_EP_Refm_PN[2][4];  //! 
+  TProfile     *fHist_Corr2p_Proton_EP_Refm_PP[2][4];  //!
+  TProfile     *fHist_Corr2p_Proton_EP_Refm_NN[2][4];  //!
+
+
+
+
+
+
+
+
+  //3particle Differential Histograms:
   //(pT_A + pT_B)/2.0
   TProfile     *fHist_Corr3p_pTSum_EP_V0A_PN[2][6]; //! 
   TProfile     *fHist_Corr3p_pTSum_EP_V0A_PP[2][6]; //!
@@ -290,7 +368,6 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PP[2][6]; //!
   TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[2][6]; //!
  
-
 
   //CME PID  differential Histograms:
   //(pT_A + pT_B)/2.0
@@ -364,14 +441,31 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
+  //2 particle Differential Histograms:
 
 
-
-
-
-
-  // Two particle correlation:
-
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm1_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm1_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm1_NN[2][6]; //!
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm2_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm2_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_pTSum_EP_Harm2_NN[2][6]; //!
+  // |(pT_A - pT_B)|
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm1_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm1_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm1_NN[2][6]; //!
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm2_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm2_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_pTDiff_EP_Harm2_NN[2][6]; //!
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm1_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm1_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm1_NN[2][6]; //!
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm2_PN[2][6]; //! 
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm2_PP[2][6]; //!
+  TProfile     *fHist_Corr2p_EtaDiff_EP_Harm2_NN[2][6]; //!
+ 
 
 
    
@@ -385,7 +479,11 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  TH1D           *fFB_Efficiency_Cent[10];   //!
+  TH1D           *fFB_Efficiency_Cent[10];   //!   for charge
+  TH1D      *fFB_Efficiency_Pion_Cent[10];   //!   
+  TH1D      *fFB_Efficiency_Kaon_Cent[10];   //!   
+  TH1D    *fFB_Efficiency_Proton_Cent[10];   //!   
+
 
   //--------- PileUp Functions -----------
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);
