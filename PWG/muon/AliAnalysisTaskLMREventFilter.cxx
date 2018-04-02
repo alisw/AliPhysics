@@ -212,9 +212,9 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
     }
 
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
-  fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"CMSL7 &0MUL (PS)");
+  fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"CMSL7-B- &0MUL (PS)");
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
-  fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"CMSL7 &0MLL (PS)");
+  fhTriggers->GetXaxis()->SetBinLabel(fhTriggers->GetNbinsX(),"CMSL7-B- &0MLL (PS)");
 
  
   fhTriggers->SetBins(fhTriggers->GetNbinsX()+1,0,1);
@@ -558,14 +558,14 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, UShor
     }
 
  
-  if( (trigStr.Contains(fTriggerClasses[5].Data()) & (physicsSelectionMask & kPST0)) | ( trigStr.Contains(fTriggerClasses[6].Data()) & (physicsSelectionMask & kPSV0)) )     // PS adapted to include the T0 information for the MB trigger condition
+  if( (trigStr.Contains(fTriggerClasses[5].Data()) && (physicsSelectionMask & kPST0)) || ( trigStr.Contains(fTriggerClasses[6].Data()) && (physicsSelectionMask & kPSV0)) )     // PS adapted to include the T0 information for the MB trigger condition
     {
       if(is0TVXfired)
 	{
 	  fhTriggers->Fill("(CINT7-CENT || C0TVX-CENT) &0TVX (PS)",1);
 	  fhNMu ->Fill(nmu,"(CINT7-CENT || C0TVX-CENT) &0TVX (PS)",1);
 	}
-      if(trigStr.Contains(fTriggerClasses[6].Data()) & (physicsSelectionMask & kPSV0))
+      if(trigStr.Contains(fTriggerClasses[6].Data()) && (physicsSelectionMask & kPSV0))
 	{
 	  if(is0MSLfired)
 	    {
