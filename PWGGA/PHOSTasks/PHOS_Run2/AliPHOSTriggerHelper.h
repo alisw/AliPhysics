@@ -66,7 +66,7 @@ class AliPHOSTriggerHelper : public TObject {
 
     Double_t GetMatchingDeltaR(){return fMatchingDeltaR;}
     Bool_t IsDeltaRUsed() {return fUseDeltaRMatching;}
-    Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin);
+    Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin, Double_t ETrigger, Bool_t isCoreUsed);
     Double_t GetDistanceToClosestTRUChannel(AliCaloPhoton *ph);
 
   private:
@@ -95,7 +95,7 @@ class AliPHOSTriggerHelper : public TObject {
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 17);
+    ClassDef(AliPHOSTriggerHelper, 18);
 
 };
 

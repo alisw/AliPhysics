@@ -250,6 +250,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
     }
 
+    void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
+
   protected:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -444,7 +446,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 51);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 52);
 };
 
 #endif
