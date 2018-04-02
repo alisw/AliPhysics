@@ -3050,6 +3050,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       isProton1 = kTRUE;
     }
 
+    //Proton below 0.4 GeV is garbage
+    if(dPt1<0.4) isProton1 = kFALSE;  
+
     //-----------------------------------------------------------------
 
 
@@ -3282,6 +3285,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       else if(dPt2>=0.8 && dPt2<=3.5 && TMath::Abs(nSigTPCproton2)<=2.5 && TMath::Abs(nSigTOFproton2)<=2.5){
 	isProton2 = kTRUE;
       }
+      //Proton below 0.4 GeV is garbage
+      if(dPt2<0.4) isProton2 = kFALSE;  
+
       //----------------------------------------------------------------
 
 
