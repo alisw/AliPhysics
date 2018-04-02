@@ -657,7 +657,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if(!fMCarray){
         AliError("Array of MC particles not found");
-        return;
+        //return;
     }
     fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     if (!fMCHeader) {
