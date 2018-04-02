@@ -12,9 +12,14 @@
 /// IMPORTANT dont forget to update your local OADB copy!
 /// rsync -av --delete yourCERNuserName@lxplus.cern.ch:/eos/experiment/alice/analysis-data/ $ALICE_DATA
 /// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
-/// root [1] Plot_BCMap("runList.txt",$ALICE_DATA)     This is a function for everyone interested      <br>
-/// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")     This is a function for BC exerts    <br>
-/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt") This is a function for BC exerts    <br>
+/// or
+/// root [0] .L $ALICE_WORK_DIR/../AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
+/// This is a function for everyone interested:
+/// root [1] Plot_BCMap("runList.txt")   In case your local copy is in $ALICE_DATA/OADB/EMCAL/..   <br>
+/// root [1] Plot_BCMap("runList.txt","pathToYourOtherOADBCopy")  If you have an OADB copy other than in $ALICE_DATA/ you can add an explicit path here <br>
+/// This are functions for BC exerts: <br>
+/// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")       <br>
+/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt")   <br>
 ///
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
