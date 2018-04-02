@@ -221,7 +221,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetCut(cutIds cutID, Int_t cut);
     Bool_t      UpdateCutString();
     void        PrintCuts();
-    void        PrintCutsWithValues();
+    void        PrintCutsWithValues(const TString analysisCutSelection);
 
     Bool_t      InitializeCutsFromCutString(const TString analysisCutSelection);
     TString     GetCutNumber();

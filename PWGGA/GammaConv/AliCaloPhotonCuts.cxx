@@ -808,7 +808,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistNCellsBigger1500MeVvsMod->GetXaxis()->SetTitle("N_{cells} with E_{cell} > 1.5 GeV");
       fHistNCellsBigger1500MeVvsMod->GetYaxis()->SetTitle("module ID");
       fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
-      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule",nBinsClusterEMod, arrClusEBinning,
+      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", nBinsClusterEMod, arrClusEBinning,
                                                  fNMaxEMCalModules,0,fNMaxEMCalModules);
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{mod} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("module ID");
@@ -977,7 +977,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistNCellsBigger1500MeVvsMod->GetXaxis()->SetTitle("N_{cells} with E_{cell} > 1.5 GeV");
       fHistNCellsBigger1500MeVvsMod->GetYaxis()->SetTitle("module ID");
       fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
-      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", nBinsClusterECoarse, minClusterELog, maxClusterELog,
+      fHistEnergyOfModvsMod           = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule", nBinsClusterEMod, arrClusEBinning,
                                                  fNMaxDCalModules, nModulesStart, fNMaxDCalModules+nModulesStart);
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
@@ -3288,7 +3288,7 @@ Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutS
     if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
   }
 
-  PrintCutsWithValues();
+  PrintCutsWithValues(analysisCutSelection);
   return kTRUE;
 }
 
@@ -3451,12 +3451,9 @@ void AliCaloPhotonCuts::PrintCuts() {
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::PrintCutsWithValues() {
+void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) {
   // Print out current Cut Selection with value
-  printf("\nCluster cutnumber \n");
-  for(Int_t ic = 0;ic < kNCuts;ic++) {
-    printf("%d",fCuts[ic]);
-  }
+  printf("\nCluster cutnumber \n %s", analysisCutSelection.Data());
   printf("\n\n");
   if (fIsPureCalo>0) printf("Merged cluster analysis was specified, mode: '%i'\n", fIsPureCalo);
 
@@ -3478,6 +3475,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
   if (fUseM02 == 2) printf("\t energy dependent M02 cut used with cutnumber min: %d  max: %d \n", fMinM02CutNr, fMaxM02CutNr );
   if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
+  if (fUseRecConv) printf("\t recovering conversions for  Mgg < %3.3f\n", fMaxMGGRecConv );
   if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
   printf("Correction Task Setting: %s \n",fCorrTaskSetting.Data());
@@ -3486,7 +3484,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
   printf("VO Reader name: %s \n",fV0ReaderName.Data());
   TString namePeriod = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (namePeriod.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(namePeriod);
-  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
+  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %i \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
   else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 
 }
