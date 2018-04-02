@@ -1045,12 +1045,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   if(Is1PHMfired) FillHistogramTH1(fOutputContainer,"hEventSummary",5);//1PHM
   if(Is1PHHfired) FillHistogramTH1(fOutputContainer,"hEventSummary",6);//1PHH
 
-  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin))){
+  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy))){
     AliInfo("event is rejected. IsPHI7 = kFALSE.");
     return;
   }
 
-  if(fForceActiveTRU) fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin);//only to set event in fPHOSTriggerHelper
+  if(fForceActiveTRU) fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);//only to set event in fPHOSTriggerHelper
 
   //<- end of event selection
   //-> start physics analysis
@@ -1790,8 +1790,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-        if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        //if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+        //if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+
+        if((!ph1->IsTrig() || e1 < fEnergyThreshold)
+        && (!ph2->IsTrig() || e2 < fEnergyThreshold)
+          ) continue;
 
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
@@ -1953,8 +1957,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         weight = 1.;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-          if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          //if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+          //if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+
+
+          if((!ph1->IsTrig() || e1 < fEnergyThreshold)
+          && (!ph2->IsTrig() || e2 < fEnergyThreshold)
+            ) continue;
 
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
@@ -3458,10 +3467,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
   Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
 
-  Bool_t Is0PH0matched = fPHOSTriggerHelperL0 ->IsPHI7(fEvent,fPHOSClusterCuts,fEmin);
-  Bool_t Is1PHHmatched = fPHOSTriggerHelperL1H->IsPHI7(fEvent,fPHOSClusterCuts,fEmin);
-  Bool_t Is1PHMmatched = fPHOSTriggerHelperL1M->IsPHI7(fEvent,fPHOSClusterCuts,fEmin);
-  Bool_t Is1PHLmatched = fPHOSTriggerHelperL1L->IsPHI7(fEvent,fPHOSClusterCuts,fEmin);
+  AliInfo(Form("Energy threshold of PHOS trigger is %3.2f GeV",fEnergyThreshold));
+
+  Bool_t Is0PH0matched = fPHOSTriggerHelperL0 ->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHHmatched = fPHOSTriggerHelperL1H->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHMmatched = fPHOSTriggerHelperL1M->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHLmatched = fPHOSTriggerHelperL1L->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
 
   if(Is0PH0fired && Is0PH0matched) FillHistogramTH1(fOutputContainer,"hEventSummary", 7);//0PH0
   if(Is1PHLfired && Is1PHHmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 8);//1PHL

@@ -188,7 +188,7 @@ void AliAnalysisTaskPHOSSingleSim::UserExec(Option_t *option)
   fEPBin = 0;
   //<- end of event selection
   //-> start physics analysis
-  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin))){
+  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy))){
     AliInfo("event is rejected. IsPHI7 = kFALSE.");
     return;
   }
