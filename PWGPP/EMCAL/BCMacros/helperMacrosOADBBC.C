@@ -8,18 +8,20 @@
 /// ---------------------
 ///  Running the macro
 /// ---------------------
-/// use root -b to speed up (no canvas drawn)                   <br>
-/// IMPORTANT dont forget to update your local OADB copy!
-/// rsync -av --delete yourCERNuserName@lxplus.cern.ch:/eos/experiment/alice/analysis-data/ $ALICE_DATA
+/// use root -b to speed up (no canvas drawn)              <br>
+/// IMPORTANT dont forget to update your local OADB copy!  <br>
+/// rsync -av --delete yourCERNuserName@lxplus.cern.ch:/eos/experiment/alice/analysis-data/ $ALICE_DATA <br>
+/// To run the macro you have to compile it first          <br>
 /// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
-/// or
+/// or                                                     <br>
 /// root [0] .L $ALICE_WORK_DIR/../AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosOADBBC.C++ <br>
-/// This is a function for everyone interested:
+/// Then you can execute the function in it                <br>
+/// This is a function for everyone interested:            <br>
 /// root [1] Plot_BCMap("runList.txt")   In case your local copy is in $ALICE_DATA/OADB/EMCAL/..   <br>
 /// root [1] Plot_BCMap("runList.txt","pathToYourOtherOADBCopy")  If you have an OADB copy other than in $ALICE_DATA/ you can add an explicit path here <br>
-/// This are functions for BC exerts: <br>
-/// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")       <br>
-/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt")   <br>
+/// This are functions for BC exerts:                       <br>
+/// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")     <br>
+/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt") <br>
 ///
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
