@@ -4599,25 +4599,6 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
 }
 
 //___________________________________________________________________
-Bool_t AliCaloPhotonCuts::SetRecConv(Int_t maxM20)
-{
-  switch(maxM20){
-  case 0:
-    if (!fUseM20) fUseM20=0;
-    fMaxM20=100;
-    break;
-  case 1:
-    if (!fUseM20) fUseM20=1;
-    fMaxM20=0.5;
-    break;
-  default:
-    AliError(Form("Max M20 Cut not defined %d",maxM20));
-    return kFALSE;
-  }
-  return kTRUE;
-}
-
-//___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetMinMaxM20(Int_t minM20)
 {
   switch(minM20){
@@ -4647,6 +4628,50 @@ Bool_t AliCaloPhotonCuts::SetMinMaxM20(Int_t minM20)
   }
   return kTRUE;
 }
+
+//___________________________________________________________________
+Bool_t AliCaloPhotonCuts::SetRecConv(Int_t recConv)
+{
+  switch(recConv){
+    case 0:
+      if (!fUseRecConv) fUseRecConv=0;
+      fMaxMGGRecConv=0;
+      break;
+    case 1:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.02;
+      break;
+    case 2:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.025;
+      break;
+    case 3:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.03;
+      break;
+    case 4:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.035;
+      break;
+    case 5:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.04;
+      break;
+    case 6:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.045;
+      break;
+    case 7:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.05;
+      break;
+    default:
+      AliError(Form("Conversion Recovery Cut not defined %d",recConv));
+      return kFALSE;
+  }
+  return kTRUE;
+}
+
 
 //___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
@@ -5212,6 +5237,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
+            energy /= 0.9935;
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
@@ -5312,6 +5338,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
+            energy /= 0.9935;
           } else if(fClusterType==2){
             energy /= ( 0.994914734 ); // additional factors
           }
@@ -5348,6 +5375,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9795532189, 0.8578583955, -2.3447892540, 1.0165873637, 0.6999387334, -2.1324782465) ;//with TM pt dep
             energy /= (FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) * 1.0040232773) ;
+            energy /= 0.9935;
           } else if(fClusterType==2) {
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
