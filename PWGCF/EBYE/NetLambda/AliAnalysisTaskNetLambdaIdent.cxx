@@ -103,6 +103,8 @@ AliAnalysisTaskSE(name),
     crossedrowsclustercut(0.8),
     fCentV0M(-1),
     fCentCL1(-1),
+    fMultV0M(-1),
+    fNtracksTPCout(-1),
     fVtxZ(-20),
     fRunNumber(-1),
     fAcceptV0(0x0),
@@ -116,8 +118,8 @@ AliAnalysisTaskSE(name),
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
 
-  fEventCuts.fUseVariablesCorrelationCuts = true;
-  fEventCuts.fUseStrongVarCorrelationCut = true;
+  //fEventCuts.fUseVariablesCorrelationCuts = true;
+  //fEventCuts.fUseStrongVarCorrelationCut = true;
   
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -233,6 +235,8 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   owd->cd();
   fTree->Branch("fCentV0M",&fCentV0M);
   fTree->Branch("fCentCL1",&fCentCL1);
+  fTree->Branch("fMultV0M",&fMultV0M);
+  fTree->Branch("fNtracksTPCout",&fNtracksTPCout);
   fTree->Branch("fVtxZ",&fVtxZ);
   fTree->Branch("fRunNumber",&fRunNumber);
   fTree->Branch("fAcceptV0",&fAcceptV0);
@@ -338,6 +342,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
   fCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   fCentV0M = MultSelection->GetMultiplicityPercentile("V0M");
+  fMultV0M = MultSelection->GetEstimator("V0M")->GetValue();
   if(fCentV0M > centcut && fCentCL1 > centcut) return;
   hEventStatistics->Fill("centrality selection",1);
 
@@ -362,7 +367,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   Int_t nTracks = 0;
   if(fIsAOD) nTracks = fAOD->GetNumberOfTracks(); // aod
   else nTracks = fESD->GetNumberOfTracks(); // esd
-  
+
+  fNtracksTPCout = 0;
   for(Int_t iTrack = 0; iTrack < nTracks; iTrack++)
     {
       Float_t pt = -999, eta = -999, phi = -999;
@@ -371,6 +377,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  AliAODTrack* track = (AliAODTrack*)fAOD->GetTrack(iTrack);
 	  if(!track) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
+	  if(track->Pt() > 0.15 && (track->GetStatus() & AliESDtrack::kTPCout) && track->GetID() > 0) fNtracksTPCout += 1.;
 	  if(!(track->TestFilterBit(96))) continue; //filter bits 5+6
 	  pt = track->Pt();
 	  eta = track->Eta();
@@ -381,6 +388,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTrack);
 	  if(!track) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
+	  if(track->Pt() > 0.15 && (track->GetStatus() & AliESDtrack::kTPCout)) fNtracksTPCout += 1.;
 	  pt = track->Pt();
 	  eta = track->Eta();
 	  phi = track->Phi();
