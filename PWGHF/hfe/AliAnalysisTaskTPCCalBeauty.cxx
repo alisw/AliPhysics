@@ -655,15 +655,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     // Get MC Headers //
     ////////////////////
     fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(!fMCarray){
+    /*if(!fMCarray){
         AliError("Array of MC particles not found");
-        return;
+        //return;
     }
     fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     if (!fMCHeader) {
         AliError("Could not find MC Header in AOD");
         //return;
-    }
+    }*/
     
     //Get NParticles from the generators
     if (fMCarray && fMCHeader) {
