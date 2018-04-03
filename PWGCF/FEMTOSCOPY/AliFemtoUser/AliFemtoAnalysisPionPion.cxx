@@ -40,6 +40,8 @@
 #include <sstream>
 #include <utility>
 #include <cassert>
+#include <typeinfo>
+
 
 static const double PionMass = 0.13956995;
 static const int UNKNOWN_CHARGE = -9999;
@@ -249,6 +251,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
 {
 }
 
+
 AliFemtoAnalysisPionPion
   ::AliFemtoAnalysisPionPion(const char *name,
                              const PionType pion_1,
@@ -257,6 +260,7 @@ AliFemtoAnalysisPionPion
     AliFemtoAnalysisPionPion(name, analysis_params_from_pion_types(pion_1, pion_2), cut_params)
 {
 }
+
 
 AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
                                                    const AnalysisParams &params,
@@ -298,14 +302,24 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     SetPairCut(BuildPairCut(cut_params));
   }
 
-  auto eventcut_cls = TClass::GetClass(typeid(*fEventCut));
-  TString eventcut_classname(eventcut_cls->GetName());
+  TString eventcut_classname = "UNKNOWN",
+          trackcut_classname = "UNKNOWN",
+          paircut_classname = "UNKNOWN";
 
-  auto trackcut_cls = TClass::GetClass(typeid(*fFirstParticleCut));
-  TString trackcut_classname(trackcut_cls->GetName());
+  if (fEventCut)
+  if (auto cls = TClass::GetClass(typeid(*fEventCut))) {
+    eventcut_classname = cls->GetName();
+  }
 
-  auto paircut_cls = TClass::GetClass(typeid(*fPairCut));
-  TString paircut_classname(paircut_cls->GetName());
+  if (fFirstParticleCut)
+  if (auto cls = TClass::GetClass(typeid(*fFirstParticleCut))) {
+    trackcut_classname = cls->GetName();
+  }
+
+  if (fPairCut)
+  if (auto cls = TClass::GetClass(typeid(*fPairCut))) {
+    paircut_classname = cls->GetName();
+  }
 
   fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
     class: 'AliFemtoAnalysisPionPion',
@@ -910,11 +924,11 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] " << msg;
     return nullptr;
   }
 
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoParticleCut*)(Configuration<__name>(cfg))
+  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? static_cast<AliFemtoParticleCut*>(Configuration<__name>(cfg))
 
   AliFemtoParticleCut *result = /* TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
                           //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
@@ -931,7 +945,7 @@ AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cf
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] " << msg;
     return nullptr;
   }
 
@@ -951,7 +965,7 @@ AliFemtoAnalysisPionPion::ConstructCorrelationFunction(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructCorrelationFunction] " << msg;
     return nullptr;
   }
 
