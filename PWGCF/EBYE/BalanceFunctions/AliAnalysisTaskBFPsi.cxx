@@ -197,6 +197,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCforKinematics(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fUseOutOfBunchPileUpCutsLHC15oJpsi(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
   fDetailedTracksQA(kFALSE),
@@ -241,6 +242,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistVZEROChannelGainEqualizationMap(0),
   fHistGlobalvsESDBeforePileUpCuts(0),
   fHistGlobalvsESDAfterPileUpCuts(0),
+  fHistV0MvsTPCoutBeforePileUpCuts(0), 
+  fHistV0MvsTPCoutAfterPileUpCuts(0),
   fUtils(0) {
   // Constructor
   // Define input and output slots here
@@ -526,6 +529,13 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistGlobalvsESDBeforePileUpCuts);
   fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
   fList->Add(fHistGlobalvsESDAfterPileUpCuts);
+
+
+  fHistV0MvsTPCoutBeforePileUpCuts = new TH2F("fHistV0MvsTPCoutBeforePileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+  fHistV0MvsTPCoutAfterPileUpCuts = new TH2F("fHistV0MvsTPCoutAfterPileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+
+    fList->Add(fHistV0MvsTPCoutBeforePileUpCuts);
+    fList->Add(fHistV0MvsTPCoutAfterPileUpCuts);
 
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
@@ -851,7 +861,7 @@ Double_t AliAnalysisTaskBFPsi::GetNUACorrection(Int_t gRun, Short_t vCharge, Dou
       nua = fHistNUACorrMinus[gRun]->GetBinContent(fHistNUACorrMinus[gRun]->FindBin(vPhi, vEta, vVz));}
 
   if (nua == 0.) {
-    Printf (Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz)); 
+    Printf ("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz); 
     return 1.;}
   
   return nua;
@@ -925,7 +935,7 @@ Double_t AliAnalysisTaskBFPsi::GetNUECorrection(Int_t gCentralityIndex, Short_t 
   }
   
   if (nue == 0.) {
-    Printf (Form("Should not happen : bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex)); 
+    Printf("Should not happen : bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex); 
     return 1.;}
 
   return nue;
@@ -1422,6 +1432,33 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
 	fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
       }
+
+      if (fUseOutOfBunchPileUpCutsLHC15oJpsi) {
+	
+	Int_t ntrkTPCout = 0;
+	 for (int it = 0; it < event->GetNumberOfTracks(); it++) {
+	   AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	   if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+	     ntrkTPCout++;
+	 }
+	 
+	 Double_t multVZERO =0; 
+	 AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+	 if(vzero) {
+	   for(int ich=0; ich < 64; ich++)
+	     multVZERO += vzero->GetMultiplicity(ich);
+	 }
+	 
+	 
+	 fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+	 
+	 if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+	   fHistEventStats->Fill(9, -1);
+	   return -1;
+	 }
+	 fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+	 
+      }     
       
       fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
       
