@@ -22,6 +22,10 @@
 ///
 /// Plus other helper methods.
 ///
+/// Class derived from AliEMCALRecoUtilsBase since AliRoot tag v5-09-26
+/// The base class just contains few track-matching extrapolation methods used in the 
+/// EMCAL reconstruction module (AliEMCALTracker and AliEMCALReconstructor) and ANALYSIS ESD to AOD filtering task
+///
 /// \author:  Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC- Grenoble 
 /// \author:  Rongrong Ma, Yale. Track matching part
 ///
@@ -45,13 +49,14 @@ class AliVEvent;
 class AliMCEvent;
 
 // EMCAL includes
+#include "AliEMCALRecoUtilsBase.h"
 class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
 class AliExternalTrackParam;
 class AliVTrack;
 
-class AliEMCALRecoUtils : public TNamed {
+class AliEMCALRecoUtils : public AliEMCALRecoUtilsBase {
   
 public:
   
@@ -300,21 +305,16 @@ public:
                                           AliExternalTrackParam *trkParam, 
                                           const TObjArray * clusterArr, 
                                           Float_t &dEta, Float_t &dPhi);
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
-                                               Double_t emcalR=440, Double_t mass=0.1396,
-                                               Double_t step=20, Double_t minpT=0.35,
-                                               Bool_t useMassForTracking = kFALSE, Bool_t useDCA = kFALSE);
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
-                                               Double_t emcalR, Double_t mass, Double_t step, 
-                                               Float_t &eta, Float_t &phi, Float_t &pt);
-  static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
-                                           Double_t mass, Double_t step, 
-                                           Float_t &tmpEta, Float_t &tmpPhi);
-  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
+ 
+  // Needed by analysis task in AliPhysics, could be removed once base class committed and analysis task is fixed.
+  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster,
                                            Double_t mass, Double_t step,
-                                           Float_t &tmpEta, Float_t &tmpPhi);
-  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
-                                           Float_t &tmpEta, Float_t &tmpPhi);
+                                           Float_t &tmpEta, Float_t &tmpPhi)
+  { return AliEMCALRecoUtilsBase::ExtrapolateTrackToCluster (trkParam, cluster, mass, step, tmpEta, tmpPhi) ; }
+  
+  Bool_t   ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
+                                      Float_t &tmpEta, Float_t &tmpPhi);
+  
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack  (Int_t trkIndex) const;
   void     GetMatchedResiduals       (Int_t clsIndex, Float_t &dEta, Float_t &dPhi);

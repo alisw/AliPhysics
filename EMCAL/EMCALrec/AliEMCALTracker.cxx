@@ -38,7 +38,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliEMCALReconstructor.h"
-#include "AliEMCALRecoUtils.h"
+#include "AliEMCALRecoUtilsBase.h"
 
 #include "AliEMCALTracker.h"
 
@@ -439,7 +439,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi, pt;
-  if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))
+  if (!AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))
   {
     if (fITSTrackSA) delete trkParam;
     return index;
@@ -481,7 +481,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
     AliExternalTrackParam trkParTmp(trkParamTmp);
 
     Float_t tmpEta, tmpPhi;
-    if (!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
+    if (!AliEMCALRecoUtilsBase::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
     
     if (TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
     {
