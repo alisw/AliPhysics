@@ -16,6 +16,7 @@
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include <iostream>
 #include <sstream>
 
 /// \cond CLASSIMP
@@ -70,6 +71,19 @@ bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other
     }
   }
   return isequal;
+}
+
+std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerDCSConfig &config) {
+  stream << "EMCAL trigger DCS config:" << std::endl;
+  stream << "================================" << std::endl;
+  for(int i = 0; i < config.GetTRUArr()->GetEntries(); i++) {
+    AliEMCALTriggerTRUDCSConfig *tru = config.GetTRUDCSConfig(i);
+    stream << "TRU" << i << ": " << *tru << std::endl;
+  }
+  AliEMCALTriggerSTUDCSConfig *emcalstu(config.GetSTUDCSConfig(false)), *dcalstu(config.GetSTUDCSConfig(true));
+  if(emcalstu) std::cout << "EMCAL STU: " << *emcalstu << std::endl;
+  if(dcalstu)  std::cout << "DCAL STU:  " << *dcalstu << std::endl;
+  return stream;
 }
 
 std::string AliEMCALTriggerDCSConfig::ToJSON() const {

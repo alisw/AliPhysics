@@ -15,6 +15,7 @@
 
 #include "TObject.h"
 #include "TClonesArray.h"
+#include <iosfwd>
 #include <string>
 
 class AliEMCALTriggerSTUDCSConfig;
@@ -36,6 +37,17 @@ public:
    */
   bool operator==(const AliEMCALTriggerDCSConfig &other) const;
 
+  /**
+   * @brief Streaming operator for trigger DCS config
+   * 
+   * Streaming all TRUs and both STUs.
+   * 
+   * @param stream Stream used for streaming the DCS config object
+   * @param config Object to be streamed
+   * @return Streaming operator after streaming DCS config 
+   */
+  friend std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerDCSConfig &config);
+  
 	/**
 	 * @brief Serialize object to JSON format
 	 * 
@@ -50,7 +62,7 @@ public:
   
   inline AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(Bool_t isDCAL = false) const;
   AliEMCALTriggerTRUDCSConfig*        GetTRUDCSConfig(Int_t iTRU) const      { return (AliEMCALTriggerTRUDCSConfig*)fTRUArr->At(iTRU); }
-  
+
 private:
   
   AliEMCALTriggerDCSConfig           (const AliEMCALTriggerDCSConfig &cd); // Not implemented
