@@ -107,12 +107,16 @@ void AliHFSystErr::Init(Int_t decay){
   case 1: // D0->Kpi
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
+      else if(fIs5TeVAnalysis){
+	if(fIsLowPtAnalysis) InitD0toKpi2017pp5TeVLowPtAn();
+	else InitD0toKpi2015pp5TeV();
+      }
       else if(fRunNumber == 10){
 	if(fIsLowPtAnalysis) InitD0toKpi2010ppLowPtAn();
 	else if(fIsPass4Analysis) InitD0toKpi2010ppPass4();
-	else if(fIs5TeVAnalysis) InitD0toKpi2015pp5TeV();
 	else InitD0toKpi2010pp();
-      } else AliFatal("Not yet implemented");
+      }
+      else AliFatal("Not yet implemented");
     }
     else if (fCollisionType==1) {
       if (fRunNumber == 10){
@@ -1071,6 +1075,56 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.03); // 3%
   fPIDEff->SetBinContent(1,0.05); // 5%
   fPIDEff->SetBinContent(2,0.05); // 5%
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+
+  // particle-antiparticle
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  for(Int_t i=1;i<=24;i++) fPartAntipart->SetBinContent(i,0.);
+
+  return;
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
+  //
+  // D0->Kpi syst errors. Responsible:
+  //   2017 pp sample at 5 TeV, analysis without topological cuts
+  //
+
+  AliInfo(" Settings for D0 --> K pi, pp collisions at 5 TeV, analysis without topological cuts");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2017pp5TeVLowPtAn");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  // temporarily use values from p-Pb 2016
+  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.2);
+  fRawYield->SetBinContent(1,0.05);
+  for(Int_t i=2;i<=12;i++) fRawYield->SetBinContent(i,0.04);
+  fRawYield->SetBinContent(4,0.05); //5<pt<6
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
@@ -7463,7 +7517,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 	grErrFeeddown->GetPoint(j,x,y);
 	errxh = grErrFeeddown->GetErrorXhigh(j);
 	errxl = grErrFeeddown->GetErrorXlow(j);
-	if ( ( (x-errxl) <= pt) && ( (x+errxl) >= pt) ) {
+	if ( ( (x-errxl) <= pt) && ( (x+errxh) >= pt) ) {
 	  erryh = grErrFeeddown->GetErrorYhigh(j);
 	  erryl = grErrFeeddown->GetErrorYlow(j);
 	}

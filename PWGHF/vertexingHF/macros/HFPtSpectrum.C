@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp5, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
@@ -423,6 +423,10 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   }
   else if (cc==kpp8){
     systematics->SetRunNumber(12);
+  }
+  else if (cc==kpp5){
+    systematics->SetIs5TeVAnalysis(true);
+    systematics->SetCollisionType(0);
   }
   else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
