@@ -72,6 +72,8 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fHistDCAXYptchargedplus_ext(0),
   fHistGlobalvsESDBeforePileUpCuts(0),
   fHistGlobalvsESDAfterPileUpCuts(0),
+  fHistV0MvsTPCoutBeforePileUpCuts(0), 
+  fHistV0MvsTPCoutAfterPileUpCuts(0),
   hNSigmaCutApplied(0),
   hBayesProbab(0),
   fUseOfflineTrigger(kFALSE),
@@ -79,6 +81,8 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fpPb(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
+  fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fUseOutOfBunchPileUpCutsLHC15oJpsi(kFALSE),
   fUsePID(kFALSE),
   fDCAext(kFALSE),
   fUseRapidity(kFALSE),
@@ -165,8 +169,15 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     fHistGlobalvsESDBeforePileUpCuts = new TH2F("fHistGlobalvsESDBeforePileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
     fHistGlobalvsESDAfterPileUpCuts = new TH2F("fHistGlobalvsESDAfterPileUpCuts","Global vs ESD Tracks; ESD tracks; Global tracks;",1000,0,20000,100,0,20000);
     
+    fHistV0MvsTPCoutBeforePileUpCuts = new TH2F("fHistV0MvsTPCoutBeforePileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+    fHistV0MvsTPCoutAfterPileUpCuts = new TH2F("fHistV0MvsTPCoutAfterPileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+    
     fListQA->Add(fHistGlobalvsESDBeforePileUpCuts);
-    fListQA->Add(fHistGlobalvsESDAfterPileUpCuts); 
+    fListQA->Add(fHistGlobalvsESDAfterPileUpCuts);
+
+    fListQA->Add(fHistV0MvsTPCoutBeforePileUpCuts);
+    fListQA->Add(fHistV0MvsTPCoutAfterPileUpCuts);
+    
     //====================================================//
     //Results TList
     fListResults = new TList();
@@ -337,26 +348,53 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				    else if (fPbPb) {
 				      fUtils->SetUseMVPlpSelection(kFALSE);
 				      fUtils->SetUseOutOfBunchPileUp(kFALSE);
-				      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-					fHistEventStats->Fill(6,gCentrality);
-					return;
+				      if (fUseOutOfBunchPileUpCutsLHC15o){
+					if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+					  fHistEventStats->Fill(6,gCentrality);
+					  return;
+					}
+					//const Int_t nTracks = gAOD->GetNumberOfTracks();
+					//Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
+					Int_t multTPC = 0;
+					for (Int_t it = 0; it < nTracks; it++) {
+					  AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
+					  if (!AODTrk){ delete AODTrk; continue; }
+					  if (AODTrk->TestFilterBit(128)) {multTPC++;}
+					} // end of for (Int_t it = 0; it < nTracks; it++)
+					
+					if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset){
+					  fHistEventStats->Fill(6,gCentrality);
+					  return;
+					}
 				      }
-				      //const Int_t nTracks = gAOD->GetNumberOfTracks();
-        			    //Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
-				      Int_t multTPC = 0;
-				      for (Int_t it = 0; it < nTracks; it++) {
-					AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
-					if (!AODTrk){ delete AODTrk; continue; }
-					if (AODTrk->TestFilterBit(128)) {multTPC++;}
-				      } // end of for (Int_t it = 0; it < nTracks; it++)
+				      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
+				    }
 
-				      if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset){
-					fHistEventStats->Fill(6,gCentrality);
+				    if (fUseOutOfBunchPileUpCutsLHC15oJpsi){
+				      Int_t ntrkTPCout = 0;
+				      for (int it = 0; it < gAOD->GetNumberOfTracks(); it++) {
+					AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
+					if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+					  ntrkTPCout++;
+				      }
+				      
+				      Double_t multVZERO =0; 
+				      AliVVZERO *vzero = (AliVVZERO*)gAOD->GetVZEROData();
+				      if(vzero) {
+					for(int ich=0; ich < 64; ich++)
+					  multVZERO += vzero->GetMultiplicity(ich);
+				      }
+
+				      fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+				      
+				      if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+					fHistEventStats->Fill(9, -1);
 					return;
 				      }
-   				    }
-				    fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-				   
+				      fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+
+				    }
+				    
 				    
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
