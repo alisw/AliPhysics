@@ -42,8 +42,13 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
 
   void SetPileUpCutsParamsLHC15o(Float_t slope, Float_t offset){
+    fUseOutOfBunchPileUpCutsLHC15o=kTRUE;
     fPileupLHC15oSlope = slope;
     fPileupLHC15oOffset = offset;
+  }
+
+  void SetPileUpCutsJpsigroup(){
+    fUseOutOfBunchPileUpCutsLHC15oJpsi=kTRUE;
   }
   
   void UsePileUpCutspPb() {fpPb = kTRUE;}
@@ -146,6 +151,9 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH2F *fHistGlobalvsESDBeforePileUpCuts;
   TH2F *fHistGlobalvsESDAfterPileUpCuts;
 
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //histos to monitor pile up cuts J/psi
+  TH2F *fHistV0MvsTPCoutAfterPileUpCuts;
+ 
   TH3F* hNSigmaCutApplied;
   TH3F* hBayesProbab;
   
@@ -155,6 +163,9 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
   Float_t fPileupLHC15oOffset;
+  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
+
+  Bool_t fUseOutOfBunchPileUpCutsLHC15oJpsi;//
   
   Bool_t fUsePID;
   Bool_t fDCAext;
@@ -187,7 +198,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   AliAnalysisTaskAccCont(const AliAnalysisTaskAccCont&); // not implemented
   AliAnalysisTaskAccCont& operator=(const AliAnalysisTaskAccCont&); // not implemented
   
-  ClassDef(AliAnalysisTaskAccCont, 2); // example of analysis
+  ClassDef(AliAnalysisTaskAccCont, 3); // example of analysis
 };
 
 #endif
