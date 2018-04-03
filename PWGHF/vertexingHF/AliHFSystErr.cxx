@@ -108,8 +108,9 @@ void AliHFSystErr::Init(Int_t decay){
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else if(fIs5TeVAnalysis){
+  if(fRunNumber==17)InitD0toKpi2017pp5TeV();
+  else InitD0toKpi2015pp5TeV();
 	if(fIsLowPtAnalysis) InitD0toKpi2017pp5TeVLowPtAn();
-	else InitD0toKpi2015pp5TeV();
       }
       else if(fRunNumber == 10){
 	if(fIsLowPtAnalysis) InitD0toKpi2010ppLowPtAn();
@@ -1083,6 +1084,65 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
   // particle-antiparticle
   //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
   //  for(Int_t i=1;i<=24;i++) fPartAntipart->SetBinContent(i,0.);
+
+  return;
+}
+//-------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2017pp5TeV(){
+  // TO BE DONE
+  // D0->Kpi syst errors. Responsible: C. Terrevoli
+  //  2015 pp sample - 5TeV
+  //
+  printf("D0 in pp@5TeV  2017 \n");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2017pp5TeV");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",50,0,50);
+ // fNorm->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.035);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",50,0,50);
+  //fBR->SetBinContent(1,0.0); // 1.2% PDG2010
+  for(Int_t i=1;i<=50;i++) fBR->SetBinContent(i,0.01); //
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);
+  fTrackingEff->SetBinContent(1,0.03); //  0-1
+  fTrackingEff->SetBinContent(2,0.03); //  1-2
+  fTrackingEff->SetBinContent(3,0.03); // 2-3
+  fTrackingEff->SetBinContent(4,0.03); // 3-4
+  for(Int_t i=5;i<=10;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=17;i<=50;i++) fTrackingEff->SetBinContent(i,0.03); //
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",50,0,50);
+  fRawYield->SetBinContent(1,0.10);
+  for(Int_t i=2;i<=12;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=12;i<=50;i++) fRawYield->SetBinContent(i,0.05);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
+//  fCutsEff->SetBinContent(1,0.0);
+  for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=3;i<=8;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=8;i<=50;i++) fCutsEff->SetBinContent(i,0.05);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
+  for(Int_t i=1;i<=50;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",50,0,50);
+  for(Int_t i=1;i<=50;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(2,0.03);
+
+  // particle-antiparticle
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  fPartAntipart->SetBinContent(1,1);
+  //  for(Int_t i=2;i<=24;i++) fPartAntipart->SetBinContent(i,0.05);
 
   return;
 }
