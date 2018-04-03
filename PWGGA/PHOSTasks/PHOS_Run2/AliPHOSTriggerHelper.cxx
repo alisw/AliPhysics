@@ -181,7 +181,7 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin)
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin, Double_t ETrigger, Bool_t isCoreUsed)
 {
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
@@ -277,6 +277,8 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, 
     L1 = -1;//L0
   }
 
+  Double_t energy = 0;
+
   while(fCaloTrigger->Next()){
     // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
 
@@ -299,7 +301,12 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, 
       if(!cuts->AcceptPhoton(ph)) continue;
       if(fApplyTOFCut && !ph->IsTOFOK()) continue;
 
-      if(ph->Energy() < Emin) continue;
+      energy = ph->Energy();
+      if(isCoreUsed) energy = (ph->GetMomV2())->Energy();
+
+      //printf("cluster  E = %e GeV\n",energy);
+      if(energy < Emin) continue;
+      if(energy < ETrigger) continue;
 
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
       //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
@@ -312,6 +319,8 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, 
       relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
       TVector3 global1(position);
       fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+      //printf("cluster positoin M%d X%d Z%d and E = %e GeV\n",relId[0],relId[2],relId[3],energy);
 
       if(fUseDeltaRMatching){
         if(IsMatchedDeltaR(trgrelId,global1)) return kTRUE;

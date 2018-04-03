@@ -51,14 +51,12 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
     100, 0, 100.0,
     100, 0, 10000.0
   );
-  fCentMult->Sumw2();
 
   fVertexZ = new TH1F(
     "VertexZ" + pf,
     TString::Format("Vertex Z Distribution%s;z (cm);N_{ev}", title_suffix),
     128, -15.0f, 15.0f
   );
-  fVertexZ->Sumw2();
 
   fVertexXY = new TH2F(
     "VertexXY" + pf,
@@ -68,7 +66,6 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
     // 48, 0.0f, 0.12f,
     // 48, 0.22f, 0.32f
   );
-  fVertexXY->Sumw2();
 
   // only create _collection_size histograms if this is the passing event cut monitor
   if (passing) {
@@ -78,7 +75,6 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                                  "Size of particle collection;"
                                                  "# pions; N_{ev}",
                                                  100, -0.5, 1000.5);
-      _identical_collection_size_pass->Sumw2();
       _identical_collection_size_fail = (TH1I*)_identical_collection_size_pass->Clone("collection_size_f");
     } else {
       _collection_size_pass = new TH2I("collection_size_p",
@@ -346,6 +342,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     }
     fMC_type->GetXaxis()->CenterLabels();
 
+#ifndef MC_PARENT_IS_THSPARSE
     fMC_parent = new TH2I(
       hist_name("mc_parent_pdg"),
       hist_title("Parent PDG Code",
@@ -362,13 +359,28 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     }
     fMC_parent->GetXaxis()->CenterLabels();
 
-
     for (UInt_t bin = 0; bin < parent_codes.size(); bin++) {
       Int_t code = parent_codes[bin];
       auto label = code_to_label.find(code);
       fMC_parent->GetYaxis()->SetBinLabel(bin + 1, label->second.c_str());
     }
     fMC_parent->GetYaxis()->CenterLabels();
+
+#else
+    const int max_code = 100555;
+    const static int ndim = 2;
+    const Int_t nbins[ndim] = {2 * max_code + 1, 2 * max_code + 1};
+    const Double_t low[ndim] = {-max_code - 0.5, -max_code - 0.5},
+                  high[ndim] = {max_code + 0.5, max_code + 0.5};
+
+    fMC_parent = new THnSparseI(
+      hist_name("mc_parent_pdg"),
+      hist_title("parent PDG code",
+                 "daughter Code;"
+                 "parent Code;"),
+      ndim,
+      nbins, low, high);
+#endif
   }
 
 }
@@ -419,14 +431,16 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
     fMC_mass->Fill(mc->GetMass());
     fMC_pt->Fill(pt, mc->GetTrueMomentum()->Perp());
 
-    const auto type_location = std::find(codes.begin(), codes.end(), mc->GetPDGPid());
+    auto pdg_code = mc->GetPDGPid(),
+         pdg_code_parent = mc->GetMotherPdgCode();
+
+    const auto type_location = std::find(codes.begin(), codes.end(), pdg_code);
     const Int_t type_bin = type_location == codes.end()
                          ? 0
                          : std::distance(codes.begin(), type_location);
     fMC_type->Fill(type_bin);
 
-
-    auto parent_location = std::find(parent_codes.begin(), parent_codes.end(), mc->GetMotherPdgCode());
+    auto parent_location = std::find(parent_codes.begin(), parent_codes.end(), pdg_code_parent);
     const Int_t parent_type_bin = parent_location == parent_codes.end()
                                 ? 0
                                 : std::distance(parent_codes.begin(), parent_location);
@@ -435,7 +449,13 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
     //           << " <- " << mc->GetMotherPdgCode()
     //           << "\n";
     // }
+    #ifndef MC_PARENT_IS_THSPARSE
     fMC_parent->Fill(type_bin, parent_type_bin);
+    #else
+    Double_t value[] = {static_cast<double>(pdg_code), static_cast<double>(pdg_code_parent)};
+    fMC_parent->Fill(value);
+    #endif
+
   }
 
   fYPt->Fill(eta, pt);

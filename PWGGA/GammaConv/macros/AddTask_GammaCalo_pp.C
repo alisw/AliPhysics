@@ -224,7 +224,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   // usually for EMCal we start with 11111: default values for            "ClusterType", "EtaMin", "EtaMax", "PhiMin", "PhiMax"
   // then two numbers for nonlinearity, e.g. 21: this is                  "NonLinearity1", "NonLinearity2"
   // Then some cuts on the clusters, e.g. 06003222: this is               "DistanceToBadChannel", "Timing", "TrackMatching", "ExoticCell", "MinEnergy", "MinNCells", "MinM02", "MaxM02"
-  // finally some for now unused cuts, usually 0000: this is              "MinM20", "MaxM20", "MaximumDispersion", "NLM"
+  // finally some for now unused cuts, usually 0000: this is              "MinMaxM20", "RecConv", "MaximumDispersion", "NLM"
 
 
   // *****************************************************************************************************

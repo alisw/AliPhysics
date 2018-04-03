@@ -1017,7 +1017,6 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
         Float_t centHIJING[ncentHIJING+1] = {0.00, 1.00, 2.00, 3.00, 4.00, 5.00, 10.00, 20.00, 30.00, 40.00, 50.00, 60.00, 70.00, 80.00, 90.00, 100.00};
         Float_t bHIJING[ncentHIJING+1]    = {0.00, 1.47, 2.11, 2.61, 3.03, 3.40,  4.84,  6.89,  8.46,  9.79, 10.95, 12.01, 12.98, 13.88, 14.79,  30.00};
 */
-        eventHeader->Print();
         if (this->fDataPeriod == this->kLHC13f3) {
           for (Int_t icent = 0; icent < ncentAMPT; icent++) {
             if (b < bAMPT[icent+1]) {

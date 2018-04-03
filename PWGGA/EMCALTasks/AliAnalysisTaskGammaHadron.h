@@ -21,11 +21,11 @@ using std::vector;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 public:
 	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
+	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
 	virtual ~AliAnalysisTaskGammaHadron();
 
 	static AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
-			Bool_t      InputGammaOrPi0 = 0,
+			Int_t       InputGammaOrPi0 = 0,
 			Bool_t      InputSeMe       = 0,
 			Bool_t      InputMCorData   = 0,
 			UInt_t      evtTriggerType  = AliVEvent::kEMCEGA,
@@ -106,7 +106,7 @@ public:
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
-  Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
+  Int_t                       fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0 or pi0 SB
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
@@ -174,10 +174,11 @@ public:
   TH1             *fHistPi0;                 //!<! Tyler's histogram
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
-  TH2             *fMassPtPionAcc;               //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
-  TH2             *fMassPtPionRej;               //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
-  TH3             *fMassPtCentPionAcc;               //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
-  TH3             *fMassPtCentPionRej;               //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
+  TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
+  TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH3             *fMassPtCentPionAcc;       //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
+  TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
 
 
   TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background

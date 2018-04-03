@@ -1313,7 +1313,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 20;
+  const Int_t kMaxLists = 21;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)

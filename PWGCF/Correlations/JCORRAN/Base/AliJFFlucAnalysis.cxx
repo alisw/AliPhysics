@@ -1,18 +1,13 @@
-#include <TChain.h>
-#include <TTree.h>
 #include <TH1D.h>
 #include <TH2D.h>
-#include <TGraphErrors.h>
+#include <TH3D.h>
 #include <TMath.h>
-#include <TCanvas.h>
-#include <TVector.h>
-#include <TVector3.h>
-#include <TVectorT.h>
 #include <TComplex.h>
+#include <TClonesArray.h>
 #include "AliJBaseTrack.h"
 #include "AliJFFlucAnalysis.h"
 //#include "AliJCorrelations.h"
-#include "AliAnalysisManager.h"
+//#include "AliAnalysisManager.h"
 //#include "AliAODEvent.h"
 //#include "AliAODTrack.h"
 //#include "AliVVertex.h"
@@ -25,13 +20,12 @@
 //#include "AliGenEventHeader.h"
 //#include "AliGenCocktailEventHeader.h"
 //#include "AliGenPythiaEventHeader.h"
-#include "AliInputEventHandler.h"
+//#include "AliInputEventHandler.h"
 //#include "AliESDVertex.h"
 //#include "AliVParticle.h"
 //#include "AliCentrality.h"
 //#include "AliEventplane.h"
 //#include "AliJHistManager.h"
-#include "TClonesArray.h"
 #include "AliJEfficiency.h"
 #pragma GCC diagnostic warning "-Wall"
 
@@ -41,7 +35,6 @@ ClassImp(AliJFFlucAnalysis)
 AliJFFlucAnalysis::AliJFFlucAnalysis()
 	: AliAnalysisTaskSE(),
 	fInputList(0),
-	//h_phi_module(),
 	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
 	fCent(0),
@@ -71,7 +64,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_cn_2c_eta10(),
 	fh_cn_cn_2c_eta10()
 {
-	fDebugLevel = 0;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -79,17 +71,12 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fQC_eta_cut_max = 0.8; // default setting
 	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
-
-	for(UInt_t icent = 0; icent < NCentBin; icent++)
-		for(UInt_t isub = 0; isub < 2; isub++)
-			h_phi_module[icent][isub] = NULL;
 }
 
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	: AliAnalysisTaskSE(name),
 	fInputList(0),
-	//h_phi_module(),
 	fEfficiency(0),
 	fVertex(0),
 	fCent(0),
@@ -121,7 +108,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 {
 	cout << "analysis task created " << endl;
 
-	fDebugLevel = 0;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -129,15 +115,12 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fQC_eta_cut_max = 0.8; // default setting
 	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
-
-	for(UInt_t icent = 0; icent < NCentBin; icent++)
-		for(UInt_t isub = 0; isub < 2; isub++)
-			h_phi_module[icent][isub] = NULL;
 }
 
 //Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
-Double_t AliJFFlucAnalysis::CentBin[CENTN+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
+Double_t AliJFFlucAnalysis::CentBin[CENTN_NAT+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
 UInt_t AliJFFlucAnalysis::NCentBin = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+UInt_t AliJFFlucAnalysis::CentralityTranslationMap[CENTN_NAT] = {0,0,0,1,2,3,4,5,6};
 Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
 
@@ -145,7 +128,6 @@ UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
-	//h_phi_module(a.h_phi_module),
 	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
 	fCent(a.fCent),
@@ -380,17 +362,11 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fCBin = GetCentralityClass(fCent);
 	if(fCBin == -1)
 		return;
-	DEBUG(3, "cent bin found" );
 	int trk_number = fInputList->GetEntriesFast();
-	DEBUG(3, Form("trk number is %d", trk_number) );
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
-	DEBUG(3, "trk number filled into histo");
 	fh_cent->Fill(fCent) ;
-	DEBUG(3, "filled cent into histo" );
 	fh_ImpactParameter->Fill( fImpactParameter);
-	DEBUG(3, "impact parameter has been filled" );
 	Fill_QA_plot( fEta_min, fEta_max );
-	DEBUG(3, "QA Plot filled");
 
 	enum{kSubA, kSubB, kNSub};
 	enum{kMin, kMax};
@@ -741,7 +717,6 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 	//	fList = dynamic_cast<TList*> (GetOutputData(1));
 	//	if(!fList) { Printf("ERROR: fList not availabe"); return;};
 	//
-	inclusFile->Close();
 	//
 	cout<<"Sucessfully Finished"<<endl;
 }
@@ -750,29 +725,27 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 {
 	Long64_t ntracks = fInputList->GetEntriesFast();
-	for( Long64_t it=0; it< ntracks; it++){
+	for( Long64_t it=0; it < ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t eta = itrack->Eta();
-		Double_t phi = itrack->Phi();
+		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)
+			continue;
 
+		Double_t phi = itrack->Phi();
 		Double_t phi_module_corr = 1.0;
-		int isub = (int)(eta > 0);
-		if(flags & FLUC_PHI_MODULATION){
-			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi ) )  );
-			if(flags & FLUC_PHI_INVERSE)
-				phi_module_corr = 1.0/phi_module_corr;
+		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
+			Double_t w = pPhiWeights->GetBinContent(
+				pPhiWeights->FindBin(fVertex[2],phi,eta));
+			if(w > 1e-6)
+				phi_module_corr = w;
 		}
 
 		Double_t pt = itrack->Pt();
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-		if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){
-			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
-			fh_pt[fCBin]->Fill(pt, 1./ effCorr );
-			if( eta < 0 )
-				fh_phi[fCBin][0]->Fill( phi, phi_module_corr/effCorr);
-			if( eta > 0 )
-				fh_phi[fCBin][1]->Fill( phi, phi_module_corr/effCorr);
-		}
+		Double_t effInv = 1.0/effCorr;
+		fh_eta[fCBin]->Fill(eta,effInv);
+		fh_pt[fCBin]->Fill(pt,effInv);
+		fh_phi[fCBin][(int)(eta > 0.0)]->Fill( phi, effInv/phi_module_corr);
 	}
 	for(int iaxis=0; iaxis<3; iaxis++)
 		fh_vertex[iaxis]->Fill( fVertex[iaxis] );
@@ -783,13 +756,12 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 }
 
 //________________________________________________________________________
-TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int harmonics)
+TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int ih)
 {
-	int ih=harmonics;
 	TComplex Qn = TComplex(0,0);
 	Double_t Sub_Ntrk = 0; // number of Tracks * effCorr * phi modulation factor
 	Long64_t ntracks = fInputList->GetEntriesFast();
-	for(Long64_t it=0; it< ntracks; it++){
+	for(Long64_t it = 0; it < ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t pt = itrack->Pt();
 		Double_t eta = itrack->Eta();
@@ -798,20 +770,20 @@ TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int har
 			continue; // eta cut
 
 		Double_t phi_module_corr = 1.0;
-		int isub = (int)(eta > 0);
-		if(flags & FLUC_PHI_MODULATION){
-			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi ) )  );
-			if(flags & FLUC_PHI_INVERSE)
-				phi_module_corr = 1.0/phi_module_corr;
+		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
+			Double_t w = pPhiWeights->GetBinContent(
+				pPhiWeights->FindBin(fVertex[2],phi,eta));
+			if(w > 1e-6)
+				phi_module_corr = w;
 		}
-		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent );
 
-		Double_t tf = phi_module_corr/effCorr;
+		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent );
+		Double_t tf = 1.0/(effCorr*phi_module_corr);
 		Qn += TComplex( tf*TMath::Cos(ih*phi), tf*TMath::Sin(ih*phi) );
 		Sub_Ntrk += tf;
 	}
 
-	if( ih !=0)
+	if(ih != 0)
 		Qn /= Sub_Ntrk; // Use Qn[0] as total number of tracks(*eff)
 
 	return Qn;
@@ -836,29 +808,29 @@ TComplex AliJFFlucAnalysis::Get_Qn_pt(Double_t eta1, Double_t eta2, int harmonic
 	Double_t Sub_Ntrk =0;
 
 	Long64_t ntracks = fInputList->GetEntriesFast();
-	for( Long64_t it=0; it< ntracks; it++){
+	for( Long64_t it = 0; it < ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t eta = itrack->Eta();
+		if(eta < eta1 || eta > eta2)
+			continue;
 		Double_t pt = itrack->Pt();
-		if( pt > pt_min && pt < pt_max){
-			if( eta>eta1 &&  eta<eta2 ){
-				int isub = (int)(eta > 0);
-				Double_t phi = itrack->Phi();
-				Double_t phi_module_corr = 1.0;
-				if(flags & FLUC_PHI_MODULATION){
-					phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-					if(flags & FLUC_PHI_INVERSE)
-						phi_module_corr = 1.0/phi_module_corr;
-				}
-				Double_t pt = itrack->Pt();
-				Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-
-				Double_t tf = phi_module_corr/effCorr;
-				Qn += TComplex(tf*TMath::Cos(nh*phi),tf*TMath::Sin(nh*phi));
-				Sub_Ntrk += tf;
-			}
+		if(pt < pt_min || pt > pt_max)
+			continue;
+		Double_t phi = itrack->Phi();
+		Double_t phi_module_corr = 1.0;
+		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
+			Double_t w = pPhiWeights->GetBinContent(
+				pPhiWeights->FindBin(fVertex[2],phi,eta));
+			if(w > 1e-6)
+				phi_module_corr = w;
 		}
+		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+
+		Double_t tf = 1.0/(phi_module_corr*effCorr);
+		Qn += TComplex(tf*TMath::Cos(nh*phi),tf*TMath::Sin(nh*phi));
+		Sub_Ntrk += tf;
 	}
+
 	Qn /= Sub_Ntrk;
 	int iside = (int)(eta1 > 0.0);
 	NSubTracks_pt[iside][ptbin] = Sub_Ntrk;
@@ -901,10 +873,11 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 		Double_t pt = itrack->Pt();
 
 		Double_t phi_module_corr = 1.0;
-		if(flags & FLUC_PHI_MODULATION){
-			phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-			if(flags & FLUC_PHI_INVERSE)
-				phi_module_corr = 1.0/phi_module_corr;
+		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
+			Double_t w = pPhiWeights->GetBinContent(
+				pPhiWeights->FindBin(fVertex[2],phi,eta));
+			if(w > 1e-6)
+				phi_module_corr = w;
 		}
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 
@@ -914,7 +887,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			for(int ik=0; ik<nKL; ik++){
 				q[ik] = TComplex(tf*TMath::Cos(ih*phi),tf*TMath::Sin(ih*phi));
 				QvectorQC[ih][ik] += q[ik];
-				tf *= phi_module_corr/effCorr;
+				tf *= 1.0/(phi_module_corr*effCorr);
 			}
 			//this is for normalized SC ( denominator needs an eta gap )
 			if(TMath::Abs(eta) > fQC_eta_gap_half){
@@ -949,10 +922,10 @@ TComplex AliJFFlucAnalysis::Four( int n1, int n2, int n3, int n4){
 	return four;
 }
 //__________________________________________________________________________
-void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi){
+/*void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi){
 	// hPhi histo setter
 	h_phi_module[cent][sub] = hModuledPhi;
-}
+}*/
 
 int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
 	for(UInt_t iCbin = 0; iCbin < NCentBin; iCbin++){

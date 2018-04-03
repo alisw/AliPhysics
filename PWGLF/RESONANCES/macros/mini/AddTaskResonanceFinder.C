@@ -5,12 +5,14 @@
 
 ****************************************************************************/
 
+
 Bool_t Config_piphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_kxphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_k0phi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_pphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_phiphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_Lambdaphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+
 
 void AddMonitorOutput_P(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_Pt(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
@@ -35,6 +37,7 @@ void AddMonitorOutput_V0TPCpim(TString s="",TObjArray* m=0,TString o="",AliRsnLo
 void AddMonitorOutput_V0TPCpip(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_LambdaProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_LambdaAntiProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
+
 
 AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
   TString lname,
@@ -113,7 +116,7 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
   // set the check for pileup 
   if(isPP && (!isMC) && cutVertex){ 
     cutVertex->SetCheckPileUp(rejectPileUp); 
-    ::Info("AddTaskRare_pp13", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+    ::Info("AddTaskResonanceFinder", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 
   // define and fill cut set for event cuts
@@ -207,7 +210,7 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
   // ----- CONTAINERS -----
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  Printf("AddTaskRare_pp13 - Set OutputFileName : \n %s\n", outputFileName.Data() );
+  Printf("AddTaskResonanceFinder - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",lname.Data()), 
 							  TList::Class(), 
@@ -225,12 +228,12 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
 
 Bool_t Config_piphi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="piphi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsPi=0,
-  Int_t       TrackCutsPhi=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsPi,
+  Int_t       TrackCutsPhi
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -436,12 +439,12 @@ Bool_t Config_piphi(
 
 Bool_t Config_kxphi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="kxphi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsK=0,
-  Int_t       TrackCutsPhi=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsK,
+  Int_t       TrackCutsPhi
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -647,12 +650,12 @@ Bool_t Config_kxphi(
 
 Bool_t Config_k0phi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="k0phi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsK0=0,
-  Int_t       TrackCutsPhi=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsK0,
+  Int_t       TrackCutsPhi
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -898,12 +901,12 @@ Bool_t Config_k0phi(
 
 Bool_t Config_pphi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="pphi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsP=0,
-  Int_t       TrackCutsPhi=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsP,
+  Int_t       TrackCutsPhi
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -1109,12 +1112,12 @@ Bool_t Config_pphi(
 
 Bool_t Config_phiphi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="phiphi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsPhi=0,
-  Int_t       TrackCutsDummy=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsPhi,
+  Int_t       TrackCutsDummy
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -1302,12 +1305,12 @@ Bool_t Config_phiphi(
 
 Bool_t Config_Lambdaphi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="Lambdaphi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsLambda=0,
-  Int_t       TrackCutsPhi=0
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsLambda,
+  Int_t       TrackCutsPhi
 ){
   bool isPP=false;
   if(!system) isPP=true;
@@ -1593,7 +1596,7 @@ Bool_t Config_Lambdaphi(
 //=============================
 
 
-void AddMonitorOutput_P(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_P(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_mom",name.Data()),AliRsnValueDaughter::kP);
   a->SetBins(0.,10.0,0.05);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1603,7 +1606,7 @@ void AddMonitorOutput_P(TString name="",TObjArray *mon=0,TString opt="",AliRsnLo
 }
 
 
-void AddMonitorOutput_Pt(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_Pt(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_pt",name.Data()),AliRsnValueDaughter::kPt);
   a->SetBins(0.,10.0,0.05);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1612,7 +1615,7 @@ void AddMonitorOutput_Pt(TString name="",TObjArray *mon=0,TString opt="",AliRsnL
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_Eta(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_Eta(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_eta",name.Data()),AliRsnValueDaughter::kEta);
   a->SetBins(-2.,2.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1621,7 +1624,7 @@ void AddMonitorOutput_Eta(TString name="",TObjArray *mon=0,TString opt="",AliRsn
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_DCAxy(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_DCAxy(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_dcaxy",name.Data()),AliRsnValueDaughter::kDCAXY);
   a->SetBins(-0.5,0.5,0.001);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1630,7 +1633,7 @@ void AddMonitorOutput_DCAxy(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_DCAz(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_DCAz(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_dcaz",name.Data()),AliRsnValueDaughter::kDCAZ);
   a->SetBins(-2.5,2.5,0.005);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1639,7 +1642,7 @@ void AddMonitorOutput_DCAz(TString name="",TObjArray *mon=0,TString opt="",AliRs
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_TPCpi(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_TPCpi(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_TPCpi",name.Data()),AliRsnValueDaughter::kTPCnsigmaPi);
   a->SetBins(-10.,10.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1648,7 +1651,7 @@ void AddMonitorOutput_TPCpi(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_TPCK(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_TPCK(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_TPCK",name.Data()),AliRsnValueDaughter::kTPCnsigmaK);
   a->SetBins(-10.,10.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1657,7 +1660,7 @@ void AddMonitorOutput_TPCK(TString name="",TObjArray *mon=0,TString opt="",AliRs
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_TPCp(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_TPCp(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_TPCp",name.Data()),AliRsnValueDaughter::kTPCnsigmaP);
   a->SetBins(-10.,10.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1666,7 +1669,7 @@ void AddMonitorOutput_TPCp(TString name="",TObjArray *mon=0,TString opt="",AliRs
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_NclTPC(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_NclTPC(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_NclTPC",name.Data()),AliRsnValueDaughter::kNTPCclusters);
   a->SetBins(-0.5,199.5,1);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1675,7 +1678,7 @@ void AddMonitorOutput_NclTPC(TString name="",TObjArray *mon=0,TString opt="",Ali
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_chi2TPC(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_chi2TPC(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_chi2TPC",name.Data()),AliRsnValueDaughter::kTPCchi2);
   a->SetBins(0.0,6,.1);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1684,7 +1687,7 @@ void AddMonitorOutput_chi2TPC(TString name="",TObjArray *mon=0,TString opt="",Al
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0NPt(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0NPt(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0npt",name.Data()),AliRsnValueDaughter::kV0NPt);
   a->SetBins(0.,10.0,0.05);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1693,7 +1696,7 @@ void AddMonitorOutput_V0NPt(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0PPt(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0PPt(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0ppt",name.Data()),AliRsnValueDaughter::kV0PPt);
   a->SetBins(0.,10.0,0.05);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1702,7 +1705,7 @@ void AddMonitorOutput_V0PPt(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0Mass(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0Mass(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0mass",name.Data()),AliRsnValueDaughter::kV0Mass);
   name.ToLower();
   if(name.Contains("k0")) a->SetBins(0.4,0.6,0.001);
@@ -1714,7 +1717,7 @@ void AddMonitorOutput_V0Mass(TString name="",TObjArray *mon=0,TString opt="",Ali
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0DCA(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0DCA(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0dca",name.Data()),AliRsnValueDaughter::kV0DCA);
   a->SetBins(0.0,0.4,0.001);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1723,7 +1726,7 @@ void AddMonitorOutput_V0DCA(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0Radius(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0Radius(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0radius",name.Data()),AliRsnValueDaughter::kV0Radius);
   a->SetBins(0.0,200,0.2);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1732,7 +1735,7 @@ void AddMonitorOutput_V0Radius(TString name="",TObjArray *mon=0,TString opt="",A
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0Lifetime(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0Lifetime(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0lifetime",name.Data()),AliRsnValueDaughter::kV0Lifetime);
   a->SetBins(0.0,200,0.1);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1741,7 +1744,7 @@ void AddMonitorOutput_V0Lifetime(TString name="",TObjArray *mon=0,TString opt=""
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0DaughterDCA(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0DaughterDCA(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0ddca",name.Data()),AliRsnValueDaughter::kDaughterDCA);
   a->SetBins(0.0,2,0.001);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1750,7 +1753,7 @@ void AddMonitorOutput_V0DaughterDCA(TString name="",TObjArray *mon=0,TString opt
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0DCA2TPV(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0DCA2TPV(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   //DCA of secondary tracks to primary vertex
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0dca2tpv",name.Data()),AliRsnValueDaughter::kV0DCAXY);
   a->SetBins(-10.,10.,0.01);
@@ -1760,7 +1763,7 @@ void AddMonitorOutput_V0DCA2TPV(TString name="",TObjArray *mon=0,TString opt="",
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0CPA(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0CPA(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0cpa",name.Data()),AliRsnValueDaughter::kCosPointAng);
   a->SetBins(0.96,1.,0.001);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1769,7 +1772,7 @@ void AddMonitorOutput_V0CPA(TString name="",TObjArray *mon=0,TString opt="",AliR
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0TPCpim(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0TPCpim(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0TPCpim",name.Data()),AliRsnValueDaughter::kLambdaPionPIDCut);
   a->SetBins(0.,5.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1778,7 +1781,7 @@ void AddMonitorOutput_V0TPCpim(TString name="",TObjArray *mon=0,TString opt="",A
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_V0TPCpip(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0){
+void AddMonitorOutput_V0TPCpip(TString name,TObjArray *mon,TString opt,AliRsnLoopDaughter *loop){
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0TPCpip",name.Data()),AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
   a->SetBins(-0.,5.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
@@ -1787,7 +1790,7 @@ void AddMonitorOutput_V0TPCpip(TString name="",TObjArray *mon=0,TString opt="",A
   if (loop) loop->AddOutput(o);
 }
 
-void AddMonitorOutput_LambdaProtonPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpPID=0){
+void AddMonitorOutput_LambdaProtonPID(TObjArray *mon,TString opt,AliRsnLoopDaughter *lpPID){
   // Lambda Cosine of the Pointing Angle
   AliRsnValueDaughter *axisLambdaProtonPID = new AliRsnValueDaughter("lambda_protonPID", AliRsnValueDaughter::kLambdaProtonPIDCut);
   axisLambdaProtonPID->SetBins(0.0,5,0.01);
@@ -1801,7 +1804,7 @@ void AddMonitorOutput_LambdaProtonPID(TObjArray *mon=0,TString opt="",AliRsnLoop
   if (lpPID) lpPID->AddOutput(outMonitorLambdaProtonPID);
 }
 
-void AddMonitorOutput_LambdaAntiProtonPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lapPID=0){
+void AddMonitorOutput_LambdaAntiProtonPID(TObjArray *mon,TString opt,AliRsnLoopDaughter *lapPID){
   // Lambda Cosine of the Pointing Angle
   AliRsnValueDaughter *axisLambdaAntiProtonPID = new AliRsnValueDaughter("lambda_antiprotonPID", AliRsnValueDaughter::kAntiLambdaAntiProtonPIDCut);
   axisLambdaAntiProtonPID->SetBins(0.0,5,0.01);

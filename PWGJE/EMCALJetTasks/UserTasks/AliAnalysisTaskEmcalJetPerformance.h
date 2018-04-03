@@ -120,6 +120,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
   void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
   void SetMaximumMatchedJetDistance(double d)               { fMaxMatchedJetDistance = d; }
+  void SetUseResponseMaker(Bool_t b)                        { fUseResponseMaker = b; }
+  void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -165,6 +167,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
   Bool_t                      fPlotMatchedJetHistograms;            ///< Set whether to plot matched jet histograms (must run ResponseMaker first)
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
+  Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
   
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -193,6 +196,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
   Double_t                    fMaxMatchedJetDistance;               ///< Maximum distance between two matched jets
+  Bool_t                      fUseResponseMaker;                    ///< Flag to use Response Maker rather than JetTagger
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -211,7 +215,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 10);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 11);
   /// \endcond
 };
 #endif

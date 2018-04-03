@@ -59,7 +59,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPionRej(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
@@ -75,7 +75,7 @@ fHPoolReady(0x0)
 
 }
 //________________________________________________________________________
-AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSeMe):
+AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSeMe):
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
 fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
@@ -87,7 +87,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPionRej(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
@@ -612,7 +612,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 3;
     dimThnPi0++;
 
-    if ( fGammaOrPi0  && fPlotQA==1)
+    if ( fGammaOrPi0>0  && fPlotQA==1)
     {
       fPi0Cands= new THnSparseF("Pi0Cands", "Pi0Cands", dimThnPi0, nBinsThnPi0, minThnPi0, maxThnPi0);
       for(Int_t i=0;i<dimThnPi0;i++)
@@ -835,7 +835,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
         dimThnQA++;
     */
     //..additional things to put inside: time
-    if(fPlotQA>0 && !fGammaOrPi0)
+    if(fPlotQA>0 && fGammaOrPi0==0)
     {
     		fClusterProp= new THnSparseF("ClusterProp", "ClusterProp", dimThnQA, nbinsThnQA, minThnQA, maxThnQA);
     		for(Int_t i=0;i<dimThnQA;i++)
@@ -978,7 +978,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 
 
-	if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
+	if ( fGammaOrPi0>0 ) {  // Don't necessarily need this for Gamma analysis
 		fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
 		fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
 		fOutput->Add(fClusEnergy);
@@ -987,6 +987,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		Double_t binEdgesMassAccRej[nMassBinsAccRej+1];
 		GenerateFixedBinArray(nMassBinsAccRej,0.,0.75,binEdgesMassAccRej);
 
+
+		//fMassPionAcc = new TH1F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
+		//fOutput->Add(fMassPionRej);
+		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
+		fOutput->Add(fMassPionRej);
 
 		fMassPtPionAcc = new TH2F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
 		fOutput->Add(fMassPtPionAcc);
@@ -1638,19 +1643,16 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Double_t zVertex = fVertex[2];
 
 	// Info for Mixed Clusters
-	if ( fGammaOrPi0  && fPlotQA==1) {
+	if ( fGammaOrPi0>0  && fPlotQA==1) {
 		fEMCalMultvZvtx->Fill(zVertex,NoOfClustersInEvent); //  #clusters with E > 0.3 GeV vs Z-vertez
 	}
 
 	//...........................................
-	//do a small loop to count the triggers in this event
-	//** we don't need this loop here any longer because we will
-	//**normalize later in the analysis not now so we don't need the
-	//** total pi0 count beforehand!!!!!
+    //..Combine pi0s with tracks in the same event
 	if(SameMix==1)
 	{
 		AliEventPool* pool = 0x0;
-		// Load Mixed Cluser pool for mixed clusters in pi0s
+		//..Load Mixed Cluser pool for mixed clusters in pi0s
 		if (fPlotQA && fDoClusMixing) {
 			Double_t fEMCalMultiplicity = NoOfClustersInEvent;
 
@@ -1702,7 +1704,6 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 						CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 						FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight,1);
-
 					}
 				}
 			}
@@ -1746,10 +1747,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				//	}
 			}
 		}
-		if (fPlotQA && fDoClusMixing) {
-
+		if (fPlotQA && fDoClusMixing)
+		{
 			TObjArray * accClusterArr = new TObjArray();
-
 			for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 			{
 				cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
@@ -1758,15 +1758,12 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 				AliVCluster * accClus = (AliVCluster *) cluster->Clone();
 				accClusterArr->Add(accClus);
-
 			}
 			if (!pool->GetLockFlag()) {
 				pool->UpdatePool(accClusterArr);
 			}
-
 		}
 	}
-
 	//...........................................
 	//..for mixed events normalize per events in pool
 	if(SameMix==0)
@@ -1817,11 +1814,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
 				nAccPi0Clusters++;
-				//	if((aliCaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (aliCaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
 
-				//here I don't really know what to do in your case
-				//eff of pi0? or eff of gamma? or some mix up of the two ?
-				//	EffWeight_Gamma=GetEff(aliCaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
 				//...........................................
 				//..combine gammas with same event tracks
 				if(SameMix==1)
@@ -2243,39 +2236,65 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
   //fPi0MassFitPars  = {d,e,m1,m2,0}
   //fPi0SigmaFitPars = {d,e,m1,m2,0}
 
-  Double_t Pi0Pt = vecPi0.Pt();
-  Double_t Pi0Mass = 0;
+  Double_t Pi0Pt    = vecPi0.Pt();
+  Double_t Pi0Mass  = 0;
   Double_t Pi0Sigma = 0;
+  Double_t SBsplit  = 0;
 
-  if (fUseParamMassSigma) {
+  if (fUseParamMassSigma)
+  {
     // Estimate Mass Peak
-    if (Pi0Pt < fPi0MassFitPars[0]) {
+    if (Pi0Pt < fPi0MassFitPars[0])
+    {
       Pi0Mass = fPi0MassFitPars[2]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[2]*fPi0MassFitPars[0];
     } else {
       Pi0Mass = fPi0MassFitPars[3]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[3]*fPi0MassFitPars[0];
     }
     // Estimate Mass Sigma
-    if (Pi0Pt < fPi0SigmaFitPars[0]) {
+    if (Pi0Pt < fPi0SigmaFitPars[0])
+    {
       Pi0Sigma = fPi0SigmaFitPars[2]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[2]*fPi0SigmaFitPars[0];
     } else {
       Pi0Sigma = fPi0SigmaFitPars[3]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[3]*fPi0SigmaFitPars[0];
     }
-  } else { // Using fixed mass windows
+  }
+  else
+  { // Using fixed mass windows
     // Finding pT Bin:
     Int_t ptBin = 0; // Default is to use lowest bin
 
-    for (Int_t k = 0; k < kNoGammaBins-1; k++) {
-      if ((Pi0Pt >= fArray_G_Bins[k]) && (Pi0Pt < fArray_G_Bins[k+1])) {
+    for (Int_t k = 0; k < kNoGammaBins-1; k++)
+    {
+      if ((Pi0Pt >= fArray_G_Bins[k]) && (Pi0Pt < fArray_G_Bins[k+1]))
+      {
         ptBin = k;
         break;
       }
     }
-
-    Pi0Mass = fPi0MassFixed[ptBin];
+    Pi0Mass  = fPi0MassFixed[ptBin];
     Pi0Sigma = fPi0SigmaFixed[ptBin];
+    SBsplit  = (0.5-(Pi0Mass+Pi0Sigma*3))*0.5; //..Upper range 500MeV lower range mass+3sigma
   }
-
-  if (TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma) {
+  //..if you select the pi0 peak region
+  if(fGammaOrPi0==1 && TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma)
+  {
+	fMassPionRej->Fill(vecPi0.M());
+    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
+    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
+    return 0;
+  }
+  //..if you select the pi0 SB region Version 1
+  if(fGammaOrPi0==2 && (vecPi0.M() < Pi0Mass+3*Pi0Sigma || vecPi0.M()>(0.5-SBsplit)) )
+  {
+	fMassPionRej->Fill(vecPi0.M());
+    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
+    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
+    return 0;
+  }
+  //..if you select the pi0 SB region Version 2
+  if(fGammaOrPi0==3 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma+SBsplit || vecPi0.M()>(0.5)) )
+  {
+	fMassPionRej->Fill(vecPi0.M());
     fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
     fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
     return 0;
@@ -2501,7 +2520,7 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
  * have to deal with difficulties caused by CINT.
  */
 AliAnalysisTaskGammaHadron* AliAnalysisTaskGammaHadron::AddTaskGammaHadron(
-		Bool_t      InputGammaOrPi0,//..gamma analysis=0, pi0 analyis=1
+		Int_t       InputGammaOrPi0,//..gamma analysis=0, pi0 analyis=1, pi0 SB1=2, pi0 SB2=3,
 		Bool_t      InputSeMe,      //..same event=0 mixed event =1
 		Bool_t      InputMCorData,  // 0->MC, 1->Data
 		UInt_t      evtTriggerType, //..use this type of events to combine gammas(trigger) with hadrons
@@ -2553,9 +2572,17 @@ AliAnalysisTaskGammaHadron* AliAnalysisTaskGammaHadron::AddTaskGammaHadron(
 	{
 		GammaPi0Name += "GH";
 	}
-	else
+	else if(InputGammaOrPi0 == 1)
 	{
 		GammaPi0Name += "Pi0H";
+	}
+	else if(InputGammaOrPi0 == 2)
+	{
+		GammaPi0Name += "Pi0H_SB1";
+	}
+	else if(InputGammaOrPi0 == 3)
+	{
+		GammaPi0Name += "Pi0H_SB2";
 	}
 	TString SameMixName;
 	if(InputSeMe == 0)

@@ -298,9 +298,9 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
       // decode trigger string in order to determine the trigger clusters
       std::vector<std::string> clusternames;
-      auto triggerinfos = PWG::EMCAL::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
       for(auto t : triggerinfos) {
-        if(std::find(clusternames.begin(), clusternames.end(), t.fTriggerCluster) == clusternames.end()) clusternames.emplace_back(t.fTriggerCluster);
+        if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
       }
       bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
            isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
@@ -458,15 +458,15 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
   if(fLumiMonitor && fUseDownscaleWeight){
     auto downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) {
-      for(auto trigger : PWG::EMCAL::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
+      for(auto trigger : PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
         auto int7trigger = trigger.IsTriggerClass("INT7");
-        auto bunchcrossing = trigger.fBunchCrossing == "B";
-        auto nopf = trigger.fPastFutureProtection == "NOPF";
-        AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.fTriggerCluster << std::endl;
+        auto bunchcrossing = trigger.BunchCrossing() == "B";
+        auto nopf = trigger.PastFutureProtection() == "NOPF";
+        AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.Triggercluster() << std::endl;
         if(int7trigger && bunchcrossing && nopf) {
           double downscale = downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName());
           AliDebugStream(5) << "Using downscale " << downscale << std::endl;
-          fLumiMonitor->Fill(trigger.fTriggerCluster.data(), 1./downscale);
+          fLumiMonitor->Fill(trigger.Triggercluster().data(), 1./downscale);
         }
       }
     }

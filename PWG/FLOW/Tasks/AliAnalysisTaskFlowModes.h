@@ -268,6 +268,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH1D*           fhEventCentrality; //! distribution of event centrality
     TH2D*           fh2EventCentralityNumSelCharged; //! distribution of event centrality vs number of selected charged tracks
     TH1D*           fhEventCounter; //! counter following event selection
+    TH2D* 	    fhEventsMultTOFFilterbit32; //! filterbit 32 vs TOF mult.
     // Charged
     TH2D*           fh2RefsMult; //!multiplicity distribution of selected RFPs
     TH2D*           fh2RefsPt; //! pt distribution of selected RFPs

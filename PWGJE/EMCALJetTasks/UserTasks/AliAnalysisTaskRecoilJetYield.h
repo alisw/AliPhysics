@@ -21,7 +21,7 @@ class AliFJWrapper;
 #include "AliClusterContainer.h"
 #include "FJ_includes.h"
 
-const Int_t nBranch = 20;
+const Int_t nBranch = 22;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   

@@ -2730,8 +2730,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
                 fhDeltaPhiCentBinnedCutSubtracted[iContainer][cBin]->Fill(dPhi2);
             }
             if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
-                fhDiJetMCentBinnedSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-                if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+                fhDiJetMCentBinnedSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+                if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
             }
         }
     }

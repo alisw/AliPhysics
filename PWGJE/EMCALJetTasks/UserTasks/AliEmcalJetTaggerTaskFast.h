@@ -216,10 +216,10 @@ class AliEmcalJetTaggerTaskFast : public AliAnalysisTaskEmcalJet {
   TH2            **fh2PtJet1VsDeltaR;            //!<! \f$ p_{t}\f$ jet 1 vs dR
   TH2            **fh2PtJet2VsFraction;          //!<! \f$ p_{t}\f$ jet 1 vs shared fraction
 
-  TH2            **fh2PtJet1VsLeadPtAllSel;      //!all jets after std selection
-  TH2            **fh2PtJet1VsLeadPtTagged;      //!tagged jets
-  TH2            **fh2PtJet1VsPtJet2;            //!pT of base jet vs tagged jet
-  TH2            **fh2PtJet2VsRelPt;             //!pT of tagged jet vs pt base jet / pt tagged jet
+  TH2            **fh2PtJet1VsLeadPtAllSel;      //!<! all jets after std selection
+  TH2            **fh2PtJet1VsLeadPtTagged;      //!<! tagged jets
+  TH2            **fh2PtJet1VsPtJet2;            //!<! pT of base jet vs tagged jet
+  TH2            **fh2PtJet2VsRelPt;             //!<! pT of tagged jet vs pt base jet / pt tagged jet
   
   TH3             *fh3PtJetDEtaDPhiConst;        //!<! \f$ p_{t}\f$ jet vs delta eta vs delta phi of constituents
   TH3             *fh3PtJetAreaDRConst;          //!<! \f$ p_{t}\f$ jet vs Area vs delta R of constituents
@@ -234,7 +234,7 @@ class AliEmcalJetTaggerTaskFast : public AliAnalysisTaskEmcalJet {
   AliEmcalJetTaggerTaskFast &operator=(const AliEmcalJetTaggerTaskFast&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTaggerTaskFast, 1);
+  ClassDef(AliEmcalJetTaggerTaskFast, 2);
   /// \endcond
 };
 }

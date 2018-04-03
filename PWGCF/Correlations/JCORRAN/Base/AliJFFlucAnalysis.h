@@ -1,13 +1,8 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-#include <vector>
-#include <TVector.h>
-#include <TRandom.h>
-#include <TString.h>
-#include <TPRegexp.h>
-#include <TObjArray.h>
-#include <TGrid.h>
+//#include <TVector.h>
+//#include <TObjArray.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
 #include "AliJEfficiency.h"
@@ -18,6 +13,7 @@
 class TClonesArray;
 class AliJBaseTrack;
 class AliJEfficiency;
+class TH3D;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 public:
@@ -37,12 +33,11 @@ public:
 	void SetEventCentrality( float cent ){fCent = cent;}
 	float GetEventCentrality() const{return fCent;}
 	void SetEventImpactParameter( float ip ){ fImpactParameter = ip; }
-	void SetEventVertex( double *vtx ){ fVertex = vtx; }
+	void SetEventVertex( const double *vtx ){ fVertex = vtx; }
 	//void SetIsPhiModule( Bool_t isphi ){//{ IsPhiModule = isphi ; }
-	void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
+	//void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
 
 	void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; }
-	void SetDebugLevel( int dblv ){ fDebugLevel = dblv; }
 	void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
 	//void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
 	//void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
@@ -53,13 +48,13 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-
+	void SetPhiWeights(TH3D *p){
+		pPhiWeights = p;
+	}
 
 	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
 	void SetEventFB32TracksQA(unsigned int fb32, unsigned int fb32tof){ fFB32trks = (float)fb32; fFB32TOFtrks = (float)fb32tof;}
 	
-	inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;}
-
 	TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
 
 	TComplex Get_Qn_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
@@ -79,8 +74,9 @@ public:
 	Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
 
 	enum{
-		FLUC_PHI_MODULATION = 0x1,
-		FLUC_PHI_INVERSE = 0x2,
+		//FLUC_PHI_MODULATION = 0x1,
+		//FLUC_PHI_INVERSE = 0x2,
+		FLUC_PHI_CORRECTION = 0x2,
 		FLUC_SCPT = 0x4,
 		FLUC_EBE_WEIGHTING = 0x8
 	};
@@ -88,9 +84,11 @@ public:
 		flags |= nflags;
 	}
 
-#define CENTN 9
-	static Double_t CentBin[CENTN+1]; //8
+#define CENTN_NAT 9
+#define CENTN 7
+	static Double_t CentBin[CENTN_NAT+1]; //8
 	static Double_t pttJacek[74];
+	static UInt_t CentralityTranslationMap[CENTN_NAT];
 	static UInt_t NCentBin;
 	static UInt_t NpttJacek;
 
@@ -101,13 +99,12 @@ private:
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 //#define kcNH kH9 //max N+1 to be 4-particle correlated
 
-	Long64_t AnaEntry;
-	TClonesArray * fInputList;
+	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
-	double *fVertex;//!
+	const double *fVertex;//!
+	TH3D *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
-	int	fDebugLevel;
 	int fCBin;
 	int fEffMode;
 	int fEffFilterBit;
@@ -129,8 +126,7 @@ private:
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[kNH][2]; // ksub
 
-	TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
-	TFile *inclusFile; // pointer for root file
+	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 
 	AliJHistManager * fHMG;//!
 
@@ -166,7 +162,7 @@ private:
 	AliJTH2D fh_TrkQA_TPCvsCent;//! // QA histos
 	AliJTH2D fh_TrkQA_FB32_vs_FB32TOF;//!
 
-	// addtinal variables for ptbins(Standard Candles only)
+	// additional variables for ptbins(Standard Candles only)
 	enum{kPt0, kPt1, kPt2, kPt3, kPt4, kPt5, kPt6, kPt7, N_ptbins};
 	double NSubTracks_pt[2][N_ptbins];
 	AliJBin fBin_Nptbins;//!

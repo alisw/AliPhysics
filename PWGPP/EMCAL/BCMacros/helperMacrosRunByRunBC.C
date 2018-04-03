@@ -9,7 +9,9 @@
 ///  Running the macro
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                              <br>
-/// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosRunByRunBC.C++                                 <br>
+/// root [0] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosRunByRunBC.C++ <br>                           <br>
+/// or                                                                     <br>
+/// root [0] .L $ALICE_WORK_DIR/../AliPhysics/PWGPP/EMCAL/BCMacros/helperMacrosRunByRunBC.C++   <br>                               <br>
 /// root [2] SummarizeRunByRun("LHC15o","Train_771","INT7","runList45",45) <br>
 /// root [2] SummarizeRunByRun("LHC15o","Train_771","INT7","GloballyGood") <br>
 /// root [2] GetBestPeriodSplitting("LHC15o",771,105,3)                    <br>

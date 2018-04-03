@@ -80,6 +80,9 @@ set(SRCS
   jtAnalysis/AliJJtAna.cxx
   iaaAnalysis/AliJCIaaTask.cxx
   iaaAnalysis/AliJIaaAna.cxx
+  AliJFlowBaseTask.cxx
+  AliJFlowHistos.cxx
+  iaaAnalysis/AliJCIaaEPTask.cxx
   )
 
 # Headers from sources

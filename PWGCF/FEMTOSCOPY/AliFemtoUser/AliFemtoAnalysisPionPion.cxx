@@ -40,6 +40,8 @@
 #include <sstream>
 #include <utility>
 #include <cassert>
+#include <typeinfo>
+
 
 static const double PionMass = 0.13956995;
 static const int UNKNOWN_CHARGE = -9999;
@@ -249,6 +251,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
 {
 }
 
+
 AliFemtoAnalysisPionPion
   ::AliFemtoAnalysisPionPion(const char *name,
                              const PionType pion_1,
@@ -257,6 +260,7 @@ AliFemtoAnalysisPionPion
     AliFemtoAnalysisPionPion(name, analysis_params_from_pion_types(pion_1, pion_2), cut_params)
 {
 }
+
 
 AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
                                                    const AnalysisParams &params,
@@ -298,10 +302,30 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     SetPairCut(BuildPairCut(cut_params));
   }
 
+  TString eventcut_classname = "UNKNOWN",
+          trackcut_classname = "UNKNOWN",
+          paircut_classname = "UNKNOWN";
+
+  if (fEventCut)
+  if (auto cls = TClass::GetClass(typeid(*fEventCut))) {
+    eventcut_classname = cls->GetName();
+  }
+
+  if (fFirstParticleCut)
+  if (auto cls = TClass::GetClass(typeid(*fFirstParticleCut))) {
+    trackcut_classname = cls->GetName();
+  }
+
+  if (fPairCut)
+  if (auto cls = TClass::GetClass(typeid(*fPairCut))) {
+    paircut_classname = cls->GetName();
+  }
+
   fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
-    type: 'AliFemtoAnalysisPionPion',
+    class: 'AliFemtoAnalysisPionPion',
     is_mc: %d,
     event: {
+      class: '%s',
       multiplicity: %d:%d,
       centrality: %f:%f,
       zVertex: %f:%f,
@@ -310,6 +334,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       accept_only_physics: %s,
     },
     track: {
+      class: '%s',
       pt: %f:%f,
       eta: %f:%f,
       DCA: %f:%f,
@@ -321,6 +346,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       set_label: %s,
     },
     pair: {
+      class: '%s',
       max_share_quality: %f,
       max_share_fraction: %f,
       delta_eta_min: %f,
@@ -330,6 +356,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     },
   })#",
     fMCAnalysis,
+    eventcut_classname.Data(),
     cut_params.event_MultMin, cut_params.event_MultMax,
     cut_params.event_CentralityMin, cut_params.event_CentralityMax,
     cut_params.event_VertexZMin, cut_params.event_VertexZMax,
@@ -337,6 +364,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     (cut_params.event_AcceptBadVertex ? "true" : "false"),
     (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
 
+    trackcut_classname.Data(),
     cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
     cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
     cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
@@ -346,6 +374,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     (cut_params.pion_1_remove_kinks ? "true" : "false"),
     (cut_params.pion_1_set_label ? "true" : "false"),
 
+    paircut_classname.Data(),
     cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
     cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
     cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
@@ -895,11 +924,11 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] " << msg;
     return nullptr;
   }
 
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoParticleCut*)(Configuration<__name>(cfg))
+  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? static_cast<AliFemtoParticleCut*>(Configuration<__name>(cfg))
 
   AliFemtoParticleCut *result = /* TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
                           //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
@@ -916,7 +945,7 @@ AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cf
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] " << msg;
     return nullptr;
   }
 
@@ -936,7 +965,7 @@ AliFemtoAnalysisPionPion::ConstructCorrelationFunction(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructCorrelationFunction] " << msg;
     return nullptr;
   }
 

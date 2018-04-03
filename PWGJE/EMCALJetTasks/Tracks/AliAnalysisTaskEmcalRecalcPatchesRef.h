@@ -69,6 +69,10 @@ protected:
   virtual void UserFillHistosAfterEventSelection();
   std::vector<AliEMCALTriggerPatchInfo *> SelectAllPatchesByType(const TClonesArray &patches, EPatchType_t patchtype) const;
   std::vector<AliEMCALTriggerPatchInfo *> SelectFiredPatchesByTrigger(const TClonesArray &patches, ETriggerThreshold_t trigger) const;
+  std::vector<std::string> GetAcceptedTriggerClusters(const char *triggerstring) const;
+  int GetNumberNonOverlappingPatchAreas(const std::vector<AliEMCALTriggerPatchInfo *> &diredpatches) const;
+  bool HasOverlap(const AliEMCALTriggerPatchInfo *ref, const AliEMCALTriggerPatchInfo *test) const;
+  bool InRange(int test, int includemin, int includemax) const { return test >= includemin && test <= includemax; }
 
 private:
   Bool_t                fEnableSumw2;         ///< Enable sum of weights

@@ -242,7 +242,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc();
   void SetPtWeightsFromFONLL5overLHC16i6a();
   void SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a();
-
+  void SetPtWeightsFromFONLL5overLHC18a4a2();
+  
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
 
