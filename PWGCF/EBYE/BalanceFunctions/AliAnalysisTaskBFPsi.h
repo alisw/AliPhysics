@@ -214,6 +214,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPileupLHC15oOffset = offset;
   }
   
+  void SetUseOutOfBunchPileUpCutsLHC15oJpsi(Bool_t useOutOfBunchPileUpCutsJpsi){
+    fUseOutOfBunchPileUpCutsLHC15oJpsi = useOutOfBunchPileUpCutsJpsi;
+  }
+  
   void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
     fDetailedTracksQA=useDetailedTracksQA;}
   
@@ -470,6 +474,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
 
+  Bool_t fUseOutOfBunchPileUpCutsLHC15oJpsi;//
+  
   Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
   Float_t fPileupLHC15oOffset;
 
@@ -528,6 +534,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH2F *fHistGlobalvsESDBeforePileUpCuts; //histos to monitor Out of bunch pile up selection
   TH2F *fHistGlobalvsESDAfterPileUpCuts;
+
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //histos to monito pile up cuts J/psi
+  TH2F *fHistV0MvsTPCoutAfterPileUpCuts;
 
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
