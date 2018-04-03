@@ -279,7 +279,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			if(cbin != -1){
 				int tbin = AliJFFlucAnalysis::CentralityTranslationMap[cbin];
-				std::unordered_map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[tbin].find(fRunNum);
+				std::map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[tbin].find(fRunNum);
 				if(m != PhiWeightMap[tbin].end())
 					fFFlucAna->SetPhiWeights(m->second);
 			}
