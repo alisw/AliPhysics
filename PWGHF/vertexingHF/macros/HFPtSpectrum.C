@@ -426,6 +426,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   }
   else if (cc==kpp5){
     systematics->SetIs5TeVAnalysis(true);
+    systematics->SetRunNumber(17);
     systematics->SetCollisionType(0);
   }
   else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
