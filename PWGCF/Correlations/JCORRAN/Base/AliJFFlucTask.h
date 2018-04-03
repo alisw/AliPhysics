@@ -135,11 +135,12 @@ public:
 
 private:
 	 //TF1 *pfOutlierLowCut, *pfOutlierHighCut;
-	 TClonesArray * fInputList;  // tracklist
+	 TClonesArray *fInputList;  // tracklist
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
 	 TH1D *h_ratio;
 	 TH1D *h_ModuledPhi[CENTN_NAT][2]; // cent7, sub2
+	 TFile *pDataFile[2];
 	 std::unordered_map<UInt_t, TH3D *> PhiWeightMap[CENTN];
 
 	 TString fTaskName;

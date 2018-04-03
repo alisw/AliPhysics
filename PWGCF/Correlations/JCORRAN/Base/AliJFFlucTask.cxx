@@ -53,6 +53,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fFFlucAna(0),
 	h_ratio(0)
 {
+	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
+		pDataFile[i] = 0;
 	fEvtNum=0;
 	fFilterBit = 0;
 	fEta_min = 0;
@@ -82,11 +84,13 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fInputList(0),
 	fOutput(0),
 	fFFlucAna(0x0),
-	h_ratio(0)
+	h_ratio(0),
+	fTaskName(name)
 {
 	DefineOutput(1, TDirectory::Class());
-	fTaskName = name;
 
+	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
+		pDataFile[i] = 0;
 	fEvtNum=0;
 	fFilterBit = 0;
 	fEta_min = 0;
@@ -134,6 +138,9 @@ AliJFFlucTask::~AliJFFlucTask()
 {
 	//delete pfOutlierLowCut;
 	//delete pfOutlierHighCut;
+	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
+		if(pDataFile[i])
+			pDataFile[i]->Close();
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -686,29 +693,28 @@ void AliJFFlucTask::EnablePhiModule(const TString fname){
 	cout<<"Phi modulation enabled: "<<fname.Data()<<endl;
 	//if(!TGrid::IsConnected())
 	TGrid::Connect("alien:");
-	TFile *pf = TFile::Open(fname.Data(),"read");
-	if(!pf){
+	pDataFile[0] = TFile::Open(fname.Data(),"read");
+	if(!pDataFile[0]){
 		cout<<"Unable to open file: "<<fname.Data()<<endl;
 		return;
 	}
 	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
-			h_ModuledPhi[icent][isub] = (TH1D*)pf->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));//dynamic_cast<TH1D *>(pf->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
+			h_ModuledPhi[icent][isub] = (TH1D*)pDataFile[0]->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));//dynamic_cast<TH1D *>(pf->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
 		}
 	}
-	//pf->Close();
 }
 
 void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 	cout<<"Phi correction enabled: "<<fname.Data()<<endl;
 	//if(!TGrid::IsConnected())
 	TGrid::Connect("alien:");
-	TFile *pf = TFile::Open(fname.Data(),"read");
-	if(!pf){
+	pDataFile[1] = TFile::Open(fname.Data(),"read");
+	if(!pDataFile[1]){
 		cout<<"Unable to open file: "<<fname.Data()<<endl;
 		return;
 	}
-	TList *plist = (TList*)pf->Get("CenPhiEta Weights");
+	TList *plist = (TList*)pDataFile[1]->Get("CenPhiEta Weights");
 	if(!plist){
 		cout<<"Unable to retrieve weight list"<<endl;
 		return;
@@ -720,7 +726,5 @@ void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 		if(cent < CENTN)
 			PhiWeightMap[cent][run] = (TH3D*)m;
 	}
-	//
-	//pf->Close();
 }
 
