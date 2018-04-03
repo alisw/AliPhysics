@@ -1888,7 +1888,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
 	fPi0Cands->Fill(valueArray,Weight);
 
-	if (!fDoRotBkg && !isMixed) return; // don't do rotational background if off or if this is looking at mixed cluster pairs
+	if (!fDoRotBkg) return;
+	if (isMixed) return; // don't do rotational background if off or if this is looking at mixed cluster pairs
 	// Rotational Background
 	//  const Double_t fOpeningAngleCut = 0.017;
 
