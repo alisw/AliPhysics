@@ -22,20 +22,20 @@
 // Adapted for AliAnalysisTaskSE and AOD objects
 //////////////////////////////////////////////////////////////////////////////
 
-#include "TChain.h"
-//#include "TList.h"
-//#include "TTree.h"
-#include "TFile.h"
-#include "AliAnalysisUtils.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAODHandler.h"
-#include "AliAODMCParticle.h"
-#include "AliMCEvent.h"
-#include "AliGenHijingEventHeader.h"
+#include <TGrid.h>
+#include <TFile.h>
+#include <TRandom.h>
+#include <AliAnalysisUtils.h>
+#include <AliAnalysisTaskSE.h>
+#include <AliAODHandler.h>
+#include <AliAODMCParticle.h>
+#include <AliMCEvent.h>
+#include <AliGenHijingEventHeader.h>
+#include <AliAnalysisManager.h>
+#include <AliVEvent.h>
+#include <AliAODEvent.h>
+#include <AliMultSelection.h>
 #include "AliJFFlucTask.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliAODEvent.h"
 #include "AliJTrack.h"
 #include "AliJMCTrack.h"
 //#include "AliJPhoton.h"
@@ -43,7 +43,6 @@
 #include "AliJHistManager.h"
 #include "AliInputEventHandler.h"
 #include "AliJEfficiency.h"
-#include "AliMultSelection.h"
 #include "AliJRunTable.h"
 //#pragma GCC diagnostic warning "-Wall"
 //______________________________________________________________________________
@@ -58,7 +57,6 @@ AliJFFlucTask::AliJFFlucTask():
 	fFilterBit = 0;
 	fEta_min = 0;
 	fEta_max = 0;
-	fDebugLevel = 0;
 	fEffMode =0;
 	fEffFilterBit=0;
 	fPt_min=0;
@@ -69,7 +67,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(UInt_t icent = 0; icent < CENTN; icent++){
+	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
@@ -93,7 +91,6 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fFilterBit = 0;
 	fEta_min = 0;
 	fEta_max = 0;
-	fDebugLevel = 0;
 	fEffMode =0;
 	fEffFilterBit=0;
 	fPt_min=0;
@@ -104,7 +101,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(UInt_t icent = 0; icent < CENTN; icent++){
+	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
@@ -147,15 +144,16 @@ AliJFFlucTask::~AliJFFlucTask()
 void AliJFFlucTask::UserCreateOutputObjects()
 {
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
-	fFFlucAna->SetDebugLevel(fDebugLevel);
 	if(flags & FLUC_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
 	if(flags & FLUC_EBE_WEIGHTING)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
-	if(flags & FLUC_PHI_MODULATION){
+	if(flags & FLUC_PHI_CORRECTION)
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
+	/*if(flags & FLUC_PHI_MODULATION){
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_MODULATION);
 		//setting histos for phi modulation
-		for(UInt_t icent = 0; icent < CENTN; icent++){
+		for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 			for(UInt_t isub = 0; isub < 2; isub++){
 				fFFlucAna->SetPhiModuleHistos( icent, isub, h_ModuledPhi[icent][isub] );
 			}
@@ -165,7 +163,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 			fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_INVERSE);
 		//if(flags & FLUC_PHI_REJECTION);
 			//fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_REJECTION);
-	}
+	}*/
 	//fFFlucAna->SetIsPhiModule( IsPhiModule);
 	//fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	//fFFlucAna->SetSCwithQC( IsSCwithQC );
@@ -268,6 +266,18 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fFFlucAna->SetEtaRange( fEta_min, fEta_max );
 		fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
 		fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
+
+		fFFlucAna->SetPhiWeights(0);
+		if(flags & FLUC_PHI_CORRECTION){
+			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+			if(cbin != -1){
+				int tbin = AliJFFlucAnalysis::CentralityTranslationMap[cbin];
+				std::unordered_map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[tbin].find(fRunNum);
+				if(m != PhiWeightMap[tbin].end())
+					fFFlucAna->SetPhiWeights(m->second);
+			}
+		}
+
 		fFFlucAna->UserExec(""); // doing some analysis here.
 		//
 	} // AOD
@@ -392,9 +402,11 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 				if(flags & FLUC_PHI_REJECTION){
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-						continue;
+					if(cbin != -1){
+						int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
+						if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+							continue;
+					}
 				}
 
 				if( fPcharge !=0){ // fPcharge 0 : all particle
@@ -614,11 +626,9 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 			if(flags & FLUC_EXCLUDEWDECAY){
 				Int_t gMotherIndex = particle->GetFirstMother(); //
 				if(gMotherIndex != -1){
-					DEBUG( 4,  "this particle has a mother " );
 					AliMCParticle* motherParticle= dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
 					if(motherParticle){
 						if(IsThisAWeakDecayingParticle( motherParticle)){
-							DEBUG ( 4, Form("this particle will be removed because it comes from : %d", motherParticle->PdgCode() ));
 							continue;
 						}
 					}
@@ -628,9 +638,11 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 			if(flags & FLUC_PHI_REJECTION){
 				int isub = (int)(track->Eta() > 0.0);
 				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-				int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-				if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-					continue;
+				if(cbin != -1){
+					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
+					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
+						continue;
+				}
 			}
 
 			Int_t pdg = particle->GetPdgCode();
@@ -662,6 +674,7 @@ double AliJFFlucTask::GetCentralityFromImpactPar(double ip) {
 	return 0.0;
 }
 
+//TODO: remove this bs
 void AliJFFlucTask::EnableCentFlat(const TString fname){
 	//cout << "Setting to flatting Centrality with LHC11h data : " << isCentFlat  << endl;
 	//flags |= FLUC_CENT_FLATTENING;
@@ -670,13 +683,44 @@ void AliJFFlucTask::EnableCentFlat(const TString fname){
 
 void AliJFFlucTask::EnablePhiModule(const TString fname){
 	//flags |= FLUC_PHI_MODULATION;
-	cout << "Setting InFIle as " << fname.Data() << endl;
+	cout<<"Phi modulation enabled: "<<fname.Data()<<endl;
+	//if(!TGrid::IsConnected())
 	TGrid::Connect("alien:");
-	TFile *inclusFile = TFile::Open( fname.Data() , "read" );
-	for(UInt_t icent = 0; icent < CENTN; icent++){
+	TFile *pf = TFile::Open(fname.Data(),"read");
+	if(!pf){
+		cout<<"Unable to open file: "<<fname.Data()<<endl;
+		return;
+	}
+	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
-			h_ModuledPhi[icent][isub] = dynamic_cast<TH1D *>(inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
+			h_ModuledPhi[icent][isub] = (TH1D*)pf->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));//dynamic_cast<TH1D *>(pf->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
 		}
 	}
+	//pf->Close();
+}
+
+void AliJFFlucTask::EnablePhiCorrection(const TString fname){
+	cout<<"Phi correction enabled: "<<fname.Data()<<endl;
+	//if(!TGrid::IsConnected())
+	TGrid::Connect("alien:");
+	TFile *pf = TFile::Open(fname.Data(),"read");
+	if(!pf){
+		cout<<"Unable to open file: "<<fname.Data()<<endl;
+		return;
+	}
+	TList *plist = (TList*)pf->Get("CenPhiEta Weights");
+	if(!plist){
+		cout<<"Unable to retrieve weight list"<<endl;
+		return;
+	}
+	for(const auto &&m: *plist){
+		UInt_t cent, run;
+		sscanf(m->GetName(),"CRCQVecPhiHistVtx[%u][%u]",&cent,&run);
+		//cout<<"phi weight map: "<<cent<<", "<<run<<endl;
+		if(cent < CENTN)
+			PhiWeightMap[cent][run] = (TH3D*)m;
+	}
+	//
+	//pf->Close();
 }
 

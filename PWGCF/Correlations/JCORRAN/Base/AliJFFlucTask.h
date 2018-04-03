@@ -14,22 +14,21 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-#include <fstream>
+#include <unordered_map>
 #include <stdlib.h>
 #include <stdio.h>
-#include <iomanip>
 
-#include "AliAODMCParticle.h"
+#include <AliAnalysisTaskSE.h>
+#include <AliAODMCParticle.h>
 #include "AliJHistManager.h"
-#include "AliAnalysisTaskSE.h"
+#include <AliESDpid.h>
+#include <AliPHOSGeoUtils.h>
+#include <AliPIDResponse.h>
+#include <AliPIDCombined.h>
+#include <AliAnalysisUtils.h>
+#include <AliVVertex.h>
 #include "AliJConst.h"
-#include "AliESDpid.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliAnalysisUtils.h"
-#include "AliVVertex.h"
 
 //==============================================================
 
@@ -38,6 +37,7 @@ using namespace std;
 //class TF1;
 class TH1D;
 class TH2D;
+class TH3D;
 class TList;
 class TTree;
 class AliMCEvent;
@@ -63,11 +63,8 @@ public:
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t* opt="");
 
-	inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}}
 	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
 	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent);
-	void SetDebugLevel(int debuglevel){
-		fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
 	//float ReadAODCentrality( AliAODEvent* aod, TString Trig );
 	//float ReadMultSelectionCentrality( AliAODEvent* aod, TString Trig );
 	float ReadCentrality(AliAODEvent *aod, TString Trig);
@@ -79,9 +76,9 @@ public:
 	double GetCentralityFromImpactPar(double ip);
 	//void SetIsWeakDeacyExclude( Bool_t WeakDecay){
 		//IsExcludeWeakDecay=WeakDecay; cout << "Setting Exclude Weak Decay Particles = " << WeakDecay <<	endl;}
-	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl; }
+	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "setting TestFilterBit = " << FilterBit << endl; }
 	void SetEtaRange( double eta_min, double eta_max ){
-		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " <<	fEta_max << endl;}
+		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta range as " << fEta_min << " ~ " <<	fEta_max << endl;}
 	void SetPtRange( double pt_min, double pt_max){
 		fPt_min = pt_min; fPt_max = pt_max; cout << "setting Pt range as " << fPt_min << " ~ " << fPt_max << endl;}
 	void SetFFlucTaskName(TString taskname){fTaskName = taskname;}
@@ -94,6 +91,7 @@ public:
 	void SetEffConfig( int effMode, int FilterBit );
 	void EnableCentFlat(const TString);
 	void EnablePhiModule(const TString);
+	void EnablePhiCorrection(const TString);
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -121,8 +119,9 @@ public:
 		FLUC_MC = 0x1,
 		FLUC_EXCLUDEWDECAY = 0x2,
 		FLUC_KINEONLY = 0x4,
-		FLUC_PHI_MODULATION = 0x8,
-		FLUC_PHI_INVERSE = 0x10,
+		//FLUC_PHI_MODULATION = 0x8,
+		//FLUC_PHI_INVERSE = 0x10,
+		FLUC_PHI_CORRECTION = 0x10,
 		FLUC_PHI_REJECTION = 0x20,
 		FLUC_SCPT = 0x40,
 		FLUC_EBE_WEIGHTING = 0x80,
@@ -140,10 +139,10 @@ private:
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
 	 TH1D *h_ratio;
-	 TH1D *h_ModuledPhi[CENTN][2]; // cent7, sub2
+	 TH1D *h_ModuledPhi[CENTN_NAT][2]; // cent7, sub2
+	 std::unordered_map<UInt_t, TH3D *> PhiWeightMap[CENTN];
 
 	 TString fTaskName;
-	 int fDebugLevel;
 	 int fEvtNum;
 	 int fFilterBit;
 	 int fEffMode;
