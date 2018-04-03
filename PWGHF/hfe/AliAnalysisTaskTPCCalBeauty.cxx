@@ -103,9 +103,11 @@ fLSEnhPhoton(0),
 fULSEnhPhoton(0),
 fPhotonicDCA(0),
 fInclElecDCA(0),
+fInclElecDCAnoSign(0),
 fInclElecEoP(0),
 fHadronEoP(0),
 fHadronDCA(0),
+fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
 fDWeight(0),
@@ -224,9 +226,11 @@ fLSEnhPhoton(0),
 fULSEnhPhoton(0),
     fPhotonicDCA(0),
     fInclElecDCA(0),
-    fInclElecEoP(0),
-    fHadronEoP(0),
-    fHadronDCA(0),
+fInclElecDCAnoSign(0),
+fInclElecEoP(0),
+fHadronEoP(0),
+fHadronDCA(0),
+fHadronCamDCA(0),
     fPi0Weight(0),
     fEtaWeight(0),
 fDWeight(0),
@@ -461,6 +465,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fInclElecDCA = new TH2F("fInclElecDCA","Incl Elec DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fInclElecDCA);
     
+    fInclElecDCAnoSign = new TH2F("fInclElecDCAnoSign","Incl Elec DCA (no Charge); p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 200,-0.2,0.2);
+    fOutputList->Add(fInclElecDCAnoSign);
+    
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
     
@@ -469,6 +476,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fHadronDCA = new TH2F("fHadronDCA","Unscaled Hadron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fHadronDCA);
+    
+    fHadronCamDCA = new TH2F("fHadronCamDCA","Unscaled Hadron DCA, no E/p cut; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 200,-0.2,0.2);
+    fOutputList->Add(fHadronCamDCA);
+    
     
     fPi0Weight = new TF1("fPi0Weight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
     fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
@@ -789,6 +800,19 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     }
 
     ////////////////
+    //Cluster loop//
+    ////////////////
+    TRefArray* caloClusters = new TRefArray();
+    fAOD->GetEMCALClusters(caloClusters);
+    
+    Int_t nclus = caloClusters->GetEntries();
+    for (Int_t icl = 0; icl < nclus; icl++) {
+        //ESD and AOD CaloCells carries the same information
+        AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
+        fClsEAll->Fill(clus->E()); //E of all clusters
+    }
+    
+    ////////////////
     // track loop //
     ////////////////
     Int_t nTracks(fAOD->GetNumberOfTracks());
@@ -850,8 +874,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         {
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
-            
-            fClsEAll->Fill(clustMatch->E()); //E of all clusters
             
             if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
             
@@ -1144,6 +1166,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     }
                 }
             }
+            if(nsigma>-5.&&nsigma<-3.) {
+                fHadronCamDCA->Fill(track->Pt(),d0z0[0]*MagSign);
+            }
             
             ///////////////////
             // Electron Cuts //
@@ -1161,6 +1186,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             // Plot Reco Electrons //
             /////////////////////////
             fInclElecDCA->Fill(track->Pt(),DCA);
+            fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]*MagSign);
             
             
             //Make incl electron and photonic electron plots
