@@ -19,7 +19,7 @@
 /// This is a function for everyone interested:            <br>
 /// root [1] Plot_BCMap("runList.txt")   In case your local copy is in $ALICE_DATA/OADB/EMCAL/..   <br>
 /// root [1] Plot_BCMap("runList.txt","pathToYourOtherOADBCopy")  If you have an OADB copy other than in $ALICE_DATA/ you can add an explicit path here <br>
-/// This are functions for BC exerts:                       <br>
+/// These are functions for BC exerts:                       <br>
 /// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")     <br>
 /// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt") <br>
 ///
