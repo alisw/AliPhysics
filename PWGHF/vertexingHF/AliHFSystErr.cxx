@@ -108,9 +108,11 @@ void AliHFSystErr::Init(Int_t decay){
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else if(fIs5TeVAnalysis){
-  if(fRunNumber==17)InitD0toKpi2017pp5TeV();
-  else InitD0toKpi2015pp5TeV();
 	if(fIsLowPtAnalysis) InitD0toKpi2017pp5TeVLowPtAn();
+	else{
+	  if(fRunNumber==17)InitD0toKpi2017pp5TeV();
+	  else InitD0toKpi2015pp5TeV();
+	}
       }
       else if(fRunNumber == 10){
 	if(fIsLowPtAnalysis) InitD0toKpi2010ppLowPtAn();
