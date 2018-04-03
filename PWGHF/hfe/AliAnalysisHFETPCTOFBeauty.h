@@ -80,6 +80,32 @@ public:
     
     //Setter for the B correction function
 	void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+	
+	
+	//Setter for the D correction function
+	void SetDcorrFunction1(TF1* DcorrF1) {fDcorr1 = DcorrF1;};
+	void SetDcorrFunction2(TF1* DcorrF2) {fDcorr2 = DcorrF2;};
+    void SetDcorrFunction3(TF1* DcorrF3) {fDcorr3 = DcorrF3;};
+    void SetDcorrFunction4(TF1* DcorrF4) {fDcorr4 = DcorrF4;};
+    void SetDcorrFunction5(TF1* DcorrF5) {fDcorr5 = DcorrF5;};
+    void SetDcorrFunction6(TF1* DcorrF6) {fDcorr6 = DcorrF6;};
+    void SetDcorrFunction7(TF1* DcorrF7) {fDcorr7 = DcorrF7;};
+    void SetDcorrFunction8(TF1* DcorrF8) {fDcorr8 = DcorrF8;};
+    void SetDcorrFunction9(TF1* DcorrF9) {fDcorr9 = DcorrF9;};
+    void SetDcorrFunction10(TF1* DcorrF10) {fDcorr10 = DcorrF10;};
+    void SetDcorrFunction11(TF1* DcorrF11) {fDcorr11 = DcorrF11;};
+    void SetDcorrFunction12(TF1* DcorrF12) {fDcorr12 = DcorrF12;};
+    void SetDcorrFunction13(TF1* DcorrF13) {fDcorr13 = DcorrF13;};
+    void SetDcorrFunction14(TF1* DcorrF14) {fDcorr14 = DcorrF14;};
+    void SetDcorrFunction15(TF1* DcorrF15) {fDcorr15 = DcorrF15;};
+    void SetDcorrFunction16(TF1* DcorrF16) {fDcorr16 = DcorrF16;};
+    void SetDcorrFunction17(TF1* DcorrF17) {fDcorr17 = DcorrF17;};
+    void SetDcorrFunction18(TF1* DcorrF18) {fDcorr18 = DcorrF18;};
+    void SetDcorrFunction19(TF1* DcorrF19) {fDcorr19 = DcorrF19;};
+    void SetDcorrFunction20(TF1* DcorrF20) {fDcorr20 = DcorrF20;};
+    void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
+    void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
+    
     
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
@@ -240,6 +266,28 @@ private:
     TH2F				*hElecPt_vsCharmMotherPt_corr;//!
     
     TF1					*fBcorr;
+    TF1					*fDcorr1;
+    TF1					*fDcorr2;
+    TF1					*fDcorr3;
+    TF1					*fDcorr4;
+    TF1					*fDcorr5;
+    TF1					*fDcorr6;
+    TF1					*fDcorr7;
+    TF1					*fDcorr8;
+    TF1					*fDcorr9;
+    TF1					*fDcorr10;
+    TF1					*fDcorr11;
+    TF1					*fDcorr12;
+    TF1					*fDcorr13;
+    TF1					*fDcorr14;
+    TF1					*fDcorr15;
+    TF1					*fDcorr16;
+    TF1					*fDcorr17;
+    TF1					*fDcorr18;
+    TF1					*fDcorr19;
+    TF1					*fDcorr20;
+    TF1					*fDcorr21;
+    TF1					*fDcorr22;
     
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE

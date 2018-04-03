@@ -242,6 +242,28 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fNembMCeta(0)
 ,fNTotMCpart(0)
 ,fBcorr(0)
+,fDcorr1(0)
+,fDcorr2(0)
+,fDcorr3(0)
+,fDcorr4(0)
+,fDcorr5(0)
+,fDcorr6(0)
+,fDcorr7(0)
+,fDcorr8(0)
+,fDcorr9(0)
+,fDcorr10(0)
+,fDcorr11(0)
+,fDcorr12(0)
+,fDcorr13(0)
+,fDcorr14(0)
+,fDcorr15(0)
+,fDcorr16(0)
+,fDcorr17(0)
+,fDcorr18(0)
+,fDcorr19(0)
+,fDcorr20(0)
+,fDcorr21(0)
+,fDcorr22(0)
 
 {
     //Named constructor
@@ -399,6 +421,28 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fNembMCeta(0)
 ,fNTotMCpart(0)
 ,fBcorr(0)
+,fDcorr1(0)
+,fDcorr2(0)
+,fDcorr3(0)
+,fDcorr4(0)
+,fDcorr5(0)
+,fDcorr6(0)
+,fDcorr7(0)
+,fDcorr8(0)
+,fDcorr9(0)
+,fDcorr10(0)
+,fDcorr11(0)
+,fDcorr12(0)
+,fDcorr13(0)
+,fDcorr14(0)
+,fDcorr15(0)
+,fDcorr16(0)
+,fDcorr17(0)
+,fDcorr18(0)
+,fDcorr19(0)
+,fDcorr20(0)
+,fDcorr21(0)
+,fDcorr22(0)
 
 
 {
@@ -1004,75 +1048,9 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
     int signB = 0;
     if(fAOD->GetMagneticField() < 0) signB = -1;
     if(fAOD->GetMagneticField() > 0) signB = 1;
+    
        
-    ///Functions used to correct D meson spectrum from MC
-    TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.0,30);
-    fDmesonShape22->SetParameter(0,4.47621);
-    
-    TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.1,30);
-    fDmesonShape21->SetParameter(0,20.2486);
-    
-    TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.2,30);
-    fDmesonShape20->SetParameter(0,21.7254);
-    
-    TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.3,30);
-    fDmesonShape19->SetParameter(0,19.1596);
-    
-    TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.4,30);
-    fDmesonShape18->SetParameter(0,16.2267);
-       
-    TF1 *fDmesonShape17 = new TF1("fDmesonShape17","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.5,30);
-    fDmesonShape17->SetParameter(0,13.7781);
-    
-    TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",1.75,30);
-    fDmesonShape16->SetParameter(0,9.99889);
-    
-    TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",2,30);
-    fDmesonShape1->SetParameter(0,8.50802);
-    
-    TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",2.25,30);   
-    fDmesonShape2->SetParameter(0,8.31432);
-    
-    TF1 *fDmesonShape3 = new TF1("fDmesonShape3","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",2.5,30);   
-    fDmesonShape3->SetParameter(0,8.01983);
-    
-    TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",2.75,30);   
-    fDmesonShape4->SetParameter(0,7.26397);
-    
-    TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",3,30);   
-    fDmesonShape5->SetParameter(0,6.11613);
-    
-    TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",3.5,30);   
-    fDmesonShape6->SetParameter(0,4.16545);
-    
-    TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/2.72057)*((CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/((CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))))",4,30);   
-    //TF1 *fDmesons_bin7 = new TF1("fDmesons_bin7","10*x[0]",8,10);   
-    //fDmesons_bin7->FixParameter(0,0.382748);
-    
-    TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",4.5,30);   
-    fDmesonShape8->SetParameter(0,1.87864);
-    
-    TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",5,30);   
-    fDmesonShape9->SetParameter(0,1.36889);
-    
-    TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",5.5,30);   
-    fDmesonShape10->SetParameter(0,1.03924);
-    
-    TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",6,30);   
-    fDmesonShape11->SetParameter(0,0.814814);
-    
-    TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",6.5,30);   
-    fDmesonShape12->SetParameter(0,0.655621);
-    
-    TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",7,30);   
-    fDmesonShape13->SetParameter(0,0.538845);
-    
-    TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",8,30);   
-    fDmesonShape14->SetParameter(0,0.382748);
-    
-    TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/[0])*(CrossOverLc(2.75563e+00,2.34650e+00,x[0])*(-4.22294e-01)/TMath::Power((-1.49187e+00)+x[0]/(4.14660e-07),1.71933e-01)+CrossOverRc(2.75563e+00,2.34650e+00,x[0])*1.64461e+00/TMath::Power((-2.58810e-01)+x/2.21576e+00,4.29324e+00)*CrossOverLc(5.67592e+00,(7.62946e-01)+CrossOverRc(5.67592e+00,7.62946e-01,x[0])*(5.49622e-01)/TMath::Power(x[0],(-2.15261e+00)),x[0]))/(CrossOverLc(3.38860e+00,4.05992e-01,x[0])*(-7.12382e-02)/TMath::Power((4.57260e-01)+x[0]/(5.36517e+02),4.07632e+00)+CrossOverRc(3.38860e+00,4.05992e-01,x[0])*(3.47577e-03)/TMath::Power(8.63986e-02+x/(2.06117e+01),2.58547e+00)*CrossOverLc(1.00000e+00,(9.99900e+03)+CrossOverRc(1.00000e+00,9.99900e+03,x[0])*(0.00000e+00)/TMath::Power(x[0],0.00000e+00),x[0]))",9,30);   
-    fDmesonShape15->SetParameter(0,0.286206);
-           
+          
         
     //=======================================================================
     ///Initialization for MC analysis:
@@ -1488,28 +1466,28 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 							 probAcceptD = 1;
 						 }
 						 else{
-							//if(fPt >=1.0 && fPt < 1.1) probAcceptD = fDmesonShape22->Eval(fMCparticleMother->Pt());
-							//if(fPt >=1.1 && fPt < 1.2) probAcceptD = fDmesonShape21->Eval(fMCparticleMother->Pt());
-							if(fPt >=1.2 && fPt < 1.3) probAcceptD = fDmesonShape20->Eval(fMCparticleMother->Pt());
-							if(fPt >=1.3 && fPt < 1.4) probAcceptD = fDmesonShape19->Eval(fMCparticleMother->Pt());
-							if(fPt >=1.4 && fPt < 1.5) probAcceptD = fDmesonShape18->Eval(fMCparticleMother->Pt());
-							if(fPt >=1.5 && fPt < 1.75) probAcceptD = fDmesonShape17->Eval(fMCparticleMother->Pt());
-							if(fPt >=1.75 && fPt < 2) probAcceptD = fDmesonShape16->Eval(fMCparticleMother->Pt());
-							if(fPt >=2 && fPt < 2.25) probAcceptD = fDmesonShape1->Eval(fMCparticleMother->Pt());
-							if(fPt >=2.25 && fPt < 2.5) probAcceptD = fDmesonShape2->Eval(fMCparticleMother->Pt());
-							if(fPt >=2.5 && fPt < 2.75) probAcceptD = fDmesonShape3->Eval(fMCparticleMother->Pt());
-							if(fPt >=2.75 && fPt < 3) probAcceptD = fDmesonShape4->Eval(fMCparticleMother->Pt());
-							if(fPt >=3 && fPt < 3.5) probAcceptD = fDmesonShape5->Eval(fMCparticleMother->Pt());
-							if(fPt >=3.5 && fPt < 4) probAcceptD = fDmesonShape6->Eval(fMCparticleMother->Pt());
-							if(fPt >=4 && fPt < 4.5) probAcceptD = fDmesonShape7->Eval(fMCparticleMother->Pt());
-							if(fPt >=4.5 && fPt < 5) probAcceptD = fDmesonShape8->Eval(fMCparticleMother->Pt());
-							if(fPt >=5 && fPt < 5.5) probAcceptD = fDmesonShape9->Eval(fMCparticleMother->Pt());
-							if(fPt >=5.5 && fPt < 6) probAcceptD = fDmesonShape10->Eval(fMCparticleMother->Pt());
-							if(fPt >=6 && fPt < 6.5) probAcceptD = fDmesonShape11->Eval(fMCparticleMother->Pt());
-							if(fPt >=6.5 && fPt < 7) probAcceptD = fDmesonShape12->Eval(fMCparticleMother->Pt());
-							if(fPt >=7 && fPt < 8) probAcceptD = fDmesonShape13->Eval(fMCparticleMother->Pt());
-							if(fPt >=8 && fPt < 9) probAcceptD = fDmesonShape14->Eval(fMCparticleMother->Pt());
-							if(fPt >=9 && fPt < 10) probAcceptD = fDmesonShape15->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.0 && fPt < 1.1) probAcceptD = fDcorr22->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.1 && fPt < 1.2) probAcceptD = fDcorr21->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.2 && fPt < 1.3) probAcceptD = fDcorr20->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.3 && fPt < 1.4) probAcceptD = fDcorr19->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.4 && fPt < 1.5) probAcceptD = fDcorr18->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.5 && fPt < 1.75) probAcceptD = fDcorr17->Eval(fMCparticleMother->Pt());
+							if(fPt >=1.75 && fPt < 2) probAcceptD = fDcorr16->Eval(fMCparticleMother->Pt());
+							if(fPt >=2 && fPt < 2.25) probAcceptD = fDcorr1->Eval(fMCparticleMother->Pt());
+							if(fPt >=2.25 && fPt < 2.5) probAcceptD = fDcorr2->Eval(fMCparticleMother->Pt());
+							if(fPt >=2.5 && fPt < 2.75) probAcceptD = fDcorr3->Eval(fMCparticleMother->Pt());
+							if(fPt >=2.75 && fPt < 3) probAcceptD = fDcorr4->Eval(fMCparticleMother->Pt());
+							if(fPt >=3 && fPt < 3.5) probAcceptD = fDcorr5->Eval(fMCparticleMother->Pt());
+							if(fPt >=3.5 && fPt < 4) probAcceptD = fDcorr6->Eval(fMCparticleMother->Pt());
+							if(fPt >=4 && fPt < 4.5) probAcceptD = fDcorr7->Eval(fMCparticleMother->Pt());
+							if(fPt >=4.5 && fPt < 5) probAcceptD = fDcorr8->Eval(fMCparticleMother->Pt());
+							if(fPt >=5 && fPt < 5.5) probAcceptD = fDcorr9->Eval(fMCparticleMother->Pt());
+							if(fPt >=5.5 && fPt < 6) probAcceptD = fDcorr10->Eval(fMCparticleMother->Pt());
+							if(fPt >=6 && fPt < 6.5) probAcceptD = fDcorr11->Eval(fMCparticleMother->Pt());
+							if(fPt >=6.5 && fPt < 7) probAcceptD = fDcorr12->Eval(fMCparticleMother->Pt());
+							if(fPt >=7 && fPt < 8) probAcceptD = fDcorr13->Eval(fMCparticleMother->Pt());
+							if(fPt >=8 && fPt < 9) probAcceptD = fDcorr14->Eval(fMCparticleMother->Pt());
+							if(fPt >=9 && fPt < 10) probAcceptD = fDcorr15->Eval(fMCparticleMother->Pt());
 						}
 						 
 						 float a = gRandom->Uniform(0,1);
