@@ -1357,35 +1357,39 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   fRun=run;
   AliCDBEntry * entry = 0;
   if (run>= fRunList.fN){
-    fRunList.Set(run*2+1);
+    fRunList.Set(run*2+1);    
     //
-    //
-    fALTROConfigData->Expand(run*2+1);    // ALTRO configuration data
-    fPulserData->Expand(run*2+1);         // Calibration Pulser data
-    fCEData->Expand(run*2+1);             // CE data
+    if (fALTROConfigData) fALTROConfigData->Expand(run*2+1);    // ALTRO configuration data
+    if (fPulserData) fPulserData->Expand(run*2+1);         // Calibration Pulser data
+    if (fCEData) fCEData->Expand(run*2+1);             // CE data
     if (!fTimeGainSplines) fTimeGainSplines = new TObjArray(run*2+1);
     fTimeGainSplines->Expand(run*2+1); // Array of AliSplineFits: at 0 MIP position in
   }
-  if (fRunList[run]>0 &&force==kFALSE) return;
+  if (fRunList[run]!=0 &&force==kFALSE) return;
 
-  fRunList[run]=1;  // sign as used
-
-  //
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
   if (entry)  {
     AliGRPObject * grpRun = dynamic_cast<AliGRPObject*>(entry->GetObject());
     if (!grpRun){
       TMap* map = dynamic_cast<TMap*>(entry->GetObject());
       if (map){
-	//grpRun = new AliGRPObject;
-	//grpRun->ReadValuesFromMap(map);
 	grpRun =  MakeGRPObjectFromMap(map);
-
 	fGRPMaps.Add(new TObjString(runstr),map);
       }
     }
     fGRPArray.Add(new TObjString(runstr),(AliGRPObject*)grpRun->Clone());
+    Int_t activeDetectors = grpRun->GetDetectorMask();
+    TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+    if ( detStr.Contains("TPC")==0){
+      AliInfo("TPC not present in the run");
+      fRunList[run] = -1;
+      return;
+    }    
   }
+  
+  fRunList[run]=1;  // sign as used
+
+  
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Goofie",run);
   if (entry){
     fGoofieArray.Add(new TObjString(runstr),entry->GetObject());
