@@ -83,6 +83,7 @@ set(SRCS
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
+  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
 
 # Headers from sources

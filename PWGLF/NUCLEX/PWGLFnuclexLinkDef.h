@@ -90,4 +90,6 @@
 #pragma link C++ class AliAnalysisCODEX::Track+;
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
+/// * NucleiSkimAOD
+#pragma link C++ class AliAnalysisTaskNucleiSkimAOD+;
 #endif
