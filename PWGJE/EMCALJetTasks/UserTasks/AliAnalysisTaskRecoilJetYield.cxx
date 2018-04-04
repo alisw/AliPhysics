@@ -375,6 +375,22 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhJetCounter_True);
     fh2PtRatio= new TH2F("fhPtRatio", "MC pt for detector level vs particle level jets",1500,-0.5,149.5,1500,-0.5,149.5);
     fOutput->Add(fh2PtRatio);
+
+    const Int_t dimSpec   = 5;
+    const Int_t nBinsSpec[5]     = {50,50,10,3,10};
+    const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
+    const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+    fhLundIterative = new THnSparseF("fHLundIterative",
+				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+    fOutput->Add(fhLundIterative); 
+    if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
+      
+      fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
+					   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+					   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+      fOutput->Add(fhLundIterativeTrue);
+    }
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
