@@ -384,13 +384,12 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
 				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
 				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
     fOutput->Add(fhLundIterative); 
-    if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
       
-      fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
-					   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
-					   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-      fOutput->Add(fhLundIterativeTrue);
-    }
+    fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
+					 "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+					 dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+    fOutput->Add(fhLundIterativeTrue);
+    
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
