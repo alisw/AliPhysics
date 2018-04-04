@@ -157,7 +157,7 @@ set(SRCS
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
     transform/AliHLTTPCFastTransformObject.cxx
-    transform-new/AliSplineGrid1D.cxx
+    transform-new/AliFlexibleSpline1D.cxx
     test/AliHLTTPCRawClusterDumpComponent.cxx
    )
 
