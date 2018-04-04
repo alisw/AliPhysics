@@ -878,6 +878,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
+
             for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
               if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
                fHistGenSmearedPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
@@ -1417,15 +1418,15 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID){
   if (fGeneratorHashs.size() == 0) return true;
 
   TString genname;
-  Bool_t hasGenerator = fMC->GetCocktailGenerator(trackID, genname);
+  Bool_t hasGenerator = fMC->GetCocktailGenerator(TMath::Abs(trackID), genname);
   // std::cout << genname << std::endl;
   if(!hasGenerator) {
-    Printf("no cocktail header list was found for this event");
+    Printf("no cocktail header list was found for this track");
     return false;
   }
   else{
     for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
-      std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
+      // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
       if (genname.Hash() == fGeneratorHashs[i]) return true;
 
     }
@@ -1439,13 +1440,27 @@ double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle p
   double weight = 0;
 
   pdgMother = fMC->GetTrack(part2.GetMotherID())->PdgCode();
-  if      (pdgMother == 111) weight = fPtPion    ->GetBinContent(fPtPion    ->FindBin(motherpt));
-  else if (pdgMother == 221) weight = fPtEta     ->GetBinContent(fPtEta     ->FindBin(motherpt));
-  else if (pdgMother == 331) weight = fPtEtaPrime->GetBinContent(fPtEtaPrime->FindBin(motherpt));
-  else if (pdgMother == 113) weight = fPtRho     ->GetBinContent(fPtRho     ->FindBin(motherpt));
-  else if (pdgMother == 223) weight = fPtOmega   ->GetBinContent(fPtOmega   ->FindBin(motherpt));
-  else if (pdgMother == 333) weight = fPtPhi     ->GetBinContent(fPtPhi     ->FindBin(motherpt));
-  else if (pdgMother == 443) weight = fPtJPsi    ->GetBinContent(fPtJPsi    ->FindBin(motherpt));
+  if      (pdgMother == 111) {
+    if (fPtPion) weight = fPtPion    ->GetBinContent(fPtPion    ->FindBin(motherpt));
+  }
+  else if (pdgMother == 221) {
+    if (fPtEta) weight = fPtEta     ->GetBinContent(fPtEta     ->FindBin(motherpt));
+  }
+  else if (pdgMother == 331) {
+    if (fPtEtaPrime) weight = fPtEtaPrime->GetBinContent(fPtEtaPrime->FindBin(motherpt));
+  }
+  else if (pdgMother == 113) {
+    if (fPtRho) weight = fPtRho     ->GetBinContent(fPtRho     ->FindBin(motherpt));
+  }
+  else if (pdgMother == 223) {
+    if (fPtOmega) weight = fPtOmega   ->GetBinContent(fPtOmega   ->FindBin(motherpt));
+  }
+  else if (pdgMother == 333) {
+    if (fPtPhi) weight = fPtPhi     ->GetBinContent(fPtPhi     ->FindBin(motherpt));
+  }
+  else if (pdgMother == 443) {
+    if (fPtJPsi) weight = fPtJPsi    ->GetBinContent(fPtJPsi    ->FindBin(motherpt));
+  }
 
   // std::cout << "weight from " << pdgMother << " for pt = " << motherpt << ": " << weight << std::endl;
 
