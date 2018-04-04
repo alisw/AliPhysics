@@ -17,26 +17,27 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
 ,fNSigCom(0)
 {
   for (int i=0;i<2;++i) {
-    fTrackCutQA[i]=0;
-    fpTDist[i]=0;
-    fpTPCDist[i]=0;
-    fetaDist[i]=0;
-    fphiDist[i]=0;
-    fTPCCls[i]=0;
-    fTPCClsS[i]=0;
-    fShrdClsITS[i]=0;
-    fDCAxy[i]=0;
-    fDCAz[i]=0;
-    fTPCCrossedRows[i]=0;
-    fTPCRatio[i]=0;
-    fTPCdedx[i]=0;
-    fTOFbeta[i]=0;
-    fNSigTPC[i]=0;
-    fNSigTOF[i]=0;
-    fTPCStatus[i]=0;
-    fTOFStatus[i]=0;
-    fTPCClsCPiluUp[i]=0;
-    fITShrdClsPileUp[i]=0;
+    fTrackCutQA[i] = nullptr;
+    fpTDist[i] = nullptr;
+    fpTPCDist[i] = nullptr;
+    fetaDist[i] = nullptr;
+    fphiDist[i] = nullptr;
+    fTPCCls[i] = nullptr;
+    fTPCClsS[i] = nullptr;
+    fTrackChi2[i] = nullptr;
+    fShrdClsITS[i] = nullptr;
+    fDCAxy[i] = nullptr;
+    fDCAz[i] = nullptr;
+    fTPCCrossedRows[i] = nullptr;
+    fTPCRatio[i] = nullptr;
+    fTPCdedx[i] = nullptr;
+    fTOFbeta[i] = nullptr;
+    fNSigTPC[i] = nullptr;
+    fNSigTOF[i] = nullptr;
+    fTPCStatus[i] = nullptr;
+    fTOFStatus[i] = nullptr;
+    fTPCClsCPiluUp[i] = nullptr;
+    fITShrdClsPileUp[i] = nullptr;
   }
 }
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
@@ -173,6 +174,13 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
     fTPCClsS[i]->Sumw2();
     fTPCClsS[i]->GetXaxis()->SetTitle("TPC Cls S");
     fTrackCutQA[i]->Add(fTPCClsS[i]);
+
+    TString ChiSquareName=Form("TrackChi2_%s",sName[i].Data());
+    fTrackChi2[i]=new TH2F(ChiSquareName.Data(),ChiSquareName.Data(),ptBins, ptmin, ptmax, 100, 0, 20);
+    fTrackChi2[i]->Sumw2();
+    fTrackChi2[i]->GetXaxis()->SetTitle("#it{p}_T");
+    fTrackChi2[i]->GetYaxis()->SetTitle("#chi^{2}/NDF");
+    fTrackCutQA[i]->Add(fTrackChi2[i]);
 
     TString ShrdClsITSName=Form("SharedClsITS_%s",sName[i].Data());
     fShrdClsITS[i]=new TH2F(ShrdClsITSName.Data(),ShrdClsITSName.Data(),
@@ -317,25 +325,25 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
 ,fNSigCom(0)
 {
   for (int i=0;i<2;++i) {
-    fTrackCutQA[i]=0;
-    fpTPCDist[i]=0;
-    fetaDist[i]=0;
-    fphiDist[i]=0;
-    fTPCCls[i]=0;
-    fTPCClsS[i]=0;
-    fShrdClsITS[i]=0;
-    fDCAxy[i]=0;
-    fDCAz[i]=0;
-    fTPCCrossedRows[i]=0;
-    fTPCRatio[i]=0;
-    fTPCdedx[i]=0;
-    fTOFbeta[i]=0;
-    fNSigTPC[i]=0;
-    fNSigTOF[i]=0;
-    fTPCStatus[i]=0;
-    fTOFStatus[i]=0;
-    fTPCClsCPiluUp[i]=0;
-    fITShrdClsPileUp[i]=0;
+    fTrackCutQA[i] = nullptr;
+    fpTPCDist[i] = nullptr;
+    fetaDist[i] = nullptr;
+    fphiDist[i] = nullptr;
+    fTPCCls[i] = nullptr;
+    fTPCClsS[i] = nullptr;
+    fShrdClsITS[i] = nullptr;
+    fDCAxy[i] = nullptr;
+    fDCAz[i] = nullptr;
+    fTPCCrossedRows[i] = nullptr;
+    fTPCRatio[i] = nullptr;
+    fTPCdedx[i] = nullptr;
+    fTOFbeta[i] = nullptr;
+    fNSigTPC[i] = nullptr;
+    fNSigTOF[i] = nullptr;
+    fTPCStatus[i] = nullptr;
+    fTOFStatus[i] = nullptr;
+    fTPCClsCPiluUp[i] = nullptr;
+    fITShrdClsPileUp[i] = nullptr;
   }
   fHistList=new TList();
   fHistList->SetOwner();

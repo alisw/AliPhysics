@@ -24,6 +24,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetDCAXYProp() const {return fdcaXYProp;};
   float GetDCAZ() const {return fdcaZ;};
   float GetDCAZProp() const {return fdcaZProp;};
+  float GetChiSquare() const { return fChi2; }
 
   //Quality Varaibles of the track
   float GetNClsTPC() const {return fNClsTPC;};
@@ -66,6 +67,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float fRatioCR;
   bool fnoSharedClst;
   float fTPCClsS;
+  float fChi2;
   std::vector<bool> fSharedClsITSLayer;
   bool fHasSharedClsITSLayer;
   float fdEdxTPC;
@@ -78,7 +80,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliAODTrack *fGlobalTrack;
   float fnSigmaTPC[5];
   float fnSigmaTOF[5];
-  ClassDef(AliFemtoDreamTrack,2)
+  ClassDef(AliFemtoDreamTrack,3)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */

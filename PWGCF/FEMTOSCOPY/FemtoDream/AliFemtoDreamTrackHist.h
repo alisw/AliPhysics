@@ -64,6 +64,10 @@ class AliFemtoDreamTrackHist {
   void FillITSSharedPileUp(int i,int iCrit,int yesno){
     if(!fMinimalBooking)fITShrdClsPileUp[i]->Fill(iCrit,yesno);
   }
+  void FillTrackChiSquare(int i, float pT, float chi2) {
+    if(!fMinimalBooking)fTrackChi2[i]->Fill(pT,chi2);
+  }
+
   void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList(){return fHistList;};
  private:
@@ -84,6 +88,7 @@ class AliFemtoDreamTrackHist {
   TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
+  TH2F *fTrackChi2[2];        //!
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
   TH2F *fNSigTPC[2];        //!
@@ -93,7 +98,7 @@ class AliFemtoDreamTrackHist {
   TH3F *fNSigCom;           //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];//!
-  ClassDef(AliFemtoDreamTrackHist,2);
+  ClassDef(AliFemtoDreamTrackHist,3);
 };
 
 #endif /* ALIFEMTODREAMTRACKHIST_H_ */

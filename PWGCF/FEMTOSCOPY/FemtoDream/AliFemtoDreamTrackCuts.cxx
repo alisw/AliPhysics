@@ -376,6 +376,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillpTCut(i,pT);
         fHists->FillpTPCCut(i,p);
         fHists->FillTPCclsCut(i,Track->GetNClsTPC());
+        fHists->FillTrackChiSquare(i, pT, Track->GetChiSquare());
         if (fDCAProp) {
           fHists->FillDCAxyCut(i,pT,Track->GetDCAXYProp());
           fHists->FillDCAzCut(i,pT,Track->GetDCAZProp());
