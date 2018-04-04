@@ -41,10 +41,54 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
                                     Bool_t isMC   = kFALSE, //run MC
                                     TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                     Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
-                                    TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+                                    TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                                    TString   additionalTrainConfig         = "0"
          ) {
 
   Int_t isHeavyIon = 0;
+  TString corrTaskSetting = ""; // select which correction task setting to use
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0){ rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    } else {
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+         if(tempStr.Contains("MaterialBudgetWeightsNONE")){
+            enableMatBudWeightsPi0 = 0;
+            cout << "INFO:  AddTask_GammaConvV1_pp materialBudgetWeights switched off signaled by additionalTrainConfigFlag" << endl;
+         } else {
+            TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+            if(fileNameMatBudWeightsArr->GetEntries()<1 ){
+                cout<<"ERROR: AddTask_GammaConvV1_pp when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl;
+                return;
+            }
+            TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+            TString  oldfileName  = oldMatObjStr->GetString();
+            TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+            cout<<newFileName.Data()<<endl;
+            if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+              filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+              cout << "INFO: AddTask_GammaConvV1_pp the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+          }
+        }
+      } 
+    }
+  }
+
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+  }
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+    
+  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -62,10 +106,13 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     AddTaskPIDResponse(isMC);
   }
 
+  
+  
   //=========  Set Cutnumber for V0Reader ================================
   //TString cutnumber = "00000000000840010015000000";
   TString cutnumberPhoton = "06000008400100007500000000";
   TString cutnumberEvent  = "00000103";
+  
 
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
