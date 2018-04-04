@@ -245,6 +245,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010ppLowEn();
   void InitDplustoKpipi2012pp();
   void InitDplustoKpipi2015pp5TeV();
+  void InitDplustoKpipi2017pp5TeV();
   void InitDplustoKpipi2016pp13TeV();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
