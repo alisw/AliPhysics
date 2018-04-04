@@ -136,9 +136,11 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
     
         TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
         TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
+        TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
         TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
         TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
         TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
+        TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
     
         TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
         TF1                 *fEtaWeight;    //! Function to weight enhanced eta
