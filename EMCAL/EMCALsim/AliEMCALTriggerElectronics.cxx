@@ -185,11 +185,16 @@ fGeometry(0)
         default:
           AliError("TRU Initialization for this Trigger Mapping is not implemented!");
       }
-      new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iTRU % 2);
+      AliEMCALTriggerTRU *mytru = new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iTRU % 2);
 
       AliDebug(999,Form("Building TRU %d with dimensions %d x %d\n",iTRU,int(rSize.X()),int(rSize.Y())));
       if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
-        AliFatal(Form("TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
+        if(dcsConf->IsTRUEnabled(iTRU)){
+          AliFatal(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
+        } else {
+          AliWarning(Form("Inactive TRU %d - L0 trigger will not be simulated for this TRU", iTRU));
+          mytru->SetActive(false);
+        }
       }
 
       AliEMCALTriggerTRU *oTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));

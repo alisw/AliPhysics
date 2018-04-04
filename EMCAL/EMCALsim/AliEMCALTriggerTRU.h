@@ -36,6 +36,15 @@ public:
   virtual void   GetL0Region(const int time, Int_t ** arr);
   virtual void   GetL0Region(const int time, Int_t arr[][4]);
   virtual Int_t  GetL0Time() const {return fL0Time;}
+
+  /**
+   * @brief Mark TRU as active or inactive
+   * 
+   * For inactive TRUs the L0 will not be simulated
+   * 
+   * @param active Active status 
+   */
+  void SetActive(Bool_t active) { fActive = active; }
   
 private:
   
@@ -46,6 +55,7 @@ private:
   
   Int_t         fADC[96][256]; //!<! FIXME: Check the maximum number of samples
   Int_t         fL0Time;       ///< Time when the L0 is issued
+  Bool_t        fActive;       ///< Flag whether TRU was active
   
   /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerTRU,1) ;
