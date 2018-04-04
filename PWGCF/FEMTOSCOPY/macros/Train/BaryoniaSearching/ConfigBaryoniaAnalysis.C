@@ -28,12 +28,12 @@ const double dalitzMax       = 6.0;
 const double dalitzBinWidth  = 0.005;
 
 const int nMultBins = 16;
-const int multBins[nMultBins+1] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 150, 160, 1000};
-const int runMult[nMultBins]    = {0, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 1  , 1  , 1  , 1  , 1  , 1 };
+const int multBins[nMultBins+1] = {80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 1000};
+const int runMult[nMultBins]    = {1, 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1  , 1  , 1  , 1  , 1  , 1 };
 
-const int nVertZbins = 9;
-const int vertZbins[nVertZbins+1] = {-1000, -21, -15, -9, -3, 3, 9, 15, 21, 1000};
-const int runVertZ[nVertZbins]    = { 0   ,  0 ,  0 ,  1 , 1, 1, 0, 0 , 0 };
+const int nVertZbins = 10;
+const int vertZbins[nVertZbins+1] = {-1000, -8, -6, -4, -2, 0 , 2, 4, 6, 8, 1000};
+const int runVertZ[nVertZbins]    = { 1   ,  1 , 1 , 1 , 1, 1 , 1, 1, 1 ,1 };
 
 bool separationCuts;
 bool ppCollisions;
