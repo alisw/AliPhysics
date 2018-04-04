@@ -31,6 +31,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fRatioCR(0)
 ,fnoSharedClst(0)
 ,fTPCClsS(0)
+,fChi2(0.f)
 ,fSharedClsITSLayer(0)
 ,fHasSharedClsITSLayer(false)
 ,fdEdxTPC(0)
@@ -97,6 +98,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
   this->SetPt(fTrack->Pt());
   this->fdcaXY=fTrack->DCA();
   this->fdcaZ=fTrack->ZAtDCA();
+  this->fChi2=fTrack->Chi2perNDF();
   double dcaVals[2] = {-99., -99.};
   double covar[3]={0.,0.,0.};
   AliAODTrack copy(*fGlobalTrack);

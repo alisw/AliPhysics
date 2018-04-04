@@ -17,26 +17,27 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
 ,fNSigCom(0)
 {
   for (int i=0;i<2;++i) {
-    fTrackCutQA[i]=0;
-    fpTDist[i]=0;
-    fpTPCDist[i]=0;
-    fetaDist[i]=0;
-    fphiDist[i]=0;
-    fTPCCls[i]=0;
-    fTPCClsS[i]=0;
-    fShrdClsITS[i]=0;
-    fDCAxy[i]=0;
-    fDCAz[i]=0;
-    fTPCCrossedRows[i]=0;
-    fTPCRatio[i]=0;
-    fTPCdedx[i]=0;
-    fTOFbeta[i]=0;
-    fNSigTPC[i]=0;
-    fNSigTOF[i]=0;
-    fTPCStatus[i]=0;
-    fTOFStatus[i]=0;
-    fTPCClsCPiluUp[i]=0;
-    fITShrdClsPileUp[i]=0;
+    fTrackCutQA[i] = nullptr;
+    fpTDist[i] = nullptr;
+    fpTPCDist[i] = nullptr;
+    fetaDist[i] = nullptr;
+    fphiDist[i] = nullptr;
+    fTPCCls[i] = nullptr;
+    fTPCClsS[i] = nullptr;
+    fTrackChi2[i] = nullptr;
+    fShrdClsITS[i] = nullptr;
+    fDCAxy[i] = nullptr;
+    fDCAz[i] = nullptr;
+    fTPCCrossedRows[i] = nullptr;
+    fTPCRatio[i] = nullptr;
+    fTPCdedx[i] = nullptr;
+    fTOFbeta[i] = nullptr;
+    fNSigTPC[i] = nullptr;
+    fNSigTOF[i] = nullptr;
+    fTPCStatus[i] = nullptr;
+    fTOFStatus[i] = nullptr;
+    fTPCClsCPiluUp[i] = nullptr;
+    fITShrdClsPileUp[i] = nullptr;
   }
 }
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
@@ -51,7 +52,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
   fHistList->SetName("TrackCuts");
   fHistList->SetOwner();
 
-  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 22, 0, 22);
+  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 23, 0, 23);
   fConfig->SetStats(0);
   fConfig->GetXaxis()->SetBinLabel(1, "pT_{min}");
   fConfig->GetXaxis()->SetBinLabel(2, "pT_{max}");
@@ -75,10 +76,11 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
   fConfig->GetXaxis()->SetBinLabel(20, "TOF Timing");
   fConfig->GetXaxis()->SetBinLabel(21, "Pile Up Rej");
   fConfig->GetXaxis()->SetBinLabel(22, "TPC Refit");
+  fConfig->GetXaxis()->SetBinLabel(23, "#chi2");
 
   fHistList->Add(fConfig);
 
-  fCutCounter = new TH1F("CutCounter", "Cut Counter", 23, 0, 23);
+  fCutCounter = new TH1F("CutCounter", "Cut Counter", 24, 0, 24);
   fCutCounter->GetXaxis()->SetBinLabel(1, "Input");
   fCutCounter->GetXaxis()->SetBinLabel(2, "Filter Bit");
   fCutCounter->GetXaxis()->SetBinLabel(3, "p_{T} Cut");
@@ -93,15 +95,16 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
   fCutCounter->GetXaxis()->SetBinLabel(12, "TPC Refit");
   fCutCounter->GetXaxis()->SetBinLabel(13, "TPC Crossed Rows");
   fCutCounter->GetXaxis()->SetBinLabel(14, "TPC Row Ratio");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "TPC OK");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "TPC PID");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "TPC TOF OK");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(20, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(21, "Passes PID");
-  fCutCounter->GetXaxis()->SetBinLabel(22, "DCA_{Z}");
-  fCutCounter->GetXaxis()->SetBinLabel(23, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "#chi2 OK");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "TPC OK");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "TPC PID");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "TPC TOF OK");
+  fCutCounter->GetXaxis()->SetBinLabel(20, "TPC TOF PID");
+  fCutCounter->GetXaxis()->SetBinLabel(21, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(22, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(23, "DCA_{Z}");
+  fCutCounter->GetXaxis()->SetBinLabel(24, "DCA_{XY}");
 
   fHistList->Add(fCutCounter);
 
@@ -173,6 +176,13 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
     fTPCClsS[i]->Sumw2();
     fTPCClsS[i]->GetXaxis()->SetTitle("TPC Cls S");
     fTrackCutQA[i]->Add(fTPCClsS[i]);
+
+    TString ChiSquareName=Form("TrackChi2_%s",sName[i].Data());
+    fTrackChi2[i]=new TH2F(ChiSquareName.Data(),ChiSquareName.Data(),ptBins, ptmin, ptmax, 100, 0, 20);
+    fTrackChi2[i]->Sumw2();
+    fTrackChi2[i]->GetXaxis()->SetTitle("#it{p}_T");
+    fTrackChi2[i]->GetYaxis()->SetTitle("#chi^{2}/NDF");
+    fTrackCutQA[i]->Add(fTrackChi2[i]);
 
     TString ShrdClsITSName=Form("SharedClsITS_%s",sName[i].Data());
     fShrdClsITS[i]=new TH2F(ShrdClsITSName.Data(),ShrdClsITSName.Data(),
@@ -317,25 +327,25 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
 ,fNSigCom(0)
 {
   for (int i=0;i<2;++i) {
-    fTrackCutQA[i]=0;
-    fpTPCDist[i]=0;
-    fetaDist[i]=0;
-    fphiDist[i]=0;
-    fTPCCls[i]=0;
-    fTPCClsS[i]=0;
-    fShrdClsITS[i]=0;
-    fDCAxy[i]=0;
-    fDCAz[i]=0;
-    fTPCCrossedRows[i]=0;
-    fTPCRatio[i]=0;
-    fTPCdedx[i]=0;
-    fTOFbeta[i]=0;
-    fNSigTPC[i]=0;
-    fNSigTOF[i]=0;
-    fTPCStatus[i]=0;
-    fTOFStatus[i]=0;
-    fTPCClsCPiluUp[i]=0;
-    fITShrdClsPileUp[i]=0;
+    fTrackCutQA[i] = nullptr;
+    fpTPCDist[i] = nullptr;
+    fetaDist[i] = nullptr;
+    fphiDist[i] = nullptr;
+    fTPCCls[i] = nullptr;
+    fTPCClsS[i] = nullptr;
+    fShrdClsITS[i] = nullptr;
+    fDCAxy[i] = nullptr;
+    fDCAz[i] = nullptr;
+    fTPCCrossedRows[i] = nullptr;
+    fTPCRatio[i] = nullptr;
+    fTPCdedx[i] = nullptr;
+    fTOFbeta[i] = nullptr;
+    fNSigTPC[i] = nullptr;
+    fNSigTOF[i] = nullptr;
+    fTPCStatus[i] = nullptr;
+    fTOFStatus[i] = nullptr;
+    fTPCClsCPiluUp[i] = nullptr;
+    fITShrdClsPileUp[i] = nullptr;
   }
   fHistList=new TList();
   fHistList->SetOwner();

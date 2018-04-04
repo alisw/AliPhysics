@@ -86,45 +86,40 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   NegAntiv0Daug->SetCutCharge(-1);
 
   if (suffix == "1") {
-    v0Cuts->SetPtRange(0.5, 999.9);
-    Antiv0Cuts->SetPtRange(0.5, 999.9);
+    Posv0Daug->SetMaxChi2(10);
+    Negv0Daug->SetMaxChi2(10);
+    PosAntiv0Daug->SetMaxChi2(10);
+    NegAntiv0Daug->SetMaxChi2(10);
   } else if (suffix == "2") {
-    v0Cuts->SetPtRange(0.75, 999.9);
-    Antiv0Cuts->SetPtRange(0.75, 999.9);
+    Posv0Daug->SetMaxChi2(8);
+    Negv0Daug->SetMaxChi2(8);
+    PosAntiv0Daug->SetMaxChi2(8);
+    NegAntiv0Daug->SetMaxChi2(8);
   } else if (suffix == "3") {
-    v0Cuts->SetPtRange(1, 999.9);
-    Antiv0Cuts->SetPtRange(1, 999.9);
+    Posv0Daug->SetMaxChi2(6);
+    Negv0Daug->SetMaxChi2(6);
+    PosAntiv0Daug->SetMaxChi2(6);
+    NegAntiv0Daug->SetMaxChi2(6);
   } else if (suffix == "4") {
-    v0Cuts->SetPtRange(1, 999.9);
-    Antiv0Cuts->SetPtRange(1, 999.9);
+    Posv0Daug->SetMaxChi2(4);
+    Negv0Daug->SetMaxChi2(4);
+    PosAntiv0Daug->SetMaxChi2(4);
+    NegAntiv0Daug->SetMaxChi2(4);
   } else if (suffix == "5") {
-    v0Cuts->SetCutInvMass(0.01);
-    Antiv0Cuts->SetCutInvMass(0.01);
+    Posv0Daug->SetMaxChi2(2);
+    Negv0Daug->SetMaxChi2(2);
+    PosAntiv0Daug->SetMaxChi2(2);
+    NegAntiv0Daug->SetMaxChi2(2);
   } else if (suffix == "6") {
-    Posv0Daug->SetPtRange(0.1, 999.9);
-    Negv0Daug->SetPtRange(0.1, 999.9);
-    PosAntiv0Daug->SetPtRange(0.1, 999.9);
-    NegAntiv0Daug->SetPtRange(0.1, 999.9);
+    Posv0Daug->SetMaxChi2(1);
+    Negv0Daug->SetMaxChi2(1);
+    PosAntiv0Daug->SetMaxChi2(1);
+    NegAntiv0Daug->SetMaxChi2(1);
   } else if (suffix == "7") {
-    Posv0Daug->SetPtRange(0.2, 999.9);
-    Negv0Daug->SetPtRange(0.2, 999.9);
-    PosAntiv0Daug->SetPtRange(0.2, 999.9);
-    NegAntiv0Daug->SetPtRange(0.2, 999.9);
-  } else if (suffix == "8") {
-    Posv0Daug->SetPtRange(0.3, 999.9);
-    Negv0Daug->SetPtRange(0.3, 999.9);
-    PosAntiv0Daug->SetPtRange(0.3, 999.9);
-    NegAntiv0Daug->SetPtRange(0.3, 999.9);
-  } else if (suffix == "9") {
-    Posv0Daug->SetPtRange(0.5, 999.9);
-    Negv0Daug->SetPtRange(0.5, 999.9);
-    PosAntiv0Daug->SetPtRange(0.5, 999.9);
-    NegAntiv0Daug->SetPtRange(0.5, 999.9);
-  } else if (suffix == "10") {
-    Posv0Daug->SetPtRange(0.3, 999.9);
-    Negv0Daug->SetPtRange(0.125, 999.9);
-    PosAntiv0Daug->SetPtRange(0.125, 999.9);
-    NegAntiv0Daug->SetPtRange(0.3, 999.9);
+    Posv0Daug->SetMaxChi2(2.4);
+    Negv0Daug->SetMaxChi2(2.4);
+    PosAntiv0Daug->SetMaxChi2(2.4);
+    NegAntiv0Daug->SetMaxChi2(2.4);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);

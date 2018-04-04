@@ -36,6 +36,8 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 ,fcutnTPCCls(false)
 ,fMaxSharedClsTPC(160)
 ,fCutSharedClsTPC(false)
+,fCutChi2(false)
+,fMaxCutChi2(0.f)
 ,fDCAProp(false)
 ,fDCAToVertexXY(0)
 ,fCutDCAToVtxXY(false)
@@ -82,7 +84,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     if (!PIDAODCuts(Track)) {
       pass=false;
     } else {
-      if (!fMinimalBooking) fHists->FillTrackCounter(20);
+      if (!fMinimalBooking) fHists->FillTrackCounter(21);
     }
   }
   if (pass) {
@@ -196,6 +198,14 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       }
     }
   }
+  if (pass && fCutChi2) {
+    if (Track->GetChiSquare() > fMaxCutChi2) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking) fHists->FillTrackCounter(14);
+    }
+  }
+
   return pass;
 }
 
@@ -222,7 +232,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
     if (!TPCisthere) {
       pass=false;
     } else {
-      if (!fMinimalBooking) fHists->FillTrackCounter(14);
+      if (!fMinimalBooking) fHists->FillTrackCounter(15);
       if (fRejectPions&&TOFisthere) {
         float nSigTOF=(Track->GetnSigmaTOF((int)(AliPID::kPion)));
         if (TMath::Abs(nSigTOF)<fNSigValue) {
@@ -233,7 +243,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
           //if the particle is a Pion according to the TOF, reject it!
           pass=false;
         } else {
-          if (!fMinimalBooking) fHists->FillTrackCounter(15);
+          if (!fMinimalBooking) fHists->FillTrackCounter(16);
         }
       }
       if (pass) {
@@ -241,7 +251,7 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
         if (!(TMath::Abs(nSigTPC)<fNSigValue)) {
           pass=false;
         } else {
-          if (!fMinimalBooking) fHists->FillTrackCounter(16);
+          if (!fMinimalBooking) fHists->FillTrackCounter(17);
         }
       }
     }
@@ -249,19 +259,19 @@ bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
     if (!(TPCisthere&&TOFisthere)) {
       pass=false;
     } else {
-      if (!fMinimalBooking) fHists->FillTrackCounter(17);
+      if (!fMinimalBooking) fHists->FillTrackCounter(18);
       float nSigTPC=(Track->GetnSigmaTPC((int)(fParticleID)));
       float nSigTOF=(Track->GetnSigmaTOF((int)(fParticleID)));
       float nSigComb=TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
       if (!(nSigComb<fNSigValue)) {
         pass=false;
       } else {
-        if (!fMinimalBooking) fHists->FillTrackCounter(18);
+        if (!fMinimalBooking) fHists->FillTrackCounter(19);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass=false;
           } else {
-            if (!fMinimalBooking) fHists->FillTrackCounter(19);
+            if (!fMinimalBooking) fHists->FillTrackCounter(20);
           }
         }
       }
@@ -301,13 +311,13 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
       if (!(TMath::Abs(Track->GetDCAZProp())<fDCAToVertexZ)) {
         pass=false;
       } else {
-        if (!fMinimalBooking) fHists->FillTrackCounter(21);
+        if (!fMinimalBooking) fHists->FillTrackCounter(22);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ())<fDCAToVertexZ)) {
         pass=false;
       } else {
-        if (!fMinimalBooking) fHists->FillTrackCounter(21);
+        if (!fMinimalBooking) fHists->FillTrackCounter(22);
       }
     }
   }
@@ -338,13 +348,13 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
       if (!(TMath::Abs(Track->GetDCAXYProp())<fDCAToVertexXY)) {
         pass=false;
       } else {
-        if (!fMinimalBooking) fHists->FillTrackCounter(22);
+        if (!fMinimalBooking) fHists->FillTrackCounter(23);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY())<fDCAToVertexXY)) {
         pass=false;
       } else {
-        if (!fMinimalBooking) fHists->FillTrackCounter(22);
+        if (!fMinimalBooking) fHists->FillTrackCounter(23);
       }
     }
   }
@@ -376,6 +386,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillpTCut(i,pT);
         fHists->FillpTPCCut(i,p);
         fHists->FillTPCclsCut(i,Track->GetNClsTPC());
+        fHists->FillTrackChiSquare(i, pT, Track->GetChiSquare());
         if (fDCAProp) {
           fHists->FillDCAxyCut(i,pT,Track->GetDCAXYProp());
           fHists->FillDCAzCut(i,pT,Track->GetDCAZProp());
@@ -643,6 +654,9 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
     }
     if (fCheckTPCRefit) {
       fHists->FillConfig(21,1);
+    }
+    if(fCutChi2) {
+      fHists->FillConfig(22,fMaxCutChi2);
     }
   }
 }
