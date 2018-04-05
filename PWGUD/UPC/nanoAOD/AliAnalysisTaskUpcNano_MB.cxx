@@ -74,7 +74,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTOFPIDProtonCorr(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0)
+	hTPCdEdxCorr(0),
+	
 
 {
 
@@ -275,11 +276,18 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  cout<<"UserCreateOutputObjects"<<endl;
   fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
+  fSPDfile->Print();
+  fSPDfile->Map();
   hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+  hSPDeff->SetDirectory(0);
   TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
   hBCmod4 = hBCmod4_2D->ProjectionY();
-  //fSPDfile->Close();
+  fSPDfile->Close();
+  
+  for(Int_t i =0; i<1200; i++)cout<<TString::Format("%1.2f",hSPDeff->GetBinContent(i+1,1))<<", ";
+  cout<<endl;
     
   PostData(1, fOutputList);
 
@@ -296,6 +304,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TString trigger = aod->GetFiredTriggerClasses();
   if(!isMC && !trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
    
+   cout<<"UserExec"<<endl;
   fRunNumber = aod->GetRunNumber();
   
   AliAODVZERO *fV0data = aod ->GetVZEROData();
@@ -619,7 +628,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
 {
   
   for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
-  
+  cout<<"RunMC"<<endl;
   UShort_t fTriggerAD = aod->GetADData()->GetTriggerBits();
   UShort_t fTriggerVZERO = aod->GetVZEROData()->GetTriggerBits();
   UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
