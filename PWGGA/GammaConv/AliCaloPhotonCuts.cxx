@@ -5193,7 +5193,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
         //pp 13 TeV LHC16
         } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9708378317, 1.2383710975, -2.0138106810, 1.0194960585, 0.8124178583, -1.9786865028));
+          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
