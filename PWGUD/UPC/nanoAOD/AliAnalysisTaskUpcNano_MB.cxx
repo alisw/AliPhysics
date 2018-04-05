@@ -75,6 +75,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
+	fSPDfile(0),
+  	hBCmod4(0),
+  	hSPDeff(0) 
 	
 
 {
