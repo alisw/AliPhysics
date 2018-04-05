@@ -120,6 +120,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
     Negv0Daug->SetMaxChi2(2.4);
     PosAntiv0Daug->SetMaxChi2(2.4);
     NegAntiv0Daug->SetMaxChi2(2.4);
+  } else if (suffix == "8") {
+    Posv0Daug->SetCheckPileUp(true);
+    NegAntiv0Daug->SetCheckPileUp(true);
+  } else if (suffix == "9") {
+    Negv0Daug->SetCheckPileUp(true);
+    PosAntiv0Daug->SetCheckPileUp(true);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -147,14 +153,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   XiNegCuts->SetMinimalBooking(true);
   XiPosCuts->SetMinimalBooking(true);
   XiBachCuts->SetMinimalBooking(true);
-  CascadeCuts->Setv0Negcuts(XiNegCuts);
-  CascadeCuts->Setv0PosCuts(XiPosCuts);
-  CascadeCuts->SetBachCuts(XiBachCuts);
-  CascadeCuts->SetPDGCodeCasc(-3312);
-  CascadeCuts->SetPDGCodev0(3122);
-  CascadeCuts->SetPDGCodePosDaug(2212);
-  CascadeCuts->SetPDGCodeNegDaug(-211);
-  CascadeCuts->SetPDGCodeBach(-211);
 
   AntiCascadeCuts =
       AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
@@ -171,6 +169,36 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AntiXiNegCuts->SetMinimalBooking(true);
   AntiXiPosCuts->SetMinimalBooking(true);
   AntiXiBachCuts->SetMinimalBooking(true);
+
+  if (suffix == "10") {
+     XiPosCuts->SetCheckPileUp(true);
+     AntiXiNegCuts->SetCheckPileUp(true);
+   } else if (suffix == "11") {
+    XiNegCuts->SetCheckPileUp(true);
+    AntiXiPosCuts->SetCheckPileUp(true);
+  } else if (suffix == "12") {
+    XiBachCuts->SetCheckPileUp(true);
+    AntiXiBachCuts->SetCheckPileUp(true);
+  } else if (suffix == "13") {
+    XiBachCuts->SetCheckPileUp(true);
+    AntiXiBachCuts->SetCheckPileUp(true);
+    XiPosCuts->SetCheckPileUp(true);
+    AntiXiNegCuts->SetCheckPileUp(true);
+  } else if (suffix == "14") {
+    XiBachCuts->SetCheckPileUp(true);
+    AntiXiBachCuts->SetCheckPileUp(true);
+    XiNegCuts->SetCheckPileUp(true);
+    AntiXiPosCuts->SetCheckPileUp(true);
+  }
+
+  CascadeCuts->Setv0Negcuts(XiNegCuts);
+  CascadeCuts->Setv0PosCuts(XiPosCuts);
+  CascadeCuts->SetBachCuts(XiBachCuts);
+  CascadeCuts->SetPDGCodeCasc(-3312);
+  CascadeCuts->SetPDGCodev0(3122);
+  CascadeCuts->SetPDGCodePosDaug(2212);
+  CascadeCuts->SetPDGCodeNegDaug(-211);
+  CascadeCuts->SetPDGCodeBach(-211);
 
   AntiXiBachCuts->SetCutCharge(1);
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
