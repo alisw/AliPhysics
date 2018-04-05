@@ -316,31 +316,21 @@ template<>
 struct Configuration<AliFemtoEventCutCentrality> : AbstractConfiguration<AliFemtoEventCut> {
   using Super = AbstractConfiguration<AliFemtoEventCut>;
 
-  using RangeF_t = AliFemtoConfigObject::RangeValue_t;
-
-  RangeF_t centrality, z, epvzero;
-  int trigger_selection;
+  AliFemtoEventCutCentrality::Parameters params;
 
   Configuration(AliFemtoConfigObject &cfg)
+    : params(cfg)
   {
-    cfg.pop_all()
-      ("centrality", centrality)
-      ("ep_v0", epvzero)
-      ;
   }
 
   void Configure(AliFemtoEventCutCentrality &cut) const
   {
-    //Super::Configure(cut);
-    cut.SetCentralityRange(centrality.first, centrality.second);
-    cut.SetZPosRange(z.first, z.second);
-    cut.SetEPVZERO(epvzero.first, epvzero.second);
-    cut.SetTriggerSelection(trigger_selection);
+    Super::Configure(cut);
+    cut.ResetWithParameters(params);
   }
 
   virtual operator AliFemtoEventCut*() const {
-    AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
-    Configure(*cut);
+    AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality(params);
     return cut;
   }
 };
@@ -484,6 +474,75 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
 };
 #endif
 
+
+#if defined(ALIFEMTOAODTRACKCUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOAODTRACKCUT_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOAODTRACKCUT_H
+template<>
+struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoParticleCut>
+{
+  using Super = AbstractConfiguration<AliFemtoParticleCut>;
+  using RangeF_t = std::pair<float, float>;
+  int charge = 1.0;
+  bool label = false;
+  RangeF_t pt = {0.0, 100.0},
+           rapidity = {-2.0, 2.0},
+           pid_prob_electron = {-1.0, 2.0},
+           pid_prob_proton = {-1.0, 2.0},
+           pid_prob_pion = {-1.0, 2.0},
+           pid_prob_kaon = {-1.0, 2.0},
+           pid_prob_muon = {-1.0, 2.0};
+
+  float max_chi_ndof = 0.3;
+  float max_sigma_to_vertex = 0.0;
+
+  Configuration(AliFemtoConfigObject cfg)
+  {
+    cfg.pop_all()
+      ("charge", charge)
+      ("pt", pt)
+      ("rapidity", rapidity)
+      ("max_chi_ndof", max_chi_ndof)
+      ("max_sigma_to_vertex", max_sigma_to_vertex)
+      ("label", label);
+
+    #define LOAD_PROB_RANGE(__key) { float f; \
+      if (cfg.pop_and_load(#__key, f)) {  __key = {-f, f}; } \
+      else { cfg.pop_and_load(#__key, __key); }
+
+    LOAD_PROB_RANGE(pid_prob_electron)
+    LOAD_PROB_RANGE(pid_prob_muon)
+    LOAD_PROB_RANGE(pid_prob_pion)
+    LOAD_PROB_RANGE(pid_prob_kaon)
+    LOAD_PROB_RANGE(pid_prob_proton)
+
+    #undef LOAD_PROB_RANGE
+
+  }
+
+  void Configure(AliFemtoESDTrackCut &cut) const
+  {
+    Super::Configure(cut);
+    cut.SetCharge(charge);
+    cut.SetPt(pt.first, pt.second);
+    cut.SetEta(eta.first, eta.second);
+    cut.SetRapidity(rapidity.first, rapidity.second);
+    cut.SetMaxSigmaToVertex(max_sigma_to_vertex);
+    cut.SetProbElectron(pid_prob_electron.first, pid_prob_electron.second);
+    cut.SetProbProton(pid_prob_proton.first, pid_prob_proton.second);
+    cut.SetProbPion(pid_prob_pion.first, pid_prob_pion.second);
+    cut.SetProbKaon(pid_prob_kaon.first, pid_prob_kaon.second);
+    cut.SetProbMuon(pid_prob_muon.first, pid_prob_muon.second);
+  }
+
+  virtual operator AliFemtoParticleCut*() const
+  {
+    AliFemtoAODTrackCut *cut = new AliFemtoAODTrackCut();
+    Configure(*cut);
+    return cut;
+  }
+
+};
+#endif
 
 //------------------------
 //
@@ -817,6 +876,7 @@ struct Configuration<AliFemtoCorrFctnDirectYlm> : AbstractConfiguration<AliFemto
     return ptr;
   }
 };
+
 #endif
 
 
@@ -849,7 +909,8 @@ struct Configuration<AliFemtoCorrFctnDPhiStarDEta> : AbstractConfiguration<AliFe
       .WarnOfRemainingItems();
   }
 
-  virtual operator AliFemtoCorrFctn*() const {
+  virtual operator AliFemtoCorrFctn*() const
+  {
     AliFemtoCorrFctnDPhiStarDEta *ptr = new AliFemtoCorrFctnDPhiStarDEta(name,
                                                                          radius,
                                                                          eta_bins,

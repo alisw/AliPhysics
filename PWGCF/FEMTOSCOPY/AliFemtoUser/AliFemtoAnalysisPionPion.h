@@ -114,7 +114,6 @@ public:
   ///
   static AliFemtoAnalysis* BuildAnalysisFromConfiguration(AliFemtoConfigObject);
 
-
   /// Construct an Event Reader from config object
   ///
   /// This static method is only using the class as a namespace (this
