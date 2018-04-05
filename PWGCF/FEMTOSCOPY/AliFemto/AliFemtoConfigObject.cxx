@@ -86,9 +86,9 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
     case kEMPTY: return "";
     case kBOOL: return fValueBool ? "true" : "false";
     case kINT: return TString::Format("%lld", fValueInt);
-    case kFLOAT: return TString::Format("%f", fValueFloat);
+    case kFLOAT: return TString::Format("%g", fValueFloat);
     case kSTRING: return TString::Format("'%s'", fValueString.c_str());
-    case kRANGE: return TString::Format("%f:%f", fValueRange.first, fValueRange.second);
+    case kRANGE: return TString::Format("%g:%g", fValueRange.first, fValueRange.second);
     case kARRAY: {
       TString result = "[";
       auto it = fValueArray.cbegin(),
@@ -107,13 +107,13 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
       auto it = fValueRangeList.cbegin(),
           end = fValueRangeList.cend();
       if (it != end) {
-        result += TString::Format("%f:%f", it->first, it->second);
+        result += TString::Format("%g:%g", it->first, it->second);
       }
       for (++it; it != end; ++it) {
         if (it->first == std::prev(it)->second) {
-          result += TString::Format(":%f", it->second);
+          result += TString::Format(":%g", it->second);
         } else {
-          result += TString::Format(", %f:%f", it->first, it->second);
+          result += TString::Format(", %g:%g", it->first, it->second);
         }
       }
       result += ')';
