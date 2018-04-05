@@ -80,6 +80,7 @@ set(SRCS
   AliFemtoShareQualityQAPairCut.cxx
   AliFemtoShareQualityCorrFctn.cxx
   AliFemtoYlm.cxx
+  AliFemtoCorrFctn3DLCMSPosQuad.cxx
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
@@ -88,8 +89,8 @@ set(SRCS
   AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnKStar.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
-  AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
+  AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
   AliFemtoPairCutRadialDistance.cxx

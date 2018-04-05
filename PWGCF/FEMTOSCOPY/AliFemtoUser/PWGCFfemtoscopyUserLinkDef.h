@@ -45,6 +45,7 @@
 //#pragma link C++ class AliFemtoEventReaderESDKine;
 //#pragma link C++ class AliFemtoEventReaderAllESDKine;
 #pragma link C++ class AliFemtoYlm;
+#pragma link C++ class AliFemtoCorrFctn3DLCMSPosQuad;
 #pragma link C++ class AliFemtoCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
