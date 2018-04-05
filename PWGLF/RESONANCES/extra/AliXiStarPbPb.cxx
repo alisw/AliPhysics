@@ -1539,6 +1539,13 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(10,1);
         
         //
+        
+        if(StandardXi){
+            if(fDecayParameters[11] < fCutValues[9][11]) ((TH3F*)fOutputList->FindObject("fXi_CPAL"))->Fill(xiPt, centralityV0M, xiMass); //QA CPA L
+            if(fDecayParameters[11] < fCutValues[20][12]) ((TH3F*)fOutputList->FindObject("fXi_CPAXi"))->Fill(xiPt, centralityV0M, xiMass);//QA CPA Xi
+            
+        }
+        
         if(fDecayParameters[11] < fCutValues[0][11]) StandardXi=kFALSE;// Cos PA Lambda
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(11,1);
         
@@ -1558,12 +1565,6 @@ void AliXiStarPbPb::Exec(Option_t *)
         }
         
         
-        
-        if(StandardXi){
-            if(fDecayParameters[11] < fCutValues[9][11]) ((TH3F*)fOutputList->FindObject("fXi_CPAL"))->Fill(xiPt, centralityV0M, xiMass); //QA CPA L
-            if(fDecayParameters[11] < fCutValues[20][12]) ((TH3F*)fOutputList->FindObject("fXi_CPAXi"))->Fill(xiPt, centralityV0M, xiMass);//QA CPA Xi
-            
-        }
         
     
         
