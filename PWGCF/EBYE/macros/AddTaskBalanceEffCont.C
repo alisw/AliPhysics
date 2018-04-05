@@ -1,16 +1,19 @@
 
-AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V0M",
-						  Double_t centrMin=10.,
-						  Double_t centrMax=80.,
-						  Double_t vertexZ=10.,
-						  Int_t AODfilterBit = 96,
-						  TString fileNameBase="AnalysisResults",
-						  UInt_t triggerSel = AliVEvent::kINT7,
-						  Bool_t usePID=kTRUE,
-						  Bool_t usePIDnSigmaComb=kTRUE,
-						  Double_t BayesThr = 0.8,
-						  AliPID::EParticleType particleType = AliPID::kPion) {
-    
+AliAnalysisTaskEffContBF *AddTaskBalanceEffCont(TString  centralityEstimator="V0M",
+						Double_t centrMin=10.,
+						Double_t centrMax=80.,
+						Double_t vertexZ=10.,
+						Int_t AODfilterBit = 96,
+						Bool_t bUseElectronRejection = kFALSE,
+						TString fileNameBase="AnalysisResults",
+						UInt_t triggerSel = AliVEvent::kINT7,
+						Bool_t usePIDfromPDG=kTRUE,
+						AliPID::EParticleType particleType = AliPID::kPion,
+						Bool_t usePIDstrategy=kFALSE,
+						Bool_t usePIDnSigmaComb=kTRUE,
+						Double_t BayesThr = 0.8,
+						) {
+  
     // Creates a balance function analysis task and adds it to the analysis manager.
     // Get the pointer to the existing analysis manager via the static access method.
     TString centralityName("");
@@ -51,7 +54,6 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
     
     // vertex
     taskEffContBF->SetVertexDiamond(1.,1.,vertexZ);
-    taskEffContBF->SetRejectInjectedSignalsGenName("Hijing");
  
     //analysis kinematic cuts
     taskEffContBF->SetMinPt(0.0);
@@ -61,17 +63,19 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
     taskEffContBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
     taskEffContBF->SetPtRange(0.0, 20.0, 100);  //acceptance cuts //5.0,49
     
-
-    
     TString pidsuffix ="ch";
-    if (usePID) {
-
+    if (usePIDfromPDG) {
         pidsuffix = AliPID::ParticleShortName(particleType);
-        taskEffContBF->SetUseParticleID(usePID, particleType);
-        taskEffContBF->SetUsePIDnSigmaComb(usePIDnSigmaComb);
-        taskEffContBF->SetBayesPIDThr(BayesThr);
+        taskEffContBF->SetUsePIDfromPDG(usePIDfromPDG, particleType);
+      
     }
-    
+
+    if (usePIDstrategy) {
+      pidsuffix = AliPID::ParticleShortName(particleType);
+      taskEffContBF->SetUseParticleID(usePIDstrategy, particleType);
+      taskEffContBF->SetUsePIDnSigmaComb(usePIDnSigmaComb);
+      taskEffContBF->SetBayesPIDThr(BayesThr);
+    }
     //AODs
     taskEffContBF->SetAODtrackCutBit(AODfilterBit);
     mgr->AddTask(taskEffContBF);
