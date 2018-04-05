@@ -703,6 +703,11 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("18910113","1111102057032230000","01631031000000d0"); // 80-90
     cuts.AddCut("16810113","1111102057032230000","01631031000000d0"); // 60-80
 
+  } else if (trainConfig == 240){ // EMCAL clusters - 0-90% centrality for PbPb EMCal
+    cuts.AddCut("50910113","1111183053032230000","0163100100000050"); //  0-90 calo correction cent dep
+    cuts.AddCut("50910913","1111183053032230000","0163103100000050"); //  0-90 calo correction cent dep
+    cuts.AddCut("50910913","1111183053032230000","0163100100000050"); //  0-90 calo correction cent dep
+
 
 
   // **********************************************************************************************************
