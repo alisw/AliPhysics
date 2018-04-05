@@ -16,6 +16,7 @@
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include <bitset>
 #include <iostream>
 #include <sstream>
 
@@ -71,6 +72,15 @@ bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other
     }
   }
   return isequal;
+}
+
+bool AliEMCALTriggerDCSConfig::IsTRUEnabled(int itru) const {
+  if(itru < 32){
+    if(fSTUObj) return std::bitset<32>(fSTUObj->GetRegion()).test(itru);
+  } else {
+    if(fSTUDCAL) return std::bitset<32>(fSTUDCAL->GetRegion()).test(itru-32);
+  }
+  return false;
 }
 
 std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerDCSConfig &config) {

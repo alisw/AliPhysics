@@ -63,6 +63,18 @@ public:
   inline AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(Bool_t isDCAL = false) const;
   AliEMCALTriggerTRUDCSConfig*        GetTRUDCSConfig(Int_t iTRU) const      { return (AliEMCALTriggerTRUDCSConfig*)fTRUArr->At(iTRU); }
 
+  /**
+   * @brief Check whether TRU is enabled
+   * 
+   * Enabled-status defined via presence of the TRU in the STU region: TRU
+   * is enabled if the corresponding bit is set in the STU region
+   * 
+   * @param iTRU    Global index of the TRU to be checked
+   * @return true   TRU is enabled 
+   * @return false  TRU is not enabled
+   */
+  bool IsTRUEnabled(int iTRU) const;
+
 private:
   
   AliEMCALTriggerDCSConfig           (const AliEMCALTriggerDCSConfig &cd); // Not implemented
