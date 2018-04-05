@@ -1182,7 +1182,7 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
   for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.2);
   fRawYield->SetBinContent(1,0.05);
   for(Int_t i=2;i<=12;i++) fRawYield->SetBinContent(i,0.04);
-  fRawYield->SetBinContent(4,0.05); //5<pt<6
+  //  fRawYield->SetBinContent(4,0.05); //5<pt<6
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
