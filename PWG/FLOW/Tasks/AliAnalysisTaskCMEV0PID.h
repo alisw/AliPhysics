@@ -25,7 +25,7 @@
 #include "TString.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
-
+//#include "TStopwatch.h"
 
 class    AliVEvent;      
 class    AliVVertex;    
@@ -63,9 +63,14 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetTrackCutNclusterMin(Int_t ncl)      {this->fTPCclustMin = ncl; }
   void SetFlagUseKinkTracks(Bool_t kink)      {this->bUseKinkTracks = kink; }
 
+
   void SetEventPlaneHarmonic(Int_t pn)            {this->gPsiN     = pn;}
   void SetHarmonicsFor3Particle(Int_t n, Int_t m) {this->gN = n; this->gM = m;}
 
+
+
+
+  void SetCentralityEstimator(TString sCent)  {this->sCentrEstimator = sCent;} 
   void SetCollisionSystem(TString s)          {this->sNucleiTP  = s;}
   void SetCentralityPercentileMin(Double_t b) {this->fCentralityPercentMin = b;}
   void SetCentralityPercentileMax(Double_t b) {this->fCentralityPercentMax = b;}
@@ -75,6 +80,9 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetFlagV0MGainCorr(Bool_t b)           {this->bV0MGainCorr    = b;}
   void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
   void SetFlagFillNUAforPID(Bool_t b)         {this->bFillNUAHistPID = b;}
+
+
+
 
   void SetFBEfficiencyFilePath(TString path)  {this->sPathOfMCFile   = path;}
   //void SetFBEfficiencyList(TList *flist)    {this->fListFBHijing   = flist;}
@@ -148,6 +156,12 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH1D                *fHCentWeightForRun;   //!   Event weights for non-flat centrality 
 
   TH2F                 *fQAEtaPhiAfterNUA;   //!
+  TH2F             *fQAEtaPhiAfterNUAPion;   //!
+  TH2F             *fQAEtaPhiAfterNUAKaon;   //!
+  TH2F           *fQAEtaPhiAfterNUAProton;   //!
+
+
+
 
 
 
@@ -216,6 +230,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   TString             sPathOfMCFile;  //
   TString                 sNucleiTP;  //
+  TString           sCentrEstimator;  //
  
 
 
