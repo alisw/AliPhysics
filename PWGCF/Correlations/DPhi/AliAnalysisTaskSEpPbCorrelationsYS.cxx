@@ -1648,7 +1648,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
 
 
-  //  if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) return; //events cuts
+  if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) return; //events cuts
   fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
   fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
   fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
