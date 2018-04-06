@@ -13,9 +13,11 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-/************************************** 
-* template class for student projects * 
-**************************************/ 
+/********************************************** 
+* template class for student projects         *
+* author: Marcel Lesch (marcel.lesch@cern.ch) *
+*
+**********************************************/ 
   
 #include "Riostream.h"
 #include "AliAnalysisTaskStudentsML.h"

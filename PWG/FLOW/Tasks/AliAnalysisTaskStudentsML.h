@@ -4,9 +4,11 @@
  * $Id$ 
  */
 
-/************************************** 
-* template class for student projects * 
-**************************************/ 
+/********************************************** 
+* template class for student projects         *
+* author: Marcel Lesch (marcel.lesch@cern.ch) *
+*
+**********************************************/ 
 
 #ifndef ALIANALYSISTASKSTUDENTSML_H
 #define ALIANALYSISTASKSTUDENTSML_H
